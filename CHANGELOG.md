@@ -1,5 +1,11 @@
 # Changelog
 
+## 17.25.0
+
+### Fixed
+
+- **Android ComposerLoader** renders its shared moving light through a hardware Canvas adapter on supported devices, with a phase-preserving SVG fallback for software-rendered hosts and older binaries.
+
 ## 17.24.0
 
 ### Added
@@ -11,6 +17,22 @@
 - Web TextField placeholder colors follow the contrast pair of the painted material bounds, including baked and transparent backings.
 
 Releases before 15.50.0 are described in their pull requests and in git history.
+
+## 17.24.0
+
+### Added
+
+- **Persistent Canvas composition.** `Canvas`, `CanvasBackground` and measured `CanvasPanel` keep a consumer's renderer mounted while panel placement and occupancy change. Settled geometry and animated panel progress are separate signals.
+- **A versioned task catalog.** Packed exports, examples and task-oriented component metadata are checked from the published package.
+- **Live selection anchors.** Popovers can follow a changing text selection or caret without remounting the anchored content.
+- **A hardware-backed Android composer light.** ComposerLoader retains its shared geometry and motion contract, with a tested software-host SVG fallback.
+
+### Fixed
+
+- Composer surface paint coordinates with the nearest loader owner, preserving the single rounded body and keeping its light decorative.
+- Android rich-text input keeps the keyboard open when tapped; inactive microphone equalizers stop their animation work.
+- Fixed AppShell layouts retain the correct Screen scroll owner.
+- Field placeholder contrast follows the resolved painted material, and plain buttons preserve explicit foreground/background token pairs.
 
 ## 17.23.0
 

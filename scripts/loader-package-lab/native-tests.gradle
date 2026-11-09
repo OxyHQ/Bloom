@@ -1,0 +1,14 @@
+// Tests live outside the packed artifact by package policy. Run them against
+// the exact installed native project without replacing its production sources.
+gradle.projectsEvaluated {
+  def bloom = gradle.rootProject.findProject(':oxy.so_bloom')
+  if (bloom == null) return
+  bloom.android.sourceSets.test.java.srcDir(new File(gradle.rootProject.projectDir, '../../../android/src/test/java'))
+}
+gradle.projectsEvaluated {
+  def bloom = gradle.rootProject.findProject(':oxy.so_bloom')
+  if (bloom == null) return
+  bloom.tasks.withType(Test).configureEach {
+    systemProperty 'robolectric.dependency.repo.url', 'https://repo.maven.apache.org/maven2'
+  }
+}

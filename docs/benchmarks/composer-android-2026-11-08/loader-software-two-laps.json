@@ -1,0 +1,56 @@
+{
+  "status": "pre-fix physical animated software-fallback capture; superseded by the static clock handoff candidate",
+  "supersededBy": "loader-software-static-fallback.json",
+  "device": {
+    "model": "Google Pixel 8a",
+    "android": 16,
+    "api": 36,
+    "capturePx": [2400, 1080],
+    "density": 420,
+    "fontScale": 1.15,
+    "orientation": "landscape"
+  },
+  "installedArtifact": {
+    "package": "so.oxy.bloom.loaderpackagelab",
+    "packageVersion": "17.23.0 local packed snapshot",
+    "apkSha256": "36871c58dec789f33e80559f44bcbfd586484771b412275d9ff769519fe32014",
+    "embeddedBloomSourceSha256": "66916565a6d4dc4e4adb1666b4e79dd002824baaee908c0ffbd6d7730f5a2e26",
+    "fixtureSha256": "8a6a72933d0fe4f2babc49ef4431906eeafe58c8c9fdb007a93755ae7dd76f1e",
+    "softwareWindow": true,
+    "installedApkPulledAndMatched": true
+  },
+  "scene": {
+    "count": 2,
+    "taper": 0.5,
+    "active": true,
+    "speedSecondsPerLap": 4.5,
+    "narrow": false,
+    "radius": 9999,
+    "paused": false,
+    "reverse": false,
+    "screen": "off",
+    "activeWindowSecondsApprox": 11,
+    "loopsApprox": 2.44
+  },
+  "recording": {
+    "file": "loader-software-two-laps.mp4",
+    "sha256": "f44640cdf0a16ab1a033767bf85c558b7c36f9502e9f16b8f4463389b768c49d",
+    "durationSeconds": 15.2091,
+    "videoFrames": 92,
+    "resolution": [2400, 1080],
+    "codec": "H.264",
+    "notes": "Contains the frozen origin, approximately 11 seconds of visible software-fallback motion, then the frozen origin after the Freeze origin benchmark control. The active interval estimate comes from the timed physical interaction, not decoded animation telemetry."
+  },
+  "diagnosticSamples": {
+    "topCpuPercentOfOneCore": [200, 186],
+    "screenrecordAverageFrameRateFps": 6.05,
+    "gfxinfoFrameStatsAvailable": false,
+    "files": {
+      "top": "loader-software-top.txt",
+      "gfxinfo": "loader-software-gfx.txt",
+      "memory": "loader-software-memory.txt"
+    },
+    "interpretation": "Exploratory samples suggest high CPU use and low screenrecord capture cadence. Screenrecord cadence is not a reliable application FPS measurement, and gfxinfo returned no frame rows for this software-rendered host. Treat this as an adverse diagnostic signal that needs a better controlled motion-performance measurement, not as a formal budget result."
+  },
+  "limits": "Synthetic local package fixture, one physical device, software-rendered Android host. This proves motion is visible during the recorded interval only; it does not prove a frame-rate budget, parity with hardware/web/iOS, production app acceptance, or published-package behavior. The CPU/cadence signal is concerning but not a thresholded acceptance result."
+}

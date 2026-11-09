@@ -1,0 +1,11 @@
+node_modules/
+android/
+bloom-local/
+build.json
+.expo/
+
+attestation.json
+
+.compat-rn73/
+
+__pycache__/

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text } from 'react-native';
+import { Platform, Text } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 
 // The shared mocks do not stub these two; the loader needs both.
@@ -231,6 +231,40 @@ describe('ComposerLoader (native)', () => {
     expect(first.strokeDasharray[0]).toBeCloseTo((g.strokes[0]!.dash * g.perimeter) / 100, 6);
     expect(first.filter).toMatch(/^url\(#bloom-cl-.*-b14\)$/);
     expect(first.strokeLinecap).toBe('round');
+  });
+
+  it('groups Android fallback strokes before applying each layer blur', () => {
+    const originalPlatform = Platform.OS;
+    Platform.OS = 'android';
+    try {
+      const { UNSAFE_root, getByTestId } = renderLoader(
+        <ComposerLoader testID="cl" taper={0.5}>
+          <Text>x</Text>
+        </ComposerLoader>,
+      );
+      fireEvent(getByTestId('cl-light', HIDDEN), 'layout', {
+        nativeEvent: { layout: { width: 640, height: 52 } },
+      });
+      const groups = UNSAFE_root.findAll(
+        (node) => (node.type as unknown) === 'G' && typeof node.props.filter === 'string',
+      );
+      expect(groups).toHaveLength(3);
+      expect(groups.map((group) => group.findAllByType('Rect' as never).length)).toEqual([
+        TAPER_STEPS,
+        TAPER_STEPS,
+        TAPER_STEPS,
+      ]);
+      expect(groups[0]?.props.filter).toMatch(/^url\(#bloom-cl-.*-b14\)$/);
+      expect(groups[0]?.props.opacity).toBe(0.8);
+      expect(groups[1]?.props.filter).toMatch(/^url\(#bloom-cl-.*-b6\)$/);
+      expect(groups[2]?.props.filter).toMatch(/^url\(#bloom-cl-.*-b2\)$/);
+      const rects = UNSAFE_root.findAll(
+        (node) => (node.type as unknown) === 'Rect' && node.props.stroke !== undefined,
+      );
+      expect(rects.every((rect) => rect.props.filter === undefined)).toBe(true);
+    } finally {
+      Platform.OS = originalPlatform;
+    }
   });
 });
 

@@ -1,0 +1,62 @@
+{
+  "status": "physical software-host static-fallback verification; broader platform acceptance pending",
+  "device": {
+    "model": "Google Pixel 8a",
+    "android": 16,
+    "api": 36,
+    "fingerprint": "google/akita/akita:16/BP4A.260205.001/14624666:user/release-keys",
+    "abi": "arm64-v8a",
+    "physicalDisplayPx": [1080, 2400],
+    "capturePx": [2400, 1080],
+    "density": 420,
+    "fontScale": 1.15,
+    "orientation": "landscape"
+  },
+  "installedArtifact": {
+    "package": "so.oxy.bloom.loaderpackagelab",
+    "packageVersion": "17.23.0 local packed snapshot",
+    "kind": "local packed snapshot; not published acceptance",
+    "apkSha256": "9c8b51cb0a507bb7c3eca5ac24a0291dbd43166e0030e44047459a099c40379f",
+    "packedTarballSha256": "7cd44cff3d543e61f550b4cee57c5f79e9017bf49f39a510234d41e7113b7571",
+    "embeddedBloomSourceSha256": "293d7117f7ec2cd396ab5977a4cc7d01046f2163f0dfd462a6a39f308915b6d7",
+    "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+    "adapterSha256": "439368f05ea092a36619510ff3cf1d255d5e8da61ff52ab3490d0dd7dd6e4c21",
+    "fixtureSha256": "8a6a72933d0fe4f2babc49ef4431906eeafe58c8c9fdb007a93755ae7dd76f1e",
+    "softwareWindow": true,
+    "installedApkPulledAndMatched": true
+  },
+  "scene": {
+    "count": 2,
+    "taper": 0.5,
+    "active": true,
+    "speedSecondsPerLap": 4.5,
+    "narrow": false,
+    "radius": 9999,
+    "paused": false,
+    "reverse": false,
+    "screen": "off",
+    "stateEvidence": "loader-software-static-state.xml; UIAutomator reports active=true, speed=4.5, count=2, taper=0.5",
+    "fallbackBehavior": "after the native adapter reports the persistently software-rendered host, the existing SVG light stays at its current phase and the owning frame clock is stopped"
+  },
+  "visual": {
+    "before": "loader-software-static-a.png",
+    "beforeSha256": "d202bf92130f7560e894cb164f471827ed6b45522bed72b4c34cc0364b990ac3",
+    "after": "loader-software-static-b.png",
+    "afterSha256": "be5f88176f0664b052b7e9e55e4c572e02f321e5bae9b6f21c5d4566b1975ea3",
+    "elapsedSecondsApprox": 15,
+    "cropPx": [100, 280, 2100, 180],
+    "psnrDb": "Infinity",
+    "interpretation": "The crop pixels were identical at the two endpoints while the fixture business state remained active and speed remained 4.5. This supports the static handoff claim for this candidate and scene, not visual acceptance."
+  },
+  "performanceDiagnostic": {
+    "method": "top -b -n 4 -d 5 while the isolated app was foreground; no screen recording",
+    "cpuSamplesPercentOfOneCore": [6.8, 4.4, 5.2, 5.0],
+    "medianPercentOfOneCore": 5.1,
+    "rawFile": "loader-software-static-top.txt",
+    "rawFileSha256": "da6071c9bccfb0065d29dae57bcfc04621a8775c16a7d5c6d1658981604360ea",
+    "gfxinfoFile": "loader-software-static-gfxinfo.txt",
+    "gfxinfoFileSha256": "3c08597401ddaa0d248ac9fc37a3c2e210db2d461f7dd8d26da806ea659d7b8d",
+    "note": "The previous animated software fallback candidate had two exploratory top samples of 200% and 186% of one core, but that run included screen recording and is not a controlled threshold comparison. Current samples are a diagnostic only, not a predeclared acceptance budget. Android gfxinfo exposes no frame rows for this host."
+  },
+  "limits": "One isolated synthetic app and one physical Android device. No production consumer, published package, API 30 physical device, iOS, WebKit, or cross-platform visual acceptance. The static phase may be visually suboptimal for some animation phases; inspect product appearances before accepting the policy."
+}
