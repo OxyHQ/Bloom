@@ -1,3 +1,4 @@
+import { avatarViewBox } from './vector-viewbox';
 import { svgA11yProps } from '../styles/svg-a11y';
 import { useSvgIdPrefix } from '../styles/svg-id';
 import {
@@ -453,7 +454,7 @@ function AnimatedVectorCharacterAvatar(props: Props) {
           ref={svg}
           width="100%"
           height="100%"
-          viewBox={display.drawing.viewBox}
+          viewBox={avatarViewBox(display.drawing.viewBox)}
           testID="bloom-vector-drawing"
           {...svgA11yProps()}
         >
