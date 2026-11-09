@@ -1,5 +1,11 @@
 # Changelog
 
+## 17.25.0
+
+### Added
+
+- **Sidebar tree rows** take a `description`: a line under the label, one line and truncated, drawn in the tree's own metrics, as a conversation row's last message is. A row with a description is two lines (an agent's name and its last message), and a row without one is unchanged.
+
 ## 17.24.0
 
 ### Added
