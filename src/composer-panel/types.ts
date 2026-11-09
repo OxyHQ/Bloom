@@ -55,6 +55,14 @@ export interface ComposerPanelAddMenuRow {
 export interface ComposerPanelAddMenuGroup {
   label: string;
   rows: ReadonlyArray<ComposerPanelAddMenuRow>;
+  /**
+   * Draw the group as ONE row that opens its rows in a submenu, instead of a heading over them.
+   * For a list that can grow long (a person's skills, their connected apps) and would otherwise
+   * push the menu's few common rows out of reach. The row is named by `label`.
+   */
+  submenu?: boolean;
+  /** The icon of the submenu's row; only read when `submenu` is set. */
+  icon?: ComponentType<IconProps>;
 }
 
 // ---------------------------------------------------------------------------

@@ -72,6 +72,28 @@ describe('alignRows', () => {
     expect(paddingLeftOf(screen, 'Rename')).toBeUndefined();
   });
 
+  it('lets a check row take a `leading` icon, so its icon sits where a plain row’s does', () => {
+    // The mark is at the END; the icon is the row's own `leading`, so the row owns one icon slot
+    // and no blank one is added before it (an icon passed as a child sat one slot too far in).
+    const screen = renderMenu(
+      true,
+      <>
+        <DropdownMenuItem leading={<Text>★</Text>}>Favourite</DropdownMenuItem>
+        <DropdownMenuCheckboxItem
+          checked
+          onCheckedChange={() => {}}
+          indicatorPosition="trailing"
+          leading={<Text>🌐</Text>}
+        >
+          Search
+        </DropdownMenuCheckboxItem>
+      </>,
+    );
+    expect(leadingSlots(screen, 'Favourite')).toBe(1);
+    expect(leadingSlots(screen, 'Search')).toBe(1);
+    expect(paddingLeftOf(screen, 'Search')).toBe(paddingLeftOf(screen, 'Favourite'));
+  });
+
   it('adds nothing when no row draws at its leading edge', () => {
     const screen = renderMenu(
       true,
