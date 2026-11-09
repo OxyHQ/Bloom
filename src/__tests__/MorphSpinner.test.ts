@@ -28,3 +28,29 @@ describe('morphing spinner frames', () => {
     expect(() => morphPathD(flat, frameCount, frameCount - 0.5)).not.toThrow();
   });
 });
+
+describe('morph outline sampling', () => {
+  const { flat, frameCount } = getMorphFrames();
+
+  it('spaces the points of every frame evenly along the outline', () => {
+    let worst = 0;
+    for (let f = 0; f < frameCount; f++) {
+      const gaps: number[] = [];
+      const base = f * POINTS_PER_FRAME * 2;
+      for (let k = 0; k < POINTS_PER_FRAME; k++) {
+        const next = (k + 1) % POINTS_PER_FRAME;
+        gaps.push(
+          Math.hypot(
+            flat[base + next * 2]! - flat[base + k * 2]!,
+            flat[base + next * 2 + 1]! - flat[base + k * 2 + 1]!,
+          ),
+        );
+      }
+      const mean = gaps.reduce((a, b) => a + b, 0) / gaps.length;
+      worst = Math.max(worst, Math.max(...gaps) / mean);
+    }
+    // Chords across a tight corner are shorter than the arc they span, so a little
+    // spread is real; samples in the wrong unit spread by whole multiples.
+    expect(worst).toBeLessThan(1.6);
+  });
+});
