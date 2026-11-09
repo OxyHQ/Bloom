@@ -51,6 +51,14 @@ try {
   const page = await browser.newPage();
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (
+      message.type() === 'error' &&
+      message.text().includes('Updating a style property during rerender')
+    ) {
+      errors.push(message.text());
+    }
+  });
   await page.setViewport({ width: 768, height: 1200, deviceScaleFactor: 1 });
   await page.goto(`${url}/iframe.html?id=${story.id}&viewMode=story`);
   await page.waitForSelector('[data-testid="lifecycle-isolated"] .bloom-composer-loader-rect');

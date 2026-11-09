@@ -1,5 +1,11 @@
 # Changelog
 
+## 17.27.0
+
+### Fixed
+
+- **Web ComposerLoader** sets its CSS animation properties independently, avoiding React's conflicting shorthand/longhand updates while preserving the same motion and reduced-motion behavior.
+
 ## 17.26.0
 
 ### Added

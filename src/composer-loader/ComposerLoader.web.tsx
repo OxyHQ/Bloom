@@ -199,7 +199,12 @@ function ComposerLoaderComponent({
                 }
                 style={{
                   opacity: stroke.opacity,
-                  animation: `${KEYFRAMES} ${speed}s linear ${(stroke.phase * speed) / 100}s infinite ${direction}`,
+                  animationName: KEYFRAMES,
+                  animationDuration: `${speed}s`,
+                  animationTimingFunction: 'linear',
+                  animationDelay: `${(stroke.phase * speed) / 100}s`,
+                  animationIterationCount: 'infinite',
+                  animationDirection: direction,
                   animationPlayState: moving ? 'running' : 'paused',
                 }}
               />
