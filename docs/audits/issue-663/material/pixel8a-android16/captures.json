@@ -1,0 +1,133 @@
+{
+  "runDate": "2026-11-09",
+  "device": {
+    "manufacturer": "Google",
+    "model": "Pixel 8a",
+    "hardware": "akita",
+    "android": "16",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "gpu": "ARM Mali-G715",
+    "displayPx": [
+      1080,
+      2400
+    ],
+    "densityDpi": 420,
+    "fontScale": 1.15
+  },
+  "build": {
+    "sourceCommit": "5bfb94021df9a897999fe036b7e9cf077f200be1",
+    "sourcePackageVersion": "17.34.0",
+    "nativeModulePackageVersion": "17.22.0",
+    "kind": "bundled release APK; isolated test fixture",
+    "appId": "so.oxy.bloom.materiallab",
+    "apkSha256": "c7582542c59a3c2a8cb443416ecc62182e8921ab4cd132058d201951d5d51ad1",
+    "apkFixtureSha256": "264d1f8f540e3eb1f5402b3369dce8c40480e5cb90e519d4233bfba8e1bb9da9",
+    "bloomSourceSha256": "304284edbc443a3572469b01c0536fff1480f2cd845d462576f2f316219f2969",
+    "embeddedBloomSourceSha256": "a8a8782f52a9de667a4b4b91a4fbc0b9e107451442f25d38031ccfc616eb282b",
+    "embeddedBloomFiles": 850,
+    "internetPermission": false,
+    "runtimeHttpAndWebSocketDenialProbes": "passed",
+    "reactNative": "0.88.1",
+    "expo": "58.0.23",
+    "reactNativeSvg": "15.16.0",
+    "expoBlur": "58.0.5",
+    "reanimated": "4.7.1",
+    "workingTreeHadTestFixtureChanges": true
+  },
+  "capture": {
+    "statesCaptured": 66,
+    "selectedArtifactsCommitted": 17,
+    "pixelsCapturedLiveFromDevice": true,
+    "hierarchyRefreshedForEveryCapture": false,
+    "interactionMethod": "adb taps/swipes using startup accessibility bounds; Android Back dismisses overlays",
+    "captureRunnerSha256": "5a79e268f4688cb93753b7845a97ca88ddacf88a61f6498a5894afab95855fca"
+  },
+  "artifacts": [
+    {
+      "name": "light-solid",
+      "file": "light-solid.png",
+      "sha256": "60bcc3488fe8a06ff2da7be3dacb9e3929b5bdee47b8784bb04191d299b265d5"
+    },
+    {
+      "name": "light-solid-composer",
+      "file": "light-solid-composer.png",
+      "sha256": "7c12490c9218438c0b0552bec47deaddd2a254825cd64a7c6d2529c415fe3e37"
+    },
+    {
+      "name": "light-solid-menu",
+      "file": "light-solid-menu.png",
+      "sha256": "66b5d4f55a7e96d3dfc36e171a123f4ff846997c4251578c13cba5008b939852"
+    },
+    {
+      "name": "light-solid-menu-dismissed",
+      "file": "light-solid-menu-dismissed.png",
+      "sha256": "e02323b05f5af8d3203282eddc16f3510c8db4a4f95398dd84edeba8f960c0ec"
+    },
+    {
+      "name": "light-solid-dialog",
+      "file": "light-solid-dialog.png",
+      "sha256": "5fd8aced26f67f368746b267b76a61abea00197d4b95cac5886234614170a13a"
+    },
+    {
+      "name": "light-solid-sheet",
+      "file": "light-solid-sheet.png",
+      "sha256": "3d655c953d381683cd3e9add1ed542b0b5922c6f8ac329d7ed05ff39f8f44548"
+    },
+    {
+      "name": "light-photo",
+      "file": "light-photo.png",
+      "sha256": "ca39f17f8a0d7447db6a0bda439abf9493ae33dd6bf3dd939e3d71f4a6486f98"
+    },
+    {
+      "name": "light-motion",
+      "file": "light-motion.png",
+      "sha256": "fb044b62695b6f43edc495b517aee555f9c71c30d2fef5607be431a54c991569"
+    },
+    {
+      "name": "light-reduced-transparency",
+      "file": "light-reduced-transparency.png",
+      "sha256": "93a8b29b76c325a17def8a1d26cda1459cf79018753722e57d91216799185862"
+    },
+    {
+      "name": "dark-solid",
+      "file": "dark-solid.png",
+      "sha256": "584ffa01f062125caf2afe2c7bd637cb77634337c3943c3f38e3969c2efc388a"
+    },
+    {
+      "name": "dark-solid-composer",
+      "file": "dark-solid-composer.png",
+      "sha256": "8f7f65ac1e5ac6cdfad348d2e16c12c8113f34cdb9ccccd67eea16bd4521ca8b"
+    },
+    {
+      "name": "dark-solid-menu",
+      "file": "dark-solid-menu.png",
+      "sha256": "fe953fd8fabfb72b8f7fce68082fd4453c56e952a438bf851079bf283f2ee02d"
+    },
+    {
+      "name": "dark-solid-dialog",
+      "file": "dark-solid-dialog.png",
+      "sha256": "ea23ffd1f9479316a883365e7df1a377f9932a796fb5fdd06c2af625a09d1f91"
+    },
+    {
+      "name": "dark-solid-sheet",
+      "file": "dark-solid-sheet.png",
+      "sha256": "e94b7face3c974bea3b63d142b3c691ad718e8b042b2d249e2915597295d5af9"
+    },
+    {
+      "name": "dark-photo",
+      "file": "dark-photo.png",
+      "sha256": "dd87ffd6762a7dbcc3446143544936d919eb83c752eb08c61768a92ceb53c8c8"
+    },
+    {
+      "name": "dark-motion",
+      "file": "dark-motion.png",
+      "sha256": "7dfefb33dd13bac0acd66219a4fadbc87203264dfd4d52361807f78b75258e30"
+    },
+    {
+      "name": "dark-reduced-transparency",
+      "file": "dark-reduced-transparency.png",
+      "sha256": "7a0119d872eda3e471faa86e044d58b376d7269a747016721d5e490b87dbab91"
+    }
+  ]
+}

@@ -32,17 +32,19 @@ const xml = () => {
   );
   return adb('shell', 'cat', '/sdcard/bloom-material-663.xml');
 };
-function node(hierarchy, id) {
-  const tag = hierarchy.match(new RegExp(`<node[^>]*resource-id="${id}"[^>]*>`))?.[0];
-  assert(tag, `Missing UI target ${id}`);
-  const bounds = tag.match(/bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/);
-  assert(bounds, `Missing bounds ${id}`);
-  const [x1, y1, x2, y2] = bounds.slice(1).map(Number);
-  assert(x2 > x1 && y2 > y1, `Invisible UI target ${id}`);
+function bounds(tag, label) {
+  assert(tag, `Missing UI target ${label}`);
+  const match = tag.match(/bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/);
+  assert(match, `Missing bounds ${label}`);
+  const [x1, y1, x2, y2] = match.slice(1).map(Number);
+  assert(x2 > x1 && y2 > y1, `Invisible UI target ${label}`);
   return { x1, y1, x2, y2 };
 }
-async function tap(id) {
-  const b = node(xml(), id);
+function node(hierarchy, id) {
+  const tag = hierarchy.match(new RegExp(`<node[^>]*resource-id="${id}"[^>]*>`))?.[0];
+  return bounds(tag, id);
+}
+function tapBounds(b) {
   adb(
     'shell',
     'input',
@@ -50,13 +52,16 @@ async function tap(id) {
     String(Math.round((b.x1 + b.x2) / 2)),
     String(Math.round((b.y1 + b.y2) / 2)),
   );
+}
+async function tap(id, hierarchy = xml()) {
+  tapBounds(node(hierarchy, id));
   await pause(700);
 }
 const captures = [];
-function capture(name) {
-  const hierarchy = xml();
+function capture(name, hierarchySnapshot = null) {
+  const hierarchy = hierarchySnapshot ?? xml();
   assert(hierarchy.includes('so.oxy.bloom.materiallab'), 'Fixture must own captured window');
-  writeFileSync(resolve(out, `${name}.xml`), hierarchy);
+  writeFileSync(resolve(out, `${name}${hierarchySnapshot ? '.base' : ''}.xml`), hierarchy);
   writeFileSync(
     resolve(out, `${name}.png`),
     execFileSync(binary, [...target, 'exec-out', 'screencap', '-p'], {
@@ -69,11 +74,19 @@ function capture(name) {
       geometry[role] = node(hierarchy, `material-${role}`);
     } catch {}
   }
-  captures.push({ name, geometry });
+  captures.push({
+    name,
+    geometry,
+    hierarchyFresh: hierarchySnapshot === null,
+    loaderActive: hierarchySnapshot === null
+      ? hierarchy.includes('content-desc="Stop generating"')
+      : null,
+  });
   writeFileSync(resolve(out, 'captures.json'), JSON.stringify({ environment, captures }, null, 2));
+  return hierarchy;
 }
-async function scroll(bottom) {
-  const b = node(xml(), 'material-scroll');
+async function scroll(bottom, hierarchy = xml()) {
+  const b = node(hierarchy, 'material-scroll');
   const x = String(Math.round((b.x1 + b.x2) / 2));
   const upper = Math.round(b.y1 + (b.y2 - b.y1) * 0.2);
   const lower = Math.round(b.y1 + (b.y2 - b.y1) * 0.8);
@@ -90,24 +103,38 @@ async function scroll(bottom) {
   await pause(600);
 }
 for (const theme of ['light', 'dark']) {
-  if (theme === 'dark') await tap('material-theme');
+  let actionHierarchy = readFileSync(resolve(out, 'initial.xml'), 'utf8');
+  if (theme === 'dark') await tap('material-theme', actionHierarchy);
   for (const background of ['solid', 'stripes', 'photo', 'motion']) {
-    await tap(`material-background-${background}`);
-    capture(`${theme}-${background}`);
-    await scroll(true);
-    capture(`${theme}-${background}-composer`);
-    await scroll(false);
+    await tap(`material-background-${background}`, actionHierarchy);
+    // The app tree has fixed geometry; record fresh pixels while reusing the
+    // initial tree for control locations and explicitly label it as a snapshot.
+    const sceneHierarchy = capture(`${theme}-${background}`, actionHierarchy);
+    // A background selection changes paint only, so its just-captured scroll
+    // bounds remain current for this immediate swipe even while the busy SVG
+    // prevents UIAutomator from reporting idle.
+    await scroll(true, sceneHierarchy);
+    // Scrolling continuously changes RN's accessibility tree on this device;
+    // use the stable scene hierarchy for geometry while keeping the screenshot
+    // as a direct fresh device capture.
+    capture(`${theme}-${background}-composer`, sceneHierarchy);
+    await scroll(false, sceneHierarchy);
+    if (theme === 'light' && background === 'solid') {
+      // Keep the first composer screenshot genuinely busy, then pause its
+      // animation from a button visible in the current top-of-scroll snapshot.
+      await tap('material-loader-toggle', sceneHierarchy);
+    }
+    actionHierarchy = sceneHierarchy;
     for (const overlay of ['menu', 'dialog', 'sheet']) {
-      await tap(`material-${overlay}-trigger`);
-      capture(`${theme}-${background}-${overlay}`);
-      if (overlay === 'menu') adb('shell', 'input', 'keyevent', '4');
-      else await tap(`material-${overlay}-close`);
+      await tap(`material-${overlay}-trigger`, actionHierarchy);
+      capture(`${theme}-${background}-${overlay}`, actionHierarchy);
+      adb('shell', 'input', 'keyevent', '4');
       await pause(700);
-      assert(xml().includes('material-background-solid'), 'Overlay did not return to the fixture');
+      capture(`${theme}-${background}-${overlay}-dismissed`, actionHierarchy);
     }
   }
-  await tap('material-transparency');
-  capture(`${theme}-reduced-transparency`);
-  await tap('material-transparency');
+  await tap('material-transparency', actionHierarchy);
+  capture(`${theme}-reduced-transparency`, actionHierarchy);
+  await tap('material-transparency', actionHierarchy);
 }
 console.log(`Captured ${captures.length} native states on ${serial}`);
