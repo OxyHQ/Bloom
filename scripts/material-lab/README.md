@@ -9,14 +9,15 @@ request is used. Theme and reduced-transparency switches stay inside this app.
 
 ## Build identity
 
-The fixture imports this checkout's Bloom **source**. Its independently pinned
-`@oxy.so/bloom@17.22.0` supplies the native Android module and CSS package path;
-it is not evidence that the published JS package was tested. All JS source
-resolves one React/native runtime from this fixture's installation. React
-Compiler is not enabled. Keep the same scope for baseline/candidate builds.
-`prepare.mjs` records commit, working-tree status, source-tree SHA-256, fixture
-SHA-256, lock SHA-256 and exact dependency declarations in `build.json`. Preserve
-that JSON with each APK before building a second candidate.
+The scene imports this checkout's Bloom **source**. By default, the fixture's
+`@oxy.so/bloom@17.22.0` installation supplies the native Android module; that
+path is not evidence that the published JS package was tested. For a same-commit
+native package run, first build Bloom and use `mirror-into-consumer.mjs --built`
+as shown below. `prepare.mjs` records the installed native package version and,
+for a local packed snapshot, its tarball SHA-256. It also records the Bloom
+commit, working-tree status, source-tree SHA-256, fixture SHA-256, lock SHA-256
+and exact dependency declarations in `build.json`. Preserve that JSON with each
+APK before building a second candidate.
 
 The lock pins RN 0.88.1, Expo 58.0.23, SVG 15.16.0, Reanimated 4.7.1 and Expo Blur
 58.0.5. LightningCSS is pinned to 1.30.1: 1.33.0 failed NativeWind's native
@@ -46,6 +47,24 @@ source. These are bundled release builds: no Metro server is needed at runtime.
 Native build directories, dependencies and generated build identity are ignored.
 The Storybook watcher excludes these generated HTML reports, which otherwise
 reload a browser capture midway through a run.
+
+To attest the built local package on a physical Android device, from the Bloom
+checkout run:
+
+```sh
+bun run build
+node scripts/mirror-into-consumer.mjs scripts/material-lab --built
+cd scripts/material-lab
+ANDROID_HOME=/path/to/sdk bun run prebuild
+ANDROID_HOME=/path/to/sdk ANDROID_SDK_ROOT=/path/to/sdk ./android/gradlew -p android :app:assembleRelease -PreactNativeArchitectures=arm64-v8a --max-workers=2
+node attest-build.mjs
+```
+
+The attestor requires Bloom's Android package in the generated React Native
+`PackageList`, in addition to matching the emitted bundle and source map. Restore
+the consumer install with `node scripts/mirror-into-consumer.mjs
+scripts/material-lab --restore` from the Bloom checkout before published-package
+checks.
 
 ## Runtime isolation and device selection
 
