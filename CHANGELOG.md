@@ -1,10 +1,17 @@
 # Changelog
 
+## 17.30.2
+
+### Fixed
+
+- **The morphing spinner's points are evenly spaced.** The outline's arc length was measured in unit coordinates against samples stored in viewbox units, so points bunched up and neighbouring frames no longer corresponded; transitions looked lumpy at corners. The largest gap between points was about ten times the mean and is now under one and a half.
+- **The web `SpinnerIcon` is in the markup.** Its path had no `d` until the first animation frame, so server-rendered HTML and the first paint showed no loading indicator. The first frame is now in the first render and the loop keeps rewriting the same `d`.
+
 ## 17.30.1
 
 ### Fixed
 
-- **`ChatHeader` uses its measured width** to choose compact gutters and default back-button visibility. `showBack` remains available when navigation context differs from available width.
+- **`ChatHeader` uses its measured width** to choose compact gutters, and, on web, the default back-button visibility. Native always shows Back when `onPressBack` is set, since no list pane sits beside the conversation. `showBack` remains available when navigation context differs from available width.
 
 ## 17.30.0
 

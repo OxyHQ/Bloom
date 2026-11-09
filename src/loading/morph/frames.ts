@@ -72,12 +72,15 @@ function resample(cubics: Cubic[], count: number): number[] {
         3 * u * u * t * c.control0Y +
         3 * u * t * t * c.control1Y +
         t * t * t * c.anchor1Y;
+      // Both the running length and the stored samples live in viewbox units.
+      const px = x * VIEWBOX;
+      const py = y * VIEWBOX;
       if (xs.length > 0) {
-        total += Math.hypot(x - xs[xs.length - 1]!, y - ys[ys.length - 1]!);
+        total += Math.hypot(px - xs[xs.length - 1]!, py - ys[ys.length - 1]!);
         lengths.push(total);
       }
-      xs.push(x * VIEWBOX);
-      ys.push(y * VIEWBOX);
+      xs.push(px);
+      ys.push(py);
     }
   }
   // Close the loop back to the first sample.
