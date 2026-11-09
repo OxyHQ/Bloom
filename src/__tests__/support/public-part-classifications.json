@@ -1598,8 +1598,6 @@
       "src/__tests__/public-parts.test.ts"
     ],
     "verification": "public identity and route census only; per-part scope, responsive, runtime and device verification pending",
-    "parts": [
-      "src/multi-agent-chat/SelectedAgentPreview.tsx#SelectedAgentPreview"
-    ]
+    "parts": ["src/multi-agent-chat/SelectedAgentPreview.tsx#SelectedAgentPreview"]
   }
 }
