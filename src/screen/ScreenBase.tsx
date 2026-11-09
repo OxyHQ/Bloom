@@ -87,6 +87,7 @@ export function createScreen(
     headerPlacement = 'inset',
     bottomBarPlacement = 'inset',
     bottomBar,
+    underlay,
     bottomBarKeyboardBehavior = 'hide',
     primaryAction,
     reselect,
@@ -526,6 +527,15 @@ export function createScreen(
                             active={active}
                             restoring={viewport.restoring}
                           />
+                        ) : null}
+                        {underlay != null ? (
+                          <View
+                            testID={testID ? `${testID}-underlay` : undefined}
+                            pointerEvents="none"
+                            style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}
+                          >
+                            {underlay}
+                          </View>
                         ) : null}
                         {headerNode}
                         <View

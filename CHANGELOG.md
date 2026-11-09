@@ -1,5 +1,15 @@
 # Changelog
 
+## 17.27.0
+
+### Added
+
+- **Screen `underlay`**: a layer behind the header, the content and the bottom bar, filling the whole screen box and never interactive, for a wallpaper, gradient or animated field.
+
+### Fixed
+
+- **AiChatContainer's `background`** is drawn in the screen's underlay, so it reaches under the composer instead of stopping in a hard edge where the content area ends. Its test id is now `<testID>-underlay`.
+
 ## 17.26.0
 
 ### Added
