@@ -1,4 +1,4 @@
-import type { SidebarProps } from '../sidebar/types';
+import type { SidebarProps, SidebarSurface } from '../sidebar/types';
 import type { ComponentRef, ComponentType, ReactNode } from 'react';
 import type {
   ImageSourcePropType,
@@ -487,6 +487,13 @@ export interface AiChatShellProps {
    * it; omitted with a node it is `false`.
    */
   sidebarCollapsed?: boolean;
+  /**
+   * The in-flow sidebar's panel. `plain` (default) runs it flush to the window edge on the page;
+   * `card` frames it as a raised panel, and the shell then keeps the gutter around it and between
+   * it and the conversation that a card needs. The shell lays out by this value, so a sidebar that
+   * draws a different surface than it declares gets the wrong gaps.
+   */
+  sidebarSurface?: SidebarSurface;
   /** Optional collapsed column width override. Omit to let the sidebar size and animate itself. */
   collapsedSidebarWidth?: number;
   /** Navigation content for integrations without an in-flow sidebar. */
