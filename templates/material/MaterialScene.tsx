@@ -165,6 +165,9 @@ export function MaterialScene({
               <Button testID="material-transparency" onPress={onToggleTransparency}>
                 Transparency
               </Button>
+              <Button testID="material-loader-toggle" onPress={() => setBusy((value) => !value)}>
+                {busy ? 'Pause loader' : 'Resume loader'}
+              </Button>
             </View>
             <Surface testID="material-surface" style={{ padding: 16, gap: 8 }}>
               <Text variant="title-3-semibold">Surface</Text>
