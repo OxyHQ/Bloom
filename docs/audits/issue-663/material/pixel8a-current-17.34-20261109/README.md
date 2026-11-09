@@ -21,6 +21,7 @@ only the authorized device; its ADB serial is omitted from committed evidence.
 | Reanimated | 4.7.1 |
 | Bloom source tree SHA-256 | `304284edbc443a3572469b01c0536fff1480f2cd845d462576f2f316219f2969` (4,385 source files) |
 | Embedded Bloom source SHA-256 | `a8a8782f52a9de667a4b4b91a4fbc0b9e107451442f25d38031ccfc616eb282b` (850 bundled Bloom files) |
+| Published npm tarball SHA-256 | `6e817cff984ff281d861137f00fa00246024f53be3e3b1eb5167d0c4fedc52f8` (`@oxy.so/bloom@17.34.0`, retrieved 2026-11-09) |
 
 The local packed snapshot includes Bloom's Android module; the compiled React
 Native `PackageList` contains `new so.oxy.bloom.BloomPackage()`. The attestor
@@ -29,11 +30,14 @@ the embedded Bloom source against this checkout. See `attestation.json` for
 artifact hashes.
 
 The APK has no Android INTERNET permission. Runtime HTTP and WebSocket denial
-probes passed before the scene mounted. This is a local package snapshot, not a
-test of what npm currently serves or a production app binary. The fixture's
-dependency lock still declares the published `@oxy.so/bloom@17.22.0`; the build
-manifest separately records the locally packed 17.34.0 Android module and its
-tarball hash. Do not conflate those identities.
+probes passed before the scene mounted. The fixture's dependency lock still
+declares `@oxy.so/bloom@17.22.0`; the fixture explicitly used a locally packed
+17.34.0 snapshot for the native module and recorded its tarball hash. Comparing
+that snapshot to the npm 17.34.0 tarball showed the only package-tree difference
+was three additional `__tests__` directories in the registry package; `src`
+runtime files, `lib`, and `android` otherwise matched byte-for-byte. The APK
+therefore exercises the published 17.34.0 Bloom runtime/module contents, though
+the fixture did not install through npm and is not a product app binary.
 
 ## Captures
 

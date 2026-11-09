@@ -765,5 +765,11 @@
       "embeddedBloomFiles": 850,
       "nativeModulePackageListSha256": "339ca55d2d575c349c4dbbe8b247a153262bd5d0b4c24c94287abc31cacdae5f"
     }
+  },
+  "publishedPackageComparison": {
+    "version": "17.34.0",
+    "registryTarballSha256": "6e817cff984ff281d861137f00fa00246024f53be3e3b1eb5167d0c4fedc52f8",
+    "fixtureTarballSha256": "e67008a3a3512fbb372aac2e6ca34959710ec804d54e8600a51ffa9a982639e1",
+    "treeDifference": "The registry tarball contains three additional __tests__ directories under src; every other extracted package file, including runtime src, lib, and android, matched byte-for-byte."
   }
 }
