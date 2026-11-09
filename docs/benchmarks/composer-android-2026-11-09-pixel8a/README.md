@@ -2,7 +2,11 @@
 
 Physical Android validation of the isolated, offline `so.oxy.bloom.loaderpackagelab` release APK, built on Bloom commit `6bdc98bdbd9668f709eee0da75c9301579aacba2` (package snapshot 17.34.0). The fixture's installed package is a local packed snapshot, **not the published npm package**. It has no `INTERNET` permission. The APK SHA-256 is `939fd960efa752251abc0421466914a282b5116ee5365d70d7aad58a7d9f5738`; attestation is in `attestation.json`.
 
-Device: Google Pixel 8a, Android 16 / API 36, ARM64, Mali-G715, physical release build. ADB serial is redacted. Captured density, screen size, font scale, build fingerprint, thermal service, APK badging and permissions are in `environment.json`, `badging.txt` and `permissions.txt`.
+Device: Google Pixel 8a, Android 16 / API 36, ARM64, Mali-G715, physical release build. Display is 1080×2400 at 420 dpi; font scale is 1.15. Fixture versions: React Native 0.88.1, Expo 58.0.23, react-native-svg 15.16.0, expo-blur 58.0.5 and Reanimated 4.7.1. ADB serial is redacted. The exact build fingerprint, thermal service, APK badging and permissions are in `environment.json`, `badging.txt` and `permissions.txt`.
+
+## Reproduction
+
+From the Bloom checkout, build and mirror the packed snapshot using `bun run build`, `bun install --frozen-lockfile` in `scripts/loader-package-lab`, `node scripts/mirror-into-consumer.mjs scripts/loader-package-lab --built`, then `node prepare.mjs` and the documented ARM64 release Gradle task in `scripts/loader-package-lab/README.md`. The lifecycle and composer evidence was collected with `verify-lifecycle.py` and `verify-composers.py`; the performance matrix used `benchmark-matrix.mjs` and `measure-android.mjs`. The fixture and installed package hashes are recorded in `environment.json`.
 
 ## Results
 
