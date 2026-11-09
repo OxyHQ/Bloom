@@ -36,15 +36,22 @@ product activity or adoption. `ownershipCandidates` are review entry points,
 not a completed route matrix. The generated snapshot preserves failed fetches
 and skipped repositories rather than silently declaring them current.
 
-The 2026-11-08 snapshot contains 30 repository candidates and 74 direct
-dependency manifests after excluding historical audit manifests. Fetch succeeded
-for 29 candidates; `oxy` timed out and retains an explicit stale-ref warning.
+The refreshed 2026-11-09 snapshot contains 30 repository candidates and 74
+direct dependency manifests after excluding historical audit manifests. All 30
+candidate default refs fetched successfully. The census finds 3,918 source
+import files and 477 ownership-candidate files; these are search leads, not
+route coverage or adoption results. Ten manifests have no Bloom installation
+resolvable from their local checkout. Thirteen checkouts have local changes,
+including 95 entries in Mention; source evidence still comes from the fetched
+git refs, while installed versions and dirty counts describe this host.
+
 Non-consumers also retain their inspected SHA and fetch status. The upstream
 Expo, React Native and react-native-screens dependency checkouts are explicitly
-excluded by their canonical remote, rather than treated as product apps. `Astro` and `Astro-legacy` point at the same source SHA and
-must not be counted as two active products without further classification.
-BloomAiIcons has source mentions but no direct Bloom dependency; its project
-exclusion still needs to be applied during adoption classification.
+excluded by their canonical remote, rather than treated as product apps. `Astro`
+and `Astro-legacy` point at the same source SHA and must not be counted as two
+active products without further classification. BloomAiIcons has source mentions
+but no direct Bloom dependency; its project exclusion still needs to be applied
+during adoption classification.
 
 ## Pilot source ownership
 
@@ -56,9 +63,9 @@ applicable platforms, route states and exact deployed artifact.
 | App / route or pattern | Inspected owners | Required next verification |
 | --- | --- | --- |
 | Mention / normal feed, detail, Deck | `packages/frontend/app/(app)/_layout.tsx` renders AppShell and descriptor `panelLayout`: split/deck, separated appearance, bounded flow for Deck/native and document flow for normal web; sidebar and panel IDs remain in the existing shell | Capture approved main baseline, resize the same mounted feed/detail/Deck tree, check scroll return and panel identity; no flattening of approved framing |
-| Nilo / document | `apps/app/components/shell/nilo-shell.tsx` renders AppShell with legacy `panels`; `components/page-chrome/page-chrome.tsx` renders Screen with Bloom PageHeader, and document cover content through CoverHeader | Trace route panel ownership through legacy shell; compare actual document hierarchy/measurements and editor focus against fixed reference |
+| Nilo / document | `apps/app/components/shell/nilo-shell.tsx` renders AppShell with legacy `panels`; `apps/app/components/page-chrome/page-chrome.tsx` renders Screen with Bloom PageHeader, and document cover content through CoverHeader | Trace route panel ownership through legacy shell; compare actual document hierarchy/measurements and editor focus against fixed reference |
 | Nilo / database, table/board | `apps/app/components/database/database-header.tsx` contains two PageHeader instances, CoverHeader, Toolbar and view Tabs; `database-view.tsx` is the route view entry | Capture empty/populated data and filters before deciding which bands combine; do not infer excess height solely from component count |
-| GoWay / browse, search, place, directions | `packages/frontend/features/explore/ExploreScreen.tsx` owns local `useMapPadding`, layout/snap state and chooses local `components/sheet/SidePanel.tsx` or `MapSheet.tsx`; `lib/useLayoutMode.ts` owns presentation choice | Persist map/camera across mode and detent changes; measure occupation and keyboard; arbitrate map/handle/list gestures and preserve legal attribution |
+| GoWay / browse, search, place, directions | `packages/frontend/features/explore/ExploreScreen.tsx` keeps one map mounted, derives panel/sheet from the canvas viewport, owns snap state and map padding, and renders `CanvasPanel` from `@goway.to/maps`; `ExploreMapControls.tsx` adapts Bloom `MapControls` | Persist map/camera across mode and detent changes; measure occupation and keyboard; arbitrate map/handle/list gestures and preserve legal attribution |
 | Homiio / discovery results and map | `packages/frontend/app/_layout.tsx` renders AppShell; `app/explore/index.tsx` supplies AppShellPanel; `components/search/SearchResultsView.tsx` supplies local AppShellPanels with results/map IDs and collapse policy | Trace nested ownership and route-specific screen scroll, capture images/results/map/filter/detail, compare panel identity and no duplicate chrome |
 | Alia / agent composer | `packages/alia-chat/src/components/AliaComposer.tsx` wraps ComposerPill in ComposerLoader, passing `surface={false}` and `frosted={busy}`; owns intake, paste/drop, suggestions and dictation callbacks | Isolated and real native loader capture, multiline/keyboard/Stop/error; preserve all domain state while shared paint coordinates |
 | Allo / human conversation composer | `packages/frontend/components/chat/composer/Composer.tsx` uses ChatComposer while owning draft persistence, caret-related mention handling, attachments and recording | Reply/edit, mention insertion, failed-send restoration, attachment/recording and conversation switches; compare shared base to Alia without unifying domain semantics |
@@ -87,3 +94,13 @@ for Alia, Mention, Accounts, Commons and Noted were found in the workspace's
 The open Bloom PRs revalidated on this date were #577 (older native-avatar
 integration), #585 (focused chart-card entries) and #586 (diagnostic packaging).
 They were not integrated or used as evidence of consumer adoption.
+
+## Runtime availability rechecked on 2026-11-09
+
+Windows PnP reports `USB\\VID_18D1&PID_4EE7\\43221JEKB12200` as an active
+Android Composite ADB Interface. Windows ADB 36.0.0-13206524 lists a Pixel 10
+Pro over its wireless debugging transport and the API 30 emulator, but not the
+USB Pixel 8a. Therefore no current physical Pixel 8a UI result is claimed. The
+older Pixel 8a editor runs above are source-candidate diagnostics only; repeat
+acceptance with the final package after the USB device becomes available to
+ADB. No iPhone validation was run, per user instruction.
