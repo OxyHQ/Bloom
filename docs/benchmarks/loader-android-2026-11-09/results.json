@@ -22,10 +22,7 @@
       "npmTarballFiles": 28112,
       "installedFiles": 28112,
       "differentFiles": 0,
-      "exclusions": [
-        "test-only __tests__ files",
-        "Gradle-generated android/build intermediates"
-      ]
+      "exclusions": ["test-only __tests__ files", "Gradle-generated android/build intermediates"]
     },
     "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
     "nativeKotlinSha256": "5aa0123303dbb2f170077c2ddf6eac5933ee0c6269274422ed41ca10bf8f94ad",
@@ -57,11 +54,7 @@
       "recentFrameSamples": 118,
       "recentFrameP50Ms": 7.33104,
       "recentFrameP95Ms": 10.363656,
-      "cpuPercentOfOneCore": [
-        92.5,
-        89,
-        93.2
-      ],
+      "cpuPercentOfOneCore": [92.5, 89, 93.2],
       "pssKb": 235868,
       "rssKb": 422008,
       "thermalStatusBefore": 1,
@@ -75,11 +68,7 @@
       "recentFrameSamples": 118,
       "recentFrameP50Ms": 9.132739,
       "recentFrameP95Ms": 10.866789,
-      "cpuPercentOfOneCore": [
-        128,
-        94.2,
-        103
-      ],
+      "cpuPercentOfOneCore": [128, 94.2, 103],
       "pssKb": 346926,
       "rssKb": 533448,
       "thermalStatusBefore": 1,
@@ -93,11 +82,7 @@
       "recentFrameSamples": 118,
       "recentFrameP50Ms": 8.673189,
       "recentFrameP95Ms": 10.920387,
-      "cpuPercentOfOneCore": [
-        117,
-        104,
-        103
-      ],
+      "cpuPercentOfOneCore": [117, 104, 103],
       "pssKb": 284642,
       "rssKb": 471000,
       "thermalStatusBefore": 1,
@@ -111,11 +96,7 @@
       "recentFrameSamples": 117,
       "recentFrameP50Ms": 11.903972,
       "recentFrameP95Ms": 13.526438,
-      "cpuPercentOfOneCore": [
-        139,
-        101,
-        105
-      ],
+      "cpuPercentOfOneCore": [139, 101, 105],
       "pssKb": 370846,
       "rssKb": 557368,
       "thermalStatusBefore": 1,
@@ -129,11 +110,7 @@
       "recentFrameSamples": 117,
       "recentFrameP50Ms": 15.256084,
       "recentFrameP95Ms": 16.316909,
-      "cpuPercentOfOneCore": [
-        146,
-        100,
-        106
-      ],
+      "cpuPercentOfOneCore": [146, 100, 106],
       "pssKb": 358802,
       "rssKb": 545324,
       "thermalStatusBefore": 1,
@@ -147,11 +124,7 @@
       "recentFrameSamples": 117,
       "recentFrameP50Ms": 15.361101,
       "recentFrameP95Ms": 16.554859,
-      "cpuPercentOfOneCore": [
-        133,
-        101,
-        102
-      ],
+      "cpuPercentOfOneCore": [133, 101, 102],
       "pssKb": 358978,
       "rssKb": 545500,
       "thermalStatusBefore": 1,
