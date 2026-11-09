@@ -11,6 +11,8 @@ acceptance remains not run.
 - Package: `@oxy.so/bloom-editor@0.8.0`
 - Declared Bloom peer: `^17.24.0`; this is the published minimum API version.
 - Packed Bloom Text dependency: `@oxy.so/bloom-text@^0.1.6`.
+- Registry state at verification: editor `0.8.0` is not yet published; editor
+  `0.7.2` and Bloom `17.31.0` are published.
 - Tarball SHA-512:
   `c4ac9bc9c07b6b3021bfac162ff1891626dee3d5ba3abd1ff4e7375e88ab07a9ceadfe7d4ba31306a4ad3c689e16800b0460a0a965fc9b29eaa1d8aabca3cf14`
 
@@ -28,9 +30,11 @@ export resolver succeeded: 73 exports were available, `EditorStore` resolved to
 a function, and `DEFAULT_SCHEMA` resolved to an object. Strict TypeScript
 consumers compiled the root, `model` and `yjs` exports through their ESM
 (`NodeNext`) and CommonJS (`Node16`) declaration conditions, resolving Bloom
-Text and Yjs (`skipLibCheck: true`, TypeScript 5.9.3, Node 24.21.0). Runtime
-smoke coverage was limited to the platform-free model; this does not establish
-React editor or native UI behavior.
+Text and Yjs (`skipLibCheck: true`, TypeScript 5.9.3, Node 24.21.0). A CommonJS
+runtime smoke also loaded the packed `yjs` export, created a `Y.Doc` and
+confirmed `blocksMap` returns a `Y.Map`. This checks package loading and the
+platform-free data exports; it does not establish React editor or native UI
+behavior.
 
 No repository `node_modules` package was replaced. The tarball and consumer
 directory were temporary artifacts under `/tmp`.
