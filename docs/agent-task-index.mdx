@@ -1,0 +1,26 @@
+---
+title: Bloom agent task index
+description: Route implementation tasks to current contracts, verification, and preserved measured hazards.
+---
+
+# Bloom agent task index
+
+Start with [`AGENTS.md`](../AGENTS.md) for the short entry and [`AGENTS.rules.md`](../AGENTS.rules.md) for the complete current rules. Read the canonical guide for the task before changing code. `docs/audits/` preserves dated investigations and raw evidence; an audit is not a current contract unless the guide links to it.
+
+| Task | Start here | Also read |
+| --- | --- | --- |
+| Choose and compose UI | [UI architecture](ui-architecture.mdx), [composition](composition.mdx), [unified API](unified-api.mdx), [task catalog](task-catalog.mdx) | [`AGENTS.rules.md` — Composition](../AGENTS.rules.md#composition-docscompositionmdx-docsadoption-matrixmdx), [Families/barrels](../AGENTS.rules.md#familiesbarrels) |
+| Change a family, public API, size, or Field behavior | [Adoption matrix](adoption-matrix.mdx), the family guide in `docs/` | [`AGENTS.rules.md` — Families/barrels](../AGENTS.rules.md#familiesbarrels), [Composition](../AGENTS.rules.md#composition-docscompositionmdx-docsadoption-matrixmdx) |
+| Build a screen, workspace, panel, or navigation flow | [Compose layouts](compose-layouts.mdx), [AppShell](app-shell.mdx), [Screen](screen.mdx) | [`AGENTS.rules.md` — Screens](../AGENTS.rules.md#screens), [Scroll restoration](../AGENTS.rules.md#scroll-restoration) |
+| Change scrolling or virtualized content | [Scroll contract](scroll.mdx), [layout](layout.mdx) | [`AGENTS.rules.md` — Scroll restoration](../AGENTS.rules.md#scroll-restoration), [Screens](../AGENTS.rules.md#screens) |
+| Change overlays, dialog, menu, focus, or accessibility | [Overlay](overlay.mdx), [dialog](dialog.mdx), [surfaces](surfaces.mdx) | [`AGENTS.rules.md` — Overlay](../AGENTS.rules.md#overlay-overlay), [Web ARIA](../AGENTS.rules.md#web-aria), [Overlay surfaces](../AGENTS.rules.md#overlay-surfaces) |
+| Change surface material, blur, or contrast | [Surface](surface.mdx), [design tokens](design-tokens.mdx) | [`AGENTS.rules.md` — Material](../AGENTS.rules.md#material-surface), [Theme/tokens](../AGENTS.rules.md#themetokens); inspect linked audits for measurements and failure captures |
+| Change chat, composer, loader, or dictation | [Composer loader](composer-loader.mdx), [chat composer](chat-composer.mdx), [AgentChat](agent-chat.mdx) | [`AGENTS.rules.md` — Reanimated web layout](../AGENTS.rules.md#reanimated-web-layout), [Images, refs, insets](../AGENTS.rules.md#images-refs-insets-rn-088-expo-sdk-58) |
+| Change web CSS, className, fonts, or images | [Styles](styles.mdx), [fonts](fonts.mdx), [getting started](getting-started.mdx) | [`AGENTS.rules.md` — Web fork CSS](../AGENTS.rules.md#web-fork-css), [Consumer CSS](../AGENTS.rules.md#consumer-css), [Style + className](../AGENTS.rules.md#style-classname) |
+| Change locale, icons, or assets | [Locale](locale.mdx), the relevant family guide | [`AGENTS.rules.md` — Locale](../AGENTS.rules.md#locale-docslocalemdx), [Avatar runtime](../AGENTS.rules.md#avatar-runtime) |
+| Change peers, exports, builds, or package release | [Verification](verification.mdx), [getting started](getting-started.mdx) | [`AGENTS.rules.md` — Packaging](../AGENTS.rules.md#packaging), [Peers](../AGENTS.rules.md#peers), [Consumer checks](../AGENTS.rules.md#consumer-checks) |
+| Integrate a consumer app or validate published adoption | [Task catalog](task-catalog.mdx), [adoption matrix](adoption-matrix.mdx), [consumer verification](verification.mdx) | [`AGENTS.rules.md` — Consumer CSS](../AGENTS.rules.md#consumer-css), [Consumer checks](../AGENTS.rules.md#consumer-checks), [ImageResolver](../AGENTS.rules.md#imageresolver) |
+
+## Evidence and history
+
+Before local installs or tests, follow [verification](verification.mdx). It records native-resolution gaps, crash baselines, mirror hazards, and the required suite-union checks. For a specific measured regression, use the linked audit as evidence and retain its identifying environment and artifact hashes; do not generalize a fixture result beyond its scope.
