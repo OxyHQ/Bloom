@@ -1,4 +1,6 @@
 export { AgentCreator } from './AgentCreator';
+export { AgentCreatorField } from './AgentCreatorField';
+export type { AgentCreatorFieldProps } from './AgentCreatorField';
 export {
   AGENT_LANGUAGES,
   AGENT_SPEECH_RATES,

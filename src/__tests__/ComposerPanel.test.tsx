@@ -211,11 +211,15 @@ describe('ComposerPanel', () => {
     pressHost(getByTestId('composer-add'));
     const panel = within(getByTestId('composer-add-panel'));
 
-    // On draws the tick; off reserves the same space without one; the action
-    // row is not a switch and says nothing either way.
-    expect(panel.queryByTestId('bloom-row-checked-search')).toBeTruthy();
-    expect(panel.queryByTestId('bloom-row-checked-research')).toBeNull();
-    expect(panel.queryByTestId('bloom-row-checked-canvas')).toBeNull();
+    // A switch is a checkbox row of the menu: on is checked, off is not; the action row is a plain
+    // item, with no checked state to announce either way.
+    const checked = (label: string) => {
+      const row = panel.getByLabelText(label);
+      return row.props['aria-checked'] ?? row.props.accessibilityState?.checked;
+    };
+    expect(checked('Web search')).toBe(true);
+    expect(checked('Deep research')).toBe(false);
+    expect(checked('Canvas')).toBeUndefined();
   });
 
   it('hides the add button for an empty menu and the picker without providers', () => {

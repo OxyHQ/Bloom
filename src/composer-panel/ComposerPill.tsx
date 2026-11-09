@@ -2,7 +2,8 @@ import React from 'react';
 
 import { ComposerPillBase } from './ComposerPillBase';
 import { ComposerPopover } from './ComposerPopover';
-import { ComposerPopoverContext } from './context';
+import * as Dropdown from '../dropdown-menu/index';
+import { ComposerDropdownContext, ComposerPopoverContext } from './context';
 import type { ComposerPillProps } from './types';
 
 /**
@@ -12,7 +13,9 @@ import type { ComposerPillProps } from './types';
 export function ComposerPill(props: ComposerPillProps) {
   return (
     <ComposerPopoverContext.Provider value={ComposerPopover}>
-      <ComposerPillBase {...props} />
+      <ComposerDropdownContext.Provider value={Dropdown}>
+        <ComposerPillBase {...props} />
+      </ComposerDropdownContext.Provider>
     </ComposerPopoverContext.Provider>
   );
 }

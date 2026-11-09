@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import type { AvatarCharacter } from '../agent-avatar';
 import type { AgentCreatorMessages } from './messages';
@@ -13,8 +14,6 @@ export type AgentCreatorAgent = {
   id: string;
   name: string;
   label: string;
-  /** The agent's username. Defined, it is edited in its own row after the name; omitted, there is no row. */
-  handle?: string;
   description: string;
   avatar: AvatarCharacter;
   preferences?: AgentPreferences;
@@ -36,6 +35,13 @@ export interface AgentCreatorProps {
    * editor is then the profile and the look alone, and `agent.preferences` is left untouched.
    */
   showPreferences?: boolean;
+  /**
+   * Rows of the host's own, after the description, in the same card. Compose them with
+   * `AgentCreatorField` so they match the built-in ones. The editor owns the look, the name, the
+   * label and the description; anything else an agent has (a username, a status, a link) is the
+   * host's, and is handed in here rather than added to the editor one field at a time.
+   */
+  children?: ReactNode;
   /** Host-owned speech preview, used on native and optionally on web. */
   onPreviewVoice?: (text: string, preferences: AgentPreferences) => void;
 }

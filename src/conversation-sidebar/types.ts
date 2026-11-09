@@ -82,6 +82,8 @@ export interface ConversationSidebarProps
   actions?: (conversation: ConversationSidebarItem) => ConversationSidebarAction[];
   onAction?: (conversation: ConversationSidebarItem, key: string) => void;
   labels?: ConversationSidebarLabels;
+  /** A heading over the rows ("Agents"), drawn like a tree section's label; none, none. Not drawn while there are no rows. */
+  heading?: string;
   /** Under the last row: a loading line, ghost rows while a page of history arrives. With it, the empty text is not drawn. */
   after?: ReactNode;
 }

@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import type React from 'react';
 import { useContext } from 'react';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
@@ -581,6 +583,39 @@ describe('AiChatShell', () => {
     expect(getByText('Panel body')).toBeTruthy();
     expect(getByText('Agentic chat', { includeHiddenElements: true })).toBeTruthy();
     expect(getByLabelText('Dismiss Code', { includeHiddenElements: true })).toBeTruthy();
+  });
+
+  it('lets the panel turn its divider off: the conversation track is resizable only for a resizable panel', () => {
+    // The divider is the conversation track's end edge, so the panel's own flag decides it. The
+    // layout engine draws it from a measured, wide window, which the native test renderer lacks.
+    const source = readFileSync(join(__dirname, '..', 'ai-chat', 'AiChatShell.tsx'), 'utf8');
+    expect(source).toMatch(/panelResizable = true/);
+    expect(source).toMatch(/resizable: !!panel && panelResizable/);
+  });
+
+  it('hands a function sidebar the resolved props, so the shell owns its collapse', () => {
+    const seen: Array<{ collapsed?: boolean; onCollapsedChange?: (c: boolean) => void }> = [];
+    renderWithPortal(
+      <AiChatShell
+        sidebar={(props) => {
+          seen.push(props);
+          return <Text>nav</Text>;
+        }}
+        panel={() => null}
+      >
+        <Text>Conversation</Text>
+      </AiChatShell>,
+    );
+    // Whatever the layout draws (the rail or the drawer), the sidebar was asked for with the
+    // shell's resolved props, not drawn as a ready-made node.
+    expect(seen.length).toBeGreaterThan(0);
+    expect(seen[seen.length - 1]).toHaveProperty('variant');
+  });
+
+  it("keeps a node sidebar expanded: it cannot take the shell's collapse", () => {
+    const source = readFileSync(join(__dirname, '..', 'ai-chat', 'AiChatShell.tsx'), 'utf8');
+    expect(source).toMatch(/const ownsCollapse = typeof sidebar === 'function'/);
+    expect(source).toMatch(/collapsed: false, collapseDisabled: true/);
   });
 
   it("centres a header's own title node between the shell's buttons", () => {

@@ -1,5 +1,24 @@
 # Changelog
 
+## 17.30.0
+
+### Added
+
+- **`AgentCreator` takes rows of the host's own**: `children` are drawn in the details card after the description, composed with the new `AgentCreatorField` (the row the editor's Name, Label and Description now use), so a host's rows match the editor's geometry, hairlines and type. Nothing changes without children.
+- **`AiChatShell panelResizable`** (default `true`): `false` removes the divider beside the context panel, which then keeps `defaultPanelWidth`. For a panel with a width of its own, such as an editor.
+- **`ConversationSidebar heading`**: a label over the conversation rows ("Agents"), drawn like a tree section's, for a rail that titles its list. Not drawn without rows.
+- **Sidebar tree rows with a `description`** give their `leading` a taller box (`tree.avatar`: 32, 36 and 40px by size) instead of the 20px glyph box, so a contact's picture is as tall as its two lines of text. Rows without a description are unchanged.
+
+### Fixed
+
+- **`AiChatShell` owns the sidebar's collapse** when `sidebar` is a function `(props) => ReactNode`: the shell hands it its resolved props (`collapsed`, `onCollapsedChange`, `variant`, `mobile`...), so the sidebar's own collapse control also resizes the shell's track and gives the room to the conversation, with the shell's motion. Before, the adapter pinned the track expanded (`collapsed: false`) and ignored those props, so collapsing only moved the sidebar's contents inside a track that stayed 260px wide. A `sidebar` node behaves as before.
+- **The composer's add menu is built on Bloom's `DropdownMenu`**, not rows of buttons in a panel of its own. Its action rows (Camera, Photos, Files, Canvas) were centred, because the row buttons never set how they lay their content out; the menu now has the family's row layout (left-aligned, an icon that leads, a switch's check mark at the end) and its semantics (roving focus, arrow keys). The `-add-panel` test id stays on the menu surface; a switch row is a checkbox row (`aria-checked`) with the test id `bloom-row-<id>`, replacing `bloom-row-checked-<id>`.
+
+### Changed
+
+- **`AgentCreator`'s `agent.handle` (17.28.0) is removed** in favour of `children` rows: a host's username (or anything else of its own) is an `AgentCreatorField` row, not a field the editor knows about.
+- **`AgentCreator`'s header carries undo and redo** as icon buttons (`avatarHistory` group), and the React, Work and Restore original buttons are gone.
+
 ## 17.29.0
 
 ### Changed

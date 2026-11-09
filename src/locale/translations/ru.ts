@@ -39,13 +39,11 @@ const MESSAGE_MEDIA_MESSAGES__items = (n: number) =>
   });
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  avatarHistory: 'История аватара',
   undoAvatar: 'Отменить',
   redoAvatar: 'Повторить',
-  restoreAvatar: 'Восстановить оригинал',
   preparingAvatar: 'Подготовка аватара…',
 
-  reaction: 'Реакция',
-  working: 'Работать',
   avatarStyle: 'Стиль аватара',
   proceduralAvatar: 'Текущий аватар',
   betaPreset: 'Готовый персонаж (бета)',
@@ -62,11 +60,9 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   customColor: 'Свой цвет аватара',
   name: 'Имя',
   label: 'Метка',
-  handle: 'Имя пользователя',
   description: 'Описание',
   nameInput: 'Имя агента',
   labelInput: 'Метка агента',
-  handleInput: 'Имя пользователя агента',
   descriptionInput: 'Описание агента',
   labelPlaceholder: 'Менеджер, маркетинг, художник',
   descriptionPlaceholder: 'Сведения об агенте',

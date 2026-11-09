@@ -330,7 +330,9 @@ nothing. `expandable` draws the disclosure with no `items` yet, and
   keeps the disclosure's 20px lane, so labels align whether or not a row has
   children.
 - `icon` (a Bloom glyph, in the row's icon colour) or `leading` (anything — an
-  emoji, an image) sits in a 20px box before the label, gap 8.
+  emoji, an image) sits in a 20px box before the label, gap 8. A row with a `description`
+  (a contact: picture, name, last line) takes a taller box for its `leading`, `tree.avatar`:
+  32, 36 and 40px by size.
 - `onPress` makes a row an action ("Browse teamspaces"); it runs before
   `onTreeItemPress`.
 - `actionsVisibility: 'hover'` — on a row or a section — shows the actions on a

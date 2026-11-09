@@ -28,13 +28,11 @@ const CALL_UI_MESSAGES__CORNERS = {
 };
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  avatarHistory: 'অ্যাভাটারের ইতিহাস',
   undoAvatar: 'পূর্বাবস্থায় ফেরান',
   redoAvatar: 'পুনরায় করুন',
-  restoreAvatar: 'আসল রূপ ফেরান',
   preparingAvatar: 'অবতার প্রস্তুত হচ্ছে…',
 
-  reaction: 'প্রতিক্রিয়া দেখান',
-  working: 'কাজ করুন',
   avatarStyle: 'অবতারের ধরন',
   proceduralAvatar: 'বর্তমান অবতার',
   betaPreset: 'প্রস্তুত চরিত্র (বিটা)',
@@ -51,11 +49,9 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   customColor: 'অবতারের নিজস্ব রং',
   name: 'নাম',
   label: 'লেবেল',
-  handle: 'ইউজারনেম',
   description: 'বিবরণ',
   nameInput: 'এজেন্টের নাম',
   labelInput: 'এজেন্টের লেবেল',
-  handleInput: 'এজেন্টের ইউজারনেম',
   descriptionInput: 'এজেন্টের বিবরণ',
   labelPlaceholder: 'ব্যবস্থাপক, বিপণন, চিত্রশিল্পী',
   descriptionPlaceholder: 'এজেন্টের বিবরণ',

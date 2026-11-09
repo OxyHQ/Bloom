@@ -34,13 +34,11 @@ const MESSAGE_MEDIA_MESSAGES__items = (n: number) =>
   plural('de', n, { one: '{n} Element', other: '{n} Elemente' });
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  avatarHistory: 'Avatarverlauf',
   undoAvatar: 'Rückgängig',
   redoAvatar: 'Wiederholen',
-  restoreAvatar: 'Original wiederherstellen',
   preparingAvatar: 'Avatar wird vorbereitet…',
 
-  reaction: 'Reagieren',
-  working: 'Arbeiten',
   avatarStyle: 'Avatar-Stil',
   proceduralAvatar: 'Aktueller Avatar',
   betaPreset: 'Charaktervorlage (Beta)',
@@ -57,11 +55,9 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   customColor: 'Eigene Avatarfarbe',
   name: 'Name',
   label: 'Bezeichnung',
-  handle: 'Benutzername',
   description: 'Beschreibung',
   nameInput: 'Agentenname',
   labelInput: 'Agentenbezeichnung',
-  handleInput: 'Benutzername des Agenten',
   descriptionInput: 'Agentenbeschreibung',
   labelPlaceholder: 'Manager, Marketing, Maler',
   descriptionPlaceholder: 'Details zum Agenten',

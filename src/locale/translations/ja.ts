@@ -28,13 +28,11 @@ const CALL_UI_MESSAGES__CORNERS = {
 };
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  avatarHistory: 'アバターの履歴',
   undoAvatar: '元に戻す',
   redoAvatar: 'やり直す',
-  restoreAvatar: '元の状態に戻す',
   preparingAvatar: 'アバターを準備中…',
 
-  reaction: 'リアクション',
-  working: '作業する',
   avatarStyle: 'アバターのスタイル',
   proceduralAvatar: '現在のアバター',
   betaPreset: 'キャラクタープリセット（ベータ）',
@@ -51,11 +49,9 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   customColor: 'アバターのカスタム色',
   name: '名前',
   label: 'ラベル',
-  handle: 'ユーザー名',
   description: '説明',
   nameInput: 'エージェント名',
   labelInput: 'エージェントのラベル',
-  handleInput: 'エージェントのユーザー名',
   descriptionInput: 'エージェントの説明',
   labelPlaceholder: 'マネージャー、マーケティング、画家',
   descriptionPlaceholder: 'エージェントの詳細',
