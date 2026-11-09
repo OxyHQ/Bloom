@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import type { ViewStyle } from 'react-native';
 
 import { StyledView } from '../styles/styled-primitives';
-import { SQRT2, STEPS_PER_SEGMENT, VIEWBOX } from './morph/const';
+import { SQRT2, STEPS_PER_SEGMENT, VIEWBOX } from './morph/constants';
 import { getMorphFrames, morphPathD } from './morph/frames';
 
 interface SpinnerIconProps {

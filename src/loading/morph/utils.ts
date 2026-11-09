@@ -1,5 +1,5 @@
 import type { Point } from './types';
-import { DISTANCE_EPSILON } from './const';
+import { DISTANCE_EPSILON } from './constants';
 
 function pt(x: number, y: number): Point {
   return { x, y };

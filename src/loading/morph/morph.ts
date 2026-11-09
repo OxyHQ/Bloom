@@ -9,7 +9,7 @@ import type {
   ProgressableFeature,
 } from './types';
 import { interpolate, positiveModulo, pt, ptDistance, ptSub } from './utils';
-import { ANGLE_EPSILON, DISTANCE_EPSILON } from './const';
+import { ANGLE_EPSILON, DISTANCE_EPSILON } from './constants';
 
 class LengthMeasurer implements Measurer {
   private readonly segments = 3;

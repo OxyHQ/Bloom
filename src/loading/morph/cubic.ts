@@ -1,4 +1,4 @@
-import { DISTANCE_EPSILON, RELAXED_DISTANCE_EPSILON } from './const';
+import { DISTANCE_EPSILON, RELAXED_DISTANCE_EPSILON } from './constants';
 import type { Feature, Point } from './types';
 import {
   collinearIsh,

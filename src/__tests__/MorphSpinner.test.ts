@@ -1,4 +1,4 @@
-import { POINTS_PER_FRAME, STEPS_PER_SEGMENT } from '../loading/morph/const';
+import { POINTS_PER_FRAME, STEPS_PER_SEGMENT } from '../loading/morph/constants';
 import { getMorphFrames, morphPathD } from '../loading/morph/frames';
 
 describe('morphing spinner frames', () => {

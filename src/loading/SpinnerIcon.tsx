@@ -9,7 +9,7 @@ import Animated, {
 import Svg, { Path } from 'react-native-svg';
 
 import { StyledView } from '../styles/styled-primitives';
-import { SQRT2, STEPS_PER_SEGMENT, VIEWBOX } from './morph/const';
+import { SQRT2, STEPS_PER_SEGMENT, VIEWBOX } from './morph/constants';
 import { getMorphFrames, morphPathD } from './morph/frames';
 
 interface SpinnerIconProps {
@@ -72,7 +72,7 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
   );
   const pathProps = useAnimatedProps(
     () => ({ d: morphPathD(flat, frameCount, phase.value) }),
-    [phase],
+    [phase, flat, frameCount],
   );
 
   const canvas = size * CANVAS_RATIO;

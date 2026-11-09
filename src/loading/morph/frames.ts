@@ -1,4 +1,4 @@
-import { POINTS_PER_FRAME, STEPS_PER_SEGMENT, VIEWBOX } from './const';
+import { POINTS_PER_FRAME, STEPS_PER_SEGMENT, VIEWBOX } from './constants';
 import type { Cubic } from './cubic';
 import { Morph } from './morph';
 import type { RoundedPolygon } from './polygon';

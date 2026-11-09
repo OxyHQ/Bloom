@@ -1,4 +1,4 @@
-import { FLOAT_PI } from './const';
+import { FLOAT_PI } from './constants';
 import {
   cornerRounding,
   createCircle,

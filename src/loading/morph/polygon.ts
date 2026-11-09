@@ -1,4 +1,4 @@
-import { DISTANCE_EPSILON, FLOAT_PI } from './const';
+import { DISTANCE_EPSILON, FLOAT_PI } from './constants';
 import { Cubic, featureTransformed } from './cubic';
 import type { CornerRounding, Feature, Point } from './types';
 import {
