@@ -73,6 +73,7 @@ import { AppShellRegionContext, type AppShellRegionValue } from '../layout/app-s
 import {
   flexFill,
   flushSidebarAtEveryWidth,
+  plainNavFlushes,
   resolveScrollMode,
   rootFrame,
   stickyRail,
@@ -273,7 +274,7 @@ export function createAppShellEngine() {
       variant !== 'canvas' &&
       (variant === 'focus' ||
         sidebar == null ||
-        flushSidebarAtEveryWidth(sidebar, navFrom, navigationAlign)) &&
+        flushSidebarAtEveryWidth(sidebar, navFrom, navigationAlign, true)) &&
       topBar == null &&
       (header !== undefined
         ? header == null
@@ -748,12 +749,8 @@ export function createAppShellEngine() {
     // region gets none on any side, whatever the mode.
     const contentAligned =
       navigationAlign === 'content' && centred && (!!cssScope || !compactRegion);
-    // A plain nav has no panel of its own, so it sits flush to the window like a docked one:
-    // with a centred reading column that is `contentAligned`; with a panel region (a chat beside
-    // its sidebar) it is the region itself, since a plain column drawn inside the frame's gutter
-    // would leave a gap on every side with nothing behind it.
     const plainFrame =
-      (contentAligned || panelHost) && flowSidebar?.surface === 'plain' && !showTopBar;
+      plainNavFlushes(contentAligned, panelHost) && flowSidebar?.surface === 'plain' && !showTopBar;
     const dockedNav = navInFlow && flowSidebar?.surface === 'docked';
     const navFlush = navInFlow && (dockedNav || plainFrame);
     const regionOuter = framed || (navInFlow && !navFlush) ? gutter : 0;
