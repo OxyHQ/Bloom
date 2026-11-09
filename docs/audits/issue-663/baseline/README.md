@@ -28,6 +28,22 @@ NILO_ROOT=/absolute/path/to/clean/Nilo node scripts/reproduce-nilo-transformer.m
 
 The shared app-preset default/experimental opt-in policy and upstream transform need correction, preserving explicit opt-in. Nilo additionally needs to remove its own explicit activation; upgrading app-preset alone cannot change it. Follow-up validation found published app-preset 6.5.1 installed with the resolved Nilo experiment still true until that local activation was removed. This clarifies configuration ownership without changing the recorded source/transformed failure evidence. Do not add consumer layout workarounds. Baselines must be rerun after the configuration correction and normal published dependency update.
 
+### Current Nilo main — partial web baseline
+
+The transformer failure above is historical and does not reproduce on Nilo `7efb84d99da743412c6292e05e1be21d2edd7ace` with Bloom `17.31.0`. A current offline fixture run captured populated and empty database views plus a document at 1440, 1024, 768, 390 and 320 CSS-pixel widths as applicable. It completed nine frames with zero browser errors and zero unhandled network requests. The report records the exact source SHA, installed package version, viewport, measured shell/tab regions and every intercepted request; images and JSON are under [current captures](nilo/current/).
+
+Observed measurements: desktop database shell x=244, width=1184 at 1440; x=244, width=768 at 1024; x=244, width=512 at 768. At 390 and 320 the shell spans the viewport; the table retains its own horizontal overflow, and at 320 the second column is visibly clipped until horizontally scrolled. Database view tabs begin at y=120 on desktop and y=144 on mobile. The document shell is x=244/y=56/width=1184 at 1440 and x=0/y=80/width=390 at 390. These are observations, not acceptance: only one synthetic database schema and one long document were exercised, and no product-approved reference measurements, interactions, dark mode, touch, native rendering or release performance were validated. This run is a usable P0 baseline and still leaves Nilo product acceptance open.
+
+Reproduce against a clean Nilo checkout after starting its local web server (the fixture intercepts app APIs and sends no production API traffic):
+
+```sh
+NILO_ROOT=/absolute/path/to/clean/Nilo \
+MENTION_ROOT=/absolute/path/to/clean/Mention \
+NILO_ORIGIN=http://localhost:8128 \
+CHROME_PATH=/path/to/chrome \
+node scripts/capture-nilo-baseline.mjs
+```
+
 ## Concrete comparison references
 
 Downloaded 2026-11-08 from official Notion documentation. These establish the comparison regions; natural image pixels are not CSS pixels because the original viewport/DPR is unknown. They are reference imagery, not evidence of Nilo parity.

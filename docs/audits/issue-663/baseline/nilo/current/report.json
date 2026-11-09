@@ -1,0 +1,545 @@
+{
+  "sourceSha": "7efb84d99da743412c6292e05e1be21d2edd7ace",
+  "bloomVersion": "17.31.0",
+  "bloomPackagePath": "/home/nate/Oxy/Nilo/.worktrees/issue-663-current/node_modules/@oxy.so/bloom/package.json",
+  "bloomEntryPath": "/home/nate/Oxy/Nilo/.worktrees/issue-663-current/node_modules/@oxy.so/bloom/lib/commonjs/index.js",
+  "bloomEntrySha256": "4d16c7f10d1a34955224de974f5332ffcb42a398e103464e563dd22a448ded3d",
+  "observedAt": "2026-11-09T15:44:41.135Z",
+  "mode": "development Metro; synthetic account/API; seeded offline document; no production API traffic",
+  "origin": "http://localhost:8129",
+  "frames": [
+    {
+      "name": "database-populated-1440",
+      "url": "http://localhost:8129/db/baseline-database",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1
+      },
+      "documentWidth": 1440,
+      "body": "P\nProduct workspace\nSearch\nCtrl+K\nHome\nAsk Alia\nInbox\nSettings & members\nWelcome to Nilo\nAsk anything with Alia\nFind what you need\nSee all\nTeamspaces\nBrowse teamspaces\nCreate teamspace\nPrivate\nProject brief\nProjects\nTemplates\nTrash\nNew page\nCtrl+Alt+N\nB\nbaseline-user\nbaseline-user@oxy.so\nProjects\nProjects\nTable\nFilter\nSort\nAdd property\nNew\nNAME\nEFFORT LEVEL\nMedium\nSmall\nMedium\nSmall\nMedium\nSmall\nMedium\nNew\nCALCULATE\nCALCULATE\n7 rows",
+      "regions": [
+        {
+          "tag": "DIV",
+          "role": null,
+          "text": null,
+          "viewport": null,
+          "x": 244,
+          "y": 12,
+          "width": 1184,
+          "height": 876,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "role": "tablist",
+          "text": null,
+          "viewport": null,
+          "x": 276,
+          "y": 120,
+          "width": 112.484375,
+          "height": 36,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "role": null,
+          "text": null,
+          "viewport": "element",
+          "x": 244,
+          "y": 12,
+          "width": 1184,
+          "height": 876,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        }
+      ]
+    },
+    {
+      "name": "database-populated-1024",
+      "url": "http://localhost:8129/db/baseline-database",
+      "viewport": {
+        "width": 1024,
+        "height": 900,
+        "dpr": 1
+      },
+      "documentWidth": 1024,
+      "body": "P\nProduct workspace\nSearch\nCtrl+K\nHome\nAsk Alia\nInbox\nSettings & members\nWelcome to Nilo\nAsk anything with Alia\nFind what you need\nSee all\nTeamspaces\nBrowse teamspaces\nCreate teamspace\nPrivate\nProject brief\nProjects\nTemplates\nTrash\nNew page\nCtrl+Alt+N\nB\nbaseline-user\nbaseline-user@oxy.so\nProjects\nProjects\nTable\nFilter\nSort\nAdd property\nNew\nNAME\nEFFORT LEVEL\nMedium\nSmall\nMedium\nSmall\nMedium\nSmall\nMedium\nNew\nCALCULATE\nCALCULATE\n7 rows",
+      "regions": [
+        {
+          "tag": "DIV",
+          "role": null,
+          "text": null,
+          "viewport": null,
+          "x": 244,
+          "y": 12,
+          "width": 768,
+          "height": 876,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "role": "tablist",
+          "text": null,
+          "viewport": null,
+          "x": 276,
+          "y": 120,
+          "width": 112.484375,
+          "height": 36,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "role": null,
+          "text": null,
+          "viewport": "element",
+          "x": 244,
+          "y": 12,
+          "width": 768,
+          "height": 876,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        }
+      ]
+    },
+    {
+      "name": "database-populated-768",
+      "url": "http://localhost:8129/db/baseline-database",
+      "viewport": {
+        "width": 768,
+        "height": 900,
+        "dpr": 1
+      },
+      "documentWidth": 768,
+      "body": "P\nProduct workspace\nSearch\nCtrl+K\nHome\nAsk Alia\nInbox\nSettings & members\nWelcome to Nilo\nAsk anything with Alia\nFind what you need\nSee all\nTeamspaces\nBrowse teamspaces\nCreate teamspace\nPrivate\nProject brief\nProjects\nTemplates\nTrash\nNew page\nCtrl+Alt+N\nB\nbaseline-user\nbaseline-user@oxy.so\nProjects\nProjects\nTable\nFilter\nSort\nAdd property\nNew\nNAME\nEFFORT LEVEL\nMedium\nSmall\nMedium\nSmall\nMedium\nSmall\nMedium\nNew\nCALCULATE\nCALCULATE\n7 rows",
+      "regions": [
+        {
+          "tag": "DIV",
+          "role": null,
+          "text": null,
+          "viewport": null,
+          "x": 244,
+          "y": 12,
+          "width": 512,
+          "height": 876,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "role": "tablist",
+          "text": null,
+          "viewport": null,
+          "x": 268,
+          "y": 120,
+          "width": 112.484375,
+          "height": 36,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "role": null,
+          "text": null,
+          "viewport": "element",
+          "x": 244,
+          "y": 12,
+          "width": 512,
+          "height": 876,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        }
+      ]
+    },
+    {
+      "name": "database-populated-390",
+      "url": "http://localhost:8129/db/baseline-database",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "documentWidth": 390,
+      "body": "Projects\nProjects\nTable\nFilter\nSort\nAdd property\nNew\nNAME\nEFFORT LEVEL\nMedium\nSmall\nMedium\nSmall\nMedium\nSmall\nMedium\nNew\nCALCULATE\nCALCULATE\n7 rows",
+      "regions": [
+        {
+          "tag": "DIV",
+          "role": null,
+          "text": null,
+          "viewport": null,
+          "x": 0,
+          "y": 36,
+          "width": 390,
+          "height": 808,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "role": "tablist",
+          "text": null,
+          "viewport": null,
+          "x": 24,
+          "y": 144,
+          "width": 112.484375,
+          "height": 36,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "role": null,
+          "text": null,
+          "viewport": "element",
+          "x": 0,
+          "y": 36,
+          "width": 390,
+          "height": 808,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        }
+      ]
+    },
+    {
+      "name": "database-populated-320",
+      "url": "http://localhost:8129/db/baseline-database",
+      "viewport": {
+        "width": 320,
+        "height": 844,
+        "dpr": 1
+      },
+      "documentWidth": 320,
+      "body": "Projects\nProjects\nTable\nFilter\nSort\nAdd property\nNew\nNAME\nEFFORT LEVEL\nMedium\nSmall\nMedium\nSmall\nMedium\nSmall\nMedium\nNew\nCALCULATE\nCALCULATE\n7 rows",
+      "regions": [
+        {
+          "tag": "DIV",
+          "role": null,
+          "text": null,
+          "viewport": null,
+          "x": 0,
+          "y": 36,
+          "width": 320,
+          "height": 808,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "role": "tablist",
+          "text": null,
+          "viewport": null,
+          "x": 24,
+          "y": 144,
+          "width": 112.484375,
+          "height": 36,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "role": null,
+          "text": null,
+          "viewport": "element",
+          "x": 0,
+          "y": 36,
+          "width": 320,
+          "height": 808,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        }
+      ]
+    },
+    {
+      "name": "database-populated-1440",
+      "url": "http://localhost:8129/db/baseline-database",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1
+      },
+      "documentWidth": 1440,
+      "body": "P\nProduct workspace\nSearch\nCtrl+K\nHome\nAsk Alia\nInbox\nSettings & members\nWelcome to Nilo\nAsk anything with Alia\nFind what you need\nSee all\nTeamspaces\nBrowse teamspaces\nCreate teamspace\nPrivate\nProject brief\nProjects\nTemplates\nTrash\nNew page\nCtrl+Alt+N\nB\nbaseline-user\nbaseline-user@oxy.so\nProjects\nProjects\nTable\nFilter\nSort\nAdd property\nNew\nNAME\nEFFORT LEVEL\nMedium\nSmall\nMedium\nSmall\nMedium\nSmall\nMedium\nNew\nCALCULATE\nCALCULATE\n7 rows",
+      "regions": [
+        {
+          "tag": "DIV",
+          "role": null,
+          "text": null,
+          "viewport": null,
+          "x": 244,
+          "y": 12,
+          "width": 1184,
+          "height": 876,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "role": "tablist",
+          "text": null,
+          "viewport": null,
+          "x": 276,
+          "y": 120,
+          "width": 112.484375,
+          "height": 36,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "role": null,
+          "text": null,
+          "viewport": "element",
+          "x": 244,
+          "y": 12,
+          "width": 1184,
+          "height": 876,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        }
+      ]
+    },
+    {
+      "name": "database-empty-1440",
+      "url": "http://localhost:8129/db/baseline-database",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1
+      },
+      "documentWidth": 1440,
+      "body": "P\nProduct workspace\nSearch\nCtrl+K\nHome\nAsk Alia\nInbox\nSettings & members\nWelcome to Nilo\nAsk anything with Alia\nFind what you need\nSee all\nTeamspaces\nBrowse teamspaces\nCreate teamspace\nPrivate\nProject brief\nProjects\nTemplates\nTrash\nNew page\nCtrl+Alt+N\nB\nbaseline-user\nbaseline-user@oxy.so\nProjects\nProjects\nTable\nFilter\nSort\nAdd property\nNew\nNAME\nEFFORT LEVEL\nNo rows yet\nNew\nCALCULATE\nCALCULATE\n0 rows",
+      "regions": [
+        {
+          "tag": "DIV",
+          "role": null,
+          "text": null,
+          "viewport": null,
+          "x": 244,
+          "y": 12,
+          "width": 1184,
+          "height": 876,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "role": "tablist",
+          "text": null,
+          "viewport": null,
+          "x": 276,
+          "y": 120,
+          "width": 112.484375,
+          "height": 36,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "role": null,
+          "text": null,
+          "viewport": "element",
+          "x": 244,
+          "y": 12,
+          "width": 1184,
+          "height": 876,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        }
+      ]
+    },
+    {
+      "name": "document-1440",
+      "url": "http://localhost:8129/p/baseline-document",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1
+      },
+      "documentWidth": 1440,
+      "body": "P\nProduct workspace\nSearch\nCtrl+K\nHome\nAsk Alia\nInbox\nSettings & members\nWelcome to Nilo\nAsk anything with Alia\nFind what you need\nSee all\nTeamspaces\nBrowse teamspaces\nCreate teamspace\nPrivate\nProject brief\nProjects\nTemplates\nTrash\nNew page\nCtrl+Alt+N\nB\nbaseline-user\nbaseline-user@oxy.so\nProject brief\nProject brief\nShare\nAdd icon\nAdd cover\nSaved\n+\n⋮⋮\n\nProject overview\n\n+\n⋮⋮\n\nSection 1: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 2: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 3: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 4: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 5: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 6: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 7: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 8: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 9: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 10: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 11: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 12: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 13: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 14: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 15: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 16: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 17: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 18: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 19: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 20: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 21: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 22: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 23: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 24: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 25: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 26: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 27: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 28: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 29: Define the scope, preserve the shared composition and verify the complete workflow.",
+      "regions": [
+        {
+          "tag": "DIV",
+          "role": null,
+          "text": null,
+          "viewport": null,
+          "x": 244,
+          "y": 56,
+          "width": 1184,
+          "height": 832,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "role": null,
+          "text": null,
+          "viewport": "element",
+          "x": 244,
+          "y": 56,
+          "width": 1184,
+          "height": 832,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        }
+      ]
+    },
+    {
+      "name": "document-390",
+      "url": "http://localhost:8129/p/baseline-document",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "documentWidth": 390,
+      "body": "Project brief\nProject brief\nAdd icon\nAdd cover\nSaved\n+\n⋮⋮\n\nProject overview\n\n+\n⋮⋮\n\nSection 1: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 2: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 3: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 4: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 5: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 6: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 7: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 8: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 9: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 10: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 11: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 12: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 13: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 14: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 15: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 16: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 17: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 18: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 19: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 20: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 21: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 22: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 23: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 24: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 25: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 26: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 27: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 28: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 29: Define the scope, preserve the shared composition and verify the complete workflow.",
+      "regions": [
+        {
+          "tag": "DIV",
+          "role": null,
+          "text": null,
+          "viewport": null,
+          "x": 0,
+          "y": 80,
+          "width": 390,
+          "height": 764,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "role": null,
+          "text": null,
+          "viewport": "element",
+          "x": 0,
+          "y": 80,
+          "width": 390,
+          "height": 764,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "unexpected": [],
+  "requests": [
+    "GET https://api.oxy.so/auth/oauth/client/fixture-nilo",
+    "GET https://api.oxy.so/session/device/directory",
+    "GET https://api.oxy.so/users/me",
+    "GET https://api.oxy.so/auth/oauth/client/fixture-nilo",
+    "GET https://api.oxy.so/safety/supervision",
+    "GET https://api.oxy.so/users/me",
+    "GET https://api.oxy.so/accounts",
+    "GET https://api.oxy.so/session/device/directory",
+    "POST https://api.oxy.so/session/device/add",
+    "POST https://api.oxy.so/apps/assertions",
+    "POST https://api.oxy.so/session/device/token",
+    "GET https://nilo-fixture.invalid/databases/baseline-database",
+    "GET https://nilo-fixture.invalid/workspaces",
+    "GET https://nilo-fixture.invalid/workspaces/baseline-workspace/teamspaces",
+    "GET https://nilo-fixture.invalid/notifications/unread-count",
+    "GET https://nilo-fixture.invalid/pages",
+    "GET https://nilo-fixture.invalid/databases",
+    "GET https://nilo-fixture.invalid/pages/recent",
+    "GET https://nilo-fixture.invalid/pages/shared",
+    "GET https://nilo-fixture.invalid/pages",
+    "GET https://nilo-fixture.invalid/workspaces/baseline-workspace/members",
+    "GET https://nilo-fixture.invalid/notifications/vapid-public-key",
+    "GET https://nilo-fixture.invalid/databases/baseline-database/automations",
+    "GET https://nilo-fixture.invalid/databases/baseline-database/templates",
+    "GET https://nilo-fixture.invalid/databases/baseline-database/rows",
+    "GET https://api.oxy.so/auth/oauth/client/fixture-nilo",
+    "GET https://api.oxy.so/session/device/directory",
+    "GET https://api.oxy.so/accounts",
+    "GET https://api.oxy.so/auth/oauth/client/fixture-nilo",
+    "GET https://api.oxy.so/users/me",
+    "POST https://api.oxy.so/session/device/token",
+    "POST https://api.oxy.so/apps/assertions",
+    "GET https://nilo-fixture.invalid/databases/baseline-database",
+    "GET https://nilo-fixture.invalid/notifications/unread-count",
+    "GET https://nilo-fixture.invalid/workspaces/baseline-workspace/members",
+    "GET https://nilo-fixture.invalid/notifications/vapid-public-key",
+    "GET https://nilo-fixture.invalid/databases/baseline-database/automations",
+    "GET https://nilo-fixture.invalid/databases/baseline-database/templates",
+    "GET https://nilo-fixture.invalid/databases/baseline-database/rows",
+    "GET https://api.oxy.so/auth/oauth/client/fixture-nilo",
+    "GET https://api.oxy.so/session/device/directory",
+    "GET https://api.oxy.so/accounts",
+    "GET https://api.oxy.so/auth/oauth/client/fixture-nilo",
+    "GET https://api.oxy.so/users/me",
+    "POST https://api.oxy.so/session/device/token",
+    "POST https://api.oxy.so/apps/assertions",
+    "GET https://nilo-fixture.invalid/pages/baseline-document",
+    "GET https://nilo-fixture.invalid/pages/baseline-document/comments",
+    "GET https://nilo-fixture.invalid/notifications/unread-count",
+    "GET https://nilo-fixture.invalid/workspaces/baseline-workspace/members",
+    "GET https://nilo-fixture.invalid/notifications/vapid-public-key",
+    "GET https://nilo-fixture.invalid/pages/baseline-document/breadcrumb",
+    "GET https://nilo-fixture.invalid/pages/baseline-document/follow",
+    "GET https://nilo-fixture.invalid/pages/baseline-document/backlinks",
+    "GET https://nilo-fixture.invalid/pages/baseline-document/permissions"
+  ],
+  "checks": {
+    "nineFrames": true,
+    "noBrowserErrors": true,
+    "noUnexpectedRequests": true,
+    "noDocumentHorizontalOverflow": true
+  },
+  "status": "captured"
+}
