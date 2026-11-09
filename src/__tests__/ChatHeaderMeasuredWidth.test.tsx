@@ -5,12 +5,21 @@ import { ChatHeader } from '../chat-screen/ChatHeader';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { mockWindowSize } from './support/window-size';
 
+let mockIsNative = false;
+jest.mock('../chat-screen/shared', () => ({
+  ...jest.requireActual('../chat-screen/shared'),
+  get IS_NATIVE() {
+    return mockIsNative;
+  },
+}));
+
 describe('ChatHeader measured width', () => {
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
-  it('uses the header host width and switches back after a resize', () => {
+  it('uses the header host width and switches back after a resize on web', () => {
+    mockIsNative = false;
     mockWindowSize({ width: 1440, height: 900, scale: 1, fontScale: 1 });
     const screen = render(
       <BloomThemeProvider mode="light" colorPreset="teal">
@@ -42,5 +51,23 @@ describe('ChatHeader measured width', () => {
 
     expect(screen.queryByTestId('header-back')).toBeNull();
     expect(paddingLeft()).toBe(16);
+  });
+
+  it('keeps back on a wide native conversation, which has no list pane beside it', () => {
+    mockIsNative = true;
+    mockWindowSize({ width: 1440, height: 900, scale: 1, fontScale: 1 });
+    const screen = render(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <ChatHeader title="Ana" onPressBack={() => {}} testID="header" />
+      </BloomThemeProvider>,
+    );
+
+    act(() => {
+      fireEvent(screen.getByTestId('header'), 'layout', {
+        nativeEvent: { layout: { x: 0, y: 0, width: 1280, height: 60 } },
+      });
+    });
+
+    expect(screen.getByTestId('header-back')).toBeTruthy();
   });
 });

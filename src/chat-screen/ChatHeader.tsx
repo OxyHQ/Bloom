@@ -25,6 +25,7 @@ import {
   CHAT_COMPACT_BREAKPOINT,
   CHAT_HEADER_HEIGHT,
   formatSelectedCount,
+  IS_NATIVE,
   useChatScreenPaint,
   type ChatScreenPaint,
 } from './shared';
@@ -108,8 +109,9 @@ function HeaderIconButton({
  * lost to a mis-tap.
  *
  * Compact (a back button by default, 12px gutters) follows this header's
- * measured width against `CHAT_COMPACT_BREAKPOINT`. `showBack` remains the
- * caller's explicit choice when navigation context differs from geometry.
+ * measured width against `CHAT_COMPACT_BREAKPOINT`. The back button follows the
+ * same width on web and is always on for native, where there is no list pane
+ * beside the conversation. `showBack` remains the caller's explicit choice.
  */
 function ChatHeaderComponent(props: ChatHeaderProps) {
   const paint = useChatScreenPaint();
@@ -324,7 +326,8 @@ function ChatHeaderComponent(props: ChatHeaderProps) {
     </View>
   );
 
-  const backVisible = showBack ?? (Boolean(onPressBack) && compact);
+  // Native has no list pane beside the conversation, so back is its only way out at any width.
+  const backVisible = showBack ?? (Boolean(onPressBack) && (IS_NATIVE || compact));
 
   return (
     <View testID={testID} onLayout={onLayout} style={[row, style]}>
