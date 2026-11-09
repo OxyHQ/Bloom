@@ -60,7 +60,9 @@ re-entry and a pending blur microtask when its block unmounts. Shared Button pai
 checks cover light/dark and all 3 material modes; transparent/default delegation
 is unchanged. Root build/package/freshness pass for the packaged source candidate.
 
-Remaining acceptance: integrate/publish shared APIs, deduplicate their temporary
-source copies, declare the editor's actual minimum published Bloom version, restore
-the local mirror before final published-package consumer checks, and validate on
-physical Android. iPhone is deferred by user request. This does not close #434.
+The shared APIs are integrated in Bloom 17.31.0. The editor declares its minimum
+published Bloom version (`^17.24.0`); its exact 0.8.0 release tarball passes the
+release inspector and a temporary published-package model import check in
+[published-editor-package-2026-11-09.md](published-editor-package-2026-11-09.md).
+Physical Android UI acceptance remains not run; iPhone is deferred by user
+request. This does not close #434.
