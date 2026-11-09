@@ -1,5 +1,12 @@
 # Changelog
 
+## 17.39.0
+
+### Added
+
+- **`Sidebar scrollbarSide`** (`'start' | 'end'`, default `'end'`): the inline edge the sidebar's scrolling area draws its scrollbar on. A flush `plain` sidebar has its scrollbar against the neighbouring panel; `start` moves it to the sidebar's outer edge. It is logical, so `start` is the right edge in RTL. Built on the new `ScrollArea scrollbarSide` and `ScrollBar side` (and the `ScrollAreaScrollbarSide` type), which any scroller can use; vertical bars only. Web only: a native scroll indicator is the system's and stays where the platform draws it.
+- **`AiChatShell sidebarScrollbarSide`**: the shell hands it to a function `sidebar` as `scrollbarSide` (it is also accepted by `ConversationSidebar` and the `AppShell` sidebar descriptor, which are `SidebarProps`).
+
 ## 17.38.0
 
 ### Fixed

@@ -275,7 +275,10 @@ Web `Screen` viewports, `ScreenScrollView`, AppShell document scrolling, and
 Deck's document horizontal axis use Bloom's existing `ScrollBar`. It observes
 and controls the actual scroll owner; it does not add a scroll container.
 `ScrollArea` and sidebar scrolling use the same indicator. Native keeps its
-platform scroll indicator. A custom external scroll implementation can attach
+platform scroll indicator. `ScrollArea scrollbarSide` / `ScrollBar side` (`'start' | 'end'`,
+default `'end'`) choose the inline edge a vertical bar sits on; both are logical, so `start` is
+the right edge in RTL. The sidebar exposes it as `Sidebar scrollbarSide`. A native indicator is
+the system's and ignores it. A custom external scroll implementation can attach
 `ScrollBar` to its ref, or use `target="document"` for a standalone document owner.
 
 Panel history supplies the existing PageHeader Back slot. It is absent

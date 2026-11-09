@@ -223,6 +223,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   closeLabel: closeLabelProp,
   fluid = false,
   surface = 'card',
+  scrollbarSide,
   size: sizeProp,
   showThemeToggle = true,
   showSearch = true,
@@ -1011,6 +1012,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             ) : null}
             <SidebarScrollArea
               ref={scrollRef}
+              scrollbarSide={scrollbarSide}
               onScroll={handleScroll}
               testID={`${testID ?? 'sidebar'}-scroll`}
               fadeColor={publishedFill ? publishedPaint : parentRecipe.paint}

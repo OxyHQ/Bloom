@@ -24,6 +24,8 @@ export interface ScrollAreaBarProps {
   /** The container the pointer must be over for `hover`. */
   area: HTMLElement | null;
   horizontal: boolean;
+  /** The inline edge a vertical bar sits on. */
+  side?: 'start' | 'end';
   mode: ScrollAreaScrollbar;
   /** The thumb's resting thickness in px; it grows 2px under the pointer. */
   thickness: number;
@@ -55,6 +57,7 @@ export function ScrollAreaBar({
   scroller,
   area,
   horizontal,
+  side = 'end',
   mode,
   thickness,
   insets,
@@ -229,9 +232,9 @@ export function ScrollAreaBar({
             : {
                 top: EDGE + (insets?.start ?? 0),
                 bottom: EDGE + (insets?.end ?? 0),
-                insetInlineEnd: EDGE + offset,
+                [side === 'start' ? 'insetInlineStart' : 'insetInlineEnd']: EDGE + offset,
                 width: thickness + GRAB,
-                alignItems: 'flex-end',
+                alignItems: side === 'start' ? 'flex-start' : 'flex-end',
               }),
         } as never
       }

@@ -14,6 +14,12 @@ import type { ScrollView, ScrollViewProps, StyleProp, View, ViewStyle } from 're
  */
 export type ScrollAreaScrollbar = 'scroll' | 'hover' | 'always' | 'never';
 
+/**
+ * Which inline edge a vertical scrollbar sits on: `end` (default) is the right edge in LTR and
+ * the left in RTL; `start` is the opposite one. Logical, so it follows the writing direction.
+ */
+export type ScrollAreaScrollbarSide = 'start' | 'end';
+
 export interface ScrollAreaProps extends ScrollViewProps {
   /** Viewport decoration above content and below scroll indicators. It must not handle input. */
   viewportOverlay?: ReactNode;
@@ -29,6 +35,11 @@ export interface ScrollAreaProps extends ScrollViewProps {
   scrollbar?: ScrollAreaScrollbar;
   /** The bar's thickness: `sm` 4px (default) or `md` 6px, each growing 2px under the pointer. */
   size?: 'sm' | 'md';
+  /**
+   * The inline edge a vertical bar sits on. Default `'end'`. Web only: a native scroller's
+   * indicator is the system's and stays where the platform draws it. Ignored when `horizontal`.
+   */
+  scrollbarSide?: ScrollAreaScrollbarSide;
   /** The underlying `ScrollView`: `scrollTo`, `scrollToEnd` and the rest work on it. */
   ref?: Ref<ComponentRef<typeof ScrollView>>;
 }
@@ -42,6 +53,8 @@ export interface ScrollBarProps {
   scrollbar?: Exclude<ScrollAreaScrollbar, 'never'>;
   /** The bar's thickness: `sm` 4px (default) or `md` 6px. */
   size?: 'sm' | 'md';
+  /** Which inline edge a vertical bar sits on. Default `'end'`. Ignored when `horizontal`. */
+  side?: ScrollAreaScrollbarSide;
   /** The bar lies along the bottom edge instead of the inline end. */
   horizontal?: boolean;
   /** Room kept free at the track's ends, for chrome that floats over the scroller. */

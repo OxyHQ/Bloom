@@ -121,7 +121,9 @@ the conversation in place. `panel` receives the width
 selected by the shared engine. Resize limits remain 320–560px by default, with
 410px as the resting context width. `sidebarSurface` (`plain` by default) is the
 sidebar's panel: the shell lays out its gutters by it, so a `card` keeps the gap around
-and beside it that a flush `plain` sidebar does not. `sidebarCollapsed` and explicit sidebar
+and beside it that a flush `plain` sidebar does not. `sidebarScrollbarSide="start"` moves the sidebar's scrollbar to its start edge (the left in LTR),
+away from the conversation beside a flush `plain` sidebar; a `sidebar` function receives it as
+`scrollbarSide`. `sidebarCollapsed` and explicit sidebar
 width overrides remain host preferences. The shell installs no swipe recognizer
 of its own.
 

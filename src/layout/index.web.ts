@@ -29,7 +29,12 @@ export { useScrollMetricsBinding } from './use-scroll-metrics-binding';
 export type { ScrollMetricsBindingOptions } from './use-scroll-metrics-binding';
 export { ScrollArea } from './ScrollArea.web';
 export { ScrollBar } from './ScrollBar.web';
-export type { ScrollAreaProps, ScrollAreaScrollbar, ScrollBarProps } from './types';
+export type {
+  ScrollAreaProps,
+  ScrollAreaScrollbar,
+  ScrollAreaScrollbarSide,
+  ScrollBarProps,
+} from './types';
 export { useAnimatedScrollMetricsBinding } from './use-animated-scroll-metrics-binding';
 export type { AnimatedScrollMetricsBindingOptions } from './use-animated-scroll-metrics-binding';
 
