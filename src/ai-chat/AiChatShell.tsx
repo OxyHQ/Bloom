@@ -1,3 +1,4 @@
+import type { SidebarProps } from '../sidebar/types';
 import { type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Platform, View } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
@@ -89,14 +90,16 @@ export function AiChatHeader({ children, style, testID }: AiChatHeaderProps) {
 export function AiChatShellBase({
   sidebar,
   sidebarWidth = 260,
-  sidebarCollapsed = false,
+  sidebarCollapsed: sidebarCollapsedProp,
   collapsedSidebarWidth,
+  sidebarSurface = 'plain',
   mobileSidebar,
   children,
   panel,
   panelLabel: panelLabelProp,
   panelIcon = RiCodeSLine,
   defaultPanelWidth = 410,
+  panelResizable = true,
   minPanelWidth = 320,
   maxPanelWidth = 560,
   navOpen: navOpenProp,
@@ -119,6 +122,15 @@ export function AiChatShellBase({
     [messages, common, labels],
   );
   const panelLabel = panelLabelProp ?? messages.code;
+  /**
+   * A sidebar that is a FUNCTION receives the shell's resolved props, so the shell can own the
+   * collapse (its control, the track's width, the motion). A node cannot take them: it is drawn
+   * as it is, so the track must never collapse under it and stays expanded.
+   */
+  const ownsCollapse = typeof sidebar === 'function';
+  const sidebarCollapsed = sidebarCollapsedProp ?? false;
+  const renderSidebar = (props: SidebarProps): ReactNode =>
+    typeof sidebar === 'function' ? sidebar(props) : sidebar;
   const [navOpen, setNavOpen] = useControllableState({
     value: navOpenProp,
     defaultValue: false,
@@ -212,12 +224,17 @@ export function AiChatShellBase({
                 ? {
                     variant: 'panel',
                     width: sidebarCollapsed ? (collapsedSidebarWidth ?? 80) : sidebarWidth,
-                    collapsed: false,
-                    collapseDisabled: true,
-                    surface: 'plain',
+                    ...(ownsCollapse
+                      ? sidebarCollapsedProp === undefined
+                        ? {}
+                        : { collapsed: sidebarCollapsedProp }
+                      : { collapsed: false, collapseDisabled: true }),
+                    surface: sidebarSurface,
                     render: (props) => (
                       <View style={[{ flex: 1, minHeight: 0, width: '100%' }, props.style]}>
-                        {props.mobile ? (mobileSidebar ?? sidebar) : (sidebar ?? mobileSidebar)}
+                        {props.mobile
+                          ? (mobileSidebar ?? renderSidebar(props))
+                          : (renderSidebar(props) ?? mobileSidebar)}
                       </View>
                     ),
                   }
@@ -238,7 +255,7 @@ export function AiChatShellBase({
                 {
                   id: 'conversation',
                   minWidth: 320,
-                  resizable: !!panel,
+                  resizable: !!panel && panelResizable,
                   appearance: surface ? undefined : 'plain',
                   content: (
                     <PanelPresence id="conversation" onVisibility={reportVisibility}>

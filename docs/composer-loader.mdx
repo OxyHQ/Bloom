@@ -119,3 +119,70 @@ renderer explicitly and exercise measurement and the frame callback; they mock
 SVG/filter rendering. iOS/Android optical quality, physical-device performance,
 background behavior on devices, keyboard/IME, and the real Alia integration
 remain unverified. This evidence does not establish native blur parity.
+
+## Android hardware light adapter (integration candidate)
+
+Android 12 / API 31 and newer can use `BloomComposerLightV1`, supplied by Bloom's
+existing Android package. Consumers must rebuild their native binary to install
+it. Missing managers (including older binaries and Expo Go), API 30 and below,
+unsupported colors or dash geometry retain the SVG renderer. A genuinely software host
+reports a one-time unsupported event and hands the light back to SVG. A temporary
+bitmap capture instead paints the current light synchronously with a CPU Gaussian
+blur and leaves the live hardware renderer installed; it never reuses a cached
+frame. That one-shot capture cost is separate from the continuous frame budget. The parent
+owns one clock throughout that handoff; Surface, draft children, measured bounds,
+fade and activity policies remain with ComposerLoader.
+
+The Android SVG fallback groups strokes by semantic layer before applying each
+layer blur, avoiding a separate blur operation for every tapered stroke. On one
+Pixel 8a phase-origin still comparison with two tapered loaders, this raised the
+hardware/software crop PSNR from 38.022437 dB to 40.280698 dB. That single
+measurement is not a visual acceptance threshold, a motion comparison, or a
+performance result; the fallback still requires product visual and performance
+acceptance. A separate physical Pixel 8a recording shows the software fallback
+moving for approximately 11 seconds with two tapered loaders (over two default
+4.5-second laps); it confirms visible motion only, not frame-rate acceptance.
+See `docs/benchmarks/composer-android-2026-11-08/loader-software-two-laps.json`
+for APK and capture metadata. Exploratory `top` samples reached 200% and 186% of
+one CPU core. The recording cadence was 6.05 fps, but screenrecord cadence is not
+an application FPS measurement, and Android `gfxinfo` returned no frame rows for
+this software host. These are adverse diagnostic signals requiring a controlled
+follow-up, not a formal performance result.
+
+The adapter groups the same strokes by semantic layer and draws their measured
+rounded-path segments into three RenderNodes. Soft layers rasterize at quarter
+resolution; the crisp layer retains full resolution. For taper, soft sigma uses
+0.7 and bloom-only intensity uses 0.8. These are the reviewed moderate optical
+calibrations, independent of color or position, rather than pixel equality with
+web. iOS and web retain their existing renderers.
+
+The private Pixel 8a harness established the candidate's motion and repeated
+performance budget, not acceptance of this packaged integration. A persistently
+software-rendered Android host now hands off to the shared SVG geometry and stops
+the owner frame clock at the current phase. This avoids leaving the costly SVG
+filters animating continuously; the light remains visible as a static busy cue.
+Registration guards pass Robolectric API 30/31 and the installed Kotlin compiles
+against react-android 0.73.0. Those checks do not establish a running old-RN host.
+Physical software-host and temporary bitmap captures pass; the installed package
+meets the previously fixed continuous budget in six repeated scene windows. The
+JS-only update control retains the earlier native payload byte for byte and paints
+SVG successfully when the new manager is absent. Exact artifact hashes and limits
+are in `docs/benchmarks/composer-loader-android-adapter-2026-11-08.json`. Android 11 / API 30 on an isolated SwiftShader emulator mounts the SVG fallback
+without the manager, suspends its pixels under reduced motion, and resumes after
+the original OS setting is restored. Its abrupt lower halo remains visible; this
+is compatibility evidence, not optical or performance acceptance. The static
+clock handoff was tested on a physical software-window Pixel 8a: with two tapered
+loaders and active=true, phase crops about 15 seconds apart were pixel-identical,
+and exploratory CPU samples were 4.4–6.8% of one core. The prior animated software
+fallback produced 200%/186% exploratory samples during screen recording. These
+signals are diagnostic, not a controlled performance threshold. Full visual
+acceptance, API 30 physical behavior, and handoff on other host configurations
+remain pending. The packaged Pixel lifecycle case preserves pixels/clock while paused
+and screen-inactive, excludes background time, survives resize and rapid toggles,
+and starts inactive at clock zero. Real packaged ComposerPill and AgentChatComposer
+retain input identity, focus, draft and selected content across busy/resize, and
+Stop remains operable followed by typing. A negative control found that resize
+reverses a backward selection and changes the next Shift+Arrow result; full
+selection preservation is therefore not accepted. Direct RN cause isolation,
+legacy runtime, Alia, and phase-aligned packaged optics remain pending.
+See `scripts/loader-package-lab` for the isolated packaged consumer procedure.

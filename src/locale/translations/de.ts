@@ -34,13 +34,11 @@ const MESSAGE_MEDIA_MESSAGES__items = (n: number) =>
   plural('de', n, { one: '{n} Element', other: '{n} Elemente' });
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  avatarHistory: 'Avatarverlauf',
   undoAvatar: 'Rückgängig',
   redoAvatar: 'Wiederholen',
-  restoreAvatar: 'Original wiederherstellen',
   preparingAvatar: 'Avatar wird vorbereitet…',
 
-  reaction: 'Reagieren',
-  working: 'Arbeiten',
   avatarStyle: 'Avatar-Stil',
   proceduralAvatar: 'Aktueller Avatar',
   betaPreset: 'Charaktervorlage (Beta)',
@@ -978,6 +976,15 @@ const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
   otherPlaceholder: 'Gib hier deine eigene Antwort ein',
   steps: 'Schritte',
   step: (n) => `Schritt ${n}`,
+};
+
+const CANVAS_MESSAGES: Translations['CANVAS_MESSAGES'] = {
+  peek: 'Eingeklappt',
+  half: 'Halb geöffnet',
+  full: 'Ausgeklappt',
+  expand: 'Ausklappen',
+  collapse: 'Einklappen',
+  hint: 'Ziehen oder Pfeiltasten verwenden, um die Panelgröße zu ändern',
 };
 
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
@@ -3121,6 +3128,7 @@ const translations: Translations = {
   PLACE_CARD_MESSAGES,
   SOCIAL_BUTTON_MESSAGES,
   QUESTIONNAIRE_MESSAGES,
+  CANVAS_MESSAGES,
   MAP_CONTROLS_MESSAGES,
   PAYMENT_METHOD_MESSAGES,
   AVATAR_GROUP_MESSAGES,

@@ -28,13 +28,11 @@ const CALL_UI_MESSAGES__CORNERS = {
 };
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  avatarHistory: 'アバターの履歴',
   undoAvatar: '元に戻す',
   redoAvatar: 'やり直す',
-  restoreAvatar: '元の状態に戻す',
   preparingAvatar: 'アバターを準備中…',
 
-  reaction: 'リアクション',
-  working: '作業する',
   avatarStyle: 'アバターのスタイル',
   proceduralAvatar: '現在のアバター',
   betaPreset: 'キャラクタープリセット（ベータ）',
@@ -935,6 +933,15 @@ const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
   otherPlaceholder: '回答を入力してください',
   steps: 'ステップ',
   step: (n) => `ステップ ${n}`,
+};
+
+const CANVAS_MESSAGES: Translations['CANVAS_MESSAGES'] = {
+  peek: '折りたたみ',
+  half: '半分開く',
+  full: '展開済み',
+  expand: '展開',
+  collapse: '折りたたむ',
+  hint: 'ドラッグするか矢印キーでパネルのサイズを変更します',
 };
 
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
@@ -3024,6 +3031,7 @@ const translations: Translations = {
   PLACE_CARD_MESSAGES,
   SOCIAL_BUTTON_MESSAGES,
   QUESTIONNAIRE_MESSAGES,
+  CANVAS_MESSAGES,
   MAP_CONTROLS_MESSAGES,
   PAYMENT_METHOD_MESSAGES,
   AVATAR_GROUP_MESSAGES,

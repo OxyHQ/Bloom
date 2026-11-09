@@ -4,6 +4,8 @@
 // changing that barrel or the set of web-forked subpaths.
 
 export { AgentCreator } from './AgentCreator.web';
+export { AgentCreatorField } from './AgentCreatorField';
+export type { AgentCreatorFieldProps } from './AgentCreatorField';
 export {
   AGENT_LANGUAGES,
   AGENT_SPEECH_RATES,

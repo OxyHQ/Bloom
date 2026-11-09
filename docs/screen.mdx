@@ -56,6 +56,12 @@ uses the enclosing adapter when available, scoped to a panel's own history.
 `--bloom-screen-viewport-height` and `--bloom-screen-viewport-top` describe the
 usable web content region for shared CSS components such as a pager.
 
+`underlay` is a layer behind everything the screen draws (header, content and bottom bar),
+filling the whole screen box and never interactive: a wallpaper, a gradient, an animated field.
+A child laid out `position: absolute; inset: 0` fills only the content area, which stops where an
+inset bottom bar begins, so the field would end in a hard edge above the composer; the underlay
+reaches under the bar and under an overlay header. `AiChatContainer`'s `background` is drawn in it.
+
 A `PageFooter` in `bottomBar` draws only its content and scrim. Screen owns its
 position and clearance; it does not create a second sticky footer or register
 another inset. Host controls that persist across routes use the panel's `headerActions`.

@@ -1,0 +1,41 @@
+{
+  "status": "passed on physical device",
+  "device": "Google Pixel 8a",
+  "android": "Android 16 / API 36",
+  "apkSha256": "ddf488169ea7b871ef789ca5becda4ca7f42a0e61259558257abf2dc7d2e384d",
+  "before": {
+    "testID": "cases-pill-input",
+    "identity": 99614543,
+    "id": 68,
+    "start": 19,
+    "end": 19,
+    "focused": true,
+    "attached": true,
+    "text": "Draft retained through resize"
+  },
+  "duringThemeChange": {
+    "testID": "cases-pill-input",
+    "identity": 99614543,
+    "id": 68,
+    "start": 19,
+    "end": 19,
+    "focused": true,
+    "attached": true,
+    "text": "Draft retained through resize"
+  },
+  "busyStateBefore": "busy=true narrow=false stops=1 submits=0 pending=none",
+  "busyStateAfter": "busy=true narrow=false stops=1 submits=0 pending=none",
+  "changedScreenPixels": 1620048,
+  "restoredToLightAndStopped": true,
+  "rotationSettingsUnchanged": true,
+  "screenshots": {
+    "theme-before": {
+      "sha256": "365274d09c7a1cfba74d52e0b08b0f2692259d7cd7aaada6488c6e0e277423f8",
+      "bytes": 263149
+    },
+    "theme-after": {
+      "sha256": "9813109944fd7f42b7793ea13d5e0e22d539e6c8563a827111689d7755433904",
+      "bytes": 281316
+    }
+  }
+}

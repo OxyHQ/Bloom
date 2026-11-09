@@ -328,6 +328,11 @@ const SELECTION_ROW =
 
 export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
   field: {
+    canvas: {
+      verdict: 'does-not-apply',
+      reason:
+        'The adjustable handle changes panel detents, not a form value; its name comes from the panel accessibilityLabel.',
+    },
     'agent-chat': { verdict: 'does-not-apply', reason: BARE_INPUT },
     'chat-composer': { verdict: 'does-not-apply', reason: BARE_INPUT },
     'chat-list': { verdict: 'does-not-apply', reason: BARE_INPUT },
@@ -530,7 +535,7 @@ export function renderAdoptionMatrix(): string {
   out.push('# Adoption matrix');
   out.push('');
   out.push(
-    'The contracts in [Composition](/docs/composition) are worth something only where they are read. This page is that measurement, and it is derived from the source on every change rather than written down once — a matrix maintained by hand is wrong the first time a family changes without its row being updated, and a stale row reads exactly like a fresh one.',
+    'This family-level matrix records source signals for the contracts in [Composition](/docs/composition). It is derived on every change. A family import is not evidence that every exported part consumes a contract; the [public React part census](/docs/public-parts) resolves size vocabularies and classifies each exported identity separately, with runtime coverage and pending work explicit.',
   );
   out.push('');
   out.push('## What is measured');
@@ -545,7 +550,9 @@ export function renderAdoptionMatrix(): string {
   out.push('');
   out.push('| verdict | means |');
   out.push('| --- | --- |');
-  out.push('| `reads` | the family imports the contract and applies it itself |');
+  out.push(
+    '| `reads` | a matching contract source signal exists in the family; not proof for every exported part |',
+  );
   out.push('| `delegated` | it hands the decision to a child that reads it |');
   out.push(
     '| `n/a¹` | the derivation matched something that is not the contract\u2019s subject — the reason is below |',

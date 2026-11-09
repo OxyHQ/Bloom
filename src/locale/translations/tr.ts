@@ -31,13 +31,11 @@ const CALL_UI_MESSAGES__CORNERS = {
 };
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  avatarHistory: 'Avatar geçmişi',
   undoAvatar: 'Geri al',
   redoAvatar: 'Yinele',
-  restoreAvatar: 'Aslına döndür',
   preparingAvatar: 'Avatar hazırlanıyor…',
 
-  reaction: 'Tepki ver',
-  working: 'Çalış',
   avatarStyle: 'Avatar stili',
   proceduralAvatar: 'Mevcut avatar',
   betaPreset: 'Hazır karakter (beta)',
@@ -944,6 +942,15 @@ const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
   otherPlaceholder: 'Kendi yanıtınızı buraya yazın',
   steps: 'Adımlar',
   step: (n) => `Adım ${n}`,
+};
+
+const CANVAS_MESSAGES: Translations['CANVAS_MESSAGES'] = {
+  peek: 'Daraltılmış',
+  half: 'Yarı açık',
+  full: 'Genişletilmiş',
+  expand: 'Genişlet',
+  collapse: 'Daralt',
+  hint: 'Paneli yeniden boyutlandırmak için sürükleyin veya ok tuşlarını kullanın',
 };
 
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
@@ -3044,6 +3051,7 @@ const translations: Translations = {
   PLACE_CARD_MESSAGES,
   SOCIAL_BUTTON_MESSAGES,
   QUESTIONNAIRE_MESSAGES,
+  CANVAS_MESSAGES,
   MAP_CONTROLS_MESSAGES,
   PAYMENT_METHOD_MESSAGES,
   AVATAR_GROUP_MESSAGES,

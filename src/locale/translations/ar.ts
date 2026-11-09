@@ -38,13 +38,11 @@ const MESSAGE_MEDIA_MESSAGES__items = (n: number) =>
   });
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  avatarHistory: 'سجل الصورة الرمزية',
   undoAvatar: 'تراجع',
   redoAvatar: 'إعادة',
-  restoreAvatar: 'استعادة الشكل الأصلي',
   preparingAvatar: 'جارٍ تجهيز الصورة الرمزية…',
 
-  reaction: 'تفاعل',
-  working: 'اعمل',
   avatarStyle: 'نمط الصورة الرمزية',
   proceduralAvatar: 'الصورة الرمزية الحالية',
   betaPreset: 'شخصية جاهزة (تجريبية)',
@@ -1068,6 +1066,15 @@ const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
   otherPlaceholder: 'اكتب إجابتك هنا',
   steps: 'الخطوات',
   step: (n) => `الخطوة ${n}`,
+};
+
+const CANVAS_MESSAGES: Translations['CANVAS_MESSAGES'] = {
+  peek: 'مطوي',
+  half: 'نصف مفتوح',
+  full: 'موسّع',
+  expand: 'توسيع',
+  collapse: 'طي',
+  hint: 'اسحب أو استخدم مفاتيح الأسهم لتغيير حجم اللوحة',
 };
 
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
@@ -3470,6 +3477,7 @@ const translations: Translations = {
   PLACE_CARD_MESSAGES,
   SOCIAL_BUTTON_MESSAGES,
   QUESTIONNAIRE_MESSAGES,
+  CANVAS_MESSAGES,
   MAP_CONTROLS_MESSAGES,
   PAYMENT_METHOD_MESSAGES,
   AVATAR_GROUP_MESSAGES,

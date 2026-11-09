@@ -50,6 +50,17 @@ describe('ConversationSidebar', () => {
     expect(view.getByText('No conversations found.')).toBeTruthy();
   });
 
+  it('titles the rows with a heading, and draws none over an empty list', () => {
+    const view = render(
+      scope(<ConversationSidebar conversations={CHATS} onSelect={() => {}} heading="Agents" />),
+    );
+    expect(view.getByText('Agents')).toBeTruthy();
+    view.rerender(
+      scope(<ConversationSidebar conversations={[]} onSelect={() => {}} heading="Agents" />),
+    );
+    expect(view.queryByText('Agents')).toBeNull();
+  });
+
   it('has the store and "+" tools only when it is given what they do', () => {
     const none = render(scope(<ConversationSidebar conversations={CHATS} onSelect={() => {}} />));
     expect(none.queryByLabelText('Marketplace')).toBeNull();

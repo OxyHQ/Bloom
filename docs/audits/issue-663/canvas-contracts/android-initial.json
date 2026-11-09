@@ -1,0 +1,50 @@
+{
+  "serial": "43221JEKB12200",
+  "apkSha256": "8e1de7cbf01968f0bb710d0d16e80473783e41cccce49e0f8721d718ed40b07b",
+  "build": {
+    "commit": "935b8fb38e731f30aaf5b4ef761b685bcd6ba075",
+    "workingTree": "M docs/adoption-matrix.mdx\n M package.json\n M scripts/generate-platform-exports.mjs\n M src/__tests__/support/adoption-matrix.ts\n M src/bottom-sheet/BottomSheetBase.tsx\n M src/index.ts\n M src/index.web.ts\n M src/locale/translations/ar.ts\n M src/locale/translations/bn.ts\n M src/locale/translations/ca.ts\n M src/locale/translations/de.ts\n M src/locale/translations/es.ts\n M src/locale/translations/fr.ts\n M src/locale/translations/hi.ts\n M src/locale/translations/id.ts\n M src/locale/translations/it.ts\n M src/locale/translations/ja.ts\n M src/locale/translations/pt.ts\n M src/locale/translations/ru.ts\n M src/locale/translations/tr.ts\n M src/locale/translations/types.ts\n M src/locale/translations/zh.ts\n?? docs/canvas.mdx\n?? src/__tests__/Canvas.test.tsx\n?? src/__tests__/CanvasPanel.test.tsx\n?? src/__tests__/CanvasPanel.web.test.tsx\n?? src/__tests__/canvas-geometry.test.ts\n?? src/bottom-sheet/drag-geometry.ts\n?? src/canvas/",
+    "fixtureSha256": "e7ef709eaba26f8f4b6dccacb5df9f2da8b170644c0a137d114564bd00e40966",
+    "sourceSha256": "a2b01d46da800066ea89d915fea20fe5eb8dac672e6dc6f7b817e27b92e6807f",
+    "sourceFiles": 4334,
+    "lockSha256": "f2df323a08c2c77c02e09a9ce69aea9f4d90b0fad025ed75ac0551bdcea8dfa4",
+    "artifactKind": "source fixture; native Bloom module from published 17.22.0",
+    "reactCompiler": false,
+    "dependencies": {
+      "@oxy.so/bloom": "17.22.0",
+      "expo": "58.0.23",
+      "expo-asset": "58.0.20",
+      "expo-blur": "58.0.5",
+      "expo-font": "58.0.11",
+      "expo-image": "58.0.18",
+      "nativewind": "5.0.0-rc.0",
+      "react": "19.3.0",
+      "react-dom": "19.3.0",
+      "react-native": "0.88.1",
+      "react-native-css": "3.1.0-rc.0",
+      "react-native-gesture-handler": "3.3.0",
+      "react-native-reanimated": "4.7.1",
+      "react-native-safe-area-context": "5.11.1",
+      "react-native-screens": "4.30.1",
+      "react-native-svg": "15.16.0",
+      "react-native-web": "0.21.4",
+      "react-native-worklets": "0.13.0"
+    },
+    "apkSha256": "8e1de7cbf01968f0bb710d0d16e80473783e41cccce49e0f8721d718ed40b07b",
+    "embeddedBundleSha256": "f6bf9b3f15a32090ecc3b2e816551b7ede00cac456f4a5a24774cd897e111cc3",
+    "embeddedBloomSourceSha256": "594c34f71e7d14817982fec5f2869db84959a482d66275c73031ac1fee61eacd",
+    "embeddedBloomFiles": 402
+  },
+  "permissions": "package: so.oxy.bloom.canvaslab\nuses-permission: name='android.permission.READ_EXTERNAL_STORAGE' maxSdkVersion='32'\nuses-permission: name='android.permission.SYSTEM_ALERT_WINDOW'\nuses-permission: name='android.permission.VIBRATE'\nuses-permission: name='android.permission.WRITE_EXTERNAL_STORAGE' maxSdkVersion='32'\npermission: so.oxy.bloom.canvaslab.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION\nuses-permission: name='so.oxy.bloom.canvaslab.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'\n",
+  "os": "16\r\n",
+  "api": "36\r\n",
+  "abi": "arm64-v8a\r\n",
+  "hardware": "akita\r\n",
+  "size": "Physical size: 1080x2400\r\n",
+  "density": "Physical density: 420\r\n",
+  "fontScale": "1.15\r\n",
+  "gpu": [
+    "GLES: ARM, Mali-G715, OpenGL ES 3.2 v1.r54p1-11eac0.bf6659b634cc4428261e868dd766545b"
+  ],
+  "fingerprint": "google/akita/akita:16/BP4A.260205.001/14624666:user/release-keys\r\n"
+}

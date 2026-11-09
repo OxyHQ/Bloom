@@ -1,3 +1,4 @@
+import type { SidebarProps, SidebarSurface } from '../sidebar/types';
 import type { ComponentRef, ComponentType, ReactNode } from 'react';
 import type {
   ImageSourcePropType,
@@ -467,15 +468,32 @@ export interface AiChatShellLabels {
 }
 
 export interface AiChatShellProps {
-  /** The floating sidebar shown from `lg` (1024). */
-  sidebar: ReactNode;
+  /**
+   * The floating sidebar shown from `lg` (1024).
+   *
+   * A function receives the shell's resolved sidebar props (`collapsed`, `onCollapsedChange`,
+   * `variant`, `mobile`...) and returns the sidebar: spread them into a `ConversationSidebar` or a
+   * `Sidebar` and the shell owns the collapse: its control, the track's width and the motion that
+   * hands the room to the conversation. A node is drawn as it is, and never collapses the track.
+   */
+  sidebar: ReactNode | ((props: SidebarProps) => ReactNode);
   /**
    * The in-flow sidebar's column width from `lg` up. Omit and the sidebar sizes
    * itself, as it always has.
    */
   sidebarWidth?: number;
-  /** Publish the in-flow sidebar's collapsed state. Default `false`; the sidebar owns its size. */
+  /**
+   * Control the in-flow sidebar's collapsed state. Omitted with a function `sidebar`, the shell owns
+   * it; omitted with a node it is `false`.
+   */
   sidebarCollapsed?: boolean;
+  /**
+   * The in-flow sidebar's panel. `plain` (default) runs it flush to the window edge on the page;
+   * `card` frames it as a raised panel, and the shell then keeps the gutter around it and between
+   * it and the conversation that a card needs. The shell lays out by this value, so a sidebar that
+   * draws a different surface than it declares gets the wrong gaps.
+   */
+  sidebarSurface?: SidebarSurface;
   /** Optional collapsed column width override. Omit to let the sidebar size and animate itself. */
   collapsedSidebarWidth?: number;
   /** Navigation content for integrations without an in-flow sidebar. */
@@ -492,6 +510,11 @@ export interface AiChatShellProps {
   defaultPanelWidth?: number;
   minPanelWidth?: number;
   maxPanelWidth?: number;
+  /**
+   * Whether the divider beside the panel can be dragged. Default `true`. A panel with a width of
+   * its own (an editor, a form) turns it off, and the panel keeps `defaultPanelWidth`.
+   */
+  panelResizable?: boolean;
   /** Controlled nav drawer (below `lg`). */
   navOpen?: boolean;
   onNavOpenChange?: (open: boolean) => void;

@@ -106,12 +106,22 @@ in another `AppShellPanel`, paint another frame, or put an existing list inside
 `scroll="panel"`. Host controls shared by a panel's routes belong in descriptor
 `headerActions`, which PageHeader composes with the route's own actions.
 
+`sidebar` may be a function: `sidebar={(props) => <ConversationSidebar {...props} … />}`. The shell hands it
+its resolved props (`collapsed`, `onCollapsedChange`, `variant`, `mobile`), so the sidebar's collapse
+control resizes the shell's track and the conversation takes the room, with no state of the host's own.
+A node `sidebar` is drawn as it is and never collapses the track.
+
+`panelResizable={false}` removes the divider beside the context panel, for a panel with a width of
+its own (an editor, a form): it keeps `defaultPanelWidth`.
+
 `AiChatShell` preserves `sidebar`, `mobileSidebar`, `panel`, width and controlled
 open props as adapters. `navOpen` controls the shared drawer and `panelOpen`
 controls the context’s floating presentation on compact layouts; closing leaves
 the conversation in place. `panel` receives the width
 selected by the shared engine. Resize limits remain 320–560px by default, with
-410px as the resting context width. `sidebarCollapsed` and explicit sidebar
+410px as the resting context width. `sidebarSurface` (`plain` by default) is the
+sidebar's panel: the shell lays out its gutters by it, so a `card` keeps the gap around
+and beside it that a flush `plain` sidebar does not. `sidebarCollapsed` and explicit sidebar
 width overrides remain host preferences. The shell installs no swipe recognizer
 of its own.
 

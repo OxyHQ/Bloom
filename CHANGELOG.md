@@ -1,16 +1,109 @@
 # Changelog
 
+## 17.31.0
+
+### Added
+
+- **`AiChatShell sidebarSurface`** (`plain` by default): the in-flow sidebar's panel. The shell lays out its gutters by the surface it is given, so a host that wants the raised `card` panel declares it here and the shell keeps the gap around and beside it; a `card` drawn inside a shell that declared `plain` ran flush to the window edge with the wrong gaps.
+
+## 17.30.2
+
+### Fixed
+
+- **The morphing spinner's points are evenly spaced.** The outline's arc length was measured in unit coordinates against samples stored in viewbox units, so points bunched up and neighbouring frames no longer corresponded; transitions looked lumpy at corners. The largest gap between points was about ten times the mean and is now under one and a half.
+- **The web `SpinnerIcon` is in the markup.** Its path had no `d` until the first animation frame, so server-rendered HTML and the first paint showed no loading indicator. The first frame is now in the first render and the loop keeps rewriting the same `d`.
+
+## 17.30.1
+
+### Fixed
+
+- **`ChatHeader` uses its measured width** to choose compact gutters, and, on web, the default back-button visibility. Native always shows Back when `onPressBack` is set, since no list pane sits beside the conversation. `showBack` remains available when navigation context differs from available width.
+
+## 17.30.0
+
+### Added
+
+- **`AgentCreator` takes rows of the host's own**: `children` are drawn in the details card after the description, composed with the new `AgentCreatorField` (the row the editor's Name, Label and Description now use), so a host's rows match the editor's geometry, hairlines and type. Nothing changes without children.
+- **`AiChatShell panelResizable`** (default `true`): `false` removes the divider beside the context panel, which then keeps `defaultPanelWidth`. For a panel with a width of its own, such as an editor.
+- **`ConversationSidebar heading`**: a label over the conversation rows ("Agents"), drawn like a tree section's, for a rail that titles its list. Not drawn without rows.
+- **Sidebar tree rows with a `description`** give their `leading` a taller box (`tree.avatar`: 32, 36 and 40px by size) instead of the 20px glyph box, so a contact's picture is as tall as its two lines of text. Rows without a description are unchanged.
+
+### Fixed
+
+- **`AiChatShell` owns the sidebar's collapse** when `sidebar` is a function `(props) => ReactNode`: the shell hands it its resolved props (`collapsed`, `onCollapsedChange`, `variant`, `mobile`...), so the sidebar's own collapse control also resizes the shell's track and gives the room to the conversation, with the shell's motion. Before, the adapter pinned the track expanded (`collapsed: false`) and ignored those props, so collapsing only moved the sidebar's contents inside a track that stayed 260px wide. A `sidebar` node behaves as before.
+- **The composer's add menu is built on Bloom's `DropdownMenu`**, not rows of buttons in a panel of its own. Its action rows (Camera, Photos, Files, Canvas) were centred, because the row buttons never set how they lay their content out; the menu now has the family's row layout (left-aligned, an icon that leads, a switch's check mark at the end) and its semantics (roving focus, arrow keys). The `-add-panel` test id stays on the menu surface; a switch row is a checkbox row (`aria-checked`) with the test id `bloom-row-<id>`, replacing `bloom-row-checked-<id>`.
+
+### Changed
+
+- **`AgentCreator`'s `agent.handle` (17.28.0) is removed** in favour of `children` rows: a host's username (or anything else of its own) is an `AgentCreatorField` row, not a field the editor knows about.
+- **`AgentCreator`'s header carries undo and redo** as icon buttons (`avatarHistory` group), and the React, Work and Restore original buttons are gone.
+
+## 17.29.0
+
+### Changed
+
+- **The spinner is the Material 3 morphing loader**: `SpinnerIcon`, and so every `Loading` variant, `Button` busy state and engagement-bar busy glyph, now draws a solid shape that morphs through the Material loading loop (soft burst, cookie, pentagon, pill, sunny, cookie, oval) while it rotates, instead of the eight-blade iOS spinner. Same props and sizes. Native blends frames into one `react-native-svg` path on the UI thread with reanimated; web writes the same path into an `<svg>` from a `requestAnimationFrame` loop. No new peer dependency.
+
+## 17.28.0
+
+### Added
+
+- **`AgentCreator` username**: `agent.handle` (optional) draws a Username row after the name, in the editor's own rows, with its strings in the fourteen locales. Omitted, nothing changes.
+- **`SelectedAgentPreview`** (and `previewAvatarGeometry`) from `@oxy.so/bloom/multi-agent-chat`: the avatars of the chosen agents composed as one large avatar, a trio, or a ring from four up, each one named for `AvatarFlights` as `${anchor}:${agent.id}`. It is the picker's preview and the empty group chat's mark in `MultiAgentChat`; a host that draws its own group chat uses the same composition and the same flights (picker to empty chat to header).
+
+## 17.27.1
+
+### Added
+
+- **Screen `underlay`**: a layer behind the header, the content and the bottom bar, filling the whole screen box and never interactive, for a wallpaper, gradient or animated field.
+
+### Fixed
+
+- **AiChatContainer's `background`** is drawn in the screen's underlay, so it reaches under the composer instead of stopping in a hard edge where the content area ends. Its test id is now `<testID>-underlay`.
+
+### Fixed
+
+- **Web ComposerLoader** sets its CSS animation properties independently, avoiding React's conflicting shorthand/longhand updates while preserving the same motion and reduced-motion behavior.
+
+## 17.26.0
+
+### Added
+
+- **Sidebar tree rows** take a `description`: a line under the label, one line and truncated, drawn in the tree's own metrics, as a conversation row's last message is. A row with a description is two lines (an agent's name and its last message), and a row without one is unchanged.
+
+## 17.25.0
+
+### Fixed
+
+- **Android ComposerLoader** renders its shared moving light through a hardware Canvas adapter on supported devices, with a phase-preserving SVG fallback for software-rendered hosts and older binaries.
+
+## 17.24.0
+
+### Added
+
+- **Canvas** provides a persistent, nonmodal canvas with measured panel occupancy and responsive panel placement while leaving map-engine and camera policy with the consumer.
+
+### Fixed
+
+- Web TextField placeholder colors follow the contrast pair of the painted material bounds, including baked and transparent backings.
+
 Releases before 15.50.0 are described in their pull requests and in git history.
 
 ## 17.24.0
 
 ### Added
 
-- **Live virtual anchors for Popover.** `PopoverContent` accepts a measured selection/caret anchor on web and tracks it through scroll and resize. Native presentation remains a sheet.
+- **Persistent Canvas composition.** `Canvas`, `CanvasBackground` and measured `CanvasPanel` keep a consumer's renderer mounted while panel placement and occupancy change. Settled geometry and animated panel progress are separate signals.
+- **A versioned task catalog.** Packed exports, examples and task-oriented component metadata are checked from the published package.
+- **Live selection anchors.** Popovers can follow a changing text selection or caret without remounting the anchored content.
+- **A hardware-backed Android composer light.** ComposerLoader retains its shared geometry and motion contract, with a tested software-host SVG fallback.
 
-### Consumers
+### Fixed
 
-- Use `PopoverContent virtualAnchor` for selection-owned popovers. `@oxy.so/bloom-editor` 0.8.0 requires Bloom 17.24.0 or newer.
+- Composer surface paint coordinates with the nearest loader owner, preserving the single rounded body and keeping its light decorative.
+- Android rich-text input keeps the keyboard open when tapped; inactive microphone equalizers stop their animation work.
+- Fixed AppShell layouts retain the correct Screen scroll owner.
+- Field placeholder contrast follows the resolved painted material, and plain buttons preserve explicit foreground/background token pairs.
 
 ## 17.23.0
 

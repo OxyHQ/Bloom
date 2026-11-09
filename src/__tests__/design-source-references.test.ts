@@ -15,17 +15,17 @@
  * than no reference at all.
  *
  * It scans the same surface `icon-references.test.ts` does — `src/`, `docs/`,
- * `README.md` and `AGENTS.md` — and it deliberately does NOT strip comments,
- * because the comments ARE the surface under test.
+ * `README.md`, `AGENTS.md` and `AGENTS.rules.md` — and it deliberately does
+ * NOT strip comments, because the comments ARE the surface under test.
  *
  * Two self-reference traps, both closed the way `icon-references` closes its:
  *
  *  1. This file necessarily SPELLS every term it forbids. It is therefore the
  *     one exclusion, pinned to exactly one path in the first assertion, so the
  *     list can neither grow quietly nor become a silent no-op through a typo.
- *  2. `AGENTS.md` is inside the scan. The rule recorded there must POINT at
- *     this file rather than repeat the terms, or the repo's own rulebook
- *     fails the rule.
+ *  2. Both agent rule files are inside the scan. The rule recorded there must
+ *     POINT at this file rather than repeat the terms, or the repo's own
+ *     rulebook fails the rule.
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { extname, join, relative } from 'node:path';
@@ -52,6 +52,7 @@ const SCANNED = [
   ...walk(join(REPO_ROOT, 'docs')),
   join(REPO_ROOT, 'README.md'),
   join(REPO_ROOT, 'AGENTS.md'),
+  join(REPO_ROOT, 'AGENTS.rules.md'),
 ];
 
 const EXCLUDED = [join(__dirname, 'design-source-references.test.ts')];
@@ -125,6 +126,7 @@ describe('the external design source is never named', () => {
     expect(CHECKED).toContain(join(SRC, 'popover', 'Popover.stories.tsx'));
     expect(CHECKED).toContain(join(REPO_ROOT, 'docs', 'popover.mdx'));
     expect(CHECKED).toContain(join(REPO_ROOT, 'AGENTS.md'));
+    expect(CHECKED).toContain(join(REPO_ROOT, 'AGENTS.rules.md'));
 
     // A misspelled path here would make the exemption a no-op and this suite
     // fail on ITSELF, rather than quietly stop covering the file it forbids.
@@ -175,7 +177,7 @@ describe('the external design source is never named', () => {
     expect(findingsIn('probe', compliant)).toEqual([]);
   });
 
-  it('names the external design source nowhere in src, docs, README or AGENTS', () => {
+  it('names the external design source nowhere in src, docs, README or agent rules', () => {
     const findings = CHECKED.flatMap((file) => findingsIn(file, readFileSync(file, 'utf8')));
     expect(findings.map(format)).toEqual([]);
   });

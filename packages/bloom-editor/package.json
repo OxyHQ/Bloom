@@ -109,7 +109,7 @@
   },
   "packageManager": "bun@1.4.3",
   "devDependencies": {
-    "@oxy.so/bloom": "17.23.0",
+    "@oxy.so/bloom": "17.24.0",
     "yjs": "13.6.33"
   }
 }

@@ -28,13 +28,11 @@ const CALL_UI_MESSAGES__CORNERS = {
 };
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  avatarHistory: '头像历史',
   undoAvatar: '撤销',
   redoAvatar: '重做',
-  restoreAvatar: '恢复原始外观',
   preparingAvatar: '正在准备头像…',
 
-  reaction: '做出反应',
-  working: '工作',
   avatarStyle: '头像风格',
   proceduralAvatar: '当前头像',
   betaPreset: '预设角色（测试版）',
@@ -924,6 +922,15 @@ const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
   otherPlaceholder: '在此输入你的答案',
   steps: '步骤',
   step: (n) => `第 ${n} 步`,
+};
+
+const CANVAS_MESSAGES: Translations['CANVAS_MESSAGES'] = {
+  peek: '已收起',
+  half: '半展开',
+  full: '已展开',
+  expand: '展开',
+  collapse: '收起',
+  hint: '拖动或使用方向键调整面板大小',
 };
 
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
@@ -2950,6 +2957,7 @@ const translations: Translations = {
   PLACE_CARD_MESSAGES,
   SOCIAL_BUTTON_MESSAGES,
   QUESTIONNAIRE_MESSAGES,
+  CANVAS_MESSAGES,
   MAP_CONTROLS_MESSAGES,
   PAYMENT_METHOD_MESSAGES,
   AVATAR_GROUP_MESSAGES,

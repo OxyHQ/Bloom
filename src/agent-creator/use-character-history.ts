@@ -8,7 +8,6 @@ const createHistory = (agent: AgentCreatorAgent) => ({
   id: agent.id,
   propKey: key(agent.avatar),
   current: snapshot(agent.avatar),
-  original: snapshot(agent.avatar),
   past: [] as AvatarCharacter[],
   future: [] as AvatarCharacter[],
   pending: new Set<string>(),
@@ -31,7 +30,6 @@ export function useCharacterHistory(
     if (s.id !== agent.id || !s.pending.has(incoming)) {
       s.id = agent.id;
       s.current = snapshot(agent.avatar);
-      s.original = snapshot(agent.avatar);
       s.past = [];
       s.future = [];
       s.pending.clear();
@@ -86,7 +84,6 @@ export function useCharacterHistory(
     character: s.current,
     canUndo: s.past.length > 0,
     canRedo: s.future.length > 0,
-    canRestore: key(s.current) !== key(s.original),
     change,
     undo,
     redo,
@@ -94,9 +91,5 @@ export function useCharacterHistory(
     begin: useCallback(() => {
       state.current!.transaction ??= state.current!.current;
     }, []),
-    restore: useCallback(() => {
-      end();
-      change(state.current!.original);
-    }, [change, end]),
   };
 }

@@ -28,13 +28,11 @@ const CALL_UI_MESSAGES__CORNERS = {
 };
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  avatarHistory: 'অ্যাভাটারের ইতিহাস',
   undoAvatar: 'পূর্বাবস্থায় ফেরান',
   redoAvatar: 'পুনরায় করুন',
-  restoreAvatar: 'আসল রূপ ফেরান',
   preparingAvatar: 'অবতার প্রস্তুত হচ্ছে…',
 
-  reaction: 'প্রতিক্রিয়া দেখান',
-  working: 'কাজ করুন',
   avatarStyle: 'অবতারের ধরন',
   proceduralAvatar: 'বর্তমান অবতার',
   betaPreset: 'প্রস্তুত চরিত্র (বিটা)',
@@ -938,6 +936,15 @@ const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
   otherPlaceholder: 'আপনার উত্তর এখানে লিখুন',
   steps: 'ধাপ',
   step: (n) => `ধাপ ${n}`,
+};
+
+const CANVAS_MESSAGES: Translations['CANVAS_MESSAGES'] = {
+  peek: 'সংকুচিত',
+  half: 'অর্ধেক খোলা',
+  full: 'প্রসারিত',
+  expand: 'প্রসারিত করুন',
+  collapse: 'সংকুচিত করুন',
+  hint: 'প্যানেলের আকার পরিবর্তন করতে টানুন বা তীর কী ব্যবহার করুন',
 };
 
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
@@ -2991,6 +2998,7 @@ const translations: Translations = {
   PLACE_CARD_MESSAGES,
   SOCIAL_BUTTON_MESSAGES,
   QUESTIONNAIRE_MESSAGES,
+  CANVAS_MESSAGES,
   MAP_CONTROLS_MESSAGES,
   PAYMENT_METHOD_MESSAGES,
   AVATAR_GROUP_MESSAGES,

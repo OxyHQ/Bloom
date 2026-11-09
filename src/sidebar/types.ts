@@ -563,11 +563,17 @@ export interface SidebarTreeItem {
   onPress?: () => void;
   key: string;
   label: string;
+  /**
+   * A line under the label, one line and truncated, as a conversation row's last message is.
+   * The row takes two lines; without it, one.
+   */
+  description?: string;
   /** A glyph before the label, in the row's icon colour. */
   icon?: SidebarIcon;
   /**
    * Anything else before the label in place of `icon` — an emoji, an image — in
-   * the same 20px box.
+   * the same 20px box (`tree.icon`), or a taller one (`tree.avatar`, 36px at the default size)
+   * when the row has a `description`: a contact's picture.
    */
   leading?: ReactNode;
   /** A short chip at the row's end (the right in LTR), e.g. a relative time (`34m`, `now`). */

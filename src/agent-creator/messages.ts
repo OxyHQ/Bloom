@@ -1,12 +1,10 @@
 import { defineMessages, type MessageCatalog } from '../locale/messages';
 
 export interface AgentCreatorMessages {
+  avatarHistory: string;
   undoAvatar: string;
   redoAvatar: string;
-  restoreAvatar: string;
   preparingAvatar: string;
-  reaction: string;
-  working: string;
   avatarStyle: string;
   proceduralAvatar: string;
   betaPreset: string;
@@ -91,12 +89,10 @@ export interface AgentCreatorMessages {
 
 export const AGENT_CREATOR_MESSAGES: MessageCatalog<AgentCreatorMessages> =
   defineMessages<AgentCreatorMessages>('AGENT_CREATOR_MESSAGES', {
+    avatarHistory: 'Avatar history',
     undoAvatar: 'Undo',
     redoAvatar: 'Redo',
-    restoreAvatar: 'Restore original',
     preparingAvatar: 'Preparing avatar…',
-    reaction: 'React',
-    working: 'Work',
     avatarStyle: 'Avatar style',
     proceduralAvatar: 'Current avatar',
     betaPreset: 'Character preset (beta)',

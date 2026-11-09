@@ -127,3 +127,8 @@ it, the app owns the map, and this tells the chrome what the map is doing.
 The markers, the cluster bubble, the approximate-area circle and the "search this area"
 pill are [`map-marker`](/docs/map-marker); the place they open is
 [`place-card`](/docs/place-card).
+
+`orientation="horizontal"` keeps the same groups and callbacks in one row, including
+the zoom pair. The default is vertical. A canvas adapter may choose the row when
+a bottom panel leaves little vertical space; measure the resulting group before
+deciding whether it fits. Changing orientation preserves control identity.

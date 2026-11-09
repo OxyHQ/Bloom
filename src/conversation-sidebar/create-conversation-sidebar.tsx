@@ -45,6 +45,7 @@ export function createConversationSidebar({
     actions,
     onAction,
     labels: labelOverrides,
+    heading,
     after,
     ...sidebar
   }: ConversationSidebarProps) {
@@ -166,6 +167,15 @@ export function createConversationSidebar({
         }
         content={
           <StyledView className="flex flex-col gap-2" accessibilityLabel={l.list}>
+            {heading && conversations.length ? (
+              <Text
+                role="heading"
+                className="px-2 pt-1 text-body-2-medium text-text-secondary"
+                numberOfLines={1}
+              >
+                {heading}
+              </Text>
+            ) : null}
             {conversations.map((conversation) => {
               const row = (
                 <SidebarItem

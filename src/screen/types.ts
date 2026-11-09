@@ -35,6 +35,14 @@ export interface ScreenProps extends ViewProps {
   documentScroll?: boolean;
   bottomBar?: ReactNode;
   /**
+   * A layer behind everything the screen draws — header, content and bottom bar — filling the whole
+   * screen box and never interactive: a wallpaper, a gradient, an animated field. A child laid out
+   * `position: absolute; inset: 0` fills only the content area, which stops where an inset bottom
+   * bar begins; this one reaches under the bar (and under an overlay header). It is clipped to the
+   * screen's box.
+   */
+  underlay?: ReactNode;
+  /**
    * Navigation hides by default; `visible` keeps its position while typing.
    * Native `follow` moves bottom chrome with the keyboard and makes ScreenScrollView
    * keep the focused input above it. Requires react-native-keyboard-controller and

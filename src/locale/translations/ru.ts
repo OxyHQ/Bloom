@@ -39,13 +39,11 @@ const MESSAGE_MEDIA_MESSAGES__items = (n: number) =>
   });
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  avatarHistory: 'История аватара',
   undoAvatar: 'Отменить',
   redoAvatar: 'Повторить',
-  restoreAvatar: 'Восстановить оригинал',
   preparingAvatar: 'Подготовка аватара…',
 
-  reaction: 'Реакция',
-  working: 'Работать',
   avatarStyle: 'Стиль аватара',
   proceduralAvatar: 'Текущий аватар',
   betaPreset: 'Готовый персонаж (бета)',
@@ -1049,6 +1047,15 @@ const QUESTIONNAIRE_MESSAGES: Translations['QUESTIONNAIRE_MESSAGES'] = {
   otherPlaceholder: 'Введите свой ответ',
   steps: 'Шаги',
   step: (n) => `Шаг ${n}`,
+};
+
+const CANVAS_MESSAGES: Translations['CANVAS_MESSAGES'] = {
+  peek: 'Свёрнуто',
+  half: 'Открыто наполовину',
+  full: 'Развёрнуто',
+  expand: 'Развернуть',
+  collapse: 'Свернуть',
+  hint: 'Перетащите или используйте клавиши со стрелками для изменения размера панели',
 };
 
 const MAP_CONTROLS_MESSAGES: Translations['MAP_CONTROLS_MESSAGES'] = {
@@ -3414,6 +3421,7 @@ const translations: Translations = {
   PLACE_CARD_MESSAGES,
   SOCIAL_BUTTON_MESSAGES,
   QUESTIONNAIRE_MESSAGES,
+  CANVAS_MESSAGES,
   MAP_CONTROLS_MESSAGES,
   PAYMENT_METHOD_MESSAGES,
   AVATAR_GROUP_MESSAGES,

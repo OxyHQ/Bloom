@@ -33,6 +33,15 @@ jest.mock('react-native-svg', () => {
     FeGaussianBlur: 'FeGaussianBlur',
   };
 });
+jest.mock('../composer-loader/AndroidLight', () => ({
+  AndroidLight: ({
+    onUnsupported,
+    children,
+  }: {
+    onUnsupported: () => void;
+    children: React.ReactNode;
+  }) => require('react').createElement('AndroidLightMock', { onUnsupported }, children),
+}));
 jest.mock('../hooks/use-prefers-reduced-motion', () => ({
   usePrefersReducedMotion: jest.fn(() => false),
 }));
@@ -167,6 +176,22 @@ for (const [platform, Loader, rectName] of [
     });
   });
 }
+
+it('freezes the native clock after software-host fallback returns to SVG', () => {
+  const t = render(
+    wrap(
+      <NativeLoader testID="loader">
+        <Text>draft</Text>
+      </NativeLoader>,
+    ),
+  );
+  fireEvent(t.getByTestId('loader-light', HIDDEN), 'layout', layout(320, 80));
+  expect(mockClock.setActive).toHaveBeenLastCalledWith(true);
+  const adapter = t.UNSAFE_root.findByType('AndroidLightMock' as never);
+  act(() => adapter.props.onUnsupported());
+  expect(mockClock.setActive).toHaveBeenLastCalledWith(false);
+  expect(t.getByText('draft')).toBeTruthy();
+});
 
 it('preserves native phase when the frame clock resumes and cancels on unmount', () => {
   const ui = (paused = false) =>

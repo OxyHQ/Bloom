@@ -1,0 +1,50 @@
+{
+  "apkSha256": "d858fbad2b6ba18ddbb4093c0122f63c7d7ce12fe8c43435a582e1319750600d",
+  "build": {
+    "commit": "2b5714f45e30657015244449d5e1774dda147b04",
+    "workingTree": "",
+    "fixtureSha256": "8a6a72933d0fe4f2babc49ef4431906eeafe58c8c9fdb007a93755ae7dd76f1e",
+    "packedTarballSha256": "f4bff6bfb73a37ccd9279d90740e47ea9a9c34a83d7e07d7c19496be5b7e0e17",
+    "kind": "local packed snapshot; not published acceptance",
+    "installed": "consumer-installed Bloom package",
+    "packageVersion": "17.26.0",
+    "nativeSha256": "5aa0123303dbb2f170077c2ddf6eac5933ee0c6269274422ed41ca10bf8f94ad",
+    "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+    "adapterSha256": "439368f05ea092a36619510ff3cf1d255d5e8da61ff52ab3490d0dd7dd6e4c21",
+    "lockSha256": "f2df323a08c2c77c02e09a9ce69aea9f4d90b0fad025ed75ac0551bdcea8dfa4",
+    "reactCompiler": false,
+    "scene": "benchmark",
+    "softwareWindow": false,
+    "apkSha256": "d858fbad2b6ba18ddbb4093c0122f63c7d7ce12fe8c43435a582e1319750600d",
+    "embeddedBundleSha256": "9be4ad49e5a7282da47d187b956f88acdadcb37ad00562ce8213805cebdc1947",
+    "embeddedBloomSourceSha256": "5c63e130e6da2915c2f1f9a80d96658716d35b785a3d0e7c828178cb88c80317",
+    "embeddedBloomFiles": 844,
+    "dex": [
+      {
+        "name": "classes.dex",
+        "sha256": "21d9a6529299a1758ed60166166893d26eeaaa87a69c7aef40f511936e204580"
+      }
+    ],
+    "r8MappingSha256": "44e328b1f6bf30d09c1c801a4e3513e8dd5b2e814ade03bb23ae2d64d8967da1",
+    "mappedNativeClass": "n10",
+    "nativeEvidence": "compiled installed Kotlin input hash, DEX contract marker and full DEX hashes; no runtime source receipt"
+  },
+  "case": "two-taper0",
+  "elapsedMs": 11053.898121,
+  "frames": 1292,
+  "jankyFrames": 0,
+  "histogramP50Ms": 12,
+  "histogramP95Ms": 14,
+  "gpuP50Ms": 6,
+  "gpuP95Ms": 7,
+  "recentFrameSamples": 119,
+  "recentFrameP50Ms": 12.067163,
+  "recentFrameP95Ms": 13.747424,
+  "recentFrameIntervalMs": 8.333333,
+  "cpuPercentOfOneCore": [100, 98, 93],
+  "pssKb": 384185,
+  "rssKb": 532344,
+  "thermalStatusBefore": 1,
+  "thermalStatusAfter": 1,
+  "note": "Single controlled foreground window, no screen recording; frame timestamps are not an FPS guarantee. Preserve font/display settings and compare thermal state."
+}

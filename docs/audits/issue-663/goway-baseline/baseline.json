@@ -1,0 +1,419 @@
+{
+  "errors": [],
+  "blocked": [],
+  "frames": [
+    {
+      "width": 1440,
+      "height": 900,
+      "mapIdentity": true,
+      "canvasIdentity": true,
+      "searchIdentity": true,
+      "camera": {
+        "center": [
+          2.1686,
+          41.3874
+        ],
+        "zoom": 11,
+        "bearing": 0,
+        "pitch": 0
+      },
+      "locationCalls": 0,
+      "regions": [
+        {
+          "id": "explore-panel",
+          "x": 16,
+          "y": 76,
+          "width": 384,
+          "height": 808,
+          "top": 76,
+          "right": 400,
+          "bottom": 884,
+          "left": 16
+        },
+        {
+          "id": "explore-search",
+          "x": 62,
+          "y": 84,
+          "width": 286,
+          "height": 36,
+          "top": 84,
+          "right": 348,
+          "bottom": 120,
+          "left": 62
+        },
+        {
+          "id": "explore-shortcuts",
+          "x": 16,
+          "y": 128,
+          "width": 384,
+          "height": 28,
+          "top": 128,
+          "right": 400,
+          "bottom": 156,
+          "left": 16
+        },
+        {
+          "id": "explore-shortcuts-track",
+          "x": 12,
+          "y": 124,
+          "width": 392,
+          "height": 36,
+          "top": 124,
+          "right": 404,
+          "bottom": 160,
+          "left": 12
+        },
+        {
+          "id": "explore-shortcuts-fade-end",
+          "x": 364,
+          "y": 124,
+          "width": 40,
+          "height": 36,
+          "top": 124,
+          "right": 404,
+          "bottom": 160,
+          "left": 364
+        }
+      ],
+      "attribution": [
+        "Show map credits"
+      ]
+    },
+    {
+      "width": 900,
+      "height": 900,
+      "mapIdentity": true,
+      "canvasIdentity": true,
+      "searchIdentity": true,
+      "camera": {
+        "center": [
+          2.1686,
+          41.3874
+        ],
+        "zoom": 11,
+        "bearing": 0,
+        "pitch": 0
+      },
+      "locationCalls": 0,
+      "regions": [
+        {
+          "id": "explore-panel",
+          "x": 16,
+          "y": 76,
+          "width": 384,
+          "height": 808,
+          "top": 76,
+          "right": 400,
+          "bottom": 884,
+          "left": 16
+        },
+        {
+          "id": "explore-search",
+          "x": 62,
+          "y": 84,
+          "width": 286,
+          "height": 36,
+          "top": 84,
+          "right": 348,
+          "bottom": 120,
+          "left": 62
+        },
+        {
+          "id": "explore-shortcuts",
+          "x": 16,
+          "y": 128,
+          "width": 384,
+          "height": 28,
+          "top": 128,
+          "right": 400,
+          "bottom": 156,
+          "left": 16
+        },
+        {
+          "id": "explore-shortcuts-track",
+          "x": 12,
+          "y": 124,
+          "width": 392,
+          "height": 36,
+          "top": 124,
+          "right": 404,
+          "bottom": 160,
+          "left": 12
+        },
+        {
+          "id": "explore-shortcuts-fade-end",
+          "x": 364,
+          "y": 124,
+          "width": 40,
+          "height": 36,
+          "top": 124,
+          "right": 404,
+          "bottom": 160,
+          "left": 364
+        }
+      ],
+      "attribution": [
+        "Show map credits"
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mapIdentity": true,
+      "canvasIdentity": true,
+      "searchIdentity": false,
+      "camera": {
+        "center": [
+          2.1686,
+          41.3874
+        ],
+        "zoom": 11,
+        "bearing": 0,
+        "pitch": 0
+      },
+      "locationCalls": 0,
+      "regions": [
+        {
+          "id": "explore-sheet",
+          "x": 0,
+          "y": 464,
+          "width": 390,
+          "height": 828,
+          "top": 464,
+          "right": 390,
+          "bottom": 1292,
+          "left": 0
+        },
+        {
+          "id": "explore-sheet-handle",
+          "x": 0,
+          "y": 464,
+          "width": 390,
+          "height": 22,
+          "top": 464,
+          "right": 390,
+          "bottom": 486,
+          "left": 0
+        },
+        {
+          "id": "explore-search",
+          "x": 46,
+          "y": 494,
+          "width": 292,
+          "height": 36,
+          "top": 494,
+          "right": 338,
+          "bottom": 530,
+          "left": 46
+        },
+        {
+          "id": "explore-shortcuts",
+          "x": 0,
+          "y": 538,
+          "width": 390,
+          "height": 28,
+          "top": 538,
+          "right": 390,
+          "bottom": 566,
+          "left": 0
+        },
+        {
+          "id": "explore-shortcuts-track",
+          "x": -4,
+          "y": 534,
+          "width": 398,
+          "height": 36,
+          "top": 534,
+          "right": 394,
+          "bottom": 570,
+          "left": -4
+        },
+        {
+          "id": "explore-shortcuts-fade-end",
+          "x": 354,
+          "y": 534,
+          "width": 40,
+          "height": 36,
+          "top": 534,
+          "right": 394,
+          "bottom": 570,
+          "left": 354
+        }
+      ],
+      "attribution": [
+        "Show map credits"
+      ]
+    },
+    {
+      "width": 320,
+      "height": 844,
+      "mapIdentity": true,
+      "canvasIdentity": true,
+      "searchIdentity": false,
+      "camera": {
+        "center": [
+          2.1686,
+          41.3874
+        ],
+        "zoom": 11,
+        "bearing": 0,
+        "pitch": 0
+      },
+      "locationCalls": 0,
+      "regions": [
+        {
+          "id": "explore-sheet",
+          "x": 0,
+          "y": 464,
+          "width": 320,
+          "height": 828,
+          "top": 464,
+          "right": 320,
+          "bottom": 1292,
+          "left": 0
+        },
+        {
+          "id": "explore-sheet-handle",
+          "x": 0,
+          "y": 464,
+          "width": 320,
+          "height": 22,
+          "top": 464,
+          "right": 320,
+          "bottom": 486,
+          "left": 0
+        },
+        {
+          "id": "explore-search",
+          "x": 46,
+          "y": 494,
+          "width": 222,
+          "height": 36,
+          "top": 494,
+          "right": 268,
+          "bottom": 530,
+          "left": 46
+        },
+        {
+          "id": "explore-shortcuts",
+          "x": 0,
+          "y": 538,
+          "width": 320,
+          "height": 28,
+          "top": 538,
+          "right": 320,
+          "bottom": 566,
+          "left": 0
+        },
+        {
+          "id": "explore-shortcuts-track",
+          "x": -4,
+          "y": 534,
+          "width": 328,
+          "height": 36,
+          "top": 534,
+          "right": 324,
+          "bottom": 570,
+          "left": -4
+        },
+        {
+          "id": "explore-shortcuts-fade-end",
+          "x": 284,
+          "y": 534,
+          "width": 40,
+          "height": 36,
+          "top": 534,
+          "right": 324,
+          "bottom": 570,
+          "left": 284
+        }
+      ],
+      "attribution": [
+        "Show map credits"
+      ]
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "mapIdentity": true,
+      "canvasIdentity": true,
+      "searchIdentity": false,
+      "camera": {
+        "center": [
+          2.1686,
+          41.3874
+        ],
+        "zoom": 11,
+        "bearing": 0,
+        "pitch": 0
+      },
+      "locationCalls": 0,
+      "regions": [
+        {
+          "id": "explore-panel",
+          "x": 16,
+          "y": 76,
+          "width": 384,
+          "height": 808,
+          "top": 76,
+          "right": 400,
+          "bottom": 884,
+          "left": 16
+        },
+        {
+          "id": "explore-search",
+          "x": 62,
+          "y": 84,
+          "width": 286,
+          "height": 36,
+          "top": 84,
+          "right": 348,
+          "bottom": 120,
+          "left": 62
+        },
+        {
+          "id": "explore-shortcuts",
+          "x": 16,
+          "y": 128,
+          "width": 384,
+          "height": 28,
+          "top": 128,
+          "right": 400,
+          "bottom": 156,
+          "left": 16
+        },
+        {
+          "id": "explore-shortcuts-track",
+          "x": 12,
+          "y": 124,
+          "width": 392,
+          "height": 36,
+          "top": 124,
+          "right": 404,
+          "bottom": 160,
+          "left": 12
+        },
+        {
+          "id": "explore-shortcuts-fade-end",
+          "x": 364,
+          "y": 124,
+          "width": 40,
+          "height": 36,
+          "top": 124,
+          "right": 404,
+          "bottom": 160,
+          "left": 364
+        }
+      ],
+      "attribution": [
+        "Show map credits"
+      ]
+    }
+  ],
+  "consumerSha": "0a83b1d96b49599f7a4aba1ac4ac3d3aabde1d14",
+  "packages": {
+    "bloom": "17.19.3",
+    "app-preset": "6.5.0"
+  },
+  "provenance": "Real public map data, current app catalogue; synthetic anonymous OAuth application registration only. No location or routing fixtures. Dev Chromium software WebGL; not release performance."
+}

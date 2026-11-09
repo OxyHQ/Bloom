@@ -106,6 +106,9 @@ export function AiChatContainerBase({
         documentScroll={documentScroll}
         headerPlacement={floatingChrome ? 'overlay' : 'inset'}
         contentClearance={0}
+        // The field fills the whole container, under the composer too: a child of the content area
+        // would stop where the composer's bar begins.
+        underlay={background}
         style={[surface ? undefined : { backgroundColor: 'transparent' }, style, backing.vars]}
         header={
           header ?? (
@@ -153,15 +156,6 @@ export function AiChatContainerBase({
           ) : undefined
         }
       >
-        {background ? (
-          <View
-            testID={testID ? `${testID}-background` : undefined}
-            pointerEvents="none"
-            style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}
-          >
-            {background}
-          </View>
-        ) : null}
         {children}
       </Screen>
     </SurfaceLevelProvider>

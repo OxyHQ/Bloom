@@ -1,7 +1,6 @@
-import { useComposerButton } from './context';
+import { useComposerButton, useComposerDropdown } from './context';
 import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
-import React, { type ComponentRef, useEffect, useRef, useState } from 'react';
-import { View } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -9,11 +8,9 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
-import { useComposerPopover } from './context';
 import { ADD_PANEL_WIDTH, CONTROL_SIZE, type ComposerPalette } from './shared';
 import type {
   ComposerPanelAddMenuGroup,
@@ -35,22 +32,25 @@ interface AddMenuProps {
 }
 
 /**
- * The `AddMenu` as the Composer Panel paints it: a 36px
- * round plus on the panel's add surface whose glyph turns 45° while open, and a
- * 361px panel of grouped rows opening upward.
+ * The `AddMenu` as the Composer Panel paints it: a 36px round plus whose glyph turns 45° while open,
+ * and a menu of grouped rows opening upward.
  *
- *   panel   w 361, radius 16, border, p 8, shadow-dropdown, groups 8 apart
- *   group   pt 4, label→rows 6, label pl 8 body-medium secondary, rows 4 apart
- *   row     px 8 py 6, radius 10, gap 8, icon 20 (or 24 artwork),
- *           body-medium primary label + secondary description 6 after
+ * The menu is Bloom's own `DropdownMenu` (the family every menu in Bloom is), not rows of buttons in
+ * a panel of its own: that is what gives it the menu semantics (roving focus, arrow keys, type
+ * ahead), the label and separator rows, and the row layout every other menu has, left-aligned, with
+ * a switch's state as the row's own check mark.
+ *
+ *   group   a `DropdownMenuLabel` over its rows; groups apart by a separator
+ *   row     an action is a `DropdownMenuItem`, a switch (`checked` defined) a
+ *           `DropdownMenuCheckboxItem` whose mark is at the end; an icon (20, or 24 artwork) leads,
+ *           the label is body-medium primary with its description inline, secondary
  */
 export function AddMenu({ palette, groups, onSelect, labels, testID }: AddMenuProps) {
   const Button = useComposerButton();
-  const Popover = useComposerPopover();
-  const triggerRef = useRef<ComponentRef<typeof View>>(null);
+  const D = useComposerDropdown();
   const [open, setOpen] = useState(false);
-  const reducedMotion = usePrefersReducedMotion();
   const rotation = useSharedValue(0);
+  const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     rotation.value = reducedMotion
@@ -74,148 +74,105 @@ export function AddMenu({ palette, groups, onSelect, labels, testID }: AddMenuPr
     cursor: 'pointer',
     '--bloom-composer-ring': palette.focusRing,
   };
-  const panelStyle: WebCssStyle = {
-    width: ADD_PANEL_WIDTH,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: palette.border,
-    backgroundColor: palette.surface,
-    padding: 8,
-    gap: 8,
-    boxShadow: palette.shadowDropdown,
-    '--bloom-composer-ring': palette.focusRing,
-  };
 
   return (
-    <>
-      <Button
-        appearance="subtle"
-        tone="neutral"
-        iconOnly
-        ref={triggerRef}
-        testID={testID}
-        accessibilityRole="button"
-        accessibilityLabel={labels.add}
-        aria-expanded={open}
-        aria-haspopup="dialog"
-        onPress={() => setOpen(!open)}
-        style={[COMPOSER_BUTTON_LAYOUT, triggerStyle]}
-      >
-        <Animated.View style={glyphStyle}>
-          <RiAddLine width={20} height={20} fill={palette.iconPrimary} />
-        </Animated.View>
-      </Button>
-
-      <Popover
-        open={open}
-        onOpenChange={setOpen}
-        anchorRef={triggerRef}
+    <D.DropdownMenu open={open} onOpenChange={setOpen}>
+      <D.DropdownMenuTrigger asChild label={labels.add}>
+        <Button
+          appearance="subtle"
+          tone="neutral"
+          iconOnly
+          testID={testID}
+          accessibilityRole="button"
+          accessibilityLabel={labels.add}
+          style={[COMPOSER_BUTTON_LAYOUT, triggerStyle]}
+        >
+          <Animated.View style={glyphStyle}>
+            <RiAddLine width={20} height={20} fill={palette.iconPrimary} />
+          </Animated.View>
+        </Button>
+      </D.DropdownMenuTrigger>
+      <D.DropdownMenuContent
         label={labels.addMenu}
         side="top"
+        align="start"
         sideOffset={8}
+        alignRows
         testID={testID ? `${testID}-panel` : undefined}
-        style={panelStyle}
+        style={{ width: ADD_PANEL_WIDTH }}
       >
-        {groups.map((group) => (
-          <View
-            key={group.label}
-            style={{ width: '100%', flexDirection: 'column', gap: 6, paddingTop: 4 }}
-          >
-            <Text variant="body-medium" style={{ paddingLeft: 8, color: palette.textSecondary }}>
-              {group.label}
-            </Text>
-            <View style={{ width: '100%', flexDirection: 'column', gap: 4 }}>
-              {group.rows.map((row) => (
-                <AddMenuRow
-                  key={row.id}
-                  row={row}
-                  palette={palette}
-                  onPress={() => {
-                    setOpen(false);
-                    onSelect?.(row.id);
-                  }}
-                />
-              ))}
-            </View>
-          </View>
+        {groups.map((group, index) => (
+          <React.Fragment key={group.label}>
+            {index === 0 ? null : <D.DropdownMenuSeparator />}
+            <D.DropdownMenuLabel>{group.label}</D.DropdownMenuLabel>
+            {group.rows.map((row) => (
+              <AddMenuRow
+                key={row.id}
+                row={row}
+                palette={palette}
+                onSelect={() => onSelect?.(row.id)}
+              />
+            ))}
+          </React.Fragment>
         ))}
-      </Popover>
-    </>
+      </D.DropdownMenuContent>
+    </D.DropdownMenu>
   );
 }
 
+/** One row: its label with the description inline, after the icon (or artwork) that leads it. */
 function AddMenuRow({
   row,
   palette,
-  onPress,
+  onSelect,
 }: {
   row: ComposerPanelAddMenuRow;
   palette: ComposerPalette;
-  onPress: () => void;
+  onSelect: () => void;
 }) {
-  const Button = useComposerButton();
-
+  const D = useComposerDropdown();
   const Icon = row.icon;
   const iconSize = row.iconSize ?? 20;
-  return (
-    <Button
-      appearance="plain"
-      tone="neutral"
-      accessibilityRole="button"
-      accessibilityLabel={row.description ? `${row.label} ${row.description}` : row.label}
-      onPress={onPress}
-      pressed={row.checked}
-      disabled={row.disabled}
-      style={[
-        COMPOSER_BUTTON_LAYOUT,
-        {
-          width: '100%',
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 8,
-          borderRadius: 10,
-          paddingLeft: 8,
-          paddingRight: 8,
-          paddingTop: 6,
-          paddingBottom: 6,
-          cursor: 'pointer',
-        },
-      ]}
-    >
-      {row.image ? (
-        <View style={{ width: 24, height: 24, flexShrink: 0 }}>{row.image}</View>
-      ) : Icon ? (
-        <View style={{ flexShrink: 0 }}>
-          <Icon width={iconSize} height={iconSize} fill={palette.iconSecondary} />
-        </View>
+  const leading = row.image ? (
+    <Animated.View style={{ width: 24, height: 24, flexShrink: 0 }}>{row.image}</Animated.View>
+  ) : Icon ? (
+    <Icon width={iconSize} height={iconSize} fill={palette.iconSecondary} />
+  ) : undefined;
+  const text = (
+    <Text variant="body-medium" numberOfLines={1} style={{ flexShrink: 1, color: palette.text }}>
+      {row.label}
+      {row.description ? (
+        <InlineAside color={palette.textSecondary}>{row.description}</InlineAside>
       ) : null}
-      <Text variant="body-medium" numberOfLines={1} style={{ flexShrink: 1, color: palette.text }}>
-        {row.label}
-        {row.description ? (
-          <InlineAside color={palette.textSecondary}>{row.description}</InlineAside>
-        ) : null}
-      </Text>
-      {/* A row that is a SWITCH says which way it is set.
-       *
-       * The menu could only ever describe actions — id, label, icon — so a
-       * host with toggles in it (web search on, deep research off) had rows
-       * that changed something and then looked identical either way. The tick
-       * is drawn at the end, after the label has taken its width, so a long
-       * label truncates rather than pushing the state off the row. */}
-      {row.checked === undefined ? null : (
-        <View style={{ marginLeft: 'auto', paddingLeft: 8, flexShrink: 0 }}>
-          {row.checked ? (
-            <RiCheckLine
-              testID={`bloom-row-checked-${row.id}`}
-              width={18}
-              height={18}
-              fill={palette.text}
-            />
-          ) : (
-            <View style={{ width: 18, height: 18 }} />
-          )}
-        </View>
-      )}
-    </Button>
+    </Text>
+  );
+  const name = row.description ? `${row.label} ${row.description}` : row.label;
+
+  if (row.checked === undefined) {
+    return (
+      <D.DropdownMenuItem
+        leading={leading}
+        accessibilityLabel={name}
+        disabled={row.disabled}
+        onPress={onSelect}
+      >
+        {text}
+      </D.DropdownMenuItem>
+    );
+  }
+  // A SWITCH says which way it is set: the menu's own check mark, at the end of the row, after the
+  // label has taken its width (a long label truncates rather than pushing the state off the row).
+  return (
+    <D.DropdownMenuCheckboxItem
+      checked={row.checked}
+      onCheckedChange={onSelect}
+      indicatorPosition="trailing"
+      accessibilityLabel={name}
+      disabled={row.disabled}
+      testID={`bloom-row-${row.id}`}
+    >
+      {leading}
+      {text}
+    </D.DropdownMenuCheckboxItem>
   );
 }

@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import type React from 'react';
 import { useContext } from 'react';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
@@ -543,12 +545,12 @@ describe('AiChatContainer host slots', () => {
     );
     // The layer is a slot, not an escape hatch: the surface is still painted.
     expect(painted.getByText('wallpaper')).toBeTruthy();
-    expect(resolvedStyle(painted.getByTestId('chat-background').props.style)).toMatchObject({
+    expect(resolvedStyle(painted.getByTestId('chat-underlay').props.style)).toMatchObject({
       position: 'absolute',
       inset: 0,
       overflow: 'hidden',
     });
-    expect(painted.getByTestId('chat-background').props.pointerEvents).toBe('none');
+    expect(painted.getByTestId('chat-underlay').props.pointerEvents).toBe('none');
     expect(resolvedStyle(painted.getByTestId('chat').props.style).backgroundColor).toBe(
       surfaceColor,
     );
@@ -581,6 +583,39 @@ describe('AiChatShell', () => {
     expect(getByText('Panel body')).toBeTruthy();
     expect(getByText('Agentic chat', { includeHiddenElements: true })).toBeTruthy();
     expect(getByLabelText('Dismiss Code', { includeHiddenElements: true })).toBeTruthy();
+  });
+
+  it('lets the panel turn its divider off: the conversation track is resizable only for a resizable panel', () => {
+    // The divider is the conversation track's end edge, so the panel's own flag decides it. The
+    // layout engine draws it from a measured, wide window, which the native test renderer lacks.
+    const source = readFileSync(join(__dirname, '..', 'ai-chat', 'AiChatShell.tsx'), 'utf8');
+    expect(source).toMatch(/panelResizable = true/);
+    expect(source).toMatch(/resizable: !!panel && panelResizable/);
+  });
+
+  it('hands a function sidebar the resolved props, so the shell owns its collapse', () => {
+    const seen: Array<{ collapsed?: boolean; onCollapsedChange?: (c: boolean) => void }> = [];
+    renderWithPortal(
+      <AiChatShell
+        sidebar={(props) => {
+          seen.push(props);
+          return <Text>nav</Text>;
+        }}
+        panel={() => null}
+      >
+        <Text>Conversation</Text>
+      </AiChatShell>,
+    );
+    // Whatever the layout draws (the rail or the drawer), the sidebar was asked for with the
+    // shell's resolved props, not drawn as a ready-made node.
+    expect(seen.length).toBeGreaterThan(0);
+    expect(seen[seen.length - 1]).toHaveProperty('variant');
+  });
+
+  it("keeps a node sidebar expanded: it cannot take the shell's collapse", () => {
+    const source = readFileSync(join(__dirname, '..', 'ai-chat', 'AiChatShell.tsx'), 'utf8');
+    expect(source).toMatch(/const ownsCollapse = typeof sidebar === 'function'/);
+    expect(source).toMatch(/collapsed: false, collapseDisabled: true/);
   });
 
   it("centres a header's own title node between the shell's buttons", () => {
@@ -754,6 +789,34 @@ describe('AiChatShell sidebar width ownership', () => {
       }
     },
   );
+});
+
+describe('AiChatShell sidebar surface', () => {
+  const surfaceOf = (props?: { sidebarSurface?: 'plain' | 'card' | 'docked' }) => {
+    let seen: string | undefined;
+    const dimensions = mockWindowSize({ width: 1440, height: 900, scale: 1, fontScale: 1 });
+    try {
+      renderIn(
+        <AiChatShell
+          {...props}
+          sidebar={(shell) => {
+            seen = shell.surface;
+            return <View />;
+          }}
+        >
+          <Text>Chat</Text>
+        </AiChatShell>,
+      );
+    } finally {
+      dimensions.mockRestore();
+    }
+    return seen;
+  };
+
+  it('is plain unless the host declares another, and hands the sidebar the one it lays out by', () => {
+    expect(surfaceOf()).toBe('plain');
+    expect(surfaceOf({ sidebarSurface: 'card' })).toBe('card');
+  });
 });
 
 describe('AiChatContainer composed actions', () => {

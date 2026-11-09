@@ -1,3 +1,4 @@
+import type { CANVAS_MESSAGES } from '../../canvas/messages';
 import type { COVER_HEADER_MESSAGES } from '../../cover-header/messages';
 import type { VOICE_MESSAGES } from '../../voice/messages';
 import type { AGENT_REPLY_MESSAGES } from '../../agent-reply/messages';
@@ -192,6 +193,7 @@ export interface Translations {
   readonly PLACE_CARD_MESSAGES: CatalogMessages<typeof PLACE_CARD_MESSAGES>;
   readonly SOCIAL_BUTTON_MESSAGES: CatalogMessages<typeof SOCIAL_BUTTON_MESSAGES>;
   readonly QUESTIONNAIRE_MESSAGES: CatalogMessages<typeof QUESTIONNAIRE_MESSAGES>;
+  readonly CANVAS_MESSAGES: CatalogMessages<typeof CANVAS_MESSAGES>;
   readonly MAP_CONTROLS_MESSAGES: CatalogMessages<typeof MAP_CONTROLS_MESSAGES>;
   readonly PAYMENT_METHOD_MESSAGES: CatalogMessages<typeof PAYMENT_METHOD_MESSAGES>;
   readonly AVATAR_GROUP_MESSAGES: CatalogMessages<typeof AVATAR_GROUP_MESSAGES>;

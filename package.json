@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "17.24.0",
+  "version": "17.31.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -363,6 +363,25 @@
       "require": {
         "types": "./lib/typescript/commonjs/screen/index.d.ts",
         "default": "./lib/commonjs/screen/index.js"
+      }
+    },
+    "./canvas": {
+      "react-native": {
+        "types": "./lib/typescript/module/canvas/index.d.ts",
+        "default": "./src/canvas/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/canvas/index.web.d.ts",
+        "import": "./lib/module/canvas/index.web.js",
+        "require": "./lib/commonjs/canvas/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/canvas/index.d.ts",
+        "default": "./lib/module/canvas/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/canvas/index.d.ts",
+        "default": "./lib/commonjs/canvas/index.js"
       }
     },
     "./panel-routing": {
@@ -4286,6 +4305,7 @@
     "storybook": "storybook dev -p 6006 --no-open",
     "storybook:build": "storybook build -o storybook-static",
     "build:avatar-vectors": "node scripts/build-avatar-vector-assets.mjs",
+    "generate:public-parts": "bun scripts/generate-public-parts.ts",
     "generate:task-catalog": "node scripts/generate-task-catalog.mjs",
     "verify:task-catalog": "node --no-opt scripts/verify-task-catalog.mjs"
   },
@@ -4531,6 +4551,9 @@
       ],
       "screen": [
         "./lib/typescript/module/screen/index.d.ts"
+      ],
+      "canvas": [
+        "./lib/typescript/module/canvas/index.d.ts"
       ],
       "panel-routing": [
         "./lib/typescript/module/panel-routing/index.d.ts"
