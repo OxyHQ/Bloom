@@ -1,66 +1,66 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-11-08T06:44:54.473Z",
+  "observedAt": "2026-11-09T12:50:03.498Z",
   "scope": "Immediate git checkouts under supplied workspace root; default remote refs for source and local filesystem for installed packages. Nested repositories, remote-only repositories and non-literal imports need separate review. Activity is not inferred from dependency presence.",
   "repositories": [
     {
       "repository": "Alia",
       "ref": "origin/main",
-      "sha": "cc76a858ff4359254cf51e3f649ea021bfc75ce7",
+      "sha": "9bbcad120a32dfc078ac11d2d39d63635dc1f2be",
       "fetch": "succeeded",
-      "checkoutSha": "0f259a861602be2148ee434e7a5561366f596255",
+      "checkoutSha": "30949d6f1987719b094c077709ba60b40326c979",
       "checkoutDirtyEntries": 0,
       "packages": [
         {
           "manifest": "package.json",
           "name": "alia-monorepo",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.30.0"
           },
           "catalog": null,
           "installed": {
-            "version": "15.10.1",
+            "version": "17.30.0",
             "packagePath": "Alia/node_modules/@oxy.so/bloom"
           },
           "localDeclaration": {
-            "dependencies": "17.9.0"
+            "dependencies": "17.30.0"
           }
         },
         {
           "manifest": "packages/alia-canvas/package.json",
           "name": "alia-canvas",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.30.0"
           },
           "catalog": null,
           "installed": {
-            "version": "15.10.1",
+            "version": "17.30.0",
             "packagePath": "Alia/node_modules/@oxy.so/bloom"
           },
           "localDeclaration": {
-            "dependencies": "17.9.0"
+            "dependencies": "17.30.0"
           }
         },
         {
           "manifest": "packages/alia-chat/package.json",
           "name": "@alia.onl/sdk",
           "declarations": {
-            "peerDependencies": ">=17.5.0"
+            "peerDependencies": ">=17.22.0"
           },
           "catalog": null,
           "installed": {
-            "version": "15.10.1",
+            "version": "17.30.0",
             "packagePath": "Alia/node_modules/@oxy.so/bloom"
           },
           "localDeclaration": {
-            "peerDependencies": ">=17.5.0"
+            "peerDependencies": ">=17.22.0"
           }
         },
         {
           "manifest": "packages/alia-codea/webview-ui/package.json",
           "name": "webview-ui",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.30.0"
           },
           "catalog": null,
           "installed": {
@@ -68,37 +68,37 @@
             "packagePath": "Alia/packages/alia-codea/webview-ui/node_modules/@oxy.so/bloom"
           },
           "localDeclaration": {
-            "dependencies": "17.9.0"
+            "dependencies": "17.30.0"
           }
         },
         {
           "manifest": "packages/alia-cowork/package.json",
           "name": "alia-cowork",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.30.0"
           },
           "catalog": null,
           "installed": {
-            "version": "15.10.1",
+            "version": "17.30.0",
             "packagePath": "Alia/node_modules/@oxy.so/bloom"
           },
           "localDeclaration": {
-            "dependencies": "17.9.0"
+            "dependencies": "17.30.0"
           }
         },
         {
           "manifest": "packages/app/package.json",
           "name": "@alia/app",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.30.0"
           },
           "catalog": null,
           "installed": {
-            "version": "15.10.1",
+            "version": "17.30.0",
             "packagePath": "Alia/node_modules/@oxy.so/bloom"
           },
           "localDeclaration": {
-            "dependencies": "17.9.0"
+            "dependencies": "17.30.0"
           }
         }
       ],
@@ -112,7 +112,7 @@
         {
           "path": "bun.lock",
           "versions": [
-            "17.19.3"
+            "17.30.0"
           ],
           "status": "text locator evidence; per-workspace resolution not inferred"
         },
@@ -132,9 +132,8 @@
           "status": "text locator evidence; per-workspace resolution not inferred"
         }
       ],
-      "importFileCount": 325,
+      "importFileCount": 309,
       "ownershipCandidates": [
-        "packages/alia-chat/src/components/AliaAvatarProvider.tsx",
         "packages/alia-chat/src/components/AliaChatHeader.tsx",
         "packages/alia-chat/src/components/AliaChatScreen.tsx",
         "packages/alia-chat/src/components/AliaComposer.tsx",
@@ -149,8 +148,6 @@
         "packages/app/app/(biglayout)/subscribe.tsx",
         "packages/app/app/_layout.tsx",
         "packages/app/src/features/agents/ui/detail/agent-header-actions.tsx",
-        "packages/app/src/features/agents/ui/edit/agent-resources-panel.tsx",
-        "packages/app/src/features/agents/ui/edit/agent-settings-panel.tsx",
         "packages/app/src/features/automations/ui/work-list-header.tsx",
         "packages/app/src/features/chat/ui/chat-header-actions.tsx",
         "packages/app/src/features/chat/ui/composer/add-menu.tsx",
@@ -161,7 +158,6 @@
         "packages/app/src/shell/command-palette.tsx",
         "packages/app/src/shell/error-boundary.tsx",
         "packages/app/src/shell/keyboard-shortcuts-dialog.tsx",
-        "packages/app/src/shell/page-chrome.tsx",
         "packages/app/src/shell/sidebar-menus.tsx",
         "packages/app/src/shell/sidebar.tsx",
         "packages/app/src/shell/workspace-panel.tsx"
@@ -461,7 +457,7 @@
     {
       "repository": "Atlas",
       "ref": "origin/main",
-      "sha": "fc3b8217679dd9dd05f203579e49d1ddc12c2dd7",
+      "sha": "e5cfd5b9fac15b6553ddcddc3d9a9f073acccd1f",
       "fetch": "succeeded",
       "checkoutSha": "69883ae4544e18af82cc5ae599321ef853ec1b98",
       "checkoutDirtyEntries": 4,
@@ -470,7 +466,7 @@
           "manifest": "packages/frontend/package.json",
           "name": "@atlas/frontend",
           "declarations": {
-            "dependencies": "^17.19.3"
+            "dependencies": "^17.22.0"
           },
           "catalog": null,
           "installed": {
@@ -490,7 +486,7 @@
         {
           "path": "bun.lock",
           "versions": [
-            "17.19.3"
+            "17.22.0"
           ],
           "status": "text locator evidence; per-workspace resolution not inferred"
         },
@@ -587,7 +583,7 @@
     {
       "repository": "Clarity",
       "ref": "origin/main",
-      "sha": "ca6934f64f4e00d77bd55373a1b5e4f79efdda28",
+      "sha": "eb2fe00aa4c16b8350d2cac771dc387c76b52c8a",
       "fetch": "succeeded",
       "checkoutSha": "e4b44ce102899cc63d45b3a9b99eba59599c7445",
       "checkoutDirtyEntries": 5,
@@ -596,7 +592,7 @@
           "manifest": "packages/frontend/package.json",
           "name": "@clarity/frontend",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.22.0"
           },
           "catalog": null,
           "installed": {
@@ -617,7 +613,7 @@
         {
           "path": "bun.lock",
           "versions": [
-            "17.19.3"
+            "17.22.0"
           ],
           "status": "text locator evidence; per-workspace resolution not inferred"
         },
@@ -646,7 +642,7 @@
     {
       "repository": "CrowdSource",
       "ref": "origin/main",
-      "sha": "1d146d66e3605dcf2cc7187784c28a463307eed6",
+      "sha": "739d6201154392e2dad55d7b5b381b4ec030d8f3",
       "fetch": "succeeded",
       "checkoutSha": "5177a8469efe951279581617a6867f3e542b64bd",
       "checkoutDirtyEntries": 1,
@@ -731,7 +727,7 @@
     {
       "repository": "Dropsea",
       "ref": "origin/main",
-      "sha": "f1414df35a233e4a2ee0f59a88a8256279e6596d",
+      "sha": "f4d92b4a7bbe26fd053fc386b933ffb0f0c8c3ec",
       "fetch": "succeeded",
       "checkoutSha": "53861651154e3bffa6862d8f2ec6afef31263356",
       "checkoutDirtyEntries": 1,
@@ -740,7 +736,7 @@
           "manifest": "packages/backend/package.json",
           "name": "@dropsea/backend",
           "declarations": {
-            "dependencies": "17.20.0"
+            "dependencies": "17.29.0"
           },
           "catalog": null,
           "installed": {
@@ -754,7 +750,7 @@
           "manifest": "packages/frontend/package.json",
           "name": "@dropsea/frontend",
           "declarations": {
-            "dependencies": "17.20.0"
+            "dependencies": "17.29.0"
           },
           "catalog": null,
           "installed": {
@@ -770,12 +766,12 @@
         {
           "path": "bun.lock",
           "versions": [
-            "17.20.0"
+            "17.29.0"
           ],
           "status": "text locator evidence; per-workspace resolution not inferred"
         }
       ],
-      "importFileCount": 65,
+      "importFileCount": 73,
       "ownershipCandidates": [
         "packages/frontend/app/_layout.tsx",
         "packages/frontend/components/BrowserProvider.tsx",
@@ -939,16 +935,16 @@
     {
       "repository": "GoWay",
       "ref": "origin/main",
-      "sha": "0a83b1d96b49599f7a4aba1ac4ac3d3aabde1d14",
+      "sha": "370fa94d4478439c27157c5decf87dc58f783ac3",
       "fetch": "succeeded",
-      "checkoutSha": "2f3048c2e42e37d00a7f1dfeb5cf31c5182e6601",
+      "checkoutSha": "f3edbc23c6317a3ba1a9ce0f0439aca008e258ae",
       "checkoutDirtyEntries": 0,
       "packages": [
         {
           "manifest": "packages/frontend/package.json",
           "name": "@goway/frontend",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.24.0"
           },
           "catalog": null,
           "installed": {
@@ -956,14 +952,14 @@
             "packagePath": "GoWay/node_modules/@oxy.so/bloom"
           },
           "localDeclaration": {
-            "dependencies": "15.0.0"
+            "dependencies": "17.24.0"
           }
         },
         {
           "manifest": "packages/maps/package.json",
           "name": "@goway.to/maps",
           "declarations": {
-            "devDependencies": "17.19.3",
+            "devDependencies": "17.24.0",
             "peerDependencies": ">=10.16.0"
           },
           "catalog": null,
@@ -972,7 +968,7 @@
             "packagePath": "GoWay/node_modules/@oxy.so/bloom"
           },
           "localDeclaration": {
-            "devDependencies": "15.0.0",
+            "devDependencies": "17.24.0",
             "peerDependencies": ">=10.16.0"
           }
         }
@@ -986,7 +982,7 @@
         {
           "path": "bun.lock",
           "versions": [
-            "17.19.3"
+            "17.24.0"
           ],
           "status": "text locator evidence; per-workspace resolution not inferred"
         },
@@ -1005,15 +1001,13 @@
           "status": "text locator evidence; per-workspace resolution not inferred"
         }
       ],
-      "importFileCount": 80,
+      "importFileCount": 79,
       "ownershipCandidates": [
         "packages/frontend/app/_layout.tsx",
         "packages/frontend/components/map/MapCanvas.tsx",
         "packages/frontend/components/map/MapCanvas.web.tsx",
         "packages/frontend/components/map/TimeOfDayScrubber.web.tsx",
         "packages/frontend/components/map/useMapStyle.ts",
-        "packages/frontend/components/sheet/MapSheet.tsx",
-        "packages/frontend/components/sheet/SidePanel.tsx",
         "packages/frontend/features/cameras/CameraScreen.tsx",
         "packages/frontend/features/contribute/ContributeScreen.tsx",
         "packages/frontend/features/credits/AttributionScreen.tsx",
@@ -1031,6 +1025,7 @@
         "packages/frontend/features/saved/SavedListScreen.tsx",
         "packages/frontend/features/saved/SavedScreen.tsx",
         "packages/frontend/features/street3d/Street3dScreen.tsx",
+        "packages/frontend/lib/map/canvas-policy.ts",
         "packages/frontend/lib/map/style/themes.ts",
         "packages/frontend/scripts/build-map-glyphs.ts",
         "packages/frontend/scripts/build-map-sprite.ts",
@@ -1147,7 +1142,7 @@
     {
       "repository": "Inbox",
       "ref": "origin/main",
-      "sha": "0bfb1b2ef825a566eb55cf2fe4628e7e7f4636dd",
+      "sha": "e6d6bdab9359df7ad54304c233df88d9601ef024",
       "fetch": "succeeded",
       "checkoutSha": "a043206a9ca570caf62110d1dbacd9e1d330224d",
       "checkoutDirtyEntries": 3,
@@ -1156,7 +1151,7 @@
           "manifest": "packages/frontend/package.json",
           "name": "inbox",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.22.0"
           },
           "catalog": null,
           "installed": {
@@ -1173,7 +1168,7 @@
         {
           "path": "bun.lock",
           "versions": [
-            "17.19.3"
+            "17.22.0"
           ],
           "status": "text locator evidence; per-workspace resolution not inferred"
         }
@@ -1199,7 +1194,7 @@
     {
       "repository": "Mention",
       "ref": "origin/main",
-      "sha": "f64e2e9105844c0692649b30b07c20e235c3b398",
+      "sha": "ecbcab660678cc6ed42c24899b82b7a12374a89c",
       "fetch": "succeeded",
       "checkoutSha": "bcf8c4c9a36f5f5c84302e22b623f526f6a6067b",
       "checkoutDirtyEntries": 95,
@@ -1235,7 +1230,7 @@
           "status": "no text locator resolved"
         }
       ],
-      "importFileCount": 572,
+      "importFileCount": 573,
       "ownershipCandidates": [
         "packages/frontend/app/(app)/(tabs)/_layout.tsx",
         "packages/frontend/app/(app)/_layout.tsx",
@@ -1282,7 +1277,7 @@
     {
       "repository": "Mercaria",
       "ref": "origin/main",
-      "sha": "7aaea15f0eb921f1273d672ce45f2c058fee660e",
+      "sha": "f05bb6aa96dad661fd164318fd6cea05dd54bf73",
       "fetch": "succeeded",
       "checkoutSha": "e5597f9936becf78f99c3cb3ef1982750be2397f",
       "checkoutDirtyEntries": 0,
@@ -1291,7 +1286,7 @@
           "manifest": "packages/dashboard/package.json",
           "name": "@mercaria/dashboard",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.22.0"
           },
           "catalog": null,
           "installed": {
@@ -1306,7 +1301,7 @@
           "manifest": "packages/frontend/package.json",
           "name": "@mercaria/frontend",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.22.0"
           },
           "catalog": null,
           "installed": {
@@ -1321,7 +1316,7 @@
           "manifest": "packages/pos/package.json",
           "name": "@mercaria/pos",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.22.0"
           },
           "catalog": null,
           "installed": {
@@ -1353,7 +1348,7 @@
         {
           "path": "bun.lock",
           "versions": [
-            "17.19.3"
+            "17.22.0"
           ],
           "status": "text locator evidence; per-workspace resolution not inferred"
         }
@@ -1405,7 +1400,7 @@
     {
       "repository": "Moovo",
       "ref": "origin/main",
-      "sha": "8702f33ec9c78c4cbf1eccdc10a8cc458ba51331",
+      "sha": "58fa92c27655ac4040114574829cebd5e44db1bb",
       "fetch": "succeeded",
       "checkoutSha": "cb0b17906133f79319f383f907f46a081c4c9ada",
       "checkoutDirtyEntries": 0,
@@ -1414,7 +1409,7 @@
           "manifest": "package.json",
           "name": "moovo-monorepo",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.22.0"
           },
           "catalog": null,
           "installed": {
@@ -1429,7 +1424,7 @@
           "manifest": "packages/courier-app/package.json",
           "name": "@moovo/courier-app",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.22.0"
           },
           "catalog": null,
           "installed": {
@@ -1444,7 +1439,7 @@
           "manifest": "packages/fleet-dashboard/package.json",
           "name": "@moovo/fleet-dashboard",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.22.0"
           },
           "catalog": null,
           "installed": {
@@ -1459,7 +1454,7 @@
           "manifest": "packages/frontend/package.json",
           "name": "@moovo/frontend",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.22.0"
           },
           "catalog": null,
           "installed": {
@@ -1474,7 +1469,7 @@
           "manifest": "packages/tracker-app/package.json",
           "name": "@moovo/tracker-app",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.22.0"
           },
           "catalog": null,
           "installed": {
@@ -1498,7 +1493,7 @@
         {
           "path": "bun.lock",
           "versions": [
-            "17.19.3"
+            "17.22.0"
           ],
           "status": "text locator evidence; per-workspace resolution not inferred"
         },
@@ -1539,7 +1534,7 @@
     {
       "repository": "Move",
       "ref": "origin/main",
-      "sha": "fd7b4967777ae16a2b0589359fce3ddba62e2353",
+      "sha": "99836649fc346e25f25cefaba9ce7144ed522dde",
       "fetch": "succeeded",
       "checkoutSha": "8299d226b31cd35dabb024cc5d29801fb104c79c",
       "checkoutDirtyEntries": 1,
@@ -1548,7 +1543,7 @@
           "manifest": "packages/frontend/package.json",
           "name": "@move/frontend",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.22.0"
           },
           "catalog": null,
           "installed": {
@@ -1565,7 +1560,7 @@
         {
           "path": "bun.lock",
           "versions": [
-            "17.19.3"
+            "17.22.0"
           ],
           "status": "text locator evidence; per-workspace resolution not inferred"
         }
@@ -1584,16 +1579,16 @@
     {
       "repository": "Nilo",
       "ref": "origin/main",
-      "sha": "e8c0cfd4a89bc3f494827cfce912ebc31f8a4d66",
+      "sha": "8f5d5b3fe5653acae5dfcfbd31af36120f238205",
       "fetch": "succeeded",
-      "checkoutSha": "f907995748a96d2fca63c6c983a11e444d3d59cf",
+      "checkoutSha": "8f5d5b3fe5653acae5dfcfbd31af36120f238205",
       "checkoutDirtyEntries": 0,
       "packages": [
         {
           "manifest": "apps/app/package.json",
           "name": "@nilo/app",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.24.0"
           },
           "catalog": null,
           "installed": {
@@ -1601,14 +1596,14 @@
             "packagePath": "Nilo/node_modules/@oxy.so/bloom"
           },
           "localDeclaration": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.24.0"
           }
         },
         {
           "manifest": "package.json",
           "name": "nilo-monorepo",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.24.0"
           },
           "catalog": null,
           "installed": {
@@ -1616,7 +1611,7 @@
             "packagePath": "Nilo/node_modules/@oxy.so/bloom"
           },
           "localDeclaration": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.24.0"
           }
         }
       ],
@@ -1629,7 +1624,7 @@
         {
           "path": "bun.lock",
           "versions": [
-            "17.19.3"
+            "17.24.0"
           ],
           "status": "text locator evidence; per-workspace resolution not inferred"
         },
@@ -1673,7 +1668,7 @@
     {
       "repository": "Noted",
       "ref": "origin/main",
-      "sha": "f6d1aaf7958dd22e28d1f22d53e5de65eee0cfe0",
+      "sha": "fe6e3b847d980165f2902b18c07b6365ab407ad8",
       "fetch": "succeeded",
       "checkoutSha": "3e47bdadd61f1a101a18509ae4e395800cc6dc40",
       "checkoutDirtyEntries": 1,
@@ -1682,7 +1677,7 @@
           "manifest": "package.json",
           "name": "noted-monorepo",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.22.0"
           },
           "catalog": null,
           "installed": {
@@ -1697,7 +1692,7 @@
           "manifest": "packages/frontend/package.json",
           "name": "@noted/frontend",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.22.0"
           },
           "catalog": null,
           "installed": {
@@ -1714,7 +1709,7 @@
         {
           "path": "bun.lock",
           "versions": [
-            "17.19.3"
+            "17.22.0"
           ],
           "status": "text locator evidence; per-workspace resolution not inferred"
         }
@@ -1734,8 +1729,8 @@
     {
       "repository": "oxy",
       "ref": "origin/main",
-      "sha": "0f0dfb0a7b933aa997661a46d72513d6d96efa14",
-      "fetch": "failed; ref may be stale",
+      "sha": "4041a1760e80024bf12685a0ca171a5a4d745639",
+      "fetch": "succeeded",
       "checkoutSha": "51e1f830b9b55934a0af8e2e89d8c455702fdc2b",
       "checkoutDirtyEntries": 9,
       "packages": [
@@ -1959,7 +1954,7 @@
           "status": "no text locator resolved"
         }
       ],
-      "importFileCount": 497,
+      "importFileCount": 499,
       "ownershipCandidates": [
         "packages/accounts/app/(tabs)/_layout.tsx",
         "packages/accounts/app/_layout.tsx",
@@ -2070,10 +2065,10 @@
     {
       "repository": "OxyOS",
       "ref": "origin/main",
-      "sha": "cee1b15efe00602787b895190caceb3502db7d35",
+      "sha": "f97660afec08c50c1017fc1c57e09531227e1242",
       "fetch": "succeeded",
-      "checkoutSha": "b631c148e372b828388992453c9a7907fc3e5cf1",
-      "checkoutDirtyEntries": 5,
+      "checkoutSha": "a3eafba9fa64c6ef77c832788b54f433bcf7649b",
+      "checkoutDirtyEntries": 3,
       "packages": [
         {
           "manifest": "apps/shell/package.json",
@@ -2124,7 +2119,7 @@
           "status": "text locator evidence; per-workspace resolution not inferred"
         }
       ],
-      "importFileCount": 82,
+      "importFileCount": 96,
       "ownershipCandidates": [
         "apps/login/src/LoginScreen.tsx",
         "apps/shell/src/Shell.tsx",
@@ -2148,6 +2143,7 @@
         "apps/shell/src/components/Overview.tsx",
         "apps/shell/src/components/OxyLogo.tsx",
         "apps/shell/src/components/PasswordField.tsx",
+        "apps/shell/src/components/SafeModeLabel.tsx",
         "apps/shell/src/components/Screenshots.tsx",
         "apps/shell/src/components/SoundPanel.tsx",
         "apps/shell/src/components/Spotlight.tsx",
@@ -2297,7 +2293,7 @@
     {
       "repository": "Schedio",
       "ref": "origin/main",
-      "sha": "324f8edbc668d5be0b032271202cfda5e2b5bcd0",
+      "sha": "104bffc95660780f24761f3a9828901ea51fca1f",
       "fetch": "succeeded",
       "checkoutSha": "4217ba36f7c74894cf1a58578c94f2f43bdfdd46",
       "checkoutDirtyEntries": 0,
@@ -2306,7 +2302,7 @@
           "manifest": "package.json",
           "name": "schedio",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.22.0"
           },
           "catalog": null,
           "installed": {
@@ -2321,7 +2317,7 @@
           "manifest": "packages/frontend/package.json",
           "name": "@schedio/frontend",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.22.0"
           },
           "catalog": null,
           "installed": {
@@ -2338,7 +2334,7 @@
         {
           "path": "bun.lock",
           "versions": [
-            "17.19.3"
+            "17.22.0"
           ],
           "status": "text locator evidence; per-workspace resolution not inferred"
         }
@@ -2533,24 +2529,24 @@
     {
       "repository": "website",
       "ref": "origin/main",
-      "sha": "15983920dec58b6ded2b864487c4a8809739c5a9",
+      "sha": "b5b0cecaa9c6358760473e59ff9e9075fd2ed445",
       "fetch": "succeeded",
-      "checkoutSha": "15983920dec58b6ded2b864487c4a8809739c5a9",
+      "checkoutSha": "b5b0cecaa9c6358760473e59ff9e9075fd2ed445",
       "checkoutDirtyEntries": 0,
       "packages": [
         {
           "manifest": "package.json",
           "name": "oxy-website",
           "declarations": {
-            "dependencies": "17.9.0"
+            "dependencies": "17.21.0"
           },
           "catalog": null,
           "installed": {
-            "version": "15.11.0",
+            "version": "17.21.0",
             "packagePath": "website/node_modules/@oxy.so/bloom"
           },
           "localDeclaration": {
-            "dependencies": "17.9.0"
+            "dependencies": "17.21.0"
           }
         }
       ],
@@ -2560,12 +2556,12 @@
           "path": "bun.lock",
           "versions": [
             "1.3.0",
-            "17.9.0"
+            "17.21.0"
           ],
           "status": "text locator evidence; per-workspace resolution not inferred"
         }
       ],
-      "importFileCount": 443,
+      "importFileCount": 445,
       "ownershipCandidates": [
         "src/components/academy/AcademyShell.tsx",
         "src/components/admin/AdminLayout.tsx",
@@ -2607,7 +2603,7 @@
     {
       "repository": "Willo",
       "ref": "origin/main",
-      "sha": "2c58b89f7ef14bf2a9ea67d6b9e86e03205d9e70",
+      "sha": "ba8fa58fc115bdffd659af03edf823f0b518140f",
       "fetch": "succeeded",
       "checkoutSha": "4dab666f693da8fc6339e383dcd647e8f7442ed1",
       "checkoutDirtyEntries": 0,
@@ -2616,7 +2612,7 @@
           "manifest": "packages/frame/package.json",
           "name": "@willo.sh/frame",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.22.0"
           },
           "catalog": null,
           "installed": {
@@ -2631,7 +2627,7 @@
           "manifest": "packages/frontend/package.json",
           "name": "@willo.sh/frontend",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.22.0"
           },
           "catalog": null,
           "installed": {
@@ -2646,7 +2642,7 @@
           "manifest": "packages/ui/package.json",
           "name": "@willo.sh/ui",
           "declarations": {
-            "dependencies": "17.19.3"
+            "dependencies": "17.22.0"
           },
           "catalog": null,
           "installed": {
@@ -2668,7 +2664,7 @@
         {
           "path": "bun.lock",
           "versions": [
-            "17.19.3"
+            "17.22.0"
           ],
           "status": "text locator evidence; per-workspace resolution not inferred"
         },
@@ -2782,7 +2778,7 @@
     },
     {
       "repository": "Kaana",
-      "sha": "07d86b475a563be7aa1824781727c3ec4dcb460f",
+      "sha": "95c09c584de8c51d68dc6c7438c45c12ccb40a80",
       "fetch": "succeeded",
       "reason": "No direct Bloom dependency or source mention at inspected ref",
       "historicalManifests": []
