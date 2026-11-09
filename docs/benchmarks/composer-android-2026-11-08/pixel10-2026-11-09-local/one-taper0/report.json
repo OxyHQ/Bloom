@@ -41,11 +41,7 @@
   "recentFrameP50Ms": 7.513075,
   "recentFrameP95Ms": 8.601408,
   "recentFrameIntervalMs": 8.333333,
-  "cpuPercentOfOneCore": [
-    10.3,
-    112,
-    27.2
-  ],
+  "cpuPercentOfOneCore": [10.3, 112, 27.2],
   "pssKb": 287080,
   "rssKb": 435500,
   "thermalStatusBefore": 1,
