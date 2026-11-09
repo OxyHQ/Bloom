@@ -22,12 +22,7 @@
       "radius": 25.904762
     },
     "identicalPixels": true,
-    "bounds": [
-      42,
-      413,
-      1038,
-      549
-    ]
+    "bounds": [42, 413, 1038, 549]
   },
   "screenInactive": {
     "before": {
@@ -52,12 +47,7 @@
       "radius": 25.904762
     },
     "identicalPixels": true,
-    "bounds": [
-      42,
-      413,
-      1038,
-      549
-    ]
+    "bounds": [42, 413, 1038, 549]
   },
   "background": {
     "before": {
