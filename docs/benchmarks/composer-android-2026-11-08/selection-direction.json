@@ -1,0 +1,101 @@
+{
+  "none": {
+    "before": {
+      "testID": "cases-pill-input",
+      "identity": 99614543,
+      "id": 68,
+      "start": 5,
+      "end": 4,
+      "focused": true,
+      "attached": true,
+      "text": "Draft retained through resize"
+    },
+    "settled": {
+      "testID": "cases-pill-input",
+      "identity": 99614543,
+      "id": 68,
+      "start": 5,
+      "end": 4,
+      "focused": true,
+      "attached": true,
+      "text": "Draft retained through resize"
+    },
+    "extended": {
+      "testID": "cases-pill-input",
+      "identity": 99614543,
+      "id": 68,
+      "start": 5,
+      "end": 3,
+      "focused": true,
+      "attached": true,
+      "text": "Draft retained through resize"
+    },
+    "state": "busy=false narrow=false stops=0 submits=0 pending=none"
+  },
+  "resize": {
+    "before": {
+      "testID": "cases-pill-input",
+      "identity": 80028603,
+      "id": 68,
+      "start": 5,
+      "end": 4,
+      "focused": true,
+      "attached": true,
+      "text": "Draft retained through resize"
+    },
+    "settled": {
+      "testID": "cases-pill-input",
+      "identity": 80028603,
+      "id": 68,
+      "start": 5,
+      "end": 4,
+      "focused": true,
+      "attached": true,
+      "text": "Draft retained through resize"
+    },
+    "extended": {
+      "testID": "cases-pill-input",
+      "identity": 80028603,
+      "id": 68,
+      "start": 5,
+      "end": 3,
+      "focused": true,
+      "attached": true,
+      "text": "Draft retained through resize"
+    },
+    "state": "busy=false narrow=true stops=0 submits=0 pending=none"
+  },
+  "busy": {
+    "before": {
+      "testID": "cases-pill-input",
+      "identity": 80028603,
+      "id": 68,
+      "start": 5,
+      "end": 4,
+      "focused": true,
+      "attached": true,
+      "text": "Draft retained through resize"
+    },
+    "settled": {
+      "testID": "cases-pill-input",
+      "identity": 80028603,
+      "id": 68,
+      "start": 5,
+      "end": 4,
+      "focused": true,
+      "attached": true,
+      "text": "Draft retained through resize"
+    },
+    "extended": {
+      "testID": "cases-pill-input",
+      "identity": 80028603,
+      "id": 68,
+      "start": 5,
+      "end": 3,
+      "focused": true,
+      "attached": true,
+      "text": "Draft retained through resize"
+    },
+    "state": "busy=true narrow=false stops=0 submits=0 pending=none"
+  }
+}

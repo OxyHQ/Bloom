@@ -6,6 +6,7 @@ import React, { type ComponentRef, useCallback, useEffect, useMemo, useRef, useS
 import { SurfacePaint } from '../surface/SurfacePaint';
 import {
   Pressable,
+  Platform,
   StyleSheet,
   TextInput,
   View,
@@ -541,8 +542,10 @@ export function ComposerPillBase({
   const addMenu = useMemo(() => addMenuProp ?? composerAddMenu(messages), [addMenuProp, messages]);
   const effortLevels: ReadonlyArray<string> = effortLevelsProp ?? messages.effortLevels;
   const windowWidth = useWindowDimensions().width;
-  const [ownWidth, setOwnWidth] = useState<number | null>(null);
-  const compact = ownWidth === null ? windowWidth < COMPACT_WIDTH : ownWidth < COMPACT_PILL_WIDTH;
+  const [compact, setCompact] = useState<boolean | null>(null);
+  const isCompact = compact ?? windowWidth < COMPACT_WIDTH;
+  const measuredWidth = useRef<number | null>(null);
+  const selectionRef = useRef({ start: 0, end: 0 });
 
   const [text, setText] = useControllableState<string>({
     value,
@@ -702,7 +705,7 @@ export function ComposerPillBase({
     height: fieldHeight,
     minHeight: LINE_HEIGHT,
     onMeasure: setContentHeight,
-    placeholder: compact ? compactPlaceholder : placeholder,
+    placeholder: isCompact ? compactPlaceholder : placeholder,
   });
 
   const customSurface = StyleSheet.flatten(style);
@@ -744,7 +747,29 @@ export function ComposerPillBase({
     <PillRoot
       {...dataHook('bloomComposerPill')}
       testID={testID}
-      onLayout={(event) => setOwnWidth(event.nativeEvent.layout.width)}
+      onLayout={(event) => {
+        const width = event.nativeEvent.layout.width;
+        const previousWidth = measuredWidth.current;
+        measuredWidth.current = width;
+        if (
+          Platform.OS === 'android' &&
+          previousWidth !== null &&
+          Math.abs(width - previousWidth) > 1 &&
+          selectionRef.current.start !== selectionRef.current.end
+        ) {
+          const selection = selectionRef.current;
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+              fieldRef.current?.setSelection(selection.start, selection.end);
+            }),
+          );
+        }
+        const nextCompact = width < COMPACT_PILL_WIDTH;
+        setCompact((current) => {
+          const currentValue = current ?? windowWidth < COMPACT_WIDTH;
+          return currentValue === nextCompact ? current : nextCompact;
+        });
+      }}
       style={[pillStyle, style]}
       surface={surface}
       radius={typeof customSurface?.borderRadius === 'number' ? customSurface.borderRadius : radius}
@@ -785,7 +810,7 @@ export function ComposerPillBase({
               onChange={onPermissionChange}
               onLearnMore={onLearnMore}
               labels={addMenuLabels}
-              iconOnly={compact}
+              iconOnly={isCompact}
               testID={testID ? `${testID}-permission` : undefined}
             />
           </View>
@@ -800,11 +825,36 @@ export function ComposerPillBase({
             aria-invalid={invalid || undefined}
             value={text}
             onChangeText={setText}
+            onSelectionChange={(event) => {
+              const next = event.nativeEvent.selection;
+              if (Platform.OS !== 'android') {
+                selectionRef.current = next;
+                return;
+              }
+              const previous = selectionRef.current;
+              const lower = Math.min(next.start, next.end);
+              const upper = Math.max(next.start, next.end);
+              if (lower === upper) {
+                selectionRef.current = next;
+              } else if (previous.start === previous.end && previous.start === upper) {
+                // RN normalizes Android's start/end event. Recover the anchor
+                // side from the last collapsed caret when extending left.
+                selectionRef.current = { start: upper, end: lower };
+              } else if (previous.start === previous.end && previous.start === lower) {
+                selectionRef.current = { start: lower, end: upper };
+              } else if (previous.start > previous.end && lower <= previous.end) {
+                selectionRef.current = { start: upper, end: lower };
+              } else if (previous.start < previous.end && upper >= previous.end) {
+                selectionRef.current = { start: lower, end: upper };
+              } else {
+                selectionRef.current = { start: lower, end: upper };
+              }
+            }}
             onKeyPress={onKeyPress}
             onSubmitEditing={submit}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
-            placeholder={compact ? compactPlaceholder : placeholder}
+            placeholder={isCompact ? compactPlaceholder : placeholder}
             placeholderTextColor={palette.textTertiary}
             selectionColor={palette.accent500}
             cursorColor={palette.accent500}

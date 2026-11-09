@@ -1,0 +1,9 @@
+// Compile the installed library against the minimum peer's Java/Kotlin API.
+// This does not claim a running RN 0.73 host or legacy architecture acceptance.
+gradle.beforeProject { project ->
+  if (project.path != ':oxy.so_bloom') return
+  project.layout.buildDirectory.set(new File(project.rootProject.projectDir, '../.compat-rn73'))
+  project.configurations.configureEach {
+    resolutionStrategy.force 'com.facebook.react:react-android:0.73.0'
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "status": "passed on physical device",
+  "device": {
+    "model": "Pixel 8a",
+    "android": "16",
+    "api": 36,
+    "serial": "43221JEKB12200",
+    "orientation": "portrait"
+  },
+  "installedArtifact": {
+    "package": "so.oxy.bloom.loaderpackagelab",
+    "apkSha256": "ddf488169ea7b871ef789ca5becda4ca7f42a0e61259558257abf2dc7d2e384d"
+  },
+  "systemPreference": {
+    "key": "global.transition_animation_scale",
+    "before": "1.0",
+    "reducedMotionValue": "0",
+    "restored": true,
+    "after": "1.0"
+  },
+  "bounds": [42, 413, 1038, 549],
+  "results": {
+    "reducedMotionPixelsStaticWhileActive": true,
+    "staticCueVisibleComparedWithIdle": true,
+    "movingFramesResumeAfterRestoringPreference": true
+  },
+  "screenshots": {
+    "reduced-a": {
+      "sha256": "2a419ef22ab5982137a00b93aeb59438db0a13378d97d98ab211742dfc3cc4ee",
+      "bytes": 202693
+    },
+    "reduced-b": {
+      "sha256": "2a419ef22ab5982137a00b93aeb59438db0a13378d97d98ab211742dfc3cc4ee",
+      "bytes": 202693
+    },
+    "reduced-idle": {
+      "sha256": "5cccc413a8582a99f74afecb249cade52bd2b9c2160e9e59726949b3d84fbab0",
+      "bytes": 180026
+    },
+    "reduced-active-a": {
+      "sha256": "2a419ef22ab5982137a00b93aeb59438db0a13378d97d98ab211742dfc3cc4ee",
+      "bytes": 202693
+    },
+    "reduced-active-b": {
+      "sha256": "2a419ef22ab5982137a00b93aeb59438db0a13378d97d98ab211742dfc3cc4ee",
+      "bytes": 202693
+    },
+    "resumed-a": {
+      "sha256": "087b7d50d8f26e4c4792dad056d715fcb1cbb121d7954437d640fd589f82b54d",
+      "bytes": 204453
+    },
+    "resumed-b": {
+      "sha256": "1312f765c593db7c20154b5c9876d69418b805b1cf12795fbca12824a75a0f29",
+      "bytes": 194783
+    }
+  },
+  "limitations": [
+    "Synthetic packaged Bloom benchmark, not production Alia.",
+    "This Android-only check does not establish iPhone behavior or cross-platform visual acceptance."
+  ]
+}

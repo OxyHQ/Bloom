@@ -1,0 +1,66 @@
+{
+  "status": "phase-origin capture pair; visual acceptance threshold not yet defined",
+  "device": {
+    "model": "Google Pixel 8a",
+    "android": 16,
+    "api": 36,
+    "physicalDisplayPx": [1080, 2400],
+    "capturePx": [2400, 1080],
+    "density": 420,
+    "fontScale": 1.15,
+    "orientation": "landscape"
+  },
+  "scene": {
+    "app": "so.oxy.bloom.loaderpackagelab",
+    "packageVersion": "17.23.0",
+    "offlineVerified": true,
+    "count": 1,
+    "taper": 0,
+    "active": true,
+    "speed": 0,
+    "narrow": false,
+    "radius": 9999,
+    "paused": false,
+    "reverse": false,
+    "screen": "off",
+    "phase": "origin; both fixtures were frozen with the public benchmark control after the same scene mounted",
+    "stateEvidence": "UIAutomator state text in hardware and software captures reads count=1 taper=0 active=true speed=0 narrow=false radius=9999 paused=false layer=all reverse=false screen=off clockLog=false"
+  },
+  "artifacts": {
+    "hardware": {
+      "apkSha256": "c7511bd7083c3330f6c2570203d7bdd00df6b0aac7a1534e435645f29319ca3b",
+      "embeddedBundleSha256": "663f7fb8d799593ecbe849eddfba2ae43d4aeaeb72eee68b75b520a5ddc65fe5",
+      "embeddedBloomSourceSha256": "bb9cbafcda1d23246b30e03a4d9f433f0aeaeac61d11a96752967da8ec4dd535",
+      "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+      "adapterSha256": "844afeb2194fbe59bc6de0175cf2e8ace8ddbb6f8a45d38dbc8b4f7de96fdba5",
+      "fixtureSha256": "8a6a72933d0fe4f2babc49ef4431906eeafe58c8c9fdb007a93755ae7dd76f1e",
+      "softwareWindow": false,
+      "manifestHardwareAccelerated": true,
+      "screenshot": "loader-hardware-phase0.png",
+      "screenshotSha256": "95aca9d812b8d5d999d936d7e4b909c7fc5de382c5f1f6e16deac85228d1570c"
+    },
+    "softwareFallback": {
+      "apkSha256": "70d4b292b886935dcb14e3fd17ce8cc61517e1785f28610bed4ff786780d11aa",
+      "embeddedBundleSha256": "a5082b063b5023e0abd282aa660ac7cfc8db676d71731913f4c78e1b6f0e5852",
+      "embeddedBloomSourceSha256": "bb9cbafcda1d23246b30e03a4d9f433f0aeaeac61d11a96752967da8ec4dd535",
+      "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+      "adapterSha256": "844afeb2194fbe59bc6de0175cf2e8ace8ddbb6f8a45d38dbc8b4f7de96fdba5",
+      "fixtureSha256": "8a6a72933d0fe4f2babc49ef4431906eeafe58c8c9fdb007a93755ae7dd76f1e",
+      "softwareWindow": true,
+      "manifestHardwareAccelerated": false,
+      "screenshot": "loader-software-phase0.png",
+      "screenshotSha256": "8af79e6f0fa90225d530789b8d60a867c6fec898b0fe7b5d2137bc69611c0a52"
+    }
+  },
+  "comparison": {
+    "matchingBloomSources": true,
+    "matchingNativeSources": true,
+    "matchingAdapterSource": true,
+    "matchingFixtureSource": true,
+    "differentBuildMode": "hardware renderer versus manifest-forced software host which exercises the SVG fallback",
+    "cropPx": [100, 280, 2200, 180],
+    "psnrDb": 36.009468,
+    "interpretation": "Same origin phase and geometry were captured. The measured pixel difference is recorded without claiming parity; no acceptance threshold has been defined."
+  },
+  "limits": "Single isolated default-radius, no-taper loader on Android 16. This is not a dynamic motion-phase or performance comparison, does not validate composer integration, web, iOS, other geometries or production app behavior, and does not establish that the SVG fallback meets visual acceptance. Two-loop motion video is recorded separately in alia-two-laps.mp4."
+}

@@ -1,0 +1,113 @@
+{
+  "pause": {
+    "before": {
+      "wallMs": 1473405624,
+      "seconds": 17.043805970907194,
+      "width": 379.42856,
+      "height": 51.809525,
+      "radius": 25.904762
+    },
+    "after": {
+      "wallMs": 1473408943,
+      "seconds": 17.043805970907194,
+      "width": 379.42856,
+      "height": 51.809525,
+      "radius": 25.904762
+    },
+    "resumed": {
+      "wallMs": 1473414063,
+      "seconds": 17.958073381900775,
+      "width": 379.42856,
+      "height": 51.809525,
+      "radius": 25.904762
+    },
+    "identicalPixels": true,
+    "bounds": [42, 413, 1038, 549]
+  },
+  "screenInactive": {
+    "before": {
+      "wallMs": 1473424023,
+      "seconds": 5.8733353230953185,
+      "width": 379.42856,
+      "height": 51.809525,
+      "radius": 25.904762
+    },
+    "after": {
+      "wallMs": 1473427257,
+      "seconds": 5.8733353230953185,
+      "width": 379.42856,
+      "height": 51.809525,
+      "radius": 25.904762
+    },
+    "resumed": {
+      "wallMs": 1473432513,
+      "seconds": 6.846325870037078,
+      "width": 379.42856,
+      "height": 51.809525,
+      "radius": 25.904762
+    },
+    "identicalPixels": true,
+    "bounds": [42, 413, 1038, 549]
+  },
+  "background": {
+    "before": {
+      "wallMs": 1473433258,
+      "seconds": 7.581607109069821,
+      "width": 379.42856,
+      "height": 51.809525,
+      "radius": 25.904762
+    },
+    "after": {
+      "wallMs": 1473437291,
+      "seconds": 8.8539989619255,
+      "width": 379.42856,
+      "height": 51.809525,
+      "radius": 25.904762
+    },
+    "continued": {
+      "wallMs": 1473438650,
+      "seconds": 10.182509032011026,
+      "width": 379.42856,
+      "height": 51.809525,
+      "radius": 25.904762
+    },
+    "wallSeconds": 4.033,
+    "activeSeconds": 1.2723918528556792
+  },
+  "resize": {
+    "before": {
+      "wallMs": 1473439483,
+      "seconds": 11.001269630670539,
+      "width": 379.42856,
+      "height": 51.809525,
+      "radius": 25.904762
+    },
+    "after": {
+      "wallMs": 1473443490,
+      "seconds": 14.978224315643292,
+      "width": 240,
+      "height": 51.809525,
+      "radius": 25.904762
+    },
+    "wallSeconds": 4.007,
+    "activeSeconds": 3.9769546849727533,
+    "toleranceSeconds": 0.25
+  },
+  "rapidToggleMs": 334.7807049867697,
+  "initialInactive": {
+    "before": {
+      "wallMs": 1473458418,
+      "seconds": 0,
+      "width": 379.42856,
+      "height": 51.809525,
+      "radius": 25.904762
+    },
+    "after": {
+      "wallMs": 1473460284,
+      "seconds": 0,
+      "width": 379.42856,
+      "height": 51.809525,
+      "radius": 25.904762
+    }
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "status": "partial; Alia Stop name, state, activation, and resumed typing verified",
+  "fixture": "Alia's actual AliaComposer and chat thread with local synthetic streaming; no network inference",
+  "device": {
+    "model": "Google Pixel 8a",
+    "android": "16",
+    "api": 36,
+    "displayPx": [1080, 2400],
+    "density": 420,
+    "fontScale": 1.15
+  },
+  "artifact": {
+    "package": "onl.alia.composer663",
+    "apkSha256": "52fa66aed6617ec303af6a1ce5b44ef300bb73a3190579250f05ff92feb8ed56",
+    "bundleSha256": "1a6cf2405a2b276f8445c78ce7c30230657ee975674e54b2f05eb6a6e02e85f4",
+    "bloomPackageSha256": "d96928aa3d8396f29fd0fdc3009625328445515adafb41e3ee6eae893e34b803",
+    "sourceCommit": "b2beaca248559428e90361a67dc3eb20756668f7",
+    "embeddedAliaComposerSha256": "33bee1e8b1b959adbe5406856fb0dca63c0df9ef9a2e57d21f523bc736d415c2",
+    "embeddedComposerPillBaseSha256": "c8c407ebc90476ae08b43e5a7aebd5464e2782a19d46216cec94259412010f07",
+    "embeddedAndroidAdapterSha256": "844afeb2194fbe59bc6de0175cf2e8ace8ddbb6f8a45d38dbc8b4f7de96fdba5",
+    "apkPulledFromInstalledPackageSha256": "52fa66aed6617ec303af6a1ce5b44ef300bb73a3190579250f05ff92feb8ed56"
+  },
+  "observations": {
+    "realComposerDisplaysStopDuringSyntheticStream": "verified by physical screenshot",
+    "sendStartsSyntheticStream": "verified by BloomAlia663FixtureStreamStarted log",
+    "androidAccessibilityDuringStreaming": {
+      "status": "verified",
+      "visualControl": "Stop icon visible",
+      "uiautomatorContentDescription": "Stop generating",
+      "uiautomatorEnabled": true,
+      "uiautomatorBounds": [922, 1366, 1016, 1460],
+      "streamTurn": 4,
+      "streamStartedAt": "2026-11-08T19:53:24+02:00",
+      "capturedAt": "2026-11-08T19:53:40+02:00",
+      "screenshot": "alia-stop-accessible.png",
+      "hierarchyXml": "alia-stop-accessible.xml",
+      "screenshotSha256": "96d354e198d099ecd7a490629c1746b4c26b05cf6eb1044eb0e94822870638d5",
+      "hierarchyXmlSha256": "44a6103c12f703eb5bafe71581d8e0354db6275c5935495ef673399c0e691415",
+      "artifactApkSha256": "60990578a96caa398228d35a969266a1f7773c070dd0956745ca2acba20d13c7",
+      "provenance": "The accessibility hierarchy and screenshot are from the earlier fixture APK listed here. Embedded AliaComposer and Android adapter source hashes match the current candidate. The current candidate has a separate physical streaming screenshot; its accessibility hierarchy was not recaptured."
+    },
+    "stopCallback": {
+      "status": "verified",
+      "streamTurn": 5,
+      "streamStartedAt": "2026-11-08T19:55:00+02:00",
+      "stopMarkerAt": "2026-11-08T19:55:03+02:00",
+      "logMarker": "BloomAlia663FixtureStop",
+      "logFile": "alia-stop-interaction.log",
+      "result": "Synthetic stream cancelled; composer returned to idle and accepted subsequent focused text input (afterStop)."
+    },
+    "currentCandidateStreamingScreenshot": {
+      "status": "verified by physical screenshot from the exact installed APK above",
+      "streamTurn": 4,
+      "streamStartedAt": "2026-11-08T20:15:28.329+02:00",
+      "screenshot": "alia-streaming-current-candidate.png",
+      "screenshotSha256": "41740cc938f1cab336e046c8622bd7ba1e2645cba58a5f52005e25de84749b79",
+      "visibleControl": "Stop icon visible while synthetic stream was active; keyboard remained open"
+    },
+    "currentCandidateStreamVideo": {
+      "status": "verified physical screen recording from the exact installed APK above",
+      "streamTurn": 6,
+      "streamStartedAt": "2026-11-08T20:22:37.252+02:00",
+      "stopMarkerAt": "2026-11-08T20:22:39.690+02:00",
+      "stopLogMarker": "BloomAlia663FixtureStop",
+      "video": "alia-issue-663-workflow.mp4",
+      "videoSha256": "7f6beb5b5c3dcad653f36827b709aaa8e31dd3ded336cd9d9dc1ab311d08b9dc",
+      "durationSeconds": 12.727511,
+      "resolution": [1080, 2400],
+      "logFile": "alia-workflow-current-candidate.log",
+      "logSha256": "2d8a8d0612d1dbe520263a4b2b50fedaf0503d4e7f49dca21d8879c33fdfded5",
+      "visibleSequence": "Idle composer and draft, synthetic stream starts, loader/Stop are visible with keyboard open, Stop is activated, composer returns to idle."
+    },
+    "twoLapMotionVideo": {
+      "status": "verified physical screen recording from exact installed APK; stream stayed active beyond two default 4.5-second laps",
+      "streamTurn": 8,
+      "streamStartedAt": "2026-11-08T20:25:46.527+02:00",
+      "stopMarkerAt": "2026-11-08T20:25:57.398+02:00",
+      "streamActiveMs": 10871,
+      "defaultLapMs": 4500,
+      "activeTimeAfter450msFadeMs": 10421,
+      "video": "alia-two-laps.mp4",
+      "videoSha256": "262cc4a5c9327745bb79073698b0c271e83824d7b1a92c847b4afe18671d4d84",
+      "videoDurationSeconds": 15.993611,
+      "midStreamScreenshot": "alia-two-laps-mid.png",
+      "midStreamScreenshotSha256": "b7f6a68b98e86d0e4d4dd6241f963e2a7ec819c59ab423444b5cbd7b4217c23f",
+      "logFile": "alia-workflow-current-candidate.log"
+    }
+  },
+  "evidence": [
+    "alia-draft.png",
+    "alia-streaming-probe.png",
+    "alia-stopped-probe.png",
+    "alia-stop-accessible.png",
+    "alia-stop-accessible.xml",
+    "alia-streaming-current-candidate.png",
+    "alia-current-candidate.log",
+    "alia-issue-663-workflow.mp4",
+    "alia-workflow-current-candidate.log",
+    "alia-two-laps.mp4",
+    "alia-two-laps-mid.png"
+  ],
+  "limits": "The offline fixture exercises AliaComposer but is not the production Alia app or inference service. The exact current installed candidate has a physical video showing idle, streaming with visible Stop, and Stop activation, plus the callback log; the saved accessibility hierarchy is from an earlier APK with matching embedded AliaComposer/adapter source hashes. This does not establish phase-aligned optical parity, complete lifecycle contract, performance acceptance, or iPhone behavior."
+}

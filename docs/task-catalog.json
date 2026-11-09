@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "package": {
     "name": "@oxy.so/bloom",
-    "version": "17.25.0",
+    "version": "17.26.0",
     "peers": {
       "@lottiefiles/dotlottie-react": ">=0.13.0",
       "@react-native-community/netinfo": ">=11.1.0",
