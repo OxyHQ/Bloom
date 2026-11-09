@@ -72,12 +72,12 @@ export interface ChatHeaderProps {
   /** Avatar diameter. Default `40`. */
   avatarSize?: number;
 
-  /** Back navigation. Drawn on the compact layout only (see `showBack`). */
+  /** Back navigation. Drawn on the compact layout by default (see `showBack`). */
   onPressBack?: () => void;
   /**
    * Forces the back button on or off. Default: on when `onPressBack` is set AND
-   * the header is compact (below `lg`, or on native, where there is no
-   * persistent list pane to go back TO on screen).
+   * the header's measured width is below `CHAT_COMPACT_BREAKPOINT`. Set this
+   * when navigation context differs from the header's available width.
    */
   showBack?: boolean;
   /** Names the back button. `"Back"` in English (localised). */
@@ -129,9 +129,8 @@ export interface ChatHeaderProps {
   formatSelectionCount?: (count: number) => string;
 
   /**
-   * Forces the compact layout (back button, tighter gutters). Default: derived
-   * from the window width against `CHAT_COMPACT_BREAKPOINT`, and always `true`
-   * on native.
+   * Forces the compact layout (tighter gutters). Default: derived from the
+   * header's measured width against `CHAT_COMPACT_BREAKPOINT`.
    */
   compact?: boolean;
   /** Draws the bottom hairline. Default `true`. */
