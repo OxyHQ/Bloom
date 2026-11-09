@@ -1,5 +1,11 @@
 # Changelog
 
+## 17.25.0
+
+### Fixed
+
+- **Android ComposerLoader** renders its shared moving light through a hardware Canvas adapter on supported devices, with a phase-preserving SVG fallback for software-rendered hosts and older binaries.
+
 ## 17.24.0
 
 ### Added
