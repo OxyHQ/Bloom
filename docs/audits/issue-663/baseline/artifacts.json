@@ -88,5 +88,59 @@
     "sha256": "517ec97e586ca141a7f44e02a31c21602ad2a971b775d0dbae51e49743b12ac9",
     "bytes": 723704,
     "sourceUrl": "https://images.ctfassets.net/spoqsaf9291f/nfJxbTGWexijW7BSAEPZL/a39afeb87300553e7fb97fc7006d320d/layouts.png"
+  },
+  {
+    "path": "nilo/current/database-empty-1440.png",
+    "sha256": "e9b0ba0de73901dd4ff75a6c40d36848507ac83ff6cd60a50d69a731d7d6729a",
+    "bytes": 65185,
+    "sourceUrl": null
+  },
+  {
+    "path": "nilo/current/database-populated-1024.png",
+    "sha256": "da47df0f6d973a48ebb6f9971ac1d25739389ad3d6df8e85da41517097bf35fb",
+    "bytes": 85577,
+    "sourceUrl": null
+  },
+  {
+    "path": "nilo/current/database-populated-1440.png",
+    "sha256": "d18d611b5865f0d2ccc7c7247981af6da13710466be421763ce0697c4d758f40",
+    "bytes": 88056,
+    "sourceUrl": null
+  },
+  {
+    "path": "nilo/current/database-populated-320.png",
+    "sha256": "ca1676272beda2cbea2feebed49fe1ac97c9ea9e05aa6eae0a708a6abc31d13e",
+    "bytes": 33466,
+    "sourceUrl": null
+  },
+  {
+    "path": "nilo/current/database-populated-390.png",
+    "sha256": "325031114c0c8ac7d8606fd2f4308ee09e2c5184232de2c7e977c4e0d4fd0025",
+    "bytes": 38386,
+    "sourceUrl": null
+  },
+  {
+    "path": "nilo/current/database-populated-768.png",
+    "sha256": "18e8719b892d74632d0bb4876c6d78b08857ad5bc1ff2c7445d2372bf096e646",
+    "bytes": 81741,
+    "sourceUrl": null
+  },
+  {
+    "path": "nilo/current/document-1440.png",
+    "sha256": "d21a731bc77fe6fb62308ae475c2d9ad333dc6a57cd502dbf9eb6e3514ad4fae",
+    "bytes": 169534,
+    "sourceUrl": null
+  },
+  {
+    "path": "nilo/current/document-390.png",
+    "sha256": "d51baa69f24bc2db1f364eeafa3d4dbed4db6634204e1a38b6986f2d1e7a9112",
+    "bytes": 76859,
+    "sourceUrl": null
+  },
+  {
+    "path": "nilo/current/report.json",
+    "sha256": "c5b09da7493582d3b05ae2bfc2dad0d5911a60483110e19e2bb6d5034039e37a",
+    "bytes": 24514,
+    "sourceUrl": null
   }
 ]
