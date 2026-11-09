@@ -49,6 +49,7 @@ export type {
   PlatformKeyEvent,
   PlatformMenu,
   PlatformMenuBar,
+  PlatformMenuAction,
   PlatformMenuItem,
   PlatformPlace,
   PlatformRestored,

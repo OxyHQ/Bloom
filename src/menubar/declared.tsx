@@ -46,7 +46,7 @@ import {
   useMenubarScope,
 } from './context';
 import { type MenuEntry, nextMenuEntryId } from './registry';
-import { EDIT_ACTION_SHORTCUTS, useEditAction } from './use-edit-action';
+import { actionShortcut, isMenuAction, useEditAction } from './use-edit-action';
 import { useMenubarLeaving } from './viewport';
 import type {
   MenubarCheckboxItemProps,
@@ -252,26 +252,31 @@ export function createMenubarRows(rows: MenuRowParts): MenubarRowParts {
 
   function MenubarItem({ shortcut, action, ...props }: MenubarItemProps) {
     const scope = useMenubarScope();
-    const chord = useChord(shortcut ?? (action ? EDIT_ACTION_SHORTCUTS[action] : undefined));
+    const chord = useChord(shortcut ?? actionShortcut(action));
     const { onPress, href } = props;
     const handler = onPress ?? (href != null ? () => openHref(href) : undefined);
-    // An editing action goes to the focused text field first (use-edit-action.ts).
-    const item = useEditAction(action, props.disabled ?? false, handler);
+    // An editing action goes to the focused text field first (use-edit-action.ts); the
+    // application's own commands (About, Settings…) are its items, which no field takes.
+    const menuAction = isMenuAction(action) ? action : undefined;
+    const editAction = isMenuAction(action) ? undefined : action;
+    const item = useEditAction(editAction, props.disabled ?? false, handler);
+    const enabled = menuAction ? item.enabled && handler !== undefined : item.enabled;
     useMenuEntry(
       scope,
       {
         kind: 'item',
         label: textOf(props.children, isHint) || (props.accessibilityLabel ?? ''),
-        enabled: item.enabled,
+        enabled,
         shortcut: chord,
         keepOpen: props.keepOpen ?? false,
+        ...(menuAction ? { action: menuAction } : null),
       },
       item.run,
     );
     if (scope?.headless) return null;
     const trailing = props.trailing ?? hint(chord);
     if (!action) return <rows.Item {...props} trailing={trailing} />;
-    return <rows.Item {...props} disabled={!item.enabled} onPress={item.run} trailing={trailing} />;
+    return <rows.Item {...props} disabled={!enabled} onPress={item.run} trailing={trailing} />;
   }
   MenubarItem.displayName = 'MenubarItem';
 

@@ -20,7 +20,12 @@
  * hear once, after it (a microtask).
  */
 import { type Chord, chordText, matchesChord } from '../kbd/chord';
-import type { PlatformKeyEvent, PlatformMenu, PlatformMenuItem } from '../platform-surface/types';
+import type {
+  PlatformKeyEvent,
+  PlatformMenu,
+  PlatformMenuAction,
+  PlatformMenuItem,
+} from '../platform-surface/types';
 
 export type MenuEntryKind = 'menu' | 'submenu' | 'item' | 'separator';
 
@@ -40,6 +45,8 @@ export interface MenuEntry {
   readonly checked?: boolean;
   /** Its menu stays open after it runs (an in-window menu). */
   readonly keepOpen?: boolean;
+  /** The application's standard command it is (About, Settings…), for the platform's bar. */
+  readonly action?: PlatformMenuAction;
   /** Runs the item as a press on its row would. Commands only. */
   readonly run?: () => void;
 }
@@ -72,6 +79,7 @@ function sameEntry(a: MenuEntry, b: MenuEntry): boolean {
     (a.shortcut ? chordText(a.shortcut) : '') === (b.shortcut ? chordText(b.shortcut) : '') &&
     a.checked === b.checked &&
     a.keepOpen === b.keepOpen &&
+    a.action === b.action &&
     a.run === b.run
   );
 }
@@ -164,6 +172,7 @@ export class MenubarRegistry {
               enabled: live,
               ...(entry.shortcut ? { shortcut: chordText(entry.shortcut) } : null),
               ...(entry.checked === undefined ? null : { checked: entry.checked }),
+              ...(entry.action ? { action: entry.action } : null),
             },
           ];
         default:

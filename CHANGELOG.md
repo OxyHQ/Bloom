@@ -1,5 +1,11 @@
 # Changelog
 
+## 17.40.0
+
+### Added
+
+- **`MenubarItem action="about"` and `action="settings"`**: the application's own About *App* and Settings…, as a Mac's application menu has them (`PlatformMenuAction`). They are the application's items, never a focused text field's (their `onPress` or `href` and `disabled`; disabled with neither); Settings… has the standard chord `Mod+,` (⌘, on a Mac, Ctrl+, elsewhere), which runs it on every platform. Drawn in the window they stay where they are declared. With the `menu-bar` capability each is described with its `action` (`PlatformMenuItem.action`), so a platform whose bar has an application menu of its own (OxyOS's, a Mac's) shows it there, as AppKit puts Settings… in the application menu (OxyOS ADR 0021).
+
 ## 17.39.1
 
 ### Fixed

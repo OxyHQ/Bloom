@@ -25,7 +25,11 @@
 import { useCallback, useSyncExternalStore } from 'react';
 
 import { usePlatformEditing } from '../platform-surface/context';
-import type { PlatformEditAction, PlatformEditing } from '../platform-surface/types';
+import type {
+  PlatformEditAction,
+  PlatformEditing,
+  PlatformMenuAction,
+} from '../platform-surface/types';
 
 /** Each action's standard chord, as a Mac's Edit menu has it; Delete has none. */
 export const EDIT_ACTION_SHORTCUTS: Readonly<Record<PlatformEditAction, string | undefined>> = {
@@ -38,6 +42,28 @@ export const EDIT_ACTION_SHORTCUTS: Readonly<Record<PlatformEditAction, string |
   delete: undefined,
   selectAll: 'Mod+A',
 };
+
+/**
+ * The application's own standard commands' chords (`PlatformMenuAction`):
+ * Settings… is ⌘, on a Mac, Ctrl+, elsewhere; About has none.
+ */
+export const MENU_ACTION_SHORTCUTS: Readonly<Record<PlatformMenuAction, string | undefined>> = {
+  about: undefined,
+  settings: 'Mod+,',
+};
+
+/** Whether `action` is one of the application's own commands, which no text field takes. */
+export function isMenuAction(action: string | undefined): action is PlatformMenuAction {
+  return action === 'about' || action === 'settings';
+}
+
+/** The standard chord of an item's `action`, editing or the application's. */
+export function actionShortcut(
+  action: PlatformEditAction | PlatformMenuAction | undefined,
+): string | undefined {
+  if (!action) return undefined;
+  return isMenuAction(action) ? MENU_ACTION_SHORTCUTS[action] : EDIT_ACTION_SHORTCUTS[action];
+}
 
 const subscribeNowhere = () => () => undefined;
 

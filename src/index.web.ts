@@ -112,6 +112,7 @@ export type {
   PlatformKeyEvent,
   PlatformMenu,
   PlatformMenuBar,
+  PlatformMenuAction,
   PlatformMenuItem,
   PlatformSurfaceAdapter,
   PlatformWindow,
