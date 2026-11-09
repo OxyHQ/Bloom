@@ -6,6 +6,12 @@
 
 - **A `plain` sidebar is flush to the window beside any panel region**, not only beside a centred reading column. `AppShell` already ran a plain nav flush when the content was centred (`navigationAlign="content"`), since a plain nav has no panel to frame; with a panel region that is not a centred column (a chat beside its sidebar, as `AiChatShell` draws it) the nav stayed inside the frame's gutter, floating with a gap at its start, top and bottom and nothing behind it. It now takes the whole height at the window's edge, as a `docked` one does, and the panel region keeps its own gutter on its other sides. `card` is unchanged. `AiChatShell` defaults to `plain`, so a host that did not pass `sidebarSurface` gets the flush sidebar; `sidebarSurface="card"` keeps the framed panel.
 
+## 17.35.0
+
+### Fixed
+
+- **Agent avatars fill their box.** Every vector frame is authored on a 320×320 canvas with room for the figure to move, and the avatar drew the whole canvas: at rest the characters span about 174 of its 320 units, so a 32px avatar was a 17px character with empty space around it. The avatar (`VectorCharacterAvatar` and the static portrait) is now drawn through one shared square crop around the figures (`vector-viewbox.ts`), so they fill about 80% of their box instead of 54%, and keep their relative sizes. A frame that carries a viewBox of its own (the eyes-only preview) is unchanged.
+
 ## 17.34.0
 
 ### Added

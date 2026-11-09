@@ -1,3 +1,4 @@
+import { avatarViewBox } from './vector-viewbox';
 import { svgA11yProps } from '../styles/svg-a11y';
 import { useSvgIdPrefix } from '../styles/svg-id';
 import { Platform, type View } from 'react-native';
@@ -57,7 +58,13 @@ function StaticPortrait({ frame, size = 64, bodyColor, onReady, ...props }: Prop
       accessibilityLabel={(props.accessibilityLabel ?? props.label) || undefined}
     >
       {frame ? (
-        <Svg ref={svg} width="100%" height="100%" viewBox={frame.viewBox} {...svgA11yProps()}>
+        <Svg
+          ref={svg}
+          width="100%"
+          height="100%"
+          viewBox={avatarViewBox(frame.viewBox)}
+          {...svgA11yProps()}
+        >
           <Defs>
             {frame.paths
               .filter((path) => path.clip !== undefined)
