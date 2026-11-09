@@ -7,6 +7,18 @@
 - **`Sidebar scrollbarSide`** (`'start' | 'end'`, default `'end'`): the inline edge the sidebar's scrolling area draws its scrollbar on. A flush `plain` sidebar has its scrollbar against the neighbouring panel; `start` moves it to the sidebar's outer edge. It is logical, so `start` is the right edge in RTL. Built on the new `ScrollArea scrollbarSide` and `ScrollBar side` (and the `ScrollAreaScrollbarSide` type), which any scroller can use; vertical bars only. Web only: a native scroll indicator is the system's and stays where the platform draws it.
 - **`AiChatShell sidebarScrollbarSide`**: the shell hands it to a function `sidebar` as `scrollbarSide` (it is also accepted by `ConversationSidebar` and the `AppShell` sidebar descriptor, which are `SidebarProps`).
 
+## 17.38.0
+
+### Fixed
+
+- **`ComposerLoader` follows the composer's corner radius.** A `ComposerPill` is a full capsule at one line and squares off to 26 when it grows into a stack (several lines, attachments, a status tab), but the loader around it kept the capsule radius, so a grown pill had an oval container and rim light behind it. The pill now reports its radius to the loader (`ComposerLoaderRadiusContext`, `useReportComposerRadius`) and the loader paints and traces that; a `radius` passed to the loader still wins, and with no composer inside it is the capsule as before.
+
+## 17.37.0
+
+### Fixed
+
+- **A plain sidebar is flush to the window in the web's CSS layout too.** 17.36.0 made a `plain` sidebar run flush beside a panel region, but only in the engine's inline styles; the browser lays the shell out with generated CSS (`shell-layout-css.ts`) that overrode them with its own copy of the rule, so on the web the sidebar still sat inside the frame's gutter and the region beside it added a second one. The rule is now ONE function, `plainNavFlushes`, that the engine, the CSS layout and `flushSidebarAtEveryWidth` all ask, so they cannot disagree again.
+
 ## 17.36.0
 
 ### Fixed

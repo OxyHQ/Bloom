@@ -1,4 +1,4 @@
-import { ComposerLoaderPaintContext } from './context';
+import { ComposerLoaderPaintContext, ComposerLoaderRadiusContext } from './context';
 /**
  * `ComposerLoader` — WEB: the light band laps on CSS keyframes over a DOM
  * `<svg>`, where the native fork drives a react-native-svg frame clock.
@@ -92,6 +92,10 @@ function ComposerLoaderComponent({
     setBox((previous) => (previous.w === w && previous.h === h ? previous : { w, h }));
   }, []);
 
+  // What the composer inside reports (a grown pill squares off); a `radius` prop wins.
+  const [pillRadius, setPillRadius] = useState<number | undefined>(undefined);
+  const cornerRadiusProp = radius ?? pillRadius;
+
   const geometry = useMemo(
     () =>
       composerLoaderGeometry({
@@ -105,13 +109,25 @@ function ComposerLoaderComponent({
         taper,
         reverse,
         offset,
-        radius,
+        radius: cornerRadiusProp,
       }),
-    [box.w, box.h, arc, line, bloom, bloomStrength, bloomOnly, taper, reverse, offset, radius],
+    [
+      box.w,
+      box.h,
+      arc,
+      line,
+      bloom,
+      bloomStrength,
+      bloomOnly,
+      taper,
+      reverse,
+      offset,
+      cornerRadiusProp,
+    ],
   );
 
   const [c0, c1, c2, c3] = colors ?? resolveComposerLoaderColors(theme);
-  const cornerRadius = radius ?? PILL_RADIUS;
+  const cornerRadius = cornerRadiusProp ?? PILL_RADIUS;
   const direction = reverse ? 'reverse' : 'normal';
 
   const surfaceStyle: WebCssStyle = {
@@ -213,9 +229,11 @@ function ComposerLoaderComponent({
         ) : null}
       </View>
 
-      <ComposerLoaderPaintContext.Provider value={active}>
-        <View style={styles.content}>{children}</View>
-      </ComposerLoaderPaintContext.Provider>
+      <ComposerLoaderRadiusContext.Provider value={setPillRadius}>
+        <ComposerLoaderPaintContext.Provider value={active}>
+          <View style={styles.content}>{children}</View>
+        </ComposerLoaderPaintContext.Provider>
+      </ComposerLoaderRadiusContext.Provider>
     </View>
   );
 }

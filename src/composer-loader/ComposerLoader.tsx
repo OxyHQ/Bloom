@@ -1,4 +1,4 @@
-import { ComposerLoaderPaintContext } from './context';
+import { ComposerLoaderPaintContext, ComposerLoaderRadiusContext } from './context';
 import { Surface } from '../surface';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Platform, StyleSheet, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
@@ -138,6 +138,10 @@ function ComposerLoaderComponent({
     setBox((previous) => (previous.w === w && previous.h === h ? previous : { w, h }));
   }, []);
 
+  // What the composer inside reports (a grown pill squares off); a `radius` prop wins.
+  const [pillRadius, setPillRadius] = useState<number | undefined>(undefined);
+  const cornerRadiusProp = radius ?? pillRadius;
+
   const geometry = useMemo(
     () =>
       composerLoaderGeometry({
@@ -151,9 +155,21 @@ function ComposerLoaderComponent({
         taper,
         reverse,
         offset,
-        radius,
+        radius: cornerRadiusProp,
       }),
-    [box.w, box.h, arc, line, bloom, bloomStrength, bloomOnly, taper, reverse, offset, radius],
+    [
+      box.w,
+      box.h,
+      arc,
+      line,
+      bloom,
+      bloomStrength,
+      bloomOnly,
+      taper,
+      reverse,
+      offset,
+      cornerRadiusProp,
+    ],
   );
   const androidStrokeGroups = useMemo(() => {
     if (Platform.OS !== 'android') return null;
@@ -191,7 +207,7 @@ function ComposerLoaderComponent({
   const fadeStyle = useAnimatedStyle(() => ({ opacity: fade.value }), [fade]);
 
   const [c0, c1, c2, c3] = colors ?? resolveComposerLoaderColors(theme);
-  const cornerRadius = radius ?? PILL_RADIUS;
+  const cornerRadius = cornerRadiusProp ?? PILL_RADIUS;
 
   const surfaceStyle: ViewStyle = {
     borderRadius: cornerRadius,
@@ -311,9 +327,11 @@ function ComposerLoaderComponent({
         ) : null}
       </Animated.View>
 
-      <ComposerLoaderPaintContext.Provider value={active}>
-        <View style={styles.content}>{children}</View>
-      </ComposerLoaderPaintContext.Provider>
+      <ComposerLoaderRadiusContext.Provider value={setPillRadius}>
+        <ComposerLoaderPaintContext.Provider value={active}>
+          <View style={styles.content}>{children}</View>
+        </ComposerLoaderPaintContext.Provider>
+      </ComposerLoaderRadiusContext.Provider>
     </View>
   );
 }

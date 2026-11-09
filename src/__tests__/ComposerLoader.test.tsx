@@ -32,6 +32,8 @@ jest.mock('react-native-reanimated', () => {
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { ComposerLoader, resolveComposerLoaderColors } from '../composer-loader';
+import { useReportComposerRadius } from '../composer-loader/context';
+import { ComposerPill } from '../composer-panel';
 import {
   TAPER_STEPS,
   composerLoaderGeometry,
@@ -192,6 +194,74 @@ describe('ComposerLoader (native)', () => {
     expect(resolvedStyle(getByTestId('cl-light', HIDDEN).props.style)).toMatchObject({
       borderRadius: 16,
       overflow: 'hidden',
+    });
+  });
+
+  /**
+   * The loader paints the pill's container and traces its rim, so it follows the box it wraps. A
+   * pill squares off when it grows into a stack; a loader that kept the capsule drew an oval
+   * behind a rectangle.
+   */
+  describe('follows the radius of the composer inside it', () => {
+    const Reports = ({ radius }: { radius: number }) => {
+      useReportComposerRadius(radius);
+      return <Text>composer</Text>;
+    };
+    const plateRadius = (screen: ReturnType<typeof renderLoader>) =>
+      resolvedStyle(screen.getByTestId('cl-surface', HIDDEN).props.style).borderRadius;
+
+    it('takes the radius the composer reports, for its container and its light', () => {
+      const screen = renderLoader(
+        <ComposerLoader testID="cl">
+          <Reports radius={26} />
+        </ComposerLoader>,
+      );
+      expect(plateRadius(screen)).toBe(26);
+      expect(resolvedStyle(screen.getByTestId('cl-light', HIDDEN).props.style).borderRadius).toBe(
+        26,
+      );
+    });
+
+    it('goes back to the capsule when the composer is gone, and lets a `radius` prop win', () => {
+      const screen = renderLoader(
+        <ComposerLoader testID="cl">
+          <Reports radius={26} />
+        </ComposerLoader>,
+      );
+      screen.rerender(
+        <BloomThemeProvider mode="light" colorPreset="teal">
+          <ComposerLoader testID="cl">
+            <Text>no composer</Text>
+          </ComposerLoader>
+        </BloomThemeProvider>,
+      );
+      expect(plateRadius(screen)).toBe(9999);
+      screen.rerender(
+        <BloomThemeProvider mode="light" colorPreset="teal">
+          <ComposerLoader testID="cl" radius={16}>
+            <Reports radius={26} />
+          </ComposerLoader>
+        </BloomThemeProvider>,
+      );
+      expect(plateRadius(screen)).toBe(16);
+    });
+
+    it('is what a pill does: a capsule at one line, square-cornered once it holds an attachment', () => {
+      const alone = renderLoader(
+        <ComposerLoader testID="cl">
+          <ComposerPill />
+        </ComposerLoader>,
+      );
+      expect(plateRadius(alone)).toBe(9999);
+      alone.unmount();
+      const stacked = renderLoader(
+        <ComposerLoader testID="cl">
+          <ComposerPill
+            attachments={[{ id: 'a', name: 'notes.txt', kind: 'file', status: 'ready' } as never]}
+          />
+        </ComposerLoader>,
+      );
+      expect(plateRadius(stacked)).toBe(26);
     });
   });
 

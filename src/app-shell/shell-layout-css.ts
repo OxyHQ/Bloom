@@ -4,6 +4,7 @@ import type { SidebarMetrics } from '../sidebar/metrics';
 import { resolveSidebarGeometry } from '../sidebar/geometry';
 import { SIDEBAR_RAIL_WIDTH } from '../sidebar/SidebarRail';
 import { breakpointPx } from './constants';
+import { plainNavFlushes } from './layout';
 import { panelEnvelope } from './panel-layout';
 import type { AppShellPanelLayout } from './panel-layout-types';
 import type { AppShellEngineProps } from './types';
@@ -107,7 +108,9 @@ ${root} [data-bloom-dock-moving] :is([data-bloom-shell-nav="${scope}"],[data-blo
     const aligned =
       options.navigationAlign === 'content' &&
       (options.variant === 'feed' || options.variant === 'focus');
-    const plain = aligned && sidebar?.surface === 'plain' && !topBarShown;
+    const panelRegion = !!options.panels && options.variant !== 'canvas';
+    const plain =
+      plainNavFlushes(aligned, panelRegion) && sidebar?.surface === 'plain' && !topBarShown;
     const flush = inFlow && (sidebar?.surface === 'docked' || plain);
     const outer = framed || (inFlow && !flush) ? gutter : 0;
     const edge = (name: 'top' | 'bottom' | 'start' | 'end') => {

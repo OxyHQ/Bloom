@@ -1,4 +1,4 @@
-import { useComposerLoaderPaint } from '../composer-loader/context';
+import { useComposerLoaderPaint, useReportComposerRadius } from '../composer-loader/context';
 import { useComposerButton } from './context';
 import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
 import { Surface } from '../surface';
@@ -690,6 +690,8 @@ export function ComposerPillBase({
    */
   const stacked = multiLine || hasAttachments || errorMessage !== undefined || status != null;
   const radius = stacked ? 26 : 9999;
+  // A loader around the pill paints its container and traces its rim: it follows this radius.
+  useReportComposerRadius(radius);
 
   /*
    * On web the field is measured, not reported. react-native-web's

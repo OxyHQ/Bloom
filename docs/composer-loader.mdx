@@ -23,7 +23,7 @@ export function WorkingComposer({ busy }: { busy: boolean }) {
 
 **The loader owns the pill surface** (the shared Surface material with `shadow-xs`) and layers the light beneath its children. `ComposerPill` automatically inherits that paint ownership and the nearest loader’s active state for frosted controls. Explicit `surface` and `frosted` values override inheritance. Outside a loader, the pill keeps its own surface and unfrosted controls. Custom children still own their paint contract; an opaque child can cover the decorative light.
 
-The loader takes its width from its container and its height from its children; the default radius is a full pill. It waits for a positive measured size before mounting the decorative SVG. The composer and its surface are present from the first render; the loader never paints a provisional 640 × 52 outline. Resizing updates the shared perimeter without replacing the composer.
+The loader takes its width from its container and its height from its children; the default radius is a full pill, or whatever the composer inside reports: a `ComposerPill` squares its corners to 26 when it grows into a stack, and the loader's container and rim follow it. It waits for a positive measured size before mounting the decorative SVG. The composer and its surface are present from the first render; the loader never paints a provisional 640 × 52 outline. Resizing updates the shared perimeter without replacing the composer.
 
 ## How the light is drawn
 
@@ -78,7 +78,7 @@ state such as stopped/error/completed. Those remain controlled by the app.
 | `bloomStrength?` | `number` | `0.3` | Bloom layer opacity. |
 | `arc?` | `number` | `120` | Band length, degrees of 360. |
 | `reverse?` | `boolean` | `false` | Travel counter-clockwise. |
-| `radius?` | `number` | full pill | Corner radius, px. |
+| `radius?` | `number` | the composer's, else full pill | Corner radius, px. Wins over the radius a `ComposerPill` inside reports. |
 | `line?` | `number` | `2.5` | Crisp line width, px; the glow scales with it. |
 | `bloomOnly?` | `boolean` | `false` | Only the wide bloom — a soft wash for a beam to lead. |
 | `surface?` | `boolean` | `true` | Paint the pill surface + `shadow-xs` behind the light. |
