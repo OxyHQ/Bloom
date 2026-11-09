@@ -1,4 +1,5 @@
 import type { ComponentRef, ReactNode, Ref } from 'react';
+import type { ScrollAreaScrollbarSide } from '../layout/types';
 import type { DropZoneProps } from '../drop-zone/types';
 import type { BloomIconComponent } from '../icons/icon-component';
 import type {
@@ -465,6 +466,12 @@ export interface SidebarProps {
   fluid?: boolean;
   /** The panel's edge. Defaults to `card`. */
   surface?: SidebarSurface;
+  /**
+   * Which inline edge the scrolling area's scrollbar sits on. `end` (default) is the right edge in
+   * LTR; `start` moves it to the left (right in RTL), away from the neighbour of a flush `plain`
+   * sidebar. Web only: a native indicator is the system's and stays where the platform draws it.
+   */
+  scrollbarSide?: ScrollAreaScrollbarSide;
   /** The row size, and the panel width that follows it. Defaults to `md`. */
   size?: SidebarSize;
 

@@ -494,6 +494,12 @@ export interface AiChatShellProps {
    * draws a different surface than it declares gets the wrong gaps.
    */
   sidebarSurface?: SidebarSurface;
+  /**
+   * Which inline edge the in-flow sidebar's scrollbar sits on (the sidebar's `scrollbarSide`).
+   * Omit for the default, the end edge; `start` keeps it off the conversation beside a flush
+   * `plain` sidebar. A `sidebar` function receives it in its props; a node draws its own.
+   */
+  sidebarScrollbarSide?: SidebarProps['scrollbarSide'];
   /** Optional collapsed column width override. Omit to let the sidebar size and animate itself. */
   collapsedSidebarWidth?: number;
   /** Navigation content for integrations without an in-flow sidebar. */

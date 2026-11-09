@@ -32,6 +32,7 @@ function NativeScrollArea({
   scrollEventThrottle,
   scrollbar,
   size: _size,
+  scrollbarSide: _scrollbarSide,
   ref,
   className,
   containerClassName,

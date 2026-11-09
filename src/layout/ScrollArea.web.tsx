@@ -22,6 +22,7 @@ export const ScrollArea: ComponentType<ScrollAreaProps> = function ScrollArea({
   size = 'sm',
   horizontal = false,
   scrollIndicatorInsets,
+  scrollbarSide,
   style,
   containerClassName,
   testID,
@@ -63,6 +64,7 @@ export const ScrollArea: ComponentType<ScrollAreaProps> = function ScrollArea({
           scrollbar={scrollbar}
           size={size}
           horizontal={Boolean(horizontal)}
+          side={scrollbarSide}
           insets={
             horizontal
               ? { start: scrollIndicatorInsets?.left, end: scrollIndicatorInsets?.right }

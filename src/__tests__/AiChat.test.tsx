@@ -817,6 +817,31 @@ describe('AiChatShell sidebar surface', () => {
     expect(surfaceOf()).toBe('plain');
     expect(surfaceOf({ sidebarSurface: 'card' })).toBe('card');
   });
+
+  it('hands the sidebar the scrollbar edge the host asked for, and none by default', () => {
+    const sideOf = (sidebarScrollbarSide?: 'start' | 'end') => {
+      let seen: string | undefined = 'unset';
+      const dimensions = mockWindowSize({ width: 1440, height: 900, scale: 1, fontScale: 1 });
+      try {
+        renderIn(
+          <AiChatShell
+            sidebarScrollbarSide={sidebarScrollbarSide}
+            sidebar={(shell) => {
+              seen = shell.scrollbarSide;
+              return <View />;
+            }}
+          >
+            <Text>Chat</Text>
+          </AiChatShell>,
+        );
+      } finally {
+        dimensions.mockRestore();
+      }
+      return seen;
+    };
+    expect(sideOf()).toBeUndefined();
+    expect(sideOf('start')).toBe('start');
+  });
 });
 
 describe('AiChatContainer composed actions', () => {

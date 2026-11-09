@@ -93,6 +93,7 @@ export function AiChatShellBase({
   sidebarCollapsed: sidebarCollapsedProp,
   collapsedSidebarWidth,
   sidebarSurface = 'plain',
+  sidebarScrollbarSide,
   mobileSidebar,
   children,
   panel,
@@ -230,6 +231,7 @@ export function AiChatShellBase({
                         : { collapsed: sidebarCollapsedProp }
                       : { collapsed: false, collapseDisabled: true }),
                     surface: sidebarSurface,
+                    scrollbarSide: sidebarScrollbarSide,
                     render: (props) => (
                       <View style={[{ flex: 1, minHeight: 0, width: '100%' }, props.style]}>
                         {props.mobile

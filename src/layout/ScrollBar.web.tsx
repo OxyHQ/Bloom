@@ -26,6 +26,7 @@ export function ScrollBar({
   scrollbar = 'scroll',
   size = 'sm',
   horizontal = false,
+  side = 'end',
   insets,
   offset,
 }: ScrollBarProps) {
@@ -66,6 +67,7 @@ export function ScrollBar({
       viewport={target === 'document'}
       offset={offset}
       horizontal={Boolean(horizontal)}
+      side={side}
       mode={scrollbar}
       thickness={THICKNESS[size]}
       insets={insets}

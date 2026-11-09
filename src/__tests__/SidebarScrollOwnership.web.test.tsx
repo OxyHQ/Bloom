@@ -108,3 +108,44 @@ it('forwards the actual scroll ref used by sidebar drag auto-scroll, without rem
     host.remove();
   }
 });
+
+function scrollbarEdge(scrollbarSide?: 'start' | 'end') {
+  const host = document.createElement('div');
+  document.body.append(host);
+  const root = createRoot(host);
+  try {
+    act(() =>
+      root.render(
+        <BloomThemeProvider fonts={false}>
+          <Sidebar
+            testID="side"
+            showThemeToggle={false}
+            showSearch={false}
+            scrollbarSide={scrollbarSide}
+            items={[{ key: 'page', label: 'Page', icon: RiHomeLine }]}
+          />
+        </BloomThemeProvider>,
+      ),
+    );
+    const track = host.querySelector('[data-bloom-scrollbar]') as HTMLElement;
+    // LTR: the logical end edge resolves to `right` and the start edge to `left`.
+    return { left: track.style.left, right: track.style.right, align: track.style.alignItems };
+  } finally {
+    act(() => root.unmount());
+    host.remove();
+  }
+}
+
+it('keeps the sidebar scrollbar on the end edge by default', () => {
+  const edge = scrollbarEdge();
+  expect(edge.right).not.toBe('');
+  expect(edge.left).toBe('');
+  expect(edge.align).toBe('flex-end');
+});
+
+it('scrollbarSide="start" moves the sidebar scrollbar to the start edge', () => {
+  const edge = scrollbarEdge('start');
+  expect(edge.left).not.toBe('');
+  expect(edge.right).toBe('');
+  expect(edge.align).toBe('flex-start');
+});
