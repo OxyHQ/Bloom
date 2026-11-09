@@ -78,9 +78,8 @@ function capture(name, hierarchySnapshot = null) {
     name,
     geometry,
     hierarchyFresh: hierarchySnapshot === null,
-    loaderActive: hierarchySnapshot === null
-      ? hierarchy.includes('content-desc="Stop generating"')
-      : null,
+    loaderActive:
+      hierarchySnapshot === null ? hierarchy.includes('content-desc="Stop generating"') : null,
   });
   writeFileSync(resolve(out, 'captures.json'), JSON.stringify({ environment, captures }, null, 2));
   return hierarchy;
