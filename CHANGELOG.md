@@ -11,6 +11,7 @@
 
 ### Fixed
 
+- **`AiChatShell` owns the sidebar's collapse** when `sidebar` is a function `(props) => ReactNode`: the shell hands it its resolved props (`collapsed`, `onCollapsedChange`, `variant`, `mobile`...), so the sidebar's own collapse control also resizes the shell's track and gives the room to the conversation, with the shell's motion. Before, the adapter pinned the track expanded (`collapsed: false`) and ignored those props, so collapsing only moved the sidebar's contents inside a track that stayed 260px wide. A `sidebar` node behaves as before.
 - **The composer's add menu is built on Bloom's `DropdownMenu`**, not rows of buttons in a panel of its own. Its action rows (Camera, Photos, Files, Canvas) were centred, because the row buttons never set how they lay their content out; the menu now has the family's row layout (left-aligned, an icon that leads, a switch's check mark at the end) and its semantics (roving focus, arrow keys). The `-add-panel` test id stays on the menu surface; a switch row is a checkbox row (`aria-checked`) with the test id `bloom-row-<id>`, replacing `bloom-row-checked-<id>`.
 
 ### Changed

@@ -593,6 +593,31 @@ describe('AiChatShell', () => {
     expect(source).toMatch(/resizable: !!panel && panelResizable/);
   });
 
+  it('hands a function sidebar the resolved props, so the shell owns its collapse', () => {
+    const seen: Array<{ collapsed?: boolean; onCollapsedChange?: (c: boolean) => void }> = [];
+    renderWithPortal(
+      <AiChatShell
+        sidebar={(props) => {
+          seen.push(props);
+          return <Text>nav</Text>;
+        }}
+        panel={() => null}
+      >
+        <Text>Conversation</Text>
+      </AiChatShell>,
+    );
+    // Whatever the layout draws (the rail or the drawer), the sidebar was asked for with the
+    // shell's resolved props, not drawn as a ready-made node.
+    expect(seen.length).toBeGreaterThan(0);
+    expect(seen[seen.length - 1]).toHaveProperty('variant');
+  });
+
+  it("keeps a node sidebar expanded: it cannot take the shell's collapse", () => {
+    const source = readFileSync(join(__dirname, '..', 'ai-chat', 'AiChatShell.tsx'), 'utf8');
+    expect(source).toMatch(/const ownsCollapse = typeof sidebar === 'function'/);
+    expect(source).toMatch(/collapsed: false, collapseDisabled: true/);
+  });
+
   it("centres a header's own title node between the shell's buttons", () => {
     const { getByLabelText, getByText, getByTestId } = renderWithPortal(
       <AiChatShell

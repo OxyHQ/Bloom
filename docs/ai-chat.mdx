@@ -106,6 +106,11 @@ in another `AppShellPanel`, paint another frame, or put an existing list inside
 `scroll="panel"`. Host controls shared by a panel's routes belong in descriptor
 `headerActions`, which PageHeader composes with the route's own actions.
 
+`sidebar` may be a function: `sidebar={(props) => <ConversationSidebar {...props} … />}`. The shell hands it
+its resolved props (`collapsed`, `onCollapsedChange`, `variant`, `mobile`), so the sidebar's collapse
+control resizes the shell's track and the conversation takes the room, with no state of the host's own.
+A node `sidebar` is drawn as it is and never collapses the track.
+
 `panelResizable={false}` removes the divider beside the context panel, for a panel with a width of
 its own (an editor, a form): it keeps `defaultPanelWidth`.
 
