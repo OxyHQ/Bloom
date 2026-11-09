@@ -2,7 +2,7 @@
 // Platform command ownership only; actual input focus/IME is checked on device.
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Platform } from 'react-native';
+import { BackHandler, Platform } from 'react-native';
 import { documentFromSnapshot, EditorStore } from '../../model';
 import { BlockEditor } from '../BlockEditor';
 import { EditorController } from '../controller';
@@ -34,6 +34,10 @@ it('keeps native caret navigation nonmodal and owns explicit link actions throug
   const controller = new EditorController(store);
   const firstOpen = jest.fn();
   const secondOpen = jest.fn();
+  const removeBackHandler = jest.fn();
+  const back = jest.spyOn(BackHandler, 'addEventListener').mockReturnValue({
+    remove: removeBackHandler,
+  });
   const host = document.createElement('div');
   document.body.appendChild(host);
   const root = createRoot(host);
@@ -92,6 +96,7 @@ it('keeps native caret navigation nonmodal and owns explicit link actions throug
     expect(controller.ui.get().linking).toBe('b1');
     expect(controller.textSelection).toEqual({ kind: 'text', blockId: 'b1', start: 7, end: 13 });
     expect(controller.linkAtSelection()).toBe('https://example.test/one');
+    expect(controller.ui.get().linking).toBe('b1');
     const urlField = host.querySelector<HTMLInputElement>('input[aria-label="Link"]');
     if (!urlField) throw new Error('Missing URL input');
     const blurUrl = jest.spyOn(urlField, 'blur');
@@ -118,6 +123,22 @@ it('keeps native caret navigation nonmodal and owns explicit link actions throug
     render(secondOpen, false, false);
     expect(controller.ui.get().inlineActions).toBeNull();
     expect(host.querySelector('[role="toolbar"]')).toBeNull();
+    render(secondOpen);
+    act(() => {
+      store.setSelection({ kind: 'text', blockId: 'b1', start: 7, end: 13 });
+      controller.ui.set({ focused: 'b1' });
+    });
+    act(() => controller.openLinkEditor());
+    const backHandler = back.mock.calls[back.mock.calls.length - 1]?.[1];
+    if (!backHandler) throw new Error('Missing Android Back handler');
+    let handled: boolean | undefined;
+    act(() => {
+      handled = backHandler({ type: 'hardwareBackPress', timeStamp: 0 });
+    });
+    expect(handled).toBe(true);
+    expect(controller.ui.get().linking).toBeNull();
+    expect(removeBackHandler).toHaveBeenCalled();
+    back.mockRestore();
   } finally {
     act(() => root.unmount());
     host.remove();

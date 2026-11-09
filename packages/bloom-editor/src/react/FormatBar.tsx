@@ -2,6 +2,7 @@ import type { ToggleableMark } from '@oxy.so/bloom-text/model';
 import { type ComponentRef, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Platform, StyleSheet, Text, type TextInput, type TextStyle, View } from 'react-native';
 import { Button } from '@oxy.so/bloom/button';
+import { useHardwareBack } from '@oxy.so/bloom/overlay/back';
 import { TextFieldInput } from '@oxy.so/bloom/text-field';
 import type { EditorController } from './controller';
 import { KeepFocus } from './KeepFocus';
@@ -69,6 +70,8 @@ export function FormatBar({ controller, theme, labels }: FormatBarProps) {
     setInvalid(false);
     if (refocus) controller.refocus();
   };
+
+  useHardwareBack(editingLink ? () => closeLink(false) : undefined);
 
   if (editingLink) {
     const apply = () => {
