@@ -29,6 +29,14 @@ Archive the APK, manifest, embedded bundle/source maps and matching receipt befo
 building another candidate. Verify exact serial, package and permission boundary
 before installing, and record OS/build/font scale/density/thermal state unchanged.
 
+For published acceptance, download the exact registry tarball with `npm pack`, verify
+its SHA-512 against `npm view @oxy.so/bloom@<version> dist.integrity`, and unpack it
+into a temporary package directory. Point `mirror-into-consumer.mjs --source=<that
+directory> --built` at it. Set `BLOOM_NPM_TARBALL`, `BLOOM_NPM_INTEGRITY`, and
+`BLOOM_NPM_VERSION` when running `node prepare.mjs`; the receipt verifies the tarball
+hash and installed package version, then records the published integrity. Without
+those values, the receipt explicitly says it is only a local snapshot.
+
 Passed: compiled local package on Pixel, API 30/31 registration guards, six
 continuous budget windows, temporary bitmap and software-host fallback, and a
 JS-only update into the previous native binary. API 30 emulator startup and reduced-motion
