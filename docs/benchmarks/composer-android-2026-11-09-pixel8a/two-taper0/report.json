@@ -1,0 +1,55 @@
+{
+  "apkSha256": "939fd960efa752251abc0421466914a282b5116ee5365d70d7aad58a7d9f5738",
+  "build": {
+    "commit": "6bdc98bdbd9668f709eee0da75c9301579aacba2",
+    "workingTree": "",
+    "fixtureSha256": "8a6a72933d0fe4f2babc49ef4431906eeafe58c8c9fdb007a93755ae7dd76f1e",
+    "packedTarballSha256": "e67008a3a3512fbb372aac2e6ca34959710ec804d54e8600a51ffa9a982639e1",
+    "kind": "local packed snapshot; not published acceptance",
+    "installed": "/home/nate/Oxy/Bloom/.worktrees/issue-663-material-current-source/scripts/loader-package-lab/bloom-local/node_modules/@oxy.so/bloom",
+    "packageVersion": "17.34.0",
+    "nativeSha256": "5aa0123303dbb2f170077c2ddf6eac5933ee0c6269274422ed41ca10bf8f94ad",
+    "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+    "adapterSha256": "439368f05ea092a36619510ff3cf1d255d5e8da61ff52ab3490d0dd7dd6e4c21",
+    "lockSha256": "f2df323a08c2c77c02e09a9ce69aea9f4d90b0fad025ed75ac0551bdcea8dfa4",
+    "reactCompiler": false,
+    "scene": "benchmark",
+    "softwareWindow": false,
+    "apkSha256": "939fd960efa752251abc0421466914a282b5116ee5365d70d7aad58a7d9f5738",
+    "embeddedBundleSha256": "22e5010e130e561fd533b680d050e5b4fae4ee52a926f6b53a5642462a94e787",
+    "embeddedBloomSourceSha256": "de1ba4adc35a298b93ed36bd1c139da2f60b8df75061bbd051b62f6b82f8bb3f",
+    "embeddedBloomFiles": 844,
+    "dex": [
+      {
+        "name": "classes.dex",
+        "sha256": "21d9a6529299a1758ed60166166893d26eeaaa87a69c7aef40f511936e204580"
+      }
+    ],
+    "r8MappingSha256": "44e328b1f6bf30d09c1c801a4e3513e8dd5b2e814ade03bb23ae2d64d8967da1",
+    "mappedNativeClass": "n10",
+    "nativeEvidence": "compiled installed Kotlin input hash, DEX contract marker and full DEX hashes; no runtime source receipt"
+  },
+  "serial": "Pixel 8a physical device (serial redacted)",
+  "case": "two-taper0",
+  "elapsedMs": 10705.657147,
+  "frames": 1278,
+  "jankyFrames": 0,
+  "histogramP50Ms": 10,
+  "histogramP95Ms": 12,
+  "gpuP50Ms": 5,
+  "gpuP95Ms": 7,
+  "recentFrameSamples": 117,
+  "recentFrameP50Ms": 10.798538,
+  "recentFrameP95Ms": 12.730836,
+  "recentFrameIntervalMs": 8.35474,
+  "cpuPercentOfOneCore": [
+    100,
+    107,
+    98.6
+  ],
+  "pssKb": 283903,
+  "rssKb": 469588,
+  "thermalStatusBefore": 1,
+  "thermalStatusAfter": 1,
+  "note": "Single controlled foreground window, no screen recording; frame timestamps are not an FPS guarantee. Preserve font/display settings and compare thermal state."
+}

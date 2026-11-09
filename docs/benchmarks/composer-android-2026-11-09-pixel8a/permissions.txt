@@ -1,0 +1,9 @@
+package: so.oxy.bloom.loaderpackagelab
+uses-permission: name='android.permission.READ_EXTERNAL_STORAGE' maxSdkVersion='32'
+uses-permission: name='android.permission.SYSTEM_ALERT_WINDOW'
+uses-permission: name='android.permission.VIBRATE'
+uses-permission: name='android.permission.WRITE_EXTERNAL_STORAGE' maxSdkVersion='32'
+uses-permission: name='android.permission.USE_BIOMETRIC'
+uses-permission: name='android.permission.USE_FINGERPRINT'
+permission: so.oxy.bloom.loaderpackagelab.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+uses-permission: name='so.oxy.bloom.loaderpackagelab.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'
