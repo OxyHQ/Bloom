@@ -1,5 +1,11 @@
 # Changelog
 
+## 17.36.0
+
+### Fixed
+
+- **A `plain` sidebar is flush to the window beside any panel region**, not only beside a centred reading column. `AppShell` already ran a plain nav flush when the content was centred (`navigationAlign="content"`), since a plain nav has no panel to frame; with a panel region that is not a centred column (a chat beside its sidebar, as `AiChatShell` draws it) the nav stayed inside the frame's gutter, floating with a gap at its start, top and bottom and nothing behind it. It now takes the whole height at the window's edge, as a `docked` one does, and the panel region keeps its own gutter on its other sides. `card` is unchanged. `AiChatShell` defaults to `plain`, so a host that did not pass `sidebarSurface` gets the flush sidebar; `sidebarSurface="card"` keeps the framed panel.
+
 ## 17.34.0
 
 ### Added

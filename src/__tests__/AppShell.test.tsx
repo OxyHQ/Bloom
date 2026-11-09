@@ -1256,6 +1256,40 @@ describe('AppShell panels: the frame', () => {
     },
   );
 
+  /**
+   * A plain nav has no panel to frame, so it is flush to the window whatever the content does: not
+   * only beside a centred reading column but beside any panel region (a chat next to its
+   * sidebar). Inside the frame's gutter it would float with a gap on every side and nothing
+   * behind it.
+   */
+  it('a plain nav is flush beside a panel region that is not a centred column', () => {
+    jest.replaceProperty(ReactNative.Platform, 'OS', 'web');
+    setWidth(1440);
+    const screen = renderIn(
+      <AppShell
+        testID="shell"
+        variant="dashboard"
+        panels
+        contentMaxWidth="none"
+        gutter={12}
+        sidebar={{ items: NAV, surface: 'plain' }}
+      >
+        <AppShellPanel>
+          <ReactNative.Text>Body</ReactNative.Text>
+        </AppShellPanel>
+      </AppShell>,
+    );
+    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({
+      paddingTop: 0,
+      paddingBottom: 0,
+      paddingInlineStart: 0,
+      paddingInlineEnd: 12,
+    });
+    const group = hostParent(screen.getByTestId('shell-content'));
+    expect(resolvedStyle(group?.props.style)).toMatchObject({ paddingTop: 12, paddingBottom: 12 });
+    expect(contentPanels(screen)[0]?.props.framed).toBe(true);
+  });
+
   it('a card nav pads the row on every side by the gutter', () => {
     setWidth(1440);
     const screen = renderIn(
