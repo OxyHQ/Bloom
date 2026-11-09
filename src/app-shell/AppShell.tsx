@@ -472,7 +472,12 @@ export function createAppShell(
       platformWindow != null &&
       !windowCornerTaken &&
       (props.sidebar == null ||
-        flushSidebarAtEveryWidth(props.sidebar, props.navFrom ?? 0, props.navigationAlign)) &&
+        flushSidebarAtEveryWidth(
+          props.sidebar,
+          props.navFrom ?? 0,
+          props.navigationAlign,
+          !!props.panels && props.variant !== 'canvas',
+        )) &&
       props.topBar == null &&
       props.header == null &&
       props.title == null &&
