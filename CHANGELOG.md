@@ -6,6 +6,12 @@
 
 - **`AiChatShell sidebarSurface`** (`plain` by default): the in-flow sidebar's panel. The shell lays out its gutters by the surface it is given, so a host that wants the raised `card` panel declares it here and the shell keeps the gap around and beside it; a `card` drawn inside a shell that declared `plain` ran flush to the window edge with the wrong gaps.
 
+## 17.30.1
+
+### Fixed
+
+- **`ChatHeader` uses its measured width** to choose compact gutters and default back-button visibility. `showBack` remains available when navigation context differs from available width.
+
 ## 17.30.0
 
 ### Added

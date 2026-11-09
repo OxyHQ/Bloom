@@ -104,9 +104,12 @@ is down and that somebody is typing over it.
 
 ### The back button is derived
 
-On by default when `onPressBack` is set AND the header is compact — below
-`1024`, or on native, where there is no list pane beside the conversation to go
-back to on screen. `showBack` overrules the derivation in either direction.
+The compact layout follows the header's measured width, not the window: below
+`CHAT_COMPACT_BREAKPOINT` (`1024`) the gutters tighten. The back button appears
+by default when `onPressBack` is set and the header is compact. Pass `showBack`
+when the navigation context differs from the available width; it overrides the
+derived visibility in either direction. `compact` can explicitly choose the
+layout independent of the measurement.
 
 ### Selection mode REPLACES the header
 
