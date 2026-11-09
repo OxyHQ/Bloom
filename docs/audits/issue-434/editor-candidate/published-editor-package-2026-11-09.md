@@ -25,10 +25,11 @@ available from the registry.
 The exact tarball was installed into a fresh temporary npm consumer with lifecycle
 scripts disabled. Requiring `@oxy.so/bloom-editor/model` through Node's package
 export resolver succeeded: 73 exports were available, `EditorStore` resolved to
-a function, and `DEFAULT_SCHEMA` resolved to an object. A strict TypeScript
-consumer compiled the same subpath with `moduleResolution: Node16`, resolving its
-published declarations and Bloom Text dependency (TypeScript 6.0.3, Node 24.21.0).
-The consumer only imports the platform-free model, so this does not establish
+a function, and `DEFAULT_SCHEMA` resolved to an object. Strict TypeScript
+consumers compiled the root, `model` and `yjs` exports through their ESM
+(`NodeNext`) and CommonJS (`Node16`) declaration conditions, resolving Bloom
+Text and Yjs (`skipLibCheck: true`, TypeScript 5.9.3, Node 24.21.0). Runtime
+smoke coverage was limited to the platform-free model; this does not establish
 React editor or native UI behavior.
 
 No repository `node_modules` package was replaced. The tarball and consumer
