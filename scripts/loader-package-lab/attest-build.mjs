@@ -54,7 +54,10 @@ function collect(map) {
     if (map.sources[i].startsWith(aliaPrefix) && /\.(?:[cm]?[jt]sx?|json)$/.test(map.sources[i]))
       assert.equal(
         map.sourcesContent[i],
-        readFileSync(resolve('node_modules/@alia.onl/sdk', map.sources[i].slice(aliaPrefix.length)), 'utf8'),
+        readFileSync(
+          resolve('node_modules/@alia.onl/sdk', map.sources[i].slice(aliaPrefix.length)),
+          'utf8',
+        ),
         `Stale published Alia source: ${map.sources[i]}`,
       );
     assert(!map.sources[i].startsWith('/../../src/'), 'Checkout source bypasses installed package');

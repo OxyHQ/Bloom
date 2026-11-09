@@ -31,13 +31,18 @@ const installedAliaPackage = JSON.parse(readFileSync(resolve(installedAlia, 'pac
 const aliaComposer = readFileSync(resolve(installedAlia, 'src/components/AliaComposer.tsx'));
 if (aliaTarball || aliaIntegrity || aliaVersion) {
   if (!aliaTarball || !aliaIntegrity || !aliaVersion)
-    throw new Error('Published Alia evidence needs ALIA_NPM_TARBALL, ALIA_NPM_INTEGRITY and ALIA_NPM_VERSION');
+    throw new Error(
+      'Published Alia evidence needs ALIA_NPM_TARBALL, ALIA_NPM_INTEGRITY and ALIA_NPM_VERSION',
+    );
   const integrity = `sha512-${createHash('sha512')
     .update(readFileSync(resolve(aliaTarball)))
     .digest('base64')}`;
-  if (integrity !== aliaIntegrity) throw new Error('Alia SDK tarball integrity does not match the registry');
+  if (integrity !== aliaIntegrity)
+    throw new Error('Alia SDK tarball integrity does not match the registry');
   if (installedAliaPackage.version !== aliaVersion)
-    throw new Error(`Installed @alia.onl/sdk@${installedAliaPackage.version}; expected published ${aliaVersion}`);
+    throw new Error(
+      `Installed @alia.onl/sdk@${installedAliaPackage.version}; expected published ${aliaVersion}`,
+    );
 }
 const native = readFileSync(
   resolve(installed, 'android/src/main/java/so/oxy/bloom/ComposerLight.kt'),
