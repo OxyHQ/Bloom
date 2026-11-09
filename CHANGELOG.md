@@ -1,5 +1,11 @@
 # Changelog
 
+## 17.31.0
+
+### Added
+
+- **`AiChatShell sidebarSurface`** (`plain` by default): the in-flow sidebar's panel. The shell lays out its gutters by the surface it is given, so a host that wants the raised `card` panel declares it here and the shell keeps the gap around and beside it; a `card` drawn inside a shell that declared `plain` ran flush to the window edge with the wrong gaps.
+
 ## 17.30.2
 
 ### Fixed

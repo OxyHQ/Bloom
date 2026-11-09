@@ -791,6 +791,34 @@ describe('AiChatShell sidebar width ownership', () => {
   );
 });
 
+describe('AiChatShell sidebar surface', () => {
+  const surfaceOf = (props?: { sidebarSurface?: 'plain' | 'card' | 'docked' }) => {
+    let seen: string | undefined;
+    const dimensions = mockWindowSize({ width: 1440, height: 900, scale: 1, fontScale: 1 });
+    try {
+      renderIn(
+        <AiChatShell
+          {...props}
+          sidebar={(shell) => {
+            seen = shell.surface;
+            return <View />;
+          }}
+        >
+          <Text>Chat</Text>
+        </AiChatShell>,
+      );
+    } finally {
+      dimensions.mockRestore();
+    }
+    return seen;
+  };
+
+  it('is plain unless the host declares another, and hands the sidebar the one it lays out by', () => {
+    expect(surfaceOf()).toBe('plain');
+    expect(surfaceOf({ sidebarSurface: 'card' })).toBe('card');
+  });
+});
+
 describe('AiChatContainer composed actions', () => {
   it('renders custom actions instead of default glyphs without requiring a title', () => {
     const screen = renderIn(
