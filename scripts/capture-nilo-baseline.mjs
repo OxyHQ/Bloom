@@ -1,7 +1,8 @@
 // Unmodified Nilo routes with local-only account/API fixtures and a seeded offline document.
 import { createRequire } from 'node:module';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 const consumer = resolve(process.env.NILO_ROOT);
 const require = createRequire(join(consumer, 'package.json'));
@@ -10,8 +11,13 @@ const { chromium } = browserRequire('@playwright/test');
 const Y = require('yjs');
 const { writeDocument } = require('@oxy.so/bloom-editor/yjs');
 const origin = process.env.NILO_ORIGIN ?? 'http://localhost:8128';
-const output = resolve(process.env.BASELINE_OUTPUT ?? 'docs/audits/issue-663/baseline/nilo');
+const output = resolve(
+  process.env.BASELINE_OUTPUT ?? 'docs/audits/issue-663/baseline/nilo/current',
+);
 mkdirSync(output, { recursive: true });
+const bloomPackagePath = realpathSync(require.resolve('@oxy.so/bloom/package.json'));
+const bloomEntryPath = realpathSync(require.resolve('@oxy.so/bloom'));
+const bloomEntrySha256 = createHash('sha256').update(readFileSync(bloomEntryPath)).digest('hex');
 const date = '2026-11-08T06:00:00.000Z';
 const user = {
   id: 'baseline-user',
@@ -74,7 +80,7 @@ const database = {
   ownerId: user.id,
   schema: {
     properties: [
-      { id: 'name', name: 'Name', type: 'title' },
+      { id: 'name', name: 'Name', type: 'text' },
       {
         id: 'effort',
         name: 'Effort level',
@@ -142,8 +148,10 @@ const report = {
   sourceSha: execFileSync('git', ['-C', consumer, 'rev-parse', 'HEAD'], {
     encoding: 'utf8',
   }).trim(),
-  bloomVersion: JSON.parse(readFileSync(require.resolve('@oxy.so/bloom/package.json'), 'utf8'))
-    .version,
+  bloomVersion: JSON.parse(readFileSync(bloomPackagePath, 'utf8')).version,
+  bloomPackagePath,
+  bloomEntryPath,
+  bloomEntrySha256,
   observedAt: new Date().toISOString(),
   mode: 'development Metro; synthetic account/API; seeded offline document; no production API traffic',
   origin,
@@ -230,6 +238,27 @@ await context.route('**/*', async (route) => {
   const json = (body) => route.fulfill({ json: body, headers });
   if (method === 'OPTIONS') return route.fulfill({ status: 204, headers });
   if (url.hostname === 'api.oxy.so') {
+    if (path === '/session/device/directory')
+      return json({
+        deviceId: 'fixture-device',
+        revision: 0,
+        activeContextId: null,
+        principals: [],
+        updatedAt: Date.now(),
+      });
+    if (path === '/accounts') return json({ accounts: [] });
+    if (method === 'POST' && path === '/session/device/add')
+      return route.fulfill({
+        status: 401,
+        json: { error: 'Synthetic device is not registered' },
+        headers,
+      });
+    if (method === 'POST' && path === '/apps/assertions')
+      return route.fulfill({
+        status: 503,
+        json: { error: 'Assertions unavailable in offline fixture' },
+        headers,
+      });
     if (path.startsWith('/auth/oauth/client/'))
       return json({
         application: {
@@ -266,17 +295,34 @@ await context.route('**/*', async (route) => {
     if (method === 'GET') {
       if (path === '/workspaces') return json({ workspaces: [workspace] });
       if (path === `/workspaces/${workspace.id}`) return json({ workspace });
-      if (path === '/teamspaces') return json({ teamspaces: [] });
+      if (path === `/workspaces/${workspace.id}/members`) return json({ members: [] });
+      if (path === '/teamspaces' || path === `/workspaces/${workspace.id}/teamspaces`)
+        return json({ teamspaces: [] });
       if (path === '/pages') return json({ pages: [pageData] });
-      if (path === '/pages/shared' || path === '/pages/recent') return json({ pages: [] });
+      if (path === '/pages/shared') return json({ shared: [] });
+      if (path === '/pages/recent') return json({ pages: [] });
       if (path === `/pages/${pageData.id}`) return json({ page: pageData, role: 'owner' });
       if (path === `/pages/${pageData.id}/breadcrumb`) return json({ breadcrumb: [] });
       if (path === `/pages/${pageData.id}/comments`) return json({ comments: [] });
       if (path === '/notifications/unread-count') return json({ count: 0 });
+      if (path === '/notifications/vapid-public-key')
+        return route.fulfill({ status: 503, json: { error: 'Web push not configured' }, headers });
+      if (path === `/pages/${pageData.id}/follow`) return json({ following: false });
+      if (path === `/pages/${pageData.id}/backlinks`) return json({ backlinks: [] });
+      if (path === `/pages/${pageData.id}/permissions`)
+        return json({
+          pageId: pageData.id,
+          restricted: false,
+          restrictedFrom: null,
+          openToWorkspace: true,
+          role: 'owner',
+          grants: [],
+        });
       if (path === '/databases') return json({ databases: [database] });
       if (path === `/databases/${database.id}`)
         return json({ database, views: [view], role: 'owner' });
       if (path === `/databases/${database.id}/views`) return json({ views: [view] });
+      if (path === `/databases/${database.id}/automations`) return json({ automations: [] });
       if (path === `/databases/${database.id}/rows`)
         return json({
           rows: empty ? [] : rows,
@@ -384,7 +430,9 @@ try {
     waitUntil: 'domcontentloaded',
     timeout: 120000,
   });
-  await page.getByText('Improve website copy', { exact: true }).first().waitFor({ timeout: 60000 });
+  await page
+    .locator('input[value="Improve website copy"]')
+    .waitFor({ state: 'visible', timeout: 60000 });
   await capture('database-populated-1440');
   for (const width of [1024, 768, 390, 320, 1440]) {
     await page.setViewportSize({ width, height: width < 768 ? 844 : 900 });
@@ -404,6 +452,14 @@ try {
   await capture('document-390');
   report.status =
     report.errors.length || report.unexpected.length ? 'captured with exceptions' : 'captured';
+  report.checks = {
+    nineFrames: report.frames.length === 9,
+    noBrowserErrors: report.errors.length === 0,
+    noUnexpectedRequests: report.unexpected.length === 0,
+    noDocumentHorizontalOverflow: report.frames.every(
+      (frame) => frame.documentWidth <= frame.viewport.width,
+    ),
+  };
 } catch (error) {
   report.status = 'incomplete';
   report.failure = error.message;
