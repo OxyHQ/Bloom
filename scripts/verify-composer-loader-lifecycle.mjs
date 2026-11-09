@@ -70,8 +70,9 @@ try {
         })),
       };
     });
-  const waitState = (state) =>
-    page.waitForFunction(
+  const settlePaint = () => delay(50);
+  const waitState = async (state) => {
+    await page.waitForFunction(
       (expected) => {
         const rects = document.querySelectorAll(
           '[data-testid="lifecycle-isolated"] .bloom-composer-loader-rect',
@@ -84,6 +85,8 @@ try {
       {},
       state,
     );
+    await settlePaint();
+  };
   const click = (id) => page.click(`[data-testid="${id}"]`);
   await waitState('running');
   await delay(300);
