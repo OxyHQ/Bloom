@@ -1,5 +1,11 @@
 # Changelog
 
+## 17.38.0
+
+### Fixed
+
+- **`ComposerLoader` follows the composer's corner radius.** A `ComposerPill` is a full capsule at one line and squares off to 26 when it grows into a stack (several lines, attachments, a status tab), but the loader around it kept the capsule radius, so a grown pill had an oval container and rim light behind it. The pill now reports its radius to the loader (`ComposerLoaderRadiusContext`, `useReportComposerRadius`) and the loader paints and traces that; a `radius` passed to the loader still wins, and with no composer inside it is the capsule as before.
+
 ## 17.36.0
 
 ### Fixed
