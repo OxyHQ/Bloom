@@ -12,7 +12,7 @@ const server = process.env.ADB_PORT ? ['-P', process.env.ADB_PORT] : [];
 const target = [...server, '-s', ANDROID_SERIAL];
 const adb = (...args) =>
   execFileSync(ADB, [...target, ...args], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
-const windows = adb('shell', 'dumpsys', 'window', 'windows');
+const windows = adb('shell', 'dumpsys', 'window');
 assert(
   windows
     .split('\n')

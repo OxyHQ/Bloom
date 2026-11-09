@@ -5,7 +5,7 @@ app=os.environ['APP_ID']
 r=pathlib.Path(os.environ['OUTPUT']);r.mkdir(parents=True,exist_ok=False)
 def call(*args):return subprocess.check_output(adb+list(args))
 def tree():
- windows=call('shell','dumpsys','window','windows').decode()
+ windows=call('shell','dumpsys','window').decode()
  assert any(app in line and ('mCurrentFocus' in line or 'mFocusedApp' in line) for line in windows.splitlines()), 'Fixture must own foreground'
  call('shell','uiautomator','dump','/sdcard/editor434-handoff.xml')
  return call('exec-out','cat','/sdcard/editor434-handoff.xml')
