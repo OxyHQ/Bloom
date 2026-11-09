@@ -1,5 +1,16 @@
 # Changelog
 
+## 17.34.0
+
+### Added
+
+- **`ComposerPanelAddMenuGroup submenu` / `icon`**: a group drawn as ONE row that opens its rows in a submenu, instead of a heading over them. For a list that can grow long (a person's skills, their connected apps) and would push the menu's few common rows out of reach.
+- **`DropdownMenuCheckboxItem` and `DropdownMenuRadioItem` take `leading`**, as `DropdownMenuItem` does.
+
+### Fixed
+
+- **The composer's add menu rows line up.** A switch row passed its icon as a child, so the menu's row alignment saw a row with no icon and put a blank icon-wide slot in front of it: Search, Deep research and Ghost sat one icon further in than Camera, Photos and Files. The switch's icon is now the row's own `leading`.
+
 ## 17.31.0
 
 ### Added

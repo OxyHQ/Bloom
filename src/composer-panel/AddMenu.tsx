@@ -101,20 +101,44 @@ export function AddMenu({ palette, groups, onSelect, labels, testID }: AddMenuPr
         testID={testID ? `${testID}-panel` : undefined}
         style={{ width: ADD_PANEL_WIDTH }}
       >
-        {groups.map((group, index) => (
-          <React.Fragment key={group.label}>
-            {index === 0 ? null : <D.DropdownMenuSeparator />}
-            <D.DropdownMenuLabel>{group.label}</D.DropdownMenuLabel>
-            {group.rows.map((row) => (
-              <AddMenuRow
-                key={row.id}
-                row={row}
-                palette={palette}
-                onSelect={() => onSelect?.(row.id)}
-              />
-            ))}
-          </React.Fragment>
-        ))}
+        {groups.map((group, index) => {
+          const rows = group.rows.map((row) => (
+            <AddMenuRow
+              key={row.id}
+              row={row}
+              palette={palette}
+              onSelect={() => onSelect?.(row.id)}
+            />
+          ));
+          const Icon = group.icon;
+          return (
+            <React.Fragment key={group.label}>
+              {index === 0 ? null : <D.DropdownMenuSeparator />}
+              {group.submenu ? (
+                <D.DropdownMenuSub>
+                  <D.DropdownMenuSubTrigger
+                    leading={
+                      Icon ? (
+                        <Icon width={20} height={20} fill={palette.iconSecondary} />
+                      ) : undefined
+                    }
+                    accessibilityLabel={group.label}
+                  >
+                    <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
+                      {group.label}
+                    </Text>
+                  </D.DropdownMenuSubTrigger>
+                  <D.DropdownMenuSubContent label={group.label}>{rows}</D.DropdownMenuSubContent>
+                </D.DropdownMenuSub>
+              ) : (
+                <>
+                  <D.DropdownMenuLabel>{group.label}</D.DropdownMenuLabel>
+                  {rows}
+                </>
+              )}
+            </React.Fragment>
+          );
+        })}
       </D.DropdownMenuContent>
     </D.DropdownMenu>
   );
@@ -167,11 +191,11 @@ function AddMenuRow({
       checked={row.checked}
       onCheckedChange={onSelect}
       indicatorPosition="trailing"
+      leading={leading}
       accessibilityLabel={name}
       disabled={row.disabled}
       testID={`bloom-row-${row.id}`}
     >
-      {leading}
       {text}
     </D.DropdownMenuCheckboxItem>
   );

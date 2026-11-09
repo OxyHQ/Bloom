@@ -222,6 +222,36 @@ describe('ComposerPanel', () => {
     expect(checked('Canvas')).toBeUndefined();
   });
 
+  it('draws a `submenu` group as one row that opens its rows, not as a heading over them', () => {
+    const onAddMenuSelect = jest.fn();
+    const { getByTestId } = renderIn(
+      <ComposerPanel
+        testID="composer"
+        onAddMenuSelect={onAddMenuSelect}
+        addMenu={[
+          { label: 'Add', rows: [{ id: 'files', label: 'Files' }] },
+          {
+            label: 'Skills',
+            submenu: true,
+            rows: [
+              { id: 'skill:a', label: 'Summarise', checked: true },
+              { id: 'skill:b', label: 'Translate', checked: false },
+            ],
+          },
+        ]}
+      />,
+    );
+    pressHost(getByTestId('composer-add'));
+    const panel = within(getByTestId('composer-add-panel'));
+
+    // "Add" keeps its heading over its row; "Skills" is a row of its own, and its skills are not
+    // in the menu until it opens.
+    expect(panel.getByText('Add')).toBeTruthy();
+    expect(panel.getByLabelText('Skills')).toBeTruthy();
+    expect(panel.queryByLabelText('Summarise')).toBeNull();
+    expect(panel.queryByLabelText('Translate')).toBeNull();
+  });
+
   it('hides the add button for an empty menu and the picker without providers', () => {
     const { queryByLabelText } = renderIn(<ComposerPanel addMenu={[]} />);
     expect(queryByLabelText('Add attachment')).toBeNull();
