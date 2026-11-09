@@ -1,5 +1,11 @@
 # Changelog
 
+## 17.29.0
+
+### Changed
+
+- **The spinner is the Material 3 morphing loader**: `SpinnerIcon`, and so every `Loading` variant, `Button` busy state and engagement-bar busy glyph, now draws a solid shape that morphs through the Material loading loop (soft burst, cookie, pentagon, pill, sunny, cookie, oval) while it rotates, instead of the eight-blade iOS spinner. Same props and sizes. Native blends frames into one `react-native-svg` path on the UI thread with reanimated; web writes the same path into an `<svg>` from a `requestAnimationFrame` loop. No new peer dependency.
+
 ## 17.28.0
 
 ### Added
