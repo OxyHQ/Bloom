@@ -7,9 +7,16 @@ const hash = (value) => createHash('sha256').update(value).digest('hex');
 const apk = resolve(process.env.APK || 'android/app/build/outputs/apk/release/app-release.apk');
 const build = JSON.parse(readFileSync('build.json', 'utf8'));
 const bundle = execFileSync('unzip', ['-p', apk, 'assets/index.android.bundle'], {
-  maxBuffer: 64 * 1024 * 1024,
+  maxBuffer: 256 * 1024 * 1024,
 });
-for (const key of ['commit', 'nativeSha256', 'adapterSha256', 'lockSha256'])
+for (const key of [
+  'commit',
+  'nativeSha256',
+  'adapterSha256',
+  'lockSha256',
+  'aliaSdkVersion',
+  'aliaComposerSha256',
+])
   assert(bundle.includes(build[key]), `Stale metadata: ${key}`);
 if (build.nativeSourcesSha256) {
   const digest = createHash('sha256');
@@ -41,8 +48,15 @@ function collect(map) {
   }
   for (let i = 0; i < map.sources.length; i++) {
     const prefix = '/bloom-local/node_modules/@oxy.so/bloom/';
+    const aliaPrefix = '/node_modules/@alia.onl/sdk/';
     if (map.sources[i].startsWith(prefix) && /\.(?:[cm]?[jt]sx?|json)$/.test(map.sources[i]))
       sources.set(map.sources[i].slice(prefix.length), map.sourcesContent[i]);
+    if (map.sources[i].startsWith(aliaPrefix) && /\.(?:[cm]?[jt]sx?|json)$/.test(map.sources[i]))
+      assert.equal(
+        map.sourcesContent[i],
+        readFileSync(resolve('node_modules/@alia.onl/sdk', map.sources[i].slice(aliaPrefix.length)), 'utf8'),
+        `Stale published Alia source: ${map.sources[i]}`,
+      );
     assert(!map.sources[i].startsWith('/../../src/'), 'Checkout source bypasses installed package');
   }
 }
@@ -72,7 +86,7 @@ assert(mappedClass, 'Native implementation missing from R8 mapping');
 let nativeContract = false;
 let nativeImplementation = false;
 const dex = entries.map((name) => {
-  const data = execFileSync('unzip', ['-p', apk, name], { maxBuffer: 64 * 1024 * 1024 });
+  const data = execFileSync('unzip', ['-p', apk, name], { maxBuffer: 256 * 1024 * 1024 });
   if (data.includes('BloomComposerLightV1')) nativeContract = true;
   if (data.includes(`L${mappedClass.replaceAll('.', '/')};`)) nativeImplementation = true;
   return { name, sha256: hash(data) };
