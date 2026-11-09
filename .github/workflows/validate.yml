@@ -91,13 +91,13 @@ jobs:
       - name: Verify packed chart card consumer entries
         run: node scripts/verify-chart-card-entries.mjs
       - run: bun run typescript
-      # The separately published workspace packages: their typecheck and jest
-      # run (the root jest config ignores packages/). This is what gates their
-      # release; the release itself runs no tests.
-      - name: Workspace packages typecheck and test
+      # The separately published workspace packages build, typecheck and test
+      # in dependency order (the root jest config ignores packages/). This
+      # gates their release; the release itself runs no tests.
+      - name: Workspace package builds, typecheck and test
         run: |
           for package in packages/bloom-text packages/bloom-editor; do
-            (cd "$package" && bun run typescript && bun run test)
+            (cd "$package" && bun run build && bun run typescript && bun run test)
           done
       # The built `@oxy.so/bloom/color-engine` subpath, as a server loads it:
       # Bun, Node ESM, Node CommonJS and a node16 typecheck, pulling no React.

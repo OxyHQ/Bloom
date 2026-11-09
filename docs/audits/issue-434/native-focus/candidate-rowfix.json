@@ -1,0 +1,18 @@
+{
+  "case": "candidate-rowfix",
+  "apk_sha256": "b7b94b3e0899aadc0d02810778b925f26904f95b0360b7065ee56d5dce2dbeda",
+  "embedded_bundle_sha256": "68989cd36ff8a89f12deb6d3599f1719061d360db6b0ae53990d3deee92fab89",
+  "block_row_source": "/editor-rowfix/package/src/react/BlockRow.tsx",
+  "block_row_sha256": "d1454c17f90f84b2f3e8862c1fa12054a44d48eb10125d268d82a506bf2821ff",
+  "has_web_only_stacking": true,
+  "device": "Pixel 8a, serial 43221JEKB12200",
+  "density": 420,
+  "font_scale": 1.15,
+  "versions": {
+    "bloom": "17.22.0 packed candidate",
+    "editor": "0.7.2 packed candidate + rowfix",
+    "react_native": "0.88.1",
+    "enriched_html": "1.1.1"
+  },
+  "status": "diagnostic, not final published acceptance"
+}

@@ -1,7 +1,7 @@
 import type { ActiveMarks } from '@oxy.so/bloom-text/model';
 import { useSyncExternalStore } from 'react';
 import type { BlockId } from '../model/document';
-import type { FormatAction, MentionItem } from './context';
+import type { EditorContextValue, FormatAction, MentionItem } from './context';
 
 /** Transient editor UI state, kept out of the document and its history. */
 export interface UiState {
@@ -35,6 +35,8 @@ export interface UiState {
   hovered: BlockId | null;
   /** The application's actions on selected text, as the editor was given them. */
   formatActions: readonly FormatAction[];
+  /** Mounted editable surface's navigation actions; null after readOnly/unmount. */
+  inlineActions: Pick<EditorContextValue, 'onOpenLink' | 'onOpenMention'> | null;
   /** A block being dragged and where it would drop. */
   drag: {
     ids: readonly BlockId[];
@@ -57,6 +59,7 @@ export class UiStore {
     codeLanguageMenu: null,
     hovered: null,
     formatActions: [],
+    inlineActions: null,
     drag: null,
   };
   private readonly listeners = new Set<() => void>();

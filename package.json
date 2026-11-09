@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "17.31.0",
+  "version": "17.32.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -311,6 +311,20 @@
       "require": {
         "types": "./lib/typescript/commonjs/overlay/index.d.ts",
         "default": "./lib/commonjs/overlay/index.js"
+      }
+    },
+    "./overlay/back": {
+      "react-native": {
+        "types": "./lib/typescript/module/overlay/back.d.ts",
+        "default": "./src/overlay/back.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/overlay/back.d.ts",
+        "default": "./lib/module/overlay/back.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/overlay/back.d.ts",
+        "default": "./lib/commonjs/overlay/back.js"
       }
     },
     "./dialog": {
@@ -4542,6 +4556,9 @@
       ],
       "overlay": [
         "./lib/typescript/module/overlay/index.d.ts"
+      ],
+      "overlay/back": [
+        "./lib/typescript/module/overlay/back.d.ts"
       ],
       "dialog": [
         "./lib/typescript/module/dialog/index.d.ts"

@@ -1,0 +1,26 @@
+[
+  {
+    "source": "/editor-handoff/package/src/react/BlockRow.tsx",
+    "sha256": "d1454c17f90f84b2f3e8862c1fa12054a44d48eb10125d268d82a506bf2821ff",
+    "blurBeforeHandoff": false,
+    "toolbarActions": false
+  },
+  {
+    "source": "/editor-handoff/package/src/react/TextBlock.tsx",
+    "sha256": "e16674057ab30316566fec32af38357afae775d89c8038eaa019d9166e4bd0e2",
+    "blurBeforeHandoff": false,
+    "toolbarActions": false
+  },
+  {
+    "source": "/editor-handoff/package/src/react/FormatBar.tsx",
+    "sha256": "a3067f8f08350a612f80c31a66a08bbc45b9fe1e5861cb1ae26630a34a50d5bf",
+    "blurBeforeHandoff": true,
+    "toolbarActions": false
+  },
+  {
+    "source": "/editor-handoff/package/src/react/EditorToolbar.tsx",
+    "sha256": "2262309ef83df747fe63279d0d216a68226972c896e24d0f8c916e9ab2876981",
+    "blurBeforeHandoff": false,
+    "toolbarActions": true
+  }
+]

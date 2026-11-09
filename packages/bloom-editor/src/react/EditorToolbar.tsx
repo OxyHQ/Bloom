@@ -1,7 +1,10 @@
 import { useSyncExternalStore } from 'react';
-import { ScrollView, type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { ScrollArea } from '@oxy.so/bloom/layout';
 import { indent, outdent } from '../model/commands';
 import type { EditorController } from './controller';
+import { InlineActions } from './InlinePopover';
+import { inlineTargetAt } from './inline-target';
 import { BarButton, FormatBar } from './FormatBar';
 import { KeepFocus } from './KeepFocus';
 import { DEFAULT_LABELS, type EditorLabels } from './labels';
@@ -34,11 +37,18 @@ export function EditorToolbar({
   const { store, ui } = controller;
   const focused = useUi(ui, (s) => s.focused);
   const linking = useUi(ui, (s) => s.linking);
+  const inlineActions = useUi(ui, (s) => s.inlineActions);
+  const suggestions = useUi(ui, (s) => s.slash !== null || s.mention !== null);
+  const document = useSyncExternalStore(store.subscribe, () => store.doc);
   const selection = useSyncExternalStore(store.subscribe, () => controller.textSelection);
   const canUndo = useSyncExternalStore(store.subscribe, () => store.getSnapshot().canUndo);
   const canRedo = useSyncExternalStore(store.subscribe, () => store.getSnapshot().canRedo);
-  if ((!focused && !linking) || !selection) return null;
+  if (!inlineActions || (!focused && !linking) || !selection) return null;
   const blockId = selection.blockId;
+  const target =
+    focused === blockId && selection.start === selection.end && !suggestions
+      ? inlineTargetAt(document.blocks[blockId]?.text ?? [], selection.start)
+      : null;
   const run = (command: Parameters<typeof store.run>[0]) => {
     store.sealHistory();
     store.run(command);
@@ -54,15 +64,24 @@ export function EditorToolbar({
         style,
       ]}
     >
-      <ScrollView
+      <ScrollArea
         horizontal
         keyboardShouldPersistTaps="always"
-        showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
         <FormatBar controller={controller} theme={theme} labels={merged} />
+        {!linking && target ? (
+          <InlineActions
+            {...inlineActions}
+            target={target}
+            theme={theme}
+            labels={merged}
+            controller={controller}
+            showDestination={false}
+          />
+        ) : null}
         {linking ? null : (
-          <KeepFocus style={styles.row}>
+          <KeepFocus owner={controller} style={styles.row}>
             <View style={[styles.separator, { backgroundColor: theme.border }]} />
             {/* The block's own menu (turn into, colour, duplicate, move,
                 delete): on touch there is no gutter handle to open it. */}
@@ -114,7 +133,7 @@ export function EditorToolbar({
             </BarButton>
           </KeepFocus>
         )}
-      </ScrollView>
+      </ScrollArea>
     </View>
   );
 }

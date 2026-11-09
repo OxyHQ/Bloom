@@ -80,6 +80,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./connection-status', 'connection-status/index.ts'],
   // Shared overlay plumbing (OverlayRoot + Backdrop) for portaled surfaces.
   ['./overlay', 'overlay/index.ts'],
+  ['./overlay/back', 'overlay/back.ts'],
   ['./dialog', 'dialog/index.ts'],
   ['./appearance', 'appearance/index.ts'],
   ['./screen', 'screen/index.ts'],

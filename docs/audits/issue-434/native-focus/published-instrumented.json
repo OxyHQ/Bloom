@@ -1,0 +1,18 @@
+{
+  "case": "published-instrumented",
+  "apk_sha256": "ca55c408d1f58e09c7efbb97fd2fd1caf6508d3cea447f1bfa6e7cd5067ae0fc",
+  "embedded_bundle_sha256": "362eea614e4f01a6b71bbb922ee55bac0e8d679ff1321962351963100294cacd",
+  "block_row_source": "/node_modules/@oxy.so/bloom-editor/src/react/BlockRow.tsx",
+  "block_row_sha256": "d632492be7d508de106c039137299c192d07dc9187f3bb69b0af7e4dba629176",
+  "has_web_only_stacking": false,
+  "device": "Pixel 8a, serial 43221JEKB12200",
+  "density": 420,
+  "font_scale": 1.15,
+  "versions": {
+    "bloom": "17.22.0 published",
+    "editor": "0.7.2 published",
+    "react_native": "0.88.1",
+    "enriched_html": "1.1.1"
+  },
+  "status": "diagnostic, not final published acceptance"
+}

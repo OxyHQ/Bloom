@@ -1,0 +1,30 @@
+diff --git a/apps/app/components/page-editor/page-editor.tsx b/apps/app/components/page-editor/page-editor.tsx
+index 3d775e4..bc6de1c 100644
+--- a/apps/app/components/page-editor/page-editor.tsx
++++ b/apps/app/components/page-editor/page-editor.tsx
+@@ -16,7 +16,7 @@ import {
+ } from '@oxy.so/bloom-editor';
+ import { RiChat3Line } from '@oxy.so/bloom/icons/RiChat3Line';
+ import { confirm } from '@oxy.so/bloom/surfaces';
+-import { useDialogControl } from '@oxy.so/bloom/dialog';
++import { Dialog, useDialogControl } from '@oxy.so/bloom/dialog';
+ import { toast } from '@oxy.so/bloom/toast';
+ import { router } from 'expo-router';
+ import { BlockCommentsProvider, openCommentCounts } from '@/components/comments/comment-indicator';
+@@ -131,6 +131,7 @@ export function PageEditor({
+   const extras = useEditorExtras(pageId, store, readOnly);
+   const renderers = useMemo(() => (store ? createRenderers(pageId, store) : {}), [pageId, store]);
+   const iconPicker = useDialogControl();
++  const fixtureDialog = useDialogControl();
+   const calloutTarget = useRef<string | null>(null);
+   const openIconPicker = iconPicker.open;
+   const markers = useMemo(
+@@ -510,7 +511,7 @@ export function PageEditor({
+       )}
+       <BlockCommentsProvider counts={commentCounts} open={openBlockComments}>
+         <EmbeddedEditorProvider value={embedded}>
+-          {layout === 'canvas' ? <PageCanvas {...editorProps} /> : <BlockEditor {...editorProps} />}
++          {layout === 'canvas' ? <PageCanvas {...editorProps} /> : <><button onClick={() => fixtureDialog.open()}>Open editor fixture</button><Dialog control={fixtureDialog} title="Editor test dialog"><BlockEditor {...editorProps} /></Dialog></>}
+         </EmbeddedEditorProvider>
+       </BlockCommentsProvider>
+     </View>

@@ -16,7 +16,7 @@ Two halves:
 
 ## UI dependency and suggestions
 
-The React adapter requires `@oxy.so/bloom >=15.11.0 <16` and a `BloomProvider`
+The React adapter requires `@oxy.so/bloom >=17.24.0 <18` and a `BloomProvider`
 at the application root. Slash and mention menus use the actual
 `SuggestionList` from `@oxy.so/bloom/chat-composer`; the editor supplies data,
 the caret anchor and command callbacks. The `/model` and `/yjs` entrypoints
@@ -85,6 +85,15 @@ const controller = useEditorController(store);
 // On touch devices, above the keyboard:
 <EditorToolbar controller={controller} theme={theme} labels={labels} mentionIndicator="@" />
 ```
+
+On native, moving the caret through a link or mention keeps the input and IME
+active. The toolbar offers Open and Remove link for the current collapsed caret;
+Link explicitly opens the existing URL for editing. It never opens a modal just
+because the caret moved. Mount `EditorToolbar` with the same controller as the
+editable surface. A custom host without it must provide deliberate actions using
+`controller.openLinkEditor()` / `removeLink()` and its navigation callbacks.
+Toolbar callbacks follow the mounted surface and are cleared for read-only mode
+and unmount; changing the selected block removes stale contextual actions.
 
 Every edit is a transaction on the store (`store.run(command)`,
 `store.dispatch(tx)`); listen with `store.onTransaction` to persist.

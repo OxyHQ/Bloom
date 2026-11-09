@@ -1,0 +1,27 @@
+diff --git a/apps/app/components/page-editor/page-editor.tsx b/apps/app/components/page-editor/page-editor.tsx
+index 3d775e4..022f07b 100644
+--- a/apps/app/components/page-editor/page-editor.tsx
++++ b/apps/app/components/page-editor/page-editor.tsx
+@@ -1,3 +1,4 @@
++import { BloomScope } from '@oxy.so/bloom/appearance';
+ import { useSlashItems } from './slash-items';
+ import { DatabasePicker } from './database-picker';
+ import { PresenceAvatars } from './presence-avatars';
+@@ -408,7 +409,7 @@ export function PageEditor({
+     confirmRemove,
+     domIdPrefix: PAGE_DOM_PREFIX,
+     theme,
+-    labels,
++    labels: { ...labels, apply: 'Änderungen am ausgewählten Hyperlink übernehmen', cancel: 'Bearbeitung des ausgewählten Hyperlinks abbrechen' },
+     readOnly,
+   };
+ 
+@@ -510,7 +511,7 @@ export function PageEditor({
+       )}
+       <BlockCommentsProvider counts={commentCounts} open={openBlockComments}>
+         <EmbeddedEditorProvider value={embedded}>
+-          {layout === 'canvas' ? <PageCanvas {...editorProps} /> : <BlockEditor {...editorProps} />}
++          {layout === 'canvas' ? <PageCanvas {...editorProps} /> : <BloomScope size="lg"><BlockEditor {...editorProps} /></BloomScope>}
+         </EmbeddedEditorProvider>
+       </BlockCommentsProvider>
+     </View>

@@ -54,6 +54,8 @@ const BlockRow = memo(function BlockRow({
   // own (react-native-web gives each `z-index: 0`), so the block that has
   // one, and the blocks it is nested in, are raised over their siblings —
   // and its row over its own children.
+  // Apply that stacking only on web. Fabric materializes a flattened row
+  // when zIndex changes, detaching the focused native input and losing its IME.
   const raised = useUi(ui, (s) => {
     const owner = s.slash?.blockId ?? s.mention?.blockId ?? s.linking ?? s.focused;
     if (owner === id) return 'self';
@@ -189,14 +191,14 @@ const BlockRow = memo(function BlockRow({
           styles.decorated,
           { borderLeftColor: decoration.color },
         ],
-        raised !== null && styles.raised,
+        Platform.OS === 'web' && raised !== null && styles.raised,
       ]}
       accessibilityHint={decoration?.label}
     >
       <View
         style={[
           styles.row,
-          raised === 'self' && styles.raised,
+          Platform.OS === 'web' && raised === 'self' && styles.raised,
           block.type === 'callout' && [
             styles.callout,
             { backgroundColor: background ?? theme.codeBackground },

@@ -3,8 +3,12 @@
   "compilerOptions": {
     "types": [],
     "rootDir": "src",
-    // The build resolves bloom-text through its published types, not its source.
-    "paths": {}
+    // Resolve the new shared Popover contract from the root build. bloom-text
+    // continues to resolve through its published types, not its source.
+    "paths": {
+      "@oxy.so/bloom/popover": ["../../lib/typescript/module/popover/index.d.ts"],
+      "@oxy.so/bloom/overlay/back": ["../../lib/typescript/module/overlay/back.d.ts"]
+    }
   },
   "exclude": ["lib", "node_modules", "src/**/__tests__/**", "src/**/*.stories.tsx"]
 }

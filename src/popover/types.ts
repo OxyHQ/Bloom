@@ -29,7 +29,7 @@ export type PopoverContentProps = OverlaySurfaceProps & {
   /** Standard optical surface or plain fill. Default surface. */
   material?: 'surface' | 'flat';
   /** Web selection/caret anchor. Re-measured by the shared owner on scroll and resize.
-   * Native retains its existing presentation; this affects web placement only.
+   * Native presentation remains a sheet; this affects web placement only.
    * Return null when the target is gone. */
   virtualAnchor?: {
     getBoundingClientRect: () => {

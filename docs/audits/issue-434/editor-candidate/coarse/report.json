@@ -1,0 +1,979 @@
+{
+  "sourceSha": "cec942f1e5b07743138d5da8c2a6724664e1c80d",
+  "presetVersion": "6.5.1",
+  "sourceDiff": "",
+  "bloomVersion": "17.22.0",
+  "observedAt": "2026-11-08T08:54:09.242Z",
+  "mode": "development Metro; synthetic account/API; seeded offline document; no production API traffic",
+  "origin": "http://localhost:8130",
+  "frames": [
+    {
+      "name": "selection-390",
+      "url": "http://localhost:8130/p/baseline-document",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "documentWidth": 390,
+      "body": "Project brief\nProject brief\nAdd icon\nAdd cover\nSaved\n+\n⋮⋮\n\nProject overview\n\n+\n⋮⋮\n\nSection 1: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 2: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 3: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 4: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 5: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 6: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 7: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 8: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 9: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 10: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 11: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 12: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 13: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 14: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 15: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 16: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 17: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 18: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 19: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 20: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 21: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 22: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 23: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 24: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 25: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 26: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 27: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 28: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 29: Define the scope, preserve the shared composition and verify the complete workflow.\n\nB\nI\nU\nS\n</>\nLink\nA",
+      "regions": [
+        {
+          "tag": "DIV",
+          "testID": null,
+          "role": null,
+          "text": null,
+          "viewport": null,
+          "x": 0,
+          "y": 88,
+          "width": 390,
+          "height": 756,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "testID": null,
+          "role": null,
+          "text": null,
+          "viewport": "element",
+          "x": 0,
+          "y": 88,
+          "width": 390,
+          "height": 756,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        }
+      ]
+    },
+    {
+      "name": "keyboard-entry-390",
+      "url": "http://localhost:8130/p/baseline-document",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "documentWidth": 390,
+      "body": "Project brief\nProject brief\nAdd icon\nAdd cover\nSaved\n+\n⋮⋮\n\nProject overview\n\n+\n⋮⋮\n\nSection 1: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 2: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 3: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 4: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 5: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 6: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 7: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 8: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 9: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 10: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 11: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 12: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 13: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 14: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 15: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 16: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 17: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 18: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 19: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 20: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 21: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 22: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 23: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 24: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 25: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 26: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 27: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 28: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 29: Define the scope, preserve the shared composition and verify the complete workflow.\n\nB\nI\nU\nS\n</>\nLink\nA",
+      "regions": [
+        {
+          "tag": "DIV",
+          "testID": null,
+          "role": null,
+          "text": null,
+          "viewport": null,
+          "x": 0,
+          "y": 88,
+          "width": 390,
+          "height": 756,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "testID": null,
+          "role": null,
+          "text": null,
+          "viewport": "element",
+          "x": 0,
+          "y": 88,
+          "width": 390,
+          "height": 756,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        }
+      ]
+    },
+    {
+      "name": "apply-new-selection-390",
+      "url": "http://localhost:8130/p/baseline-document",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "documentWidth": 390,
+      "body": "Project brief\nProject brief\nAdd icon\nAdd cover\nOffline — the copy on this device; changes sync when you reconnect\n+\n⋮⋮\n\nProject overview\n\n+\n⋮⋮\n\nSection 1: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 2: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 3: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 4: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 5: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 6: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 7: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 8: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 9: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 10: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 11: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 12: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 13: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 14: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 15: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 16: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 17: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 18: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 19: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 20: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 21: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 22: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 23: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 24: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 25: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 26: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 27: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 28: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 29: Define the scope, preserve the shared composition and verify the complete workflow.\n\nB\nI\nU\nS\n</>\nLink\nA",
+      "regions": [
+        {
+          "tag": "DIV",
+          "testID": null,
+          "role": null,
+          "text": null,
+          "viewport": null,
+          "x": 0,
+          "y": 88,
+          "width": 390,
+          "height": 756,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "testID": null,
+          "role": null,
+          "text": null,
+          "viewport": "element",
+          "x": 0,
+          "y": 88,
+          "width": 390,
+          "height": 756,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        }
+      ]
+    },
+    {
+      "name": "existing-link-caret-390",
+      "url": "http://localhost:8130/p/baseline-document",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "documentWidth": 390,
+      "body": "Project brief\nProject brief\nAdd icon\nAdd cover\nOffline — the copy on this device; changes sync when you reconnect\n+\n⋮⋮\n\nProject overview\n\n+\n⋮⋮\n\nSection 1: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 2: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 3: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 4: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 5: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 6: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 7: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 8: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 9: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 10: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 11: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 12: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 13: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 14: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 15: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 16: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 17: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 18: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 19: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 20: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 21: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 22: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 23: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 24: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 25: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 26: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 27: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 28: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 29: Define the scope, preserve the shared composition and verify the complete workflow.\n\nhttp://localhost:8130/__editor-link/original\nOpen\nRemove link",
+      "regions": [
+        {
+          "tag": "DIV",
+          "testID": null,
+          "role": null,
+          "text": null,
+          "viewport": null,
+          "x": 0,
+          "y": 88,
+          "width": 390,
+          "height": 756,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "testID": null,
+          "role": null,
+          "text": null,
+          "viewport": "element",
+          "x": 0,
+          "y": 88,
+          "width": 390,
+          "height": 756,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        }
+      ]
+    },
+    {
+      "name": "palette-320",
+      "url": "http://localhost:8130/p/baseline-document",
+      "viewport": {
+        "width": 320,
+        "height": 844,
+        "dpr": 1
+      },
+      "documentWidth": 320,
+      "body": "Project brief\nProject brief\nAdd icon\nAdd cover\nOffline — the copy on this device; changes sync when you reconnect\n+\n⋮⋮\n\nProject overview\n\n+\n⋮⋮\n\nSection 1: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 2: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 3: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 4: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 5: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 6: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 7: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 8: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 9: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 10: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 11: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 12: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 13: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 14: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 15: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 16: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 17: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 18: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 19: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 20: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 21: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 22: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 23: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 24: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 25: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 26: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 27: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 28: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 29: Define the scope, preserve the shared composition and verify the complete workflow.\n\nColor\nA\nA\nA\nA\nA\nA\nA\nA\nA\nA\nBackground",
+      "regions": [
+        {
+          "tag": "DIV",
+          "testID": null,
+          "role": null,
+          "text": null,
+          "viewport": null,
+          "x": 0,
+          "y": 88,
+          "width": 320,
+          "height": 756,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "testID": null,
+          "role": null,
+          "text": null,
+          "viewport": "element",
+          "x": 0,
+          "y": 88,
+          "width": 320,
+          "height": 756,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        }
+      ]
+    },
+    {
+      "name": "palette-390",
+      "url": "http://localhost:8130/p/baseline-document",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "documentWidth": 390,
+      "body": "Project brief\nProject brief\nAdd icon\nAdd cover\nOffline — the copy on this device; changes sync when you reconnect\n+\n⋮⋮\n\nProject overview\n\n+\n⋮⋮\n\nSection 1: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 2: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 3: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 4: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 5: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 6: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 7: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 8: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 9: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 10: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 11: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 12: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 13: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 14: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 15: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 16: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 17: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 18: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 19: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 20: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 21: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 22: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 23: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 24: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 25: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 26: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 27: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 28: Define the scope, preserve the shared composition and verify the complete workflow.\n\n+\n⋮⋮\n\nSection 29: Define the scope, preserve the shared composition and verify the complete workflow.\n\nColor\nA\nA\nA\nA\nA\nA\nA\nA\nA\nA\nBackground",
+      "regions": [
+        {
+          "tag": "DIV",
+          "testID": null,
+          "role": null,
+          "text": null,
+          "viewport": null,
+          "x": 0,
+          "y": 88,
+          "width": 390,
+          "height": 756,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        },
+        {
+          "tag": "DIV",
+          "testID": null,
+          "role": null,
+          "text": null,
+          "viewport": "element",
+          "x": 0,
+          "y": 88,
+          "width": 390,
+          "height": 756,
+          "padding": "0px",
+          "fontSize": "16px",
+          "lineHeight": "24px",
+          "scrollTop": 0
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "unexpected": [],
+  "requests": [
+    "GET https://api.oxy.so/auth/oauth/client/fixture-nilo",
+    "GET https://api.oxy.so/session/device/directory",
+    "GET https://api.oxy.so/users/me",
+    "GET https://api.oxy.so/auth/oauth/client/fixture-nilo",
+    "GET https://api.oxy.so/safety/supervision",
+    "GET https://api.oxy.so/users/me",
+    "GET https://api.oxy.so/accounts",
+    "GET https://api.oxy.so/session/device/directory",
+    "POST https://api.oxy.so/session/device/add",
+    "POST https://api.oxy.so/apps/assertions",
+    "GET https://nilo-fixture.invalid/pages/baseline-document",
+    "GET https://nilo-fixture.invalid/workspaces",
+    "GET https://nilo-fixture.invalid/pages/baseline-document/comments",
+    "GET https://nilo-fixture.invalid/workspaces/baseline-workspace/teamspaces",
+    "GET https://nilo-fixture.invalid/notifications/unread-count",
+    "GET https://nilo-fixture.invalid/pages",
+    "GET https://nilo-fixture.invalid/databases",
+    "GET https://nilo-fixture.invalid/pages/recent",
+    "GET https://nilo-fixture.invalid/pages/shared",
+    "GET https://nilo-fixture.invalid/pages",
+    "GET https://nilo-fixture.invalid/workspaces/baseline-workspace/members",
+    "GET https://nilo-fixture.invalid/notifications/vapid-public-key",
+    "GET https://nilo-fixture.invalid/pages/baseline-document/breadcrumb",
+    "GET https://nilo-fixture.invalid/pages/baseline-document/follow",
+    "GET https://nilo-fixture.invalid/pages/baseline-document/backlinks",
+    "GET https://nilo-fixture.invalid/pages/baseline-document/permissions",
+    "POST https://nilo-fixture.invalid/pages/baseline-document/visit",
+    "GET https://nilo-fixture.invalid/pages/recent"
+  ],
+  "checks": {
+    "before": [
+      "",
+      "Project brief",
+      "",
+      "",
+      "",
+      "Add icon",
+      "Add cover",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "+",
+      "⋮⋮",
+      "",
+      "B",
+      "I",
+      "U",
+      "S",
+      "</>",
+      "Link",
+      "A",
+      ""
+    ],
+    "afterKeyboardEntry": {
+      "active": "<button id=\"bloom-btn-_r_5b_\" type=\"button\" class=\"bloom-btn\" role=\"button\" aria-pressed=\"false\" aria-label=\"Italic\" style=\"--bloom-btn-height: 36px; --bloom-btn-padding: 8px; --bloom-btn-radius: 9999px; --bloom-btn-font-size: 14px; --bloom-btn-line-height: 20px; --bloom-btn-font-weight: 500; --bloom-btn-letter-spacing: normal; --bloom-surface-filter: blur(24px) saturate(1.8705) contrast(0.44189) brightness(1.38000); --bloom-surface-highlight-filter: brightness(1.5600); --bloom-surface-edge-glow: linear-gradient(to bottom, rgba(0,0,0,0.250) 0px, rgba(0,0,0,0.250) 1.25px, rgba(0,0,0,0.214) 1.75px, rgba(0,0,0,0.179) 2.25px, rgba(0,0,0,0.161) 2.75px, rgba(0,0,0,0.143) 3.25px, rgba(0,0,0,0.125) 3.75px, rgba(0,0,0,0.107) 4.25px, rgba(0,0,0,0.089) 5px, rgba(0,0,0,0.054) 6px, rgba(0,0,0,0.027) 7px, rgba(0,0,0,0.000) 8px, rgba(0,0,0,0.000) calc(100% - 8px), rgba(0,0,0,0.027) calc(100% - 7px), rgba(0,0,0,0.054) calc(100% - 6px), rgba(0,0,0,0.089) calc(100% - 5px), rgba(0,0,0,0.107) calc(100% - 4.25px), rgba(0,0,0,0.125) calc(100% - 3.75px), rgba(0,0,0,0.143) calc(100% - 3.25px), rgba(0,0,0,0.161) calc(100% - 2.75px), rgba(0,0,0,0.179) calc(100% - 2.25px), rgba(0,0,0,0.214) calc(100% - 1.75px), rgba(0,0,0,0.250) calc(100% - 1.25px), rgba(0,0,0,0.250) calc(100% - 0px)); --bloom-surface-corner-y: 18px; --bloom-btn-gap: 2px; --bloom-btn-ring: rgb(126 103 0); --bloom-btn-press-scale: 1; --bloom-btn-shadow: none; --bloom-btn-border-width: 0px; --bloom-btn-fg: rgb(113 93 0); --bloom-btn-fg-hover: rgb(113 93 0); --bloom-btn-fg-active: rgb(113 93 0); --bloom-btn-fg-disabled: rgb(83 70 15); --bloom-btn-disabled-opacity: 1; --bloom-btn-bg: transparent; --bloom-surface-solid: transparent; --bloom-surface-hairline: transparent; --bloom-btn-bg-hover: rgba(172, 142, 0, 0.13); --bloom-btn-bg-active: rgba(172, 142, 0, 0.13); --bloom-btn-bg-disabled: rgba(0, 0, 0, 0); --bloom-btn-border: rgba(0, 0, 0, 0); --bloom-btn-border-hover: rgba(0, 0, 0, 0); --bloom-btn-border-active: rgba(0, 0, 0, 0); --bloom-btn-border-disabled: rgba(0, 0, 0, 0); height: 36px; padding-left: 8px; padding-right: 8px; border-radius: 9999px; font-size: 14px; line-height: 20px; font-weight: 500; min-width: 44px; min-height: 44px;\"><span style=\"display: inline-flex; flex-flow: inherit; align-items: inherit; place-content: inherit; gap: inherit; align-self: stretch; flex-grow: 1; flex-shrink: 1; min-width: 0px;\"><span style=\"display: inline-flex; align-items: center; padding-left: 4px; padding-right: 4px; font-style: italic;\">I</span></span></button>",
+      "selection": "Section"
+    },
+    "linkButtonsAfterEntry": 1,
+    "linkDraftCancelled": true,
+    "afterApply": "<p><a href=\"http://localhost:8130/__editor-link/original\">Section</a> 1: Define the scope, preserve the shared composition and verify the complete workflow.</p>",
+    "inlineHref": "http://localhost:8130/__editor-link/original",
+    "linkActivation": [
+      {
+        "kind": "ordinary",
+        "href": "http://localhost:8130/__editor-link/original",
+        "calls": [
+          "http://localhost:8130/__editor-link/original"
+        ]
+      },
+      {
+        "kind": "control",
+        "href": "http://localhost:8130/__editor-link/original",
+        "calls": [
+          "http://localhost:8130/__editor-link/original"
+        ]
+      },
+      {
+        "kind": "middle",
+        "href": "http://localhost:8130/__editor-link/original",
+        "calls": [
+          "http://localhost:8130/__editor-link/original"
+        ]
+      }
+    ],
+    "existingDraft": "http://localhost:8130/__editor-link/original",
+    "invalidDraft": {
+      "value": "not a link",
+      "invalid": "true"
+    },
+    "undoHref": "http://localhost:8130/__editor-link/original",
+    "escape": {
+      "drafts": 0,
+      "selection": "Section"
+    },
+    "outerEscape": {
+      "panels": 0,
+      "selection": "Section"
+    },
+    "unrelatedFocus": {
+      "drafts": 0,
+      "active": "unrelated-field"
+    },
+    "palette320": {
+      "rect": {
+        "x": 46,
+        "y": 217,
+        "width": 266,
+        "height": 244,
+        "top": 217,
+        "right": 312,
+        "bottom": 461,
+        "left": 46
+      },
+      "buttons": [
+        {
+          "label": "Color: Default",
+          "rect": {
+            "x": 55,
+            "y": 246,
+            "width": 44,
+            "height": 44,
+            "top": 246,
+            "right": 99,
+            "bottom": 290,
+            "left": 55
+          }
+        },
+        {
+          "label": "Color: Gray",
+          "rect": {
+            "x": 103,
+            "y": 246,
+            "width": 44,
+            "height": 44,
+            "top": 246,
+            "right": 147,
+            "bottom": 290,
+            "left": 103
+          }
+        },
+        {
+          "label": "Color: Brown",
+          "rect": {
+            "x": 151,
+            "y": 246,
+            "width": 44,
+            "height": 44,
+            "top": 246,
+            "right": 195,
+            "bottom": 290,
+            "left": 151
+          }
+        },
+        {
+          "label": "Color: Orange",
+          "rect": {
+            "x": 199,
+            "y": 246,
+            "width": 44,
+            "height": 44,
+            "top": 246,
+            "right": 243,
+            "bottom": 290,
+            "left": 199
+          }
+        },
+        {
+          "label": "Color: Yellow",
+          "rect": {
+            "x": 247,
+            "y": 246,
+            "width": 44,
+            "height": 44,
+            "top": 246,
+            "right": 291,
+            "bottom": 290,
+            "left": 247
+          }
+        },
+        {
+          "label": "Color: Green",
+          "rect": {
+            "x": 55,
+            "y": 294,
+            "width": 44,
+            "height": 44,
+            "top": 294,
+            "right": 99,
+            "bottom": 338,
+            "left": 55
+          }
+        },
+        {
+          "label": "Color: Blue",
+          "rect": {
+            "x": 103,
+            "y": 294,
+            "width": 44,
+            "height": 44,
+            "top": 294,
+            "right": 147,
+            "bottom": 338,
+            "left": 103
+          }
+        },
+        {
+          "label": "Color: Purple",
+          "rect": {
+            "x": 151,
+            "y": 294,
+            "width": 44,
+            "height": 44,
+            "top": 294,
+            "right": 195,
+            "bottom": 338,
+            "left": 151
+          }
+        },
+        {
+          "label": "Color: Pink",
+          "rect": {
+            "x": 199,
+            "y": 294,
+            "width": 44,
+            "height": 44,
+            "top": 294,
+            "right": 243,
+            "bottom": 338,
+            "left": 199
+          }
+        },
+        {
+          "label": "Color: Red",
+          "rect": {
+            "x": 247,
+            "y": 294,
+            "width": 44,
+            "height": 44,
+            "top": 294,
+            "right": 291,
+            "bottom": 338,
+            "left": 247
+          }
+        },
+        {
+          "label": "Background: Default",
+          "rect": {
+            "x": 55,
+            "y": 360,
+            "width": 44,
+            "height": 44,
+            "top": 360,
+            "right": 99,
+            "bottom": 404,
+            "left": 55
+          }
+        },
+        {
+          "label": "Background: Gray",
+          "rect": {
+            "x": 103,
+            "y": 360,
+            "width": 44,
+            "height": 44,
+            "top": 360,
+            "right": 147,
+            "bottom": 404,
+            "left": 103
+          }
+        },
+        {
+          "label": "Background: Brown",
+          "rect": {
+            "x": 151,
+            "y": 360,
+            "width": 44,
+            "height": 44,
+            "top": 360,
+            "right": 195,
+            "bottom": 404,
+            "left": 151
+          }
+        },
+        {
+          "label": "Background: Orange",
+          "rect": {
+            "x": 199,
+            "y": 360,
+            "width": 44,
+            "height": 44,
+            "top": 360,
+            "right": 243,
+            "bottom": 404,
+            "left": 199
+          }
+        },
+        {
+          "label": "Background: Yellow",
+          "rect": {
+            "x": 247,
+            "y": 360,
+            "width": 44,
+            "height": 44,
+            "top": 360,
+            "right": 291,
+            "bottom": 404,
+            "left": 247
+          }
+        },
+        {
+          "label": "Background: Green",
+          "rect": {
+            "x": 55,
+            "y": 408,
+            "width": 44,
+            "height": 44,
+            "top": 408,
+            "right": 99,
+            "bottom": 452,
+            "left": 55
+          }
+        },
+        {
+          "label": "Background: Blue",
+          "rect": {
+            "x": 103,
+            "y": 408,
+            "width": 44,
+            "height": 44,
+            "top": 408,
+            "right": 147,
+            "bottom": 452,
+            "left": 103
+          }
+        },
+        {
+          "label": "Background: Purple",
+          "rect": {
+            "x": 151,
+            "y": 408,
+            "width": 44,
+            "height": 44,
+            "top": 408,
+            "right": 195,
+            "bottom": 452,
+            "left": 151
+          }
+        },
+        {
+          "label": "Background: Pink",
+          "rect": {
+            "x": 199,
+            "y": 408,
+            "width": 44,
+            "height": 44,
+            "top": 408,
+            "right": 243,
+            "bottom": 452,
+            "left": 199
+          }
+        },
+        {
+          "label": "Background: Red",
+          "rect": {
+            "x": 247,
+            "y": 408,
+            "width": 44,
+            "height": 44,
+            "top": 408,
+            "right": 291,
+            "bottom": 452,
+            "left": 247
+          }
+        }
+      ]
+    },
+    "palette390": {
+      "rect": {
+        "x": 101,
+        "y": 217,
+        "width": 266,
+        "height": 244,
+        "top": 217,
+        "right": 367,
+        "bottom": 461,
+        "left": 101
+      },
+      "buttons": [
+        {
+          "label": "Color: Default",
+          "rect": {
+            "x": 110,
+            "y": 246,
+            "width": 44,
+            "height": 44,
+            "top": 246,
+            "right": 154,
+            "bottom": 290,
+            "left": 110
+          }
+        },
+        {
+          "label": "Color: Gray",
+          "rect": {
+            "x": 158,
+            "y": 246,
+            "width": 44,
+            "height": 44,
+            "top": 246,
+            "right": 202,
+            "bottom": 290,
+            "left": 158
+          }
+        },
+        {
+          "label": "Color: Brown",
+          "rect": {
+            "x": 206,
+            "y": 246,
+            "width": 44,
+            "height": 44,
+            "top": 246,
+            "right": 250,
+            "bottom": 290,
+            "left": 206
+          }
+        },
+        {
+          "label": "Color: Orange",
+          "rect": {
+            "x": 254,
+            "y": 246,
+            "width": 44,
+            "height": 44,
+            "top": 246,
+            "right": 298,
+            "bottom": 290,
+            "left": 254
+          }
+        },
+        {
+          "label": "Color: Yellow",
+          "rect": {
+            "x": 302,
+            "y": 246,
+            "width": 44,
+            "height": 44,
+            "top": 246,
+            "right": 346,
+            "bottom": 290,
+            "left": 302
+          }
+        },
+        {
+          "label": "Color: Green",
+          "rect": {
+            "x": 110,
+            "y": 294,
+            "width": 44,
+            "height": 44,
+            "top": 294,
+            "right": 154,
+            "bottom": 338,
+            "left": 110
+          }
+        },
+        {
+          "label": "Color: Blue",
+          "rect": {
+            "x": 158,
+            "y": 294,
+            "width": 44,
+            "height": 44,
+            "top": 294,
+            "right": 202,
+            "bottom": 338,
+            "left": 158
+          }
+        },
+        {
+          "label": "Color: Purple",
+          "rect": {
+            "x": 206,
+            "y": 294,
+            "width": 44,
+            "height": 44,
+            "top": 294,
+            "right": 250,
+            "bottom": 338,
+            "left": 206
+          }
+        },
+        {
+          "label": "Color: Pink",
+          "rect": {
+            "x": 254,
+            "y": 294,
+            "width": 44,
+            "height": 44,
+            "top": 294,
+            "right": 298,
+            "bottom": 338,
+            "left": 254
+          }
+        },
+        {
+          "label": "Color: Red",
+          "rect": {
+            "x": 302,
+            "y": 294,
+            "width": 44,
+            "height": 44,
+            "top": 294,
+            "right": 346,
+            "bottom": 338,
+            "left": 302
+          }
+        },
+        {
+          "label": "Background: Default",
+          "rect": {
+            "x": 110,
+            "y": 360,
+            "width": 44,
+            "height": 44,
+            "top": 360,
+            "right": 154,
+            "bottom": 404,
+            "left": 110
+          }
+        },
+        {
+          "label": "Background: Gray",
+          "rect": {
+            "x": 158,
+            "y": 360,
+            "width": 44,
+            "height": 44,
+            "top": 360,
+            "right": 202,
+            "bottom": 404,
+            "left": 158
+          }
+        },
+        {
+          "label": "Background: Brown",
+          "rect": {
+            "x": 206,
+            "y": 360,
+            "width": 44,
+            "height": 44,
+            "top": 360,
+            "right": 250,
+            "bottom": 404,
+            "left": 206
+          }
+        },
+        {
+          "label": "Background: Orange",
+          "rect": {
+            "x": 254,
+            "y": 360,
+            "width": 44,
+            "height": 44,
+            "top": 360,
+            "right": 298,
+            "bottom": 404,
+            "left": 254
+          }
+        },
+        {
+          "label": "Background: Yellow",
+          "rect": {
+            "x": 302,
+            "y": 360,
+            "width": 44,
+            "height": 44,
+            "top": 360,
+            "right": 346,
+            "bottom": 404,
+            "left": 302
+          }
+        },
+        {
+          "label": "Background: Green",
+          "rect": {
+            "x": 110,
+            "y": 408,
+            "width": 44,
+            "height": 44,
+            "top": 408,
+            "right": 154,
+            "bottom": 452,
+            "left": 110
+          }
+        },
+        {
+          "label": "Background: Blue",
+          "rect": {
+            "x": 158,
+            "y": 408,
+            "width": 44,
+            "height": 44,
+            "top": 408,
+            "right": 202,
+            "bottom": 452,
+            "left": 158
+          }
+        },
+        {
+          "label": "Background: Purple",
+          "rect": {
+            "x": 206,
+            "y": 408,
+            "width": 44,
+            "height": 44,
+            "top": 408,
+            "right": 250,
+            "bottom": 452,
+            "left": 206
+          }
+        },
+        {
+          "label": "Background: Pink",
+          "rect": {
+            "x": 254,
+            "y": 408,
+            "width": 44,
+            "height": 44,
+            "top": 408,
+            "right": 298,
+            "bottom": 452,
+            "left": 254
+          }
+        },
+        {
+          "label": "Background: Red",
+          "rect": {
+            "x": 302,
+            "y": 408,
+            "width": 44,
+            "height": 44,
+            "top": 408,
+            "right": 346,
+            "bottom": 452,
+            "left": 302
+          }
+        }
+      ]
+    }
+  },
+  "status": "captured"
+}

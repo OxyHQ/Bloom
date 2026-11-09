@@ -21,6 +21,61 @@ import { UiStore } from './ui-store';
 export class EditorController {
   readonly ui = new UiStore();
   readonly inputs = new Map<BlockId, RichTextInputHandle>();
+  readonly controlHosts = new Set<unknown>();
+
+  ownsControlFocus(target: unknown): boolean {
+    return [...this.controlHosts].some((host) => {
+      const node = host as { contains?: (target: unknown) => boolean } | null;
+      return typeof node?.contains === 'function' && node.contains(target);
+    });
+  }
+
+  private editable = true;
+  private linkSession: {
+    blockId: BlockId;
+    start: number;
+    end: number;
+    text: string;
+  } | null = null;
+
+  /** A link draft is cancelled, never retargeted, when its context changes. */
+  validateLinkSession(): boolean {
+    const session = this.linkSession;
+    const selection = this.textSelection;
+    if (!session) return false;
+    const block = this.store.doc.blocks[session.blockId];
+    if (
+      !this.editable ||
+      !block ||
+      !selection ||
+      selection.blockId !== session.blockId ||
+      selection.start !== session.start ||
+      selection.end !== session.end ||
+      JSON.stringify(block.text ?? []) !== session.text
+    ) {
+      this.cancelLinkEditor();
+      return false;
+    }
+    return true;
+  }
+
+  setEditable(editable: boolean): void {
+    this.editable = editable;
+    if (!editable) this.cancelLinkEditor();
+  }
+
+  cancelLinkEditor(): void {
+    this.linkSession = null;
+    if (this.ui.get().linking !== null) this.ui.set({ linking: null });
+  }
+
+  /** Apply only to the session opened by openLinkEditor, never a fresh range. */
+  applyLinkDraft(url: string): boolean {
+    if (!this.validateLinkSession()) return false;
+    if (!this.setLink(url)) return false;
+    this.cancelLinkEditor();
+    return true;
+  }
 
   constructor(readonly store: EditorStore) {}
 
@@ -41,10 +96,14 @@ export class EditorController {
   setLink(url: string): boolean {
     const selection = this.textSelection;
     const href = normalizeLink(url);
-    if (!selection || selection.start === selection.end || !href) return false;
+    if (!this.editable || !selection || selection.start === selection.end || !href) return false;
     const block = getBlock(this.store.doc, selection.blockId);
     const text = segmentsToPlainText(block.text ?? []).slice(selection.start, selection.end);
-    this.inputs.get(selection.blockId)?.setLink(selection.start, selection.end, text, href);
+    const input = this.inputs.get(selection.blockId);
+    if (!input) return false;
+    this.store.sealHistory();
+    input.setLink(selection.start, selection.end, text, href);
+    this.store.sealHistory();
     return true;
   }
 
@@ -130,6 +189,7 @@ export class EditorController {
    * link — for that whole link. False when there is nothing to link.
    */
   openLinkEditor(): boolean {
+    if (!this.editable) return false;
     const selection = this.textSelection;
     if (!selection) return false;
     if (selection.start === selection.end) {
@@ -141,6 +201,14 @@ export class EditorController {
       this.store.setSelection({ ...selection, start: target.start, end: target.end });
       this.inputs.get(selection.blockId)?.setSelection(target.start, target.end);
     }
+    const target = this.textSelection;
+    if (!target) return false;
+    this.linkSession = {
+      blockId: target.blockId,
+      start: target.start,
+      end: target.end,
+      text: JSON.stringify(getBlock(this.store.doc, target.blockId).text ?? []),
+    };
     this.ui.set({ linking: selection.blockId });
     return true;
   }

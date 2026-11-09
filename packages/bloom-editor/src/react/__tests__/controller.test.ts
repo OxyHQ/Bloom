@@ -163,3 +163,74 @@ describe('normalizeLink', () => {
     expect(normalizeLink(input)).toBe(expected);
   });
 });
+
+describe('link draft ownership', () => {
+  it('cancels when another range in the same block replaces the target', () => {
+    const { store, controller, calls, id } = setup([
+      { type: 'paragraph', text: [{ text: 'hello world' }] },
+    ]);
+    store.setSelection({ kind: 'text', blockId: id, start: 0, end: 5 });
+    controller.openLinkEditor();
+    store.setSelection({ kind: 'text', blockId: id, start: 6, end: 11 });
+    expect(controller.applyLinkDraft('https://example.test')).toBe(false);
+    expect(calls).toEqual([]);
+    expect(controller.ui.get().linking).toBeNull();
+  });
+
+  it('retains an invalid draft session and applies a corrected URL to its original range', () => {
+    const { store, controller, calls, id } = setup([
+      { type: 'paragraph', text: [{ text: 'hello world' }] },
+    ]);
+    store.setSelection({ kind: 'text', blockId: id, start: 0, end: 5 });
+    controller.openLinkEditor();
+    expect(controller.applyLinkDraft('javascript:alert(1)')).toBe(false);
+    expect(controller.ui.get().linking).toBe(id);
+    expect(controller.applyLinkDraft('example.test')).toBe(true);
+    expect(calls).toEqual([['setLink', 0, 5, 'hello', 'https://example.test']]);
+    expect(controller.ui.get().linking).toBeNull();
+  });
+
+  it('invalidates a draft when editing permission is removed', () => {
+    const { store, controller, calls, id } = setup([
+      { type: 'paragraph', text: [{ text: 'hello' }] },
+    ]);
+    store.setSelection({ kind: 'text', blockId: id, start: 0, end: 5 });
+    controller.openLinkEditor();
+    controller.setEditable(false);
+    expect(controller.applyLinkDraft('https://example.test')).toBe(false);
+    expect(controller.setLink('https://example.test')).toBe(false);
+    expect(controller.openLinkEditor()).toBe(false);
+    expect(calls).toEqual([]);
+  });
+});
+
+it('cancels a link session after remote text replacement even when selection coordinates survive', () => {
+  const { store, controller, calls, id } = setup([
+    { type: 'paragraph', text: [{ text: 'hello world' }] },
+  ]);
+  store.setSelection({ kind: 'text', blockId: id, start: 0, end: 5 });
+  controller.openLinkEditor();
+  store.reset(
+    documentFromSnapshot([{ type: 'paragraph', text: [{ text: 'other world' }] }], idFactory('b')),
+  );
+  store.setSelection({ kind: 'text', blockId: id, start: 0, end: 5 });
+  expect(controller.applyLinkDraft('https://example.test')).toBe(false);
+  expect(calls).toEqual([]);
+});
+
+it('cancels a link session when its block disappears remotely', () => {
+  const { store, controller, calls, id } = setup([
+    { type: 'paragraph', text: [{ text: 'hello world' }] },
+  ]);
+  store.setSelection({ kind: 'text', blockId: id, start: 0, end: 5 });
+  controller.openLinkEditor();
+  store.reset(
+    documentFromSnapshot(
+      [{ type: 'paragraph', text: [{ text: 'replacement' }] }],
+      idFactory('remote'),
+    ),
+  );
+  expect(controller.applyLinkDraft('https://example.test')).toBe(false);
+  expect(controller.ui.get().linking).toBeNull();
+  expect(calls).toEqual([]);
+});

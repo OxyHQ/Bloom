@@ -1,0 +1,54 @@
+FAIL packages/bloom-editor/src/react/__tests__/native-block-stacking.test.tsx
+  ● keeps native block stacking stable while retaining web overlay stacking (android)
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Array [
+    -   "0",
+    -   "0",
+    +   "1",
+    +   "1",
+      ]
+
+      33 |       act(() => controller.ui.set({ focused: 'b1' }));
+      34 |       const focused = [getComputedStyle(block).zIndex, getComputedStyle(row).zIndex];
+    > 35 |       expect(focused).toEqual(platform === 'web' ? ['1', '1'] : before);
+         |                       ^
+      36 |       act(() => controller.ui.set({ focused: null }));
+      37 |       expect([getComputedStyle(block).zIndex, getComputedStyle(row).zIndex]).toEqual(before);
+      38 |     } finally {
+
+      at src/react/__tests__/native-block-stacking.test.tsx:35:23
+
+  ● keeps native block stacking stable while retaining web overlay stacking (ios)
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Array [
+    -   "0",
+    -   "0",
+    +   "1",
+    +   "1",
+      ]
+
+      33 |       act(() => controller.ui.set({ focused: 'b1' }));
+      34 |       const focused = [getComputedStyle(block).zIndex, getComputedStyle(row).zIndex];
+    > 35 |       expect(focused).toEqual(platform === 'web' ? ['1', '1'] : before);
+         |                       ^
+      36 |       act(() => controller.ui.set({ focused: null }));
+      37 |       expect([getComputedStyle(block).zIndex, getComputedStyle(row).zIndex]).toEqual(before);
+      38 |     } finally {
+
+      at src/react/__tests__/native-block-stacking.test.tsx:35:23
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 1 passed, 3 total
+Snapshots:   0 total
+Time:        3.101 s
+Ran all test suites matching native-block-stacking.

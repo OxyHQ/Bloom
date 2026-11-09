@@ -1,0 +1,90 @@
+{
+  "caret": {
+    "ime": true,
+    "focused": "fixture-1",
+    "linking": null,
+    "selection": {
+      "kind": "text",
+      "blockId": "fixture-1",
+      "start": 10,
+      "end": 10
+    }
+  },
+  "editing": {
+    "ime": true,
+    "focused": null,
+    "linking": "fixture-1",
+    "selection": {
+      "kind": "text",
+      "blockId": "fixture-1",
+      "start": 7,
+      "end": 13
+    }
+  },
+  "apply": {
+    "ime": true,
+    "focused": "fixture-1",
+    "linking": null,
+    "selection": {
+      "kind": "text",
+      "blockId": "fixture-1",
+      "start": 7,
+      "end": 13
+    }
+  },
+  "cancel": {
+    "ime": true,
+    "focused": "fixture-1",
+    "linking": null,
+    "selection": {
+      "kind": "text",
+      "blockId": "fixture-1",
+      "start": 7,
+      "end": 13
+    }
+  },
+  "external": {
+    "ime": false,
+    "focused": "fixture-2",
+    "linking": null,
+    "selection": {
+      "kind": "text",
+      "blockId": "fixture-2",
+      "start": 7,
+      "end": 7
+    }
+  },
+  "back": {
+    "ime": false,
+    "focused": null,
+    "linking": "fixture-1",
+    "selection": {
+      "kind": "text",
+      "blockId": "fixture-1",
+      "start": 7,
+      "end": 13
+    }
+  },
+  "afterBackCancel": {
+    "ime": true,
+    "focused": "fixture-1",
+    "linking": null,
+    "selection": {
+      "kind": "text",
+      "blockId": "fixture-1",
+      "start": 7,
+      "end": 13
+    }
+  },
+  "injectedEscape": {
+    "ime": false,
+    "focused": null,
+    "linking": "fixture-1",
+    "selection": {
+      "kind": "text",
+      "blockId": "fixture-1",
+      "start": 7,
+      "end": 13
+    }
+  }
+}
