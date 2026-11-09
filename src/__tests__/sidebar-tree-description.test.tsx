@@ -42,6 +42,7 @@ describe('tree rows with a description', () => {
     // The label and the chip are still there beside it.
     expect(view.getByText('Pepe')).toBeTruthy();
     expect(view.getByText('2h')).toBeTruthy();
+    expect(view.getByLabelText('Pepe, Sent the quarterly notes, 2h')).toBeTruthy();
   });
 
   it('leave a row without one as it was: its label alone', () => {
