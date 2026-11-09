@@ -4,6 +4,25 @@ import { readFileSync, writeFileSync, realpathSync } from 'node:fs';
 import { resolve } from 'node:path';
 const root = resolve('../..');
 const installed = realpathSync('node_modules/@oxy.so/bloom');
+const installedPackage = JSON.parse(readFileSync(resolve(installed, 'package.json')));
+const npmTarball = process.env.BLOOM_NPM_TARBALL;
+const npmIntegrity = process.env.BLOOM_NPM_INTEGRITY;
+const npmVersion = process.env.BLOOM_NPM_VERSION;
+if (npmTarball || npmIntegrity || npmVersion) {
+  if (!npmTarball || !npmIntegrity || !npmVersion)
+    throw new Error(
+      'Published-package evidence needs BLOOM_NPM_TARBALL, BLOOM_NPM_INTEGRITY and BLOOM_NPM_VERSION',
+    );
+  const integrity = `sha512-${createHash('sha512')
+    .update(readFileSync(resolve(npmTarball)))
+    .digest('base64')}`;
+  if (integrity !== npmIntegrity)
+    throw new Error('npm tarball integrity does not match the registry');
+  if (installedPackage.version !== npmVersion)
+    throw new Error(
+      `Installed @oxy.so/bloom@${installedPackage.version}; expected published ${npmVersion}`,
+    );
+}
 const native = readFileSync(
   resolve(installed, 'android/src/main/java/so/oxy/bloom/ComposerLight.kt'),
 );
@@ -45,7 +64,10 @@ writeFileSync(
       }).trim(),
       fixtureSha256: fixtureDigest.digest('hex'),
       packedTarballSha256: readFileSync('bloom-local/.built-sha256', 'utf8'),
-      kind: 'local packed snapshot; not published acceptance',
+      kind: npmIntegrity
+        ? 'published npm tarball'
+        : 'local packed snapshot; not published acceptance',
+      ...(npmIntegrity ? { npmIntegrity } : {}),
       installed,
       packageVersion: JSON.parse(readFileSync(resolve(installed, 'package.json'))).version,
       nativeSha256: hash(native),
