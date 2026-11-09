@@ -1,5 +1,11 @@
 # Changelog
 
+## 17.39.1
+
+### Fixed
+
+- **A flush `plain` sidebar leaves no gap before the region beside it.** Its rows already carry their own inset, and it has no panel to space the region from, yet the shell still put the navigation gap (16 by default) between it and the panels, so the sidebar's end side kept a gutter the start side had lost. The region now starts at the sidebar's edge, on the web layout and the native engine alike (a docked sidebar keeps the frame's gutter, a card sidebar its `navigationGap`).
+
 ## 17.39.0
 
 ### Added
