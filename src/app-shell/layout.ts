@@ -22,6 +22,20 @@ import type {
 export type ScrollMode = 'document' | 'container' | 'fixed';
 
 /**
+ * Whether a PLAIN sidebar sits flush to the window instead of inside the frame's gutter.
+ *
+ * A plain sidebar has no panel of its own to frame, so in a shell that frames its regions it runs
+ * the window's whole height at its start edge, as a docked one does, and the region beside it keeps
+ * its own gutter. That holds beside a centred reading column (`contentAligned`) and beside a panel
+ * region (a chat next to its sidebar). The one rule: the engine (native, and the web's inline
+ * styles) and the web's CSS layout both ask it, so the two cannot disagree about where the
+ * sidebar starts.
+ */
+export function plainNavFlushes(contentAligned: boolean, panelRegion: boolean): boolean {
+  return contentAligned || panelRegion;
+}
+
+/**
  * A sidebar flush to the window's start edge at every width the shell can
  * take: in flow from 0 (`navFrom={0}`, a desktop window's navigation, which
  * hides by its dock rather than into a drawer) and docked, or plain beside a
@@ -32,11 +46,13 @@ export function flushSidebarAtEveryWidth(
   sidebar: AppShellSidebarProps,
   navFrom: AppShellBreakpoint | undefined,
   navigationAlign: 'edge' | 'content' | undefined,
+  panelRegion = false,
 ): boolean {
   return (
     navFrom !== undefined &&
     breakpointPx(navFrom) <= 0 &&
-    (sidebar.surface === 'docked' || (sidebar.surface === 'plain' && navigationAlign === 'content'))
+    (sidebar.surface === 'docked' ||
+      (sidebar.surface === 'plain' && plainNavFlushes(navigationAlign === 'content', panelRegion)))
   );
 }
 

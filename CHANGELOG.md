@@ -1,5 +1,11 @@
 # Changelog
 
+## 17.37.0
+
+### Fixed
+
+- **A plain sidebar is flush to the window in the web's CSS layout too.** 17.36.0 made a `plain` sidebar run flush beside a panel region, but only in the engine's inline styles; the browser lays the shell out with generated CSS (`shell-layout-css.ts`) that overrode them with its own copy of the rule, so on the web the sidebar still sat inside the frame's gutter and the region beside it added a second one. The rule is now ONE function, `plainNavFlushes`, that the engine, the CSS layout and `flushSidebarAtEveryWidth` all ask, so they cannot disagree again.
+
 ## 17.36.0
 
 ### Fixed
