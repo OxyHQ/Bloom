@@ -54,14 +54,13 @@ describe('surfaces backed by the required react-native-svg peer', () => {
     expect(types).toEqual(expect.arrayContaining(['Svg', 'Defs', 'ClipPath', 'Path', 'SvgImage']));
   });
 
-  it('draws the spinner blades as SVG rects, never an ActivityIndicator', () => {
+  it('draws the spinner as one morphing SVG path, never an ActivityIndicator', () => {
     const { toJSON } = render(<SpinnerIcon size={26} color="#111111" />);
     const types = elementTypes(toJSON());
 
     expect(types).toContain('Svg');
-    // Eight blades with the opacity trail — a count, so a partially rendered
-    // spinner cannot pass as a whole one.
-    expect(types.filter((type) => type === 'Rect')).toHaveLength(8);
+    // One path whose outline is morphed frame by frame.
+    expect(types.filter((type) => type === 'Path')).toHaveLength(1);
     expect(types).not.toContain('ActivityIndicator');
   });
 
