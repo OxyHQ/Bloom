@@ -1,5 +1,17 @@
 # Changelog
 
+## 17.29.0
+
+### Added
+
+- **`AgentCreator` takes rows of the host's own**: `children` are drawn in the details card after the description, composed with the new `AgentCreatorField` (the row the editor's Name, Label and Description now use), so a host's rows match the editor's geometry, hairlines and type. Nothing changes without children.
+- **`AiChatShell panelResizable`** (default `true`): `false` removes the divider beside the context panel, which then keeps `defaultPanelWidth`. For a panel with a width of its own, such as an editor.
+- **Sidebar tree rows with a `description`** give their `leading` a taller box (`tree.avatar`: 32, 36 and 40px by size) instead of the 20px glyph box, so a contact's picture is as tall as its two lines of text. Rows without a description are unchanged.
+
+### Changed
+
+- **`AgentCreator`'s header carries undo and redo** as icon buttons (`avatarHistory` group), and the React, Work and Restore original buttons are gone.
+
 ## 17.28.0
 
 ### Added

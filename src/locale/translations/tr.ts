@@ -31,13 +31,11 @@ const CALL_UI_MESSAGES__CORNERS = {
 };
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  avatarHistory: 'Avatar geçmişi',
   undoAvatar: 'Geri al',
   redoAvatar: 'Yinele',
-  restoreAvatar: 'Aslına döndür',
   preparingAvatar: 'Avatar hazırlanıyor…',
 
-  reaction: 'Tepki ver',
-  working: 'Çalış',
   avatarStyle: 'Avatar stili',
   proceduralAvatar: 'Mevcut avatar',
   betaPreset: 'Hazır karakter (beta)',
@@ -54,11 +52,9 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   customColor: 'Özel avatar rengi',
   name: 'Ad',
   label: 'Etiket',
-  handle: 'Kullanıcı adı',
   description: 'Açıklama',
   nameInput: 'Ajan adı',
   labelInput: 'Ajan etiketi',
-  handleInput: 'Aracının kullanıcı adı',
   descriptionInput: 'Ajan açıklaması',
   labelPlaceholder: 'Yönetici, pazarlama, ressam',
   descriptionPlaceholder: 'Ajan ayrıntıları',

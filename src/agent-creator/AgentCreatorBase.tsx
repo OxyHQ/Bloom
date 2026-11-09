@@ -9,7 +9,9 @@ import {
   updateAvatarCharacter,
 } from '../agent-avatar';
 import { editorShapeId } from './shape-choices';
-import { Button } from '../button/Button';
+import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { RiArrowGoBackLine } from '../icons/remix/RiArrowGoBackLine';
+import { RiArrowGoForwardLine } from '../icons/remix/RiArrowGoForwardLine';
 import { CloseButton } from '../button/CloseButton';
 import { useDirectionProps } from '../hooks/use-is-rtl';
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
@@ -17,6 +19,7 @@ import { TextFieldInput } from '../text-field';
 import { Textarea } from '../textarea';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { AgentCreatorField } from './AgentCreatorField';
 import { AgentPreferencesPanel } from './AgentPreferencesPanel';
 import { CharacterControls } from './CharacterControls';
 import { CustomColorPicker } from './CustomColorPicker';
@@ -100,8 +103,6 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
     node?.addEventListener('keydown', keydown);
     return () => node?.removeEventListener('keydown', keydown);
   }, []);
-  const [reactionKey, setReactionKey] = useState(0);
-  const [workingKey, setWorkingKey] = useState(0);
   // Every control reads the resolved character and writes one edit to the saved one.
   const character = useMemo(() => resolveAvatarCharacter(avatar), [avatar]);
   const edit = (patch: Parameters<typeof updateAvatarCharacter>[1]) =>
@@ -169,6 +170,24 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                 titleAlign="center"
                 sticky={false}
                 safeArea={false}
+                leading={
+                  <ButtonGroup accessibilityLabel={messages.avatarHistory}>
+                    <ButtonGroupItem
+                      iconOnly
+                      leadingIcon={RiArrowGoBackLine}
+                      accessibilityLabel={messages.undoAvatar}
+                      disabled={!history.canUndo}
+                      onPress={history.undo}
+                    />
+                    <ButtonGroupItem
+                      iconOnly
+                      leadingIcon={RiArrowGoForwardLine}
+                      accessibilityLabel={messages.redoAvatar}
+                      disabled={!history.canRedo}
+                      onPress={history.redo}
+                    />
+                  </ButtonGroup>
+                }
                 actions={
                   !isWithinDialog && onClose ? (
                     <CloseButton
@@ -223,8 +242,6 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                     size={162}
                     interactive
                     renderer="svg"
-                    reactionKey={reactionKey}
-                    workingKey={workingKey}
                     onLoadingChange={setPreparing}
                     label={messages.livePreview(agent.name || messages.newAgent)}
                   />
@@ -252,14 +269,6 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                 <Text accessibilityLiveRegion="polite" role="status" variant="caption-1-regular">
                   {preparing ? messages.preparingAvatar : ''}
                 </Text>
-              </StyledView>
-              <StyledView className="mt-2 flex-row justify-center gap-2">
-                <Button size="xs" onPress={() => setReactionKey((key) => key + 1)}>
-                  {messages.reaction}
-                </Button>
-                <Button size="xs" onPress={() => setWorkingKey((key) => key + 1)}>
-                  {messages.working}
-                </Button>
               </StyledView>
               <StyledView
                 className="mt-[15px] flex shrink-0 flex-row justify-center"
@@ -335,129 +344,46 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                 </StyledView>
               </StyledView>
               <CharacterControls character={avatar} onChange={history.change} />
-              <StyledView className="mt-3 flex-row flex-wrap justify-center gap-2">
-                <Button appearance="plain" onPress={history.undo} disabled={!history.canUndo}>
-                  {messages.undoAvatar}
-                </Button>
-                <Button appearance="plain" onPress={history.redo} disabled={!history.canRedo}>
-                  {messages.redoAvatar}
-                </Button>
-                <Button appearance="plain" onPress={history.restore} disabled={!history.canRestore}>
-                  {messages.restoreAvatar}
-                </Button>
-              </StyledView>
               <StyledView
                 className="mt-[15px] overflow-hidden rounded-2xl bg-background-secondary-default ps-3"
                 style={{ backgroundColor: colors.backgroundSecondary }}
               >
-                <StyledView
-                  className="grid h-[52px] grid-cols-[96px_minmax(0,1fr)] items-center border-b border-border-button-default dark:border-border-button-default/35 pe-2.5 flex-row"
-                  style={{
-                    flexDirection: 'row',
-                    alignContent: 'stretch',
-                    borderColor: colors.border,
-                  }}
-                >
-                  <Text
-                    variant="body-regular"
-                    className="text-body-regular text-text-primary"
-                    style={{ width: 96 }}
-                  >
-                    {messages.name}
-                  </Text>
-                  <StyledView className="min-w-0 flex-1">
-                    <TextFieldInput
-                      label={messages.nameInput}
-                      size="sm"
-                      maxLength={48}
-                      value={agent.name}
-                      onChangeText={(name) => onChange({ ...agent, name })}
-                      /* i18n-exempt: original example person’s proper name */
-                      placeholder={'Michael Scott'}
-                    />
-                  </StyledView>
-                </StyledView>
-                {agent.handle === undefined ? null : (
-                  <StyledView
-                    className="grid h-[52px] grid-cols-[96px_minmax(0,1fr)] items-center border-b border-border-button-default dark:border-border-button-default/35 pe-2.5 flex-row"
-                    style={{
-                      flexDirection: 'row',
-                      alignContent: 'stretch',
-                      borderColor: colors.border,
-                    }}
-                  >
-                    <Text
-                      variant="body-regular"
-                      className="text-body-regular text-text-primary"
-                      style={{ width: 96 }}
-                    >
-                      {messages.handle}
-                    </Text>
-                    <StyledView className="min-w-0 flex-1">
-                      <TextFieldInput
-                        label={messages.handleInput}
-                        size="sm"
-                        maxLength={32}
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        value={agent.handle}
-                        onChangeText={(handle) => onChange({ ...agent, handle })}
-                      />
-                    </StyledView>
-                  </StyledView>
-                )}
-                <StyledView
-                  className="grid h-[52px] grid-cols-[96px_minmax(0,1fr)] items-center border-b border-border-button-default dark:border-border-button-default/35 pe-2.5 flex-row"
-                  style={{
-                    flexDirection: 'row',
-                    alignContent: 'stretch',
-                    borderColor: colors.border,
-                  }}
-                >
-                  <Text
-                    variant="body-regular"
-                    className="text-body-regular text-text-primary"
-                    style={{ width: 96 }}
-                  >
-                    {messages.label}
-                  </Text>
-                  <StyledView className="min-w-0 flex-1">
-                    <TextFieldInput
-                      label={messages.labelInput}
-                      size="sm"
-                      maxLength={60}
-                      value={agent.label}
-                      onChangeText={(label) => onChange({ ...agent, label })}
-                      placeholder={messages.labelPlaceholder}
-                    />
-                  </StyledView>
-                </StyledView>
-                <StyledView
-                  className="grid h-[82px] grid-cols-[96px_minmax(0,1fr)] items-start py-2.5 pe-2.5 flex-row"
-                  style={{ flexDirection: 'row' }}
-                >
-                  <Text
-                    variant="body-regular"
-                    className="pt-1 text-body-regular text-text-primary"
-                    style={{ width: 96, paddingTop: 4 }}
-                  >
-                    {messages.description}
-                  </Text>
-                  <StyledView className="min-w-0 flex-1">
-                    <Textarea
-                      accessibilityLabel={messages.descriptionInput}
-                      size="sm"
-                      rows={2}
-                      resize="none"
-                      maxLength={500}
-                      fieldStyle={{ height: 62 }}
-                      style={{ height: 62 }}
-                      value={agent.description}
-                      onChangeText={(description) => onChange({ ...agent, description })}
-                      placeholder={messages.descriptionPlaceholder}
-                    />
-                  </StyledView>
-                </StyledView>
+                <AgentCreatorField label={messages.name} divider={false}>
+                  <TextFieldInput
+                    label={messages.nameInput}
+                    size="sm"
+                    maxLength={48}
+                    value={agent.name}
+                    onChangeText={(name) => onChange({ ...agent, name })}
+                    /* i18n-exempt: original example person’s proper name */
+                    placeholder={'Michael Scott'}
+                  />
+                </AgentCreatorField>
+                <AgentCreatorField label={messages.label}>
+                  <TextFieldInput
+                    label={messages.labelInput}
+                    size="sm"
+                    maxLength={60}
+                    value={agent.label}
+                    onChangeText={(label) => onChange({ ...agent, label })}
+                    placeholder={messages.labelPlaceholder}
+                  />
+                </AgentCreatorField>
+                <AgentCreatorField label={messages.description} multiline>
+                  <Textarea
+                    accessibilityLabel={messages.descriptionInput}
+                    size="sm"
+                    rows={2}
+                    resize="none"
+                    maxLength={500}
+                    fieldStyle={{ height: 62 }}
+                    style={{ height: 62 }}
+                    value={agent.description}
+                    onChangeText={(description) => onChange({ ...agent, description })}
+                    placeholder={messages.descriptionPlaceholder}
+                  />
+                </AgentCreatorField>
+                {props.children}
               </StyledView>
               {preferencesPanel}
             </ScreenScrollView>

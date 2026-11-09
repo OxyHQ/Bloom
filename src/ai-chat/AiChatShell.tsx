@@ -97,6 +97,7 @@ export function AiChatShellBase({
   panelLabel: panelLabelProp,
   panelIcon = RiCodeSLine,
   defaultPanelWidth = 410,
+  panelResizable = true,
   minPanelWidth = 320,
   maxPanelWidth = 560,
   navOpen: navOpenProp,
@@ -238,7 +239,7 @@ export function AiChatShellBase({
                 {
                   id: 'conversation',
                   minWidth: 320,
-                  resizable: !!panel,
+                  resizable: !!panel && panelResizable,
                   appearance: surface ? undefined : 'plain',
                   content: (
                     <PanelPresence id="conversation" onVisibility={reportVisibility}>

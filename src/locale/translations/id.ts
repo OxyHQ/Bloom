@@ -31,13 +31,11 @@ const CALL_UI_MESSAGES__CORNERS = {
 };
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  avatarHistory: 'Riwayat avatar',
   undoAvatar: 'Urungkan',
   redoAvatar: 'Ulangi',
-  restoreAvatar: 'Pulihkan tampilan awal',
   preparingAvatar: 'Menyiapkan avatar…',
 
-  reaction: 'Bereaksi',
-  working: 'Bekerja',
   avatarStyle: 'Gaya avatar',
   proceduralAvatar: 'Avatar saat ini',
   betaPreset: 'Karakter bawaan (beta)',
@@ -54,11 +52,9 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   customColor: 'Warna avatar khusus',
   name: 'Nama',
   label: 'Label',
-  handle: 'Nama pengguna',
   description: 'Deskripsi',
   nameInput: 'Nama agen',
   labelInput: 'Label agen',
-  handleInput: 'Nama pengguna agen',
   descriptionInput: 'Deskripsi agen',
   labelPlaceholder: 'Manajer, pemasaran, pelukis',
   descriptionPlaceholder: 'Detail agen',

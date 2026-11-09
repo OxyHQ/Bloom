@@ -1,12 +1,10 @@
 import { defineMessages, type MessageCatalog } from '../locale/messages';
 
 export interface AgentCreatorMessages {
+  avatarHistory: string;
   undoAvatar: string;
   redoAvatar: string;
-  restoreAvatar: string;
   preparingAvatar: string;
-  reaction: string;
-  working: string;
   avatarStyle: string;
   proceduralAvatar: string;
   betaPreset: string;
@@ -23,11 +21,9 @@ export interface AgentCreatorMessages {
   customColor: string;
   name: string;
   label: string;
-  handle: string;
   description: string;
   nameInput: string;
   labelInput: string;
-  handleInput: string;
   descriptionInput: string;
   labelPlaceholder: string;
   descriptionPlaceholder: string;
@@ -93,12 +89,10 @@ export interface AgentCreatorMessages {
 
 export const AGENT_CREATOR_MESSAGES: MessageCatalog<AgentCreatorMessages> =
   defineMessages<AgentCreatorMessages>('AGENT_CREATOR_MESSAGES', {
+    avatarHistory: 'Avatar history',
     undoAvatar: 'Undo',
     redoAvatar: 'Redo',
-    restoreAvatar: 'Restore original',
     preparingAvatar: 'Preparing avatar…',
-    reaction: 'React',
-    working: 'Work',
     avatarStyle: 'Avatar style',
     proceduralAvatar: 'Current avatar',
     betaPreset: 'Character preset (beta)',
@@ -115,11 +109,9 @@ export const AGENT_CREATOR_MESSAGES: MessageCatalog<AgentCreatorMessages> =
     customColor: 'Custom avatar color',
     name: 'Name',
     label: 'Label',
-    handle: 'Username',
     description: 'Description',
     nameInput: 'Agent name',
     labelInput: 'Agent label',
-    handleInput: 'Agent username',
     descriptionInput: 'Agent description',
     labelPlaceholder: 'Manager, marketing, painter',
     descriptionPlaceholder: 'Details for the agent',

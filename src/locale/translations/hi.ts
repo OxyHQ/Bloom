@@ -28,13 +28,11 @@ const CALL_UI_MESSAGES__CORNERS = {
 };
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  avatarHistory: 'अवतार इतिहास',
   undoAvatar: 'पूर्ववत करें',
   redoAvatar: 'फिर से करें',
-  restoreAvatar: 'मूल रूप बहाल करें',
   preparingAvatar: 'अवतार तैयार हो रहा है…',
 
-  reaction: 'प्रतिक्रिया दें',
-  working: 'काम करें',
   avatarStyle: 'अवतार शैली',
   proceduralAvatar: 'वर्तमान अवतार',
   betaPreset: 'तैयार पात्र (बीटा)',
@@ -51,11 +49,9 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   customColor: 'अवतार का कस्टम रंग',
   name: 'नाम',
   label: 'लेबल',
-  handle: 'यूज़रनेम',
   description: 'विवरण',
   nameInput: 'एजेंट का नाम',
   labelInput: 'एजेंट का लेबल',
-  handleInput: 'एजेंट का यूज़रनेम',
   descriptionInput: 'एजेंट का विवरण',
   labelPlaceholder: 'प्रबंधक, मार्केटिंग, चित्रकार',
   descriptionPlaceholder: 'एजेंट का विवरण',

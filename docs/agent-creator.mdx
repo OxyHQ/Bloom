@@ -58,7 +58,25 @@ Eyewear and accessories use Bloom Select; `'none'` removes either. The retired b
 
 `AgentPreferences` carries `voice`, `speed`, `language` and `notifications`. Defaults are voice `alice`, speed `1`, language `auto`, notifications `true`. Supported speeds are `0.75`, `1`, `1.25`, `1.5`; languages are auto-detect, English, Turkish, Spanish, French, German, Japanese and Portuguese. `normalizeAgentPreferences()` restores supported values and limits voice identifiers to 200 characters.
 
-`agent.handle` (optional) adds a **Username** row after the name; omitted, there is no row. A host whose agents have a unique username (Alia's) passes it and saves it with the rest.
+## Rows of your own
+
+The editor owns the look, the name, the label and the description. Anything else an agent has
+(a username, a status, a link) is yours: hand it in as `children`, composed with
+`AgentCreatorField`, the row the editor's own fields use, so it matches them in geometry,
+hairlines and type, in light and dark.
+
+```tsx
+import { AgentCreator, AgentCreatorField } from '@oxy.so/bloom/agent-creator';
+
+<AgentCreator agent={agent} onChange={save}>
+  <AgentCreatorField label="Username">
+    <TextFieldInput label="Agent username" size="sm" value={handle} onChangeText={setHandle} />
+  </AgentCreatorField>
+</AgentCreator>
+```
+
+`multiline` makes a taller row with its label at the top; `divider={false}` drops the hairline
+above a row.
 
 `showPreferences={false}` draws the profile and the look alone: no voice, speed, language or notifications, and `agent.preferences` is left as it was. A host whose agents have no voice (Alia's) uses it.
 

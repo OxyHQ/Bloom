@@ -38,13 +38,11 @@ const MESSAGE_MEDIA_MESSAGES__items = (n: number) =>
   });
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  avatarHistory: 'سجل الصورة الرمزية',
   undoAvatar: 'تراجع',
   redoAvatar: 'إعادة',
-  restoreAvatar: 'استعادة الشكل الأصلي',
   preparingAvatar: 'جارٍ تجهيز الصورة الرمزية…',
 
-  reaction: 'تفاعل',
-  working: 'اعمل',
   avatarStyle: 'نمط الصورة الرمزية',
   proceduralAvatar: 'الصورة الرمزية الحالية',
   betaPreset: 'شخصية جاهزة (تجريبية)',
@@ -61,11 +59,9 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   customColor: 'لون مخصص للصورة الرمزية',
   name: 'الاسم',
   label: 'التسمية',
-  handle: 'اسم المستخدم',
   description: 'الوصف',
   nameInput: 'اسم الوكيل',
   labelInput: 'تسمية الوكيل',
-  handleInput: 'اسم مستخدم الوكيل',
   descriptionInput: 'وصف الوكيل',
   labelPlaceholder: 'مدير، تسويق، رسام',
   descriptionPlaceholder: 'تفاصيل الوكيل',

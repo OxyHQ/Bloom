@@ -1599,5 +1599,16 @@
     ],
     "verification": "public identity and route census only; per-part scope, responsive, runtime and device verification pending",
     "parts": ["src/multi-agent-chat/SelectedAgentPreview.tsx#SelectedAgentPreview"]
+  },
+  "agent-creator-field-parts": {
+    "status": "pending",
+    "reason": "AgentCreatorField is the editor's own details-card row, exported so a host's rows (handed to AgentCreator as children) match it. It fills the card's width at a fixed 96px label column and has not yet been audited as a BloomScope or responsive contract; this row records the part without implying a defect or adoption.",
+    "evidence": [
+      "src/agent-creator/AgentCreatorField.tsx",
+      "src/agent-creator/__tests__/AgentCreator.test.tsx",
+      "src/__tests__/public-parts.test.ts"
+    ],
+    "verification": "public identity and route census only; per-part scope, responsive, runtime and device verification pending",
+    "parts": ["src/agent-creator/AgentCreatorField.tsx#AgentCreatorField"]
   }
 }

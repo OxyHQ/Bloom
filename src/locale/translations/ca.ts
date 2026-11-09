@@ -34,13 +34,11 @@ const MESSAGE_MEDIA_MESSAGES__items = (n: number) =>
   plural('ca', n, { one: '{n} element', other: '{n} elements' });
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  avatarHistory: 'Historial de l’avatar',
   undoAvatar: 'Desfés',
   redoAvatar: 'Refés',
-  restoreAvatar: 'Restaura l’original',
   preparingAvatar: 'Preparant l’avatar…',
 
-  reaction: 'Reacció',
-  working: 'Treballa',
   avatarStyle: 'Estil de l’avatar',
   proceduralAvatar: 'Avatar actual',
   betaPreset: 'Personatge predefinit (beta)',
@@ -57,11 +55,9 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   customColor: 'Color personalitzat de l’avatar',
   name: 'Nom',
   label: 'Etiqueta',
-  handle: 'Nom d’usuari',
   description: 'Descripció',
   nameInput: 'Nom de l’agent',
   labelInput: 'Etiqueta de l’agent',
-  handleInput: 'Nom d’usuari de l’agent',
   descriptionInput: 'Descripció de l’agent',
   labelPlaceholder: 'Gerent, màrqueting, pintor',
   descriptionPlaceholder: 'Detalls de l’agent',
