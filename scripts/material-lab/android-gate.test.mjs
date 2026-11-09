@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { requireLabEmulator, requireOfflineApk } from './android-gate.mjs';
+import { requireLabEmulator, requireLabForeground, requireOfflineApk } from './android-gate.mjs';
 const devices = 'List of devices attached\nemulator-5580\tdevice\n';
 test('accepts only the named isolated emulator', () => {
   requireLabEmulator('emulator-5580', devices, 'bloom_material_663\nOK', '1');
@@ -34,5 +34,11 @@ test('physical access requires exact explicit serial and cannot reuse another au
   assert.throws(() => requireLabEmulator('other456', 'other456\tdevice', '', '', 'approved123'));
   assert.throws(() =>
     requireLabEmulator('approved123', 'approved123\toffline', '', '', 'approved123'),
+  );
+});
+test('capture requires the material fixture to own the focused window', () => {
+  requireLabForeground('mCurrentFocus=Window{123 u0 so.oxy.bloom.materiallab/.MainActivity t4}');
+  assert.throws(() =>
+    requireLabForeground('mCurrentFocus=Window{123 u0 com.android.launcher3/.Launcher t1}'),
   );
 });

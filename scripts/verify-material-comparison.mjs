@@ -26,7 +26,11 @@ const report = {
   commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
   workingTree: execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim(),
   browser: await browser.version(),
-  viewport: { width: 390, height: 844, deviceScaleFactor: 1 },
+  viewport: {
+    width: Number(process.env.VIEWPORT_WIDTH || 390),
+    height: Number(process.env.VIEWPORT_HEIGHT || 844),
+    deviceScaleFactor: Number(process.env.DEVICE_SCALE_FACTOR || 1),
+  },
   captures: [],
 };
 const wait = (ms) => new Promise((done) => setTimeout(done, ms));
