@@ -102,9 +102,9 @@ They were not integrated or used as evidence of consumer adoption.
 ## Runtime availability rechecked on 2026-11-09
 
 Windows PnP reports `USB\\VID_18D1&PID_4EE7\\43221JEKB12200` as an active
-Android Composite ADB Interface. Windows ADB 36.0.0-13206524 lists a Pixel 10
-Pro over its wireless debugging transport and the API 30 emulator, but not the
-USB Pixel 8a. Therefore no current physical Pixel 8a UI result is claimed. The
-older Pixel 8a editor runs above are source-candidate diagnostics only; repeat
-acceptance with the final package after the USB device becomes available to
-ADB. No iPhone validation was run, per user instruction.
+Android Composite ADB Interface. The Windows ADB server on port 5038 lists the
+USB Pixel 8a (`43221JEKB12200`), the wireless Pixel 10 Pro, and the API 30
+emulator. WSL's separate ADB server on port 5039 does not list that USB device;
+commands from WSL must explicitly connect to port 5038. The Pixel is available,
+but no final-package physical UI result is claimed until that acceptance run is
+completed. No iPhone validation was run, per user instruction.
