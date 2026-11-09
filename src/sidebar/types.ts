@@ -563,6 +563,11 @@ export interface SidebarTreeItem {
   onPress?: () => void;
   key: string;
   label: string;
+  /**
+   * A line under the label, one line and truncated, as a conversation row's last message is.
+   * The row takes two lines; without it, one.
+   */
+  description?: string;
   /** A glyph before the label, in the row's icon colour. */
   icon?: SidebarIcon;
   /**

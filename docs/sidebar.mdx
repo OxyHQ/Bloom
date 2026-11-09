@@ -272,7 +272,7 @@ its label, before any folders: use them when the section IS the list. Keep
 />
 ```
 
-- A direct row is a folder row without the connector: the same height, radius, `meta` chip, selection, hover, `actions`, `href`, `onPrefetch` and `onLongPress`, inset 8 (to the folder glyph) instead of 36.
+- A direct row is a folder row without the connector: the same height, radius, `meta` chip, selection, hover, `actions`, `href`, `onPrefetch` and `onLongPress`, inset 8 (to the folder glyph) instead of 36. A row with a `description` is two lines: the label, then the description in caption-1-regular text-tertiary, one line and truncated (an agent's name and its last message).
 - `onTreeItemPress(item, folder)` gets the row's folder, or `undefined` for a direct row. `selectedTreeItem` matches a key in any section.
 - A row draws again when the selection moves onto, off or within it, never for a selection elsewhere: keep `tree` (and `onTreeItemPress`) the same objects while what they show is the same, and a selection moving at each navigation draws only the rows it moves between.
 - `key` identifies a section among several (defaults to `label`). `items` and `folders` are both optional; a section with neither, or with nothing left after quick search, is not drawn.

@@ -598,7 +598,7 @@ const TreeRow = memo(function TreeRow({
             }
           : {})}
         role={item.href ? 'link' : 'button'}
-        accessibilityLabel={item.meta ? `${item.label}, ${item.meta}` : item.label}
+        accessibilityLabel={[item.label, item.description, item.meta].filter(Boolean).join(', ')}
         accessibilityState={{ selected }}
         accessibilityActions={accessibilityActions}
         onAccessibilityAction={
@@ -659,21 +659,30 @@ const TreeRow = memo(function TreeRow({
             )}
           </View>
         ) : null}
-        <Text
-          variant={tree.label}
-          numberOfLines={1}
-          style={{
-            minWidth: 0,
-            flex: 1,
-            color: lit
-              ? palette.selectedForeground
-              : selected
-                ? palette.text
-                : palette.textSecondary,
-          }}
-        >
-          {item.label}
-        </Text>
+        <View style={{ minWidth: 0, flex: 1, gap: item.description != null ? 2 : 0 }}>
+          <Text
+            variant={tree.label}
+            numberOfLines={1}
+            style={{
+              color: lit
+                ? palette.selectedForeground
+                : selected
+                  ? palette.text
+                  : palette.textSecondary,
+            }}
+          >
+            {item.label}
+          </Text>
+          {item.description != null ? (
+            <Text
+              variant={tree.meta}
+              numberOfLines={1}
+              style={{ color: lit ? palette.selectedForeground : palette.textTertiary }}
+            >
+              {item.description}
+            </Text>
+          ) : null}
+        </View>
         {item.meta ? (
           <View
             style={{
