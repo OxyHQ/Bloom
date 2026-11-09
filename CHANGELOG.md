@@ -1,6 +1,6 @@
 # Changelog
 
-## 17.27.0
+## 17.27.1
 
 ### Added
 
@@ -9,6 +9,10 @@
 ### Fixed
 
 - **AiChatContainer's `background`** is drawn in the screen's underlay, so it reaches under the composer instead of stopping in a hard edge where the content area ends. Its test id is now `<testID>-underlay`.
+
+### Fixed
+
+- **Web ComposerLoader** sets its CSS animation properties independently, avoiding React's conflicting shorthand/longhand updates while preserving the same motion and reduced-motion behavior.
 
 ## 17.26.0
 

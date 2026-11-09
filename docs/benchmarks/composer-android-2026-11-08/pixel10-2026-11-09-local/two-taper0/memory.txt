@@ -1,0 +1,63 @@
+Applications Memory Usage (in Kilobytes):
+Uptime: 416787684 Realtime: 520068181
+
+** MEMINFO in pid 8727 [so.oxy.bloom.loaderpackagelab] **
+                   Pss  Private  Private  SwapPss      Rss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty    Total     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------   ------
+  Native Heap    42595    42588        0        2    46152    55888    47083     4925
+  Dalvik Heap    11250    11020      208        6    15692   262144     6416   255728
+ Dalvik Other     2137     2004        0        0     3028
+        Stack      972      972        0        0      980
+       Ashmem        8        0        0        0     1036
+    Other dev        4        0        4        0      312
+     .so mmap     3448      176      196        6    46276
+    .jar mmap      544        0       44        0    39676
+    .apk mmap    23647     1188    20596        0    40784
+    .ttf mmap      943        0      792        0     1516
+    .dex mmap     5394        4     5376        0     6280
+    .oat mmap       91        0        0        0    12536
+    .art mmap      601      492        4        0    23172
+   Other mmap      343        4      240        0     1716
+   EGL mtrack    51460    51460        0        0    51460
+    GL mtrack   221948   221948        0        0   221948
+      Unknown    18784    18640      124        2    19780
+        TOTAL   384185   350496    27584       16   532344   318032    53499   260653
+
+ App Summary
+                       Pss(KB)                        Rss(KB)
+                        ------                         ------
+           Java Heap:    11516                          38864
+         Native Heap:    42588                          46152
+                Code:    28376                         147332
+               Stack:      972                            980
+            Graphics:   273408                         273408
+       Private Other:    21220
+              System:     6105
+             Unknown:                                   25608
+
+           TOTAL PSS:   384185            TOTAL RSS:   532344       TOTAL SWAP PSS:       16
+
+ Objects
+               Views:       68         ViewRootImpl:        1
+         AppContexts:        5           Activities:        1
+              Assets:       41        AssetManagers:        0
+       Local Binders:       23        Proxy Binders:       58
+       Parcel memory:        8         Parcel count:       32
+    Death Recipients:        0             WebViews:        0
+
+ Native Allocations
+                         Count                       Total(kB)
+                        ------                         ------
+    Other (malloced):      966                             90
+ Other (nonmalloced):       91                             65
+
+ Shared Bitmaps
+                         Count                       Size(KB)
+                        ------                         ------
+              Mapped:        0                              0
+  (Enable debug.hwui.bitmap_ashmem_long_name sysprop to count unique bitmap allocations)
+
+ SQL
+         MEMORY_USED:        0
+  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0
