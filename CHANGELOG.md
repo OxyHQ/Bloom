@@ -1,5 +1,15 @@
 # Changelog
 
+## 17.24.0
+
+### Added
+
+- **Canvas** provides a persistent, nonmodal canvas with measured panel occupancy and responsive panel placement while leaving map-engine and camera policy with the consumer.
+
+### Fixed
+
+- Web TextField placeholder colors follow the contrast pair of the painted material bounds, including baked and transparent backings.
+
 Releases before 15.50.0 are described in their pull requests and in git history.
 
 ## 17.23.0
