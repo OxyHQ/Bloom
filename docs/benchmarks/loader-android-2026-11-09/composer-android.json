@@ -1,0 +1,140 @@
+{
+  "apkSha256": "9b9717b836a5528a6cfcd324b697f3041d77df0840585ee92dbc93ea885f049e",
+  "device": "Google Pixel 8a / Android 16 API 36",
+  "owners": {
+    "cases-pill-input": {
+      "resizeAndBusy": {
+        "allRetained": true,
+        "states": [
+          "busy=false narrow=true stops=0 submits=0 pending=none",
+          "busy=true narrow=true stops=0 submits=0 pending=none"
+        ]
+      },
+      "stop": {
+        "result": "busy=false narrow=true stops=1 submits=0 pending=none",
+        "focusAndViewIdentityRetained": true
+      },
+      "typedAfterStop": "Draft retained through resizeq",
+      "rotation": {
+        "before": {
+          "testID": "cases-pill-input",
+          "identity": 219412188,
+          "id": 68,
+          "start": 0,
+          "end": 30,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resizeq"
+        },
+        "rotated": {
+          "testID": "cases-pill-input",
+          "identity": 219412188,
+          "id": 68,
+          "start": 0,
+          "end": 30,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resizeq"
+        },
+        "returned": {
+          "testID": "cases-pill-input",
+          "identity": 219412188,
+          "id": 68,
+          "start": 0,
+          "end": 30,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resizeq"
+        },
+        "nativeViewStable": true,
+        "startOrientation": 0,
+        "targetOrientation": 1,
+        "keyboardVisibleThroughout": true,
+        "selectionMethod": "Ctrl+A on focused native EditText"
+      }
+    },
+    "cases-agent-pill-input": {
+      "resizeAndBusy": {
+        "allRetained": true,
+        "states": [
+          "busy=false narrow=true stops=1 submits=0 pending=none",
+          "busy=true narrow=true stops=1 submits=0 pending=none"
+        ]
+      },
+      "stop": {
+        "result": "busy=false narrow=true stops=2 submits=0 pending=none",
+        "focusAndViewIdentityRetained": true
+      },
+      "typedAfterStop": "Agent draft retained through resiqze",
+      "rotation": {
+        "before": {
+          "testID": "cases-agent-pill-input",
+          "identity": 145131847,
+          "id": 106,
+          "start": 0,
+          "end": 36,
+          "focused": true,
+          "attached": true,
+          "text": "Agent draft retained through resiqze"
+        },
+        "rotated": {
+          "testID": "cases-agent-pill-input",
+          "identity": 145131847,
+          "id": 106,
+          "start": 0,
+          "end": 36,
+          "focused": true,
+          "attached": true,
+          "text": "Agent draft retained through resiqze"
+        },
+        "returned": {
+          "testID": "cases-agent-pill-input",
+          "identity": 145131847,
+          "id": 106,
+          "start": 0,
+          "end": 36,
+          "focused": true,
+          "attached": true,
+          "text": "Agent draft retained through resiqze"
+        },
+        "nativeViewStable": true,
+        "startOrientation": 0,
+        "targetOrientation": 1,
+        "keyboardVisibleThroughout": true,
+        "selectionMethod": "Ctrl+A on focused native EditText"
+      }
+    }
+  },
+  "selectionDirection": {
+    "sameBackwardSelectionAcrossNoTransitionResizeBusy": true,
+    "beforeNextShiftLeft": [
+      [
+        5,
+        4
+      ],
+      [
+        5,
+        4
+      ],
+      [
+        5,
+        4
+      ]
+    ],
+    "afterNextShiftLeft": [
+      [
+        5,
+        3
+      ],
+      [
+        5,
+        3
+      ],
+      [
+        5,
+        3
+      ]
+    ],
+    "allFocusedAndAttached": true
+  }
+}

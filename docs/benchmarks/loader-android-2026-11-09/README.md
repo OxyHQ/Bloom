@@ -21,3 +21,9 @@ Per-case data is in [results.json](./results.json). GPU P95 ranged from 4 to 10 
 The build/source receipt verifies the native binary corresponds to the installed Bloom package snapshot, and the published runtime tree comparison verifies the same Bloom runtime is in npm `17.36.0`. This closes the compiler-scope/native-rebuild evidence in §14.3.
 
 No approved performance budget or fixed baseline was available, so these measurements do not establish performance acceptance. They cover one Android device and one synthetic fixture. Full loader visual acceptance, platform comparison, broader consumer behavior, and iPhone validation remain separate work.
+
+## Composer interaction on the same APK
+
+The packaged ComposerPill and AgentChatComposer fixture also passed real-touch resize and busy transitions on the Pixel 8a. Both retained text, focus, attachment, selection range, and native EditText identity. Stop cleared busy, retained focus/identity, and accepted a subsequent typed character. Portrait → landscape → portrait retained text, full selection endpoints, native view identity, and visible Gboard throughout; the fixture restored the device's original rotation settings. Results are in [composer-android.json](./composer-android.json); selected state captures and SHA-256 values are in [composer-captures](./composer-captures/).
+
+The backward-selection check also passed for no transition, resize, and busy: the selection remained `[5,4]`, and the next Shift+Left extended it to `[5,3]` in all three states. This is fixture evidence for Android interaction and state retention; it does not establish broad consumer adoption or iOS behavior.
