@@ -1,10 +1,21 @@
 # Changelog
 
-## 17.33.0
+## 17.35.0
 
 ### Fixed
 
 - **Agent avatars fill their box.** Every vector frame is authored on a 320×320 canvas with room for the figure to move, and the avatar drew the whole canvas: at rest the characters span about 174 of its 320 units, so a 32px avatar was a 17px character with empty space around it. The avatar (`VectorCharacterAvatar` and the static portrait) is now drawn through one shared square crop around the figures (`vector-viewbox.ts`), so they fill about 80% of their box instead of 54%, and keep their relative sizes. A frame that carries a viewBox of its own (the eyes-only preview) is unchanged.
+
+## 17.34.0
+
+### Added
+
+- **`ComposerPanelAddMenuGroup submenu` / `icon`**: a group drawn as ONE row that opens its rows in a submenu, instead of a heading over them. For a list that can grow long (a person's skills, their connected apps) and would push the menu's few common rows out of reach.
+- **`DropdownMenuCheckboxItem` and `DropdownMenuRadioItem` take `leading`**, as `DropdownMenuItem` does.
+
+### Fixed
+
+- **The composer's add menu rows line up.** A switch row passed its icon as a child, so the menu's row alignment saw a row with no icon and put a blank icon-wide slot in front of it: Search, Deep research and Ghost sat one icon further in than Camera, Photos and Files. The switch's icon is now the row's own `leading`.
 
 ## 17.31.0
 

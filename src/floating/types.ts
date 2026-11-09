@@ -373,8 +373,7 @@ export interface MenuRowProps {
   testID?: string;
 }
 
-export interface MenuCheckboxRowProps
-  extends Omit<MenuRowProps, 'onPress' | 'variant' | 'leading' | 'inset'> {
+export interface MenuCheckboxRowProps extends Omit<MenuRowProps, 'onPress' | 'variant' | 'inset'> {
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   /**
@@ -392,8 +391,7 @@ export interface MenuRadioGroupProps {
   onValueChange: (value: string) => void;
 }
 
-export interface MenuRadioRowProps
-  extends Omit<MenuRowProps, 'onPress' | 'variant' | 'leading' | 'inset'> {
+export interface MenuRadioRowProps extends Omit<MenuRowProps, 'onPress' | 'variant' | 'inset'> {
   value: string;
   /**
    * Mark rendered while this value is selected. Omit for Bloom's default dot;

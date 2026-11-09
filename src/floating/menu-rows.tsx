@@ -190,6 +190,7 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     indicator,
     indicatorPosition = 'leading',
     disabled = false,
+    leading,
     trailing,
     keepOpen = false,
     accessibilityLabel,
@@ -216,6 +217,7 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
           selected={checked}
           disabled={disabled}
           gutter={indicatorPosition}
+          leading={leading}
           trailing={trailing}
           title={title}
           onPress={() => {
@@ -257,6 +259,7 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     indicator,
     indicatorPosition = 'leading',
     disabled = false,
+    leading,
     trailing,
     keepOpen = false,
     accessibilityLabel,
@@ -282,6 +285,7 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
           selected={checked}
           disabled={disabled}
           gutter={indicatorPosition}
+          leading={leading}
           trailing={trailing}
           title={title}
           onPress={() => {
