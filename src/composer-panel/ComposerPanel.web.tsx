@@ -3,7 +3,8 @@ import React from 'react';
 
 import { ComposerPanelBase } from './ComposerPanelBase';
 import { ComposerPopover } from './ComposerPopover.web';
-import { ComposerPopoverContext, ComposerButtonContext } from './context';
+import * as Dropdown from '../dropdown-menu/index.web';
+import { ComposerDropdownContext, ComposerPopoverContext, ComposerButtonContext } from './context';
 import type { ComposerPanelProps } from './types';
 
 /**
@@ -14,7 +15,9 @@ export function ComposerPanel(props: ComposerPanelProps) {
   return (
     <ComposerButtonContext.Provider value={Button}>
       <ComposerPopoverContext.Provider value={ComposerPopover}>
-        <ComposerPanelBase {...props} />
+        <ComposerDropdownContext.Provider value={Dropdown}>
+          <ComposerPanelBase {...props} />
+        </ComposerDropdownContext.Provider>
       </ComposerPopoverContext.Provider>
     </ComposerButtonContext.Provider>
   );

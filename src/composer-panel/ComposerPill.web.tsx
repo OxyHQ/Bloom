@@ -3,7 +3,8 @@ import React from 'react';
 
 import { ComposerPillBase } from './ComposerPillBase';
 import { ComposerPopover } from './ComposerPopover.web';
-import { ComposerPopoverContext, ComposerButtonContext } from './context';
+import * as Dropdown from '../dropdown-menu/index.web';
+import { ComposerDropdownContext, ComposerPopoverContext, ComposerButtonContext } from './context';
 import type { ComposerPillProps } from './types';
 
 /**
@@ -14,7 +15,9 @@ export function ComposerPill(props: ComposerPillProps) {
   return (
     <ComposerButtonContext.Provider value={Button}>
       <ComposerPopoverContext.Provider value={ComposerPopover}>
-        <ComposerPillBase {...props} />
+        <ComposerDropdownContext.Provider value={Dropdown}>
+          <ComposerPillBase {...props} />
+        </ComposerDropdownContext.Provider>
       </ComposerPopoverContext.Provider>
     </ComposerButtonContext.Provider>
   );

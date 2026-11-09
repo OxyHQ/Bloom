@@ -1,6 +1,8 @@
 import { Button } from '../button/Button';
 import { createContext, useContext, type ComponentType } from 'react';
 
+import type * as DropdownMenuModule from '../dropdown-menu';
+
 import type { ComposerPopoverProps } from './types';
 
 /**
@@ -30,4 +32,20 @@ export function useComposerPopover(): ComponentType<ComposerPopoverProps> {
 export const ComposerButtonContext = createContext<typeof Button>(Button);
 export function useComposerButton() {
   return useContext(ComposerButtonContext);
+}
+
+/**
+ * The menu base the add menu is built on: Bloom's `DropdownMenu` family, platform-forked, injected
+ * by each binding like the popover. The shared implementation never names a platform file.
+ */
+export const ComposerDropdownContext = createContext<typeof DropdownMenuModule | null>(null);
+
+export function useComposerDropdown(): typeof DropdownMenuModule {
+  const Dropdown = useContext(ComposerDropdownContext);
+  if (!Dropdown) {
+    throw new Error(
+      'composer-panel: the add menu rendered outside ComposerPanel / ComposerPill — import them from @oxy.so/bloom/composer-panel.',
+    );
+  }
+  return Dropdown;
 }

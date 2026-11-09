@@ -9,6 +9,10 @@
 - **`ConversationSidebar heading`**: a label over the conversation rows ("Agents"), drawn like a tree section's, for a rail that titles its list. Not drawn without rows.
 - **Sidebar tree rows with a `description`** give their `leading` a taller box (`tree.avatar`: 32, 36 and 40px by size) instead of the 20px glyph box, so a contact's picture is as tall as its two lines of text. Rows without a description are unchanged.
 
+### Fixed
+
+- **The composer's add menu is built on Bloom's `DropdownMenu`**, not rows of buttons in a panel of its own. Its action rows (Camera, Photos, Files, Canvas) were centred, because the row buttons never set how they lay their content out; the menu now has the family's row layout (left-aligned, an icon that leads, a switch's check mark at the end) and its semantics (roving focus, arrow keys). The `-add-panel` test id stays on the menu surface; a switch row is a checkbox row (`aria-checked`) with the test id `bloom-row-<id>`, replacing `bloom-row-checked-<id>`.
+
 ### Changed
 
 - **`AgentCreator`'s `agent.handle` (17.28.0) is removed** in favour of `children` rows: a host's username (or anything else of its own) is an `AgentCreatorField` row, not a field the editor knows about.
