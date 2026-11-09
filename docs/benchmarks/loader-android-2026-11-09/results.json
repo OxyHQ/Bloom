@@ -1,0 +1,176 @@
+{
+  "issue": "OxyHQ/Bloom#663",
+  "requirement": "§14.3 compiler scope and native rebuild identity",
+  "status": "verified for compiler-scope/native-build identity only; performance acceptance remains open",
+  "device": {
+    "model": "Google Pixel 8a",
+    "serial": "43221JEKB12200",
+    "buildFingerprint": "google/akita/akita:16/BP4A.260205.001/14624666:user/release-keys",
+    "api": "36",
+    "abi": "arm64-v8a",
+    "display": "Physical size: 1080x2400",
+    "density": "Physical density: 420",
+    "fontScale": "1.15"
+  },
+  "bloom": {
+    "version": "17.36.0",
+    "gitCommit": "d2f89289216972181ee7fb03ed0283e1e24328ff",
+    "sourceKind": "local packed snapshot; not published acceptance",
+    "npmIntegrity": "sha512-/c+CdwLJJUCvVu/XhxJJRshM45JbTzs3XCQJtfTcCAUqsw1WVVUT8vLaXQrp4l91dIuxiIv/76o68oRDLjwtzw==",
+    "npmTarballSha256": "651c1202a92a57f9eb3725cf1ae7071683404e4f94b723134586a8989a8b89a5",
+    "runtimeTreeComparison": {
+      "npmTarballFiles": 28112,
+      "installedFiles": 28112,
+      "differentFiles": 0,
+      "exclusions": [
+        "test-only __tests__ files",
+        "Gradle-generated android/build intermediates"
+      ]
+    },
+    "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+    "nativeKotlinSha256": "5aa0123303dbb2f170077c2ddf6eac5933ee0c6269274422ed41ca10bf8f94ad",
+    "embeddedBloomFiles": 845,
+    "embeddedBloomSourceSha256": "e07768919e39498ea8a494123bc6abef9eb973b2ebfd12587752cf2262f9c6e8",
+    "apkSha256": "9b9717b836a5528a6cfcd324b697f3041d77df0840585ee92dbc93ea885f049e",
+    "embeddedBundleSha256": "d9c6e5a6f46a2f5f3df72eaca266c964612785e8d8f17aa12dbab133d6a2e6eb",
+    "dex": [
+      {
+        "name": "classes.dex",
+        "sha256": "21d9a6529299a1758ed60166166893d26eeaaa87a69c7aef40f511936e204580"
+      }
+    ],
+    "r8MappingSha256": "44e328b1f6bf30d09c1c801a4e3513e8dd5b2e814ade03bb23ae2d64d8967da1",
+    "reactCompiler": false
+  },
+  "fixture": {
+    "package": "so.oxy.bloom.loaderpackagelab",
+    "internetPermission": false,
+    "scene": "benchmark",
+    "hardwareCanvas": true
+  },
+  "matrix": [
+    {
+      "case": "one-taper0",
+      "frames": 1283,
+      "jankyFrames": 0,
+      "gpuP95Ms": 4,
+      "recentFrameSamples": 118,
+      "recentFrameP50Ms": 7.33104,
+      "recentFrameP95Ms": 10.363656,
+      "cpuPercentOfOneCore": [
+        92.5,
+        89,
+        93.2
+      ],
+      "pssKb": 235868,
+      "rssKb": 422008,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1
+    },
+    {
+      "case": "one-taper05",
+      "frames": 1276,
+      "jankyFrames": 1,
+      "gpuP95Ms": 7,
+      "recentFrameSamples": 118,
+      "recentFrameP50Ms": 9.132739,
+      "recentFrameP95Ms": 10.866789,
+      "cpuPercentOfOneCore": [
+        128,
+        94.2,
+        103
+      ],
+      "pssKb": 346926,
+      "rssKb": 533448,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1
+    },
+    {
+      "case": "two-taper0",
+      "frames": 1267,
+      "jankyFrames": 0,
+      "gpuP95Ms": 5,
+      "recentFrameSamples": 118,
+      "recentFrameP50Ms": 8.673189,
+      "recentFrameP95Ms": 10.920387,
+      "cpuPercentOfOneCore": [
+        117,
+        104,
+        103
+      ],
+      "pssKb": 284642,
+      "rssKb": 471000,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1
+    },
+    {
+      "case": "two-taper05",
+      "frames": 1265,
+      "jankyFrames": 1,
+      "gpuP95Ms": 10,
+      "recentFrameSamples": 117,
+      "recentFrameP50Ms": 11.903972,
+      "recentFrameP95Ms": 13.526438,
+      "cpuPercentOfOneCore": [
+        139,
+        101,
+        105
+      ],
+      "pssKb": 370846,
+      "rssKb": 557368,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1
+    },
+    {
+      "case": "two-taper05-repeat2",
+      "frames": 1274,
+      "jankyFrames": 0,
+      "gpuP95Ms": 10,
+      "recentFrameSamples": 117,
+      "recentFrameP50Ms": 15.256084,
+      "recentFrameP95Ms": 16.316909,
+      "cpuPercentOfOneCore": [
+        146,
+        100,
+        106
+      ],
+      "pssKb": 358802,
+      "rssKb": 545324,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1
+    },
+    {
+      "case": "two-taper05-repeat3",
+      "frames": 1261,
+      "jankyFrames": 0,
+      "gpuP95Ms": 10,
+      "recentFrameSamples": 117,
+      "recentFrameP50Ms": 15.361101,
+      "recentFrameP95Ms": 16.554859,
+      "cpuPercentOfOneCore": [
+        133,
+        101,
+        102
+      ],
+      "pssKb": 358978,
+      "rssKb": 545500,
+      "thermalStatusBefore": 1,
+      "thermalStatusAfter": 1
+    }
+  ],
+  "method": {
+    "windowSeconds": 15,
+    "screenRecording": false,
+    "foregroundOnly": true,
+    "betweenCasesDelaySeconds": 2,
+    "refreshSettingChanged": false,
+    "userDataCleared": false,
+    "deviceSettingsChanged": false
+  },
+  "limits": [
+    "The APK was compiled from the local package snapshot; installed runtime files byte-match the npm 17.36.0 tarball after excluding tests and generated Gradle intermediates.",
+    "The test fixture disables React Compiler; it is not evidence for compiler-enabled apps.",
+    "No fixed performance budget or acceptable baseline was available. These observations do not establish a performance pass/fail threshold.",
+    "One physical Android model was measured. iOS device validation remains deferred by user request."
+  ]
+}
