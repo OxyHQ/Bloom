@@ -543,12 +543,12 @@ describe('AiChatContainer host slots', () => {
     );
     // The layer is a slot, not an escape hatch: the surface is still painted.
     expect(painted.getByText('wallpaper')).toBeTruthy();
-    expect(resolvedStyle(painted.getByTestId('chat-background').props.style)).toMatchObject({
+    expect(resolvedStyle(painted.getByTestId('chat-underlay').props.style)).toMatchObject({
       position: 'absolute',
       inset: 0,
       overflow: 'hidden',
     });
-    expect(painted.getByTestId('chat-background').props.pointerEvents).toBe('none');
+    expect(painted.getByTestId('chat-underlay').props.pointerEvents).toBe('none');
     expect(resolvedStyle(painted.getByTestId('chat').props.style).backgroundColor).toBe(
       surfaceColor,
     );
