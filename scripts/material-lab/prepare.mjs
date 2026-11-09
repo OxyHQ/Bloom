@@ -1,10 +1,19 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve, relative } from 'node:path';
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '../..');
+const localPackage = resolve(here, 'bloom-local/node_modules/@oxy.so/bloom');
+const localPackageMarker = resolve(here, 'bloom-local/.built-sha256');
+const installedPackage = existsSync(localPackageMarker)
+  ? localPackage
+  : resolve(here, 'node_modules/@oxy.so/bloom');
+const nativePackage = JSON.parse(readFileSync(resolve(installedPackage, 'package.json'), 'utf8'));
+const localPackageSha256 = existsSync(localPackageMarker)
+  ? readFileSync(localPackageMarker, 'utf8').trim()
+  : null;
 const files = [
   'templates/material/MaterialScene.tsx',
   'scripts/material-lab/MaterialLab.tsx',
@@ -48,10 +57,15 @@ writeFileSync(
       fixtureSha256: hash.digest('hex'),
       sourceSha256: sourceHash.digest('hex'),
       sourceFiles,
+      nativeModulePackageVersion: nativePackage.version,
+      nativeModuleArtifact: localPackageSha256
+        ? 'local packed Bloom snapshot'
+        : 'installed package from consumer lockfile',
+      nativeModuleTarballSha256: localPackageSha256,
       lockSha256: createHash('sha256')
         .update(readFileSync(resolve(here, 'bun.lock')))
         .digest('hex'),
-      artifactKind: 'source fixture; native Bloom module from published 17.22.0',
+      artifactKind: 'Bloom source fixture with the installed native package recorded separately',
       reactCompiler: false,
       dependencies: JSON.parse(readFileSync(resolve(here, 'package.json'), 'utf8')).dependencies,
     },

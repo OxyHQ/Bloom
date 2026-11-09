@@ -1,0 +1,775 @@
+{
+  "captureCount": 66,
+  "captureNames": [
+    "light-solid",
+    "light-solid-composer",
+    "light-solid-menu",
+    "light-solid-menu-dismissed",
+    "light-solid-dialog",
+    "light-solid-dialog-dismissed",
+    "light-solid-sheet",
+    "light-solid-sheet-dismissed",
+    "light-stripes",
+    "light-stripes-composer",
+    "light-stripes-menu",
+    "light-stripes-menu-dismissed",
+    "light-stripes-dialog",
+    "light-stripes-dialog-dismissed",
+    "light-stripes-sheet",
+    "light-stripes-sheet-dismissed",
+    "light-photo",
+    "light-photo-composer",
+    "light-photo-menu",
+    "light-photo-menu-dismissed",
+    "light-photo-dialog",
+    "light-photo-dialog-dismissed",
+    "light-photo-sheet",
+    "light-photo-sheet-dismissed",
+    "light-motion",
+    "light-motion-composer",
+    "light-motion-menu",
+    "light-motion-menu-dismissed",
+    "light-motion-dialog",
+    "light-motion-dialog-dismissed",
+    "light-motion-sheet",
+    "light-motion-sheet-dismissed",
+    "light-reduced-transparency",
+    "dark-solid",
+    "dark-solid-composer",
+    "dark-solid-menu",
+    "dark-solid-menu-dismissed",
+    "dark-solid-dialog",
+    "dark-solid-dialog-dismissed",
+    "dark-solid-sheet",
+    "dark-solid-sheet-dismissed",
+    "dark-stripes",
+    "dark-stripes-composer",
+    "dark-stripes-menu",
+    "dark-stripes-menu-dismissed",
+    "dark-stripes-dialog",
+    "dark-stripes-dialog-dismissed",
+    "dark-stripes-sheet",
+    "dark-stripes-sheet-dismissed",
+    "dark-photo",
+    "dark-photo-composer",
+    "dark-photo-menu",
+    "dark-photo-menu-dismissed",
+    "dark-photo-dialog",
+    "dark-photo-dialog-dismissed",
+    "dark-photo-sheet",
+    "dark-photo-sheet-dismissed",
+    "dark-motion",
+    "dark-motion-composer",
+    "dark-motion-menu",
+    "dark-motion-menu-dismissed",
+    "dark-motion-dialog",
+    "dark-motion-dialog-dismissed",
+    "dark-motion-sheet",
+    "dark-motion-sheet-dismissed",
+    "dark-reduced-transparency"
+  ],
+  "selectedImages": [
+    {
+      "name": "light-solid",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null,
+      "pngSha256": "510a39d26675e4364498d38239c2d74f32a678828a93eb9dd66a0b8e7a13a213"
+    },
+    {
+      "name": "light-solid-composer",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null,
+      "pngSha256": "39cb3eb1760a5cf664487b714ce93fc6fdea036ab032ccad10397542bcf45cbe"
+    },
+    {
+      "name": "light-solid-menu",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null,
+      "pngSha256": "7eaf3bdcfd7336d01c74a61f5dfdc8312e2d528f1b8241029a481b6e758094d2"
+    },
+    {
+      "name": "light-solid-menu-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null,
+      "pngSha256": "10508da1ab75a9f349e44ca043c81b84d3cfd8a714a57cb645f2bc3f84bc4d02"
+    },
+    {
+      "name": "light-solid-dialog",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null,
+      "pngSha256": "05cec653327afdc7a2d52c26c981e571720add10459ab4f9de7791a3816e7bb2"
+    },
+    {
+      "name": "light-solid-sheet",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null,
+      "pngSha256": "03d724af597503896918b9b7422b47855401a67741438551bfee9fb7bf545785"
+    },
+    {
+      "name": "light-photo",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null,
+      "pngSha256": "d3fc338fd6c1b79ef9822b1eae436e035969285ca81897af30d53a41964867cd"
+    },
+    {
+      "name": "light-motion",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null,
+      "pngSha256": "593e7edb67b479d01e9c5be4e997c893453acaa9bcfbd364ad5b7d25a9fd2e84"
+    },
+    {
+      "name": "light-reduced-transparency",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null,
+      "pngSha256": "587e63c429fff1aba47d914bcbf2acf585c5ab420782a91cf191ef5007e9a376"
+    },
+    {
+      "name": "dark-solid",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null,
+      "pngSha256": "db00dcf9731d66447176e85afdf055e6671b5063528039d41ef6bf90e23951f3"
+    },
+    {
+      "name": "dark-solid-composer",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null,
+      "pngSha256": "58ec536486d9e038c7cd60b1d90561d0088c2b6864c54b67ff5979dc22b77fef"
+    },
+    {
+      "name": "dark-solid-menu",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null,
+      "pngSha256": "f2fa1676361381900c38fff8f221a237afc46736192de8cf68fc7cc73ffb5bcc"
+    },
+    {
+      "name": "dark-solid-dialog",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null,
+      "pngSha256": "d3aa13e8d886d7bf92da0a84109959ccf3d7861ea50e97ec5616651b8847ed74"
+    },
+    {
+      "name": "dark-solid-sheet",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null,
+      "pngSha256": "ed45c7351bedbdbdf089b43e1a4880ce8db4b9cdf5f0e5e5b77af20fb616b29d"
+    },
+    {
+      "name": "dark-photo",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null,
+      "pngSha256": "ba7dae2e71a53abbfbcb164b113eba4369c8b23c9b7174becbfb9f87b1ef16f3"
+    },
+    {
+      "name": "dark-motion",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null,
+      "pngSha256": "934f2f87ad3cb73cc13336cf09a86dcdd610647a057584a503b6f62774aeefd1"
+    },
+    {
+      "name": "dark-reduced-transparency",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null,
+      "pngSha256": "ba5c710e7197e4313abc78ab9bec1d41c33b8c7e6216d289b03ff21e03e2dc80"
+    }
+  ],
+  "environment": {
+    "os": "16",
+    "api": "36",
+    "abi": "arm64-v8a",
+    "hardware": "akita",
+    "size": "Physical size: 1080x2400",
+    "density": "Physical density: 420",
+    "fontScale": "1.15",
+    "gpu": [
+      "GLES: ARM, Mali-G715, OpenGL ES 3.2 v1.r54p1-11eac0.bf6659b634cc4428261e868dd766545b"
+    ],
+    "apkSha256": "887ee4bcc5dc387260fdd6104ef77eafbc675687bcf494d98932a13c83e62ffa",
+    "build": {
+      "commit": "eda4fda37964d4a0e18c36fbb6e6aea16ec1f2a1",
+      "fixtureSha256": "264d1f8f540e3eb1f5402b3369dce8c40480e5cb90e519d4233bfba8e1bb9da9",
+      "sourceSha256": "304284edbc443a3572469b01c0536fff1480f2cd845d462576f2f316219f2969",
+      "sourceFiles": 4385,
+      "nativeModulePackageVersion": "17.34.0",
+      "nativeModuleArtifact": "local packed Bloom snapshot",
+      "nativeModuleTarballSha256": "e67008a3a3512fbb372aac2e6ca34959710ec804d54e8600a51ffa9a982639e1",
+      "lockSha256": "f2df323a08c2c77c02e09a9ce69aea9f4d90b0fad025ed75ac0551bdcea8dfa4",
+      "artifactKind": "Bloom source fixture with the installed native package recorded separately",
+      "reactCompiler": false,
+      "dependencies": {
+        "@oxy.so/bloom": "17.22.0",
+        "expo": "58.0.23",
+        "expo-asset": "58.0.20",
+        "expo-blur": "58.0.5",
+        "expo-font": "58.0.11",
+        "expo-image": "58.0.18",
+        "nativewind": "5.0.0-rc.0",
+        "react": "19.3.0",
+        "react-dom": "19.3.0",
+        "react-native": "0.88.1",
+        "react-native-css": "3.1.0-rc.0",
+        "react-native-gesture-handler": "3.3.0",
+        "react-native-reanimated": "4.7.1",
+        "react-native-safe-area-context": "5.11.1",
+        "react-native-screens": "4.30.1",
+        "react-native-svg": "15.16.0",
+        "react-native-web": "0.21.4",
+        "react-native-worklets": "0.13.0"
+      },
+      "apkSha256": "887ee4bcc5dc387260fdd6104ef77eafbc675687bcf494d98932a13c83e62ffa",
+      "embeddedBundleSha256": "96916c88919fc5327fda1da3cf1a35d3101b9d856a295785e781ca3ea0385b62",
+      "embeddedBloomSourceSha256": "a8a8782f52a9de667a4b4b91a4fbc0b9e107451442f25d38031ccfc616eb282b",
+      "embeddedBloomFiles": 850,
+      "nativeModulePackageListSha256": "339ca55d2d575c349c4dbbe8b247a153262bd5d0b4c24c94287abc31cacdae5f"
+    }
+  },
+  "publishedPackageComparison": {
+    "version": "17.34.0",
+    "registryTarballSha256": "6e817cff984ff281d861137f00fa00246024f53be3e3b1eb5167d0c4fedc52f8",
+    "fixtureTarballSha256": "e67008a3a3512fbb372aac2e6ca34959710ec804d54e8600a51ffa9a982639e1",
+    "treeDifference": "The registry tarball contains three additional __tests__ directories under src; every other extracted package file, including runtime src, lib, and android, matched byte-for-byte."
+  }
+}

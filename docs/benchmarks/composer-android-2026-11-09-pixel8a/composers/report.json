@@ -1,0 +1,246 @@
+{
+  "cases-pill-input": {
+    "transitions": [
+      {
+        "control": "cases-resize",
+        "state": "busy=false narrow=true stops=0 submits=0 pending=none",
+        "before": {
+          "testID": "cases-pill-input",
+          "identity": 195893917,
+          "id": 68,
+          "start": 19,
+          "end": 19,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "after": {
+          "testID": "cases-pill-input",
+          "identity": 195893917,
+          "id": 68,
+          "start": 19,
+          "end": 19,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        }
+      },
+      {
+        "control": "cases-busy",
+        "state": "busy=true narrow=true stops=0 submits=0 pending=none",
+        "before": {
+          "testID": "cases-pill-input",
+          "identity": 195893917,
+          "id": 68,
+          "start": 29,
+          "end": 29,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        },
+        "after": {
+          "testID": "cases-pill-input",
+          "identity": 195893917,
+          "id": 68,
+          "start": 29,
+          "end": 29,
+          "focused": true,
+          "attached": true,
+          "text": "Draft retained through resize"
+        }
+      }
+    ],
+    "stop": {
+      "before": {
+        "testID": "cases-pill-input",
+        "identity": 195893917,
+        "id": 68,
+        "start": 29,
+        "end": 29,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "after": {
+        "testID": "cases-pill-input",
+        "identity": 195893917,
+        "id": 68,
+        "start": 29,
+        "end": 29,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "state": "busy=false narrow=true stops=1 submits=0 pending=none"
+    },
+    "typed": {
+      "testID": "cases-pill-input",
+      "identity": 195893917,
+      "id": 68,
+      "start": 30,
+      "end": 30,
+      "focused": true,
+      "attached": true,
+      "text": "Draft retained through resizeq"
+    },
+    "rotation": {
+      "before": {
+        "testID": "cases-pill-input",
+        "identity": 195893917,
+        "id": 68,
+        "start": 0,
+        "end": 30,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resizeq"
+      },
+      "rotated": {
+        "testID": "cases-pill-input",
+        "identity": 195893917,
+        "id": 68,
+        "start": 0,
+        "end": 30,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resizeq"
+      },
+      "returned": {
+        "testID": "cases-pill-input",
+        "identity": 195893917,
+        "id": 68,
+        "start": 0,
+        "end": 30,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resizeq"
+      },
+      "nativeViewStable": true,
+      "startOrientation": 0,
+      "targetOrientation": 1,
+      "keyboardVisibleThroughout": true,
+      "selectionMethod": "Ctrl+A on focused native EditText"
+    }
+  },
+  "cases-agent-pill-input": {
+    "transitions": [
+      {
+        "control": "cases-resize",
+        "state": "busy=false narrow=true stops=1 submits=0 pending=none",
+        "before": {
+          "testID": "cases-agent-pill-input",
+          "identity": 170970892,
+          "id": 106,
+          "start": 19,
+          "end": 19,
+          "focused": true,
+          "attached": true,
+          "text": "Agent draft retained through resize"
+        },
+        "after": {
+          "testID": "cases-agent-pill-input",
+          "identity": 170970892,
+          "id": 106,
+          "start": 19,
+          "end": 19,
+          "focused": true,
+          "attached": true,
+          "text": "Agent draft retained through resize"
+        }
+      },
+      {
+        "control": "cases-busy",
+        "state": "busy=true narrow=true stops=1 submits=0 pending=none",
+        "before": {
+          "testID": "cases-agent-pill-input",
+          "identity": 170970892,
+          "id": 106,
+          "start": 33,
+          "end": 33,
+          "focused": true,
+          "attached": true,
+          "text": "Agent draft retained through resize"
+        },
+        "after": {
+          "testID": "cases-agent-pill-input",
+          "identity": 170970892,
+          "id": 106,
+          "start": 33,
+          "end": 33,
+          "focused": true,
+          "attached": true,
+          "text": "Agent draft retained through resize"
+        }
+      }
+    ],
+    "stop": {
+      "before": {
+        "testID": "cases-agent-pill-input",
+        "identity": 170970892,
+        "id": 106,
+        "start": 33,
+        "end": 33,
+        "focused": true,
+        "attached": true,
+        "text": "Agent draft retained through resize"
+      },
+      "after": {
+        "testID": "cases-agent-pill-input",
+        "identity": 170970892,
+        "id": 106,
+        "start": 33,
+        "end": 33,
+        "focused": true,
+        "attached": true,
+        "text": "Agent draft retained through resize"
+      },
+      "state": "busy=false narrow=true stops=2 submits=0 pending=none"
+    },
+    "typed": {
+      "testID": "cases-agent-pill-input",
+      "identity": 170970892,
+      "id": 106,
+      "start": 34,
+      "end": 34,
+      "focused": true,
+      "attached": true,
+      "text": "Agent draft retained through resiqze"
+    },
+    "rotation": {
+      "before": {
+        "testID": "cases-agent-pill-input",
+        "identity": 170970892,
+        "id": 106,
+        "start": 0,
+        "end": 36,
+        "focused": true,
+        "attached": true,
+        "text": "Agent draft retained through resiqze"
+      },
+      "rotated": {
+        "testID": "cases-agent-pill-input",
+        "identity": 170970892,
+        "id": 106,
+        "start": 0,
+        "end": 36,
+        "focused": true,
+        "attached": true,
+        "text": "Agent draft retained through resiqze"
+      },
+      "returned": {
+        "testID": "cases-agent-pill-input",
+        "identity": 170970892,
+        "id": 106,
+        "start": 0,
+        "end": 36,
+        "focused": true,
+        "attached": true,
+        "text": "Agent draft retained through resiqze"
+      },
+      "nativeViewStable": true,
+      "startOrientation": 0,
+      "targetOrientation": 1,
+      "keyboardVisibleThroughout": true,
+      "selectionMethod": "Ctrl+A on focused native EditText"
+    }
+  }
+}

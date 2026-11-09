@@ -11,6 +11,17 @@ const apk = resolve(
   process.env.APK || 'android/app/build/outputs/apk/release/app-release.apk',
 );
 const build = JSON.parse(readFileSync(resolve(here, 'build.json'), 'utf8'));
+const packageList = readFileSync(
+  resolve(
+    here,
+    'android/app/build/generated/autolinking/src/main/java/com/facebook/react/PackageList.java',
+  ),
+  'utf8',
+);
+assert(
+  packageList.includes('new so.oxy.bloom.BloomPackage()'),
+  'Installed Bloom Android package is missing from the compiled consumer autolinking list',
+);
 const packed = execFileSync('unzip', ['-p', apk, 'assets/index.android.bundle'], {
   maxBuffer: 64 * 1024 * 1024,
 });
@@ -59,6 +70,7 @@ const report = {
   embeddedBundleSha256: createHash('sha256').update(packed).digest('hex'),
   embeddedBloomSourceSha256: hash.digest('hex'),
   embeddedBloomFiles: sources.size,
+  nativeModulePackageListSha256: createHash('sha256').update(packageList).digest('hex'),
 };
 writeFileSync(resolve(here, 'attestation.json'), JSON.stringify(report, null, 2));
 console.log(`Attested ${sources.size} embedded Bloom sources and exact APK bundle`);
