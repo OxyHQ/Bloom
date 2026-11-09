@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import type { ViewStyle } from 'react-native';
 
 import { StyledView } from '../styles/styled-primitives';
@@ -58,6 +58,12 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
   }, []);
 
   const canvas = size * CANVAS_RATIO;
+  // The first frame is in the markup, so server HTML and the first paint already
+  // show the shape; the animation loop then keeps rewriting the same `d`.
+  const initialD = useMemo(() => {
+    const { flat, frameCount } = getMorphFrames();
+    return morphPathD(flat, frameCount, 0);
+  }, []);
 
   return (
     <StyledView
@@ -72,7 +78,7 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
         aria-hidden
         style={{ position: 'absolute', pointerEvents: 'none' }}
       >
-        <path ref={pathRef} fill={color} />
+        <path ref={pathRef} d={initialD} fill={color} />
       </svg>
     </StyledView>
   );
