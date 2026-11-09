@@ -66,8 +66,8 @@ type TreePress = (item: SidebarTreeItem, folder?: SidebarTreeFolder) => void;
  *
  * A row: radius full, py `tree.padding`, inset 8 plus 16 per level. In a section where any
  * row nests, every row keeps a `tree.icon` lane for the disclosure (a chevron that
- * turns 90° open) so labels align; then the icon or `leading` (`tree.icon` box, gap
- * 8), the label (`tree.label` text-secondary, truncating) and the `meta` chip.
+ * turns 90° open) so labels align; then the icon or `leading` (`tree.icon` box, or `tree.avatar`
+ * when the row has a `description`, gap 8), the label (`tree.label` text-secondary, truncating) and the `meta` chip.
  * Hover and selection fill the whole line with background-secondary-hover; the
  * actions sit inside it, at the end, never in the row's press target. Children
  * ease open and shut (300ms) and are only mounted while shown. A row with a
@@ -519,6 +519,9 @@ const TreeRow = memo(function TreeRow({
 
   const { tree } = useSidebarMetrics();
   const lane = tree.icon;
+  // A row with a description is a contact (picture, name, last line): its picture is as tall as the
+  // two lines. Any other `leading` stays in the glyph's box.
+  const leadingBox = item.leading != null && item.description != null ? tree.avatar : tree.icon;
   const inset = 8 + depth * TREE_INDENT;
   const Icon = item.icon;
   const row = (
@@ -641,8 +644,8 @@ const TreeRow = memo(function TreeRow({
         {Icon || item.leading != null ? (
           <View
             style={{
-              width: tree.icon,
-              height: tree.icon,
+              width: leadingBox,
+              height: leadingBox,
               flexShrink: 0,
               alignItems: 'center',
               justifyContent: 'center',

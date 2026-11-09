@@ -42,6 +42,11 @@ export interface SidebarMetrics {
     padding: number;
     /** The glyph's box, and the disclosure lane's side. */
     icon: number;
+    /**
+     * The `leading` box of a row that has a `description` (a contact: avatar, name, last line).
+     * Such a row takes two lines, so its picture is as tall as they are.
+     */
+    avatar: number;
     /** The section label and every row and folder label. */
     label: TypeScaleVariant;
     /** The trailing `meta` chip. */
@@ -79,6 +84,7 @@ export const SIDEBAR_METRICS: Record<SidebarSize, SidebarMetrics> = {
   sm: size(232, 6, 18, 'body-2-medium', {
     padding: 4,
     icon: 16,
+    avatar: 32,
     label: 'body-2-medium',
     meta: 'caption-2-medium',
     status: 'body-2-regular',
@@ -86,6 +92,7 @@ export const SIDEBAR_METRICS: Record<SidebarSize, SidebarMetrics> = {
   md: size(260, 9, 22, 'headline-medium', {
     padding: 5,
     icon: 20,
+    avatar: 36,
     label: 'body-medium',
     meta: 'caption-1-medium',
     status: 'body-regular',
@@ -93,6 +100,7 @@ export const SIDEBAR_METRICS: Record<SidebarSize, SidebarMetrics> = {
   lg: size(300, 10, 24, 'title-3-medium', {
     padding: 6,
     icon: 22,
+    avatar: 40,
     label: 'headline-medium',
     meta: 'body-2-medium',
     status: 'headline-regular',

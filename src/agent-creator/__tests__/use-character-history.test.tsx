@@ -44,7 +44,7 @@ it('retains current selection through delayed own echoes and preserves latest bu
   act(() => h.result.current.redo());
   expect(h.result.current.character).toEqual(blue);
 });
-it('records one transaction for a drag, restores the session original undoably and preserves redo on no-op', () => {
+it('records one transaction for a drag and preserves redo on no-op', () => {
   const h = renderHook(() => useCharacterHistory(agent, jest.fn()));
   act(() => {
     h.result.current.begin();
@@ -58,10 +58,6 @@ it('records one transaction for a drag, restores the session original undoably a
   act(() => h.result.current.change(original));
   expect(h.result.current.canRedo).toBe(true);
   act(() => h.result.current.redo());
-  expect(h.result.current.character).toEqual(blue);
-  act(() => h.result.current.restore());
-  expect(h.result.current.character).toEqual(original);
-  act(() => h.result.current.undo());
   expect(h.result.current.character).toEqual(blue);
   act(() => h.result.current.change(red));
   expect(h.result.current.canRedo).toBe(false);
@@ -80,10 +76,8 @@ it('rebases on external character replacement and agent identity, not profile-on
   expect(h.result.current.canUndo).toBe(true);
   h.rerender({ value: { ...agent, avatar: blue } });
   expect(h.result.current.canUndo).toBe(false);
-  expect(h.result.current.canRestore).toBe(false);
   act(() => h.result.current.change(red));
-  act(() => h.result.current.restore());
-  expect(h.result.current.character).toEqual(blue);
+  expect(h.result.current.character).toEqual(red);
   h.rerender({ value: { ...agent, id: 'b' } });
   expect(h.result.current.character).toEqual(original);
   expect(h.result.current.canUndo).toBe(false);

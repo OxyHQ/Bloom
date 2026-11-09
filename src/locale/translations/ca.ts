@@ -34,13 +34,11 @@ const MESSAGE_MEDIA_MESSAGES__items = (n: number) =>
   plural('ca', n, { one: '{n} element', other: '{n} elements' });
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  avatarHistory: 'Historial de l’avatar',
   undoAvatar: 'Desfés',
   redoAvatar: 'Refés',
-  restoreAvatar: 'Restaura l’original',
   preparingAvatar: 'Preparant l’avatar…',
 
-  reaction: 'Reacció',
-  working: 'Treballa',
   avatarStyle: 'Estil de l’avatar',
   proceduralAvatar: 'Avatar actual',
   betaPreset: 'Personatge predefinit (beta)',

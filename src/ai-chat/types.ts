@@ -492,6 +492,11 @@ export interface AiChatShellProps {
   defaultPanelWidth?: number;
   minPanelWidth?: number;
   maxPanelWidth?: number;
+  /**
+   * Whether the divider beside the panel can be dragged. Default `true`. A panel with a width of
+   * its own (an editor, a form) turns it off, and the panel keeps `defaultPanelWidth`.
+   */
+  panelResizable?: boolean;
   /** Controlled nav drawer (below `lg`). */
   navOpen?: boolean;
   onNavOpenChange?: (open: boolean) => void;

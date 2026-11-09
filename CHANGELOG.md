@@ -4,6 +4,9 @@
 
 ### Added
 
+- **`AiChatShell panelResizable`** (default `true`): `false` removes the divider beside the context panel, which then keeps `defaultPanelWidth`. For a panel with a width of its own, such as an editor.
+- **Sidebar tree rows with a `description`** give their `leading` a taller box (`tree.avatar`: 32, 36 and 40px by size) instead of the 20px glyph box, so a contact's picture is as tall as its two lines of text. Rows without a description are unchanged.
+- **`AgentCreator` takes rows of the host's own**: `children` are drawn in the details card after the description, composed with the new `AgentCreatorField` (the row the editor's Name, Label and Description now use), so a host's rows match the editor's geometry, hairlines and type. Nothing changes without children.
 - **`SelectedAgentPreview`** (and `previewAvatarGeometry`) from `@oxy.so/bloom/multi-agent-chat`: the avatars of the chosen agents composed as one large avatar, a trio, or a ring from four up, each one named for `AvatarFlights` as `${anchor}:${agent.id}`. It is the picker's preview and the empty group chat's mark in `MultiAgentChat`; a host that draws its own group chat uses the same composition and the same flights (picker to empty chat to header).
 
 ## 17.27.1

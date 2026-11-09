@@ -28,13 +28,11 @@ const CALL_UI_MESSAGES__CORNERS = {
 };
 
 const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
+  avatarHistory: 'अवतार इतिहास',
   undoAvatar: 'पूर्ववत करें',
   redoAvatar: 'फिर से करें',
-  restoreAvatar: 'मूल रूप बहाल करें',
   preparingAvatar: 'अवतार तैयार हो रहा है…',
 
-  reaction: 'प्रतिक्रिया दें',
-  working: 'काम करें',
   avatarStyle: 'अवतार शैली',
   proceduralAvatar: 'वर्तमान अवतार',
   betaPreset: 'तैयार पात्र (बीटा)',

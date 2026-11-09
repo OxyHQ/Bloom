@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render } from '@testing-library/react-native';
 import React from 'react';
+import { View } from 'react-native';
 import { RiHome4Line } from '../icons/remix/RiHome4Line';
 import { Sidebar, type SidebarSize, type SidebarTree } from '../sidebar';
 import { SIDEBAR_METRICS } from '../sidebar/metrics';
@@ -84,6 +85,54 @@ describe('sidebar tree section follows the sidebar size metrics', () => {
     expect(px('md')).toBeLessThan(px('lg'));
     expect(SIDEBAR_METRICS.sm.tree.icon).toBeLessThan(SIDEBAR_METRICS.md.tree.icon);
     expect(SIDEBAR_METRICS.md.tree.icon).toBeLessThan(SIDEBAR_METRICS.lg.tree.icon);
+  });
+
+  it.each(SIZES)('gives a row with a description a taller leading box at %s', (size) => {
+    const { tree } = SIDEBAR_METRICS[size];
+    const Picture = ({ testID }: { testID: string }) => <View testID={testID} />;
+    const view = render(
+      <BloomThemeProvider mode="light">
+        <Sidebar
+          size={size}
+          items={NAV}
+          showSearch={false}
+          showThemeToggle={false}
+          tree={[
+            {
+              key: 'agents',
+              label: 'Agents',
+              items: [
+                {
+                  key: 'contact',
+                  label: 'Nadia',
+                  description: 'Hello',
+                  leading: <Picture testID="with-description" />,
+                },
+                { key: 'plain', label: 'Chat', leading: <Picture testID="without-description" /> },
+              ],
+            },
+          ]}
+        />
+      </BloomThemeProvider>,
+    );
+    // The width of the nearest ancestor that sets one: the leading box.
+    const boxWidth = (testID: string) => {
+      for (let node = view.getByTestId(testID).parent; node; node = node.parent) {
+        const widths = ([] as unknown[])
+          .concat(node.props.style ?? [])
+          .flat(4)
+          .flatMap((entry) =>
+            entry && typeof entry === 'object' && 'width' in entry
+              ? [(entry as { width: number }).width]
+              : [],
+          );
+        if (widths.length > 0) return widths[0];
+      }
+      return undefined;
+    };
+    expect(boxWidth('with-description')).toBe(tree.avatar);
+    expect(boxWidth('without-description')).toBe(tree.icon);
+    expect(tree.avatar).toBeGreaterThan(tree.icon);
   });
 
   it.each(['SidebarTreeSection.tsx', 'SidebarFolder.tsx'])(

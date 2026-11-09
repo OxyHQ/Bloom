@@ -12,6 +12,8 @@ import { GlossArt } from '../GlossArt';
 import { EmotionPicker } from '../EmotionPicker';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
 import { AgentCreator } from '../AgentCreator';
+import { AgentCreatorField } from '../AgentCreatorField';
+import { TextFieldInput } from '../../text-field';
 import type { AgentCreatorAgent } from '../types';
 
 jest.mock('../../agent-avatar/CharacterAvatar', () => ({
@@ -96,6 +98,29 @@ describe('controlled agent creator', () => {
     fireEvent.changeText(hidden.getByLabelText('Agent name'), 'Architect');
     expect(onChange).toHaveBeenLastCalledWith({ ...agent, name: 'Architect' });
   });
+  it('draws the host’s own rows in the details card, in the editor’s own row geometry', () => {
+    const onUsername = jest.fn();
+    const view = render(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <AgentCreator agent={agent} onChange={jest.fn()}>
+          <AgentCreatorField label="Username">
+            <TextFieldInput
+              label="Agent username"
+              size="sm"
+              value="designer"
+              onChangeText={onUsername}
+            />
+          </AgentCreatorField>
+        </AgentCreator>
+      </BloomThemeProvider>,
+    );
+    expect(view.getByText('Username')).toBeTruthy();
+    fireEvent.changeText(view.getByLabelText('Agent username'), 'architect');
+    expect(onUsername).toHaveBeenCalledWith('architect');
+    // The built-in rows are the same component: the host's row follows them, never replaces them.
+    expect(view.getByLabelText('Agent name')).toBeTruthy();
+    expect(view.getByLabelText('Agent description')).toBeTruthy();
+  });
   it('previews a host speech provider with saved voice preferences', () => {
     const onPreviewVoice = jest.fn();
     const view = editor(jest.fn(), {
@@ -145,7 +170,7 @@ describe('the character editor', () => {
     global.cancelAnimationFrame = jest.fn();
   });
 
-  it('groups a color gesture into one undo step and keeps restoration undoable', () => {
+  it('groups a color gesture into one undo step, from the header', () => {
     const { view, last } = controlled();
     fireEvent.press(view.getByLabelText('Custom avatar color'));
     const picker = () => view.UNSAFE_getByType(CustomColorPicker).props;
@@ -154,13 +179,9 @@ describe('the character editor', () => {
     act(() => picker().onChange('#445566'));
     act(() => picker().onInteractionEnd());
     expect(last().bodyColor).toBe(normalizeAvatarSkinColor('#445566'));
-    fireEvent.press(view.getByText('Undo'));
+    fireEvent.press(view.getByLabelText('Undo'));
     expect(last()).toEqual(agent.avatar);
-    fireEvent.press(view.getByText('Redo'));
-    expect(last().bodyColor).toBe(normalizeAvatarSkinColor('#445566'));
-    fireEvent.press(view.getByText('Restore original'));
-    expect(last()).toEqual(agent.avatar);
-    fireEvent.press(view.getByText('Undo'));
+    fireEvent.press(view.getByLabelText('Redo'));
     expect(last().bodyColor).toBe(normalizeAvatarSkinColor('#445566'));
   });
 
@@ -353,11 +374,5 @@ describe('the character editor', () => {
     expect(CHARACTER_OPTIONS.eyes.map((option) => option[0]).sort()).toEqual(
       AVATAR_EYES.filter((id) => id !== 'cyclops').sort(),
     );
-  });
-
-  it('replays working on the preview without editing the saved character', () => {
-    const { view, onChange } = controlled();
-    fireEvent.press(view.getByText('Work'));
-    expect(onChange).not.toHaveBeenCalled();
   });
 });
