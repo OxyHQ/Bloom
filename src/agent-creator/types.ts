@@ -13,8 +13,6 @@ export type AgentCreatorAgent = {
   id: string;
   name: string;
   label: string;
-  /** The agent's username. Defined, it is edited in its own row after the name; omitted, there is no row. */
-  handle?: string;
   description: string;
   avatar: AvatarCharacter;
   preferences?: AgentPreferences;

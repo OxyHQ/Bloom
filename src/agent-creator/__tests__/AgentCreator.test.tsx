@@ -96,18 +96,6 @@ describe('controlled agent creator', () => {
     fireEvent.changeText(hidden.getByLabelText('Agent name'), 'Architect');
     expect(onChange).toHaveBeenLastCalledWith({ ...agent, name: 'Architect' });
   });
-  it('edits the username in its own row, only when the agent has one', () => {
-    expect(editor().queryByLabelText('Agent username')).toBeNull();
-
-    const onChange = jest.fn();
-    const view = render(
-      <BloomThemeProvider mode="light" colorPreset="teal">
-        <AgentCreator agent={{ ...agent, handle: 'designer' }} onChange={onChange} />
-      </BloomThemeProvider>,
-    );
-    fireEvent.changeText(view.getByLabelText('Agent username'), 'architect');
-    expect(onChange).toHaveBeenLastCalledWith({ ...agent, handle: 'architect' });
-  });
   it('previews a host speech provider with saved voice preferences', () => {
     const onPreviewVoice = jest.fn();
     const view = editor(jest.fn(), {

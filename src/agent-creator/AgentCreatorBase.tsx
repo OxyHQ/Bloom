@@ -377,35 +377,6 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                     />
                   </StyledView>
                 </StyledView>
-                {agent.handle === undefined ? null : (
-                  <StyledView
-                    className="grid h-[52px] grid-cols-[96px_minmax(0,1fr)] items-center border-b border-border-button-default dark:border-border-button-default/35 pe-2.5 flex-row"
-                    style={{
-                      flexDirection: 'row',
-                      alignContent: 'stretch',
-                      borderColor: colors.border,
-                    }}
-                  >
-                    <Text
-                      variant="body-regular"
-                      className="text-body-regular text-text-primary"
-                      style={{ width: 96 }}
-                    >
-                      {messages.handle}
-                    </Text>
-                    <StyledView className="min-w-0 flex-1">
-                      <TextFieldInput
-                        label={messages.handleInput}
-                        size="sm"
-                        maxLength={32}
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        value={agent.handle}
-                        onChangeText={(handle) => onChange({ ...agent, handle })}
-                      />
-                    </StyledView>
-                  </StyledView>
-                )}
                 <StyledView
                   className="grid h-[52px] grid-cols-[96px_minmax(0,1fr)] items-center border-b border-border-button-default dark:border-border-button-default/35 pe-2.5 flex-row"
                   style={{
