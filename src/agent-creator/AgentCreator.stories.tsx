@@ -3,6 +3,9 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { CHARACTER_TEMPLATES } from './constants';
 import { AgentCreator } from './AgentCreator.web';
+import { AgentCreatorField } from './AgentCreatorField';
+import { AgentCreatorSection } from './AgentCreatorSection';
+import { Switch } from '../switch';
 import type { AgentCreatorAgent } from './types';
 
 const meta: Meta<typeof AgentCreator> = {
@@ -22,7 +25,21 @@ function ControlledCreator() {
   });
   return (
     <View style={{ width: 360, height: 800 }}>
-      <AgentCreator agent={agent} onChange={setAgent} />
+      <AgentCreator
+        agent={agent}
+        onChange={setAgent}
+        sections={
+          <AgentCreatorSection title="Heartbeat">
+            <AgentCreatorField label="Check" divider={false}>
+              <Switch
+                accessibilityLabel="Check on its own"
+                checked
+                onCheckedChange={() => undefined}
+              />
+            </AgentCreatorField>
+          </AgentCreatorSection>
+        }
+      />
     </View>
   );
 }

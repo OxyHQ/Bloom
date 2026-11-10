@@ -13,6 +13,7 @@ import { EmotionPicker } from '../EmotionPicker';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
 import { AgentCreator } from '../AgentCreator';
 import { AgentCreatorField } from '../AgentCreatorField';
+import { AgentCreatorSection } from '../AgentCreatorSection';
 import { TextFieldInput } from '../../text-field';
 import type { AgentCreatorAgent } from '../types';
 
@@ -119,6 +120,31 @@ describe('controlled agent creator', () => {
     expect(onUsername).toHaveBeenCalledWith('architect');
     // The built-in rows are the same component: the host's row follows them, never replaces them.
     expect(view.getByLabelText('Agent name')).toBeTruthy();
+    expect(view.getByLabelText('Agent description')).toBeTruthy();
+  });
+  it('draws the host’s own titled cards below the details card, with the editor’s rows in them', () => {
+    const view = render(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <AgentCreator
+          agent={agent}
+          onChange={jest.fn()}
+          sections={
+            <AgentCreatorSection title="Heartbeat">
+              <AgentCreatorField label="Every" divider={false}>
+                <TextFieldInput
+                  label="Heartbeat interval"
+                  size="sm"
+                  value="60"
+                  onChangeText={jest.fn()}
+                />
+              </AgentCreatorField>
+            </AgentCreatorSection>
+          }
+        />
+      </BloomThemeProvider>,
+    );
+    expect(view.getByText('Heartbeat')).toBeTruthy();
+    expect(view.getByLabelText('Heartbeat interval')).toBeTruthy();
     expect(view.getByLabelText('Agent description')).toBeTruthy();
   });
   it('previews a host speech provider with saved voice preferences', () => {
