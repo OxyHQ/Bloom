@@ -25,7 +25,7 @@ import { BloomScope } from '../appearance';
  * panel (the keyboard then has it, as on the web). The popup goes on tracking the pointer over
  * the trigger while it holds its grab (`trackingRef`). The trigger's own press is unchanged.
  */
-import React, { useCallback, useMemo, useRef, type ComponentRef } from 'react';
+import React, { useCallback, useMemo, useRef, type ComponentRef, type ReactNode } from 'react';
 import type { PointerEvent, View } from 'react-native';
 
 import { SheetShell } from '../dialog/SheetShell';
@@ -43,6 +43,7 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import { HOVER_CARD_CLOSE_DELAY, HOVER_CARD_OPEN_DELAY } from '../hover-card/constants';
 import { useHoverIntent } from '../hover-card/use-hover-intent';
 import { getNativeGlassMenu } from '../floating/glass-menu/native-glass-menu';
+import { parseGlassMenu } from '../floating/glass-menu/parse-glass-menu';
 import { GlassTrigger, useGlassMenu } from '../floating/glass-menu/use-glass-menu';
 import { DropdownMenuProvider, useDropdownMenu } from './context';
 import type {
@@ -125,7 +126,7 @@ export function DropdownMenu({
   const glass = useGlassMenu({
     children,
     content: DropdownMenuContent,
-    rows,
+    parse: (props) => parseGlassMenu(props.children as ReactNode, rows),
     open: isOpen,
     setOpen: setMenuOpen,
   });
