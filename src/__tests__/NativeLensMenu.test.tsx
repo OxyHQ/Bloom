@@ -199,3 +199,27 @@ describe('Select as the native lens menu', () => {
     expect(onValueChange).toHaveBeenCalledWith('pear');
   });
 });
+
+describe('a ButtonGroup with the lens material', () => {
+  it('is drawn by the native lens, and its items still press', () => {
+    const onPress = jest.fn();
+    const screen = wrap(
+      <Button.Group material="lens" accessibilityLabel="Actions">
+        <Button onPress={onPress}>Share</Button>
+      </Button.Group>,
+    );
+    expect(screen.getByTestId('native-lens')).toBeTruthy();
+    expect(lastProps?.items).toEqual([]);
+    expect(screen.getByLabelText('Actions')).toBeTruthy();
+    act(() => screen.getByText('Share').props.onPress?.());
+  });
+
+  it('keeps the shared surface without the lens prop', () => {
+    const screen = wrap(
+      <Button.Group accessibilityLabel="Actions">
+        <Button>Share</Button>
+      </Button.Group>,
+    );
+    expect(screen.queryByTestId('native-lens')).toBeNull();
+  });
+});
