@@ -1,4 +1,6 @@
 import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
+import { useLensOriginReporter } from '../floating/lens/use-lens-menu';
+import { compositeOnto } from '../surface/shared';
 import { getNativeLens } from '../floating/lens/native-lens';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import type { LinkButtonProps } from './types';
@@ -516,6 +518,22 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
       : hovered && !loading
         ? palette.hover
         : palette.rest;
+
+  // A button that is the trigger of a lens menu tells it its fill and radius: the menu morphs out
+  // of the button's own shape. The resting paint, composited onto the page, is what it looks like.
+  const reportOrigin = useLensOriginReporter();
+  const restFill = palette.rest.background;
+  const styleRadius = StyleSheet.flatten(style)?.borderRadius;
+  const originRadius = typeof styleRadius === 'number' ? styleRadius : BUTTON_RADIUS;
+  const pageColor = theme.colors.background;
+  useEffect(() => {
+    if (!reportOrigin) return;
+    reportOrigin(
+      restFill === 'transparent'
+        ? null
+        : { tint: compositeOnto(restFill, pageColor), radius: originRadius },
+    );
+  }, [reportOrigin, restFill, originRadius, pageColor]);
 
   const baseStyles = useMemo((): ViewStyle => {
     // Composed by spreading, never by assigning: React Native's style types are
