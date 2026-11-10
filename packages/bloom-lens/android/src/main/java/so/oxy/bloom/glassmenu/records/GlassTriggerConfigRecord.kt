@@ -6,8 +6,8 @@ import expo.modules.kotlin.records.Record
 
 class GlassTriggerConfigRecord : Record {
   @Field val blur: Float = 1f
-  @Field var tintColor: Color? = null
-  @Field var tintOpacity: Float? = null
+  @Field val tintColor: Color? = null
+  @Field val tintOpacity: Float? = null
   @Field val saturation: Float = 1f
   @Field val refraction: Float = 1f
   @Field val rim: Float = 1f
