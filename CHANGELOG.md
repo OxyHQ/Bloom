@@ -1,10 +1,16 @@
 # Changelog
 
-## 17.42.0
+## 17.43.0
 
 ### Added
 
 - **`AgentCreator sections` and `AgentCreatorSection`**: titled cards of the host's own below the details card, for what an agent *has* beyond who it is (its schedule, its inbox, what it remembers). `AgentCreatorSection title` draws the card with the details card's surface, radius and inset; its rows are `AgentCreatorField`s (or any row of the host's). They scroll with the rest of the editor. `children` stays the way to add rows to the details card itself.
+
+## 17.41.0
+
+### Added
+
+- **`ComposerLoader.phase`** (`idle`, `submitting`, `streaming`, `stopping`, `error`, `complete`) gives chat composers one controlled request lifecycle. Bloom owns the fade and motion; the app continues to own submission, cancellation, error and completion. `active` remains compatible during the 17.x migration. `AgentChat` maps its transport-neutral statuses and accepts `composerPhase` when an app needs explicit stopping/completion phases.
 
 ## 17.40.0
 

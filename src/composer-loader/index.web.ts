@@ -5,4 +5,4 @@
 
 export { ComposerLoader } from './ComposerLoader.web';
 export { resolveComposerLoaderColors } from './shared';
-export type { ComposerLoaderColors, ComposerLoaderProps } from './types';
+export type { ComposerLoaderColors, ComposerLoaderPhase, ComposerLoaderProps } from './types';

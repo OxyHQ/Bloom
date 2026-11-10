@@ -19,6 +19,7 @@ import {
   COLUMN_MAX_WIDTH,
   HISTORY_BREAKPOINT,
   RAIL_WIDTH,
+  resolveAgentChatComposerPhase,
   useAgentChatPalette,
   useAgentChatWebCss,
   type AgentChatPalette,
@@ -169,6 +170,7 @@ export function AgentChatBase({
   disabled = false,
   messages,
   status = 'ready',
+  composerPhase: composerPhaseProp,
   error,
   title,
   value,
@@ -218,6 +220,7 @@ export function AgentChatBase({
   });
 
   const busy = status === 'submitted' || status === 'streaming';
+  const composerPhase = composerPhaseProp ?? resolveAgentChatComposerPhase(status);
   const blocked = disabled || composerProps?.disabled === true;
   const showError = error ?? status === 'error';
   const last = messages[messages.length - 1];
@@ -327,6 +330,7 @@ export function AgentChatBase({
                           onStop={onStop}
                           onAttach={onAttach}
                           busy={busy}
+                          phase={composerPhase}
                           disabled={blocked}
                           model={model}
                           provider={provider}

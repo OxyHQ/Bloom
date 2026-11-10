@@ -4,9 +4,30 @@ import type { StyleProp, ViewStyle } from 'react-native';
 /** Four gradient colours, spread across the pill left → right. */
 export type ComposerLoaderColors = readonly [string, string, string, string];
 
+/** Controlled phases for a composer's visual working state. */
+export type ComposerLoaderPhase =
+  | 'idle'
+  | 'submitting'
+  | 'streaming'
+  | 'stopping'
+  | 'error'
+  | 'complete';
+
 export interface ComposerLoaderProps {
   children: ReactNode;
-  /** Show the light. Fades in/out (450ms) — flip it while awaiting a response. Default `true`. */
+  /**
+   * The visual phase of the composer request. `submitting`, `streaming` and
+   * `stopping` keep the light active without resetting its lap. `idle`, `error`
+   * and `complete` fade it out. The app owns the request and passes business
+   * state such as `ComposerPill.busy` and `ComposerPill.error` separately.
+   * When present, this takes precedence over the legacy `active` prop.
+   */
+  phase?: ComposerLoaderPhase;
+  /**
+   * Show the light. Fades in/out (450ms). Prefer `phase` for a request lifecycle.
+   * Default `true`.
+   * @deprecated `phase` is the recommended API; `active` will be removed in 18.0.0.
+   */
   active?: boolean;
   /** Freeze the decorative light without changing active or the composer. Use native viewability for offscreen content. */
   paused?: boolean;

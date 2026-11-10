@@ -207,7 +207,7 @@ export function MaterialScene({
                 Sheet
               </Button>
             </View>
-            <ComposerLoader active={busy} testID="material-loader">
+            <ComposerLoader phase={busy ? 'streaming' : 'idle'} testID="material-loader">
               <View style={{ height: 52 }} />
             </ComposerLoader>
             <AgentChatComposer

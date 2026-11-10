@@ -21,11 +21,13 @@ const story = Object.values(index.entries).find(
     entry.exportName === 'Lifecycle',
 );
 assert(story, 'Lifecycle story missing: check which checkout the server serves');
-const browser = await puppeteer.launch({
-  executablePath: process.env.CHROME_PATH,
-  headless: true,
-  args: ['--no-sandbox'],
-});
+const browser = process.env.CHROME_WS_ENDPOINT
+  ? await puppeteer.connect({ browserWSEndpoint: process.env.CHROME_WS_ENDPOINT })
+  : await puppeteer.launch({
+      executablePath: process.env.CHROME_PATH,
+      headless: true,
+      args: ['--no-sandbox'],
+    });
 const report = {
   commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
   workingTree: execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim(),
@@ -96,6 +98,35 @@ try {
     await settlePaint();
   };
   const click = (id) => page.click(`[data-testid="${id}"]`);
+  const setPhase = (phase) => click(`loader-phase-${phase}`);
+  await waitState('running');
+  await delay(250);
+  const submitting = await sample();
+  await setPhase('streaming');
+  await waitState('running');
+  await delay(200);
+  const streaming = await sample();
+  assert(streaming.clocks[0].time > submitting.clocks[0].time);
+  report.cases.push({
+    name: 'submit to streaming keeps the same running lap',
+    submitting,
+    streaming,
+  });
+  await setPhase('stopping');
+  await waitState('running');
+  const stopping = await sample();
+  assert(stopping.clocks[0].time > streaming.clocks[0].time);
+  await setPhase('error');
+  await waitState('paused');
+  const error = await sample();
+  await delay(200);
+  assert.deepEqual((await sample()).clocks, error.clocks);
+  await setPhase('complete');
+  await waitState('paused');
+  await setPhase('idle');
+  await waitState('paused');
+  report.cases.push({ name: 'stopping, error, complete and idle settle', stopping, error });
+  await setPhase('streaming');
   await waitState('running');
   await delay(300);
   const before = await sample();
@@ -109,14 +140,14 @@ try {
     await delay(9500);
     await recording.stop();
   }
-  await click('loader-toggle');
+  await setPhase('idle');
   await waitState('paused');
   const inactive = await sample();
   await delay(250);
   const inactiveLater = await sample();
   assert.deepEqual(inactiveLater.clocks, inactive.clocks);
   report.cases.push({ name: 'inactive settles', before: inactive, after: inactiveLater });
-  await click('loader-toggle');
+  await setPhase('streaming');
   await waitState('running');
   await click('loader-pause');
   await waitState('paused');
@@ -135,7 +166,7 @@ try {
   await click('loader-retain');
   await waitState('running');
   report.cases.push({ name: 'retained Screen', paused: retained, resumed: await sample() });
-  await click('loader-toggle');
+  await setPhase('idle');
   await delay(100);
   await click('loader-retain');
   await waitState('paused');
@@ -149,12 +180,14 @@ try {
   assert.equal(interruptedFade.animations, 0);
   report.cases.push({ name: 'hide during fade cancels opacity work', interruptedFade });
   await click('loader-retain');
-  await click('loader-toggle');
+  await setPhase('streaming');
   await waitState('running');
   await page.click('[data-testid="lifecycle-agent"] [aria-label="Stop generating"]');
-  await waitState('paused');
+  await waitState('running');
   report.cases.push({ name: 'AgentChat Stop uses real handler', stopped: await sample() });
-  await click('loader-toggle');
+  await setPhase('idle');
+  await waitState('paused');
+  await setPhase('streaming');
   await waitState('running');
   const backgroundTab = await browser.newPage();
   await backgroundTab.bringToFront();
