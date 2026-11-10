@@ -107,6 +107,7 @@ function CloseButtonComponent({
   const disc =
     StyleSheet.flatten(style)?.backgroundColor === undefined ? (
       <SurfacePaint
+        lens
         fill={paint.background}
         radius={g.box / 2}
         composite

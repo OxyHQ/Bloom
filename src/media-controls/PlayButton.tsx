@@ -147,6 +147,7 @@ function PlayButtonComponent({
   const disc =
     fill === undefined || StyleSheet.flatten(style)?.backgroundColor !== undefined ? null : (
       <SurfacePaint
+        lens
         fill={fill}
         radius={box / 2}
         composite

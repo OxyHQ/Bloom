@@ -301,6 +301,7 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
   const material =
     className || callerFill !== undefined || isClearFill(fill) ? null : (
       <SurfacePaint
+        lens
         fill={fill}
         radius={Math.max(0, borderRadius.full - paint.borderWidth)}
         composite
