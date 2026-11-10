@@ -71,6 +71,8 @@ export const CANONICAL_TOKENS = [
   // for the surface behind one. A single value can only ever be a fill, which is
   // why consumers hand-rolled the rest with hex-alpha arithmetic.
   'primary-text',
+  'vivid',
+  'vivid-foreground',
   'primary-subtle',
   'secondary-text',
   'secondary-subtle',

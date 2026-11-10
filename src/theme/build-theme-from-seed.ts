@@ -90,6 +90,8 @@ function buildSeedThemeValues(
       tertiarySubtle: g('tertiary-subtle'),
       tertiarySubtleForeground: g('tertiary-text'),
 
+      vivid: g('vivid'),
+      vividForeground: g('vivid-foreground'),
       tint: g('primary'),
       icon: g('muted-foreground'),
       iconActive: g('primary'),

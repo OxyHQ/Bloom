@@ -64,6 +64,14 @@ export interface ThemeColors {
   infoSubtle: string;
   infoSubtleForeground: string;
 
+  /**
+   * The brand at full strength, a system tint: the seed's own tone and chroma, the same in light
+   * and dark. `primary` is a fill that must carry a white label, so it is deeper; a control that
+   * should read as the brand colour itself (a glass button, a switch) uses this.
+   */
+  vivid: string;
+  /** Black or white, whichever reads on `vivid`. */
+  vividForeground: string;
   primarySubtle: string;
   primarySubtleForeground: string;
   negative: string;
