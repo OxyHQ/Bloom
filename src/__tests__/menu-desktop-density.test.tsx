@@ -133,6 +133,8 @@ describe('desktop menu rows', () => {
     expect(classesOf(screen, 'Rename')).not.toContain('cursor-pointer');
     const label = resolvedStyle(screen.getByText('Rename').props.style);
     expect(label).toMatchObject({ fontSize: 13, lineHeight: 16, letterSpacing: -0.08 });
+    // The label counts at its own width, so a panel sized by its rows never cuts it.
+    expect(label.flexBasis).toBe('auto');
   });
 
   it('paints the hovered row with the accent and its foreground on label and shortcut', () => {
@@ -205,6 +207,7 @@ describe('desktop menu rows', () => {
     fireEvent(screen.getByLabelText('Rename'), 'hoverIn');
     expect(rowStyle(screen, 'Rename').backgroundColor).toBe(theme.colors.backgroundSecondary);
     expect(resolvedStyle(screen.getByText('Rename').props.style).fontSize).toBe(14);
+    expect(resolvedStyle(screen.getByText('Rename').props.style).flexBasis).toBeUndefined();
   });
 });
 

@@ -446,7 +446,14 @@ export function MenuRowShell({
             numberOfLines={1}
             className={ROW_TEXT_CLASS}
             // `text-body-medium`, in Inter (a desktop's body, `DESKTOP_TEXT_STYLES.body`).
-            style={[{ ...density.rowType, ...MENU_FONT_FAMILY }, { color: labelColor }]}
+            style={[
+              { ...density.rowType, ...MENU_FONT_FAMILY },
+              { color: labelColor },
+              // A desktop's menu is as wide as its widest row: the label counts at
+              // its own width (`flex-1` alone makes its basis 0, so a panel sized
+              // by its content cut every label at the width floor).
+              density.desktop ? DESKTOP_LABEL_BASIS : null,
+            ]}
           >
             {title}
           </StyledText>
@@ -460,6 +467,8 @@ export function MenuRowShell({
     </StyledPressable>
   );
 }
+
+const DESKTOP_LABEL_BASIS = { flexBasis: 'auto' } as const;
 
 /**
  * The sub-trigger's chevron slot — `size-4 shrink-0 ms-auto`. A component rather
