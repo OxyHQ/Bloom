@@ -39,9 +39,7 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   redoAvatar: 'Rétablir',
   preparingAvatar: 'Préparation de l’avatar…',
 
-  avatarStyle: 'Style de l’avatar',
   proceduralAvatar: 'Avatar actuel',
-  betaPreset: 'Personnage prédéfini (bêta)',
   betaEyes: 'Style des yeux',
   eyewear: 'Lunettes',
   accessory: 'Accessoire',

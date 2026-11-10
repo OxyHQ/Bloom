@@ -5,9 +5,7 @@ export interface AgentCreatorMessages {
   undoAvatar: string;
   redoAvatar: string;
   preparingAvatar: string;
-  avatarStyle: string;
   proceduralAvatar: string;
-  betaPreset: string;
   betaEyes: string;
   eyewear: string;
   accessory: string;
@@ -93,9 +91,7 @@ export const AGENT_CREATOR_MESSAGES: MessageCatalog<AgentCreatorMessages> =
     undoAvatar: 'Undo',
     redoAvatar: 'Redo',
     preparingAvatar: 'Preparing avatar…',
-    avatarStyle: 'Avatar style',
     proceduralAvatar: 'Current avatar',
-    betaPreset: 'Character preset (beta)',
     betaEyes: 'Eye style',
     eyewear: 'Eyewear',
     accessory: 'Accessory',

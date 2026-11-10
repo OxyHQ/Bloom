@@ -328,14 +328,16 @@ describe('the character editor', () => {
   it('edits eyewear and accessory through the selects, and rejects a malformed exact color', () => {
     const { view, onChange, last } = controlled();
     const controls = () => view.UNSAFE_getAllByType(Select);
-    expect(controls()[1]!.props.value).toBe('none');
-    expect(controls()[2]!.props.value).toBe('felipe_beret');
-    fireEvent(controls()[2]!, 'valueChange', 'crown');
+    // Eyewear and accessory lead the controls: a character is built from its parts, with no preset to pick.
+    expect(controls().map((select) => select.props.value)).not.toContain('blue_beret');
+    expect(controls()[0]!.props.value).toBe('none');
+    expect(controls()[1]!.props.value).toBe('felipe_beret');
+    fireEvent(controls()[1]!, 'valueChange', 'crown');
     expect(last()).toMatchObject({ accessory: 'crown', shape: 'six_lobed_flower' });
-    fireEvent(controls()[1]!, 'valueChange', 'monocle');
+    fireEvent(controls()[0]!, 'valueChange', 'monocle');
     expect(last()).toMatchObject({ eyewear: 'monocle', accessory: 'crown' });
-    expect(controls()[1]!.props.value).toBe('monocle');
-    fireEvent(controls()[2]!, 'valueChange', 'none');
+    expect(controls()[0]!.props.value).toBe('monocle');
+    fireEvent(controls()[1]!, 'valueChange', 'none');
     expect(last()).toMatchObject({ accessory: 'none' });
     fireEvent.press(view.getByLabelText('Custom avatar color'));
     const calls = onChange.mock.calls.length;
@@ -348,8 +350,8 @@ describe('the character editor', () => {
     const controls = () => view.UNSAFE_getAllByType(Select);
     act(() => view.UNSAFE_getByType(ShapeArc).props.onSelect('cloud'));
     fireEvent.press(view.getByLabelText('Dots'));
-    fireEvent(controls()[1]!, 'valueChange', 'round_sunglasses');
-    fireEvent(controls()[2]!, 'valueChange', 'crown');
+    fireEvent(controls()[0]!, 'valueChange', 'round_sunglasses');
+    fireEvent(controls()[1]!, 'valueChange', 'crown');
     fireEvent.press(view.getByLabelText('Coral avatar'));
     expect(last()).toEqual({
       preset: 'blue_beret',
@@ -361,16 +363,7 @@ describe('the character editor', () => {
     });
   });
 
-  it('starts from a template, shows Custom after an edit, and recognises the template again', () => {
-    const { view, last } = controlled({ ...agent, avatar: CHARACTER_TEMPLATES.blue_beret! });
-    const controls = () => view.UNSAFE_getAllByType(Select);
-    expect(controls()[0]!.props.value).toBe('blue_beret');
-    act(() => view.UNSAFE_getByType(ShapeArc).props.onSelect('bot_heart'));
-    expect(controls()[0]!.props.value).toBe('custom');
-    act(() => view.UNSAFE_getByType(ShapeArc).props.onSelect('six_lobed_flower'));
-    expect(controls()[0]!.props.value).toBe('blue_beret');
-    fireEvent(controls()[0]!, 'valueChange', 'alfred');
-    expect(last()).toEqual(CHARACTER_TEMPLATES.alfred);
+  it('offers every eye but the single one the catalogue draws separately', () => {
     expect(CHARACTER_OPTIONS.eyes.map((option) => option[0]).sort()).toEqual(
       AVATAR_EYES.filter((id) => id !== 'cyclops').sort(),
     );

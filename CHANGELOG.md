@@ -1,5 +1,11 @@
 # Changelog
 
+## 17.41.0
+
+### Removed
+
+- **The agent creator's "Avatar style" row.** `CharacterControls` offered a select of ready-made character presets above eyewear and accessory. A person editing or creating an agent builds a character from its parts (shape, eyes, colour, eyewear, accessory), and a preset there only replaced all of them at once, so the row is gone. The `avatarStyle` and `betaPreset` message keys of `AgentCreatorMessages` go with it (and from every locale). `CHARACTER_PRESETS`, `CHARACTER_TEMPLATES` and `characterTemplateChoice` stay exported for code that starts from a template.
+
 ## 17.40.0
 
 ### Added

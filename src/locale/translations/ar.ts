@@ -43,9 +43,7 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   redoAvatar: 'إعادة',
   preparingAvatar: 'جارٍ تجهيز الصورة الرمزية…',
 
-  avatarStyle: 'نمط الصورة الرمزية',
   proceduralAvatar: 'الصورة الرمزية الحالية',
-  betaPreset: 'شخصية جاهزة (تجريبية)',
   betaEyes: 'نمط العيون',
   eyewear: 'نظارات',
   accessory: 'إكسسوار',

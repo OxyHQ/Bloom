@@ -36,9 +36,7 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   redoAvatar: 'Ulangi',
   preparingAvatar: 'Menyiapkan avatar…',
 
-  avatarStyle: 'Gaya avatar',
   proceduralAvatar: 'Avatar saat ini',
-  betaPreset: 'Karakter bawaan (beta)',
   betaEyes: 'Gaya mata',
   eyewear: 'Kacamata',
   accessory: 'Aksesori',
