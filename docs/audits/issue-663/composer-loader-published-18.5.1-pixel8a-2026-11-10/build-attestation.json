@@ -1,0 +1,32 @@
+{
+  "commit": "6ab8cf206a400945ede7dae278b484ff8f03d9a9",
+  "workingTree": "M scripts/loader-package-lab/verify-composers.py",
+  "fixtureSha256": "c39dd40030a06eca102cf4debf76dee0a23089a3641f507fb94c24c66b6703d1",
+  "packedTarballSha256": "7a8a407f82733972a70b695c5253ae2a77493925c64e933a9afd8afd114ebfb7",
+  "kind": "published npm tarball",
+  "npmIntegrity": "sha512-vngo+CYJ2ji5qjlzLy296BuJwm/kT66CJXRGs23/f4BsYhvm2M/GI7ws+fYZByu3nKfjVXz9W5OcbIBcO4YKog==",
+  "aliaSdkVersion": "24.0.0",
+  "aliaComposerSha256": "33bee1e8b1d959adbe5406856fb0dca63c0df9ef9a2e57d21f523bc736d415c2",
+  "installed": "/home/nate/Oxy/Bloom/scripts/loader-package-lab/bloom-local/node_modules/@oxy.so/bloom",
+  "packageVersion": "18.5.1",
+  "nativeSha256": "5aa0123303dbb2f170077c2ddf6eac5933ee0c6269274422ed41ca10bf8f94ad",
+  "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+  "adapterSha256": "439368f05ea092a36619510ff3cf1d255d5e8da61ff52ab3490d0dd7dd6e4c21",
+  "lockSha256": "5c38ac4dbedbdcd9da152b86cdc76750eb4d436dd3288adbfd60c8c7264c5a69",
+  "reactCompiler": false,
+  "scene": "composers",
+  "softwareWindow": false,
+  "apkSha256": "73afdb82d3e111183f5a3b80642f466f8345a9c558267323e427eeb0bf75d20e",
+  "embeddedBundleSha256": "5754f34364c100a28001c5651191f86ce9d43cd3e2c9f0458a1a7eacbf1b00d1",
+  "embeddedBloomSourceSha256": "30202b3c97f070c9e463d1e8bdcb9b7ae4485403e96006ab2367cc9f2209333e",
+  "embeddedBloomFiles": 1097,
+  "dex": [
+    {
+      "name": "classes.dex",
+      "sha256": "83710ad053d1aeb9d8f30937b3337cb3aa416bc8cb40853be0d72e23f96b1f43"
+    }
+  ],
+  "r8MappingSha256": "7fd7d8ec134ebaddb80d30f36a1d593b3264da834d4d611d6944f7e4a69e1db4",
+  "mappedNativeClass": "uc0",
+  "nativeEvidence": "compiled installed Kotlin input hash, DEX contract marker and full DEX hashes; no runtime source receipt"
+}
