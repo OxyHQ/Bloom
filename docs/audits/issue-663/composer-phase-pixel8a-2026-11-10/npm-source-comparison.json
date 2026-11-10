@@ -1,0 +1,14 @@
+{
+  "registryPackage": "@oxy.so/bloom@17.41.0",
+  "registryTarballSha256": "9a82a7ee299d1eeb95800e26fa587768c3d8713c2a0fda64953349671aa2d5db",
+  "apkBloomJavaScriptSourcesCompared": 1092,
+  "mismatchedJavaScriptSources": 0,
+  "matchedJavaScriptSourceSetSha256": "984eac63ac9dbc773e12658d395692fb230864d2278c3ee20d58b9bf87cd9e86",
+  "matchingFiles": {
+    "src/composer-loader/AndroidLight.tsx": "439368f05ea092a36619510ff3cf1d255d5e8da61ff52ab3490d0dd7dd6e4c21",
+    "src/composer-loader/ComposerLoader.tsx": "8ba639c613b84095a262f7ecd13101732272e36927663b0ac4e9dc0c52694cba",
+    "android/src/main/java/so/oxy/bloom/BloomPackage.kt": "0425099c44ccc190e1f7edc7a717fca5a69537d10738304b24ca114c95da8086",
+    "android/src/main/java/so/oxy/bloom/ComposerLight.kt": "5aa0123303dbb2f170077c2ddf6eac5933ee0c6269274422ed41ca10bf8f94ad",
+    "android/src/main/java/so/oxy/bloom/ComposerLightSnapshot.kt": "4c58d079460b65cca74b379139d64a172e6abb50cc65e8c41e099ad08c8572f6"
+  }
+}
