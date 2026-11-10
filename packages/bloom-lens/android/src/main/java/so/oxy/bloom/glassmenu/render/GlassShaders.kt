@@ -173,6 +173,7 @@ uniform float surfaceOpacity;
 uniform float4 press;
 uniform float pressLift;
 uniform float rimLift;
+uniform float magnify;
 """ + FieldFunctions + EdgeFunctions + """
 float glassDisplacement(float signedDistance, float inverseHeight, float signedAmount) {
     float u = clamp(-signedDistance * inverseHeight, 0.0, 1.0);
@@ -202,6 +203,8 @@ float3 glassVibrant(float3 c) {
 }
 half4 main(float2 coord) {
     float2 p = coord + nodeOrigin;
+    float2 magOffset = float2(0.0);
+    if (magnify != 1.0) magOffset = (center + (p - center) / magnify) - p;
     float3 field = liquidFieldGradient(p);
     float depth = -field.x;
     float coverage = nativeGlassShapeCoverage(field);
@@ -213,16 +216,16 @@ half4 main(float2 coord) {
     }
     if (coverage <= 0.0 && key <= .000001) return half4(0.0);
 
-    float3 original = glassSample(coord);
+    float3 original = glassSample(coord + magOffset);
     float3 filtered = original;
     if (coverage > 0.0) {
         float2 grad = field.yz;
         if (lensHeight > 0.0 && depth < lensHeight) {
-            filtered = glassSample(coord + glassDisplacement(field.x, 1.0 / lensHeight, lensAmount) * grad);
+            filtered = glassSample(coord + magOffset + glassDisplacement(field.x, 1.0 / lensHeight, lensAmount) * grad);
         }
         float weight = clamp((field.x + density) / density, 0.0, 1.0) * .6;
         if (outerHeight > 0.0 && weight > 0.0) {
-            float3 outer = glassSample(coord + glassDisplacement(field.x, 1.0 / outerHeight, outerAmount) * grad);
+            float3 outer = glassSample(coord + magOffset + glassDisplacement(field.x, 1.0 / outerHeight, outerAmount) * grad);
             filtered = mix(filtered, outer, weight);
         }
     }

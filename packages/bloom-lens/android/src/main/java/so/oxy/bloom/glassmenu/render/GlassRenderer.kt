@@ -185,6 +185,7 @@ internal class GlassRenderer(private val density: Float, private val minimumFiel
     material.setFloatUniform("press", state.pressX, state.pressY, state.pressRadius, state.poolGain)
     material.setFloatUniform("pressLift", state.pressLift)
     material.setFloatUniform("rimLift", state.rimLift)
+    material.setFloatUniform("magnify", state.magnify)
 
     val blur = RenderEffect.createBlurEffect(blurRadius, blurRadius, Shader.TileMode.CLAMP)
     glassNode.setRenderEffect(
