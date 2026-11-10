@@ -24,8 +24,9 @@ export function ComposerCases({ onToggleMode }: { onToggleMode: () => void }) {
   const [taper, setTaper] = useState(0);
   const [stops, setStops] = useState(0);
   const [submits, setSubmits] = useState(0);
+  const [attached, setAttached] = useState(false);
   const [pending, setPending] = useState('none');
-  const state = `busy=${busy} phase=${phase} narrow=${narrow} taper=${taper} multiline=${multiline} stops=${stops} submits=${submits} pending=${pending}`;
+  const state = `busy=${busy} phase=${phase} narrow=${narrow} taper=${taper} multiline=${multiline} attached=${attached} stops=${stops} submits=${submits} pending=${pending}`;
   const cancelPhaseTimers = () => {
     for (const timer of phaseTimers.current) clearTimeout(timer);
     phaseTimers.current = [];
@@ -156,6 +157,30 @@ export function ComposerCases({ onToggleMode }: { onToggleMode: () => void }) {
               Theme
             </Button>
             <Button
+              testID="cases-rapid-phase"
+              onPress={() => {
+                cancelPhaseTimers();
+                setBusy(true);
+                setPhase('submitting');
+                phaseTimers.current.push(setTimeout(() => setPhase('streaming'), 120));
+                phaseTimers.current.push(
+                  setTimeout(() => {
+                    setPhase('stopping');
+                    setBusy(false);
+                  }, 240),
+                );
+                phaseTimers.current.push(setTimeout(() => setPhase('idle'), 360));
+              }}
+            >
+              Rapid phases
+            </Button>
+            <Button
+              testID="cases-attachment"
+              onPress={() => setAttached((value) => !value)}
+            >
+              {attached ? 'Remove fixture attachment' : 'Attach fixture file'}
+            </Button>
+            <Button
               testID="cases-taper"
               onPress={() => setTaper((value) => (value === 0 ? 0.5 : 0))}
             >
@@ -185,7 +210,19 @@ export function ComposerCases({ onToggleMode }: { onToggleMode: () => void }) {
                 busy={busy}
                 surface={false}
                 frosted={busy}
-                addMenu={[]}
+                addMenu={[
+                  {
+                    label: 'Add',
+                    rows: [{ id: 'fixture-file', label: 'Fixture document' }],
+                  },
+                ]}
+                onAddMenuSelect={() => setAttached(true)}
+                attachments={
+                  attached
+                    ? [{ id: 'fixture-document', name: 'fixture.txt', kind: 'document' }]
+                    : []
+                }
+                onRemoveAttachment={() => setAttached(false)}
                 effortLevels={[]}
                 showVoice={false}
                 testID="cases-pill"
@@ -209,7 +246,6 @@ export function ComposerCases({ onToggleMode }: { onToggleMode: () => void }) {
                 onSubmit={submit}
                 onStop={stop}
                 busy={busy}
-                loaderPhase={phase}
                 disableKeyboardAvoidance
                 onError={() => {}}
               />

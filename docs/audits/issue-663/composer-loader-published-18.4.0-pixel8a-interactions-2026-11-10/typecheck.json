@@ -1,0 +1,18 @@
+{
+  "command": "bunx --package typescript tsc --noEmit --project tsconfig.json",
+  "status": "failed",
+  "fixtureDiagnosticsAfterFix": [],
+  "unrelatedDiagnostics": [
+    {
+      "file": "node_modules/@oxy.so/services/src/ui/hooks/useSurfaceHeader.ts",
+      "line": 77,
+      "issue": "HeaderAction union has no accessibilityLabel property on one branch (reported twice)."
+    },
+    {
+      "file": "node_modules/@oxy.so/services/src/ui/screens/AvatarCropScreen.tsx",
+      "line": 182,
+      "issue": "Missing expo-image-manipulator module/types."
+    }
+  ],
+  "result": "The stale unsupported loaderPhase prop on AliaComposer 24.0.0 was removed from this fixture. No TypeScript diagnostics remain in ComposerCases.tsx; consumer types are blocked by errors in the separate installed @oxy.so/services source."
+}

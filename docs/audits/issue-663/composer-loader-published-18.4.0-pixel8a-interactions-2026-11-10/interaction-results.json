@@ -1,0 +1,43 @@
+{
+  "date": "2026-11-10",
+  "package": "@oxy.so/bloom@18.4.0",
+  "npmIntegrity": "sha512-XLC+0q97VKQVnxzjJ57ZdSRV8JXX2S4IC/pbYqpNvHHR5yTht/FBOApdhD4FwlnVA07lmsPXoI/3dLXZtePGoA==",
+  "apkSha256": "2f1f8b54ccfed276d436c8f96337d34c18742a54344ee8d8bc32a70a30928e0e",
+  "device": {
+    "model": "Pixel 8a",
+    "serial": "43221JEKB12200",
+    "api": 36,
+    "resolution": "1080x2400"
+  },
+  "checks": {
+    "nativeAddMenu": {
+      "status": "verified",
+      "observed": "On the final attested APK, opened the ComposerPill add sheet, selected Fixture document, sheet dismissed and cases-state changed attached=false to attached=true. The menu screenshot shows the sheet over a dark/blank backing even though a prior screenshot on the same published Bloom version showed the background content; UIAutomator confirms the menu row and callback. Preserve this capture discrepancy for follow-up.",
+      "evidence": ["add-menu-open-final.xml", "add-menu-selected-final.xml", "add-menu-open.png", "add-menu-open-final.png", "add-menu-selected-final.png"]
+    },
+    "attachmentTile": {
+      "status": "verified",
+      "observed": "Physical tap produced a visible fixture.txt document tile in the real published ComposerPill.",
+      "evidence": ["attachment.png"]
+    },
+    "liveThemeWithIme": {
+      "status": "verified",
+      "observed": "While Gboard was visible and Ctrl+A selected the draft, a real tap changed light to dark. BloomInputProbe before/after on the final APK reports the same native input identity 234622800, text, focus=true, selection [0,29], attached=true. The screenshot includes Gboard. On API 36, dumpsys reports isShowing=false while mInputShown=true and mImeWindowVis=3, matching the known Pixel report in verify-composers.py.",
+      "evidence": ["input-probe.log", "theme-keyboard-with-selection.png", "dark-theme-with-attachment.png"]
+    },
+    "rapidPhases": {
+      "status": "partial",
+      "observed": "On the final APK, a rapid-phase tap produced phase=streaming, busy=true and the Stop button in one frame, then returned to idle in later frames. Intermediate submitting and stopping frames were too brief to capture. The native input probe preserved identity, draft, focus and selection; Gboard remained visible (mInputShown=true, mImeWindowVis=3).",
+      "evidence": ["rapid-phase-streaming-stop.png", "rapid-phase-idle-keyboard.png", "input-probe.log"]
+    },
+    "fullAutomatedReplay": {
+      "status": "failed",
+      "observed": "The existing full replay was interrupted because an adb exec-out screencap subprocess stalled while moving to the second composer owner. First-owner resize, busy, Stop/typing and keyboard-visible rotation artifacts were produced; no complete second-owner report was written. In a separate rapid-phase capture, two screen captures were blank while the UI hierarchy still reported the live scene; only the valid streaming/Stop frame is retained.",
+      "evidence": ["cases-pill-input-cases-resize.png", "cases-pill-input-cases-busy.png", "cases-pill-input-stop-and-type.png", "cases-pill-input-rotation-before.png", "cases-pill-input-rotation-0.png", "cases-pill-input-rotation-1.png"]
+    },
+    "closeDuringFadeOut": {
+      "status": "not run",
+      "observed": "The isolated package fixture has no production route transition and this criterion was not simulated."
+    }
+  }
+}
