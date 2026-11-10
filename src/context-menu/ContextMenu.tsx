@@ -33,6 +33,7 @@ import React, {
   useRef,
   useState,
   type ComponentRef,
+  type ReactNode,
 } from 'react';
 import type {
   AccessibilityActionEvent,
@@ -52,6 +53,7 @@ import { PopupPanel } from '../floating/PopupPanel';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
 import { getNativeGlassMenu } from '../floating/glass-menu/native-glass-menu';
+import { parseGlassMenu } from '../floating/glass-menu/parse-glass-menu';
 import { GlassTrigger, useGlassMenu } from '../floating/glass-menu/use-glass-menu';
 import type { FloatingAnchor } from '../floating/types';
 import { usePopupSurface } from '../platform-surface/context';
@@ -115,7 +117,7 @@ export function ContextMenu({
   const glass = useGlassMenu({
     children,
     content: ContextMenuContent,
-    rows,
+    parse: (props) => parseGlassMenu(props.children as ReactNode, rows),
     open,
     setOpen: setGlassOpen,
   });
