@@ -110,3 +110,21 @@ same backward selection and next Shift+Arrow. Its Pixel 8a run verifies that the
 selection endpoints and active direction survive a resize. The direct RN controls
 are `SCENE=raw-input` and `SCENE=raw-autosize`; the latter isolates a multiline
 input that changes height as it wraps.
+
+For issue #663's narrow/multiline taper matrix, the composer fixture has explicit
+`cases-taper` and `cases-content` controls. After preparing the published Bloom
+snapshot and installing its attested release on the authorized Pixel 8a, run:
+
+```sh
+ADB=/usr/bin/adb ADB_PORT=5038 ANDROID_HOME=/path/to/sdk \
+ANDROID_SERIAL=<pixel-serial> AUTHORIZED_PHYSICAL_SERIAL=<pixel-serial> \
+EXPECTED_BLOOM_VERSION=<published-version> ARTIFACT=/absolute/path/to/artifacts \
+node benchmark-composer-matrix.mjs
+```
+
+The matrix requires all three composer editors and all three visible loader views,
+checks exact scenario state, verifies multiline bounds fit the usable viewport, and
+collects eight alternating/repeated windows without screen recording. It records
+per-window reports and hierarchy XML in `ARTIFACT`; archive the environment receipt,
+APK attestation, screenshots and `matrix.json` with the audit. The captured Pixel 8a
+run is in `docs/audits/issue-663/composer-loader-multiline-pixel8a-2026-11-10/`.
