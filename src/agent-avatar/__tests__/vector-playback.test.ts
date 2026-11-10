@@ -1,4 +1,10 @@
-import { advanceVectorPlayback, playVectorAction, type VectorPlayback } from '../vector-playback';
+import {
+  advanceVectorPlayback,
+  playVectorAction,
+  VECTOR_MAX_FRAME_SECONDS,
+  vectorFrameDelta,
+  type VectorPlayback,
+} from '../vector-playback';
 import { sampleVectorPose, blendVectorPose } from '../vector-pose';
 import { renderVectorFrame } from '../vector-frame';
 import { vectorShapeImports, vectorTemplateImports } from '../vector-asset-imports';
@@ -73,4 +79,33 @@ it('only exits the final repeat and freezes an exit when its clock is paused', a
   const frozen = paint(s, asset);
   advanceVectorPlayback(s, asset, 0);
   expect(paint(s, asset)).toEqual(frozen);
+});
+
+describe('the clock a frame advances by', () => {
+  it('is the forward step between two timestamps, in seconds', () => {
+    expect(vectorFrameDelta(1016, 1000)).toBeCloseTo(0.016);
+  });
+
+  it('never runs further than one frame, so a stalled tab resumes where it was', () => {
+    expect(vectorFrameDelta(60_000, 1000)).toBe(VECTOR_MAX_FRAME_SECONDS);
+  });
+
+  it('is zero for the first frame, a step backwards, and any timestamp that is not a number', () => {
+    expect(vectorFrameDelta(1000, undefined)).toBe(0);
+    expect(vectorFrameDelta(900, 1000)).toBe(0);
+    expect(vectorFrameDelta(Number.NaN, 1000)).toBe(0);
+    expect(vectorFrameDelta(undefined as unknown as number, 1000)).toBe(0);
+    expect(vectorFrameDelta(Number.POSITIVE_INFINITY, 1000)).toBe(0);
+    expect(vectorFrameDelta(1000, Number.NaN)).toBe(0);
+  });
+
+  it('keeps a clock that was advanced by every one of them finite', () => {
+    const s = state();
+    for (const now of [1000, Number.NaN, 1016, undefined as unknown as number, 1032, 900, 1048]) {
+      s.clock += vectorFrameDelta(now, 1000);
+      s.time += vectorFrameDelta(now, 1000);
+    }
+    expect(Number.isFinite(s.clock)).toBe(true);
+    expect(Number.isFinite(s.time)).toBe(true);
+  });
 });
