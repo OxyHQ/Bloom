@@ -19,14 +19,16 @@ All three build targets completed, and the package/export gate plus build-freshn
 
 The first catalog verification exposed the default child-process output buffer limit on the npm pack file list. The verifier now uses the same 64 MB bound as the existing package gate and accepts both npm 11 array and npm 12 object result shapes. Only the affected catalog step was rerun after that fix and the consumer package-boundary fix. No runtime UI pass is inferred.
 
-## Acceptance still pending
+## Acceptance status
 
-Compilation proves import/type compatibility only. The examples' browser/Android/iOS runtime evidence remains `not run`. The full per-component catalog expansion, product route adoption, document/bounded scaffold exercise and clean agent-discovery evaluation remain separate work. This checkpoint does not close R10 or global #663.
+The clean published-package discovery exercise is recorded in
+[`clean-discovery-18.2.1`](./clean-discovery-18.2.1/README.md). It uses the
+18.2.1 registry tarball, published guide and examples, selects workspace, canvas
+and conversation, and checks their real browser interactions after typecheck and
+production build. The same-tree resize preserves the two workspace input nodes
+and their values. This is a fixture-level discovery result; it does not establish
+product route adoption or native runtime behavior.
 
-For clean discovery, give an evaluator only the packed guide/JSON/examples and these prompts in a fresh context:
-
-1. Build a continuous document workspace with a document and inspector while preserving both across resize.
-2. Host an interactive map/board, identify the available shared controls, and state which persistent-panel capability is still absent.
-3. Compose an agent conversation with busy/stop state and its existing loader without rebuilding composer chrome.
-
-Record the installed package version/hash, chosen task/imports/example, any missing or misleading guidance, implementation, type results, real browser interaction and remaining platform limitations. Do not supply internal source paths or count this written protocol as an executed discovery test.
+The full per-component catalog expansion, product route adoption and
+document/bounded scaffold exercise remain separate work. This checkpoint does
+not close R10 or global #663.

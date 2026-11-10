@@ -1,0 +1,80 @@
+{
+  "packageVersion": "18.2.1",
+  "browser": "156.0.8078.4",
+  "errors": [],
+  "checks": [
+    {
+      "name": "workspace state and identity at 1400px",
+      "pass": true,
+      "width": 1400,
+      "values": [
+        "Selected through the published workspace example",
+        "Inspector state survives resize"
+      ],
+      "sameNodes": true
+    },
+    {
+      "name": "workspace state and identity at 700px",
+      "pass": true,
+      "width": 700,
+      "values": [
+        "Selected through the published workspace example",
+        "Inspector state survives resize"
+      ],
+      "sameNodes": true
+    },
+    {
+      "name": "workspace state and identity at 390px",
+      "pass": true,
+      "width": 390,
+      "values": [
+        "Selected through the published workspace example",
+        "Inspector state survives resize"
+      ],
+      "sameNodes": true
+    },
+    {
+      "name": "workspace state and identity at 1400px",
+      "pass": true,
+      "width": 1400,
+      "values": [
+        "Selected through the published workspace example",
+        "Inspector state survives resize"
+      ],
+      "sameNodes": true
+    },
+    {
+      "name": "canvas example wires shared map callbacks and layer picker",
+      "pass": true,
+      "mapState": "Explore\nZoom 13; satellite; following; tilted\nMap\nStandard\nSatellite"
+    },
+    {
+      "name": "canvas controls remain available at compact width",
+      "pass": true,
+      "mapState": "Explore\nZoom 12; satellite; following; tilted\nMap\nStandard\nSatellite"
+    },
+    {
+      "name": "conversation uses animated shared loader while busy",
+      "pass": true,
+      "before": [
+        "0px",
+        "-0.748592px",
+        "-0.371644px"
+      ],
+      "after": [
+        "-4.39121px",
+        "-5.56193px",
+        "-5.18498px"
+      ]
+    },
+    {
+      "name": "conversation Stop returns through app callback",
+      "pass": true
+    },
+    {
+      "name": "no uncaught page errors",
+      "pass": true,
+      "errors": []
+    }
+  ]
+}
