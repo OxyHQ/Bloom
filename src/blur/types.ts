@@ -46,6 +46,12 @@ export interface BlurIslandProps {
   accessibilityLabel?: string;
   /** Forwarded to the material. Controls the shared sheen gradient. */
   sheen?: boolean;
+  /**
+   * `'lens'` (default) draws the island with the native lens where the device has one (Android 13+);
+   * elsewhere, and with `'surface'`, it keeps the shared surface material. An island that scrolls with
+   * its content should be `'surface'`: the lens is drawn by the window, not by the scroll view.
+   */
+  material?: 'lens' | 'surface';
   style?: StyleProp<IslandStyle>;
   testID?: string;
 }

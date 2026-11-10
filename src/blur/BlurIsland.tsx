@@ -12,6 +12,8 @@ import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { borderRadius } from '../styles/tokens';
 import { SurfacePaint } from '../surface/SurfacePaint';
+import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
+import { getNativeLens } from '../floating/lens/native-lens';
 import type { BlurIslandProps } from './types';
 
 /** Floating control container using the shared surface material.
@@ -24,6 +26,7 @@ const BlurIslandComponent: React.FC<BlurIslandProps> = ({
   role,
   accessibilityLabel,
   sheen = true,
+  material: variant = 'lens',
   style,
   testID,
 }) => {
@@ -39,6 +42,37 @@ const BlurIslandComponent: React.FC<BlurIslandProps> = ({
   const { paintFill: fill, publishedFill: publishedFill } = material;
   const geometry = resolveSurfaceGeometry(radius, style, borderRadius.full, cornerCurve);
   const shape = geometry.shape;
+
+  if (variant === 'lens' && getNativeLens() != null) {
+    // The island is the native lens: the engine draws the material, its shadow and its light, and the
+    // controls inside draw their content. Placement stays on the host, the look on the inner view.
+    const split = splitLensStyle(style);
+    return (
+      <BloomScope>
+        <LensButtonHost
+          radius={typeof geometry.radius === 'number' ? geometry.radius : undefined}
+          style={split.host}
+        >
+          <View
+            collapsable={false}
+            {...directionProps}
+            role={role}
+            accessibilityLabel={accessibilityLabel}
+            testID={testID}
+            style={[
+              styles.island,
+              { borderRadius: geometry.radius, overflow: 'hidden' },
+              split.control,
+            ]}
+          >
+            <SurfaceLevelProvider level={material.level} fill={publishedFill}>
+              {children}
+            </SurfaceLevelProvider>
+          </View>
+        </LensButtonHost>
+      </BloomScope>
+    );
+  }
 
   return (
     <BloomScope>
