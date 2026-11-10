@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
+import type { BloomSize } from '../appearance';
 import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
@@ -16,6 +17,8 @@ export type AddressKind = 'place' | 'saved' | 'recent' | 'suggestion';
 export type AddressDensity = 'comfortable' | 'compact';
 
 export interface AddressRowProps {
+  /** Inherits the nearest BloomScope; defaults to md. */
+  size?: BloomSize;
   /** The line a reader identifies the place by — "Home", "Carrer de l’Om 14". */
   title: string;
   /** The rest of it — "Carrer de l’Om 14, Barcelona", "2nd floor, ring twice". */
@@ -79,6 +82,8 @@ export interface AddressListSection {
 export type AddressListVariant = 'list' | 'picker';
 
 export interface AddressListProps {
+  /** Inherits the nearest BloomScope; defaults to md. */
+  size?: BloomSize;
   sections: readonly AddressListSection[];
   /** The chosen entry's `id`. Only meaningful for `variant="picker"`. */
   selectedId?: string;

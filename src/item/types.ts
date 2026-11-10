@@ -1,4 +1,4 @@
-import type { BloomSize } from '../appearance';
+import type { BloomContentDensity, BloomSize } from '../appearance';
 import type {
   AccessibilityRole,
   MouseEvent as NativeMouseEvent,
@@ -53,8 +53,10 @@ export interface ItemProps {
    * nothing: the row is neither chosen (`selected`) nor current (`active`).
    */
   highlighted?: boolean;
-  /** Legacy explicit geometry. Prefer size for new composition; omitted density inherits BloomScope. */
+  /** Legacy geometry shortcut. Use contentDensity to keep row rhythm separate from size. */
   density?: 'comfortable' | 'compact';
+  /** Content-row rhythm independent of control size. Defaults to the size geometry. */
+  contentDensity?: BloomContentDensity;
   style?: StyleProp<ViewStyle>;
   titleStyle?: StyleProp<TextStyle>;
   subtitleStyle?: StyleProp<TextStyle>;

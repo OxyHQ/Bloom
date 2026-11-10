@@ -1,8 +1,8 @@
-import { useBloomAppearance } from '../appearance';
+import { useBloomAppearance, useBloomContentDensity } from '../appearance';
 import { ITEM_GEOMETRY, CONTROL_LABEL_TYPE } from '../appearance/control-geometry';
 import { TYPE_SCALE } from '../typography/scale';
 import { useTouchInput } from '../styles/pointer';
-import React, { memo, useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { surfacePresenceStyle, useSurfacePresenceContent } from '../surface/use-surface-presence';
 import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 
@@ -46,6 +46,7 @@ const ItemComponent = function Item({
   active = false,
   highlighted = false,
   density,
+  contentDensity: contentDensityProp,
   size: sizeProp,
   style,
   titleStyle,
@@ -74,11 +75,15 @@ const ItemComponent = function Item({
 
   const titleColor = destructive ? theme.colors.error : theme.colors.text;
   const { size } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const contentDensity = useBloomContentDensity(contentDensityProp, undefined);
   const geometry = ITEM_GEOMETRY[size];
-  const legacy = density !== undefined && sizeProp === undefined;
+  const legacy =
+    density !== undefined && sizeProp === undefined && contentDensityProp === undefined;
   const cfg = legacy
     ? DENSITY[density]
-    : { paddingVertical: geometry.paddingVertical, minHeight: geometry.height };
+    : contentDensity
+      ? DENSITY[contentDensity]
+      : { paddingVertical: geometry.paddingVertical, minHeight: geometry.height };
   const interactive = Boolean(onPress || onLongPress);
   const touch = useTouchInput();
   const touchHeight = interactive && touch ? Math.max(44, cfg.minHeight) : cfg.minHeight;

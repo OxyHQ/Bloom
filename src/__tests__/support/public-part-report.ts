@@ -46,13 +46,13 @@ export function renderPublicPartCensus(census: PartCensus = derivePublicParts())
     '',
     'Routes use `native:` / `web:` followed by the package subpath and export name. `.` means the root package. Namespace paths preserve the public alias; the first column identifies the normalized contract; declarations preserve each physical implementation, not a family-wide verdict. A missing size prop does not automatically mean size is irrelevant.',
     '',
-    '| part-contract identity / declarations | public routes | resolved size vocabulary | classification |',
+    '| part-contract identity / declarations | public routes | resolved geometry vocabulary | classification |',
     '| --- | --- | --- | --- |',
   );
   for (const row of census.parts) {
     const size =
       Object.entries(row.props)
-        .filter(([key]) => key.endsWith(':size'))
+        .filter(([key]) => key.endsWith(':size') || key.endsWith(':contentDensity'))
         .map(
           ([key, value]) =>
             `${key}: ${value.literals.length ? value.literals.join('/') : value.type}`,

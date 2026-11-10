@@ -38,6 +38,14 @@ and differ only in what they put in it.
 An app whose provenance is not one of those four passes `icon`. An app that wants a face
 or a map thumbnail passes `leading`.
 
+## Size and row density
+
+`AddressList` and `AddressRow` inherit xs/sm/md/lg from the nearest `BloomScope`;
+an explicit `size` on the list or an entry wins locally. At the normal md size,
+the comfortable glyph tile remains 40px, matching an lg avatar; the list's
+loading and empty states follow the same local size. `density="compact"` changes
+the address row rhythm independently from control size and touch-target rules.
+
 ## `leading` is read for presence
 
 - omitted → the glyph tile
