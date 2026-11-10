@@ -1,10 +1,16 @@
 # Changelog
 
-## 17.44.0
+## 17.48.0
 
 ### Added
 
 - **`AgentCreator sections` and `AgentCreatorSection`**: titled cards of the host's own below the details card, for what an agent *has* beyond who it is (its schedule, its inbox, what it remembers). `AgentCreatorSection title` draws the card with the details card's surface, radius and inset; its rows are `AgentCreatorField`s (or any row of the host's). They scroll with the rest of the editor. `children` stays the way to add rows to the details card itself.
+
+## 17.46.0
+
+### Fixed
+
+- **An avatar never draws a path with `NaN` in it.** The vector avatar's clock is added to every frame and kept for the life of the avatar, so a single frame callback without a usable timestamp (a shimmed `requestAnimationFrame`, a webview that omits it) made every later pose, and every contour and clip path drawn from it, `NaN`, and the browser rejected each one (`<path> attribute d: Expected number, "MNaN NaN…"`). The step now comes from `vectorFrameDelta`: only a finite, forward step counts, and a frame with no timestamp is read off `performance.now()`. `renderVectorFrame` draws the rest pose for a `time`, `yaw` or `pitch` that is not finite, and leaves out a part whose projection is not finite rather than writing it as path data. No frame the renderer drew from valid input changes.
 
 ## 17.42.0
 

@@ -70,9 +70,24 @@ export type VectorFrameOptions = {
 /** Pure frame projection shared by browser and native SVG. No renderer or DOM dependency. */
 export function renderVectorFrame(
   asset: VectorData,
-  { action, time, yaw = 0, pitch = 0, eyesOnly = false, look, pose, motion }: VectorFrameOptions,
+  {
+    action,
+    time: requestedTime,
+    yaw: requestedYaw = 0,
+    pitch: requestedPitch = 0,
+    eyesOnly = false,
+    look,
+    pose,
+    motion,
+  }: VectorFrameOptions,
 ): VectorFrame {
   const clip = asset.clips[action];
+  // Every frame is drawn from these three numbers. One that is not finite is the rest pose (zero)
+  // rather than a `NaN` carried through every projected point into the path data.
+  const finite = (value: number) => (Number.isFinite(value) ? value : 0);
+  const time = finite(requestedTime),
+    yaw = finite(requestedYaw),
+    pitch = finite(requestedPitch);
   const elapsed = Math.max(
     0,
     action === 'idle' && clip.duration > 0 ? time % clip.duration : Math.min(time, clip.duration),
@@ -204,6 +219,9 @@ export function renderVectorFrame(
       }
       return result;
     });
+    // A part whose projection is not finite has no outline to draw: it is left out of the frame,
+    // not written as path data the renderer rejects.
+    if (!points.every((point) => point.every(Number.isFinite))) continue;
     const fill = part.color ?? '#171717',
       opacity = partVisibility,
       fillOpacity = part.opacity ?? (part.role === 'panel' ? 0.22 : 1);
