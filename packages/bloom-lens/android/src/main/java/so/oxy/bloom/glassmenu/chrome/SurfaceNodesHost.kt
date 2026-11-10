@@ -3,6 +3,7 @@ package so.oxy.bloom.glassmenu.chrome
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import so.oxy.bloom.glassmenu.backdrop.GlassBackdrop
+import com.facebook.react.R
 import so.oxy.bloom.glassmenu.overlay.GlassDevGuard
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.viewevent.EventDispatcher
@@ -26,6 +27,15 @@ class SurfaceNodesHost(context: android.content.Context, appContext: AppContext)
   }
   private var attachedRoot: ViewGroup? = null
 
+  // The icon host is the child tagged with ICON_HOST_ID (a React view of the `icons` prop, set by SurfaceNodes).
+  private fun findIconHost(): ViewGroup? {
+    for (i in 0 until childCount) {
+      val child = getChildAt(i)
+      if (child.getTag(R.id.view_tag_native_id) == ICON_HOST_ID) return child as? ViewGroup
+    }
+    return null
+  }
+
   var focusedField: String?
     get() = overlay.focusedField
     set(value) {
@@ -43,9 +53,14 @@ class SurfaceNodesHost(context: android.content.Context, appContext: AppContext)
     val root = rootView as? ViewGroup ?: return
     attachedRoot = root
     GlassDevGuard.warnIfInOverscrollScroll(this)
+    overlay.iconHost = { findIconHost() }
     if (overlay.parent == null) {
       root.addView(overlay, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
     }
+  }
+
+  companion object {
+    const val ICON_HOST_ID = "glass-surface-icons"
   }
 
   override fun onDetachedFromWindow() {

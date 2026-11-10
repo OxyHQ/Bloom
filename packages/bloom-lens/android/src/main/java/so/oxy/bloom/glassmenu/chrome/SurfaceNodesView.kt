@@ -39,6 +39,8 @@ internal data class SurfaceNode(
   val h: Float,
   val r: Float,
   val icon: String?,
+  // Index of a React child of the host (its icon host), drawn centred; takes the place of `icon`. Null when unused.
+  val iconSlot: Int?,
   val text: String?,
   val textSize: Float?,
   val color: Int,
@@ -61,6 +63,7 @@ internal data class SurfaceNode(
         h = (map["h"] as? Number)?.toFloat() ?: 0f,
         r = (map["r"] as? Number)?.toFloat() ?: 0f,
         icon = map["icon"] as? String,
+        iconSlot = (map["iconSlot"] as? Number)?.toInt(),
         text = map["text"] as? String,
         textSize = (map["textSize"] as? Number)?.toFloat(),
         color = parseColor(map["color"] as? String),
@@ -122,6 +125,8 @@ class SurfaceNodesView(context: Context) : FrameLayout(context) {
   private val tracks = LinkedHashMap<String, Track>()
   private val inputs = HashMap<String, EditText>()
   private val iconPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+  // The React icon host of the owner (SurfaceNodesHost): its children are the iconSlot views.
+  internal var iconHost: () -> ViewGroup? = { null }
   private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
     typeface = Typeface.create(Typeface.DEFAULT, 500, false)
     textAlign = Paint.Align.CENTER
@@ -296,7 +301,29 @@ class SurfaceNodesView(context: Context) : FrameLayout(context) {
     return state
   }
 
+  // A React icon (iconSlot): its view is drawn centred in the node. The view is measured by React after the first
+  // layout, so a view with no size yet asks for another frame.
+  private fun drawSlot(canvas: Canvas, rect: RectF, slot: Int) {
+    val view = iconHost()?.getChildAt(slot) ?: return
+    val w = view.width
+    val h = view.height
+    if (w == 0 || h == 0) {
+      invalidate()
+      return
+    }
+    canvas.save()
+    canvas.translate(rect.centerX(), rect.centerY())
+    canvas.scale(1f / density, 1f / density)
+    canvas.translate(-w / 2f, -h / 2f)
+    view.draw(canvas)
+    canvas.restore()
+  }
+
   private fun drawContent(canvas: Canvas, node: SurfaceNode, rect: RectF) {
+    if (node.iconSlot != null && node.kind != "field") {
+      drawSlot(canvas, rect, node.iconSlot)
+      return
+    }
     if (node.kind == "field") {
       if (node.icon != null) {
         SurfaceIcons.draw(canvas, iconPaint, node.icon, rect.left + FIELD_ICON_LEFT + FIELD_ICON_SIZE / 2f, rect.centerY(), FIELD_ICON_SIZE, FIELD_ICON_COLOR, 1f)
