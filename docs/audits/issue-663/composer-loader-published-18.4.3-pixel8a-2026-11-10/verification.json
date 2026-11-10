@@ -1,0 +1,284 @@
+{
+  "date": "2026-11-10",
+  "issue": "OxyHQ/Bloom#663",
+  "bloomVersion": "18.4.3",
+  "npmIntegrity": "sha512-iWJwep/txz4Sfvr/+vUXq8T5EA/DS6bpzO4bjHVA0Wd1apJVwrwD7Mvqo42QOSdVp/D97vIWve2NdARnHQ9sqA==",
+  "bloomSourceCommit": "da58782bd01c66817ef6a412fff6ef7793216e37",
+  "apkSha256": "4c54c6c21ef805ccc28c6d8107c8de1f6d1b96ece8083eaa46380af7509749dc",
+  "device": {
+    "model": "Google Pixel 8a",
+    "serial": "43221JEKB12200",
+    "androidApi": 36,
+    "abi": "arm64-v8a",
+    "size": "1080x2400",
+    "densityDpi": 420,
+    "fontScale": 1.15
+  },
+  "fixture": {
+    "package": "so.oxy.bloom.loaderpackagelab",
+    "offline": true,
+    "reactNative": "0.88.1",
+    "expo": "58.0.23",
+    "reactNativeSvg": "15.16.0",
+    "reactCompiler": false,
+    "owners": [
+      "ComposerPill",
+      "AgentChatComposer"
+    ],
+    "aliaComposer": "mounted in fixture, not part of input lifecycle assertions"
+  },
+  "runs": {
+    "exec-out": {
+      "cases-pill-input": {
+        "transitions": {
+          "cases-resize": {
+            "state": "busy=false phase=idle narrow=true taper=0 multiline=false attached=false stops=0 submits=0 pending=none",
+            "sameNativeInput": true,
+            "draftPreserved": true,
+            "focusPreserved": true,
+            "caretPreserved": true
+          },
+          "cases-busy": {
+            "state": "busy=true phase=streaming narrow=true taper=0 multiline=false attached=false stops=0 submits=0 pending=none",
+            "sameNativeInput": true,
+            "draftPreserved": true,
+            "focusPreserved": true,
+            "caretPreserved": true
+          }
+        },
+        "stopAndType": {
+          "phaseAfterStop": "busy=false phase=complete narrow=true taper=0 multiline=false attached=false stops=1 submits=0 pending=none",
+          "sameNativeInput": true,
+          "textAfterPhysicalKey": "Draft retained through rqesize",
+          "focusedAfterTyping": true
+        },
+        "rotation": {
+          "from": 0,
+          "to": 1,
+          "returnedToStartOrientation": 0,
+          "sameNativeInput": true,
+          "keyboardVisibleThroughout": true,
+          "selectionRangeBefore": [
+            0,
+            30
+          ],
+          "selectionRangeRotated": [
+            0,
+            30
+          ],
+          "selectionRangeReturned": [
+            0,
+            30
+          ],
+          "textPreserved": true
+        }
+      },
+      "cases-agent-pill-input": {
+        "transitions": {
+          "cases-resize": {
+            "state": "busy=false phase=idle narrow=true taper=0 multiline=false attached=false stops=1 submits=0 pending=none",
+            "sameNativeInput": true,
+            "draftPreserved": true,
+            "focusPreserved": true,
+            "caretPreserved": true
+          },
+          "cases-busy": {
+            "state": "busy=true phase=streaming narrow=true taper=0 multiline=false attached=false stops=1 submits=0 pending=none",
+            "sameNativeInput": true,
+            "draftPreserved": true,
+            "focusPreserved": true,
+            "caretPreserved": true
+          }
+        },
+        "stopAndType": {
+          "phaseAfterStop": "busy=false phase=complete narrow=true taper=0 multiline=false attached=false stops=2 submits=0 pending=none",
+          "sameNativeInput": true,
+          "textAfterPhysicalKey": "Agent draft retained through resiqze",
+          "focusedAfterTyping": true
+        },
+        "rotation": {
+          "from": 0,
+          "to": 1,
+          "returnedToStartOrientation": 0,
+          "sameNativeInput": true,
+          "keyboardVisibleThroughout": true,
+          "selectionRangeBefore": [
+            0,
+            36
+          ],
+          "selectionRangeRotated": [
+            0,
+            36
+          ],
+          "selectionRangeReturned": [
+            0,
+            36
+          ],
+          "textPreserved": true
+        }
+      }
+    },
+    "shell-pull": {
+      "cases-pill-input": {
+        "transitions": {
+          "cases-resize": {
+            "state": "busy=false phase=idle narrow=true taper=0 multiline=false attached=false stops=0 submits=0 pending=none",
+            "sameNativeInput": true,
+            "draftPreserved": true,
+            "focusPreserved": true,
+            "caretPreserved": true
+          },
+          "cases-busy": {
+            "state": "busy=true phase=streaming narrow=true taper=0 multiline=false attached=false stops=0 submits=0 pending=none",
+            "sameNativeInput": true,
+            "draftPreserved": true,
+            "focusPreserved": true,
+            "caretPreserved": true
+          }
+        },
+        "stopAndType": {
+          "phaseAfterStop": "busy=false phase=complete narrow=true taper=0 multiline=false attached=false stops=1 submits=0 pending=none",
+          "sameNativeInput": true,
+          "textAfterPhysicalKey": "Draft retained through rqesize",
+          "focusedAfterTyping": true
+        },
+        "rotation": {
+          "from": 0,
+          "to": 1,
+          "returnedToStartOrientation": 0,
+          "sameNativeInput": true,
+          "keyboardVisibleThroughout": true,
+          "selectionRangeBefore": [
+            0,
+            30
+          ],
+          "selectionRangeRotated": [
+            0,
+            30
+          ],
+          "selectionRangeReturned": [
+            0,
+            30
+          ],
+          "textPreserved": true
+        }
+      },
+      "cases-agent-pill-input": {
+        "transitions": {
+          "cases-resize": {
+            "state": "busy=false phase=idle narrow=true taper=0 multiline=false attached=false stops=1 submits=0 pending=none",
+            "sameNativeInput": true,
+            "draftPreserved": true,
+            "focusPreserved": true,
+            "caretPreserved": true
+          },
+          "cases-busy": {
+            "state": "busy=true phase=streaming narrow=true taper=0 multiline=false attached=false stops=1 submits=0 pending=none",
+            "sameNativeInput": true,
+            "draftPreserved": true,
+            "focusPreserved": true,
+            "caretPreserved": true
+          }
+        },
+        "stopAndType": {
+          "phaseAfterStop": "busy=false phase=complete narrow=true taper=0 multiline=false attached=false stops=2 submits=0 pending=none",
+          "sameNativeInput": true,
+          "textAfterPhysicalKey": "Agent draft retained through resiqze",
+          "focusedAfterTyping": true
+        },
+        "rotation": {
+          "from": 0,
+          "to": 1,
+          "returnedToStartOrientation": 0,
+          "sameNativeInput": true,
+          "keyboardVisibleThroughout": true,
+          "selectionRangeBefore": [
+            0,
+            36
+          ],
+          "selectionRangeRotated": [
+            0,
+            36
+          ],
+          "selectionRangeReturned": [
+            0,
+            36
+          ],
+          "textPreserved": true
+        }
+      }
+    }
+  },
+  "screenshotFallback": {
+    "status": "passed",
+    "mode": "shell screencap to /sdcard then adb pull",
+    "forcedForThisRun": true,
+    "validPngCount": 12,
+    "captures": [
+      {
+        "name": "cases-pill-input-cases-resize",
+        "transport": "shell-screencap+pull",
+        "bytes": 273407
+      },
+      {
+        "name": "cases-pill-input-cases-busy",
+        "transport": "shell-screencap+pull",
+        "bytes": 289330
+      },
+      {
+        "name": "cases-pill-input-rotation-before",
+        "transport": "shell-screencap+pull",
+        "bytes": 268917
+      },
+      {
+        "name": "cases-pill-input-rotation-1",
+        "transport": "shell-screencap+pull",
+        "bytes": 162259
+      },
+      {
+        "name": "cases-pill-input-rotation-0",
+        "transport": "shell-screencap+pull",
+        "bytes": 268847
+      },
+      {
+        "name": "cases-pill-input-stop-and-type",
+        "transport": "shell-screencap+pull",
+        "bytes": 268847
+      },
+      {
+        "name": "cases-agent-pill-input-cases-resize",
+        "transport": "shell-screencap+pull",
+        "bytes": 274579
+      },
+      {
+        "name": "cases-agent-pill-input-cases-busy",
+        "transport": "shell-screencap+pull",
+        "bytes": 300373
+      },
+      {
+        "name": "cases-agent-pill-input-rotation-before",
+        "transport": "shell-screencap+pull",
+        "bytes": 270054
+      },
+      {
+        "name": "cases-agent-pill-input-rotation-1",
+        "transport": "shell-screencap+pull",
+        "bytes": 130221
+      },
+      {
+        "name": "cases-agent-pill-input-rotation-0",
+        "transport": "shell-screencap+pull",
+        "bytes": 269991
+      },
+      {
+        "name": "cases-agent-pill-input-stop-and-type",
+        "transport": "shell-screencap+pull",
+        "bytes": 269991
+      }
+    ]
+  },
+  "limits": [
+    "In the native input probes, attached=true means the EditText remains attached to its Android view hierarchy; it is not an attachment-file assertion.",
+    "This pass covers resize, busy/streaming, Stop, subsequent physical typing and keyboard-visible rotation for ComposerPill and AgentChatComposer. It does not verify close-during-fade, the full lifecycle matrix, visual/performance acceptance, or iPhone behavior."
+  ]
+}
