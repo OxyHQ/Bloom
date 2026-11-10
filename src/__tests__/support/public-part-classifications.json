@@ -1524,13 +1524,15 @@
   },
   "navigation-layout": {
     "status": "independent-scale",
-    "reason": "These root parts own screen chrome, measured edge claims, safe areas and expanded/minimized navigation geometry, not a canonical size prop. Preserve those role-specific layout recipes; their separately exported controls/parts still need their own applicability audit. Fixed navigation height is not evidence that controls meet size or touch contracts.",
+    "reason": "PageHeader, TabBar and BottomBar own screen chrome, measured edge claims, safe areas and expanded/minimized navigation geometry, not a canonical control-size prop. Preserve those role-specific layout recipes; their separately exported controls/parts still need their own applicability audit. Native and web runtime tests verify the fixed header/tab/navigation dimensions remain stable under xs and lg BloomScope; fixed chrome dimensions do not establish that targets inside or surrounding controls meet touch contracts.",
     "evidence": [
       "src/page-header/PageHeader.tsx",
       "src/tab-bar/TabBarBase.tsx",
-      "src/bottom-bar/BottomBarBase.tsx"
+      "src/bottom-bar/BottomBarBase.tsx",
+      "src/__tests__/NavigationPublicPartScope.test.tsx",
+      "src/__tests__/NavigationPublicPartScope.web.test.tsx"
     ],
-    "verification": "source ownership reviewed; full native/web layout, control proportions and physical target matrix pending",
+    "verification": "mock-rendered native styles and DOM-computed web styles compare PageHeader navigation min-height 44, TabBar pill height 58 and BottomBar height 74 under xs and lg BloomScope; physical layout, control proportions and target matrix pending",
     "parts": [
       "src/page-header/PageHeader.tsx#PageHeader",
       "src/tab-bar/index.ts#TabBar",
