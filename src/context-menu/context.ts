@@ -10,6 +10,7 @@
 import { createContext, useContext, type ComponentRef, type RefObject } from 'react';
 import type { View } from 'react-native';
 
+import type { MenuGlass } from '../floating/glass-menu/use-glass-menu';
 import type { MenuFocusIntent } from '../floating/menu-keyboard';
 import type { FloatingAnchor } from '../floating/types';
 
@@ -35,6 +36,8 @@ export interface ContextMenuContextValue {
    * when it gives one, else the trigger's wrapper.
    */
   anchorRef?: RefObject<ComponentRef<typeof View> | null>;
+  /** Native glass (Android 13+): the menu's rows as data; the menu is then drawn natively. */
+  glass?: MenuGlass;
   /** Web only: the row focus lands on when the menu opens (`menu-keyboard.ts`). */
   focusIntent?: MenuFocusIntent;
 }
