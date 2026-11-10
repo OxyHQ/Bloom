@@ -15,7 +15,10 @@ internal object ChromeMaterial {
   const val REFRACTION_SCALE = 0f
 
   // Magnification of the content under the selection lens (convex centre). Same value as chrome-material.web.ts.
-  const val PILL_MAGNIFY = 1.0f
+  const val PILL_MAGNIFY = 1.12f
+
+  // Refraction band of the selection lens (dp): the rim only. Same value as chrome-material.web.ts.
+  const val PILL_LENS_BAND = 6f
 
   fun apply(state: GlassSurfaceState) {
     state.config = GlassMenuConfigRecord()
@@ -52,6 +55,7 @@ internal fun ChromeMaterial.applyPill(
   state.dark = true
   state.refractionScale = 1f
   state.magnify = PILL_MAGNIFY
+  state.lensBand = PILL_LENS_BAND
   state.hasSource = false
   state.smoothing = 0f
   state.lensHeight = 0f
