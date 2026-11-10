@@ -1,0 +1,70 @@
+--- a/GlassMenuAndroidModule.kt
++++ b/GlassMenuAndroidModule.kt
+@@ -8,7 +8,7 @@
+ 
+ class GlassMenuAndroidModule : Module() {
+   override fun definition() = ModuleDefinition {
+-    Name("GlassMenuAndroid")
++    Name("BloomGlassMenu")
+ 
+     View(GlassMenuAndroidView::class) {
+       Events("onItemSelect", "onMenuOpenChange")
+--- a/records/GlassMenuConfigRecord.kt
++++ b/records/GlassMenuConfigRecord.kt
+@@ -9,6 +9,11 @@
+   @Field val morphBlur: Float = 1f
+   @Field val tintColor: Color? = null
+   @Field val tintOpacity: Float? = null
++  // Row ink; null keeps the built-in light/dark colours.
++  @Field val textColor: Color? = null
++  @Field val mutedColor: Color? = null
++  @Field val destructiveColor: Color? = null
++  @Field val separatorColor: Color? = null
+   @Field val saturation: Float = 1f
+   @Field val refraction: Float = 1f
+   @Field val rim: Float = 1f
+--- a/content/GlassMenuContent.kt
++++ b/content/GlassMenuContent.kt
+@@ -65,6 +65,8 @@
+   var height = 0f
+     private set
+   var dark = true
++  // The theme's row ink (null channels keep the built-in colours).
++  var ink: so.oxy.bloom.glassmenu.records.GlassMenuConfigRecord? = null
+   // Alpha of the whole content: the submenu navigation fades the level in (RowsRevealSpring).
+   var contentAlpha = 1f
+ 
+@@ -190,11 +192,11 @@
+   // (the submenu header) is drawn by the same code wherever it is. `chevronRotation` turns the trailing chevron
+   // around its own centre.
+   fun drawRow(canvas: Canvas, row: GlassRow, chevronRotation: Float) {
+-    val foreground = if (dark) Color.argb(245, 255, 255, 255) else Color.argb(235, 0, 0, 0)
+-    val muted = if (dark) Color.argb(153, 235, 235, 245) else Color.argb(153, 60, 60, 67)
+-    val destructive = if (dark) Color.rgb(255, 82, 84) else Color.rgb(220, 30, 48)
++    val foreground = ink?.textColor?.toArgb() ?: if (dark) Color.argb(245, 255, 255, 255) else Color.argb(235, 0, 0, 0)
++    val muted = ink?.mutedColor?.toArgb() ?: if (dark) Color.argb(153, 235, 235, 245) else Color.argb(153, 60, 60, 67)
++    val destructive = ink?.destructiveColor?.toArgb() ?: if (dark) Color.rgb(255, 82, 84) else Color.rgb(220, 30, 48)
+     if (row.isSeparator) {
+-      fillPaint.color = if (dark) Color.argb(17, 255, 255, 255) else Color.argb(26, 0, 0, 0)
++      fillPaint.color = ink?.separatorColor?.toArgb() ?: if (dark) Color.argb(17, 255, 255, 255) else Color.argb(26, 0, 0, 0)
+       val y = row.rect.centerY()
+       val half = density / 2f
+       canvas.drawRect(Metrics.SeparatorInset * density, y - half, width - Metrics.SeparatorInset * density, y + half, fillPaint)
+--- a/overlay/GlassMenuSession.kt
++++ b/overlay/GlassMenuSession.kt
+@@ -95,6 +95,7 @@
+     val margin = 16f * density
+     availableWidth = windowWidth - margin * 2f
+     content.dark = anchor.isDark()
++    content.ink = anchor.config
+     levelItems = null
+     nav.reset(1f)
+     parentDim.reset(0f)
+@@ -542,6 +543,7 @@
+       anchor, density,
+       GlassMenuContent(overlay.context, density) { slot -> anchor.iconView(slot) }.also {
+         it.dark = content.dark
++        it.ink = content.ink
+         it.forceCheckColumn = content.reservesCheckColumn
+       },
+       if (supportsGlass) RenderNode("GlassMenu.submenu.rows") else null,

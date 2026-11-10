@@ -20,6 +20,7 @@ export {
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
 } from './DropdownMenu.web';
+export { useGlassPrimary } from '../floating/glass-menu/use-glass-primary';
 export type {
   DropdownMenuProps,
   DropdownMenuTriggerProps,

@@ -42,6 +42,21 @@ export type DropdownMenuTriggerProps = OverlayTriggerProps & {
    * as a Mac's menu bar extras do. Native only: on web the browser owns focus.
    */
   restoreFocus?: boolean;
+  /**
+   * The colour of a glass trigger (Android 13+): `'neutral'` (default) tints it with the menu
+   * surface, `'primary'` with the theme's `vivid` brand colour, strongly. Setting `'primary'`
+   * makes the trigger glass. No effect where the menu is not the native glass menu.
+   */
+  glassTone?: 'neutral' | 'primary';
+  /**
+   * Draw the trigger itself as glass. Off by default: a menu opens as glass from any trigger, but
+   * a glass trigger belongs to the fixed layer (a header, a toolbar, a floating button), never
+   * inside a scrolling area, whose overscroll stretch it does not follow. `glassTone` and
+   * `glassTint` imply it.
+   */
+  glass?: boolean;
+  /** An explicit colour for the native glass trigger (`#rrggbb`); wins over `glassTone`. */
+  glassTint?: string;
 };
 export type DropdownMenuContentProps = MenuSurfaceProps;
 

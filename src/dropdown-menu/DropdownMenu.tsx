@@ -25,8 +25,19 @@ import { BloomScope } from '../appearance';
  * panel (the keyboard then has it, as on the web). The popup goes on tracking the pointer over
  * the trigger while it holds its grab (`trackingRef`). The trigger's own press is unchanged.
  */
-import React, { useCallback, useMemo, useRef, type ComponentRef } from 'react';
-import type { PointerEvent, View } from 'react-native';
+import React, {
+  Children,
+  Fragment,
+  isValidElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  type ComponentRef,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
+import { View, type PointerEvent } from 'react-native';
 
 import { SheetShell } from '../dialog/SheetShell';
 import { PopupPanel } from '../floating/PopupPanel';
@@ -42,7 +53,17 @@ import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { HOVER_CARD_CLOSE_DELAY, HOVER_CARD_OPEN_DELAY } from '../hover-card/constants';
 import { useHoverIntent } from '../hover-card/use-hover-intent';
-import { DropdownMenuProvider, useDropdownMenu } from './context';
+import {
+  GLASS_MENU_ICON_HOST_ID,
+  getNativeGlassMenu,
+  type GlassMenuNativeHandle,
+  type GlassMenuNativeItem,
+} from '../floating/glass-menu/native-glass-menu';
+import { parseGlassMenu } from '../floating/glass-menu/parse-glass-menu';
+import { useGlassPrimary } from '../floating/glass-menu/use-glass-primary';
+import { useTheme } from '../theme/use-theme';
+import { useMenuPalette } from '../floating/menu-palette';
+import { DropdownMenuProvider, useDropdownMenu, type DropdownMenuGlass } from './context';
 import type {
   DropdownMenuContentProps,
   DropdownMenuProps,
@@ -54,6 +75,77 @@ import { useMessages } from '../locale/messages';
 
 /** React Native's standard accessibility action for a long press (TalkBack's, a reader's). */
 const LONG_PRESS_ACTION = 'longpress';
+
+/** The `DropdownMenuContent` element among a root's children, looking through fragments only. */
+function findContent(children: ReactNode): ReactElement<DropdownMenuContentProps> | null {
+  for (const child of Children.toArray(children)) {
+    if (!isValidElement(child)) continue;
+    if (child.type === DropdownMenuContent) return child as ReactElement<DropdownMenuContentProps>;
+    if (child.type === Fragment) {
+      const inner = findContent((child.props as { children?: ReactNode }).children);
+      if (inner) return inner;
+    }
+  }
+  return null;
+}
+
+/**
+ * The menu as the native glass menu takes it (Android 13+, in a binary that has Bloom's module),
+ * or `undefined` when it cannot: the menu then keeps its sheet. Rows outside the glass menu's
+ * vocabulary (see `parseGlassMenu`) also keep the sheet.
+ */
+function useGlassMenu(
+  children: ReactNode,
+  isOpen: boolean,
+  setOpen: (open: boolean) => void,
+): DropdownMenuGlass | undefined {
+  const available = getNativeGlassMenu() != null;
+  const nativeRef = useRef<GlassMenuNativeHandle | null>(null);
+  const nativeOpen = useRef(false);
+  const content = available ? findContent(children) : null;
+  const parsed = content ? parseGlassMenu(content.props.children, rows) : null;
+
+  const handlers = useRef(parsed?.handlers ?? {});
+  handlers.current = parsed?.handlers ?? {};
+  const itemsKey = parsed ? JSON.stringify(parsed.items) : '';
+  const items = useMemo<GlassMenuNativeItem[] | undefined>(
+    () => (itemsKey ? JSON.parse(itemsKey) : undefined),
+    [itemsKey],
+  );
+  const icons = parsed?.icons;
+  const select = useCallback((id: string) => handlers.current[id]?.(), []);
+  const openChange = useCallback(
+    (next: boolean) => {
+      nativeOpen.current = next;
+      setOpen(next);
+    },
+    [setOpen],
+  );
+
+  // An open or close the owner makes through the `open` prop reaches the native menu here; the
+  // native menu's own opens and closes arrive through `openChange` first and find nothing to do.
+  const present = items != null;
+  useEffect(() => {
+    if (!present || isOpen === nativeOpen.current) return;
+    nativeOpen.current = isOpen;
+    void (isOpen ? nativeRef.current?.open() : nativeRef.current?.close());
+  }, [present, isOpen]);
+
+  return useMemo(
+    () =>
+      items && icons
+        ? {
+            items,
+            icons,
+            handlers: handlers.current,
+            nativeRef,
+            select,
+            openChange,
+          }
+        : undefined,
+    [items, icons, select, openChange],
+  );
+}
 
 export function DropdownMenu({
   children,
@@ -120,6 +212,7 @@ export function DropdownMenu({
     }),
     [intent, setMenuOpen],
   );
+  const glass = useGlassMenu(children, isOpen, setMenuOpen);
   const value = useMemo(
     () => ({
       open: isOpen,
@@ -129,8 +222,9 @@ export function DropdownMenu({
       activation,
       ...(activation === 'hover' ? { hover } : null),
       onPrimaryOpenChange,
+      glass,
     }),
-    [isOpen, setMenuOpen, focusIntent, activation, hover, onPrimaryOpenChange],
+    [isOpen, setMenuOpen, focusIntent, activation, hover, onPrimaryOpenChange, glass],
   );
 
   return <DropdownMenuProvider value={value}>{children}</DropdownMenuProvider>;
@@ -146,6 +240,9 @@ export function DropdownMenuTrigger({
   testID,
   pressTrigger,
   restoreFocus,
+  glassTone = 'neutral',
+  glassTint,
+  glass: glassTrigger = false,
 }: DropdownMenuTriggerProps) {
   const menu = useDropdownMenu();
   // Hover opens it only where it is a desktop's popup: never a phone's sheet.
@@ -167,7 +264,7 @@ export function DropdownMenuTrigger({
     (React.isValidElement<{ onPress?: unknown; href?: string }>(children) &&
       (children.props.onPress != null || children.props.href != null));
 
-  return (
+  const trigger = (
     <TriggerSlot
       asChild={asChild}
       pressTrigger={pressTrigger}
@@ -192,7 +289,12 @@ export function DropdownMenuTrigger({
       style={style}
       testID={testID}
       handle={{
-        onPress: () => menu.setOpen(menu.activation !== 'hover' || !primaryAction),
+        onPress: () => {
+          const open = menu.activation !== 'hover' || !primaryAction;
+          // The native menu morphs out of the touch that opened it: open it here, not through state.
+          if (open && menu.glass) void menu.glass.nativeRef.current?.open();
+          else menu.setOpen(open);
+        },
         onLongPress: menu.activation === 'hover' ? () => menu.setOpen(true) : undefined,
         ...showMenu,
         disabled,
@@ -205,7 +307,92 @@ export function DropdownMenuTrigger({
       {children}
     </TriggerSlot>
   );
+  if (!menu.glass || !getNativeGlassMenu()) return trigger;
+  return (
+    <GlassTrigger
+      glass={menu.glass}
+      triggerGlass={glassTrigger || glassTone === 'primary' || glassTint != null}
+      tone={glassTone}
+      tint={glassTint}
+    >
+      {trigger}
+    </GlassTrigger>
+  );
 }
+
+/**
+ * The native glass view around a trigger. It reads the theme, so it is a component of its own:
+ * only a menu the native glass menu presents mounts it, and every other menu stays free of the
+ * theme (as the sheet always was).
+ */
+function GlassTrigger({
+  glass,
+  triggerGlass,
+  tone,
+  tint,
+  children,
+}: {
+  glass: DropdownMenuGlass;
+  triggerGlass: boolean;
+  tone: 'neutral' | 'primary';
+  tint?: string;
+  children: ReactNode;
+}) {
+  const NativeGlassMenu = getNativeGlassMenu();
+  const dark = useTheme().isDark;
+  const primary = useGlassPrimary().color;
+  const { surface, border, text, textSecondary, destructive, trigger } = useMenuPalette();
+  // Bloom's menu palette colours the glass: its surface tints the panel, its ink draws the rows.
+  const config = useMemo(
+    () => ({
+      tintColor: surface,
+      tintOpacity: dark ? 0.72 : 0.6,
+      textColor: text,
+      mutedColor: textSecondary,
+      destructiveColor: destructive,
+      separatorColor: border,
+    }),
+    [surface, border, text, textSecondary, destructive, dark],
+  );
+  const triggerConfig = tint
+    ? { tintColor: tint, tintOpacity: 0.96 }
+    : tone === 'primary'
+      ? { tintColor: primary, tintOpacity: 0.96 }
+      : { tintColor: trigger.background, tintOpacity: 0.5 };
+  if (!NativeGlassMenu) return <>{children}</>;
+  return (
+    <NativeGlassMenu
+      ref={glass.nativeRef}
+      items={glass.items}
+      glass={triggerGlass}
+      colorScheme={dark ? 'dark' : 'light'}
+      config={config}
+      triggerConfig={triggerConfig}
+      style={glassTriggerStyle}
+      onItemSelect={(event) => glass.select(event.nativeEvent.id)}
+      onMenuOpenChange={(event) => glass.openChange(event.nativeEvent.open)}
+    >
+      {children}
+      <View
+        nativeID={GLASS_MENU_ICON_HOST_ID}
+        collapsable={false}
+        pointerEvents="none"
+        style={glassIconHostStyle}
+      >
+        {glass.icons.map((icon, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: the slot index is the identity the native side uses
+          <View key={index} collapsable={false} style={glassIconSlotStyle}>
+            {icon}
+          </View>
+        ))}
+      </View>
+    </NativeGlassMenu>
+  );
+}
+
+const glassTriggerStyle = { alignSelf: 'flex-start' } as const;
+const glassIconHostStyle = { position: 'absolute', left: 0, top: 0 } as const;
+const glassIconSlotStyle = { alignSelf: 'flex-start' } as const;
 
 export function DropdownMenuContent({
   children,
@@ -233,6 +420,9 @@ export function DropdownMenuContent({
     () => ({ close: () => menu.setOpen(false), presentation: PopupSurface ? 'dropdown' : 'sheet' }),
     [menu, PopupSurface],
   );
+
+  // The native glass menu draws the rows itself; the trigger hosts it.
+  if (menu.glass) return null;
 
   if (PopupSurface) {
     // The platform's popup: mounted while open, closed by the platform on an
