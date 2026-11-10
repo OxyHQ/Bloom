@@ -1,5 +1,11 @@
 # Changelog
 
+## 17.50.0
+
+### Added
+
+- **`AiChatShell panelFloatingBelow`** (`'sm' | 'md' | 'lg' | 'xl' | number`, default `'xl'`): the width below which the context panel stops sitting beside the conversation and floats over it as a dialog. It was fixed at `xl`, so a narrow panel worked in beside the thing it edits (an agent editor, 380px) became a modal with the page dimmed under it on any laptop window under 1280px, though the sidebar, a 320px conversation and the panel fit from `lg`. A host whose panel is that kind sets `'lg'`; nothing changes without it.
+
 ## 17.46.0
 
 ### Fixed

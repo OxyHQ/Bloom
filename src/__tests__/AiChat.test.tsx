@@ -593,6 +593,14 @@ describe('AiChatShell', () => {
     expect(source).toMatch(/resizable: !!panel && panelResizable/);
   });
 
+  it('floats the panel below a breakpoint the host chooses, `xl` by default', () => {
+    // Where the panel leaves the row for a dialog is the context track's `floating.below`; the
+    // layout engine reads it from a measured, wide window, which the native test renderer lacks.
+    const source = readFileSync(join(__dirname, '..', 'ai-chat', 'AiChatShell.tsx'), 'utf8');
+    expect(source).toMatch(/panelFloatingBelow = 'xl'/);
+    expect(source).toMatch(/below: panelFloatingBelow/);
+  });
+
   it('hands a function sidebar the resolved props, so the shell owns its collapse', () => {
     const seen: Array<{ collapsed?: boolean; onCollapsedChange?: (c: boolean) => void }> = [];
     renderWithPortal(
