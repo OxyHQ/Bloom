@@ -4,6 +4,9 @@ import { Modal, Platform, StyleSheet } from 'react-native';
 
 import { BlurWindow } from '../blur/blur-target';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { getNativeLens } from '../floating/lens/native-lens';
+import { OverlayRoot } from '../overlay';
+import { Portal } from '../portal';
 import type { SharedValue } from 'react-native-reanimated';
 import { BottomSheetBase } from './BottomSheetBase';
 import type { BottomSheetProps, BottomSheetRef, BottomSheetShellProps } from './types';
@@ -80,12 +83,12 @@ function SheetKeyboardSync({ keyboardHeight }: { keyboardHeight: SharedValue<num
 }
 
 /**
- * Native shell: RN's `<Modal>` (its own native root window) + the sheet's
+ * The native shell where there is no lens: RN's `<Modal>` (its own native root window) + the sheet's
  * keyboard tracker + a `<GestureHandlerRootView>` (the app-root GHRV does not
  * cross the Modal's native-window boundary, so pan gestures need their own root
  * here). No `<KeyboardProvider>`: see `SheetKeyboardSync`.
  */
-export function NativeShell({
+function ModalShell({
   visible,
   onRequestClose,
   keyboardHeight,
@@ -113,6 +116,35 @@ export function NativeShell({
       </BlurWindow>
     </Modal>
   );
+}
+
+/**
+ * The native shell where the device has Bloom's native lens (Android 13+ with the module): the
+ * sheet presents in the APP'S OWN window, through bloom's `<Portal>` and an `OverlayRoot`, as the
+ * side drawers do. A `<Modal>` is a second native window, and a surface in it cannot refract what
+ * is behind it (the lens has nothing to sample), so its controls would keep the shared paint. In
+ * the app's window:
+ *
+ *  - the app's `GestureHandlerRootView` already covers it;
+ *  - `SheetKeyboardSync` reads the app's one `<KeyboardProvider>` directly;
+ *  - the surface is `modal`: `OverlayRoot`, through the app's `OverlayInertBoundary`, confines
+ *    TalkBack, and consumes Android back via `onRequestClose`, newest surface first.
+ */
+function AppWindowShell({ visible, onRequestClose, keyboardHeight, children }: BottomSheetShellProps) {
+  if (!visible) return null;
+  return (
+    <Portal>
+      <OverlayRoot onRequestClose={onRequestClose} modal>
+        <SheetKeyboardSync keyboardHeight={keyboardHeight} />
+        {children}
+      </OverlayRoot>
+    </Portal>
+  );
+}
+
+/** Native shell: the app's own window where the device has the lens, else RN's `<Modal>`. */
+export function NativeShell(props: BottomSheetShellProps) {
+  return getNativeLens() != null ? <AppWindowShell {...props} /> : <ModalShell {...props} />;
 }
 
 const BottomSheet = forwardRef(

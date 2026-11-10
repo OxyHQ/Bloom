@@ -104,8 +104,8 @@ export interface CenteredCardProps {
  * first.
  *
  * It presents in the same RN `<Modal>` as `BottomSheet` (`NativeShell`): its
- * own native window, where Escape on macOS and Back on Android send
- * `onRequestClose`. Its imperative handle is `BottomSheet`'s, so an owner swaps
+ * own native window (the app's window on a device with the native lens), where
+ * Escape on macOS and Back on Android send `onRequestClose`. Its imperative handle is `BottomSheet`'s, so an owner swaps
  * one for the other by the window it is in (`useDesktopPresentationSession`).
  */
 export const CenteredCard = forwardRef(
