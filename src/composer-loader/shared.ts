@@ -1,6 +1,6 @@
 import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
-import type { ComposerLoaderColors } from './types';
+import type { ComposerLoaderColors, ComposerLoaderPhase } from './types';
 
 /**
  * The geometry both `ComposerLoader` forks draw. One module so the web fork (CSS keyframes on
@@ -32,6 +32,12 @@ export function resolveComposerLoaderColors(theme: Theme): ComposerLoaderColors 
 
 /** The light fades in/out over this long when `active` flips. */
 export const COMPOSER_LOADER_FADE_MS = 450;
+
+/** Resolve the visual light state while preserving the existing boolean API. */
+export function resolveComposerLoaderActive(active: boolean, phase?: ComposerLoaderPhase): boolean {
+  if (phase === undefined) return active;
+  return phase === 'submitting' || phase === 'streaming' || phase === 'stopping';
+}
 
 /** Copies per layer when tapering. */
 export const TAPER_STEPS = 14;

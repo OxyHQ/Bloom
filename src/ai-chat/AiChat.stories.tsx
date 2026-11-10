@@ -321,7 +321,7 @@ export const Container: Story = {
             working={working}
             composer={
               <>
-                <ComposerLoader active={working}>
+                <ComposerLoader phase={working ? 'streaming' : 'idle'}>
                   <ComposerPill
                     surface={false}
                     frosted={working}

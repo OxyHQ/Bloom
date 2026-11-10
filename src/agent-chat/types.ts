@@ -4,6 +4,7 @@ import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { BloomIconComponent } from '../icons/icon-component';
 import type { AgentLogToolCallProps } from '../agent-log';
+import type { ComposerLoaderPhase } from '../composer-loader/types';
 
 /** The agent a reply was delegated to, shown above it. */
 export interface AgentChatAgent {
@@ -309,6 +310,8 @@ export interface AgentChatComposerProps {
   /** Enter or the send disc. Receives the current text. */
   onSubmit?: (text: string) => void;
   onStop?: () => void;
+  /** Explicit loader phase; defaults to `streaming` while `busy`, else `idle`. */
+  phase?: ComposerLoaderPhase;
   /** Shows the stop disc and lights the `ComposerLoader` band. */
   busy?: boolean;
   /** Enables the shared add menu's attachment action. */
@@ -347,6 +350,8 @@ export interface AgentChatProps {
   messages: ReadonlyArray<AgentChatMessageData>;
   /** Default `'ready'`. `submitted`/`streaming` are "busy". */
   status?: AgentChatStatus;
+  /** Overrides only the visual loader phase derived from `status`. */
+  composerPhase?: ComposerLoaderPhase;
   /** Shows the error line under the transcript. Default: `status === 'error'`. */
   error?: boolean;
   /** Header title. Default: the active thread's title, else `labels.newChat`. */

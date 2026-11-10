@@ -1,10 +1,16 @@
 # Changelog
 
-## 17.41.0
+## 17.42.0
 
 ### Removed
 
 - **The agent creator's "Avatar style" row.** `CharacterControls` offered a select of ready-made character presets above eyewear and accessory. A person editing or creating an agent builds a character from its parts (shape, eyes, colour, eyewear, accessory), and a preset there only replaced all of them at once, so the row is gone. The `avatarStyle` and `betaPreset` message keys of `AgentCreatorMessages` go with it (and from every locale). `CHARACTER_PRESETS`, `CHARACTER_TEMPLATES` and `characterTemplateChoice` stay exported for code that starts from a template.
+
+## 17.41.0
+
+### Added
+
+- **`ComposerLoader.phase`** (`idle`, `submitting`, `streaming`, `stopping`, `error`, `complete`) gives chat composers one controlled request lifecycle. Bloom owns the fade and motion; the app continues to own submission, cancellation, error and completion. `active` remains compatible during the 17.x migration. `AgentChat` maps its transport-neutral statuses and accepts `composerPhase` when an app needs explicit stopping/completion phases.
 
 ## 17.40.0
 

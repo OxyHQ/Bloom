@@ -389,7 +389,7 @@ export const PillFrosted: Story = {
             {working ? 'Stop working' : 'Start working'}
           </Button>
         </View>
-        <ComposerLoader active={working}>
+        <ComposerLoader phase={working ? 'streaming' : 'idle'}>
           <ComposerPill
             surface={false}
             frosted={working}
@@ -509,7 +509,7 @@ export const BusyAndStop: Story = {
           providers={PROVIDERS}
           defaultValue="Draft the release notes"
         />
-        <ComposerLoader active={busy}>
+        <ComposerLoader phase={busy ? 'streaming' : 'idle'}>
           <ComposerPill
             surface={false}
             frosted={busy}

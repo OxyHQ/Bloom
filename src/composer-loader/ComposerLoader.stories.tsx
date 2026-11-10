@@ -10,10 +10,15 @@ import { ComposerLoader } from './index';
 import { ComposerPill } from '../composer-panel';
 import { AgentChatComposer } from '../agent-chat';
 import { Screen } from '../screen';
+import type { ComposerLoaderPhase } from './types';
 
 const meta: Meta<typeof ComposerLoader> = {
   argTypes: {
-    active: { control: 'boolean' },
+    phase: {
+      control: 'select',
+      options: ['idle', 'submitting', 'streaming', 'stopping', 'error', 'complete'],
+    },
+    active: { control: false },
     speed: { control: 'number' },
     intensity: { control: 'number' },
     bloom: { control: 'number' },
@@ -117,7 +122,7 @@ export const Variants: Story = {
       </View>
       <View>
         <Label>inactive (surface only)</Label>
-        <ComposerLoader active={false}>
+        <ComposerLoader phase="idle">
           <Pill />
         </ComposerLoader>
       </View>
@@ -179,7 +184,7 @@ export const WithComposer: Story = {
     const [value, setValue] = useState('Summarise the release notes');
     return (
       <View style={{ width: '100%', maxWidth: WIDTH }}>
-        <ComposerLoader active={busy}>
+        <ComposerLoader phase={busy ? 'streaming' : 'idle'}>
           <View
             style={{
               height: 52,
@@ -221,11 +226,12 @@ export const WithComposer: Story = {
   },
 };
 
-/** Same mounted inputs across resize, working/idle, retention and suspension. */
+/** Same mounted inputs across request phases, resize, retention and suspension. */
 export const Lifecycle: Story = {
   parameters: { controls: { disable: true } },
   render: function Render() {
-    const [busy, setBusy] = useState(true);
+    const [phase, setPhase] = useState<ComposerLoaderPhase>('submitting');
+    const busy = phase === 'submitting' || phase === 'streaming' || phase === 'stopping';
     const [paused, setPaused] = useState(false);
     const [retained, setRetained] = useState(false);
     const [tall, setTall] = useState(false);
@@ -233,9 +239,19 @@ export const Lifecycle: Story = {
     return (
       <View testID="loader-lifecycle" style={{ width: '100%', maxWidth: 640, gap: 16 }}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-          <Button testID="loader-toggle" onPress={() => setBusy((value) => !value)}>
-            Toggle working
-          </Button>
+          {(['idle', 'submitting', 'streaming', 'stopping', 'error', 'complete'] as const).map(
+            (nextPhase) => (
+              <Button
+                key={nextPhase}
+                testID={`loader-phase-${nextPhase}`}
+                onPress={() => setPhase(nextPhase)}
+                appearance={phase === nextPhase ? 'solid' : 'outline'}
+                tone={phase === nextPhase ? 'accent' : 'neutral'}
+              >
+                {nextPhase}
+              </Button>
+            ),
+          )}
           <Button testID="loader-pause" onPress={() => setPaused((value) => !value)}>
             Pause decoration
           </Button>
@@ -248,11 +264,11 @@ export const Lifecycle: Story = {
         </View>
         <Screen active={!retained} scroll="none">
           <View style={{ gap: 24 }}>
-            <ComposerLoader active={busy} paused={paused} testID="lifecycle-isolated">
+            <ComposerLoader phase={phase} paused={paused} testID="lifecycle-isolated">
               <Pill height={tall ? 160 : 52} />
             </ComposerLoader>
             <ComposerLoader
-              active={busy}
+              phase={phase}
               paused={paused}
               taper={0.6}
               radius={16}
@@ -260,13 +276,13 @@ export const Lifecycle: Story = {
             >
               <Pill height={tall ? 160 : 80} />
             </ComposerLoader>
-            <ComposerLoader active={busy} paused={paused} testID="lifecycle-pill">
+            <ComposerLoader phase={phase} paused={paused} testID="lifecycle-pill">
               <ComposerPill
                 value={draft}
                 onValueChange={setDraft}
                 busy={busy}
-                onSubmit={() => setBusy(true)}
-                onStop={() => setBusy(false)}
+                onSubmit={() => setPhase('submitting')}
+                onStop={() => setPhase('stopping')}
                 addMenu={[]}
                 models={[]}
                 effortLevels={[]}
@@ -277,9 +293,10 @@ export const Lifecycle: Story = {
             <AgentChatComposer
               value={draft}
               onValueChange={setDraft}
+              phase={phase}
               busy={busy}
-              onSubmit={() => setBusy(true)}
-              onStop={() => setBusy(false)}
+              onSubmit={() => setPhase('submitting')}
+              onStop={() => setPhase('stopping')}
               testID="lifecycle-agent"
             />
           </View>

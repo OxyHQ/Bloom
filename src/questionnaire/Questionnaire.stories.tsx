@@ -180,7 +180,7 @@ export const AboveTheComposer: Story = {
             onDismiss={() => setAsking(false)}
           />
         ) : null}
-        <ComposerLoader active={false}>
+        <ComposerLoader phase="idle">
           <ComposerPill value={draft} onValueChange={setDraft} onSubmit={() => setDraft('')} />
         </ComposerLoader>
       </View>
