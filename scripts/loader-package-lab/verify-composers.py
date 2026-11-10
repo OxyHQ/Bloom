@@ -28,7 +28,8 @@ def inputs():
     old=len(rows()); adb('shell','am','start','-n',pkg+'/.MainActivity','--es','bloomProbe','inputs')
     for _ in range(20):
         new=rows()[old:]
-        if len(new)>=2: return {n['testID']:n for n in new}
+        identified={n['testID']:n for n in new if n.get('testID')}
+        if {'cases-pill-input','cases-agent-pill-input'} <= identified.keys(): return identified
         time.sleep(.1)
     raise AssertionError('Input receipt missing')
 def shot(name):
@@ -127,9 +128,15 @@ for owner in ['cases-pill-input','cases-agent-pill-input']:
         assert ('narrow=true' if control=='cases-resize' else 'busy=true') in state
         shot(owner+'-'+control)
         cases.append({'control':control,'state':state,'before':before,'after':after})
+    # Pixel 8a's accessibility provider can stall while Gboard owns the
+    # window. Keep the input focused, but hide the IME for this node lookup;
+    # the rotation check below explicitly verifies the visible-keyboard path.
+    dismiss_ime()
     stop_tree=ui()
     stop_nodes=[n for n in stop_tree.iter('node') if n.get('content-desc')=='Stop generating' and n.get('clickable')=='true']
-    assert len(stop_nodes)==2
+    # AliaComposer is also present in this fixture; the tested Bloom owners
+    # are the first two stop controls in the packaged tree.
+    assert len(stop_nodes)>=2
     stop_node=stop_nodes[0 if owner=='cases-pill-input' else 1]
     x,y,r,b=map(int,re.findall(r'\d+',stop_node.get('bounds')))
     before_stop=inputs()[owner]
@@ -142,6 +149,7 @@ for owner in ['cases-pill-input','cases-agent-pill-input']:
     assert typed['identity']==after_stop['identity'] and typed['focused']
     start,end=sorted([after_stop['start'],after_stop['end']])
     assert typed['text']==after_stop['text'][:start]+'q'+after_stop['text'][end:]
+    tap(point(ui(),owner));time.sleep(.3)
     rotation=rotate_and_check(owner)
     shot(owner+'-stop-and-type')
     results[owner]={'transitions':cases,'stop':{'before':before_stop,'after':after_stop,'state':state},'typed':typed,'rotation':rotation}
