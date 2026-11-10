@@ -8,7 +8,11 @@ import { Text, View } from 'react-native';
 import { Button } from '../button/Button';
 import { ButtonGroup, ButtonGroupItem } from '../button-group/ButtonGroup';
 import { PageHeader } from '../page-header/PageHeader';
+import { BlurIsland } from '../blur';
+import { RiSearchLine } from '../icons/remix/RiSearchLine';
+import { RiFilterLine } from '../icons/remix/RiFilterLine';
 import { Surface } from '../surface/Surface';
+import { ComposerPopover } from '../composer-panel/ComposerPopover';
 import { BlurWindow } from '../blur';
 import { act, render } from '@testing-library/react-native';
 
@@ -273,5 +277,65 @@ describe('a Surface with the lens material', () => {
     );
     expect(screen.queryByTestId('native-lens')).toBeNull();
     expect(screen.getByText('Dialog')).toBeTruthy();
+  });
+
+  it('keeps the shared paint in the ComposerPopover window', () => {
+    const anchorRef = {
+      current: {
+        measureInWindow: (cb: (x: number, y: number, w: number, h: number) => void) =>
+          cb(100, 400, 80, 32),
+      },
+    };
+    const screen = wrap(
+      <ComposerPopover
+        open
+        onOpenChange={() => {}}
+        anchorRef={anchorRef}
+        label="Effort"
+        side="bottom"
+        sideOffset={8}
+      >
+        <Surface material="lens">
+          <Text>Effort</Text>
+        </Surface>
+      </ComposerPopover>,
+    );
+    expect(screen.queryByTestId('native-lens')).toBeNull();
+    expect(screen.getByText('Effort')).toBeTruthy();
+  });
+});
+
+describe('a bottom toolbar composed of islands', () => {
+  it('draws a circle, a central pill and a circle with the lens', () => {
+    const screen = wrap(
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <BlurIsland>
+          <Button
+            iconOnly
+            material="shared"
+            appearance="plain"
+            icon={RiFilterLine}
+            accessibilityLabel="Filter"
+          />
+        </BlurIsland>
+        <BlurIsland>
+          <Button material="shared" appearance="plain">
+            Inbox
+          </Button>
+        </BlurIsland>
+        <BlurIsland>
+          <Button
+            iconOnly
+            material="shared"
+            appearance="plain"
+            icon={RiSearchLine}
+            accessibilityLabel="Search"
+          />
+        </BlurIsland>
+      </View>,
+    );
+    expect(screen.getAllByTestId('native-lens')).toHaveLength(3);
+    expect(screen.getByLabelText('Filter')).toBeTruthy();
+    expect(screen.getByText('Inbox')).toBeTruthy();
   });
 });

@@ -21,6 +21,7 @@ import {
  * Motion is the popover entry without the blur (no filter on native):
  * 150ms `ease-out` fade + `scale(0.95 → 1)`, snapped under reduced motion.
  */
+import { BlurWindow } from '../blur';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { BloomThemeContext } from '../theme/BloomThemeProvider';
 import { parseRgba } from '../theme/color-utils';
@@ -166,37 +167,40 @@ export function ComposerPopover({
 
   return (
     <Modal transparent visible animationType="none" onRequestClose={close} statusBarTranslucent>
-      <Pressable
-        style={StyleSheet.absoluteFill}
-        onPress={close}
-        accessibilityRole="button"
-        accessibilityLabel={common.dismiss}
-      />
-      <Animated.View
-        testID={testID}
-        accessibilityLabel={label}
-        accessibilityViewIsModal
-        onLayout={onLayout}
-        style={[
-          { position: 'absolute', left, top, maxWidth: window.width - 32 },
-          style,
-          paintsSurface ? { backgroundColor: 'transparent', overflow: 'visible' } : undefined,
-          animatedStyle,
-          surfaceFillVars(publishedFill),
-          placed ? null : { opacity: 0 },
-        ]}
-      >
-        {paintsSurface ? (
-          <SurfacePaint floating fill={fill as string} radius={panelStyle?.borderRadius ?? 16} />
-        ) : null}
-        {paintsSurface && panelStyle?.overflow === 'hidden' ? (
-          <View style={{ overflow: 'hidden', borderRadius: panelStyle.borderRadius }}>
-            {content}
-          </View>
-        ) : (
-          content
-        )}
-      </Animated.View>
+      {/* Its own native window: declared to the blur and lens layers, as every Bloom `<Modal>` is. */}
+      <BlurWindow>
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={close}
+          accessibilityRole="button"
+          accessibilityLabel={common.dismiss}
+        />
+        <Animated.View
+          testID={testID}
+          accessibilityLabel={label}
+          accessibilityViewIsModal
+          onLayout={onLayout}
+          style={[
+            { position: 'absolute', left, top, maxWidth: window.width - 32 },
+            style,
+            paintsSurface ? { backgroundColor: 'transparent', overflow: 'visible' } : undefined,
+            animatedStyle,
+            surfaceFillVars(publishedFill),
+            placed ? null : { opacity: 0 },
+          ]}
+        >
+          {paintsSurface ? (
+            <SurfacePaint floating fill={fill as string} radius={panelStyle?.borderRadius ?? 16} />
+          ) : null}
+          {paintsSurface && panelStyle?.overflow === 'hidden' ? (
+            <View style={{ overflow: 'hidden', borderRadius: panelStyle.borderRadius }}>
+              {content}
+            </View>
+          ) : (
+            content
+          )}
+        </Animated.View>
+      </BlurWindow>
     </Modal>
   );
 }
