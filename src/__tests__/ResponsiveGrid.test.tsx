@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text } from 'react-native';
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, within } from '@testing-library/react-native';
 import { ResponsiveGrid } from '../grid';
 import { ChartCardSurface } from '../chart-cards/primitives/ChartCardSurface';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -118,3 +118,37 @@ it.each([false, true])(
     expect(resolvedStyle(screen.getByTestId('auto').props.style).flexGrow).toBeUndefined();
   },
 );
+
+it('flows cells into independent columns: each stack takes every n-th cell, one stack when narrow', () => {
+  const screen = render(
+    <ResponsiveGrid testID="grid" flow="columns" minItemWidth={200} maxColumns={3} gap={10}>
+      {contents()}
+    </ResponsiveGrid>,
+  );
+  const resize = (width: number) =>
+    fireEvent(screen.getByTestId('grid-layout'), 'layout', {
+      nativeEvent: { layout: { width, height: 100 } },
+    });
+  const columnTexts = (count: number) =>
+    Array.from({ length: count }, (_, column) =>
+      within(screen.getByTestId(`grid-column-${column}`))
+        .queryAllByText(/^[a-e]$/)
+        .map((node) => node.props.children as string),
+    );
+  // Before any measure there is one column holding every cell.
+  expect(columnTexts(1)).toEqual([['a', 'b', 'c', 'd', 'e']]);
+  resize(620);
+  expect(columnTexts(3)).toEqual([['a', 'd'], ['b', 'e'], ['c']]);
+  expect(resolvedStyle(screen.getByTestId('grid-column-0').props.style)).toMatchObject({
+    width: 200,
+    gap: 10,
+  });
+  resize(420);
+  expect(columnTexts(2)).toEqual([
+    ['a', 'c', 'e'],
+    ['b', 'd'],
+  ]);
+  resize(300);
+  expect(screen.queryByTestId('grid-column-1')).toBeNull();
+  expect(columnTexts(1)).toEqual([['a', 'b', 'c', 'd', 'e']]);
+});
