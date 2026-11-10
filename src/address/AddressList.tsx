@@ -1,6 +1,7 @@
-import React, { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { View } from 'react-native';
 
+import { BloomScope, useBloomAppearance, useBloomContentDensity } from '../appearance';
 import { RiMapPin2Line } from '../icons/remix/RiMapPin2Line';
 import { useMessages } from '../locale/messages';
 import * as Skeleton from '../skeleton';
@@ -8,7 +9,7 @@ import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { AddressRow } from './AddressRow';
-import { ADDRESS_GEOMETRY, ADDRESS_SECTION_GAP, ADDRESS_SECTIONS_GAP } from './constants';
+import { ADDRESS_SCOPED_GEOMETRY, ADDRESS_LIST_GEOMETRY } from './geometry';
 import { ADDRESS_MESSAGES } from './messages';
 import { resolveAddressPaint } from './shared';
 import type { AddressListEntry, AddressListProps } from './types';
@@ -34,10 +35,11 @@ import type { AddressListEntry, AddressListProps } from './types';
  */
 function AddressListComponent({
   sections,
+  size: sizeProp,
   selectedId,
   onSelect,
   variant = 'list',
-  density = 'comfortable',
+  density: densityProp,
   loading = false,
   loadingRows = 3,
   empty,
@@ -48,13 +50,16 @@ function AddressListComponent({
   style,
   testID,
 }: AddressListProps) {
+  const { size } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
+  const density = useBloomContentDensity(densityProp);
   const { messages } = useMessages(ADDRESS_MESSAGES);
   const emptyTitle = emptyTitleProp ?? messages.emptyTitle;
   const accessibilityLabel = accessibilityLabelProp ?? messages.addresses;
   const theme = useTheme();
   const surface = useSurfaceFill();
   const paint = useMemo(() => resolveAddressPaint(theme, surface), [theme, surface]);
-  const g = ADDRESS_GEOMETRY[density];
+  const g = ADDRESS_SCOPED_GEOMETRY[size][density];
+  const layout = ADDRESS_LIST_GEOMETRY[size];
   const picker = variant === 'picker';
 
   const press = useCallback(
@@ -64,59 +69,79 @@ function AddressListComponent({
 
   if (loading) {
     return (
-      <View
-        aria-busy
-        accessibilityLabel={accessibilityLabel}
-        testID={testID}
-        style={[{ gap: ADDRESS_SECTION_GAP }, style]}
-      >
-        {Array.from({ length: loadingRows }, (_unused, index) => (
-          <View
-            key={index}
-            testID={testID ? `${testID}-placeholder-${index}` : undefined}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 12,
-              paddingHorizontal: 16,
-              paddingVertical: 10,
-            }}
-          >
-            <Skeleton.Circle size={g.tile} />
-            <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
-              <Skeleton.Text style={{ width: '45%', lineHeight: 16 }} />
-              <Skeleton.Text style={{ width: '70%', lineHeight: 14 }} />
+      <BloomScope size={sizeProp} contentDensity={density}>
+        <View
+          aria-busy
+          accessibilityLabel={accessibilityLabel}
+          testID={testID}
+          style={[{ gap: layout.sectionsGap }, style]}
+        >
+          {Array.from({ length: loadingRows }, (_unused, index) => (
+            <View
+              key={index}
+              testID={testID ? `${testID}-placeholder-${index}` : undefined}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: layout.rowGap,
+                paddingHorizontal: layout.loadingPaddingHorizontal,
+                paddingVertical: layout.loadingPaddingVertical,
+              }}
+            >
+              <Skeleton.Circle size={g.tile} />
+              <View style={{ flex: 1, minWidth: 0, gap: layout.loadingContentGap }}>
+                <Skeleton.Text
+                  style={{ width: '45%', lineHeight: layout.loadingTitleLineHeight }}
+                />
+                <Skeleton.Text
+                  style={{ width: '70%', lineHeight: layout.loadingSubtitleLineHeight }}
+                />
+              </View>
             </View>
-          </View>
-        ))}
-      </View>
+          ))}
+        </View>
+      </BloomScope>
     );
   }
 
   const total = sections.reduce((count, section) => count + section.entries.length, 0);
   if (total === 0) {
     return (
-      <View testID={testID} style={style}>
-        {empty ?? (
-          <View
-            testID={testID ? `${testID}-empty` : undefined}
-            style={{ alignItems: 'center', gap: 8, paddingVertical: 32, paddingHorizontal: 16 }}
-          >
-            <EmptyIcon width={32} height={32} fill={paint.textTertiary} />
-            <Text variant="body-medium" style={{ color: paint.text, textAlign: 'center' }}>
-              {emptyTitle}
-            </Text>
-            {emptyDescription ? (
+      <BloomScope size={sizeProp} contentDensity={density}>
+        <View testID={testID} style={style}>
+          {empty ?? (
+            <View
+              testID={testID ? `${testID}-empty` : undefined}
+              style={{
+                alignItems: 'center',
+                gap: layout.emptyGap,
+                paddingVertical: layout.emptyPaddingVertical,
+                paddingHorizontal: layout.emptyPaddingHorizontal,
+              }}
+            >
+              <EmptyIcon
+                width={layout.emptyIcon}
+                height={layout.emptyIcon}
+                fill={paint.textTertiary}
+              />
               <Text
-                variant="body-2-regular"
-                style={{ color: paint.textSecondary, textAlign: 'center' }}
+                variant={layout.emptyTitleVariant}
+                style={{ color: paint.text, textAlign: 'center' }}
               >
-                {emptyDescription}
+                {emptyTitle}
               </Text>
-            ) : null}
-          </View>
-        )}
-      </View>
+              {emptyDescription ? (
+                <Text
+                  variant={layout.emptyDescriptionVariant}
+                  style={{ color: paint.textSecondary, textAlign: 'center' }}
+                >
+                  {emptyDescription}
+                </Text>
+              ) : null}
+            </View>
+          )}
+        </View>
+      </BloomScope>
     );
   }
 
@@ -128,6 +153,7 @@ function AddressListComponent({
         <AddressRow
           key={entry.id}
           title={entry.title}
+          size={entry.size}
           subtitle={entry.subtitle}
           kind={entry.kind}
           icon={entry.icon}
@@ -136,7 +162,7 @@ function AddressListComponent({
           badge={entry.badge}
           action={entry.action}
           disabled={entry.disabled}
-          density={density}
+          density={entry.density ?? density}
           accessibilityLabel={entry.accessibilityLabel}
           style={entry.style}
           onPress={press(entry)}
@@ -155,12 +181,12 @@ function AddressListComponent({
     });
 
     return (
-      <View key={key} style={{ gap: ADDRESS_SECTION_GAP }}>
+      <View key={key} style={{ gap: layout.sectionGap }}>
         {section.title ? (
           <Text
-            variant="caption-1-semibold"
+            variant={layout.headerVariant}
             testID={sectionId ? `${sectionId}-title` : undefined}
-            style={{ color: paint.textSecondary, paddingHorizontal: 16 }}
+            style={{ color: paint.textSecondary, paddingHorizontal: layout.headerPadding }}
           >
             {section.title}
           </Text>
@@ -179,22 +205,26 @@ function AddressListComponent({
 
   if (!picker) {
     return (
-      <View testID={testID} style={[{ gap: ADDRESS_SECTIONS_GAP }, style]}>
-        {groups}
-      </View>
+      <BloomScope size={sizeProp} contentDensity={density}>
+        <View testID={testID} style={[{ gap: layout.sectionsGap }, style]}>
+          {groups}
+        </View>
+      </BloomScope>
     );
   }
 
   return (
-    <View
-      collapsable={false}
-      role="radiogroup"
-      accessibilityLabel={accessibilityLabel}
-      testID={testID}
-      style={[{ gap: ADDRESS_SECTIONS_GAP }, style]}
-    >
-      {groups}
-    </View>
+    <BloomScope size={sizeProp} contentDensity={density}>
+      <View
+        collapsable={false}
+        role="radiogroup"
+        accessibilityLabel={accessibilityLabel}
+        testID={testID}
+        style={[{ gap: layout.sectionsGap }, style]}
+      >
+        {groups}
+      </View>
+    </BloomScope>
   );
 }
 

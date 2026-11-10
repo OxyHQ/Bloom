@@ -38,7 +38,9 @@ import { Item } from '@oxy.so/bloom/item';
 | `active`      | the "you are here" state, for navigation rows                    |
 | `highlighted` | the keyboard's cursor, in a list a field drives                  |
 | `onHoverIn` / `onHoverOut` | pointer hover on a pressable row — move `highlighted` with it |
-| `density`     | `comfortable` (default) or `compact` for a dense list            |
+| `size`        | inherited `BloomScope` control size (xs/sm/md/lg)                 |
+| `contentDensity` | row rhythm, inherited from `BloomScope` or set per row           |
+| `density`     | legacy geometry (`comfortable` or `compact`)                      |
 | `destructive` | paints the title in the error role                               |
 
 ## `role` is the prop that matters
@@ -103,3 +105,6 @@ Interactive touch rows keep a 44px minimum target. Explicit legacy `density`
 retains its previous geometry unless `size` is also supplied; prefer size for
 new composition. Menus use their menu row parts, and mixed popovers use
 `PopoverItem`, since menu rows have distinct proportions from navigation Items.
+`contentDensity` resolves from its explicit prop, then `BloomScope`; without
+either, the row uses its size geometry. It changes vertical row rhythm while
+the size still controls the title and horizontal proportions.

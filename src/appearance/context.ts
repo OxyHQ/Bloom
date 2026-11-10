@@ -14,9 +14,21 @@ export function useBloomControlDensity(explicit?: BloomControlDensity): BloomCon
 }
 
 /** The content density: an explicit prop, else the nearest scope's, else `comfortable`. */
-export function useBloomContentDensity(explicit?: BloomContentDensity): BloomContentDensity {
+export function useBloomContentDensity(explicit?: BloomContentDensity): BloomContentDensity;
+export function useBloomContentDensity(
+  explicit: BloomContentDensity | undefined,
+  fallback: null,
+): BloomContentDensity | undefined;
+export function useBloomContentDensity(
+  explicit?: BloomContentDensity,
+  fallback?: BloomContentDensity | null,
+): BloomContentDensity | undefined {
   const scope = useContext(BloomAppearanceContext);
-  return explicit ?? scope.contentDensity ?? 'comfortable';
+  return (
+    explicit ??
+    scope.contentDensity ??
+    (fallback === null ? undefined : (fallback ?? 'comfortable'))
+  );
 }
 
 /** Explicit props override the nearest scope, then the family's defaults. */

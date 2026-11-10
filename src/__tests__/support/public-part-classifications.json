@@ -733,8 +733,6 @@
       "src/activity-feed/ActivityFeed.tsx#ActivityFeed",
       "src/activity-feed/ActivityFeedFilters.tsx#ActivityFeedFilters",
       "src/activity-heatmap/ActivityHeatmap.tsx#ActivityHeatmap",
-      "src/address/AddressList.tsx#AddressList",
-      "src/address/AddressRow.tsx#AddressRow",
       "src/agent-avatar/AgentAvatar.tsx#AgentAvatar",
       "src/agent-avatar/AgentAvatarProvider.tsx#AgentAvatarProvider",
       "src/agent-chat/AgentChat.tsx#AgentChat",
@@ -1079,7 +1077,6 @@
       "src/input-group/InputGroup.tsx#InputGroup",
       "src/input-group/InputGroup.tsx#InputGroupAddon",
       "src/input-otp/InputOtp.tsx#InputOtp",
-      "src/item/Item.tsx#Item",
       "src/job-board/JobBoard.tsx#JobBoard",
       "src/job-board/JobCard.tsx#JobCard",
       "src/kbd/Kbd.tsx#Kbd",
@@ -1705,6 +1702,26 @@
       "src/admonition/Admonition.tsx#AdmonitionRoot",
       "src/admonition/Admonition.tsx#AdmonitionRow",
       "src/admonition/Admonition.tsx#AdmonitionText"
+    ]
+  },
+  "address-item-scope": {
+    "status": "applicable",
+    "reason": "AddressList and AddressRow consume BloomScope size for tiles, type, local list spacing, and loading/empty states. Their content density is a separate axis and resolves explicit density, then BloomScope contentDensity, then comfortable; AddressRow delegates row structure to Item. Item preserves legacy density while its new contentDensity axis leaves control size and touch targets independent.",
+    "evidence": [
+      "src/address/geometry.ts",
+      "src/item/Item.tsx",
+      "src/__tests__/support/public-parts.ts",
+      "src/__tests__/support/public-part-report.ts",
+      "src/__tests__/AddressPublicPartScope.test.tsx",
+      "src/__tests__/AddressPublicPartScope.web.test.tsx",
+      "docs/address.mdx",
+      "docs/item.mdx"
+    ],
+    "verification": "Native-renderer and DOM web tests cover default md, inherited xs, explicit list sm over lg, explicit entry lg over list xs, nested sm badge size, portal action inheritance, compact content density under lg, Item contentDensity inheritance, explicit comfortable override over compact scope and legacy density, xs loading geometry, and lg empty geometry. Physical-device layout remains unverified; submenus do not apply.",
+    "parts": [
+      "src/address/AddressList.tsx#AddressList",
+      "src/address/AddressRow.tsx#AddressRow",
+      "src/item/Item.tsx#Item"
     ]
   }
 }

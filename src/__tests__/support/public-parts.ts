@@ -339,7 +339,15 @@ export function derivePublicParts(root = ROOT): PartCensus {
             : props.flags & ts.TypeFlags.Unknown
               ? 'unknown'
               : 'typed';
-        for (const key of ['size', 'density', 'controlDensity', 'textVariant', 'width', 'height']) {
+        for (const key of [
+          'size',
+          'density',
+          'contentDensity',
+          'controlDensity',
+          'textVariant',
+          'width',
+          'height',
+        ]) {
           const member = props.getProperty(key);
           if (!member) continue;
           const value = checker.getTypeOfSymbolAtLocation(
