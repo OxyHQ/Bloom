@@ -11,6 +11,7 @@ import {
   advanceVectorPlayback,
   playVectorAction,
   VECTOR_TRANSITION_SECONDS,
+  vectorFrameDelta,
 } from './vector-playback';
 import { paintVectorEyeFrame } from './vector-eye-ink';
 import { CHARACTER_COLORS } from './character-colors';
@@ -262,13 +263,21 @@ function AnimatedVectorCharacterAvatar(props: Props) {
   }, []);
   useEffect(() => {
     if (!asset || !visible || !foreground) return;
-    let last = 0,
+    let last: number | undefined,
       painted = 0,
       disposed = false;
     const stopped = !!paused || !!portrait || reduced;
-    const tick = (now: number) => {
+    const tick = (timestamp: number) => {
       if (disposed) return;
-      const delta = last ? Math.min(0.064, (now - last) / 1000) : 0;
+      // A frame callback that brings no timestamp is read off the page's own clock; with no clock
+      // at all there is nothing to advance by, and the frame is not drawn.
+      const now = Number.isFinite(timestamp)
+        ? timestamp
+        : typeof performance === 'undefined'
+          ? Number.NaN
+          : performance.now();
+      if (!Number.isFinite(now)) return;
+      const delta = vectorFrameDelta(now, last);
       last = now;
       const asset = latestAsset.current!;
       const motion = state.current;
