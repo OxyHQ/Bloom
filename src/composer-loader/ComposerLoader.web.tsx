@@ -18,6 +18,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import {
   COMPOSER_LOADER_FADE_MS,
+  resolveComposerLoaderActive,
   resolveComposerLoaderColors,
   PILL_RADIUS,
   blurFilterId,
@@ -55,6 +56,7 @@ export const COMPOSER_LOADER_WEB_CSS = `
 
 function ComposerLoaderComponent({
   children,
+  phase,
   active = true,
   paused = false,
   colors,
@@ -74,12 +76,13 @@ function ComposerLoaderComponent({
   style,
   testID,
 }: ComposerLoaderProps) {
+  const showLight = resolveComposerLoaderActive(active, phase);
   const theme = useTheme();
   const gradientId = `${useSvgIdPrefix('bloom-cl')}gradient`;
   const [box, setBox] = useState({ w: 0, h: 0 });
   const measured = box.w > 0 && box.h > 0;
   const { inView, targetProps } = useInView();
-  const { moving, animate } = useLoaderMotion(active, measured && inView && !paused);
+  const { moving, animate } = useLoaderMotion(showLight, measured && inView && !paused);
 
   useEffect(() => {
     adoptStyleSheet(STYLE_ID, COMPOSER_LOADER_WEB_CSS);
@@ -137,7 +140,7 @@ function ComposerLoaderComponent({
   const clipStyle: WebCssStyle = {
     overflow: 'hidden',
     borderRadius: cornerRadius,
-    opacity: active ? 1 : 0,
+    opacity: showLight ? 1 : 0,
     transitionProperty: animate ? 'opacity' : 'none',
     transitionDuration: `${animate ? COMPOSER_LOADER_FADE_MS : 0}ms`,
     transitionTimingFunction: 'ease',
@@ -230,7 +233,7 @@ function ComposerLoaderComponent({
       </View>
 
       <ComposerLoaderRadiusContext.Provider value={setPillRadius}>
-        <ComposerLoaderPaintContext.Provider value={active}>
+        <ComposerLoaderPaintContext.Provider value={showLight}>
           <View style={styles.content}>{children}</View>
         </ComposerLoaderPaintContext.Provider>
       </ComposerLoaderRadiusContext.Provider>

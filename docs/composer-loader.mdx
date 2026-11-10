@@ -6,20 +6,41 @@ order: 98
 
 # ComposerLoader
 
-The loading state that wraps a chat composer while an agent works: an iridescent band of light laps the pill's rim with a soft bloom bleeding inward. `active` fades the whole effect in and out over 450ms, so toggling it on send / reply reads as the composer lighting up rather than snapping.
+The loading state that wraps a chat composer while an agent works: an iridescent band of light laps the pill's rim with a soft bloom bleeding inward. `phase` gives the request lifecycle a single controlled API; Bloom fades and animates the presentation while the app owns the request.
 
 ```tsx
-import { ComposerLoader } from '@oxy.so/bloom/composer-loader';
+import { ComposerLoader, type ComposerLoaderPhase } from '@oxy.so/bloom/composer-loader';
 import { ComposerPill } from '@oxy.so/bloom/composer-panel';
 
-export function WorkingComposer({ busy }: { busy: boolean }) {
+export function WorkingComposer({ busy, phase }: { busy: boolean; phase: ComposerLoaderPhase }) {
   return (
-    <ComposerLoader active={busy}>
+    <ComposerLoader phase={phase}>
       <ComposerPill busy={busy} defaultValue="" />
     </ComposerLoader>
   );
 }
 ```
+
+## Request lifecycle
+
+The app owns whether a request was sent, is producing output, is being cancelled,
+failed, or completed. It passes that state as `phase`; Bloom owns the light's
+fade and motion. The loader never submits, cancels, retries, clears an error, or
+infers completion from a timeout.
+
+| `phase` | Loader presentation | Composer responsibility |
+|---|---|---|
+| `idle` | Hidden; an in-progress fade finishes. | Draft is editable and send follows the app's permissions. |
+| `submitting` | Fades in over 450 ms and starts the lap. | The app has accepted the send; do not clear or replace the draft unless its submit contract says to. |
+| `streaming` | Stays lit on the same lap; a submit-to-stream transition does not restart it. | Keep the stop action available while output is in flight. |
+| `stopping` | Stays lit until the app confirms cancellation. | Keep the in-flight state until the cancellation callback resolves. |
+| `error` | Fades out over 450 ms. | Pass the actual error to `ComposerPill.error`; Bloom presents its error ring/message. |
+| `complete` | Fades out over 450 ms. | Keep the completed response and draft under app control. |
+
+`active` remains as a compatibility prop for existing consumers. Prefer `phase`
+for new code and migrate callers while on 17.x; `active` is scheduled for removal
+in 18.0.0. This transition keeps current apps working while giving new
+compositions one explicit lifecycle API.
 
 **The loader owns the pill surface** (the shared Surface material with `shadow-xs`) and layers the light beneath its children. `ComposerPill` automatically inherits that paint ownership and the nearest loader’s active state for frosted controls. Explicit `surface` and `frosted` values override inheritance. Outside a loader, the pill keeps its own surface and unfrosted controls. Custom children still own their paint contract; an opaque child can cover the decorative light.
 
@@ -38,7 +59,7 @@ Three dash strokes on the rounded-rect outline, normalised to a path length of 1
 `band = arc / 360 × 100`. The crisp line leads and every soft layer trails it. The gradient runs left → right across the pill through the four `colors`, with the centre stop a blend of the middle two so the band never washes out to white. `taper` stacks each layer as 14 shorter, centred copies at a fraction of its opacity; the blur melts the steps into a fade.
 
 - **Web** draws a DOM `<svg>`, `pathLength={100}` rects, a self-injected `@keyframes` on `stroke-dashoffset` (0 → -100) with each layer's phase as an `animation-delay`. Blur is an SVG `feGaussianBlur`, not a CSS `filter` — WebKit ignores CSS filters on individual SVG elements, which rendered the light razor-sharp on every iPhone browser.
-- **Native** draws the same layers in react-native-svg. react-native-svg ignores `pathLength`, so the dashes are scaled to the measured perimeter in px, and the lap runs on a `useFrameCallback` clock that reproduces the CSS delays exactly (a positive delay holds the dash at 0 before it starts). The clock only runs while `active` (and through the visible fade-out), with a measured size and a visible Screen/foreground app. It accumulates active frame deltas, preserving phase across suspension. Blur uses react-native-svg 15's `Filter` / `FeGaussianBlur`, implemented on iOS and Android — not yet verified on a device.
+- **Native** keeps the same shared geometry and `useFrameCallback` phase clock. iOS draws with react-native-svg; its device optics remain unverified. Android 12 / API 31 and newer use Bloom's `BloomComposerLightV1` when the host has registered the native manager and the palette/geometry are supported. The manager measures the rounded path in physical pixels and draws three semantic layers into `RenderNode`s; soft layers rasterize at quarter resolution and use Android `RenderEffect`, while the crisp line stays at full resolution. The native layer receives the same geometry, colors and animated seconds as the SVG path. API 30 and below, older host binaries, and unsupported inputs keep the SVG renderer; Android groups those SVG strokes by layer before applying blur. A persistent software-rendered host draws the current snapshot and hands off to a static SVG cue, stopping the shared clock at its current phase. A temporary software bitmap capture does not trigger that handoff. See the [Pixel 8a Android adapter measurements](/docs/audits/issue-663/composer-loader-multiline-pixel8a-2026-11-10/) and [adapter acceptance record](/docs/benchmarks/composer-loader-android-adapter-2026-11-08.json); these Android results do not verify iOS optics.
 
 Under reduced motion the band rests at its current phase (web: paused CSS animation;
 native: stopped frame clock) and visibility changes are immediate. Otherwise the
@@ -56,20 +77,21 @@ screen activity is automatic; per-item native visibility is not inferred from
 mounting or from a window-size guess. Resuming preserves the lap phase.
 
 ```tsx
-<ComposerLoader active={busy} paused={!inView}>
+<ComposerLoader phase={busy ? 'streaming' : 'idle'} paused={!inView}>
   <ComposerPill {...composerProps} />
 </ComposerLoader>
 ```
 
-`paused` does not hide or disable the input and does not represent a business
-state such as stopped/error/completed. Those remain controlled by the app.
+`paused` does not hide or disable the input and does not represent a request
+phase. The app chooses the phase; `ComposerLoader` only presents it.
 
 ## Props
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `children` | `ReactNode` | — | The composer. |
-| `active?` | `boolean` | `true` | Show the light; fades in/out over 450ms. |
+| `phase?` | `ComposerLoaderPhase` | — | Controlled request lifecycle; takes precedence over `active`. |
+| `active?` | `boolean` | `true` | **Deprecated:** show the light; fades in/out over 450ms. Use `phase`. |
 | `paused?` | `boolean` | `false` | Freeze the light at its current phase; input and surface remain mounted. |
 | `colors?` | `[string, string, string, string]` | Theme primary / support / action foreground roles | Gradient left → right. Any colour string. |
 | `speed?` | `number` | `4.5` | Seconds per lap. |
@@ -99,17 +121,26 @@ The surface and the light are decorative (`aria-hidden`, `pointerEvents="none"`)
 
 The existing Composer Loader catalogue now includes `Lifecycle`: isolated and
 tapered light, `ComposerPill`, and `AgentChatComposer`, with the same mounted
-inputs across working/idle, explicit pause, retained `Screen`, height changes
-and viewport resize. It is a synthetic Bloom fixture, not the real Alia route.
+inputs across submitting/streaming/stopping/error/complete/idle, explicit pause,
+retained `Screen`, height changes and viewport resize. It is a synthetic Bloom
+fixture, not the real Alia route.
 
 Run `scripts/verify-composer-loader-lifecycle.mjs` against this checkout's
 Storybook. It resolves the story from `index.json` and uses real mouse clicks,
-CSS animation clocks and DOM focus/selection. Set `STORYBOOK_URL`, `CHROME_PATH`
-and, when not installed locally, `PUPPETEER_PATH` to `puppeteer-core`.
+CSS animation clocks and DOM focus/selection. It verifies submit-to-streaming
+continues the same lap, stopping stays lit, and error/completion/idle settle.
+Set `STORYBOOK_URL`, `CHROME_PATH` and, when not installed locally,
+`PUPPETEER_PATH` to `puppeteer-core`; `CHROME_WS_ENDPOINT` connects to an
+already running Chromium.
 `RECORD_VIDEO=1` records 9.5 seconds (two default laps); `OUT` chooses the artifact
 directory. The JSON report identifies the commit/browser, viewport, geometry,
 clock and input observations. Screenshots support visual review; clock results
 are not GPU/performance budgets.
+
+The [2026-11-10 phase run](/docs/audits/issue-663/composer-phase-lifecycle-2026-11-10/)
+passed all 18 browser cases, including a continuously advancing clock across
+`submitting` → `streaming`, a lit `stopping` phase, and settled `error`,
+`complete` and `idle` states.
 
 On 2026-11-08, Chromium 146 reproduced three running CSS animations with
 `active=false` on baseline `e3996b93`; their timelines advanced 500 ms while

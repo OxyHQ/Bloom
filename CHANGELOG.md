@@ -1,6 +1,6 @@
 # Changelog
 
-## 17.41.0
+## 17.42.0
 
 ### Added
 
@@ -18,6 +18,12 @@ On a **desktop platform** (`useDesktopPlatform()`: an adapter reporting `window`
 
 - The settings rail's hover is the documented 60% wash, no longer the selected fill.
 - `Switch` fades disabled at the one `DISABLED_OPACITY` (0.5), not 0.4.
+
+## 17.41.0
+
+### Added
+
+- **`ComposerLoader.phase`** (`idle`, `submitting`, `streaming`, `stopping`, `error`, `complete`) gives chat composers one controlled request lifecycle. Bloom owns the fade and motion; the app continues to own submission, cancellation, error and completion. `active` remains compatible during the 17.x migration. `AgentChat` maps its transport-neutral statuses and accepts `composerPhase` when an app needs explicit stopping/completion phases.
 
 ## 17.40.0
 

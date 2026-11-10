@@ -12,14 +12,34 @@ import { OxyProvider } from '@oxy.so/services/ui/client';
 
 /** Real packaged owners with synthetic state; no chat service or copied input. */
 export function ComposerCases({ onToggleMode }: { onToggleMode: () => void }) {
+  const [multiline, setMultiline] = useState(false);
   const [pill, setPill] = useState('Draft retained through resize');
   const [agent, setAgent] = useState('Agent draft retained through resize');
   const [alia, setAlia] = useState('Alia draft retained through resize');
   const [busy, setBusy] = useState(false);
   const [narrow, setNarrow] = useState(false);
+  const [taper, setTaper] = useState(0);
   const [stops, setStops] = useState(0);
   const [submits, setSubmits] = useState(0);
   const [pending, setPending] = useState('none');
+  const state = `busy=${busy} narrow=${narrow} taper=${taper} multiline=${multiline} stops=${stops} submits=${submits} pending=${pending}`;
+  const setDraftLength = (next: boolean) => {
+    const drafts = next
+      ? {
+          pill: 'A longer draft wraps across lines as the loader tracks its height.',
+          agent: 'An agent reply grows across lines while the active loader follows.',
+          alia: 'An Alia message wraps across lines in the packaged composer.',
+        }
+      : {
+          pill: 'Draft retained through resize',
+          agent: 'Agent draft retained through resize',
+          alia: 'Alia draft retained through resize',
+        };
+    setMultiline(next);
+    setPill(drafts.pill);
+    setAgent(drafts.agent);
+    setAlia(drafts.alia);
+  };
   const stop = () => {
     setStops((value) => value + 1);
     setBusy(false);
@@ -59,19 +79,28 @@ export function ComposerCases({ onToggleMode }: { onToggleMode: () => void }) {
             <Button testID="cases-theme" onPress={onToggleMode}>
               Theme
             </Button>
+            <Button
+              testID="cases-taper"
+              onPress={() => setTaper((value) => (value === 0 ? 0.5 : 0))}
+            >
+              {taper === 0 ? 'No taper' : 'Taper'}
+            </Button>
+            <Button testID="cases-content" onPress={() => setDraftLength(!multiline)}>
+              {multiline ? 'Short draft' : 'Multiline draft'}
+            </Button>
           </View>
-          <Text testID="cases-state">{`busy=${busy} narrow=${narrow} stops=${stops} submits=${submits} pending=${pending}`}</Text>
+          <Text testID="cases-state">{state}</Text>
           <View style={{ width: narrow ? 260 : '100%', gap: 24 }}>
             <View style={{ gap: 8 }}>
               <Text variant="body-2-medium">Standalone ComposerLoader</Text>
-              <ComposerLoader active={busy} taper={0.5} testID="cases-isolated-loader">
+              <ComposerLoader active={busy} taper={taper} testID="cases-isolated-loader">
                 <View
                   testID="cases-isolated-loader-content"
                   style={{ height: 68, borderRadius: 24 }}
                 />
               </ComposerLoader>
             </View>
-            <ComposerLoader active={busy} taper={0.5} testID="cases-pill-loader">
+            <ComposerLoader active={busy} taper={taper} testID="cases-pill-loader">
               <ComposerPill
                 value={pill}
                 onValueChange={setPill}

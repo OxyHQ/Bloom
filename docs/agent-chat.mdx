@@ -55,7 +55,8 @@ state when it becomes hidden. Standalone `AgentChatHistory` retains its own fram
 Bloom wires none of the AI SDK (`useChat`), `localStorage`, or a `/api/chat` route into this component. Everything it needs from them is a prop:
 
 - **`messages`** — `{ id, role, text, at?, agent?, reasoning?, toolCalls?, markdown? }`. An assistant turn renders its parts in this order: the delegated `agent` (avatar + name), the `reasoning` block (`{ text, durationMs?, streaming? }`, an `AgentThinking` disclosure: "Thought for N s"), the `toolCalls` (`{ id, name, label?, status: 'running' | 'done' | 'error', detail?, error?, durationMs?, onPress? }`, `AgentLogToolCalls` lines on the log's guide), then the text. `markdown: true` sets the text with `Markdown` (streaming-aware) instead of plain paragraphs; `onLinkPress` receives its links.
-- **`status`** — `'ready' | 'submitted' | 'streaming' | 'error'`, the AI SDK's own values. `submitted` and `streaming` are *busy*: the composer shows stop and lights its `ComposerLoader` band, the rail is disabled (switching mid-stream would strand the reply), and suggestions and Enter are refused.
+- **`status`** — `'ready' | 'submitted' | 'streaming' | 'error'`, the AI SDK's own values. `submitted` and `streaming` are *busy*: the composer shows stop and lights its `ComposerLoader` band, the rail is disabled (switching mid-stream would strand the reply), and suggestions and Enter are refused. The loader maps these to `idle`, `submitting`, `streaming` and `error` respectively.
+- **`composerPhase`** — optionally overrides only the loader presentation with `ComposerLoaderPhase` (`idle`, `submitting`, `streaming`, `stopping`, `error`, `complete`). Use `stopping` until the app confirms cancellation and `complete` to run the completion fade; transport status and business actions remain app-owned.
 - **`threads`** — `{ id, title, updatedAt, unread? }`, in the order you want them listed. Ordering, persistence, title derivation and "reading a chat marks it read" are the consumer's.
 - **Every action** — `onSubmit` (trimmed, non-empty), `onStop`, `onAttach`, `onShare`, `onExport`, `onCopyMessage`, `onReadAloud`, and the thread callbacks.
 
@@ -92,6 +93,8 @@ count remain in the status row. Uncontrolled drafts clear through ComposerPill a
 `composerProps` exposes the shared pill API for model selection, attachments,
 voice, permissions, labels and keyboard integration; the chat owns draft and
 turn state. Add attachment and voice controls appear when host handlers exist.
+Standalone `AgentChatComposer.phase` and `AgentChat.composerPhase` control only
+the loader's visual lifecycle; the latter defaults from the AI SDK `status`.
 The workspace `disabled` prop and `composerProps.disabled` combine as restrictions: either blocks editing, Enter, send and suggestion submission. Stop stays reachable while busy and disabled. Enter sends; Shift+Enter inserts
 a line break, and IME composition does not submit.
 

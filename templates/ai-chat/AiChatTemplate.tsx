@@ -431,7 +431,7 @@ export function AiChatTemplate({ defaultScenario }: { defaultScenario: AiChatSce
                   working={working}
                   composer={
                     <>
-                      <ComposerLoader active={working}>
+                      <ComposerLoader phase={working ? 'streaming' : 'idle'}>
                         {/*
                   `busy` + `onStop` is the turn-in-flight contract: send becomes
                   the stop disc, and it answers even with the rest of the
