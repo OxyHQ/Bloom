@@ -9,6 +9,7 @@ export function ResponsiveGrid({
   minItemWidth = 320,
   maxColumns = 2,
   gap = 16,
+  flow = 'rows',
   stretchItems = false,
   style,
   testID,
@@ -27,6 +28,48 @@ export function ResponsiveGrid({
     Math.min(maximum, items.length, Math.floor((width + spacing) / (minimum + spacing))),
   );
   const cellWidth = columns === 1 ? '100%' : (width - spacing * (columns - 1)) / columns;
+
+  // `columns`: one stack per column, each taking every `columns`-th cell. One column is one stack.
+  const stacks =
+    flow === 'columns'
+      ? Array.from({ length: columns }, (_, column) =>
+          items.filter((_item, index) => index % columns === column),
+        )
+      : null;
+
+  if (stacks !== null) {
+    return (
+      <View testID={testID} style={[{ minWidth: 0 }, style]}>
+        <View
+          testID={testID ? `${testID}-layout` : undefined}
+          onLayout={measure}
+          style={{ minWidth: 0, flexDirection: 'row', alignItems: 'flex-start', gap: spacing }}
+        >
+          {stacks.map((stack, column) => (
+            <View
+              // biome-ignore lint/suspicious/noArrayIndexKey: a column is its position
+              key={column}
+              testID={testID ? `${testID}-column-${column}` : undefined}
+              style={{
+                minWidth: 0,
+                gap: spacing,
+                ...(columns === 1 ? { flex: 1 } : { width: cellWidth }),
+              }}
+            >
+              {stack.map((child) => (
+                <View
+                  key={React.isValidElement(child) ? (child.key ?? undefined) : undefined}
+                  style={{ minWidth: 0 }}
+                >
+                  {child}
+                </View>
+              ))}
+            </View>
+          ))}
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View testID={testID} style={[{ minWidth: 0 }, style]}>

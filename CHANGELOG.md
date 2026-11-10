@@ -1,5 +1,11 @@
 # Changelog
 
+## 18.4.0
+
+### Added
+
+- **`ResponsiveGrid flow="columns"`**: cells fill independent column stacks (cell 1 to column 1, cell 2 to column 2, …) instead of aligned rows, so cells of very different heights (the sections of a detail page) sit one under the other with no gap under the short ones. The column count is still chosen from the measured container (`minItemWidth`, `maxColumns`), and one column when narrow. In this mode a cell moves column when the count changes, so it remounts. `flow="rows"` (default) is exactly as before.
+
 ## 18.3.0
 
 ### Added
