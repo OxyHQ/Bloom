@@ -104,7 +104,10 @@ Pill/AgentChatComposer resize and busy transitions, drafts, focus/caret, Stop,
 subsequent typing, and selection retention through physical display rotation with
 the keyboard visible. It first confirms each delayed control press registered;
 it dismisses the IME before measuring a new target because its overlay can cover
-the center of an accessibility node's bounds.
+the center of an accessibility node's bounds. It resets phase between owners,
+validates captured PNGs and falls back from timed-out `exec-out` to a temporary
+on-device screenshot plus `adb pull`. Set `BLOOM_COMPOSER_CAPTURE=shell-pull` to
+exercise that fallback in a physical run.
 `verify-selection-direction.py` compares no transition, resize and busy with the
 same backward selection and next Shift+Arrow. Its Pixel 8a run verifies that the
 selection endpoints and active direction survive a resize. The direct RN controls

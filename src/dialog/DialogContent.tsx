@@ -20,6 +20,7 @@ import { DESKTOP_TEXT_STYLES } from '../typography/desktop-scale';
 import { IS_WEB } from '../styles/platform';
 import { useDialogContext } from './context';
 import type { DialogAction, DialogActionColor } from './types';
+import { DialogFrameContent } from './DialogFrameContent';
 
 /**
  * Shared dialog content primitives used by every `<Dialog>` placement on both
@@ -186,11 +187,24 @@ function DesktopDialogBody({
   );
 }
 
-/** Whether `children` renders anything: a dialog with none is its declarative chrome alone. */
+/**
+ * Whether `children` renders anything: a dialog with none is its declarative
+ * chrome alone. `Dialog` hands its content on wrapped in `DialogFrameContent`
+ * (which registers a frame and renders its children as they are), so what
+ * counts is what that wrapper holds: an `AlertDialog`, which passes nothing,
+ * is an alert.
+ */
 export function hasChildren(children: React.ReactNode): boolean {
   let any = false;
   React.Children.forEach(children, (child) => {
-    if (child !== null && child !== undefined && child !== false && child !== '') any = true;
+    if (
+      React.isValidElement<{ children?: React.ReactNode }>(child) &&
+      child.type === DialogFrameContent
+    ) {
+      if (hasChildren(child.props.children)) any = true;
+    } else if (child !== null && child !== undefined && child !== false && child !== '') {
+      any = true;
+    }
   });
   return any;
 }
