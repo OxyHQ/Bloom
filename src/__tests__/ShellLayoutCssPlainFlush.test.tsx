@@ -13,7 +13,10 @@ import { useSidebarMetrics } from '../sidebar/metrics';
 
 const NAV = [{ key: 'home', label: 'Home', icon: () => null }];
 
-function compile(surface: 'plain' | 'card', extra: { navigationAlign?: 'content' } = {}) {
+function compile(
+  surface: 'plain' | 'card',
+  extra: { navigationAlign?: 'content'; navigationGapDeclared?: boolean } = {},
+) {
   let css = '';
   const Probe = () => {
     const metrics = useSidebarMetrics();
@@ -56,5 +59,11 @@ describe('the CSS layout of a shell with a panel region', () => {
       '--bloom-frame-top:12px;--bloom-frame-bottom:12px;--bloom-frame-start:12px',
     );
     expect(css).toContain('--bloom-body-gutter-top:0px;--bloom-body-gutter-bottom:0px');
+  });
+
+  it('puts no gap between a plain sidebar and the region beside it, unless the shell declares one', () => {
+    expect(compile('plain')).toContain('--bloom-nav-gap:0px');
+    expect(compile('plain', { navigationGapDeclared: true })).toContain('--bloom-nav-gap:12px');
+    expect(compile('card')).toContain('--bloom-nav-gap:12px');
   });
 });

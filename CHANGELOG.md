@@ -1,5 +1,36 @@
 # Changelog
 
+## 17.41.0
+
+### Added
+
+On a **desktop platform** (`useDesktopPlatform()`: an adapter reporting `window` or `pointer`, an OxyOS window or shell) Bloom draws a desktop's own compact chrome. Phones and the web are unchanged.
+
+- **Desktop text styles** (`DESKTOP_TEXT_STYLES`, `DESKTOP_TYPE_SCALE`, `DESKTOP_TRACKING`, `desktopTextStyle`, `resolveTypeScale`): one style per role, 13/16 body, tracking by size; `Text` variants map onto them and titles take the sans. `TypographyScope scale` opts in or out.
+- **Neutral surfaces** (`BloomThemeProvider surfaces`, `SurfaceTint`, `ExplicitAccents.surfaces`): page, surfaces, text and boundaries in greys of no hue, the default on a desktop; the accent stays the seed's.
+- **Label levels** (`resolveLabelColors`, `useLabelColors`, `LABEL_ALPHA`): the ink at 1 / 0.65 / 0.42 / 0.18.
+- **Compact desktop menus**: 22px rows of 13px text, 5px panel padding, radius 10/5, content width (120 floor), accent highlight, a clear shadow, the arrow pointer, shortcuts in a trailing column (`DESKTOP_MENU_GEOMETRY`, `DESKTOP_MENU_SHADOW`).
+- **One desktop alert layout** for `AlertDialog`, `confirm()`/`alert()` and declarative `Dialog`: narrow, icon, bold title, buttons sized to their labels, the default accent-filled, trailing in a row and on top of a stack. New `icon` on `Dialog`, `AlertDialog` and `confirm()`.
+- **Tooltip delay** of one second on a desktop, with a 500 ms warm window (`DESKTOP_TOOLTIP_DELAY`, `TOOLTIP_WARM_WINDOW`); an explicit `delay` wins.
+- **The platform's material**: the `material` capability and its `Material` view (`PlatformMaterialProps`, `usePlatformMaterial()`), drawn under a floating surface's tint.
+
+### Fixed
+
+- The settings rail's hover is the documented 60% wash, no longer the selected fill.
+- `Switch` fades disabled at the one `DISABLED_OPACITY` (0.5), not 0.4.
+
+## 17.40.0
+
+### Added
+
+- **`MenubarItem action="about"` and `action="settings"`**: the application's own About *App* and Settings…, as a Mac's application menu has them (`PlatformMenuAction`). They are the application's items, never a focused text field's (their `onPress` or `href` and `disabled`; disabled with neither); Settings… has the standard chord `Mod+,` (⌘, on a Mac, Ctrl+, elsewhere), which runs it on every platform. Drawn in the window they stay where they are declared. With the `menu-bar` capability each is described with its `action` (`PlatformMenuItem.action`), so a platform whose bar has an application menu of its own (OxyOS's, a Mac's) shows it there, as AppKit puts Settings… in the application menu (OxyOS ADR 0021).
+
+## 17.39.1
+
+### Fixed
+
+- **A flush `plain` sidebar leaves no gap before the region beside it.** Its rows already carry their own inset, and it has no panel to space the region from, yet the shell still put the navigation gap (16 by default) between it and the panels, so the sidebar's end side kept a gutter the start side had lost. The region now starts at the sidebar's edge, on the web layout and the native engine alike (a docked sidebar keeps the frame's gutter, a card sidebar its `navigationGap`).
+
 ## 17.39.0
 
 ### Added

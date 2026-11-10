@@ -27,6 +27,8 @@ type Options = Pick<
   gap: number;
   gutter: number;
   navigationGap: number;
+  /** Whether the shell set `navigationGap` itself (rather than inheriting the column gap). */
+  navigationGapDeclared?: boolean;
   contentWidth: number;
   userCollapsed: boolean;
   /** `contentMaxWidth="none"`: the envelope fills the row, so there is nothing to centre. */
@@ -42,7 +44,7 @@ export interface CssShellState {
 
 /** Descriptor compilation only: container queries resolve the live shell width. */
 export function shellLayoutCss(scope: string, options: Options) {
-  const { sidebar, metrics, layout, gap, gutter, navigationGap } = options;
+  const { sidebar, metrics, layout, gap, gutter, navigationGap, navigationGapDeclared } = options;
   const root = `[data-bloom-layout="${scope}"]`;
   const frame = `${root} [data-bloom-shell-frame="${scope}"]`;
   const hasNav = sidebar != null && options.variant !== 'focus';
@@ -119,7 +121,15 @@ ${root} [data-bloom-dock-moving] :is([data-bloom-shell-nav="${scope}"],[data-blo
         ? Math.max(0, declared)
         : outer;
     };
-    const rowGap = !inFlow ? 0 : sidebar?.surface === 'docked' ? outer : navigationGap;
+    // A plain sidebar has no panel to space the region from: its rows carry their own inset, so
+    // unless the shell declares a `navigationGap` the region beside it starts at its edge.
+    const rowGap = !inFlow
+      ? 0
+      : sidebar?.surface === 'docked'
+        ? outer
+        : plain && !navigationGapDeclared
+          ? 0
+          : navigationGap;
     // A docked navigation's slot carries the row gap and closes from its own
     // width (plus that gap) down to what a flush one leaves of the frame.
     const docked = inFlow && sidebar?.dock != null;

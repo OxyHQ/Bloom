@@ -401,6 +401,12 @@ export type PlatformMenuItem =
       readonly shortcut?: string;
       /** Check items and radio items only. */
       readonly checked?: boolean;
+      /**
+       * The application's standard command this item is, when it is one
+       * (`PlatformMenuAction`): a platform with an application menu of its own
+       * shows it there.
+       */
+      readonly action?: PlatformMenuAction;
     }
   | {
       readonly kind: 'submenu';
@@ -410,6 +416,17 @@ export type PlatformMenuItem =
       readonly items: readonly PlatformMenuItem[];
     }
   | { readonly kind: 'separator' };
+
+/**
+ * A standard command of the application itself, as a Mac's application menu
+ * has them: `about` (About *App*, `orderFrontStandardAboutPanel:`) and
+ * `settings` (Settings…, ⌘, on a Mac, Ctrl+, elsewhere). A platform whose bar
+ * has an application menu of its own (a Mac's, OxyOS's) shows the item there,
+ * in its place, instead of where the application declared it, and draws its
+ * own About panel and a disabled Settings… for an application that declares
+ * none; elsewhere the item stays where it is declared.
+ */
+export type PlatformMenuAction = 'about' | 'settings';
 
 /** One menu of the bar: `File`, `Edit`, … in the order the application declares them. */
 export interface PlatformMenu {

@@ -7,6 +7,7 @@
     "prebuild": "EXPO_NO_TELEMETRY=1 expo prebuild --platform android --no-install"
   },
   "dependencies": {
+    "@alia.onl/sdk": "24.0.0",
     "@oxy.so/bloom": "17.22.0",
     "expo": "58.0.23",
     "expo-asset": "58.0.20",

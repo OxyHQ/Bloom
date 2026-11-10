@@ -362,6 +362,7 @@ export function createAppShellEngine() {
       gap: cssLayout?.gap ?? gutter,
       gutter,
       navigationGap: Math.max(0, navigationGap ?? columnGap),
+      navigationGapDeclared: navigationGap !== undefined,
       contentWidth,
       userCollapsed,
       fillWidth: contentMaxWidth === 'none',
@@ -919,7 +920,7 @@ export function createAppShellEngine() {
         ? panelHost
           ? regionOuter
           : 0
-        : Math.max(0, navigationGap ?? columnGap);
+        : Math.max(0, navigationGap ?? (plainFrame ? 0 : columnGap));
     // The reading envelope is flex, natively as on the web: a filling envelope
     // grows into whatever room the row leaves it (beside the navigation, as a
     // dock slides it closed, inside the gutters), and a capped one is its
