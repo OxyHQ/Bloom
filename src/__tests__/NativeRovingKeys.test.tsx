@@ -321,6 +321,26 @@ describe('The settings rail beside its page on a native host with the window key
     expect(screen.getByText('general body')).toBeTruthy();
     expect(send).toHaveBeenCalledTimes(3);
   });
+
+  it('moves one row per ↓ even when the keys come before the host says where its focus went', () => {
+    // A loaded host reads the keys pressed while the first one's page renders in the turn that
+    // moved its focus, before JavaScript hears that move: each still goes one row further.
+    const keyboard = fakeKeyboard();
+    const screen = rail(keyboard);
+    const row = (key: string) => host(screen, `settings-nav-${key}`);
+    focus(row('general'));
+    expect(press(keyboard, 'ArrowDown')).toBe(true);
+    expect(press(keyboard, 'ArrowDown')).toBe(true);
+    expect(screen.getByText('about body')).toBeTruthy();
+    // The host's focus catches up, through the row the first ↓ chose: the keys go on from the
+    // last row chosen, which stops a list at its end.
+    focus(row('profile'));
+    focus(row('about'));
+    expect(press(keyboard, 'ArrowDown')).toBe(true);
+    expect(screen.getByText('about body')).toBeTruthy();
+    expect(press(keyboard, 'ArrowUp')).toBe(true);
+    expect(screen.getByText('profile body')).toBeTruthy();
+  });
 });
 
 describe('A ChoiceList on a native host with the window keys', () => {
