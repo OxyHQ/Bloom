@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import type { AccentTone } from '../theme/accent-colors';
 import type { AccessibilityState, StyleProp, ViewStyle } from 'react-native';
 import type { CardProps } from '../card/types';
+import type { BloomContentDensity } from '../appearance/types';
 
 export interface GroupedSectionItemProps {
   /** Icon element (e.g. SVG icon component) or Ionicons-style string */
@@ -55,11 +56,25 @@ export interface GroupedSectionItemProps {
 }
 
 export interface GroupedSectionProps {
-  /** Outer corner radius of the clipped group. Defaults to radius-28. */
+  /**
+   * The rows' density: `comfortable` (the touch list) or `compact` (a desktop
+   * form: 36-point rows in the body style, hairlines inset at the text, a
+   * 12 radius, the title in the headline style as written, no outer margin).
+   * Default: the nearest `BloomScope contentDensity`, else `comfortable`. Set
+   * here, it reaches the section's rows too.
+   */
+  density?: BloomContentDensity;
+  /** Outer corner radius of the clipped group. Default radius-28 (comfortable), radius-12 (compact). */
   radius?: CardProps['radius'];
-  /** Space between rounded rows (default), legacy divider lines, or no separation. */
+  /**
+   * Space between rounded rows (comfortable's default), divider lines (compact's default: a hairline
+   * inset at the text of the row above), or no separation.
+   */
   separator?: 'space' | 'line' | 'none';
-  /** Optional section header text */
+  /**
+   * Optional section header text. Comfortable draws it in small capitals; compact as it is written,
+   * so write it as the language writes a title (Title Case in English).
+   */
   title?: string;
   /** Optional section footer text */
   footer?: string;

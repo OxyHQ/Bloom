@@ -2395,6 +2395,8 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
   nav: 'Einstellungsbereiche',
   close: 'Einstellungen schließen',
   saved: 'Gespeichert',
+  search: 'Suchen',
+  noResults: 'Keine Ergebnisse',
   currentPlan: 'Aktueller Tarif',
   actions: 'Aktionen',
   storage: {

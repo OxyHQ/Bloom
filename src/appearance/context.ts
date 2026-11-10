@@ -1,11 +1,22 @@
 import { createContext, useContext } from 'react';
-import type { BloomAppearanceProps, BloomControlDensity, BloomScopeProps } from './types';
+import type {
+  BloomAppearanceProps,
+  BloomContentDensity,
+  BloomControlDensity,
+  BloomScopeProps,
+} from './types';
 
 export const BloomAppearanceContext = createContext<Omit<BloomScopeProps, 'children'>>({});
 
 export function useBloomControlDensity(explicit?: BloomControlDensity): BloomControlDensity {
   const scope = useContext(BloomAppearanceContext);
   return explicit ?? scope.controlDensity ?? 'default';
+}
+
+/** The content density: an explicit prop, else the nearest scope's, else `comfortable`. */
+export function useBloomContentDensity(explicit?: BloomContentDensity): BloomContentDensity {
+  const scope = useContext(BloomAppearanceContext);
+  return explicit ?? scope.contentDensity ?? 'comfortable';
 }
 
 /** Explicit props override the nearest scope, then the family's defaults. */

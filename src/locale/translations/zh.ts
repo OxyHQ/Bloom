@@ -2249,6 +2249,8 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
   nav: '设置分区',
   close: '关闭设置',
   saved: '已保存',
+  search: '搜索',
+  noResults: '无结果',
   currentPlan: '当前方案',
   actions: '操作',
   storage: {

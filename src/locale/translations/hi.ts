@@ -2300,6 +2300,8 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
   nav: 'सेटिंग्स के सेक्शन',
   close: 'सेटिंग्स बंद करें',
   saved: 'सेव हो गया',
+  search: 'खोजें',
+  noResults: 'कोई परिणाम नहीं',
   currentPlan: 'मौजूदा प्लान',
   actions: 'कार्रवाइयां',
   storage: {

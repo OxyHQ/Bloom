@@ -2646,6 +2646,8 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
   nav: 'Разделы настроек',
   close: 'Закрыть настройки',
   saved: 'Сохранено',
+  search: 'Поиск',
+  noResults: 'Нет результатов',
   currentPlan: 'Текущий тариф',
   actions: 'Действия',
   storage: {

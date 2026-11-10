@@ -2363,6 +2363,8 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
   nav: 'Seccions de la configuració',
   close: 'Tanca la configuració',
   saved: 'Desat',
+  search: 'Cerca',
+  noResults: 'Cap resultat',
   currentPlan: 'Pla actual',
   actions: 'Accions',
   storage: {
