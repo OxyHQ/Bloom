@@ -17,6 +17,10 @@
  *    has them — choose the next option. They are the focused control's keys,
  *    offered before the application's own (`FOCUSED_CONTROL_KEYS`), so a list's
  *    arrows behind never take them;
+ *  - each key goes on from the option the keys last chose until the host's focus
+ *    has landed on it: keys read before JavaScript hears the focus move (several
+ *    pressed while the page the first chose renders) each move one further, so
+ *    eight ↓ choose eight options down, in order;
  *  - the focus FOLLOWS THE CHOICE: once the group's value is the option asked
  *    for (at once for a local value; when it lands for one the platform keeps,
  *    as a session preference is), that option is the group's stop and the
@@ -122,15 +126,18 @@ export function useNativeRovingGroup<Value extends string>(
   const [focused, setFocused] = useState<Value | undefined>(undefined);
   const focusedRef = useRef<Value | undefined>(undefined);
   focusedRef.current = focused;
-  // The option a key chose, until the group's value is it and the focus moved there.
+  // The option a key chose, until the group's value is it and the host's focus landed on it.
   const pending = useRef<Value | undefined>(undefined);
   // Manual activation: the option the arrows moved to, the group's stop until the
   // keyboard leaves it from there.
   const [moved, setMoved] = useState<Value | undefined>(undefined);
   const manual = options.activation === 'manual';
 
+  // The option chosen stays `pending` until the host's focus lands on it (its `onFocus`): a key
+  // read before JavaScript hears that move goes on from the option chosen, never from the one the
+  // focus is leaving. A loaded host read seven ↓ in the turn that moved the focus for the first,
+  // and each chose the row the first had chosen: eight presses, one move.
   const focusOption = useCallback((target: Value) => {
-    pending.current = undefined;
     const node = nodes.current.get(target);
     if (node != null) AccessibilityInfo.sendAccessibilityEvent(node as HostInstance, 'focus');
   }, []);
@@ -218,8 +225,14 @@ export function useNativeRovingGroup<Value extends string>(
       let own = handlers.current.get(item);
       if (own === undefined) {
         own = {
-          onFocus: () => setFocused(item),
+          onFocus: () => {
+            focusedRef.current = item;
+            // The focus is where the keys chose: they go on from it now.
+            if (pending.current === item) pending.current = undefined;
+            setFocused(item);
+          },
           onBlur: () => {
+            if (focusedRef.current === item) focusedRef.current = undefined;
             setFocused((current) => (current === item ? undefined : current));
             // Leaving the group from the option moved to: the chosen one is the stop again.
             setMoved((current) => (current === item ? undefined : current));

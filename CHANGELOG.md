@@ -1,5 +1,11 @@
 # Changelog
 
+## 18.5.1
+
+### Fixed
+
+- **A roving group's arrows move one option per press, however late the host's focus.** A key chose the next option from the one the host last said had the focus, and the option a key chose stopped counting once its value landed, before the host's focus moved there. A host that read several ↓ in the turn that moved the focus for the first (a loaded machine, while the first one's page rendered) had each choose the row the first had chosen: eight presses in a settings rail, one move. The option chosen now stays the one the keys go on from until the host's focus lands on it (its `onFocus`), and the host's focus and blur are taken at once.
+
 ## 18.5.0
 
 ### Added
