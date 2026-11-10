@@ -146,11 +146,25 @@ An item's `action` makes it a standard editing command, sent to the focused text
 - **Find** is no editing action: a text field does not claim it (an `NSTextField` has no find bar, nor has `EditText`). Declare it as the application's command, enabled by its own `disabled`.
 - Without the platform's `editing` (the web today) an item with an `action` is an ordinary item with its standard chord.
 
+## The application's About and Settings…
+
+`about` and `settings` are the application's own standard commands, as a Mac's application menu has them (`PlatformMenuAction`). Declare them in whichever menu suits the platforms that draw the bar in the window:
+
+```tsx
+<MenubarItem action="about" onPress={showAbout}>About Notes</MenubarItem>
+<MenubarItem action="settings" onPress={openSettings}>Settings…</MenubarItem>
+```
+
+- **They are the application's**, never a text field's: their `onPress` (or `href`) and `disabled`, disabled with neither.
+- **Settings… has the standard chord `Mod+,`** (⌘, on a Mac, Ctrl+, elsewhere) unless `shortcut` says otherwise; About has none. The chord runs the item on every platform, as any item's does; a focused field does not keep it.
+- **Drawn in the window**, they stay where they are declared.
+- **With `menu-bar`**, each is described with its `action`, and a platform whose bar has an application menu of its own (OxyOS's, a Mac's) shows it there instead of where it was declared, as AppKit puts Settings… in the application menu. Such a platform draws its own standard About panel for an application that declares no `about`, and a disabled Settings… for one that declares no `settings`.
+
 ## A platform's menu bar (`menu-bar`)
 
 Where the platform shows the active window's menus in a bar of its own (OxyOS's top bar, a Mac's), its adapter reports `menu-bar` ([Platform surfaces](/docs/bloom/main/platform-surface), OxyOS ADR 0021). The application's declaration does not change.
 
-- **`Menubar` draws nothing in the window.** It gives the platform a description of its menus (`PlatformMenuBar.setMenus`): each menu's label, and its items, check items (`checked`), radio items (each `checked` or not), separators and submenus, with each item's label (its text), `enabled` and its chord (`Mod+Shift+Z`, the one canonical spelling). A group's `MenubarLabel` is an item that is never enabled. `MenubarGroup` and `MenubarRadioGroup` are their items.
+- **`Menubar` draws nothing in the window.** It gives the platform a description of its menus (`PlatformMenuBar.setMenus`): each menu's label, and its items, check items (`checked`), radio items (each `checked` or not), separators and submenus, with each item's label (its text), `enabled`, its chord (`Mod+Shift+Z`, the one canonical spelling) and, for the application's About and Settings…, its `action`. A group's `MenubarLabel` is an item that is never enabled. `MenubarGroup` and `MenubarRadioGroup` are their items.
 - **It describes again whenever the description changes**, once for the commit that changed it however many items changed, never per item and not when it came out the same. Unmounted, it gives the platform `[]`.
 - **An item chosen in the platform's bar** (`onActivate(id)`) runs exactly as a press on its row would, once. A disabled item, an id it no longer has and a menu's own id run nothing.
 - **Ids** are Bloom's (`bloom-menu-…`), stable while the item is mounted, unique in the window.

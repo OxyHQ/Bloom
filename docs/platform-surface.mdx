@@ -156,15 +156,18 @@ interface PlatformMenuBar {
 }
 interface PlatformMenu { id: string; label: string; items: readonly PlatformMenuItem[] }
 type PlatformMenuItem =
-  | { kind: 'item'; id: string; label: string; enabled: boolean; shortcut?: string; checked?: boolean }
+  | { kind: 'item'; id: string; label: string; enabled: boolean; shortcut?: string; checked?: boolean;
+      action?: PlatformMenuAction }
   | { kind: 'submenu'; id: string; label: string; enabled: boolean; items: readonly PlatformMenuItem[] }
   | { kind: 'separator' };
+type PlatformMenuAction = 'about' | 'settings';
 ```
 
 - Ids are Bloom's, stable while the entry is mounted and unique in the window.
 - `checked` is present on check items and on each item of a radio group.
 - `enabled` is false under a disabled menu or submenu too.
 - A group's label is an item that is never enabled.
+- `action` marks the application's own About *App* and Settings… (`MenubarItem action`). A platform whose bar has an application menu shows them there instead of where they were declared, draws its own About panel for an application with no `about`, and shows Settings… disabled for one with no `settings`.
 - `shortcut` is the chord in one canonical spelling: `Mod+Ctrl+Alt+Shift+Meta+<Key>`, the modifiers it has in that order, a letter in upper case, `Space` and `Plus` for those two, and otherwise a W3C `KeyboardEvent.key` name (`Enter`, `ArrowUp`, `F5`). `Mod` is ⌘ on Apple platforms and Ctrl elsewhere.
 
 The platform only shows a shortcut. Bloom matches the window's keys and runs

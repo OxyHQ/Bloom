@@ -1,6 +1,6 @@
 import type { StyleProp, ViewStyle } from 'react-native';
 
-import type { PlatformEditAction } from '../platform-surface/types';
+import type { PlatformEditAction, PlatformMenuAction } from '../platform-surface/types';
 
 import type {
   MenuCheckboxRowProps,
@@ -103,8 +103,18 @@ export interface MenubarItemProps extends MenuRowProps, MenubarShortcutProp {
    * It gives the item its standard shortcut unless `shortcut` says otherwise:
    * `Mod+Z`, `Mod+Shift+Z`, `Mod+X`, `Mod+C`, `Mod+V`, `Mod+Alt+Shift+V`
    * (Paste and Match Style) and `Mod+A`; Delete has none.
+   *
+   * Or one of the application's own standard commands, which no text field
+   * takes (`PlatformMenuAction`): `about`, its About *App*, and `settings`,
+   * its Settings… (standard shortcut `Mod+,`: ⌘, on a Mac, Ctrl+, elsewhere).
+   * The item is the application's (its `onPress` or `href`, and `disabled`;
+   * disabled with neither). Drawn in the window it stays where it is
+   * declared; with the `menu-bar` capability the platform is told which
+   * command it is, and a platform with an application menu (a Mac's, OxyOS's)
+   * shows it there instead, as AppKit puts Settings… in the application menu.
+   * Its shortcut runs it on every platform, as any item's does.
    */
-  action?: PlatformEditAction;
+  action?: PlatformEditAction | PlatformMenuAction;
 }
 export interface MenubarCheckboxItemProps extends MenuCheckboxRowProps, MenubarShortcutProp {}
 export type MenubarRadioGroupProps = MenuRadioGroupProps;
