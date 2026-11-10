@@ -51,6 +51,8 @@ import { LongPressArea } from '../floating/LongPressArea';
 import { PopupPanel } from '../floating/PopupPanel';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
+import { getNativeGlassMenu } from '../floating/glass-menu/native-glass-menu';
+import { GlassTrigger, useGlassMenu } from '../floating/glass-menu/use-glass-menu';
 import type { FloatingAnchor } from '../floating/types';
 import { usePopupSurface } from '../platform-surface/context';
 import { useRestoreAccessibilityFocus } from '../hooks/use-accessibility-focus';
@@ -91,26 +93,45 @@ export function ContextMenu({
   const anchorRef = anchorRefProp ?? triggerRef;
   useRestoreAccessibilityFocus(open && PopupSurface != null, anchorRef, anchorRefProp != null);
 
+  const openAt = useCallback(
+    (next: FloatingAnchor | null) => {
+      const at = next ?? NOWHERE;
+      if (!controlled) setOwnAnchor(at);
+      onOpenChange?.(true);
+      onAnchorChange?.(pointAnchor(at));
+    },
+    [controlled, onOpenChange, onAnchorChange],
+  );
+  const close = useCallback(() => {
+    if (!controlled) setOwnAnchor(null);
+    onOpenChange?.(false);
+    onAnchorChange?.(null);
+  }, [controlled, onOpenChange, onAnchorChange]);
+  // The native glass menu opens at the press itself; its state reaches here as an open with no point.
+  const setGlassOpen = useCallback(
+    (next: boolean) => (next ? openAt(null) : close()),
+    [openAt, close],
+  );
+  const glass = useGlassMenu({
+    children,
+    content: ContextMenuContent,
+    rows,
+    open,
+    setOpen: setGlassOpen,
+  });
+
   const value = useMemo(
     () => ({
       open,
-      openAt: (next: FloatingAnchor | null) => {
-        const at = next ?? NOWHERE;
-        if (!controlled) setOwnAnchor(at);
-        onOpenChange?.(true);
-        onAnchorChange?.(pointAnchor(at));
-      },
-      close: () => {
-        if (!controlled) setOwnAnchor(null);
-        onOpenChange?.(false);
-        onAnchorChange?.(null);
-      },
+      openAt,
+      close,
       // A sheet is not anchored to the press; a platform popup is.
       anchor: PopupSurface ? anchor : null,
       triggerRef,
       anchorRef,
+      glass,
     }),
-    [open, anchor, controlled, onOpenChange, onAnchorChange, PopupSurface, anchorRef],
+    [open, anchor, openAt, close, PopupSurface, anchorRef, glass],
   );
 
   return <ContextMenuProvider value={value}>{children}</ContextMenuProvider>;
@@ -141,9 +162,14 @@ export function ContextMenuTrigger({
   // its frame measured in the window as a pointer's point is. (Not at the
   // caller's `anchorRef`, which is where the LAST menu hung: a controlled
   // caller re-anchors it from this frame if it wants it elsewhere.)
+  const glass = menu.glass;
   const onAccessibilityAction = useCallback(
     (event: AccessibilityActionEvent) => {
       if (disabled || event.nativeEvent.actionName !== LONG_PRESS_ACTION) return;
+      if (glass) {
+        void glass.nativeRef.current?.open();
+        return;
+      }
       const view = triggerRef?.current;
       if (!view) {
         openAt(null);
@@ -153,7 +179,7 @@ export function ContextMenuTrigger({
         openAt({ top: y, bottom: y + height, left: x, right: x + width }),
       );
     },
-    [disabled, openAt, triggerRef],
+    [disabled, openAt, triggerRef, glass],
   );
   const accessibilityActions = useMemo(
     () => (disabled ? undefined : [{ name: LONG_PRESS_ACTION, label: messages.showMenu }]),
@@ -189,7 +215,7 @@ export function ContextMenuTrigger({
   // rather than TriggerSlot's `Pressable`: a Pressable holds the touch
   // responder, which on Android keeps a horizontal ScrollView inside the
   // trigger (a code block in a chat turn) from ever scrolling.
-  return (
+  const trigger = (
     <TriggerSlot
       asChild
       anchorRef={menu.triggerRef}
@@ -210,7 +236,12 @@ export function ContextMenuTrigger({
         // `View` would make it a pressable (react-native-css renders a `View`
         // with `onPress` as a `Pressable`): a keyboard stop taking Space and
         // Return for nothing, and a touch responder.
-        onLongPress: (event) => openAt(pressPoint(event)),
+        onLongPress: (event) => {
+          const point = pressPoint(event);
+          // The native glass menu morphs out of the press: a small box around the point.
+          if (glass) void glass.nativeRef.current?.open(...(point ? glassOrigin(point) : []));
+          else openAt(point);
+        },
         disabled,
         accessibilityLabel: label,
         accessibilityRole: 'button',
@@ -223,6 +254,17 @@ export function ContextMenuTrigger({
       {asChild ? children : <LongPressArea>{children}</LongPressArea>}
     </TriggerSlot>
   );
+  if (!glass || !getNativeGlassMenu()) return trigger;
+  return (
+    <GlassTrigger glass={glass} triggerGlass={false} tone="neutral">
+      {trigger}
+    </GlassTrigger>
+  );
+}
+
+/** The 44-dp box around a press point that the native glass menu opens from. */
+function glassOrigin(point: FloatingAnchor): [number, number, number, number] {
+  return [point.left - 22, point.top - 22, 44, 44];
 }
 
 /** The anchor view's frame in the window, measured as the menu opens. */
@@ -321,6 +363,9 @@ export function ContextMenuContent({
     [menu.close, PopupSurface],
   );
   const origin = useTriggerOrigin(menu.open && PopupSurface != null, menu.anchorRef);
+
+  // The native glass menu draws the rows itself; the trigger hosts it.
+  if (menu.glass) return null;
 
   if (PopupSurface) {
     // The platform's popup, at the press: mounted while open, closed by the
