@@ -98,6 +98,8 @@ result are independent; for a surface that never mounts, the callback can run
 before the caller observes the result. It does not guarantee a painted frame or
 close other surfaces.
 
+`confirm()` takes an `icon` as well (the application's icon, a caution symbol), drawn above the title. On a desktop platform `alert()` and `confirm()` take the desktop alert layout ([Dialog](./dialog.mdx#on-a-desktop-platform-one-alert-layout)).
+
 ## "Don't ask again": `confirmWithSuppression()`
 
 A desktop alert's suppression checkbox. `confirm()` keeps resolving a plain

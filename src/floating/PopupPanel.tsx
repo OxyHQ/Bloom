@@ -21,7 +21,7 @@ import { StyleSheet, type View, type StyleProp, type ViewStyle } from 'react-nat
 import { StyledView } from '../styles/styled-primitives';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import type { PopupDismissReason, PopupSurfaceProps } from '../platform-surface/types';
-import { DEFAULT_ALIGN_OFFSET, DEFAULT_SIDE_OFFSET, MENU_WIDTH } from './constants';
+import { DEFAULT_ALIGN_OFFSET, DEFAULT_SIDE_OFFSET } from './constants';
 import { useMenuPalette } from './menu-palette';
 import type { FloatingPositionProps } from './types';
 import { useMenuDensity } from './use-menu-density';
@@ -80,13 +80,20 @@ export function PopupPanelSurface({
   children?: React.ReactNode;
 }) {
   const palette = useMenuPalette();
+  // `rounded-radius-16`, or a desktop platform's 10px (`DESKTOP_MENU_GEOMETRY`).
+  const radius = useMenuDensity().panelRadius;
   return (
     <StyledView
       ref={panelRef}
       className={className}
-      style={[styles.panel, { borderWidth: edge, boxShadow: palette.shadow }, style]}
+      style={[
+        styles.panel,
+        { borderWidth: edge, boxShadow: palette.shadow },
+        radius !== PANEL_RADIUS ? { borderRadius: radius } : null,
+        style,
+      ]}
     >
-      <SurfacePaint fill={palette.surface} radius={PANEL_RADIUS} outset={edge} floating />
+      <SurfacePaint fill={palette.surface} radius={radius} outset={edge} floating />
       {children}
     </StyledView>
   );
@@ -107,7 +114,7 @@ export function PopupPanelRows({ children }: { children?: React.ReactNode }) {
  * two cannot drift.
  */
 export function PopupPanelChrome({
-  minWidth = MENU_WIDTH,
+  minWidth,
   maxWidth,
   maxHeight,
   className,
@@ -128,7 +135,16 @@ export function PopupPanelChrome({
     <PopupPanelSurface
       panelRef={panelRef}
       className={className}
-      style={[{ minWidth, maxWidth, maxHeight, padding: density.panelPadding }, style]}
+      style={[
+        // `MENU_WIDTH`, or a desktop's floor: there a menu is as wide as its widest row.
+        {
+          minWidth: minWidth ?? density.minWidth,
+          maxWidth,
+          maxHeight,
+          padding: density.panelPadding,
+        },
+        style,
+      ]}
     >
       <PopupPanelRows>{children}</PopupPanelRows>
     </PopupPanelSurface>

@@ -54,6 +54,35 @@ export const MENU_GEOMETRY = {
     gutter: 36,
   },
 } as const;
+/**
+ * A desktop PLATFORM's menu (`useDesktopPlatform()`), the same at every size:
+ * a desktop's menus are compact and identical in every window. A 13/16 body
+ * line in a 22px row (3px above and below), 8px from the row's edges; rows
+ * touch, with 5px of panel round them and a 10px panel corner concentric with
+ * the rows' 5px. Separators are inset 5px from the panel's padding (10 from its
+ * edge) with 5px above and below. A check or radio mark sits in a 20px gutter,
+ * its 12px glyph sized to the text. The panel is as wide as its widest row,
+ * never below 120px.
+ */
+export const DESKTOP_MENU_GEOMETRY = {
+  height: 22,
+  rowGap: 0,
+  groupClass: 'gap-0',
+  separatorMargin: 5,
+  separatorClass: 'mx-[5px] my-[5px] h-px',
+  icon: 16,
+  gap: 6,
+  rowClass: 'px-space-8 py-[3px] min-h-[22px] gap-1.5',
+  labelClass: 'px-space-8 pt-[5px] pb-[3px]',
+  gutter: 20,
+  indicator: 12,
+  indicatorInset: 5,
+  panelPadding: 5,
+  panelClass: 'p-[5px]',
+  panelRadius: 10,
+  rowRadius: 5,
+  minWidth: 120,
+} as const;
 export const ITEM_GEOMETRY = {
   xs: { height: 28, paddingHorizontal: 8, paddingVertical: 6, gap: 6, icon: 16 },
   sm: { height: 32, paddingHorizontal: 10, paddingVertical: 7, gap: 8, icon: 18 },

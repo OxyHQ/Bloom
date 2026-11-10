@@ -47,9 +47,15 @@ card, toasts, native tooltips and the composer's popover.
 
 - **In-flow surfaces stay one opaque view.** A card in a feed has nothing moving
   behind it, and a `UIVisualEffectView` per row is an offscreen pass per row.
-- **Android and OxyOS never blur a surface.** A `BlurView` inside its own blur
-  target crashes Android's render thread ([Blur](./blur.mdx)); their floating
+- **Android never blurs a surface.** A `BlurView` inside its own blur
+  target crashes Android's render thread ([Blur](./blur.mdx)); its floating
   surfaces stay opaque, so iOS and Android floating surfaces differ by design.
+- **A platform with its own material blurs through it.** An adapter that
+  reports `material` (OxyOS: the compositor's blur of the windows and desktop
+  behind, [Platform surfaces](./platform-surface.mdx)) supplies a `Material`
+  view; a floating surface draws it where iOS draws `SurfaceBlur`, under the
+  same translucent tint, and not at all with transparency reduced. Bloom never
+  mounts expo-blur's `BlurView` there. `surface-platform-material.test.tsx`.
 - **A `composite` fill keeps the opaque paint:** its token is made to read over
   the surface.
 - **With transparency reduced** (or contrast increased) the floating surface is

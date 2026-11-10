@@ -63,6 +63,9 @@ import { ReducedTransparencyProvider } from './reduced-transparency';
 import { IncreasedContrastProvider } from './increased-contrast';
 import { useSystemAccessibility } from './system-accessibility';
 import { usePlatformAppearanceState } from '../platform-surface/use-platform-appearance';
+import { useDesktopPlatform } from '../platform-surface/use-desktop-platform';
+import { TypographyPlatformDefault } from '../typography/TypographyScope';
+import type { SurfaceTint } from './color-policy';
 
 const DEFAULT_PRESET: AppColorName = 'oxy';
 const DEFAULT_MODE: ThemeMode = 'system';
@@ -227,6 +230,16 @@ export interface BloomThemeProviderProps {
    * says.
    */
   increaseContrast?: boolean;
+
+  /**
+   * How the surfaces take the colour (`SurfaceTint`): `tinted` carries the
+   * preset's hue through the page, surfaces, text and boundaries; `neutral`
+   * draws them in greys of no hue, leaving the hue to the accent (selection,
+   * the default button, the focus ring, a switch that is on). Default: `neutral`
+   * on a desktop platform (`useDesktopPlatform()`: an OxyOS window or shell),
+   * whose windows stay neutral whatever the accent, else `tinted`.
+   */
+  surfaces?: SurfaceTint;
 
   children: React.ReactNode;
 }
@@ -411,9 +424,12 @@ export function BloomThemeProvider({
   reduceTransparency = false,
   increaseContrast = false,
   followSystemAccent = false,
+  surfaces,
   prepaintTheme,
   children,
 }: BloomThemeProviderProps) {
+  const desktopPlatform = useDesktopPlatform();
+  const surfaceTint: SurfaceTint = surfaces ?? (desktopPlatform ? 'neutral' : 'tinted');
   const persistKey = requestedPersistKey ?? prepaintTheme?.persistKey;
   const defaultMode = requestedDefaultMode ?? prepaintTheme?.defaultMode ?? DEFAULT_MODE;
   // The app's own default colour; undefined when it has none.
@@ -469,10 +485,16 @@ export function BloomThemeProvider({
   // to the preset path too when no ambient seed is present.
   const explicitAccents = useMemo<ExplicitAccents | undefined>(
     () =>
-      effectiveSecondary === undefined && effectiveTertiary === undefined
+      effectiveSecondary === undefined &&
+      effectiveTertiary === undefined &&
+      surfaceTint === 'tinted'
         ? undefined
-        : { secondaryHex: effectiveSecondary, tertiaryHex: effectiveTertiary },
-    [effectiveSecondary, effectiveTertiary],
+        : {
+            secondaryHex: effectiveSecondary,
+            tertiaryHex: effectiveTertiary,
+            ...(surfaceTint === 'neutral' ? { surfaces: 'neutral' as const } : null),
+          },
+    [effectiveSecondary, effectiveTertiary, surfaceTint],
   );
 
   const {
@@ -692,9 +714,12 @@ export function BloomThemeProvider({
       <ThemeScopeContext.Provider value={scopeState}>
         <ReducedTransparencyProvider value={reducedTransparency}>
           <IncreasedContrastProvider value={increasedContrast}>
-            <FontLoader enabled={fonts} fallback={onFontsLoading}>
-              {isGated ? (onHydrating ?? null) : children}
-            </FontLoader>
+            {/* A desktop platform's text styles for the tree, unless a scope above chose. */}
+            <TypographyPlatformDefault desktop={desktopPlatform}>
+              <FontLoader enabled={fonts} fallback={onFontsLoading}>
+                {isGated ? (onHydrating ?? null) : children}
+              </FontLoader>
+            </TypographyPlatformDefault>
           </IncreasedContrastProvider>
         </ReducedTransparencyProvider>
       </ThemeScopeContext.Provider>

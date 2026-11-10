@@ -48,12 +48,19 @@ import { surfacePresenceTargets } from '../surface/use-surface-presence';
 import { RiArrowRightSLine as ChevronRightIcon } from '../icons/remix/RiArrowRightSLine';
 import { StyledView } from '../styles/styled-primitives';
 import { useMenuPalette } from './menu-palette';
-import { MENU_SUB_PANEL_CLASS, MENU_SUB_SIDE_OFFSET, ROW_ICON_SIZE } from './constants';
+import { MENU_SUB_PANEL_CLASS, MENU_SUB_SIDE_OFFSET } from './constants';
 import { useMenuSurface } from './context';
 import { pushFloatingEscape } from './escape-stack';
 import { FloatingPanel } from './FloatingPanel';
 import { hostElement, MENU_ROW_SELECTOR, useMenuPanelKeys } from './menu-keyboard';
-import { cx, MenuRowChevron, MenuRowShell, splitChildren, SUB_TRIGGER_CLASS } from './shared';
+import {
+  cx,
+  MenuRowChevron,
+  MenuRowGlyph,
+  MenuRowShell,
+  splitChildren,
+  SUB_TRIGGER_CLASS,
+} from './shared';
 import { MenuRowAlignmentScope, useMenuRowsAligned } from './menu-row-alignment';
 import type {
   FloatingAnchor,
@@ -651,11 +658,7 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
           // from the label it sits beside.
           trailing={
             <MenuRowChevron>
-              <ChevronRightIcon
-                width={ROW_ICON_SIZE}
-                height={ROW_ICON_SIZE}
-                fill={palette.textSecondary}
-              />
+              <MenuRowGlyph Icon={ChevronRightIcon} fill={palette.textSecondary} />
             </MenuRowChevron>
           }
           title={title}

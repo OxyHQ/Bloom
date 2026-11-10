@@ -10,7 +10,7 @@ import { IS_WEB } from '../styles/platform';
 import { useTheme } from '../theme/use-theme';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { resolveSwitchOffPaint } from './paint';
-import { animation, hitSlop } from '../styles/tokens';
+import { animation, DISABLED_OPACITY, hitSlop } from '../styles/tokens';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import { useIsRtl } from '../hooks/use-is-rtl';
@@ -228,7 +228,8 @@ export const Switch: MemoRefComponent<SwitchProps, React.ComponentRef<typeof Pre
 
 const styles = StyleSheet.create({
   disabled: {
-    opacity: 0.4,
+    // The one disabled fade (`DISABLED_OPACITY`), as every faded control.
+    opacity: DISABLED_OPACITY,
   },
   thumb: {
     // Subtle raise (`shadow-s`) — `boxShadow` on web (RN-Web deprecated `shadow*`),

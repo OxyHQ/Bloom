@@ -1,6 +1,6 @@
 import { APP_COLOR_PRESETS, type AppColorName, type PresetTokens } from './color-presets';
 import { argbFromHex, generateRoleColors, type RoleColors } from './color-engine';
-import { buildPolicyTokens, policyBackground } from './color-policy';
+import { buildPolicyTokens, policyBackground, type SurfaceTint } from './color-policy';
 
 /**
  * Optional explicit accent-colour overrides (`#rrggbb`) that PIN the secondary
@@ -12,6 +12,12 @@ import { buildPolicyTokens, policyBackground } from './color-policy';
 export interface ExplicitAccents {
   secondaryHex?: string;
   tertiaryHex?: string;
+  /**
+   * How the surfaces take the seed (`SurfaceTint`, `color-policy.ts`):
+   * `neutral` draws the page, surfaces, text and boundaries in greys of no hue,
+   * as a desktop platform's windows are. Absent: `tinted`.
+   */
+  surfaces?: SurfaceTint;
 }
 /**
  * Map a preset (seed + variant) and mode onto Bloom's canonical CSS-var token
@@ -43,6 +49,7 @@ export function getPresetVars(
     mode,
     accents?.secondaryHex ?? null,
     accents?.tertiaryHex ?? null,
+    accents?.surfaces === 'neutral',
   ]);
   let tokens = PRESET_VARS_CACHE.get(key);
   if (tokens === undefined) {
@@ -143,6 +150,7 @@ function solvePresetVars(
     ...buildPolicyTokens(preset.hex, mode === 'dark', r, {
       secondary: accents?.secondaryHex ?? preset.secondaryHex,
       tertiary: accents?.tertiaryHex ?? preset.tertiaryHex,
+      neutralSurfaces: accents?.surfaces === 'neutral',
     }),
     ...authoredTokens(preset.tokens?.[mode], accents),
   };
@@ -173,13 +181,31 @@ function authoredTokens(
 ): PresetTokens {
   if (authored === undefined) return {};
   const out: PresetTokens = {};
+  const neutral = accents?.surfaces === 'neutral';
   for (const [token, hex] of Object.entries(authored)) {
+    // Neutral surfaces replace an authored ladder (the Oxy preset's pink page
+    // and aubergine dark) with the policy's greys; the accents stay authored.
+    if (neutral && AUTHORED_SURFACE_TOKENS.has(token)) continue;
     if (accents?.secondaryHex !== undefined && token.startsWith('--secondary')) continue;
     if (accents?.tertiaryHex !== undefined && token.startsWith('--tertiary')) continue;
     out[token] = rgbFromHex(hex);
   }
   return out;
 }
+
+/** The authored tokens that are the surface ladder, not an accent. */
+const AUTHORED_SURFACE_TOKENS: ReadonlySet<string> = new Set([
+  '--background',
+  '--surface',
+  '--popover',
+  '--card',
+  '--muted',
+  '--accent',
+  '--sidebar',
+  '--sidebar-accent',
+  '--sidebar-accent-foreground',
+  '--content-area',
+]);
 
 function rgbFromHex(hex: string): string {
   const argb = argbFromHex(hex);

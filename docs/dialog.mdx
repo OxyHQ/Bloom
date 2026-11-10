@@ -178,6 +178,28 @@ The choice is held for the whole session, like a responsive placement. A dialog 
 
 Before this, a native `center` dialog was always the detached sheet. On a Mac it floated up from the bottom-left corner of the window (the Oxy sign-in sheet in Astro). Yoga does not centre an absolute view with auto margins, so a sheet capped narrower than its window sat on its left inset; `BottomSheet` now centres itself by its insets (see [Bottom sheet](/docs/bloom/main/bottom-sheet)).
 
+### On a desktop platform: one alert layout
+
+On a desktop platform (`useDesktopPlatform()`: an adapter reporting `window`
+or `pointer`, an OxyOS window or shell) every dialog drawn from the declarative
+`title` / `description` / `actions` takes one alert layout, whether an
+`AlertDialog`, a `confirm()` / `alert()` surface or an application's own
+`Dialog`. Phones and the web keep the stack above.
+
+| | Desktop alert |
+|---|---|
+| Width | `DESKTOP_ALERT_WIDTH` (280) when the dialog has no content of its own; a caller's `maxWidth` wins |
+| Icon | `icon` (an application's icon, a caution symbol), 56 square, above the title |
+| Title | desktop `headline`: 13/16 bold, the label colour, left-aligned |
+| Message | desktop `callout`: 12/15, the secondary label level |
+| Buttons | 28 tall, each as wide as its label (at least 72); the default filled with the accent, the others outlined, destructive keeps its colour |
+| Order | two side by side at the trailing edge, the default last; three or more, or two that do not fit, stacked full width with the default on top and Cancel at the bottom |
+
+The default button is the action with `initialFocus`, else the first that is
+not a `cancel`; the others keep the order the caller gave them
+(`desktopActionOrder`). Return presses the default, Escape the cancel, as
+before. `desktop-alert.test.tsx`.
+
 ## Nav header: the title beside the ✕
 
 In `header` mode every large title starts below the 56px navigation row and its 20px gradient tail. Root and nested screens share the same full-width title area, regardless of back, close or trailing actions. The title therefore keeps its position and wrapping when navigation controls change. As content scrolls, the small title still appears in the navigation row.

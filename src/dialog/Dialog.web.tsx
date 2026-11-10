@@ -70,7 +70,8 @@ import { useTheme } from '../theme/use-theme';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { Context, useDialogContext } from './context';
 import { useDialogFooter } from './DialogFooter';
-import { DialogBody } from './DialogContent';
+import { DESKTOP_ALERT_WIDTH, DialogBody, hasChildren } from './DialogContent';
+import { useDesktopPlatform } from '../platform-surface/use-desktop-platform';
 import { DialogBottomSheet } from './DialogBottomSheet';
 import {
   DIALOG_NAV_BAR_HEIGHT,
@@ -238,12 +239,13 @@ function CenterOrSideDialog({
   testID,
   title,
   description,
+  icon,
   actions,
   header,
   placement,
   width = DEFAULT_SIDE_WIDTH,
   minSideGutter,
-  maxWidth = DEFAULT_CENTER_MAX_WIDTH,
+  maxWidth: maxWidthProp,
   inset,
   dismissOnBackdrop = true,
   contentPadding = DEFAULT_DIALOG_CONTENT_PADDING,
@@ -260,6 +262,18 @@ function CenterOrSideDialog({
   footer,
 }: Omit<DialogProps, 'placement'> &
   DialogPresentationLifecycle & { placement: 'center' | DialogSidePlacement }) {
+  // A desktop platform's alert (declarative chrome and nothing of its own) is
+  // narrow; a caller's `maxWidth` still wins (`Dialog.tsx`).
+  const desktopPlatform = useDesktopPlatform();
+  const maxWidth =
+    maxWidthProp ??
+    (desktopPlatform &&
+    actions !== undefined &&
+    actions.length > 0 &&
+    !header &&
+    !hasChildren(children)
+      ? DESKTOP_ALERT_WIDTH
+      : DEFAULT_CENTER_MAX_WIDTH);
   // Inject the required @keyframes on mount (before the panel ever appears —
   // this component renders once with `isOpen=false` prior to opening, so the
   // stylesheet is present by the time the animated surface mounts).
@@ -451,6 +465,7 @@ function CenterOrSideDialog({
                   label={label}
                   title={title}
                   description={description}
+                  icon={icon}
                   actions={actions}
                   header={header}
                   style={[panelStyle, style]}
@@ -486,6 +501,7 @@ function CenterOrSideDialog({
             label={label}
             title={title}
             description={description}
+            icon={icon}
             actions={actions}
             header={header}
             scrollable={scrollable}
@@ -520,6 +536,7 @@ function DialogPanel({
   label,
   title,
   description,
+  icon,
   actions,
   header,
   style,
@@ -540,6 +557,7 @@ function DialogPanel({
   label?: string;
   title?: string;
   description?: string;
+  icon?: React.ReactNode;
   actions?: DialogAction[];
   header?: DialogProps['header'];
   style?: DialogProps['style'];
@@ -627,6 +645,7 @@ function DialogPanel({
       descriptionId={descriptionId}
       title={title}
       description={description}
+      icon={icon}
       actions={actions}
     >
       {/* The dialog uses the PAGE token as its tint and nominal surface.
@@ -787,6 +806,7 @@ function SheetSurface({
   label,
   title,
   description,
+  icon,
   actions,
   header,
   scrollable,
@@ -814,6 +834,7 @@ function SheetSurface({
   label?: string;
   title?: string;
   description?: string;
+  icon?: React.ReactNode;
   actions?: DialogAction[];
   header?: DialogProps['header'];
   scrollable?: boolean;
@@ -1032,6 +1053,7 @@ function SheetSurface({
                       descriptionId={descriptionId}
                       title={title}
                       description={description}
+                      icon={icon}
                       actions={actions}
                     >
                       {surfaceChildren}
@@ -1058,6 +1080,7 @@ function SheetSurface({
                       descriptionId={descriptionId}
                       title={title}
                       description={description}
+                      icon={icon}
                       actions={actions}
                     >
                       {surfaceChildren}
@@ -1078,6 +1101,7 @@ function SheetSurface({
                 descriptionId={descriptionId}
                 title={title}
                 description={description}
+                icon={icon}
                 actions={actions}
               >
                 {surfaceChildren}

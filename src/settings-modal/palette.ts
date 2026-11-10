@@ -8,6 +8,7 @@ import {
   type Ramp,
 } from '../button/shared';
 import { MENU_SHADOW } from '../floating/menu-palette';
+import { mixColors } from '../styles/color-contrast';
 import type { Theme } from '../theme/types';
 
 export interface SettingsPalette {
@@ -58,7 +59,10 @@ export function resolveSettingsPalette(theme: Theme): SettingsPalette {
     primaryHover: c.backgroundSecondary,
     secondary: c.backgroundSecondary,
     secondaryHover: c.backgroundTertiary,
-    secondaryHoverSoft: c.backgroundTertiary,
+    // The hover wash is the selected fill at 60% over the rail, composited to an
+    // opaque colour: a hovered row reads as lighter than the selected one, never
+    // as the same row selected twice.
+    secondaryHoverSoft: mixColors(c.backgroundSecondary, c.backgroundTertiary, 0.6),
     tertiary: c.backgroundTertiary,
     tertiaryHover: c.card,
     separator: c.borderLight,

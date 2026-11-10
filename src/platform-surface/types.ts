@@ -1,5 +1,5 @@
 import type { ComponentRef, ComponentType, ReactNode, RefObject } from 'react';
-import type { View } from 'react-native';
+import type { StyleProp, View, ViewStyle } from 'react-native';
 import type { FloatingAlign, FloatingSide } from '../floating/types';
 
 /**
@@ -29,6 +29,12 @@ import type { FloatingAlign, FloatingSide } from '../floating/types';
  *   platform (`PlatformDrag`, `DropTarget`): a `DropZone` takes drops from any
  *   application, and an application starts a drag of its own content with
  *   `usePlatformDrag()`.
+ * - `material`: the platform blurs what is behind a view it is given
+ *   (`Material`), its own material, as a Mac's vibrancy blurs the windows and
+ *   desktop behind a menu or a sheet. A floating surface (`SurfacePaint
+ *   floating`: menus, popovers, dialogs, sheets, toasts, tooltips) then draws
+ *   its tint over that material instead of an opaque fill, unless
+ *   transparency is reduced.
  */
 export type SurfaceCapability =
   | 'popup-surface'
@@ -36,7 +42,8 @@ export type SurfaceCapability =
   | 'pointer'
   | 'menu-bar'
   | 'appearance'
-  | 'drag-and-drop';
+  | 'drag-and-drop'
+  | 'material';
 
 /**
  * What a drop does with what is dragged, as the web's `dropEffect`, Wayland's
@@ -1130,4 +1137,21 @@ export interface PlatformSurfaceAdapter {
   readonly DropTarget?: ComponentType<PlatformDropTargetProps>;
   /** Required with `drag-and-drop`: dragging the application's own content out. */
   readonly drag?: PlatformDrag;
+  /** Required with `material`: the view the platform fills with its blurred material. */
+  readonly Material?: ComponentType<PlatformMaterialProps>;
+}
+
+/**
+ * The adapter's material (`material`): a view the platform fills with what is
+ * behind it, blurred and saturated as the platform's own materials are, behind
+ * the window as well as within it (the desktop and the windows under a menu).
+ * It has no content: Bloom lays the surface's tint and edge over it, clipped
+ * to the surface's shape, and stops mounting it while transparency is reduced.
+ */
+export interface PlatformMaterialProps {
+  /** Its frame and shape: the surface's (absolute fill, corner radii). */
+  readonly style?: StyleProp<ViewStyle>;
+  /** Light or dark, by Bloom's theme, so a surface never takes the other mode's material. */
+  readonly appearance: 'light' | 'dark';
+  readonly testID?: string;
 }
