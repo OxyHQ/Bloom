@@ -102,7 +102,7 @@ class GlassChromeView(context: Context) : FrameLayout(context) {
   private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG)
   private val iconPaint = Paint(Paint.ANTI_ALIAS_FLAG)
   private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-    typeface = Typeface.create(Typeface.DEFAULT, 500, false)
+    typeface = Typeface.create(Typeface.DEFAULT, 700, false)
     textAlign = Paint.Align.CENTER
   }
 
@@ -202,6 +202,8 @@ class GlassChromeView(context: Context) : FrameLayout(context) {
     canvas.scale(density, density)
     drawContent(canvas, w, h, shapes, progress)
     canvas.restore()
+    // The selection pill is drawn last: above the labels and icons, refracting them as it passes over.
+    drawPillGlass(canvas, w, h, progress)
   }
 
   // Press deformation of one control: the menu's GlassJelly.deformControl on the control's rectangle (dp).
@@ -235,9 +237,10 @@ class GlassChromeView(context: Context) : FrameLayout(context) {
     // The static glass (bar container and create circle) comes from a hardware texture while the pill is dragged; the
     // texture covers the strip from the top of the static glass down, and is rendered again only when its key changes.
     val stripTopDp = max(0f, min(rest.first { it.id == "tabs" }.y0, rest.first { it.id == "fab" }.y0) - ChromeGeometry.LAYER_PAD)
-    val stripPx = stripTopDp * d
+    // Whole device pixels: a fractional offset makes drawBitmap resample the texture, which blurs the rim and the shadow edges.
+    val stripPx = Math.round(stripTopDp * d).toFloat()
     val stripWidthPx = Math.round(w * d)
-    val stripHeightPx = Math.round((h - stripTopDp) * d)
+    val stripHeightPx = Math.round(h * d) - stripPx.toInt()
     val cacheKey = "$stripWidthPx,$stripHeightPx,${Math.round(progress * 1000)},${provider.version},$bottomInset,${labels.size},$ox,$oy"
     if (staticGlass.isSupported && staticGlass.key != cacheKey) {
       staticGlass.render(cacheKey, stripWidthPx, stripHeightPx) { cacheCanvas ->
@@ -252,12 +255,6 @@ class GlassChromeView(context: Context) : FrameLayout(context) {
       canvas.drawBitmap(cached, 0f, stripPx, null)
     } else {
       drawStaticGlass(canvas, provider, limits, ox, oy, tabs, search, fab, rest)
-    }
-    if (labels.isNotEmpty()) {
-      val pill = pillRectDp(w, h, progress)
-      val pillState = pillGlassState(pill, ox, oy)
-      pillRenderer.prepare(pillState)
-      pillRenderer.drawGlass(canvas, provider.node, pillState, limits)
     }
     canvas.restore()
   }
@@ -283,6 +280,41 @@ class GlassChromeView(context: Context) : FrameLayout(context) {
       fabRenderer.prepare(fabState)
       fabRenderer.drawGlass(canvas, provider.node, fabState, limits)
     }
+  }
+
+  // The pill's backdrop: the page (provider node) plus the tab items, recorded into its own node. The pill is not
+  // recorded into it, and the page node contains neither the chrome nor the pill, so there is no recursion.
+  private val pillBackdrop = RenderNode("ChromePillBackdrop")
+
+  private fun drawPillGlass(canvas: Canvas, w: Float, h: Float, progress: Float) {
+    if (labels.isEmpty()) return
+    val provider = backdropProvider ?: return
+    val root = rootView as? ViewGroup ?: return
+    val rootLocation = IntArray(2)
+    val chromeLocation = IntArray(2)
+    root.getLocationInWindow(rootLocation)
+    getLocationInWindow(chromeLocation)
+    val ox = (chromeLocation[0] - rootLocation[0]).toFloat()
+    val oy = (chromeLocation[1] - rootLocation[1]).toFloat()
+    val limits = Rect(0, 0, root.width, root.height)
+    val shapes = ChromeGeometry.tabBarShapes(w, h, bottomInset, progress)
+    val d = density
+    pillBackdrop.setPosition(0, 0, root.width, root.height)
+    val rec = pillBackdrop.beginRecording(root.width, root.height)
+    rec.drawRenderNode(provider.node)
+    rec.save()
+    rec.translate(ox, oy)
+    rec.scale(d, d)
+    drawTabItems(rec, w, h, shapes, progress)
+    rec.restore()
+    pillBackdrop.endRecording()
+    val pill = pillRectDp(w, h, progress)
+    val pillState = pillGlassState(pill, ox, oy)
+    pillRenderer.prepare(pillState)
+    canvas.save()
+    canvas.translate(-ox, -oy)
+    pillRenderer.drawGlass(canvas, pillBackdrop, pillState, limits)
+    canvas.restore()
   }
 
   // The pill rectangle in dp: at the pill's spring position, deformed by its jelly like the menu's trigger.
@@ -329,6 +361,24 @@ class GlassChromeView(context: Context) : FrameLayout(context) {
     return state
   }
 
+  // Tab items: icon 22 dp, label 11 dp below (same layout as the web items). Drawn in dp.
+  private fun drawTabItems(canvas: Canvas, w: Float, h: Float, shapes: List<ChromeShape>, progress: Float) {
+    val tabs = shapes.first { it.id == "tabs" }
+    val itemW = if (labels.isNotEmpty()) ChromeGeometry.itemWidth(w, labels.size) else 0f
+    val centerY = tabs.y0 + ChromeGeometry.TAB_HEIGHT / 2f
+    val itemsOpacity = clamp01(1f - progress * 1.5f)
+    labels.forEachIndexed { i, label ->
+      val cx = tabs.x0 + ChromeGeometry.PILL_INSET + i * itemW + itemW / 2f
+      // The label takes the active colour as the pill covers it: the colour follows the pill's continuous position.
+      val color = lerpColor(TAB_INACTIVE, ACCENT, clamp01(1f - abs(pillSpring.value - i)))
+      val iconName = icons.getOrNull(i) ?: ""
+      ChromeIcons.draw(canvas, iconPaint, iconName, cx, centerY - 7.5f, 22f, color, itemsOpacity)
+      textPaint.color = ChromeIcons.withAlpha(color, itemsOpacity)
+      textPaint.textSize = 11f
+      canvas.drawText(label, cx, centerY + 15.5f, textPaint)
+    }
+  }
+
   private fun drawContent(canvas: Canvas, w: Float, h: Float, shapes: List<ChromeShape>, progress: Float) {
 
     val tabs = shapes.first { it.id == "tabs" }
@@ -340,17 +390,7 @@ class GlassChromeView(context: Context) : FrameLayout(context) {
     val itemsOpacity = clamp01(1f - progress * 1.5f)
 
 
-    // Tab items: icon 22 dp, label 11 dp below (same layout as the web items).
-    labels.forEachIndexed { i, label ->
-      val cx = tabs.x0 + ChromeGeometry.PILL_INSET + i * itemW + itemW / 2f
-      // The label takes the active colour as the pill covers it: the colour follows the pill's continuous position.
-      val color = lerpColor(ACCENT_INACTIVE, ACCENT, clamp01(1f - abs(pillSpring.value - i)))
-      val iconName = icons.getOrNull(i) ?: ""
-      ChromeIcons.draw(canvas, iconPaint, iconName, cx, centerY - 7.5f, 22f, color, itemsOpacity)
-      textPaint.color = ChromeIcons.withAlpha(color, itemsOpacity)
-      textPaint.textSize = 11f
-      canvas.drawText(label, cx, centerY + 15.5f, textPaint)
-    }
+    drawTabItems(canvas, w, h, shapes, progress)
 
     // Search circle: lupa fades out as the close icon fades in.
     val searchCx = (search.x0 + search.x1) / 2f
@@ -563,5 +603,7 @@ class GlassChromeView(context: Context) : FrameLayout(context) {
     private val PILL_SPEC = GlassMotion.CollapseSpring
     private val ACCENT = 0xFF0A84FF.toInt()
     private val ACCENT_INACTIVE = 0xFFA1A1A6.toInt()
+    // Inactive tab labels and icons: white, as in Apple's tab bar. The search field keeps ACCENT_INACTIVE.
+    private val TAB_INACTIVE = 0xFFFFFFFF.toInt()
   }
 }
