@@ -1,0 +1,22 @@
+navigate
+mounted
+controls
+transition pill Width
+transition pill Theme
+transition pill Attachment
+transition pill idle
+transition pill submitting
+transition pill streaming
+transition pill stopping
+transition pill error
+transition pill complete
+transition agent Width
+transition agent Theme
+transition agent Attachment
+transition agent idle
+transition agent submitting
+transition agent streaming
+transition agent stopping
+transition agent error
+transition agent complete
+{"status":"passed","cases":27}
