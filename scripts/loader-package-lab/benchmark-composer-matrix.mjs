@@ -124,7 +124,46 @@ async function setDelayedValue(id, pendingName, key, expected) {
 }
 
 async function ensureScene({ narrow, multiline, taper }) {
-  let current = await setDelayedValue('cases-resize', 'resize', 'narrow', String(narrow));
+  // Restore access to the controls before changing the next scenario; the
+  // previous sample intentionally left the same screen scrolled to its end.
+  let current = tree();
+  const initialScroll = current.nodes.find(
+    (node) => node.class === 'android.widget.ScrollView' && node.scrollable === 'true',
+  );
+  assert(initialScroll, 'Missing composer fixture ScrollView');
+  const initialViewport = boundsOf(initialScroll);
+  const centerX = String(Math.round((initialViewport.left + initialViewport.right) / 2));
+  // Keep the gesture outside centered buttons/editors so Android assigns it
+  // to the ScrollView instead of a child responder.
+  const scrollX = String(initialViewport.right - 20);
+  let controlsVisible = false;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const resize = current.nodes.find((node) => node['resource-id'] === 'cases-resize');
+    if (resize) {
+      const bounds = boundsOf(resize);
+      if (bounds.top >= 120 && bounds.bottom <= initialViewport.bottom) {
+        controlsVisible = true;
+        break;
+      }
+    }
+    // A single touch only scrolls one viewport on Android; repeat until the
+    // first control is wholly below the status bar and inside the ScrollView.
+    adb(
+      'shell',
+      'input',
+      'swipe',
+      scrollX,
+      String(initialViewport.top + 300),
+      scrollX,
+      String(initialViewport.bottom - 120),
+      '500',
+    );
+    await new Promise((resolvePromise) => setTimeout(resolvePromise, 500));
+    current = tree();
+  }
+  assert(controlsVisible, 'Could not scroll the fixture back to its scenario controls');
+
+  current = await setDelayedValue('cases-resize', 'resize', 'narrow', String(narrow));
   current = await setImmediateValue('cases-content', 'multiline', String(multiline));
   current = await setImmediateValue('cases-taper', 'taper', taper);
   current = await setDelayedValue('cases-busy', 'busy', 'busy', 'true');
@@ -133,6 +172,29 @@ async function ensureScene({ narrow, multiline, taper }) {
   assert(hasState(state, 'multiline', String(multiline)), state);
   assert(hasState(state, 'taper', taper), state);
   assert(hasState(state, 'busy', 'true') && hasState(state, 'pending', 'none'), state);
+
+  // The third-party Alia composer sits below the two Bloom-only owners in this
+  // fixture. React Native clips its accessibility bounds to the ScrollView
+  // viewport until the real scroller reaches the end, which looked like a
+  // short editor even though the full multiline control was rendered below it.
+  // Scroll the same mounted tree before measuring all three editors.
+  const scrollView = current.nodes.find(
+    (node) => node.class === 'android.widget.ScrollView' && node.scrollable === 'true',
+  );
+  assert(scrollView, 'Missing composer fixture ScrollView');
+  const viewport = boundsOf(scrollView);
+  adb(
+    'shell',
+    'input',
+    'swipe',
+    String(Math.round((viewport.left + viewport.right) / 2)),
+    String(viewport.bottom - 120),
+    String(Math.round((viewport.left + viewport.right) / 2)),
+    String(viewport.top + 100),
+    '500',
+  );
+  await new Promise((resolvePromise) => setTimeout(resolvePromise, 800));
+  current = tree();
 
   const inputs = current.nodes.filter((node) => node.class === 'android.widget.EditText');
   assert.equal(

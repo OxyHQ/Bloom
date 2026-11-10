@@ -1,0 +1,69 @@
+Applications Memory Usage (in Kilobytes):
+Uptime: 1325164378 Realtime: 1638272443
+
+** MEMINFO in pid 4071 [so.oxy.bloom.loaderpackagelab] **
+                   Pss  Private  Private  SwapPss      Rss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty    Total     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------   ------
+  Native Heap    57119    57036        0        0    61540    77388    61353    11158
+  Dalvik Heap    27047    26880        8        3    34368    31011     6435    24576
+ Dalvik Other     1822     1428        0        0     3000                           
+        Stack     1164     1164        0        0     1168                           
+       Ashmem       33        0        0        0     1428                           
+    Other dev       12        0       12        0      292                           
+     .so mmap     5525      152      464        6    60020                           
+    .jar mmap     2377        0      120        0    42616                           
+    .apk mmap    34925     1328    28828        0    48428                           
+    .ttf mmap     1454        0     1344        0     1712                           
+    .dex mmap     9520       16     8652        0    13172                           
+    .oat mmap      512        0        0        0    12800                           
+    .art mmap     1736      932      116       27    31636                           
+   Other mmap      603       12       52        0     2780                           
+   EGL mtrack    51820    51820        0        0    51820                           
+    GL mtrack   277592   277592        0        0   277592                           
+      Unknown    36377    36132      232        8    37744                           
+        TOTAL   509682   454492    39828       44   682116   108399    67788    35734
+ 
+ App Summary
+                       Pss(KB)                        Rss(KB)
+                        ------                         ------
+           Java Heap:    27928                          66004
+         Native Heap:    57036                          61540
+                Code:    40908                         179512
+               Stack:     1164                           1168
+            Graphics:   329412                         329412
+       Private Other:    37872
+              System:    15362
+             Unknown:                                   44480
+ 
+           TOTAL PSS:   509682            TOTAL RSS:   682116       TOTAL SWAP PSS:       44
+ 
+ Objects
+               Views:      141         ViewRootImpl:        1
+         AppContexts:        5           Activities:        1
+              Assets:       40        AssetManagers:        0
+       Local Binders:       44        Proxy Binders:       69
+       Parcel memory:        9         Parcel count:       37
+    Death Recipients:        0             WebViews:        0
+ 
+ Native Allocations
+                         Count                       Total(kB)
+                        ------                         ------
+    Other (malloced):     2299                            218
+ Other (nonmalloced):      120                             83
+   Bitmap (malloced):       24                            144
+ 
+ SQL
+         MEMORY_USED:      174
+  PAGECACHE_OVERFLOW:       49          MALLOC_SIZE:       46
+ 
+ DATABASES
+      pgsz     dbsz   Lookaside(b) cache hits cache misses cache size  Dbname
+PER CONNECTION STATS
+         4       24             34    54   115     3  /data/user/0/so.oxy.bloom.loaderpackagelab/databases/AsyncStorage
+         4        8                    0     0     0    (attached) temp
+         4       24             40     9    50     4  /data/user/0/so.oxy.bloom.loaderpackagelab/databases/AsyncStorage (1)
+POOL STATS
+     cache hits  cache misses    cache size  Dbname
+             63           169             7  /data/user/0/so.oxy.bloom.loaderpackagelab/databases/AsyncStorage
+ 
