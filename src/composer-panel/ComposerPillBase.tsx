@@ -2,7 +2,15 @@ import { useComposerLoaderPaint, useReportComposerRadius } from '../composer-loa
 import { useComposerButton } from './context';
 import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
 import { Surface } from '../surface';
-import React, { type ComponentRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  type ComponentRef,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import {
   Pressable,
@@ -591,6 +599,33 @@ export function ComposerPillBase({
     [inputRef],
   );
 
+  // Android's controlled TextInput can collapse a live caret to the end when
+  // the stop control or loader changes the pill during a focused edit. Capture
+  // its last selection before the native update, then restore it after layout.
+  const previousFocus = useRef(focused);
+  const previousBusy = useRef(busy);
+  const previousLoaderActive = useRef(loaderActive);
+  useLayoutEffect(() => {
+    const focusChanged = previousFocus.current !== focused;
+    const stateChanged =
+      previousBusy.current !== busy || previousLoaderActive.current !== loaderActive;
+    previousFocus.current = focused;
+    previousBusy.current = busy;
+    previousLoaderActive.current = loaderActive;
+    if (Platform.OS !== 'android' || !focused || focusChanged || !stateChanged) return;
+    const { start, end } = selectionRef.current;
+    let secondFrame = 0;
+    const firstFrame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(() => {
+        if (fieldRef.current?.isFocused()) fieldRef.current.setSelection(start, end);
+      });
+    });
+    return () => {
+      cancelAnimationFrame(firstFrame);
+      if (secondFrame) cancelAnimationFrame(secondFrame);
+    };
+  }, [busy, focused, loaderActive]);
+
   const controlPalette: ComposerPalette = useMemo(
     () =>
       frosted
@@ -756,8 +791,7 @@ export function ComposerPillBase({
         if (
           Platform.OS === 'android' &&
           previousWidth !== null &&
-          Math.abs(width - previousWidth) > 1 &&
-          selectionRef.current.start !== selectionRef.current.end
+          Math.abs(width - previousWidth) > 1
         ) {
           const selection = selectionRef.current;
           requestAnimationFrame(() =>
