@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 export type AlertDialogActionStyle = 'default' | 'cancel' | 'destructive';
@@ -11,6 +12,11 @@ export interface AlertDialogProps {
   title: string;
   /** Supporting copy. */
   description?: string;
+  /**
+   * Drawn above the title (`DialogProps.icon`): the application's icon on an
+   * alert about it, or a caution symbol.
+   */
+  icon?: ReactNode;
   /** Confirm button label; `'Confirm'` in English. */
   confirmLabel?: string;
   /** Cancel button label; `'Cancel'` in English. */

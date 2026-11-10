@@ -6,6 +6,7 @@ export {
   usePlatformEditing,
   usePlatformFiles,
   usePlatformKeyboard,
+  usePlatformMaterial,
   usePlatformMenuBar,
   usePlatformSearch,
   usePlatformSounds,
@@ -14,6 +15,7 @@ export {
   usePopupSurface,
 } from './context';
 export { usePlatformAppearanceState } from './use-platform-appearance';
+export { isDesktopPlatform, useDesktopPlatform } from './use-desktop-platform';
 export type {
   DragAction,
   DragCancelReason,
@@ -46,6 +48,7 @@ export type {
   PlatformFileTags,
   PlatformFileVersion,
   PlatformKeyboard,
+  PlatformMaterialProps,
   PlatformKeyEvent,
   PlatformMenu,
   PlatformMenuBar,

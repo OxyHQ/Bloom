@@ -37,13 +37,20 @@ import { RiArrowRightSLine as ChevronRightIcon } from '../icons/remix/RiArrowRig
 import { RiArrowUpSLine as ChevronTopIcon } from '../icons/remix/RiArrowUpSLine';
 import { StyledView } from '../styles/styled-primitives';
 import { useMenuPalette } from './menu-palette';
-import { MENU_SUB_SIDE_OFFSET, ROW_ICON_SIZE } from './constants';
+import { MENU_SUB_SIDE_OFFSET } from './constants';
 import { MenuSubProvider, useMenuSub } from './context';
 import { FLOATING_MESSAGES } from './messages';
 import { MenuRowAlignmentScope, useMenuRowsAligned } from './menu-row-alignment';
 import { type PopupSubmenu, PopupSubmenuScope, usePopupKeys } from './popup-navigation';
 import { POPUP_PANEL_BORDER, PopupPanelChrome, usePanelPopupSurface } from './PopupPanel';
-import { cx, MenuRowChevron, MenuRowShell, splitChildren, SUB_TRIGGER_CLASS } from './shared';
+import {
+  cx,
+  MenuRowChevron,
+  MenuRowGlyph,
+  MenuRowShell,
+  splitChildren,
+  SUB_TRIGGER_CLASS,
+} from './shared';
 import type { MenuSubContentProps, MenuSubParts, MenuSubProps, MenuSubTriggerProps } from './types';
 
 /** Whether a submenu here flies out: inside a platform popup, with a pointer. */
@@ -108,7 +115,7 @@ export function createInlineMenuSub(prefix: string): MenuSubParts {
         // row's check, one step back in colour, exactly as the flyout's.
         trailing={
           <MenuRowChevron>
-            <Chevron width={ROW_ICON_SIZE} height={ROW_ICON_SIZE} fill={palette.textSecondary} />
+            <MenuRowGlyph Icon={Chevron} fill={palette.textSecondary} />
           </MenuRowChevron>
         }
         title={title}

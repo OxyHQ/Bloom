@@ -61,6 +61,7 @@ export function DialogBottomSheet({
   testID,
   title,
   description,
+  icon,
   actions,
   header,
   material: surfaceMaterial = 'surface',
@@ -247,6 +248,7 @@ export function DialogBottomSheet({
       descriptionId={descriptionId}
       title={title}
       description={description}
+      icon={icon}
       actions={actions}
     >
       {children}
@@ -432,6 +434,7 @@ export type DialogBottomSheetProps = DialogPresentationLifecycle &
     | 'testID'
     | 'title'
     | 'description'
+    | 'icon'
     | 'actions'
     | 'header'
     | 'material'

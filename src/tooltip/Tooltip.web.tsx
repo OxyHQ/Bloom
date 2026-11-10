@@ -39,7 +39,8 @@ import {
 } from './constants';
 import { createTextBubble } from './TextBubble';
 import type { TooltipProps } from './types';
-import { useDelayedVisibility } from './use-delayed-visibility';
+import { DESKTOP_TOOLTIP_DELAY, useDelayedVisibility } from './use-delayed-visibility';
+import { useDesktopPlatform } from '../platform-surface/use-desktop-platform';
 import { TooltipCaret } from './TooltipCaret';
 
 /**
@@ -98,10 +99,16 @@ export function Tooltip({
   children,
   position = 'bottom',
   visible: visibleProp,
-  delay = 0,
+  delay: delayProp,
   onVisibleChange,
 }: TooltipProps) {
-  const visible = useDelayedVisibility(visibleProp, delay);
+  // A desktop's help tag waits under a resting pointer; an explicit `delay` wins.
+  const desktop = useDesktopPlatform();
+  const visible = useDelayedVisibility(
+    visibleProp,
+    delayProp ?? (desktop ? DESKTOP_TOOLTIP_DELAY : 0),
+    desktop && delayProp === undefined,
+  );
   const triggerRef = useRef<ComponentRef<typeof View>>(null);
   const ctx = useMemo(
     () => ({ position, visible, onVisibleChange, triggerRef }),

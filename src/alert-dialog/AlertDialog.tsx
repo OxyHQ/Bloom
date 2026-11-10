@@ -48,6 +48,7 @@ export function createAlertDialog(Dialog: DialogComponent) {
     onOpenChange,
     title,
     description,
+    icon,
     confirmLabel: confirmLabelProp,
     cancelLabel: cancelLabelProp,
     onConfirm,
@@ -160,6 +161,7 @@ export function createAlertDialog(Dialog: DialogComponent) {
         dismissOnBackdrop={dismissible}
         title={title}
         description={description}
+        icon={icon}
         actions={actions}
         label={title}
         style={cardStyle}

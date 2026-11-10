@@ -691,6 +691,32 @@ or ended, `dropped` true when it was dropped on one of them, told once that
 drop was delivered (after the target's `onDrop`). It returns the function that
 stops following. Without it, `useWindowDrag` tells nothing.
 
+## `material`
+
+A platform that blurs what is behind a view of its own reports `material` and
+supplies `Material` (`PlatformMaterialProps`: `style`, `appearance`). It is the
+platform's material, behind the window as well as within it: OxyOS's compositor
+blurs the desktop and the windows under a menu, a sheet or a dialog, as a Mac's
+vibrancy does. A floating surface (`SurfacePaint floating`) mounts it under its
+translucent tint where iOS mounts the system material, and paints opaque
+instead while transparency is reduced. `usePlatformMaterial()` returns the
+component, or null without the capability; an adapter that reports it without
+the component throws.
+
+## A desktop platform
+
+`useDesktopPlatform()` (and `isDesktopPlatform(adapter)`) is true for an
+adapter that reports `window` or `pointer`. There Bloom takes a desktop's own
+chrome: the desktop text styles ([Typography](./typography.mdx)), neutral
+surfaces and the label levels ([Design tokens](./design-tokens.mdx)), compact
+menus with an accent highlight ([Dropdown menu](./dropdown-menu.mdx)), one
+alert layout ([Dialog](./dialog.mdx)) and a one-second tooltip delay
+([Tooltip](./tooltip.mdx)). The keyboard's focus ring on a native desktop is the
+platform's: OxyOS's host draws it around the control the keyboard moved to, in
+the `ring` token's colour, so Bloom draws none of its own there. A browser is
+never a desktop platform by this test: a web application keeps its approved
+look.
+
 ## Who registers the adapter
 
 The runtime that runs the application: the web build's, a native runtime's,

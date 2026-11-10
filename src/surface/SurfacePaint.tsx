@@ -1,7 +1,7 @@
 import { pointerEventsStyle } from '../styles/pointer-events';
 import { surfaceStyle } from '../shapes/surface-style';
 import type { SurfaceShape, SurfaceStyle } from '../shapes/corner-types';
-import { memo, useEffect } from 'react';
+import { memo, useEffect, type ComponentType } from 'react';
 import { Platform, StyleSheet, View, type ViewStyle } from 'react-native';
 import { StyledView } from '../styles/styled-primitives';
 import { webDataSet } from '../styles/web-data';
@@ -24,6 +24,9 @@ import { SurfaceBlur } from './SurfaceBlur';
 import { useReducedTransparency } from '../theme/reduced-transparency';
 import { useIncreasedContrast } from '../theme/increased-contrast';
 import { useSurfaceFill } from '../styles/surface-levels';
+import { usePlatformMaterial } from '../platform-surface/context';
+import type { PlatformMaterialProps } from '../platform-surface/types';
+import { useTheme } from '../theme/use-theme';
 
 // Backing participates only in web compositing. Native uses the supplied tint
 // directly, so it does not subscribe every painted surface to the backing tree.
@@ -132,6 +135,8 @@ export const SurfacePaint = memo(function SurfacePaint({
   // Colour arithmetic reads the concrete theme, never a prepaint variable.
   const text = opticsRecipe.current.text;
   const increasedContrast = useIncreasedContrast();
+  // A platform's own material under a floating surface (`material`: OxyOS).
+  const platformMaterial = usePlatformMaterial();
   const isWeb = Platform.OS === 'web';
   const contextBacking = useCompositeBacking();
   const resolvedFill = resolveSurfaceTint(
@@ -201,7 +206,12 @@ export const SurfacePaint = memo(function SurfacePaint({
           }
         : null;
   const body = fill === undefined ? 'transparent' : resolvedFill;
-  if (Platform.OS === 'ios' && floating && !composite && fill !== undefined) {
+  if (
+    (Platform.OS === 'ios' || platformMaterial !== null) &&
+    floating &&
+    !composite &&
+    fill !== undefined
+  ) {
     return (
       <FloatingIosPaint
         testID={testID}
@@ -209,6 +219,7 @@ export const SurfacePaint = memo(function SurfacePaint({
         body={body}
         edge={edge}
         presence={presence}
+        Material={platformMaterial}
       />
     );
   }
@@ -249,14 +260,21 @@ function FloatingIosPaint({
   body,
   edge,
   presence,
+  Material,
 }: {
   testID?: string;
   geometry: ViewStyle;
   body: string;
   edge: ViewStyle | null;
   presence?: number;
+  /**
+   * The platform's own material (`material`, `usePlatformMaterial()`): an
+   * OxyOS window's behind-window blur. Drawn in place of iOS's, the same way.
+   */
+  Material: ComponentType<PlatformMaterialProps> | null;
 }) {
   const reduced = useReducedTransparency();
+  const { isDark } = useTheme();
   const opacity = presence === undefined ? null : { opacity: presence };
   if (reduced) {
     return (
@@ -283,7 +301,15 @@ function FloatingIosPaint({
         pointerEventsStyle('none'),
       ]}
     >
-      <SurfaceBlur />
+      {Material ? (
+        <Material
+          testID={testID ? `${testID}-material` : undefined}
+          appearance={isDark ? 'dark' : 'light'}
+          style={[StyleSheet.absoluteFill, geometry]}
+        />
+      ) : (
+        <SurfaceBlur />
+      )}
       <View
         testID={testID ? `${testID}-tint` : undefined}
         style={[

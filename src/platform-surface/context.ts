@@ -6,6 +6,7 @@ import type {
   PlatformEditing,
   PlatformFiles,
   PlatformKeyboard,
+  PlatformMaterialProps,
   PlatformMenuBar,
   PlatformSearch,
   PlatformSounds,
@@ -154,4 +155,21 @@ export function usePlatformDropTarget(): ComponentType<PlatformDropTargetProps> 
  */
 export function usePlatformDrag(): PlatformDrag | null {
   return dragAndDrop(useContext(PlatformSurfaceContext))?.drag ?? null;
+}
+
+/**
+ * The adapter's material when it reports `material`, otherwise null (a
+ * floating surface paints opaque, or iOS's own material on iOS). An adapter
+ * that reports the capability without the component throws, as
+ * `usePopupSurface` does.
+ */
+export function usePlatformMaterial(): ComponentType<PlatformMaterialProps> | null {
+  const adapter = useContext(PlatformSurfaceContext);
+  if (!adapter?.capabilities.has('material')) return null;
+  if (!adapter.Material) {
+    throw new Error(
+      `Bloom: the ${adapter.platform} platform adapter reports 'material' without a Material component.`,
+    );
+  }
+  return adapter.Material;
 }

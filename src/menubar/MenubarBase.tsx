@@ -29,7 +29,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { type PointerEvent, StyleSheet, type View as RNView } from 'react-native';
+import { Platform, type PointerEvent, StyleSheet, type View as RNView } from 'react-native';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { FIELD_REST_BORDER_WIDTH } from '../styles/field-border';
 
@@ -42,7 +42,9 @@ import {
   MENU_TRIGGER_POPUP,
 } from '../floating/constants';
 import { useMenuPalette } from '../floating/menu-palette';
-import { menuType } from '../floating/menu-type';
+import { MENU_FONT_FAMILY, menuType } from '../floating/menu-type';
+import { DESKTOP_MENU_GEOMETRY } from '../appearance/control-geometry';
+import { DESKTOP_TEXT_STYLES } from '../typography/desktop-scale';
 import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useMenuFocusIntent, useMenuTriggerKeys, useOpenFocus } from '../floating/menu-keyboard';
@@ -357,16 +359,33 @@ function MenubarTriggerButton({
   // why a Bloom menubar read as loose text against a pill-per-menu bar. The
   // same chrome on both platforms, so the bar reads identically. `asChild`
   // still hands the whole thing to the caller.
+  // A desktop platform lights the open title with the accent, as its menus' rows,
+  // and sets it in the desktop's body (`DESKTOP_TEXT_STYLES.body`) at its own weight.
+  const lit = menu.open || focused;
+  const active = lit ? palette.rowActive : null;
   const trigger = (
     <StyledView
       className={cx(MENUBAR_TRIGGER_CLASS, menu.open && MENUBAR_TRIGGER_OPEN_CLASS, className)}
-      style={{ backgroundColor: menu.open || focused ? palette.rowHighlight : 'transparent' }}
+      style={
+        palette.rowActive
+          ? {
+              backgroundColor: active ? active.fill : 'transparent',
+              borderRadius: DESKTOP_MENU_GEOMETRY.rowRadius,
+              ...(Platform.OS !== 'web' && !disabled ? { cursor: 'auto' as const } : null),
+            }
+          : { backgroundColor: lit ? palette.rowHighlight : 'transparent' }
+      }
     >
       {typeof children === 'string' ? (
         <StyledText
           className={MENUBAR_TRIGGER_TEXT_CLASS}
           // `text-body-medium text-text-primary`, in Inter.
-          style={[menuType('body-medium'), { color: palette.text }]}
+          style={[
+            palette.rowActive
+              ? { ...DESKTOP_TEXT_STYLES.body, fontWeight: '500' as const, ...MENU_FONT_FAMILY }
+              : menuType('body-medium'),
+            { color: active ? active.text : palette.text },
+          ]}
         >
           {children}
         </StyledText>

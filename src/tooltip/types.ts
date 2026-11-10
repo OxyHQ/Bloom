@@ -8,7 +8,10 @@ export interface TooltipProps {
   visible: boolean;
   /**
    * Milliseconds `visible` must stay true before the bubble shows, so a pointer that only passes
-   * over the trigger opens nothing. Closing is immediate. Default `0`.
+   * over the trigger opens nothing. Closing is immediate. Default `0`; on a desktop platform
+   * (`useDesktopPlatform()`) `DESKTOP_TOOLTIP_DELAY` (1 s), and at once while another tooltip
+   * shows or just closed (`TOOLTIP_WARM_WINDOW`), so neighbours read in turn. A tooltip that must
+   * show at once (a dock's names) passes `0`.
    */
   delay?: number;
   onVisibleChange: (visible: boolean) => void;
