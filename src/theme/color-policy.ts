@@ -548,6 +548,18 @@ export function buildPolicyTokens(
       : brandTone(brandPalette, isDark, declaresWhiteLabel(seedHex)),
   );
 
+  // The brand as a SYSTEM TINT: the seed at its own tone and chroma, the same in light and
+  // dark, with whichever of black or white reads on it. `--primary` is a FILL that must carry a
+  // white label, so it is pulled down to a tone white allows and reads deeper (and, over glass,
+  // washed) next to a vivid control tint like a system blue or yellow. A control that wants the
+  // brand at full strength (a glass button, a switch, a selection) reads `--vivid` instead.
+  // A monochrome seed has no colour to show, so its tint is its fill.
+  const vividArgb = monochrome ? undefined : brandPalette.tone(Math.round(seed.tone));
+  const vivid =
+    vividArgb === undefined
+      ? primary
+      : { fill: rgb(vividArgb), foreground: foregroundFor(vividArgb) };
+
   // Surfaces, text and boundaries share the identity hue and tonal authority.
   // A desktop's neutral surfaces (`SurfaceTint`) keep the same tones with no hue.
   const neutral = TonalPalette.fromHueAndChroma(
@@ -568,6 +580,8 @@ export function buildPolicyTokens(
   const tokens: PolicyTokens = {
     '--primary': primary.fill,
     '--primary-foreground': primary.foreground,
+    '--vivid': vivid.fill,
+    '--vivid-foreground': vivid.foreground,
     // The accent legible as TEXT on the page surface — the job M3's `primary`
     // does correctly, and which the fill must stop trying to do at the same time.
     '--primary-text': roles.primary,
