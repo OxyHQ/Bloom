@@ -1,5 +1,11 @@
 # Changelog
 
+## 18.4.1
+
+### Fixed
+
+- **A desktop menu is as wide as its widest row on native.** 17.42.0 gave a desktop platform's menus their content's width, but each row's label kept `flex-1`, whose `flex: 1` makes Yoga's flex basis 0 whatever `flexBasis` says, so a panel sized by its content was held at its 120px floor and cut its labels (OxyOS's dock menu showed "Mostrar toda…"). On a desktop the label now grows and shrinks from its own width (`flexGrow`/`flexShrink`, no `flex`).
+
 ## 18.4.0
 
 ### Added
