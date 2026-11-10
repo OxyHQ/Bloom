@@ -18,4 +18,6 @@ class GlassMenuItemRecord : Record {
   @Field val heading: Boolean = false
   // Submenu rows: the child items. Null for plain items.
   @Field val items: List<GlassMenuItemRecord>? = null
+  // Action row: its cells (one icon action each), in order. Null for every other row.
+  @Field val actions: List<GlassMenuItemRecord>? = null
 }

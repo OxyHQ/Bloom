@@ -52,6 +52,9 @@ internal class GlassMenuSession(
 
   private val plateTop = GlassSpring(.25f, 8f)
   private val plateHeight = GlassSpring(.25f, 8f)
+  // Horizontal extent of the plate: a list row spans the plate inset; an action cell its column (plateSpan).
+  private val plateLeft = GlassSpring(.25f, 8f)
+  private val plateRight = GlassSpring(.25f, 8f)
   private val plateAlpha = GlassSpring(.004f, .05f)
   private val jelly = GlassJelly()
   private val scrub = GlassScrub(jelly)
@@ -89,7 +92,7 @@ internal class GlassMenuSession(
   var expanded = true
     private set
   val needsFrame: Boolean
-    get() = animating || !plateAlpha.isSettled || !plateTop.isSettled || !plateHeight.isSettled ||
+    get() = animating || !plateAlpha.isSettled || !plateTop.isSettled || !plateHeight.isSettled || !plateLeft.isSettled || !plateRight.isSettled ||
       !jelly.isSettled || !nav.isSettled || !parentDim.isSettled || child?.needsFrame == true
 
   init {
@@ -133,6 +136,8 @@ internal class GlassMenuSession(
     plateAlpha.reset(0f)
     plateTop.reset(0f)
     plateHeight.reset(0f)
+    plateLeft.reset(0f)
+    plateRight.reset(0f)
   }
 
   fun refreshItems() {
@@ -266,6 +271,8 @@ internal class GlassMenuSession(
     if (!nav.isSettled || rowsDirty) rowsDirty = true
     plateTop.advance(seconds)
     plateHeight.advance(seconds)
+    plateLeft.advance(seconds)
+    plateRight.advance(seconds)
     plateAlpha.advance(seconds)
     jelly.advance(seconds)
     return settled && !expanded && nav.isSettled && child == null
@@ -304,16 +311,18 @@ internal class GlassMenuSession(
     state.lockedFieldStep = lockedFieldStep
     state.radiusX = frame.radiusX
     state.radiusY = frame.radiusY
-    state.hasSource = anchor.glass
+    state.hasSource = anchor.morphs
     state.source.set(frame.sourceLobe)
     val swell = anchor.jelly.swell(anchor.height.toFloat(), density, anchor.triggerConfig.jelly) - 1f
     state.source.inset(-state.source.width() * swell / 2f, -state.source.height() * swell / 2f)
-    state.sourceRadius = min(state.source.width(), state.source.height()) / 2f
+    // A plain trigger keeps its own corner radius (cornerRadius), not the capsule of a glass lobe.
+    state.sourceRadius = if (anchor.glass) min(state.source.width(), state.source.height()) / 2f
+      else anchor.cornerRadiusPx(state.source)
     state.smoothing = frame.smoothing
     state.lensHeight = frame.lensHeight
     state.lensAmount = frame.lensAmount
     state.materialProgress = frame.contentProgress
-    state.surfaceOpacity = if (anchor.glass) 1f else frame.contentProgress
+    state.surfaceOpacity = if (anchor.morphs) 1f else frame.contentProgress
     state.dark = content.dark
     state.config = anchor.config
     state.trigger = anchor.triggerConfig
@@ -364,13 +373,13 @@ internal class GlassMenuSession(
       plate.setAlpha(frame.rowsOpacity)
     }
     renderer.drawForeground(canvas, state, animating, frame.portalBlur * morphBlur) { recording ->
-      if (anchor.glass && frame.sourceOpacity > .001f) recording.drawRenderNode(trigger)
+      if (anchor.morphs && frame.sourceOpacity > .001f) recording.drawRenderNode(trigger)
       if (frame.rowsOpacity > .001f) {
         if (plate != null) recording.drawRenderNode(plate)
         recording.drawRenderNode(rows)
       }
     }
-    if (!anchor.glass && frame.sourceOpacity > .001f) canvas.drawRenderNode(trigger)
+    if (!anchor.morphs && frame.sourceOpacity > .001f) canvas.drawRenderNode(trigger)
   }
 
   private fun blur(radius: Float): RenderEffect? =
@@ -425,9 +434,14 @@ internal class GlassMenuSession(
     return node
   }
 
+  // Horizontal extent of the plate for a row, in px: an action cell spans its column; a list row spans the plate inset.
+  private fun plateSpan(row: GlassRow): Pair<Float, Float> =
+    if (row.isAction) row.rect.left to row.rect.right
+    else PlateInset * density to target.width() - PlateInset * density
+
   private fun updatePlateRect() {
     val top = plateTop.value - scroll
-    plateRect.set(PlateInset * density, top, target.width() - PlateInset * density, top + plateHeight.value)
+    plateRect.set(plateLeft.value, top, plateRight.value, top + plateHeight.value)
   }
 
   fun drawFallback(canvas: Canvas) {
@@ -665,12 +679,17 @@ internal class GlassMenuSession(
       plateVisible = false
       plateAlpha.target(0f, PlateFade)
     } else {
+      val span = plateSpan(row)
       if (!plateVisible && !hadRow) {
         plateTop.reset(row.rect.top)
         plateHeight.reset(row.rect.height())
+        plateLeft.reset(span.first)
+        plateRight.reset(span.second)
       } else {
         plateTop.target(row.rect.top, PlateSlide)
         plateHeight.target(row.rect.height(), PlateSlide)
+        plateLeft.target(span.first, PlateSlide)
+        plateRight.target(span.second, PlateSlide)
         overlay.hapticTick()
       }
       plateVisible = true

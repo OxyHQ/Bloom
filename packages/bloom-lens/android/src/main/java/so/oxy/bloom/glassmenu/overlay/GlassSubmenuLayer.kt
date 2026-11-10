@@ -41,6 +41,9 @@ internal class GlassSubmenuLayer(
   private var activeRow: GlassRow? = null
   private val plateTop = GlassSpring(.25f, 8f)
   private val plateHeight = GlassSpring(.25f, 8f)
+  // Horizontal extent of the plate: a list row spans the plate inset; an action cell its column (plateSpan).
+  private val plateLeft = GlassSpring(.25f, 8f)
+  private val plateRight = GlassSpring(.25f, 8f)
   private val plateAlpha = GlassSpring(.004f, .05f)
   var closing = false
     private set
@@ -53,7 +56,7 @@ internal class GlassSubmenuLayer(
     get() = !closing && progress.isSettled && progress.value >= 1f - ProgressTolerance
 
   val needsFrame: Boolean
-    get() = !progress.isSettled || !plateAlpha.isSettled || !plateTop.isSettled || !plateHeight.isSettled
+    get() = !progress.isSettled || !plateAlpha.isSettled || !plateTop.isSettled || !plateHeight.isSettled || !plateLeft.isSettled || !plateRight.isSettled
 
   // Opens from the row rect (screen px) to the panel rect (screen px).
   fun open(rowRect: RectF, panel: RectF) {
@@ -68,6 +71,8 @@ internal class GlassSubmenuLayer(
     plateAlpha.reset(0f)
     plateTop.reset(0f)
     plateHeight.reset(0f)
+    plateLeft.reset(0f)
+    plateRight.reset(0f)
     plateVisible = false
     activeRow = null
     rowsDirty = true
@@ -102,6 +107,8 @@ internal class GlassSubmenuLayer(
   fun tick(seconds: Float): Boolean {
     progress.advance(seconds)
     plateTop.advance(seconds)
+    plateLeft.advance(seconds)
+    plateRight.advance(seconds)
     plateHeight.advance(seconds)
     plateAlpha.advance(seconds)
     rowsDirty = true
@@ -206,7 +213,7 @@ internal class GlassSubmenuLayer(
     val height = target.height().toInt()
     node.setPosition(0, 0, width, height)
     val recording = node.beginRecording(width, height)
-    plateRect.set(PlateInset * density, plateTop.value, target.width() - PlateInset * density, plateTop.value + plateHeight.value)
+    plateRect.set(plateLeft.value, plateTop.value, plateRight.value, plateTop.value + plateHeight.value)
     content.drawPlate(recording, plateRect, plateAlpha.value, plateRect.centerX(), anchor.config.highlightOpacity, anchor.config.shine)
     node.endRecording()
     return node
@@ -219,6 +226,11 @@ internal class GlassSubmenuLayer(
 
   fun contains(x: Float, y: Float): Boolean = target.contains(x, y)
 
+  // Horizontal extent of the plate for a row, in px: an action cell spans its column; a list row spans the plate inset.
+  private fun plateSpan(row: GlassRow): Pair<Float, Float> =
+    if (row.isAction) row.rect.left to row.rect.right
+    else PlateInset * density to target.width() - PlateInset * density
+
   fun highlight(row: GlassRow?, immediate: Boolean) {
     if (row === activeRow) return
     val hadRow = activeRow != null
@@ -228,12 +240,17 @@ internal class GlassSubmenuLayer(
       plateAlpha.target(0f, PlateFade)
       return
     }
+    val span = plateSpan(row)
     if (!plateVisible && !hadRow) {
       plateTop.reset(row.rect.top)
       plateHeight.reset(row.rect.height())
+      plateLeft.reset(span.first)
+      plateRight.reset(span.second)
     } else {
       plateTop.target(row.rect.top, PlateSlide)
       plateHeight.target(row.rect.height(), PlateSlide)
+      plateLeft.target(span.first, PlateSlide)
+      plateRight.target(span.second, PlateSlide)
     }
     plateVisible = true
     if (immediate) plateAlpha.reset(1f) else plateAlpha.target(1f, PlateFade)

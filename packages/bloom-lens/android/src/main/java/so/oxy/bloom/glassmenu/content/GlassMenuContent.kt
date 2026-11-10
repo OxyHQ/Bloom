@@ -40,6 +40,12 @@ private object Metrics {
   const val TitleSize = 17f
   const val SubtitleSize = 13f
   const val IconSize = 19.5f
+  // Action row (the top row of icon actions): row height, icon size and title size, as the web layout.
+  const val ActionRowHeight = 64f
+  const val ActionIconSize = 22f
+  const val ActionTitleSize = 12f
+  const val ActionIconTop = 10f
+  const val ActionTitleBottom = 10f
 }
 internal class GlassMenuContent(
   private val context: Context,
@@ -54,6 +60,9 @@ internal class GlassMenuContent(
     strokeJoin = Paint.Join.ROUND
   }
   private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+  private val actionPaint = TextPaint(Paint.ANTI_ALIAS_FLAG or Paint.SUBPIXEL_TEXT_FLAG).apply {
+    textAlign = Paint.Align.CENTER
+  }
   private val iconMatrix = Matrix()
   private val iconPath = Path()
   private var reservesCheck = false
@@ -87,12 +96,26 @@ internal class GlassMenuContent(
     reservesCheck = forceCheckColumn ?: items.any { it.checked != null }
     val flat = ArrayList<GlassRow>()
     if (back != null) flat.add(GlassRow(back, 0, back = true))
-    items.forEach { item -> flat.add(GlassRow(item, flat.size)) }
+    items.forEach { item ->
+      val cells = item.actions
+      if (cells != null) {
+        cells.forEachIndexed { column, action ->
+          flat.add(GlassRow(action, flat.size).apply {
+            this.column = column
+            columns = cells.size
+          })
+        }
+      } else {
+        flat.add(GlassRow(item, flat.size))
+      }
+    }
     val built: List<GlassRow> = flat
+    actionPaint.typeface = typeface
+    actionPaint.textSize = Metrics.ActionTitleSize * density * fontScale * FontFit
 
     var widest = Metrics.MinimumWidth * density
     for (row in built) {
-      if (row.isSeparator) continue
+      if (row.isSeparator || row.isAction) continue
       val paint = titlePaint
       val text = paint.measureText(row.item.title)
       val reserve = if (row.submenu || row.back) CHEVRON_RESERVE else 0f
@@ -103,7 +126,19 @@ internal class GlassMenuContent(
 
     var y = Metrics.ContentInsetY * density
     val rowScale = max(fontScale, 1f)
+    var actionTop = y
     for (row in built) {
+      if (row.isAction) {
+        // The cells of one action row share its band; the band advances after the last cell.
+        if (row.column == 0) actionTop = y
+        val inset = Metrics.PlateInsetX * density
+        val cellWidth = (width - 2 * inset) / row.columns
+        val height = Metrics.ActionRowHeight * density
+        row.rect.set(inset + row.column * cellWidth, actionTop, inset + (row.column + 1) * cellWidth, actionTop + height)
+        if (row.column == row.columns - 1) y += height
+        row.title = TextUtils.ellipsize(row.item.title, actionPaint, cellWidth - 8f * density, TextUtils.TruncateAt.END)
+        continue
+      }
       val rowHeight = when {
         row.isSeparator -> Metrics.SeparatorBlock
         row.isHeading -> Metrics.HeadingHeight * rowScale
@@ -139,7 +174,11 @@ internal class GlassMenuContent(
   }
 
   fun rowAt(x: Float, y: Float): GlassRow? =
-    rows.firstOrNull { it.selectable && y >= it.rect.top && y < it.rect.bottom && x >= 0f && x <= width }
+    rows.firstOrNull {
+      it.selectable && y >= it.rect.top && y < it.rect.bottom &&
+        // An action cell is hit within its column; every other row spans the layout width.
+        (if (it.isAction) x >= it.rect.left && x <= it.rect.right else x >= 0f && x <= width)
+    }
 
   fun nearestRow(x: Float, y: Float, slack: Float): GlassRow? {
     if (x < -slack || x > width + slack || y < -slack || y > height + slack) return null
@@ -147,9 +186,14 @@ internal class GlassMenuContent(
     var distance = Float.MAX_VALUE
     for (row in rows) {
       if (!row.selectable) continue
-      val gap = when {
+      var gap = when {
         y < row.rect.top -> row.rect.top - y
         y > row.rect.bottom -> y - row.rect.bottom
+        else -> 0f
+      }
+      if (row.isAction) gap += when {
+        x < row.rect.left -> row.rect.left - x
+        x > row.rect.right -> x - row.rect.right
         else -> 0f
       }
       if (gap < distance) {
@@ -205,6 +249,14 @@ internal class GlassMenuContent(
     val alpha = if (row.item.disabled) .38f else 1f
     val base = if (row.item.destructive) destructive else foreground
     val color = withAlpha(base, alpha)
+    if (row.isAction) {
+      // One cell: the icon above the title, centred in the cell's column.
+      val cx = row.rect.centerX()
+      drawIcon(canvas, row.item.icon, row.item.iconPath, cx, row.rect.top + (Metrics.ActionIconTop + Metrics.ActionIconSize / 2f) * density, Metrics.ActionIconSize, color, 1.45f)
+      actionPaint.color = color
+      canvas.drawText(row.title, 0, row.title.length, cx, row.rect.bottom - Metrics.ActionTitleBottom * density, actionPaint)
+      return
+    }
     val left = rowLeading(row) * density
     if (row.isHeading) {
       subtitlePaint.color = muted
