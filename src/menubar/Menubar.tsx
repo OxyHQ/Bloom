@@ -429,7 +429,8 @@ function PopupMenuLayer({
         style={[
           {
             padding: density.panelPadding + POPUP_PANEL_BORDER,
-            minWidth: props.minWidth ?? MENU_WIDTH,
+            // `MENU_WIDTH`, or a desktop's floor (`DESKTOP_MENU_GEOMETRY`).
+            minWidth: props.minWidth ?? (density.desktop ? density.minWidth : MENU_WIDTH),
             maxWidth: props.maxWidth,
             maxHeight: props.maxHeight,
           },

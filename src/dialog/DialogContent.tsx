@@ -1,5 +1,10 @@
-import React, { useCallback, useEffect, useLayoutEffect, type ComponentRef } from 'react';
-import { AccessibilityInfo, View, type GestureResponderEvent } from 'react-native';
+import React, { useCallback, useEffect, useLayoutEffect, useState, type ComponentRef } from 'react';
+import {
+  AccessibilityInfo,
+  View,
+  type GestureResponderEvent,
+  type LayoutChangeEvent,
+} from 'react-native';
 
 import { Text } from '../typography';
 
@@ -9,6 +14,9 @@ import { Button } from '../button';
 import type { ButtonProps } from '../button/types';
 import { useAccessibilityFocus } from '../hooks/use-accessibility-focus';
 import { usePlatformKeyboard } from '../platform-surface/context';
+import { useDesktopPlatform } from '../platform-surface/use-desktop-platform';
+import { resolveLabelColors } from '../theme/label-colors';
+import { DESKTOP_TEXT_STYLES } from '../typography/desktop-scale';
 import { IS_WEB } from '../styles/platform';
 import { useDialogContext } from './context';
 import type { DialogAction, DialogActionColor } from './types';
@@ -32,6 +40,7 @@ export function DialogBody({
   descriptionId,
   title,
   description,
+  icon,
   actions,
   children,
 }: {
@@ -39,10 +48,27 @@ export function DialogBody({
   descriptionId: string;
   title?: string;
   description?: string;
+  /** Drawn above the title (`DialogProps.icon`). */
+  icon?: React.ReactNode;
   actions?: DialogAction[];
   children?: React.ReactNode;
 }) {
   const theme = useTheme();
+  const desktop = useDesktopPlatform();
+  if (desktop) {
+    return (
+      <DesktopDialogBody
+        titleId={titleId}
+        descriptionId={descriptionId}
+        title={title}
+        description={description}
+        icon={icon}
+        actions={actions}
+      >
+        {children}
+      </DesktopDialogBody>
+    );
+  }
   return (
     // A dialog is its own screen: chrome inside it claims THIS surface's top
     // edge and follows THIS surface's scroller, not the page's underneath
@@ -79,13 +105,138 @@ export function DialogBody({
           {description}
         </Text>
       ) : null}
+      {icon != null ? <View style={{ paddingBottom: 12 }}>{icon}</View> : null}
       {children}
       {actions && actions.length > 0 ? <ActionRow actions={actions} /> : null}
     </ScreenScope>
   );
 }
 
+/**
+ * A desktop platform's alert (`useDesktopPlatform()`): one layout for every
+ * dialog drawn from the declarative `title`/`description`/`actions`, whether
+ * an `AlertDialog`, a `confirm()`/`alert()` surface or an application's own
+ * `Dialog`. Left-aligned: the icon (an application's own, or a caution
+ * symbol) on top at {@link DESKTOP_ALERT_ICON_SIZE}, the title in the desktop
+ * `headline` style, the message in `callout` in the secondary label colour,
+ * then the buttons ({@link ActionRow}, desktop order).
+ */
+function DesktopDialogBody({
+  titleId,
+  descriptionId,
+  title,
+  description,
+  icon,
+  actions,
+  children,
+}: {
+  titleId: string;
+  descriptionId: string;
+  title?: string;
+  description?: string;
+  icon?: React.ReactNode;
+  actions?: DialogAction[];
+  children?: React.ReactNode;
+}) {
+  const theme = useTheme();
+  const labels = resolveLabelColors(theme);
+  return (
+    <ScreenScope>
+      {icon != null ? (
+        <View
+          testID="bloom-dialog-icon"
+          style={{
+            width: DESKTOP_ALERT_ICON_SIZE,
+            height: DESKTOP_ALERT_ICON_SIZE,
+            marginBottom: 12,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {icon}
+        </View>
+      ) : null}
+      {title ? (
+        <Text
+          nativeID={titleId}
+          style={{
+            ...DESKTOP_TEXT_STYLES.headline,
+            color: labels.label,
+            paddingBottom: description ? 6 : 16,
+          }}
+        >
+          {title}
+        </Text>
+      ) : null}
+      {description ? (
+        <Text
+          nativeID={descriptionId}
+          style={{ ...DESKTOP_TEXT_STYLES.callout, color: labels.secondary, paddingBottom: 16 }}
+        >
+          {description}
+        </Text>
+      ) : null}
+      {children}
+      {actions && actions.length > 0 ? <ActionRow actions={actions} /> : null}
+    </ScreenScope>
+  );
+}
+
+/** Whether `children` renders anything: a dialog with none is its declarative chrome alone. */
+export function hasChildren(children: React.ReactNode): boolean {
+  let any = false;
+  React.Children.forEach(children, (child) => {
+    if (child !== null && child !== undefined && child !== false && child !== '') any = true;
+  });
+  return any;
+}
+
+/** A desktop alert's icon: an application's icon or a caution symbol, this many px square. */
+export const DESKTOP_ALERT_ICON_SIZE = 56;
+
+/**
+ * A desktop alert's width (`Dialog` without children, on a desktop platform):
+ * narrow, so the title wraps to two short lines rather than running across.
+ */
+export const DESKTOP_ALERT_WIDTH = 280;
+
+/** A desktop alert's button height: a desktop's compact push button. */
+export const DESKTOP_ACTION_HEIGHT = 28;
+
+/** The least width of a desktop alert's button, so a short `OK` is still a target. */
+export const DESKTOP_ACTION_MIN_WIDTH = 72;
+
+/**
+ * Which of `actions` is the DEFAULT button on a desktop: the one that asks for
+ * the initial focus, else the first that is not a cancel. -1 when none is
+ * (every action is a cancel: `Done`, `Close`).
+ */
+export function desktopDefaultAction(actions: readonly DialogAction[]): number {
+  const focused = actions.findIndex((action) => action.initialFocus === true);
+  if (focused >= 0) return focused;
+  return actions.findIndex((action) => (action.color ?? 'default') !== 'cancel');
+}
+
+/**
+ * The buttons in a desktop's order. `row`: leading to trailing, the default
+ * LAST, so it sits at the trailing edge with the others (Cancel) before it.
+ * `stack`: top to bottom, the default FIRST, Cancel at the bottom. The others
+ * keep the order the caller gave them.
+ */
+export function desktopActionOrder(
+  actions: readonly DialogAction[],
+  layout: 'row' | 'stack',
+): DialogAction[] {
+  const index = desktopDefaultAction(actions);
+  if (index < 0) return [...actions];
+  const others = actions.filter((_, i) => i !== index);
+  const primary = actions[index]!;
+  return layout === 'row' ? [...others, primary] : [primary, ...others];
+}
+
 export function ActionRow({ actions }: { actions: DialogAction[] }) {
+  const desktop = useDesktopPlatform();
+  if (desktop) return <DesktopActionRow actions={actions} />;
   return (
     <View style={{ width: '100%', gap: 8, justifyContent: 'flex-end' }}>
       {actions.map((action, idx) => (
@@ -95,7 +246,53 @@ export function ActionRow({ actions }: { actions: DialogAction[] }) {
   );
 }
 
-function ActionButton({ action }: { action: DialogAction }) {
+/**
+ * A desktop's buttons: each as wide as its label (at least
+ * {@link DESKTOP_ACTION_MIN_WIDTH}), side by side at the trailing edge with
+ * the default last; stacked full width with the default on top when there are
+ * three or more, or when two do not fit side by side.
+ */
+function DesktopActionRow({ actions }: { actions: DialogAction[] }) {
+  const [room, setRoom] = useState(0);
+  const [needed, setNeeded] = useState(0);
+  const stacked = actions.length >= 3 || (room > 0 && needed > room);
+  const ordered = desktopActionOrder(actions, stacked ? 'stack' : 'row');
+  return (
+    <View
+      testID="bloom-dialog-actions"
+      onLayout={(event: LayoutChangeEvent) => setRoom(event.nativeEvent.layout.width)}
+      style={{ width: '100%' }}
+    >
+      {stacked ? (
+        <View style={{ gap: 8 }}>
+          {ordered.map((action, idx) => (
+            <ActionButton key={`${action.label}-${idx}`} action={action} desktop="stack" />
+          ))}
+        </View>
+      ) : (
+        <View
+          // Sized by its buttons, never shrunk: its width is what the row needs,
+          // which the alert compares with its own to decide to stack.
+          onLayout={(event: LayoutChangeEvent) => setNeeded(event.nativeEvent.layout.width)}
+          style={{ flexDirection: 'row', alignSelf: 'flex-end', flexShrink: 0, gap: 8 }}
+        >
+          {ordered.map((action, idx) => (
+            <ActionButton key={`${action.label}-${idx}`} action={action} desktop="row" />
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
+function ActionButton({
+  action,
+  desktop,
+}: {
+  action: DialogAction;
+  /** A desktop's button (`DesktopActionRow`): beside the others, or one of a stack. */
+  desktop?: 'row' | 'stack';
+}) {
   const { close } = useDialogContext();
   // The default button: the keyboard and the screen reader start on it, as a
   // Mac's alert starts on its default button.
@@ -159,19 +356,39 @@ function ActionButton({ action }: { action: DialogAction }) {
   return (
     <Button
       ref={ref}
-      {...ACTION_APPEARANCE[color]}
-      size="lg"
+      {...(desktop ? DESKTOP_ACTION_APPEARANCE : ACTION_APPEARANCE)[color]}
+      size={desktop ? 'sm' : 'lg'}
       disabled={action.disabled}
       loading={action.loading}
       onPress={() => handlePress()}
       accessibilityLabel={action.label}
       testID={action.testID}
-      style={{ width: '100%' }}
+      style={
+        desktop === 'row'
+          ? { height: DESKTOP_ACTION_HEIGHT, minWidth: DESKTOP_ACTION_MIN_WIDTH, flexShrink: 0 }
+          : desktop === 'stack'
+            ? { height: DESKTOP_ACTION_HEIGHT, width: '100%' }
+            : { width: '100%' }
+      }
     >
       {action.label}
     </Button>
   );
 }
+
+/**
+ * A desktop's buttons: the default filled with the accent, the others quiet
+ * outlined buttons rather than tinted fills, so the accent is the one colour
+ * in the alert. Destructive keeps its colour.
+ */
+const DESKTOP_ACTION_APPEARANCE: Record<
+  DialogActionColor,
+  Pick<ButtonProps, 'appearance' | 'tone'>
+> = {
+  default: { appearance: 'solid', tone: 'accent' },
+  cancel: { appearance: 'outline', tone: 'neutral' },
+  destructive: { appearance: 'solid', tone: 'danger' },
+};
 
 /** Dialog actions use the same semantic recipe as standalone buttons. */
 const ACTION_APPEARANCE: Record<DialogActionColor, Pick<ButtonProps, 'appearance' | 'tone'>> = {

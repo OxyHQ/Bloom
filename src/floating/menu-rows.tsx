@@ -58,8 +58,9 @@ import {
 } from './constants';
 import { MenuRadioGroupProvider, useMenuRadioGroup, useMenuSurface } from './context';
 import { useMenuPalette } from './menu-palette';
-import { menuType, menuTypeClass } from './menu-type';
-import { cx, MenuRowShell, splitChildren } from './shared';
+import { MENU_FONT_FAMILY, menuType, menuTypeClass } from './menu-type';
+import { cx, MenuRowGlyph, MenuRowShell, splitChildren, useMenuRowInk } from './shared';
+import { DESKTOP_TEXT_STYLES } from '../typography/desktop-scale';
 import { useMenuRowAlignment } from './menu-row-alignment';
 import { MenuSwatchRow } from './menu-swatch-row';
 
@@ -101,6 +102,9 @@ function IndicatorGutter({
   children: React.ReactNode;
 }) {
   const density = useMenuDensity();
+  // A desktop platform's row draws its mark itself (`MenuRowShell indicator`), so the
+  // mark takes the row's ink under the accent highlight.
+  if (density.desktop) return <>{children}</>;
   return (
     <StyledView className="relative">
       {children}
@@ -112,6 +116,17 @@ function IndicatorGutter({
         {indicator}
       </StyledView>
     </StyledView>
+  );
+}
+
+/** A desktop's radio mark: a 6px dot in the row's ink (the accent's foreground while highlighted). */
+function MenuRadioDot() {
+  const palette = useMenuPalette();
+  const ink = useMenuRowInk();
+  return (
+    <StyledView
+      style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: ink ?? palette.text }}
+    />
   );
 }
 
@@ -200,13 +215,19 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
   }: MenuCheckboxRowProps) {
     const palette = useMenuPalette();
     const surface = useMenuSurface();
+    const density = useMenuDensity();
     const { title, body } = splitChildren(children);
-    // The selection tick: `size-4 shrink-0 text-text-secondary`.
+    // The selection tick: `size-4 shrink-0 text-text-secondary`. A desktop's is
+    // the text's size, in the label's own ink (the accent's foreground while
+    // highlighted), and a checked row is not painted as highlighted: the check
+    // says it.
     const selectedIndicator =
-      indicator === undefined ? (
-        <CheckIcon width={ROW_ICON_SIZE} height={ROW_ICON_SIZE} fill={palette.textSecondary} />
-      ) : (
+      indicator !== undefined ? (
         indicator
+      ) : density.desktop ? (
+        <MenuRowGlyph Icon={CheckIcon} fill={palette.text} />
+      ) : (
+        <CheckIcon width={ROW_ICON_SIZE} height={ROW_ICON_SIZE} fill={palette.textSecondary} />
       );
 
     return (
@@ -214,7 +235,8 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
         <MenuRowShell
           role="checkbox"
           checked={checked}
-          selected={checked}
+          selected={density.desktop ? false : checked}
+          indicator={density.desktop ? (checked ? selectedIndicator : null) : undefined}
           disabled={disabled}
           gutter={indicatorPosition}
           leading={leading}
@@ -271,18 +293,27 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     const group = useMenuRadioGroup();
     const { title, body } = splitChildren(children);
     const checked = group.value === value;
+    const density = useMenuDensity();
     // `bg-foreground h-2 w-2 rounded-full`: the established default remains a
     // filled dot. A caller-supplied node replaces only this selected mark; the
-    // shared gutter and ARIA state remain owned here.
+    // shared gutter and ARIA state remain owned here. A desktop's dot takes the
+    // row's ink, and the chosen row is marked by it, not highlighted.
     const selectedIndicator =
-      indicator === undefined ? <StyledView className={ROW_RADIO_DOT_CLASS} /> : indicator;
+      indicator !== undefined ? (
+        indicator
+      ) : density.desktop ? (
+        <MenuRadioDot />
+      ) : (
+        <StyledView className={ROW_RADIO_DOT_CLASS} />
+      );
 
     return (
       <IndicatorGutter position={indicatorPosition} indicator={checked ? selectedIndicator : null}>
         <MenuRowShell
           role="radio"
           checked={checked}
-          selected={checked}
+          selected={density.desktop ? false : checked}
+          indicator={density.desktop ? (checked ? selectedIndicator : null) : undefined}
           disabled={disabled}
           gutter={indicatorPosition}
           leading={leading}
@@ -309,6 +340,13 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     const density = useMenuDensity();
     const type = 'caption-1-medium';
     const column = useMenuRowAlignment(NO_ROW_TRAITS);
+    // A desktop's group label: the subheadline (11/14), semibold, in the
+    // secondary label level.
+    const labelType = density.desktop
+      ? className
+        ? MENU_FONT_FAMILY
+        : { ...DESKTOP_TEXT_STYLES.subheadline, fontWeight: '600' as const, ...MENU_FONT_FAMILY }
+      : menuType(type, className);
     const aligned = inset || column.gutter;
     // The group label: `pl-2 text-body-medium text-text-secondary` — the
     // rows' size and weight, one step back in colour. The colour is inline only
@@ -324,7 +362,7 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
           className,
         )}
         style={[
-          menuType(type, className),
+          labelType,
           aligned ? { paddingLeft: density.gutter } : null,
           className ? null : { color: palette.textSecondary },
           style,
@@ -343,14 +381,51 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     // negative inset is what makes the rule reach the panel's edge through its
     // own `p-2.5`, and a hairline is not what the target draws — `h-px` is one
     // whole pixel.
+    // A desktop's rule is inset from the panel's padding with room above and
+    // below (`DESKTOP_MENU_GEOMETRY`), inline as well as in the class.
     return (
-      <StyledView className={density.separatorClass} style={{ backgroundColor: palette.border }} />
+      <StyledView
+        className={density.separatorClass}
+        style={
+          density.desktop
+            ? {
+                height: 1,
+                marginLeft: density.separatorMargin,
+                marginRight: density.separatorMargin,
+                marginTop: density.separatorMargin,
+                marginBottom: density.separatorMargin,
+                backgroundColor: palette.border,
+              }
+            : { backgroundColor: palette.border }
+        }
+      />
     );
   }
   MenuSeparator.displayName = `${prefix}Separator`;
 
   function MenuShortcut({ children, className, style }: MenuShortcutProps) {
     const palette = useMenuPalette();
+    const density = useMenuDensity();
+    const ink = useMenuRowInk();
+    if (density.desktop) {
+      // A desktop's key column: the row's own body size, in the secondary label
+      // level (the accent's foreground while the row is highlighted), clear of
+      // the label by 16px and pushed to the trailing edge.
+      return (
+        <StyledText
+          numberOfLines={1}
+          className={cx(ROW_SHORTCUT_CLASS, className)}
+          style={[
+            className ? MENU_FONT_FAMILY : { ...density.rowType, ...MENU_FONT_FAMILY },
+            { paddingLeft: 16, textAlign: 'right' },
+            className && ink == null ? null : { color: ink ?? palette.textSecondary },
+            style,
+          ]}
+        >
+          {children}
+        </StyledText>
+      );
+    }
     return (
       <StyledText
         className={cx(

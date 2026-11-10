@@ -34,7 +34,8 @@ import {
 } from './constants';
 import { createTextBubble } from './TextBubble';
 import type { TooltipProps } from './types';
-import { useDelayedVisibility } from './use-delayed-visibility';
+import { DESKTOP_TOOLTIP_DELAY, useDelayedVisibility } from './use-delayed-visibility';
+import { useDesktopPlatform } from '../platform-surface/use-desktop-platform';
 import { TooltipCaret } from './TooltipCaret';
 import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 import { TooltipDescriptionContext } from '../hooks/use-described-by-hint';
@@ -85,10 +86,16 @@ export function Tooltip({
   children,
   position = 'bottom',
   visible: visibleProp,
-  delay = 0,
+  delay: delayProp,
   onVisibleChange,
 }: TooltipProps) {
-  const requestVisible = useDelayedVisibility(visibleProp, delay);
+  // A desktop's help tag waits under a resting pointer; an explicit `delay` wins.
+  const desktop = useDesktopPlatform();
+  const requestVisible = useDelayedVisibility(
+    visibleProp,
+    delayProp ?? (desktop ? DESKTOP_TOOLTIP_DELAY : 0),
+    desktop && delayProp === undefined,
+  );
   /**
    * Lagging state to track the externally-controlled visibility of the
    * tooltip, which needs to wait for the target to be measured before

@@ -134,9 +134,9 @@ describe('a submenu on a desktop flies out beside its row, in a popup of its own
     expect(platform.popups.get('flyout')).toMatchObject({
       side: 'right',
       align: 'start',
-      // The 2px seam, measured from the parent panel's edge: its 6px padding and 1px border
-      // are between the row and that edge.
-      sideOffset: 9,
+      // The 2px seam, measured from the parent panel's edge: a desktop menu's 5px padding
+      // (`DESKTOP_MENU_GEOMETRY`) and its 1px border are between the row and that edge.
+      sideOffset: 8,
       alignOffset: 0,
       role: 'menu',
     });

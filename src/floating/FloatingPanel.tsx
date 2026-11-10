@@ -272,7 +272,11 @@ export function FloatingPanel({
     undefined,
     undefined,
     StyleSheet.flatten(style)?.borderRadius ??
-      (surface === 'popover' ? undefined : SURFACE_SHAPES.menu.radius),
+      (surface === 'popover'
+        ? undefined
+        : density.desktop
+          ? density.panelRadius
+          : SURFACE_SHAPES.menu.radius),
   );
   const transparentFill = ownFill === 'transparent' || parsedFill?.a === 0;
   // The mounted panel as STATE, not a bare ref: placement has to measure it,
@@ -621,6 +625,14 @@ export function FloatingPanel({
             // `bg-background-primary-default border-border-button-default
             // shadow-dropdown`, resolved from the theme. Inline, and BEFORE the
             // caller's `style`, which still overrides it.
+            // A desktop platform's menu: a 10px corner and no 266px floor (its
+            // rows set its width), before the caller's own.
+            isMenuSurface && density.desktop
+              ? {
+                  borderRadius: density.panelRadius,
+                  ...(minWidth === undefined ? { minWidth: density.minWidth } : null),
+                }
+              : null,
             isMenuSurface
               ? {
                   backgroundColor: palette.surface,

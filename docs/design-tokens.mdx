@@ -261,6 +261,28 @@ the page and measures 2.42:1 on a chart card.
 Gates: `surface-levels.test.ts` (both spellings agree, and clear AA, over all 64
 presets x 2 modes) and `surface-level-adoption.test.ts` (the families).
 
+## Neutral surfaces and the label levels
+
+`BloomThemeProvider surfaces` decides how the surfaces take the preset's colour
+(`SurfaceTint`). `tinted` carries its hue through the page, the surface rungs,
+the text and the boundaries. `neutral` draws them in greys of no hue at the
+same tones, and drops an authored surface ladder (the Oxy preset's pink page
+and aubergine dark), so the hue is left to the accent alone: selection, the
+default button, the focus ring, a switch that is on. The default is `neutral`
+on a desktop platform (`useDesktopPlatform()`), whose windows stay neutral
+whatever the accent, and `tinted` elsewhere. It travels with the pinned accents
+(`ExplicitAccents.surfaces`), so the scope vars, the JS theme and the cache all
+key on it.
+
+`resolveLabelColors(theme)` / `useLabelColors()` give the four levels of label
+ink a desktop's chrome is drawn in: the theme's `text` at alpha 1, 0.65, 0.42
+and 0.18 (`LABEL_ALPHA`). Composited over whatever they land on, each level
+reads the same on every surface. `secondary` holds 4.5:1 against the page and
+every surface rung in both modes; `tertiary` is a placeholder's and a disabled
+row's; `quaternary` is never text (a separator, a quiet fill).
+`colors.textTertiary` keeps its meaning (the one AA-legible quiet text colour,
+equal to `textSecondary`); `tertiary` is the level below it.
+
 ## Surfaces above the page
 
 The ramp below answers where the PAGE's own rungs sit. It does not answer "the

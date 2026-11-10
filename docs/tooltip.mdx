@@ -72,6 +72,14 @@ Closing is immediate and the default is `0`. A request that should show at once
 <Tooltip visible={hovered || focused} delay={focused ? 0 : 200} onVisibleChange={setOpen}>
 ```
 
+On a desktop platform (`useDesktopPlatform()`: an OxyOS window or shell) an
+unset `delay` is `DESKTOP_TOOLTIP_DELAY`, one second: a help tag waits under a
+resting pointer. Once one has shown, its neighbours show at once while it is up
+and for `TOOLTIP_WARM_WINDOW` (500 ms) after it closes, so moving along a row of
+controls reads their tags in turn. A tooltip that names its trigger and must
+show at once (a dock's application names) passes `delay={0}`; an explicit
+`delay` always wins. Off a desktop platform the default stays `0`.
+
 `TooltipTextBubble` renders its own content surface, so it is a **sibling** of
 the trigger inside `Tooltip`, not something you wrap in a `TooltipContent`.
 

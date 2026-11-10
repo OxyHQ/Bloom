@@ -35,7 +35,7 @@ import { KEYBOARD_ACTIVATION, type PopupSubmenu, usePopupNavigationRow } from '.
  * DOM, so a layout class and a visual class cannot land in different places.
  */
 import type React from 'react';
-import { type ComponentRef, useEffect, useRef } from 'react';
+import { type ComponentRef, createContext, useContext, useEffect, useRef } from 'react';
 import {
   AccessibilityInfo,
   Platform,
@@ -56,6 +56,7 @@ import { FOCUS_SETTLE_MS } from '../hooks/use-accessibility-focus';
 import {
   ROW_CHEVRON_CLASS,
   ROW_CLASS,
+  ROW_DESKTOP_ENABLED_CLASS,
   ROW_DISABLED_CLASS,
   ROW_DISABLED_DIM_CLASS,
   ROW_ENABLED_CLASS,
@@ -66,8 +67,9 @@ import {
   ROW_TEXT_CLASS,
 } from './constants';
 import { useMenuPalette } from './menu-palette';
-import { menuType } from './menu-type';
+import { MENU_FONT_FAMILY } from './menu-type';
 import type { WebCssStyle } from '../styles/web-view-style';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
  * The row highlight's `transition-colors` (150ms). Web only: on
@@ -82,6 +84,29 @@ const ROW_TRANSITION: WebCssStyle | null =
         transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
       }
     : null;
+
+/**
+ * The ink of what a row draws on itself while the accent highlights it (a
+ * desktop platform's `MenuPalette.rowActive`): the accent's foreground, for its
+ * shortcut, check, radio dot and chevron. Null while the row is not highlighted
+ * with the accent, where each part keeps its own colour.
+ */
+const MenuRowInkContext = createContext<string | null>(null);
+MenuRowInkContext.displayName = 'BloomMenuRowInkContext';
+
+export function useMenuRowInk(): string | null {
+  return useContext(MenuRowInkContext);
+}
+
+/**
+ * A glyph a row draws itself (the check, the sub-menu chevron): the density's
+ * glyph size, in the row's ink while the accent highlights it, else `fill`.
+ */
+export function MenuRowGlyph({ Icon, fill }: { Icon: BloomIconComponent; fill: string }) {
+  const ink = useMenuRowInk();
+  const density = useMenuDensity();
+  return <Icon width={density.glyphSize} height={density.glyphSize} fill={ink ?? fill} />;
+}
 
 /**
  * Join class strings, dropping the empty ones.
@@ -164,6 +189,13 @@ export interface MenuRowShellProps {
   trailing?: React.ReactNode;
   /** A plain-string child, rendered as the row's own label. */
   title?: string;
+  /**
+   * The check or radio mark, drawn in the row's own gutter at `gutter`'s edge
+   * so it takes the row's ink while highlighted. Only a desktop platform's
+   * rows draw it here (`menu-rows.tsx`); elsewhere the mark is laid over the
+   * row from outside, as it always was.
+   */
+  indicator?: React.ReactNode;
   onPress: (event: GestureResponderEvent) => void;
   /** The submenu this row opens, for a platform popup's keyboard (`popup-navigation.tsx`). */
   submenu?: PopupSubmenu;
@@ -214,6 +246,7 @@ export function MenuRowShell({
   leading,
   trailing,
   title,
+  indicator,
   onPress,
   submenu,
   accessibilityLabel,
@@ -260,10 +293,12 @@ export function MenuRowShell({
       selected ||
       current);
 
+  // A desktop platform highlights with the accent, and everything on the row takes its ink.
+  const active = highlighted ? palette.rowActive : null;
   const rowClass = cx(
     ROW_CLASS,
     density.rowClass,
-    disabled ? ROW_DISABLED_CLASS : ROW_ENABLED_CLASS,
+    disabled ? ROW_DISABLED_CLASS : density.desktop ? ROW_DESKTOP_ENABLED_CLASS : ROW_ENABLED_CLASS,
     disabled && title == null && ROW_DISABLED_DIM_CLASS,
     gutter === 'leading'
       ? ROW_GUTTER_CLASS
@@ -276,9 +311,23 @@ export function MenuRowShell({
   );
   const labelColor = disabled
     ? palette.textDisabled
-    : destructive
-      ? palette.destructive
-      : palette.text;
+    : active
+      ? active.text
+      : destructive
+        ? palette.destructive
+        : palette.text;
+  // A desktop's row geometry inline as well as in `rowClass`, as the gap below
+  // is, while the caller passes no `className` (which keeps the final say).
+  const desktopGeometry =
+    density.desktop && className == null
+      ? {
+          minHeight: density.height,
+          paddingTop: (density.height - (density.rowType.lineHeight ?? 16)) / 2,
+          paddingBottom: (density.height - (density.rowType.lineHeight ?? 16)) / 2,
+          paddingLeft: 8,
+          paddingRight: 8,
+        }
+      : null;
 
   return (
     <StyledPressable
@@ -344,7 +393,13 @@ export function MenuRowShell({
       style={[
         ROW_TRANSITION,
         {
-          backgroundColor: highlighted ? palette.rowHighlight : 'transparent',
+          backgroundColor: highlighted ? (active?.fill ?? palette.rowHighlight) : 'transparent',
+          ...desktopGeometry,
+          ...(density.rowRadius != null ? { borderRadius: density.rowRadius } : null),
+          // The arrow, not the hand (`ROW_DESKTOP_ENABLED_CLASS`): native spells it `auto`.
+          ...(density.desktop && !disabled && Platform.OS !== 'web'
+            ? { cursor: 'auto' as const }
+            : null),
           ...(gutter === 'leading' || insetToColumn ? { paddingLeft: density.gutter } : null),
           ...(gutter === 'trailing' ? { paddingRight: density.gutter } : null),
           ...(density.touch ? { minHeight: 44 } : null),
@@ -358,33 +413,66 @@ export function MenuRowShell({
       ]}
       testID={testID}
     >
-      {leading != null || leadingSpacer ? (
-        <StyledView
-          className={ROW_LEADING_CLASS}
-          style={{ width: density.leadingSize, alignItems: 'center', justifyContent: 'center' }}
-          {...(leadingSpacer ? { 'aria-hidden': true } : null)}
-        >
-          {leading}
-        </StyledView>
-      ) : null}
-      {title != null ? (
-        <StyledText
-          numberOfLines={1}
-          className={ROW_TEXT_CLASS}
-          // `text-body-medium`, in Inter.
-          style={[menuType(density.type), { color: labelColor }]}
-        >
-          {title}
-        </StyledText>
-      ) : (
-        children
-      )}
-      {/* No wrapper: the shortcut's own `ms-auto` and the chevron's have to act
+      <MenuRowInkContext.Provider value={active?.text ?? null}>
+        {indicator !== undefined ? (
+          <StyledView
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              ...(gutter === 'trailing'
+                ? { right: density.indicatorInset }
+                : { left: density.indicatorInset }),
+              width: density.indicatorSize,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {indicator}
+          </StyledView>
+        ) : null}
+        {leading != null || leadingSpacer ? (
+          <StyledView
+            className={ROW_LEADING_CLASS}
+            style={{ width: density.leadingSize, alignItems: 'center', justifyContent: 'center' }}
+            {...(leadingSpacer ? { 'aria-hidden': true } : null)}
+          >
+            {leading}
+          </StyledView>
+        ) : null}
+        {title != null ? (
+          <StyledText
+            numberOfLines={1}
+            className={ROW_TEXT_CLASS}
+            // `text-body-medium`, in Inter (a desktop's body, `DESKTOP_TEXT_STYLES.body`).
+            style={
+              // A desktop's menu is as wide as its widest row: the label counts at
+              // its own width (`flex-1` alone makes its basis 0, so a panel sized
+              // by its content cut every label at the width floor).
+              density.desktop
+                ? [
+                    { ...density.rowType, ...MENU_FONT_FAMILY },
+                    { color: labelColor },
+                    DESKTOP_LABEL_BASIS,
+                  ]
+                : [{ ...density.rowType, ...MENU_FONT_FAMILY }, { color: labelColor }]
+            }
+          >
+            {title}
+          </StyledText>
+        ) : (
+          children
+        )}
+        {/* No wrapper: the shortcut's own `ms-auto` and the chevron's have to act
           on a direct flex child of the row, and a slot view would absorb them. */}
-      {trailing}
+        {trailing}
+      </MenuRowInkContext.Provider>
     </StyledPressable>
   );
 }
+
+const DESKTOP_LABEL_BASIS = { flexBasis: 'auto' } as const;
 
 /**
  * The sub-trigger's chevron slot — `size-4 shrink-0 ms-auto`. A component rather

@@ -93,6 +93,33 @@ Layout classes on web need the consumer's Tailwind pipeline to be scanning Bloom
 
 A feed row draws dozens of texts, so `Text` is kept cheap. Without a `className` there is nothing for react-native-css to resolve, and `Text` renders React Native's text node directly: on native one component, no hook slot, and two context reads (the theme and the typography scope). The display face's Bold cut is chosen from the same style it would be under the interop. Only a `Text` with a `className` mounts the interop host that resolves the utilities. `useThemePaint` reads the prepaint context on the web alone (`theme/prepaint/use-paint-colors.native.ts`). `src/typography/__tests__/text-host-cost.test.tsx` pins these numbers.
 
+## Desktop text styles
+
+On a desktop platform (`useDesktopPlatform()`) Bloom's ramp is drawn in the
+desktop text styles (`DESKTOP_TEXT_STYLES`, `DESKTOP_TYPE_SCALE`): one style per
+role, each with its size, line height and weight, and tracking by size
+(`DESKTOP_TRACKING`: +0.12 at 10, 0 at 12, −0.08 at 13, −0.43 at 17, back to
+positive from 24).
+
+| Role | Size/line | Weight | Bloom steps drawn in it |
+|---|---|---|---|
+| `large-title` | 26/32 | regular | — |
+| `title-1` | 22/26 | regular | `title-1-*` |
+| `title-2` | 17/22 | regular | `title-2-*` |
+| `title-3` | 15/20 | regular | `title-3-*`, `headline-*` |
+| `headline` | 13/16 | bold | an alert's title |
+| `body` | 13/16 | regular | `body-*`, an unsized `Text` |
+| `callout` | 12/15 | regular | `body-2-*` |
+| `subheadline` | 11/14 | regular | `caption-1-*`, a menu's group label |
+| `footnote`, `caption-1`, `caption-2` | 10/13 | regular, regular, medium | `caption-2-*` |
+
+A step keeps its own weight (`body-semibold` is the body role, semibold). The
+hero steps (`large-title`, `display-*`) keep their size and their display face;
+`title-*` and headings are set in the sans on a desktop. `TypographyScope
+scale="desktop"` asks for these styles off a desktop platform and
+`scale="default"` keeps Bloom's ramp on one; `useDesktopTypography()` reads the
+answer.
+
 ## Local system-font scope
 
 `<TypographyScope mode="system">` changes the font family of Bloom text and composed controls in its subtree to the platform system font. Semantic variants retain their size, weight and spacing. It applies to headings, body text, buttons and segmented controls without changing global fonts. `mode="default"` explicitly returns to Bloom families; omitted mode inherits the enclosing scope. The provider is stable across mode changes, preserving mounted controls and media.

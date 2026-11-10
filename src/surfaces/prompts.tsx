@@ -105,6 +105,7 @@ export function confirm(options: SurfaceConfirmOptions): Promise<boolean> {
       dismissOnBackdrop: options.dismissible ?? true,
       title: options.title,
       description: options.description,
+      icon: options.icon,
       label: options.title,
       actions: (surface, locale) => {
         // Defaults resolve here, as the surface renders — `confirm()` itself runs

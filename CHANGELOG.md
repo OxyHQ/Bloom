@@ -1,10 +1,29 @@
 # Changelog
 
-## 17.43.0
+## 17.44.0
 
 ### Added
 
 - **`AgentCreator sections` and `AgentCreatorSection`**: titled cards of the host's own below the details card, for what an agent *has* beyond who it is (its schedule, its inbox, what it remembers). `AgentCreatorSection title` draws the card with the details card's surface, radius and inset; its rows are `AgentCreatorField`s (or any row of the host's). They scroll with the rest of the editor. `children` stays the way to add rows to the details card itself.
+
+## 17.42.0
+
+### Added
+
+On a **desktop platform** (`useDesktopPlatform()`: an adapter reporting `window` or `pointer`, an OxyOS window or shell) Bloom draws a desktop's own compact chrome. Phones and the web are unchanged.
+
+- **Desktop text styles** (`DESKTOP_TEXT_STYLES`, `DESKTOP_TYPE_SCALE`, `DESKTOP_TRACKING`, `desktopTextStyle`, `resolveTypeScale`): one style per role, 13/16 body, tracking by size; `Text` variants map onto them and titles take the sans. `TypographyScope scale` opts in or out.
+- **Neutral surfaces** (`BloomThemeProvider surfaces`, `SurfaceTint`, `ExplicitAccents.surfaces`): page, surfaces, text and boundaries in greys of no hue, the default on a desktop; the accent stays the seed's.
+- **Label levels** (`resolveLabelColors`, `useLabelColors`, `LABEL_ALPHA`): the ink at 1 / 0.65 / 0.42 / 0.18.
+- **Compact desktop menus**: 22px rows of 13px text, 5px panel padding, radius 10/5, content width (120 floor), accent highlight, a clear shadow, the arrow pointer, shortcuts in a trailing column (`DESKTOP_MENU_GEOMETRY`, `DESKTOP_MENU_SHADOW`).
+- **One desktop alert layout** for `AlertDialog`, `confirm()`/`alert()` and declarative `Dialog`: narrow, icon, bold title, buttons sized to their labels, the default accent-filled, trailing in a row and on top of a stack. New `icon` on `Dialog`, `AlertDialog` and `confirm()`.
+- **Tooltip delay** of one second on a desktop, with a 500 ms warm window (`DESKTOP_TOOLTIP_DELAY`, `TOOLTIP_WARM_WINDOW`); an explicit `delay` wins.
+- **The platform's material**: the `material` capability and its `Material` view (`PlatformMaterialProps`, `usePlatformMaterial()`), drawn under a floating surface's tint.
+
+### Fixed
+
+- The settings rail's hover is the documented 60% wash, no longer the selected fill.
+- `Switch` fades disabled at the one `DISABLED_OPACITY` (0.5), not 0.4.
 
 ## 17.41.0
 

@@ -283,6 +283,19 @@ The panel and rows share one menu recipe, used by `DropdownMenu`, `ContextMenu`,
 
 These colours come from the theme through `button/shared.ts`'s ramps (`floating/menu-palette.ts`) and are applied INLINE, since the ramp stops exist as no CSS variable. A caller's `style` still overrides them; a `className` on a label or shortcut drops the inline colour so a `text-*` utility applies. The leading slot no longer dims its icon — pass the glyph in `text-secondary`.
 
+### On a desktop platform
+
+Where the platform is a desktop (`useDesktopPlatform()`: an adapter reporting `window` or `pointer`, an OxyOS window or shell), every menu (`DropdownMenu`, `ContextMenu`, `Menubar`'s menus and their sub-menus) takes one compact desktop recipe, the same at every size (`DESKTOP_MENU_GEOMETRY`, `appearance/control-geometry.ts`). A browser is never a desktop platform by this test, so the web and phones keep the look above.
+
+- **Panel** — as wide as its widest row, never below 120px (no 266px floor; `minWidth` still wins), 5px padding, 10px corner, rows touching (no row gap), and `DESKTOP_MENU_SHADOW`: a half-pixel hairline over a soft drop, so the panel separates from a light window.
+- **Row** — 22px: the desktop body (13/16, −0.08 tracking) with 3px above and below, 8px from the row's edges, a 5px corner (concentric with the panel's 10). Hover, keyboard focus and a `current` row paint the ACCENT (`colors.primary`), and everything the row draws takes its foreground: label, shortcut, check, radio dot and chevron (`MenuRowGlyph`, `useMenuRowInk()`; a caller's own leading icon keeps its colour). A checked checkbox or radio row is marked by its check alone, not painted. Disabled rows are the tertiary label level (`resolveLabelColors`) and never highlight. The pointer stays the arrow (`cursor-default`; `cursor: 'auto'` on native), never the hand.
+- **Check and radio** — a 12px mark in a 20px gutter, 5px from the row's edge, drawn by the row itself.
+- **Label** — the subheadline (11/14) semibold, in the secondary label level.
+- **Shortcut** — a trailing column in the row's body size, the secondary label level, 16px clear of the label.
+- **Separator** — a 1px rule inset 5px from the panel's padding, 5px above and below.
+
+The menu bar's in-window title lights with the same accent while its menu is open.
+
 ## Size and viewport ownership
 
 Action rows inherit the app's `BloomScope size` through portals and submenus;
