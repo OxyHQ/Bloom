@@ -1,5 +1,11 @@
 # Changelog
 
+## 18.4.2
+
+### Fixed
+
+- **A desktop alert starts on its default button.** 17.42.0 put the default button last in a desktop alert's row, but only an action that asked for the initial focus (`initialFocus`, `defaultAction`) took it, so an alert that asked for none (a `confirm()`, OxyOS Settings' sign-out) started the keyboard and the screen reader on its first button, Cancel. On a desktop the default button now takes it when no action asks (`desktopInitialFocus`), as a Mac's alert does; one that asks still wins (`defaultAction: 'cancel'`).
+
 ## 18.4.1
 
 ### Fixed

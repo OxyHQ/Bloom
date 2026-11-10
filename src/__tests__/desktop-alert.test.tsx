@@ -15,6 +15,7 @@ import {
   DESKTOP_ALERT_WIDTH,
   desktopActionOrder,
   desktopDefaultAction,
+  desktopInitialFocus,
   hasChildren,
 } from '../dialog/DialogContent';
 import type { DialogAction } from '../dialog/types';
@@ -51,6 +52,23 @@ describe('desktop alert order', () => {
       ]),
     ).toBe(0);
     expect(desktopDefaultAction([{ label: 'Done', color: 'cancel' }])).toBe(-1);
+  });
+
+  it('starts the keyboard and the reader on the default button when no action asks', () => {
+    // A confirm without `defaultAction`: its first action used to be where a
+    // reader began, and a desktop's row puts the default last.
+    const signOut: DialogAction[] = [
+      { label: 'Sign Out', color: 'default' },
+      { label: 'Cancel', color: 'cancel' },
+    ];
+    expect(desktopInitialFocus(signOut)).toBe(0);
+    expect(desktopInitialFocus(QUIT)).toBe(2);
+    const safe: DialogAction[] = [
+      { label: 'Erase', color: 'destructive' },
+      { label: 'Cancel', color: 'cancel', initialFocus: true },
+    ];
+    expect(desktopInitialFocus(safe)).toBe(1);
+    expect(desktopInitialFocus([{ label: 'Done', color: 'cancel' }])).toBe(-1);
   });
 
   it('puts the default last in a row and first in a stack, the rest in the caller order', () => {
