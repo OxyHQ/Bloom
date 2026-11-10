@@ -49,8 +49,7 @@ const clickButton = async (button, name) => {
   // A mouse click at the proven hit-test point still exercises real dispatch.
   await page.mouse.click(point.x, point.y);
 };
-const control = (name) =>
-  clickButton(page.getByRole('button', { name, exact: true }), name);
+const control = (name) => clickButton(page.getByRole('button', { name, exact: true }), name);
 const settled = () =>
   page.getByTestId('isolated').evaluate(async (el) => {
     await Promise.all(
@@ -120,10 +119,7 @@ try {
     }
     await control('streaming');
     const before = (await state()).stops;
-    await clickButton(
-      page.getByTestId(id).getByRole('button', { name: /stop/i }),
-      `${id} Stop`,
-    );
+    await clickButton(page.getByTestId(id).getByRole('button', { name: /stop/i }), `${id} Stop`);
     assert.equal((await state()).stops, before + 1);
     await input.press('Control+End');
     await input.pressSequentially('Z');
