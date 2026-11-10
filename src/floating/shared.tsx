@@ -69,6 +69,7 @@ import {
 import { useMenuPalette } from './menu-palette';
 import { MENU_FONT_FAMILY } from './menu-type';
 import type { WebCssStyle } from '../styles/web-view-style';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
  * The row highlight's `transition-colors` (150ms). Web only: on
@@ -101,13 +102,7 @@ export function useMenuRowInk(): string | null {
  * A glyph a row draws itself (the check, the sub-menu chevron): the density's
  * glyph size, in the row's ink while the accent highlights it, else `fill`.
  */
-export function MenuRowGlyph({
-  Icon,
-  fill,
-}: {
-  Icon: React.ComponentType<{ width?: number; height?: number; fill?: string }>;
-  fill: string;
-}) {
+export function MenuRowGlyph({ Icon, fill }: { Icon: BloomIconComponent; fill: string }) {
   const ink = useMenuRowInk();
   const density = useMenuDensity();
   return <Icon width={density.glyphSize} height={density.glyphSize} fill={ink ?? fill} />;
