@@ -1,5 +1,6 @@
 import { CollapsibleFrame } from '../collapsible/CollapsibleFrame';
 import { useCollapsibleMotion } from '../collapsible/use-collapsible-motion';
+import { BloomScope, useBloomAppearance } from '../appearance';
 import type React from 'react';
 import { memo, useCallback, useContext } from 'react';
 import { View, Pressable, Animated, StyleSheet, type TextStyle } from 'react-native';
@@ -7,10 +8,12 @@ import { View, Pressable, Animated, StyleSheet, type TextStyle } from 'react-nat
 import { RiArrowDownSLine as ChevronBottomIcon } from '../icons/remix/RiArrowDownSLine';
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { DISABLED_OPACITY, fontSize, space } from '../styles/tokens';
+import { useTouchInput } from '../styles/pointer';
+import { DISABLED_OPACITY, space } from '../styles/tokens';
 import { Text } from '../typography';
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
 import { styled } from 'react-native-css';
+import { resolveAccordionGeometry } from './geometry';
 import { AccordionContext, AccordionItemContext } from './context';
 import { useAccordionState, useAccordionItem, useAccordionMotion } from './use-accordion';
 import type {
@@ -27,6 +30,7 @@ const AccordionComponent: React.FC<AccordionProps> = ({
   onValueChange,
   type = 'single',
   transition,
+  size,
   children,
   style,
   testID,
@@ -35,9 +39,11 @@ const AccordionComponent: React.FC<AccordionProps> = ({
 
   return (
     <AccordionContext.Provider value={contextValue}>
-      <View style={style} testID={testID}>
-        {children}
-      </View>
+      <BloomScope size={size}>
+        <View style={style} testID={testID}>
+          {children}
+        </View>
+      </BloomScope>
     </AccordionContext.Provider>
   );
 };
@@ -74,8 +80,8 @@ const AccordionItemComponent: React.FC<AccordionItemProps> = ({
 
 /** The trigger's label box: fills the row, sized from its content (`flexBasis: 'auto'`). */
 const TRIGGER_LABEL_STYLE = { flexGrow: 1, flexShrink: 1 } as const;
-/** A string trigger's label: the 15px size step, semibold. */
-const TRIGGER_TEXT: TextStyle = { fontSize: fontSize.md, fontWeight: '600' };
+/** A string trigger's label is semibold at its inherited control size. */
+const TRIGGER_TEXT: TextStyle = { fontWeight: '600' };
 
 const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
   children,
@@ -83,6 +89,9 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
   style,
   textStyle,
 }) => {
+  const { size } = useBloomAppearance({}, { size: 'md', tone: 'neutral' });
+  const geometry = resolveAccordionGeometry(size);
+  const touch = useTouchInput();
   const theme = useTheme();
   const { toggle } = useContext(AccordionContext);
   const { value, isExpanded, disabled, triggerId, contentId } = useContext(AccordionItemContext);
@@ -123,9 +132,10 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
         {
           flexDirection: 'row',
           alignItems: 'center',
-          paddingVertical: space.md,
+          paddingVertical: geometry.paddingVertical,
           paddingHorizontal: space.xs,
-          gap: space.sm,
+          gap: geometry.gap,
+          minHeight: touch ? 44 : undefined,
           opacity: disabled ? DISABLED_OPACITY : pressed ? 0.7 : 1,
         },
         style,
@@ -149,7 +159,14 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
           Android while web (max-content sizing) kept it on one. */}
       <View testID="accordion-trigger-label" style={TRIGGER_LABEL_STYLE}>
         {typeof children === 'string' ? (
-          <Text style={[TRIGGER_TEXT, { color: theme.colors.text }, callerText, textStyle]}>
+          <Text
+            style={[
+              TRIGGER_TEXT,
+              { fontSize: geometry.fontSize, color: theme.colors.text },
+              callerText,
+              textStyle,
+            ]}
+          >
             {children}
           </Text>
         ) : (
@@ -157,7 +174,7 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
         )}
       </View>
       <Animated.View style={{ transform: [{ rotate: rotation }] }}>
-        <ChevronBottomIcon size="sm" fill={theme.colors.textSecondary} />
+        <ChevronBottomIcon size={geometry.chevronSize} fill={theme.colors.textSecondary} />
       </Animated.View>
     </Pressable>
   );
@@ -168,6 +185,8 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
 const AccordionContentComponent: React.FC<
   AccordionContentProps & { contentStyle?: AccordionContentProps['style'] }
 > = ({ children, style, contentStyle }) => {
+  const { size } = useBloomAppearance({}, { size: 'md', tone: 'neutral' });
+  const geometry = resolveAccordionGeometry(size);
   const { isExpanded, contentId, triggerId } = useContext(AccordionItemContext);
   const { transition } = useContext(AccordionContext);
   const motion = useCollapsibleMotion(isExpanded, transition);
@@ -180,7 +199,11 @@ const AccordionContentComponent: React.FC<
       returnFocusId={triggerId}
       style={style}
       contentStyle={[
-        { paddingBottom: space.md, paddingLeft: space.xs, paddingRight: space.xs },
+        {
+          paddingBottom: geometry.contentPaddingBottom,
+          paddingLeft: space.xs,
+          paddingRight: space.xs,
+        },
         contentStyle,
       ]}
     >

@@ -39,6 +39,11 @@ const [open, setOpen] = useState<string | string[] | undefined>('shipping');
 | `className` | on Root, Item, Trigger and Content: styles that component’s actual host |
 | `contentClassName` | on Content: styles its measured inner body, including padding |
 | `transition` | default `"spring"`, or `{ duration, easing? }` for a timed reveal and chevron |
+| `size` | optional `xs`, `sm`, `md` or `lg` override for the accordion; otherwise the nearest `BloomScope` applies |
+
+The trigger type, padding, icon and expanded content spacing follow the inherited
+size. On touch input, the trigger keeps a 44px minimum target. The default `md`
+recipe preserves the standard accordion geometry.
 
 **It is fully controlled — `value` and `onValueChange` are required.** There is
 no uncontrolled mode and no `collapsible` flag: closing the last open section
