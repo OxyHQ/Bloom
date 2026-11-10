@@ -43,6 +43,7 @@ import {
   buttonTouchVisualInset,
 } from '../button/shared';
 import { BloomScope } from '../appearance';
+import { LensMaterialProvider } from '../floating/lens/lens-material';
 import { RiArrowLeftLine } from '../icons/remix/RiArrowLeftLine';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { useScrollMetricsValue } from '../layout/scroll-metrics';
@@ -844,16 +845,24 @@ function PageHeaderComponent({
     <>
       {backButton}
       {history ? (
-        <BloomScope>
-          <PageHeaderHistory
-            navigation={history}
-            active={screen?.active !== false && host.active !== false}
-            backLabel={backLabel}
-            testID={testID ? `${testID}-history` : undefined}
-          />
-        </BloomScope>
+        <LensMaterialProvider value={floating ? 'lens' : 'surface'}>
+          <BloomScope>
+            <PageHeaderHistory
+              navigation={history}
+              active={screen?.active !== false && host.active !== false}
+              backLabel={backLabel}
+              testID={testID ? `${testID}-history` : undefined}
+            />
+          </BloomScope>
+        </LensMaterialProvider>
       ) : null}
-      {floating && leading ? <BloomScope>{leading}</BloomScope> : leading}
+      {floating && leading ? (
+        <LensMaterialProvider value="lens">
+          <BloomScope>{leading}</BloomScope>
+        </LensMaterialProvider>
+      ) : (
+        leading
+      )}
     </>
   );
 
@@ -940,10 +949,19 @@ function PageHeaderComponent({
                 display: searchOccupiesRow ? 'none' : 'flex',
               }}
             >
-              {floating ? <BloomScope>{actions}</BloomScope> : actions}
+              {floating ? (
+                <LensMaterialProvider value="lens">
+                  <BloomScope>{actions}</BloomScope>
+                </LensMaterialProvider>
+              ) : (
+                actions
+              )}
             </View>
           ) : floating ? (
-            <BloomScope>{actions}</BloomScope>
+            // A floating header's controls float over the content: the native lens where there is one.
+            <LensMaterialProvider value="lens">
+              <BloomScope>{actions}</BloomScope>
+            </LensMaterialProvider>
           ) : (
             actions
           )}
