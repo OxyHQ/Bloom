@@ -444,17 +444,18 @@ export function MenuRowShell({
         {title != null ? (
           <StyledText
             numberOfLines={1}
-            className={ROW_TEXT_CLASS}
+            // A desktop's menu is as wide as its widest row, so its label counts at
+            // its own width: it grows and shrinks without `flex-1`, whose `flex: 1`
+            // makes Yoga's basis 0 whatever `flexBasis` says (a panel sized by its
+            // content then cut every label at the width floor, OxyOS's dock menu).
+            className={density.desktop ? DESKTOP_ROW_TEXT_CLASS : ROW_TEXT_CLASS}
             // `text-body-medium`, in Inter (a desktop's body, `DESKTOP_TEXT_STYLES.body`).
             style={
-              // A desktop's menu is as wide as its widest row: the label counts at
-              // its own width (`flex-1` alone makes its basis 0, so a panel sized
-              // by its content cut every label at the width floor).
               density.desktop
                 ? [
                     { ...density.rowType, ...MENU_FONT_FAMILY },
                     { color: labelColor },
-                    DESKTOP_LABEL_BASIS,
+                    DESKTOP_LABEL_FLEX,
                   ]
                 : [{ ...density.rowType, ...MENU_FONT_FAMILY }, { color: labelColor }]
             }
@@ -472,7 +473,9 @@ export function MenuRowShell({
   );
 }
 
-const DESKTOP_LABEL_BASIS = { flexBasis: 'auto' } as const;
+/** `ROW_TEXT_CLASS` less `flex-1`: a desktop's label grows and shrinks from its own width. */
+const DESKTOP_ROW_TEXT_CLASS = 'min-w-0';
+const DESKTOP_LABEL_FLEX = { flexGrow: 1, flexShrink: 1 } as const;
 
 /**
  * The sub-trigger's chevron slot — `size-4 shrink-0 ms-auto`. A component rather
