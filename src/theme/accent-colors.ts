@@ -41,6 +41,7 @@ import type { ThemeColors } from './types';
 export type AccentTone =
   | 'default'
   | 'primary'
+  | 'vivid'
   | 'secondary'
   | 'tertiary'
   | 'success'
@@ -91,6 +92,15 @@ function tonePalette(colors: ThemeColors, tone: AccentTone): TonePalette {
       return {
         fill: colors.primary,
         fillForeground: colors.primaryForeground,
+        tint: colors.primarySubtle,
+        accent: colors.primarySubtleForeground,
+      };
+    case 'vivid':
+      // The brand at full strength: the same hue as `primary`, as a system tint rather than as a
+      // fill that must carry a white label. Its tint and accent are the brand's own.
+      return {
+        fill: colors.vivid,
+        fillForeground: colors.vividForeground,
         tint: colors.primarySubtle,
         accent: colors.primarySubtleForeground,
       };

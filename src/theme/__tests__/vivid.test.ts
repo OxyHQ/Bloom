@@ -1,4 +1,6 @@
 import { APP_COLOR_NAMES } from '../color-presets';
+import { buildTheme } from '../build-theme';
+import { resolveAccentColors } from '../accent-colors';
 import { getPresetVars } from '../preset-vars';
 
 /** `rgb(r g b)` to relative luminance. */
@@ -42,5 +44,24 @@ describe('vivid: the brand as a system tint', () => {
     expect(vars['--vivid']).toBe('rgb(254 212 0)');
     expect(vars['--vivid-foreground']).toBe('rgb(0 0 0)');
     expect(vars['--primary']).not.toBe(vars['--vivid']);
+  });
+});
+
+describe('the vivid tone', () => {
+  it('fills with the brand at full strength and a label that reads on it', () => {
+    for (const name of APP_COLOR_NAMES) {
+      for (const mode of ['light', 'dark'] as const) {
+        const { colors } = buildTheme(name, mode);
+        const solid = resolveAccentColors(colors, 'vivid', 'solid');
+        expect(solid.background).toBe(colors.vivid);
+        expect(contrast(solid.background, solid.foreground)).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+
+  it('is calmer-than-vivid only for the primary tone', () => {
+    const { colors } = buildTheme('yellow', 'light');
+    expect(resolveAccentColors(colors, 'primary', 'solid').background).toBe(colors.primary);
+    expect(resolveAccentColors(colors, 'vivid', 'solid').background).not.toBe(colors.primary);
   });
 });
