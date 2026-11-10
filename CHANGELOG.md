@@ -1,5 +1,11 @@
 # Changelog
 
+## 18.2.1
+
+### Fixed
+
+- Register Bloom's `web:` utility variant in the standalone Vite recipe so bounded desktop panel layers retain their grid geometry.
+
 ## 18.2.0
 
 ### Added

@@ -38,7 +38,7 @@ Worklet styles write every key every run (value or `UNSET`): native drops `undef
 
 ## Consumer CSS
 
-Web consumers MUST wire Tailwind/NativeWind + `@source`-scan Bloom/services built lib/ trees. RNW resets otherwise silently break flex-row/gap/sizes, masked by working inline colors; native unaffected
+Web: Tailwind/NativeWind `@source`-scan Bloom/Services lib/. Standalone Vite needs `@custom-variant web (@supports selector(div > div));`; else bounded desktop panels collapse to 0px while compact works. Missing CSS silently breaks RNW flex/gap/sizes despite inline colors; native unaffected
 
 Expo/Metro: import @oxy.so/app-preset/css/base.css atop `global.css`, first in app/_layout.tsx, with @tailwindcss/postcss. Vite: @tailwindcss/vite + stylesheet scanning both lib/s. `create-oxy-app` scaffolds it
 
@@ -49,7 +49,7 @@ Pure index.ts barrel; Pascal.tsx implementation; types.ts props. family-layout.t
 - Factory barrels prevent cycles across differing platform components: alert-dialog, command, surfaces, tab-bar, app-shell. EQUALITY exemption list
 - Barrels use .ts, never JSX-free .tsx. Hooks use-kebab-case.ts; context.ts; constants.ts (not const.ts); cross-fork shared.ts
 - Flat-prefixed parts (Tabs/TabsTrigger), never static Tabs.Trigger/Menu.Item/Select.Trigger/InputGroup.Addon. Colliding Text/Box/Row collections use namespaces/subpaths: Icons, Typography, Skeleton, Grid, Code, Fonts, ColorEngine, ImageAspectRatio
-- Root-export unless adding PACKAGE: Metro cannot tree-shake unmet peers. Exceptions: tab-bar/zoomable-image-gallery (documented peers), phone-input (~145KB flags, not peer). Universal/root-exported Provider: explicit router adapter. root-barrel-graph.test.ts counts STATIC imports: theme/adaptive-colors.native.ts optional-requires expo-router/build/color/index.js; web resolves neutral null file. Installed optional requires ARE LINKED: require read module, never heavy root (`'expo-router'` linked 322 router modules, ~1.4 MB; optional-peer-imports.test.ts)
+- Root-export unless adding PACKAGE (Metro can't tree-shake peers); exceptions tab-bar/zoomable-image-gallery and phone-input (~145KB flags). Provider root with explicit router adapter. root-barrel-graph.test.ts counts static imports; adaptive-colors.native.ts optional-requires expo-router (web neutral null). Optional peers need direct literal require, never heavy roots (`expo-router`: 322 modules/~1.4MB); optional-peer-imports.test.ts
 
 ## Composition (docs/composition.mdx, docs/adoption-matrix.mdx)
 
@@ -60,14 +60,14 @@ Durable requirements; inconsistencies grant no exemptions. docs/composition.mdx,
 - Use actual Bloom components + compositor. Consumer: business data/actions. Bloom: layout/presentation/interaction. Extend existing components/engine, remove consumer workarounds, preserve main's approved visuals
 - Surface owns material; container owns scroll. Keep shared rounded paint/backing, no duplicate chrome. Fix overflow/viewport coordination in shared owners, not nested consumer ScrollViews. Verify adoption before claiming completion
 
-- Join Field: `useFieldMembership()`. Name → field (`??`); disabled/invalid OR (`||`); caller ID wins; aria-describedby lists JOIN; RN drops it: native hint = caller's, then described texts (`useDescribedByHint`; described-by-hint-census.test.ts). `labelPlacement`: above-control TextField/Textarea labels yield to Field; beside-control captions retain visible names. Subscribe composite halves: input-only subscription left PhoneInput picker operable in disabled Field. FieldMembership.test.tsx (15 families; one `||` → `??` mutation fails18), FieldAssociation.test.tsx
+- Join Field: `useFieldMembership()`; name→field (`??`), disabled/invalid OR (`||`), caller ID wins, aria-describedby JOINs. RN drops it; native hint=caller + described text (`useDescribedByHint`; census). Above-control labels yield; beside-control captions keep names. Subscribe composite halves (input-only left PhoneInput picker stayed enabled in disabled Field). FieldMembership.test.tsx (15 families; one `||`→`??` fails18), FieldAssociation.test.tsx
 - Sole size/tone context: BloomScope. Prop → nearest scope → family default; xs/sm/md/lg. InputGroup aligns member geometry; domain content density stays separate. Field disabled/invalid are OR constraints, never overridable defaults
 - Modals/sheets need their OWN layout/ScreenScope. Otherwise chrome claims underlying page edges (padding appears/disappears) + follows untouched scrollers. DialogBody/BottomSheetBase mount it for all three dialog placements/sheets. ScreenScope.test.tsx tests both directions
-- GENERATED adoption matrix: `bun run generate:adoption-matrix` via src/__tests__/support/adoption-matrix.ts; manual edits overwritten. Classify family RENDERS, never transitive reachability (nearly all reach text-field; falsely passed17 raw-TextInput families). Non-adopters: reasoned EQUALITY-pinned classifications; new UNCLASSIFIED/stale entries fail
+- Adoption matrix GENERATED by `bun run generate:adoption-matrix` / src/__tests__/support/adoption-matrix.ts; manual edits overwritten. Classify what family RENDERS, never transitive reachability (nearly all reach text-field; once falsely passed17 raw-TextInput families). Non-adopters need reasoned EQUALITY-pinned classes; new UNCLASSIFIED/stale entries fail
 
 ## Verification
 
-Read docs/verification.mdx before tests/local installs: Node/Jest crashes/native-resolution gaps/mirror hazards. Compare crashes with main; verify shard-suite union, not counts. Jest ignores `.native.*`: explicitly import native subjects; web tests cannot prove device behavior. Avatar timing: never read destination pixels; PNG fidelity: fresh destinations per pose (repeated getImageData changes acceleration). Readbacks: docs/verification.mdx
+Read docs/verification.mdx before tests/installs: Node/Jest, native-resolution, mirror hazards. Compare crashes with main; verify shard union, not counts. Jest ignores `.native.*`: import native subjects explicitly; web tests don't prove device behavior. Avatar timing: never read destination pixels; PNG fidelity: fresh destination/pose (getImageData changes acceleration). Details: docs/verification.mdx
 
 ## Root provider
 
@@ -75,9 +75,9 @@ Read docs/verification.mdx before tests/local installs: Node/Jest crashes/native
 
 ## Screens
 
-`Screen` owns scrollY; AppShell route motion (`navigationScope="isolated"` for modals). AppShell measures bottom/rail/sidebar only at thresholds (`useMeasuredSizeClass`); what follows the room is flex, never pixels from `onLayout` state or `useWindowDimensions`: a resize runs no JS. A basis is a size under `flexBasis: auto` (Fabric leaves Yoga a changed `flexBasis`'s old size). docs/app-shell.mdx. Static `Fab`: `Screen.primaryAction` or `BottomBar.action`. Registry→React boolean→separate FAB animation lagged1-3 frames (`runOnJS`, two renders): never revive. `Screen.collapseProgress` → `BottomBar.minimizeProgress`; native frames on shared values. History: docs/layout.mdx. Retained screens: `active={focused}`; virtual lists: `AppShell scroll="external"` + `VirtualList screen={{active, restoration}}`, never outer ScrollView
+`Screen` owns scrollY; AppShell motion (isolated in modals). Measure bottom/rail/sidebar at breakpoints; flex fills rest, not `onLayout` state/window dimensions (resize no JS). Fabric retains Yoga's old size after flexBasis changes (`useMeasuredSizeClass`, docs/app-shell.mdx). `Fab` static: `Screen.primaryAction`/`BottomBar.action`. Never revive registry→React boolean→separate FAB animation (1–3 frame lag: `runOnJS`+2 renders). Pass collapseProgress to `BottomBar.minimizeProgress`; native uses shared values (docs/layout.mdx). Retained screens `active={focused}`; virtual lists use external AppShell scroll + VirtualList restoration; no outer ScrollView
 
-Panels: `panelLayout` / embedded `AppShellPanels layout` own descriptor surfaces; routes render Screen, never another panel/wrapper Screen. Legacy `AppShell panels` leaves JSX panels to routes. Stable IDs/content trees across flow/order changes; AppShellScrollSwitch.web.test.tsx. docs/compose-layouts.mdx
+Panels: `panelLayout`/embedded `AppShellPanels layout` own descriptor surfaces. Routes render Screen, never another panel/wrapper Screen. Legacy `AppShell panels` leaves JSX panels to routes. Keep IDs/content trees stable across flow/order changes; AppShellScrollSwitch.web.test.tsx, docs/compose-layouts.mdx
 
 ## Scroll restoration
 
@@ -136,7 +136,7 @@ BloomThemeProvider sets preset/mode, dark class + full-color CSS vars via applyC
 
 `Surface` owns material; Button/Card/Sidebar/BlurIsland reuse its paint, preserving semantics. blur/ owns grouping + Android blur targets. docs/surface.mdx
 
-- ONE material/no selector. Web: opaque fill at72% (`SURFACE_TINT_OPACITY`), frosted backdrop + masked edge light (TWO backdrop passes/host). Native: opaque fill + inset edge shadows. Reduced transparency (prop/platform/OS): document state, each host's opaque `--bloom-surface-solid`, no filters. Increased contrast implies it + host `--bloom-surface-hairline` replacing edge light (3:1 on body; native1px border). Button `material="flat"` bypasses paint; BottomBar blur separate. Keep foreground pairs/caller alpha; publish fill composited over actual backing
+- ONE material/no selector. Web: opaque 72% fill (`SURFACE_TINT_OPACITY`) + frosted backdrop/masked edge (TWO passes/host); native: opaque fill + inset shadows. Reduced transparency (prop/platform/OS): document state, host `--bloom-surface-solid`, no filters. Increased contrast implies it; `--bloom-surface-hairline` replaces edge (3:1 body; native1px). Button flat bypasses paint; BottomBar blur independent. Keep foreground pairs/caller alpha; publish fill composited on actual backing
 - NO SVG filter/displacement/gradient: per-surface refraction cost GPU + failed outside Chromium. Web: `blur(24px)` + measured saturate/contrast/brightness (`SURFACE_BLUR_PX`, optics.ts, `surfaceMaterialCss`). Native: ONE View, tint + inset `boxShadow` rim/glow, no gradient (`calc()` stop: dropped; `px` stops: emulator SIGSEGV)
 - Native per-surface blur: floating-only, iOS `SurfaceBlur` or a `material` adapter's own `Material` (OxyOS; surface-platform-material.test.tsx), never reduced transparency or expo-blur on Android/OxyOS: BlurView under own BlurTargetView can SIGSEGV Android. Never wrap app in blur target; only `BlurWindow` inside Modal publishes one. Native blur lives in overlay Backdrop/ProgressiveBlur
 - Web bakes material over one known backdrop colour (surface/baked-material.ts), per-instance DOM decision after live first paint. Never image/translucent fill/floating ancestor/overlapping positioned sibling. verify-surface-baked-material.mjs (same pixels; live where required); control `data-bloom-material-bake="off"`
@@ -147,7 +147,7 @@ BloomThemeProvider sets preset/mode, dark class + full-color CSS vars via applyC
 
 ## Avatar runtime
 
-An avatar is ONE flat `AvatarCharacter` everywhere (`agent-avatar/character.ts`); which animation plays is `resolveAvatarCharacter(c).authored`, never how it was written. SVG is the sole shipped renderer. `runtime/avatar/` is offline extraction input only: run `bun run build:avatar-vectors` after authored source changes; never ship generated WebGL assets or import the offline runtime from production. **Catalog retarget never writes an eye pivot offset in the PARENT's frame** (carrier = the eye's own turn; the six-lobed body rolls 180° under still eyes, the heart's eyes ride it): `docs/agent-avatar.mdx`, gate `catalog-retarget.test.ts`.
+Flat `AvatarCharacter` (`agent-avatar/character.ts`); animation=`resolveAvatarCharacter(c).authored`, not serialized. SVG only ships; runtime/avatar offline (build:avatar-vectors after edits), never ship WebGL/runtime. **Catalog retarget eye pivot uses its own frame, never PARENT** (carrier=eye turn; six-lobed body rolls180° under still eyes; heart eyes ride body). docs/agent-avatar.mdx, catalog-retarget.test.ts.
 
 ## Locale (docs/locale.mdx)
 
