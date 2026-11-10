@@ -16,6 +16,10 @@ export interface SettingsModalMessages {
   close: string;
   /** The saved toast. */
   saved: string;
+  /** The rail's search field (`SettingsLayout search`), its placeholder and name. */
+  search: string;
+  /** The rail's search, when nothing matches. */
+  noResults: string;
   /** `SettingsPlanCard`'s chip. */
   currentPlan: string;
   /** A column header, and the name of a server's "…" menu (with `labelFor`). */
@@ -87,6 +91,8 @@ export const SETTINGS_MODAL_MESSAGES: MessageCatalog<SettingsModalMessages> =
     nav: 'Settings sections',
     close: 'Close settings',
     saved: 'Saved',
+    search: 'Search',
+    noResults: 'No Results',
     currentPlan: 'Current plan',
     actions: 'Actions',
     storage: {

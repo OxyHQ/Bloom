@@ -2388,6 +2388,8 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
   nav: 'Secciones de ajustes',
   close: 'Cerrar ajustes',
   saved: 'Guardado',
+  search: 'Buscar',
+  noResults: 'Sin resultados',
   currentPlan: 'Plan actual',
   actions: 'Acciones',
   storage: {

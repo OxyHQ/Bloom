@@ -1,5 +1,5 @@
 export { BloomScope } from './BloomScope';
-export { useBloomAppearance } from './context';
+export { useBloomAppearance, useBloomContentDensity } from './context';
 export { resolveBloomColors } from './colors';
 export type {
   BloomSize,
@@ -8,4 +8,5 @@ export type {
   BloomAppearanceProps,
   BloomScopeProps,
   BloomControlDensity,
+  BloomContentDensity,
 } from './types';

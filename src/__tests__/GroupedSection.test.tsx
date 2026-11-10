@@ -8,6 +8,7 @@ import {
   GroupedSectionCollapse,
 } from '../grouped-section';
 import { SettingsListGroup, SettingsListItem, SettingsListDivider } from '../settings-list';
+import { BloomScope } from '../appearance';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { GROUPED_SECTION_TEST_ID } from '../grouped-section/surface';
 import { SurfacePaint } from '../surface/SurfacePaint';
@@ -165,4 +166,69 @@ it('preserves state and identity for static rows without adding a button', () =>
   expect(row.props['aria-selected']).toBe(true);
   expect(row.props['aria-busy']).toBe(true);
   expect(row.props.onPress).toBeUndefined();
+});
+
+describe('compact density (a desktop form)', () => {
+  it('draws 36-point rows in the body style, hairlines inset at the text, a 12 radius and the title as written', () => {
+    const screen = render(
+      <BloomThemeProvider>
+        <GroupedSection
+          density="compact"
+          title="Dynamic Wallpapers"
+          footer="Changes with the time."
+        >
+          <GroupedSectionItem title="Plain" testID="plain" />
+          <GroupedSectionItem title="With icon" icon={<View />} />
+          <GroupedSectionItem title="Inset" leftInset={44} />
+          <GroupedSectionItem title="Last" />
+        </GroupedSection>
+      </BloomThemeProvider>,
+    );
+    expect(cardLayout(screen.getByTestId(GROUPED_SECTION_TEST_ID)).borderRadius).toBe(12);
+    const row = resolvedStyle(screen.getAllByTestId('settings-list-item-content')[0]?.props.style);
+    expect(row).toMatchObject({
+      minHeight: 36,
+      paddingLeft: 10,
+      paddingRight: 10,
+      paddingVertical: 6,
+    });
+    // The body style (13 on a desktop), regular, not the 15/500 touch label.
+    const label = resolvedStyle(screen.getByText('Plain').props.style);
+    expect(label.fontWeight).toBe('400');
+    expect(label.fontSize).toBe(14);
+    // Each hairline starts at the text of the row above it: 10, after an icon 10 + 20 + 8, else the
+    // row's own inset. No 2-point gaps.
+    const insets = screen
+      .getAllByTestId('grouped-section-divider')
+      .map((divider) => resolvedStyle(divider.props.style).marginStart);
+    expect(insets).toEqual([10, 38, 44]);
+    expect(screen.queryByTestId('grouped-section-gap')).toBeNull();
+    // The title in the headline style (bold body), as it is written: no capitals forced.
+    const title = resolvedStyle(screen.getByText('Dynamic Wallpapers').props.style);
+    expect(title.textTransform).toBeUndefined();
+    expect(title.fontWeight).toBe('700');
+    expect(title.paddingHorizontal).toBe(10);
+  });
+
+  it('follows the nearest scope, and an explicit density wins', () => {
+    const screen = render(
+      <BloomThemeProvider>
+        <BloomScope contentDensity="compact">
+          <GroupedSection title="Scoped">
+            <GroupedSectionItem title="A" />
+          </GroupedSection>
+          <GroupedSection density="comfortable" title="Touch">
+            <GroupedSectionItem title="B" />
+          </GroupedSection>
+        </BloomScope>
+      </BloomThemeProvider>,
+    );
+    const [scoped, touch] = screen.getAllByTestId(GROUPED_SECTION_TEST_ID);
+    expect(cardLayout(scoped!).borderRadius).toBe(12);
+    expect(cardLayout(touch!).borderRadius).toBe(28);
+    const rows = screen.getAllByTestId('settings-list-item-content');
+    expect(resolvedStyle(rows[0]?.props.style).minHeight).toBe(36);
+    expect(resolvedStyle(rows[1]?.props.style).minHeight).toBe(52);
+    expect(resolvedStyle(screen.getByText('Touch').props.style).textTransform).toBe('uppercase');
+  });
 });

@@ -6,6 +6,7 @@ import type { DialogControlProps } from '../dialog/types';
 import type { SelectSize } from '../select/types';
 import type { FileUploadProps } from '../file-upload/types';
 import type { Props as SVGIconProps } from '../icons/shared';
+import type { BloomContentDensity } from '../appearance/types';
 
 /** Any Bloom icon — the Remix set (`../icons/remix`) is what's drawn here. */
 export type SettingsIcon = ComponentType<SVGIconProps>;
@@ -68,6 +69,46 @@ export interface SettingsModalLabels {
   saved?: string;
   /** Compact layout: the back button from a page to the section list (`Back` in English). */
   back?: string;
+  /** The rail's search, when nothing matches (`No Results` in English). */
+  noResults?: string;
+}
+
+/**
+ * The search field at the top of a `SettingsLayout`'s rail, as a Mac's System
+ * Settings has one: CONTROLLED, its owner filtering `groups` to what matches
+ * (the owner knows each page's words). While it has the keyboard, Escape
+ * clears it, and ↓ and Return go to the first result: on a native host's
+ * selection list (the rail beside the page) that row is chosen, its page shown
+ * and the keyboard on it, its arrows going on through the results; elsewhere
+ * ↓ moves the focus to it and Return opens it.
+ */
+export interface SettingsSearchProps {
+  value: string;
+  onChangeText: (text: string) => void;
+  /** Default: `Search` in the layout's language. */
+  placeholder?: string;
+  /** The field's name. Default: the placeholder. */
+  accessibilityLabel?: string;
+  testID?: string;
+}
+
+/** Where a `SettingsLayout`'s pages visited can go (its toolbar's back and forward). */
+export interface SettingsLayoutHistory {
+  canGoBack: boolean;
+  canGoForward: boolean;
+}
+
+/**
+ * A `SettingsLayout`'s commands, for its owner's menus (a Mac's Edit › Find…,
+ * View › Back and Forward): the same as its own controls and keys do.
+ */
+export interface SettingsLayoutHandle {
+  /** The keyboard to the rail's search field, its text selected to type over. */
+  focusSearch(): void;
+  /** The page visited before, as the toolbar's Back. Nothing where there is none. */
+  back(): void;
+  /** The page visited after, as the toolbar's Forward. Nothing where there is none. */
+  forward(): void;
 }
 
 export interface SettingsModalProps {
@@ -147,6 +188,17 @@ export interface SettingsLayoutProps {
    * header whose buttons are grouped capsules over the scrolling page.
    */
   headerPresentation?: 'bar' | 'floating';
+  /**
+   * `comfortable` (default): the touch settings. `compact`: a desktop's System
+   * Settings — 28-point rail rows in the body style and the label's colour, the
+   * groups apart by space alone (no group headings), a 20 content inset, and
+   * the pages' `GroupedSection`s compact (`BloomScope contentDensity`).
+   */
+  density?: BloomContentDensity;
+  /** A search field at the top of the rail (`SettingsSearchProps`). */
+  search?: SettingsSearchProps;
+  /** Told when going back or forward becomes possible or not (the owner's View menu). */
+  onHistoryChange?: (history: SettingsLayoutHistory) => void;
   labels?: SettingsModalLabels;
   style?: StyleProp<ViewStyle>;
   testID?: string;

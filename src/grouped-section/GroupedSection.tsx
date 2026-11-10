@@ -11,6 +11,9 @@ import { Card } from '../card';
 import { Collapsible } from '../collapsible/Collapsible';
 import { Divider } from '../divider';
 import { RiArrowRightSLine as ChevronRightIcon } from '../icons/remix/RiArrowRightSLine';
+import { BloomScope } from '../appearance/BloomScope';
+import { useBloomContentDensity } from '../appearance/context';
+import type { BloomContentDensity } from '../appearance/types';
 import { GROUPED_SECTION_TEST_ID } from './surface';
 import type {
   GroupedSectionItemProps,
@@ -36,12 +39,37 @@ function sectionRows(
   });
 }
 
+/**
+ * Each density's row geometry. `compact` is a desktop form's, as a Mac's System
+ * Settings draws its groups: a 36-point row (a mini switch or a small control
+ * in it), the text inset 10 from the group's edge, a small icon, and the hairline
+ * between rows inset at the text.
+ */
+export const GROUPED_SECTION_GEOMETRY = {
+  comfortable: { paddingHorizontal: 16, paddingVertical: 12, minHeight: 52, gap: 12, icon: 28 },
+  compact: { paddingHorizontal: 10, paddingVertical: 6, minHeight: 36, gap: 8, icon: 20 },
+} as const satisfies Record<BloomContentDensity, Record<string, number>>;
+
+/** Where a compact separator starts: at the text of the row above it. */
+function textInset(node: React.ReactNode): number {
+  const { paddingHorizontal, icon, gap } = GROUPED_SECTION_GEOMETRY.compact;
+  if (
+    !React.isValidElement<Partial<GroupedSectionItemProps>>(node) ||
+    node.type !== GroupedSectionItem
+  ) {
+    return paddingHorizontal;
+  }
+  if (node.props.leftInset !== undefined) return node.props.leftInset;
+  return node.props.icon ? paddingHorizontal + icon + gap : paddingHorizontal;
+}
+
 const REVEAL_TRANSITION = {
   duration: 320,
   easing: [0.22, 1, 0.36, 1] as [number, number, number, number],
 };
 interface RowsContextValue {
   separator: NonNullable<GroupedSectionProps['separator']>;
+  density: BloomContentDensity;
   parentFill: string;
   hasPrevious: boolean;
 }
@@ -64,6 +92,7 @@ export function GroupedSectionCollapse({
 
 function renderRows(children: React.ReactNode, context: RowsContextValue): React.ReactNode {
   let hasPrevious = context.hasPrevious;
+  let previous: React.ReactNode = null;
   return sectionRows(children).map(({ key, node }) => {
     if (
       React.isValidElement<GroupedSectionCollapseProps>(node) &&
@@ -78,7 +107,9 @@ function renderRows(children: React.ReactNode, context: RowsContextValue): React
       );
     }
     const separated = hasPrevious;
+    const above = previous;
     hasPrevious = true;
+    previous = node;
     return (
       <React.Fragment key={key}>
         {separated ? (
@@ -88,7 +119,14 @@ function renderRows(children: React.ReactNode, context: RowsContextValue): React
               style={{ height: 2, backgroundColor: context.parentFill }}
             />
           ) : context.separator === 'line' ? (
-            <Divider testID="grouped-section-divider" style={styles.divider} />
+            <Divider
+              testID="grouped-section-divider"
+              style={
+                context.density === 'compact'
+                  ? [styles.hairline, { marginStart: textInset(above) }]
+                  : styles.divider
+              }
+            />
           ) : null
         ) : null}
         <View testID="grouped-section-row" style={{ backgroundColor: 'transparent' }}>
@@ -122,6 +160,7 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
   leftInset,
 }) {
   const theme = useTheme();
+  const compact = useBloomContentDensity() === 'compact';
   const hasChevron = showChevron ?? Boolean(onPress);
   const titleColor = destructive ? theme.colors.error : theme.colors.text;
   const isDisabled = disabled || accessibilityState?.disabled === true;
@@ -148,12 +187,17 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
     <View
       style={[
         styles.itemContainer,
+        compact ? styles.itemContainerCompact : undefined,
         leftInset !== undefined ? { paddingLeft: leftInset } : undefined,
       ]}
       testID="settings-list-item-content"
       data-left-inset={leftInset}
     >
-      {icon ? <View style={styles.iconContainer}>{icon}</View> : null}
+      {icon ? (
+        <View style={[styles.iconContainer, compact ? styles.iconContainerCompact : undefined]}>
+          {icon}
+        </View>
+      ) : null}
 
       {customContent !== undefined ? (
         <View style={styles.textContainer}>{customContent}</View>
@@ -161,14 +205,15 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
         <>
           <View style={styles.textContainer}>
             <Text
-              style={[styles.title, { color: titleColor }]}
+              variant={compact ? 'body-regular' : undefined}
+              style={[compact ? undefined : styles.title, { color: titleColor }]}
               numberOfLines={titleNumberOfLines === 0 ? undefined : titleNumberOfLines}
             >
               {title}
             </Text>
             {description ? (
               <Text
-                variant="body-2-regular"
+                variant={compact ? 'caption-1-regular' : 'body-2-regular'}
                 style={{ color: theme.colors.textSecondary }}
                 numberOfLines={descriptionLines === 0 ? undefined : descriptionLines}
               >
@@ -179,7 +224,7 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
 
           {value ? (
             <Text
-              variant="body-2-regular"
+              variant={compact ? 'body-regular' : 'body-2-regular'}
               style={{ color: theme.colors.textSecondary }}
               numberOfLines={1}
             >
@@ -253,11 +298,16 @@ export const GroupedSection = memo<GroupedSectionProps>(function GroupedSection(
   children,
   style,
   variant,
-  radius = 'radius-28',
-  separator = 'space',
+  density: densityProp,
+  radius: radiusProp,
+  separator: separatorProp,
 }) {
   const theme = useTheme();
   const layer = useSurfaceLayer();
+  const density = useBloomContentDensity(densityProp);
+  const compact = density === 'compact';
+  const radius = radiusProp ?? (compact ? 'radius-12' : 'radius-28');
+  const separator = separatorProp ?? (compact ? 'line' : 'space');
   const backgroundColor =
     variant === 'filled'
       ? theme.colors.backgroundSecondary
@@ -266,14 +316,25 @@ export const GroupedSection = memo<GroupedSectionProps>(function GroupedSection(
         : layer.fill;
 
   return (
-    <View style={[styles.groupContainer, style]}>
+    <View style={[compact ? styles.groupContainerCompact : styles.groupContainer, style]}>
       {title ? (
-        <Text
-          variant="caption-2-semibold"
-          style={[styles.groupTitle, { color: theme.colors.textSecondary }]}
-        >
-          {title}
-        </Text>
+        compact ? (
+          // A desktop form's section title: the headline style (bold body), in the label's colour,
+          // as it is written (Title Case in English), aligned with the rows' text.
+          <Text
+            variant="body-bold"
+            style={[styles.groupTitleCompact, { color: theme.colors.text }]}
+          >
+            {title}
+          </Text>
+        ) : (
+          <Text
+            variant="caption-2-semibold"
+            style={[styles.groupTitle, { color: theme.colors.textSecondary }]}
+          >
+            {title}
+          </Text>
+        )
       ) : null}
 
       {/*
@@ -292,13 +353,24 @@ export const GroupedSection = memo<GroupedSectionProps>(function GroupedSection(
         style={{ backgroundColor }}
         testID={GROUPED_SECTION_TEST_ID}
       >
-        {renderRows(children, { separator, parentFill: layer.parentFill, hasPrevious: false })}
+        {/* An explicit density reaches the rows the section holds, whatever scope is above it. */}
+        <BloomScope contentDensity={densityProp}>
+          {renderRows(children, {
+            separator,
+            density,
+            parentFill: layer.parentFill,
+            hasPrevious: false,
+          })}
+        </BloomScope>
       </Card>
 
       {footer ? (
         <Text
           variant="caption-1-regular"
-          style={[styles.groupFooter, { color: theme.colors.textTertiary }]}
+          style={[
+            compact ? styles.groupFooterCompact : styles.groupFooter,
+            { color: compact ? theme.colors.textSecondary : theme.colors.textTertiary },
+          ]}
         >
           {footer}
         </Text>
@@ -334,12 +406,23 @@ const styles = StyleSheet.create({
     minHeight: 52,
     gap: 12,
   },
+  itemContainerCompact: {
+    paddingLeft: GROUPED_SECTION_GEOMETRY.compact.paddingHorizontal,
+    paddingRight: GROUPED_SECTION_GEOMETRY.compact.paddingHorizontal,
+    paddingVertical: GROUPED_SECTION_GEOMETRY.compact.paddingVertical,
+    minHeight: GROUPED_SECTION_GEOMETRY.compact.minHeight,
+    gap: GROUPED_SECTION_GEOMETRY.compact.gap,
+  },
   iconContainer: {
     minWidth: 28,
     minHeight: 28,
     flexShrink: 0,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  iconContainerCompact: {
+    minWidth: GROUPED_SECTION_GEOMETRY.compact.icon,
+    minHeight: GROUPED_SECTION_GEOMETRY.compact.icon,
   },
   textContainer: {
     flex: 1,
@@ -371,6 +454,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 6,
   },
+  // Compact: no outer margin (the page's stack sets the space between sections, so the two never
+  // add up), the title and footer aligned with the rows' text.
+  groupContainerCompact: {},
+  groupTitleCompact: {
+    paddingHorizontal: GROUPED_SECTION_GEOMETRY.compact.paddingHorizontal,
+    paddingBottom: 6,
+  },
+  groupFooterCompact: {
+    paddingHorizontal: GROUPED_SECTION_GEOMETRY.compact.paddingHorizontal,
+    paddingTop: 6,
+  },
 
   // Divider. `Divider` supplies the hairline height and `theme.colors.border`;
   // these are the settings-list specifics on top of it. `width: 'auto'` is
@@ -378,6 +472,13 @@ const styles = StyleSheet.create({
   // an inset rule overhang its container by exactly the inset.
   divider: {
     marginLeft: 16,
+    width: 'auto',
+    opacity: 0.3,
+  },
+  // Compact: the hairline between rows, from the text of the row above to the group's edge less
+  // the rows' inset, as a Mac's grouped form draws it. `marginStart` is set per row.
+  hairline: {
+    marginEnd: GROUPED_SECTION_GEOMETRY.compact.paddingHorizontal,
     width: 'auto',
     opacity: 0.3,
   },
