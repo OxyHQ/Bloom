@@ -25,7 +25,7 @@ import {
   type GlassMenuNativeItem,
   getNativeGlassMenu,
 } from './native-glass-menu';
-import { type GlassMenuParts, type ParsedGlassMenu, parseGlassMenu } from './parse-glass-menu';
+import type { ParsedGlassMenu } from './parse-glass-menu';
 import { useGlassPrimary } from './use-glass-primary';
 
 /** A menu's rows, read as data for the native glass menu. */
@@ -57,8 +57,8 @@ export interface UseGlassMenuOptions {
   children: ReactNode;
   /** The family's `Content` component, whose children are the rows. */
   content: unknown;
-  /** The family's row parts. */
-  rows: GlassMenuParts;
+  /** Reads the `Content` element's props as rows; `null` when they leave the vocabulary. */
+  parse: (props: Record<string, unknown>) => ParsedGlassMenu | null;
   /** Whether the family's own state says the menu is open. */
   open: boolean;
   /** Sets the family's own open state. */
@@ -73,7 +73,7 @@ export interface UseGlassMenuOptions {
 export function useGlassMenu({
   children,
   content,
-  rows,
+  parse,
   open,
   setOpen,
 }: UseGlassMenuOptions): MenuGlass | undefined {
@@ -81,7 +81,7 @@ export function useGlassMenu({
   const nativeRef = useRef<GlassMenuNativeHandle | null>(null);
   const nativeOpen = useRef(false);
   const element = available ? findElement(children, content) : null;
-  const parsed = element ? parseGlassMenu(element.props.children, rows) : null;
+  const parsed = element ? parse(element.props as Record<string, unknown>) : null;
 
   const handlers = useRef(parsed?.handlers ?? {});
   handlers.current = parsed?.handlers ?? {};
