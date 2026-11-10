@@ -51,8 +51,19 @@ export interface ButtonProps {
   /** Keep an embedded action from also activating its parent. Default false. */
   stopPropagation?: boolean;
   appearance?: BloomAppearance;
-  /** Own surface (default), flat fill, or shared material painted by an enclosing control group. */
-  material?: 'surface' | 'flat' | 'shared';
+  /**
+   * Own surface (default), flat fill, shared material painted by an enclosing control group, or
+   * `'glass'`: the native glass (Android 13+, in a binary that has Bloom's glass module), which
+   * draws the fill, tinted by the button's tone, and springs under the finger. Where glass is
+   * not available the button keeps its own surface. A glass button sizes to its content or to
+   * its `width`/`height`.
+   *
+   * Glass belongs to the fixed layer: a header, a toolbar, a floating button. Never inside a
+   * scrolling area, whose overscroll stretch a glass control does not follow, and never one per
+   * row of a list: each glass button is a native view drawn every frame (measured on a Pixel 8a,
+   * 60 at once cost 21% janky frames while scrolling, against 2% on a surface).
+   */
+  material?: 'surface' | 'flat' | 'shared' | 'glass';
   tone?: BloomTone;
   leading?: ReactNode;
   trailing?: ReactNode;

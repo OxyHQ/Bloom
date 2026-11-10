@@ -362,7 +362,7 @@ export function resolveCanonicalButtonPalette(
   tone: BloomTone = 'accent',
   colors?: { background: string; foreground: string },
   neutralFill?: string,
-  material: 'surface' | 'flat' | 'shared' = 'surface',
+  material: 'surface' | 'flat' | 'shared' | 'glass' = 'surface',
 ): ButtonPalette {
   if (material === 'shared') {
     const base = resolveCanonicalButtonPalette(
