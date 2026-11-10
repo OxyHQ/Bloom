@@ -5,6 +5,7 @@
  */
 import type React from 'react';
 import { Text, View } from 'react-native';
+import { Button } from '../button/Button';
 import { act, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme';
@@ -122,6 +123,23 @@ describe('DropdownMenu as the native lens menu', () => {
       </DropdownMenu>,
     );
     expect(lastProps).toBeUndefined();
+  });
+});
+
+describe('a Button as the trigger of a lens menu', () => {
+  it('tells the menu its fill and radius, so the menu morphs out of that shape', () => {
+    wrap(
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button style={{ borderRadius: 14 }}>Open</Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem>One</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+    expect(lastProps?.cornerRadius).toBe(14);
+    expect(lastProps?.triggerConfig?.tintColor).toMatch(/^(#|rgb)/);
   });
 });
 

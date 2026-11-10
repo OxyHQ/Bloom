@@ -10,10 +10,13 @@ import {
   type ReactElement,
   type ReactNode,
   type RefObject,
+  createContext,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from 'react';
 import { View } from 'react-native';
 
@@ -118,6 +121,26 @@ export function useLensMenu({
   );
 }
 
+/** What a trigger's own surface looks like, so the menu can morph out of it. */
+export interface LensOrigin {
+  /** The trigger's fill (`#rrggbb` or `rgb(...)`). */
+  tint: string;
+  /** The trigger's corner radius in dp. */
+  radius: number;
+}
+
+const LensOriginContext = createContext<((origin: LensOrigin | null) => void) | null>(null);
+LensOriginContext.displayName = 'BloomLensOriginContext';
+
+/**
+ * Where a control inside a lens trigger reports its own surface. A `Button` that is the trigger
+ * of a menu publishes its fill and radius here, and the menu morphs out of that shape. Null
+ * outside a lens trigger.
+ */
+export function useLensOriginReporter(): ((origin: LensOrigin | null) => void) | null {
+  return useContext(LensOriginContext);
+}
+
 interface LensTriggerProps {
   lens: MenuLens;
   /** Draw the trigger itself as lens (a fixed-layer control), not only the menu. */
@@ -149,17 +172,21 @@ export function LensTrigger({ lens, triggerLens, tone, tint, children }: LensTri
     }),
     [surface, border, text, textSecondary, destructive, dark],
   );
+  const [origin, setOrigin] = useState<LensOrigin | null>(null);
   const triggerConfig = tint
     ? { tintColor: tint, tintOpacity: 0.96 }
     : tone === 'primary'
       ? { tintColor: primary, tintOpacity: 0.96 }
-      : { tintColor: trigger.background, tintOpacity: 0.5 };
+      : origin
+        ? { tintColor: origin.tint, tintOpacity: 0.96 }
+        : { tintColor: trigger.background, tintOpacity: 0.5 };
   if (!NativeLens) return <>{children}</>;
   return (
     <NativeLens
       ref={lens.nativeRef}
       items={lens.items}
       lens={triggerLens}
+      cornerRadius={origin?.radius}
       colorScheme={dark ? 'dark' : 'light'}
       config={config}
       triggerConfig={triggerConfig}
@@ -167,7 +194,7 @@ export function LensTrigger({ lens, triggerLens, tone, tint, children }: LensTri
       onItemSelect={(event) => lens.select(event.nativeEvent.id)}
       onMenuOpenChange={(event) => lens.openChange(event.nativeEvent.open)}
     >
-      {children}
+      <LensOriginContext.Provider value={setOrigin}>{children}</LensOriginContext.Provider>
       <View
         nativeID={LENS_ICON_HOST_ID}
         collapsable={false}
