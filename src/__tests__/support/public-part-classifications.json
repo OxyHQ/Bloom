@@ -1610,14 +1610,17 @@
     ]
   },
   "multi-agent-preview-parts": {
-    "status": "pending",
-    "reason": "SelectedAgentPreview is a new public composition of agent avatars for selection. Its fixed preview footprint and count-based avatar geometry have not yet been audited as a BloomScope or responsive contract; this row records the part without implying a defect or adoption.",
+    "status": "independent-scale",
+    "reason": "SelectedAgentPreview owns a fixed 160×112px artwork viewport; avatar diameter and position are selected by participant count (80px for one, 62px for two or three, 48px for four or more), not by control size. It has no size prop, and its caption uses the standard Text family. Evidence: src/multi-agent-chat/SelectedAgentPreview.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.test.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.web.test.tsx. Both platform routes measure the viewport and each rendered avatar at counts 1, 2, 3 and 4 with no scope, xs, and nested xs/lg scopes; physical-device fit and responsive footprint remain pending.",
     "evidence": [
       "src/multi-agent-chat/SelectedAgentPreview.tsx",
+      "src/__tests__/SelectedAgentPreviewPublicPartScope.test.tsx",
+      "src/__tests__/SelectedAgentPreviewPublicPartScope.web.test.tsx",
+      "src/multi-agent-chat/__tests__/preview-geometry.test.ts",
       "src/__tests__/SelectedAgentPreviewExport.test.ts",
       "src/__tests__/public-parts.test.ts"
     ],
-    "verification": "public identity and route census only; per-part scope, responsive, runtime and device verification pending",
+    "verification": "native renderer and RNW DOM measure the 160×112px viewport and count-specific 80/62/48px avatar geometry for 1/2/3/4 agents under no scope, xs and nested xs/lg scopes; device fit and responsive footprint pending",
     "parts": ["src/multi-agent-chat/SelectedAgentPreview.tsx#SelectedAgentPreview"]
   },
   "agent-creator-field-parts": {
