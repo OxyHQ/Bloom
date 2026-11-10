@@ -75,7 +75,7 @@ const ItemComponent = function Item({
 
   const titleColor = destructive ? theme.colors.error : theme.colors.text;
   const { size } = useBloomAppearance({ size: sizeProp }, { size: 'md', tone: 'neutral' });
-  const contentDensity = useBloomContentDensity(contentDensityProp, undefined);
+  const contentDensity = useBloomContentDensity(contentDensityProp, null);
   const geometry = ITEM_GEOMETRY[size];
   const legacy =
     density !== undefined && sizeProp === undefined && contentDensityProp === undefined;
