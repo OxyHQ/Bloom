@@ -44,6 +44,7 @@ function ShareTargetButtonComponent({ target, circleSize, colors }: ShareTargetB
             }}
           >
             <SurfacePaint
+              lens
               fill={pressed || hovered ? colors.border : colors.backgroundSecondary}
               radius={circleSize / 2}
               composite
