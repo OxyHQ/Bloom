@@ -34,3 +34,5 @@ Eight alternating/repeated release windows measured wide/short and narrow/multil
 | Repeat wide / short / taper 0 | 210 / 105 / 210 | 933 | 9 | 0 / 1265 | 15.46 | 1 → 1 |
 
 GPU P95 ranged 8–16 ms and janky frames ranged 0–3 per approximately 1,260-frame window. The device thermal status was already level 1 at the start and remained at level 1. CPU and frame-interval variation is visible in the raw reports. These are descriptive measurements on one physical API 36 Pixel, not an accepted performance pass: issue #663 still calls for an agreed budget and coverage of supported APIs/devices. iPhone material and performance checks remain deferred per user instruction.
+
+A [state-retention follow-up](state-retention-followup-2026-11-11/README.md) now verifies stable native input identity, draft, focus, and selection across theme/attachment/error/reset and two complete loader cycles on the Pixel 8a. It also verifies typing during `streaming`; the expanded scope and package/device limits are recorded there.

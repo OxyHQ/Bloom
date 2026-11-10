@@ -1,0 +1,459 @@
+{
+  "deviceSerial": "43221JEKB12200",
+  "device": "Pixel 8a / Android 16 API 36",
+  "scene": "published Bloom 18.5.1 ComposerCases",
+  "owners": {
+    "cases-pill-input": {
+      "selectedAtStart": {
+        "testID": "cases-pill-input",
+        "identity": 8742530,
+        "id": 186,
+        "start": 0,
+        "end": 29,
+        "focused": true,
+        "attached": true,
+        "text": "Draft retained through resize"
+      },
+      "checkpoints": [
+        {
+          "control": "cases-theme",
+          "input": {
+            "testID": "cases-pill-input",
+            "identity": 8742530,
+            "id": 186,
+            "start": 0,
+            "end": 29,
+            "focused": true,
+            "attached": true,
+            "text": "Draft retained through resize"
+          },
+          "state": "busy=false phase=idle narrow=false taper=0 multiline=false attached=false stops=0 submits=0 pending=none"
+        },
+        {
+          "control": "cases-theme",
+          "input": {
+            "testID": "cases-pill-input",
+            "identity": 8742530,
+            "id": 186,
+            "start": 0,
+            "end": 29,
+            "focused": true,
+            "attached": true,
+            "text": "Draft retained through resize"
+          },
+          "state": "busy=false phase=idle narrow=false taper=0 multiline=false attached=false stops=0 submits=0 pending=none"
+        },
+        {
+          "control": "cases-attachment",
+          "input": {
+            "testID": "cases-pill-input",
+            "identity": 8742530,
+            "id": 186,
+            "start": 0,
+            "end": 29,
+            "focused": true,
+            "attached": true,
+            "text": "Draft retained through resize"
+          },
+          "state": "busy=false phase=idle narrow=false taper=0 multiline=false attached=true stops=0 submits=0 pending=none"
+        },
+        {
+          "control": "run-two-laps",
+          "scheduledPhase": "submitting",
+          "elapsedSeconds": 1.192,
+          "input": {
+            "testID": "cases-pill-input",
+            "identity": 8742530,
+            "id": 186,
+            "start": 0,
+            "end": 29,
+            "focused": true,
+            "attached": true,
+            "text": "Draft retained through resize"
+          },
+          "typingDuringStreaming": null
+        },
+        {
+          "control": "run-two-laps",
+          "scheduledPhase": "streaming",
+          "elapsedSeconds": 5.109,
+          "input": {
+            "testID": "cases-pill-input",
+            "identity": 8742530,
+            "id": 186,
+            "start": 0,
+            "end": 29,
+            "focused": true,
+            "attached": true,
+            "text": "Draft retained through resize"
+          },
+          "typingDuringStreaming": {
+            "testID": "cases-pill-input",
+            "identity": 8742530,
+            "id": 186,
+            "start": 30,
+            "end": 30,
+            "focused": true,
+            "attached": true,
+            "text": "Draft retained through resizeZ"
+          }
+        },
+        {
+          "control": "run-two-laps",
+          "scheduledPhase": "stopping",
+          "elapsedSeconds": 9.186,
+          "input": {
+            "testID": "cases-pill-input",
+            "identity": 8742530,
+            "id": 186,
+            "start": 30,
+            "end": 30,
+            "focused": true,
+            "attached": true,
+            "text": "Draft retained through resizeZ"
+          },
+          "typingDuringStreaming": null
+        },
+        {
+          "control": "run-two-laps",
+          "scheduledPhase": "complete",
+          "elapsedSeconds": 12.264,
+          "input": {
+            "testID": "cases-pill-input",
+            "identity": 8742530,
+            "id": 186,
+            "start": 30,
+            "end": 30,
+            "focused": true,
+            "attached": true,
+            "text": "Draft retained through resizeZ"
+          },
+          "typingDuringStreaming": null
+        },
+        {
+          "control": "run-two-laps",
+          "scheduledPhase": "submitting",
+          "elapsedSeconds": 14.018,
+          "input": {
+            "testID": "cases-pill-input",
+            "identity": 8742530,
+            "id": 186,
+            "start": 30,
+            "end": 30,
+            "focused": true,
+            "attached": true,
+            "text": "Draft retained through resizeZ"
+          },
+          "typingDuringStreaming": null
+        },
+        {
+          "control": "run-two-laps",
+          "scheduledPhase": "streaming",
+          "elapsedSeconds": 17.181,
+          "input": {
+            "testID": "cases-pill-input",
+            "identity": 8742530,
+            "id": 186,
+            "start": 30,
+            "end": 30,
+            "focused": true,
+            "attached": true,
+            "text": "Draft retained through resizeZ"
+          },
+          "typingDuringStreaming": null
+        },
+        {
+          "control": "run-two-laps",
+          "scheduledPhase": "stopping",
+          "elapsedSeconds": 22.37,
+          "input": {
+            "testID": "cases-pill-input",
+            "identity": 8742530,
+            "id": 186,
+            "start": 30,
+            "end": 30,
+            "focused": true,
+            "attached": true,
+            "text": "Draft retained through resizeZ"
+          },
+          "typingDuringStreaming": null
+        },
+        {
+          "control": "run-two-laps",
+          "scheduledPhase": "complete",
+          "elapsedSeconds": 25.292,
+          "input": {
+            "testID": "cases-pill-input",
+            "identity": 8742530,
+            "id": 186,
+            "start": 30,
+            "end": 30,
+            "focused": true,
+            "attached": true,
+            "text": "Draft retained through resizeZ"
+          },
+          "typingDuringStreaming": null
+        },
+        {
+          "control": "run-two-laps",
+          "scheduledPhase": "idle",
+          "elapsedSeconds": 27.99,
+          "input": {
+            "testID": "cases-pill-input",
+            "identity": 8742530,
+            "id": 186,
+            "start": 30,
+            "end": 30,
+            "focused": true,
+            "attached": true,
+            "text": "Draft retained through resizeZ"
+          },
+          "typingDuringStreaming": null
+        },
+        {
+          "control": "run-two-laps",
+          "finalState": "busy=false phase=idle narrow=false taper=0 multiline=false attached=true stops=0 submits=0 pending=none",
+          "input": {
+            "testID": "cases-pill-input",
+            "identity": 8742530,
+            "id": 186,
+            "start": 30,
+            "end": 30,
+            "focused": true,
+            "attached": true,
+            "text": "Draft retained through resizeZ"
+          }
+        }
+      ],
+      "keyboardVisibleDuringPhaseCycle": true,
+      "phaseCycleSamples": 10
+    },
+    "cases-agent-pill-input": {
+      "selectedAtStart": {
+        "testID": "cases-agent-pill-input",
+        "identity": 248857562,
+        "id": 224,
+        "start": 0,
+        "end": 35,
+        "focused": true,
+        "attached": true,
+        "text": "Agent draft retained through resize"
+      },
+      "checkpoints": [
+        {
+          "control": "cases-theme",
+          "input": {
+            "testID": "cases-agent-pill-input",
+            "identity": 248857562,
+            "id": 224,
+            "start": 0,
+            "end": 35,
+            "focused": true,
+            "attached": true,
+            "text": "Agent draft retained through resize"
+          },
+          "state": "busy=false phase=idle narrow=false taper=0 multiline=false attached=false stops=0 submits=0 pending=none"
+        },
+        {
+          "control": "cases-theme",
+          "input": {
+            "testID": "cases-agent-pill-input",
+            "identity": 248857562,
+            "id": 224,
+            "start": 0,
+            "end": 35,
+            "focused": true,
+            "attached": true,
+            "text": "Agent draft retained through resize"
+          },
+          "state": "busy=false phase=idle narrow=false taper=0 multiline=false attached=false stops=0 submits=0 pending=none"
+        },
+        {
+          "control": "cases-attachment",
+          "input": {
+            "testID": "cases-agent-pill-input",
+            "identity": 248857562,
+            "id": 224,
+            "start": 0,
+            "end": 35,
+            "focused": true,
+            "attached": true,
+            "text": "Agent draft retained through resize"
+          },
+          "state": "busy=false phase=idle narrow=false taper=0 multiline=false attached=true stops=0 submits=0 pending=none"
+        },
+        {
+          "control": "run-two-laps",
+          "scheduledPhase": "submitting",
+          "elapsedSeconds": 1.241,
+          "input": {
+            "testID": "cases-agent-pill-input",
+            "identity": 248857562,
+            "id": 224,
+            "start": 0,
+            "end": 35,
+            "focused": true,
+            "attached": true,
+            "text": "Agent draft retained through resize"
+          },
+          "typingDuringStreaming": null
+        },
+        {
+          "control": "run-two-laps",
+          "scheduledPhase": "streaming",
+          "elapsedSeconds": 5.325,
+          "input": {
+            "testID": "cases-agent-pill-input",
+            "identity": 248857562,
+            "id": 224,
+            "start": 0,
+            "end": 35,
+            "focused": true,
+            "attached": true,
+            "text": "Agent draft retained through resize"
+          },
+          "typingDuringStreaming": {
+            "testID": "cases-agent-pill-input",
+            "identity": 248857562,
+            "id": 224,
+            "start": 36,
+            "end": 36,
+            "focused": true,
+            "attached": true,
+            "text": "Agent draft retained through resizeZ"
+          }
+        },
+        {
+          "control": "run-two-laps",
+          "scheduledPhase": "stopping",
+          "elapsedSeconds": 9.224,
+          "input": {
+            "testID": "cases-agent-pill-input",
+            "identity": 248857562,
+            "id": 224,
+            "start": 36,
+            "end": 36,
+            "focused": true,
+            "attached": true,
+            "text": "Agent draft retained through resizeZ"
+          },
+          "typingDuringStreaming": null
+        },
+        {
+          "control": "run-two-laps",
+          "scheduledPhase": "complete",
+          "elapsedSeconds": 12.344,
+          "input": {
+            "testID": "cases-agent-pill-input",
+            "identity": 248857562,
+            "id": 224,
+            "start": 36,
+            "end": 36,
+            "focused": true,
+            "attached": true,
+            "text": "Agent draft retained through resizeZ"
+          },
+          "typingDuringStreaming": null
+        },
+        {
+          "control": "run-two-laps",
+          "scheduledPhase": "submitting",
+          "elapsedSeconds": 14.25,
+          "input": {
+            "testID": "cases-agent-pill-input",
+            "identity": 248857562,
+            "id": 224,
+            "start": 36,
+            "end": 36,
+            "focused": true,
+            "attached": true,
+            "text": "Agent draft retained through resizeZ"
+          },
+          "typingDuringStreaming": null
+        },
+        {
+          "control": "run-two-laps",
+          "scheduledPhase": "streaming",
+          "elapsedSeconds": 17.165,
+          "input": {
+            "testID": "cases-agent-pill-input",
+            "identity": 248857562,
+            "id": 224,
+            "start": 36,
+            "end": 36,
+            "focused": true,
+            "attached": true,
+            "text": "Agent draft retained through resizeZ"
+          },
+          "typingDuringStreaming": null
+        },
+        {
+          "control": "run-two-laps",
+          "scheduledPhase": "stopping",
+          "elapsedSeconds": 22.339,
+          "input": {
+            "testID": "cases-agent-pill-input",
+            "identity": 248857562,
+            "id": 224,
+            "start": 36,
+            "end": 36,
+            "focused": true,
+            "attached": true,
+            "text": "Agent draft retained through resizeZ"
+          },
+          "typingDuringStreaming": null
+        },
+        {
+          "control": "run-two-laps",
+          "scheduledPhase": "complete",
+          "elapsedSeconds": 25.248,
+          "input": {
+            "testID": "cases-agent-pill-input",
+            "identity": 248857562,
+            "id": 224,
+            "start": 36,
+            "end": 36,
+            "focused": true,
+            "attached": true,
+            "text": "Agent draft retained through resizeZ"
+          },
+          "typingDuringStreaming": null
+        },
+        {
+          "control": "run-two-laps",
+          "scheduledPhase": "idle",
+          "elapsedSeconds": 27.971,
+          "input": {
+            "testID": "cases-agent-pill-input",
+            "identity": 248857562,
+            "id": 224,
+            "start": 36,
+            "end": 36,
+            "focused": true,
+            "attached": true,
+            "text": "Agent draft retained through resizeZ"
+          },
+          "typingDuringStreaming": null
+        },
+        {
+          "control": "run-two-laps",
+          "finalState": "busy=false phase=idle narrow=false taper=0 multiline=false attached=true stops=0 submits=0 pending=none",
+          "input": {
+            "testID": "cases-agent-pill-input",
+            "identity": 248857562,
+            "id": 224,
+            "start": 36,
+            "end": 36,
+            "focused": true,
+            "attached": true,
+            "text": "Agent draft retained through resizeZ"
+          }
+        }
+      ],
+      "keyboardVisibleDuringPhaseCycle": true,
+      "phaseCycleSamples": 10
+    }
+  },
+  "finalState": "busy=false phase=idle narrow=false taper=0 multiline=false attached=true stops=0 submits=0 pending=none",
+  "keyboardVisibleAtEnd": false
+}
