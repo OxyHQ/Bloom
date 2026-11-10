@@ -92,6 +92,11 @@ export interface SettingsModalProps {
   onPageChange?: (page: string) => void;
   /** Compact layout: start at the section list (default) or open the selected page directly. Resets on each open. */
   initialView?: 'navigation' | 'page';
+  /**
+   * The page header: `bar` (default), Bloom's flat opaque strip, or `floating`, Bloom's transparent
+   * header whose buttons are grouped capsules over the scrolling page.
+   */
+  headerPresentation?: 'bar' | 'floating';
   labels?: SettingsModalLabels;
   testID?: string;
 }
@@ -137,6 +142,11 @@ export interface SettingsLayoutProps {
    * inside an application, away from the window's corner.
    */
   windowControls?: 'auto' | 'none';
+  /**
+   * The page header: `bar` (default), Bloom's flat opaque strip, or `floating`, Bloom's transparent
+   * header whose buttons are grouped capsules over the scrolling page.
+   */
+  headerPresentation?: 'bar' | 'floating';
   labels?: SettingsModalLabels;
   style?: StyleProp<ViewStyle>;
   testID?: string;

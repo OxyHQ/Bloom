@@ -1364,6 +1364,7 @@
       "src/settings-modal/SettingsStorage.tsx#SettingsStoragePage",
       "src/settings-modal/SettingsTools.tsx#SettingsServerList",
       "src/settings-modal/SettingsTools.tsx#SettingsToolsPage",
+      "src/settings-modal/page-actions.tsx#SettingsPageActions",
       "src/shapes/Border.tsx#Border",
       "src/shapes/Fill.tsx#Fill",
       "src/shapes/Image.tsx#Image",
