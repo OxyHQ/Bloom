@@ -154,18 +154,19 @@ function AiProfileCardComponent({
   const letters = initials ?? name.trim().charAt(0).toUpperCase();
 
   const grid = useMemo(
-    () => (
-      <ContributionsGrid
-        cells={cells}
-        columns={columns}
-        color={colors.grid}
-        animateIn={animateIn}
-        compact={!wide}
-        activeCell={activeCell}
-        onActiveCellChange={onActiveCellChange}
-        testID={testID ? `${testID}-grid` : undefined}
-      />
-    ),
+    () =>
+      cells === undefined ? null : (
+        <ContributionsGrid
+          cells={cells}
+          columns={columns}
+          color={colors.grid}
+          animateIn={animateIn}
+          compact={!wide}
+          activeCell={activeCell}
+          onActiveCellChange={onActiveCellChange}
+          testID={testID ? `${testID}-grid` : undefined}
+        />
+      ),
     [cells, columns, colors.grid, animateIn, wide, activeCell, onActiveCellChange, testID],
   );
 
@@ -267,113 +268,125 @@ function AiProfileCardComponent({
         ) : null}
       </View>
 
-      <View style={{ width: '100%', flexDirection: 'column', gap: 8 }}>
-        <View style={{ flexDirection: 'column', gap: 2 }}>
-          <Text variant="body-medium" numberOfLines={1} style={{ color: colors.textSecondary }}>
-            {contributionsLabel}
-          </Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <RollingHeadline
-              value={contributions}
-              duration={countUpDuration}
-              format={format}
-              color={colors.text}
-              testID={testID ? `${testID}-headline` : undefined}
-            />
-            {delta != null ? (
-              <Chip
-                size="md"
-                testID={testID ? `${testID}-delta` : undefined}
-                style={{ alignSelf: 'center', backgroundColor: colors.chip.background }}
-                textStyle={{ color: colors.chip.foreground }}
-              >
-                {delta}
-              </Chip>
-            ) : null}
-          </View>
-        </View>
-
-        {stats && stats.length > 0 ? (
-          <View
-            testID={testID ? `${testID}-stats` : undefined}
-            style={{ flexDirection: 'column', gap: 8 }}
-          >
-            {(wide ? [stats.map((_, i) => i)] : pairs(stats.length)).map((row) => (
-              <View key={row[0]} style={{ flexDirection: 'row', alignItems: 'stretch', gap: 8 }}>
-                {row.map((i) => {
-                  const stat = stats[i]!;
-                  return (
-                    <View
-                      key={`${i}-${stat.label}`}
-                      testID={testID ? `${testID}-stat-${i}` : undefined}
-                      style={[styles.tile, { backgroundColor: colors.secondary }]}
-                    >
-                      <Text
-                        variant="body-medium"
-                        numberOfLines={1}
-                        style={{ width: '100%', color: colors.text }}
-                      >
-                        {stat.value}
-                      </Text>
-                      <Text
-                        variant="body-2-medium"
-                        numberOfLines={1}
-                        style={{ width: '100%', color: colors.textSecondary }}
-                      >
-                        {stat.label}
-                      </Text>
-                    </View>
-                  );
-                })}
-                {/* An odd tile keeps its half of the two-column grid. */}
-                {!wide && row.length === 1 ? <View style={styles.tileSpacer} /> : null}
+      {contributions !== undefined || (stats && stats.length > 0) || cells !== undefined ? (
+        <View style={{ width: '100%', flexDirection: 'column', gap: 8 }}>
+          {contributions !== undefined ? (
+            <View style={{ flexDirection: 'column', gap: 2 }}>
+              <Text variant="body-medium" numberOfLines={1} style={{ color: colors.textSecondary }}>
+                {contributionsLabel}
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <RollingHeadline
+                  value={contributions}
+                  duration={countUpDuration}
+                  format={format}
+                  color={colors.text}
+                  testID={testID ? `${testID}-headline` : undefined}
+                />
+                {delta != null ? (
+                  <Chip
+                    size="md"
+                    testID={testID ? `${testID}-delta` : undefined}
+                    style={{ alignSelf: 'center', backgroundColor: colors.chip.background }}
+                    textStyle={{ color: colors.chip.foreground }}
+                  >
+                    {delta}
+                  </Chip>
+                ) : null}
               </View>
-            ))}
-          </View>
-        ) : null}
+            </View>
+          ) : null}
 
-        <View
-          style={{
-            width: '100%',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingTop: 6,
-            paddingLeft: 2,
-          }}
-        >
-          <Text variant="body-2-medium" style={{ color: colors.textSecondary }}>
-            {activityLabel}
-          </Text>
-          {periods.length > 0 ? (
-            <SegmentedControl
-              label={messages.periodGroup(activityLabel)}
-              type="radio"
-              variant="plain"
-              value={selectedPeriod}
-              onValueChange={setPeriod}
+          {stats && stats.length > 0 ? (
+            <View
+              testID={testID ? `${testID}-stats` : undefined}
+              style={{ flexDirection: 'column', gap: 8 }}
             >
-              {periods.map((p) => (
-                <SegmentedControlItem
-                  key={p.id}
-                  value={p.id}
-                  testID={testID ? `${testID}-period-${p.id}` : undefined}
-                >
-                  <SegmentedControlItemText>{p.label}</SegmentedControlItemText>
-                </SegmentedControlItem>
+              {(wide ? [stats.map((_, i) => i)] : pairs(stats.length)).map((row) => (
+                <View key={row[0]} style={{ flexDirection: 'row', alignItems: 'stretch', gap: 8 }}>
+                  {row.map((i) => {
+                    const stat = stats[i]!;
+                    return (
+                      <View
+                        key={`${i}-${stat.label}`}
+                        testID={testID ? `${testID}-stat-${i}` : undefined}
+                        style={[styles.tile, { backgroundColor: colors.secondary }]}
+                      >
+                        <Text
+                          variant="body-medium"
+                          numberOfLines={1}
+                          style={{ width: '100%', color: colors.text }}
+                        >
+                          {stat.value}
+                        </Text>
+                        <Text
+                          variant="body-2-medium"
+                          numberOfLines={1}
+                          style={{ width: '100%', color: colors.textSecondary }}
+                        >
+                          {stat.label}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                  {/* An odd tile keeps its half of the two-column grid. */}
+                  {!wide && row.length === 1 ? <View style={styles.tileSpacer} /> : null}
+                </View>
               ))}
-            </SegmentedControl>
+            </View>
+          ) : null}
+
+          {cells !== undefined ? (
+            <>
+              <View
+                style={{
+                  width: '100%',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingTop: 6,
+                  paddingLeft: 2,
+                }}
+              >
+                <Text variant="body-2-medium" style={{ color: colors.textSecondary }}>
+                  {activityLabel}
+                </Text>
+                {periods.length > 0 ? (
+                  <SegmentedControl
+                    label={messages.periodGroup(activityLabel)}
+                    type="radio"
+                    variant="plain"
+                    value={selectedPeriod}
+                    onValueChange={setPeriod}
+                  >
+                    {periods.map((p) => (
+                      <SegmentedControlItem
+                        key={p.id}
+                        value={p.id}
+                        testID={testID ? `${testID}-period-${p.id}` : undefined}
+                      >
+                        <SegmentedControlItemText>{p.label}</SegmentedControlItemText>
+                      </SegmentedControlItem>
+                    ))}
+                  </SegmentedControl>
+                ) : null}
+              </View>
+
+              {wide ? (
+                grid
+              ) : (
+                <ScrollArea
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={{ flexGrow: 0 }}
+                >
+                  {grid}
+                </ScrollArea>
+              )}
+            </>
           ) : null}
         </View>
-
-        {wide ? (
-          grid
-        ) : (
-          <ScrollArea horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }}>
-            {grid}
-          </ScrollArea>
-        )}
-      </View>
+      ) : null}
     </CoverHeader>
   );
 }

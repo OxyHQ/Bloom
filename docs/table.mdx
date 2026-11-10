@@ -59,7 +59,7 @@ React Native has no table layout, so HTML's automatic column sizing cannot be po
 
 ## Sorting and selection
 
-`onSort` turns a header into a button — label plus a 24px sort chevron, rotated for `'ascending'`, dimmed for `'none'` — and puts `aria-sort` on the column header. Sorting the data is the caller's job.
+`onSort` turns a header into a button — label plus a 24px sort chevron, rotated for `'ascending'`, and not drawn for `'none'` (its room kept, so a label never moves as the sort changes column), as a desktop table shows the indicator on the sorted column alone — and puts `aria-sort` on the column header. Sorting the data is the caller's job.
 
 `leading` draws content before the label, 8px from it and outside the sort button: a select-all checkbox, which a `<button>` may not contain and a keyboard could not reach inside one.
 

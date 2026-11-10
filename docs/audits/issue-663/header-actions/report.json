@@ -1,0 +1,63 @@
+{
+  "story": "composition-headers-adaptive-actions--local-width",
+  "viewport": {
+    "width": 1500,
+    "height": 900
+  },
+  "containerWidths": [
+    1400,
+    240,
+    1400
+  ],
+  "checks": [
+    {
+      "name": "container measures 1400px",
+      "pass": true,
+      "expected": 1400,
+      "actual": 1400
+    },
+    {
+      "name": "selected action state changes in spacious layout",
+      "pass": true
+    },
+    {
+      "name": "container measures 240px",
+      "pass": true,
+      "expected": 240,
+      "actual": 240
+    },
+    {
+      "name": "selected state is represented in compact overflow",
+      "pass": true
+    },
+    {
+      "name": "ArrowDown moves real browser focus to the first menu item",
+      "pass": true
+    },
+    {
+      "name": "container measures 1400px",
+      "pass": true,
+      "expected": 1400,
+      "actual": 1400
+    },
+    {
+      "name": "open menu and focused item survive compact-to-spacious resize",
+      "pass": true
+    },
+    {
+      "name": "Enter invokes the original action handler after resize",
+      "pass": true
+    },
+    {
+      "name": "selected action state survives overflow and resize",
+      "pass": true
+    },
+    {
+      "name": "no uncaught page errors",
+      "pass": true,
+      "errors": []
+    }
+  ],
+  "errors": [],
+  "browser": "Chrome/156.0.8078.4"
+}

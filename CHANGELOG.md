@@ -1,10 +1,40 @@
 # Changelog
 
-## 18.1.2
+## 18.4.1
 
 ### Fixed
 
 - **A desktop menu is as wide as its widest row on native.** 17.42.0 gave a desktop platform's menus their content's width, but each row's label kept `flex-1`, whose `flex: 1` makes Yoga's flex basis 0 whatever `flexBasis` says, so a panel sized by its content was held at its 120px floor and cut its labels (OxyOS's dock menu showed "Mostrar toda…"). On a desktop the label now grows and shrinks from its own width (`flexGrow`/`flexShrink`, no `flex`).
+
+## 18.4.0
+
+### Added
+
+- **`ResponsiveGrid flow="columns"`**: cells fill independent column stacks (cell 1 to column 1, cell 2 to column 2, …) instead of aligned rows, so cells of very different heights (the sections of a detail page) sit one under the other with no gap under the short ones. The column count is still chosen from the measured container (`minItemWidth`, `maxColumns`), and one column when narrow. In this mode a cell moves column when the count changes, so it remounts. `flow="rows"` (default) is exactly as before.
+
+## 18.3.0
+
+### Added
+
+- **`AiProfileCard` is an identity on its own.** `contributions` and `cells` are optional: without `contributions` the headline (label, count-up, delta) is not drawn, without `cells` the Activity row and the heatmap are not, and the `stats` tiles were already optional. A profile that has only a person's name, handle and picture (a public account, with no activity of its own to count) is the cover, the avatar and the name row, with `actions`. A card given all of them is drawn exactly as before.
+
+## 18.2.2
+
+### Changed
+
+- **A table shows its sort chevron on the sorted column alone.** A sortable `TableColumn` with `sortDirection` `'none'` drew the same chevron as the sorted one (in the header's colour, which is the sorted one's too), so every sortable header looked sorted, unlike a desktop table (macOS's, Finder's list), whose headers show the indicator only where the table is sorted. An unsorted column now keeps the chevron's room, drawn transparent, so no label moves as the sort goes from column to column; `aria-sort` and the header's button are unchanged.
+
+## 18.2.1
+
+### Fixed
+
+- Register Bloom's `web:` utility variant in the standalone Vite recipe so bounded desktop panel layers retain their grid geometry.
+
+## 18.2.0
+
+### Added
+
+- **`SettingsPageActions`**: settings pages can put Save/Cancel actions in their header, grouped beside close, while the page retains its dirty/saving state. `SettingsModal` and `SettingsLayout` also accept `headerPresentation="floating"` for Bloom’s floating `PageHeader`.
 
 ## 18.1.1
 
@@ -37,6 +67,7 @@
 - **An avatar never draws a path with `NaN` in it.** The vector avatar's clock is added to every frame and kept for the life of the avatar, so a single frame callback without a usable timestamp (a shimmed `requestAnimationFrame`, a webview that omits it) made every later pose, and every contour and clip path drawn from it, `NaN`, and the browser rejected each one (`<path> attribute d: Expected number, "MNaN NaN…"`). The step now comes from `vectorFrameDelta`: only a finite, forward step counts, and a frame with no timestamp is read off `performance.now()`. `renderVectorFrame` draws the rest pose for a `time`, `yaw` or `pitch` that is not finite, and leaves out a part whose projection is not finite rather than writing it as path data. No frame the renderer drew from valid input changes.
 
 ## 17.42.0
+
 
 ### Added
 

@@ -356,10 +356,20 @@ function SortChevron({
   direction: TableColumnProps['sortDirection'];
   color: string;
 }) {
+  // Only the sorted column shows its chevron, as a desktop table's headers do
+  // (macOS's, Finder's list): an unsorted one keeps the chevron's room, drawn
+  // transparent, so a label never moves as the sort goes from column to column.
+  const hidden = direction === 'none';
   return (
     // `rotate-180` for ascending, on a wrapper: a transform on the `Svg` itself
     // is not honoured by every react-native-svg target.
-    <View style={direction === 'ascending' ? { transform: [{ rotate: '180deg' }] } : undefined}>
+    <View
+      testID="bloom-table-sort-chevron"
+      style={[
+        direction === 'ascending' ? { transform: [{ rotate: '180deg' }] } : undefined,
+        hidden ? { opacity: 0 } : undefined,
+      ]}
+    >
       <Svg width={SORT_ICON_SIZE} height={SORT_ICON_SIZE} viewBox="0 0 24 24">
         <Path
           d="M12.7071 15.2929C12.3166 15.6834 11.6834 15.6834 11.2929 15.2929L7.70711 11.7071C7.07714 11.0771 7.52331 10 8.41421 10H15.5858C16.4767 10 16.9229 11.0771 16.2929 11.7071L12.7071 15.2929Z"
@@ -413,10 +423,7 @@ export function TableColumn({
       }
     >
       {label}
-      <SortChevron
-        direction={sortDirection}
-        color={sortDirection === 'none' ? palette.headerText : palette.sortActive}
-      />
+      <SortChevron direction={sortDirection} color={palette.sortActive} />
     </Pressable>
   ) : (
     label

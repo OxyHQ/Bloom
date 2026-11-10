@@ -119,6 +119,25 @@ describe('Table', () => {
     expect(onSort).toHaveBeenCalledTimes(1);
   });
 
+  it("shows the sort chevron on the sorted column alone, keeping an unsorted one's room", () => {
+    const { getByTestId } = renderWithTheme(
+      <Table>
+        <TableHeader>
+          <TableColumn onSort={() => {}} sortDirection="descending" testID="col-sorted">
+            Name
+          </TableColumn>
+          <TableColumn onSort={() => {}} testID="col-unsorted">
+            Size
+          </TableColumn>
+        </TableHeader>
+      </Table>,
+    );
+    const chevron = (column: string) =>
+      getByTestId(column).find((node) => node.props.testID === 'bloom-table-sort-chevron');
+    expect(resolvedStyle(chevron('col-sorted').props.style).opacity).toBeUndefined();
+    expect(resolvedStyle(chevron('col-unsorted').props.style).opacity).toBe(0);
+  });
+
   it('draws `leading` beside the sort button, not inside it, and lets an auto column hug', () => {
     const { getByLabelText, getByTestId } = renderWithTheme(
       <Table>
