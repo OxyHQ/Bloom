@@ -40,6 +40,10 @@ The existing `minimizeBehavior="collapse"` compatibility prop uses the same labe
 transition when its minimization context requests it. Explicit `collapsed` also
 works independently, without a navigation or Sidebar provider.
 
+## Material
+
+A FAB floats over the content, so on Android 13+ with the native lens installed it is drawn by the lens, tinted with its tone, and morphs when it is the trigger of a menu. Pass `material="surface"` for the shared paint; other platforms always use it.
+
 ## Migration
 
 Remove `placement`, `offset`, `zIndex`, and `minimizeBehavior`. Position the action

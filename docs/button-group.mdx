@@ -82,6 +82,7 @@ Text is `body-medium` (Inter 14/20 500) through Bloom's typography `Text` — a 
 |------|------|---------|-------------|
 | `ButtonGroup.size?` | `'md' \| 'sm' \| 'xs'` | inherited, then `'md'` | Size for every item: 34, 30 or 24px. |
 | `ButtonGroup.separated?` | `boolean` | `false` | One pill cut into segments: items sit 2px apart under a pill-shaped clip, so only the first item's start and the last item's end are rounded. No shared surface, hairlines or sliding selection. An item is `subtle`, and `outline` while `checked`; an `iconOnly` item is a `Button wide`: a pill 1.5× as wide as it is tall, never a circle. |
+| `ButtonGroup.material?` | `'surface' \| 'lens'` | `'surface'` | `'lens'` draws the group with the native lens on Android 13+ (the items, dividers, selection and accessibility are unchanged) and keeps the Surface elsewhere. For a fixed layer such as a header or toolbar, not a scrolling list: the lens is drawn by the window, so it does not follow a scroll view's overscroll stretch. [`HeaderActions`](./page-header.mdx) uses it. |
 | `ButtonGroup.dividers?` | `boolean` | `true` | Hairlines between items. |
 | `ButtonGroup.accessibilityLabel?` | `string` | — | Names the group. |
 | `ButtonGroupItem.onPress?` | `(event) => void` | — | Press handler. Receives the event, so a composed trigger handler can `preventDefault()` it. |
