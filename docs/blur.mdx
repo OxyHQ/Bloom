@@ -25,6 +25,8 @@ Keep shadow on the outer control and clip only the inner paint layer; clipping t
 
 `BlurIsland` groups related controls in one translucent pane with flush controls, painted with the same Surface material. It publishes its tint composited against the parent as an estimate for descendants. BloomScope carries density only. Plain sidebar surfaces and navigation rails keep their existing semantics.
 
+On Android 13+ with the native lens installed, an island is drawn by the lens (`material="lens"`, the default): the engine paints the material, its shadow and its light, and the controls inside draw only their content. Everywhere else, and with `material="surface"`, it keeps the Surface paint above. An island that scrolls with its content should be `material="surface"`, because the lens is drawn by the window and does not follow a scroll view's overscroll stretch.
+
 ## Shared geometry
 
 `SurfacePaint` accepts `shape` plus `direction` for logical corners. The host and material share the same Shapes policy, including CSS smooth corners, native continuous curves where supported, clipped paint and the rim. `BlurIsland` exposes `cornerCurve` for non-capsule shapes; capsules remain round. Radius precedence is explicit prop, then resolved `style.borderRadius`, then the capsule default; host and paint use the same result.
