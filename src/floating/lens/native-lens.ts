@@ -1,8 +1,8 @@
 /**
- * The optional boundary for Bloom's native glass menu (Android, API 33+).
+ * The optional boundary for Bloom's native lens menu (Android, API 33+).
  *
  * The overlay, its material and its motion are drawn and animated natively
- * (`android/.../glassmenu`); React only describes rows. The view exists only in
+ * (`android/.../lensmenu`); React only describes rows. The view exists only in
  * a binary built with Bloom's Expo module, so it is resolved lazily and its
  * absence is not an error: the menu keeps its sheet.
  *
@@ -12,7 +12,7 @@
 import type { ComponentType, ReactNode, Ref } from 'react';
 import { Platform, type StyleProp, type ViewStyle } from 'react-native';
 
-export interface GlassMenuNativeItem {
+export interface LensNativeItem {
   id: string;
   title: string;
   iconSlot?: number;
@@ -23,16 +23,16 @@ export interface GlassMenuNativeItem {
   separator?: boolean;
   heading?: boolean;
   /** A sub-menu row: its rows (one level). */
-  items?: GlassMenuNativeItem[];
+  items?: LensNativeItem[];
 }
 
-export interface GlassMenuNativeHandle {
+export interface LensNativeHandle {
   open: (x?: number, y?: number, width?: number, height?: number) => Promise<void>;
   close: () => Promise<void>;
 }
 
 /** The menu panel's material and row ink; a missing colour keeps the engine's own. */
-export interface GlassMenuNativeConfig {
+export interface LensNativeConfig {
   tintColor?: string;
   tintOpacity?: number;
   textColor?: string;
@@ -42,19 +42,19 @@ export interface GlassMenuNativeConfig {
 }
 
 /** The trigger's material. */
-export interface GlassMenuNativeTriggerConfig {
+export interface LensNativeTriggerConfig {
   tintColor?: string;
   tintOpacity?: number;
 }
 
-export interface GlassMenuNativeProps {
-  ref?: Ref<GlassMenuNativeHandle>;
-  items: GlassMenuNativeItem[];
-  glass?: boolean;
+export interface LensNativeProps {
+  ref?: Ref<LensNativeHandle>;
+  items: LensNativeItem[];
+  lens?: boolean;
   cornerRadius?: number;
   colorScheme?: 'light' | 'dark' | 'auto';
-  config?: GlassMenuNativeConfig;
-  triggerConfig?: GlassMenuNativeTriggerConfig;
+  config?: LensNativeConfig;
+  triggerConfig?: LensNativeTriggerConfig;
   menuWidth?: number;
   alignment?: string;
   style?: StyleProp<ViewStyle>;
@@ -64,14 +64,14 @@ export interface GlassMenuNativeProps {
 }
 
 /** The id of the view that hosts the rows' icons; the native side looks it up. */
-export const GLASS_MENU_ICON_HOST_ID = 'glass-menu-icons';
+export const LENS_ICON_HOST_ID = 'lens-icons';
 
 const MIN_ANDROID_API = 33;
 
-let resolved: ComponentType<GlassMenuNativeProps> | null | undefined;
+let resolved: ComponentType<LensNativeProps> | null | undefined;
 
-/** The native glass menu view, or `null` where it cannot run. */
-export function getNativeGlassMenu(): ComponentType<GlassMenuNativeProps> | null {
+/** The native lens menu view, or `null` where it cannot run. */
+export function getNativeLens(): ComponentType<LensNativeProps> | null {
   if (resolved !== undefined) return resolved;
   resolved = null;
   if (Platform.OS !== 'android' || Number(Platform.Version) < MIN_ANDROID_API) return resolved;
@@ -80,7 +80,7 @@ export function getNativeGlassMenu(): ComponentType<GlassMenuNativeProps> | null
     const expo = require('expo') as {
       requireNativeView?: <P>(name: string) => ComponentType<P>;
     };
-    resolved = expo.requireNativeView?.<GlassMenuNativeProps>('BloomGlassMenu') ?? null;
+    resolved = expo.requireNativeView?.<LensNativeProps>('BloomLensMenu') ?? null;
   } catch {
     resolved = null;
   }

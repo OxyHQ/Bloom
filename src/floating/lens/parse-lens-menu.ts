@@ -1,5 +1,5 @@
 /**
- * Reads a menu's rows as data for the native glass menu.
+ * Reads a menu's rows as data for the native lens menu.
  *
  * The native overlay draws its own rows, so it takes a CLOSED vocabulary: a
  * title, an icon, a check, destructive, disabled, a separator or a heading. The
@@ -9,7 +9,7 @@
  */
 import { Children, Fragment, isValidElement, type ReactElement, type ReactNode } from 'react';
 
-import type { GlassMenuNativeItem } from './native-glass-menu';
+import type { LensNativeItem } from './native-lens';
 import type {
   MenuCheckboxRowProps,
   MenuGroupProps,
@@ -23,7 +23,7 @@ import type {
 } from '../types';
 
 /** The part components of one menu family, by role. */
-export interface GlassMenuParts {
+export interface LensMenuParts {
   Item: unknown;
   CheckboxItem: unknown;
   RadioGroup: unknown;
@@ -36,8 +36,8 @@ export interface GlassMenuParts {
   SubContent: unknown;
 }
 
-export interface ParsedGlassMenu {
-  items: GlassMenuNativeItem[];
+export interface ParsedLensMenu {
+  items: LensNativeItem[];
   /** Leading nodes, in the order of the items' `iconSlot`s. */
   icons: ReactNode[];
   /** What each row does when chosen, by item id. */
@@ -59,8 +59,8 @@ function walk(children: ReactNode, visit: (element: ReactElement) => boolean): b
   return true;
 }
 
-export function parseGlassMenu(children: ReactNode, parts: GlassMenuParts): ParsedGlassMenu | null {
-  const items: GlassMenuNativeItem[] = [];
+export function parseLensMenu(children: ReactNode, parts: LensMenuParts): ParsedLensMenu | null {
+  const items: LensNativeItem[] = [];
   const icons: ReactNode[] = [];
   const handlers: Record<string, () => void> = {};
   // Where the rows being read go: the menu, or the sub-menu being read (the native menu nests one level).
@@ -71,11 +71,11 @@ export function parseGlassMenu(children: ReactNode, parts: GlassMenuParts): Pars
     id: string,
     title: unknown,
     leading: ReactNode,
-    flags: Pick<GlassMenuNativeItem, 'checked' | 'destructive' | 'disabled' | 'keepOpen'>,
+    flags: Pick<LensNativeItem, 'checked' | 'destructive' | 'disabled' | 'keepOpen'>,
     run: () => void,
   ): boolean => {
     if (typeof title !== 'string') return false;
-    const item: GlassMenuNativeItem = { id, title, ...flags };
+    const item: LensNativeItem = { id, title, ...flags };
     if (leading != null && leading !== false) {
       icons.push(leading);
       item.iconSlot = icons.length - 1;
@@ -164,12 +164,12 @@ export function parseGlassMenu(children: ReactNode, parts: GlassMenuParts): Pars
     });
     const trigger = read.trigger;
     if (!found || !trigger || typeof trigger.children !== 'string') return false;
-    const children: GlassMenuNativeItem[] = [];
+    const children: LensNativeItem[] = [];
     out = children;
     const ok = walk(read.content, visitRows(group));
     out = items;
     if (!ok || children.length === 0) return false;
-    const sub: GlassMenuNativeItem = { id, title: trigger.children, items: children };
+    const sub: LensNativeItem = { id, title: trigger.children, items: children };
     if (trigger.leading != null && trigger.leading !== false) {
       icons.push(trigger.leading);
       sub.iconSlot = icons.length - 1;

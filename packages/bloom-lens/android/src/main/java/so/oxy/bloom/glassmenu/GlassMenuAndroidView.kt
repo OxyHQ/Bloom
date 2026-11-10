@@ -90,7 +90,7 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
     super.onAttachedToWindow()
     val root = rootView as? ViewGroup ?: return
     overlay = GlassMenuOverlay.obtain(root).also { it.register(this) }
-    GlassDevGuard.warnIfInOverscrollScroll(this)
+    if (drawsGlass) GlassDevGuard.warnIfInOverscrollScroll(this)
     refreshDrawing()
   }
 
@@ -268,9 +268,9 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
     invalidate()
   }
 
-  private companion object {
+  internal companion object {
     const val FieldStep = 4f
-    const val IconHostId = "glass-menu-icons"
+    const val IconHostId = "lens-icons"
     const val PressMemory = 1000L
     const val MorphFromPress = "press"
     const val PressRadius = 22f

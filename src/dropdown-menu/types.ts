@@ -43,20 +43,20 @@ export type DropdownMenuTriggerProps = OverlayTriggerProps & {
    */
   restoreFocus?: boolean;
   /**
-   * The colour of a glass trigger (Android 13+): `'neutral'` (default) tints it with the menu
+   * The colour of a lens trigger (Android 13+): `'neutral'` (default) tints it with the menu
    * surface, `'primary'` with the theme's `vivid` brand colour, strongly. Setting `'primary'`
-   * makes the trigger glass. No effect where the menu is not the native glass menu.
+   * makes the trigger lens. No effect where the menu is not the native lens menu.
    */
-  glassTone?: 'neutral' | 'primary';
+  lensTone?: 'neutral' | 'primary';
   /**
-   * Draw the trigger itself as glass. Off by default: a menu opens as glass from any trigger, but
-   * a glass trigger belongs to the fixed layer (a header, a toolbar, a floating button), never
-   * inside a scrolling area, whose overscroll stretch it does not follow. `glassTone` and
-   * `glassTint` imply it.
+   * Draw the trigger itself as lens. Off by default: a menu opens as lens from any trigger, but
+   * a lens trigger belongs to the fixed layer (a header, a toolbar, a floating button), never
+   * inside a scrolling area, whose overscroll stretch it does not follow. `lensTone` and
+   * `lensTint` imply it.
    */
-  glass?: boolean;
-  /** An explicit colour for the native glass trigger (`#rrggbb`); wins over `glassTone`. */
-  glassTint?: string;
+  lens?: boolean;
+  /** An explicit colour for the native lens trigger (`#rrggbb`); wins over `lensTone`. */
+  lensTint?: string;
 };
 export type DropdownMenuContentProps = MenuSurfaceProps;
 

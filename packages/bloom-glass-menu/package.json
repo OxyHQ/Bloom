@@ -1,8 +1,0 @@
-{
-  "name": "@oxy.so/bloom-glass-menu",
-  "version": "0.1.0",
-  "description": "Bloom's native glass menu for Android: the overlay, material and motion that @oxy.so/bloom's DropdownMenu uses when the app's binary has it.",
-  "license": "SEE LICENSE IN LICENSE",
-  "files": ["android", "expo-module.config.json", "!android/build", "!android/.gradle"],
-  "peerDependencies": { "expo": "*", "react-native": "*" }
-}

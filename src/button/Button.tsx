@@ -1,5 +1,5 @@
-import { GlassButtonHost, splitGlassStyle } from '../floating/glass-menu/glass-button-host';
-import { getNativeGlassMenu } from '../floating/glass-menu/native-glass-menu';
+import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
+import { getNativeLens } from '../floating/lens/native-lens';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import type { LinkButtonProps } from './types';
 import React, {
@@ -449,20 +449,20 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
           ? geometry.iconSize
           : ICON_BUTTON_ICON_SIZE[size]
         : geometry.iconSize;
-  // A glass button is filled by the glass: a solid brand button takes the brand at full strength
+  // A lens button is filled by the lens: a solid brand button takes the brand at full strength
   // (the theme's `vivid`) rather than the deeper fill that carries a white label on a plain surface.
-  const glass = material === 'glass' && getNativeGlassMenu() != null;
-  const glassColors =
+  const lens = material === 'lens' && getNativeLens() != null;
+  const lensColors =
     colors ??
-    (glass && appearance === 'solid' && (tone === 'accent' || tone === 'action')
+    (lens && appearance === 'solid' && (tone === 'accent' || tone === 'action')
       ? { background: theme.colors.vivid, foreground: theme.colors.vividForeground }
       : undefined);
   const palette = useMemo(
     () =>
       isLink && linkTone != null && toneProp == null
         ? resolveLinkButtonPalette(theme, linkTone)
-        : resolveButtonPalette(appearance, theme, tone, glassColors, layer.fill, material),
-    [appearance, theme, tone, toneProp, isLink, linkTone, glassColors, layer.fill, material],
+        : resolveButtonPalette(appearance, theme, tone, lensColors, layer.fill, material),
+    [appearance, theme, tone, toneProp, isLink, linkTone, lensColors, layer.fill, material],
   );
   const underlineMode = resolveButtonUnderline(isLink, underline);
 
@@ -630,7 +630,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
         ? () => (target === '_blank' ? openExternal(href) : openHref(href))
         : undefined));
 
-  const split = glass ? splitGlassStyle(style) : null;
+  const split = lens ? splitLensStyle(style) : null;
   const pressable = (
     <StyledPressable
       ref={ref}
@@ -707,7 +707,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
       {...(ariaHasPopup == null ? {} : { 'aria-haspopup': ariaHasPopup })}
       testID={testID}
     >
-      {paint.surface && !glass ? (
+      {paint.surface && !lens ? (
         <SurfacePaint
           fill={paint.background}
           radius={StyleSheet.flatten(style)?.borderRadius ?? BUTTON_RADIUS}
@@ -722,13 +722,13 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
   if (!split) return pressable;
   const flatRadius = StyleSheet.flatten(style)?.borderRadius;
   return (
-    <GlassButtonHost
+    <LensButtonHost
       tint={appearance === 'solid' ? paint.background : undefined}
       radius={typeof flatRadius === 'number' ? flatRadius : BUTTON_RADIUS}
       style={split.host}
     >
       {pressable}
-    </GlassButtonHost>
+    </LensButtonHost>
   );
 });
 

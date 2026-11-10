@@ -550,9 +550,9 @@ export function buildPolicyTokens(
 
   // The brand as a SYSTEM TINT: the seed at its own tone and chroma, the same in light and
   // dark, with whichever of black or white reads on it. `--primary` is a FILL that must carry a
-  // white label, so it is pulled down to a tone white allows and reads deeper (and, over glass,
+  // white label, so it is pulled down to a tone white allows and reads deeper (and, over lens,
   // washed) next to a vivid control tint like a system blue or yellow. A control that wants the
-  // brand at full strength (a glass button, a switch, a selection) reads `--vivid` instead.
+  // brand at full strength (a lens button, a switch, a selection) reads `--vivid` instead.
   // A monochrome seed has no colour to show, so its tint is its fill.
   const vividArgb = monochrome ? undefined : brandPalette.tone(Math.round(seed.tone));
   const vivid =

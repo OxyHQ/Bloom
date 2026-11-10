@@ -122,6 +122,7 @@ const ALLOWED: { peer: string; file: string; why: string }[] = [
  */
 const DYNAMIC_BOUNDARIES: { peer: string; file: string }[] = [
   { peer: '@react-native-community/netinfo', file: 'connection-status/netinfo.ts' },
+  { peer: 'expo', file: 'floating/lens/native-lens.ts' },
   { peer: 'expo-haptics', file: 'hooks/haptics-module.ts' },
   { peer: 'expo-clipboard', file: 'hooks/clipboard-module.ts' },
   { peer: 'expo-web-browser', file: 'hooks/web-browser-module.ts' },

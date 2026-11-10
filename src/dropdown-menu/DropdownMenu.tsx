@@ -34,9 +34,9 @@ import { TriggerSlot } from '../floating/TriggerSlot';
 import { useMenuFocusIntent, useOpenFocus } from '../floating/menu-keyboard';
 import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
 import { useControllableState } from '../hooks/use-controllable-state';
-import { getNativeGlassMenu } from '../floating/glass-menu/native-glass-menu';
-import { parseGlassMenu } from '../floating/glass-menu/parse-glass-menu';
-import { GlassTrigger, useGlassMenu } from '../floating/glass-menu/use-glass-menu';
+import { getNativeLens } from '../floating/lens/native-lens';
+import { parseLensMenu } from '../floating/lens/parse-lens-menu';
+import { LensTrigger, useLensMenu } from '../floating/lens/use-lens-menu';
 import { DropdownMenuProvider, useDropdownMenu } from './context';
 import type {
   DropdownMenuContentProps,
@@ -76,10 +76,10 @@ export function DropdownMenu({
     },
     [setOpen],
   );
-  const glass = useGlassMenu({
+  const lens = useLensMenu({
     children,
     content: DropdownMenuContent,
-    parse: (props) => parseGlassMenu(props.children as ReactNode, rows),
+    parse: (props) => parseLensMenu(props.children as ReactNode, rows),
     open: isOpen,
     setOpen: setMenuOpen,
   });
@@ -91,9 +91,9 @@ export function DropdownMenu({
       focusIntent,
       activation,
       onPrimaryOpenChange,
-      glass,
+      lens,
     }),
-    [isOpen, setMenuOpen, focusIntent, activation, onPrimaryOpenChange, glass],
+    [isOpen, setMenuOpen, focusIntent, activation, onPrimaryOpenChange, lens],
   );
 
   return <DropdownMenuProvider value={value}>{children}</DropdownMenuProvider>;
@@ -109,9 +109,9 @@ export function DropdownMenuTrigger({
   testID,
   pressTrigger,
   restoreFocus,
-  glassTone = 'neutral',
-  glassTint,
-  glass: glassTrigger = false,
+  lensTone = 'neutral',
+  lensTint,
+  lens: lensTrigger = false,
 }: DropdownMenuTriggerProps) {
   const menu = useDropdownMenu();
   const primaryAction =
@@ -133,7 +133,7 @@ export function DropdownMenuTrigger({
         onPress: () => {
           const open = menu.activation !== 'hover' || !primaryAction;
           // The native menu morphs out of the touch that opened it: open it here, not through state.
-          if (open && menu.glass) void menu.glass.nativeRef.current?.open();
+          if (open && menu.lens) void menu.lens.nativeRef.current?.open();
           else menu.setOpen(open);
         },
         onLongPress: menu.activation === 'hover' ? () => menu.setOpen(true) : undefined,
@@ -147,16 +147,16 @@ export function DropdownMenuTrigger({
       {children}
     </TriggerSlot>
   );
-  if (!menu.glass || !getNativeGlassMenu()) return trigger;
+  if (!menu.lens || !getNativeLens()) return trigger;
   return (
-    <GlassTrigger
-      glass={menu.glass}
-      triggerGlass={glassTrigger || glassTone === 'primary' || glassTint != null}
-      tone={glassTone}
-      tint={glassTint}
+    <LensTrigger
+      lens={menu.lens}
+      triggerLens={lensTrigger || lensTone === 'primary' || lensTint != null}
+      tone={lensTone}
+      tint={lensTint}
     >
       {trigger}
-    </GlassTrigger>
+    </LensTrigger>
   );
 }
 
@@ -187,8 +187,8 @@ export function DropdownMenuContent({
     [menu, PopupSurface],
   );
 
-  // The native glass menu draws the rows itself; the trigger hosts it.
-  if (menu.glass) return null;
+  // The native lens menu draws the rows itself; the trigger hosts it.
+  if (menu.lens) return null;
 
   if (PopupSurface) {
     // The platform's popup: mounted while open, closed by the platform on an

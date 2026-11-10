@@ -5,10 +5,30 @@
  class GlassMenuAndroidModule : Module() {
    override fun definition() = ModuleDefinition {
 -    Name("GlassMenuAndroid")
-+    Name("BloomGlassMenu")
++    Name("BloomLensMenu")
  
      View(GlassMenuAndroidView::class) {
        Events("onItemSelect", "onMenuOpenChange")
+@@ -16,7 +16,7 @@
+       Prop("items") { view: GlassMenuAndroidView, items: List<GlassMenuItemRecord>? ->
+         view.items = items ?: emptyList()
+       }
+-      Prop("glass") { view: GlassMenuAndroidView, glass: Boolean? ->
++      Prop("lens") { view: GlassMenuAndroidView, glass: Boolean? ->
+         view.glass = glass ?: true
+       }
+       Prop("cornerRadius") { view: GlassMenuAndroidView, radius: Float? ->
+--- a/GlassMenuAndroidView.kt
++++ b/GlassMenuAndroidView.kt
+@@ -270,7 +270,7 @@
+ 
+   internal companion object {
+     const val FieldStep = 4f
+-    const val IconHostId = "glass-menu-icons"
++    const val IconHostId = "lens-icons"
+     const val PressMemory = 1000L
+     const val MorphFromPress = "press"
+     const val PressRadius = 22f
 --- a/records/GlassMenuConfigRecord.kt
 +++ b/records/GlassMenuConfigRecord.kt
 @@ -9,6 +9,11 @@
@@ -52,7 +72,7 @@
        canvas.drawRect(Metrics.SeparatorInset * density, y - half, width - Metrics.SeparatorInset * density, y + half, fillPaint)
 --- a/overlay/GlassMenuSession.kt
 +++ b/overlay/GlassMenuSession.kt
-@@ -95,6 +95,7 @@
+@@ -96,6 +96,7 @@
      val margin = 16f * density
      availableWidth = windowWidth - margin * 2f
      content.dark = anchor.isDark()
@@ -60,7 +80,7 @@
      levelItems = null
      nav.reset(1f)
      parentDim.reset(0f)
-@@ -542,6 +543,7 @@
+@@ -543,6 +544,7 @@
        anchor, density,
        GlassMenuContent(overlay.context, density) { slot -> anchor.iconView(slot) }.also {
          it.dark = content.dark
