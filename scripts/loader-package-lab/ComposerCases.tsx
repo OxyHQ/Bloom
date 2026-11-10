@@ -12,7 +12,13 @@ import { AliaComposer } from './node_modules/@alia.onl/sdk/src/components/AliaCo
 import { OxyProvider } from '@oxy.so/services/ui/client';
 
 /** Real packaged owners with synthetic state; no chat service or copied input. */
-export function ComposerCases({ onToggleMode }: { onToggleMode: () => void }) {
+export function ComposerCases({
+  onToggleMode,
+  onCloseDuringFade,
+}: {
+  onToggleMode: () => void;
+  onCloseDuringFade: () => void;
+}) {
   const [multiline, setMultiline] = useState(false);
   const [pill, setPill] = useState('Draft retained through resize');
   const [agent, setAgent] = useState('Agent draft retained through resize');
@@ -155,6 +161,21 @@ export function ComposerCases({ onToggleMode }: { onToggleMode: () => void }) {
             </Button>
             <Button testID="cases-theme" onPress={onToggleMode}>
               Theme
+            </Button>
+            <Button
+              testID="cases-close-during-fade"
+              onPress={() => {
+                setBusy(true);
+                setPhase('streaming');
+                requestAnimationFrame(() => {
+                  requestAnimationFrame(() => {
+                    setPhase('idle');
+                    setTimeout(onCloseDuringFade, 100);
+                  });
+                });
+              }}
+            >
+              Close during fade
             </Button>
             <Button
               testID="cases-rapid-phase"

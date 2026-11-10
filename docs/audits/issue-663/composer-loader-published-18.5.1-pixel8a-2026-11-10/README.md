@@ -16,6 +16,8 @@ Physical Android evidence for Bloom issue #663 using the exact published `@oxy.s
 
 The verifier accepts Android 16's `cmd window user-rotation` output (`free`) and restores the original sensor-controlled mode. The Pixel was returned to its original orientation, and the synthetic app was force-stopped after capture.
 
+The [2026-11-11 interaction follow-up](interaction-followup-2026-11-11/README.md) adds physical captures for live theme change, fixture attachment and add menu, multiline and 500-character input, error/reset, rapid phases, and two complete phase cycles. A separate [unmount follow-up](unmount-followup-2026-11-11/README.md) verifies closing and reopening the composer screen during fade-out. The full issue checklist remains open because preservation must be established across every applicable state and the other Android, web, and cross-platform criteria are not all complete.
+
 ## Performance matrix
 
 Eight alternating/repeated release windows measured wide/short and narrow/multiline scenes with three visible loader views (ComposerLoader, ComposerPill, AgentChatComposer), with and without taper. UIAutomator checked the actual scene and usable viewport bounds. Each window records roughly 10 seconds of frame/GPU data, CPU samples, process PSS, and thermal status; no screen recording was active.

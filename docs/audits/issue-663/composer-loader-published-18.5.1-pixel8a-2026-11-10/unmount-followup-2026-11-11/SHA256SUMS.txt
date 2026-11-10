@@ -1,0 +1,8 @@
+5241d2b41f8341e283e6f849bd996263f9fdb161e8d42b3d6856afa5aa158293  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/unmount-followup-2026-11-11/README.md
+ad19ca7f63795486fac01b7714f32c19d14401eb5c210e52e739bc9065cbc77d  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/unmount-followup-2026-11-11/badging.txt
+649b6a152e5b74d5b93d60d623b09aeb52a430732b57d6b9cf02b87f3b675a0c  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/unmount-followup-2026-11-11/build-attestation.json
+e7736f8f591569b429529fd7c177981a6ed6ba11d16365e1458026ecf41ab148  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/unmount-followup-2026-11-11/environment.json
+4a1689253cacb4d02f3de11f94eabcc3f15136e822a49cfe8e25f1147a11e0fd  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/unmount-followup-2026-11-11/permissions.txt
+cfc6460092dfc1fe871b7fa263b5e54633d342c4c3e5d150b0ebb4a8ae4724a6  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/unmount-followup-2026-11-11/screen-closed-during-fade.png
+d547966e25a1d796c969ebf7a448c57d91a6abfb6d7a0c532ac86ecc8b0afe89  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/unmount-followup-2026-11-11/screen-reopened-after-fade.png
+364445b20917e6f9f8dce06f4b8c7ea1ffe61d7d90211e5aef8ad5a166fd0b3c  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/unmount-followup-2026-11-11/unmount-report.json

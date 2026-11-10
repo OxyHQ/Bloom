@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BloomProvider } from '@oxy.so/bloom/provider';
 import { PortalProvider, PortalOutlet } from '@oxy.so/bloom/portal';
 import { SurfaceProvider } from '@oxy.so/bloom/surfaces';
+import { Button } from '@oxy.so/bloom/button';
 import { LoaderBenchmark } from './LoaderBenchmark';
 import { ComposerCases } from './ComposerCases';
 import { RawInputControl } from './RawInputControl';
@@ -44,6 +45,7 @@ export function PackageLab({
   scene?: string;
 } = {}) {
   const [mode, setMode] = useState<'light' | 'dark'>('light');
+  const [composerOpen, setComposerOpen] = useState(true);
   const [isolation, setIsolation] = useState('Checking offline boundary');
   useEffect(() => {
     assertNetworkDenied().then(
@@ -67,9 +69,19 @@ export function PackageLab({
               (scene ?? build.scene) === 'raw-autosize' ? (
                 <RawInputControl autoSize={(scene ?? build.scene) === 'raw-autosize'} />
               ) : (scene ?? build.scene) === 'composers' ? (
-                <ComposerCases
-                  onToggleMode={() => setMode((value) => (value === 'light' ? 'dark' : 'light'))}
-                />
+                composerOpen ? (
+                  <ComposerCases
+                    onToggleMode={() => setMode((value) => (value === 'light' ? 'dark' : 'light'))}
+                    onCloseDuringFade={() => setComposerOpen(false)}
+                  />
+                ) : (
+                  <View style={{ flex: 1, justifyContent: 'center', padding: 32, gap: 16 }}>
+                    <Text testID="cases-screen-closed">Composer screen closed during fade</Text>
+                    <Button testID="cases-reopen-screen" onPress={() => setComposerOpen(true)}>
+                      Reopen composer
+                    </Button>
+                  </View>
+                )
               ) : (
                 <LoaderBenchmark
                   initialActive={initialActive}
