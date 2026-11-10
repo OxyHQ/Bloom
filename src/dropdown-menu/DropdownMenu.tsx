@@ -19,7 +19,7 @@ import { BloomScope } from '../appearance';
  * The rows come from `floating/menu-rows`, the same set `ContextMenu` and
  * `Menubar` publish under their own prefixes.
  */
-import React, { useCallback, useMemo, useRef, type ComponentRef } from 'react';
+import React, { useCallback, useMemo, useRef, type ComponentRef, type ReactNode } from 'react';
 import type { View } from 'react-native';
 
 import { SheetShell } from '../dialog/SheetShell';
@@ -35,6 +35,7 @@ import { useMenuFocusIntent, useOpenFocus } from '../floating/menu-keyboard';
 import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { getNativeGlassMenu } from '../floating/glass-menu/native-glass-menu';
+import { parseGlassMenu } from '../floating/glass-menu/parse-glass-menu';
 import { GlassTrigger, useGlassMenu } from '../floating/glass-menu/use-glass-menu';
 import { DropdownMenuProvider, useDropdownMenu } from './context';
 import type {
@@ -78,7 +79,7 @@ export function DropdownMenu({
   const glass = useGlassMenu({
     children,
     content: DropdownMenuContent,
-    rows,
+    parse: (props) => parseGlassMenu(props.children as ReactNode, rows),
     open: isOpen,
     setOpen: setMenuOpen,
   });

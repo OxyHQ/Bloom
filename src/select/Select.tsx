@@ -9,6 +9,7 @@ import { useBloomAppearance } from '../appearance';
 import type React from 'react';
 import {
   createContext,
+  isValidElement,
   useCallback,
   useContext,
   useEffect,
@@ -63,6 +64,9 @@ import type {
   SelectTriggerProps,
   SelectValueProps,
 } from './types';
+import { getNativeGlassMenu } from '../floating/glass-menu/native-glass-menu';
+import type { ParsedGlassMenu } from '../floating/glass-menu/parse-glass-menu';
+import { GlassTrigger, type MenuGlass, useGlassMenu } from '../floating/glass-menu/use-glass-menu';
 import { useFieldMembership } from '../field/membership';
 import { useMessages } from '../locale/messages';
 import { SELECT_MESSAGES } from './messages';
@@ -75,6 +79,8 @@ import { createSelectField } from './SelectField';
 type SelectContextValue = {
   control: DialogControlProps;
   size: NonNullable<SelectProps['size']>;
+  /** Native glass (Android 13+): the options as data; the list is then drawn natively. */
+  glass?: MenuGlass;
 } & Pick<SelectProps, 'value' | 'onValueChange' | 'disabled'>;
 
 const SelectContext = createContext<SelectContextValue | null>(null);
@@ -135,9 +141,19 @@ export function Select(props: SelectProps) {
   }, [visible, control]);
   const valueStoreState = useState<unknown>(undefined);
 
+  // The native glass list closes itself; the select has no open state of its own to keep in step.
+  const glass = useGlassMenu({
+    children,
+    content: SelectContent,
+    parse: (content) =>
+      parseSelectOptions(content as SelectContentProps<unknown>, value, onValueChange),
+    open: false,
+    setOpen: ignoreOpen,
+  });
+
   const ctx = useMemo<SelectContextValue>(
-    () => ({ control, value, onValueChange, disabled: disabled || !visible, size }),
-    [control, value, onValueChange, disabled, size, visible],
+    () => ({ control, value, onValueChange, disabled: disabled || !visible, size, glass }),
+    [control, value, onValueChange, disabled, size, visible, glass],
   );
 
   return (
@@ -173,7 +189,7 @@ export function SelectTrigger({
   fieldStyle,
   testID,
 }: SelectTriggerProps) {
-  const { control, size, disabled: rootDisabled } = useSelectContext();
+  const { control, size, disabled: rootDisabled, glass } = useSelectContext();
   const palette = useMenuPalette();
   const touch = useTouchInput();
   // The trigger IS the select's control, so it takes the enclosing `Field`'s id,
@@ -224,32 +240,42 @@ export function SelectTrigger({
     [isDisabled, size],
   );
 
+  const slot = (
+    <TriggerSlot
+      asChild={asChild}
+      style={[styles.triggerSlot, style]}
+      testID={testID}
+      handle={{
+        onPress: () => (glass ? void glass.nativeRef.current?.open() : control.open()),
+        disabled: isDisabled,
+        accessibilityLabel: membership.accessibilityLabel,
+        accessibilityRole: 'button',
+        accessibilityValue: display ? { text: display } : undefined,
+        'aria-haspopup': SELECT_TRIGGER_POPUP,
+        nativeID: membership.nativeID,
+        'aria-describedby': requiredDescription.describedBy,
+        // The field's texts, then "required", as the web's id list orders them.
+        accessibilityHint: joinDescription(
+          [membership.accessibilityHint, requiredDescription.hint],
+          membership.accessibilityLabel,
+        ),
+        'aria-invalid': membership.invalid || undefined,
+      }}
+    >
+      {asChild ? children : field}
+    </TriggerSlot>
+  );
+
   return (
     <SelectTriggerStateContext.Provider value={triggerState}>
       <SelectDisplayContext.Provider value={setDisplay}>
-        <TriggerSlot
-          asChild={asChild}
-          style={[styles.triggerSlot, style]}
-          testID={testID}
-          handle={{
-            onPress: () => control.open(),
-            disabled: isDisabled,
-            accessibilityLabel: membership.accessibilityLabel,
-            accessibilityRole: 'button',
-            accessibilityValue: display ? { text: display } : undefined,
-            'aria-haspopup': SELECT_TRIGGER_POPUP,
-            nativeID: membership.nativeID,
-            'aria-describedby': requiredDescription.describedBy,
-            // The field's texts, then "required", as the web's id list orders them.
-            accessibilityHint: joinDescription(
-              [membership.accessibilityHint, requiredDescription.hint],
-              membership.accessibilityLabel,
-            ),
-            'aria-invalid': membership.invalid || undefined,
-          }}
-        >
-          {asChild ? children : field}
-        </TriggerSlot>
+        {glass && getNativeGlassMenu() ? (
+          <GlassTrigger glass={glass} triggerGlass={false} tone="neutral">
+            {slot}
+          </GlassTrigger>
+        ) : (
+          slot
+        )}
       </SelectDisplayContext.Provider>
       {requiredDescription.description}
     </SelectTriggerStateContext.Provider>
@@ -354,7 +380,7 @@ export function SelectContent<T>({
   valueExtractor = defaultItemValueExtractor,
   ...props
 }: SelectContentProps<T>) {
-  const { control, size, ...context } = useSelectContext();
+  const { control, size, glass, ...context } = useSelectContext();
   const [, setStoredValue] = useContext(ValueStoreContext);
 
   useLayoutEffect(() => {
@@ -363,6 +389,9 @@ export function SelectContent<T>({
     // instead of the last item it matched.
     setStoredValue(() => item);
   }, [items, context.value, valueExtractor, setStoredValue]);
+
+  // The native glass list draws the options itself; the trigger hosts it.
+  if (glass) return null;
 
   return (
     <BloomScope size={contentSize}>
@@ -442,6 +471,41 @@ function SelectContentInner<T>({
       </SelectContext.Provider>
     </SheetShell>
   );
+}
+
+const ignoreOpen = () => {};
+
+/**
+ * The options as the native glass list takes them: what `renderItem` returns for each item, when
+ * it is a `SelectItem` (its `label`, `value`, `disabled` and `leading`). Any other element, or a
+ * list that is not made of `SelectItem`s, leaves the vocabulary and the select keeps its sheet.
+ */
+function parseSelectOptions(
+  { items, renderItem, valueExtractor = defaultItemValueExtractor }: SelectContentProps<unknown>,
+  value: string | undefined,
+  onValueChange: (next: string | undefined) => void,
+): ParsedGlassMenu | null {
+  const parsed: ParsedGlassMenu = { items: [], icons: [], handlers: {} };
+  for (const [index, item] of items.entries()) {
+    const option = renderItem(item, index, value);
+    if (!isValidElement<SelectItemProps>(option) || option.type !== SelectItem) return null;
+    const { label, value: optionValue, disabled, leading } = option.props;
+    if (typeof label !== 'string') return null;
+    const id = valueExtractor(item);
+    const row: ParsedGlassMenu['items'][number] = {
+      id,
+      title: label,
+      checked: optionValue === value,
+    };
+    if (disabled) row.disabled = true;
+    if (leading != null && leading !== false) {
+      parsed.icons.push(leading);
+      row.iconSlot = parsed.icons.length - 1;
+    }
+    parsed.items.push(row);
+    parsed.handlers[id] = () => onValueChange(optionValue);
+  }
+  return parsed.items.length > 0 ? parsed : null;
 }
 
 // ---------------------------------------------------------------------------
