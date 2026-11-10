@@ -41,6 +41,7 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
       fill,
       rim = true,
       sheen: _sheen = true,
+      material: _material = 'surface',
       radius,
       cornerCurve = SURFACE_SHAPES.panel.curve,
       style,

@@ -8,6 +8,7 @@ import { Text, View } from 'react-native';
 import { Button } from '../button/Button';
 import { ButtonGroup, ButtonGroupItem } from '../button-group/ButtonGroup';
 import { PageHeader } from '../page-header/PageHeader';
+import { Surface } from '../surface/Surface';
 import { act, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme';
@@ -238,5 +239,26 @@ describe('a floating PageHeader', () => {
     floating.unmount();
     const bar = wrap(<PageHeader title="Inbox" presentation="bar" actions={actions} />);
     expect(bar.queryByTestId('native-lens')).toBeNull();
+  });
+});
+
+describe('a Surface with the lens material', () => {
+  it('is drawn by the native lens and holds its content', () => {
+    const screen = wrap(
+      <Surface material="lens" testID="panel">
+        <Text>Panel</Text>
+      </Surface>,
+    );
+    expect(screen.getByTestId('native-lens')).toBeTruthy();
+    expect(screen.getByText('Panel')).toBeTruthy();
+  });
+
+  it('keeps the shared paint without the prop', () => {
+    const screen = wrap(
+      <Surface>
+        <Text>Panel</Text>
+      </Surface>,
+    );
+    expect(screen.queryByTestId('native-lens')).toBeNull();
   });
 });
