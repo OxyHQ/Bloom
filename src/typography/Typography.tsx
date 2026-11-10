@@ -19,8 +19,9 @@ import { BREAKPOINTS } from '../styles/breakpoints';
 import { space } from '../styles/tokens';
 import { mergeTypographyStyle, typographyDefaultsWhenNoClassName } from './defaults';
 import { TYPE_SCALE } from './scale';
+import { DESKTOP_TYPE_SCALE, desktopTracking } from './desktop-scale';
 import { StyledText } from '../styles/styled-primitives';
-import { useTypographySystemFamily } from './TypographyScope';
+import { useTypographyScope } from './TypographyScope';
 import { DescriptionSource } from './DescriptionSource';
 import { IS_WEB } from '../styles/platform';
 import type { BlockquoteProps, TextProps } from './types';
@@ -79,10 +80,18 @@ const MONO_CLASS = /(?:^|\s)(?:[\w-]+:)*font-mono(?=\s|$)/;
  * `font-mono` (an explicit family beats one implied by size), BlomusModernus
  * for the big titles, Inter for the rest.
  */
-function textFamily(variant: string | undefined, className: string | undefined) {
+function textFamily(
+  variant: string | undefined,
+  className: string | undefined,
+  desktop: boolean = false,
+) {
   if (className !== undefined && MONO_CLASS.test(className)) return MONO_FONT_FAMILY;
   const display =
-    (variant !== undefined && isDisplayVariant(variant)) ||
+    (variant !== undefined &&
+      isDisplayVariant(variant) &&
+      // A desktop's chrome takes no display face for its titles (`desktop-scale.ts`);
+      // the hero steps (`large-title`, `display-*`) keep it.
+      !(desktop && /^title-[123]-/.test(variant))) ||
     (className !== undefined && DISPLAY_CLASS.test(className));
   return display ? DISPLAY_FONT_FAMILY : SANS_FONT_FAMILY;
 }
@@ -132,6 +141,12 @@ const DEFAULT_TEXT_TYPOGRAPHY: TextStyle = {
   fontSize: 13,
 };
 
+/** The same 13px, with the desktop body's tracking (`desktop-scale.ts`). */
+const DESKTOP_DEFAULT_TEXT_TYPOGRAPHY: TextStyle = {
+  fontSize: 13,
+  letterSpacing: desktopTracking(13),
+};
+
 /**
  * Base text component with theme-aware default color and the Bloom sans
  * font family applied (the display family for the `large-title` and `display-*`
@@ -140,15 +155,22 @@ const DEFAULT_TEXT_TYPOGRAPHY: TextStyle = {
  */
 const TextComponent = function Text({ children, style, className, variant, ...rest }: TextProps) {
   const colors = useThemePaint();
-  const systemFamily = useTypographySystemFamily();
+  const { systemFamily, desktop } = useTypographyScope();
   const trimmedClassName = className?.trim() ? className : undefined;
 
   const merged = mergeTypographyStyle(
     trimmedClassName,
-    { ...(variant ? TYPE_SCALE[variant] : DEFAULT_TEXT_TYPOGRAPHY), color: colors.text },
-    rest.accessibilityRole === 'header' || rest.role === 'heading'
+    {
+      ...(variant
+        ? (desktop ? DESKTOP_TYPE_SCALE : TYPE_SCALE)[variant]
+        : desktop
+          ? DESKTOP_DEFAULT_TEXT_TYPOGRAPHY
+          : DEFAULT_TEXT_TYPOGRAPHY),
+      color: colors.text,
+    },
+    (rest.accessibilityRole === 'header' || rest.role === 'heading') && !desktop
       ? DISPLAY_FONT_FAMILY
-      : textFamily(variant, trimmedClassName),
+      : textFamily(variant, trimmedClassName, desktop),
     [style, systemFamily],
   );
 

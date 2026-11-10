@@ -209,6 +209,13 @@ export const ROW_CLASS = 'relative flex-row items-center select-none min-w-0 rou
 export const ROW_ENABLED_CLASS = 'cursor-pointer';
 
 /**
+ * `cursor-default`: an enabled row on a desktop platform. A desktop's pointer
+ * stays the arrow over a menu, as over a button; the hand is a link's alone.
+ * Native has no `default`, so the row also sets `cursor: 'auto'` inline there.
+ */
+export const ROW_DESKTOP_ENABLED_CLASS = 'cursor-default';
+
+/**
  * `cursor-not-allowed`. The dimming itself is the label's `text-disabled`
  * colour, set inline by the row.
  */

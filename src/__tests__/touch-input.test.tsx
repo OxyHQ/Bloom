@@ -44,7 +44,7 @@ describe('useTouchInput on native', () => {
     const desktop = renderHook(() => useMenuDensity(), { wrapper: on(DESKTOP_WINDOW) }).result
       .current;
     expect(phone.height).toBe(44);
-    expect(desktop).toEqual(resolveMenuDensity('md', false));
+    expect(desktop).toEqual(resolveMenuDensity('md', false, true));
     expect(desktop.height).toBeLessThan(44);
   });
 });

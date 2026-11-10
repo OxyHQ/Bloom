@@ -270,7 +270,7 @@ function MenuLayer({
     () => ({ close: menu.choose, presentation: 'dropdown' }),
     [menu.choose],
   );
-  const minWidth = (props.minWidth ?? MENU_WIDTH) - 2 * EDGE;
+  const minWidth = (props.minWidth ?? (density.desktop ? density.minWidth : MENU_WIDTH)) - 2 * EDGE;
   const layerStyle: WebCssStyle = {
     minWidth,
     maxWidth: props.maxWidth === undefined ? undefined : props.maxWidth - 2 * EDGE,

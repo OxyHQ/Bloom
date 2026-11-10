@@ -42,7 +42,24 @@ export const STATUS_SEEDS = {
 export interface PinnedAccents {
   secondary?: string;
   tertiary?: string;
+  /**
+   * Draw the surfaces, text and boundaries in greys of no hue
+   * (`SurfaceTint`): a desktop's window chrome, which stays neutral whatever
+   * the accent, with the seed's hue left to the accent alone (selection, the
+   * default button, the focus ring, a switch that is on).
+   */
+  neutralSurfaces?: boolean;
 }
+
+/**
+ * How a theme's surfaces take its seed: `tinted` (the default) carries the
+ * identity hue through the page, the surfaces, the text and the boundaries;
+ * `neutral` draws them in greys of no hue at the same tones, as a desktop's
+ * windows are, so a pink or violet accent never tints a window pink or
+ * aubergine. Only the neutral ladder changes: the accent, its fills, the
+ * status families and the charts are the seed's either way.
+ */
+export type SurfaceTint = 'tinted' | 'neutral';
 
 /** The tokens the policy owns. Everything else keeps coming from the M3 roles. */
 export type PolicyTokens = Record<string, string>;
@@ -231,10 +248,17 @@ export function isColourlessSeed(seedHex: string): boolean {
  * theme resolves) gets the same value for one tone solve instead of the whole
  * set — roles, fill searches, accents, charts and status families.
  */
-export function policyBackground(seedHex: string, isDark: boolean): string {
+export function policyBackground(
+  seedHex: string,
+  isDark: boolean,
+  neutralSurfaces: boolean = false,
+): string {
   const seed = Hct.fromInt(argbFromHex(seedHex));
   const monochrome = seed.chroma <= MONOCHROME_MAX_CHROMA;
-  const neutral = TonalPalette.fromHueAndChroma(seed.hue, monochrome ? 0 : NEUTRAL_CHROMA);
+  const neutral = TonalPalette.fromHueAndChroma(
+    seed.hue,
+    monochrome || neutralSurfaces ? 0 : NEUTRAL_CHROMA,
+  );
   const lightShift = !isDark && !monochrome ? LIGHT_NEUTRAL_SHIFT : 0;
   return rgb(neutral.tone((isDark ? BACKGROUND_TONE.dark : BACKGROUND_TONE.light) + lightShift));
 }
@@ -525,7 +549,11 @@ export function buildPolicyTokens(
   );
 
   // Surfaces, text and boundaries share the identity hue and tonal authority.
-  const neutral = TonalPalette.fromHueAndChroma(seed.hue, monochrome ? 0 : NEUTRAL_CHROMA);
+  // A desktop's neutral surfaces (`SurfaceTint`) keep the same tones with no hue.
+  const neutral = TonalPalette.fromHueAndChroma(
+    seed.hue,
+    monochrome || pinned.neutralSurfaces === true ? 0 : NEUTRAL_CHROMA,
+  );
   const originalRamp = isDark ? SURFACE_RAMP.dark : SURFACE_RAMP.light;
   const lightShift = !isDark && !monochrome ? LIGHT_NEUTRAL_SHIFT : 0;
   const rampTones = {
@@ -553,7 +581,7 @@ export function buildPolicyTokens(
         ? roles.surfaceContainerHighest
         : roles.surfaceContainerLowest
       : rgb(neutral.tone(isDark ? 22 : 98)),
-    '--background': policyBackground(seedHex, isDark),
+    '--background': policyBackground(seedHex, isDark, pinned.neutralSurfaces === true),
     '--content-area': monochrome ? roles.background : rgb(neutral.tone(isDark ? 6 : 96)),
     '--foreground': monochrome ? roles.onBackground : foreground,
     '--surface-foreground': monochrome ? roles.onSurface : foreground,

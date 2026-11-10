@@ -104,6 +104,8 @@ export interface SurfacePresentation {
   title?: string;
   /** Declarative supporting copy, rendered under the title. */
   description?: string;
+  /** Drawn above the title (`DialogProps.icon`): an application's icon, or a caution symbol. */
+  icon?: ReactNode;
   /**
    * Declarative action row, rendered through the shared `Dialog`'s own
    * `actions` prop — the same `ActionRow`/`ActionButton` primitive every other
@@ -211,6 +213,8 @@ export interface SurfaceConfirmOptions {
   title: string;
   /** Supporting copy. */
   description?: string;
+  /** Drawn above the title: the application's icon, or a caution symbol. */
+  icon?: ReactNode;
   /** Confirm button label (`'Confirm'` in English). */
   confirmLabel?: string;
   /** Cancel button label (`'Cancel'` in English). */

@@ -95,6 +95,8 @@ export {
   PlatformSurfaceProvider,
   usePlatformAppearance,
   usePlatformAppearanceState,
+  isDesktopPlatform,
+  useDesktopPlatform,
   usePlatformEditing,
   usePlatformKeyboard,
   usePlatformMenuBar,

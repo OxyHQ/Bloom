@@ -299,8 +299,17 @@ export type DialogProps = React.PropsWithChildren<{
   /** Optional supporting copy, rendered below the title. */
   description?: string;
   /**
+   * Drawn above the title: an application's icon on an alert about it, or a
+   * caution symbol where the alert warns. On a desktop platform it is
+   * `DESKTOP_ALERT_ICON_SIZE` square; elsewhere it keeps its own size.
+   */
+  icon?: React.ReactNode;
+  /**
    * Optional action row. When provided, bloom renders the appropriate
-   * confirm/cancel/destructive buttons for you. Order is preserved.
+   * confirm/cancel/destructive buttons for you. Order is preserved; on a
+   * desktop platform the default button (the one with `initialFocus`, else
+   * the first that is not a cancel) goes to the trailing edge of a row, or the
+   * top of a stack (three or more, or two that do not fit side by side).
    */
   actions?: DialogAction[];
   /**

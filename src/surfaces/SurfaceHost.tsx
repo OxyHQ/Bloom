@@ -70,6 +70,7 @@ function dialogPropsFor(p: SurfacePresentation): Partial<DialogProps> {
     testID: p.testID,
     title: p.title,
     description: p.description,
+    icon: p.icon,
   };
 }
 
@@ -138,6 +139,7 @@ export function createSurfaceHost(Dialog: DialogComponent) {
       [entry.presentation, controls, locale],
     );
 
+    const body = entry.render(controls);
     return (
       // `startOpen` is the surface's open-INTENT (true while not closing). It
       // ONLY seeds a freshly-mounted Dialog branch's visible state — the
@@ -152,7 +154,12 @@ export function createSurfaceHost(Dialog: DialogComponent) {
         startOpen={status !== 'closing'}
         {...dialogProps}
       >
-        <SurfaceContext.Provider value={controls}>{entry.render(controls)}</SurfaceContext.Provider>
+        {/* A surface of declarative chrome alone (`alert()`, `confirm()`) renders
+            nothing of its own, and passes the Dialog no children: it is then an
+            alert, which a desktop platform draws narrow. */}
+        {body == null ? null : (
+          <SurfaceContext.Provider value={controls}>{body}</SurfaceContext.Provider>
+        )}
       </Dialog>
     );
   }

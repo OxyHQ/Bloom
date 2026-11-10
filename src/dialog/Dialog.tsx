@@ -51,7 +51,8 @@ import { bloomShadowStyle } from '../design-tokens/shadows';
 import { StyledView } from '../styles/styled-primitives';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { Context } from './context';
-import { DialogBody } from './DialogContent';
+import { DESKTOP_ALERT_WIDTH, DialogBody, hasChildren } from './DialogContent';
+import { useDesktopPlatform } from '../platform-surface/use-desktop-platform';
 import { DialogBottomSheet } from './DialogBottomSheet';
 import {
   type DialogHeaderController,
@@ -177,6 +178,7 @@ function CenteredOrSideDialog({
   testID,
   title,
   description,
+  icon,
   actions,
   header,
   scrollable,
@@ -184,7 +186,7 @@ function CenteredOrSideDialog({
   placement,
   width = DEFAULT_SIDE_WIDTH,
   minSideGutter,
-  maxWidth = DEFAULT_CENTER_MAX_WIDTH,
+  maxWidth: maxWidthProp,
   maxHeightRatio,
   inset,
   dismissOnBackdrop = true,
@@ -208,8 +210,18 @@ function CenteredOrSideDialog({
   // presents the centred placement as the web does: a centred card, not a card
   // floating up from the bottom edge — which on a wide window also sat at the
   // bottom-LEFT, Yoga ignoring the auto margins that centre it on the web.
+  const desktopPlatform = useDesktopPlatform();
   const desktopSession = useDesktopPresentationSession(!!(controlledOpen ?? startOpen));
   const desktop = !isSide && desktopSession.desktop;
+  // A desktop platform's alert (declarative chrome and nothing of its own) is
+  // narrow, as a desktop's alerts are; a caller's `maxWidth` still wins.
+  const desktopAlert =
+    desktopPlatform &&
+    actions !== undefined &&
+    actions.length > 0 &&
+    !header &&
+    !hasChildren(children);
+  const maxWidth = maxWidthProp ?? (desktopAlert ? DESKTOP_ALERT_WIDTH : DEFAULT_CENTER_MAX_WIDTH);
 
   // Size morphing across an in-place content swap. The detached centered card
   // is content-hugging, so animating its height reshapes it about its own
@@ -378,6 +390,7 @@ function CenteredOrSideDialog({
       descriptionId={descriptionId}
       title={title}
       description={description}
+      icon={icon}
       actions={actions}
     >
       {children}
