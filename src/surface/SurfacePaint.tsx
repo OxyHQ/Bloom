@@ -27,6 +27,8 @@ import { useSurfaceFill } from '../styles/surface-levels';
 import { usePlatformMaterial } from '../platform-surface/context';
 import type { PlatformMaterialProps } from '../platform-surface/types';
 import { useTheme } from '../theme/use-theme';
+import { parseRgba } from '../theme/color-utils';
+import { getNativeLensSurface } from '../floating/lens/native-lens';
 
 // Backing participates only in web compositing. Native uses the supplied tint
 // directly, so it does not subscribe every painted surface to the backing tree.
@@ -55,6 +57,7 @@ export const SurfacePaint = memo(function SurfacePaint({
   direction = 'ltr',
   sheen = true,
   rim = true,
+  lens = false,
   outset = 0,
   composite = false,
   backing,
@@ -79,6 +82,13 @@ export const SurfacePaint = memo(function SurfacePaint({
    * or the two read as one double stroke.
    */
   rim?: boolean;
+  /**
+   * Paint a control with the engine's lens material where the platform has it (Android 13+, in a
+   * binary with Bloom's lens module): the material rendered once per size and tint and drawn from
+   * a shared texture inside the page, so it follows the scroll and costs a blit. For controls
+   * (buttons, field triggers), not for panels, whose size would not share a texture.
+   */
+  lens?: boolean;
   testID?: string;
   /**
    * The host's own border width. An absolute child sits inside the border, so a
@@ -128,12 +138,14 @@ export const SurfacePaint = memo(function SurfacePaint({
     (theme) => ({
       ...resolveSurfaceOptics(theme.isDark),
       text: theme.colors.text,
+      dark: theme.isDark,
+      page: theme.colors.background,
     }),
     [],
   );
   const optics = opticsRecipe.paint;
   // Colour arithmetic reads the concrete theme, never a prepaint variable.
-  const text = opticsRecipe.current.text;
+  const { text, dark, page } = opticsRecipe.current;
   const increasedContrast = useIncreasedContrast();
   // A platform's own material under a floating surface (`material`: OxyOS).
   const platformMaterial = usePlatformMaterial();
@@ -206,6 +218,41 @@ export const SurfacePaint = memo(function SurfacePaint({
           }
         : null;
   const body = fill === undefined ? 'transparent' : resolvedFill;
+  const LensSurface = lens && Platform.OS === 'android' ? getNativeLensSurface() : null;
+  if (
+    LensSurface &&
+    fill !== undefined &&
+    rim &&
+    sheen &&
+    !increasedContrast &&
+    typeof geometry.borderRadius === 'number'
+  ) {
+    // A translucent fill is composited onto what the surface sits on first, as the web's material
+    // does: the texture is opaque, so it must be the colour the token reads as.
+    const behind = backing ?? page;
+    const solid = compositeOnto(body, behind);
+    if (parseRgba(solid)?.a === 1) {
+      return (
+        <View
+          testID={testID}
+          pointerEvents="none"
+          style={[
+            StyleSheet.absoluteFill,
+            outset ? { top: -outset, right: -outset, bottom: -outset, left: -outset } : null,
+            presence === undefined ? null : { opacity: presence },
+          ]}
+        >
+          <LensSurface
+            style={StyleSheet.absoluteFill}
+            tint={solid}
+            radius={geometry.borderRadius}
+            dark={dark}
+            page={behind}
+          />
+        </View>
+      );
+    }
+  }
   if (
     (Platform.OS === 'ios' || platformMaterial !== null) &&
     floating &&

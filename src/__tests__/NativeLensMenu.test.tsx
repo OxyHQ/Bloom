@@ -180,4 +180,26 @@ describe('Select as the native lens menu', () => {
     act(() => lastProps?.onItemSelect?.({ nativeEvent: { id: items[1]?.id ?? '', index: 1 } }));
     expect(onValueChange).toHaveBeenCalledWith('pear');
   });
+
+  it('draws the trigger itself as the lens only when asked', () => {
+    const select = (lens?: boolean) => (
+      <Select value="apple" onValueChange={() => {}}>
+        <SelectTrigger label="Fruit" lens={lens}>
+          <Text>Fruit</Text>
+        </SelectTrigger>
+        <SelectContent
+          items={FRUITS}
+          renderItem={(item) => (
+            <SelectItem value={item.value} label={item.label}>
+              {item.label}
+            </SelectItem>
+          )}
+        />
+      </Select>
+    );
+    wrap(select());
+    expect(lastProps?.lens).toBe(false);
+    wrap(select(true));
+    expect(lastProps?.lens).toBe(true);
+  });
 });

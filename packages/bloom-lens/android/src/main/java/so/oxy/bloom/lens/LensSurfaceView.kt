@@ -36,7 +36,19 @@ class LensSurfaceView(context: Context, appContext: AppContext) : ExpoView(conte
     val radius = if (radiusDp < 0f) capsule else min(radiusDp * density, capsule)
     val bitmap = LensSurfaceCache.bitmap(
       LensSurfaceSpec(width, height, radius, tint, tintOpacity, dark, page, density),
-    ) ?: return
+    )
+    if (bitmap == null) {
+      // The engine hands the rendered texture over asynchronously: ask again next frame, a few times.
+      if (LensSurfaceCache.supported() && attempts++ < MAX_ATTEMPTS) postInvalidateOnAnimation()
+      return
+    }
+    attempts = 0
     canvas.drawBitmap(bitmap, 0f, 0f, null)
+  }
+
+  private var attempts = 0
+
+  private companion object {
+    const val MAX_ATTEMPTS = 8
   }
 }
