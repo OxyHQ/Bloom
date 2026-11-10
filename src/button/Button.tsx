@@ -2,6 +2,7 @@ import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-hos
 import { useLensOriginReporter } from '../floating/lens/use-lens-menu';
 import { compositeOnto } from '../surface/shared';
 import { getNativeLens } from '../floating/lens/native-lens';
+import { useControlMaterial } from '../floating/lens/lens-material';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import type { LinkButtonProps } from './types';
 import React, {
@@ -431,7 +432,8 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
   });
   const layer = useSurfaceLayer();
   const appearance = appearanceProp ?? 'solid';
-  const material = materialProp ?? 'surface';
+  const regionMaterial = useControlMaterial();
+  const material = materialProp ?? regionMaterial;
   const { size, tone } = useBloomAppearance(
     { size: sizeProp, tone: toneProp },
     { size: 'md', tone: 'accent' },

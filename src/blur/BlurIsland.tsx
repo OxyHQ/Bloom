@@ -14,6 +14,7 @@ import { borderRadius } from '../styles/tokens';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
 import { getNativeLens } from '../floating/lens/native-lens';
+import { LensMaterialProvider } from '../floating/lens/lens-material';
 import type { BlurIslandProps } from './types';
 
 /** Floating control container using the shared surface material.
@@ -66,7 +67,7 @@ const BlurIslandComponent: React.FC<BlurIslandProps> = ({
             ]}
           >
             <SurfaceLevelProvider level={material.level} fill={publishedFill}>
-              {children}
+              <LensMaterialProvider value="surface">{children}</LensMaterialProvider>
             </SurfaceLevelProvider>
           </View>
         </LensButtonHost>

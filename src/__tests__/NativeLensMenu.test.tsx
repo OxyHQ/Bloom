@@ -7,6 +7,7 @@ import type React from 'react';
 import { Text, View } from 'react-native';
 import { Button } from '../button/Button';
 import { ButtonGroup, ButtonGroupItem } from '../button-group/ButtonGroup';
+import { PageHeader } from '../page-header/PageHeader';
 import { act, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme';
@@ -222,5 +223,20 @@ describe('a ButtonGroup with the lens material', () => {
       </ButtonGroup>,
     );
     expect(screen.queryByTestId('native-lens')).toBeNull();
+  });
+});
+
+describe('a floating PageHeader', () => {
+  it('draws its action group with the lens without a prop, and the bar presentation does not', () => {
+    const actions = (
+      <ButtonGroup accessibilityLabel="Header actions">
+        <ButtonGroupItem>Share</ButtonGroupItem>
+      </ButtonGroup>
+    );
+    const floating = wrap(<PageHeader title="Inbox" actions={actions} />);
+    expect(floating.getAllByTestId('native-lens').length).toBeGreaterThan(0);
+    floating.unmount();
+    const bar = wrap(<PageHeader title="Inbox" presentation="bar" actions={actions} />);
+    expect(bar.queryByTestId('native-lens')).toBeNull();
   });
 });

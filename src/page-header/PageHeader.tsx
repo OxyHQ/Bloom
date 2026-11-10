@@ -34,6 +34,7 @@ import { Button } from '../button';
 import { BUTTON_SHADOW } from '../button/shared';
 import { BloomScope } from '../appearance';
 import { BlurIsland } from '../blur';
+import { LensMaterialProvider } from '../floating/lens/lens-material';
 import { RiArrowLeftLine } from '../icons/remix/RiArrowLeftLine';
 import { useScrollMetricsValue } from '../layout/scroll-metrics';
 import { useClaimTopEdge, useScrollOffset } from '../layout';
@@ -741,16 +742,24 @@ function PageHeaderComponent({
     <>
       {backButton}
       {history ? (
-        <BloomScope>
-          <PageHeaderHistory
-            navigation={history}
-            active={screen?.active !== false && host.active !== false}
-            backLabel={backLabel}
-            testID={testID ? `${testID}-history` : undefined}
-          />
-        </BloomScope>
+        <LensMaterialProvider value={floating ? 'lens' : 'surface'}>
+          <BloomScope>
+            <PageHeaderHistory
+              navigation={history}
+              active={screen?.active !== false && host.active !== false}
+              backLabel={backLabel}
+              testID={testID ? `${testID}-history` : undefined}
+            />
+          </BloomScope>
+        </LensMaterialProvider>
       ) : null}
-      {floating && leading ? <BloomScope>{leading}</BloomScope> : leading}
+      {floating && leading ? (
+        <LensMaterialProvider value="lens">
+          <BloomScope>{leading}</BloomScope>
+        </LensMaterialProvider>
+      ) : (
+        leading
+      )}
     </>
   );
 
@@ -821,7 +830,14 @@ function PageHeaderComponent({
       testID={testID ? `${testID}-actions` : undefined}
     >
       <HeaderActionsHostContext.Provider value={actionHost}>
-        {floating ? <BloomScope>{actions}</BloomScope> : actions}
+        {floating ? (
+          // A floating header's controls float over the content: the native lens where there is one.
+          <LensMaterialProvider value="lens">
+            <BloomScope>{actions}</BloomScope>
+          </LensMaterialProvider>
+        ) : (
+          actions
+        )}
       </HeaderActionsHostContext.Provider>
     </View>
   ) : null;
