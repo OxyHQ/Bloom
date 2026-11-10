@@ -33,9 +33,7 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   redoAvatar: 'やり直す',
   preparingAvatar: 'アバターを準備中…',
 
-  avatarStyle: 'アバターのスタイル',
   proceduralAvatar: '現在のアバター',
-  betaPreset: 'キャラクタープリセット（ベータ）',
   betaEyes: '目のスタイル',
   eyewear: '眼鏡',
   accessory: 'アクセサリー',

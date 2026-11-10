@@ -36,9 +36,7 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   redoAvatar: 'Yinele',
   preparingAvatar: 'Avatar hazırlanıyor…',
 
-  avatarStyle: 'Avatar stili',
   proceduralAvatar: 'Mevcut avatar',
-  betaPreset: 'Hazır karakter (beta)',
   betaEyes: 'Göz stili',
   eyewear: 'Gözlük',
   accessory: 'Aksesuar',
