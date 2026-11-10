@@ -6,7 +6,7 @@ export type TableSize = 'sm' | 'md';
 /** Horizontal alignment of a column's cells. */
 export type TableAlign = 'start' | 'center' | 'end';
 
-/** ARIA's sort states. `'none'` renders the sort chevron dimmed. */
+/** ARIA's sort states. `'none'` draws no chevron (its room kept), as a desktop table's unsorted headers. */
 export type TableSortDirection = 'ascending' | 'descending' | 'none';
 
 /**

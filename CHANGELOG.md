@@ -1,5 +1,11 @@
 # Changelog
 
+## 18.2.2
+
+### Changed
+
+- **A table shows its sort chevron on the sorted column alone.** A sortable `TableColumn` with `sortDirection` `'none'` drew the same chevron as the sorted one (in the header's colour, which is the sorted one's too), so every sortable header looked sorted, unlike a desktop table (macOS's, Finder's list), whose headers show the indicator only where the table is sorted. An unsorted column now keeps the chevron's room, drawn transparent, so no label moves as the sort goes from column to column; `aria-sort` and the header's button are unchanged.
+
 ## 18.2.1
 
 ### Fixed
