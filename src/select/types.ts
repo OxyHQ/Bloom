@@ -28,13 +28,6 @@ export type SelectTriggerProps = {
    * pressable. The same escape hatch every anchored Bloom family offers.
    */
   asChild?: boolean;
-  /**
-   * Draw the trigger as the native lens (Android 13+): the field is a lens pill that morphs into
-   * the list when it opens, as a `DropdownMenuTrigger lens` does. Off by default: a lens trigger
-   * belongs to the fixed layer (a header, a toolbar), not a scrolling area, whose overscroll
-   * stretch it does not follow.
-   */
-  lens?: boolean;
   disabled?: boolean;
   /**
    * The trigger's accessible name.
