@@ -1,5 +1,11 @@
 # Changelog
 
+## 18.4.3
+
+### Fixed
+
+- **A desktop dialog with content starts in its content.** 18.4.2 gave a desktop dialog's default button the initial focus whenever no action asked for it, which is right for an alert but moved a dialog with content of its own off its content: a sheet with a list (OxyOS Settings' input methods) opened with the keyboard on Add, not on its first row. The default button now takes it only in an alert, a dialog of its declarative chrome alone; an action that asks still wins anywhere.
+
 ## 18.4.2
 
 ### Fixed
