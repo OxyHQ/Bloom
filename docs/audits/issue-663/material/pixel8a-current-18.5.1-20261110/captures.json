@@ -1,0 +1,2558 @@
+{
+  "device": "Google Pixel 8a over USB",
+  "capturedAt": "2026-11-10",
+  "os": "16\n",
+  "api": "36\n",
+  "abi": "arm64-v8a\n",
+  "hardware": "akita\n",
+  "size": "Physical size: 1080x2400\n",
+  "density": "Physical density: 420\n",
+  "fontScale": "1.15\n",
+  "gpu": [
+    "GLES: ARM, Mali-G715, OpenGL ES 3.2 v1.r54p1-11eac0.bf6659b634cc4428261e868dd766545b"
+  ],
+  "internetPermission": false,
+  "appId": "so.oxy.bloom.materiallab",
+  "apkSha256": "9beaa39cf048d2d0787967790245fc6192603e228a0114662f6f73b64857d6ba",
+  "bloom": {
+    "commit": "bfb10ec2278936e06b44f1c47b86b698e9923b4c",
+    "packageVersion": "18.5.1",
+    "artifactKind": "local packed Bloom snapshot",
+    "sourceSha256": "f8c6047e9a62c082e3a61a5094c6c4dd669069e8e2eaa0d5002cb281351ddf10",
+    "sourceFiles": 4421,
+    "nativeModuleTarballSha256": "cb7c9d4602e041926b8766955d3da5fdc4b161ce2fdf181df6f7dd219047c087",
+    "embeddedBundleSha256": "883949ae3b3b84c6ba28c8766f08ce1b75e80dcb88bab235e6c9e028de83d33a",
+    "embeddedBloomSourceSha256": "cc94114ff166b044065e8cde1be47f8f83fd43676bc38ae1a6d0d06d159e30fe",
+    "embeddedBloomFiles": 854
+  },
+  "captureCount": 66,
+  "captures": [
+    {
+      "name": "light-solid",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-solid-composer",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-solid-menu",
+      "focus": "mCurrentFocus=Window{345d985 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-solid-menu-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-solid-dialog",
+      "focus": "mCurrentFocus=Window{114afeb u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-solid-dialog-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-solid-sheet",
+      "focus": "mCurrentFocus=Window{2907fcb u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-solid-sheet-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-stripes",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-stripes-composer",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-stripes-menu",
+      "focus": "mCurrentFocus=Window{6c84c4c u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-stripes-menu-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-stripes-dialog",
+      "focus": "mCurrentFocus=Window{bc74175 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-stripes-dialog-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-stripes-sheet",
+      "focus": "mCurrentFocus=Window{19a0037 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-stripes-sheet-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-photo",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-photo-composer",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-photo-menu",
+      "focus": "mCurrentFocus=Window{473bd21 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-photo-menu-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-photo-dialog",
+      "focus": "mCurrentFocus=Window{4795ea6 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-photo-dialog-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-photo-sheet",
+      "focus": "mCurrentFocus=Window{454d063 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-photo-sheet-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-motion",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-motion-composer",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-motion-menu",
+      "focus": "mCurrentFocus=Window{1a33908 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-motion-menu-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-motion-dialog",
+      "focus": "mCurrentFocus=Window{cc06875 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-motion-dialog-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-motion-sheet",
+      "focus": "mCurrentFocus=Window{e9e9b6a u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-motion-sheet-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-reduced-transparency",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-solid",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-solid-composer",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-solid-menu",
+      "focus": "mCurrentFocus=Window{6507aa0 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-solid-menu-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-solid-dialog",
+      "focus": "mCurrentFocus=Window{36d877e u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-solid-dialog-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-solid-sheet",
+      "focus": "mCurrentFocus=Window{8a09ebf u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-solid-sheet-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-stripes",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-stripes-composer",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-stripes-menu",
+      "focus": "mCurrentFocus=Window{5f56c69 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-stripes-menu-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-stripes-dialog",
+      "focus": "mCurrentFocus=Window{5dea67c u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-stripes-dialog-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-stripes-sheet",
+      "focus": "mCurrentFocus=Window{ca712dc u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-stripes-sheet-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-photo",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-photo-composer",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-photo-menu",
+      "focus": "mCurrentFocus=Window{d162e79 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-photo-menu-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-photo-dialog",
+      "focus": "mCurrentFocus=Window{ac70d1e u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-photo-dialog-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-photo-sheet",
+      "focus": "mCurrentFocus=Window{d2e53df u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-photo-sheet-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-motion",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-motion-composer",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-motion-menu",
+      "focus": "mCurrentFocus=Window{5aa8c0 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-motion-menu-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-motion-dialog",
+      "focus": "mCurrentFocus=Window{d4ff54c u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-motion-dialog-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-motion-sheet",
+      "focus": "mCurrentFocus=Window{e11860a u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-motion-sheet-dismissed",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-reduced-transparency",
+      "focus": "mCurrentFocus=Window{34895e4 u0 so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity}",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    }
+  ],
+  "selectedScreenshotSha256": {
+    "light-solid.png": "22558c27ee1ccac3791d65f6f7a2aa3d97fea7f9e0cd8b857e6f05576641abf8",
+    "light-solid-composer.png": "668dfcb6f9e7ba32a3c57b0979852274413b8c701d267552a0172e3d82f5c0fb",
+    "light-solid-menu.png": "5e928471ecd207775057733726dbdd45e3db9479099ea0a8f68cc4798bbf1705",
+    "light-solid-menu-dismissed.png": "55e55c8ac1c41b62d34376434166e658ea92abf9d498a7a637756261bcbeb415",
+    "light-solid-dialog.png": "83833f59a114f5c2948a170ee4796f5a9a96b77711fe19fbe056565c267152fb",
+    "light-solid-sheet.png": "62b2c268b739efd19735effe0d812add16ccdf4961203ead3ea61116ea5b40e3",
+    "light-photo.png": "ee8d516d4f50aad5aa65392b7653c1a89d5c67894ac50609949883455cc054b2",
+    "light-motion.png": "8b96f1924ccdec3592483dbb9028108da872db3a56763624039a6a188f3b2481",
+    "light-reduced-transparency.png": "f9ee6fa3cf5abe760cd6178bc5d7d7e7901f4284bcd0751ad3d76ebf3763f036",
+    "dark-solid.png": "52e613469f881b3e0f3a9bd86bd9a82d490959cd916d7016de68254e332b330b",
+    "dark-solid-composer.png": "784b8a143987c98d9521776b76c881caef4f8002b9a3fd5f56179fc24b3a6226",
+    "dark-solid-menu.png": "a75353c57358a6d97d90cdf8a2a54b48c7d9d3d46fc42a9c2cf5458f0c663f86",
+    "dark-solid-dialog.png": "359d06f8a763736ad64d2381225514610f76ca29b26cfffbf3d5d96f00d954cd",
+    "dark-solid-sheet.png": "15ae27329422d144625149703ce9ac9eb616810113ba9958194edf647d248f57",
+    "dark-photo.png": "25709a16aef754bfbf170f423d05330eff412cd3ae209f6fa687a8708296cdb0",
+    "dark-motion.png": "676eb09b2b5bf46fe9b3b88684e743be5f44bbe42e2d06f5b0b20d39bfd739de",
+    "dark-reduced-transparency.png": "a46dab561bd6e5b412df5bdbab51b22b56f48a764c9674cfd4d99fcf77e51434"
+  }
+}
