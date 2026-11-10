@@ -34,6 +34,10 @@ through the matching SDK's installer and validation.
   its installed module tree too. Paths are relative to the stylesheet. Scanning
   every CommonJS/type/source copy is unnecessary; the original discovery fixture
   became unresponsive scanning the whole 255 MB package tree.
+- Standalone Tailwind needs Bloom's `web:` utility variant registered in the
+  stylesheet. Without it, panel material's grid overlay classes disappear and
+  bounded desktop panels can collapse to zero height while compact layouts work.
+  The Vite recipe defines the variant with a browser capability query.
 - Utilities are intentionally unlayered so React Native Web's unlayered reset
   cannot override them. A layered Tailwind import left the measured Text at
   14 px with 0 padding despite its `text-2xl p-4` classes; the recipe yields

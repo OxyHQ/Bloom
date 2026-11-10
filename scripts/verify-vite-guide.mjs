@@ -8,7 +8,12 @@ const { chromium } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright'
 const url = process.env.BLOOM_VITE_URL || 'http://127.0.0.1:5181';
 const output = resolve(process.env.BLOOM_VITE_OUTPUT || '.local/vite-guide-browser');
 mkdirSync(output, { recursive: true });
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch({
+  headless: true,
+  ...(process.env.BLOOM_CHROMIUM_EXECUTABLE
+    ? { executablePath: process.env.BLOOM_CHROMIUM_EXECUTABLE }
+    : {}),
+});
 const page = await browser.newPage({ viewport: { width: 1100, height: 800 } });
 const errors = [];
 const fontResponses = [];
@@ -30,9 +35,15 @@ try {
     ]);
     const row = getComputedStyle(document.querySelector('[data-testid="utilities"]'));
     const text = getComputedStyle(document.querySelector('[data-testid="utility-text"]'));
+    const webGrid = document.createElement('div');
+    webGrid.className = 'web:[grid-area:1/1]';
+    document.body.append(webGrid);
+    const panelGridArea = getComputedStyle(webGrid).gridArea;
+    webGrid.remove();
     return {
       row: { direction: row.flexDirection, gap: row.gap, padding: row.padding },
       text: { size: text.fontSize, padding: text.padding, family: text.fontFamily },
+      panelGridArea,
       fonts: [...document.fonts].map((font) => ({ family: font.family, status: font.status })),
       adoptedSheets: document.adoptedStyleSheets.length,
     };
@@ -40,6 +51,7 @@ try {
   assert.deepEqual(setup.row, { direction: 'row', gap: '16px', padding: '16px' });
   assert.equal(setup.text.size, '24px');
   assert.equal(setup.text.padding, '16px');
+  assert.equal(setup.panelGridArea, '1 / 1');
   assert.equal(setup.fonts.length, 4);
   assert.ok(setup.fonts.every((font) => font.status === 'loaded'));
   assert.ok(setup.adoptedSheets > 0);
