@@ -63,26 +63,54 @@ export interface LensNativeProps {
   onMenuOpenChange?: (event: { nativeEvent: { open: boolean } }) => void;
 }
 
+/** The static lens surface: the engine's material under a resting control, drawn from a shared texture. */
+export interface LensSurfaceNativeProps {
+  style?: StyleProp<ViewStyle>;
+  /** The fill, opaque (`#rrggbb` or `rgb(...)`). */
+  tint?: string;
+  tintOpacity?: number;
+  /** Corner radius in dp; omitted, a capsule. */
+  radius?: number;
+  dark?: boolean;
+  /** The colour of what the surface sits on. */
+  page?: string;
+}
+
 /** The id of the view that hosts the rows' icons; the native side looks it up. */
 export const LENS_ICON_HOST_ID = 'lens-icons';
 
 const MIN_ANDROID_API = 33;
 
-let resolved: ComponentType<LensNativeProps> | null | undefined;
+/**
+ * A native view of the lens module, or `null` where it cannot run (not Android 13+, or a binary
+ * without the module). The `require` is a direct statement of a `try` block so Metro treats `expo`
+ * as an optional dependency.
+ */
+function loadNativeView<P>(name: string): ComponentType<P> | null {
+  if (Platform.OS !== 'android' || Number(Platform.Version) < MIN_ANDROID_API) return null;
+  if (typeof require !== 'function') return null;
+  try {
+    const expo = require('expo') as { requireNativeView?: <T>(view: string) => ComponentType<T> };
+    return expo.requireNativeView?.<P>(name) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+let resolvedMenu: ComponentType<LensNativeProps> | null | undefined;
 
 /** The native lens menu view, or `null` where it cannot run. */
 export function getNativeLens(): ComponentType<LensNativeProps> | null {
-  if (resolved !== undefined) return resolved;
-  resolved = null;
-  if (Platform.OS !== 'android' || Number(Platform.Version) < MIN_ANDROID_API) return resolved;
-  if (typeof require !== 'function') return resolved;
-  try {
-    const expo = require('expo') as {
-      requireNativeView?: <P>(name: string) => ComponentType<P>;
-    };
-    resolved = expo.requireNativeView?.<LensNativeProps>('BloomLensMenu') ?? null;
-  } catch {
-    resolved = null;
+  if (resolvedMenu === undefined) resolvedMenu = loadNativeView<LensNativeProps>('BloomLensMenu');
+  return resolvedMenu;
+}
+
+let resolvedSurface: ComponentType<LensSurfaceNativeProps> | null | undefined;
+
+/** The native lens surface view, or `null` where it cannot run. */
+export function getNativeLensSurface(): ComponentType<LensSurfaceNativeProps> | null {
+  if (resolvedSurface === undefined) {
+    resolvedSurface = loadNativeView<LensSurfaceNativeProps>('BloomLensSurface');
   }
-  return resolved;
+  return resolvedSurface;
 }
