@@ -672,16 +672,64 @@
       "src/icons/simple-icons/SiSubstack.tsx#SiSubstack"
     ]
   },
+  "accordion-root-part": {
+    "status": "delegated",
+    "reason": "Accordion accepts an explicit size override and applies it through BloomScope to its entire compound tree; when omitted, the nearest caller scope remains in force. The renderer keeps state/interaction ownership separate from visual context.",
+    "evidence": [
+      "src/accordion/Accordion.tsx",
+      "src/accordion/Accordion.web.tsx",
+      "src/accordion/types.ts",
+      "src/__tests__/AccordionPublicPartScope.test.tsx",
+      "src/__tests__/AccordionPublicPartScope.web.test.tsx",
+      "docs/accordion.mdx"
+    ],
+    "verification": "native mock and RNW DOM verify default md, inherited xs, nested xs then lg, and explicit root sm over inherited lg; descendants receive the resolved scope; physical-device layout pending",
+    "parts": ["src/accordion/Accordion.tsx#Accordion"]
+  },
+  "accordion-item-part": {
+    "status": "delegated",
+    "reason": "AccordionItem owns disclosure state membership and a semantic divider, not a size recipe. Its child trigger/content remain under the nearest BloomScope and resolve their own geometry.",
+    "evidence": [
+      "src/accordion/Accordion.tsx",
+      "src/accordion/Accordion.web.tsx",
+      "src/__tests__/AccordionPublicPartScope.test.tsx",
+      "src/__tests__/AccordionPublicPartScope.web.test.tsx"
+    ],
+    "verification": "native mock and RNW DOM exercise the actual AccordionItem > AccordionTrigger/AccordionContent composition under default md, inherited xs, nested xs/lg, and explicit root sm; physical-device layout pending",
+    "parts": ["src/accordion/Accordion.tsx#AccordionItem"]
+  },
+  "accordion-trigger-part": {
+    "status": "applicable",
+    "reason": "AccordionTrigger is an interactive disclosure control. Its typography, vertical padding, icon and gap now follow the inherited or explicit Accordion size recipe while preserving the established md geometry.",
+    "evidence": [
+      "src/accordion/geometry.ts",
+      "src/accordion/Accordion.tsx",
+      "src/accordion/Accordion.web.tsx",
+      "src/__tests__/AccordionPublicPartScope.test.tsx",
+      "src/__tests__/AccordionPublicPartScope.web.test.tsx"
+    ],
+    "verification": "native mock and RNW DOM measure md 15/12/8px, xs 12/8/6px, sm 13/10/8px and lg 17/14/10px typography/padding/gap under inherited, nested and explicit sizes; native touch renderer keeps 44px minimum height; physical-device target fit pending",
+    "parts": ["src/accordion/Accordion.tsx#AccordionTrigger"]
+  },
+  "accordion-content-part": {
+    "status": "applicable",
+    "reason": "AccordionContent owns measured disclosure-body spacing. Its trailing padding follows the same inherited size scale so the animated content measurement stays aligned with the trigger recipe.",
+    "evidence": [
+      "src/accordion/geometry.ts",
+      "src/accordion/Accordion.tsx",
+      "src/accordion/Accordion.web.tsx",
+      "src/__tests__/AccordionPublicPartScope.test.tsx",
+      "src/__tests__/AccordionPublicPartScope.web.test.tsx"
+    ],
+    "verification": "native mock measures body padding at xs 8px, sm 10px, md 12px and lg 14px; RNW DOM verifies the matching size-specific body CSS recipe under inherited, nested and explicit sizes; physical-device layout pending",
+    "parts": ["src/accordion/Accordion.tsx#AccordionContent"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/accordion/Accordion.tsx#Accordion",
-      "src/accordion/Accordion.tsx#AccordionContent",
-      "src/accordion/Accordion.tsx#AccordionItem",
-      "src/accordion/Accordion.tsx#AccordionTrigger",
       "src/activity-feed/ActivityFeed.tsx#ActivityFeed",
       "src/activity-feed/ActivityFeedFilters.tsx#ActivityFeedFilters",
       "src/activity-heatmap/ActivityHeatmap.tsx#ActivityHeatmap",

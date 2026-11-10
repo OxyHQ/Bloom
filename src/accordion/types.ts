@@ -1,4 +1,5 @@
 import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
+import type { BloomSize } from '../appearance';
 
 export type AccordionType = 'single' | 'multiple';
 /** Preserve the default springs, or opt into a shared timed reveal/chevron curve. */
@@ -12,6 +13,8 @@ export type AccordionTransition =
     };
 
 export interface AccordionProps {
+  /** Inherited size for the whole accordion; nearest BloomScope is used when omitted. */
+  size?: BloomSize;
   /** Controls which items are expanded. For 'single' type, pass a string or undefined.
    *  For 'multiple' type, pass an array of strings. */
   value: string | string[] | undefined;
