@@ -32,6 +32,8 @@ export function useFabProps({
   return {
     ...props,
     ...resolved,
+    // A FAB floats over the content: the native lens where the device has it.
+    material: props.material ?? 'lens',
     appearance,
     icon,
     iconSize: glyphSize,
