@@ -9,6 +9,7 @@ import { Button } from '../button/Button';
 import { ButtonGroup, ButtonGroupItem } from '../button-group/ButtonGroup';
 import { PageHeader } from '../page-header/PageHeader';
 import { Surface } from '../surface/Surface';
+import { BlurWindow } from '../blur';
 import { act, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme';
@@ -260,5 +261,17 @@ describe('a Surface with the lens material', () => {
       </Surface>,
     );
     expect(screen.queryByTestId('native-lens')).toBeNull();
+  });
+
+  it('keeps the shared paint in a separate window, where there is nothing behind to refract', () => {
+    const screen = wrap(
+      <BlurWindow>
+        <Surface material="lens">
+          <Text>Dialog</Text>
+        </Surface>
+      </BlurWindow>,
+    );
+    expect(screen.queryByTestId('native-lens')).toBeNull();
+    expect(screen.getByText('Dialog')).toBeTruthy();
   });
 });

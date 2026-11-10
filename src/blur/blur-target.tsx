@@ -147,6 +147,15 @@ export const BlurWindow = memo(function BlurWindow({ children }: BlurWindowProps
 });
 
 /**
+ * Whether this subtree renders in its own native window (a `<Modal>`), where it cannot see what is
+ * behind it: Android does not sample one window from another. The native lens reads it to keep the
+ * shared paint there.
+ */
+export function useInSeparateWindow(): boolean {
+  return useContext(SeparateWindowContext);
+}
+
+/**
  * The blur target for a surface, or `undefined` when there is none it may
  * safely use — either because no provider is mounted, or because this surface
  * shares a window with the content and would crash.

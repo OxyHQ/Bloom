@@ -25,8 +25,11 @@ import { moveSelection, SELECTION_FADE, SELECTION_SPRING } from '../motion/selec
 import { surfacePresenceStyle, useEnteredPresence } from '../surface/use-surface-presence';
 import { IS_WEB } from '../styles/platform';
 import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
-import { getNativeLens } from '../floating/lens/native-lens';
-import { LensMaterialProvider, useControlMaterial } from '../floating/lens/lens-material';
+import {
+  LensMaterialProvider,
+  useControlMaterial,
+  useLensAvailable,
+} from '../floating/lens/lens-material';
 import { useGroupSelection } from './use-group-selection';
 import type { ButtonProps } from '../button/types';
 import type { SurfaceProps } from '../surface/types';
@@ -137,7 +140,8 @@ export function createButtonGroup(
     // The group's one material: its own Surface, or, with `material="lens"` on a device that has the
     // native lens, the lens itself behind the items. The items draw their content either way.
     const regionMaterial = useControlMaterial();
-    const lens = (material ?? regionMaterial) === 'lens' && getNativeLens() != null;
+    const lensAvailable = useLensAvailable();
+    const lens = (material ?? regionMaterial) === 'lens' && lensAvailable;
     const frame = (content: React.ReactNode) => {
       if (lens) {
         const split = splitLensStyle(style);

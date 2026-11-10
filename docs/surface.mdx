@@ -248,10 +248,11 @@ surface over content, such as a panel. Three measured limits decide where it is 
   shared paint. A surface that repeats (a card in a feed) stays `material="surface"`.
 - **Not in a scroll stretch.** The lens is drawn by the window, so it does not follow a scroll view's
   overscroll stretch. Use it in a fixed layer.
-- **Not in a `<Modal>`.** `Dialog` and `BottomSheet` present in a React Native `Modal`, a separate
-  window; the engine's overlay lives in the activity window, so inside a `Modal` the lens does not
-  draw glass and shows a dark opaque box (measured on the Pixel 8a). They keep the shared paint
-  until the engine can host in the `Modal`'s window.
+- **Not across windows.** `Dialog` and `BottomSheet` present in a React Native `Modal`, a separate
+  window, and Android does not sample one window from another: there is no content behind to refract,
+  and the lens drew an empty dark box (measured on the Pixel 8a). Inside a `BlurWindow` (what Bloom's
+  `Modal` shells render) a control that asks for the lens keeps the shared paint on its own, through
+  `useLensAvailable`.
 
 Inside a lens region a control takes the lens through `LensMaterialProvider` (a floating `PageHeader`
 publishes it for its controls); `ButtonGroup`, `BlurIsland` and `Surface` publish `'surface'` for what

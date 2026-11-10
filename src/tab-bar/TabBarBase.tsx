@@ -6,7 +6,7 @@ import { pointerEventsStyle } from '../styles/pointer-events';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { TabBarSurface } from './surface';
 import { LensButtonHost } from '../floating/lens/lens-button-host';
-import { getNativeLens } from '../floating/lens/native-lens';
+import { useLensAvailable } from '../floating/lens/lens-material';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { IS_WEB } from '../styles/platform';
 import { borderRadius } from '../styles/tokens';
@@ -507,7 +507,7 @@ function TabBarBody({
   // them is correct on both platforms. Same rule as `BottomSheetBase` and
   // `ZoomableMediaGallery`. Do NOT strip these.
   // The bar's material: the native lens behind the items where the device has it, else the shared surface.
-  const lens = getNativeLens() != null;
+  const lens = useLensAvailable();
   const barStyle = useAnimatedStyle(() => {
     const height = interpolate(
       progress.value,
