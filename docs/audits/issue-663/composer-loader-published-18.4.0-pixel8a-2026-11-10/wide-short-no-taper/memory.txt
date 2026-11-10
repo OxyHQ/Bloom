@@ -1,0 +1,68 @@
+Applications Memory Usage (in Kilobytes):
+Uptime: 1312084795 Realtime: 1625192859
+
+** MEMINFO in pid 16317 [so.oxy.bloom.loaderpackagelab] **
+                   Pss  Private  Private  SwapPss      Rss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty    Total     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------   ------
+  Native Heap    42815    42728        0        0    47240    58080    51134     3211
+  Dalvik Heap    14879    14712        0        4    22192    30162     5586    24576
+ Dalvik Other     1330     1156        0        0     2292
+        Stack     1056     1056        0        0     1060
+       Ashmem       35        0        0        0     1428
+    Other dev       12        0       12        0      292
+     .so mmap     5119      148       20        6    59376
+    .jar mmap     2671        0      120        0    41840
+    .apk mmap    34208     1328    28796        0    48172
+    .ttf mmap     1451        0     1348        0     1720
+    .dex mmap     9546       16     8652        0    13236
+    .oat mmap      610        0        0        0    12652
+    .art mmap     1662      904       64       32    31496
+   Other mmap      595        4       56        0     2780
+   EGL mtrack    51820    51820        0        0    51820
+    GL mtrack   171652   171652        0        0   171652
+      Unknown    27786    27604      168        8    29152
+        TOTAL   367297   313128    39236       50   538400    88242    56720    27787
+
+ App Summary
+                       Pss(KB)                        Rss(KB)
+                        ------                         ------
+           Java Heap:    15680                          53688
+         Native Heap:    42728                          47240
+                Code:    40440                         177328
+               Stack:     1056                           1060
+            Graphics:   223472                         223472
+       Private Other:    28988
+              System:    14933
+             Unknown:                                   35612
+
+           TOTAL PSS:   367297            TOTAL RSS:   538400       TOTAL SWAP PSS:       50
+
+ Objects
+               Views:      126         ViewRootImpl:        1
+         AppContexts:        5           Activities:        1
+              Assets:       40        AssetManagers:        0
+       Local Binders:       37        Proxy Binders:       66
+       Parcel memory:        9         Parcel count:       37
+    Death Recipients:        0             WebViews:        0
+
+ Native Allocations
+                         Count                       Total(kB)
+                        ------                         ------
+    Other (malloced):     1615                            153
+ Other (nonmalloced):      108                             77
+   Bitmap (malloced):       24                            133
+
+ SQL
+         MEMORY_USED:      191
+  PAGECACHE_OVERFLOW:       66          MALLOC_SIZE:       46
+
+ DATABASES
+      pgsz     dbsz   Lookaside(b) cache hits cache misses cache size  Dbname
+PER CONNECTION STATS
+         4       24             34    14    40     3  /data/user/0/so.oxy.bloom.loaderpackagelab/databases/AsyncStorage
+         4        8                    0     0     0    (attached) temp
+         4       24             40     9    29     4  /data/user/0/so.oxy.bloom.loaderpackagelab/databases/AsyncStorage (1)
+POOL STATS
+     cache hits  cache misses    cache size  Dbname
+             23            73             7  /data/user/0/so.oxy.bloom.loaderpackagelab/databases/AsyncStorage
