@@ -823,7 +823,6 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       >
         {paint.surface && !lens ? (
           <SurfacePaint
-            lens
             fill={paint.background}
             radius={StyleSheet.flatten(style)?.borderRadius ?? BUTTON_RADIUS}
           />
