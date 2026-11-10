@@ -137,6 +137,11 @@ directory. The JSON report identifies the commit/browser, viewport, geometry,
 clock and input observations. Screenshots support visual review; clock results
 are not GPU/performance budgets.
 
+The [2026-11-10 phase run](/docs/audits/issue-663/composer-phase-lifecycle-2026-11-10/)
+passed all 18 browser cases, including a continuously advancing clock across
+`submitting` → `streaming`, a lit `stopping` phase, and settled `error`,
+`complete` and `idle` states.
+
 On 2026-11-08, Chromium 146 reproduced three running CSS animations with
 `active=false` on baseline `e3996b93`; their timelines advanced 500 ms while
 invisible. The lifecycle correction passes suspension/resumption (including a real
