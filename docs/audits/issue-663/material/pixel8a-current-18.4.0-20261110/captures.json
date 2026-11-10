@@ -1,0 +1,2504 @@
+{
+  "captured": "2026-11-10",
+  "device": {
+    "model": "Google Pixel 8a",
+    "hardware": "akita",
+    "android": "16",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "resolution": "Physical size: 1080x2400",
+    "density": "Physical density: 420",
+    "fontScale": 1.15,
+    "gpu": [
+      "GLES: ARM, Mali-G715, OpenGL ES 3.2 v1.r54p1-11eac0.bf6659b634cc4428261e868dd766545b"
+    ],
+    "supportedRefreshRatesHz": [
+      60,
+      120
+    ]
+  },
+  "build": {
+    "commit": "7f9a20f85adb878c2008289e6df9111bd212925d",
+    "bloomVersion": "18.4.0",
+    "artifact": "local packed Bloom snapshot",
+    "bloomTarballSha256": "5109a9b04ec51cbba85fb8b1071187f5c463ea7625ea035346e3ff3ad0c64021",
+    "sourceSha256": "5cf737dfc7573ae574960e9f0ab9108fa07fb679f503e203567c484903bcfa34",
+    "apkSha256": "ad7ce5e4993d2d8a2ba85c9957399a3571513052f89ae6f8dbd91bc51ca0d61c",
+    "embeddedBloomSourceSha256": "902df20386a125f2bd904e6730a455cf7abf1c00f2d397ad59acd2ab8a677186",
+    "embeddedBloomFiles": 854,
+    "fixtureSha256": "0db3aa4d1d4e91bfe33ac0ef5d84352e77367c9e93d1f21fd3c976ce1d4e610c",
+    "reactNative": "0.88.1",
+    "expo": "58.0.23",
+    "reactNativeSvg": "15.16.0",
+    "expoBlur": "58.0.5",
+    "reanimated": "4.7.1",
+    "reactCompiler": false
+  },
+  "network": {
+    "internetPermission": false,
+    "httpAndWebSocketDeniedBeforeRender": true
+  },
+  "captures": [
+    {
+      "name": "light-solid",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-solid-composer",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-solid-menu",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-solid-menu-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-solid-dialog",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-solid-dialog-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-solid-sheet",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-solid-sheet-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-stripes",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-stripes-composer",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-stripes-menu",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-stripes-menu-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-stripes-dialog",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-stripes-dialog-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-stripes-sheet",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-stripes-sheet-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-photo",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-photo-composer",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-photo-menu",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-photo-menu-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-photo-dialog",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-photo-dialog-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-photo-sheet",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-photo-sheet-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-motion",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-motion-composer",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-motion-menu",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-motion-menu-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-motion-dialog",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-motion-dialog-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-motion-sheet",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-motion-sheet-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "light-reduced-transparency",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-solid",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-solid-composer",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-solid-menu",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-solid-menu-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-solid-dialog",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-solid-dialog-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-solid-sheet",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-solid-sheet-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-stripes",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-stripes-composer",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-stripes-menu",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-stripes-menu-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-stripes-dialog",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-stripes-dialog-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-stripes-sheet",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-stripes-sheet-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-photo",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-photo-composer",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-photo-menu",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-photo-menu-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-photo-dialog",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-photo-dialog-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-photo-sheet",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-photo-sheet-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-motion",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-motion-composer",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-motion-menu",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-motion-menu-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-motion-dialog",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-motion-dialog-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-motion-sheet",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-motion-sheet-dismissed",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    },
+    {
+      "name": "dark-reduced-transparency",
+      "geometry": {
+        "surface": {
+          "x1": 42,
+          "y1": 562,
+          "x2": 1038,
+          "y2": 987
+        },
+        "card": {
+          "x1": 42,
+          "y1": 1029,
+          "x2": 1038,
+          "y2": 1305
+        },
+        "island": {
+          "x1": 42,
+          "y1": 1347,
+          "x2": 455,
+          "y2": 1468
+        },
+        "loader": {
+          "x1": 42,
+          "y1": 1646,
+          "x2": 1038,
+          "y2": 1783
+        },
+        "composer": {
+          "x1": 42,
+          "y1": 1825,
+          "x2": 1038,
+          "y2": 2108
+        }
+      },
+      "hierarchyFresh": false,
+      "loaderActive": null
+    }
+  ],
+  "selectedScreenshots": {
+    "light-solid": "1b23bfd75ce01c6a858b077aadad9efac8eb21be383e8f17db90ec36f6647457",
+    "light-solid-composer": "b03aff3489231c886315c149cdcb10c52d9868a0e3422a868df154e2e3fad87a",
+    "light-solid-menu": "46aebdbe332bae1560e293fb48713383d157750d34747849f8e9d247abbb41df",
+    "light-solid-menu-dismissed": "958253e08f6295a7670f4d20342adea743ab26c25b2dc15270b4026db01b9800",
+    "light-solid-dialog": "30d629887fae7c91279e85ec75a66f169300a9d57f113a24778bc6825b92fcd5",
+    "light-solid-sheet": "ed0be6db0ef7e3a422c7ceff06ccf62908143fd19d30d785dec282fc98c1391d",
+    "light-photo": "7ab1bdd766e62898461ff8a3f027ecfd3436522af478df1ae022f1d76b30e474",
+    "light-motion": "cb7b4db438a2ef880242fa5b1c9ac933bec2c061941904ff87310f03745e9907",
+    "light-reduced-transparency": "0f6faaaa964452ec950c8b0011420e3282e553601269bb1e9c828baf6a049daf",
+    "dark-solid": "6478242acaf73166a30ae817a58be96a11025dd17c39ab654f97920ca58eff5b",
+    "dark-solid-composer": "6adc2a4c84d7e329eea551a93305300ad68f94cd4abb0b3e9e7efcbd9e6a264d",
+    "dark-solid-menu": "d822572cb9cd8c16ac4ee561d08d9cb305dbbe9f1e13e3fd26df837777fa068b",
+    "dark-solid-dialog": "77cb33f36129bc144747d099dac32350d08649f113442a130c0c9c4b726c5846",
+    "dark-solid-sheet": "6b35158703bc588923e18c488487611bdfd8e15a613d173b80ab0b85dbef8b34",
+    "dark-photo": "22306608c80422225072d3d888aa9385cd09f292810e2dbb349236e79640fadd",
+    "dark-motion": "c4304c2ddb8f8b6ab6ba9a5817273cbf6f5d5b1548287bfd9a02150b738c8661",
+    "dark-reduced-transparency": "380ffbbbd99852676274a5d9e5bb93be304bc98a0f427da36c17b683f901ffe6"
+  }
+}

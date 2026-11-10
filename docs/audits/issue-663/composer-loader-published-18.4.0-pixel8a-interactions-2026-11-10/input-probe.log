@@ -1,0 +1,9 @@
+11-10 14:29:59.757 19601 19601 I BloomInputProbe: {"testID":"cases-pill-input","identity":234622800,"id":176,"start":0,"end":29,"focused":true,"attached":true,"text":"Draft retained through resize"}
+11-10 14:29:59.757 19601 19601 I BloomInputProbe: {"testID":"cases-agent-pill-input","identity":67270760,"id":214,"start":35,"end":35,"focused":false,"attached":true,"text":"Agent draft retained through resize"}
+11-10 14:29:59.757 19601 19601 I BloomInputProbe: {"identity":30267949,"id":284,"start":34,"end":34,"focused":false,"attached":true,"text":"Alia draft retained through resize"}
+11-10 14:30:01.000 19601 19601 I BloomInputProbe: {"testID":"cases-pill-input","identity":234622800,"id":176,"start":0,"end":29,"focused":true,"attached":true,"text":"Draft retained through resize"}
+11-10 14:30:01.000 19601 19601 I BloomInputProbe: {"testID":"cases-agent-pill-input","identity":67270760,"id":214,"start":35,"end":35,"focused":false,"attached":true,"text":"Agent draft retained through resize"}
+11-10 14:30:01.000 19601 19601 I BloomInputProbe: {"identity":30267949,"id":284,"start":34,"end":34,"focused":false,"attached":true,"text":"Alia draft retained through resize"}
+11-10 14:30:43.840 19601 19601 I BloomInputProbe: {"testID":"cases-pill-input","identity":234622800,"id":176,"start":0,"end":29,"focused":true,"attached":true,"text":"Draft retained through resize"}
+11-10 14:30:43.840 19601 19601 I BloomInputProbe: {"testID":"cases-agent-pill-input","identity":67270760,"id":214,"start":35,"end":35,"focused":false,"attached":true,"text":"Agent draft retained through resize"}
+11-10 14:30:43.840 19601 19601 I BloomInputProbe: {"identity":30267949,"id":284,"start":34,"end":34,"focused":false,"attached":true,"text":"Alia draft retained through resize"}

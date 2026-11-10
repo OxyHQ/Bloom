@@ -1,0 +1,14 @@
+{
+  "name": "bloom-catalog-clean-discovery",
+  "package": "@oxy.so/bloom",
+  "version": "18.2.1",
+  "sourceExamples": [
+    "docs/examples/workspace.tsx",
+    "docs/examples/canvas.tsx",
+    "docs/examples/conversation.tsx"
+  ],
+  "host": "docs/examples/vite",
+  "cssRecipe": "published style.css copied unchanged",
+  "install": "exact registry tarball via local file URL; verified against npm dist.integrity",
+  "integrity": "sha512-DmGTL/4GiOqaDtU4MWSj2bKlt149uCAAVnxvfxclUXGUJyqDZ3a2WeUyQGHH/L3f200n8XMLH2Tl+L8RHty9ww=="
+}

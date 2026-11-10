@@ -1,0 +1,19 @@
+{
+  "commit": "4a984fc512b0e1414024d8af80298dc407d9cd9c",
+  "workingTree": "M scripts/loader-package-lab/bun.lock\n M scripts/loader-package-lab/package.json\n?? scripts/loader-package-lab/hs_err_pid2323711.log\n?? scripts/loader-package-lab/replay_pid2323711.log",
+  "fixtureSha256": "e07602737cd6a1a3056aa9efe215437be6cadbc28bfb0a1e72d310bb448835ee",
+  "packedTarballSha256": "ae8d73268f6d07d37535a329b85086f79f789614e6963617e4bd69e8f7d8d9ad",
+  "kind": "published npm tarball",
+  "npmIntegrity": "sha512-DmGTL/4GiOqaDtU4MWSj2bKlt149uCAAVnxvfxclUXGUJyqDZ3a2WeUyQGHH/L3f200n8XMLH2Tl+L8RHty9ww==",
+  "aliaSdkVersion": "24.0.0",
+  "aliaComposerSha256": "33bee1e8b1d959adbe5406856fb0dca63c0df9ef9a2e57d21f523bc736d415c2",
+  "installed": "/home/nate/Oxy/Bloom/.worktrees/issue663-published18-pixel8a/scripts/loader-package-lab/bloom-local/node_modules/@oxy.so/bloom",
+  "packageVersion": "18.2.1",
+  "nativeSha256": "5aa0123303dbb2f170077c2ddf6eac5933ee0c6269274422ed41ca10bf8f94ad",
+  "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+  "adapterSha256": "439368f05ea092a36619510ff3cf1d255d5e8da61ff52ab3490d0dd7dd6e4c21",
+  "lockSha256": "a4e54457d5e84f2784f33a8f2e21dcf5e83f7bba49992479547d00d2174ab4cf",
+  "reactCompiler": false,
+  "scene": "composers",
+  "softwareWindow": false
+}

@@ -44,6 +44,9 @@ def retained_across_rotation(a,b):
     assert b['focused'] and b['attached']
 def orientation():
     return int(ui().get('rotation','-1'))
+def user_rotation():
+    mode, value=adb('shell','cmd','window','user-rotation').split()
+    return mode, int(value)
 def wait_orientation(expected):
     for _ in range(60):
         if orientation()==expected: return
@@ -64,8 +67,7 @@ def select_all(owner):
     assert selected['focused'] and selected['start']!=selected['end'], selected
     return selected
 def rotate_and_check(owner):
-    old_accel=adb('shell','settings','get','system','accelerometer_rotation')
-    old_user=adb('shell','settings','get','system','user_rotation')
+    old_mode,old_user=user_rotation()
     old_orientation=orientation()
     assert old_orientation in (0,1), old_orientation
     before=select_all(owner)
@@ -73,8 +75,7 @@ def rotate_and_check(owner):
     shot(owner+'-rotation-before')
     target=0 if old_orientation==1 else 1
     try:
-        adb('shell','settings','put','system','accelerometer_rotation','0')
-        adb('shell','settings','put','system','user_rotation',str(target))
+        adb('shell','cmd','window','user-rotation','lock',str(target))
         wait_orientation(target)
         time.sleep(.8)
         after=inputs()[owner]
@@ -91,10 +92,7 @@ def rotate_and_check(owner):
         assert ime_visible(), 'Keyboard closed after returning from rotation'
         return {'before':before,'rotated':after,'returned':restored,'nativeViewStable':before['identity']==after['identity']==restored['identity'],'startOrientation':old_orientation,'targetOrientation':target,'keyboardVisibleThroughout':True,'selectionMethod':'Ctrl+A on focused native EditText'}
     finally:
-        if old_user in ('0','1','2','3'):
-            adb('shell','settings','put','system','user_rotation',old_user)
-        if old_accel in ('0','1'):
-            adb('shell','settings','put','system','accelerometer_rotation',old_accel)
+        adb('shell','cmd','window','user-rotation',old_mode,str(old_user))
         wait_orientation(old_orientation)
 adb('shell','am','force-stop',pkg)
 adb('shell','am','start','-n',pkg+'/.MainActivity','--es','scene','composers');time.sleep(3)

@@ -133,8 +133,13 @@ describe('desktop menu rows', () => {
     expect(classesOf(screen, 'Rename')).not.toContain('cursor-pointer');
     const label = resolvedStyle(screen.getByText('Rename').props.style);
     expect(label).toMatchObject({ fontSize: 13, lineHeight: 16, letterSpacing: -0.08 });
-    // The label counts at its own width, so a panel sized by its rows never cuts it.
-    expect(label.flexBasis).toBe('auto');
+    // The label counts at its own width, so a panel sized by its rows never cuts it:
+    // it grows and shrinks, and never takes `flex` (whose 1 makes Yoga's basis 0).
+    expect(label).toMatchObject({ flexGrow: 1, flexShrink: 1 });
+    expect(label.flex).toBeUndefined();
+    expect(label.flexBasis).toBeUndefined();
+    expect(String(label.className)).not.toMatch(/\bflex-1\b/);
+    expect(String(label.className)).toMatch(/\bmin-w-0\b/);
   });
 
   it('paints the hovered row with the accent and its foreground on label and shortcut', () => {
@@ -207,7 +212,10 @@ describe('desktop menu rows', () => {
     fireEvent(screen.getByLabelText('Rename'), 'hoverIn');
     expect(rowStyle(screen, 'Rename').backgroundColor).toBe(theme.colors.backgroundSecondary);
     expect(resolvedStyle(screen.getByText('Rename').props.style).fontSize).toBe(14);
-    expect(resolvedStyle(screen.getByText('Rename').props.style).flexBasis).toBeUndefined();
+    expect(resolvedStyle(screen.getByText('Rename').props.style).flexGrow).toBeUndefined();
+    expect(String(resolvedStyle(screen.getByText('Rename').props.style).className)).toMatch(
+      /\bflex-1\b/,
+    );
   });
 });
 

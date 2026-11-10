@@ -1,0 +1,593 @@
+{
+  "capturedAt": "2026-11-10T11:33:40.711Z",
+  "runnerSha256": "5aa910b50e149142037fed77e0315d8c63992c30b9b3ad61ac61b128fb08452e",
+  "engine": "webkit",
+  "package": "18.4.0",
+  "lockSha256": "0517e730beaa4d77e679fe819d5fd13e85ea9570f13dd2d9f6fbfb7429bc974a",
+  "compiler": false,
+  "cases": [
+    {
+      "id": "pill",
+      "change": "Width",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "Theme",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "Attachment",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "idle",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "submitting",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "streaming",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "stopping",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "error",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "complete",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "Width",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "Theme",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "Attachment",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "idle",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "submitting",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "streaming",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "stopping",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "error",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "complete",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "lifecycle": {
+        "moving": [
+          {
+            "time": 2570,
+            "play": "running",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b14)"
+          },
+          {
+            "time": 2570,
+            "play": "running",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b6)"
+          },
+          {
+            "time": 2570,
+            "play": "running",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+          }
+        ],
+        "later": [
+          {
+            "time": 2825,
+            "play": "running",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b14)"
+          },
+          {
+            "time": 2825,
+            "play": "running",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b6)"
+          },
+          {
+            "time": 2825,
+            "play": "running",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+          }
+        ],
+        "paused": [
+          {
+            "time": 8843,
+            "play": "paused",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b14)"
+          },
+          {
+            "time": 8843,
+            "play": "paused",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b6)"
+          },
+          {
+            "time": 8843,
+            "play": "paused",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+          }
+        ],
+        "reduced": [
+          {
+            "time": 8843,
+            "play": "paused",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b14)"
+          },
+          {
+            "time": 8843,
+            "play": "paused",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b6)"
+          },
+          {
+            "time": 8843,
+            "play": "paused",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+          }
+        ]
+      }
+    },
+    {
+      "pngSha256": "6b2099fb17d73f0adb691720701fb678705aadc19cc5241b660d0f277903102a",
+      "theme": "light",
+      "phaseMs": 0,
+      "clocks": [
+        {
+          "time": 0,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b14)"
+        },
+        {
+          "time": 0,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b6)"
+        },
+        {
+          "time": 0,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+        }
+      ],
+      "alignment": "CSS time only; not a native physical-band match"
+    },
+    {
+      "pngSha256": "6545a09a0b8e5308799edf5cf21b2ebe4f409c2f199664e30d289a7169bf7003",
+      "theme": "light",
+      "phaseMs": 1000,
+      "clocks": [
+        {
+          "time": 1000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b14)"
+        },
+        {
+          "time": 1000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b6)"
+        },
+        {
+          "time": 1000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+        }
+      ],
+      "alignment": "CSS time only; not a native physical-band match"
+    },
+    {
+      "pngSha256": "e778fe632b43320888242f7afd8b6ea452592de7185685426ef6000adf74a109",
+      "theme": "light",
+      "phaseMs": 2000,
+      "clocks": [
+        {
+          "time": 2000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b14)"
+        },
+        {
+          "time": 2000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b6)"
+        },
+        {
+          "time": 2000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+        }
+      ],
+      "alignment": "CSS time only; not a native physical-band match"
+    },
+    {
+      "pngSha256": "8b29b4f073801acb4cee3b354e7140edcf7520bc3a2af7a011087d0c6645154c",
+      "theme": "light",
+      "phaseMs": 3000,
+      "clocks": [
+        {
+          "time": 3000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b14)"
+        },
+        {
+          "time": 3000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b6)"
+        },
+        {
+          "time": 3000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+        }
+      ],
+      "alignment": "CSS time only; not a native physical-band match"
+    },
+    {
+      "pngSha256": "b10c4291fd541d051da37a6c2fc3e26b0d32fee110bee303e143e48b6773dba2",
+      "theme": "dark",
+      "phaseMs": 0,
+      "clocks": [
+        {
+          "time": 0,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b14)"
+        },
+        {
+          "time": 0,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b6)"
+        },
+        {
+          "time": 0,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+        }
+      ],
+      "alignment": "CSS time only; not a native physical-band match"
+    },
+    {
+      "pngSha256": "cd45c7d6a7eafb283183ac456f2e354e431ea2c3b05e398e327854f7cb85b83f",
+      "theme": "dark",
+      "phaseMs": 1000,
+      "clocks": [
+        {
+          "time": 1000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b14)"
+        },
+        {
+          "time": 1000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b6)"
+        },
+        {
+          "time": 1000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+        }
+      ],
+      "alignment": "CSS time only; not a native physical-band match"
+    },
+    {
+      "pngSha256": "f1b8144cc7673cd085aeb5149e579215dd7316ec8440f9cb11af0701f2e1266b",
+      "theme": "dark",
+      "phaseMs": 2000,
+      "clocks": [
+        {
+          "time": 2000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b14)"
+        },
+        {
+          "time": 2000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b6)"
+        },
+        {
+          "time": 2000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+        }
+      ],
+      "alignment": "CSS time only; not a native physical-band match"
+    },
+    {
+      "pngSha256": "bfa4eff5e6dce609ca1a20dde235f6ccb088f189b0557e069b6296b9f9ed3e22",
+      "theme": "dark",
+      "phaseMs": 3000,
+      "clocks": [
+        {
+          "time": 3000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b14)"
+        },
+        {
+          "time": 3000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b6)"
+        },
+        {
+          "time": 3000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+        }
+      ],
+      "alignment": "CSS time only; not a native physical-band match"
+    }
+  ],
+  "errors": [],
+  "browser": "27.2",
+  "status": "passed"
+}

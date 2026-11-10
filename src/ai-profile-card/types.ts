@@ -42,8 +42,11 @@ export interface AiProfileCardProps {
 
   /** Label over the headline. `"Contributions this year"` in English. */
   contributionsLabel?: string;
-  /** The headline number; counts up from 0 on mount (1.6s). */
-  contributions: number;
+  /**
+   * The headline number; counts up from 0 on mount (1.6s). Without it the headline (and its label,
+   * delta and count-up) is not drawn: a profile that is only an identity has no number to show.
+   */
+  contributions?: number;
   /** Headline format. Default `$7,462`. */
   format?: (value: number) => string;
   /** Duration of the mount count-up, ms. Default 1600; 0 shows the number at once. */
@@ -62,8 +65,11 @@ export interface AiProfileCardProps {
   /** Initial period when uncontrolled. Defaults to the first. */
   defaultPeriod?: string;
   onPeriodChange?: (id: string) => void;
-  /** Heatmap cells, column-major (`columns × 7`). */
-  cells: readonly ContributionCell[];
+  /**
+   * Heatmap cells, column-major (`columns × 7`). Without them the Activity row and the heatmap are
+   * not drawn.
+   */
+  cells?: readonly ContributionCell[];
   /** Heatmap columns. Default 38. */
   columns?: number;
   /** Heatmap ramp base. Default violet-500 on the theme. */

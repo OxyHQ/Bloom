@@ -107,7 +107,9 @@ export function DialogBody({
       ) : null}
       {icon != null ? <View style={{ paddingBottom: 12 }}>{icon}</View> : null}
       {children}
-      {actions && actions.length > 0 ? <ActionRow actions={actions} /> : null}
+      {actions && actions.length > 0 ? (
+        <ActionRow actions={actions} alert={!hasChildren(children)} />
+      ) : null}
     </ScreenScope>
   );
 }
@@ -177,7 +179,9 @@ function DesktopDialogBody({
         </Text>
       ) : null}
       {children}
-      {actions && actions.length > 0 ? <ActionRow actions={actions} /> : null}
+      {actions && actions.length > 0 ? (
+        <ActionRow actions={actions} alert={!hasChildren(children)} />
+      ) : null}
     </ScreenScope>
   );
 }
@@ -218,6 +222,19 @@ export function desktopDefaultAction(actions: readonly DialogAction[]): number {
 }
 
 /**
+ * Which of `actions` the keyboard and the screen reader start on in a desktop
+ * ALERT (a dialog of declarative chrome alone): the one that asks for it, else
+ * the default button, as a Mac's alert starts on its default button. A dialog
+ * with content of its own starts in that content. Off a desktop only an action that asks is focused; its
+ * stack's first button is where a reader begins, and there that is the
+ * caller's first action, while a desktop's row puts the default last.
+ */
+export function desktopInitialFocus(actions: readonly DialogAction[]): number {
+  const asked = actions.findIndex((action) => action.initialFocus === true);
+  return asked >= 0 ? asked : desktopDefaultAction(actions);
+}
+
+/**
  * The buttons in a desktop's order. `row`: leading to trailing, the default
  * LAST, so it sits at the trailing edge with the others (Cancel) before it.
  * `stack`: top to bottom, the default FIRST, Cancel at the bottom. The others
@@ -234,9 +251,20 @@ export function desktopActionOrder(
   return layout === 'row' ? [...others, primary] : [primary, ...others];
 }
 
-export function ActionRow({ actions }: { actions: DialogAction[] }) {
+export function ActionRow({
+  actions,
+  alert = false,
+}: {
+  actions: DialogAction[];
+  /**
+   * The dialog is its declarative chrome alone (no content of its own): on a
+   * desktop its default button takes the initial focus when no action asks.
+   * A dialog with content starts in its content, as a Mac's sheet does.
+   */
+  alert?: boolean;
+}) {
   const desktop = useDesktopPlatform();
-  if (desktop) return <DesktopActionRow actions={actions} />;
+  if (desktop) return <DesktopActionRow actions={actions} alert={alert} />;
   return (
     <View style={{ width: '100%', gap: 8, justifyContent: 'flex-end' }}>
       {actions.map((action, idx) => (
@@ -252,11 +280,12 @@ export function ActionRow({ actions }: { actions: DialogAction[] }) {
  * the default last; stacked full width with the default on top when there are
  * three or more, or when two do not fit side by side.
  */
-function DesktopActionRow({ actions }: { actions: DialogAction[] }) {
+function DesktopActionRow({ actions, alert }: { actions: DialogAction[]; alert: boolean }) {
   const [room, setRoom] = useState(0);
   const [needed, setNeeded] = useState(0);
   const stacked = actions.length >= 3 || (room > 0 && needed > room);
   const ordered = desktopActionOrder(actions, stacked ? 'stack' : 'row');
+  const focused = actions[alert ? desktopInitialFocus(actions) : -1];
   return (
     <View
       testID="bloom-dialog-actions"
@@ -266,7 +295,12 @@ function DesktopActionRow({ actions }: { actions: DialogAction[] }) {
       {stacked ? (
         <View style={{ gap: 8 }}>
           {ordered.map((action, idx) => (
-            <ActionButton key={`${action.label}-${idx}`} action={action} desktop="stack" />
+            <ActionButton
+              key={`${action.label}-${idx}`}
+              action={action}
+              desktop="stack"
+              focus={action === focused}
+            />
           ))}
         </View>
       ) : (
@@ -277,7 +311,12 @@ function DesktopActionRow({ actions }: { actions: DialogAction[] }) {
           style={{ flexDirection: 'row', alignSelf: 'flex-end', flexShrink: 0, gap: 8 }}
         >
           {ordered.map((action, idx) => (
-            <ActionButton key={`${action.label}-${idx}`} action={action} desktop="row" />
+            <ActionButton
+              key={`${action.label}-${idx}`}
+              action={action}
+              desktop="row"
+              focus={action === focused}
+            />
           ))}
         </View>
       )}
@@ -288,10 +327,13 @@ function DesktopActionRow({ actions }: { actions: DialogAction[] }) {
 function ActionButton({
   action,
   desktop,
+  focus = false,
 }: {
   action: DialogAction;
   /** A desktop's button (`DesktopActionRow`): beside the others, or one of a stack. */
   desktop?: 'row' | 'stack';
+  /** The initial focus though the action does not ask for it: a desktop's default button. */
+  focus?: boolean;
 }) {
   const { close } = useDialogContext();
   // The default button: the keyboard and the screen reader start on it, as a
@@ -304,7 +346,7 @@ function ActionButton({
   //    once it is (`useAccessibilityFocus`).
   //  - The web: it focuses itself as it mounts, which the modal's own focus
   //    (`ModalKeyboard`, a frame later) then keeps.
-  const initialFocus = action.initialFocus === true;
+  const initialFocus = action.initialFocus === true || focus;
   const keyboard = usePlatformKeyboard();
   const inCommit = !IS_WEB && keyboard !== null;
   const ref = useAccessibilityFocus<ComponentRef<typeof Button>>(initialFocus && !inCommit);

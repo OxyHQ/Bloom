@@ -8,13 +8,17 @@ import type React from 'react';
 import { StyleSheet, Text as RNText } from 'react-native';
 import { act, fireEvent, render, within } from '@testing-library/react-native';
 
+import { AccessibilityInfo } from 'react-native';
+
 import { AlertDialog } from '../alert-dialog';
 import {
   DESKTOP_ACTION_HEIGHT,
   DESKTOP_ACTION_MIN_WIDTH,
   DESKTOP_ALERT_WIDTH,
+  ActionRow,
   desktopActionOrder,
   desktopDefaultAction,
+  desktopInitialFocus,
   hasChildren,
 } from '../dialog/DialogContent';
 import type { DialogAction } from '../dialog/types';
@@ -51,6 +55,23 @@ describe('desktop alert order', () => {
       ]),
     ).toBe(0);
     expect(desktopDefaultAction([{ label: 'Done', color: 'cancel' }])).toBe(-1);
+  });
+
+  it('starts the keyboard and the reader on the default button when no action asks', () => {
+    // A confirm without `defaultAction`: its first action used to be where a
+    // reader began, and a desktop's row puts the default last.
+    const signOut: DialogAction[] = [
+      { label: 'Sign Out', color: 'default' },
+      { label: 'Cancel', color: 'cancel' },
+    ];
+    expect(desktopInitialFocus(signOut)).toBe(0);
+    expect(desktopInitialFocus(QUIT)).toBe(2);
+    const safe: DialogAction[] = [
+      { label: 'Erase', color: 'destructive' },
+      { label: 'Cancel', color: 'cancel', initialFocus: true },
+    ];
+    expect(desktopInitialFocus(safe)).toBe(1);
+    expect(desktopInitialFocus([{ label: 'Done', color: 'cancel' }])).toBe(-1);
   });
 
   it('puts the default last in a row and first in a stack, the rest in the caller order', () => {
@@ -196,5 +217,50 @@ describe('without a desktop platform', () => {
 describe('the desktop alert width', () => {
   it('is narrow', () => {
     expect(DESKTOP_ALERT_WIDTH).toBeLessThanOrEqual(300);
+  });
+});
+
+describe('the initial focus of a desktop dialog', () => {
+  const focusRequests = AccessibilityInfo.sendAccessibilityEvent as jest.Mock;
+  const nodeMock = { createNodeMock: () => ({}) };
+  const actions: DialogAction[] = [
+    { label: 'Add', color: 'default' },
+    { label: 'Cancel', color: 'cancel' },
+  ];
+
+  function requests(ui: React.ReactElement) {
+    focusRequests.mockClear();
+    jest.useFakeTimers();
+    try {
+      render(
+        <PlatformSurfaceProvider value={DESKTOP}>
+          <BloomThemeProvider mode="light" colorPreset="teal">
+            {ui}
+          </BloomThemeProvider>
+        </PlatformSurfaceProvider>,
+        nodeMock,
+      );
+      act(() => {
+        jest.advanceTimersByTime(200);
+      });
+      return focusRequests.mock.calls.length;
+    } finally {
+      jest.useRealTimers();
+    }
+  }
+
+  it('starts an alert (its chrome alone) on its default button', () => {
+    expect(requests(<ActionRow actions={actions} alert />)).toBe(1);
+  });
+
+  it('leaves a dialog with content of its own to start in that content', () => {
+    // A sheet with a list (OxyOS Settings' input methods): the keyboard on its
+    // first row, not on Add.
+    expect(requests(<ActionRow actions={actions} />)).toBe(0);
+  });
+
+  it('still focuses an action that asks, content or not', () => {
+    const asked: DialogAction[] = [actions[0]!, { ...actions[1]!, initialFocus: true }];
+    expect(requests(<ActionRow actions={asked} />)).toBe(1);
   });
 });
