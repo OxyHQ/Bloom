@@ -42,6 +42,12 @@ export interface AgentCreatorProps {
    * host's, and is handed in here rather than added to the editor one field at a time.
    */
   children?: ReactNode;
+  /**
+   * Cards of the host's own, below the details card: `AgentCreatorSection`s for what an agent has
+   * beyond who it is (its schedule, its inbox, what it remembers). The editor scrolls them with
+   * the rest.
+   */
+  sections?: ReactNode;
   /** Host-owned speech preview, used on native and optionally on web. */
   onPreviewVoice?: (text: string, preferences: AgentPreferences) => void;
 }

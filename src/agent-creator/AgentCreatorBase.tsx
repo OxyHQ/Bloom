@@ -385,6 +385,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                 </AgentCreatorField>
                 {props.children}
               </StyledView>
+              {props.sections}
               {preferencesPanel}
             </ScreenScrollView>
           </Screen>
