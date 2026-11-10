@@ -203,7 +203,6 @@ const BadgeComponent: React.FC<BadgeProps> = ({
     isClearFill(paint.background) ||
     StyleSheet.flatten(style)?.backgroundColor !== undefined ? null : (
       <SurfacePaint
-        lens
         fill={hostFill ? undefined : paint.background}
         radius={variant === 'outlined' ? borderRadius.full - 1 : borderRadius.full}
         composite
