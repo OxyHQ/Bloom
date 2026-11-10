@@ -6,6 +6,7 @@ import React, {
   type ComponentRef,
   memo,
   useCallback,
+  useContext,
   useEffect,
   useImperativeHandle,
   useMemo,
@@ -35,6 +36,12 @@ import { RiCheckboxCircleFill } from '../icons/remix/RiCheckboxCircleFill';
 import { PageHeader } from '../page-header/PageHeader';
 import { ButtonGroup, ButtonGroupItem } from '../button-group';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
+import {
+  SettingsHeaderPresentationContext,
+  SettingsPageActionsContext,
+  type SettingsHeaderPresentation,
+  type SettingsPageActionsState,
+} from './page-actions';
 import { Backdrop, OverlayRoot } from '../overlay';
 import { ModalKeyboard } from '../overlay/ModalKeyboard';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -321,6 +328,7 @@ export function createSettings(
     onPageChange,
     initialView = 'navigation',
     labels,
+    headerPresentation = 'bar',
     testID,
   }: SettingsModalProps) {
     const panelRef = useRef<ComponentRef<typeof View>>(null);
@@ -586,17 +594,19 @@ export function createSettings(
                   >
                     <SurfacePaint fill={palette.full} radius={layout === 'compact' ? 0 : 24} />
                     <SurfaceLevelProvider level={1} fill={publishedFill}>
-                      <SettingsPanes
-                        layout={layout}
-                        navigation={navigation}
-                        groups={groups}
-                        pages={pages}
-                        labels={labels}
-                        onClose={requestClose}
-                        room={null}
-                        palette={palette}
-                        testID={testID}
-                      />
+                      <SettingsHeaderPresentationContext.Provider value={headerPresentation}>
+                        <SettingsPanes
+                          layout={layout}
+                          navigation={navigation}
+                          groups={groups}
+                          pages={pages}
+                          labels={labels}
+                          onClose={requestClose}
+                          room={null}
+                          palette={palette}
+                          testID={testID}
+                        />
+                      </SettingsHeaderPresentationContext.Provider>
                     </SurfaceLevelProvider>
                   </View>
                   <SavedToast
@@ -636,6 +646,7 @@ export function createSettings(
     layout: layoutProp,
     windowControls = 'auto',
     labels,
+    headerPresentation = 'bar',
     style,
     testID,
   }: SettingsLayoutProps) {
@@ -725,17 +736,19 @@ export function createSettings(
           style={[styles.layout, { backgroundColor: palette.full }, ringVars(palette), style]}
         >
           <SurfaceLevelProvider level={1} fill={palette.full}>
-            <SettingsPanes
-              layout={layout}
-              navigation={navigation}
-              groups={groups}
-              pages={pages}
-              labels={labels}
-              onClose={onClose ? requestClose : undefined}
-              room={windowChrome ? appWindow.metrics.room : null}
-              palette={palette}
-              testID={testID}
-            />
+            <SettingsHeaderPresentationContext.Provider value={headerPresentation}>
+              <SettingsPanes
+                layout={layout}
+                navigation={navigation}
+                groups={groups}
+                pages={pages}
+                labels={labels}
+                onClose={onClose ? requestClose : undefined}
+                room={windowChrome ? appWindow.metrics.room : null}
+                palette={palette}
+                testID={testID}
+              />
+            </SettingsHeaderPresentationContext.Provider>
           </SurfaceLevelProvider>
           <SavedToast
             phase={savedPhase}
@@ -1282,6 +1295,8 @@ export function createSettings(
      * much room for the window's controls at its leading edge.
      */
     windowRoom?: number;
+    /** The page's own actions (Save…), grouped before the close button. */
+    pageActions?: SettingsPageActionsState | null;
   };
 
   function SettingsHeader({
@@ -1291,10 +1306,12 @@ export function createSettings(
     closeLabel,
     onClose,
     windowRoom,
+    pageActions,
     testID,
   }: SettingsHeaderProps & {
     testID?: string;
   }) {
+    const presentation = useContext(SettingsHeaderPresentationContext);
     return (
       <WindowToolbar room={windowRoom}>
         <PageHeader
@@ -1303,22 +1320,42 @@ export function createSettings(
           onBack={onBack}
           backLabel={backLabel}
           safeArea={false}
-          // The opaque bar, not the floating islands: page content scrolls UNDER
-          // this header, and the floating presentation's translucent capsules and
-          // gradient scrim showed that content ghosting through. The bar paints the
-          // modal's published surface fill and draws its hairline once scrolled.
-          presentation="bar"
+          // `bar`: the opaque strip, for a host whose page content must not ghost through the
+          // translucent capsules as it scrolls under the header. `floating`: Bloom's own header,
+          // transparent, with its buttons as grouped capsules over the content.
+          presentation={presentation}
           actions={
-            onClose ? (
-              <ButtonGroup accessibilityLabel={closeLabel}>
-                <ButtonGroupItem
-                  iconOnly
-                  leadingIcon={RiCloseLine}
-                  accessibilityLabel={closeLabel}
-                  onPress={onClose}
-                  testID={testID ? `${testID}-close` : undefined}
-                />
-              </ButtonGroup>
+            pageActions || onClose ? (
+              <>
+                {pageActions && pageActions.actions.length > 0 ? (
+                  <ButtonGroup accessibilityLabel={pageActions.label}>
+                    {pageActions.actions.map((action) => (
+                      <ButtonGroupItem
+                        key={action.key}
+                        iconOnly={action.icon !== undefined}
+                        leadingIcon={action.icon}
+                        accessibilityLabel={action.label}
+                        disabled={action.disabled}
+                        onPress={action.onPress}
+                        testID={testID ? `${testID}-action-${action.key}` : undefined}
+                      >
+                        {action.icon === undefined ? action.label : undefined}
+                      </ButtonGroupItem>
+                    ))}
+                  </ButtonGroup>
+                ) : null}
+                {onClose ? (
+                  <ButtonGroup accessibilityLabel={closeLabel}>
+                    <ButtonGroupItem
+                      iconOnly
+                      leadingIcon={RiCloseLine}
+                      accessibilityLabel={closeLabel}
+                      onPress={onClose}
+                      testID={testID ? `${testID}-close` : undefined}
+                    />
+                  </ButtonGroup>
+                ) : null}
+              </>
             ) : undefined
           }
           testID={testID ? `${testID}-header` : undefined}
@@ -1341,19 +1378,23 @@ export function createSettings(
     insetTop?: number;
     testID?: string;
   }) {
+    // Each page is keyed, so this state is the page's: its actions leave with it.
+    const [pageActions, setPageActions] = useState<SettingsPageActionsState | null>(null);
     return (
-      <Screen
-        scroll="auto"
-        documentScroll={false}
-        navigationScope="isolated"
-        contentClearance={0}
-        header={<SettingsHeader {...header} testID={testID} />}
-        style={styles.scroll}
-      >
-        <SettingsPageContent inset={inset} insetTop={insetTop} testID={testID}>
-          {children}
-        </SettingsPageContent>
-      </Screen>
+      <SettingsPageActionsContext.Provider value={setPageActions}>
+        <Screen
+          scroll="auto"
+          documentScroll={false}
+          navigationScope="isolated"
+          contentClearance={0}
+          header={<SettingsHeader {...header} pageActions={pageActions} testID={testID} />}
+          style={styles.scroll}
+        >
+          <SettingsPageContent inset={inset} insetTop={insetTop} testID={testID}>
+            {children}
+          </SettingsPageContent>
+        </Screen>
+      </SettingsPageActionsContext.Provider>
     );
   }
 

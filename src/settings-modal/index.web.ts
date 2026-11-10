@@ -19,7 +19,9 @@ export { SettingsPlanArt } from './SettingsArt';
 export { SettingsToolsPage, SettingsServerList } from './SettingsTools';
 export { SettingsStoragePage } from './SettingsStorage';
 export { settingsLayoutFor, useSettingsSavedToast } from './context';
+export { SettingsPageActions } from './page-actions';
 
+export type { SettingsPageAction, SettingsHeaderPresentation } from './page-actions';
 export type {
   SettingsCardProps,
   SettingsDateFieldProps,
