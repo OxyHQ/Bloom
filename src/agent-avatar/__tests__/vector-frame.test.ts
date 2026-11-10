@@ -204,3 +204,31 @@ it('does not mutate a captured pose while applying procedural blink', async () =
   });
   expect(JSON.stringify(pose)).toBe(before);
 });
+
+describe('a frame is only ever drawn from finite numbers', () => {
+  const nan = (frame: ReturnType<typeof renderVectorFrame>) =>
+    frame.paths.some((path) => /NaN|Infinity/.test(path.d) || /NaN|Infinity/.test(path.clip ?? ''));
+
+  it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
+    'draws the rest pose for a time, a yaw or a pitch of %s',
+    async (bad) => {
+      const asset = (await vectorShapeImports.bot_blob()).default;
+      const rest = renderVectorFrame(asset, { action: 'idle', time: 0, yaw: 0, pitch: 0 });
+      for (const options of [{ time: bad }, { yaw: bad }, { pitch: bad }]) {
+        const frame = renderVectorFrame(asset, { action: 'idle', time: 0, ...options });
+        expect(nan(frame)).toBe(false);
+        expect(frame.paths.map((path) => path.d)).toEqual(rest.paths.map((path) => path.d));
+      }
+    },
+  );
+
+  it('leaves out a part whose projection is not finite instead of writing it as path data', async () => {
+    const asset = structuredClone((await vectorShapeImports.bot_blob()).default);
+    const complete = renderVectorFrame(asset, { action: 'idle', time: 0 });
+    const index = asset.parts.findIndex((part) => part.role === 'body');
+    asset.parts[index]!.points[0]![0] = Number.NaN;
+    const frame = renderVectorFrame(asset, { action: 'idle', time: 0 });
+    expect(nan(frame)).toBe(false);
+    expect(frame.paths).toHaveLength(complete.paths.length - 1);
+  });
+});

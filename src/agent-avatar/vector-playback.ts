@@ -3,6 +3,21 @@ import type { VectorPose } from './vector-pose';
 import type { VectorMotionPose } from './vector-motion';
 
 export const VECTOR_TRANSITION_SECONDS = 0.28;
+/** The longest a frame may advance the clock: a stalled tab resumes where it was, not far ahead. */
+export const VECTOR_MAX_FRAME_SECONDS = 0.064;
+
+/**
+ * Seconds a frame advances the avatar's clock, from the timestamps of this frame and the last.
+ *
+ * Only a finite, forward step counts. A frame callback that carries no timestamp (a shimmed
+ * `requestAnimationFrame`, a webview that omits it), one that runs backwards, or a first frame has
+ * a delta of zero. The clock is added to every frame and kept for the life of the avatar, so one
+ * non-finite step would make every later pose, and every path drawn from it, `NaN`.
+ */
+export function vectorFrameDelta(now: number, last: number | undefined): number {
+  if (last === undefined || !Number.isFinite(now) || !Number.isFinite(last)) return 0;
+  return Math.max(0, Math.min(VECTOR_MAX_FRAME_SECONDS, (now - last) / 1000));
+}
 export type VectorPlayback = {
   action: VectorAction;
   time: number;
