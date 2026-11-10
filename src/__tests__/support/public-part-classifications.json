@@ -1607,25 +1607,27 @@
     "parts": ["src/multi-agent-chat/SelectedAgentPreview.tsx#SelectedAgentPreview"]
   },
   "agent-creator-field-parts": {
-    "status": "pending",
-    "reason": "AgentCreatorField is the editor's own details-card row, exported so a host's rows (handed to AgentCreator as children) match it. It fills the card's width at a fixed 96px label column and has not yet been audited as a BloomScope or responsive contract; this row records the part without implying a defect or adoption.",
+    "status": "delegated",
+    "reason": "AgentCreatorField owns a details-card row and 96px label column but has no size prop or control recipe; its caller-provided control remains a child and inherits the surrounding BloomScope. The label uses the standard Text family. Evidence: src/agent-creator/AgentCreatorField.tsx, src/__tests__/AgentCreatorPublicPartScope.test.tsx, src/__tests__/AgentCreatorPublicPartScope.web.test.tsx. Native and RNW verify default md, inherited sm, nested lg and explicit md child Button geometry, including a body portal from the companion section; responsive row wrapping and physical-device layout remain pending.",
     "evidence": [
       "src/agent-creator/AgentCreatorField.tsx",
-      "src/agent-creator/__tests__/AgentCreator.test.tsx",
+      "src/__tests__/AgentCreatorPublicPartScope.test.tsx",
+      "src/__tests__/AgentCreatorPublicPartScope.web.test.tsx",
       "src/__tests__/public-parts.test.ts"
     ],
-    "verification": "public identity and route census only; per-part scope, responsive, runtime and device verification pending",
+    "verification": "mock-rendered native and DOM web measure child Button geometry through the field at default md, inherited sm, nested lg and explicit md, plus a real web body portal; responsive wrapping and device verification pending",
     "parts": ["src/agent-creator/AgentCreatorField.tsx#AgentCreatorField"]
   },
   "agent-creator-section-parts": {
-    "status": "pending",
-    "reason": "AgentCreatorSection is the editor's titled card of a host's own rows (handed to AgentCreator as sections), drawn on the details card's surface so the two read as one editor. It fills the editor's width and has not yet been audited as a BloomScope or responsive contract; this row records the part without implying a defect or adoption.",
+    "status": "delegated",
+    "reason": "AgentCreatorSection owns the titled card surface and spacing but has no size prop or control recipe; caller-provided rows remain children and inherit the surrounding BloomScope. Its title uses the standard Text family. Evidence: src/agent-creator/AgentCreatorSection.tsx, src/__tests__/AgentCreatorPublicPartScope.test.tsx, src/__tests__/AgentCreatorPublicPartScope.web.test.tsx. Native and RNW verify default md, inherited sm, nested lg and explicit md child Button geometry, including a real portal; responsive section overflow and physical-device layout remain pending.",
     "evidence": [
       "src/agent-creator/AgentCreatorSection.tsx",
-      "src/agent-creator/__tests__/AgentCreator.test.tsx",
+      "src/__tests__/AgentCreatorPublicPartScope.test.tsx",
+      "src/__tests__/AgentCreatorPublicPartScope.web.test.tsx",
       "src/__tests__/public-parts.test.ts"
     ],
-    "verification": "public identity and route census only; per-part scope, responsive, runtime and device verification pending",
+    "verification": "mock-rendered native and DOM web measure child Button geometry at default md, inherited sm, nested lg and explicit md through the section; native and web portal behavior exercised; responsive overflow and device verification pending",
     "parts": ["src/agent-creator/AgentCreatorSection.tsx#AgentCreatorSection"]
   }
 }
