@@ -62,6 +62,15 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
       field = value
       refreshDrawing()
     }
+  // Morph from the trigger without glass: a glass trigger always morphs (its glass is the origin); a plain trigger
+  // morphs only when this is set. The plain trigger is drawn by the hierarchy at rest and by the session while open.
+  internal var morph = true
+    set(value) {
+      field = value
+      overlay?.invalidate()
+    }
+  // The session takes the trigger as its origin (a lobe with glass, the tint and radius of the trigger) when true.
+  internal val morphs get() = glass || morph
   internal var cornerRadius: Float? = null
     set(value) {
       field = value

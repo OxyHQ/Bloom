@@ -6,8 +6,7 @@
     "modules": [
       "so.oxy.bloom.glassmenu.GlassMenuAndroidModule",
       "so.oxy.bloom.glassmenu.chrome.GlassChromeModule",
-      "so.oxy.bloom.glassmenu.chrome.SurfaceNodesModule",
-      "so.oxy.bloom.lens.LensSurfaceModule"
+      "so.oxy.bloom.glassmenu.chrome.SurfaceNodesModule"
     ]
   }
 }
