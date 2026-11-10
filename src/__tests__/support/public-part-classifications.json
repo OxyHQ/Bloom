@@ -51,6 +51,19 @@
     "verification": "native mock and DOM web verify independent defaults under xs/lg control scopes and explicit document/artwork sizes; physical-device rendering pending",
     "parts": ["src/voice/AudioWaveVisualizer.tsx#AudioWaveVisualizer"]
   },
+  "scrollbar-visual": {
+    "status": "independent-scale",
+    "reason": "ScrollBar's size prop is scrollbar thumb thickness on web (sm 4px, md 6px), not Bloom control size; the hit strip adds 6px without taking content space. Native renders no overlay and leaves the operating system indicator to its ScrollView. Native and web runtime tests verify the control scope cannot change this role-specific geometry and the explicit web size remains effective.",
+    "evidence": [
+      "src/layout/ScrollBar.tsx",
+      "src/layout/ScrollBar.web.tsx",
+      "src/layout/ScrollAreaBar.web.tsx",
+      "src/__tests__/ScrollBarPublicPartScope.test.tsx",
+      "src/__tests__/ScrollBarPublicPartScope.web.test.tsx"
+    ],
+    "verification": "native renderer returns no overlay for xs/lg scopes and sm/md thickness props; web measures track/thumb at 10/4px for sm and 12/6px for md under both xs and lg scopes; actual native platform indicator appearance remains OS-owned",
+    "parts": ["src/layout/ScrollBar.tsx#ScrollBar"]
+  },
   "button-delegation": {
     "status": "delegated",
     "reason": "Each named Button composition renders the shared Button with the complete props spread and no size default. Both native/web implementations delegate size precedence directly; appearance/tone/iconOnly defaults do not consume or replace size.",
@@ -1036,7 +1049,6 @@
       "src/layout/AutoHideBar.tsx#AutoHideBarRegion",
       "src/layout/ResizeHandle.tsx#ResizeHandle",
       "src/layout/ScrollArea.tsx#ScrollArea",
-      "src/layout/ScrollBar.tsx#ScrollBar",
       "src/layout/ScrollSurface.tsx#ScrollSurface",
       "src/layout/StickySection.tsx#StickySection",
       "src/layout/Toolbar.tsx#Toolbar",
