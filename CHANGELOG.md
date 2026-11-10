@@ -1,5 +1,11 @@
 # Changelog
 
+## 18.2.0
+
+### Added
+
+- **`SettingsPageActions`**: settings pages can put Save/Cancel actions in their header, grouped beside close, while the page retains its dirty/saving state. `SettingsModal` and `SettingsLayout` also accept `headerPresentation="floating"` for Bloom’s floating `PageHeader`.
+
 ## 18.1.1
 
 ### Fixed
@@ -31,6 +37,7 @@
 - **An avatar never draws a path with `NaN` in it.** The vector avatar's clock is added to every frame and kept for the life of the avatar, so a single frame callback without a usable timestamp (a shimmed `requestAnimationFrame`, a webview that omits it) made every later pose, and every contour and clip path drawn from it, `NaN`, and the browser rejected each one (`<path> attribute d: Expected number, "MNaN NaN…"`). The step now comes from `vectorFrameDelta`: only a finite, forward step counts, and a frame with no timestamp is read off `performance.now()`. `renderVectorFrame` draws the rest pose for a `time`, `yaw` or `pitch` that is not finite, and leaves out a part whose projection is not finite rather than writing it as path data. No frame the renderer drew from valid input changes.
 
 ## 17.42.0
+
 
 ### Added
 
