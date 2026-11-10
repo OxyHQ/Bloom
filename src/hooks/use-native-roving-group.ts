@@ -104,6 +104,14 @@ export function useNativeRovingGroup<Value extends string>(
   stop: Value | undefined;
   /** The props of option `value`'s host view (none off a native platform keyboard). */
   itemProps: (value: Value, disabled?: boolean) => NativeRovingItemProps;
+  /**
+   * Brings the keyboard into the group at option `value`, as an arrow reaching
+   * it does: chosen (`follow`) and focused once the choice lands, or focused
+   * alone (`manual`). For a control outside the group that hands the keyboard
+   * to it: a search field's ↓ into the list of its results. Nothing off a
+   * native platform keyboard.
+   */
+  focusItem: (value: Value) => void;
 } {
   const keyboard = usePlatformKeyboard();
   const active = !IS_WEB && keyboard !== null;
@@ -144,6 +152,9 @@ export function useNativeRovingGroup<Value extends string>(
             all[0]
           )?.value;
   }
+
+  const stopRef = useRef(stop);
+  stopRef.current = stop;
 
   useEffect(() => {
     if (!active || focused === undefined) return undefined;
@@ -232,5 +243,19 @@ export function useNativeRovingGroup<Value extends string>(
     [active, stop],
   );
 
-  return { stop, itemProps };
+  const focusItem = useCallback(
+    (target: Value) => {
+      if (!active) return;
+      pending.current = target;
+      if (latest.current.activation === 'manual') {
+        // Already the group's stop: focusable now, so the focus goes to it at once.
+        if (stopRef.current === target) focusOption(target);
+        else setMoved(target);
+      } else if (latest.current.value === target) focusOption(target);
+      else latest.current.select(target);
+    },
+    [active, focusOption],
+  );
+
+  return { stop, itemProps, focusItem };
 }

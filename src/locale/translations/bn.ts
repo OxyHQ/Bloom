@@ -2282,6 +2282,8 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
   nav: 'সেটিংসের বিভাগ',
   close: 'সেটিংস বন্ধ করুন',
   saved: 'সেভ হয়েছে',
+  search: 'অনুসন্ধান',
+  noResults: 'কোনো ফলাফল নেই',
   currentPlan: 'বর্তমান প্ল্যান',
   actions: 'কাজ',
   storage: {

@@ -1,5 +1,15 @@
 # Changelog
 
+## 18.3.0
+
+### Added
+
+- **Desktop density for grouped forms and settings.** `GroupedSection density="compact"` draws a desktop form's groups, as a Mac's System Settings does: 36-point rows (padding 10 × 6) in the body style, regular, a hairline between rows inset at the text of the row above, a 12 radius, the title in the headline style as it is written (no forced capitals) and aligned with the rows' text, and no outer margin (the page's stack spaces sections). The density comes from the new `BloomScope contentDensity` (`'comfortable' | 'compact'`, `useBloomContentDensity()`) when a section does not say; `comfortable` is unchanged.
+- **`SettingsLayout density="compact"`**: 28-point rail rows in the body style and the label's colour, groups apart by space alone (no headings), a 20 content inset and compact sections in its pages.
+- **`SettingsLayout search`**: a controlled search field at the top of the rail (`SettingsSearchProps`), its owner filtering the groups; Escape clears it, ↓ and Return go to the first result (chosen, its page shown, the keyboard on its row on a native host), and `labels.noResults` says when nothing matches (`search` and `noResults` in every Bloom language).
+- **`SettingsLayout`'s handle** (`ref`, `SettingsLayoutHandle`: `focusSearch()`, `back()`, `forward()`) and `onHistoryChange({ canGoBack, canGoForward })`, for the owner's Edit › Find… and View › Back and Forward.
+- **`useNativeRovingGroup().focusItem(value)`**: brings the keyboard into a roving group at an option, as an arrow reaching it does (a search field's ↓ into its results).
+
 ## 18.2.1
 
 ### Fixed

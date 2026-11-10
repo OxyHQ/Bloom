@@ -2353,6 +2353,8 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
   nav: 'Bagian pengaturan',
   close: 'Tutup pengaturan',
   saved: 'Tersimpan',
+  search: 'Cari',
+  noResults: 'Tidak Ada Hasil',
   currentPlan: 'Paket saat ini',
   actions: 'Tindakan',
   storage: {

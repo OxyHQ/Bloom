@@ -2302,6 +2302,8 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
   nav: '設定のセクション',
   close: '設定を閉じる',
   saved: '保存しました',
+  search: '検索',
+  noResults: '結果なし',
   currentPlan: '現在のプラン',
   actions: '操作',
   storage: {

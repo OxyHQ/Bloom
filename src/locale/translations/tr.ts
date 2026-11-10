@@ -2321,6 +2321,8 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
   nav: 'Ayar bölümleri',
   close: 'Ayarları kapat',
   saved: 'Kaydedildi',
+  search: 'Ara',
+  noResults: 'Sonuç Yok',
   currentPlan: 'Mevcut plan',
   actions: 'İşlemler',
   storage: {

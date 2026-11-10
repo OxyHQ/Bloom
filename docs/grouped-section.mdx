@@ -126,8 +126,9 @@ Custom surrounding surfaces can publish their fill using `SurfaceLevelProvider`.
 | `title?` | `string` | Section header. |
 | `footer?` | `string` | Section footer. |
 | `children` | `React.ReactNode` | Direct children become rows; arbitrary custom row content is supported. |
-| `radius?` | `CardProps['radius']` | Outer silhouette; defaults to `radius-28`. |
-| `separator?` | `'space' \| 'line' \| 'none'` | Defaults to 2px transparent spacing; `line` restores dividers. |
+| `density?` | `'comfortable' \| 'compact'` | The rows' density; default the nearest `BloomScope contentDensity`, else `comfortable`. See [Desktop density](#desktop-density). |
+| `radius?` | `CardProps['radius']` | Outer silhouette; defaults to `radius-28` (`radius-12` compact). |
+| `separator?` | `'space' \| 'line' \| 'none'` | Defaults to 2px transparent spacing (a hairline inset at the text, compact); `line` restores dividers. |
 | `style?` | `StyleProp<ViewStyle>` | Override group container style. |
 | `variant?` | `'plain' \| 'filled'` | Overrides the surface the group would resolve from the container's published fill — `card` or `backgroundSecondary`. Normally left unset; see [above](#the-group-knows-what-it-is-sitting-on). |
 
@@ -228,6 +229,30 @@ Use `separator="line"` for the previous single-card divider treatment, with
 keeps a continuous card with no divisions. Titles and footers remain outside
 the clipped group.
 
+
+### Desktop density
+
+`density="compact"` is a desktop form's, as a Mac's System Settings lays its groups out: the
+same material and clipping, with a desktop's geometry.
+
+| | `comfortable` (default) | `compact` |
+|---|---|---|
+| Row | min 52, padding 16 × 12, gap 12 | min 36, padding 10 × 6, gap 8 (a mini switch or small control fits) |
+| Row label | 15 / 500 | the body style, regular (`body-regular`) |
+| Description | `body-2-regular` | `caption-1-regular` |
+| Icon column | 28 | 20 |
+| Separation | 2px parent-coloured spacers | a hairline from the text of the row above (10, or 10 + 20 + 8 after an icon, or the row's `leftInset`) to 10 before the edge |
+| Radius | `radius-28` | `radius-12` |
+| Title | 11 / 600 in capitals, secondary, inset 20 | the headline style (`body-bold`) in the label's colour, **as written**, inset 10 with the rows' text |
+| Footer | tertiary, inset 20 | secondary, inset 10 |
+| Outer margin | 16 below | none: the page's stack sets the space between sections (20 on a settings page), so the two never add up |
+
+Write a compact title as the language writes a title (Title Case in English, sentence case in
+Spanish): nothing transforms it. The density is a scope's as much as a section's:
+`BloomScope contentDensity="compact"` makes every section under it compact (a
+`SettingsLayout density="compact"` sets it for its pages), and a section's own `density` wins
+and reaches its rows. The row geometry is `GROUPED_SECTION_GEOMETRY`. Explicit `radius` and
+`separator` still win over the density's defaults.
 
 ## Compatibility
 

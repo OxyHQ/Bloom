@@ -2676,6 +2676,8 @@ const SETTINGS_MODAL_MESSAGES: Translations['SETTINGS_MODAL_MESSAGES'] = {
   nav: 'أقسام الإعدادات',
   close: 'إغلاق الإعدادات',
   saved: 'تم الحفظ',
+  search: 'بحث',
+  noResults: 'لا توجد نتائج',
   currentPlan: 'الخطة الحالية',
   actions: 'الإجراءات',
   storage: {

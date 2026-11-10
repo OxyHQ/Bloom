@@ -4,6 +4,7 @@ import type { ScrollAreaProps } from '../layout/types';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import React, {
   type ComponentRef,
+  forwardRef,
   memo,
   useCallback,
   useContext,
@@ -19,6 +20,7 @@ import {
   View,
   useWindowDimensions,
   type ScrollView,
+  type TextInput,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
@@ -58,13 +60,19 @@ import {
 import { ModalPortal } from './modal-portal';
 import type { SettingsPalette } from './palette';
 import type {
+  SettingsLayoutHandle,
   SettingsLayoutProps,
   SettingsModalLabels,
   SettingsModalPage,
   SettingsModalProps,
   SettingsNavGroup,
   SettingsNavItem,
+  SettingsSearchProps,
 } from './types';
+import { BloomScope } from '../appearance/BloomScope';
+import type { BloomContentDensity } from '../appearance/types';
+import type { Search } from '../search/Search';
+import { useWindowKeys } from '../kbd/use-window-keys';
 import { useKeyboardReveal } from '../hooks/use-keyboard-reveal';
 import { useSettingsWebCss } from './web-css';
 import { useCommonMessages } from '../locale/common-messages';
@@ -96,6 +104,11 @@ export function createSettings(
    * (`lean-entries.test.ts`), and a modal is never a window's content.
    */
   AppShell: React.ComponentType<AppShellProps> | null,
+  /**
+   * The rail's search field (`SettingsLayout search`). Only the layout's entry passes it: the
+   * modal's must not link a field (`lean-entries.test.ts`).
+   */
+  SearchField: typeof Search | null = null,
 ) {
   /**
    * A settings modal.
@@ -142,6 +155,15 @@ export function createSettings(
     medium: 24,
     compact: 16,
   };
+  /** A desktop's (`density="compact"`) content inset beside the rail, as a Mac's 20-point margins. */
+  const CONTENT_INSET_DESKTOP = 20;
+  function contentInset(layout: SettingsModalLayout, density: BloomContentDensity): number {
+    return density === 'compact' && layout !== 'compact'
+      ? CONTENT_INSET_DESKTOP
+      : CONTENT_INSET[layout];
+  }
+  /** A desktop's rail row: 28 points, an 18-point icon, the body style in the label's colour. */
+  const RAIL_ICON = { comfortable: 20, compact: 18 } as const;
   const VIEWPORT_GUTTER = 16;
   const MOTION_MS = 300;
   const UNMOUNT_MS = 320;
@@ -634,142 +656,207 @@ export function createSettings(
    * has windows) the rail keeps the window controls' room at its top and moves
    * the window; narrow, the header keeps it at its leading edge.
    */
-  function SettingsLayout({
-    onClose,
-    onBeforeLeave,
-    groups,
-    pages,
-    page,
-    defaultPage,
-    onPageChange,
-    initialView = 'navigation',
-    layout: layoutProp,
-    windowControls = 'auto',
-    labels,
-    headerPresentation = 'bar',
-    style,
-    testID,
-  }: SettingsLayoutProps) {
-    const { messages } = useMessages(SETTINGS_MODAL_MESSAGES);
-    useSettingsWebCss();
-    const palette = useSettingsPalette();
-    const reducedMotion = usePrefersReducedMotion();
-    const dirProps = useDirectionProps();
-    // The window until the first layout, so a layout that spans the window is
-    // right on frame one; an embedded one pays a single layout pass.
-    const { width: windowWidth } = useWindowDimensions();
-    const { width: measuredWidth, onLayout } = useContainerWidth();
-    const layout = layoutProp ?? settingsLayoutFor(measuredWidth ?? windowWidth);
+  const SettingsLayout = forwardRef<SettingsLayoutHandle, SettingsLayoutProps>(
+    function SettingsLayout(
+      {
+        onClose,
+        onBeforeLeave,
+        groups,
+        pages,
+        page,
+        defaultPage,
+        onPageChange,
+        initialView = 'navigation',
+        layout: layoutProp,
+        windowControls = 'auto',
+        headerPresentation = 'bar',
+        density = 'comfortable',
+        search,
+        onHistoryChange,
+        labels,
+        style,
+        testID,
+      },
+      ref,
+    ) {
+      const { messages } = useMessages(SETTINGS_MODAL_MESSAGES);
+      useSettingsWebCss();
+      const palette = useSettingsPalette();
+      const reducedMotion = usePrefersReducedMotion();
+      const dirProps = useDirectionProps();
+      // The window until the first layout, so a layout that spans the window is
+      // right on frame one; an embedded one pays a single layout pass.
+      const { width: windowWidth } = useWindowDimensions();
+      const { width: measuredWidth, onLayout } = useContainerWidth();
+      const layout = layoutProp ?? settingsLayoutFor(measuredWidth ?? windowWidth);
 
-    const navigation = useSettingsNavigation({
-      groups,
-      page,
-      defaultPage,
-      onPageChange,
-      initialView,
-      onBeforeLeave,
-    });
-    const { mayLeave } = navigation;
-    const onCloseRef = useRef(onClose);
-    onCloseRef.current = onClose;
-    const requestClose = useCallback(() => {
-      if (mayLeave('close')) onCloseRef.current?.();
-    }, [mayLeave]);
+      const navigation = useSettingsNavigation({
+        groups,
+        page,
+        defaultPage,
+        onPageChange,
+        initialView,
+        onBeforeLeave,
+      });
+      const { mayLeave } = navigation;
 
-    const { savedPhase, showSaved } = useSavedToast();
-    const context = useMemo(
-      () => ({ showSaved, close: requestClose, layout }),
-      [showSaved, requestClose, layout],
-    );
-
-    // The window's content, unless a region above already holds its corner
-    // (the layout is a panel in an application's shell).
-    const platformWindow = useWindow();
-    const cornerTaken = useWindowCornerTaken();
-    const appWindow = windowControls === 'auto' && !cornerTaken ? platformWindow : null;
-    const windowChrome = appWindow != null && !appWindow.fullscreen;
-    // A window wide enough for the rail beside the page is composed as every
-    // Oxy application's window is: Bloom's AppShell, the rail its sidebar and
-    // the page its panel, whose history the page's header (the window's
-    // toolbar) goes back and forward through. The shell keeps the controls'
-    // room and draws them. Narrower, the section list and its pushed page.
-    if (AppShell != null && appWindow != null && layout !== 'compact') {
-      return (
-        <SettingsModalContext.Provider value={context}>
-          <View
-            {...dirProps}
-            onLayout={onLayout}
-            testID={testID}
-            style={[styles.layout, { backgroundColor: palette.full }, ringVars(palette), style]}
-          >
-            <SurfaceLevelProvider level={1} fill={palette.full}>
-              <SettingsWindow
-                layout={layout}
-                navigation={navigation}
-                groups={groups}
-                pages={pages}
-                labels={labels}
-                onClose={onClose ? requestClose : undefined}
-                palette={palette}
-                testID={testID}
-              />
-            </SurfaceLevelProvider>
-            <SavedToast
-              phase={savedPhase}
-              label={labels?.saved ?? messages.saved}
-              palette={palette}
-              reducedMotion={reducedMotion}
-              inset={TOAST_INSET}
-              testID={testID ? `${testID}-saved` : undefined}
-            />
-          </View>
-        </SettingsModalContext.Provider>
+      // The owner's menus: Find… to the rail's search, Back and Forward through the pages visited.
+      const searchRef = useRef<ComponentRef<typeof TextInput>>(null);
+      const historyRef = useRef(navigation.history);
+      historyRef.current = navigation.history;
+      const navigateRef = useRef(navigation.navigate);
+      navigateRef.current = navigation.navigate;
+      useImperativeHandle(
+        ref,
+        () => ({
+          focusSearch: () => {
+            const field = searchRef.current;
+            field?.focus();
+            field?.setSelection?.(0, Number.MAX_SAFE_INTEGER);
+          },
+          back: () => {
+            const { entries, index } = historyRef.current;
+            if (index > 0) navigateRef.current({ entries, index: index - 1 });
+          },
+          forward: () => {
+            const { entries, index } = historyRef.current;
+            if (index < entries.length - 1) navigateRef.current({ entries, index: index + 1 });
+          },
+        }),
+        [],
       );
-    }
+      const canGoBack = navigation.history.index > 0;
+      const canGoForward = navigation.history.index < navigation.history.entries.length - 1;
+      const onHistoryChangeRef = useRef(onHistoryChange);
+      onHistoryChangeRef.current = onHistoryChange;
+      useEffect(() => {
+        onHistoryChangeRef.current?.({ canGoBack, canGoForward });
+      }, [canGoBack, canGoForward]);
+      const rail = useMemo(
+        () => ({ density, search, searchRef, noResults: labels?.noResults ?? messages.noResults }),
+        [density, search, labels?.noResults, messages.noResults],
+      );
 
-    const settings = (
-      <SettingsModalContext.Provider value={context}>
-        <View
-          {...dirProps}
-          onLayout={onLayout}
-          testID={testID}
-          style={[styles.layout, { backgroundColor: palette.full }, ringVars(palette), style]}
-        >
-          <SurfaceLevelProvider level={1} fill={palette.full}>
-            <SettingsHeaderPresentationContext.Provider value={headerPresentation}>
-              <SettingsPanes
-                layout={layout}
-                navigation={navigation}
-                groups={groups}
-                pages={pages}
-                labels={labels}
-                onClose={onClose ? requestClose : undefined}
-                room={windowChrome ? appWindow.metrics.room : null}
-                palette={palette}
+      const onCloseRef = useRef(onClose);
+      onCloseRef.current = onClose;
+      const requestClose = useCallback(() => {
+        if (mayLeave('close')) onCloseRef.current?.();
+      }, [mayLeave]);
+
+      const { savedPhase, showSaved } = useSavedToast();
+      const context = useMemo(
+        () => ({ showSaved, close: requestClose, layout }),
+        [showSaved, requestClose, layout],
+      );
+
+      // The window's content, unless a region above already holds its corner
+      // (the layout is a panel in an application's shell).
+      const platformWindow = useWindow();
+      const cornerTaken = useWindowCornerTaken();
+      const appWindow = windowControls === 'auto' && !cornerTaken ? platformWindow : null;
+      const windowChrome = appWindow != null && !appWindow.fullscreen;
+      // A window wide enough for the rail beside the page is composed as every
+      // Oxy application's window is: Bloom's AppShell, the rail its sidebar and
+      // the page its panel, whose history the page's header (the window's
+      // toolbar) goes back and forward through. The shell keeps the controls'
+      // room and draws them. Narrower, the section list and its pushed page.
+      if (AppShell != null && appWindow != null && layout !== 'compact') {
+        return (
+          <BloomScope contentDensity={density}>
+            <SettingsModalContext.Provider value={context}>
+              <View
+                {...dirProps}
+                onLayout={onLayout}
                 testID={testID}
+                style={[styles.layout, { backgroundColor: palette.full }, ringVars(palette), style]}
+              >
+                <SurfaceLevelProvider level={1} fill={palette.full}>
+                  <SettingsWindow
+                    layout={layout}
+                    rail={rail}
+                    navigation={navigation}
+                    groups={groups}
+                    pages={pages}
+                    labels={labels}
+                    onClose={onClose ? requestClose : undefined}
+                    palette={palette}
+                    testID={testID}
+                  />
+                </SurfaceLevelProvider>
+                <SavedToast
+                  phase={savedPhase}
+                  label={labels?.saved ?? messages.saved}
+                  palette={palette}
+                  reducedMotion={reducedMotion}
+                  inset={TOAST_INSET}
+                  testID={testID ? `${testID}-saved` : undefined}
+                />
+              </View>
+            </SettingsModalContext.Provider>
+          </BloomScope>
+        );
+      }
+
+      const settings = (
+        <BloomScope contentDensity={density}>
+          <SettingsModalContext.Provider value={context}>
+            <View
+              {...dirProps}
+              onLayout={onLayout}
+              testID={testID}
+              style={[styles.layout, { backgroundColor: palette.full }, ringVars(palette), style]}
+            >
+              <SurfaceLevelProvider level={1} fill={palette.full}>
+                <SettingsHeaderPresentationContext.Provider value={headerPresentation}>
+                  <SettingsPanes
+                    layout={layout}
+                    rail={rail}
+                    navigation={navigation}
+                    groups={groups}
+                    pages={pages}
+                    labels={labels}
+                    onClose={onClose ? requestClose : undefined}
+                    room={windowChrome ? appWindow.metrics.room : null}
+                    palette={palette}
+                    testID={testID}
+                  />
+                </SettingsHeaderPresentationContext.Provider>
+              </SurfaceLevelProvider>
+              <SavedToast
+                phase={savedPhase}
+                label={labels?.saved ?? messages.saved}
+                palette={palette}
+                reducedMotion={reducedMotion}
+                inset={TOAST_INSET}
+                testID={testID ? `${testID}-saved` : undefined}
               />
-            </SettingsHeaderPresentationContext.Provider>
-          </SurfaceLevelProvider>
-          <SavedToast
-            phase={savedPhase}
-            label={labels?.saved ?? messages.saved}
-            palette={palette}
-            reducedMotion={reducedMotion}
-            inset={TOAST_INSET}
-            testID={testID ? `${testID}-saved` : undefined}
-          />
-          {windowChrome ? (
-            <WindowControls testID={testID ? `${testID}-window-controls` : undefined} />
-          ) : null}
-        </View>
-      </SettingsModalContext.Provider>
-    );
-    return appWindow != null ? (
-      <WindowCornerProvider value>{settings}</WindowCornerProvider>
-    ) : (
-      settings
-    );
-  }
+              {windowChrome ? (
+                <WindowControls testID={testID ? `${testID}-window-controls` : undefined} />
+              ) : null}
+            </View>
+          </SettingsModalContext.Provider>
+        </BloomScope>
+      );
+      return appWindow != null ? (
+        <WindowCornerProvider value>{settings}</WindowCornerProvider>
+      ) : (
+        settings
+      );
+    },
+  );
+
+  /** What a `SettingsLayout` gives its rail and pages beyond the modal's: its density and search. */
+  type RailOptions = {
+    density: BloomContentDensity;
+    search?: SettingsSearchProps;
+    searchRef: React.RefObject<ComponentRef<typeof TextInput> | null>;
+    noResults: string;
+  };
+  const MODAL_RAIL: RailOptions = {
+    density: 'comfortable',
+    searchRef: { current: null },
+    noResults: '',
+  };
 
   /**
    * A settings window beside its rail: Bloom's AppShell, as Dropsea, Mention
@@ -780,6 +867,7 @@ export function createSettings(
    */
   function SettingsWindow({
     layout,
+    rail,
     navigation,
     groups,
     pages,
@@ -789,6 +877,7 @@ export function createSettings(
     testID,
   }: {
     layout: SettingsModalLayout;
+    rail: RailOptions;
     navigation: SettingsNavigationState;
     groups: SettingsNavGroup[];
     pages: Record<string, SettingsModalPage>;
@@ -816,7 +905,7 @@ export function createSettings(
         <PageScroller
           header={{ title: pageConfig?.title ?? '', backLabel, closeLabel, onClose }}
           key={entry.key}
-          inset={CONTENT_INSET[layout]}
+          inset={contentInset(layout, rail.density)}
           insetTop={pageConfig?.compactTitle ? 6 : 12}
           testID={testID}
         >
@@ -845,6 +934,7 @@ export function createSettings(
             <SettingsRail
               // The region's height and width, as the shell gives its sidebar.
               style={[styles.railFill, style]}
+              options={rail}
               groups={groups}
               page={currentPage}
               onSelect={selectPage}
@@ -884,6 +974,7 @@ export function createSettings(
    */
   function SettingsPanes({
     layout,
+    rail = MODAL_RAIL,
     navigation,
     groups,
     pages,
@@ -894,6 +985,8 @@ export function createSettings(
     testID,
   }: {
     layout: SettingsModalLayout;
+    /** The layout's density and search; the modal's are the defaults. */
+    rail?: RailOptions;
     navigation: SettingsNavigationState;
     groups: SettingsNavGroup[];
     pages: Record<string, SettingsModalPage>;
@@ -973,6 +1066,7 @@ export function createSettings(
               onClose,
               windowRoom: compactWindowRoom,
             }}
+            options={rail}
             groups={groups}
             page={currentPage}
             onSelect={selectPage}
@@ -986,6 +1080,7 @@ export function createSettings(
     ) : (
       <>
         <SettingsRail
+          options={rail}
           groups={groups}
           page={currentPage}
           onSelect={selectPage}
@@ -1007,7 +1102,7 @@ export function createSettings(
                 windowRoom: room ? 0 : undefined,
               }}
               key={currentPage}
-              inset={CONTENT_INSET[layout]}
+              inset={contentInset(layout, rail.density)}
               insetTop={pageConfig?.compactTitle ? 6 : 12}
               testID={testID}
             >
@@ -1045,6 +1140,7 @@ export function createSettings(
 
   function SettingsRail({
     header,
+    options = MODAL_RAIL,
     groups,
     page,
     onSelect,
@@ -1056,6 +1152,8 @@ export function createSettings(
     testID,
   }: {
     header?: SettingsHeaderProps;
+    /** The layout's density and search (the modal's are the defaults). */
+    options?: RailOptions;
     groups: SettingsNavGroup[];
     page: string | undefined;
     onSelect: (page: string) => void;
@@ -1069,6 +1167,8 @@ export function createSettings(
     testID?: string;
   }) {
     const compact = layout === 'compact';
+    const desktop = options.density === 'compact';
+    const { search } = options;
     // The rows are given one selection handler for as long as the rail lives: the navigation's
     // own changes with every page it moves to, which would draw every row again at each move.
     const latestSelect = useRef(onSelect);
@@ -1103,6 +1203,33 @@ export function createSettings(
       wrap: false,
       disabled: !selection,
     });
+    // The rows' own views, by page, for the search's ↓ where the rail is no selection list.
+    const rowNodes = useRef(new Map<string, { focus?: () => void }>());
+    const rowRef = useCallback((pageKey: string, node: unknown) => {
+      if (node == null) rowNodes.current.delete(pageKey);
+      else rowNodes.current.set(pageKey, node as { focus?: () => void });
+    }, []);
+    // The search's results are the rows shown: ↓ and Return go to the first one.
+    const firstResult = groups
+      .flatMap((group) => group.items)
+      .find((item) => item.page !== undefined && !item.disabled)?.page;
+    const firstResultRef = useRef(firstResult);
+    firstResultRef.current = firstResult;
+    const enterResults = useCallback(
+      (open: boolean) => {
+        const first = firstResultRef.current;
+        if (first === undefined) return;
+        if (selection) {
+          roving.focusItem(first);
+          return;
+        }
+        if (open) latestSelect.current(first);
+        else rowNodes.current.get(first)?.focus?.();
+      },
+      [selection, roving.focusItem],
+    );
+    const searching = search !== undefined && search.value.trim().length > 0;
+    const empty = groups.every((group) => group.items.length === 0);
     const content = (
       <View
         role={selection ? 'list' : undefined}
@@ -1110,43 +1237,83 @@ export function createSettings(
         // view that forms no stacking context in the one above): the list
         // holds its items.
         collapsable={!selection}
-        style={header ? [styles.railContent, styles.railContentCompact] : { gap: 20 }}
+        style={
+          header
+            ? [
+                styles.railContent,
+                styles.railContentCompact,
+                desktop ? styles.railContentDesktop : null,
+              ]
+            : desktop
+              ? styles.railGroupsDesktop
+              : { gap: 20 }
+        }
       >
-        {groups.map((group) => (
-          <View key={group.key ?? group.label} style={styles.group}>
-            <Text
-              variant="body-medium"
-              // A section of the rail, as the screen reader's headings list finds it.
-              role="heading"
-              aria-level={3}
-              style={[styles.groupLabel, { color: palette.textSecondary }]}
+        {groups.map((group) =>
+          // A desktop's sidebar has no group headings: its groups are apart by space alone, as a
+          // Mac's System Settings sets them. A group the search left empty takes no space.
+          desktop && group.items.length === 0 ? null : (
+            <View
+              key={group.key ?? group.label}
+              style={desktop ? styles.groupDesktop : styles.group}
             >
-              {group.label}
-            </Text>
-            <View style={styles.groupRows}>
-              {group.items.map((item) => (
-                <RailRow
-                  key={item.key}
-                  item={item}
-                  // A list, not a selection, when the rows ARE the navigation.
-                  selected={!compact && item.page !== undefined && item.page === page}
-                  showChevron={compact && item.page !== undefined}
-                  onSelect={select}
-                  palette={palette}
-                  listItem={selection}
-                  roving={
-                    selection && item.page !== undefined
-                      ? roving.itemProps(item.page, item.disabled)
-                      : undefined
-                  }
-                  testID={testID ? `${testID}-nav-${item.key}` : undefined}
-                />
-              ))}
+              {desktop ? null : (
+                <Text
+                  variant="body-medium"
+                  // A section of the rail, as the screen reader's headings list finds it.
+                  role="heading"
+                  aria-level={3}
+                  style={[styles.groupLabel, { color: palette.textSecondary }]}
+                >
+                  {group.label}
+                </Text>
+              )}
+              <View style={desktop ? null : styles.groupRows}>
+                {group.items.map((item) => (
+                  <RailRow
+                    key={item.key}
+                    item={item}
+                    // A list, not a selection, when the rows ARE the navigation.
+                    selected={!compact && item.page !== undefined && item.page === page}
+                    showChevron={compact && item.page !== undefined}
+                    onSelect={select}
+                    palette={palette}
+                    desktop={desktop}
+                    listItem={selection}
+                    roving={
+                      selection && item.page !== undefined
+                        ? roving.itemProps(item.page, item.disabled)
+                        : undefined
+                    }
+                    nodeRef={search && !selection ? rowRef : undefined}
+                    testID={testID ? `${testID}-nav-${item.key}` : undefined}
+                  />
+                ))}
+              </View>
             </View>
-          </View>
-        ))}
+          ),
+        )}
+        {searching && empty ? (
+          <Text
+            variant="body-regular"
+            style={[styles.noResults, { color: palette.textSecondary }]}
+            testID={testID ? `${testID}-search-empty` : undefined}
+          >
+            {options.noResults}
+          </Text>
+        ) : null}
       </View>
     );
+    const searchField =
+      search && SearchField ? (
+        <RailSearch
+          search={search}
+          inputRef={options.searchRef}
+          onEnterResults={enterResults}
+          style={header ? styles.railSearchCompact : styles.railSearch}
+          testID={testID ? `${testID}-search` : undefined}
+        />
+      ) : null;
     return (
       <SurfaceLevelProvider level={1} fill={palette.secondary}>
         {header ? (
@@ -1158,26 +1325,37 @@ export function createSettings(
             testID={testID ? `${testID}-rail` : undefined}
           >
             <PageScroller header={header} inset={0} testID={testID}>
+              {searchField}
               {content}
             </PageScroller>
           </View>
-        ) : !compact && windowBand > 0 ? (
-          // The band stays put while the rows scroll, so they never pass under
-          // the controls.
+        ) : (!compact && windowBand > 0) || searchField ? (
+          // The band and the search stay put while the rows scroll, so the rows never pass under
+          // the window's controls and the field is always where the keys left it.
           <View
             collapsable={false}
             role="navigation"
             aria-label={label}
-            style={[styles.rail, { width: railWidth }, railLook, style]}
+            style={[
+              compact ? styles.railCompact : [styles.rail, { width: railWidth }],
+              railLook,
+              style,
+            ]}
             testID={testID ? `${testID}-rail` : undefined}
           >
-            <WindowDragRegion
-              style={{ height: windowBand }}
-              testID={testID ? `${testID}-rail-window-band` : undefined}
-            />
+            {!compact && windowBand > 0 ? (
+              <WindowDragRegion
+                style={{ height: windowBand }}
+                testID={testID ? `${testID}-rail-window-band` : undefined}
+              />
+            ) : null}
+            {searchField}
             <ScrollArea
               style={styles.scroll}
-              contentContainerStyle={styles.railContent}
+              contentContainerStyle={[
+                styles.railContent,
+                desktop ? styles.railContentDesktop : null,
+              ]}
               contentInsetAdjustmentBehavior="never"
               automaticallyAdjustContentInsets={false}
             >
@@ -1193,7 +1371,7 @@ export function createSettings(
               railLook,
               style,
             ]}
-            contentContainerStyle={styles.railContent}
+            contentContainerStyle={[styles.railContent, desktop ? styles.railContentDesktop : null]}
             contentInsetAdjustmentBehavior="never"
             automaticallyAdjustContentInsets={false}
             testID={testID ? `${testID}-rail` : undefined}
@@ -1205,6 +1383,64 @@ export function createSettings(
     );
   }
 
+  /**
+   * The rail's search field. While it has the keyboard, Escape clears it (a
+   * field acts on no Escape of its own), and ↓ and Return go to the first
+   * result (`SettingsSearchProps`).
+   */
+  function RailSearch({
+    search,
+    inputRef,
+    onEnterResults,
+    style,
+    testID,
+  }: {
+    search: SettingsSearchProps;
+    inputRef: React.RefObject<ComponentRef<typeof TextInput> | null>;
+    onEnterResults: (open: boolean) => void;
+    style: StyleProp<ViewStyle>;
+    testID?: string;
+  }) {
+    const { messages } = useMessages(SETTINGS_MODAL_MESSAGES);
+    const [focused, setFocused] = useState(false);
+    const latest = useRef(search);
+    latest.current = search;
+    useWindowKeys(
+      (event) => {
+        if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return false;
+        if (event.key === 'Escape') {
+          if (latest.current.value.length === 0) return false;
+          latest.current.onChangeText('');
+          return true;
+        }
+        if (event.key === 'ArrowDown') {
+          onEnterResults(false);
+          return true;
+        }
+        return false;
+      },
+      { enabled: focused, whileTyping: true },
+    );
+    const placeholder = search.placeholder ?? messages.search;
+    if (SearchField == null) return null;
+    return (
+      <View style={style}>
+        <SearchField
+          ref={inputRef}
+          value={search.value}
+          onChangeText={search.onChangeText}
+          onClearText={() => search.onChangeText('')}
+          placeholder={placeholder}
+          accessibilityLabel={search.accessibilityLabel ?? placeholder}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          onSubmitEditing={() => onEnterResults(true)}
+          testID={search.testID ?? testID}
+        />
+      </View>
+    );
+  }
+
   // Memoized: a page selected draws the two rows it moves between, not every row (with the
   // groups the application keeps the same while they say the same).
   const RailRow = memo(function RailRow({
@@ -1213,8 +1449,10 @@ export function createSettings(
     showChevron = false,
     onSelect,
     palette,
+    desktop = false,
     listItem = false,
     roving,
+    nodeRef,
     testID,
   }: {
     item: SettingsNavItem;
@@ -1222,18 +1460,33 @@ export function createSettings(
     showChevron?: boolean;
     onSelect: (page: string) => void;
     palette: SettingsPalette;
+    /** A desktop's row (`density="compact"`): 28 points, the body style, the label's colour. */
+    desktop?: boolean;
     /** An item of the rail's list (beside the page, natively), not a button. */
     listItem?: boolean;
     /** The rail's one Tab stop and its arrows, natively. */
     roving?: NativeRovingItemProps;
+    /** The row's view, by its page, where the search moves the focus to it itself. */
+    nodeRef?: (page: string, node: unknown) => void;
     testID?: string;
   }) {
     const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
     const Icon = item.icon;
     const onPress = item.page ? () => onSelect(item.page as string) : item.onPress;
+    const iconSize = RAIL_ICON[desktop ? 'compact' : 'comfortable'];
+    const page = item.page;
+    const ownRef = useMemo(
+      () => (nodeRef && page !== undefined ? (node: unknown) => nodeRef(page, node) : undefined),
+      [nodeRef, page],
+    );
+    const ref = useMemo(
+      () => (ownRef && roving?.ref ? mergeRefs([ownRef, roving.ref]) : (ownRef ?? roving?.ref)),
+      [ownRef, roving?.ref],
+    );
     return (
       <Pressable
         {...roving}
+        ref={ref}
         role={listItem ? 'listitem' : 'button'}
         accessibilityLabel={item.label}
         accessibilityState={{ selected, disabled: item.disabled }}
@@ -1247,6 +1500,7 @@ export function createSettings(
         testID={testID}
         style={[
           styles.railRow,
+          desktop ? styles.railRowDesktop : null,
           {
             backgroundColor: selected
               ? palette.secondaryHover
@@ -1256,14 +1510,14 @@ export function createSettings(
           },
         ]}
       >
-        <Icon width={20} height={20} fill={palette.iconSecondary} />
+        <Icon width={iconSize} height={iconSize} fill={palette.iconSecondary} />
         <Text
-          variant="body-medium"
+          variant={desktop ? 'body-regular' : 'body-medium'}
           numberOfLines={1}
           style={[
             styles.railLabel,
             {
-              color: selected || showChevron ? palette.text : palette.textSecondary,
+              color: desktop || selected || showChevron ? palette.text : palette.textSecondary,
             },
           ]}
         >
@@ -1598,6 +1852,36 @@ export function createSettings(
       gap: 8,
       padding: 8,
       borderRadius: 10,
+    },
+    // A desktop's sidebar (`density="compact"`): 28-point rows that touch, an 18-point icon.
+    railRowDesktop: {
+      gap: 6,
+      paddingVertical: 5,
+      paddingHorizontal: 8,
+      minHeight: 28,
+      borderRadius: 8,
+    },
+    railContentDesktop: {
+      paddingTop: 4,
+    },
+    // The groups apart by space alone, no headings.
+    railGroupsDesktop: {
+      gap: 12,
+    },
+    groupDesktop: {},
+    noResults: {
+      paddingHorizontal: 8,
+      paddingVertical: 12,
+      textAlign: 'center',
+    },
+    // The search field above the rows, inset as the rows are.
+    railSearch: {
+      paddingHorizontal: 10,
+      paddingTop: 4,
+      paddingBottom: 6,
+    },
+    railSearchCompact: {
+      paddingBottom: 12,
     },
     railLabel: {
       flexShrink: 1,
