@@ -39,6 +39,7 @@ import {
   composerLoaderGeometry,
   dashOffsetAt,
   gradientMidColor,
+  resolveComposerLoaderActive,
 } from '../composer-loader/shared';
 import { COMPOSER_LOADER_WEB_CSS } from '../composer-loader/ComposerLoader.web';
 import { BUTTON_SHADOW } from '../button/shared';
@@ -68,6 +69,25 @@ const BASE = {
   reverse: false,
   offset: 0,
 };
+
+describe('ComposerLoader request phases', () => {
+  it.each([
+    ['idle', false],
+    ['submitting', true],
+    ['streaming', true],
+    ['stopping', true],
+    ['error', false],
+    ['complete', false],
+  ] as const)('%s resolves to the expected visual light state', (phase, expected) => {
+    expect(resolveComposerLoaderActive(true, phase)).toBe(expected);
+  });
+
+  it('uses the legacy active value only when no phase is supplied', () => {
+    expect(resolveComposerLoaderActive(false)).toBe(false);
+    expect(resolveComposerLoaderActive(true)).toBe(true);
+    expect(resolveComposerLoaderActive(false, 'streaming')).toBe(true);
+  });
+});
 
 describe('composerLoaderGeometry', () => {
   it("measures the pill's perimeter as 2(w − h) + πh", () => {
