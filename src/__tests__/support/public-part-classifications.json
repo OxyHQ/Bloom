@@ -1610,5 +1610,16 @@
     ],
     "verification": "public identity and route census only; per-part scope, responsive, runtime and device verification pending",
     "parts": ["src/agent-creator/AgentCreatorField.tsx#AgentCreatorField"]
+  },
+  "agent-creator-section-parts": {
+    "status": "pending",
+    "reason": "AgentCreatorSection is the editor's titled card of a host's own rows (handed to AgentCreator as sections), drawn on the details card's surface so the two read as one editor. It fills the editor's width and has not yet been audited as a BloomScope or responsive contract; this row records the part without implying a defect or adoption.",
+    "evidence": [
+      "src/agent-creator/AgentCreatorSection.tsx",
+      "src/agent-creator/__tests__/AgentCreator.test.tsx",
+      "src/__tests__/public-parts.test.ts"
+    ],
+    "verification": "public identity and route census only; per-part scope, responsive, runtime and device verification pending",
+    "parts": ["src/agent-creator/AgentCreatorSection.tsx#AgentCreatorSection"]
   }
 }
