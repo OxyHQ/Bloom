@@ -1,6 +1,6 @@
 {
-  "capturedAt": "2026-11-10T10:36:15.842Z",
-  "runnerSha256": "57ed60325208049a5a12018e8d42113064ed9f495e176138836e82598e4d5d9d",
+  "capturedAt": "2026-11-10T11:34:38.205Z",
+  "runnerSha256": "5aa910b50e149142037fed77e0315d8c63992c30b9b3ad61ac61b128fb08452e",
   "engine": "firefox",
   "package": "18.4.0",
   "lockSha256": "0517e730beaa4d77e679fe819d5fd13e85ea9570f13dd2d9f6fbfb7429bc974a",
@@ -226,7 +226,7 @@
       "lifecycle": {
         "moving": [
           {
-            "time": 14783.46,
+            "time": 4766.76,
             "play": "running",
             "width": "620",
             "height": "52",
@@ -234,7 +234,7 @@
             "filter": "url(#bloom-cl-r3-gradient-b14)"
           },
           {
-            "time": 14783.46,
+            "time": 4766.76,
             "play": "running",
             "width": "620",
             "height": "52",
@@ -242,7 +242,7 @@
             "filter": "url(#bloom-cl-r3-gradient-b6)"
           },
           {
-            "time": 14783.46,
+            "time": 4766.76,
             "play": "running",
             "width": "620",
             "height": "52",
@@ -252,7 +252,7 @@
         ],
         "later": [
           {
-            "time": 15016.6,
+            "time": 5033.32,
             "play": "running",
             "width": "620",
             "height": "52",
@@ -260,7 +260,7 @@
             "filter": "url(#bloom-cl-r3-gradient-b14)"
           },
           {
-            "time": 15016.6,
+            "time": 5033.32,
             "play": "running",
             "width": "620",
             "height": "52",
@@ -268,7 +268,7 @@
             "filter": "url(#bloom-cl-r3-gradient-b6)"
           },
           {
-            "time": 15016.6,
+            "time": 5033.32,
             "play": "running",
             "width": "620",
             "height": "52",
@@ -278,7 +278,7 @@
         ],
         "paused": [
           {
-            "time": 15966.4,
+            "time": 5315.88,
             "play": "paused",
             "width": "620",
             "height": "52",
@@ -286,7 +286,7 @@
             "filter": "url(#bloom-cl-r3-gradient-b14)"
           },
           {
-            "time": 15966.4,
+            "time": 5315.88,
             "play": "paused",
             "width": "620",
             "height": "52",
@@ -294,7 +294,7 @@
             "filter": "url(#bloom-cl-r3-gradient-b6)"
           },
           {
-            "time": 15966.4,
+            "time": 5315.88,
             "play": "paused",
             "width": "620",
             "height": "52",
@@ -304,7 +304,7 @@
         ],
         "reduced": [
           {
-            "time": 16100.16,
+            "time": 5355.44,
             "play": "paused",
             "width": "620",
             "height": "52",
@@ -312,7 +312,7 @@
             "filter": "url(#bloom-cl-r3-gradient-b14)"
           },
           {
-            "time": 16100.16,
+            "time": 5355.44,
             "play": "paused",
             "width": "620",
             "height": "52",
@@ -320,7 +320,7 @@
             "filter": "url(#bloom-cl-r3-gradient-b6)"
           },
           {
-            "time": 16100.16,
+            "time": 5355.44,
             "play": "paused",
             "width": "620",
             "height": "52",
@@ -459,7 +459,7 @@
       "alignment": "CSS time only; not a native physical-band match"
     },
     {
-      "pngSha256": "5fc817ed1b08028a3ce211af0ec9df2dd6e5bd87a373de686e00fc2889e253df",
+      "pngSha256": "922de14a56221c0b1e3f9d4f4244b9bbc63386664aa659c7f844f42c8ef323ea",
       "theme": "dark",
       "phaseMs": 0,
       "clocks": [
@@ -491,7 +491,7 @@
       "alignment": "CSS time only; not a native physical-band match"
     },
     {
-      "pngSha256": "8742c7a25f3179b2ef22fedb4b0d04dfc5cab8108e756ac6ec06453444427ae7",
+      "pngSha256": "7341bc86d8cb9ab4fbe58e5dcd74e7b68d92f2fcbab5765772bd63592bdfbe08",
       "theme": "dark",
       "phaseMs": 1000,
       "clocks": [

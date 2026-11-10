@@ -17,6 +17,10 @@ error and complete. Each receives a real Stop click followed by typing. Retained
 Screen and reduced motion steady-state clocks are checked after Animation.ready.
 The nine changes use actual pointer clicks separated by 60 ms after each click;
 this is not a precisely timed 60 ms application scheduler or fade-unmount test.
+Before each click the runner checks visibility, enabled state and
+`elementFromPoint`; `page.mouse.click` then goes through browser hit testing.
+Playwright's locator stability polling hangs in WebKit while unrelated SVG WAAPI
+animations run, even though the control is fixed and the hit point is clear.
 
 Eight full-viewport captures per passing browser pause the existing CSS clocks
 at four times in light/dark. Selected PNGs and the isolated loader's SVG snapshots
@@ -32,24 +36,19 @@ results. Firefox's earlier pending-pause measurement is retained as a runner
 negative: waiting for Animation.ready resolves that sampling race, without any
 product change or claimed maximum pause latency.
 
-No ADB was used: the authorized Pixel 8a was not confirmed available, and a
-reported Pixel 10 Pro is not a substitute authorization. Android continuation
-requires the authorized device. Physical iPhone testing remains deferred by the
-user. Alia, menus/drawers, keyboard, rotation and unmount during fade remain
-outside this fixture's evidence.
+Alia, menus/drawers, keyboard, rotation and unmount during fade remain outside
+this web fixture's evidence. Android device evidence is recorded separately;
+physical iPhone testing remains deferred by the user.
 
 ## Result
 
 - **Chromium 156.0.8078.4: passed**, 27 recorded cases; no page errors.
 - **Firefox 157.0: passed**, the same 27 cases; no page errors.
-- **WebKit 27.2: failed/blocked**, the first Width pointer action times out after
-  10 seconds waiting for the element to be visible, enabled and stable. The page
-  mounted and the input accepted the long draft before that action. No page error
-  was reported. This repro does not establish whether the cause is material,
-  SVG animation, browser scheduling or the automation host. The gate uses actual
-  hit testing; it does not bypass the failure using DOM click or forced actions.
+- **WebKit 27.2: passed**, the same 27 cases; no page errors. The first runner
+  version timed out in Playwright's locator stability polling. Replacing that
+  poll with a visible/enabled check, verified hit point and real browser mouse
+  input made the same scenarios pass; no DOM event dispatch, forced click or
+  production renderer/material change was used.
 
-WebKit's matching-client negative prevents a universal web pass. Further isolation
-should compare the same fixture with a diagnostic paused/static loader and then
-isolate painted layers; neither a renderer fallback nor a production material
-change is justified by this timeout alone.
+This completes browser coverage for the fixture, not the broader cross-platform
+composer checklist or visual/native parity requirements.

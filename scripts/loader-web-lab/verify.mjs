@@ -33,7 +33,24 @@ page.setDefaultTimeout(10000);
 page.setDefaultNavigationTimeout(15000);
 page.on('pageerror', (e) => report.errors.push(e.message));
 const state = () => page.getByTestId('state').textContent().then(JSON.parse);
-const control = (name) => page.getByRole('button', { name, exact: true }).click();
+const clickButton = async (button, name) => {
+  await button.waitFor({ state: 'visible' });
+  assert.equal(await button.isEnabled(), true, `Control ${name} is disabled`);
+  const box = await button.boundingBox();
+  assert.ok(box, `Control ${name} has no visible bounds`);
+  const point = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  const receivesPointer = await button.evaluate((el, point) => {
+    const hit = document.elementFromPoint(point.x, point.y);
+    return hit === el || (hit !== null && el.contains(hit));
+  }, point);
+  assert.equal(receivesPointer, true, `Control ${name} is covered at its center`);
+  // WebKit 26's locator stability check waits indefinitely while SVG WAAPI
+  // animations are active, even when this separate control has fixed bounds.
+  // A mouse click at the proven hit-test point still exercises real dispatch.
+  await page.mouse.click(point.x, point.y);
+};
+const control = (name) =>
+  clickButton(page.getByRole('button', { name, exact: true }), name);
 const settled = () =>
   page.getByTestId('isolated').evaluate(async (el) => {
     await Promise.all(
@@ -103,7 +120,10 @@ try {
     }
     await control('streaming');
     const before = (await state()).stops;
-    await page.getByTestId(id).getByRole('button', { name: /stop/i }).click();
+    await clickButton(
+      page.getByTestId(id).getByRole('button', { name: /stop/i }),
+      `${id} Stop`,
+    );
     assert.equal((await state()).stops, before + 1);
     await input.press('Control+End');
     await input.pressSequentially('Z');

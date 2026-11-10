@@ -1,6 +1,6 @@
 {
-  "capturedAt": "2026-11-10T10:35:50.931Z",
-  "runnerSha256": "57ed60325208049a5a12018e8d42113064ed9f495e176138836e82598e4d5d9d",
+  "capturedAt": "2026-11-10T11:34:38.212Z",
+  "runnerSha256": "5aa910b50e149142037fed77e0315d8c63992c30b9b3ad61ac61b128fb08452e",
   "engine": "chromium",
   "package": "18.4.0",
   "lockSha256": "0517e730beaa4d77e679fe819d5fd13e85ea9570f13dd2d9f6fbfb7429bc974a",
@@ -226,7 +226,7 @@
       "lifecycle": {
         "moving": [
           {
-            "time": 16682.546000029255,
+            "time": 5283.232,
             "play": "running",
             "width": "620",
             "height": "52",
@@ -234,7 +234,7 @@
             "filter": "url(#bloom-cl-r3-gradient-b14)"
           },
           {
-            "time": 16682.546000029255,
+            "time": 5283.232,
             "play": "running",
             "width": "620",
             "height": "52",
@@ -242,7 +242,7 @@
             "filter": "url(#bloom-cl-r3-gradient-b6)"
           },
           {
-            "time": 16682.546000029255,
+            "time": 5283.232,
             "play": "running",
             "width": "620",
             "height": "52",
@@ -252,7 +252,7 @@
         ],
         "later": [
           {
-            "time": 17015.960000029256,
+            "time": 5566.562,
             "play": "running",
             "width": "620",
             "height": "52",
@@ -260,7 +260,7 @@
             "filter": "url(#bloom-cl-r3-gradient-b14)"
           },
           {
-            "time": 17015.960000029256,
+            "time": 5566.562,
             "play": "running",
             "width": "620",
             "height": "52",
@@ -268,7 +268,7 @@
             "filter": "url(#bloom-cl-r3-gradient-b6)"
           },
           {
-            "time": 17015.960000029256,
+            "time": 5566.562,
             "play": "running",
             "width": "620",
             "height": "52",
@@ -278,7 +278,7 @@
         ],
         "paused": [
           {
-            "time": 17349.266000029253,
+            "time": 5633.226000000001,
             "play": "paused",
             "width": "620",
             "height": "52",
@@ -286,7 +286,7 @@
             "filter": "url(#bloom-cl-r3-gradient-b14)"
           },
           {
-            "time": 17349.266000029253,
+            "time": 5633.226000000001,
             "play": "paused",
             "width": "620",
             "height": "52",
@@ -294,7 +294,7 @@
             "filter": "url(#bloom-cl-r3-gradient-b6)"
           },
           {
-            "time": 17349.266000029253,
+            "time": 5633.226000000001,
             "play": "paused",
             "width": "620",
             "height": "52",
@@ -304,7 +304,7 @@
         ],
         "reduced": [
           {
-            "time": 17365.932000029254,
+            "time": 5649.892000000001,
             "play": "paused",
             "width": "620",
             "height": "52",
@@ -312,7 +312,7 @@
             "filter": "url(#bloom-cl-r3-gradient-b14)"
           },
           {
-            "time": 17365.932000029254,
+            "time": 5649.892000000001,
             "play": "paused",
             "width": "620",
             "height": "52",
@@ -320,7 +320,7 @@
             "filter": "url(#bloom-cl-r3-gradient-b6)"
           },
           {
-            "time": 17365.932000029254,
+            "time": 5649.892000000001,
             "play": "paused",
             "width": "620",
             "height": "52",
