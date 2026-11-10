@@ -24,7 +24,9 @@
       "src/__tests__/PublicPartScope.web.test.tsx"
     ],
     "verification": "native mock and DOM web verify independent defaults under xs/lg control scopes and explicit document/artwork sizes; physical-device rendering pending",
-    "parts": ["src/code/CodeLines.tsx#CodeLines"]
+    "parts": [
+      "src/code/CodeLines.tsx#CodeLines"
+    ]
   },
   "markdown-document": {
     "status": "independent-scale",
@@ -37,7 +39,9 @@
       "src/__tests__/PublicPartScope.web.test.tsx"
     ],
     "verification": "native mock and DOM web verify independent defaults under xs/lg control scopes and explicit document/artwork sizes; physical-device rendering pending",
-    "parts": ["src/markdown/Markdown.tsx#Markdown"]
+    "parts": [
+      "src/markdown/Markdown.tsx#Markdown"
+    ]
   },
   "audio-art": {
     "status": "independent-scale",
@@ -49,12 +53,17 @@
       "src/__tests__/PublicPartScope.web.test.tsx"
     ],
     "verification": "native mock and DOM web verify independent defaults under xs/lg control scopes and explicit document/artwork sizes; physical-device rendering pending",
-    "parts": ["src/voice/AudioWaveVisualizer.tsx#AudioWaveVisualizer"]
+    "parts": [
+      "src/voice/AudioWaveVisualizer.tsx#AudioWaveVisualizer"
+    ]
   },
   "button-delegation": {
     "status": "delegated",
     "reason": "Each named Button composition renders the shared Button with the complete props spread and no size default. Both native/web implementations delegate size precedence directly; appearance/tone/iconOnly defaults do not consume or replace size.",
-    "evidence": ["src/button/Button.tsx", "src/button/Button.web.tsx"],
+    "evidence": [
+      "src/button/Button.tsx",
+      "src/button/Button.web.tsx"
+    ],
     "verification": "direct JSX/props delegation inspected; per-wrapper runtime matrix pending",
     "parts": [
       "src/button/Button.tsx#DestructiveButton",
@@ -1364,6 +1373,7 @@
       "src/settings-modal/SettingsStorage.tsx#SettingsStoragePage",
       "src/settings-modal/SettingsTools.tsx#SettingsServerList",
       "src/settings-modal/SettingsTools.tsx#SettingsToolsPage",
+      "src/settings-modal/page-actions.tsx#SettingsPageActions",
       "src/shapes/Border.tsx#Border",
       "src/shapes/Fill.tsx#Fill",
       "src/shapes/Image.tsx#Image",
@@ -1598,7 +1608,9 @@
       "src/__tests__/public-parts.test.ts"
     ],
     "verification": "public identity and route census only; per-part scope, responsive, runtime and device verification pending",
-    "parts": ["src/multi-agent-chat/SelectedAgentPreview.tsx#SelectedAgentPreview"]
+    "parts": [
+      "src/multi-agent-chat/SelectedAgentPreview.tsx#SelectedAgentPreview"
+    ]
   },
   "agent-creator-field-parts": {
     "status": "pending",
@@ -1609,7 +1621,9 @@
       "src/__tests__/public-parts.test.ts"
     ],
     "verification": "public identity and route census only; per-part scope, responsive, runtime and device verification pending",
-    "parts": ["src/agent-creator/AgentCreatorField.tsx#AgentCreatorField"]
+    "parts": [
+      "src/agent-creator/AgentCreatorField.tsx#AgentCreatorField"
+    ]
   },
   "agent-creator-section-parts": {
     "status": "pending",
@@ -1620,6 +1634,8 @@
       "src/__tests__/public-parts.test.ts"
     ],
     "verification": "public identity and route census only; per-part scope, responsive, runtime and device verification pending",
-    "parts": ["src/agent-creator/AgentCreatorSection.tsx#AgentCreatorSection"]
+    "parts": [
+      "src/agent-creator/AgentCreatorSection.tsx#AgentCreatorSection"
+    ]
   }
 }
