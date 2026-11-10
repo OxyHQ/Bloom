@@ -185,6 +185,8 @@ function createMockColors(): ThemeColors {
     warningSubtleForeground: '#B45309',
     infoSubtle: '#eff6ff',
     infoSubtleForeground: '#1D4ED8',
+    vivid: '#00bcd4',
+    vividForeground: '#000000',
     primarySubtle: '#e0f7fa',
     primarySubtleForeground: '#003d44',
     negative: '#B91C1C',

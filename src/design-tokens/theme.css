@@ -140,6 +140,8 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-primary-text: var(--primary-text);
+  --color-vivid: var(--vivid);
+  --color-vivid-foreground: var(--vivid-foreground);
   --color-primary-subtle: var(--primary-subtle);
   --color-secondary-text: var(--secondary-text);
   --color-secondary-subtle: var(--secondary-subtle);

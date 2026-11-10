@@ -17,6 +17,8 @@ const COLOR_FIELDS = {
   input: ['borderLight'],
   primary: ['primary', 'tint', 'iconActive'],
   'primary-foreground': ['primaryForeground'],
+  vivid: ['vivid'],
+  'vivid-foreground': ['vividForeground'],
   'primary-subtle': ['primarySubtle'],
   'primary-text': ['primarySubtleForeground'],
   secondary: ['secondary'],
