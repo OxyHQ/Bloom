@@ -50,10 +50,11 @@ import {
 | `error`   | something that has gone wrong                           |
 | `apology` | a limitation on our side, not the reader's mistake      |
 
-The shared design uses 16px padding and corners, a 12px icon gap, a soft
-status surface and a subtle outline. The icon reads the matching text token;
-text remains the normal foreground. The outline alone has 30% opacity, so
-its token stays valid on native and web and never dims the content.
+The shared design defaults to `md`: 16px padding, 12px icon gap, 20px icon,
+and 14/22px text. `Admonition` and `AdmonitionRoot` accept `size`; otherwise
+their parts inherit the nearest `BloomScope` size. The icon reads the matching
+text token; text remains the normal foreground. The outline alone has 30%
+opacity, so its token stays valid on native and web and never dims the content.
 
 `AdmonitionContent` accepts rich content directly. Use the compound API for
 a heading and Markdown blocks instead of putting block elements inside

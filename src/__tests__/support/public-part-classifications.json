@@ -735,13 +735,6 @@
       "src/activity-heatmap/ActivityHeatmap.tsx#ActivityHeatmap",
       "src/address/AddressList.tsx#AddressList",
       "src/address/AddressRow.tsx#AddressRow",
-      "src/admonition/Admonition.tsx#Admonition",
-      "src/admonition/Admonition.tsx#AdmonitionButton",
-      "src/admonition/Admonition.tsx#AdmonitionContent",
-      "src/admonition/Admonition.tsx#AdmonitionIcon",
-      "src/admonition/Admonition.tsx#AdmonitionRoot",
-      "src/admonition/Admonition.tsx#AdmonitionRow",
-      "src/admonition/Admonition.tsx#AdmonitionText",
       "src/agent-avatar/AgentAvatar.tsx#AgentAvatar",
       "src/agent-avatar/AgentAvatarProvider.tsx#AgentAvatarProvider",
       "src/agent-chat/AgentChat.tsx#AgentChat",
@@ -1694,5 +1687,24 @@
     ],
     "verification": "mock-rendered native and DOM web measure child Button geometry at default md, inherited sm, nested lg and explicit md through the section; native and web portal behavior exercised; responsive overflow and device verification pending",
     "parts": ["src/agent-creator/AgentCreatorSection.tsx#AgentCreatorSection"]
+  },
+  "admonition-parts": {
+    "status": "applicable",
+    "reason": "Admonition uses shared proportions. Admonition and AdmonitionRoot establish the explicit-or-inherited BloomScope size; xs/sm/md/lg map to measured padding, row gap, icon, content gap and text recipes. AdmonitionButton delegates to Button and preserves its explicit size override. Type tint and outline semantics remain independent.",
+    "evidence": [
+      "src/admonition/geometry.ts",
+      "src/__tests__/AdmonitionPublicPartScope.test.tsx",
+      "src/__tests__/AdmonitionPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native-renderer and DOM web tests cover default md, nearest xs, explicit root sm over outer lg, nested lg, explicit Button sm over nested lg, composed parts through Portal, and the one-piece Admonition explicit lg. Submenus do not apply to this family; physical device layout and accessibility remain unverified.",
+    "parts": [
+      "src/admonition/Admonition.tsx#Admonition",
+      "src/admonition/Admonition.tsx#AdmonitionButton",
+      "src/admonition/Admonition.tsx#AdmonitionContent",
+      "src/admonition/Admonition.tsx#AdmonitionIcon",
+      "src/admonition/Admonition.tsx#AdmonitionRoot",
+      "src/admonition/Admonition.tsx#AdmonitionRow",
+      "src/admonition/Admonition.tsx#AdmonitionText"
+    ]
   }
 }

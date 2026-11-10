@@ -1,18 +1,28 @@
-import React, { createContext, useContext } from 'react';
+import { createContext, useContext } from 'react';
+import { BloomScope, useBloomAppearance } from '../appearance';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import { StyleSheet, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text as BaseText } from '../typography';
-import { Button as BaseButton, type ButtonProps } from '../button';
+import { Button as BaseButton } from '../button';
 import { RiInformationLine as CircleInfoIcon } from '../icons/remix/RiInformationLine';
 import { RiForbidLine as ForbidIcon } from '../icons/remix/RiForbidLine';
 import { RiLightbulbLine as LightbulbIcon } from '../icons/remix/RiLightbulbLine';
 import { resolveAccentColors, type AccentTone } from '../theme/accent-colors';
 import { RiAlertLine as WarningIcon } from '../icons/remix/RiAlertLine';
 import { RiEmotionUnhappyLine as EmojiSadIcon } from '../icons/remix/RiEmotionUnhappyLine';
-
-type AdmonitionType = 'info' | 'tip' | 'warning' | 'error' | 'apology';
+import { ADMONITION_GEOMETRY } from './geometry';
+import type {
+  AdmonitionButtonProps,
+  AdmonitionContentProps,
+  AdmonitionIconProps,
+  AdmonitionProps,
+  AdmonitionRootProps,
+  AdmonitionRowProps,
+  AdmonitionTextProps,
+  AdmonitionType,
+} from './types';
 
 type AdmonitionContextValue = {
   type: AdmonitionType;
@@ -39,89 +49,85 @@ const TONE_MAP: Record<AdmonitionType, AccentTone> = {
   apology: 'default',
 };
 
-export function AdmonitionIcon() {
+export function AdmonitionIcon({ testID }: AdmonitionIconProps) {
   const theme = useTheme();
   const { type } = useContext(AdmonitionContext);
+  const { size } = useBloomAppearance({}, { size: 'md', tone: 'neutral' });
+  const geometry = ADMONITION_GEOMETRY[size];
   const IconComponent = ICON_MAP[type];
   const colors = resolveAccentColors(theme.colors, TONE_MAP[type], 'subtle');
 
   return (
-    <View aria-hidden style={styles.icon}>
-      <IconComponent fill={colors.foreground} width={20} height={20} />
+    <View
+      aria-hidden
+      style={[styles.icon, { width: geometry.icon, height: geometry.icon }]}
+      testID={testID}
+    >
+      <IconComponent fill={colors.foreground} width={geometry.icon} height={geometry.icon} />
     </View>
   );
 }
 AdmonitionIcon.displayName = 'AdmonitionIcon';
 
-export function AdmonitionContent({
-  children,
-  style,
-}: {
-  children: React.ReactNode;
-  style?: StyleProp<ViewStyle>;
-}) {
-  return <View style={[styles.content, style]}>{children}</View>;
+export function AdmonitionContent({ children, style }: AdmonitionContentProps) {
+  const { size } = useBloomAppearance({}, { size: 'md', tone: 'neutral' });
+  return (
+    <View style={[styles.content, { gap: ADMONITION_GEOMETRY[size].contentGap }, style]}>
+      {children}
+    </View>
+  );
 }
 AdmonitionContent.displayName = 'AdmonitionContent';
 
-export function AdmonitionText({
-  children,
-  style,
-}: {
-  children?: React.ReactNode;
-  style?: TextStyle;
-}) {
-  return <BaseText style={style ? [styles.text, style] : styles.text}>{children}</BaseText>;
+export function AdmonitionText({ children, style }: AdmonitionTextProps) {
+  const { size } = useBloomAppearance({}, { size: 'md', tone: 'neutral' });
+  const geometry = ADMONITION_GEOMETRY[size];
+  return (
+    <BaseText
+      style={[styles.text, { fontSize: geometry.fontSize, lineHeight: geometry.lineHeight }, style]}
+    >
+      {children}
+    </BaseText>
+  );
 }
 AdmonitionText.displayName = 'AdmonitionText';
 
-export function AdmonitionButton({ children, ...props }: Omit<ButtonProps, 'size'>) {
-  return (
-    <BaseButton size="sm" {...props}>
-      {children}
-    </BaseButton>
-  );
+export function AdmonitionButton({ children, ...props }: AdmonitionButtonProps) {
+  return <BaseButton {...props}>{children}</BaseButton>;
 }
 AdmonitionButton.displayName = 'AdmonitionButton';
 
-export function AdmonitionRow({
-  children,
-  style,
-}: {
-  children: React.ReactNode;
-  style?: StyleProp<ViewStyle>;
-}) {
-  return <View style={[styles.row, style]}>{children}</View>;
+export function AdmonitionRow({ children, style }: AdmonitionRowProps) {
+  const { size } = useBloomAppearance({}, { size: 'md', tone: 'neutral' });
+  return (
+    <View style={[styles.row, { gap: ADMONITION_GEOMETRY[size].rowGap }, style]}>{children}</View>
+  );
 }
 AdmonitionRow.displayName = 'AdmonitionRow';
 
-export function AdmonitionRoot({
-  children,
-  type = 'info',
-  style,
-}: {
-  children: React.ReactNode;
-  type?: AdmonitionType;
-  style?: StyleProp<ViewStyle>;
-}) {
+export function AdmonitionRoot({ children, type = 'info', size, style }: AdmonitionRootProps) {
   const theme = useTheme();
+  const { size: resolvedSize } = useBloomAppearance({ size }, { size: 'md', tone: 'neutral' });
+  const geometry = ADMONITION_GEOMETRY[resolvedSize];
 
   const tone = TONE_MAP[type];
   const colors = resolveAccentColors(theme.colors, tone, 'subtle');
   const border = resolveAccentColors(theme.colors, tone, 'solid').border;
 
   return (
-    <AdmonitionContext.Provider value={{ type }}>
-      <View style={[styles.outer, style]}>
-        {StyleSheet.flatten(style)?.backgroundColor === undefined ? (
-          <SurfacePaint fill={colors.background} radius={16} composite />
-        ) : null}
-        {/* Separate opacity preserves the token's native colour syntax and
-            keeps the content fully opaque on both native and web. */}
-        <View pointerEvents="none" aria-hidden style={[styles.border, { borderColor: border }]} />
-        {children}
-      </View>
-    </AdmonitionContext.Provider>
+    <BloomScope size={size}>
+      <AdmonitionContext.Provider value={{ type }}>
+        <View style={[styles.outer, { padding: geometry.padding }, style]}>
+          {StyleSheet.flatten(style)?.backgroundColor === undefined ? (
+            <SurfacePaint fill={colors.background} radius={16} composite />
+          ) : null}
+          {/* Separate opacity preserves the token's native colour syntax and
+              keeps the content fully opaque on both native and web. */}
+          <View pointerEvents="none" aria-hidden style={[styles.border, { borderColor: border }]} />
+          {children}
+        </View>
+      </AdmonitionContext.Provider>
+    </BloomScope>
   );
 }
 AdmonitionRoot.displayName = 'AdmonitionRoot';
@@ -131,17 +137,9 @@ AdmonitionRoot.displayName = 'AdmonitionRoot';
  * For more control, compose with AdmonitionRoot, AdmonitionRow, AdmonitionIcon,
  * AdmonitionContent, AdmonitionText, and AdmonitionButton.
  */
-export function Admonition({
-  children,
-  type,
-  style,
-}: {
-  children?: React.ReactNode;
-  type?: AdmonitionType;
-  style?: StyleProp<ViewStyle>;
-}) {
+export function Admonition({ children, type, size, style }: AdmonitionProps) {
   return (
-    <AdmonitionRoot type={type} style={style}>
+    <AdmonitionRoot type={type} size={size} style={style}>
       <AdmonitionRow>
         <AdmonitionIcon />
         <AdmonitionContent>
