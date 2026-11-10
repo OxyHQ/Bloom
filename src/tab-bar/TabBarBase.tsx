@@ -5,6 +5,8 @@ import { resolveTabBarTheme } from './shared';
 import { pointerEventsStyle } from '../styles/pointer-events';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { TabBarSurface } from './surface';
+import { LensButtonHost } from '../floating/lens/lens-button-host';
+import { getNativeLens } from '../floating/lens/native-lens';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { IS_WEB } from '../styles/platform';
 import { borderRadius } from '../styles/tokens';
@@ -545,6 +547,8 @@ function TabBarBody({
   // Native (plugin present) auto-tracks and ignores the extra deps, so listing
   // them is correct on both platforms. Same rule as `BottomSheetBase` and
   // `ZoomableMediaGallery`. Do NOT strip these.
+  // The bar's material: the native lens behind the items where the device has it, else the shared surface.
+  const lens = getNativeLens() != null;
   const barStyle = useAnimatedStyle(() => {
     const height = interpolate(
       progress.value,
@@ -712,6 +716,67 @@ function TabBarBody({
     ],
   );
 
+  const barContent = (
+    <>
+      {collapseActive ? (
+        <View
+          pointerEvents="none"
+          style={[
+            StyleSheet.absoluteFill,
+            { flexDirection: 'row', alignItems: 'center', paddingHorizontal: ROW_PAD_H },
+          ]}
+        >
+          <Animated.View style={[{ flexBasis: 0 }, leadingFoldStyle]} />
+          <Animated.View
+            style={[
+              { flexGrow: 1, flexBasis: 0, borderRadius: borderRadius.full },
+              foldingHighlightStyle,
+            ]}
+          >
+            <SurfacePaint
+              fill={recipe.paint.theme.highlight}
+              radius={borderRadius.full}
+              composite
+              backing={publishedFill}
+            />
+          </Animated.View>
+          <Animated.View style={[{ flexBasis: 0 }, trailingFoldStyle]} />
+        </View>
+      ) : (
+        <Animated.View style={[styles.highlight, highlightStyle]}>
+          <SurfacePaint
+            fill={recipe.paint.theme.highlight}
+            radius={borderRadius.full}
+            composite
+            backing={publishedFill}
+            presence={IS_WEB ? (highlightPresent ? 1 : 0) : undefined}
+            presenceMs={SELECTION_FADE.duration}
+          />
+        </Animated.View>
+      )}
+      <Animated.View
+        collapsable={false}
+        accessibilityRole="tablist"
+        style={[
+          styles.itemRow,
+          collapseActive ? [{ alignItems: 'stretch' }, foldingRowStyle] : undefined,
+        ]}
+      >
+        <SurfaceLevelProvider
+          level={layer.level}
+          fill={publishedFill}
+          fillModes={{
+            light: recipe.light.material.publishedFill,
+            dark: recipe.dark.material.publishedFill,
+            resolvePreset: (preset, mode) =>
+              recipe.resolvePreset(preset, mode).material.publishedFill,
+          }}
+        >
+          <BarContext.Provider value={barContext}>{children}</BarContext.Provider>
+        </SurfaceLevelProvider>
+      </Animated.View>
+    </>
+  );
   return (
     <View
       {...viewProps}
@@ -756,68 +821,20 @@ function TabBarBody({
       >
         <OptionalGesture enabled={!scrollable && !collapseActive} gesture={gesture}>
           <Animated.View style={[barStyle, surfaceFillVars(recipe.paint.material.publishedFill)]}>
-            <TabBarSurface
-              theme={theme}
-              paintFill={recipe.paint.material.paintFill}
-              style={shapeStyle}
-            />
-            {collapseActive ? (
-              <View
-                pointerEvents="none"
-                style={[
-                  StyleSheet.absoluteFill,
-                  { flexDirection: 'row', alignItems: 'center', paddingHorizontal: ROW_PAD_H },
-                ]}
-              >
-                <Animated.View style={[{ flexBasis: 0 }, leadingFoldStyle]} />
-                <Animated.View
-                  style={[
-                    { flexGrow: 1, flexBasis: 0, borderRadius: borderRadius.full },
-                    foldingHighlightStyle,
-                  ]}
-                >
-                  <SurfacePaint
-                    fill={recipe.paint.theme.highlight}
-                    radius={borderRadius.full}
-                    composite
-                    backing={publishedFill}
-                  />
-                </Animated.View>
-                <Animated.View style={[{ flexBasis: 0 }, trailingFoldStyle]} />
-              </View>
+            {lens ? (
+              <LensButtonHost style={{ alignSelf: 'stretch', flex: 1 }}>
+                <View style={{ flex: 1 }}>{barContent}</View>
+              </LensButtonHost>
             ) : (
-              <Animated.View style={[styles.highlight, highlightStyle]}>
-                <SurfacePaint
-                  fill={recipe.paint.theme.highlight}
-                  radius={borderRadius.full}
-                  composite
-                  backing={publishedFill}
-                  presence={IS_WEB ? (highlightPresent ? 1 : 0) : undefined}
-                  presenceMs={SELECTION_FADE.duration}
+              <>
+                <TabBarSurface
+                  theme={theme}
+                  paintFill={recipe.paint.material.paintFill}
+                  style={shapeStyle}
                 />
-              </Animated.View>
+                {barContent}
+              </>
             )}
-            <Animated.View
-              collapsable={false}
-              accessibilityRole="tablist"
-              style={[
-                styles.itemRow,
-                collapseActive ? [{ alignItems: 'stretch' }, foldingRowStyle] : undefined,
-              ]}
-            >
-              <SurfaceLevelProvider
-                level={layer.level}
-                fill={publishedFill}
-                fillModes={{
-                  light: recipe.light.material.publishedFill,
-                  dark: recipe.dark.material.publishedFill,
-                  resolvePreset: (preset, mode) =>
-                    recipe.resolvePreset(preset, mode).material.publishedFill,
-                }}
-              >
-                <BarContext.Provider value={barContext}>{children}</BarContext.Provider>
-              </SurfaceLevelProvider>
-            </Animated.View>
           </Animated.View>
         </OptionalGesture>
       </View>
