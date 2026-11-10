@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { StorybookConfig } from '@storybook/react-vite';
@@ -44,6 +45,31 @@ function expoTypeDeclarations() {
         },
       });
       return { code: output.outputText, map: output.sourceMapText ?? null };
+    },
+  };
+}
+
+// A workspace package imports Bloom by its published name (`@oxy.so/bloom/button`).
+// Node resolves that to the copy installed in `node_modules`, a second, older Bloom
+// with its own theme store and portal context, and without the exports this
+// checkout has added. Resolve the name to this checkout's source through its own
+// `exports` map instead, so the map stays the single source of truth.
+const BLOOM_ROOT = path.resolve(__dirname, '..');
+const BLOOM_EXPORTS = JSON.parse(readFileSync(path.join(BLOOM_ROOT, 'package.json'), 'utf8'))
+  .exports as Record<string, { 'react-native'?: { default?: string } }>;
+
+function bloomSelfReference() {
+  return {
+    name: 'bloom-self-reference',
+    enforce: 'pre' as const,
+    resolveId(source: string) {
+      const match = /^@oxy\.so\/bloom(\/.+)?$/.exec(source);
+      if (!match) return null;
+      const entry = BLOOM_EXPORTS[match[1] ? `.${match[1]}` : '.']?.['react-native']?.default;
+      if (!entry) {
+        throw new Error(`"${source}" has no react-native entry in package.json exports`);
+      }
+      return path.resolve(BLOOM_ROOT, entry);
     },
   };
 }
@@ -106,6 +132,7 @@ const config: StorybookConfig = {
   async viteFinal(viteConfig) {
     return mergeConfig(viteConfig, {
       plugins: [
+        bloomSelfReference(),
         avatarSurfaceTransport(),
         avatarMotionTransport(),
         tailwindcss(),

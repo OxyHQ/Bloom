@@ -42,10 +42,12 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
     const { flat, frameCount } = getMorphFrames();
     let rotation = 0;
     let phase = 0;
-    let last = performance.now();
+    // The clock starts at the first frame: its timestamp can precede an earlier
+    // `performance.now()`, and a negative step would index before frame 0 (NaN path).
+    let last: number | undefined;
     let raf = 0;
     const tick = (now: number) => {
-      const dt = now - last;
+      const dt = last === undefined ? 0 : now - last;
       last = now;
       rotation = (rotation + (dt * 360) / ROTATION_MS) % 360;
       phase = (phase + (dt * STEPS_PER_SEGMENT) / MORPH_MS) % frameCount;

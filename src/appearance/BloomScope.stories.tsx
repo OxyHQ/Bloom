@@ -26,7 +26,7 @@ export const Inheritance: Story = {
     <BloomScope {...args}>
       <View style={{ gap: 16, alignItems: 'flex-start' }}>
         <Button>Inherited action</Button>
-        <Badge appearance="solid">Inherited badge</Badge>
+        <Badge appearance="solid" content="Inherited badge" />
         <Chip appearance="subtle">Inherited chip</Chip>
         <BloomScope size="xs">
           <Button>Nested size</Button>
