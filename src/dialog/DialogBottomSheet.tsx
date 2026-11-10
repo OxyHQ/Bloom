@@ -100,8 +100,8 @@ export function DialogBottomSheet({
     ref.current?.scrollTo(0, false);
     headerController.scrollY.value = 0;
   });
-  // A flush sheet reaches the bottom of the window (a `<Modal>` drawn
-  // edge-to-edge on Android, and under the home indicator on iOS), and
+  // A flush sheet reaches the bottom of the window (drawn edge-to-edge on
+  // Android, and under the home indicator on iOS), and
   // `BottomSheet` deliberately leaves the safe area to its content. This Dialog
   // IS the content's chrome, so it owns the inset (the spacer after the body).
   // Detached sheets already clear it through BottomSheet's window-edge gap.

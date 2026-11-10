@@ -1,6 +1,7 @@
 import React from 'react';
-import { Modal, Text } from 'react-native';
-import { act, fireEvent, render } from '@testing-library/react-native';
+import { Text } from 'react-native';
+import { act, fireEvent } from '@testing-library/react-native';
+import { captureAndroidBack, render } from './support/portal-host';
 
 import { Dialog, useDialogControl } from '../dialog';
 import { CenteredCard } from '../dialog/CenteredCard';
@@ -352,13 +353,13 @@ describe('native centred Dialog: startOpen and dismissOnBackdrop', () => {
 
     it('with dismissOnBackdrop={false}, a backdrop tap and Android Back leave it open', () => {
       const onClose = jest.fn();
+      const pressBack = captureAndroidBack();
       const { screen, control } = renderCentred(false, onClose);
       fireEvent.press(screen.getByLabelText('Dismiss'));
-      act(() => screen.UNSAFE_getByType(Modal).props.onRequestClose());
+      act(() => pressBack());
       act(() => jest.advanceTimersByTime(500));
       expect(onClose).not.toHaveBeenCalled();
       expect(screen.getByText('Centred body')).toBeTruthy();
-      expect(screen.UNSAFE_getByType(Modal).props.visible).toBe(true);
       // `close()` is not a user dismissal: the veto does not block it.
       act(() => control()?.close());
       act(() => jest.advanceTimersByTime(500));
@@ -440,8 +441,9 @@ describe('controlled native Dialog: a self-dismissal reaches onClose', () => {
 
   it('center: Android Back calls onClose once', () => {
     const onClose = jest.fn();
+    const pressBack = captureAndroidBack();
     const screen = renderWithTheme(<ControlledHost placement="center" onClose={onClose} />);
-    act(() => screen.UNSAFE_getByType(Modal).props.onRequestClose());
+    act(() => pressBack());
     settle();
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(screen.queryByText('Controlled body')).toBeNull();

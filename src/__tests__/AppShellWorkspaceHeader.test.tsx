@@ -8,9 +8,12 @@ import { Screen } from '../screen';
 import { Dialog, useDialogControl } from '../dialog';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { resolvedStyle } from './support/rendered-style';
+import { PortalHost } from './support/portal-host';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <BloomThemeProvider fonts={false}>{children}</BloomThemeProvider>
+  <BloomThemeProvider fonts={false}>
+    <PortalHost>{children}</PortalHost>
+  </BloomThemeProvider>
 );
 it.each(['joined', 'separated', 'plain'] as const)(
   'measures one shared %s header and preserves drafts and open overlays as tracks change',
@@ -67,25 +70,27 @@ it.each(['joined', 'separated', 'plain'] as const)(
       panels: [layout.panels[0]!, { ...layout.panels[1]!, visible: true }],
     };
     view.rerender(<AppShellPanels testID="panels" layout={next} />);
-    expect(view.getByTestId('draft').props.value).toBe('Unsaved work');
+    expect(view.getByTestId('draft', { hidden: true }).props.value).toBe('Unsaved work');
     expect(view.getByText('Keep this overlay')).toBeTruthy();
     expect(mounted).toHaveBeenCalledTimes(1);
     expect(unmounted).not.toHaveBeenCalled();
-    expect(view.getAllByText('Shared workspace header')).toHaveLength(1);
-    expect(view.getAllByTestId('content-panel-surface')).toHaveLength(
+    expect(view.getAllByText('Shared workspace header', { hidden: true })).toHaveLength(1);
+    expect(view.getAllByTestId('content-panel-surface', { hidden: true })).toHaveLength(
       appearance === 'separated' ? 2 : 1,
     );
     if (appearance === 'plain') {
       expect(
-        resolvedStyle(view.getByTestId('content-panel-surface').props.style).backgroundColor,
+        resolvedStyle(view.getByTestId('content-panel-surface', { hidden: true }).props.style)
+          .backgroundColor,
       ).toBe('transparent');
     }
     view.rerender(<AppShellPanels testID="panels" layout={{ ...next, header: null }} />);
-    expect(view.getByTestId('draft').props.value).toBe('Unsaved work');
+    expect(view.getByTestId('draft', { hidden: true }).props.value).toBe('Unsaved work');
     expect(mounted).toHaveBeenCalledTimes(1);
-    expect(resolvedStyle(view.getByTestId('panels-workspace-content').props.style).paddingTop).toBe(
-      0,
-    );
+    expect(
+      resolvedStyle(view.getByTestId('panels-workspace-content', { hidden: true }).props.style)
+        .paddingTop,
+    ).toBe(0);
   },
 );
 it('allows the same header owner in an explicitly local workspace inside a page panel', () => {

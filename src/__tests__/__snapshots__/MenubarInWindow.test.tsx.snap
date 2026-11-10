@@ -938,489 +938,6 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
        ]
       },
       {
-       "type": "Modal",
-       "props": {
-        "ref": null,
-        "visible": true,
-        "transparent": true,
-        "animationType": "none",
-        "statusBarTranslucent": true
-       },
-       "children": [
-        {
-         "type": "View",
-         "props": {
-          "ref": null,
-          "style": {
-           "position": "absolute",
-           "left": 0,
-           "right": 0,
-           "top": 0,
-           "bottom": 0
-          }
-         },
-         "children": [
-          {
-           "type": "View",
-           "props": {
-            "ref": null,
-            "style": [
-             [
-              {
-               "position": "absolute",
-               "left": 0,
-               "right": 0,
-               "top": 0,
-               "bottom": 0
-              },
-              {
-               "flex": 1
-              }
-             ],
-             {
-              "pointerEvents": "box-none"
-             }
-            ]
-           },
-           "children": [
-            {
-             "type": "Pressable",
-             "props": {
-              "ref": null,
-              "focusable": false,
-              "accessibilityLabel": "Dismiss",
-              "accessibilityRole": "button",
-              "disabled": false,
-              "style": [
-               {
-                "position": "absolute",
-                "left": 0,
-                "right": 0,
-                "top": 0,
-                "bottom": 0
-               },
-               {
-                "pointerEvents": "auto"
-               }
-              ]
-             },
-             "children": [
-              {
-               "type": "BlurView",
-               "props": {
-                "intensity": 80,
-                "tint": "dark",
-                "style": [
-                 [
-                  {
-                   "position": "absolute",
-                   "left": 0,
-                   "right": 0,
-                   "top": 0,
-                   "bottom": 0
-                  },
-                  null,
-                  {
-                   "opacity": 0
-                  }
-                 ],
-                 {
-                  "pointerEvents": "none"
-                 }
-                ]
-               },
-               "children": null
-              },
-              {
-               "type": "Animated.View",
-               "props": {
-                "style": [
-                 [
-                  {
-                   "position": "absolute",
-                   "left": 0,
-                   "right": 0,
-                   "top": 0,
-                   "bottom": 0
-                  },
-                  {
-                   "backgroundColor": "#000"
-                  },
-                  null,
-                  {
-                   "opacity": 0
-                  }
-                 ],
-                 {
-                  "pointerEvents": "none"
-                 }
-                ]
-               },
-               "children": null
-              }
-             ]
-            }
-           ]
-          },
-          {
-           "type": "Animated.View",
-           "props": {
-            "collapsable": false,
-            "ref": {
-             "current": null
-            },
-            "style": [
-             {
-              "position": "absolute",
-              "bottom": 0,
-              "maxWidth": 800,
-              "alignSelf": "center",
-              "marginHorizontal": "auto",
-              "backgroundColor": "transparent",
-              "left": 16,
-              "right": 16,
-              "borderRadius": 24,
-              "borderCurve": "circular"
-             },
-             null,
-             {
-              "marginBottom": 16
-             },
-             {
-              "transform": [
-               {
-                "translateY": 812
-               },
-               {
-                "scale": 0.95
-               }
-              ]
-             },
-             {
-              "maxHeight": 780,
-              "height": null
-             },
-             {
-              "maxWidth": 500,
-              "backgroundColor": "transparent",
-              "borderRadius": 20,
-              "borderCurve": "circular"
-             },
-             {
-              "backgroundColor": "transparent"
-             }
-            ]
-           },
-           "children": [
-            {
-             "type": "View",
-             "props": {
-              "ref": null,
-              "style": [
-               [
-                {
-                 "position": "absolute",
-                 "left": 0,
-                 "right": 0,
-                 "top": 0,
-                 "bottom": 0
-                },
-                {
-                 "borderCurve": "circular",
-                 "borderTopLeftRadius": 20,
-                 "borderTopRightRadius": 20,
-                 "borderBottomLeftRadius": 20,
-                 "borderBottomRightRadius": 20
-                },
-                {
-                 "overflow": "hidden"
-                }
-               ],
-               {
-                "pointerEvents": "none"
-               }
-              ]
-             },
-             "children": [
-              {
-               "type": "View",
-               "props": {
-                "ref": null,
-                "style": [
-                 [
-                  {
-                   "position": "absolute",
-                   "left": 0,
-                   "right": 0,
-                   "top": 0,
-                   "bottom": 0
-                  },
-                  {
-                   "bottom": 0
-                  }
-                 ],
-                 {
-                  "pointerEvents": "none"
-                 }
-                ]
-               },
-               "children": [
-                {
-                 "type": "View",
-                 "props": {
-                  "ref": null,
-                  "style": [
-                   [
-                    {
-                     "position": "absolute",
-                     "left": 0,
-                     "right": 0,
-                     "top": 0,
-                     "bottom": 0
-                    },
-                    {
-                     "borderRadius": 20,
-                     "borderCurve": "circular"
-                    },
-                    {
-                     "overflow": "hidden"
-                    },
-                    null
-                   ],
-                   {
-                    "pointerEvents": "none"
-                   }
-                  ]
-                 },
-                 "children": [
-                  {
-                   "type": "BlurView",
-                   "props": {
-                    "intensity": 100,
-                    "tint": "systemUltraThinMaterialLight",
-                    "style": [
-                     [
-                      {
-                       "position": "absolute",
-                       "left": 0,
-                       "right": 0,
-                       "top": 0,
-                       "bottom": 0
-                      },
-                      null
-                     ],
-                     {
-                      "pointerEvents": "none"
-                     }
-                    ]
-                   },
-                   "children": null
-                  },
-                  {
-                   "type": "View",
-                   "props": {
-                    "ref": null,
-                    "style": [
-                     [
-                      {
-                       "position": "absolute",
-                       "left": 0,
-                       "right": 0,
-                       "top": 0,
-                       "bottom": 0
-                      },
-                      {
-                       "borderRadius": 20,
-                       "borderCurve": "circular"
-                      },
-                      {
-                       "backgroundColor": "rgba(199, 246, 255, 0.72)"
-                      },
-                      {
-                       "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14)"
-                      }
-                     ],
-                     {
-                      "pointerEvents": "none"
-                     }
-                    ]
-                   },
-                   "children": null
-                  }
-                 ]
-                }
-               ]
-              }
-             ]
-            },
-            {
-             "type": "Animated.ScrollView",
-             "props": {
-              "ref": {
-               "current": null
-              },
-              "style": [
-               {
-                "flex": 1
-               },
-               {
-                "borderCurve": "circular",
-                "borderTopLeftRadius": 20,
-                "borderTopRightRadius": 20,
-                "borderBottomLeftRadius": 20,
-                "borderBottomRightRadius": 20
-               }
-              ],
-              "contentContainerStyle": {
-               "flexGrow": 1
-              },
-              "showsVerticalScrollIndicator": false,
-              "keyboardShouldPersistTaps": "handled",
-              "scrollEventThrottle": 16
-             },
-             "children": [
-              {
-               "type": "View",
-               "props": {
-                "ref": null,
-                "style": {
-                 "position": "absolute",
-                 "width": "100%",
-                 "alignItems": "center",
-                 "zIndex": 10,
-                 "height": 20
-                }
-               },
-               "children": [
-                {
-                 "type": "Pressable",
-                 "props": {
-                  "ref": null,
-                  "accessibilityLabel": "Dismiss",
-                  "accessibilityHint": "Tap to close",
-                  "hitSlop": {
-                   "top": 10,
-                   "bottom": 10,
-                   "left": 40,
-                   "right": 40
-                  }
-                 },
-                 "children": [
-                  {
-                   "type": "View",
-                   "props": {
-                    "ref": null,
-                    "style": [
-                     {
-                      "top": 8,
-                      "width": 35,
-                      "height": 5,
-                      "borderRadius": 3,
-                      "alignSelf": "center",
-                      "opacity": 0.5
-                     },
-                     {
-                      "backgroundColor": "rgb(0 31 36)"
-                     }
-                    ]
-                   },
-                   "children": null
-                  }
-                 ]
-                }
-               ]
-              },
-              {
-               "type": "View",
-               "props": {
-                "ref": {
-                 "current": null
-                },
-                "accessibilityLabel": "Menu",
-                "style": [
-                 {
-                  "paddingTop": 20,
-                  "paddingHorizontal": 20,
-                  "paddingBottom": 20
-                 },
-                 {
-                  "backgroundColor": "transparent"
-                 },
-                 [
-                  {
-                   "gap": 2
-                  },
-                  null
-                 ]
-                ]
-               },
-               "children": [
-                {
-                 "type": "Pressable",
-                 "props": {
-                  "ref": null,
-                  "role": "menuitem",
-                  "accessibilityLabel": "Undo",
-                  "accessibilityRole": "button",
-                  "disabled": false,
-                  "style": [
-                   [
-                    null,
-                    {
-                     "backgroundColor": "transparent",
-                     "minHeight": 44,
-                     "columnGap": 8
-                    },
-                    null
-                   ],
-                   {
-                    "$$css": true,
-                    "className": "relative flex-row items-center select-none min-w-0 rounded-[10px] px-space-8 py-space-4 min-h-[28px] gap-space-8 min-h-[44px] cursor-pointer"
-                   }
-                  ]
-                 },
-                 "children": [
-                  {
-                   "type": "Text",
-                   "props": {
-                    "ref": null,
-                    "numberOfLines": 1,
-                    "style": [
-                     [
-                      {
-                       "fontSize": 14,
-                       "lineHeight": 20,
-                       "letterSpacing": 0,
-                       "fontWeight": "400",
-                       "fontFamily": "Inter"
-                      },
-                      {
-                       "color": "rgb(0 31 36)"
-                      }
-                     ],
-                     {
-                      "$$css": true,
-                      "className": "flex-1 min-w-0"
-                     }
-                    ]
-                   },
-                   "children": [
-                    "Undo"
-                   ]
-                  }
-                 ]
-                }
-               ]
-              }
-             ]
-            }
-           ]
-          }
-         ]
-        }
-       ]
-      },
-      {
        "type": "View",
        "props": {
         "collapsable": false,
@@ -1477,6 +994,504 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
              },
              "children": [
               "View"
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "View",
+     "props": {
+      "ref": null,
+      "accessibilityViewIsModal": true,
+      "style": [
+       [
+        {
+         "position": "absolute",
+         "top": 0,
+         "left": 0,
+         "right": 0,
+         "bottom": 0
+        },
+        {
+         "zIndex": 1010
+        },
+        null
+       ],
+       {
+        "pointerEvents": "box-none"
+       }
+      ]
+     },
+     "children": [
+      {
+       "type": "View",
+       "props": {
+        "ref": null,
+        "style": {
+         "position": "absolute",
+         "left": 0,
+         "right": 0,
+         "top": 0,
+         "bottom": 0
+        }
+       },
+       "children": [
+        {
+         "type": "View",
+         "props": {
+          "ref": null,
+          "style": [
+           [
+            {
+             "position": "absolute",
+             "left": 0,
+             "right": 0,
+             "top": 0,
+             "bottom": 0
+            },
+            {
+             "flex": 1
+            }
+           ],
+           {
+            "pointerEvents": "box-none"
+           }
+          ]
+         },
+         "children": [
+          {
+           "type": "Pressable",
+           "props": {
+            "ref": null,
+            "focusable": false,
+            "accessibilityLabel": "Dismiss",
+            "accessibilityRole": "button",
+            "disabled": false,
+            "style": [
+             {
+              "position": "absolute",
+              "left": 0,
+              "right": 0,
+              "top": 0,
+              "bottom": 0
+             },
+             {
+              "pointerEvents": "auto"
+             }
+            ]
+           },
+           "children": [
+            {
+             "type": "BlurView",
+             "props": {
+              "intensity": 80,
+              "tint": "dark",
+              "style": [
+               [
+                {
+                 "position": "absolute",
+                 "left": 0,
+                 "right": 0,
+                 "top": 0,
+                 "bottom": 0
+                },
+                null,
+                {
+                 "opacity": 0
+                }
+               ],
+               {
+                "pointerEvents": "none"
+               }
+              ]
+             },
+             "children": null
+            },
+            {
+             "type": "Animated.View",
+             "props": {
+              "style": [
+               [
+                {
+                 "position": "absolute",
+                 "left": 0,
+                 "right": 0,
+                 "top": 0,
+                 "bottom": 0
+                },
+                {
+                 "backgroundColor": "#000"
+                },
+                null,
+                {
+                 "opacity": 0
+                }
+               ],
+               {
+                "pointerEvents": "none"
+               }
+              ]
+             },
+             "children": null
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "type": "Animated.View",
+         "props": {
+          "collapsable": false,
+          "ref": {
+           "current": null
+          },
+          "style": [
+           {
+            "position": "absolute",
+            "bottom": 0,
+            "maxWidth": 800,
+            "alignSelf": "center",
+            "marginHorizontal": "auto",
+            "backgroundColor": "transparent",
+            "left": 16,
+            "right": 16,
+            "borderRadius": 24,
+            "borderCurve": "circular"
+           },
+           null,
+           {
+            "marginBottom": 16
+           },
+           {
+            "transform": [
+             {
+              "translateY": 812
+             },
+             {
+              "scale": 0.95
+             }
+            ]
+           },
+           {
+            "maxHeight": 780,
+            "height": null
+           },
+           {
+            "maxWidth": 500,
+            "backgroundColor": "transparent",
+            "borderRadius": 20,
+            "borderCurve": "circular"
+           },
+           {
+            "backgroundColor": "transparent"
+           }
+          ]
+         },
+         "children": [
+          {
+           "type": "View",
+           "props": {
+            "ref": null,
+            "style": [
+             [
+              {
+               "position": "absolute",
+               "left": 0,
+               "right": 0,
+               "top": 0,
+               "bottom": 0
+              },
+              {
+               "borderCurve": "circular",
+               "borderTopLeftRadius": 20,
+               "borderTopRightRadius": 20,
+               "borderBottomLeftRadius": 20,
+               "borderBottomRightRadius": 20
+              },
+              {
+               "overflow": "hidden"
+              }
+             ],
+             {
+              "pointerEvents": "none"
+             }
+            ]
+           },
+           "children": [
+            {
+             "type": "View",
+             "props": {
+              "ref": null,
+              "style": [
+               [
+                {
+                 "position": "absolute",
+                 "left": 0,
+                 "right": 0,
+                 "top": 0,
+                 "bottom": 0
+                },
+                {
+                 "bottom": 0
+                }
+               ],
+               {
+                "pointerEvents": "none"
+               }
+              ]
+             },
+             "children": [
+              {
+               "type": "View",
+               "props": {
+                "ref": null,
+                "style": [
+                 [
+                  {
+                   "position": "absolute",
+                   "left": 0,
+                   "right": 0,
+                   "top": 0,
+                   "bottom": 0
+                  },
+                  {
+                   "borderRadius": 20,
+                   "borderCurve": "circular"
+                  },
+                  {
+                   "overflow": "hidden"
+                  },
+                  null
+                 ],
+                 {
+                  "pointerEvents": "none"
+                 }
+                ]
+               },
+               "children": [
+                {
+                 "type": "BlurView",
+                 "props": {
+                  "intensity": 100,
+                  "tint": "systemUltraThinMaterialLight",
+                  "style": [
+                   [
+                    {
+                     "position": "absolute",
+                     "left": 0,
+                     "right": 0,
+                     "top": 0,
+                     "bottom": 0
+                    },
+                    null
+                   ],
+                   {
+                    "pointerEvents": "none"
+                   }
+                  ]
+                 },
+                 "children": null
+                },
+                {
+                 "type": "View",
+                 "props": {
+                  "ref": null,
+                  "style": [
+                   [
+                    {
+                     "position": "absolute",
+                     "left": 0,
+                     "right": 0,
+                     "top": 0,
+                     "bottom": 0
+                    },
+                    {
+                     "borderRadius": 20,
+                     "borderCurve": "circular"
+                    },
+                    {
+                     "backgroundColor": "rgba(199, 246, 255, 0.72)"
+                    },
+                    {
+                     "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14)"
+                    }
+                   ],
+                   {
+                    "pointerEvents": "none"
+                   }
+                  ]
+                 },
+                 "children": null
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "type": "Animated.ScrollView",
+           "props": {
+            "ref": {
+             "current": null
+            },
+            "style": [
+             {
+              "flex": 1
+             },
+             {
+              "borderCurve": "circular",
+              "borderTopLeftRadius": 20,
+              "borderTopRightRadius": 20,
+              "borderBottomLeftRadius": 20,
+              "borderBottomRightRadius": 20
+             }
+            ],
+            "contentContainerStyle": {
+             "flexGrow": 1
+            },
+            "showsVerticalScrollIndicator": false,
+            "keyboardShouldPersistTaps": "handled",
+            "scrollEventThrottle": 16
+           },
+           "children": [
+            {
+             "type": "View",
+             "props": {
+              "ref": null,
+              "style": {
+               "position": "absolute",
+               "width": "100%",
+               "alignItems": "center",
+               "zIndex": 10,
+               "height": 20
+              }
+             },
+             "children": [
+              {
+               "type": "Pressable",
+               "props": {
+                "ref": null,
+                "accessibilityLabel": "Dismiss",
+                "accessibilityHint": "Tap to close",
+                "hitSlop": {
+                 "top": 10,
+                 "bottom": 10,
+                 "left": 40,
+                 "right": 40
+                }
+               },
+               "children": [
+                {
+                 "type": "View",
+                 "props": {
+                  "ref": null,
+                  "style": [
+                   {
+                    "top": 8,
+                    "width": 35,
+                    "height": 5,
+                    "borderRadius": 3,
+                    "alignSelf": "center",
+                    "opacity": 0.5
+                   },
+                   {
+                    "backgroundColor": "rgb(0 31 36)"
+                   }
+                  ]
+                 },
+                 "children": null
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "type": "View",
+             "props": {
+              "ref": {
+               "current": null
+              },
+              "accessibilityLabel": "Menu",
+              "style": [
+               {
+                "paddingTop": 20,
+                "paddingHorizontal": 20,
+                "paddingBottom": 20
+               },
+               {
+                "backgroundColor": "transparent"
+               },
+               [
+                {
+                 "gap": 2
+                },
+                null
+               ]
+              ]
+             },
+             "children": [
+              {
+               "type": "Pressable",
+               "props": {
+                "ref": null,
+                "role": "menuitem",
+                "accessibilityLabel": "Undo",
+                "accessibilityRole": "button",
+                "disabled": false,
+                "style": [
+                 [
+                  null,
+                  {
+                   "backgroundColor": "transparent",
+                   "minHeight": 44,
+                   "columnGap": 8
+                  },
+                  null
+                 ],
+                 {
+                  "$$css": true,
+                  "className": "relative flex-row items-center select-none min-w-0 rounded-[10px] px-space-8 py-space-4 min-h-[28px] gap-space-8 min-h-[44px] cursor-pointer"
+                 }
+                ]
+               },
+               "children": [
+                {
+                 "type": "Text",
+                 "props": {
+                  "ref": null,
+                  "numberOfLines": 1,
+                  "style": [
+                   [
+                    {
+                     "fontSize": 14,
+                     "lineHeight": 20,
+                     "letterSpacing": 0,
+                     "fontWeight": "400",
+                     "fontFamily": "Inter"
+                    },
+                    {
+                     "color": "rgb(0 31 36)"
+                    }
+                   ],
+                   {
+                    "$$css": true,
+                    "className": "flex-1 min-w-0"
+                   }
+                  ]
+                 },
+                 "children": [
+                  "Undo"
+                 ]
+                }
+               ]
+              }
              ]
             }
            ]
@@ -1861,745 +1876,6 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
        ]
       },
       {
-       "type": "Modal",
-       "props": {
-        "ref": null,
-        "visible": true,
-        "transparent": true,
-        "animationType": "none",
-        "statusBarTranslucent": true
-       },
-       "children": [
-        {
-         "type": "View",
-         "props": {
-          "ref": null,
-          "style": {
-           "position": "absolute",
-           "left": 0,
-           "right": 0,
-           "top": 0,
-           "bottom": 0
-          }
-         },
-         "children": [
-          {
-           "type": "View",
-           "props": {
-            "ref": null,
-            "style": [
-             [
-              {
-               "position": "absolute",
-               "left": 0,
-               "right": 0,
-               "top": 0,
-               "bottom": 0
-              },
-              {
-               "flex": 1
-              }
-             ],
-             {
-              "pointerEvents": "box-none"
-             }
-            ]
-           },
-           "children": [
-            {
-             "type": "Pressable",
-             "props": {
-              "ref": null,
-              "focusable": false,
-              "accessibilityLabel": "Dismiss",
-              "accessibilityRole": "button",
-              "disabled": false,
-              "style": [
-               {
-                "position": "absolute",
-                "left": 0,
-                "right": 0,
-                "top": 0,
-                "bottom": 0
-               },
-               {
-                "pointerEvents": "auto"
-               }
-              ]
-             },
-             "children": [
-              {
-               "type": "BlurView",
-               "props": {
-                "intensity": 80,
-                "tint": "dark",
-                "style": [
-                 [
-                  {
-                   "position": "absolute",
-                   "left": 0,
-                   "right": 0,
-                   "top": 0,
-                   "bottom": 0
-                  },
-                  null,
-                  {
-                   "opacity": 0
-                  }
-                 ],
-                 {
-                  "pointerEvents": "none"
-                 }
-                ]
-               },
-               "children": null
-              },
-              {
-               "type": "Animated.View",
-               "props": {
-                "style": [
-                 [
-                  {
-                   "position": "absolute",
-                   "left": 0,
-                   "right": 0,
-                   "top": 0,
-                   "bottom": 0
-                  },
-                  {
-                   "backgroundColor": "#000"
-                  },
-                  null,
-                  {
-                   "opacity": 0
-                  }
-                 ],
-                 {
-                  "pointerEvents": "none"
-                 }
-                ]
-               },
-               "children": null
-              }
-             ]
-            }
-           ]
-          },
-          {
-           "type": "Animated.View",
-           "props": {
-            "collapsable": false,
-            "ref": {
-             "current": null
-            },
-            "style": [
-             {
-              "position": "absolute",
-              "bottom": 0,
-              "maxWidth": 800,
-              "alignSelf": "center",
-              "marginHorizontal": "auto",
-              "backgroundColor": "transparent",
-              "left": 16,
-              "right": 16,
-              "borderRadius": 24,
-              "borderCurve": "circular"
-             },
-             null,
-             {
-              "marginBottom": 16
-             },
-             {
-              "transform": [
-               {
-                "translateY": 812
-               },
-               {
-                "scale": 0.95
-               }
-              ]
-             },
-             {
-              "maxHeight": 780,
-              "height": null
-             },
-             {
-              "maxWidth": 500,
-              "backgroundColor": "transparent",
-              "borderRadius": 20,
-              "borderCurve": "circular"
-             },
-             {
-              "backgroundColor": "transparent"
-             }
-            ]
-           },
-           "children": [
-            {
-             "type": "View",
-             "props": {
-              "ref": null,
-              "style": [
-               [
-                {
-                 "position": "absolute",
-                 "left": 0,
-                 "right": 0,
-                 "top": 0,
-                 "bottom": 0
-                },
-                {
-                 "borderCurve": "circular",
-                 "borderTopLeftRadius": 20,
-                 "borderTopRightRadius": 20,
-                 "borderBottomLeftRadius": 20,
-                 "borderBottomRightRadius": 20
-                },
-                {
-                 "overflow": "hidden"
-                }
-               ],
-               {
-                "pointerEvents": "none"
-               }
-              ]
-             },
-             "children": [
-              {
-               "type": "View",
-               "props": {
-                "ref": null,
-                "style": [
-                 [
-                  {
-                   "position": "absolute",
-                   "left": 0,
-                   "right": 0,
-                   "top": 0,
-                   "bottom": 0
-                  },
-                  {
-                   "bottom": 0
-                  }
-                 ],
-                 {
-                  "pointerEvents": "none"
-                 }
-                ]
-               },
-               "children": [
-                {
-                 "type": "View",
-                 "props": {
-                  "ref": null,
-                  "style": [
-                   [
-                    {
-                     "position": "absolute",
-                     "left": 0,
-                     "right": 0,
-                     "top": 0,
-                     "bottom": 0
-                    },
-                    {
-                     "borderRadius": 20,
-                     "borderCurve": "circular"
-                    },
-                    {
-                     "overflow": "hidden"
-                    },
-                    null
-                   ],
-                   {
-                    "pointerEvents": "none"
-                   }
-                  ]
-                 },
-                 "children": [
-                  {
-                   "type": "BlurView",
-                   "props": {
-                    "intensity": 100,
-                    "tint": "systemUltraThinMaterialLight",
-                    "style": [
-                     [
-                      {
-                       "position": "absolute",
-                       "left": 0,
-                       "right": 0,
-                       "top": 0,
-                       "bottom": 0
-                      },
-                      null
-                     ],
-                     {
-                      "pointerEvents": "none"
-                     }
-                    ]
-                   },
-                   "children": null
-                  },
-                  {
-                   "type": "View",
-                   "props": {
-                    "ref": null,
-                    "style": [
-                     [
-                      {
-                       "position": "absolute",
-                       "left": 0,
-                       "right": 0,
-                       "top": 0,
-                       "bottom": 0
-                      },
-                      {
-                       "borderRadius": 20,
-                       "borderCurve": "circular"
-                      },
-                      {
-                       "backgroundColor": "rgba(199, 246, 255, 0.72)"
-                      },
-                      {
-                       "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14)"
-                      }
-                     ],
-                     {
-                      "pointerEvents": "none"
-                     }
-                    ]
-                   },
-                   "children": null
-                  }
-                 ]
-                }
-               ]
-              }
-             ]
-            },
-            {
-             "type": "Animated.ScrollView",
-             "props": {
-              "ref": {
-               "current": null
-              },
-              "style": [
-               {
-                "flex": 1
-               },
-               {
-                "borderCurve": "circular",
-                "borderTopLeftRadius": 20,
-                "borderTopRightRadius": 20,
-                "borderBottomLeftRadius": 20,
-                "borderBottomRightRadius": 20
-               }
-              ],
-              "contentContainerStyle": {
-               "flexGrow": 1
-              },
-              "showsVerticalScrollIndicator": false,
-              "keyboardShouldPersistTaps": "handled",
-              "scrollEventThrottle": 16
-             },
-             "children": [
-              {
-               "type": "View",
-               "props": {
-                "ref": null,
-                "style": {
-                 "position": "absolute",
-                 "width": "100%",
-                 "alignItems": "center",
-                 "zIndex": 10,
-                 "height": 20
-                }
-               },
-               "children": [
-                {
-                 "type": "Pressable",
-                 "props": {
-                  "ref": null,
-                  "accessibilityLabel": "Dismiss",
-                  "accessibilityHint": "Tap to close",
-                  "hitSlop": {
-                   "top": 10,
-                   "bottom": 10,
-                   "left": 40,
-                   "right": 40
-                  }
-                 },
-                 "children": [
-                  {
-                   "type": "View",
-                   "props": {
-                    "ref": null,
-                    "style": [
-                     {
-                      "top": 8,
-                      "width": 35,
-                      "height": 5,
-                      "borderRadius": 3,
-                      "alignSelf": "center",
-                      "opacity": 0.5
-                     },
-                     {
-                      "backgroundColor": "rgb(0 31 36)"
-                     }
-                    ]
-                   },
-                   "children": null
-                  }
-                 ]
-                }
-               ]
-              },
-              {
-               "type": "View",
-               "props": {
-                "ref": {
-                 "current": null
-                },
-                "accessibilityLabel": "Menu",
-                "style": [
-                 {
-                  "paddingTop": 20,
-                  "paddingHorizontal": 20,
-                  "paddingBottom": 20
-                 },
-                 {
-                  "backgroundColor": "transparent"
-                 },
-                 [
-                  {
-                   "gap": 2
-                  },
-                  null
-                 ]
-                ]
-               },
-               "children": [
-                {
-                 "type": "Pressable",
-                 "props": {
-                  "ref": null,
-                  "role": "menuitem",
-                  "testID": "new",
-                  "accessibilityLabel": "New tab",
-                  "accessibilityRole": "button",
-                  "disabled": false,
-                  "style": [
-                   [
-                    null,
-                    {
-                     "backgroundColor": "transparent",
-                     "minHeight": 44,
-                     "columnGap": 8
-                    },
-                    null
-                   ],
-                   {
-                    "$$css": true,
-                    "className": "relative flex-row items-center select-none min-w-0 rounded-[10px] px-space-8 py-space-4 min-h-[28px] gap-space-8 min-h-[44px] cursor-pointer"
-                   }
-                  ]
-                 },
-                 "children": [
-                  {
-                   "type": "Text",
-                   "props": {
-                    "ref": null,
-                    "numberOfLines": 1,
-                    "style": [
-                     [
-                      {
-                       "fontSize": 14,
-                       "lineHeight": 20,
-                       "letterSpacing": 0,
-                       "fontWeight": "400",
-                       "fontFamily": "Inter"
-                      },
-                      {
-                       "color": "rgb(0 31 36)"
-                      }
-                     ],
-                     {
-                      "$$css": true,
-                      "className": "flex-1 min-w-0"
-                     }
-                    ]
-                   },
-                   "children": [
-                    "New tab"
-                   ]
-                  },
-                  {
-                   "type": "Text",
-                   "props": {
-                    "ref": null,
-                    "style": [
-                     [
-                      {
-                       "fontSize": 12,
-                       "lineHeight": 16,
-                       "letterSpacing": 0.15,
-                       "fontWeight": "500",
-                       "fontFamily": "Inter"
-                      },
-                      {
-                       "color": "rgb(64 90 95)"
-                      },
-                      null
-                     ],
-                     {
-                      "$$css": true,
-                      "className": "shrink-0 ms-auto"
-                     }
-                    ]
-                   },
-                   "children": [
-                    "⌘N"
-                   ]
-                  }
-                 ]
-                },
-                {
-                 "type": "Pressable",
-                 "props": {
-                  "ref": null,
-                  "role": "menuitem",
-                  "accessibilityLabel": "Open…",
-                  "accessibilityRole": "button",
-                  "disabled": false,
-                  "style": [
-                   [
-                    null,
-                    {
-                     "backgroundColor": "transparent",
-                     "minHeight": 44,
-                     "columnGap": 8
-                    },
-                    null
-                   ],
-                   {
-                    "$$css": true,
-                    "className": "relative flex-row items-center select-none min-w-0 rounded-[10px] px-space-8 py-space-4 min-h-[28px] gap-space-8 min-h-[44px] cursor-pointer"
-                   }
-                  ]
-                 },
-                 "children": [
-                  {
-                   "type": "Text",
-                   "props": {
-                    "ref": null,
-                    "numberOfLines": 1,
-                    "style": [
-                     [
-                      {
-                       "fontSize": 14,
-                       "lineHeight": 20,
-                       "letterSpacing": 0,
-                       "fontWeight": "400",
-                       "fontFamily": "Inter"
-                      },
-                      {
-                       "color": "rgb(0 31 36)"
-                      }
-                     ],
-                     {
-                      "$$css": true,
-                      "className": "flex-1 min-w-0"
-                     }
-                    ]
-                   },
-                   "children": [
-                    "Open…"
-                   ]
-                  }
-                 ]
-                },
-                {
-                 "type": "View",
-                 "props": {
-                  "ref": null,
-                  "style": [
-                   {
-                    "backgroundColor": "rgb(204 221 224)"
-                   },
-                   {
-                    "$$css": true,
-                    "className": "-mx-space-8 my-[2px] h-px"
-                   }
-                  ]
-                 },
-                 "children": null
-                },
-                {
-                 "type": "Pressable",
-                 "props": {
-                  "ref": null,
-                  "role": "menuitem",
-                  "aria-expanded": false,
-                  "aria-haspopup": "menu",
-                  "accessibilityLabel": "Share",
-                  "accessibilityRole": "button",
-                  "disabled": false,
-                  "style": [
-                   [
-                    null,
-                    {
-                     "backgroundColor": "transparent",
-                     "minHeight": 44
-                    },
-                    null
-                   ],
-                   {
-                    "$$css": true,
-                    "className": "relative flex-row items-center select-none min-w-0 rounded-[10px] px-space-8 py-space-4 min-h-[28px] gap-space-8 min-h-[44px] cursor-pointer justify-between"
-                   }
-                  ]
-                 },
-                 "children": [
-                  {
-                   "type": "Text",
-                   "props": {
-                    "ref": null,
-                    "numberOfLines": 1,
-                    "style": [
-                     [
-                      {
-                       "fontSize": 14,
-                       "lineHeight": 20,
-                       "letterSpacing": 0,
-                       "fontWeight": "400",
-                       "fontFamily": "Inter"
-                      },
-                      {
-                       "color": "rgb(0 31 36)"
-                      }
-                     ],
-                     {
-                      "$$css": true,
-                      "className": "flex-1 min-w-0"
-                     }
-                    ]
-                   },
-                   "children": [
-                    "Share"
-                   ]
-                  },
-                  {
-                   "type": "View",
-                   "props": {
-                    "ref": null,
-                    "style": [
-                     null,
-                     {
-                      "$$css": true,
-                      "className": "shrink-0 ms-auto"
-                     }
-                    ]
-                   },
-                   "children": [
-                    {
-                     "type": "Svg",
-                     "props": {
-                      "ref": null,
-                      "fill": "none",
-                      "width": 16,
-                      "height": 16,
-                      "viewBox": "0 0 24 24",
-                      "style": [
-                       null
-                      ]
-                     },
-                     "children": [
-                      {
-                       "type": "Path",
-                       "props": {
-                        "ref": null,
-                        "fill": "rgb(64 90 95)",
-                        "stroke": "none",
-                        "strokeWidth": 0,
-                        "strokeLinecap": "butt",
-                        "strokeLinejoin": "miter",
-                        "fillRule": "evenodd",
-                        "clipRule": "evenodd",
-                        "d": "M11.9999 13.1714L16.9497 8.22168L18.3639 9.63589L11.9999 15.9999L5.63599 9.63589L7.0502 8.22168L11.9999 13.1714Z"
-                       },
-                       "children": null
-                      }
-                     ]
-                    }
-                   ]
-                  }
-                 ]
-                },
-                {
-                 "type": "Pressable",
-                 "props": {
-                  "ref": null,
-                  "role": "menuitem",
-                  "accessibilityLabel": "Print",
-                  "accessibilityRole": "button",
-                  "disabled": true,
-                  "style": [
-                   [
-                    null,
-                    {
-                     "backgroundColor": "transparent",
-                     "minHeight": 44,
-                     "columnGap": 8
-                    },
-                    null
-                   ],
-                   {
-                    "$$css": true,
-                    "className": "relative flex-row items-center select-none min-w-0 rounded-[10px] px-space-8 py-space-4 min-h-[28px] gap-space-8 min-h-[44px] cursor-not-allowed"
-                   }
-                  ]
-                 },
-                 "children": [
-                  {
-                   "type": "Text",
-                   "props": {
-                    "ref": null,
-                    "numberOfLines": 1,
-                    "style": [
-                     [
-                      {
-                       "fontSize": 14,
-                       "lineHeight": 20,
-                       "letterSpacing": 0,
-                       "fontWeight": "400",
-                       "fontFamily": "Inter"
-                      },
-                      {
-                       "color": "rgb(126 149 153)"
-                      }
-                     ],
-                     {
-                      "$$css": true,
-                      "className": "flex-1 min-w-0"
-                     }
-                    ]
-                   },
-                   "children": [
-                    "Print"
-                   ]
-                  }
-                 ]
-                }
-               ]
-              }
-             ]
-            }
-           ]
-          }
-         ]
-        }
-       ]
-      },
-      {
        "type": "View",
        "props": {
         "collapsable": false,
@@ -2721,6 +1997,760 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
              },
              "children": [
               "View"
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "View",
+     "props": {
+      "ref": null,
+      "accessibilityViewIsModal": true,
+      "style": [
+       [
+        {
+         "position": "absolute",
+         "top": 0,
+         "left": 0,
+         "right": 0,
+         "bottom": 0
+        },
+        {
+         "zIndex": 1010
+        },
+        null
+       ],
+       {
+        "pointerEvents": "box-none"
+       }
+      ]
+     },
+     "children": [
+      {
+       "type": "View",
+       "props": {
+        "ref": null,
+        "style": {
+         "position": "absolute",
+         "left": 0,
+         "right": 0,
+         "top": 0,
+         "bottom": 0
+        }
+       },
+       "children": [
+        {
+         "type": "View",
+         "props": {
+          "ref": null,
+          "style": [
+           [
+            {
+             "position": "absolute",
+             "left": 0,
+             "right": 0,
+             "top": 0,
+             "bottom": 0
+            },
+            {
+             "flex": 1
+            }
+           ],
+           {
+            "pointerEvents": "box-none"
+           }
+          ]
+         },
+         "children": [
+          {
+           "type": "Pressable",
+           "props": {
+            "ref": null,
+            "focusable": false,
+            "accessibilityLabel": "Dismiss",
+            "accessibilityRole": "button",
+            "disabled": false,
+            "style": [
+             {
+              "position": "absolute",
+              "left": 0,
+              "right": 0,
+              "top": 0,
+              "bottom": 0
+             },
+             {
+              "pointerEvents": "auto"
+             }
+            ]
+           },
+           "children": [
+            {
+             "type": "BlurView",
+             "props": {
+              "intensity": 80,
+              "tint": "dark",
+              "style": [
+               [
+                {
+                 "position": "absolute",
+                 "left": 0,
+                 "right": 0,
+                 "top": 0,
+                 "bottom": 0
+                },
+                null,
+                {
+                 "opacity": 0
+                }
+               ],
+               {
+                "pointerEvents": "none"
+               }
+              ]
+             },
+             "children": null
+            },
+            {
+             "type": "Animated.View",
+             "props": {
+              "style": [
+               [
+                {
+                 "position": "absolute",
+                 "left": 0,
+                 "right": 0,
+                 "top": 0,
+                 "bottom": 0
+                },
+                {
+                 "backgroundColor": "#000"
+                },
+                null,
+                {
+                 "opacity": 0
+                }
+               ],
+               {
+                "pointerEvents": "none"
+               }
+              ]
+             },
+             "children": null
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "type": "Animated.View",
+         "props": {
+          "collapsable": false,
+          "ref": {
+           "current": null
+          },
+          "style": [
+           {
+            "position": "absolute",
+            "bottom": 0,
+            "maxWidth": 800,
+            "alignSelf": "center",
+            "marginHorizontal": "auto",
+            "backgroundColor": "transparent",
+            "left": 16,
+            "right": 16,
+            "borderRadius": 24,
+            "borderCurve": "circular"
+           },
+           null,
+           {
+            "marginBottom": 16
+           },
+           {
+            "transform": [
+             {
+              "translateY": 812
+             },
+             {
+              "scale": 0.95
+             }
+            ]
+           },
+           {
+            "maxHeight": 780,
+            "height": null
+           },
+           {
+            "maxWidth": 500,
+            "backgroundColor": "transparent",
+            "borderRadius": 20,
+            "borderCurve": "circular"
+           },
+           {
+            "backgroundColor": "transparent"
+           }
+          ]
+         },
+         "children": [
+          {
+           "type": "View",
+           "props": {
+            "ref": null,
+            "style": [
+             [
+              {
+               "position": "absolute",
+               "left": 0,
+               "right": 0,
+               "top": 0,
+               "bottom": 0
+              },
+              {
+               "borderCurve": "circular",
+               "borderTopLeftRadius": 20,
+               "borderTopRightRadius": 20,
+               "borderBottomLeftRadius": 20,
+               "borderBottomRightRadius": 20
+              },
+              {
+               "overflow": "hidden"
+              }
+             ],
+             {
+              "pointerEvents": "none"
+             }
+            ]
+           },
+           "children": [
+            {
+             "type": "View",
+             "props": {
+              "ref": null,
+              "style": [
+               [
+                {
+                 "position": "absolute",
+                 "left": 0,
+                 "right": 0,
+                 "top": 0,
+                 "bottom": 0
+                },
+                {
+                 "bottom": 0
+                }
+               ],
+               {
+                "pointerEvents": "none"
+               }
+              ]
+             },
+             "children": [
+              {
+               "type": "View",
+               "props": {
+                "ref": null,
+                "style": [
+                 [
+                  {
+                   "position": "absolute",
+                   "left": 0,
+                   "right": 0,
+                   "top": 0,
+                   "bottom": 0
+                  },
+                  {
+                   "borderRadius": 20,
+                   "borderCurve": "circular"
+                  },
+                  {
+                   "overflow": "hidden"
+                  },
+                  null
+                 ],
+                 {
+                  "pointerEvents": "none"
+                 }
+                ]
+               },
+               "children": [
+                {
+                 "type": "BlurView",
+                 "props": {
+                  "intensity": 100,
+                  "tint": "systemUltraThinMaterialLight",
+                  "style": [
+                   [
+                    {
+                     "position": "absolute",
+                     "left": 0,
+                     "right": 0,
+                     "top": 0,
+                     "bottom": 0
+                    },
+                    null
+                   ],
+                   {
+                    "pointerEvents": "none"
+                   }
+                  ]
+                 },
+                 "children": null
+                },
+                {
+                 "type": "View",
+                 "props": {
+                  "ref": null,
+                  "style": [
+                   [
+                    {
+                     "position": "absolute",
+                     "left": 0,
+                     "right": 0,
+                     "top": 0,
+                     "bottom": 0
+                    },
+                    {
+                     "borderRadius": 20,
+                     "borderCurve": "circular"
+                    },
+                    {
+                     "backgroundColor": "rgba(199, 246, 255, 0.72)"
+                    },
+                    {
+                     "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14)"
+                    }
+                   ],
+                   {
+                    "pointerEvents": "none"
+                   }
+                  ]
+                 },
+                 "children": null
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "type": "Animated.ScrollView",
+           "props": {
+            "ref": {
+             "current": null
+            },
+            "style": [
+             {
+              "flex": 1
+             },
+             {
+              "borderCurve": "circular",
+              "borderTopLeftRadius": 20,
+              "borderTopRightRadius": 20,
+              "borderBottomLeftRadius": 20,
+              "borderBottomRightRadius": 20
+             }
+            ],
+            "contentContainerStyle": {
+             "flexGrow": 1
+            },
+            "showsVerticalScrollIndicator": false,
+            "keyboardShouldPersistTaps": "handled",
+            "scrollEventThrottle": 16
+           },
+           "children": [
+            {
+             "type": "View",
+             "props": {
+              "ref": null,
+              "style": {
+               "position": "absolute",
+               "width": "100%",
+               "alignItems": "center",
+               "zIndex": 10,
+               "height": 20
+              }
+             },
+             "children": [
+              {
+               "type": "Pressable",
+               "props": {
+                "ref": null,
+                "accessibilityLabel": "Dismiss",
+                "accessibilityHint": "Tap to close",
+                "hitSlop": {
+                 "top": 10,
+                 "bottom": 10,
+                 "left": 40,
+                 "right": 40
+                }
+               },
+               "children": [
+                {
+                 "type": "View",
+                 "props": {
+                  "ref": null,
+                  "style": [
+                   {
+                    "top": 8,
+                    "width": 35,
+                    "height": 5,
+                    "borderRadius": 3,
+                    "alignSelf": "center",
+                    "opacity": 0.5
+                   },
+                   {
+                    "backgroundColor": "rgb(0 31 36)"
+                   }
+                  ]
+                 },
+                 "children": null
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "type": "View",
+             "props": {
+              "ref": {
+               "current": null
+              },
+              "accessibilityLabel": "Menu",
+              "style": [
+               {
+                "paddingTop": 20,
+                "paddingHorizontal": 20,
+                "paddingBottom": 20
+               },
+               {
+                "backgroundColor": "transparent"
+               },
+               [
+                {
+                 "gap": 2
+                },
+                null
+               ]
+              ]
+             },
+             "children": [
+              {
+               "type": "Pressable",
+               "props": {
+                "ref": null,
+                "role": "menuitem",
+                "testID": "new",
+                "accessibilityLabel": "New tab",
+                "accessibilityRole": "button",
+                "disabled": false,
+                "style": [
+                 [
+                  null,
+                  {
+                   "backgroundColor": "transparent",
+                   "minHeight": 44,
+                   "columnGap": 8
+                  },
+                  null
+                 ],
+                 {
+                  "$$css": true,
+                  "className": "relative flex-row items-center select-none min-w-0 rounded-[10px] px-space-8 py-space-4 min-h-[28px] gap-space-8 min-h-[44px] cursor-pointer"
+                 }
+                ]
+               },
+               "children": [
+                {
+                 "type": "Text",
+                 "props": {
+                  "ref": null,
+                  "numberOfLines": 1,
+                  "style": [
+                   [
+                    {
+                     "fontSize": 14,
+                     "lineHeight": 20,
+                     "letterSpacing": 0,
+                     "fontWeight": "400",
+                     "fontFamily": "Inter"
+                    },
+                    {
+                     "color": "rgb(0 31 36)"
+                    }
+                   ],
+                   {
+                    "$$css": true,
+                    "className": "flex-1 min-w-0"
+                   }
+                  ]
+                 },
+                 "children": [
+                  "New tab"
+                 ]
+                },
+                {
+                 "type": "Text",
+                 "props": {
+                  "ref": null,
+                  "style": [
+                   [
+                    {
+                     "fontSize": 12,
+                     "lineHeight": 16,
+                     "letterSpacing": 0.15,
+                     "fontWeight": "500",
+                     "fontFamily": "Inter"
+                    },
+                    {
+                     "color": "rgb(64 90 95)"
+                    },
+                    null
+                   ],
+                   {
+                    "$$css": true,
+                    "className": "shrink-0 ms-auto"
+                   }
+                  ]
+                 },
+                 "children": [
+                  "⌘N"
+                 ]
+                }
+               ]
+              },
+              {
+               "type": "Pressable",
+               "props": {
+                "ref": null,
+                "role": "menuitem",
+                "accessibilityLabel": "Open…",
+                "accessibilityRole": "button",
+                "disabled": false,
+                "style": [
+                 [
+                  null,
+                  {
+                   "backgroundColor": "transparent",
+                   "minHeight": 44,
+                   "columnGap": 8
+                  },
+                  null
+                 ],
+                 {
+                  "$$css": true,
+                  "className": "relative flex-row items-center select-none min-w-0 rounded-[10px] px-space-8 py-space-4 min-h-[28px] gap-space-8 min-h-[44px] cursor-pointer"
+                 }
+                ]
+               },
+               "children": [
+                {
+                 "type": "Text",
+                 "props": {
+                  "ref": null,
+                  "numberOfLines": 1,
+                  "style": [
+                   [
+                    {
+                     "fontSize": 14,
+                     "lineHeight": 20,
+                     "letterSpacing": 0,
+                     "fontWeight": "400",
+                     "fontFamily": "Inter"
+                    },
+                    {
+                     "color": "rgb(0 31 36)"
+                    }
+                   ],
+                   {
+                    "$$css": true,
+                    "className": "flex-1 min-w-0"
+                   }
+                  ]
+                 },
+                 "children": [
+                  "Open…"
+                 ]
+                }
+               ]
+              },
+              {
+               "type": "View",
+               "props": {
+                "ref": null,
+                "style": [
+                 {
+                  "backgroundColor": "rgb(204 221 224)"
+                 },
+                 {
+                  "$$css": true,
+                  "className": "-mx-space-8 my-[2px] h-px"
+                 }
+                ]
+               },
+               "children": null
+              },
+              {
+               "type": "Pressable",
+               "props": {
+                "ref": null,
+                "role": "menuitem",
+                "aria-expanded": false,
+                "aria-haspopup": "menu",
+                "accessibilityLabel": "Share",
+                "accessibilityRole": "button",
+                "disabled": false,
+                "style": [
+                 [
+                  null,
+                  {
+                   "backgroundColor": "transparent",
+                   "minHeight": 44
+                  },
+                  null
+                 ],
+                 {
+                  "$$css": true,
+                  "className": "relative flex-row items-center select-none min-w-0 rounded-[10px] px-space-8 py-space-4 min-h-[28px] gap-space-8 min-h-[44px] cursor-pointer justify-between"
+                 }
+                ]
+               },
+               "children": [
+                {
+                 "type": "Text",
+                 "props": {
+                  "ref": null,
+                  "numberOfLines": 1,
+                  "style": [
+                   [
+                    {
+                     "fontSize": 14,
+                     "lineHeight": 20,
+                     "letterSpacing": 0,
+                     "fontWeight": "400",
+                     "fontFamily": "Inter"
+                    },
+                    {
+                     "color": "rgb(0 31 36)"
+                    }
+                   ],
+                   {
+                    "$$css": true,
+                    "className": "flex-1 min-w-0"
+                   }
+                  ]
+                 },
+                 "children": [
+                  "Share"
+                 ]
+                },
+                {
+                 "type": "View",
+                 "props": {
+                  "ref": null,
+                  "style": [
+                   null,
+                   {
+                    "$$css": true,
+                    "className": "shrink-0 ms-auto"
+                   }
+                  ]
+                 },
+                 "children": [
+                  {
+                   "type": "Svg",
+                   "props": {
+                    "ref": null,
+                    "fill": "none",
+                    "width": 16,
+                    "height": 16,
+                    "viewBox": "0 0 24 24",
+                    "style": [
+                     null
+                    ]
+                   },
+                   "children": [
+                    {
+                     "type": "Path",
+                     "props": {
+                      "ref": null,
+                      "fill": "rgb(64 90 95)",
+                      "stroke": "none",
+                      "strokeWidth": 0,
+                      "strokeLinecap": "butt",
+                      "strokeLinejoin": "miter",
+                      "fillRule": "evenodd",
+                      "clipRule": "evenodd",
+                      "d": "M11.9999 13.1714L16.9497 8.22168L18.3639 9.63589L11.9999 15.9999L5.63599 9.63589L7.0502 8.22168L11.9999 13.1714Z"
+                     },
+                     "children": null
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "type": "Pressable",
+               "props": {
+                "ref": null,
+                "role": "menuitem",
+                "accessibilityLabel": "Print",
+                "accessibilityRole": "button",
+                "disabled": true,
+                "style": [
+                 [
+                  null,
+                  {
+                   "backgroundColor": "transparent",
+                   "minHeight": 44,
+                   "columnGap": 8
+                  },
+                  null
+                 ],
+                 {
+                  "$$css": true,
+                  "className": "relative flex-row items-center select-none min-w-0 rounded-[10px] px-space-8 py-space-4 min-h-[28px] gap-space-8 min-h-[44px] cursor-not-allowed"
+                 }
+                ]
+               },
+               "children": [
+                {
+                 "type": "Text",
+                 "props": {
+                  "ref": null,
+                  "numberOfLines": 1,
+                  "style": [
+                   [
+                    {
+                     "fontSize": 14,
+                     "lineHeight": 20,
+                     "letterSpacing": 0,
+                     "fontWeight": "400",
+                     "fontFamily": "Inter"
+                    },
+                    {
+                     "color": "rgb(126 149 153)"
+                    }
+                   ],
+                   {
+                    "$$css": true,
+                    "className": "flex-1 min-w-0"
+                   }
+                  ]
+                 },
+                 "children": [
+                  "Print"
+                 ]
+                }
+               ]
+              }
              ]
             }
            ]
@@ -3233,28 +3263,197 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
          ]
         }
        ]
-      },
+      }
+     ]
+    },
+    {
+     "type": "View",
+     "props": {
+      "ref": null,
+      "accessibilityViewIsModal": true,
+      "style": [
+       [
+        {
+         "position": "absolute",
+         "top": 0,
+         "left": 0,
+         "right": 0,
+         "bottom": 0
+        },
+        {
+         "zIndex": 1010
+        },
+        null
+       ],
+       {
+        "pointerEvents": "box-none"
+       }
+      ]
+     },
+     "children": [
       {
-       "type": "Modal",
+       "type": "View",
        "props": {
         "ref": null,
-        "visible": true,
-        "transparent": true,
-        "animationType": "none",
-        "statusBarTranslucent": true
+        "style": {
+         "position": "absolute",
+         "left": 0,
+         "right": 0,
+         "top": 0,
+         "bottom": 0
+        }
        },
        "children": [
         {
          "type": "View",
          "props": {
           "ref": null,
-          "style": {
-           "position": "absolute",
-           "left": 0,
-           "right": 0,
-           "top": 0,
-           "bottom": 0
+          "style": [
+           [
+            {
+             "position": "absolute",
+             "left": 0,
+             "right": 0,
+             "top": 0,
+             "bottom": 0
+            },
+            {
+             "flex": 1
+            }
+           ],
+           {
+            "pointerEvents": "box-none"
+           }
+          ]
+         },
+         "children": [
+          {
+           "type": "Pressable",
+           "props": {
+            "ref": null,
+            "focusable": false,
+            "accessibilityLabel": "Dismiss",
+            "accessibilityRole": "button",
+            "disabled": false,
+            "style": [
+             {
+              "position": "absolute",
+              "left": 0,
+              "right": 0,
+              "top": 0,
+              "bottom": 0
+             },
+             {
+              "pointerEvents": "auto"
+             }
+            ]
+           },
+           "children": [
+            {
+             "type": "BlurView",
+             "props": {
+              "intensity": 80,
+              "tint": "dark",
+              "style": [
+               [
+                {
+                 "position": "absolute",
+                 "left": 0,
+                 "right": 0,
+                 "top": 0,
+                 "bottom": 0
+                },
+                null,
+                {
+                 "opacity": 0
+                }
+               ],
+               {
+                "pointerEvents": "none"
+               }
+              ]
+             },
+             "children": null
+            },
+            {
+             "type": "Animated.View",
+             "props": {
+              "style": [
+               [
+                {
+                 "position": "absolute",
+                 "left": 0,
+                 "right": 0,
+                 "top": 0,
+                 "bottom": 0
+                },
+                {
+                 "backgroundColor": "#000"
+                },
+                null,
+                {
+                 "opacity": 0
+                }
+               ],
+               {
+                "pointerEvents": "none"
+               }
+              ]
+             },
+             "children": null
+            }
+           ]
           }
+         ]
+        },
+        {
+         "type": "Animated.View",
+         "props": {
+          "collapsable": false,
+          "ref": {
+           "current": null
+          },
+          "style": [
+           {
+            "position": "absolute",
+            "bottom": 0,
+            "maxWidth": 800,
+            "alignSelf": "center",
+            "marginHorizontal": "auto",
+            "backgroundColor": "transparent",
+            "left": 16,
+            "right": 16,
+            "borderRadius": 24,
+            "borderCurve": "circular"
+           },
+           null,
+           {
+            "marginBottom": 16
+           },
+           {
+            "transform": [
+             {
+              "translateY": 812
+             },
+             {
+              "scale": 0.95
+             }
+            ]
+           },
+           {
+            "maxHeight": 780,
+            "height": null
+           },
+           {
+            "maxWidth": 500,
+            "backgroundColor": "transparent",
+            "borderRadius": 20,
+            "borderCurve": "circular"
+           },
+           {
+            "backgroundColor": "transparent"
+           }
+          ]
          },
          "children": [
           {
@@ -3271,140 +3470,18 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
                "bottom": 0
               },
               {
-               "flex": 1
+               "borderCurve": "circular",
+               "borderTopLeftRadius": 20,
+               "borderTopRightRadius": 20,
+               "borderBottomLeftRadius": 20,
+               "borderBottomRightRadius": 20
+              },
+              {
+               "overflow": "hidden"
               }
              ],
              {
-              "pointerEvents": "box-none"
-             }
-            ]
-           },
-           "children": [
-            {
-             "type": "Pressable",
-             "props": {
-              "ref": null,
-              "focusable": false,
-              "accessibilityLabel": "Dismiss",
-              "accessibilityRole": "button",
-              "disabled": false,
-              "style": [
-               {
-                "position": "absolute",
-                "left": 0,
-                "right": 0,
-                "top": 0,
-                "bottom": 0
-               },
-               {
-                "pointerEvents": "auto"
-               }
-              ]
-             },
-             "children": [
-              {
-               "type": "BlurView",
-               "props": {
-                "intensity": 80,
-                "tint": "dark",
-                "style": [
-                 [
-                  {
-                   "position": "absolute",
-                   "left": 0,
-                   "right": 0,
-                   "top": 0,
-                   "bottom": 0
-                  },
-                  null,
-                  {
-                   "opacity": 0
-                  }
-                 ],
-                 {
-                  "pointerEvents": "none"
-                 }
-                ]
-               },
-               "children": null
-              },
-              {
-               "type": "Animated.View",
-               "props": {
-                "style": [
-                 [
-                  {
-                   "position": "absolute",
-                   "left": 0,
-                   "right": 0,
-                   "top": 0,
-                   "bottom": 0
-                  },
-                  {
-                   "backgroundColor": "#000"
-                  },
-                  null,
-                  {
-                   "opacity": 0
-                  }
-                 ],
-                 {
-                  "pointerEvents": "none"
-                 }
-                ]
-               },
-               "children": null
-              }
-             ]
-            }
-           ]
-          },
-          {
-           "type": "Animated.View",
-           "props": {
-            "collapsable": false,
-            "ref": {
-             "current": null
-            },
-            "style": [
-             {
-              "position": "absolute",
-              "bottom": 0,
-              "maxWidth": 800,
-              "alignSelf": "center",
-              "marginHorizontal": "auto",
-              "backgroundColor": "transparent",
-              "left": 16,
-              "right": 16,
-              "borderRadius": 24,
-              "borderCurve": "circular"
-             },
-             null,
-             {
-              "marginBottom": 16
-             },
-             {
-              "transform": [
-               {
-                "translateY": 812
-               },
-               {
-                "scale": 0.95
-               }
-              ]
-             },
-             {
-              "maxHeight": 780,
-              "height": null
-             },
-             {
-              "maxWidth": 500,
-              "backgroundColor": "transparent",
-              "borderRadius": 20,
-              "borderCurve": "circular"
-             },
-             {
-              "backgroundColor": "transparent"
+              "pointerEvents": "none"
              }
             ]
            },
@@ -3423,14 +3500,7 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
                  "bottom": 0
                 },
                 {
-                 "borderCurve": "circular",
-                 "borderTopLeftRadius": 20,
-                 "borderTopRightRadius": 20,
-                 "borderBottomLeftRadius": 20,
-                 "borderBottomRightRadius": 20
-                },
-                {
-                 "overflow": "hidden"
+                 "bottom": 0
                 }
                ],
                {
@@ -3453,8 +3523,13 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
                    "bottom": 0
                   },
                   {
-                   "bottom": 0
-                  }
+                   "borderRadius": 20,
+                   "borderCurve": "circular"
+                  },
+                  {
+                   "overflow": "hidden"
+                  },
+                  null
                  ],
                  {
                   "pointerEvents": "none"
@@ -3462,6 +3537,29 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
                 ]
                },
                "children": [
+                {
+                 "type": "BlurView",
+                 "props": {
+                  "intensity": 100,
+                  "tint": "systemUltraThinMaterialLight",
+                  "style": [
+                   [
+                    {
+                     "position": "absolute",
+                     "left": 0,
+                     "right": 0,
+                     "top": 0,
+                     "bottom": 0
+                    },
+                    null
+                   ],
+                   {
+                    "pointerEvents": "none"
+                   }
+                  ]
+                 },
+                 "children": null
+                },
                 {
                  "type": "View",
                  "props": {
@@ -3480,175 +3578,257 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
                      "borderCurve": "circular"
                     },
                     {
-                     "overflow": "hidden"
+                     "backgroundColor": "rgba(199, 246, 255, 0.72)"
                     },
-                    null
+                    {
+                     "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14)"
+                    }
                    ],
                    {
                     "pointerEvents": "none"
                    }
                   ]
                  },
-                 "children": [
-                  {
-                   "type": "BlurView",
-                   "props": {
-                    "intensity": 100,
-                    "tint": "systemUltraThinMaterialLight",
-                    "style": [
-                     [
-                      {
-                       "position": "absolute",
-                       "left": 0,
-                       "right": 0,
-                       "top": 0,
-                       "bottom": 0
-                      },
-                      null
-                     ],
-                     {
-                      "pointerEvents": "none"
-                     }
-                    ]
+                 "children": null
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "type": "Animated.ScrollView",
+           "props": {
+            "ref": {
+             "current": null
+            },
+            "style": [
+             {
+              "flex": 1
+             },
+             {
+              "borderCurve": "circular",
+              "borderTopLeftRadius": 20,
+              "borderTopRightRadius": 20,
+              "borderBottomLeftRadius": 20,
+              "borderBottomRightRadius": 20
+             }
+            ],
+            "contentContainerStyle": {
+             "flexGrow": 1
+            },
+            "showsVerticalScrollIndicator": false,
+            "keyboardShouldPersistTaps": "handled",
+            "scrollEventThrottle": 16
+           },
+           "children": [
+            {
+             "type": "View",
+             "props": {
+              "ref": null,
+              "style": {
+               "position": "absolute",
+               "width": "100%",
+               "alignItems": "center",
+               "zIndex": 10,
+               "height": 20
+              }
+             },
+             "children": [
+              {
+               "type": "Pressable",
+               "props": {
+                "ref": null,
+                "accessibilityLabel": "Dismiss",
+                "accessibilityHint": "Tap to close",
+                "hitSlop": {
+                 "top": 10,
+                 "bottom": 10,
+                 "left": 40,
+                 "right": 40
+                }
+               },
+               "children": [
+                {
+                 "type": "View",
+                 "props": {
+                  "ref": null,
+                  "style": [
+                   {
+                    "top": 8,
+                    "width": 35,
+                    "height": 5,
+                    "borderRadius": 3,
+                    "alignSelf": "center",
+                    "opacity": 0.5
                    },
-                   "children": null
-                  },
-                  {
-                   "type": "View",
-                   "props": {
-                    "ref": null,
-                    "style": [
-                     [
-                      {
-                       "position": "absolute",
-                       "left": 0,
-                       "right": 0,
-                       "top": 0,
-                       "bottom": 0
-                      },
-                      {
-                       "borderRadius": 20,
-                       "borderCurve": "circular"
-                      },
-                      {
-                       "backgroundColor": "rgba(199, 246, 255, 0.72)"
-                      },
-                      {
-                       "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 8px 5.18px -5.18px rgba(255, 255, 255, 0.14), inset 0 -8px 5.18px -5.18px rgba(255, 255, 255, 0.14)"
-                      }
-                     ],
-                     {
-                      "pointerEvents": "none"
-                     }
-                    ]
-                   },
-                   "children": null
-                  }
-                 ]
+                   {
+                    "backgroundColor": "rgb(0 31 36)"
+                   }
+                  ]
+                 },
+                 "children": null
                 }
                ]
               }
              ]
             },
             {
-             "type": "Animated.ScrollView",
+             "type": "View",
              "props": {
               "ref": {
                "current": null
               },
+              "accessibilityLabel": "Menu",
               "style": [
                {
-                "flex": 1
+                "paddingTop": 20,
+                "paddingHorizontal": 20,
+                "paddingBottom": 20
                },
                {
-                "borderCurve": "circular",
-                "borderTopLeftRadius": 20,
-                "borderTopRightRadius": 20,
-                "borderBottomLeftRadius": 20,
-                "borderBottomRightRadius": 20
-               }
-              ],
-              "contentContainerStyle": {
-               "flexGrow": 1
-              },
-              "showsVerticalScrollIndicator": false,
-              "keyboardShouldPersistTaps": "handled",
-              "scrollEventThrottle": 16
+                "backgroundColor": "transparent"
+               },
+               [
+                {
+                 "gap": 2
+                },
+                null
+               ]
+              ]
              },
              "children": [
               {
                "type": "View",
                "props": {
                 "ref": null,
-                "style": {
-                 "position": "absolute",
-                 "width": "100%",
-                 "alignItems": "center",
-                 "zIndex": 10,
-                 "height": 20
-                }
+                "style": [
+                 null,
+                 {
+                  "$$css": true,
+                  "className": "relative"
+                 }
+                ]
                },
                "children": [
                 {
                  "type": "Pressable",
                  "props": {
                   "ref": null,
-                  "accessibilityLabel": "Dismiss",
-                  "accessibilityHint": "Tap to close",
-                  "hitSlop": {
-                   "top": 10,
-                   "bottom": 10,
-                   "left": 40,
-                   "right": 40
-                  }
+                  "role": "checkbox",
+                  "aria-checked": false,
+                  "accessibilityLabel": "Dense rows",
+                  "accessibilityRole": "checkbox",
+                  "disabled": false,
+                  "style": [
+                   [
+                    null,
+                    {
+                     "backgroundColor": "transparent",
+                     "paddingLeft": 36,
+                     "minHeight": 44,
+                     "columnGap": 8
+                    },
+                    null
+                   ],
+                   {
+                    "$$css": true,
+                    "className": "relative flex-row items-center select-none min-w-0 rounded-[10px] px-space-8 py-space-4 min-h-[28px] gap-space-8 min-h-[44px] cursor-pointer pl-space-32 pr-space-8"
+                   }
+                  ]
                  },
                  "children": [
                   {
-                   "type": "View",
+                   "type": "Text",
                    "props": {
                     "ref": null,
+                    "numberOfLines": 1,
                     "style": [
+                     [
+                      {
+                       "fontSize": 14,
+                       "lineHeight": 20,
+                       "letterSpacing": 0,
+                       "fontWeight": "400",
+                       "fontFamily": "Inter"
+                      },
+                      {
+                       "color": "rgb(0 31 36)"
+                      }
+                     ],
                      {
-                      "top": 8,
-                      "width": 35,
-                      "height": 5,
-                      "borderRadius": 3,
-                      "alignSelf": "center",
-                      "opacity": 0.5
-                     },
-                     {
-                      "backgroundColor": "rgb(0 31 36)"
+                      "$$css": true,
+                      "className": "flex-1 min-w-0"
                      }
                     ]
                    },
-                   "children": null
+                   "children": [
+                    "Dense rows"
+                   ]
                   }
                  ]
+                },
+                {
+                 "type": "View",
+                 "props": {
+                  "ref": null,
+                  "pointerEvents": "none",
+                  "style": [
+                   {
+                    "width": 20
+                   },
+                   {
+                    "$$css": true,
+                    "className": "absolute left-space-8 inset-y-0 w-3.5 items-center justify-center"
+                   }
+                  ]
+                 },
+                 "children": null
                 }
+               ]
+              },
+              {
+               "type": "Text",
+               "props": {
+                "ref": null,
+                "style": [
+                 [
+                  {
+                   "fontSize": 12,
+                   "lineHeight": 16,
+                   "letterSpacing": 0.15,
+                   "fontWeight": "500",
+                   "fontFamily": "Inter"
+                  },
+                  null,
+                  {
+                   "color": "rgb(64 90 95)"
+                  },
+                  null
+                 ],
+                 {
+                  "$$css": true,
+                  "className": "px-space-8 py-space-4"
+                 }
+                ]
+               },
+               "children": [
+                "Layout"
                ]
               },
               {
                "type": "View",
                "props": {
-                "ref": {
-                 "current": null
-                },
-                "accessibilityLabel": "Menu",
+                "ref": null,
+                "collapsable": false,
+                "role": "radiogroup",
                 "style": [
+                 null,
                  {
-                  "paddingTop": 20,
-                  "paddingHorizontal": 20,
-                  "paddingBottom": 20
-                 },
-                 {
-                  "backgroundColor": "transparent"
-                 },
-                 [
-                  {
-                   "gap": 2
-                  },
-                  null
-                 ]
+                  "$$css": true,
+                  "className": "gap-[2px]"
+                 }
                 ]
                },
                "children": [
@@ -3669,10 +3849,114 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
                    "type": "Pressable",
                    "props": {
                     "ref": null,
-                    "role": "checkbox",
+                    "role": "radio",
+                    "aria-checked": true,
+                    "accessibilityLabel": "Comfortable",
+                    "accessibilityRole": "radio",
+                    "disabled": false,
+                    "style": [
+                     [
+                      null,
+                      {
+                       "backgroundColor": "rgb(179 236 247)",
+                       "paddingLeft": 36,
+                       "minHeight": 44,
+                       "columnGap": 8
+                      },
+                      null
+                     ],
+                     {
+                      "$$css": true,
+                      "className": "relative flex-row items-center select-none min-w-0 rounded-[10px] px-space-8 py-space-4 min-h-[28px] gap-space-8 min-h-[44px] cursor-pointer pl-space-32 pr-space-8"
+                     }
+                    ]
+                   },
+                   "children": [
+                    {
+                     "type": "Text",
+                     "props": {
+                      "ref": null,
+                      "numberOfLines": 1,
+                      "style": [
+                       [
+                        {
+                         "fontSize": 14,
+                         "lineHeight": 20,
+                         "letterSpacing": 0,
+                         "fontWeight": "400",
+                         "fontFamily": "Inter"
+                        },
+                        {
+                         "color": "rgb(0 31 36)"
+                        }
+                       ],
+                       {
+                        "$$css": true,
+                        "className": "flex-1 min-w-0"
+                       }
+                      ]
+                     },
+                     "children": [
+                      "Comfortable"
+                     ]
+                    }
+                   ]
+                  },
+                  {
+                   "type": "View",
+                   "props": {
+                    "ref": null,
+                    "pointerEvents": "none",
+                    "style": [
+                     {
+                      "width": 20
+                     },
+                     {
+                      "$$css": true,
+                      "className": "absolute left-space-8 inset-y-0 w-3.5 items-center justify-center"
+                     }
+                    ]
+                   },
+                   "children": [
+                    {
+                     "type": "View",
+                     "props": {
+                      "ref": null,
+                      "style": [
+                       null,
+                       {
+                        "$$css": true,
+                        "className": "w-space-8 h-space-8 rounded-full bg-foreground"
+                       }
+                      ]
+                     },
+                     "children": null
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "type": "View",
+                 "props": {
+                  "ref": null,
+                  "style": [
+                   null,
+                   {
+                    "$$css": true,
+                    "className": "relative"
+                   }
+                  ]
+                 },
+                 "children": [
+                  {
+                   "type": "Pressable",
+                   "props": {
+                    "ref": null,
+                    "role": "radio",
                     "aria-checked": false,
-                    "accessibilityLabel": "Dense rows",
-                    "accessibilityRole": "checkbox",
+                    "accessibilityLabel": "Compact",
+                    "accessibilityRole": "radio",
                     "disabled": false,
                     "style": [
                      [
@@ -3717,7 +4001,7 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
                       ]
                      },
                      "children": [
-                      "Dense rows"
+                      "Compact"
                      ]
                     }
                    ]
@@ -3738,245 +4022,6 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
                     ]
                    },
                    "children": null
-                  }
-                 ]
-                },
-                {
-                 "type": "Text",
-                 "props": {
-                  "ref": null,
-                  "style": [
-                   [
-                    {
-                     "fontSize": 12,
-                     "lineHeight": 16,
-                     "letterSpacing": 0.15,
-                     "fontWeight": "500",
-                     "fontFamily": "Inter"
-                    },
-                    null,
-                    {
-                     "color": "rgb(64 90 95)"
-                    },
-                    null
-                   ],
-                   {
-                    "$$css": true,
-                    "className": "px-space-8 py-space-4"
-                   }
-                  ]
-                 },
-                 "children": [
-                  "Layout"
-                 ]
-                },
-                {
-                 "type": "View",
-                 "props": {
-                  "ref": null,
-                  "collapsable": false,
-                  "role": "radiogroup",
-                  "style": [
-                   null,
-                   {
-                    "$$css": true,
-                    "className": "gap-[2px]"
-                   }
-                  ]
-                 },
-                 "children": [
-                  {
-                   "type": "View",
-                   "props": {
-                    "ref": null,
-                    "style": [
-                     null,
-                     {
-                      "$$css": true,
-                      "className": "relative"
-                     }
-                    ]
-                   },
-                   "children": [
-                    {
-                     "type": "Pressable",
-                     "props": {
-                      "ref": null,
-                      "role": "radio",
-                      "aria-checked": true,
-                      "accessibilityLabel": "Comfortable",
-                      "accessibilityRole": "radio",
-                      "disabled": false,
-                      "style": [
-                       [
-                        null,
-                        {
-                         "backgroundColor": "rgb(179 236 247)",
-                         "paddingLeft": 36,
-                         "minHeight": 44,
-                         "columnGap": 8
-                        },
-                        null
-                       ],
-                       {
-                        "$$css": true,
-                        "className": "relative flex-row items-center select-none min-w-0 rounded-[10px] px-space-8 py-space-4 min-h-[28px] gap-space-8 min-h-[44px] cursor-pointer pl-space-32 pr-space-8"
-                       }
-                      ]
-                     },
-                     "children": [
-                      {
-                       "type": "Text",
-                       "props": {
-                        "ref": null,
-                        "numberOfLines": 1,
-                        "style": [
-                         [
-                          {
-                           "fontSize": 14,
-                           "lineHeight": 20,
-                           "letterSpacing": 0,
-                           "fontWeight": "400",
-                           "fontFamily": "Inter"
-                          },
-                          {
-                           "color": "rgb(0 31 36)"
-                          }
-                         ],
-                         {
-                          "$$css": true,
-                          "className": "flex-1 min-w-0"
-                         }
-                        ]
-                       },
-                       "children": [
-                        "Comfortable"
-                       ]
-                      }
-                     ]
-                    },
-                    {
-                     "type": "View",
-                     "props": {
-                      "ref": null,
-                      "pointerEvents": "none",
-                      "style": [
-                       {
-                        "width": 20
-                       },
-                       {
-                        "$$css": true,
-                        "className": "absolute left-space-8 inset-y-0 w-3.5 items-center justify-center"
-                       }
-                      ]
-                     },
-                     "children": [
-                      {
-                       "type": "View",
-                       "props": {
-                        "ref": null,
-                        "style": [
-                         null,
-                         {
-                          "$$css": true,
-                          "className": "w-space-8 h-space-8 rounded-full bg-foreground"
-                         }
-                        ]
-                       },
-                       "children": null
-                      }
-                     ]
-                    }
-                   ]
-                  },
-                  {
-                   "type": "View",
-                   "props": {
-                    "ref": null,
-                    "style": [
-                     null,
-                     {
-                      "$$css": true,
-                      "className": "relative"
-                     }
-                    ]
-                   },
-                   "children": [
-                    {
-                     "type": "Pressable",
-                     "props": {
-                      "ref": null,
-                      "role": "radio",
-                      "aria-checked": false,
-                      "accessibilityLabel": "Compact",
-                      "accessibilityRole": "radio",
-                      "disabled": false,
-                      "style": [
-                       [
-                        null,
-                        {
-                         "backgroundColor": "transparent",
-                         "paddingLeft": 36,
-                         "minHeight": 44,
-                         "columnGap": 8
-                        },
-                        null
-                       ],
-                       {
-                        "$$css": true,
-                        "className": "relative flex-row items-center select-none min-w-0 rounded-[10px] px-space-8 py-space-4 min-h-[28px] gap-space-8 min-h-[44px] cursor-pointer pl-space-32 pr-space-8"
-                       }
-                      ]
-                     },
-                     "children": [
-                      {
-                       "type": "Text",
-                       "props": {
-                        "ref": null,
-                        "numberOfLines": 1,
-                        "style": [
-                         [
-                          {
-                           "fontSize": 14,
-                           "lineHeight": 20,
-                           "letterSpacing": 0,
-                           "fontWeight": "400",
-                           "fontFamily": "Inter"
-                          },
-                          {
-                           "color": "rgb(0 31 36)"
-                          }
-                         ],
-                         {
-                          "$$css": true,
-                          "className": "flex-1 min-w-0"
-                         }
-                        ]
-                       },
-                       "children": [
-                        "Compact"
-                       ]
-                      }
-                     ]
-                    },
-                    {
-                     "type": "View",
-                     "props": {
-                      "ref": null,
-                      "pointerEvents": "none",
-                      "style": [
-                       {
-                        "width": 20
-                       },
-                       {
-                        "$$css": true,
-                        "className": "absolute left-space-8 inset-y-0 w-3.5 items-center justify-center"
-                       }
-                      ]
-                     },
-                     "children": null
-                    }
-                   ]
                   }
                  ]
                 }

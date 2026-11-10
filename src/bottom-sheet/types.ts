@@ -153,8 +153,8 @@ export interface BottomSheetProps {
 
 /**
  * Props consumed by a platform Shell — the outermost wrapper that hosts the
- * sheet body in a full-screen overlay. Native wraps it in RN's `<Modal>` +
- * `<GestureHandlerRootView>` (keyboard tracking reads the app's own root
+ * sheet body in a full-screen overlay. Native portals it into the app's own
+ * window under an `OverlayRoot` (keyboard tracking reads the app's own root
  * `<KeyboardProvider>`, never a second one); web wraps it in bloom's
  * stable DOM `<Portal>` + a fixed `<GestureHandlerRootView>`. Splitting the
  * shell is what lets web avoid RN-Web's `<Modal>`/`ModalPortal`, whose host
@@ -164,7 +164,7 @@ export interface BottomSheetProps {
 export interface BottomSheetShellProps {
   /** True while the sheet is mounted (open or animating closed). */
   visible: boolean;
-  /** Hardware/back-button dismissal request (native `<Modal onRequestClose>`). */
+  /** Hardware/back-button dismissal request (`OverlayRoot`'s `onRequestClose`). */
   onRequestClose: () => void;
   /**
    * Live keyboard height, driven by the native shell's keyboard tracker. Web
@@ -180,7 +180,7 @@ export interface BottomSheetShellProps {
  * only thing that differs per platform is the `Shell` (see
  * `BottomSheetShellProps`) — injected by `index.tsx` (native) and
  * `index.web.tsx` (web). This module imports nothing platform-specific
- * (no RN `<Modal>`, no `react-native-keyboard-controller`) so it is safe to
+ * (no native shell, no `react-native-keyboard-controller`) so it is safe to
  * bundle on web.
  */
 export interface BottomSheetBaseProps extends BottomSheetProps {

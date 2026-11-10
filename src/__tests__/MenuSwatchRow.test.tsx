@@ -30,6 +30,7 @@ import {
   swatchGlyphColor,
 } from '../floating/menu-swatch-row';
 import { BloomProvider } from '../provider';
+import { PortalHost } from './support/portal-host';
 import { mixColors } from '../styles/color-contrast';
 import type { PlatformSurfaceAdapter, PopupSurfaceProps } from '../platform-surface/types';
 
@@ -113,7 +114,9 @@ describe('the swatch’s paint, light and dark', () => {
   function circle(mode: 'light' | 'dark', key: string) {
     const screen = render(
       <BloomProvider mode={mode}>
-        <Menu onSelect={() => {}} />
+        <PortalHost>
+          <Menu onSelect={() => {}} />
+        </PortalHost>
       </BloomProvider>,
     );
     fireEvent.press(screen.getByTestId('trigger'));
@@ -149,7 +152,11 @@ describe('the swatch’s paint, light and dark', () => {
 
 describe('DropdownMenuSwatchRow in a sheet', () => {
   function open(ui: React.ReactElement) {
-    const screen = render(<BloomProvider mode="light">{ui}</BloomProvider>);
+    const screen = render(
+      <BloomProvider mode="light">
+        <PortalHost>{ui}</PortalHost>
+      </BloomProvider>,
+    );
     fireEvent.press(screen.getByTestId('trigger'));
     return screen;
   }
@@ -222,7 +229,7 @@ describe('DropdownMenuSwatchRow in a platform popup (a desktop window)', () => {
     const popup = jest.fn();
     const screen = render(
       <BloomProvider mode="light" platform={adapter(popup)}>
-        {ui}
+        <PortalHost>{ui}</PortalHost>
       </BloomProvider>,
       // Each host view's ref stands for it by its testID, so a focus sent is told apart.
       { createNodeMock: (element) => ({ testID: (element.props as { testID?: string }).testID }) },

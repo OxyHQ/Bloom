@@ -1,17 +1,18 @@
 import React, { createRef } from 'react';
 import * as ReactNative from 'react-native';
-import { Modal, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { act, render, within } from '@testing-library/react-native';
 
 import { useSurfaceFill, useSurfaceLevelValue } from '../styles/surface-levels';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { hostNodes, resolvedStyle, surfaceSheens } from './support/rendered-style';
 import BottomSheet, { type BottomSheetRef } from '../bottom-sheet';
+import { PortalHost, captureAndroidBack } from './support/portal-host';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
     <BloomThemeProvider mode="light" colorPreset="teal">
-      {ui}
+      <PortalHost>{ui}</PortalHost>
     </BloomThemeProvider>,
   );
 }
@@ -19,7 +20,7 @@ function renderWithTheme(ui: React.ReactElement) {
 function renderWithDarkTheme(ui: React.ReactElement) {
   return render(
     <BloomThemeProvider mode="dark" colorPreset="teal">
-      {ui}
+      <PortalHost>{ui}</PortalHost>
     </BloomThemeProvider>,
   );
 }
@@ -43,9 +44,11 @@ describe('BottomSheet', () => {
     const background = jest.fn(() => <View testID="custom-background" />);
     screen.rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <BottomSheet ref={ref} backgroundComponent={background}>
-          <Text>Material</Text>
-        </BottomSheet>
+        <PortalHost>
+          <BottomSheet ref={ref} backgroundComponent={background}>
+            <Text>Material</Text>
+          </BottomSheet>
+        </PortalHost>
       </BloomThemeProvider>,
     );
     expect(screen.getByTestId('custom-background')).toBeTruthy();
@@ -277,16 +280,14 @@ describe('BottomSheet', () => {
     });
   });
 
-  describe("keyboard provider: the app's one, never a second inside the Modal", () => {
+  describe("keyboard provider: the app's one, never a second", () => {
     it("adds no KeyboardProvider of its own and tracks the keyboard through the app's", () => {
       // Every keyboard-controller provider suspends its main-window callback
-      // when a <Modal> shows and relies on `dialog.setOnDismissListener` to
-      // resume it; a dialog keeps only the last listener, so a provider added
-      // inside the sheet left the app's own suspended for good — after the
-      // first sheet, no KeyboardAvoidingView in the app followed the keyboard
-      // until a restart (Alia #608, Android 16). React context crosses the
-      // Modal, and the root provider carries the Modal window's keyboard
-      // events itself, so the sheet uses that one.
+      // when a window-level dialog shows and relies on
+      // `dialog.setOnDismissListener` to resume it; a dialog keeps only the last
+      // listener, so a provider added inside the sheet left the app's own
+      // suspended for good (Alia #608, Android 16). The sheet lives in the app's
+      // own window, so the root provider is the one it uses.
       // The same module instance the sheet `require`s (moduleNameMapper'd to
       // `__mocks__/`); `jest.requireMock` would hand back a separate automock.
       const { KeyboardProvider, useKeyboardHandler } =
@@ -412,8 +413,13 @@ it('publishes declared custom background at the sheet level reset', () => {
 });
 
 describe('protected sheet dismissal lifecycle', () => {
-  beforeEach(() => jest.useFakeTimers());
+  let pressBack: () => void;
+  beforeEach(() => {
+    jest.useFakeTimers();
+    pressBack = captureAndroidBack();
+  });
   afterEach(() => {
+    jest.restoreAllMocks();
     jest.runOnlyPendingTimers();
     jest.useRealTimers();
   });
@@ -428,11 +434,11 @@ describe('protected sheet dismissal lifecycle', () => {
       </BottomSheet>,
     );
     act(() => ref.current?.present());
-    act(() => screen.UNSAFE_getByType(Modal).props.onRequestClose());
+    act(() => pressBack());
     act(() => jest.advanceTimersByTime(400));
     expect(guard).toHaveBeenCalledTimes(1);
     expect(onDismiss).not.toHaveBeenCalled();
-    expect(screen.UNSAFE_getByType(Modal).props.visible).toBe(true);
+    expect(screen.getByText('Protected')).toBeTruthy();
   });
 
   it('settles an explicit close even when user dismissal is blocked, then reopens', () => {
@@ -450,7 +456,7 @@ describe('protected sheet dismissal lifecycle', () => {
     expect(onDismiss).toHaveBeenCalledTimes(1);
     expect(guard).not.toHaveBeenCalled();
     act(() => ref.current?.present());
-    expect(screen.UNSAFE_getByType(Modal).props.visible).toBe(true);
+    expect(screen.getByText('Protected')).toBeTruthy();
   });
 
   it('settles an allowed Android Back request exactly once', () => {
@@ -463,7 +469,7 @@ describe('protected sheet dismissal lifecycle', () => {
       </BottomSheet>,
     );
     act(() => ref.current?.present());
-    act(() => screen.UNSAFE_getByType(Modal).props.onRequestClose());
+    act(() => pressBack());
     act(() => jest.advanceTimersByTime(400));
     expect(onDismiss).toHaveBeenCalledTimes(1);
     expect(guard).toHaveBeenCalledTimes(1);

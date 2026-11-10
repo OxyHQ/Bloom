@@ -11,6 +11,7 @@ import { CustomColorPicker } from '../CustomColorPicker';
 import { GlossArt } from '../GlossArt';
 import { EmotionPicker } from '../EmotionPicker';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
+import { PortalHost } from '../../__tests__/support/portal-host';
 import { AgentCreator } from '../AgentCreator';
 import { AgentCreatorField } from '../AgentCreatorField';
 import { TextFieldInput } from '../../text-field';
@@ -36,7 +37,9 @@ const agent: AgentCreatorAgent = {
 function editor(onChange = jest.fn(), extra = {}) {
   return render(
     <BloomThemeProvider mode="light" colorPreset="teal">
-      <AgentCreator agent={agent} onChange={onChange} {...extra} />
+      <PortalHost>
+        <AgentCreator agent={agent} onChange={onChange} {...extra} />
+      </PortalHost>
     </BloomThemeProvider>,
   );
 }
@@ -77,7 +80,9 @@ describe('controlled agent creator', () => {
     const next = { ...agent, avatar: { ...agent.avatar, bodyColor: '#123456' } };
     view.rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <AgentCreator agent={next} onChange={onChange} />
+        <PortalHost>
+          <AgentCreator agent={next} onChange={onChange} />
+        </PortalHost>
       </BloomThemeProvider>,
     );
     fireEvent.press(view.getByLabelText('Notify when this agent finishes'));
@@ -102,16 +107,18 @@ describe('controlled agent creator', () => {
     const onUsername = jest.fn();
     const view = render(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <AgentCreator agent={agent} onChange={jest.fn()}>
-          <AgentCreatorField label="Username">
-            <TextFieldInput
-              label="Agent username"
-              size="sm"
-              value="designer"
-              onChangeText={onUsername}
-            />
-          </AgentCreatorField>
-        </AgentCreator>
+        <PortalHost>
+          <AgentCreator agent={agent} onChange={jest.fn()}>
+            <AgentCreatorField label="Username">
+              <TextFieldInput
+                label="Agent username"
+                size="sm"
+                value="designer"
+                onChangeText={onUsername}
+              />
+            </AgentCreatorField>
+          </AgentCreator>
+        </PortalHost>
       </BloomThemeProvider>,
     );
     expect(view.getByText('Username')).toBeTruthy();
@@ -148,13 +155,15 @@ function controlled(initial: AgentCreatorAgent = agent) {
     return (
       <CharacterRuntimeFixture value={{}}>
         <BloomThemeProvider>
-          <AgentCreator
-            agent={current}
-            onChange={(next) => {
-              onChange(next);
-              setCurrent(next);
-            }}
-          />
+          <PortalHost>
+            <AgentCreator
+              agent={current}
+              onChange={(next) => {
+                onChange(next);
+                setCurrent(next);
+              }}
+            />
+          </PortalHost>
         </BloomThemeProvider>
       </CharacterRuntimeFixture>
     );
@@ -179,9 +188,9 @@ describe('the character editor', () => {
     act(() => picker().onChange('#445566'));
     act(() => picker().onInteractionEnd());
     expect(last().bodyColor).toBe(normalizeAvatarSkinColor('#445566'));
-    fireEvent.press(view.getByLabelText('Undo'));
+    fireEvent.press(view.getByLabelText('Undo', { includeHiddenElements: true }));
     expect(last()).toEqual(agent.avatar);
-    fireEvent.press(view.getByLabelText('Redo'));
+    fireEvent.press(view.getByLabelText('Redo', { includeHiddenElements: true }));
     expect(last().bodyColor).toBe(normalizeAvatarSkinColor('#445566'));
   });
 
@@ -207,18 +216,22 @@ describe('the character editor', () => {
     const eyes = view.UNSAFE_getByType(EmotionPicker).props.choices;
     view.rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <AgentCreator agent={{ ...agent, name: 'Updated' }} onChange={jest.fn()} />
+        <PortalHost>
+          <AgentCreator agent={{ ...agent, name: 'Updated' }} onChange={jest.fn()} />
+        </PortalHost>
       </BloomThemeProvider>,
     );
     expect(view.UNSAFE_getByType(ShapeArc).props.choices).toBe(shapes);
     expect(view.UNSAFE_getByType(EmotionPicker).props.choices).toBe(eyes);
     view.rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <AgentCreator
-          agent={agent}
-          onChange={jest.fn()}
-          labels={{ characterOption: (_category, id) => `Translated ${id}` }}
-        />
+        <PortalHost>
+          <AgentCreator
+            agent={agent}
+            onChange={jest.fn()}
+            labels={{ characterOption: (_category, id) => `Translated ${id}` }}
+          />
+        </PortalHost>
       </BloomThemeProvider>,
     );
     expect(view.UNSAFE_getByType(EmotionPicker).props.choices[0].label).toMatch(/^Translated /);
@@ -230,12 +243,14 @@ describe('the character editor', () => {
     const view = render(
       <CharacterRuntimeFixture value={{}}>
         <BloomThemeProvider mode="light" colorPreset="teal">
-          <AgentCreator agent={agent} onChange={jest.fn()} />
+          <PortalHost>
+            <AgentCreator agent={agent} onChange={jest.fn()} />
+          </PortalHost>
         </BloomThemeProvider>
       </CharacterRuntimeFixture>,
     );
     expect(view.getByTestId('agent-creator-character-controls')).toBeTruthy();
-    expect(view.getByLabelText('Blue avatar')).toBeTruthy();
+    expect(view.getByLabelText('Blue avatar', { includeHiddenElements: true })).toBeTruthy();
     expect(view.UNSAFE_getByType(ShapeArc)).toBeTruthy();
     expect(view.UNSAFE_getByType(EmotionPicker)).toBeTruthy();
     for (const avatar of view.UNSAFE_getAllByType(CharacterAvatar)) {
@@ -301,7 +316,9 @@ describe('the character editor', () => {
       ...agent,
       avatar: { preset: 'blue_beret', bodyColor: '#123456' },
     });
-    expect(view.getByLabelText('Blue avatar').props['aria-pressed']).toBe(false);
+    expect(
+      view.getByLabelText('Blue avatar', { includeHiddenElements: true }).props['aria-pressed'],
+    ).toBe(false);
     expect(view.getByLabelText('Custom avatar color').props['aria-pressed']).toBe(true);
     expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe(
       normalizeAvatarSkinColor('#123456'),
@@ -319,10 +336,12 @@ describe('the character editor', () => {
     fireEvent(picker, 'change', '#Ab1234');
     expect(last()).toMatchObject({ bodyColor: normalizeAvatarSkinColor('#ab1234') });
     expect(last()).not.toHaveProperty('color');
-    fireEvent.press(view.getByLabelText('Blue avatar'));
+    fireEvent.press(view.getByLabelText('Blue avatar', { includeHiddenElements: true }));
     expect(last()).toMatchObject({ color: 'blue' });
     expect(last()).not.toHaveProperty('bodyColor');
-    expect(view.getByLabelText('Blue avatar').props['aria-pressed']).toBe(true);
+    expect(
+      view.getByLabelText('Blue avatar', { includeHiddenElements: true }).props['aria-pressed'],
+    ).toBe(true);
   });
 
   it('edits eyewear and accessory through the selects, and rejects a malformed exact color', () => {

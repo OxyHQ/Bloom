@@ -22,6 +22,7 @@ import { PlatformSurfaceProvider } from '../platform-surface/context';
 import type { PlatformSurfaceAdapter } from '../platform-surface/types';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { DESKTOP_TEXT_STYLES } from '../typography/desktop-scale';
+import { PortalHost } from './support/portal-host';
 
 const DESKTOP: PlatformSurfaceAdapter = { platform: 'desktop', capabilities: new Set(['window']) };
 
@@ -29,7 +30,7 @@ function renderOn(adapter: PlatformSurfaceAdapter | null, ui: React.ReactElement
   return render(
     <PlatformSurfaceProvider value={adapter}>
       <BloomThemeProvider mode="light" colorPreset="teal">
-        {ui}
+        <PortalHost>{ui}</PortalHost>
       </BloomThemeProvider>
     </PlatformSurfaceProvider>,
   );

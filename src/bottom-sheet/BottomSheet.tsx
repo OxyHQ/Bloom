@@ -1,9 +1,9 @@
 import type React from 'react';
 import { forwardRef } from 'react';
-import { Modal, Platform, StyleSheet } from 'react-native';
+import { Platform } from 'react-native';
 
-import { BlurWindow } from '../blur/blur-target';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { OverlayRoot } from '../overlay';
+import { Portal } from '../portal';
 import type { SharedValue } from 'react-native-reanimated';
 import { BottomSheetBase } from './BottomSheetBase';
 import type { BottomSheetProps, BottomSheetRef, BottomSheetShellProps } from './types';
@@ -43,14 +43,10 @@ if (Platform.OS !== 'web' && typeof require !== 'undefined') {
  * Renders nothing.
  *
  * It reads the APP's one `<KeyboardProvider>`, and the sheet deliberately does
- * not mount a second one inside its `<Modal>`:
+ * not mount a second one. The sheet lives in the app's own window, so this hook
+ * finds the app-root provider and its events directly (they used to cross an RN
+ * `<Modal>`'s window through the provider's `ModalAttachedWatcher`).
  *
- *  - React context crosses a `<Modal>` like any other element, so this hook
- *    finds the app-root provider from inside the sheet.
- *  - The native events cross too: when a `<Modal>` shows, the root provider's
- *    `ModalAttachedWatcher` (keyboard-controller ≥ 1.13, Android) attaches a
- *    keyboard callback to the dialog's window and propagates it to the ROOT
- *    provider's view, which is where this handler is registered.
  *  - A second provider breaks the app until it restarts. Every provider's
  *    watcher answers the same `topShow`: each SUSPENDS its own main-window
  *    callback and then calls `dialog.setOnDismissListener` to un-suspend it —
@@ -80,10 +76,18 @@ function SheetKeyboardSync({ keyboardHeight }: { keyboardHeight: SharedValue<num
 }
 
 /**
- * Native shell: RN's `<Modal>` (its own native root window) + the sheet's
- * keyboard tracker + a `<GestureHandlerRootView>` (the app-root GHRV does not
- * cross the Modal's native-window boundary, so pan gestures need their own root
- * here). No `<KeyboardProvider>`: see `SheetKeyboardSync`.
+ * Native shell: the sheet presents in the APP'S OWN window, through bloom's
+ * `<Portal>` and an `OverlayRoot`, exactly as the side drawers do. Not an RN
+ * `<Modal>`: a `<Modal>` is a second native window, and a surface in it can
+ * neither refract what is behind it (the lens material has nothing to sample)
+ * nor share the app's gesture root and keyboard provider. In the app's window
+ * all three just work, so this shell mounts none of them:
+ *
+ *  - the app's `GestureHandlerRootView` already covers it;
+ *  - `SheetKeyboardSync` reads the app's one `<KeyboardProvider>` directly;
+ *  - the surface is `modal` — `OverlayRoot` confines VoiceOver (iOS) and, through
+ *    the app's `OverlayInertBoundary`, TalkBack — and consumes Android back via
+ *    `onRequestClose`, newest surface first.
  */
 export function NativeShell({
   visible,
@@ -91,27 +95,14 @@ export function NativeShell({
   keyboardHeight,
   children,
 }: BottomSheetShellProps) {
+  if (!visible) return null;
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="none"
-      statusBarTranslucent
-      onRequestClose={onRequestClose}
-    >
-      {/*
-              This <Modal> is its own native window — the same boundary the
-              GestureHandlerRootView below is re-established for.
-              `BlurWindow` declares it to the blur layer, which is the
-              ONLY thing that lets a backdrop in here take an Android blur target:
-              a BlurView in the app's own window would be a descendant of what it
-              blurs, and that segfaults. See `blur/blur-target.tsx`.
-            */}
-      <BlurWindow>
+    <Portal>
+      <OverlayRoot onRequestClose={onRequestClose} modal>
         <SheetKeyboardSync keyboardHeight={keyboardHeight} />
-        <GestureHandlerRootView style={styles.rootView}>{children}</GestureHandlerRootView>
-      </BlurWindow>
-    </Modal>
+        {children}
+      </OverlayRoot>
+    </Portal>
   );
 }
 
@@ -122,12 +113,6 @@ const BottomSheet = forwardRef(
 );
 
 BottomSheet.displayName = 'BottomSheet';
-
-const styles = StyleSheet.create({
-  rootView: {
-    flex: 1,
-  },
-});
 
 export default BottomSheet;
 

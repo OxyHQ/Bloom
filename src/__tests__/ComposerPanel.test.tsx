@@ -12,6 +12,7 @@ import React from 'react';
 import { act, fireEvent, render, within } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { PortalHost } from './support/portal-host';
 import {
   COMPOSER_PANEL_PERMISSIONS,
   ComposerAttachments,
@@ -58,7 +59,7 @@ function surfacePaintFill(root: ReactTestInstance, radius: number) {
 function renderIn(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
   return render(
     <BloomThemeProvider mode={mode} colorPreset="teal">
-      {ui}
+      <PortalHost>{ui}</PortalHost>
     </BloomThemeProvider>,
   );
 }

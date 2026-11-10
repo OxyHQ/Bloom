@@ -35,8 +35,7 @@ function WebShell({ children }: BottomSheetShellProps) {
                 sheet, backdrop included, was click-through on web. `modal`:
                 the sheet dims and blocks the page, so the app's
                 `OverlayInertBoundary` makes that page inert while it is open.
-                (Native needs no flag — its shell is an RN `Modal`, a separate
-                window the screen reader is already confined to.) */}
+                (Native sets it the same way, through the same root.) */}
       <OverlayRoot style={webStyles.rootView} modal>
         <GestureHandlerRootView style={StyleSheet.absoluteFill}>{children}</GestureHandlerRootView>
       </OverlayRoot>

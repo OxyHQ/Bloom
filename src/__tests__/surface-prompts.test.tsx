@@ -7,6 +7,7 @@ import { alert, confirm, confirmWithSuppression, prompt, SurfaceHost } from '../
 import { createSurfaceHost } from '../surfaces/SurfaceHost';
 import { __resetSurfacesForTests, getSnapshot } from '../surfaces/surface-store';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { PortalHost } from './support/portal-host';
 
 /**
  * `alert()`, `confirm()` and `prompt()` are the three built-in surfaces. They
@@ -19,7 +20,9 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 function renderHost() {
   return render(
     <BloomThemeProvider mode="light" colorPreset="teal">
-      <SurfaceHost />
+      <PortalHost>
+        <SurfaceHost />
+      </PortalHost>
     </BloomThemeProvider>,
   );
 }
@@ -89,8 +92,9 @@ describe('built-in surfaces', () => {
         alert('Second');
       });
       expect(getSnapshot()).toHaveLength(2);
-      expect(getByText('First')).toBeTruthy();
-      expect(getByText('Second')).toBeTruthy();
+      // The lower alert stays mounted but is hidden from assistive tech by the modal above it.
+      expect(getByText('First', { includeHiddenElements: true })).toBeTruthy();
+      expect(getByText('Second', { includeHiddenElements: true })).toBeTruthy();
     });
   });
 

@@ -303,7 +303,7 @@ describe('sidebar, surfaces and the overlays', () => {
           </MenubarMenu>
         </Menubar>,
       );
-      expect(screen.getByLabelText('Barra de menús')).toBeTruthy();
+      expect(screen.getByLabelText('Barra de menús', { includeHiddenElements: true })).toBeTruthy();
       expect(screen.getAllByLabelText('Menú').length).toBeGreaterThan(0);
     });
   });

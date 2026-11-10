@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { PortalHost } from './support/portal-host';
 import { TextField, TextFieldInput } from '../text-field';
 import { TEXT_FIELD_ADDON_PADDING, TEXT_FIELD_GEOMETRY } from '../text-field/shared';
 import { COUNTRIES, CountryCodeSelect, CountryFlag, PhoneInput, findCountry } from '../phone-input';
@@ -16,7 +17,7 @@ import { resolvedStyle } from './support/rendered-style';
 function renderLight(ui: React.ReactElement) {
   return render(
     <BloomThemeProvider mode="light" colorPreset="teal">
-      {ui}
+      <PortalHost>{ui}</PortalHost>
     </BloomThemeProvider>,
   );
 }

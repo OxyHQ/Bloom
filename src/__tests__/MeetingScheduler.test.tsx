@@ -2,6 +2,7 @@ import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { PortalHost } from './support/portal-host';
 import { MeetingScheduler } from '../date-picker';
 import { pressHost } from './support/press-host';
 
@@ -20,7 +21,15 @@ const MEETING = {
 function renderScheduler(props: Partial<React.ComponentProps<typeof MeetingScheduler>> = {}) {
   return render(
     <BloomThemeProvider mode="light" colorPreset="teal">
-      <MeetingScheduler host={HOST} meeting={MEETING} timezone="Amsterdam" testID="ms" {...props} />
+      <PortalHost>
+        <MeetingScheduler
+          host={HOST}
+          meeting={MEETING}
+          timezone="Amsterdam"
+          testID="ms"
+          {...props}
+        />
+      </PortalHost>
     </BloomThemeProvider>,
   );
 }

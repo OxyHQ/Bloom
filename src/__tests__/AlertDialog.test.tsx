@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useState } from 'react';
-import { act, fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent } from '@testing-library/react-native';
+import { render } from './support/portal-host';
 
 import { AlertDialog } from '../alert-dialog';
 import { createAlertDialog } from '../alert-dialog/AlertDialog';

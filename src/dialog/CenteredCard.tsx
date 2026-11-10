@@ -103,9 +103,8 @@ export interface CenteredCardProps {
  * hairline border, `shadow-m`, the zoom-in and the backdrop that fades in
  * first.
  *
- * It presents in the same RN `<Modal>` as `BottomSheet` (`NativeShell`): its
- * own native window, where Escape on macOS and Back on Android send
- * `onRequestClose`. Its imperative handle is `BottomSheet`'s, so an owner swaps
+ * It presents in the same window shell as `BottomSheet` (`NativeShell`): the
+ * app's own window, where Back on Android sends `onRequestClose`. Its imperative handle is `BottomSheet`'s, so an owner swaps
  * one for the other by the window it is in (`useDesktopPresentationSession`).
  */
 export const CenteredCard = forwardRef(

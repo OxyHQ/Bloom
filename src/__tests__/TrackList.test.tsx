@@ -12,6 +12,7 @@ import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { PortalHost } from './support/portal-host';
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
 import {
@@ -50,7 +51,7 @@ function mount(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
     root.render(
       <BloomThemeProvider mode={mode} colorPreset="teal">
         <ReadTheme />
-        {ui}
+        <PortalHost>{ui}</PortalHost>
       </BloomThemeProvider>,
     );
   });

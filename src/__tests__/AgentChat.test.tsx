@@ -32,6 +32,7 @@ jest.mock('react-native-reanimated', () => {
 });
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { PortalHost } from './support/portal-host';
 import {
   AgentChat,
   AgentChatActions,
@@ -55,7 +56,7 @@ import { mockWindowSize } from './support/window-size';
 function renderIn(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
   return render(
     <BloomThemeProvider mode={mode} colorPreset="teal">
-      {ui}
+      <PortalHost>{ui}</PortalHost>
     </BloomThemeProvider>,
   );
 }

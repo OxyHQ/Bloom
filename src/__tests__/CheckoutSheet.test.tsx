@@ -1,6 +1,7 @@
 import type React from 'react';
-import { Modal, Text } from 'react-native';
-import { act, fireEvent, render, within } from '@testing-library/react-native';
+import { Text } from 'react-native';
+import { act, fireEvent, within } from '@testing-library/react-native';
+import { captureAndroidBack, render } from './support/portal-host';
 import { CheckoutSheet, emptyCheckoutDraft, type CheckoutSheetProps } from '../checkout-sheet';
 import { Dialog } from '../dialog';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -139,11 +140,12 @@ it('lists allowed methods and keeps the add-card row with or without saved cards
 
 it('vetoes backdrop, native Back and stale close callbacks while processing, but allows terminal dismissal', () => {
   const input = props();
+  const pressBack = captureAndroidBack();
   const view = render(<CheckoutSheet {...input} step="review" />, { wrapper });
   const earlierClose = view.UNSAFE_getByType(Dialog).props.onClose;
   view.rerender(<CheckoutSheet {...input} step="processing" />);
   fireEvent.press(view.getByLabelText('Dismiss'));
-  act(() => view.UNSAFE_getByType(Modal).props.onRequestClose());
+  act(() => pressBack());
   act(() => earlierClose());
   expect(input.onClose).not.toHaveBeenCalled();
   expect(view.getByText('result.processing')).toBeTruthy();
@@ -280,6 +282,7 @@ it('distinguishes a quoted zero tax from tax that has not been supplied', () => 
 
 it('keeps provider fields mounted while blocking dismissal during host confirmation', () => {
   const input = props();
+  const pressBack = captureAndroidBack();
   input.step = 'card';
   input.cardEntry = <Text>Secure provider fields</Text>;
   const view = render(<CheckoutSheet {...input} />, { wrapper });
@@ -289,7 +292,7 @@ it('keeps provider fields mounted while blocking dismissal during host confirmat
   view.rerender(<CheckoutSheet {...input} interactionBlocked />);
   fireEvent.press(view.getByLabelText('Dismiss'));
   act(() => {
-    view.UNSAFE_getByType(Modal).props.onRequestClose();
+    pressBack();
     close();
     back();
   });

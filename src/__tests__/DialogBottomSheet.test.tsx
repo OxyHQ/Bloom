@@ -1,6 +1,7 @@
 import React, { createRef, type ComponentRef } from 'react';
 import { Text, type View } from 'react-native';
-import { act, fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent } from '@testing-library/react-native';
+import { render } from './support/portal-host';
 
 import { Dialog, useDialogControl } from '../dialog';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

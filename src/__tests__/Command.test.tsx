@@ -6,11 +6,12 @@ import { createCommand } from '../command/Command';
 import type { CommandItem } from '../command';
 import type { DialogProps } from '../dialog';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { PortalHost } from './support/portal-host';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
     <BloomThemeProvider mode="light" colorPreset="teal">
-      {ui}
+      <PortalHost>{ui}</PortalHost>
     </BloomThemeProvider>,
   );
 }
@@ -64,7 +65,9 @@ describe('Command (built on Dialog)', () => {
     // A keyword on a different item matches that item.
     rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <Command open onOpenChange={() => {}} items={makeItems(() => {})} query="oauth" />
+        <PortalHost>
+          <Command open onOpenChange={() => {}} items={makeItems(() => {})} query="oauth" />
+        </PortalHost>
       </BloomThemeProvider>,
     );
     expect(getByText('Create application')).toBeTruthy();
@@ -159,7 +162,9 @@ describe('Command (built on Dialog)', () => {
       act(() => {
         rerender(
           <BloomThemeProvider mode="light" colorPreset="teal">
-            <TestCommand open={false} onOpenChange={() => {}} items={makeItems(() => {})} />
+            <PortalHost>
+              <TestCommand open={false} onOpenChange={() => {}} items={makeItems(() => {})} />
+            </PortalHost>
           </BloomThemeProvider>,
         );
       });
@@ -192,7 +197,9 @@ describe('Command (built on Dialog)', () => {
       act(() => {
         rerender(
           <BloomThemeProvider mode="light" colorPreset="teal">
-            <TestCommand open={false} onOpenChange={onOpenChange} items={makeItems(() => {})} />
+            <PortalHost>
+              <TestCommand open={false} onOpenChange={onOpenChange} items={makeItems(() => {})} />
+            </PortalHost>
           </BloomThemeProvider>,
         );
       });

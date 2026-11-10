@@ -1,6 +1,7 @@
 import React from 'react';
 import { Text } from 'react-native';
-import { act, fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent } from '@testing-library/react-native';
+import { render } from './support/portal-host';
 
 import { Dialog } from '../dialog';
 import {

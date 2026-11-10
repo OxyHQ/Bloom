@@ -16,6 +16,7 @@ import { ComposerPanel, ComposerPill } from '../composer-panel';
 import type { ComposerPanelAttachment } from '../composer-panel';
 import { isComposerEmpty } from '../composer-panel/shared';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { PortalHost } from './support/portal-host';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -37,7 +38,7 @@ function mount(ui: React.ReactElement) {
   act(() => {
     root.render(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        {ui}
+        <PortalHost>{ui}</PortalHost>
       </BloomThemeProvider>,
     );
   });

@@ -15,6 +15,7 @@ import { AttachmentMenu } from '../chat-composer';
 import type { AttachmentMenuItem } from '../chat-composer/types';
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { PortalHost } from './support/portal-host';
 
 const ITEMS: AttachmentMenuItem[] = ['Photos and videos', 'Camera', 'Document'].map((label, i) => ({
   id: `item-${i}`,
@@ -26,9 +27,11 @@ describe('AttachmentMenu grid on native', () => {
   it('tops each disc in its cell', () => {
     const screen = render(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <AttachmentMenu open onOpenChange={() => {}} items={ITEMS}>
-          <Button>Attach</Button>
-        </AttachmentMenu>
+        <PortalHost>
+          <AttachmentMenu open onOpenChange={() => {}} items={ITEMS}>
+            <Button>Attach</Button>
+          </AttachmentMenu>
+        </PortalHost>
       </BloomThemeProvider>,
     );
     const cells = screen

@@ -1,7 +1,8 @@
 import type React from 'react';
 import { useState } from 'react';
 import { TextInput, View } from 'react-native';
-import { act, fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent } from '@testing-library/react-native';
+import { render } from './support/portal-host';
 import type { SharedValue } from 'react-native-reanimated';
 import { BottomSheetBase } from '../bottom-sheet/BottomSheetBase';
 import BottomSheet from '../bottom-sheet/BottomSheet';

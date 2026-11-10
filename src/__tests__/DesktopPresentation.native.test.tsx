@@ -1,6 +1,6 @@
 import React from 'react';
 import * as ReactNative from 'react-native';
-import { Modal, Platform, StyleSheet, Text } from 'react-native';
+import { Platform, StyleSheet, Text } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 
 // Explicit native owners: Jest resolves bare `./X`, never `.native.*`, and the
@@ -22,9 +22,19 @@ import { hostNodes, resolvedStyle } from './support/rendered-style';
 import { declaration } from './support/menubar-declaration';
 import * as MenubarParts from '../menubar';
 import { PortalOutlet, PortalProvider } from '../portal';
+import { PortalHost } from './support/portal-host';
 
 const MAC_WINDOW = { width: 1360, height: 860, scale: 2, fontScale: 1 };
 const PHONE_WINDOW = { width: 375, height: 812, scale: 3, fontScale: 1 };
+
+type BackListener = Parameters<typeof ReactNative.BackHandler.addEventListener>[1];
+/** What React Native hands a back listener; nothing here reads it. */
+const BACK_PRESS = { type: 'hardwareBackPress', timeStamp: 0 };
+let backListeners: BackListener[] = [];
+
+/** What Android does: the newest listener first, until one returns true. */
+const pressBack = (): boolean =>
+  [...backListeners].reverse().some((listener) => listener(BACK_PRESS) === true);
 
 let windowSize = PHONE_WINDOW;
 const originalOS = Platform.OS;
@@ -35,6 +45,15 @@ beforeEach(() => {
   // Bloom's breakpoint reads (`hooks/use-width-class.ts`) see the same window.
   jest.spyOn(ReactNative.Dimensions, 'get').mockImplementation(() => windowSize);
   jest.useFakeTimers();
+  backListeners = [];
+  jest.spyOn(ReactNative.BackHandler, 'addEventListener').mockImplementation((_name, listener) => {
+    backListeners.push(listener);
+    return {
+      remove: () => {
+        backListeners = backListeners.filter((l) => l !== listener);
+      },
+    };
+  });
 });
 
 afterEach(() => {
@@ -56,25 +75,33 @@ function renderDialog(props: Partial<React.ComponentProps<typeof Dialog>> = {}) 
   let control!: ReturnType<typeof useDialogControl>;
   const tree = () => (
     <BloomThemeProvider fonts={false}>
-      <Harness>
-        {(c) => {
-          control = c;
-          return (
-            <Dialog control={c} label="Sign in" testID="sign-in" {...props}>
-              <Text>Use your Oxy account</Text>
-            </Dialog>
-          );
-        }}
-      </Harness>
+      <PortalHost>
+        <Harness>
+          {(c) => {
+            control = c;
+            return (
+              <Dialog control={c} label="Sign in" testID="sign-in" {...props}>
+                <Text>Use your Oxy account</Text>
+              </Dialog>
+            );
+          }}
+        </Harness>
+      </PortalHost>
     </BloomThemeProvider>
   );
   const view = render(tree());
   return { view, tree, control: () => control };
 }
 
+/** The card's own panel: the innermost modal node (the overlay root around it is modal too). */
+function modalPanel(view: ReturnType<typeof render>) {
+  const modal = view.UNSAFE_root.findAll((node) => node.props.accessibilityViewIsModal === true);
+  return modal[modal.length - 1];
+}
+
 function pressBackdrop(view: ReturnType<typeof render>) {
-  const card = view.UNSAFE_getByType(CenteredCard);
-  const backdrop = card.findAll(
+  // The card presents through the portal outlet, so search the whole tree.
+  const backdrop = view.UNSAFE_root.findAll(
     (node) => typeof node.props.onPress === 'function' && node.props.progress !== undefined,
   )[0];
   backdrop?.props.onPress();
@@ -103,12 +130,12 @@ describe('native Dialog, placement center', () => {
     const { view, control } = renderDialog({ placement: { base: 'bottom', md: 'center' } });
     act(() => control().open());
 
-    const card = view.UNSAFE_getByType(CenteredCard);
     expect(view.UNSAFE_queryByProps({ detached: true })).toBeNull();
-    expect(view.UNSAFE_getAllByType(Modal)).toHaveLength(1);
+    // The card presents through the portal host, not a native Modal window.
+    expect(view.UNSAFE_getAllByType(CenteredCard)).toHaveLength(1);
     expect(view.getByText('Use your Oxy account')).toBeTruthy();
 
-    const panel = card.findAll((node) => node.props.accessibilityViewIsModal === true)[0];
+    const panel = modalPanel(view);
     const style = flat(panel?.props.style);
     expect(style.maxWidth).toBe(480);
     expect(style.maxHeight).toBe(Math.round(860 * 0.9));
@@ -128,9 +155,7 @@ describe('native Dialog, placement center', () => {
     windowSize = MAC_WINDOW;
     const { view, control } = renderDialog({ maxWidth: 420 });
     act(() => control().open());
-    const panel = view
-      .UNSAFE_getByType(CenteredCard)
-      .findAll((node) => node.props.accessibilityViewIsModal === true)[0];
+    const panel = modalPanel(view);
     expect(flat(panel?.props.style).maxWidth).toBe(420);
   });
 
@@ -148,14 +173,16 @@ describe('native Dialog, placement center', () => {
     expect(view.UNSAFE_queryByProps({ detached: true })).not.toBeNull();
   });
 
-  it('closes on Escape (the Modal’s onRequestClose) and on a backdrop press', () => {
-    Platform.OS = 'macos';
+  it('closes on Android Back (the overlay’s onRequestClose) and on a backdrop press', () => {
+    Platform.OS = 'android';
     windowSize = MAC_WINDOW;
     const onClose = jest.fn();
     const { view, control } = renderDialog({ onClose });
 
     act(() => control().open());
-    act(() => view.UNSAFE_getByType(Modal).props.onRequestClose());
+    act(() => {
+      expect(pressBack()).toBe(true);
+    });
     act(() => jest.runOnlyPendingTimers());
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(view.queryByText('Use your Oxy account')).toBeNull();
@@ -166,13 +193,15 @@ describe('native Dialog, placement center', () => {
     expect(onClose).toHaveBeenCalledTimes(2);
   });
 
-  it('stays open on Escape and a backdrop press when dismissOnBackdrop is false', () => {
-    Platform.OS = 'macos';
+  it('stays open on Android Back and a backdrop press when dismissOnBackdrop is false', () => {
+    Platform.OS = 'android';
     windowSize = MAC_WINDOW;
     const onClose = jest.fn();
     const { view, control } = renderDialog({ onClose, dismissOnBackdrop: false });
     act(() => control().open());
-    act(() => view.UNSAFE_getByType(Modal).props.onRequestClose());
+    act(() => {
+      expect(pressBack()).toBe(true);
+    });
     act(() => pressBackdrop(view));
     act(() => jest.runOnlyPendingTimers());
     expect(onClose).not.toHaveBeenCalled();
@@ -204,9 +233,11 @@ describe('CenteredCard lifecycle', () => {
     const ref = React.createRef<BottomSheetRef>();
     const view = render(
       <BloomThemeProvider fonts={false}>
-        <CenteredCard ref={ref} open onDismiss={onDismiss}>
-          <Text>Card</Text>
-        </CenteredCard>
+        <PortalHost>
+          <CenteredCard ref={ref} open onDismiss={onDismiss}>
+            <Text>Card</Text>
+          </CenteredCard>
+        </PortalHost>
       </BloomThemeProvider>,
     );
     act(() => ref.current?.dismiss());
@@ -234,7 +265,9 @@ describe('native SheetShell', () => {
     windowSize = MAC_WINDOW;
     const view = render(
       <BloomThemeProvider fonts={false}>
-        <OpenShell />
+        <PortalHost>
+          <OpenShell />
+        </PortalHost>
       </BloomThemeProvider>,
     );
     expect(view.UNSAFE_queryByType(CenteredCard)).not.toBeNull();
@@ -247,7 +280,9 @@ describe('native SheetShell', () => {
     windowSize = MAC_WINDOW;
     const view = render(
       <BloomThemeProvider fonts={false}>
-        <OpenShell anchored />
+        <PortalHost>
+          <OpenShell anchored />
+        </PortalHost>
       </BloomThemeProvider>,
     );
     expect(view.UNSAFE_queryByType(CenteredCard)).toBeNull();
@@ -276,7 +311,9 @@ describe('native SheetShell', () => {
   it('keeps the sheet and its handle on a phone', () => {
     const view = render(
       <BloomThemeProvider fonts={false}>
-        <OpenShell />
+        <PortalHost>
+          <OpenShell />
+        </PortalHost>
       </BloomThemeProvider>,
     );
     expect(view.UNSAFE_queryByType(CenteredCard)).toBeNull();
@@ -299,9 +336,11 @@ describe('BottomSheet horizontal placement', () => {
     windowSize = MAC_WINDOW;
     const view = render(
       <BloomThemeProvider fonts={false}>
-        <BottomSheet open detached style={{ maxWidth: 500 }}>
-          <Text>Sheet</Text>
-        </BottomSheet>
+        <PortalHost>
+          <BottomSheet open detached style={{ maxWidth: 500 }}>
+            <Text>Sheet</Text>
+          </BottomSheet>
+        </PortalHost>
       </BloomThemeProvider>,
     );
     const style = resolvedStyle(

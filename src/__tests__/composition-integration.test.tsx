@@ -36,11 +36,12 @@ import { Textarea } from '../textarea';
 import { BloomScope } from '../appearance';
 import { ScreenScope, TopEdgeProvider, useClaimTopEdge, useTopEdgeInset } from '../layout';
 import { Text } from '../typography';
+import { PortalHost } from './support/portal-host';
 
 function screen(ui: React.ReactElement) {
   return render(
     <BloomThemeProvider mode="light" colorPreset="teal">
-      {ui}
+      <PortalHost>{ui}</PortalHost>
     </BloomThemeProvider>,
   );
 }

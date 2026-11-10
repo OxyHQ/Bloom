@@ -1,6 +1,7 @@
 import React from 'react';
 import { Text } from 'react-native';
-import { act, render } from '@testing-library/react-native';
+import { act } from '@testing-library/react-native';
+import { render } from './support/portal-host';
 import type { ReactTestInstance } from 'react-test-renderer';
 
 import BottomSheet, { type BottomSheetRef } from '../bottom-sheet';

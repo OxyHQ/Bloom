@@ -1,6 +1,7 @@
 import React from 'react';
 import { Text } from 'react-native';
-import { render } from '@testing-library/react-native';
+import {} from '@testing-library/react-native';
+import { render } from './support/portal-host';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Dialog } from '../dialog/Dialog';
 import { Popover, PopoverContent } from '../popover/Popover';

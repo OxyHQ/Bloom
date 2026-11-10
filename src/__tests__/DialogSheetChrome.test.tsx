@@ -1,6 +1,7 @@
 import type React from 'react';
 import { Text } from 'react-native';
-import { act, render } from '@testing-library/react-native';
+import { act } from '@testing-library/react-native';
+import { render } from './support/portal-host';
 // The sheet's keyboard tracker, as jest maps it (the package is an optional
 // peer and not installed here).
 import { useKeyboardHandler } from '../../__mocks__/react-native-keyboard-controller';

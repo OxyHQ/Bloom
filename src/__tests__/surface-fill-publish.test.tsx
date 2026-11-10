@@ -46,6 +46,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import { BloomColorScope } from '../theme/color-scope/ColorScope';
 import { findHost, resolvedStyle } from './support/rendered-style';
+import { PortalHost } from './support/portal-host';
 
 const PRESET = 'teal';
 /** The scoped preset the last suite switches to. */
@@ -83,7 +84,7 @@ function LevelProbe() {
 function renderIn(mode: 'light' | 'dark', ui: React.ReactNode) {
   return render(
     <BloomThemeProvider mode={mode} colorPreset={PRESET}>
-      {ui}
+      <PortalHost>{ui}</PortalHost>
     </BloomThemeProvider>,
   );
 }

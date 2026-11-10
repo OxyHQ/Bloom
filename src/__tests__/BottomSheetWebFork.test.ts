@@ -34,9 +34,12 @@ describe('BottomSheet web fork (RN-Web Modal-orphan fix)', () => {
     expect(web).not.toMatch(/require\(\s*['"]react-native-keyboard-controller['"]/);
   });
 
-  it('native shell keeps RN <Modal> + keyboard-controller', () => {
+  it('native shell renders through bloom Portal + OverlayRoot (no RN <Modal>) and keeps keyboard-controller', () => {
     const native = read('bottom-sheet/BottomSheet.tsx');
-    expect(native).toMatch(/import \{ Modal[^}]*\} from 'react-native'/);
+    expect(native).not.toMatch(/import \{[^}]*\bModal\b[^}]*\} from 'react-native'/);
+    expect(native).toMatch(/import \{ Portal \} from '\.\.\/portal'/);
+    expect(native).toMatch(/import \{ OverlayRoot \} from '\.\.\/overlay'/);
+    expect(native).toContain('<OverlayRoot');
     expect(native).toContain('react-native-keyboard-controller');
     expect(native).toMatch(/BottomSheetBase/);
   });

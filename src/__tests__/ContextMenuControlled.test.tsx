@@ -19,6 +19,7 @@ import {
 import { LONG_PRESS_MS } from '../floating/LongPressArea';
 import { Button } from '../button';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { PortalHost } from './support/portal-host';
 
 const calls = { open: jest.fn(), anchor: jest.fn(), rename: jest.fn() };
 beforeEach(() => {
@@ -43,29 +44,31 @@ function Controlled({
   const [anchor, setAnchor] = useState<ContextMenuAnchor | null>(null);
   return (
     <BloomThemeProvider mode="light" colorPreset="teal">
-      <Pressable accessibilityLabel="Open" onPress={() => setAnchor({ x: 10, y: 20 })}>
-        <Text>Open</Text>
-      </Pressable>
-      <Pressable accessibilityLabel="Clear" onPress={() => setAnchor(null)}>
-        <Text>Clear</Text>
-      </Pressable>
-      <ContextMenu
-        anchor={anchor}
-        onOpenChange={calls.open}
-        onAnchorChange={(next) => {
-          calls.anchor(next);
-          if (follow) setAnchor(next);
-        }}
-      >
-        {withTrigger ? (
-          <ContextMenuTrigger label="Message actions">
-            <Text>Hold me</Text>
-          </ContextMenuTrigger>
-        ) : null}
-        <ContextMenuContent>
-          <ContextMenuItem onPress={calls.rename}>Rename</ContextMenuItem>
-        </ContextMenuContent>
-      </ContextMenu>
+      <PortalHost>
+        <Pressable accessibilityLabel="Open" onPress={() => setAnchor({ x: 10, y: 20 })}>
+          <Text>Open</Text>
+        </Pressable>
+        <Pressable accessibilityLabel="Clear" onPress={() => setAnchor(null)}>
+          <Text>Clear</Text>
+        </Pressable>
+        <ContextMenu
+          anchor={anchor}
+          onOpenChange={calls.open}
+          onAnchorChange={(next) => {
+            calls.anchor(next);
+            if (follow) setAnchor(next);
+          }}
+        >
+          {withTrigger ? (
+            <ContextMenuTrigger label="Message actions">
+              <Text>Hold me</Text>
+            </ContextMenuTrigger>
+          ) : null}
+          <ContextMenuContent>
+            <ContextMenuItem onPress={calls.rename}>Rename</ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
+      </PortalHost>
     </BloomThemeProvider>
   );
 }
@@ -80,7 +83,7 @@ it('presents the sheet exactly while the anchor is non-null', () => {
   expect(screen.getByText('Rename')).toBeTruthy();
   expect(calls.open).not.toHaveBeenCalled();
 
-  fireEvent.press(screen.getByLabelText('Clear'));
+  fireEvent.press(screen.getByLabelText('Clear', { hidden: true }));
   settle();
   expect(screen.queryByText('Rename')).toBeNull();
   // The caller closed it; the sheet's own exit does not report back.

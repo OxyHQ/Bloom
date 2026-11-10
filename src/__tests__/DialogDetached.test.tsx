@@ -1,7 +1,8 @@
 import type React from 'react';
 import { useState } from 'react';
 import { Text, TextInput } from 'react-native';
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent } from '@testing-library/react-native';
+import { render } from './support/portal-host';
 import { Dialog, useDialogFrame } from '../dialog';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { hostNodes, resolvedStyle } from './support/rendered-style';

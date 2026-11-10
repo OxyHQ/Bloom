@@ -1,7 +1,8 @@
 import type React from 'react';
 import { createRef } from 'react';
 import { Text } from 'react-native';
-import { act, render } from '@testing-library/react-native';
+import { act } from '@testing-library/react-native';
+import { render } from './support/portal-host';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import BottomSheet, { type BottomSheetRef } from '../bottom-sheet';

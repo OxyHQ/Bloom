@@ -144,6 +144,7 @@ describe('a ButtonGroupItem as a trigger', () => {
 
     fireEvent.press(item, { defaultPrevented: false });
     expect(utils.queryByText('Duplicate')).not.toBeNull();
-    expect(utils.getByTestId('more').props['aria-expanded']).toBe(true);
+    // The open popover is modal, so the trigger behind it is hidden from the a11y tree.
+    expect(utils.getByTestId('more', { hidden: true }).props['aria-expanded']).toBe(true);
   });
 });

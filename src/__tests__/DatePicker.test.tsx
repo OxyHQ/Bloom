@@ -3,6 +3,7 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomProvider } from '../provider';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { PortalHost } from './support/portal-host';
 
 import { Calendar, DatePicker, DateRangePicker, RangeCalendar } from '../date-picker';
 import {
@@ -30,7 +31,7 @@ const iso = (date: Date) => `${date.getFullYear()}-${date.getMonth() + 1}-${date
 function renderWithTheme(ui: React.ReactElement) {
   return render(
     <BloomThemeProvider mode="light" colorPreset="teal">
-      {ui}
+      <PortalHost>{ui}</PortalHost>
     </BloomThemeProvider>,
   );
 }
@@ -302,7 +303,8 @@ describe("locale: Bloom speaks the picker's own strings", () => {
     const { getByText, getByTestId, getByLabelText } = renderWithTheme(
       <DatePicker defaultOpen locale="es-ES" testID="dp" />,
     );
-    expect(getByText('Seleccionar fecha')).toBeTruthy();
+    // The trigger sits behind the open picker's modal, so it is hidden from assistive tech.
+    expect(getByText('Seleccionar fecha', { includeHiddenElements: true })).toBeTruthy();
     expect(getByTestId('dp-cancel')).toHaveTextContent('Cancelar');
     expect(getByTestId('dp-apply')).toHaveTextContent('Aplicar');
     expect(getByLabelText('Mes siguiente')).toBeTruthy();
@@ -313,7 +315,9 @@ describe("locale: Bloom speaks the picker's own strings", () => {
   it("takes BloomProvider's locale when the picker has none", () => {
     const { getByTestId, getByLabelText } = render(
       <BloomProvider locale="de-DE" mode="light" colorPreset="teal">
-        <DatePicker defaultValue={day(16)} defaultOpen testID="dp" />
+        <PortalHost>
+          <DatePicker defaultValue={day(16)} defaultOpen testID="dp" />
+        </PortalHost>
       </BloomProvider>,
     );
     expect(getByTestId('dp-cancel')).toHaveTextContent('Abbrechen');

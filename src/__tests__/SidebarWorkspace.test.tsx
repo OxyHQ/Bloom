@@ -15,11 +15,12 @@ import type { SidebarAccount, SidebarTeam, SidebarTree, SidebarTreeDrop } from '
 import { TreeDragProvider, useTreeDrag } from '../sidebar/SidebarTreeDrag';
 import { pressHost } from './support/press-host';
 import { resolvedStyle } from './support/rendered-style';
+import { PortalHost } from './support/portal-host';
 
 function renderIn(ui: React.ReactElement) {
   return render(
     <BloomThemeProvider mode="light" colorPreset="teal">
-      {ui}
+      <PortalHost>{ui}</PortalHost>
     </BloomThemeProvider>,
   );
 }

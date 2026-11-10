@@ -11,6 +11,7 @@ import {
   subscribe,
 } from '../surfaces/surface-store';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { PortalHost } from './support/portal-host';
 
 const noop = () => null;
 function firstId() {
@@ -123,7 +124,9 @@ it('does not mount a surface cancelled before the host renders', async () => {
   controller.abort();
   const screen = render(
     <BloomThemeProvider mode="light" colorPreset="teal">
-      <SurfaceHost />
+      <PortalHost>
+        <SurfaceHost />
+      </PortalHost>
     </BloomThemeProvider>,
   );
   expect(screen.queryByText('never visible')).toBeNull();
@@ -135,7 +138,9 @@ it('aborts suppressible confirmations with the current checkbox value', async ()
   const controller = new AbortController();
   const screen = render(
     <BloomThemeProvider mode="light" colorPreset="teal">
-      <SurfaceHost />
+      <PortalHost>
+        <SurfaceHost />
+      </PortalHost>
     </BloomThemeProvider>,
   );
   let answer!: ReturnType<typeof confirmWithSuppression>;
@@ -163,7 +168,11 @@ it('preserves the existing non-abort close lifecycle during a host hand-off', as
     return null;
   };
   const { SurfaceHost: MockHost } = createSurfaceHost(MockDialog);
-  const screen = render(<MockHost />);
+  const screen = render(
+    <PortalHost>
+      <MockHost />
+    </PortalHost>,
+  );
   let answer!: Promise<boolean>;
   act(() => {
     answer = confirm({ title: 'handoff' });
@@ -171,7 +180,11 @@ it('preserves the existing non-abort close lifecycle during a host hand-off', as
   act(() => requestDismiss(firstId(), false));
   screen.unmount();
   calls.length = 0;
-  render(<MockHost />);
+  render(
+    <PortalHost>
+      <MockHost />
+    </PortalHost>,
+  );
   expect(calls).toContain('render:false');
   expect(calls).toContain('close');
   expect(getSnapshot()[0]?.status).toBe('closing');
@@ -199,7 +212,9 @@ it('closes correctly under StrictMode', async () => {
   const screen = render(
     <React.StrictMode>
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <SurfaceHost />
+        <PortalHost>
+          <SurfaceHost />
+        </PortalHost>
       </BloomThemeProvider>
     </React.StrictMode>,
   );
@@ -223,7 +238,11 @@ it('does not reopen an aborted confirmation between host unmount and remount', a
     return null;
   };
   const { SurfaceHost: MockHost } = createSurfaceHost(MockDialog);
-  const screen = render(<MockHost />);
+  const screen = render(
+    <PortalHost>
+      <MockHost />
+    </PortalHost>,
+  );
   const controller = new AbortController();
   const remove = jest.spyOn(controller.signal, 'removeEventListener');
   let answer!: Promise<boolean>;
@@ -236,7 +255,11 @@ it('does not reopen an aborted confirmation between host unmount and remount', a
   expect(remove).toHaveBeenCalledWith('abort', expect.any(Function));
   expect(getSnapshot()).toHaveLength(0);
   renders.mockClear();
-  render(<MockHost />);
+  render(
+    <PortalHost>
+      <MockHost />
+    </PortalHost>,
+  );
   expect(renders).not.toHaveBeenCalled();
   await expect(answer).resolves.toBe(false);
 });
@@ -249,8 +272,16 @@ it('keeps an entry alive when one of two mounted hosts unmounts before abort', a
     return null;
   };
   const { SurfaceHost: MockHost } = createSurfaceHost(MockDialog);
-  const first = render(<MockHost />);
-  const second = render(<MockHost />);
+  const first = render(
+    <PortalHost>
+      <MockHost />
+    </PortalHost>,
+  );
+  const second = render(
+    <PortalHost>
+      <MockHost />
+    </PortalHost>,
+  );
   const controller = new AbortController();
   let answer!: Promise<boolean>;
   act(() => {
@@ -273,7 +304,11 @@ it('does not reopen if the last host unmounts during an aborted exit', async () 
     return null;
   };
   const { SurfaceHost: MockHost } = createSurfaceHost(MockDialog);
-  const screen = render(<MockHost />);
+  const screen = render(
+    <PortalHost>
+      <MockHost />
+    </PortalHost>,
+  );
   const controller = new AbortController();
   let answer!: Promise<boolean>;
   act(() => {
@@ -284,7 +319,11 @@ it('does not reopen if the last host unmounts during an aborted exit', async () 
   screen.unmount();
   expect(getSnapshot()).toHaveLength(0);
   renders.mockClear();
-  render(<MockHost />);
+  render(
+    <PortalHost>
+      <MockHost />
+    </PortalHost>,
+  );
   expect(renders).not.toHaveBeenCalled();
   await expect(answer).resolves.toBe(false);
 });
@@ -296,8 +335,16 @@ it('waits for the last mounted host before finalizing an aborted exit', async ()
     return null;
   };
   const { SurfaceHost: MockHost } = createSurfaceHost(MockDialog);
-  const first = render(<MockHost />);
-  const second = render(<MockHost />);
+  const first = render(
+    <PortalHost>
+      <MockHost />
+    </PortalHost>,
+  );
+  const second = render(
+    <PortalHost>
+      <MockHost />
+    </PortalHost>,
+  );
   const controller = new AbortController();
   let answer!: Promise<boolean>;
   act(() => {

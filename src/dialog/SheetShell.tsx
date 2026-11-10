@@ -148,7 +148,7 @@ export function SheetShell({
         // VoiceOver, a back gesture under TalkBack. Without it a screen-reader
         // user has to find the drag handle to leave a sheet, and the handle is
         // a 4dp pill. Android's hardware back is already covered: every Bloom
-        // sheet is an RN `<Modal>`, whose `onRequestClose` it fires.
+        // sheet's `OverlayRoot` consumes it through `onRequestClose`.
         onAccessibilityEscape={() => close()}
         accessibilityLabel={label}
         className={contentClassName}

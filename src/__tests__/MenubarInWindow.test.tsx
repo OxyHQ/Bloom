@@ -48,7 +48,10 @@ describe('Menubar without the menu-bar capability (native)', () => {
   });
 
   it('draws the same with an adapter that does not report it', () => {
-    const before = markup(draw(declaration(Parts, {}, {}, { defaultValue: 'file' })));
+    // Unmounted first: each live overlay takes the next layer, so two at once would differ in zIndex.
+    const first = draw(declaration(Parts, {}, {}, { defaultValue: 'file' }));
+    const before = markup(first);
+    first.unmount();
     const screen = draw(declaration(Parts, {}, {}, { defaultValue: 'file' }), {
       platform: 'test',
       capabilities: new Set(),
