@@ -1,5 +1,11 @@
 # Changelog
 
+## 18.1.1
+
+### Fixed
+
+- **Android composer caret survives busy and loader transitions.** A focused controlled `TextInput` could move its caret to the end when the Stop control or loader changed the pill. The native selection is restored after layout on Android, and width changes also preserve collapsed selections. Verified on a Pixel 8a through resize, busy/Stop, continued typing and rotation; evidence is in `docs/audits/issue-663/composer-input-rotation-pixel8a-2026-11-10/`.
+
 ## 18.1.0
 
 ### Added
