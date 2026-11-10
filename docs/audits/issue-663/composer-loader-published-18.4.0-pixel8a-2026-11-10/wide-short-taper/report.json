@@ -1,0 +1,58 @@
+{
+  "apkSha256": "58817fd75cecc825d01727141514f6eb9a6a14bf9cea5b76616a4d48a8d670b0",
+  "build": {
+    "commit": "fe3d68ecbc26433aea225b3c2526c24b8e4613aa",
+    "workingTree": "M scripts/loader-package-lab/bun.lock\n M scripts/loader-package-lab/package.json\n M scripts/loader-package-lab/verify-composers.py\n?? docs/audits/issue-663/composer-loader-published-18.4.0-pixel8a-2026-11-10/",
+    "fixtureSha256": "0a3519118075c1bd930124fc338184869d79230554f0db350b3a60e5f4267707",
+    "packedTarballSha256": "5109a9b04ec51cbba85fb8b1071187f5c463ea7625ea035346e3ff3ad0c64021",
+    "kind": "published npm tarball",
+    "npmIntegrity": "sha512-XLC+0q97VKQVnxzjJ57ZdSRV8JXX2S4IC/pbYqpNvHHR5yTht/FBOApdhD4FwlnVA07lmsPXoI/3dLXZtePGoA==",
+    "aliaSdkVersion": "24.0.0",
+    "aliaComposerSha256": "33bee1e8b1d959adbe5406856fb0dca63c0df9ef9a2e57d21f523bc736d415c2",
+    "installed": "/home/nate/Oxy/Bloom/.worktrees/issue663-published184-pixel8a/scripts/loader-package-lab/bloom-local/node_modules/@oxy.so/bloom",
+    "packageVersion": "18.4.0",
+    "nativeSha256": "5aa0123303dbb2f170077c2ddf6eac5933ee0c6269274422ed41ca10bf8f94ad",
+    "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+    "adapterSha256": "439368f05ea092a36619510ff3cf1d255d5e8da61ff52ab3490d0dd7dd6e4c21",
+    "lockSha256": "5c38ac4dbedbdcd9da152b86cdc76750eb4d436dd3288adbfd60c8c7264c5a69",
+    "reactCompiler": false,
+    "scene": "composers",
+    "softwareWindow": false,
+    "apkSha256": "58817fd75cecc825d01727141514f6eb9a6a14bf9cea5b76616a4d48a8d670b0",
+    "embeddedBundleSha256": "a369860ad74b74d77f79534b93ca40192073730d94513fa2646ec6dbd45f7e89",
+    "embeddedBloomSourceSha256": "283948c466ad44a1223f93bf06415586bc307635fa2f0fa64c942db3c473a712",
+    "embeddedBloomFiles": 1095,
+    "dex": [
+      {
+        "name": "classes.dex",
+        "sha256": "83710ad053d1aeb9d8f30937b3337cb3aa416bc8cb40853be0d72e23f96b1f43"
+      }
+    ],
+    "r8MappingSha256": "7fd7d8ec134ebaddb80d30f36a1d593b3264da834d4d611d6944f7e4a69e1db4",
+    "mappedNativeClass": "uc0",
+    "nativeEvidence": "compiled installed Kotlin input hash, DEX contract marker and full DEX hashes; no runtime source receipt"
+  },
+  "serial": "43221JEKB12200",
+  "case": "wide-short-taper",
+  "elapsedMs": 10524.581779,
+  "frames": 1259,
+  "jankyFrames": 0,
+  "histogramP50Ms": 12,
+  "histogramP95Ms": 16,
+  "gpuP50Ms": 6,
+  "gpuP95Ms": 9,
+  "recentFrameSamples": 117,
+  "recentFrameP50Ms": 13.053896,
+  "recentFrameP95Ms": 16.024434,
+  "recentFrameIntervalMs": 8.355941,
+  "cpuPercentOfOneCore": [
+    115,
+    106,
+    99
+  ],
+  "pssKb": 435118,
+  "rssKb": 606372,
+  "thermalStatusBefore": 0,
+  "thermalStatusAfter": 0,
+  "note": "Single controlled foreground window, no screen recording; frame timestamps are not an FPS guarantee. Preserve font/display settings and compare thermal state."
+}
