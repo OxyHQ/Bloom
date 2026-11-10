@@ -1,0 +1,14 @@
+{
+  "testedPackageVersion": "18.2.1",
+  "currentPublishedPackageVersion": "18.2.2",
+  "currentPublishedIntegrity": "sha512-Hzoj8G25gN7LAPqSv/okFRIboF2qRIlqJMD1ZyhFdMGl/Xdp9kF/h0OVIlWkp3qq2veqkD80FZHs3+zoVb0z+g==",
+  "currentPublishedTarballSha512": "1f3a23f06db980decb00fa92bffa2415121ba05daa44896a24c0f567284574c1a5fd7769f6417f8743952255a4a77aaadaf7aa903f341591ecdfece855bd33fa",
+  "composerNativeSourceSha256": {
+    "tested": "5aa0123303dbb2f170077c2ddf6eac5933ee0c6269274422ed41ca10bf8f94ad",
+    "published18_2_2": "5aa0123303dbb2f170077c2ddf6eac5933ee0c6269274422ed41ca10bf8f94ad"
+  },
+  "composerAndroidAdapterSha256": {
+    "tested": "439368f05ea092a36619510ff3cf1d255d5e8da61ff52ab3490d0dd7dd6e4c21",
+    "published18_2_2": "439368f05ea092a36619510ff3cf1d255d5e8da61ff52ab3490d0dd7dd6e4c21"
+  }
+}
