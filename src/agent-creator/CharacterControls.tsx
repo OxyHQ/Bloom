@@ -6,15 +6,13 @@ import {
 } from '../agent-avatar/character';
 import { StyledView } from '../styles/styled-primitives';
 import { Text } from '../typography';
-import {
-  CHARACTER_OPTIONS,
-  CHARACTER_PRESETS,
-  CHARACTER_TEMPLATES,
-  characterTemplateChoice,
-} from './constants';
+import { CHARACTER_OPTIONS } from './constants';
 import { useAgentCreatorBindings, useAgentCreatorMessages } from './context';
 
-/** Template and accessory controls share Bloom Select; shapes, eyes and colors use the pickers. */
+/**
+ * Eyewear and accessory share Bloom Select; shapes, eyes and colors use the pickers. A character
+ * is made of those parts: there is no row to start from a ready-made preset.
+ */
 export function CharacterControls({
   character,
   onChange,
@@ -32,7 +30,6 @@ export function CharacterControls({
     SelectItem,
     SelectItemText,
   } = useAgentCreatorBindings();
-  const choice = characterTemplateChoice(character);
   const resolved = resolveAvatarCharacter(character);
   const row = (
     label: string,
@@ -66,15 +63,6 @@ export function CharacterControls({
       </StyledView>
     </StyledView>
   );
-  const templates = [
-    ...(choice === 'custom'
-      ? [{ id: 'custom', title: messages.characterOption('preset', 'custom', 'Custom') }]
-      : []),
-    ...CHARACTER_PRESETS.map((item) => ({
-      id: item.id,
-      title: messages.characterOption('preset', item.id, item.title),
-    })),
-  ];
   const parts = {
     eyewear: messages.eyewear,
     accessory: messages.accessory,
@@ -84,16 +72,6 @@ export function CharacterControls({
       className="mt-[15px] flex flex-col gap-2 px-3"
       testID="agent-creator-character-controls"
     >
-      {row(
-        messages.avatarStyle,
-        choice,
-        templates,
-        (id) => {
-          const template = CHARACTER_TEMPLATES[id];
-          if (template) onChange(template);
-        },
-        messages.betaPreset,
-      )}
       {(['eyewear', 'accessory'] as const).map((part) =>
         row(
           parts[part],

@@ -1,10 +1,22 @@
 # Changelog
 
-## 17.48.0
+## 18.1.0
 
 ### Added
 
 - **`AgentCreator sections` and `AgentCreatorSection`**: titled cards of the host's own below the details card, for what an agent *has* beyond who it is (its schedule, its inbox, what it remembers). `AgentCreatorSection title` draws the card with the details card's surface, radius and inset; its rows are `AgentCreatorField`s (or any row of the host's). They scroll with the rest of the editor. `children` stays the way to add rows to the details card itself.
+
+## 18.0.0
+
+### Removed
+
+- **The agent creator's "Avatar style" row.** `CharacterControls` offered a select of ready-made character presets above eyewear and accessory. A person editing or creating an agent builds a character from its parts (shape, eyes, colour, eyewear, accessory), and a preset there only replaced all of them at once, so the row is gone. The `avatarStyle` and `betaPreset` message keys of `AgentCreatorMessages` go with it (and from every locale). `CHARACTER_PRESETS`, `CHARACTER_TEMPLATES` and `characterTemplateChoice` stay exported for code that starts from a template.
+
+## 17.50.0
+
+### Added
+
+- **`AiChatShell panelFloatingBelow`** (`'sm' | 'md' | 'lg' | 'xl' | number`, default `'xl'`): the width below which the context panel stops sitting beside the conversation and floats over it as a dialog. It was fixed at `xl`, so a narrow panel worked in beside the thing it edits (an agent editor, 380px) became a modal with the page dimmed under it on any laptop window under 1280px, though the sidebar, a 320px conversation and the panel fit from `lg`. A host whose panel is that kind sets `'lg'`; nothing changes without it.
 
 ## 17.46.0
 

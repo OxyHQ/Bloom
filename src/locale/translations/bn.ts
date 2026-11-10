@@ -33,9 +33,7 @@ const AGENT_CREATOR_MESSAGES: Translations['AGENT_CREATOR_MESSAGES'] = {
   redoAvatar: 'পুনরায় করুন',
   preparingAvatar: 'অবতার প্রস্তুত হচ্ছে…',
 
-  avatarStyle: 'অবতারের ধরন',
   proceduralAvatar: 'বর্তমান অবতার',
-  betaPreset: 'প্রস্তুত চরিত্র (বিটা)',
   betaEyes: 'চোখের ধরন',
   eyewear: 'চশমা',
   accessory: 'অনুষঙ্গ',

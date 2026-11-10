@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { AppShell } from '@oxy.so/bloom/app-shell';
 import { Screen, ScreenScrollView } from '@oxy.so/bloom/screen';
 import { Button } from '@oxy.so/bloom/button';
 import { Text } from '@oxy.so/bloom/typography';
 import { ComposerLoader } from '@oxy.so/bloom/composer-loader';
+import type { ComposerLoaderPhase } from '@oxy.so/bloom/composer-loader';
 import { ComposerPill } from '@oxy.so/bloom/composer-panel';
 import { AgentChatComposer } from '@oxy.so/bloom/agent-chat';
 import { AliaComposer } from './node_modules/@alia.onl/sdk/src/components/AliaComposer';
@@ -17,12 +18,49 @@ export function ComposerCases({ onToggleMode }: { onToggleMode: () => void }) {
   const [agent, setAgent] = useState('Agent draft retained through resize');
   const [alia, setAlia] = useState('Alia draft retained through resize');
   const [busy, setBusy] = useState(false);
+  const [phase, setPhase] = useState<ComposerLoaderPhase>('idle');
+  const phaseTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const [narrow, setNarrow] = useState(false);
   const [taper, setTaper] = useState(0);
   const [stops, setStops] = useState(0);
   const [submits, setSubmits] = useState(0);
   const [pending, setPending] = useState('none');
-  const state = `busy=${busy} narrow=${narrow} taper=${taper} multiline=${multiline} stops=${stops} submits=${submits} pending=${pending}`;
+  const state = `busy=${busy} phase=${phase} narrow=${narrow} taper=${taper} multiline=${multiline} stops=${stops} submits=${submits} pending=${pending}`;
+  const cancelPhaseTimers = () => {
+    for (const timer of phaseTimers.current) clearTimeout(timer);
+    phaseTimers.current = [];
+  };
+  useEffect(
+    () => () => {
+      for (const timer of phaseTimers.current) clearTimeout(timer);
+    },
+    [],
+  );
+  const runTwoLaps = () => {
+    cancelPhaseTimers();
+    setPending('phase-sequence');
+    const advance = (delay: number, action: () => void) => {
+      phaseTimers.current.push(setTimeout(action, delay));
+    };
+    const lap = (start: number) => {
+      advance(start, () => {
+        setBusy(true);
+        setPhase('submitting');
+      });
+      advance(start + 3000, () => setPhase('streaming'));
+      advance(start + 8000, () => setPhase('stopping'));
+      advance(start + 11000, () => {
+        setPhase('complete');
+        setBusy(false);
+      });
+    };
+    lap(0);
+    lap(13000);
+    advance(26000, () => {
+      setPhase('idle');
+      setPending('none');
+    });
+  };
   const setDraftLength = (next: boolean) => {
     const drafts = next
       ? {
@@ -41,12 +79,22 @@ export function ComposerCases({ onToggleMode }: { onToggleMode: () => void }) {
     setAlia(drafts.alia);
   };
   const stop = () => {
+    cancelPhaseTimers();
     setStops((value) => value + 1);
-    setBusy(false);
+    setPhase('stopping');
+    phaseTimers.current.push(
+      setTimeout(() => {
+        setPhase('complete');
+        setBusy(false);
+      }, 450),
+    );
   };
   const submit = () => {
+    cancelPhaseTimers();
     setSubmits((value) => value + 1);
     setBusy(true);
+    setPhase('submitting');
+    phaseTimers.current.push(setTimeout(() => setPhase('streaming'), 400));
   };
   const later = (name: string, action: () => void) => {
     setPending(name);
@@ -72,9 +120,37 @@ export function ComposerCases({ onToggleMode }: { onToggleMode: () => void }) {
             </Button>
             <Button
               testID="cases-busy"
-              onPress={() => later('busy', () => setBusy((value) => !value))}
+              onPress={() =>
+                later('busy', () => {
+                  setBusy((value) => !value);
+                  setPhase((value) => (value === 'idle' ? 'streaming' : 'idle'));
+                })
+              }
             >
               Busy in 4s
+            </Button>
+            <Button testID="cases-run-phases" onPress={runTwoLaps}>
+              Run two laps
+            </Button>
+            <Button
+              testID="cases-phase-error"
+              onPress={() => {
+                setBusy(false);
+                setPhase('error');
+              }}
+            >
+              Error phase
+            </Button>
+            <Button
+              testID="cases-phase-reset"
+              onPress={() => {
+                cancelPhaseTimers();
+                setBusy(false);
+                setPhase('idle');
+                setPending('none');
+              }}
+            >
+              Reset phase
             </Button>
             <Button testID="cases-theme" onPress={onToggleMode}>
               Theme
@@ -93,14 +169,14 @@ export function ComposerCases({ onToggleMode }: { onToggleMode: () => void }) {
           <View style={{ width: narrow ? 260 : '100%', gap: 24 }}>
             <View style={{ gap: 8 }}>
               <Text variant="body-2-medium">Standalone ComposerLoader</Text>
-              <ComposerLoader active={busy} taper={taper} testID="cases-isolated-loader">
+              <ComposerLoader phase={phase} taper={taper} testID="cases-isolated-loader">
                 <View
                   testID="cases-isolated-loader-content"
                   style={{ height: 68, borderRadius: 24 }}
                 />
               </ComposerLoader>
             </View>
-            <ComposerLoader active={busy} taper={taper} testID="cases-pill-loader">
+            <ComposerLoader phase={phase} taper={taper} testID="cases-pill-loader">
               <ComposerPill
                 value={pill}
                 onValueChange={setPill}
@@ -121,6 +197,7 @@ export function ComposerCases({ onToggleMode }: { onToggleMode: () => void }) {
               onSubmit={submit}
               onStop={stop}
               busy={busy}
+              phase={phase}
               provider="Offline fixture"
               testID="cases-agent"
               composerProps={{ showVoice: false, addMenu: [], effortLevels: [] }}
@@ -132,6 +209,7 @@ export function ComposerCases({ onToggleMode }: { onToggleMode: () => void }) {
                 onSubmit={submit}
                 onStop={stop}
                 busy={busy}
+                loaderPhase={phase}
                 disableKeyboardAvoidance
                 onError={() => {}}
               />
