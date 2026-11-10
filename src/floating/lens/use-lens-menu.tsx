@@ -1,5 +1,5 @@
 /**
- * What every menu family shares to present as the native glass menu (Android 13+): reading its
+ * What every menu family shares to present as the native lens menu (Android 13+): reading its
  * rows as data, the open state across React and the native overlay, and the native view that
  * hosts the trigger. A family brings its own row parts and its own `Content` component.
  */
@@ -20,17 +20,17 @@ import { View } from 'react-native';
 import { useTheme } from '../../theme/use-theme';
 import { useMenuPalette } from '../menu-palette';
 import {
-  GLASS_MENU_ICON_HOST_ID,
-  type GlassMenuNativeHandle,
-  type GlassMenuNativeItem,
-  getNativeGlassMenu,
-} from './native-glass-menu';
-import type { ParsedGlassMenu } from './parse-glass-menu';
-import { useGlassPrimary } from './use-glass-primary';
+  LENS_ICON_HOST_ID,
+  type LensNativeHandle,
+  type LensNativeItem,
+  getNativeLens,
+} from './native-lens';
+import type { ParsedLensMenu } from './parse-lens-menu';
+import { useLensTint } from './use-lens-tint';
 
-/** A menu's rows, read as data for the native glass menu. */
-export interface MenuGlass extends ParsedGlassMenu {
-  nativeRef: RefObject<GlassMenuNativeHandle | null>;
+/** A menu's rows, read as data for the native lens menu. */
+export interface MenuLens extends ParsedLensMenu {
+  nativeRef: RefObject<LensNativeHandle | null>;
   select: (id: string) => void;
   /** The native menu opened or closed itself. */
   openChange: (open: boolean) => void;
@@ -52,13 +52,13 @@ function findElement(
   return null;
 }
 
-export interface UseGlassMenuOptions {
+export interface UseLensMenuOptions {
   /** The family's root children, which hold its `Content`. */
   children: ReactNode;
   /** The family's `Content` component, whose children are the rows. */
   content: unknown;
   /** Reads the `Content` element's props as rows; `null` when they leave the vocabulary. */
-  parse: (props: Record<string, unknown>) => ParsedGlassMenu | null;
+  parse: (props: Record<string, unknown>) => ParsedLensMenu | null;
   /** Whether the family's own state says the menu is open. */
   open: boolean;
   /** Sets the family's own open state. */
@@ -66,19 +66,19 @@ export interface UseGlassMenuOptions {
 }
 
 /**
- * The menu as the native glass menu takes it (Android 13+, in a binary that has Bloom's module),
- * or `undefined` when it cannot: the menu then keeps its sheet. Rows outside the glass menu's
- * vocabulary (see `parseGlassMenu`) also keep the sheet.
+ * The menu as the native lens menu takes it (Android 13+, in a binary that has Bloom's module),
+ * or `undefined` when it cannot: the menu then keeps its sheet. Rows outside the lens menu's
+ * vocabulary (see `parseLensMenu`) also keep the sheet.
  */
-export function useGlassMenu({
+export function useLensMenu({
   children,
   content,
   parse,
   open,
   setOpen,
-}: UseGlassMenuOptions): MenuGlass | undefined {
-  const available = getNativeGlassMenu() != null;
-  const nativeRef = useRef<GlassMenuNativeHandle | null>(null);
+}: UseLensMenuOptions): MenuLens | undefined {
+  const available = getNativeLens() != null;
+  const nativeRef = useRef<LensNativeHandle | null>(null);
   const nativeOpen = useRef(false);
   const element = available ? findElement(children, content) : null;
   const parsed = element ? parse(element.props as Record<string, unknown>) : null;
@@ -86,7 +86,7 @@ export function useGlassMenu({
   const handlers = useRef(parsed?.handlers ?? {});
   handlers.current = parsed?.handlers ?? {};
   const itemsKey = parsed ? JSON.stringify(parsed.items) : '';
-  const items = useMemo<GlassMenuNativeItem[] | undefined>(
+  const items = useMemo<LensNativeItem[] | undefined>(
     () => (itemsKey ? JSON.parse(itemsKey) : undefined),
     [itemsKey],
   );
@@ -118,26 +118,26 @@ export function useGlassMenu({
   );
 }
 
-export interface GlassTriggerProps {
-  glass: MenuGlass;
-  /** Draw the trigger itself as glass (a fixed-layer control), not only the menu. */
-  triggerGlass: boolean;
+export interface LensTriggerProps {
+  lens: MenuLens;
+  /** Draw the trigger itself as lens (a fixed-layer control), not only the menu. */
+  triggerLens: boolean;
   tone: 'neutral' | 'primary';
   tint?: string;
   children: ReactNode;
 }
 
 /**
- * The native glass view around a trigger. It reads the theme, so it is a component of its own:
- * only a menu the native glass menu presents mounts it, and every other menu stays free of the
+ * The native lens view around a trigger. It reads the theme, so it is a component of its own:
+ * only a menu the native lens menu presents mounts it, and every other menu stays free of the
  * theme (as the sheet always was).
  */
-export function GlassTrigger({ glass, triggerGlass, tone, tint, children }: GlassTriggerProps) {
-  const NativeGlassMenu = getNativeGlassMenu();
+export function LensTrigger({ lens, triggerLens, tone, tint, children }: LensTriggerProps) {
+  const NativeLens = getNativeLens();
   const dark = useTheme().isDark;
-  const primary = useGlassPrimary().color;
+  const primary = useLensTint().color;
   const { surface, border, text, textSecondary, destructive, trigger } = useMenuPalette();
-  // Bloom's menu palette colours the glass: its surface tints the panel, its ink draws the rows.
+  // Bloom's menu palette colours the lens: its surface tints the panel, its ink draws the rows.
   const config = useMemo(
     () => ({
       tintColor: surface,
@@ -154,34 +154,34 @@ export function GlassTrigger({ glass, triggerGlass, tone, tint, children }: Glas
     : tone === 'primary'
       ? { tintColor: primary, tintOpacity: 0.96 }
       : { tintColor: trigger.background, tintOpacity: 0.5 };
-  if (!NativeGlassMenu) return <>{children}</>;
+  if (!NativeLens) return <>{children}</>;
   return (
-    <NativeGlassMenu
-      ref={glass.nativeRef}
-      items={glass.items}
-      glass={triggerGlass}
+    <NativeLens
+      ref={lens.nativeRef}
+      items={lens.items}
+      lens={triggerLens}
       colorScheme={dark ? 'dark' : 'light'}
       config={config}
       triggerConfig={triggerConfig}
       style={TRIGGER_STYLE}
-      onItemSelect={(event) => glass.select(event.nativeEvent.id)}
-      onMenuOpenChange={(event) => glass.openChange(event.nativeEvent.open)}
+      onItemSelect={(event) => lens.select(event.nativeEvent.id)}
+      onMenuOpenChange={(event) => lens.openChange(event.nativeEvent.open)}
     >
       {children}
       <View
-        nativeID={GLASS_MENU_ICON_HOST_ID}
+        nativeID={LENS_ICON_HOST_ID}
         collapsable={false}
         pointerEvents="none"
         style={ICON_HOST_STYLE}
       >
-        {glass.icons.map((icon, index) => (
+        {lens.icons.map((icon, index) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: the slot index is the identity the native side uses
           <View key={index} collapsable={false} style={ICON_SLOT_STYLE}>
             {icon}
           </View>
         ))}
       </View>
-    </NativeGlassMenu>
+    </NativeLens>
   );
 }
 

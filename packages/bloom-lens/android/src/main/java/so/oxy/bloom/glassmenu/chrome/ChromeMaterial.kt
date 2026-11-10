@@ -2,7 +2,10 @@ package so.oxy.bloom.glassmenu.chrome
 
 import so.oxy.bloom.glassmenu.records.GlassMenuConfigRecord
 import so.oxy.bloom.glassmenu.records.GlassTriggerConfigRecord
+import so.oxy.bloom.glassmenu.motion.GlassJelly
 import so.oxy.bloom.glassmenu.render.GlassSurfaceState
+import android.graphics.RectF
+import so.oxy.bloom.glassmenu.GlassMenuAndroidView
 
 // The ONE material configuration of the chrome (Android twin of chrome-material.web.ts). Every chrome surface
 // (tab bar, search circle, create circle, headers, toolbars, circular buttons) goes through apply(): the menu's
@@ -28,9 +31,19 @@ internal object ChromeMaterial {
   }
 }
 
-// The selection pill: the menu's resting-trigger material (the glass a pressable menu anchor shows at rest), with
-// refraction on. Same records and recipe as the menu; the state follows GlassMenuOverlay.drawRestingAnchor.
-internal fun ChromeMaterial.applyPill(state: GlassSurfaceState) {
+// The selection pill: the same material as the menu's resting trigger (the "Prueba" button): the same records
+// (GlassMenuConfigRecord and GlassTriggerConfigRecord defaults, which are the ones GlassMenuAndroidView uses unless the
+// app sets them), the same recipe, and the same light as GlassMenuAndroidView.applyLight with the pill's jelly and rect.
+// Refraction is on (refractionScale 1). The state is the one GlassMenuOverlay.drawRestingAnchor uses.
+// `pill` is the pill rectangle in dp; ox and oy are the chrome's window offset in px.
+internal fun ChromeMaterial.applyPill(
+  state: GlassSurfaceState,
+  jelly: GlassJelly,
+  pill: RectF,
+  ox: Float,
+  oy: Float,
+  density: Float,
+) {
   state.config = GlassMenuConfigRecord()
   state.trigger = GlassTriggerConfigRecord()
   state.dark = true
@@ -41,7 +54,13 @@ internal fun ChromeMaterial.applyPill(state: GlassSurfaceState) {
   state.lensAmount = 0f
   state.materialProgress = 0f
   state.surfaceOpacity = 1f
-  state.rimLift = 0f
-  state.pressLift = 0f
-  state.poolGain = 0f
+  // applyLight(state, origin, opacity = 1) of GlassMenuAndroidView, with the pill's jelly. The jelly works in dp here,
+  // so its light position is converted to px and offset to the window.
+  val glow = jelly.glowValue * state.trigger.shine
+  state.pressX = ox + (pill.left + jelly.lightPositionX) * density
+  state.pressY = oy + (pill.top + jelly.lightPositionY) * density
+  state.pressRadius = GlassMenuAndroidView.LightRadius * density
+  state.poolGain = GlassMenuAndroidView.LightPool * glow
+  state.pressLift = GlassMenuAndroidView.LightLift * glow
+  state.rimLift = GlassMenuAndroidView.LightRimLift * glow
 }

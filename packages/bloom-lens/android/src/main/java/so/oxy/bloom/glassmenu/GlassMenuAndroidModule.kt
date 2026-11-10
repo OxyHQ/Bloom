@@ -8,7 +8,7 @@ import expo.modules.kotlin.modules.ModuleDefinition
 
 class GlassMenuAndroidModule : Module() {
   override fun definition() = ModuleDefinition {
-    Name("BloomGlassMenu")
+    Name("BloomLensMenu")
 
     View(GlassMenuAndroidView::class) {
       Events("onItemSelect", "onMenuOpenChange")
@@ -16,7 +16,7 @@ class GlassMenuAndroidModule : Module() {
       Prop("items") { view: GlassMenuAndroidView, items: List<GlassMenuItemRecord>? ->
         view.items = items ?: emptyList()
       }
-      Prop("glass") { view: GlassMenuAndroidView, glass: Boolean? ->
+      Prop("lens") { view: GlassMenuAndroidView, glass: Boolean? ->
         view.glass = glass ?: true
       }
       Prop("cornerRadius") { view: GlassMenuAndroidView, radius: Float? ->
