@@ -1,5 +1,11 @@
 # Changelog
 
+## 17.41.0
+
+### Added
+
+- **`ComposerLoader.phase`** (`idle`, `submitting`, `streaming`, `stopping`, `error`, `complete`) gives chat composers one controlled request lifecycle. Bloom owns the fade and motion; the app continues to own submission, cancellation, error and completion. `active` remains compatible during the 17.x migration. `AgentChat` maps its transport-neutral statuses and accepts `composerPhase` when an app needs explicit stopping/completion phases.
+
 ## 17.40.0
 
 ### Added

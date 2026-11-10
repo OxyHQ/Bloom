@@ -18,6 +18,7 @@ import { useTheme } from '../theme/use-theme';
 import { useSvgIdPrefix } from '../styles/svg-id';
 import {
   COMPOSER_LOADER_FADE_MS,
+  resolveComposerLoaderActive,
   resolveComposerLoaderColors,
   PILL_RADIUS,
   blurFilterId,
@@ -105,6 +106,7 @@ const LoaderStroke = memo(function LoaderStroke({
 
 function ComposerLoaderComponent({
   children,
+  phase,
   active = true,
   paused = false,
   colors,
@@ -124,12 +126,13 @@ function ComposerLoaderComponent({
   style,
   testID,
 }: ComposerLoaderProps) {
+  const showLight = resolveComposerLoaderActive(active, phase);
   const theme = useTheme();
   const gradientId = `${useSvgIdPrefix('bloom-cl')}gradient`;
   const [box, setBox] = useState({ w: 0, h: 0 });
   const [androidSoftwareFallback, setAndroidSoftwareFallback] = useState(false);
   const measured = box.w > 0 && box.h > 0;
-  const { moving, animate } = useLoaderMotion(active, measured && !paused);
+  const { moving, animate } = useLoaderMotion(showLight, measured && !paused);
 
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
@@ -196,14 +199,14 @@ function ComposerLoaderComponent({
     return () => clock.setActive(false);
   }, [moving, clock, androidSoftwareFallback]);
 
-  const fade = useSharedValue(active ? 1 : 0);
+  const fade = useSharedValue(showLight ? 1 : 0);
   useEffect(() => {
     fade.value = !animate
-      ? active
+      ? showLight
         ? 1
         : 0
-      : withTiming(active ? 1 : 0, { duration: COMPOSER_LOADER_FADE_MS, easing: EASE });
-  }, [active, animate, fade]);
+      : withTiming(showLight ? 1 : 0, { duration: COMPOSER_LOADER_FADE_MS, easing: EASE });
+  }, [showLight, animate, fade]);
   const fadeStyle = useAnimatedStyle(() => ({ opacity: fade.value }), [fade]);
 
   const [c0, c1, c2, c3] = colors ?? resolveComposerLoaderColors(theme);
@@ -328,7 +331,7 @@ function ComposerLoaderComponent({
       </Animated.View>
 
       <ComposerLoaderRadiusContext.Provider value={setPillRadius}>
-        <ComposerLoaderPaintContext.Provider value={active}>
+        <ComposerLoaderPaintContext.Provider value={showLight}>
           <View style={styles.content}>{children}</View>
         </ComposerLoaderPaintContext.Provider>
       </ComposerLoaderRadiusContext.Provider>

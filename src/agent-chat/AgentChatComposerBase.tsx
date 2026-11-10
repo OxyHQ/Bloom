@@ -36,6 +36,7 @@ export function AgentChatComposerBase({
   onValueChange,
   onSubmit,
   onStop,
+  phase,
   busy = false,
   onAttach,
   model,
@@ -61,7 +62,10 @@ export function AgentChatComposerBase({
 
   return (
     <View testID={testID} style={[{ width: '100%', flexDirection: 'column', gap: 10 }, style]}>
-      <ComposerLoader active={busy}>
+      <ComposerLoader
+        phase={phase ?? (busy ? 'streaming' : 'idle')}
+        testID={testID ? `${testID}-loader` : undefined}
+      >
         <ComposerPill
           placeholder={l.placeholder}
           addMenu={

@@ -1,0 +1,668 @@
+{
+  "commit": "a5e3985f332cf196fd0d8e48bc7a24481cdb738a",
+  "workingTree": "",
+  "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "packages": {
+    "react": "19.3.0",
+    "react-native": "0.88.1",
+    "react-native-web": "0.21.4",
+    "react-native-svg": "15.16.0",
+    "react-native-reanimated": "4.7.1",
+    "expo-blur": "58.0.5"
+  },
+  "story": "agents-composer-loader--lifecycle",
+  "browser": "Chrome/156.0.8078.80",
+  "cases": [
+    {
+      "name": "submit to streaming keeps the same running lap",
+      "submitting": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 683.2639999999994,
+            "dash": "-16.1278px"
+          },
+          {
+            "playState": "running",
+            "time": 683.2639999999994,
+            "dash": "-16.1037px"
+          },
+          {
+            "playState": "running",
+            "time": 683.2639999999994,
+            "dash": "-15.1836px"
+          }
+        ]
+      },
+      "streaming": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 1399.9640000000006,
+            "dash": "-32.0544px"
+          },
+          {
+            "playState": "running",
+            "time": 1399.9640000000006,
+            "dash": "-32.0304px"
+          },
+          {
+            "playState": "running",
+            "time": 1399.9640000000006,
+            "dash": "-31.1103px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "stopping, error, complete and idle settle",
+      "stopping": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 1833.2639999999997,
+            "dash": "-41.6833px"
+          },
+          {
+            "playState": "running",
+            "time": 1833.2639999999997,
+            "dash": "-41.6592px"
+          },
+          {
+            "playState": "running",
+            "time": 1833.2639999999997,
+            "dash": "-40.7392px"
+          }
+        ]
+      },
+      "error": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "paused",
+            "time": 2649.9999999999986,
+            "dash": "-59.833px"
+          },
+          {
+            "playState": "paused",
+            "time": 2649.9999999999986,
+            "dash": "-59.8089px"
+          },
+          {
+            "playState": "paused",
+            "time": 2649.9999999999986,
+            "dash": "-58.8889px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "active clock",
+      "before": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 3049.975999989872,
+            "dash": "-68.7214px"
+          },
+          {
+            "playState": "running",
+            "time": 3049.975999989872,
+            "dash": "-68.6973px"
+          },
+          {
+            "playState": "running",
+            "time": 3049.975999989872,
+            "dash": "-67.7772px"
+          }
+        ]
+      },
+      "after": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 3316.5759999898723,
+            "dash": "-74.6458px"
+          },
+          {
+            "playState": "running",
+            "time": 3316.5759999898723,
+            "dash": "-74.6217px"
+          },
+          {
+            "playState": "running",
+            "time": 3316.5759999898723,
+            "dash": "-73.7017px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "inactive settles",
+      "before": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "paused",
+            "time": 4049.8779999898743,
+            "dash": "-90.9414px"
+          },
+          {
+            "playState": "paused",
+            "time": 4049.8779999898743,
+            "dash": "-90.9173px"
+          },
+          {
+            "playState": "paused",
+            "time": 4049.8779999898743,
+            "dash": "-89.9973px"
+          }
+        ]
+      },
+      "after": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "paused",
+            "time": 4049.8779999898743,
+            "dash": "-90.9414px"
+          },
+          {
+            "playState": "paused",
+            "time": 4049.8779999898743,
+            "dash": "-90.9173px"
+          },
+          {
+            "playState": "paused",
+            "time": 4049.8779999898743,
+            "dash": "-89.9973px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "explicit pause preserves phase",
+      "paused": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "paused",
+            "time": 4283.225999982196,
+            "dash": "-96.1269px"
+          },
+          {
+            "playState": "paused",
+            "time": 4283.225999982196,
+            "dash": "-96.1028px"
+          },
+          {
+            "playState": "paused",
+            "time": 4283.225999982196,
+            "dash": "-95.1828px"
+          }
+        ]
+      },
+      "resumed": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 4399.823999982196,
+            "dash": "-98.718px"
+          },
+          {
+            "playState": "running",
+            "time": 4399.823999982196,
+            "dash": "-98.6939px"
+          },
+          {
+            "playState": "running",
+            "time": 4399.823999982196,
+            "dash": "-97.7739px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "retained Screen",
+      "paused": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "paused",
+            "time": 4783.117999982195,
+            "dash": "-7.23565px"
+          },
+          {
+            "playState": "paused",
+            "time": 4783.117999982195,
+            "dash": "-7.21155px"
+          },
+          {
+            "playState": "paused",
+            "time": 4783.117999982195,
+            "dash": "-6.29151px"
+          }
+        ]
+      },
+      "resumed": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 4899.6819999821955,
+            "dash": "-9.82596px"
+          },
+          {
+            "playState": "running",
+            "time": 4899.6819999821955,
+            "dash": "-9.80187px"
+          },
+          {
+            "playState": "running",
+            "time": 4899.6819999821955,
+            "dash": "-8.88182px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "hide during fade cancels opacity work",
+      "interruptedFade": {
+        "duration": "0s",
+        "opacity": "0",
+        "animations": 0
+      }
+    },
+    {
+      "name": "AgentChat Stop uses real handler",
+      "stopped": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 6299.711999969613,
+            "dash": "-40.9377px"
+          },
+          {
+            "playState": "running",
+            "time": 6299.711999969613,
+            "dash": "-40.9136px"
+          },
+          {
+            "playState": "running",
+            "time": 6299.711999969613,
+            "dash": "-39.9936px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "background tab",
+      "background": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "paused",
+            "time": 7183.015999960194,
+            "dash": "-60.5667px"
+          },
+          {
+            "playState": "paused",
+            "time": 7183.015999960194,
+            "dash": "-60.5426px"
+          },
+          {
+            "playState": "paused",
+            "time": 7183.015999960194,
+            "dash": "-59.6226px"
+          }
+        ]
+      },
+      "resumed": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 7283.027999960197,
+            "dash": "-62.7892px"
+          },
+          {
+            "playState": "running",
+            "time": 7283.027999960197,
+            "dash": "-62.7651px"
+          },
+          {
+            "playState": "running",
+            "time": 7283.027999960197,
+            "dash": "-61.8451px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "resize 320",
+      "measured": {
+        "width": 288,
+        "height": 52,
+        "viewBox": "0 0 288 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 7683.017999960196,
+            "dash": "-69.0306px"
+          },
+          {
+            "playState": "running",
+            "time": 7683.017999960196,
+            "dash": "-70.8265px"
+          },
+          {
+            "playState": "running",
+            "time": 7683.017999960196,
+            "dash": "-70.7337px"
+          }
+        ]
+      },
+      "input": {
+        "same": true,
+        "focused": true,
+        "start": 2,
+        "end": 12,
+        "value": "A draft preserved across every transition"
+      }
+    },
+    {
+      "name": "resize 390",
+      "measured": {
+        "width": 358,
+        "height": 52,
+        "viewBox": "0 0 358 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 8049.669999960194,
+            "dash": "-78.0878px"
+          },
+          {
+            "playState": "running",
+            "time": 8049.669999960194,
+            "dash": "-79.2585px"
+          },
+          {
+            "playState": "running",
+            "time": 8049.669999960194,
+            "dash": "-78.8816px"
+          }
+        ]
+      },
+      "input": {
+        "same": true,
+        "focused": true,
+        "start": 2,
+        "end": 12,
+        "value": "A draft preserved across every transition"
+      }
+    },
+    {
+      "name": "resize 768",
+      "measured": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 8282.993999960194,
+            "dash": "-85.0107px"
+          },
+          {
+            "playState": "running",
+            "time": 8282.993999960194,
+            "dash": "-84.9866px"
+          },
+          {
+            "playState": "running",
+            "time": 8282.993999960194,
+            "dash": "-84.0665px"
+          }
+        ]
+      },
+      "input": {
+        "same": true,
+        "focused": true,
+        "start": 2,
+        "end": 12,
+        "value": "A draft preserved across every transition"
+      }
+    },
+    {
+      "name": "resize 1024",
+      "measured": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 8582.981999960197,
+            "dash": "-91.6771px"
+          },
+          {
+            "playState": "running",
+            "time": 8582.981999960197,
+            "dash": "-91.653px"
+          },
+          {
+            "playState": "running",
+            "time": 8582.981999960197,
+            "dash": "-90.7329px"
+          }
+        ]
+      },
+      "input": {
+        "same": true,
+        "focused": true,
+        "start": 2,
+        "end": 12,
+        "value": "A draft preserved across every transition"
+      }
+    },
+    {
+      "name": "resize 1440",
+      "measured": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 8932.967999960194,
+            "dash": "-99.4545px"
+          },
+          {
+            "playState": "running",
+            "time": 8932.967999960194,
+            "dash": "-99.4304px"
+          },
+          {
+            "playState": "running",
+            "time": 8932.967999960194,
+            "dash": "-98.5104px"
+          }
+        ]
+      },
+      "input": {
+        "same": true,
+        "focused": true,
+        "start": 2,
+        "end": 12,
+        "value": "A draft preserved across every transition"
+      }
+    },
+    {
+      "name": "resize 390",
+      "measured": {
+        "width": 358,
+        "height": 52,
+        "viewBox": "0 0 358 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 9182.961999960195,
+            "dash": "-3.27206px"
+          },
+          {
+            "playState": "running",
+            "time": 9182.961999960195,
+            "dash": "-4.44277px"
+          },
+          {
+            "playState": "running",
+            "time": 9182.961999960195,
+            "dash": "-4.06582px"
+          }
+        ]
+      },
+      "input": {
+        "same": true,
+        "focused": true,
+        "start": 2,
+        "end": 12,
+        "value": "A draft preserved across every transition"
+      }
+    },
+    {
+      "name": "height resize",
+      "tall": {
+        "width": 358,
+        "height": 160,
+        "viewBox": "0 0 358 160",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 9899.607999960195,
+            "dash": "-19.7637px"
+          },
+          {
+            "playState": "running",
+            "time": 9899.607999960195,
+            "dash": "-20.5452px"
+          },
+          {
+            "playState": "running",
+            "time": 9899.607999960195,
+            "dash": "-19.9913px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "reduced motion",
+      "reduced": {
+        "width": 358,
+        "height": 160,
+        "viewBox": "0 0 358 160",
+        "clocks": [
+          {
+            "playState": "paused",
+            "time": 10566.247999960196,
+            "dash": "-34.578px"
+          },
+          {
+            "playState": "paused",
+            "time": 10566.247999960196,
+            "dash": "-35.3594px"
+          },
+          {
+            "playState": "paused",
+            "time": 10566.247999960196,
+            "dash": "-34.8055px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "offscreen",
+      "offscreen": {
+        "width": 343,
+        "height": 160,
+        "viewBox": "0 0 343 160",
+        "clocks": [
+          {
+            "playState": "paused",
+            "time": 10849.411999960197,
+            "dash": "-40.7475px"
+          },
+          {
+            "playState": "paused",
+            "time": 10849.411999960197,
+            "dash": "-41.6135px"
+          },
+          {
+            "playState": "paused",
+            "time": 10849.411999960197,
+            "dash": "-41.098px"
+          }
+        ]
+      },
+      "resumed": {
+        "width": 343,
+        "height": 160,
+        "viewBox": "0 0 343 160",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 10949.407999960196,
+            "dash": "-42.9697px"
+          },
+          {
+            "playState": "running",
+            "time": 10949.407999960196,
+            "dash": "-43.8356px"
+          },
+          {
+            "playState": "running",
+            "time": 10949.407999960196,
+            "dash": "-43.3202px"
+          }
+        ]
+      }
+    }
+  ]
+}

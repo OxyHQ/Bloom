@@ -55,6 +55,7 @@ import { ComposerLoader as WebLoader } from '../composer-loader/ComposerLoader.w
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { useScreenVisible } from '../screen/use-screen-visible';
 import { COMPOSER_LOADER_FADE_MS } from '../composer-loader/shared';
+import type { ComposerLoaderPhase } from '../composer-loader/types';
 import { resolvedStyle } from './support/rendered-style';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
@@ -78,9 +79,9 @@ for (const [platform, Loader, rectName] of [
 ] as const) {
   describe(`${platform} loader lifecycle`, () => {
     const setup = (active = true, paused = false) => {
-      const ui = (on: boolean, pause = false) =>
+      const ui = (on: boolean, pause = false, phase?: ComposerLoaderPhase) =>
         wrap(
-          <Loader active={on} paused={pause} testID="loader">
+          <Loader active={on} phase={phase} paused={pause} testID="loader">
             <Text>draft</Text>
           </Loader>,
         );
@@ -95,7 +96,8 @@ for (const [platform, Loader, rectName] of [
         platform === 'native'
           ? mockClock.setActive.mock.lastCall?.[0]
           : strokes()[0]?.props.style.animationPlayState === 'running';
-      return { ...tree, ui, measure, strokes, moving };
+      const phaseUi = (phase: ComposerLoaderPhase) => ui(false, false, phase);
+      return { ...tree, ui, phaseUi, measure, strokes, moving };
     };
 
     it('waits for measured positive geometry and retains children across resize', () => {
@@ -130,6 +132,35 @@ for (const [platform, Loader, rectName] of [
       expect(t.moving()).toBe(true);
       t.rerender(t.ui(false));
       act(() => jest.advanceTimersByTime(COMPOSER_LOADER_FADE_MS));
+      expect(t.moving()).toBe(false);
+    });
+
+    it('keeps submit, streaming and stop on one lap, then fades on completion', () => {
+      const t = setup(false);
+      t.measure();
+      t.rerender(t.phaseUi('submitting'));
+      expect(t.moving()).toBe(true);
+      const firstAnimation = t.strokes()[0]?.props.style;
+      if (platform === 'native') {
+        act(() => mockFrame({ timeSincePreviousFrame: 1000, timeSinceFirstFrame: 1000 }));
+        const offset = mockDashProps().strokeDashoffset;
+        t.rerender(t.phaseUi('streaming'));
+        act(() => mockFrame({ timeSincePreviousFrame: 1000, timeSinceFirstFrame: 0 }));
+        expect(mockDashProps().strokeDashoffset).not.toBe(offset);
+      } else {
+        t.rerender(t.phaseUi('streaming'));
+        expect(t.strokes()[0]?.props.style).toEqual(firstAnimation);
+      }
+      expect(t.moving()).toBe(true);
+      t.rerender(t.phaseUi('stopping'));
+      expect(t.moving()).toBe(true);
+      t.rerender(t.phaseUi('complete'));
+      expect(t.moving()).toBe(true);
+      act(() => jest.advanceTimersByTime(COMPOSER_LOADER_FADE_MS));
+      expect(t.moving()).toBe(false);
+      t.rerender(t.phaseUi('error'));
+      expect(t.moving()).toBe(false);
+      t.rerender(t.phaseUi('idle'));
       expect(t.moving()).toBe(false);
     });
 

@@ -40,7 +40,13 @@ import {
   AgentChatMessage,
 } from '../agent-chat';
 import type { AgentChatMessageData, AgentChatThread } from '../agent-chat';
-import { formatAgo, relativeTime, resolveAgentChatPalette, shortModel } from '../agent-chat/shared';
+import {
+  formatAgo,
+  relativeTime,
+  resolveAgentChatComposerPhase,
+  resolveAgentChatPalette,
+  shortModel,
+} from '../agent-chat/shared';
 import { buildTheme } from '../theme/build-theme';
 import { pressHost } from './support/press-host';
 import { resolvedStyle } from './support/rendered-style';
@@ -55,6 +61,15 @@ function renderIn(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
 }
 
 const NOW = Date.now();
+
+it.each([
+  ['ready', 'idle'],
+  ['submitted', 'submitting'],
+  ['streaming', 'streaming'],
+  ['error', 'error'],
+] as const)('maps AgentChat status %s to ComposerLoader phase %s', (status, phase) => {
+  expect(resolveAgentChatComposerPhase(status)).toBe(phase);
+});
 
 const MESSAGES: AgentChatMessageData[] = [
   { id: 'u1', role: 'user', text: 'Write a product update', at: NOW },
@@ -468,6 +483,17 @@ describe('AgentChat', () => {
       </BloomThemeProvider>,
     );
     expect(queryByText('Thinking')).toBeNull();
+  });
+
+  it('lets the app choose the loader presentation independently of transport status', () => {
+    const { getByTestId } = renderIn(
+      <AgentChat testID="chat" messages={MESSAGES} status="streaming" composerPhase="complete" />,
+    );
+    expect(
+      resolvedStyle(
+        getByTestId('chat-composer-loader-light', { includeHiddenElements: true }).props.style,
+      ).opacity,
+    ).toBe(0);
   });
 
   it('reports an error as an alert', () => {

@@ -8,6 +8,22 @@ import { AGENT_CHAT_MESSAGES, type AgentChatMessages } from './messages';
 import { IS_WEB } from '../styles/platform';
 import { animation } from '../styles/tokens';
 import { BREAKPOINTS } from '../styles/breakpoints';
+import type { ComposerLoaderPhase } from '../composer-loader/types';
+import type { AgentChatStatus } from './types';
+
+/** Map transport-neutral conversation state to the composer's visual lifecycle. */
+export function resolveAgentChatComposerPhase(status: AgentChatStatus): ComposerLoaderPhase {
+  switch (status) {
+    case 'submitted':
+      return 'submitting';
+    case 'streaming':
+      return 'streaming';
+    case 'error':
+      return 'error';
+    default:
+      return 'idle';
+  }
+}
 
 /** Shared semantic surfaces, text and action roles for every agent-chat part. */
 export interface AgentChatPalette {
