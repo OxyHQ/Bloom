@@ -19,6 +19,9 @@ class GlassMenuAndroidModule : Module() {
       Prop("lens") { view: GlassMenuAndroidView, glass: Boolean? ->
         view.glass = glass ?: true
       }
+      Prop("morph") { view: GlassMenuAndroidView, morph: Boolean? ->
+        view.morph = morph ?: true
+      }
       Prop("cornerRadius") { view: GlassMenuAndroidView, radius: Float? ->
         view.cornerRadius = radius
       }
