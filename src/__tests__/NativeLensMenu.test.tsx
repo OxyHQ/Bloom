@@ -6,6 +6,7 @@
 import type React from 'react';
 import { Text, View } from 'react-native';
 import { Button } from '../button/Button';
+import { ButtonGroup, ButtonGroupItem } from '../button-group/ButtonGroup';
 import { act, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme';
@@ -197,5 +198,29 @@ describe('Select as the native lens menu', () => {
     ]);
     act(() => lastProps?.onItemSelect?.({ nativeEvent: { id: items[1]?.id ?? '', index: 1 } }));
     expect(onValueChange).toHaveBeenCalledWith('pear');
+  });
+});
+
+describe('a ButtonGroup with the lens material', () => {
+  it('is drawn by the native lens, and its items still press', () => {
+    const onPress = jest.fn();
+    const screen = wrap(
+      <ButtonGroup material="lens" accessibilityLabel="Actions">
+        <ButtonGroupItem onPress={onPress}>Share</ButtonGroupItem>
+      </ButtonGroup>,
+    );
+    expect(screen.getByTestId('native-lens')).toBeTruthy();
+    expect(lastProps?.items).toEqual([]);
+    expect(screen.getByLabelText('Actions')).toBeTruthy();
+    act(() => screen.getByText('Share').props.onPress?.());
+  });
+
+  it('keeps the shared surface without the lens prop', () => {
+    const screen = wrap(
+      <ButtonGroup accessibilityLabel="Actions">
+        <ButtonGroupItem>Share</ButtonGroupItem>
+      </ButtonGroup>,
+    );
+    expect(screen.queryByTestId('native-lens')).toBeNull();
   });
 });

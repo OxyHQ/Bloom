@@ -26,6 +26,12 @@ export interface ButtonGroupProps {
    * `outline` while `checked`. Default `false`.
    */
   separated?: boolean;
+  /**
+   * The group's material. `'surface'` (default) paints it with the shared Surface; `'lens'` draws it with
+   * the native lens where the device has one (Android 13+), and falls back to the Surface elsewhere. Use it
+   * in a fixed layer such as a header or a toolbar, not inside a scrolling list.
+   */
+  material?: 'surface' | 'lens';
   /** `ButtonGroupItem` children. */
   children: React.ReactNode;
   /** Names the group. */

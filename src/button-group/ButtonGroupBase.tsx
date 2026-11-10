@@ -24,6 +24,8 @@ import { BUTTON_RADIUS, BUTTON_SHADOW, resolveCanonicalButtonPalette } from '../
 import { moveSelection, SELECTION_FADE, SELECTION_SPRING } from '../motion/selection-motion';
 import { surfacePresenceStyle, useEnteredPresence } from '../surface/use-surface-presence';
 import { IS_WEB } from '../styles/platform';
+import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
+import { getNativeLens } from '../floating/lens/native-lens';
 import { useGroupSelection } from './use-group-selection';
 import type { ButtonProps } from '../button/types';
 import type { SurfaceProps } from '../surface/types';
@@ -71,6 +73,7 @@ export function createButtonGroup(
     separated = false,
     children,
     accessibilityLabel,
+    material,
     style,
     testID,
   }: ButtonGroupProps) {
@@ -130,6 +133,42 @@ export function createButtonGroup(
         {item}
       </Fragment>
     ));
+    // The group's one material: its own Surface, or, with `material="lens"` on a device that has the
+    // native lens, the lens itself behind the items. The items draw their content either way.
+    const lens = material === 'lens' && getNativeLens() != null;
+    const frame = (content: React.ReactNode) => {
+      if (lens) {
+        const split = splitLensStyle(style);
+        return (
+          <LensButtonHost radius={BUTTON_RADIUS} style={{ alignSelf: 'flex-start', ...split.host }}>
+            <View
+              role="group"
+              accessibilityLabel={accessibilityLabel}
+              // The group holds its items (GROUP_HOLDS_ITEMS).
+              collapsable={false}
+              testID={testID}
+              style={[{ borderRadius: BUTTON_RADIUS, overflow: 'hidden' }, split.control]}
+            >
+              {content}
+            </View>
+          </LensButtonHost>
+        );
+      }
+      return (
+        <Surface
+          radius={BUTTON_RADIUS}
+          cornerCurve="round"
+          role="group"
+          accessibilityLabel={accessibilityLabel}
+          // The group holds its items (GROUP_HOLDS_ITEMS).
+          collapsable={false}
+          testID={testID}
+          style={[{ alignSelf: 'flex-start', boxShadow: recipe.paint.shadow }, style]}
+        >
+          {content}
+        </Surface>
+      );
+    };
     if (separated)
       return (
         <GroupContext.Provider value={context}>
@@ -138,22 +177,7 @@ export function createButtonGroup(
             {/* One pill: the group's own Surface paints the rim and shadow once, around the
                 whole, and clips the first segment's start and the last one's end. The segments
                 are flat tints with a hairline of the surface between them. */}
-            <Surface
-              radius={BUTTON_RADIUS}
-              cornerCurve="round"
-              role="group"
-              accessibilityLabel={accessibilityLabel}
-              // The group holds its items (GROUP_HOLDS_ITEMS).
-              collapsable={false}
-              testID={testID}
-              style={[
-                {
-                  alignSelf: 'flex-start',
-                  boxShadow: recipe.paint.shadow,
-                },
-                style,
-              ]}
-            >
+            {frame(
               <View
                 testID={testID ? `${testID}-items` : undefined}
                 style={{
@@ -165,8 +189,8 @@ export function createButtonGroup(
                 }}
               >
                 {items}
-              </View>
-            </Surface>
+              </View>,
+            )}
           </BloomScope>
         </GroupContext.Provider>
       );
@@ -174,22 +198,7 @@ export function createButtonGroup(
       <GroupContext.Provider value={context}>
         {recipe.sheet}
         <BloomScope size={size}>
-          <Surface
-            radius={BUTTON_RADIUS}
-            cornerCurve="round"
-            role="group"
-            accessibilityLabel={accessibilityLabel}
-            // The group holds its items (GROUP_HOLDS_ITEMS).
-            collapsable={false}
-            testID={testID}
-            style={[
-              {
-                alignSelf: 'flex-start',
-                boxShadow: recipe.paint.shadow,
-              },
-              style,
-            ]}
-          >
+          {frame(
             <View
               testID={testID ? `${testID}-items` : undefined}
               style={{
@@ -224,8 +233,8 @@ export function createButtonGroup(
                 </Animated.View>
               ) : null}
               {row}
-            </View>
-          </Surface>
+            </View>,
+          )}
         </BloomScope>
       </GroupContext.Provider>
     );
