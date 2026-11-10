@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import tempfile
 import time
 import xml.etree.ElementTree as ET
 serial=os.environ['ANDROID_SERIAL']; assert serial==os.environ['AUTHORIZED_PHYSICAL_SERIAL']
@@ -33,7 +34,53 @@ def inputs():
         time.sleep(.1)
     raise AssertionError('Input receipt missing')
 def shot(name):
-    foreground(); (out/(name+'.png')).write_bytes(raw('exec-out','screencap','-p'))
+    foreground()
+    destination=out / (name + '.png')
+    direct_error=None
+    force_pull=os.environ.get('BLOOM_COMPOSER_CAPTURE')=='shell-pull'
+    image=None
+    if not force_pull:
+        try:
+            result=subprocess.run(
+                base+['exec-out','screencap','-p'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=12,
+                check=True,
+            )
+            image=result.stdout
+        except (subprocess.TimeoutExpired,subprocess.CalledProcessError) as error:
+            direct_error=type(error).__name__
+    else:
+        direct_error='forced shell-pull capture'
+    if direct_error:
+        remote='/sdcard/bloom-composers-663-capture.png'
+        subprocess.run(
+            base+['shell','screencap','-p',remote],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            timeout=12,
+            check=True,
+        )
+        with tempfile.TemporaryDirectory(prefix='bloom-composer-shot-') as temporary:
+            local=Path(temporary)/'capture.png'
+            subprocess.run(
+                base+['pull',remote,str(local)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=12,
+                check=True,
+            )
+            image=local.read_bytes()
+        transport='shell-screencap+pull'
+    else:
+        transport='exec-out'
+    assert image is not None
+    if len(image)<1024 or image[:8]!=b'\x89PNG\r\n\x1a\n':
+        raise AssertionError(f'Invalid PNG screenshot for {name}: {len(image)} bytes via {transport}')
+    destination.write_bytes(image)
+    if direct_error:
+        print(json.dumps({'screenshot':name,'transport':transport,'directError':direct_error,'bytes':len(image)}),flush=True)
 def retained(a,b):
     for k in ['identity','id','text','focused','attached']: assert a[k]==b[k], (k,a,b)
     assert sorted([a['start'],a['end']])==sorted([b['start'],b['end']]), ('selected range',a,b)
@@ -153,9 +200,10 @@ for owner in ['cases-pill-input','cases-agent-pill-input']:
     results[owner]={'transitions':cases,'stop':{'before':before_stop,'after':after_stop,'state':state},'typed':typed,'rotation':rotation}
     # Restore idle/full width between owners without touching another application.
     adb('shell','input','keyevent','KEYCODE_BACK')
+    tree=ui(); tap(point(tree,'cases-phase-reset')); time.sleep(.4)
     tree=ui(); state=next(n for n in tree.iter('node') if n.get('resource-id')=='cases-state').get('text')
-    for control,flag in [('cases-busy','busy=true'),('cases-resize','narrow=true')]:
-        if flag in state: tap(point(tree,control));time.sleep(4.3);tree=ui()
+    if 'narrow=true' in state:
+        tap(point(tree,'cases-resize')); time.sleep(4.3)
 (out/'report.json').write_text(json.dumps(results,indent=2))
 print(json.dumps(results))
 adb('shell','am','force-stop',pkg)
