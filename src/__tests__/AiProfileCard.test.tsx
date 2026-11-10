@@ -241,4 +241,30 @@ describe('AiProfileCard', () => {
       theme.colors.secondarySubtle,
     );
   });
+
+  it('is an identity alone without a number or a heatmap: no headline, no Activity row, no grid', () => {
+    viewport(1440);
+    const { getByTestId, queryByTestId, queryByText, getByText } = renderCard(
+      <AiProfileCard testID="card" name="Maya Collins" handle="@maya" />,
+    );
+    expect(getByText('Maya Collins')).toBeTruthy();
+    expect(getByText('@maya')).toBeTruthy();
+    expect(getByTestId('card')).toBeTruthy();
+    expect(queryByTestId('card-headline')).toBeNull();
+    expect(queryByTestId('card-grid')).toBeNull();
+    expect(queryByTestId('card-stats')).toBeNull();
+    expect(queryByText('Activity')).toBeNull();
+    expect(queryByText('Contributions this year')).toBeNull();
+  });
+
+  it('draws each block it is given: stats without a heatmap, a heatmap without a number', () => {
+    viewport(1440);
+    const stats = renderCard(<AiProfileCard testID="card" name="Maya" stats={STATS} />);
+    expect(stats.getByTestId('card-stats')).toBeTruthy();
+    expect(stats.queryByTestId('card-grid')).toBeNull();
+    stats.unmount();
+    const grid = renderCard(<AiProfileCard testID="card" name="Maya" cells={CELLS} />);
+    expect(grid.getByTestId('card-grid')).toBeTruthy();
+    expect(grid.queryByTestId('card-headline')).toBeNull();
+  });
 });

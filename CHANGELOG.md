@@ -1,5 +1,11 @@
 # Changelog
 
+## 18.3.0
+
+### Added
+
+- **`AiProfileCard` is an identity on its own.** `contributions` and `cells` are optional: without `contributions` the headline (label, count-up, delta) is not drawn, without `cells` the Activity row and the heatmap are not, and the `stats` tiles were already optional. A profile that has only a person's name, handle and picture (a public account, with no activity of its own to count) is the cover, the avatar and the name row, with `actions`. A card given all of them is drawn exactly as before.
+
 ## 18.2.2
 
 ### Changed
