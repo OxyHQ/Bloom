@@ -1,3 +1,4 @@
+import type { AppShellBreakpoint } from '../app-shell/types';
 import type { SidebarProps, SidebarSurface } from '../sidebar/types';
 import type { ComponentRef, ComponentType, ReactNode } from 'react';
 import type {
@@ -524,7 +525,14 @@ export interface AiChatShellProps {
   /** Controlled nav drawer (below `lg`). */
   navOpen?: boolean;
   onNavOpenChange?: (open: boolean) => void;
-  /** Controlled panel drawer (below `xl`). */
+  /**
+   * The width below which the panel stops sitting beside the conversation and floats over it as a
+   * dialog (opened and closed by `panelOpen`). Default `'xl'`. A panel that is narrow and is worked
+   * in beside the thing it edits (an editor) can stay in flow lower down, as far as the sidebar,
+   * the conversation's own minimum and the panel still fit.
+   */
+  panelFloatingBelow?: AppShellBreakpoint;
+  /** Controlled panel drawer (below `panelFloatingBelow`). */
   panelOpen?: boolean;
   onPanelOpenChange?: (open: boolean) => void;
   /**

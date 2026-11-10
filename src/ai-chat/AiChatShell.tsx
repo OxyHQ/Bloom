@@ -102,6 +102,7 @@ export function AiChatShellBase({
   defaultPanelWidth = 410,
   panelResizable = true,
   minPanelWidth = 320,
+  panelFloatingBelow = 'xl',
   maxPanelWidth = 560,
   navOpen: navOpenProp,
   onNavOpenChange,
@@ -274,7 +275,7 @@ export function AiChatShellBase({
                   maxWidth: maxPanelWidth,
                   visible: !!panel,
                   floating: {
-                    below: 'xl',
+                    below: panelFloatingBelow,
                     open: panelOpen,
                     onOpenChange: setPanelOpen,
                     label: panelLabel,
