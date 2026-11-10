@@ -298,14 +298,12 @@ class GlassChromeView(context: Context) : FrameLayout(context) {
   private fun pillGlassState(pill: RectF, ox: Float, oy: Float): GlassSurfaceState {
     val d = density
     val state = GlassSurfaceState()
-    ChromeMaterial.applyPill(state)
+    ChromeMaterial.applyPill(state, pillJelly, pill, ox, oy, d)
     val radius = min(pill.width(), pill.height()) / 2f * d
     state.incoming.set(pill.left * d + ox, pill.top * d + oy, pill.right * d + ox, pill.bottom * d + oy)
     state.radiusX = radius
     state.radiusY = radius
-    state.pressX = pillJelly.lightPositionX
-    state.pressY = pillJelly.lightPositionY
-    state.pressRadius = 1f
+    // Capture: the pill plus a margin for the blur reach, as the menu's resting anchor does.
     state.captureBounds.set(state.incoming)
     state.captureBounds.inset(-PILL_CAPTURE_MARGIN * d, -PILL_CAPTURE_MARGIN * d)
     return state
@@ -341,19 +339,6 @@ class GlassChromeView(context: Context) : FrameLayout(context) {
     val centerY = tabs.y0 + ChromeGeometry.TAB_HEIGHT / 2f
     val itemsOpacity = clamp01(1f - progress * 1.5f)
 
-    // Pill (DOM "pill" in the web bar): slides with the pill spring.
-    if (itemCount > 0) {
-      val pillH = ChromeGeometry.TAB_HEIGHT - 2f * ChromeGeometry.PILL_INSET
-      val pillX = tabs.x0 + ChromeGeometry.PILL_INSET + pillSpring.value * itemW
-      // The pill is deformed by the press jelly (menu's deformControl), like the menu's trigger.
-      val pillRect = RectF(pillX, tabs.y0 + ChromeGeometry.PILL_INSET, pillX + itemW, tabs.y0 + ChromeGeometry.PILL_INSET + pillH)
-      pillJelly.deformControl(pillRect, 1f, 1f)
-      fillPaint.reset()
-      fillPaint.isAntiAlias = true
-      fillPaint.color = ChromeIcons.withAlpha(Color.WHITE, 0.16f * itemsOpacity)
-      val radius = min(pillRect.width(), pillRect.height()) / 2f
-      canvas.drawRoundRect(pillRect, radius, radius, fillPaint)
-    }
 
     // Tab items: icon 22 dp, label 11 dp below (same layout as the web items).
     labels.forEachIndexed { i, label ->

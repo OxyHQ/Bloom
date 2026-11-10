@@ -52,9 +52,9 @@ import { LongPressArea } from '../floating/LongPressArea';
 import { PopupPanel } from '../floating/PopupPanel';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
-import { getNativeGlassMenu } from '../floating/glass-menu/native-glass-menu';
-import { parseGlassMenu } from '../floating/glass-menu/parse-glass-menu';
-import { GlassTrigger, useGlassMenu } from '../floating/glass-menu/use-glass-menu';
+import { getNativeLens } from '../floating/lens/native-lens';
+import { parseLensMenu } from '../floating/lens/parse-lens-menu';
+import { LensTrigger, useLensMenu } from '../floating/lens/use-lens-menu';
 import type { FloatingAnchor } from '../floating/types';
 import { usePopupSurface } from '../platform-surface/context';
 import { useRestoreAccessibilityFocus } from '../hooks/use-accessibility-focus';
@@ -109,17 +109,17 @@ export function ContextMenu({
     onOpenChange?.(false);
     onAnchorChange?.(null);
   }, [controlled, onOpenChange, onAnchorChange]);
-  // The native glass menu opens at the press itself; its state reaches here as an open with no point.
-  const setGlassOpen = useCallback(
+  // The native lens menu opens at the press itself; its state reaches here as an open with no point.
+  const setLensOpen = useCallback(
     (next: boolean) => (next ? openAt(null) : close()),
     [openAt, close],
   );
-  const glass = useGlassMenu({
+  const lens = useLensMenu({
     children,
     content: ContextMenuContent,
-    parse: (props) => parseGlassMenu(props.children as ReactNode, rows),
+    parse: (props) => parseLensMenu(props.children as ReactNode, rows),
     open,
-    setOpen: setGlassOpen,
+    setOpen: setLensOpen,
   });
 
   const value = useMemo(
@@ -131,9 +131,9 @@ export function ContextMenu({
       anchor: PopupSurface ? anchor : null,
       triggerRef,
       anchorRef,
-      glass,
+      lens,
     }),
-    [open, anchor, openAt, close, PopupSurface, anchorRef, glass],
+    [open, anchor, openAt, close, PopupSurface, anchorRef, lens],
   );
 
   return <ContextMenuProvider value={value}>{children}</ContextMenuProvider>;
@@ -164,12 +164,12 @@ export function ContextMenuTrigger({
   // its frame measured in the window as a pointer's point is. (Not at the
   // caller's `anchorRef`, which is where the LAST menu hung: a controlled
   // caller re-anchors it from this frame if it wants it elsewhere.)
-  const glass = menu.glass;
+  const lens = menu.lens;
   const onAccessibilityAction = useCallback(
     (event: AccessibilityActionEvent) => {
       if (disabled || event.nativeEvent.actionName !== LONG_PRESS_ACTION) return;
-      if (glass) {
-        void glass.nativeRef.current?.open();
+      if (lens) {
+        void lens.nativeRef.current?.open();
         return;
       }
       const view = triggerRef?.current;
@@ -181,7 +181,7 @@ export function ContextMenuTrigger({
         openAt({ top: y, bottom: y + height, left: x, right: x + width }),
       );
     },
-    [disabled, openAt, triggerRef, glass],
+    [disabled, openAt, triggerRef, lens],
   );
   const accessibilityActions = useMemo(
     () => (disabled ? undefined : [{ name: LONG_PRESS_ACTION, label: messages.showMenu }]),
@@ -240,8 +240,8 @@ export function ContextMenuTrigger({
         // Return for nothing, and a touch responder.
         onLongPress: (event) => {
           const point = pressPoint(event);
-          // The native glass menu morphs out of the press: a small box around the point.
-          if (glass) void glass.nativeRef.current?.open(...(point ? glassOrigin(point) : []));
+          // The native lens menu morphs out of the press: a small box around the point.
+          if (lens) void lens.nativeRef.current?.open(...(point ? lensOrigin(point) : []));
           else openAt(point);
         },
         disabled,
@@ -256,16 +256,16 @@ export function ContextMenuTrigger({
       {asChild ? children : <LongPressArea>{children}</LongPressArea>}
     </TriggerSlot>
   );
-  if (!glass || !getNativeGlassMenu()) return trigger;
+  if (!lens || !getNativeLens()) return trigger;
   return (
-    <GlassTrigger glass={glass} triggerGlass={false} tone="neutral">
+    <LensTrigger lens={lens} triggerLens={false} tone="neutral">
       {trigger}
-    </GlassTrigger>
+    </LensTrigger>
   );
 }
 
-/** The 44-dp box around a press point that the native glass menu opens from. */
-function glassOrigin(point: FloatingAnchor): [number, number, number, number] {
+/** The 44-dp box around a press point that the native lens menu opens from. */
+function lensOrigin(point: FloatingAnchor): [number, number, number, number] {
   return [point.left - 22, point.top - 22, 44, 44];
 }
 
@@ -366,8 +366,8 @@ export function ContextMenuContent({
   );
   const origin = useTriggerOrigin(menu.open && PopupSurface != null, menu.anchorRef);
 
-  // The native glass menu draws the rows itself; the trigger hosts it.
-  if (menu.glass) return null;
+  // The native lens menu draws the rows itself; the trigger hosts it.
+  if (menu.lens) return null;
 
   if (PopupSurface) {
     // The platform's popup, at the press: mounted while open, closed by the

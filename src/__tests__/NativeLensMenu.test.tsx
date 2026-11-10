@@ -1,5 +1,5 @@
 /**
- * The menus present as the native glass menu where the platform has it: their rows are read as
+ * The menus present as the native lens menu where the platform has it: their rows are read as
  * data and handed to the native view, which draws them. The native view is a stub here; what is
  * checked is what React tells it, and that a menu outside the vocabulary keeps its sheet.
  */
@@ -8,7 +8,7 @@ import { Text, View } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme';
-import type { GlassMenuNativeProps } from '../floating/glass-menu/native-glass-menu';
+import type { LensNativeProps } from '../floating/lens/native-lens';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -35,16 +35,16 @@ import {
 } from '../dropdown-menu/DropdownMenu';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '../select/Select';
 
-let lastProps: GlassMenuNativeProps | undefined;
+let lastProps: LensNativeProps | undefined;
 
-function NativeGlassStub(props: GlassMenuNativeProps) {
+function NativeLensStub(props: LensNativeProps) {
   lastProps = props;
-  return <View testID="native-glass">{props.children}</View>;
+  return <View testID="native-lens">{props.children}</View>;
 }
 
-jest.mock('../floating/glass-menu/native-glass-menu', () => ({
-  ...jest.requireActual('../floating/glass-menu/native-glass-menu'),
-  getNativeGlassMenu: () => NativeGlassStub,
+jest.mock('../floating/lens/native-lens', () => ({
+  ...jest.requireActual('../floating/lens/native-lens'),
+  getNativeLens: () => NativeLensStub,
 }));
 
 function wrap(ui: React.ReactElement) {
@@ -59,7 +59,7 @@ beforeEach(() => {
   lastProps = undefined;
 });
 
-describe('DropdownMenu as the native glass menu', () => {
+describe('DropdownMenu as the native lens menu', () => {
   it('hands its rows to the native view, sub-menu included', () => {
     const onShare = jest.fn();
     const screen = wrap(
@@ -89,7 +89,7 @@ describe('DropdownMenu as the native glass menu', () => {
         </DropdownMenuContent>
       </DropdownMenu>,
     );
-    expect(screen.getByTestId('native-glass')).toBeTruthy();
+    expect(screen.getByTestId('native-lens')).toBeTruthy();
     const items = lastProps?.items ?? [];
     expect(items.map((item) => item.title)).toEqual([
       'View as',
@@ -125,7 +125,7 @@ describe('DropdownMenu as the native glass menu', () => {
   });
 });
 
-describe('ContextMenu as the native glass menu', () => {
+describe('ContextMenu as the native lens menu', () => {
   it('hands its rows to the native view', () => {
     wrap(
       <ContextMenu>
@@ -149,7 +149,7 @@ describe('ContextMenu as the native glass menu', () => {
   });
 });
 
-describe('Select as the native glass menu', () => {
+describe('Select as the native lens menu', () => {
   const FRUITS = [
     { value: 'apple', label: 'Apple' },
     { value: 'pear', label: 'Pear' },

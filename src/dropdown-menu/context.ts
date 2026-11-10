@@ -9,13 +9,13 @@ import { createContext, useContext } from 'react';
 
 import type { ViewRef } from '../styles/native-refs';
 import type { OverlayShellContextValue } from '../floating/types';
-import type { MenuGlass } from '../floating/glass-menu/use-glass-menu';
+import type { MenuLens } from '../floating/lens/use-lens-menu';
 
-export type DropdownMenuGlass = MenuGlass;
+export type DropdownMenuLens = MenuLens;
 
 export interface DropdownMenuContextValue extends OverlayShellContextValue {
-  /** Set when the native glass menu presents this menu; the sheet is then not used. */
-  glass?: DropdownMenuGlass;
+  /** Set when the native lens menu presents this menu; the sheet is then not used. */
+  lens?: DropdownMenuLens;
   activation?: 'click' | 'hover';
   onPrimaryOpenChange?: (open: boolean) => void;
   panelRef?: React.RefObject<ViewRef | null>;

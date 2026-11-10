@@ -20,7 +20,7 @@ export {
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
 } from './DropdownMenu.web';
-export { useGlassPrimary } from '../floating/glass-menu/use-glass-primary';
+export { useLensTint } from '../floating/lens/use-lens-tint';
 export type {
   DropdownMenuProps,
   DropdownMenuTriggerProps,

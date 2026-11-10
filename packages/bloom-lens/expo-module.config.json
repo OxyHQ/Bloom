@@ -3,7 +3,8 @@
   "android": {
     "modules": [
       "so.oxy.bloom.glassmenu.GlassMenuAndroidModule",
-      "so.oxy.bloom.glassmenu.chrome.GlassChromeModule"
+      "so.oxy.bloom.glassmenu.chrome.GlassChromeModule",
+      "so.oxy.bloom.glassmenu.chrome.SurfaceNodesModule"
     ]
   }
 }
