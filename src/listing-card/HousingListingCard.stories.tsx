@@ -11,7 +11,7 @@ import type { ListingCardProps, ListingFact } from './types';
 const meta: Meta = {
   id: 'blocks-housing-listing-card',
   title: 'Patterns/Housing/Listing Card',
-  parameters: { layout: 'fullscreen' },
+  parameters: { layout: 'padded' },
 };
 
 export default meta;
