@@ -449,20 +449,13 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(funct
           ? geometry.iconSize
           : ICON_BUTTON_ICON_SIZE[size]
         : geometry.iconSize;
-  // A lens button is filled by the lens: a solid brand button takes the brand at full strength
-  // (the theme's `vivid`) rather than the deeper fill that carries a white label on a plain surface.
   const lens = material === 'lens' && getNativeLens() != null;
-  const lensColors =
-    colors ??
-    (lens && appearance === 'solid' && (tone === 'accent' || tone === 'action')
-      ? { background: theme.colors.vivid, foreground: theme.colors.vividForeground }
-      : undefined);
   const palette = useMemo(
     () =>
       isLink && linkTone != null && toneProp == null
         ? resolveLinkButtonPalette(theme, linkTone)
-        : resolveButtonPalette(appearance, theme, tone, lensColors, layer.fill, material),
-    [appearance, theme, tone, toneProp, isLink, linkTone, lensColors, layer.fill, material],
+        : resolveButtonPalette(appearance, theme, tone, colors, layer.fill, material),
+    [appearance, theme, tone, toneProp, isLink, linkTone, colors, layer.fill, material],
   );
   const underlineMode = resolveButtonUnderline(isLink, underline);
 

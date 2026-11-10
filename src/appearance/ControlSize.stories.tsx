@@ -1,7 +1,7 @@
 import { PresenceDot } from '../chat-indicators/PresenceDot';
 import { UnreadBadge } from '../chat-indicators/UnreadBadge';
 import { EnergyBadge } from '../property-insights/EnergyBadge';
-import React from 'react';
+import type React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
