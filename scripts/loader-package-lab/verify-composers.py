@@ -92,7 +92,11 @@ def retained_across_rotation(a,b):
 def orientation():
     return int(ui().get('rotation','-1'))
 def user_rotation():
-    mode, value=adb('shell','cmd','window','user-rotation').split()
+    values=adb('shell','cmd','window','user-rotation').split()
+    mode=values[0]
+    # Android 16 returns only "free" while rotation is sensor-controlled;
+    # older versions may also print the remembered user rotation.
+    value=values[1] if len(values)>1 else adb('shell','settings','get','system','user_rotation')
     return mode, int(value)
 def wait_orientation(expected):
     for _ in range(60):
@@ -139,7 +143,8 @@ def rotate_and_check(owner):
         assert ime_visible(), 'Keyboard closed after returning from rotation'
         return {'before':before,'rotated':after,'returned':restored,'nativeViewStable':before['identity']==after['identity']==restored['identity'],'startOrientation':old_orientation,'targetOrientation':target,'keyboardVisibleThroughout':True,'selectionMethod':'Ctrl+A on focused native EditText'}
     finally:
-        adb('shell','cmd','window','user-rotation',old_mode,str(old_user))
+        if old_mode=='free': adb('shell','cmd','window','user-rotation','free')
+        else: adb('shell','cmd','window','user-rotation',old_mode,str(old_user))
         wait_orientation(old_orientation)
 adb('shell','am','force-stop',pkg)
 adb('shell','am','start','-n',pkg+'/.MainActivity','--es','scene','composers');time.sleep(3)
