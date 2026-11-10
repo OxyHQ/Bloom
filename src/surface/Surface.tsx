@@ -13,8 +13,7 @@ import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { useResolvedSurface } from './use-resolved-surface';
 import { SurfacePaint } from './SurfacePaint';
 import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
-import { LensMaterialProvider } from '../floating/lens/lens-material';
-import { getNativeLens } from '../floating/lens/native-lens';
+import { LensMaterialProvider, useLensAvailable } from '../floating/lens/lens-material';
 import type { SurfaceProps } from './types';
 import type { MemoRefComponent } from '../styles/native-refs';
 
@@ -71,7 +70,8 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
     const material = useResolvedSurface({
       fill: override === undefined ? undefined : String(override),
     });
-    const lens = materialProp === 'lens' && getNativeLens() != null;
+    const lensAvailable = useLensAvailable();
+    const lens = materialProp === 'lens' && lensAvailable;
     const split = lens ? splitLensStyle(style) : null;
     const surface = (
       <StyledView

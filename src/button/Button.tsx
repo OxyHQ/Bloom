@@ -5,8 +5,7 @@ import { useGroupedButton } from './use-grouped-button';
 import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
 import { useLensOriginReporter } from '../floating/lens/use-lens-menu';
 import { compositeOnto } from '../surface/shared';
-import { getNativeLens } from '../floating/lens/native-lens';
-import { useControlMaterial } from '../floating/lens/lens-material';
+import { useControlMaterial, useLensAvailable } from '../floating/lens/lens-material';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import React, {
   type ComponentRef,
@@ -509,7 +508,8 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
             ? geometry.iconSize
             : ICON_BUTTON_ICON_SIZE[size]
           : geometry.iconSize;
-    const lens = material === 'lens' && getNativeLens() != null;
+    const lensAvailable = useLensAvailable();
+    const lens = material === 'lens' && lensAvailable;
     const palette = useMemo(
       () =>
         resolveButtonOverrides(

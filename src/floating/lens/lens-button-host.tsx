@@ -7,6 +7,7 @@ import { Children, type ReactNode } from 'react';
 import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../../theme/use-theme';
+import { useLensAvailable } from './lens-material';
 import { getNativeLens } from './native-lens';
 
 const NO_ITEMS: never[] = [];
@@ -101,7 +102,7 @@ interface LensButtonHostProps {
 }
 
 export function LensButtonHost({ tint, radius, style, children }: LensButtonHostProps) {
-  const NativeLens = getNativeLens();
+  const NativeLens = useLensAvailable() ? getNativeLens() : null;
   const dark = useTheme().isDark;
   if (!NativeLens) return <>{Children.only(children)}</>;
   return (

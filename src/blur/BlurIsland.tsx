@@ -13,8 +13,7 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { borderRadius } from '../styles/tokens';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
-import { getNativeLens } from '../floating/lens/native-lens';
-import { LensMaterialProvider } from '../floating/lens/lens-material';
+import { LensMaterialProvider, useLensAvailable } from '../floating/lens/lens-material';
 import type { BlurIslandProps } from './types';
 
 /** Floating control container using the shared surface material.
@@ -31,6 +30,7 @@ const BlurIslandComponent: React.FC<BlurIslandProps> = ({
   style,
   testID,
 }) => {
+  const lensAvailable = useLensAvailable();
   const directionProps = useDirectionProps();
   const direction = useIsRtl() ? 'rtl' : 'ltr';
   const layer = useSurfaceLayer();
@@ -44,7 +44,7 @@ const BlurIslandComponent: React.FC<BlurIslandProps> = ({
   const geometry = resolveSurfaceGeometry(radius, style, borderRadius.full, cornerCurve);
   const shape = geometry.shape;
 
-  if (variant === 'lens' && getNativeLens() != null) {
+  if (variant === 'lens' && lensAvailable) {
     // The island is the native lens: the engine draws the material, its shadow and its light, and the
     // controls inside draw their content. Placement stays on the host, the look on the inner view.
     const split = splitLensStyle(style);
