@@ -14,6 +14,9 @@ internal object ChromeMaterial {
   // Multiplies the menu's refraction in GlassRenderer.drawGlass. 0 = no lens, no outer displacement (option B).
   const val REFRACTION_SCALE = 0f
 
+  // Magnification of the content under the selection lens (convex centre). Same value as chrome-material.web.ts.
+  const val PILL_MAGNIFY = 1.0f
+
   fun apply(state: GlassSurfaceState) {
     state.config = GlassMenuConfigRecord()
     state.trigger = GlassTriggerConfigRecord()
@@ -48,6 +51,7 @@ internal fun ChromeMaterial.applyPill(
   state.trigger = GlassTriggerConfigRecord()
   state.dark = true
   state.refractionScale = 1f
+  state.magnify = PILL_MAGNIFY
   state.hasSource = false
   state.smoothing = 0f
   state.lensHeight = 0f
