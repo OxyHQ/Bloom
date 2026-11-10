@@ -173,7 +173,7 @@ internal class GlassRenderer(private val density: Float, private val minimumFiel
     val innerAmount = min(extent * .5f, 60f) * density
     val outerHeight = max(16f, extent * .2f) * density
     val outerAmount = max(16f, extent * .25f) * density
-    val lensHeight = max(state.lensHeight, innerHeight)
+    val lensHeight = if (state.lensBand > 0f) state.lensBand * density else max(state.lensHeight, innerHeight)
     material.setFloatUniform("lensHeight", lensHeight)
     material.setFloatUniform("lensAmount", min(state.lensAmount, -innerAmount) * refraction)
     material.setFloatUniform("outerHeight", outerHeight)

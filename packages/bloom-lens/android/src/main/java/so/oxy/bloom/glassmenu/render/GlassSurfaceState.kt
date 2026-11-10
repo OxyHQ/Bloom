@@ -28,6 +28,8 @@ internal class GlassSurfaceState {
   var refractionScale = 1f
   // Magnification of the content about the shape's centre (1 = none). A convex lens uses a value above 1.
   var magnify = 1f
+  // Width of the refraction band in dp. 0 = the default band (min(extent * 0.25, 20 dp)). The menu never sets it.
+  var lensBand = 0f
   var config = GlassMenuConfigRecord()
   var trigger = GlassTriggerConfigRecord()
 }
