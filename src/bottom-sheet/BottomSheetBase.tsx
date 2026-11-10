@@ -50,6 +50,7 @@ import { backdropFade } from './backdrop-fade';
 import { ModalKeyboard } from '../overlay/ModalKeyboard';
 import { useTheme } from '../theme/use-theme';
 import { SheetKeyboardProvider } from './context';
+import { shouldClosePan } from './pan-dismiss';
 import type { BottomSheetRef, BottomSheetBaseProps } from './types';
 import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 import { UNSET } from '../styles/animated-style';
@@ -425,10 +426,7 @@ export const BottomSheetBase = forwardRef(
             'worklet';
             const velocity = event.velocityY;
             const distance = translateY.value;
-            const closeThreshold = Math.max(140, screenHeightSV.value * 0.25);
-            const fastSwipeThreshold = 900;
-            const shouldClose =
-              velocity > fastSwipeThreshold || (distance > closeThreshold && velocity > -300);
+            const shouldClose = shouldClosePan(distance, velocity, screenHeightSV.value);
 
             if (shouldClose) {
               runOnJS(requestPanDismiss)(closeGeneration.value, velocity);
@@ -475,11 +473,7 @@ export const BottomSheetBase = forwardRef(
           }
           const velocity = event.velocityY;
           const distance = translateY.value;
-          // Require a deeper pull to close (more like native bottom sheets)
-          const closeThreshold = Math.max(140, screenHeightSV.value * 0.25);
-          const fastSwipeThreshold = 900;
-          const shouldClose =
-            velocity > fastSwipeThreshold || (distance > closeThreshold && velocity > -300);
+          const shouldClose = shouldClosePan(distance, velocity, screenHeightSV.value);
 
           if (shouldClose) {
             runOnJS(requestPanDismiss)(closeGeneration.value, velocity);
@@ -526,10 +520,7 @@ export const BottomSheetBase = forwardRef(
           'worklet';
           const velocity = event.velocityY;
           const distance = translateY.value;
-          const closeThreshold = Math.max(140, screenHeightSV.value * 0.25);
-          const fastSwipeThreshold = 900;
-          const shouldClose =
-            velocity > fastSwipeThreshold || (distance > closeThreshold && velocity > -300);
+          const shouldClose = shouldClosePan(distance, velocity, screenHeightSV.value);
 
           if (shouldClose) {
             runOnJS(requestPanDismiss)(closeGeneration.value, velocity);
