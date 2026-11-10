@@ -5,6 +5,7 @@ import type { BloomAppearance, BloomTone } from './types';
 const PALETTE: Record<BloomTone, AccentTone> = {
   neutral: 'default',
   accent: 'primary',
+  vivid: 'vivid',
   support: 'secondary',
   action: 'tertiary',
   success: 'success',
