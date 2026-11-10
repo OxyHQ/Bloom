@@ -36,6 +36,9 @@ import { AlertDialog } from '@oxy.so/bloom/alert-dialog';
 | `hideCancel`    | one button only — an acknowledgement, not a choice            |
 | `dismissible`   | whether a backdrop press or Escape closes it                  |
 | `defaultAction` | the button the keyboard and the screen reader start on (`'cancel'` for a safe default) |
+| `icon`          | drawn above the title: the application's icon, or a caution symbol |
+
+On a desktop platform the alert takes the desktop layout ([Dialog](./dialog.mdx#on-a-desktop-platform-one-alert-layout)): narrow, left-aligned, buttons sized to their labels with the default (accent) at the trailing edge, or on top when they stack.
 
 The default Confirm / Cancel words are localised via `BloomProvider locale`; `confirmLabel` / `cancelLabel` still win.
 
