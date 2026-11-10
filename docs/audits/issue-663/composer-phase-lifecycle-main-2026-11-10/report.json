@@ -1,0 +1,668 @@
+{
+  "commit": "e97802b8ed3387c00531de06b19b0af43fa63f57",
+  "workingTree": "M scripts/loader-package-lab/ComposerCases.tsx\n?? docs/audits/issue-663/composer-phase-pixel8a-2026-11-10/\n?? scripts/loader-package-lab/verify-composer-phases.py",
+  "diffSha256": "5b06c628629a8e399c70dd436acb87c7fe8431b278b7abcf79f193f6dd5b20c6",
+  "packages": {
+    "react": "19.3.0",
+    "react-native": "0.88.1",
+    "react-native-web": "0.21.4",
+    "react-native-svg": "15.16.0",
+    "react-native-reanimated": "4.7.1",
+    "expo-blur": "58.0.5"
+  },
+  "story": "agents-composer-loader--lifecycle",
+  "browser": "Chrome/146.0.7680.31",
+  "cases": [
+    {
+      "name": "submit to streaming keeps the same running lap",
+      "submitting": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 333.3659999999998,
+            "dash": "-8.35227px"
+          },
+          {
+            "playState": "running",
+            "time": 333.3659999999998,
+            "dash": "-8.32818px"
+          },
+          {
+            "playState": "running",
+            "time": 333.3659999999998,
+            "dash": "-7.40813px"
+          }
+        ]
+      },
+      "streaming": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 716.6320000000006,
+            "dash": "-16.8693px"
+          },
+          {
+            "playState": "running",
+            "time": 716.6320000000006,
+            "dash": "-16.8452px"
+          },
+          {
+            "playState": "running",
+            "time": 716.6320000000006,
+            "dash": "-15.9252px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "stopping, error, complete and idle settle",
+      "stopping": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 883.2979999999999,
+            "dash": "-20.573px"
+          },
+          {
+            "playState": "running",
+            "time": 883.2979999999999,
+            "dash": "-20.5489px"
+          },
+          {
+            "playState": "running",
+            "time": 883.2979999999999,
+            "dash": "-19.6288px"
+          }
+        ]
+      },
+      "error": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "paused",
+            "time": 1433.2000000000012,
+            "dash": "-32.793px"
+          },
+          {
+            "playState": "paused",
+            "time": 1433.2000000000012,
+            "dash": "-32.7689px"
+          },
+          {
+            "playState": "paused",
+            "time": 1433.2000000000012,
+            "dash": "-31.8489px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "active clock",
+      "before": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 1783.2109999907377,
+            "dash": "-40.571px"
+          },
+          {
+            "playState": "running",
+            "time": 1783.2109999907377,
+            "dash": "-40.547px"
+          },
+          {
+            "playState": "running",
+            "time": 1783.2109999907377,
+            "dash": "-39.6269px"
+          }
+        ]
+      },
+      "after": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 1983.1449999907384,
+            "dash": "-45.014px"
+          },
+          {
+            "playState": "running",
+            "time": 1983.1449999907384,
+            "dash": "-44.9899px"
+          },
+          {
+            "playState": "running",
+            "time": 1983.1449999907384,
+            "dash": "-44.0699px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "inactive settles",
+      "before": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "paused",
+            "time": 2533.1789999907387,
+            "dash": "-57.237px"
+          },
+          {
+            "playState": "paused",
+            "time": 2533.1789999907387,
+            "dash": "-57.2129px"
+          },
+          {
+            "playState": "paused",
+            "time": 2533.1789999907387,
+            "dash": "-56.2929px"
+          }
+        ]
+      },
+      "after": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "paused",
+            "time": 2533.1789999907387,
+            "dash": "-57.237px"
+          },
+          {
+            "playState": "paused",
+            "time": 2533.1789999907387,
+            "dash": "-57.2129px"
+          },
+          {
+            "playState": "paused",
+            "time": 2533.1789999907387,
+            "dash": "-56.2929px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "explicit pause preserves phase",
+      "paused": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "paused",
+            "time": 2633.147999993575,
+            "dash": "-59.4585px"
+          },
+          {
+            "playState": "paused",
+            "time": 2633.147999993575,
+            "dash": "-59.4344px"
+          },
+          {
+            "playState": "paused",
+            "time": 2633.147999993575,
+            "dash": "-58.5144px"
+          }
+        ]
+      },
+      "resumed": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 2683.181999993575,
+            "dash": "-60.5704px"
+          },
+          {
+            "playState": "running",
+            "time": 2683.181999993575,
+            "dash": "-60.5463px"
+          },
+          {
+            "playState": "running",
+            "time": 2683.181999993575,
+            "dash": "-59.6263px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "retained Screen",
+      "paused": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "paused",
+            "time": 2783.145999993575,
+            "dash": "-62.7918px"
+          },
+          {
+            "playState": "paused",
+            "time": 2783.145999993575,
+            "dash": "-62.7677px"
+          },
+          {
+            "playState": "paused",
+            "time": 2783.145999993575,
+            "dash": "-61.8477px"
+          }
+        ]
+      },
+      "resumed": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 2833.1799999935756,
+            "dash": "-63.9037px"
+          },
+          {
+            "playState": "running",
+            "time": 2833.1799999935756,
+            "dash": "-63.8796px"
+          },
+          {
+            "playState": "running",
+            "time": 2833.1799999935756,
+            "dash": "-62.9596px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "hide during fade cancels opacity work",
+      "interruptedFade": {
+        "duration": "0s",
+        "opacity": "0",
+        "animations": 0
+      }
+    },
+    {
+      "name": "AgentChat Stop uses real handler",
+      "stopped": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 3283.0749999876207,
+            "dash": "-73.9014px"
+          },
+          {
+            "playState": "running",
+            "time": 3283.0749999876207,
+            "dash": "-73.8773px"
+          },
+          {
+            "playState": "running",
+            "time": 3283.0749999876207,
+            "dash": "-72.9572px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "background tab",
+      "background": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "paused",
+            "time": 3899.670000004139,
+            "dash": "-87.6035px"
+          },
+          {
+            "playState": "paused",
+            "time": 3899.670000004139,
+            "dash": "-87.5794px"
+          },
+          {
+            "playState": "paused",
+            "time": 3899.670000004139,
+            "dash": "-86.6593px"
+          }
+        ]
+      },
+      "resumed": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 3966.2360000041394,
+            "dash": "-89.0827px"
+          },
+          {
+            "playState": "running",
+            "time": 3966.2360000041394,
+            "dash": "-89.0586px"
+          },
+          {
+            "playState": "running",
+            "time": 3966.2360000041394,
+            "dash": "-88.1386px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "resize 320",
+      "measured": {
+        "width": 288,
+        "height": 52,
+        "viewBox": "0 0 288 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 4166.302000004139,
+            "dash": "-90.8813px"
+          },
+          {
+            "playState": "running",
+            "time": 4166.302000004139,
+            "dash": "-92.6773px"
+          },
+          {
+            "playState": "running",
+            "time": 4166.302000004139,
+            "dash": "-92.5845px"
+          }
+        ]
+      },
+      "input": {
+        "same": true,
+        "focused": true,
+        "start": 2,
+        "end": 12,
+        "value": "A draft preserved across every transition"
+      }
+    },
+    {
+      "name": "resize 390",
+      "measured": {
+        "width": 358,
+        "height": 52,
+        "viewBox": "0 0 358 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 4332.964000004139,
+            "dash": "-95.4943px"
+          },
+          {
+            "playState": "running",
+            "time": 4332.964000004139,
+            "dash": "-96.665px"
+          },
+          {
+            "playState": "running",
+            "time": 4332.964000004139,
+            "dash": "-96.2881px"
+          }
+        ]
+      },
+      "input": {
+        "same": true,
+        "focused": true,
+        "start": 2,
+        "end": 12,
+        "value": "A draft preserved across every transition"
+      }
+    },
+    {
+      "name": "resize 768",
+      "measured": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 4516.3360000041375,
+            "dash": "-1.30716px"
+          },
+          {
+            "playState": "running",
+            "time": 4516.3360000041375,
+            "dash": "-1.28307px"
+          },
+          {
+            "playState": "running",
+            "time": 4516.3360000041375,
+            "dash": "-0.363022px"
+          }
+        ]
+      },
+      "input": {
+        "same": true,
+        "focused": true,
+        "start": 2,
+        "end": 12,
+        "value": "A draft preserved across every transition"
+      }
+    },
+    {
+      "name": "resize 1024",
+      "measured": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 4699.6620000041385,
+            "dash": "-5.38107px"
+          },
+          {
+            "playState": "running",
+            "time": 4699.6620000041385,
+            "dash": "-5.35698px"
+          },
+          {
+            "playState": "running",
+            "time": 4699.6620000041385,
+            "dash": "-4.43693px"
+          }
+        ]
+      },
+      "input": {
+        "same": true,
+        "focused": true,
+        "start": 2,
+        "end": 12,
+        "value": "A draft preserved across every transition"
+      }
+    },
+    {
+      "name": "resize 1440",
+      "measured": {
+        "width": 640,
+        "height": 52,
+        "viewBox": "0 0 640 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 4899.664000004139,
+            "dash": "-9.82556px"
+          },
+          {
+            "playState": "running",
+            "time": 4899.664000004139,
+            "dash": "-9.80147px"
+          },
+          {
+            "playState": "running",
+            "time": 4899.664000004139,
+            "dash": "-8.88142px"
+          }
+        ]
+      },
+      "input": {
+        "same": true,
+        "focused": true,
+        "start": 2,
+        "end": 12,
+        "value": "A draft preserved across every transition"
+      }
+    },
+    {
+      "name": "resize 390",
+      "measured": {
+        "width": 358,
+        "height": 52,
+        "viewBox": "0 0 358 52",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 5082.99000000414,
+            "dash": "-12.1616px"
+          },
+          {
+            "playState": "running",
+            "time": 5082.99000000414,
+            "dash": "-13.3323px"
+          },
+          {
+            "playState": "running",
+            "time": 5082.99000000414,
+            "dash": "-12.9553px"
+          }
+        ]
+      },
+      "input": {
+        "same": true,
+        "focused": true,
+        "start": 2,
+        "end": 12,
+        "value": "A draft preserved across every transition"
+      }
+    },
+    {
+      "name": "height resize",
+      "tall": {
+        "width": 358,
+        "height": 160,
+        "viewBox": "0 0 358 160",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 5332.980000004138,
+            "dash": "-18.2831px"
+          },
+          {
+            "playState": "running",
+            "time": 5332.980000004138,
+            "dash": "-19.0646px"
+          },
+          {
+            "playState": "running",
+            "time": 5332.980000004138,
+            "dash": "-18.5107px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "reduced motion",
+      "reduced": {
+        "width": 358,
+        "height": 160,
+        "viewBox": "0 0 358 160",
+        "clocks": [
+          {
+            "playState": "paused",
+            "time": 5566.304000004139,
+            "dash": "-23.4681px"
+          },
+          {
+            "playState": "paused",
+            "time": 5566.304000004139,
+            "dash": "-24.2495px"
+          },
+          {
+            "playState": "paused",
+            "time": 5566.304000004139,
+            "dash": "-23.6956px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "offscreen",
+      "offscreen": {
+        "width": 358,
+        "height": 160,
+        "viewBox": "0 0 358 160",
+        "clocks": [
+          {
+            "playState": "paused",
+            "time": 5732.91600000414,
+            "dash": "-27.1706px"
+          },
+          {
+            "playState": "paused",
+            "time": 5732.91600000414,
+            "dash": "-27.952px"
+          },
+          {
+            "playState": "paused",
+            "time": 5732.91600000414,
+            "dash": "-27.3981px"
+          }
+        ]
+      },
+      "resumed": {
+        "width": 358,
+        "height": 160,
+        "viewBox": "0 0 358 160",
+        "clocks": [
+          {
+            "playState": "running",
+            "time": 5782.9140000041425,
+            "dash": "-28.2817px"
+          },
+          {
+            "playState": "running",
+            "time": 5782.9140000041425,
+            "dash": "-29.0631px"
+          },
+          {
+            "playState": "running",
+            "time": 5782.9140000041425,
+            "dash": "-28.5092px"
+          }
+        ]
+      }
+    }
+  ]
+}
