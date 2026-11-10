@@ -1,0 +1,41 @@
+{
+  "package": "so.oxy.bloom.loaderpackagelab",
+  "device": "Pixel 8a / Android 16 API 36",
+  "publishedBloom": "18.5.1",
+  "initial": "busy=false phase=idle narrow=false taper=0 multiline=false attached=false stops=0 submits=0 pending=none",
+  "theme": {
+    "screenshotChanged": true,
+    "state": "busy=false phase=idle narrow=false taper=0 multiline=false attached=false stops=0 submits=0 pending=none"
+  },
+  "cases-attachment": {
+    "state": "busy=false phase=idle narrow=false taper=0 multiline=false attached=true stops=0 submits=0 pending=none"
+  },
+  "cases-content": {
+    "state": "busy=false phase=idle narrow=false taper=0 multiline=true attached=true stops=0 submits=0 pending=none"
+  },
+  "addMenu": {
+    "opened": true,
+    "labels": [
+      "Add to chat",
+      "Add",
+      "Fixture document",
+      "Fixture document"
+    ]
+  },
+  "cases-rapid-phase": {
+    "state": "busy=false phase=idle narrow=false taper=0 multiline=true attached=true stops=0 submits=0 pending=none"
+  },
+  "cases-phase-error": {
+    "state": "busy=false phase=error narrow=false taper=0 multiline=true attached=true stops=0 submits=0 pending=none"
+  },
+  "cases-phase-reset": {
+    "state": "busy=false phase=idle narrow=false taper=0 multiline=true attached=true stops=0 submits=0 pending=none"
+  },
+  "longInput": {
+    "characters": 500,
+    "focus": "true",
+    "keyboardRequested": true,
+    "state": "busy=false phase=idle narrow=false taper=0 multiline=true attached=true stops=0 submits=0 pending=none"
+  },
+  "finalState": "busy=false phase=idle narrow=false taper=0 multiline=false attached=false stops=0 submits=0 pending=none"
+}

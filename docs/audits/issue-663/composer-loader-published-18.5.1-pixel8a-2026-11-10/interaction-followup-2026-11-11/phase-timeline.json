@@ -1,0 +1,41 @@
+{
+  "stateAfter": "busy=false phase=idle narrow=false taper=0 multiline=false attached=false stops=0 submits=0 pending=none",
+  "timeline": [
+    {
+      "checkpoint": "lap1-submitting",
+      "elapsedSeconds": 0.05
+    },
+    {
+      "checkpoint": "lap1-streaming",
+      "elapsedSeconds": 3.2
+    },
+    {
+      "checkpoint": "lap1-stopping",
+      "elapsedSeconds": 8.2
+    },
+    {
+      "checkpoint": "lap1-complete",
+      "elapsedSeconds": 11.2
+    },
+    {
+      "checkpoint": "lap2-submitting",
+      "elapsedSeconds": 13.2
+    },
+    {
+      "checkpoint": "lap2-streaming",
+      "elapsedSeconds": 16.2
+    },
+    {
+      "checkpoint": "lap2-stopping",
+      "elapsedSeconds": 21.2
+    },
+    {
+      "checkpoint": "lap2-complete",
+      "elapsedSeconds": 24.2
+    },
+    {
+      "checkpoint": "idle",
+      "elapsedSeconds": 27.204
+    }
+  ]
+}

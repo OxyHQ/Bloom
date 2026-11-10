@@ -1,0 +1,10 @@
+{
+  "package": "so.oxy.bloom.loaderpackagelab",
+  "device": "43221JEKB12200 / Pixel 8a / Android 16 API 36",
+  "apkSha256": "bfafe92621f834ef5322dc1f9d0c2496fb2a760b91c38b986defea36cd81381f",
+  "publishedBloom": "18.5.1",
+  "before": "busy=false phase=idle narrow=false taper=0 multiline=false attached=false stops=0 submits=0 pending=none",
+  "closedScreen": "Composer screen closed during fade",
+  "reopened": "composer-cases-screen",
+  "stateAfterRemount": "busy=false phase=idle narrow=false taper=0 multiline=false attached=false stops=0 submits=0 pending=none"
+}

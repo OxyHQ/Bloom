@@ -1,0 +1,14 @@
+fcf0ea6f300b4838734116a0f25d83afbfe24db57c046b397bbf1c26856f2605  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/interaction-followup-2026-11-11/add-menu-open.png
+ad19ca7f63795486fac01b7714f32c19d14401eb5c210e52e739bc9065cbc77d  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/interaction-followup-2026-11-11/badging.txt
+e53ce1c8bbe60878bbe0c0056b4a61a0c5fcaec2058ca2871e008a50b0e8fd19  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/interaction-followup-2026-11-11/build-attestation.json
+b057bf2abfd7f1f0c7e4e833fdd35d5c066657f46a922928ccd38c85484855af  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/interaction-followup-2026-11-11/cases-attachment.png
+82332d4f8f771dd35e29779c31f6db4546ac7bbe30c5b6a905383bfafdca9b19  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/interaction-followup-2026-11-11/cases-content.png
+706f1adb59b7029c9d3b41ae61dcb2a9fda108bc4b5b97a1274e7ca1ac431467  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/interaction-followup-2026-11-11/cases-phase-error.png
+dcb30c4a89562b082b297949ab914b796d455b5aab5923244f81152d461600d9  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/interaction-followup-2026-11-11/cases-rapid-phase.png
+b3ea6cf92308e7d8dab4eb47cc27fe9003982c2e7983488324175f12adaae559  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/interaction-followup-2026-11-11/environment.json
+15a7fe04de7431d6ed9cb41a6a311202cc48763489d58ad9d2120201f4c701d8  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/interaction-followup-2026-11-11/interaction-report.json
+913098bd028a46a8c72e53627b55c4fd19e8b5eaefe0d63d67036bf8e1feda29  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/interaction-followup-2026-11-11/long-input-keyboard.png
+4a1689253cacb4d02f3de11f94eabcc3f15136e822a49cfe8e25f1147a11e0fd  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/interaction-followup-2026-11-11/permissions.txt
+3325b760faca07b99c08e2ab709b68fc7da4051b2cfdd7c7ca785b34a5e16509  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/interaction-followup-2026-11-11/phase-timeline.json
+a3d7baf4d46d495200d1e2f6aaabaa8df3ec1e0084f2def1ccbd888676576f6d  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/interaction-followup-2026-11-11/theme-toggled.png
+0646a86724ed1bc8af854c418a8b2b28834ea67a0b09fdfcb72a5828961ac84d  docs/audits/issue-663/composer-loader-published-18.5.1-pixel8a-2026-11-10/interaction-followup-2026-11-11/two-laps.mp4
