@@ -91,7 +91,7 @@ function definedOnly(style: ViewStyle): ViewStyle {
   return Object.fromEntries(Object.entries(style).filter(([, value]) => value !== undefined));
 }
 
-export interface LensButtonHostProps {
+interface LensButtonHostProps {
   /** `#rrggbb` or `rgb(...)`; omitted, the lens stays neutral. */
   tint?: string;
   /** The corner radius in dp; omitted, the shape is a capsule. */

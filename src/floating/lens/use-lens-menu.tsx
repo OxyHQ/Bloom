@@ -118,7 +118,7 @@ export function useLensMenu({
   );
 }
 
-export interface LensTriggerProps {
+interface LensTriggerProps {
   lens: MenuLens;
   /** Draw the trigger itself as lens (a fixed-layer control), not only the menu. */
   triggerLens: boolean;

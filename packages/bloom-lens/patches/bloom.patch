@@ -43,19 +43,6 @@
    @Field val saturation: Float = 1f
    @Field val refraction: Float = 1f
    @Field val rim: Float = 1f
---- a/records/GlassTriggerConfigRecord.kt
-+++ b/records/GlassTriggerConfigRecord.kt
-@@ -6,8 +6,8 @@
- 
- class GlassTriggerConfigRecord : Record {
-   @Field val blur: Float = 1f
--  @Field val tintColor: Color? = null
--  @Field val tintOpacity: Float? = null
-+  @Field var tintColor: Color? = null
-+  @Field var tintOpacity: Float? = null
-   @Field val saturation: Float = 1f
-   @Field val refraction: Float = 1f
-   @Field val rim: Float = 1f
 --- a/content/GlassMenuContent.kt
 +++ b/content/GlassMenuContent.kt
 @@ -65,6 +65,8 @@
