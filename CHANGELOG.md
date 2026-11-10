@@ -1,5 +1,11 @@
 # Changelog
 
+## 18.4.4
+
+### Fixed
+
+- **A desktop `AlertDialog` is a desktop alert.** `Dialog` hands its content on wrapped in its frame scope (`DialogFrameContent`), so `hasChildren` always saw content and no dialog drawn through `Dialog` was ever an alert on a desktop: an `AlertDialog` or `confirm()` kept the 480px card instead of the 280px alert (17.42.0), and its keyboard and screen reader started on its first button, Cancel, not its default (18.4.2, 18.4.3). `hasChildren` now counts what that wrapper holds.
+
 ## 18.4.3
 
 ### Fixed

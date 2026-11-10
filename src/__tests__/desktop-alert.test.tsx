@@ -11,6 +11,7 @@ import { act, fireEvent, render, within } from '@testing-library/react-native';
 import { AccessibilityInfo } from 'react-native';
 
 import { AlertDialog } from '../alert-dialog';
+import { Dialog } from '../dialog';
 import {
   DESKTOP_ACTION_HEIGHT,
   DESKTOP_ACTION_MIN_WIDTH,
@@ -262,5 +263,83 @@ describe('the initial focus of a desktop dialog', () => {
   it('still focuses an action that asks, content or not', () => {
     const asked: DialogAction[] = [actions[0]!, { ...actions[1]!, initialFocus: true }];
     expect(requests(<ActionRow actions={asked} />)).toBe(1);
+  });
+});
+
+describe('an AlertDialog through Dialog, on a platform that gives Bloom the keys (OxyOS)', () => {
+  // `Dialog` wraps whatever it is given in its frame scope; an AlertDialog,
+  // which gives nothing, must still be an alert: narrow, on its default button.
+  const OXYOS: PlatformSurfaceAdapter = {
+    platform: 'desktop',
+    capabilities: new Set(['window', 'pointer']),
+    keyboard: { subscribe: () => () => {} },
+  };
+  const focusRequests = AccessibilityInfo.sendAccessibilityEvent as jest.Mock;
+  const labelled = {
+    createNodeMock: (element: React.ReactElement) => ({
+      label: (element.props as { accessibilityLabel?: string }).accessibilityLabel,
+    }),
+  };
+
+  function focused(ui: React.ReactElement) {
+    focusRequests.mockClear();
+    render(
+      <PlatformSurfaceProvider value={OXYOS}>
+        <BloomThemeProvider mode="light" colorPreset="teal">
+          {ui}
+        </BloomThemeProvider>
+      </PlatformSurfaceProvider>,
+      labelled,
+    );
+    return focusRequests.mock.calls.map(([node]) => (node as { label?: string }).label);
+  }
+
+  it('asks to focus the default button of an alert that names none', () => {
+    expect(
+      focused(
+        <AlertDialog
+          open
+          onOpenChange={() => {}}
+          title="Sign out?"
+          description="Apps close."
+          confirmLabel="Sign Out"
+          cancelLabel="Cancel"
+        />,
+      ),
+    ).toEqual(['Sign Out']);
+  });
+
+  it('keeps the one an alert names', () => {
+    expect(
+      focused(
+        <AlertDialog
+          open
+          onOpenChange={() => {}}
+          title="Remove?"
+          confirmLabel="Remove"
+          cancelLabel="Cancel"
+          destructive
+          defaultAction="cancel"
+        />,
+      ),
+    ).toEqual(['Cancel']);
+  });
+
+  it('asks for none in a dialog with content of its own', () => {
+    expect(
+      focused(
+        <Dialog
+          open
+          onClose={() => {}}
+          title="Add an input source"
+          actions={[
+            { label: 'Add', color: 'default' },
+            { label: 'Cancel', color: 'cancel' },
+          ]}
+        >
+          <RNText>a list</RNText>
+        </Dialog>,
+      ),
+    ).toEqual([]);
   });
 });
