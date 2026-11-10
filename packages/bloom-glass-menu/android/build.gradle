@@ -1,0 +1,19 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'so.oxy.bloom.glassmenu'
+version = '0.1.0'
+
+android {
+  namespace "so.oxy.bloom.glassmenu"
+  lintOptions {
+    abortOnError false
+  }
+}
+
+dependencies {
+  implementation 'com.facebook.react:react-android'
+  implementation 'androidx.customview:customview:1.1.0'
+}
