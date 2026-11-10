@@ -1,0 +1,593 @@
+{
+  "capturedAt": "2026-11-10T10:36:15.842Z",
+  "runnerSha256": "57ed60325208049a5a12018e8d42113064ed9f495e176138836e82598e4d5d9d",
+  "engine": "firefox",
+  "package": "18.4.0",
+  "lockSha256": "0517e730beaa4d77e679fe819d5fd13e85ea9570f13dd2d9f6fbfb7429bc974a",
+  "compiler": false,
+  "cases": [
+    {
+      "id": "pill",
+      "change": "Width",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "Theme",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "Attachment",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "idle",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "submitting",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "streaming",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "stopping",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "error",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "complete",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "Width",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "Theme",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "Attachment",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "idle",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "submitting",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "streaming",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "stopping",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "error",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "complete",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "lifecycle": {
+        "moving": [
+          {
+            "time": 14783.46,
+            "play": "running",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b14)"
+          },
+          {
+            "time": 14783.46,
+            "play": "running",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b6)"
+          },
+          {
+            "time": 14783.46,
+            "play": "running",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+          }
+        ],
+        "later": [
+          {
+            "time": 15016.6,
+            "play": "running",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b14)"
+          },
+          {
+            "time": 15016.6,
+            "play": "running",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b6)"
+          },
+          {
+            "time": 15016.6,
+            "play": "running",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+          }
+        ],
+        "paused": [
+          {
+            "time": 15966.4,
+            "play": "paused",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b14)"
+          },
+          {
+            "time": 15966.4,
+            "play": "paused",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b6)"
+          },
+          {
+            "time": 15966.4,
+            "play": "paused",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+          }
+        ],
+        "reduced": [
+          {
+            "time": 16100.16,
+            "play": "paused",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b14)"
+          },
+          {
+            "time": 16100.16,
+            "play": "paused",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b6)"
+          },
+          {
+            "time": 16100.16,
+            "play": "paused",
+            "width": "620",
+            "height": "52",
+            "rx": "26",
+            "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+          }
+        ]
+      }
+    },
+    {
+      "pngSha256": "483c7b854531a434a0203ffb6d4da8f2999678233824ac51cbf334b9bcf980f8",
+      "theme": "light",
+      "phaseMs": 0,
+      "clocks": [
+        {
+          "time": 0,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b14)"
+        },
+        {
+          "time": 0,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b6)"
+        },
+        {
+          "time": 0,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+        }
+      ],
+      "alignment": "CSS time only; not a native physical-band match"
+    },
+    {
+      "pngSha256": "9c0ab64e36ff9fab7f6ad49e1a98840ccafddaaaff66256bc593c5b4fad027c1",
+      "theme": "light",
+      "phaseMs": 1000,
+      "clocks": [
+        {
+          "time": 1000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b14)"
+        },
+        {
+          "time": 1000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b6)"
+        },
+        {
+          "time": 1000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+        }
+      ],
+      "alignment": "CSS time only; not a native physical-band match"
+    },
+    {
+      "pngSha256": "23926c719d89b7b090b318918c074cfe045e25594bade130baec3f9e5235417b",
+      "theme": "light",
+      "phaseMs": 2000,
+      "clocks": [
+        {
+          "time": 2000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b14)"
+        },
+        {
+          "time": 2000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b6)"
+        },
+        {
+          "time": 2000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+        }
+      ],
+      "alignment": "CSS time only; not a native physical-band match"
+    },
+    {
+      "pngSha256": "4c47d7ac168888348c177bb65d7dbd7b414f111c7e5f0dbf135df370c1bf4dae",
+      "theme": "light",
+      "phaseMs": 3000,
+      "clocks": [
+        {
+          "time": 3000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b14)"
+        },
+        {
+          "time": 3000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b6)"
+        },
+        {
+          "time": 3000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+        }
+      ],
+      "alignment": "CSS time only; not a native physical-band match"
+    },
+    {
+      "pngSha256": "5fc817ed1b08028a3ce211af0ec9df2dd6e5bd87a373de686e00fc2889e253df",
+      "theme": "dark",
+      "phaseMs": 0,
+      "clocks": [
+        {
+          "time": 0,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b14)"
+        },
+        {
+          "time": 0,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b6)"
+        },
+        {
+          "time": 0,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+        }
+      ],
+      "alignment": "CSS time only; not a native physical-band match"
+    },
+    {
+      "pngSha256": "8742c7a25f3179b2ef22fedb4b0d04dfc5cab8108e756ac6ec06453444427ae7",
+      "theme": "dark",
+      "phaseMs": 1000,
+      "clocks": [
+        {
+          "time": 1000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b14)"
+        },
+        {
+          "time": 1000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b6)"
+        },
+        {
+          "time": 1000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+        }
+      ],
+      "alignment": "CSS time only; not a native physical-band match"
+    },
+    {
+      "pngSha256": "7d5701ba7a886bf59f362e7f6684d948aecc31e5613c536cc809ade4978103fe",
+      "theme": "dark",
+      "phaseMs": 2000,
+      "clocks": [
+        {
+          "time": 2000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b14)"
+        },
+        {
+          "time": 2000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b6)"
+        },
+        {
+          "time": 2000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+        }
+      ],
+      "alignment": "CSS time only; not a native physical-band match"
+    },
+    {
+      "pngSha256": "84370b55fe57b365911275b5cc1760fbb7859ace40546e84bcbf230cc1d1eec9",
+      "theme": "dark",
+      "phaseMs": 3000,
+      "clocks": [
+        {
+          "time": 3000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b14)"
+        },
+        {
+          "time": 3000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b6)"
+        },
+        {
+          "time": 3000,
+          "play": "paused",
+          "width": "620",
+          "height": "52",
+          "rx": "26",
+          "filter": "url(#bloom-cl-r3-gradient-b0_5)"
+        }
+      ],
+      "alignment": "CSS time only; not a native physical-band match"
+    }
+  ],
+  "errors": [],
+  "browser": "157.0",
+  "status": "passed"
+}

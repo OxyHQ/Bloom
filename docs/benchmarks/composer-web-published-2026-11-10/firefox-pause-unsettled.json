@@ -1,0 +1,228 @@
+{
+  "engine": "firefox",
+  "package": "18.4.0",
+  "lockSha256": "72396a55c3895f83e114ca20977ed43d3b09f65e9de4767cb76ba932088e4f39",
+  "compiler": false,
+  "cases": [
+    {
+      "id": "pill",
+      "change": "Width",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "Theme",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "Attachment",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "idle",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "submitting",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "streaming",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "stopping",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "error",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "pill",
+      "change": "complete",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "Width",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "Theme",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "Attachment",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "idle",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "submitting",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "streaming",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "stopping",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "error",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    },
+    {
+      "id": "agent",
+      "change": "complete",
+      "actual": {
+        "same": true,
+        "focused": true,
+        "start": 5,
+        "end": 19,
+        "direction": "backward",
+        "value": "Synthetic long draft\nSecond line preserves selection\nThird line."
+      }
+    }
+  ],
+  "errors": [],
+  "browser": "157.0",
+  "status": "failed",
+  "failure": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    {\n      filter: 'url(#bloom-cl-r3-gradient-b14)',\n      height: '52',\n      play: 'paused',\n      rx: '26',\n+     time: 10217.4,\n-     time: 10066.92,\n      width: '620'\n    },\n    {\n      filter: 'url(#bloom-cl-r3-gradient-b6)',\n      height: '52',\n      play: 'paused',\n      rx: '26',\n+     time: 10217.4,\n-     time: 10066.92,\n      width: '620'\n    },\n    {\n      filter: 'url(#bloom-cl-r3-gradient-b0_5)',\n      height: '52',\n      play: 'paused',\n      rx: '26',\n+     time: 10217.4,\n-     time: 10066.92,\n      width: '620'\n    }\n  ]\n\n    at file:///home/nate/Oxy/Bloom/.worktrees/issue-663-loader-web-published/scripts/loader-web-lab/verify.mjs:45:129"
+}

@@ -1,0 +1,22 @@
+{
+  "version": "18.4.0",
+  "integrity": "sha512-XLC+0q97VKQVnxzjJ57ZdSRV8JXX2S4IC/pbYqpNvHHR5yTht/FBOApdhD4FwlnVA07lmsPXoI/3dLXZtePGoA==",
+  "archiveSha256": "908cf8de202bd017a22348e5354ac07e1c0c1818ee59faec638e34ea4ea08233",
+  "installedFiles": 28185,
+  "installedTreeSha256": "cdbdf2c9a7a06b581fa58dec8d8b41dcc2ba7c4a6c27768e68140469a3eb5b3b",
+  "source": "npm tarball, no source mirror",
+  "fixtureFiles": {
+    "src/main.tsx": "61b8d852fd1a1b16e689e93c08ba94c399ca01d36f40317312d3ee9f5f742023",
+    "style.css": "2af86ed0e142a828cbdd5175eebc94860e8b3928191defa67771f2e63a7cc02e",
+    "index.html": "919f0e7598974fe289531e024cc6d6ba31488cf137cbb6309f18cbab3d38450f",
+    "vite.config.mjs": "f9bc622107fa48d38ce7af8c59bfd219a644171224d3b5bd27a3afdf3ef0a775",
+    "verify.mjs": "57ed60325208049a5a12018e8d42113064ed9f495e176138836e82598e4d5d9d",
+    "package.json": "63364b8d2e1958859364d0544278a1ade26fb87c82cc196d1288331622f71063"
+  },
+  "compiler": false,
+  "lockSha256": "0517e730beaa4d77e679fe819d5fd13e85ea9570f13dd2d9f6fbfb7429bc974a",
+  "platform": "linux",
+  "arch": "x64",
+  "node": "v24.21.0",
+  "host": "Linux 6.18.33.2-microsoft-standard-WSL2"
+}
