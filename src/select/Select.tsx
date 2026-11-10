@@ -182,6 +182,7 @@ export function Select(props: SelectProps) {
 export function SelectTrigger({
   children,
   asChild,
+  lens: lensProp = false,
   disabled,
   label,
   className,
@@ -192,6 +193,8 @@ export function SelectTrigger({
   const { control, size, disabled: rootDisabled, lens } = useSelectContext();
   const palette = useMenuPalette();
   const touch = useTouchInput();
+  // The lens pill is the field's fill and edge: the field keeps its padding and content only.
+  const lensTrigger = lensProp && lens != null && getNativeLens() != null;
   // The trigger IS the select's control, so it takes the enclosing `Field`'s id,
   // name, description and invalid state — and the field's `disabled` on top of
   // the two it already combines. A `Popover` trigger deliberately does not do
@@ -220,16 +223,19 @@ export function SelectTrigger({
         {
           ...(touch ? { minHeight: 44 } : null),
           borderRadius: borderRadius.full,
-          borderColor: t.border,
-          boxShadow: isDisabled ? undefined : t.shadow,
+          borderColor: lensTrigger ? 'transparent' : t.border,
+          boxShadow: isDisabled || lensTrigger ? undefined : t.shadow,
         },
         fieldStyle,
       ]}
     >
+      {lensTrigger ? null : (
       <SurfacePaint
+        lens
         fill={isDisabled ? t.disabledBackground : t.background}
         radius={selectTriggerPaintRadius(fieldStyle)}
       />
+      )}
       {children}
     </StyledView>
   );
@@ -270,7 +276,7 @@ export function SelectTrigger({
     <SelectTriggerStateContext.Provider value={triggerState}>
       <SelectDisplayContext.Provider value={setDisplay}>
         {lens && getNativeLens() ? (
-          <LensTrigger lens={lens} triggerLens={false} tone="neutral">
+          <LensTrigger lens={lens} triggerLens={lensTrigger} tone="neutral">
             {slot}
           </LensTrigger>
         ) : (
