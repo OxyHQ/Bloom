@@ -518,6 +518,13 @@ header, including wrapped summaries, without a consumer height calculation.
 
 Toolbar inherits BloomScope: xs/sm/md/lg use 4/6/8/12px outer inset and tool gaps, with 2/4/4/6px between the tools and accessory. Explicit `size` overrides the scope for the toolbar and its controls. Normal md preserves the original 8px toolbar spacing; each child still uses its own family's size proportions.
 
+`Toolbar` paints no material of its own: the controls inside it do, so there is nothing for it to migrate to
+the native lens. The floating bottom toolbar of the current iOS pattern (a circle, a central pill, a circle)
+is a different thing: three `BlurIsland`s, drawn by the lens where the device has it. See
+[A bottom toolbar](./blur.mdx#a-bottom-toolbar). A control inside this `Toolbar` that floats over content
+can take `material="lens"` on its own; a `Toolbar` in a scrolling row should not, because the lens does not
+follow a scroll view.
+
 ## `AutoHideBar` — a bar that steps aside
 
 A toolbar at the top of a region that recedes to a thin strip when its owner
