@@ -174,10 +174,7 @@ export function ComposerCases({ onToggleMode }: { onToggleMode: () => void }) {
             >
               Rapid phases
             </Button>
-            <Button
-              testID="cases-attachment"
-              onPress={() => setAttached((value) => !value)}
-            >
+            <Button testID="cases-attachment" onPress={() => setAttached((value) => !value)}>
               {attached ? 'Remove fixture attachment' : 'Attach fixture file'}
             </Button>
             <Button

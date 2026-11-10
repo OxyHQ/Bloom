@@ -1,7 +1,7 @@
 {
-  "commit": "0c3ea134592fa2123c5e8ca3aa870b21321b312a",
-  "workingTree": "M scripts/loader-package-lab/ComposerCases.tsx\n?? docs/audits/issue-663/composer-loader-published-18.4.0-pixel8a-interactions-2026-11-10/",
-  "fixtureSha256": "3ab039852e9b95647af2327821bb5a6aa9752a6ec7d8fbcfc8a9e8156dc8b3f9",
+  "commit": "b3fef12a4299069c1c3d9e030225eea404fdc0bf",
+  "workingTree": "M scripts/loader-package-lab/ComposerCases.tsx",
+  "fixtureSha256": "c39dd40030a06eca102cf4debf76dee0a23089a3641f507fb94c24c66b6703d1",
   "packedTarballSha256": "5109a9b04ec51cbba85fb8b1071187f5c463ea7625ea035346e3ff3ad0c64021",
   "kind": "published npm tarball",
   "npmIntegrity": "sha512-XLC+0q97VKQVnxzjJ57ZdSRV8JXX2S4IC/pbYqpNvHHR5yTht/FBOApdhD4FwlnVA07lmsPXoI/3dLXZtePGoA==",
@@ -16,8 +16,8 @@
   "reactCompiler": false,
   "scene": "composers",
   "softwareWindow": false,
-  "apkSha256": "2f1f8b54ccfed276d436c8f96337d34c18742a54344ee8d8bc32a70a30928e0e",
-  "embeddedBundleSha256": "597c1958068a8b6ba7a626c6f26d844cf9f5a3cdc655b2a862ead1a61e1a8807",
+  "apkSha256": "ad35576a9a885515d8c4fd9884d8eb1348e7ab0e30d09d59ddf3be1207aee462",
+  "embeddedBundleSha256": "0e2ebb36d2449d0c55dc81c89a98f11818e3533c505f302e65fddca46e8fbe35",
   "embeddedBloomSourceSha256": "283948c466ad44a1223f93bf06415586bc307635fa2f0fa64c942db3c473a712",
   "embeddedBloomFiles": 1095,
   "dex": [
