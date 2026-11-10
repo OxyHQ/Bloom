@@ -121,13 +121,17 @@ The surface and the light are decorative (`aria-hidden`, `pointerEvents="none"`)
 
 The existing Composer Loader catalogue now includes `Lifecycle`: isolated and
 tapered light, `ComposerPill`, and `AgentChatComposer`, with the same mounted
-inputs across working/idle, explicit pause, retained `Screen`, height changes
-and viewport resize. It is a synthetic Bloom fixture, not the real Alia route.
+inputs across submitting/streaming/stopping/error/complete/idle, explicit pause,
+retained `Screen`, height changes and viewport resize. It is a synthetic Bloom
+fixture, not the real Alia route.
 
 Run `scripts/verify-composer-loader-lifecycle.mjs` against this checkout's
 Storybook. It resolves the story from `index.json` and uses real mouse clicks,
-CSS animation clocks and DOM focus/selection. Set `STORYBOOK_URL`, `CHROME_PATH`
-and, when not installed locally, `PUPPETEER_PATH` to `puppeteer-core`.
+CSS animation clocks and DOM focus/selection. It verifies submit-to-streaming
+continues the same lap, stopping stays lit, and error/completion/idle settle.
+Set `STORYBOOK_URL`, `CHROME_PATH` and, when not installed locally,
+`PUPPETEER_PATH` to `puppeteer-core`; `CHROME_WS_ENDPOINT` connects to an
+already running Chromium.
 `RECORD_VIDEO=1` records 9.5 seconds (two default laps); `OUT` chooses the artifact
 directory. The JSON report identifies the commit/browser, viewport, geometry,
 clock and input observations. Screenshots support visual review; clock results

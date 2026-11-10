@@ -230,7 +230,7 @@ export const WithComposer: Story = {
 export const Lifecycle: Story = {
   parameters: { controls: { disable: true } },
   render: function Render() {
-    const [phase, setPhase] = useState<ComposerLoaderPhase>('streaming');
+    const [phase, setPhase] = useState<ComposerLoaderPhase>('submitting');
     const busy = phase === 'submitting' || phase === 'streaming' || phase === 'stopping';
     const [paused, setPaused] = useState(false);
     const [retained, setRetained] = useState(false);
