@@ -26,6 +26,8 @@ internal class GlassSurfaceState {
   var pressLift = 0f
   var rimLift = 0f
   var refractionScale = 1f
+  // Magnification of the content about the shape's centre (1 = none). A convex lens uses a value above 1.
+  var magnify = 1f
   var config = GlassMenuConfigRecord()
   var trigger = GlassTriggerConfigRecord()
 }
