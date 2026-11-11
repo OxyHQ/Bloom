@@ -701,7 +701,16 @@
       "src/icons/remix/RiWrenchLine.tsx#RiWrenchLine",
       "src/icons/remix/RiYoutubeFill.tsx#RiYoutubeFill",
       "src/icons/remix/RiYoutubeLine.tsx#RiYoutubeLine",
-      "src/icons/simple-icons/SiSubstack.tsx#SiSubstack"
+      "src/icons/simple-icons/SiSubstack.tsx#SiSubstack",
+      "src/icons/social/BookmarkFillIcon.tsx#BookmarkFillIcon",
+      "src/icons/social/BookmarkIcon.tsx#BookmarkIcon",
+      "src/icons/social/GifAttachmentIcon.tsx#GifAttachmentIcon",
+      "src/icons/social/LikeFillIcon.tsx#LikeFillIcon",
+      "src/icons/social/LikeIcon.tsx#LikeIcon",
+      "src/icons/social/MediaAttachmentIcon.tsx#MediaAttachmentIcon",
+      "src/icons/social/ReplyIcon.tsx#ReplyIcon",
+      "src/icons/social/RepostIcon.tsx#RepostIcon",
+      "src/icons/social/ShareIcon.tsx#ShareIcon"
     ]
   },
   "accordion-root-part": {
@@ -1982,5 +1991,17 @@
     ],
     "verification": "Native renderer and DOM web verify the default xl disc/glyph (64/28px), explicit lg geometry (52/24px), and stable geometry under xs, lg and nested BloomScope. Native type-level fixtures use BloomIconComponent directly. Physical-device proportions remain unverified.",
     "parts": ["src/icon-circle/IconCircle.tsx#IconCircle"]
+  },
+  "compact-composer": {
+    "status": "delegated",
+    "reason": "Controlled composed editor delegates surface, field, scroll, expansion, meter and controls to their existing owners. Its compact recipe explicitly sets attachment targets to sm (32), expand glyph to 32, field to sm and submit to md; these are role-specific dimensions, not inherited application scale. Caller slots preserve their own scope.",
+    "evidence": [
+      "src/chat-composer/create-compact-composer.tsx",
+      "src/__tests__/CompactComposer.test.tsx",
+      "scripts/verify-compact-composer.mjs",
+      "docs/chat-composer.mdx"
+    ],
+    "verification": "Native-renderer behavior tests and Chromium input/scroll/focus validation; physical IME and device geometry not established by these checks.",
+    "parts": ["src/chat-composer/CompactComposer.tsx#CompactComposer"]
   }
 }

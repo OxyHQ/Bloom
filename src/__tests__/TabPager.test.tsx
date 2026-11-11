@@ -233,3 +233,20 @@ it('orders a sidebar row after another with sidebarAfter, leaving the bar in dec
     'you',
   ]);
 });
+
+it('uses the retained pager selection for an opt-in contextual bar on a pushed route', () => {
+  mockPathname = '/you';
+  const tree = () => (
+    <TabPagerProvider destinations={DESTINATIONS}>
+      <TabPagerBottomBar routeBehavior="contextual" actionBehavior="dock" />
+    </TabPagerProvider>
+  );
+  const view = render(tree());
+  expect(jest.mocked(BottomBar).mock.calls.slice(-1)[0]?.[0].value).toBe('you');
+  mockPathname = '/p/detail';
+  view.rerender(tree());
+  const contextual = jest.mocked(BottomBar).mock.calls.slice(-1)[0]?.[0];
+  expect(contextual?.value).toBe('you');
+  expect(contextual?.hideProgress).toBeUndefined();
+  expect(contextual?.activeProgress).toBeUndefined();
+});

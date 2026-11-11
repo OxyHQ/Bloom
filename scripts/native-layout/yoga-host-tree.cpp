@@ -43,6 +43,7 @@ void style(YGNodeRef node, const std::string& key, const std::string& value) {
     else if(key=="alignSelf") YGNodeStyleSetAlignSelf(node,align);
     else YGNodeStyleSetAlignContent(node,align);
   } else if (key == "gap" || key == "rowGap" || key == "columnGap") YGNodeStyleSetGap(node,key=="gap"?YGGutterAll:key=="rowGap"?YGGutterRow:YGGutterColumn,number());
+  else if(key=="display") YGNodeStyleSetDisplay(node,value=="none"?YGDisplayNone:YGDisplayFlex);
   else if(key=="position") YGNodeStyleSetPositionType(node,value=="absolute"?YGPositionTypeAbsolute:YGPositionTypeRelative);
   else if(key=="overflow") YGNodeStyleSetOverflow(node,value=="hidden"?YGOverflowHidden:value=="scroll"?YGOverflowScroll:YGOverflowVisible);
   else {
@@ -52,7 +53,7 @@ void style(YGNodeRef node, const std::string& key, const std::string& value) {
       if(key=="margin"+suffix) { YGNodeStyleSetMargin(node,edge,number()); return; }
       if(key=="border"+suffix+"Width") { YGNodeStyleSetBorder(node,edge,number()); return; }
     }
-    if(key=="top"||key=="bottom"||key=="left"||key=="right") YGNodeStyleSetPosition(node,key=="top"?YGEdgeTop:key=="bottom"?YGEdgeBottom:key=="left"?YGEdgeLeft:YGEdgeRight,number());
+    if(key=="top"||key=="bottom"||key=="left"||key=="right"||key=="start"||key=="end") YGNodeStyleSetPosition(node,key=="top"?YGEdgeTop:key=="bottom"?YGEdgeBottom:key=="left"?YGEdgeLeft:key=="right"?YGEdgeRight:key=="start"?YGEdgeStart:YGEdgeEnd,number());
     else { std::cerr << "Unsupported layout property " << key << '\n'; std::exit(1); }
   }
 }

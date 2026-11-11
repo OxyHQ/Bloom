@@ -27,6 +27,8 @@ import type { TabBarItem, TabBarTheme } from './types';
 
 export const EXPANDED_HEIGHT = 58;
 export const MINIMIZED_HEIGHT = 44;
+/** Fraction of shared collapse progress that frees the editor's horizontal lane. */
+export const DOCK_NAVIGATION_PHASE = 0.6;
 /** Extra horizontal inset applied to the pill when minimized (per side). */
 export const MINIMIZED_INSET = 34;
 /** Outer margin between the pill and the screen edges (per side). */

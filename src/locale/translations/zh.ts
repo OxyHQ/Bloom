@@ -284,6 +284,14 @@ const CARD_FORM_MESSAGES: Translations['CARD_FORM_MESSAGES'] = {
   selectCountry: '选择国家/地区',
 };
 
+const COMPACT_COMPOSER_MESSAGES: Translations['COMPACT_COMPOSER_MESSAGES'] = {
+  input: '撰写消息',
+  expand: '打开完整编辑器',
+  characterCount: '字符数',
+  characterCountValue: (count, max) => `${count}/${max} 个字符`,
+  limitHint: (max) => `简洁消息最多允许 ${max} 个字符。展开编辑器以输入更多内容。`,
+};
+
 const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   attach: '添加附件',
   emoji: '表情',
@@ -2946,6 +2954,7 @@ const translations: Translations = {
   SIDEBAR_MESSAGES,
   FILE_SIZE_UNITS,
   CARD_FORM_MESSAGES,
+  COMPACT_COMPOSER_MESSAGES,
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
   MEDIA_PLAYER_MESSAGES,

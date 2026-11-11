@@ -301,6 +301,15 @@ const CARD_FORM_MESSAGES: Translations['CARD_FORM_MESSAGES'] = {
   selectCountry: 'Choisissez un pays',
 };
 
+const COMPACT_COMPOSER_MESSAGES: Translations['COMPACT_COMPOSER_MESSAGES'] = {
+  input: 'Écrire un message',
+  expand: 'Ouvrir l’éditeur complet',
+  characterCount: 'Caractères',
+  characterCountValue: (count, max) => `${count} caractères sur ${max}`,
+  limitHint: (max) =>
+    `Les messages compacts autorisent ${max} caractères. Agrandissez l’éditeur pour écrire davantage.`,
+};
+
 const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   attach: 'Joindre',
   emoji: 'Émoji',
@@ -3125,6 +3134,7 @@ const translations: Translations = {
   SIDEBAR_MESSAGES,
   FILE_SIZE_UNITS,
   CARD_FORM_MESSAGES,
+  COMPACT_COMPOSER_MESSAGES,
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
   MEDIA_PLAYER_MESSAGES,

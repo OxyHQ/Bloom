@@ -43,7 +43,8 @@ What genuinely transfers is reused rather than retyped: the 56px attachment tile
 
 | Export | What it is |
 |---|---|
-| `ChatComposer` | The bar. |
+| `ChatComposer` | The messaging bar. |
+| `CompactComposer` | Controlled expanding editor with a fixed toolbar, character limit and full-editor action. |
 | `ComposerBanner` | One reply / edit / forward preview, or a one-line `note`. |
 | `ComposerAttachmentStrip` | The pending-attachment tiles. `ChatComposer` draws one from `attachments`; export it for a standalone strip. |
 | `ComposerIconButton` | The 36px round control, for a slot that has to match. |
@@ -377,3 +378,60 @@ The standalone presentation retains its own Surface and scroll viewport (232 px
 by default). Anchored results default to a 320 px ceiling, further constrained
 by available space; `maxHeight` can explicitly lower or change that ceiling.
 Both presentations render the same result rows and callbacks.
+
+## Compact editor
+
+`CompactComposer` is a controlled, expanding editor for replies, comments and
+other short drafts. It uses the same Bloom field, surface, scrollbar, toolbar,
+meter and glyph controls as their standalone forms. `ChatComposer` remains the
+messaging bar with send/microphone and suggestion behavior.
+
+```tsx
+import { CompactComposer } from '@oxy.so/bloom/chat-composer';
+
+<CompactComposer
+  value={draft}
+  onChangeText={setDraft}
+  maxLength={250}
+  avatar={<AccountAvatar />}
+  attachments={previews.length ? <AttachmentPreviews /> : null}
+  attachmentActions={[
+    { id: 'media', icon: MediaAttachmentIcon, label: 'Attach media', onPress: pickMedia },
+  ]}
+  onExpand={openFullEditor}
+  onSubmit={publish}
+  busy={publishing}
+  labels={{ submit: 'Reply' }}
+/>
+```
+
+The application owns authentication, draft persistence, attachment selection,
+permissions and publication. Bloom owns the stable textarea, focus expansion,
+scrolling editor and fixed toolbar. Attachments share the editor's outer scroll
+viewport; an attachment gallery may own its independent horizontal scroll.
+Pass `null` when there are no attachments. Attachment controls use 32px targets
+without gaps; the separate submit action retains normal `md` size.
+
+`maxLength` uses UTF-16 string length, like `TextInput` and JavaScript strings.
+An edit that grows past the limit is rejected without truncation and pulses the
+existing expand glyph. Previously loaded longer drafts remain visible and may
+be shortened or replaced without growing; they cannot submit until within the
+limit. The meter announces the current count and limit. `labels` overrides all
+visible and accessible strings; Bloom supplies localized defaults.
+
+`busy` blocks actions while keeping the input editable so an application can
+preserve edits made during publication. `disabled` also disables editing.
+`canSubmit` adds an application permission check; it cannot enable an empty or
+over-limit draft. Attachment-only drafts may submit. `onExpand` is optional;
+when absent, no expand control is drawn.
+
+`inputRef` forwards to the same textarea across expansion, attachments and
+loading states. `onFocusChange` reports input focus, retains it when focus moves
+to a control inside the capsule on web, and resets when focus leaves or the
+editor unmounts. It can coordinate a surrounding `BottomBar` dock without
+moving the editor to another parent. The host still owns keyboard avoidance.
+
+The outer editor viewport caps naturally at 16rem (20rem from `md`), while the
+toolbar remains outside that viewport. No measured composer heights or per-frame
+React state are needed. Layout stays in CSS/Flex and native Yoga; expansion and
+attention use the existing reduced-motion-aware Bloom components.

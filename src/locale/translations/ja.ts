@@ -284,6 +284,15 @@ const CARD_FORM_MESSAGES: Translations['CARD_FORM_MESSAGES'] = {
   selectCountry: '国を選択',
 };
 
+const COMPACT_COMPOSER_MESSAGES: Translations['COMPACT_COMPOSER_MESSAGES'] = {
+  input: 'メッセージを書く',
+  expand: '完全なエディターを開く',
+  characterCount: '文字数',
+  characterCountValue: (count, max) => `${max}文字中${count}文字`,
+  limitHint: (max) =>
+    `コンパクトなメッセージは${max}文字までです。さらに書くにはエディターを展開してください。`,
+};
+
 const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   attach: '添付',
   emoji: '絵文字',
@@ -3020,6 +3029,7 @@ const translations: Translations = {
   SIDEBAR_MESSAGES,
   FILE_SIZE_UNITS,
   CARD_FORM_MESSAGES,
+  COMPACT_COMPOSER_MESSAGES,
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
   MEDIA_PLAYER_MESSAGES,

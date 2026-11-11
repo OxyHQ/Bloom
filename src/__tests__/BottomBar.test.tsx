@@ -6,7 +6,10 @@ import type { TabBarProps, TabBarButtonProps } from '../tab-bar/types';
 import * as SafeArea from 'react-native-safe-area-context';
 import { BottomBarSlotContext } from '../layout/bottom-bar-slot';
 import { useClaimBottomEdge } from '../layout/bottom-edge';
-jest.mock('../layout/bottom-edge', () => ({ useClaimBottomEdge: jest.fn() }));
+jest.mock('../layout/bottom-edge', () => ({
+  ...jest.requireActual('../layout/bottom-edge'),
+  useClaimBottomEdge: jest.fn(),
+}));
 import { resolvedStyle } from './support/rendered-style';
 const Navigation = jest.fn((props: TabBarProps) => (
   <View testID="navigation">{props.children}</View>
@@ -302,4 +305,60 @@ it.each([0, 34])('applies inset %s once and lets a shell own the sole measured c
   );
   expect(useClaimBottomEdge).toHaveBeenLastCalledWith(0);
   safeArea.mockRestore();
+});
+
+it('docks the same editable action through keyboard, resize and navigation suppression', () => {
+  const draft = <Text testID="draft">Retained editor</Text>;
+  const props = {
+    Navigation,
+    Item,
+    Blur,
+    items,
+    value: 'home',
+    onValueChange: () => {},
+    action: draft,
+    actionBehavior: 'dock' as const,
+    testID: 'dock',
+  };
+  const view = render(<BottomBarBase {...props} />);
+  const editor = view.getByTestId('draft');
+  expect(Navigation.mock.calls.slice(-1)[0]?.[0].minimizeBehavior).toBe('active');
+  view.rerender(<BottomBarBase {...props} navigationVisibility="never" />);
+  expect(view.getByTestId('draft')).toBe(editor);
+  expect(
+    resolvedStyle(view.getByTestId('dock-navigation', { includeHiddenElements: true }).props.style)
+      .display,
+  ).toBe('none');
+  view.rerender(<BottomBarBase {...props} />);
+  const show = [...(Keyboard.addListener as jest.Mock).mock.calls]
+    .reverse()
+    .find((call) => call[0] === 'keyboardDidShow')?.[1];
+  act(() => show({ endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 } }));
+  expect(view.getByTestId('draft')).toBe(editor);
+  expect(view.getByTestId('dock')).toBeTruthy();
+  expect(
+    resolvedStyle(view.getByTestId('dock-navigation', { includeHiddenElements: true }).props.style)
+      .display,
+  ).toBe('none');
+  expect(view.getByTestId('dock-action-content').props.onLayout).toBeUndefined();
+  expect(resolvedStyle(view.getByTestId('dock').props.style).height).toBeUndefined();
+});
+
+it('keeps dock navigation expanded when no destination is selected', () => {
+  render(
+    <BottomBarBase
+      Navigation={Navigation}
+      Item={Item}
+      Blur={Blur}
+      items={items}
+      value="unmatched"
+      onValueChange={() => {}}
+      action={<Text>Editor</Text>}
+      actionBehavior="dock"
+      minimizeProgress={{ value: 1 } as NonNullable<TabBarProps['minimizeProgress']>}
+    />,
+  );
+  const navigation = Navigation.mock.calls.slice(-1)[0]?.[0];
+  expect(navigation?.activeIndex).toBe(-1);
+  expect(navigation?.minimizeProgress?.value).toBe(0);
 });

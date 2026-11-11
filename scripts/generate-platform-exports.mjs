@@ -221,6 +221,16 @@ const SUBPATHS = /** @type {const} */ ([
   // must clear MIN_PATTERN_MATCHES, and a floor lowered to fit one file would
   // stop catching a renamed Remix folder. Promote to a pattern if this grows.
   ['./icons/SiSubstack', 'icons/simple-icons/SiSubstack.tsx'],
+  // Individual social glyphs keep consumer imports independent of the icon barrel.
+  ['./icons/MediaAttachmentIcon', 'icons/social/MediaAttachmentIcon.tsx'],
+  ['./icons/GifAttachmentIcon', 'icons/social/GifAttachmentIcon.tsx'],
+  ['./icons/ReplyIcon', 'icons/social/ReplyIcon.tsx'],
+  ['./icons/RepostIcon', 'icons/social/RepostIcon.tsx'],
+  ['./icons/LikeIcon', 'icons/social/LikeIcon.tsx'],
+  ['./icons/LikeFillIcon', 'icons/social/LikeFillIcon.tsx'],
+  ['./icons/BookmarkIcon', 'icons/social/BookmarkIcon.tsx'],
+  ['./icons/BookmarkFillIcon', 'icons/social/BookmarkFillIcon.tsx'],
+  ['./icons/ShareIcon', 'icons/social/ShareIcon.tsx'],
   ['./typography', 'typography/index.ts'],
   ['./skeleton', 'skeleton/index.ts'],
   ['./grid', 'grid/index.ts'],
