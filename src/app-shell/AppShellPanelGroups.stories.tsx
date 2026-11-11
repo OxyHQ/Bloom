@@ -324,3 +324,37 @@ export const HorizontalFlow: Story = {
 export const ContentCappedSplit: Story = {
   render: () => <SplitExample short contentCap />,
 };
+
+function ReorderGroupsExample() {
+  const [order, setOrder] = useState<readonly string[]>(['main', 'first', 'second']);
+  return (
+    <AppShell
+      header={null}
+      scroll="fixed"
+      contentMaxWidth="none"
+      panelLayout={{
+        mode: 'deck',
+        flow: 'bounded',
+        horizontalScroll: 'contained',
+        onPanelOrderChange: setOrder,
+        panels: order.map((id) => ({
+          id,
+          testID: `reorder-${id}`,
+          width: 300,
+          reorderable: id !== 'main',
+          reorderLabel: id,
+          group: {
+            axis: 'vertical',
+            mode: 'split',
+            panels: [
+              { id, content: <ReadingPanel title={id} short /> },
+              { id: 'detail', content: <ReadingPanel title={`${id} detail`} short /> },
+            ],
+          },
+        })),
+      }}
+    />
+  );
+}
+
+export const ReorderNestedGroups: Story = { render: () => <ReorderGroupsExample /> };
