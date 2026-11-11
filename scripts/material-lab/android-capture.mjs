@@ -116,7 +116,7 @@ async function scroll(bottom, hierarchy = xml()) {
 for (const theme of ['light', 'dark']) {
   let actionHierarchy = readFileSync(resolve(out, 'initial.xml'), 'utf8');
   if (theme === 'dark') await tap('material-theme', actionHierarchy);
-  for (const background of ['solid', 'stripes', 'photo', 'motion']) {
+  for (const background of ['solid', 'stripes', 'photo']) {
     await tap(`material-background-${background}`, actionHierarchy);
     // The app tree has fixed geometry; record fresh pixels while reusing the
     // initial tree for control locations and explicitly label it as a snapshot.
@@ -135,7 +135,10 @@ for (const theme of ['light', 'dark']) {
       // animation from a button visible in the current top-of-scroll snapshot.
       await tap('material-loader-toggle', sceneHierarchy);
     }
-    actionHierarchy = sceneHierarchy;
+    // A scroll out and back is not guaranteed to land on the exact same
+    // accessibility bounds. Refresh after the motion has settled so overlay
+    // taps use current hit-test coordinates rather than the pre-scroll tree.
+    actionHierarchy = xml();
     for (const overlay of ['menu', 'dialog', 'sheet']) {
       await tap(`material-${overlay}-trigger`, actionHierarchy);
       capture(`${theme}-${background}-${overlay}`, actionHierarchy);
@@ -144,6 +147,13 @@ for (const theme of ['light', 'dark']) {
       capture(`${theme}-${background}-${overlay}-dismissed`, actionHierarchy);
     }
   }
+  // The moving photograph keeps Android's accessibility tree continuously
+  // active, so capture its pixels from the last stable geometry and return to
+  // a static backing before asking UIAutomator for fresh coordinates again.
+  await tap('material-background-motion', actionHierarchy);
+  capture(`${theme}-motion`, actionHierarchy);
+  await tap('material-background-photo', actionHierarchy);
+  actionHierarchy = xml();
   await tap('material-transparency', actionHierarchy);
   capture(`${theme}-reduced-transparency`, actionHierarchy);
   await tap('material-transparency', actionHierarchy);
