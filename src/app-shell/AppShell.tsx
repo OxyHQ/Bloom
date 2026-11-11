@@ -509,6 +509,9 @@ export function createAppShell(
           fillWidth={fillWidth}
           shellWidth={width}
           gap={gap}
+          stackGap={
+            layout.appearance === 'joined' ? 1 : (props.gutter ?? APP_SHELL_DEFAULTS.gutter)
+          }
           testID={props.testID ? `${props.testID}-panels` : undefined}
         />
       ) : (

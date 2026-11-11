@@ -1,5 +1,6 @@
 import type { WindowChrome } from '../window/context';
 import { breakpointPx } from './constants';
+import { groupPanelStacks } from './panel-stacks';
 import { resolveResponsive, responsiveThresholds } from '../styles/responsive';
 import type { AppShellPanelDefinition, AppShellPanelLayout, PanelAxis } from './panel-layout-types';
 
@@ -30,7 +31,9 @@ export function eligiblePanels(layout: AppShellPanelLayout, shellWidth: number) 
       throw new Error('AppShell panel ids must be nonempty and unique.');
     ids.add(panel.id);
   }
-  return layout.panels.filter(
+  // Panels stacked in one slot take the room of one track: every reader of the layout (the shell's
+  // envelope, the tracks, the CSS) sees slots.
+  return groupPanelStacks(layout).layout.panels.filter(
     (panel) =>
       panel.visible !== false &&
       (!panel.floating || shellWidth >= breakpointPx(panel.floating.below)) &&
@@ -148,7 +151,7 @@ export function resolvePanelTracks(
   shown.forEach((panel, index) => {
     if (sizes[index]! < panelMinimum(panel)) sizes[index] = panelMinimum(panel);
   });
-  return layout.panels.map((panel) => {
+  return groupPanelStacks(layout).layout.panels.map((panel) => {
     const index = shown.findIndex((candidate) => candidate.id === panel.id);
     return {
       id: panel.id,
@@ -369,7 +372,7 @@ export function resolvePanelFlex(
         if (track.min > level * track.span + HELD_TOLERANCE) held.add(track.id);
     }
   }
-  return layout.panels.map((declared) => {
+  return groupPanelStacks(layout).layout.panels.map((declared) => {
     const position = shown.findIndex((candidate) => candidate.id === declared.id);
     const floating = declared.floating
       ? { floating: shellWidth < breakpointPx(declared.floating.below) }

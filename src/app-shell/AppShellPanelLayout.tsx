@@ -57,6 +57,8 @@ import { usePanelReveal } from './use-panel-reveal';
 import { usePanelResize, type PanelResizePreview } from './use-panel-resize';
 import { useRoomChanged } from './use-room-changed';
 import { PanelCssContext, panelLayoutCss } from './panel-layout-css';
+import { groupPanelStacks } from './panel-stacks';
+import { type StackHeights, stackCells } from './panel-stack-cells';
 import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import {
   AppShellPanelContext,
@@ -122,6 +124,20 @@ const FILL: ViewStyle = {
   minHeight: 0,
   minWidth: 0,
 };
+/** The room panels docked in a column take: declared on the column, read by the panels above. */
+const DOCK_ROOM = 'var(--bloom-dock)';
+
+/** The time and curve of a panel opening in a stack, as every panel of the layout moves. */
+const STACK_MOTION = '380ms cubic-bezier(0.4, 0, 0.2, 1)';
+const STACK_CELL_TRANSITION = ['flex-grow', 'height', 'min-height', 'opacity']
+  .map((property) => `${property} ${STACK_MOTION}`)
+  .join(', ');
+/** `--bloom-dock` as a length: a registered property is one the stylesheet can transition. */
+const STACK_CSS = '@property --bloom-dock{syntax:"<length>";inherits:true;initial-value:0px}';
+
+/** A stack's panels are not reordered: they are cells of one slot. */
+const NO_REORDER = () => () => {};
+
 export interface PanelLayoutViewProps {
   layout: AppShellPanelLayout;
   shellWidth: number;
@@ -130,6 +146,11 @@ export interface PanelLayoutViewProps {
   /** JSX compatibility groups resolve eligibility against their own box. */
   eligibilityFromGroup?: boolean;
   gap: number;
+  /**
+   * The gap between panels stacked in one slot: the shell's gutter between panel cards. The gap
+   * along the layout's axis (`gap`) can be 0 for panels that touch; cards stacked do not.
+   */
+  stackGap?: number;
   testID?: string;
 }
 
@@ -181,7 +202,7 @@ export function createPanelLayoutView(
       <Dialog
         control={control}
         label={panel.floating!.label}
-        placement="end"
+        placement={panel.floating!.placement ?? 'end'}
         width={panel.floating!.width ?? panel.width ?? 410}
         inset={{ top: 12, bottom: 12, left: 12, right: 12 }}
         scrollable={false}
@@ -312,6 +333,11 @@ export function createPanelLayoutView(
     vertical,
     naturalHeight,
     track,
+    viewportFrame,
+    dock,
+    docked,
+    cell,
+    slot,
     alone,
     document: documentFlow,
     joined,
@@ -341,6 +367,23 @@ export function createPanelLayoutView(
     vertical: boolean;
     naturalHeight: boolean;
     track: PanelFlexTrack;
+    /** Panels beside each other in a document-scrolled page: the viewport sizes the frame. */
+    viewportFrame: boolean;
+    /** This panel's flex in a stack's column: a static style, no track animates it. */
+    cell?: ViewStyle;
+    /** This panel is docked at the window's bottom edge: the frame is its own box. */
+    docked: boolean;
+    /**
+     * A panel is docked under this one at the window's bottom edge. The room it takes is the CSS
+     * variable `--bloom-dock` of the column (its height and the gap, summed by the stylesheet):
+     * this panel's frame ends above it, so the two read as cells of one grid.
+     */
+    dock: boolean;
+    /**
+     * What a stacked slot holds, instead of one panel: its panels, as a layout of their own. The
+     * slot is a track and has no surface of its own: each panel in it is a sibling panel.
+     */
+    slot?: React.ReactNode;
     alone: boolean;
     document: boolean;
     joined: boolean;
@@ -424,7 +467,9 @@ export function createPanelLayoutView(
     const [stickyHeight, setStickyHeight] = useState(0);
     const document = documentFlow && !track.floating;
     const floatingOpen = !!track.floating && !!panel.floating?.open && panel.visible !== false;
-    const sticky = !!panel.sticky && document && !vertical;
+    // A panel beside others in a document stays in view from the top. One stacked under another
+    // (`docked`) stays in view from the bottom: its stack places it (`stackCells`).
+    const sticky = !!panel.sticky && document && viewportFrame && !vertical;
     const parent = React.useContext(ScreenContext);
     const active =
       panel.visible !== false && (track.visible || floatingOpen) && (parent?.active ?? true);
@@ -547,7 +592,7 @@ export function createPanelLayoutView(
     // followed: its turning back is no new geometry.
     // biome-ignore lint/correctness/useExhaustiveDependencies: `resized` qualifies the change
     useEffect(() => {
-      if (cssScope) return;
+      if (cssScope || cell) return;
       const held = gestureHeld.current;
       gestureHeld.current = false;
       animatePanelFlex(
@@ -580,6 +625,7 @@ export function createPanelLayoutView(
       transition,
       reduced,
       cssScope,
+      cell,
     ]);
     // Every key on every run (`styles/animated-style.ts`).
     // The track's basis is its main-axis SIZE (`width` across, `height` down)
@@ -591,7 +637,7 @@ export function createPanelLayoutView(
     // again on every layout.
     const sizing = useAnimatedStyle(
       () =>
-        cssScope
+        cssScope || cell
           ? {}
           : {
               flexGrow: grow.value,
@@ -647,6 +693,7 @@ export function createPanelLayoutView(
         track.basisAuto,
         document,
         cssScope,
+        cell,
         layoutReady,
         naturalHeight,
       ],
@@ -729,7 +776,12 @@ export function createPanelLayoutView(
               </ScrollMetricsContext.Provider>
             </ScreenHostContext.Provider>
           </ScreenScope>
-          <DocumentPanelReserve height={document && !vertical ? (region?.bottomReserve ?? 0) : 0} />
+          <DocumentPanelReserve
+            height={viewportFrame && !docked ? (region?.bottomReserve ?? 0) : 0}
+          />
+          {dock ? (
+            <View style={{ height: DOCK_ROOM as ViewStyle['height'], flexShrink: 0 }} />
+          ) : null}
         </>
       );
       const framed = region?.framed ?? true;
@@ -752,17 +804,29 @@ export function createPanelLayoutView(
           framed={cssScope && cssFraming ? true : framed}
           maskColor={region?.maskColor}
           errorBoundary={panel.errorBoundary}
-          fill={!document}
+          // A docked panel is a box of its own: it fills it, and its frame is that box.
+          fill={!document || docked}
           scrollable={false}
-          overlaySizing={document && !vertical ? 'viewport' : 'panel'}
-          overlayInset={document && !vertical ? region?.viewportInset : undefined}
+          overlaySizing={viewportFrame && !docked ? 'viewport' : 'panel'}
+          overlayInset={
+            viewportFrame && !docked && region
+              ? {
+                  top: region.viewportInset.top,
+                  bottom: dock
+                    ? `calc(${region.viewportInset.bottom}px + ${DOCK_ROOM})`
+                    : region.viewportInset.bottom,
+                }
+              : undefined
+          }
           surfaceStyle={[
             FILL,
-            document && !vertical && !sticky && region
+            viewportFrame && !sticky && !docked && region
               ? {
-                  minHeight: webViewportHeightMinus(
-                    region.viewportInset.top + region.viewportInset.bottom,
-                  ),
+                  minHeight: dock
+                    ? (`calc(100dvh - ${region.viewportInset.top + region.viewportInset.bottom}px - ${DOCK_ROOM})` as ViewStyle['minHeight'])
+                    : webViewportHeightMinus(
+                        region.viewportInset.top + region.viewportInset.bottom,
+                      ),
                 }
               : undefined,
             // Only along a window's top edge, so the style is unchanged elsewhere.
@@ -773,7 +837,12 @@ export function createPanelLayoutView(
           {body}
         </ContentPanel>
       );
-      const resizable = panel.resizable && hasNext && track.visible && !alone;
+      // The divider is at a panel's end edge and moves it against the next one. A docked panel is
+      // the last of its column and sits against the viewport's edge, so its divider is its start
+      // edge, and dragging toward the start grows it.
+      const resizable = docked
+        ? panel.resizable && track.visible
+        : panel.resizable && hasNext && track.visible && !alone;
       return (
         <>
           <AnimatedView
@@ -804,6 +873,16 @@ export function createPanelLayoutView(
                     ),
                   }
                 : undefined,
+              cell,
+              docked
+                ? {
+                    // The page shows through the margin under the panel as the document scrolls:
+                    // the panel covers it, with a shadow offset by the margin, so its size is intact.
+                    boxShadow: `0 ${region?.viewportInset.bottom ?? 0}px 0 0 ${
+                      region?.maskColor ?? theme.colors.background
+                    }`,
+                  }
+                : undefined,
               !track.visible ? { overflow: 'hidden' } : undefined,
               resizable ? { zIndex: 1 } : undefined,
               Platform.OS !== 'web' ? reorderStyle : undefined,
@@ -820,7 +899,9 @@ export function createPanelLayoutView(
             accessibilityElementsHidden={!active}
             pointerEvents={active ? 'auto' : 'none'}
           >
-            {mounted.current && !track.floating ? (
+            {slot !== undefined && !track.floating ? (
+              slot
+            ) : mounted.current && !track.floating ? (
               <AppShellPanelContext.Provider value={panelValue}>
                 {/* Menus and popovers opened in here stay inside this panel while
                 they fit in it (`overlay/placement-boundary`). */}
@@ -881,7 +962,9 @@ export function createPanelLayoutView(
                   {
                     position: 'absolute',
                     ...(vertical
-                      ? { left: 0, right: 0, bottom: -gap / 2, height: 0 }
+                      ? docked
+                        ? { left: 0, right: 0, top: 0, height: 0 }
+                        : { left: 0, right: 0, bottom: -gap / 2, height: 0 }
                       : { top: 0, bottom: 0, insetInlineEnd: -gap / 2, width: 0 }),
                   } as WebCssStyle
                 }
@@ -898,9 +981,11 @@ export function createPanelLayoutView(
                     onResizeStart();
                     start.current = getSize();
                   }}
-                  onResize={(dx) => onResize(start.current + (!vertical && rtl ? -dx : dx))}
+                  onResize={(dx) =>
+                    onResize(start.current + (docked ? -dx : !vertical && rtl ? -dx : dx))
+                  }
                   onResizeEnd={onResizeEnd}
-                  onNudge={(dx) => onNudge(!vertical && rtl ? -dx : dx)}
+                  onNudge={(dx) => onNudge(docked ? -dx : !vertical && rtl ? -dx : dx)}
                 />
               </View>
             ) : null}
@@ -932,7 +1017,7 @@ export function createPanelLayoutView(
     // does not recreate its history or scroll store.
     return (
       <PanelScrollScope id={panel.id} active={active}>
-        {panel.navigation ? (
+        {panel.navigation && slot === undefined ? (
           // A panel with navigation of its own is a stack of screens of its own:
           // its reselect answers for its screens, not the main one's.
           <ScreenReselectScope>
@@ -955,6 +1040,186 @@ export function createPanelLayoutView(
       </PanelScrollScope>
     );
   }
+  /**
+   * The panels of a stacked slot, one under another, in a flex column. Every panel is a full
+   * `PanelHost`: its own surface, scroll and header. The column's flex does the division (the
+   * browser, Yoga): `stackCells` only states how each cell takes part. What JavaScript holds is the
+   * height a divider was dragged to.
+   */
+  function PanelStack({
+    members,
+    shellWidth,
+    document,
+    viewportFrame,
+    gap,
+    joined,
+    transition,
+    resizeHandle,
+    testID,
+  }: {
+    members: readonly AppShellPanelDefinition[];
+    shellWidth: number;
+    document: boolean;
+    viewportFrame: boolean;
+    gap: number;
+    joined: boolean;
+    transition: AppShellPanelLayout['transition'];
+    resizeHandle: AppShellPanelLayout['resizeHandle'];
+    testID?: string;
+  }) {
+    const region = useAppShellRegion();
+    const reduced = usePrefersReducedMotion();
+    const [heights, setHeights] = useState<StackHeights>({});
+    const previews = useRef(new Map<string, PanelResizePreview>());
+    // A panel that opens is mounted first, with its cell still closed, and opened once that has been
+    // painted: mounting its content blocks the page for longer than the transition lasts, and a
+    // transition that starts then is over before a frame shows it.
+    const isShown = (panel: AppShellPanelDefinition) => panel.visible !== false;
+    const [ready, setReady] = useState<ReadonlySet<string>>(
+      () => new Set(members.filter(isShown).map((panel) => panel.id)),
+    );
+    const shownKey = members
+      .filter(isShown)
+      .map((panel) => panel.id)
+      .join('|');
+    useEffect(() => {
+      const shown = shownKey ? shownKey.split('|') : [];
+      // What closed is no longer ready: opening it again mounts it again.
+      setReady((held) => {
+        const kept = [...held].filter((id) => shown.includes(id));
+        return kept.length === held.size ? held : new Set(kept);
+      });
+      if (shown.every((id) => ready.has(id))) return;
+      // Where there are no frames (a test renderer) there is nothing to wait for.
+      if (typeof requestAnimationFrame !== 'function') {
+        setReady((held) => new Set([...held, ...shown]));
+        return;
+      }
+      let second = 0;
+      const first = requestAnimationFrame(() => {
+        second = requestAnimationFrame(() => setReady((held) => new Set([...held, ...shown])));
+      });
+      return () => {
+        cancelAnimationFrame(first);
+        cancelAnimationFrame(second);
+      };
+    }, [shownKey, ready]);
+    const gated = members.map((panel) =>
+      isShown(panel) && !ready.has(panel.id) ? { ...panel, visible: false } : panel,
+    );
+    const cells = stackCells(gated, {
+      shellWidth,
+      document,
+      gap,
+      bottomInset: region?.viewportInset.bottom ?? 0,
+      heights,
+    });
+    const last = cells.shown.length - 1;
+    const bounds = (panel: AppShellPanelDefinition, value: number) =>
+      Math.max(panel.minHeight ?? 0, Math.min(panel.maxHeight ?? Number.POSITIVE_INFINITY, value));
+    return (
+      <View
+        testID={testID}
+        style={[
+          {
+            flexDirection: 'column',
+            alignItems: 'stretch',
+            flexGrow: 1,
+            flexShrink: document ? 0 : 1,
+            flexBasis: document ? 'auto' : 0,
+            minHeight: 0,
+            minWidth: 0,
+            // In a document the frames above end over the docked panel (`--bloom-dock`) and the gap
+            // is theirs; in a bounded column the gap is between the cells.
+            gap: document ? 0 : gap,
+          },
+          IS_WEB && cells.dockRoom
+            ? ({
+                '--bloom-dock': cells.dockRoom,
+                // The room the frames above leave moves with the panel that opens: same time, same
+                // curve (the property is registered, so the stylesheet can interpolate it).
+                transition: reduced ? 'none' : `--bloom-dock ${STACK_MOTION}`,
+              } as WebCssStyle)
+            : null,
+        ]}
+      >
+        {IS_WEB ? <ServerStyleSheet id="bloom-panel-stack" css={STACK_CSS} /> : null}
+        {members.map((member, index) => {
+          const at = cells.shown.indexOf(member);
+          const floating = cells.floating.has(member.id);
+          const docked = cells.docked.has(member.id);
+          // The divider: at the end of every panel but the last, or, in a page that scrolls as a
+          // document, at the start of the docked one.
+          const panel = {
+            ...member,
+            stack: undefined,
+            resizable: document ? docked : at >= 0 && at < last,
+          };
+          return (
+            <PanelHost
+              key={member.id}
+              panel={panel}
+              registerReorder={NO_REORDER}
+              transition={transition}
+              resizeHandle={resizeHandle}
+              cssScope={null}
+              cssFraming
+              visibilityReady
+              index={index}
+              getSize={() => previews.current.get(member.id)?.read() ?? heights[member.id] ?? 0}
+              modelSize={() => heights[member.id] ?? member.height ?? 0}
+              vertical
+              naturalHeight={false}
+              // Mounted as soon as it is shown; its cell opens a frame later (`ready`).
+              track={{
+                ...CSS_TRACK,
+                id: member.id,
+                visible: isShown(member) && !floating,
+                floating,
+              }}
+              viewportFrame={viewportFrame}
+              dock={cells.dockRoom !== null && !docked}
+              docked={docked}
+              cell={
+                IS_WEB && !reduced
+                  ? ({ ...cells.style(member.id), transition: STACK_CELL_TRANSITION } as ViewStyle)
+                  : cells.style(member.id)
+              }
+              alone={cells.shown.length === 1}
+              document={document}
+              joined={joined}
+              gap={gap}
+              hasNext={at >= 0 && at < last}
+              windowChrome={null}
+              resized={false}
+              onResizeStart={() => {}}
+              onResize={(value) =>
+                setHeights((held) => ({ ...held, [member.id]: bounds(member, value) }))
+              }
+              onResizeEnd={() => {}}
+              onNudge={(delta) =>
+                setHeights((held) => ({
+                  ...held,
+                  [member.id]: bounds(
+                    member,
+                    (previews.current.get(member.id)?.read() ?? held[member.id] ?? 0) + delta,
+                  ),
+                }))
+              }
+              registerResizePreview={(preview) => {
+                previews.current.set(member.id, preview);
+                return () => {
+                  if (previews.current.get(member.id) === preview)
+                    previews.current.delete(member.id);
+                };
+              }}
+              testID={member.testID ?? (testID ? `${testID}-${member.id}` : undefined)}
+            />
+          );
+        })}
+      </View>
+    );
+  }
   function PanelLayoutTracks({
     layout: declared,
     surfaceOwned = false,
@@ -962,12 +1227,15 @@ export function createPanelLayoutView(
     eligibilityFromGroup = false,
     fillWidth = false,
     gap,
+    stackGap = gap,
     testID,
   }: PanelLayoutViewProps & { surfaceOwned?: boolean }) {
     const layoutReady = useShellLayoutReady();
     const [ownSpans, setOwnSpans] = useState<Readonly<Record<string, number>>>({});
     const spans = declared.spans ?? ownSpans;
-    const layout = useMemo(() => applyPanelSpans(declared, spans), [declared, spans]);
+    // One panel per slot: panels that share a `stack` are laid out as one track.
+    const slots = useMemo(() => groupPanelStacks(declared), [declared]);
+    const layout = useMemo(() => applyPanelSpans(slots.layout, spans), [slots.layout, spans]);
     const region = useAppShellRegion();
     const restoration = useOptionalScrollRestorationContext();
     const ancestorHost = useContext(ScreenHostContext);
@@ -1022,6 +1290,7 @@ export function createPanelLayoutView(
     const actualGap = layout.gap ?? (joined ? 1 : gap);
     const document = layout.flow === 'document' && layout.mode !== 'deck' && Platform.OS === 'web';
     const deck = layout.mode === 'deck';
+    const viewportFrame = document && !vertical;
     const documentHorizontal =
       !!cssScope && deck && !vertical && layout.horizontalScroll !== 'contained';
     const reducedMotion = usePrefersReducedMotion();
@@ -1346,6 +1615,24 @@ export function createPanelLayoutView(
               dimensions[panel.id] === undefined
             }
             track={trackById.get(panel.id) ?? { ...CSS_TRACK, id: panel.id, visible: false }}
+            viewportFrame={viewportFrame}
+            dock={false}
+            docked={false}
+            slot={
+              slots.members.has(panel.id) ? (
+                <PanelStack
+                  members={slots.members.get(panel.id)!}
+                  shellWidth={shellWidth}
+                  document={document}
+                  viewportFrame={viewportFrame}
+                  gap={stackGap}
+                  joined={joined}
+                  transition={layout.transition}
+                  resizeHandle={layout.resizeHandle}
+                  testID={panel.testID ?? (testID ? `${testID}-${panel.id}-stack` : undefined)}
+                />
+              ) : undefined
+            }
             alone={visible.length === 1}
             document={document}
             joined={joined}

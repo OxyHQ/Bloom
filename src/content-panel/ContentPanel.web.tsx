@@ -368,27 +368,40 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   // type is shared with native where `calc()` does not exist. This file is
   // web-only, where it is a real value react-native-web passes straight
   // through.
+  // An inset is a number of points, or a CSS length (`calc(8px + var(--dock))`) when the room it
+  // leaves depends on something the stylesheet knows and the component does not.
   const insetTop =
     typeof overlayInset === 'number' ? overlayInset : (overlayInset?.top ?? PANEL_TOP_INSET);
   const insetBottom =
     typeof overlayInset === 'number' ? overlayInset : (overlayInset?.bottom ?? PANEL_BOTTOM_INSET);
+  const length = (inset: number | string) => (typeof inset === 'number' ? `${inset}px` : inset);
   const customInset = insetTop !== PANEL_TOP_INSET || insetBottom !== PANEL_BOTTOM_INSET;
+  // Both in points: one number of points, as it always was. A CSS length: the stylesheet adds them.
+  const insets =
+    typeof insetTop === 'number' && typeof insetBottom === 'number'
+      ? `${insetTop + insetBottom}px`
+      : `(${length(insetTop)} + ${length(insetBottom)})`;
   const insetStyle =
     !boundToPanel && customInset
       ? ({
           top: insetTop,
-          height: `calc(100dvh - ${insetTop + insetBottom}px)`,
-          marginBottom: `calc(-100dvh + ${insetTop + insetBottom}px)`,
+          height: `calc(100dvh - ${insets})`,
+          marginBottom: `calc(-100dvh + ${insets})`,
         } as unknown as ViewStyle)
       : undefined;
 
   const insetVars: WebCssStyle = {
-    '--bloom-panel-inset-top': `${insetTop}px`,
-    '--bloom-panel-inset-bottom': `${insetBottom}px`,
+    '--bloom-panel-inset-top': length(insetTop),
+    '--bloom-panel-inset-bottom': length(insetBottom),
   };
+  // The mask can only be as wide as a number says; a length that is not a number adds none.
   const maskSpread = boundToPanel
     ? GUTTER_MASK_SPREAD
-    : Math.max(GUTTER_MASK_SPREAD, insetTop, insetBottom);
+    : Math.max(
+        GUTTER_MASK_SPREAD,
+        typeof insetTop === 'number' ? insetTop : 0,
+        typeof insetBottom === 'number' ? insetBottom : 0,
+      );
 
   return (
     <ContentPanelNestingContext.Provider value={true}>

@@ -163,3 +163,26 @@ describe('vertical and responsive panel tracks', () => {
     ]);
   });
 });
+
+describe('stacked panels in the layout geometry', () => {
+  const stacked: AppShellPanelLayout = {
+    gap: 0,
+    panels: [
+      { id: 'main', stack: 'column', width: 620 },
+      { id: 'pane', stack: 'column', height: 380 },
+      { id: 'context', width: 350, hideBelow: 990 },
+    ],
+  };
+
+  it('counts a stack as one track in the envelope, as the panel beside it would be', () => {
+    expect(panelEnvelope(stacked, 1200, 0)).toBe(970);
+    expect(panelEnvelope(feed, 1200, 0)).toBe(970);
+  });
+
+  it('lays out one track per slot', () => {
+    expect(resolvePanelTracks(stacked, 970, 1200, 0).map((track) => track.id)).toEqual([
+      'main',
+      'context',
+    ]);
+  });
+});

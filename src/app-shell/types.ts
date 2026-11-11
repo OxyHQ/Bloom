@@ -585,6 +585,11 @@ export interface AppShellPanelProps {
     onOpenChange: (open: boolean) => void;
     label: string;
     width?: number;
+    /**
+     * How the compact surface presents: `end`, the default, a panel from the inline end;
+     * `bottom`, a bottom sheet. A panel stacked under another (`stack`) wants `bottom`.
+     */
+    placement?: 'end' | 'bottom';
   };
   /** `ContentPanel`'s: `plain` keeps layout and clipping without painting a surface. */
   appearance?: ContentPanelProps['appearance'];

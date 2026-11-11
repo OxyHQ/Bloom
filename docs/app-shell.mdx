@@ -1316,6 +1316,62 @@ the server does not know the viewport. Keep that hook for client behavior.
 The `verify-css-panel-layout.mjs` browser gate pauses application JavaScript and
 verifies that width changes still update panel geometry and framing.
 
+### Stacked panels
+
+The layout is a grid of panels: panels beside each other are the tracks of a row, and panels
+that share a `stack` id are stacked in one slot of that row, one under another, in their array
+order. Every panel is the same `PanelHost`: the same surface, scroll and header, a sibling of the
+others, never nested in a surface.
+
+```tsx
+panelLayout={{
+  panels: [
+    { id: 'main', stack: 'main:stack', width: 620, content: <Post /> },
+    {
+      id: 'likes',
+      stack: 'main:stack',
+      visible: open,          // stays in the layout while closed
+      sticky: true,
+      height: 380,
+      minHeight: 220,
+      floating: { below: 'md', open, onOpenChange, label: 'Likes', placement: 'bottom' },
+      content: <LikesScreen />,
+    },
+    { id: 'context', width: 350, content: <RightBar /> },
+  ],
+}}
+```
+
+A stack is one track to everything that reads the layout (the shell's envelope, the tracks, the
+CSS), so it takes the room of its first panel. Keep a panel that opens and closes in the layout
+with `visible: false`: adding and removing it would change a stack of one into a stack of two and
+remount the panel above it.
+
+**How a stack divides the room depends on how its page scrolls**, as a column does:
+
+- **Bounded** (a deck column, a layout with a height): the column's height is divided between its
+  panels, like a row's width is between its columns, and a divider (`ResizeHandle`) sits between
+  them. Each panel scrolls on its own.
+- **Document** (the window scrolls): there is no height to divide. The first panel keeps the
+  document's scroll, and a panel with `sticky` is **docked** at the window's bottom edge: the
+  divider is its top edge, and dragging up grows it. Its height is a CSS length that follows the
+  window, `clamp(minHeight, 45dvh, maxHeight)`, unless it declares a `height` or was dragged. The
+  panels above end over it, with the layout's gutter between: the column declares the room the
+  docked panels take once, as the CSS variable `--bloom-dock`, and the stylesheet adds it to the
+  reserve under the content and to the bottom inset of the frames above (`ContentPanel
+  overlayInset` takes a CSS length). Nothing is measured or summed in JavaScript.
+
+**A panel that opens and closes is a transition**, not an element that appears: a closed panel is
+in its column with no height and no opacity, and opening it changes the size of the same element
+(`flex-grow`, `height`, `min-height` and `opacity`, the time and curve of every panel of the
+layout). `--bloom-dock` is a registered property (`@property`), so the frames above move with the
+panel, in step. A panel that opens is mounted first, with its cell still closed, and opened a frame
+later: mounting its content blocks the page for longer than the transition lasts. With reduced
+motion there is no transition.
+
+`floating.placement: 'bottom'` presents the panel as a bottom sheet below `floating.below`; the
+default `end` is a panel from the inline end.
+
 ### Deck edge action
 
 `panelLayout.trailingAction` accepts the application's action (for example, an

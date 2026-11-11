@@ -158,5 +158,5 @@ export interface ContentPanelProps {
    * panel visually starts without moving its DOM position, so the frame has to
    * start lower without also ending higher.
    */
-  overlayInset?: number | { top: number; bottom: number };
+  overlayInset?: number | { top: number | string; bottom: number | string };
 }

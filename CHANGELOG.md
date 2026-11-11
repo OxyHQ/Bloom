@@ -1,5 +1,19 @@
 # Changelog
 
+## 19.4.0
+
+### Added
+
+- **Stacked panels: panels that share a `stack` id are one slot of the layout, one under another.** The compositor lays out one track per slot (the shell's envelope, the tracks and the CSS read slots), and each panel in a slot is a full `PanelHost`, a sibling of the others. In a bounded column (a deck column) the flex of the column divides the height between them, with a divider; in a page that scrolls as a document a panel with `sticky` is docked at the window's bottom edge, `clamp(minHeight, 45dvh, maxHeight)` tall, its top edge the divider, and the panels above end over it, with the gutter between, through the registered CSS property `--bloom-dock`. Opening and closing is a CSS transition, and nothing is measured or summed in JavaScript. See [Stacked panels](/docs/app-shell#stacked-panels).
+- **`floating.placement` (`'end' | 'bottom'`) on a panel.** The compact presentation can be a bottom sheet, not only a panel from the inline end.
+- **`ContentPanel overlayInset` takes a CSS length** (`calc(8px + var(--bloom-dock))`) for an edge, where the room depends on something the stylesheet knows.
+- **`Sidebar` `arrangement`: where the logo and the primary action sit.** `{ logo: 'top' | 'group', primaryAction: 'bottom' | 'group' }`. Everything `group` is centred with the destinations as one block above the persistent footer; the controls stay pinned at the top and the footer at the bottom.
+- **`Responsive<T>` and `resolveResponsive` / `responsiveThresholds` (`styles/responsive`).** One resolver for a value that changes by breakpoint tier; the panel layout's `axis` and its compiled thresholds read it instead of four copies of the same loop.
+
+### Fixed
+
+- **`Sidebar contentAlignment="center"` does what its documentation says.** It centred only the destinations and left the logo at the top and the primary action in the footer; it now centres the logo, the destinations and the primary action as a group above the footer, in the panel.
+
 ## 19.3.1
 
 ### Fixed

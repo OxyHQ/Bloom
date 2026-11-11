@@ -186,6 +186,21 @@ describe('ContentPanel.web overlayInset', () => {
     expect(resolvedStyle(findHost(tree, 'content-panel-border-frame')?.props.style).top).toBe(16);
   });
 
+  it('takes a CSS length for an edge, so the stylesheet adds what the component cannot know', () => {
+    const { toJSON } = renderPanel(
+      <ContentPanel framed overlayInset={{ top: 8, bottom: 'calc(8px + var(--bloom-dock))' }}>
+        <Text>content</Text>
+      </ContentPanel>,
+    );
+    const tree = toJSON();
+    const mask = resolvedStyle(findHost(tree, 'content-panel-bleed-mask')?.props.style);
+    expect(mask.top).toBe(8);
+    expect(mask.height).toBe('calc(100dvh - (8px + calc(8px + var(--bloom-dock))))');
+    expect(mask.marginBottom).toBe('calc(-100dvh + (8px + calc(8px + var(--bloom-dock))))');
+    // A length is not a number of points: it widens no halo.
+    expect(mask.boxShadow).toContain('0 0 0 40px');
+  });
+
   it('takes a PAIR when chrome above the panel shifts where it visually starts', () => {
     const { toJSON } = renderPanel(
       <ContentPanel framed overlayInset={{ top: 72, bottom: 8 }}>
