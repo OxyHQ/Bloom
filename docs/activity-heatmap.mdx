@@ -35,6 +35,13 @@ import { ActivityHeatmap } from '@oxy.so/bloom/activity-heatmap';
 | `monthLabels` / `weekdayLabels` | the axis text, for localisation                |
 | `onPressDay`               | makes a cell pressable                              |
 
+## Touch-target limitation
+
+`cellSize` also sets the pressable cell's hit box. The default is 12px, so
+interactive cells are smaller than standalone touch targets. The grid does not
+expand them with overlapping hit regions; no touch-safe interaction model is
+currently provided for `onPressDay` on dense grids.
+
 ## `levels` is the prop to think about
 
 The default buckets suit a roughly uniform distribution. Real activity data is
