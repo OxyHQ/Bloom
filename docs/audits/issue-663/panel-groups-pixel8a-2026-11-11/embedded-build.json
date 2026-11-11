@@ -1,0 +1,14 @@
+{
+  "sourceRoot": "/home/nate/Oxy/Bloom/.worktrees/panel-groups-split-flow",
+  "identity": "0f3ea7b104f1cbc31ed11498718f466e788cd8b0546842f399f682dd0635fe13",
+  "files": {
+    "src/app-shell/AppShellPanelLayout.tsx": "7376f4b4009d9ef763b2c0aa1563a23eeb0a0b508c0a61252e09e12eb9a1c6cd",
+    "src/app-shell/panel-layout.ts": "96b6563017a1393a09add1f64773b287103435f0f56c39ac85b8d1d528bb3123",
+    "src/app-shell/panel-layout-types.ts": "40fc50a5b342ae522b9bf206eb09c6b7c916490f9ce3d1a7249324f370d6a197",
+    "src/app-shell/panel-motion.ts": "e315a0e4c82f0886c69fe0baa53d15dc15575829f19c3a3d4e8e7c0937bd763c",
+    "src/app-shell/use-panel-exit-completion.ts": "33363d00e6a63c4e17e9809805603c3b441c0bf86823f2bfc53c14e1227b4583",
+    "src/dialog/Dialog.tsx": "25a6b4a9edd8270a51eb68c54c72ef6a54c52a5ad0bebeb76a2c2030a194fdf3",
+    "src/dialog/Dialog.web.tsx": "4ea0ca768913df5c60bc1cd9039029a5e951048b27cddaf668c607afeb578e88",
+    "src/bottom-sheet/BottomSheetBase.tsx": "ed9a3c28d6949829b2b6486aac15b49d859bd90de8e2a0a2b196ec9fe9ba254e"
+  }
+}

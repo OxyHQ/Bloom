@@ -1,0 +1,81 @@
+{
+  "nestedHeaderOwnsNoDuplicateInset": true,
+  "split": {
+    "native-post-panel": [
+      0,
+      268,
+      1080,
+      1324
+    ],
+    "native-likes-panel": [
+      0,
+      1345,
+      1080,
+      2400
+    ]
+  },
+  "nativeResizeMinimums": true,
+  "independentNativeScroll": true,
+  "closeRetainsReadingPosition": true,
+  "inlineExitCompletion": true,
+  "floatingHeaderOwnsNoDuplicateInset": true,
+  "sheetBounds": [
+    0,
+    240,
+    1080,
+    2400
+  ],
+  "sheetMaxHeightRatio": 0.9,
+  "nativeSheetAndBackDismiss": true,
+  "sheetExitCompletion": true,
+  "flowInitial": [
+    "Email 1",
+    "Email paragraph 1",
+    "Email paragraph 2",
+    "Email paragraph 3",
+    "Email paragraph 4",
+    "Email paragraph 5",
+    "Email paragraph 6",
+    "Email paragraph 7",
+    "Email paragraph 8",
+    "Email 2",
+    "Email paragraph 1",
+    "Email paragraph 2",
+    "Email paragraph 3",
+    "Email paragraph 4",
+    "Email paragraph 5",
+    "Email paragraph 6",
+    "Email paragraph 7",
+    "Email paragraph 8",
+    "Email 3"
+  ],
+  "flowScrolled": [
+    "Email paragraph 5",
+    "Email paragraph 6",
+    "Email paragraph 7",
+    "Email paragraph 8",
+    "Email 2",
+    "Email paragraph 1",
+    "Email paragraph 2",
+    "Email paragraph 3",
+    "Email paragraph 4",
+    "Email paragraph 5",
+    "Email paragraph 6",
+    "Email paragraph 7",
+    "Email paragraph 8",
+    "Email 3",
+    "Email paragraph 1",
+    "Email paragraph 2",
+    "Email paragraph 3",
+    "Email paragraph 4",
+    "Email paragraph 5",
+    "Email paragraph 6",
+    "Email paragraph 7",
+    "Email paragraph 8"
+  ],
+  "nativeFlowAddsScrollContent": true,
+  "nativeContentResizeCap": {
+    "initial": 1055,
+    "capped": 741
+  }
+}

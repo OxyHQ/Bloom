@@ -1,0 +1,132 @@
+{
+  "capturedAtUtc": "2026-11-11T13:35:24.413642+00:00",
+  "device": {
+    "model": "Pixel 8a",
+    "androidRelease": "16",
+    "apiLevel": "36",
+    "physicalSize": "Physical size: 1080x2400",
+    "density": "Physical density: 420",
+    "adbTransport": "Windows ADB server forwarded to WSL; USB device"
+  },
+  "fixture": {
+    "applicationId": "so.oxy.bloom.panelgroupslab",
+    "apkType": "release",
+    "apkSha256": "5a21fad9d69462756e0cf54647722622766b0240d587f470920b3cf4c3985692",
+    "bloomSourceIdentity": "0f3ea7b104f1cbc31ed11498718f466e788cd8b0546842f399f682dd0635fe13",
+    "bloomSourceFiles": {
+      "src/app-shell/AppShellPanelLayout.tsx": "7376f4b4009d9ef763b2c0aa1563a23eeb0a0b508c0a61252e09e12eb9a1c6cd",
+      "src/app-shell/panel-layout.ts": "96b6563017a1393a09add1f64773b287103435f0f56c39ac85b8d1d528bb3123",
+      "src/app-shell/panel-layout-types.ts": "40fc50a5b342ae522b9bf206eb09c6b7c916490f9ce3d1a7249324f370d6a197",
+      "src/app-shell/panel-motion.ts": "e315a0e4c82f0886c69fe0baa53d15dc15575829f19c3a3d4e8e7c0937bd763c",
+      "src/app-shell/use-panel-exit-completion.ts": "33363d00e6a63c4e17e9809805603c3b441c0bf86823f2bfc53c14e1227b4583",
+      "src/dialog/Dialog.tsx": "25a6b4a9edd8270a51eb68c54c72ef6a54c52a5ad0bebeb76a2c2030a194fdf3",
+      "src/dialog/Dialog.web.tsx": "4ea0ca768913df5c60bc1cd9039029a5e951048b27cddaf668c607afeb578e88",
+      "src/bottom-sheet/BottomSheetBase.tsx": "ed9a3c28d6949829b2b6486aac15b49d859bd90de8e2a0a2b196ec9fe9ba254e"
+    },
+    "bloomSourceRoot": "/home/nate/Oxy/Bloom/.worktrees/panel-groups-split-flow",
+    "fixtureLockfileVersions": {
+      "@oxy.so/bloom": "17.22.0",
+      "expo": "58.0.23",
+      "react": "19.3.0",
+      "react-native": "0.88.1",
+      "react-native-svg": "15.16.0",
+      "expo-blur": "58.0.5"
+    },
+    "boundary": "JS/TS Bloom sources are bundled from this worktree. Native Bloom module is the exact lockfile version shown above; this is not a published-package adoption test.",
+    "requestedAndroidPermissions": [
+      "android.permission.SYSTEM_ALERT_WINDOW",
+      "so.oxy.bloom.panelgroupslab.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+      "android.permission.VIBRATE"
+    ],
+    "networkPermissionsAbsent": true,
+    "installedApkSha256": "5a21fad9d69462756e0cf54647722622766b0240d587f470920b3cf4c3985692",
+    "installedApkMatchesBuildArtifact": true
+  },
+  "test": {
+    "script": "scripts/panel-groups-native/verify.py",
+    "sourceCommit": "1e1099d22623d91d12f37b64f02306e215a82665",
+    "inputMethod": "adb shell input taps and swipes with UIAutomator bounds, followed by screenshot and hierarchy capture",
+    "report": {
+      "nestedHeaderOwnsNoDuplicateInset": true,
+      "split": {
+        "native-post-panel": [
+          0,
+          268,
+          1080,
+          1324
+        ],
+        "native-likes-panel": [
+          0,
+          1345,
+          1080,
+          2400
+        ]
+      },
+      "nativeResizeMinimums": true,
+      "independentNativeScroll": true,
+      "closeRetainsReadingPosition": true,
+      "inlineExitCompletion": true,
+      "floatingHeaderOwnsNoDuplicateInset": true,
+      "sheetBounds": [
+        0,
+        240,
+        1080,
+        2400
+      ],
+      "sheetMaxHeightRatio": 0.9,
+      "nativeSheetAndBackDismiss": true,
+      "sheetExitCompletion": true,
+      "flowInitial": [
+        "Email 1",
+        "Email paragraph 1",
+        "Email paragraph 2",
+        "Email paragraph 3",
+        "Email paragraph 4",
+        "Email paragraph 5",
+        "Email paragraph 6",
+        "Email paragraph 7",
+        "Email paragraph 8",
+        "Email 2",
+        "Email paragraph 1",
+        "Email paragraph 2",
+        "Email paragraph 3",
+        "Email paragraph 4",
+        "Email paragraph 5",
+        "Email paragraph 6",
+        "Email paragraph 7",
+        "Email paragraph 8",
+        "Email 3"
+      ],
+      "flowScrolled": [
+        "Email paragraph 5",
+        "Email paragraph 6",
+        "Email paragraph 7",
+        "Email paragraph 8",
+        "Email 2",
+        "Email paragraph 1",
+        "Email paragraph 2",
+        "Email paragraph 3",
+        "Email paragraph 4",
+        "Email paragraph 5",
+        "Email paragraph 6",
+        "Email paragraph 7",
+        "Email paragraph 8",
+        "Email 3",
+        "Email paragraph 1",
+        "Email paragraph 2",
+        "Email paragraph 3",
+        "Email paragraph 4",
+        "Email paragraph 5",
+        "Email paragraph 6",
+        "Email paragraph 7",
+        "Email paragraph 8"
+      ],
+      "nativeFlowAddsScrollContent": true,
+      "nativeContentResizeCap": {
+        "initial": 1055,
+        "capped": 741
+      }
+    },
+    "result": "passed"
+  }
+}
