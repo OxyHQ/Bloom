@@ -1023,8 +1023,6 @@
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/agent-avatar/AgentAvatar.tsx#AgentAvatar",
-      "src/agent-avatar/AgentAvatarProvider.tsx#AgentAvatarProvider",
       "src/agent-chat/AgentChat.tsx#AgentChat",
       "src/agent-chat/AgentChat.tsx#AgentChatActions",
       "src/agent-chat/AgentChat.tsx#AgentChatComposer",
@@ -1980,6 +1978,30 @@
     ],
     "verification": "Native renderer and DOM web verify default md (36px), inherited sm (32px), explicit md over inherited sm, nested lg (44px), and inherited/explicit geometry through Canvas, CanvasBackground, CanvasPanel, and actual Portal. Direct size tables verify xs/sm/md/lg geometry and touch accommodation; device-rendered fit and accessibility remain separate",
     "parts": ["src/button/Button.tsx#Button"]
+  },
+  "agent-avatar-size": {
+    "status": "independent-scale",
+    "reason": "AgentAvatar's numeric size describes character artwork geometry, not a control-size rung. Its authored 64px default and caller-selected numeric diameter must remain intact under BloomScope; no touch or control recipe is inferred from the illustration size.",
+    "evidence": [
+      "src/agent-avatar/types.ts",
+      "src/agent-avatar/VectorCharacterAvatar.tsx",
+      "src/agent-avatar/VectorStaticPortrait.tsx",
+      "docs/agent-avatar.mdx",
+      "src/__tests__/AgentAvatarPublicPartScope.test.tsx",
+      "src/__tests__/AgentAvatarPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web measure default 64px and explicit 48px character artwork unchanged under xs and lg BloomScope. Device-rendered proportions and surrounding layout remain unverified.",
+    "parts": ["src/agent-avatar/AgentAvatar.tsx#AgentAvatar"]
+  },
+  "agent-avatar-provider": {
+    "status": "does-not-apply",
+    "reason": "AgentAvatarProvider publishes vector catalog and runtime capability contexts and renders no visual node or control geometry. BloomScope has no size contract to apply to this provider-only export.",
+    "evidence": [
+      "src/agent-avatar/AgentAvatarProvider.tsx",
+      "src/agent-avatar/__tests__/AgentAvatarProvider.test.tsx"
+    ],
+    "verification": "Source and the provider context suite confirm the export only wraps children in capability/catalog contexts; it paints no UI, exposes no size prop and owns no portal.",
+    "parts": ["src/agent-avatar/AgentAvatarProvider.tsx#AgentAvatarProvider"]
   },
   "activity-feed-parts": {
     "status": "delegated",
