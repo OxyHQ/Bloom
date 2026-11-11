@@ -135,9 +135,14 @@ ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
       const max = vertical ? p.maxHeight : p.maxWidth;
       const natural = vertical && (document || layout.mode === 'flow');
       const soleSplit = !deck && !natural && shown.length === 1;
+      // A percentage basis resolves to intrinsic content in an indefinite
+      // document column, and to its viewport in a bounded column. Keeping this
+      // basis across owner changes avoids an auto -> length interpolation that
+      // briefly collapses the persistent pane to its minimum.
+      const soleDocument = document && vertical && shown.length === 1 && dim === undefined;
       const basis =
-        forced || soleSplit
-          ? natural
+        forced || soleSplit || soleDocument
+          ? natural && !soleDocument
             ? 'auto'
             : '100%'
           : dim !== undefined
@@ -148,7 +153,7 @@ ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
                 ? `${DEFAULT_PANEL_WIDTH}px`
                 : '0px';
       const grow =
-        forced || soleSplit
+        forced || soleSplit || soleDocument
           ? 1
           : natural
             ? 0
@@ -160,11 +165,6 @@ ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
                   ? 0
                   : (p.span ?? 1);
       rules += `${item(index)}{--bloom-panel-alone-display:${shown.length === 1 ? 'flex' : 'none'};--bloom-panel-multiple-display:${shown.length === 1 ? 'none' : 'flex'};--bloom-panel-visible:1;--bloom-surface-presence:1;--bloom-panel-fade-delay:${ordered ? 530 : 0}ms;scale:1;display:flex!important;flex:var(${panelGrowProperty(scope, index)}, ${grow}) ${deck || natural ? 0 : 1} ${liveSize(index, basis)}!important;width:${vertical ? '100%' : pageDeck ? (forced ? 'calc(var(--bloom-deck-viewport) - var(--bloom-frame-end))' : liveSize(index, `${dim ?? DEFAULT_PANEL_WIDTH}px`)) : dim !== undefined && !forced ? `${dim}px` : 'auto'}!important;height:auto!important;min-width:${vertical || forced ? 0 : (min ?? 0)}px!important;max-width:${vertical || forced ? '100%' : max === undefined ? (deck ? 'none' : '100%') : `${max}px`}!important;min-height:${vertical && !forced ? (min ?? 0) : 0}px!important;max-height:${vertical && !forced && max !== undefined ? `${max}px` : 'none'}!important;opacity:1!important;margin-inline-start:${!vertical && position > 0 ? gap : 0}px!important;margin-top:${vertical && position > 0 ? gap : 0}px!important}\n`;
-      // Intrinsic document content must exist at the owner handoff's first
-      // layout. Interpolating 0px -> auto temporarily collapses the document,
-      // clamps its transferred offset to zero, and flashes the first paragraph.
-      if (natural)
-        rules += `${item(index)}{interpolate-size:numeric-only;transition-property:width,min-width,max-width,margin-inline-start,margin-top,opacity,scale,display}\n`;
       const entering = item(index).replace(
         group,
         `${group}[data-bloom-panel-ready]:not([data-bloom-panel-ordering])`,

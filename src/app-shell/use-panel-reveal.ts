@@ -1,4 +1,5 @@
 import { useEffect, useRef, type RefObject } from 'react';
+import { panelGeometryTransitions } from './panel-transitions';
 import type { PanelRevealRequest, AppShellPanelDefinition } from './panel-layout-types';
 import type { ResolvedPanelTrack } from './panel-layout';
 
@@ -45,13 +46,7 @@ export function usePanelReveal({
         root.querySelectorAll<HTMLElement>(`[data-bloom-panel-owner="${scope}"]`),
       );
       if (envelope) owners.push(envelope);
-      const transitions = owners.flatMap((owner) =>
-        (owner.getAnimations?.() ?? []).filter(
-          (animation) =>
-            'transitionProperty' in animation &&
-            (animation.pending || animation.playState === 'running'),
-        ),
-      );
+      const transitions = panelGeometryTransitions(owners);
       if (transitions.length) {
         void Promise.allSettled(transitions.map((animation) => animation.finished)).then(
           revealWhenSettled,

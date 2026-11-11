@@ -47,6 +47,7 @@ import type { ScreenProps } from '../screen/types';
 import { ResizeHandle } from '../layout/ResizeHandle';
 import { PanelErrorBoundary } from '../error-boundary/PanelErrorBoundary';
 import { PANEL_EXIT_MS, PANEL_LAYOUT_MS, animatePanelFlex } from './panel-motion';
+import { panelGeometryTransitions } from './panel-transitions';
 import { UNSET } from '../styles/animated-style';
 import { useMeasuredSizeClass, useWindowSizeWhile } from '../hooks/use-width-class';
 import { IS_WEB } from '../styles/platform';
@@ -98,6 +99,9 @@ import { PanelDropProvider, PanelDropZones, usePanelDropCoordinator } from './Pa
 import { RetainedPanelLayout } from './RetainedPanelLayout';
 
 const PanelWindowInsetsContext = React.createContext<EdgeInsets | null>(null);
+// The document is one scroll owner. Transparent groups delegate its restoration
+// down the primary branch instead of each layout restoring the same window.
+const PanelDocumentRestorationContext = React.createContext(true);
 
 /** A track the CSS compositor sizes: its flex values are the stylesheet's, never read. */
 const CSS_TRACK: Omit<PanelFlexTrack, 'id' | 'visible'> = {
@@ -332,6 +336,7 @@ export function createPanelLayoutView(
     track,
     alone,
     document: documentFlow,
+    documentRestorationOwner,
     joined,
     gap,
     onResize,
@@ -363,6 +368,7 @@ export function createPanelLayoutView(
     track: PanelFlexTrack;
     alone: boolean;
     document: boolean;
+    documentRestorationOwner: boolean;
     joined: boolean;
     gap: number;
     onResize: (width: number) => void;
@@ -983,18 +989,20 @@ export function createPanelLayoutView(
     };
     if (panel.group)
       return renderPanel(
-        <NestedPanelGroup
-          layout={panel.group}
-          groupActions={
-            <>
-              {reorderHandle}
-              {panel.headerActions}
-            </>
-          }
-          shellWidth={shellWidth}
-          gap={gap}
-          testID={testID ? `${testID}-group` : undefined}
-        />,
+        <PanelDocumentRestorationContext.Provider value={documentRestorationOwner && active}>
+          <NestedPanelGroup
+            layout={panel.group}
+            groupActions={
+              <>
+                {reorderHandle}
+                {panel.headerActions}
+              </>
+            }
+            shellWidth={shellWidth}
+            gap={gap}
+            testID={testID ? `${testID}-group` : undefined}
+          />
+        </PanelDocumentRestorationContext.Provider>,
       );
     // Navigation and restoration belong to the persistent descriptor, above
     // the inline/portal presentation boundary. Closing or docking a surface
@@ -1047,8 +1055,9 @@ export function createPanelLayoutView(
     const [documentReady, setDocumentReady] = useState(wantsDocument);
     const document = wantsDocument && documentReady;
     // Keep the same bounded owner while the outgoing track closes and the
-    // survivor expands. Transfer to document scrolling only when those actual
-    // CSS transitions finish: no timeout or JavaScript geometry calculation.
+    // survivor expands, including ancestor width changes when leaving Deck.
+    // Transfer to document scrolling only when those actual CSS transitions
+    // finish: no timeout or JavaScript geometry calculation.
     useLayoutEffect(() => {
       if (!wantsDocument) {
         setDocumentReady(false);
@@ -1056,28 +1065,33 @@ export function createPanelLayoutView(
       }
       if (documentReady) return;
       const node = groupRef.current as unknown as HTMLElement | null;
-      const animations = reducedMotion
-        ? []
-        : (node?.getAnimations?.({ subtree: true }) ?? []).filter((animation) => {
-            const target = (animation.effect as KeyframeEffect | null)?.target;
-            return (
-              typeof CSSTransition !== 'undefined' &&
-              animation instanceof CSSTransition &&
-              target instanceof HTMLElement &&
-              target.dataset.bloomPanelOwner === scope &&
-              /^(width|height|flex-basis|flex-grow|min-width|min-height|max-width|max-height|margin-inline-start|margin-top|display)$/.test(
-                animation.transitionProperty,
-              )
-            );
-          });
-      if (!animations.length) {
-        setDocumentReady(true);
-        return;
+      const ancestors = new Set<HTMLElement>();
+      for (let ancestor = node?.parentElement; ancestor; ancestor = ancestor.parentElement) {
+        if (
+          ancestor.dataset.bloomPanelOwner ||
+          ancestor.dataset.bloomReadingEnvelope ||
+          ancestor.dataset.bloomShellFrame
+        )
+          ancestors.add(ancestor);
       }
       let cancelled = false;
-      Promise.allSettled(animations.map((animation) => animation.finished)).then(() => {
-        if (!cancelled) setDocumentReady(true);
-      });
+      const finishWhenSettled = () => {
+        if (cancelled) return;
+        const owners = node?.querySelectorAll<HTMLElement>(`[data-bloom-panel-owner="${scope}"]`);
+        const animations = reducedMotion
+          ? []
+          : panelGeometryTransitions([...(owners ?? []), ...ancestors]);
+        if (!animations.length) {
+          setDocumentReady(true);
+          return;
+        }
+        // A resize can replace an in-flight transition without changing the
+        // requested owner. Recheck its replacement before committing the handoff.
+        void Promise.allSettled(animations.map((animation) => animation.finished)).then(
+          finishWhenSettled,
+        );
+      };
+      finishWhenSettled();
       return () => {
         cancelled = true;
       };
@@ -1171,6 +1185,7 @@ export function createPanelLayoutView(
     const layout = useMemo(() => applyPanelSpans(declared, spans), [declared, spans]);
     const region = useAppShellRegion();
     const restoration = useOptionalScrollRestorationContext();
+    const canRestoreDocument = useContext(PanelDocumentRestorationContext);
     const ancestorHost = useContext(ScreenHostContext);
     const parentScreen = useContext(ScreenContext);
     const fallbackInsets = useSafeAreaInsets();
@@ -1370,6 +1385,16 @@ export function createPanelLayoutView(
       return () => observer?.disconnect();
     }, [cssScope, responsiveScope, cssRules, layout.panels]);
     const visible = tracks.filter((track) => track.visible);
+    // Selection can survive Deck exit on a secondary column. Only actual
+    // inline order (already resolved for expansion/compact mode) owns the page.
+    const primaryId = visible[0]?.id;
+    const primaryPanel = layout.panels.find((panel) => panel.id === primaryId);
+    const ownsDocumentRestoration =
+      canRestoreDocument &&
+      ancestorHost.active !== false &&
+      parentScreen?.active !== false &&
+      primaryPanel !== undefined &&
+      !primaryPanel.group;
     const handedWindowChrome = useWindowChrome();
     const platformWindow = usePlatformWindow();
     // A web page deck scrolls the document from the shell's own start edge (the
@@ -1557,6 +1582,7 @@ export function createPanelLayoutView(
             track={trackById.get(panel.id) ?? { ...CSS_TRACK, id: panel.id, visible: false }}
             alone={visible.length === 1}
             document={document}
+            documentRestorationOwner={canRestoreDocument && panel.id === primaryId}
             joined={joined}
             gap={actualGap}
             hasNext={visible[visible.length - 1]?.id !== panel.id}
@@ -1631,7 +1657,7 @@ export function createPanelLayoutView(
               ]}
             >
               {Platform.OS === 'web' && restoration && !ancestorHost.restoresDocument ? (
-                <DocumentRestoration enabled={document} />
+                <DocumentRestoration enabled={document && ownsDocumentRestoration} />
               ) : null}
               {joined && !surfaceOwned ? (
                 <ContentPanel

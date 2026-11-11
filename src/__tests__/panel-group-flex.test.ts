@@ -124,17 +124,16 @@ it('keeps reading-envelope widths steady while local fixed-basis splits can shar
   expect(local).toContain('flex:var(--group-panel-grow-0, 1)');
 });
 
-it('switches intrinsic document height atomically after bounded exit motion', () => {
-  const css = panelLayoutCss(
-    'group',
-    {
-      axis: 'vertical',
-      flow: 'document',
-      panels: [{ id: 'main', minHeight: 160 }],
-    },
-    8,
-  );
-  expect(css).toContain(
-    'interpolate-size:numeric-only;transition-property:width,min-width,max-width,margin-inline-start,margin-top,opacity,scale,display',
-  );
+it('keeps the sole reading pane on one percentage basis across scroll owners', () => {
+  const layout: AppShellPanelLayout = {
+    axis: 'vertical',
+    panels: [{ id: 'main', minHeight: 160 }],
+  };
+  const document = panelLayoutCss('group', { ...layout, flow: 'document' }, 8);
+  const bounded = panelLayoutCss('group', { ...layout, flow: 'bounded' }, 8);
+  for (const css of [document, bounded]) {
+    expect(css).toContain('flex:var(--group-panel-grow-0, 1)');
+    expect(css).toContain('var(--group-panel-size-0, 100%)');
+    expect(css).not.toContain('interpolate-size:numeric-only');
+  }
 });
