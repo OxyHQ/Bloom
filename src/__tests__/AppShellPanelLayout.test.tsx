@@ -379,3 +379,88 @@ describe('a screen colour preset', () => {
       expect(tree.getByTestId(id).props.children).toBe(seeded);
   });
 });
+
+describe('nested panel groups', () => {
+  it('keeps the main content mounted through split insertion, closure and flow changes', () => {
+    const mounts = jest.fn();
+    function Main() {
+      useEffect(mounts, []);
+      const panel = useAppShellPanel();
+      return <Native.Text testID="nested-main">{panel.id}</Native.Text>;
+    }
+    const layout = (visible: boolean, mode: 'split' | 'flow' = 'split'): AppShellPanelLayout => ({
+      panels: [
+        {
+          id: 'workspace',
+          group: {
+            mode,
+            axis: 'vertical',
+            panels: [
+              { id: 'post', content: <Main /> },
+              { id: 'likes', visible, content: <Native.Text>Likes</Native.Text> },
+            ],
+          },
+        },
+      ],
+    });
+    const screen = render(<AppShell panelLayout={layout(false)} />, { wrapper });
+    expect(screen.getByTestId('nested-main').props.children).toBe('post');
+    screen.rerender(<AppShell panelLayout={layout(true)} />);
+    expect(screen.getByText('Likes')).toBeTruthy();
+    screen.rerender(<AppShell panelLayout={layout(false)} />);
+    screen.rerender(<AppShell panelLayout={layout(true, 'flow')} />);
+    expect(mounts).toHaveBeenCalledTimes(1);
+  });
+
+  it('composes horizontal and vertical groups recursively without replacing leaf identity', () => {
+    function Leaf() {
+      return <Native.Text>{useAppShellPanel().id}</Native.Text>;
+    }
+    const screen = render(
+      <AppShell
+        panelLayout={{
+          panels: [
+            {
+              id: 'row',
+              group: {
+                axis: 'horizontal',
+                panels: [
+                  {
+                    id: 'column',
+                    group: { axis: 'vertical', panels: [{ id: 'leaf', content: <Leaf /> }] },
+                  },
+                ],
+              },
+            },
+          ],
+        }}
+      />,
+      { wrapper },
+    );
+    expect(screen.getByText('leaf')).toBeTruthy();
+  });
+});
+
+it('deactivates retained leaves when their transparent group closes', () => {
+  function Leaf() {
+    return <Native.Text testID="group-active">{String(useAppShellPanel().active)}</Native.Text>;
+  }
+  const layout = (visible: boolean): AppShellPanelLayout => ({
+    panels: [
+      {
+        id: 'group',
+        visible,
+        keepMounted: true,
+        group: {
+          panels: [{ id: 'leaf', content: <Leaf /> }],
+        },
+      },
+    ],
+  });
+  const screen = render(<AppShell panelLayout={layout(true)} />, { wrapper });
+  expect(screen.getByTestId('group-active').props.children).toBe('true');
+  screen.rerender(<AppShell panelLayout={layout(false)} />);
+  expect(screen.getByTestId('group-active', { includeHiddenElements: true }).props.children).toBe(
+    'false',
+  );
+});

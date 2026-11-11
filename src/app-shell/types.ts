@@ -580,6 +580,8 @@ export interface AppShellPanelProps {
    * Descriptors also use `visible` to hide both presentations.
    */
   floating?: {
+    /** Compact presentation; end is the default for existing side panels. */
+    placement?: 'bottom' | 'end' | 'center';
     below: AppShellBreakpoint;
     open: boolean;
     onOpenChange: (open: boolean) => void;

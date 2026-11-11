@@ -47,6 +47,8 @@ export interface AppShellPanelDefinition extends Omit<AppShellPanelProps, 'child
   /** Explicit semantic visibility, independent of responsive eligibility. */
   visible?: boolean;
   content?: ReactNode;
+  /** A transparent, independently composed group. Keep its id and child ids stable. */
+  group?: AppShellPanelLayout;
   /** Host controls composed into the route Screen's existing PageHeader actions. */
   headerActions?: ReactNode;
   /** Panel footer composed below the route Screen bottom bar, measured and pinned by that Screen. */
@@ -102,7 +104,10 @@ export interface AppShellPanelLayout {
   onViewportScroll?: (offset: { x: number; y: number }) => void;
   /** Commit a full ID permutation after a handle drag or keyboard move. The host applies this order. */
   onPanelOrderChange?: (ids: readonly string[]) => void;
-  mode?: 'split' | 'deck';
+  /** Split divides available space; flow grows and scrolls along its axis. */
+  mode?: 'split' | 'flow' | 'deck';
+  /** Nested split only: let its sole inline panel use the web document scroll. */
+  singlePanelFlow?: 'document';
   /** Fade outgoing panels before moving tracks, then reveal incoming content at its settled width. */
   transition?: 'simultaneous' | 'exit-before-enter';
   /** Web horizontal decks use the document scrollbar by default. Native remains native-scrolling. */
