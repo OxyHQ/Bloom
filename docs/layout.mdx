@@ -476,7 +476,7 @@ every scroll event, so scrolling renders nothing in React.
 </View>
 ```
 
-It hides the scroller's own bar and draws Bloom's over it; on native it renders nothing. `ScrollArea` is a `ScrollView` and one of these, and `scrollIndicatorInsets` (`top` / `bottom`, or `left` / `right` when `horizontal`) keeps the bar clear of chrome that floats over the scroller. Do not style `::-webkit-scrollbar` per component: that is how nine surfaces ended up with nine different bars, some hidden outright.
+It hides the scroller's own bar and draws Bloom's over it; on native it renders nothing. `scrollbar="never"` keeps that web indicator ownership without rendering an overlay or observing its geometry. AppShell and retained Screens use it while bounded or exiting, so the system indicator cannot flash while their content still moves. Scrolling itself remains enabled. `ScrollArea` is a `ScrollView` and one of these, and `scrollIndicatorInsets` (`top` / `bottom`, or `left` / `right` when `horizontal`) keeps the bar clear of chrome that floats over the scroller. Do not style `::-webkit-scrollbar` per component: that is how nine surfaces ended up with nine different bars, some hidden outright.
 
 
 ### Shared scroll owners

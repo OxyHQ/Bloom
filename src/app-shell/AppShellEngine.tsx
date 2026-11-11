@@ -1061,8 +1061,12 @@ export function createAppShellEngine() {
         fill={compactRegion ? theme.colors.card : theme.colors.background}
         fillModes={compactRegion ? cardRecipe : backgroundRecipe}
       >
-        {Platform.OS === 'web' && doc ? (
-          <ScrollBar target="document" insets={{ start: gutter, end: bottomEdge + gutter }} />
+        {Platform.OS === 'web' ? (
+          <ScrollBar
+            target="document"
+            scrollbar={doc ? 'scroll' : 'never'}
+            insets={{ start: gutter, end: bottomEdge + gutter }}
+          />
         ) : null}
         {(cssScope ? bottomBar != null : showBottomBar) ? (
           <AppShellBottomBar

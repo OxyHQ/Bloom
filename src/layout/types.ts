@@ -49,8 +49,8 @@ export interface ScrollBarProps {
   target: RefObject<unknown> | 'document';
   /** Cross-axis clearance for persistent viewport chrome (document bars). */
   offset?: number;
-  /** When the bar shows. Default `'scroll'`. */
-  scrollbar?: Exclude<ScrollAreaScrollbar, 'never'>;
+  /** When the bar shows. Default `'scroll'`; `'never'` hides both indicators on web. */
+  scrollbar?: ScrollAreaScrollbar;
   /** The bar's thickness: `sm` 4px (default) or `md` 6px. */
   size?: 'sm' | 'md';
   /** Which inline edge a vertical bar sits on. Default `'end'`. Ignored when `horizontal`. */
