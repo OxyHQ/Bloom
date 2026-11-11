@@ -825,6 +825,69 @@
     "verification": "Native-renderer and DOM web suites verify default md, nearest xs, nested lg over xs, explicit lg over xs, ordinary wrappers and an actual portal for both controls; physical geometry, assistive-technology behavior and device accessibility remain pending. These parts own no submenu",
     "parts": ["src/checkbox/Checkbox.tsx#Checkbox", "src/switch/Switch.tsx#Switch"]
   },
+  "select-control-size": {
+    "status": "applicable",
+    "reason": "Select resolves trigger geometry, value typography and chevron size from its explicit size or nearest BloomScope. SelectContent establishes an independent menu density for option rows, group spacing, indicators and separators; SelectField delegates its trigger size to Select. The option list and trigger are separate size owners by design.",
+    "evidence": [
+      "src/select/Select.tsx",
+      "src/select/Select.web.tsx",
+      "src/select/shared.tsx",
+      "src/select/SelectField.tsx",
+      "docs/select.mdx",
+      "src/__tests__/SelectPublicPartScope.test.tsx",
+      "src/__tests__/SelectPublicPartScope.web.test.tsx",
+      "src/__tests__/SelectItemLabel.test.tsx",
+      "src/__tests__/MenuDensity.web.test.tsx"
+    ],
+    "verification": "Native renderer verifies trigger padding, 44dp touch target, value and chevron at default md, xs/sm/md/lg scopes, nested scope, actual React portal, explicit override, SelectField delegation and an open sm content list under an xs scope and lg trigger. Web DOM verifies trigger geometry/type/glyph across md defaults and all scale rungs, wrappers, nested scopes, portal and explicit override; a real FloatingPanel portal verifies independent sm option density, row text, selected indicator, group spacing and separator margin under xs scope/lg trigger. Physical Android rendering and accessibility remain pending.",
+    "parts": [
+      "src/select/Select.tsx#Select",
+      "src/select/Select.tsx#SelectContent",
+      "src/select/Select.tsx#SelectIcon",
+      "src/select/Select.tsx#SelectItem",
+      "src/select/Select.tsx#SelectTrigger",
+      "src/select/Select.tsx#SelectValue",
+      "src/select/shared.tsx#SelectGroup",
+      "src/select/shared.tsx#SelectItemIndicator",
+      "src/select/shared.tsx#SelectItemText",
+      "src/select/shared.tsx#SelectSeparator"
+    ]
+  },
+  "select-field-size-delegation": {
+    "status": "delegated",
+    "reason": "SelectField adds the Field label, description and error layout, then forwards its optional size to the platform-specific Select root. Select remains the owner of trigger size resolution.",
+    "evidence": [
+      "src/select/SelectField.tsx",
+      "src/__tests__/SelectPublicPartScope.test.tsx",
+      "src/__tests__/SelectPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and web DOM each pass size xs through SelectField and measure the resulting trigger at its platform geometry and type; physical-device fit remains pending.",
+    "parts": ["src/select/Select.tsx#SelectField"]
+  },
+  "select-fixed-menu-parts": {
+    "status": "independent-scale",
+    "reason": "SelectLabel is a semantic group heading with a fixed caption type. SelectScrollUpButton and SelectScrollDownButton are optional scroll affordances with fixed 16px glyphs and padding; SelectContent does not mount them, but callers can compose them through SelectScrollProvider on either platform. Their documented roles do not scale with option density.",
+    "evidence": [
+      "src/select/shared.tsx",
+      "docs/select.mdx",
+      "src/__tests__/core-locale-auth.test.tsx",
+      "src/__tests__/SelectPublicPartScope.test.tsx",
+      "src/__tests__/SelectPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web compare custom scroll-button glyphs and classes under xs and lg, and verify the fixed caption type beside a differently sized option list; actual device painting remains unverified.",
+    "parts": [
+      "src/select/shared.tsx#SelectLabel",
+      "src/select/shared.tsx#SelectScrollDownButton",
+      "src/select/shared.tsx#SelectScrollUpButton"
+    ]
+  },
+  "select-scroll-provider": {
+    "status": "does-not-apply",
+    "reason": "SelectScrollProvider only publishes canScrollUp/canScrollDown and a scroll callback; it renders no visual surface or control geometry for BloomScope to size.",
+    "evidence": ["src/select/shared.tsx", "src/__tests__/core-locale-auth.test.tsx"],
+    "verification": "The provider itself emits no UI; native locale coverage confirms it supplies scroll state and localized labels to the optional affordances when mounted.",
+    "parts": ["src/select/shared.tsx#SelectScrollProvider"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
@@ -1459,21 +1522,6 @@
       "src/segmented-control/SegmentedControl.tsx#SegmentedControl",
       "src/segmented-control/SegmentedControl.tsx#SegmentedControlItem",
       "src/segmented-control/SegmentedControl.tsx#SegmentedControlItemText",
-      "src/select/Select.tsx#Select",
-      "src/select/Select.tsx#SelectContent",
-      "src/select/Select.tsx#SelectField",
-      "src/select/Select.tsx#SelectIcon",
-      "src/select/Select.tsx#SelectItem",
-      "src/select/Select.tsx#SelectTrigger",
-      "src/select/Select.tsx#SelectValue",
-      "src/select/shared.tsx#SelectGroup",
-      "src/select/shared.tsx#SelectItemIndicator",
-      "src/select/shared.tsx#SelectItemText",
-      "src/select/shared.tsx#SelectLabel",
-      "src/select/shared.tsx#SelectScrollDownButton",
-      "src/select/shared.tsx#SelectScrollProvider",
-      "src/select/shared.tsx#SelectScrollUpButton",
-      "src/select/shared.tsx#SelectSeparator",
       "src/settings-list/SettingsList.tsx#SettingsListDivider",
       "src/settings-list/SettingsList.tsx#SettingsListGroup",
       "src/settings-list/SettingsList.tsx#SettingsListItem",
