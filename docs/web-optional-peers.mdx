@@ -48,6 +48,7 @@ return before the `require` is ever reached:
 | `nativewind` (scoped presets) | both callers `return` on web (`theme/color-scope/style-builder.ts:159, :192`) |
 | `expo-haptics` | `useHaptics` returns on web (`hooks/use-haptics.tsx:47`) |
 | `expo-clipboard` | `writeClipboardText` writes `navigator.clipboard` first (`hooks/clipboard.ts`) |
+| `expo-sharing` | `shareFile` downloads through an anchor on web and returns before the peer is read (`hooks/share.ts`) |
 | `expo-web-browser` | `openExternal` opens a tab and returns on web (`hooks/link-activation.ts`) |
 
 Note the two different reasons: a platform guard inside the file, and a whole

@@ -100,8 +100,12 @@ export { applyPresetVarsToDocument } from './token-registry';
 export { applyDarkClass } from './apply-dark-class';
 export { setColorSchemeSafe } from './set-color-scheme-safe';
 export { initCssInteropDarkMode } from './init-css-interop';
-export type { BloomThemeStorage, PersistedThemeState } from './persistence';
-export { webLocalStorage } from './persistence';
+export type {
+  BloomThemeStorage,
+  BloomThemeStorageConfig,
+  PersistedThemeState,
+} from './persistence';
+export { createBloomThemeStorage, webLocalStorage } from './persistence';
 
 export { useThemePaint } from './use-theme-paint';
 export { BloomThemeHead } from './ThemeBootstrap';

@@ -386,6 +386,8 @@ const NO_COMPONENT: readonly string[] = [
   // An adapter type, a raw context Provider and hooks — no `.tsx`; the
   // adapter's own component is the platform's, not Bloom's.
   'platform-surface',
+  // Two functions over a key-value adapter and their types: nothing renders.
+  'storage',
 ];
 
 const docStem = (family: string): string => DOC_ALIASES[family] ?? family;

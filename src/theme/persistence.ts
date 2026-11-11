@@ -182,3 +182,41 @@ export const webLocalStorage: BloomThemeStorage | undefined = (() => {
     },
   };
 })();
+
+export interface BloomThemeStorageConfig {
+  /** `BloomProvider`'s `persistKey`: where `{ mode, colorPreset }` is stored. */
+  persistKey: string;
+  /** `BloomProvider`'s `storage`: `localStorage` on web, `adapter` on native. */
+  storage: BloomThemeStorage | undefined;
+}
+
+/**
+ * The `persistKey` + `storage` pair `BloomProvider` needs, in one place per app:
+ *
+ * ```ts
+ * export const BLOOM_THEME = createBloomThemeStorage('noted.bloom.theme', AsyncStorage);
+ * <BloomProvider {...BLOOM_THEME} />
+ * ```
+ *
+ * On web the storage is {@link webLocalStorage}, synchronous, so Bloom hydrates
+ * before the first paint and the palette never flashes. On native it is
+ * `adapter` (an `AsyncStorage`-compatible object; `webLocalStorage` is
+ * `undefined` there by design) — without one nothing persists, as with
+ * `BloomProvider` given no storage.
+ *
+ * The key must be the APP's own: two apps (or two surfaces) that share a
+ * `localStorage` origin or a native storage group and one key overwrite each
+ * other's theme, so use `<app>.bloom.theme` and never copy another app's.
+ */
+export function createBloomThemeStorage(
+  persistKey: string,
+  adapter?: BloomThemeStorage,
+): BloomThemeStorageConfig {
+  if (typeof persistKey !== 'string' || persistKey.trim() === '') {
+    throw new Error('createBloomThemeStorage: persistKey must be a non-empty string');
+  }
+  return {
+    persistKey,
+    storage: Platform.OS === 'web' && webLocalStorage ? webLocalStorage : adapter,
+  };
+}

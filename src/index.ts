@@ -125,10 +125,12 @@ export {
   useBloomLocale,
   BLOOM_LANGUAGES,
   resolveBloomLanguage,
+  formatBytes,
   formatClock,
   formatCompactCurrency,
   formatCompactNumber,
   formatCurrency,
+  formatDurationText,
   formatInteger,
   formatMultiplier,
   formatNumber,
@@ -136,7 +138,12 @@ export {
   formatRelativeTime,
   formatSignedPercent,
 } from './locale';
-export type { BloomLanguage, RelativeTimeOptions, RelativeTimeStyle } from './locale';
+export type {
+  BloomLanguage,
+  DurationStyle,
+  RelativeTimeOptions,
+  RelativeTimeStyle,
+} from './locale';
 // A namespace, not seven loose verbs: `getAspectRatio`/`setAspectRatio`/
 // `hasAspectRatio` are exactly the collision-prone shape the namespace rule
 // covers.
@@ -324,8 +331,9 @@ export * from './task-list';
 export * from './agent-chat';
 export * from './ai-chat';
 export * from './radio-indicator';
-export { ErrorBoundary, PanelErrorBoundary } from './error-boundary';
+export { AppErrorFallback, ErrorBoundary, PanelErrorBoundary } from './error-boundary';
 export type {
+  AppErrorFallbackProps,
   ErrorBoundaryProps,
   ErrorBoundaryFallback,
   ErrorBoundaryFallbackContext,
@@ -2326,3 +2334,7 @@ export * from './checkout-sheet';
 export { CardFormHostedField } from './card-form';
 export type { CardFormHostedFieldProps, CardFormHostedFieldControl } from './card-form';
 export { TextFieldHostedContent } from './text-field';
+
+export * from './notifications';
+export { createStorage } from './storage';
+export type { BloomStorageAdapter, CreateStorageOptions, JsonStorage } from './storage';

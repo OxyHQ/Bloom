@@ -88,6 +88,7 @@ import type { SHAPE_MESSAGES } from '../../shapes/messages';
 import type { TENANCY_MESSAGES } from '../../tenancy/messages';
 import type { DATA_TABLE_MESSAGES } from '../../data-table/messages';
 import type { ERROR_BOUNDARY_MESSAGES } from '../../error-boundary/messages';
+import type { NOTIFICATIONS_MESSAGES } from '../../notifications/messages';
 import type { AI_PROFILE_CARD_MESSAGES } from '../../ai-profile-card/messages';
 import type { BREADCRUMB_MESSAGES } from '../../breadcrumb/messages';
 import type { MESSAGE_MEDIA_MESSAGES } from '../../message-media/messages';
@@ -238,6 +239,7 @@ export interface Translations {
   readonly TENANCY_MESSAGES: CatalogMessages<typeof TENANCY_MESSAGES>;
   readonly DATA_TABLE_MESSAGES: CatalogMessages<typeof DATA_TABLE_MESSAGES>;
   readonly ERROR_BOUNDARY_MESSAGES: CatalogMessages<typeof ERROR_BOUNDARY_MESSAGES>;
+  readonly NOTIFICATIONS_MESSAGES: CatalogMessages<typeof NOTIFICATIONS_MESSAGES>;
   readonly AI_PROFILE_CARD_MESSAGES: CatalogMessages<typeof AI_PROFILE_CARD_MESSAGES>;
   readonly BREADCRUMB_MESSAGES: CatalogMessages<typeof BREADCRUMB_MESSAGES>;
   readonly MESSAGE_MEDIA_MESSAGES: CatalogMessages<typeof MESSAGE_MEDIA_MESSAGES>;

@@ -2086,10 +2086,23 @@ const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
   density: { md: 'Обычная', sm: 'Компактная' },
 };
 
+const NOTIFICATIONS_MESSAGES: Translations['NOTIFICATIONS_MESSAGES'] = {
+  permissionTitle: 'Включите уведомления',
+  permissionBody: 'Получайте оповещения о новой активности, даже когда приложение закрыто.',
+  enable: 'Включить уведомления',
+  later: 'Не сейчас',
+  pushTitle: 'Push-уведомления',
+  pushDescription: 'Получайте оповещения на этом устройстве.',
+  pushBlocked: 'Уведомления отключены в настройках системы.',
+  loadError: 'Не удалось загрузить уведомления',
+};
+
 const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = {
   title: 'Что-то пошло не так',
   message: 'Произошла непредвиденная ошибка',
   retry: 'Повторить попытку',
+  copyDetails: 'Скопировать сведения об ошибке',
+  exhausted: 'Ошибка повторяется. Закройте и снова откройте приложение.',
 };
 
 const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
@@ -3466,6 +3479,7 @@ const translations: Translations = {
   TENANCY_MESSAGES,
   DATA_TABLE_MESSAGES,
   ERROR_BOUNDARY_MESSAGES,
+  NOTIFICATIONS_MESSAGES,
   AI_PROFILE_CARD_MESSAGES,
   BREADCRUMB_MESSAGES,
   MESSAGE_MEDIA_MESSAGES,

@@ -62,6 +62,8 @@ back to plain English formatting rather than throwing.
 | `formatMultiplier(value, locale?)` | `1.5` → `1.5×` |
 | `formatRelativeTime(at, locale?, { now?, style? })` | 3 minutes ago → `3 minutes ago` (`hace 3 minutos` in `es`); within 45 s → `now`; `style: 'short'` → `3 min. ago`; a future time → `in 3 minutes` |
 | `formatClock(seconds)` | `83` → `1:23`, the same in every locale |
+| `formatBytes(bytes, locale?, digits?)` | `512` → `512 B`, `1536` → `1.5 KB`, `2400000` → `2.3 MB` (`2,3 MB` in `es`); binary steps up to TB, exact bytes under 1 KB |
+| `formatDurationText(seconds, locale?, { style?, maxUnits? })` | `3725` → `1h 2m` (`narrow`), `1 hr 2 min` (`short`), `1 hour 2 minutes` (`long`); the two largest non-zero units, `0s` for none |
 
 ```tsx
 const locale = useBloomLocale();
@@ -75,7 +77,12 @@ long list of prices or dates constructs one `Intl` formatter, not one per row.
 `formatRelativeTime` uses `Intl.RelativeTimeFormat`, which Hermes lacks; there it
 falls back to English words (`3 minutes ago`) rather than throwing.
 
-A file size is `formatFileSize` from `@oxy.so/bloom/file-upload`.
+`formatBytes` is for a quota or a download: it keeps an exact byte count under
+1 KB and climbs to terabytes. `formatFileSize` (`@oxy.so/bloom/file-upload`, the
+file picker's rule) never shows under 1 KB and rounds whole above ten. For a
+media timestamp (`1:23`) use `formatClock`; `formatDurationText` is the prose a
+task or an uptime wants. (It is not called `formatDuration` because the root
+already exports `media-controls`' `formatDuration`, a clock.)
 
 ## Overriding a string
 

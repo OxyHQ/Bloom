@@ -1,0 +1,51 @@
+---
+title: Storage
+description: A typed JSON key-value store under a namespace, and the theme's persistence pair.
+order: 74
+---
+
+# Storage
+
+## `createStorage`
+
+Apps kept a byte-identical `storage.ts`: `get`/`set`/`remove` over `AsyncStorage`
+with `JSON.parse`/`stringify` and a try/catch each. `createStorage(namespace,
+{ adapter?, onError? })` from `@oxy.so/bloom/storage` is that file.
+
+```ts
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createStorage } from '@oxy.so/bloom/storage';
+
+export const storage = createStorage('homiio', { adapter: AsyncStorage });
+
+await storage.set('draft', { title });       // false if the write failed
+const draft = await storage.get<Draft>('draft'); // null if absent, unreadable or corrupt
+await storage.set('draft', null);            // null / undefined remove the key
+await storage.remove('draft');
+```
+
+- Keys are stored as `namespace:key`; an empty namespace keeps raw keys, which is
+  how an app adopts it over data it already stored.
+- Every call is best-effort and resolves: a full disk, a private window or a
+  corrupt value gives `null` / `false`, never a rejection. `onError(error,
+  operation, key)` observes them.
+- `adapter` is any `{ getItem, setItem, removeItem? }`, sync or async. Default:
+  `localStorage` on web; on native pass `AsyncStorage` (without one, values live in
+  memory for the session, which is right for tests and wrong for an app).
+
+## `createBloomThemeStorage`
+
+`themePersistence.ts` was copied into every app, and one copy even reused
+another app's key. `createBloomThemeStorage(persistKey, adapter?)` from
+`@oxy.so/bloom/theme` returns the `{ persistKey, storage }` pair `BloomProvider`
+takes:
+
+```tsx
+export const BLOOM_THEME = createBloomThemeStorage('noted.bloom.theme', AsyncStorage);
+<BloomProvider {...BLOOM_THEME} />
+```
+
+On web the storage is the synchronous `webLocalStorage`, so Bloom hydrates before
+the first paint; on native it is `adapter`. Use `<app>.bloom.theme`: two apps or
+surfaces that share an origin or storage group and a key overwrite each other's
+theme. An empty key throws.

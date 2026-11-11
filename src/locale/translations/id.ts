@@ -1843,10 +1843,23 @@ const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
   density: { md: 'Normal', sm: 'Ringkas' },
 };
 
+const NOTIFICATIONS_MESSAGES: Translations['NOTIFICATIONS_MESSAGES'] = {
+  permissionTitle: 'Aktifkan notifikasi',
+  permissionBody: 'Dapatkan pemberitahuan aktivitas baru, bahkan saat aplikasi ditutup.',
+  enable: 'Aktifkan notifikasi',
+  later: 'Nanti saja',
+  pushTitle: 'Notifikasi push',
+  pushDescription: 'Terima pemberitahuan di perangkat ini.',
+  pushBlocked: 'Notifikasi dinonaktifkan di pengaturan sistem.',
+  loadError: 'Notifikasi tidak dapat dimuat',
+};
+
 const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = {
   title: 'Terjadi kesalahan',
   message: 'Terjadi kesalahan yang tidak terduga',
   retry: 'Coba lagi',
+  copyDetails: 'Salin detail kesalahan',
+  exhausted: 'Masalah ini terus terjadi. Tutup lalu buka kembali aplikasi.',
 };
 
 const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
@@ -3125,6 +3138,7 @@ const translations: Translations = {
   TENANCY_MESSAGES,
   DATA_TABLE_MESSAGES,
   ERROR_BOUNDARY_MESSAGES,
+  NOTIFICATIONS_MESSAGES,
   AI_PROFILE_CARD_MESSAGES,
   BREADCRUMB_MESSAGES,
   MESSAGE_MEDIA_MESSAGES,

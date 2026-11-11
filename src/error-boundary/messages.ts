@@ -8,6 +8,10 @@ export interface ErrorBoundaryMessages {
   title: string;
   message: string;
   retry: string;
+  /** The `AppErrorFallback` button that copies the error report. */
+  copyDetails: string;
+  /** What an `AppErrorFallback` says once `maxRetries` is spent. */
+  exhausted: string;
 }
 
 export const ERROR_BOUNDARY_MESSAGES: MessageCatalog<ErrorBoundaryMessages> =
@@ -15,4 +19,6 @@ export const ERROR_BOUNDARY_MESSAGES: MessageCatalog<ErrorBoundaryMessages> =
     title: 'Something went wrong',
     message: 'An unexpected error occurred',
     retry: 'Try Again',
+    copyDetails: 'Copy error details',
+    exhausted: 'This keeps failing. Close and reopen the app.',
   });

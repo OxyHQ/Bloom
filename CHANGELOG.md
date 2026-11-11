@@ -1,5 +1,19 @@
 # Changelog
 
+## 19.2.0
+
+### Added
+
+Shared pieces apps each re-implemented. All additive.
+
+- **`AppErrorFallback`** from `@oxy.so/bloom/error-boundary`: the app-root recovery screen for `ErrorBoundary`'s render-prop `fallback`: title, message, "Try again" until `maxRetries`, "Copy error details" (name, message, stacks and your `deviceInfo`), the stacks in development, and `actions`/`footer` slots for feedback. Reads no theme or router context. `buildErrorReport` is the report text on its own.
+- **`@oxy.so/bloom/notifications`**: `NotificationsScreen` (rows, "Mark all read", push-permission row, loading/error/empty/next-page states, data through props) and `NotificationPermissionGate` / `NotificationPermissionSheet` (a sheet on the surface stack with pluggable `storage`, `delayMs`, `onGranted`, `repromptAfterMs`, and the OS permission through a two-method `permission` adapter). Strings in every Bloom language.
+- **`useShare`, `shareUrl`, `shareFile`** from `@oxy.so/bloom/hooks`: share a link (Web Share, system sheet, clipboard fallback) resolving `'shared' | 'copied' | 'dismissed' | 'failed'`, and a file (a download on web, the system sheet through the new optional `expo-sharing` peer) resolving `'shared' | 'unavailable' | 'failed'`.
+- **`formatBytes(bytes, locale?)` and `formatDurationText(seconds, locale?, { style?, maxUnits? })`** from `@oxy.so/bloom/locale` and the root: `1536` → `1.5 KB`, `3725` → `1h 2m`, in the reader's locale. (`formatDurationText`, not `formatDuration`: the root already exports `media-controls`' `formatDuration`, a clock.)
+- **`createBloomThemeStorage(persistKey, adapter?)`** from `@oxy.so/bloom/theme`: the `{ persistKey, storage }` pair for `BloomProvider`, `localStorage` on web and your adapter on native.
+- **`createStorage(namespace, { adapter?, onError? })`** from the new `@oxy.so/bloom/storage`: a typed, best-effort JSON key-value store.
+- **`useDebouncedCallback(callback, delay, { flushOnUnmount? })`** from `@oxy.so/bloom/hooks`: `{ run, flush, cancel }`.
+
 ## 19.1.0
 
 ### Added

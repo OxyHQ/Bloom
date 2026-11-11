@@ -202,6 +202,80 @@ export function formatFileSize(bytes: number, locale?: string): string {
 }
 
 /**
+ * A byte count as a size, the whole ladder: `512` → `512 B`, `1536` → `1.5 KB`,
+ * `2400000` → `2.3 MB` (en), `2,3 MB` (es), `2,3 Mo` (fr), `1.2 TB`.
+ *
+ * Unlike {@link formatFileSize} — the file picker's rule, never under 1 KB and
+ * whole numbers above ten — this keeps an exact byte count under 1 KB and goes
+ * on to terabytes, which is what a storage quota or a download wants. Binary
+ * (1024) steps, up to `maximumFractionDigits` (default 1) decimals, trailing
+ * zeros dropped. A negative or non-finite count reads as `0 B`.
+ */
+export function formatBytes(bytes: number, locale?: string, maximumFractionDigits = 1): string {
+  const units = pickMessages(FILE_SIZE_UNITS, locale);
+  const safe = Number.isFinite(bytes) ? Math.max(0, bytes) : 0;
+  if (safe < 1024) return `${formatInteger(Math.floor(safe), locale)} ${units.byte}`;
+  const scaled = (value: number) => formatNumber(value, locale, { maximumFractionDigits });
+  const kb = safe / 1024;
+  if (kb < 1024) return `${scaled(kb)} ${units.kilobyte}`;
+  const mb = kb / 1024;
+  if (mb < 1024) return `${scaled(mb)} ${units.megabyte}`;
+  const gb = mb / 1024;
+  if (gb < 1024) return `${scaled(gb)} ${units.gigabyte}`;
+  const tb = gb / 1024;
+  const format = numberFormat(locale, {
+    style: 'unit',
+    unit: 'terabyte',
+    unitDisplay: 'short',
+    maximumFractionDigits,
+  });
+  return format ? format.format(tb) : `${scaled(tb)} TB`;
+}
+
+export type DurationStyle = 'narrow' | 'short' | 'long';
+
+const DURATION_UNITS = [
+  ['day', 86_400, 'd'],
+  ['hour', 3600, 'h'],
+  ['minute', 60, 'm'],
+  ['second', 1, 's'],
+] as const;
+
+/**
+ * A length of time as words, the two largest non-zero units: `65` → `1m 5s`,
+ * `3725` → `1h 2m`, `90000` → `1d 1h` (en, `narrow`), `1 h 2 min` (es, `short`),
+ * `1 hour, 2 minutes`-style with `long`. Seconds in; fractions are floored, and
+ * under a second reads `0s`. For a media timestamp (`1:23`) use
+ * {@link formatClock}; this is the prose a task or an uptime wants.
+ *
+ * Each part goes through `Intl.NumberFormat` units, so the unit names are the
+ * locale's; an engine without them gets the English letters.
+ */
+export function formatDurationText(
+  seconds: number,
+  locale?: string,
+  options: { style?: DurationStyle; maxUnits?: number } = {},
+): string {
+  const { style = 'narrow', maxUnits = 2 } = options;
+  let rest = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
+  const parts: string[] = [];
+  for (const [unit, size, letter] of DURATION_UNITS) {
+    if (parts.length >= maxUnits) break;
+    const value = Math.floor(rest / size);
+    if (value === 0 && !(unit === 'second' && parts.length === 0)) continue;
+    rest -= value * size;
+    const format = numberFormat(locale, {
+      style: 'unit',
+      unit,
+      unitDisplay: style,
+      maximumFractionDigits: 0,
+    });
+    parts.push(format ? format.format(value) : `${value}${letter}`);
+  }
+  return parts.join(' ');
+}
+
+/**
  * A running time as a clock: `83` → `1:23`, `3723` → `1:02:03`. The same in
  * every locale — a media timestamp is not localised prose.
  */

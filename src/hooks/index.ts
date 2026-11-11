@@ -48,3 +48,13 @@ export type { KeyboardMetrics, KeyboardMetricsOptions } from './use-keyboard-met
 export { useKeyboardReveal, KEYBOARD_REVEAL_MARGIN } from './use-keyboard-reveal';
 export { useBrowserTitle } from './use-browser-title';
 export { isPlainLinkActivation, openExternal, openHref } from './link-activation';
+export { useDebouncedCallback } from './use-debounced-callback';
+export type { DebouncedCallback, DebouncedCallbackOptions } from './use-debounced-callback';
+export { shareFile, shareUrl, useShare } from './share';
+export type {
+  ShareFileInput,
+  ShareFileOutcome,
+  ShareOutcome,
+  ShareUrlInput,
+  UseShare,
+} from './share';
