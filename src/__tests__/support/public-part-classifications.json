@@ -944,6 +944,18 @@
     "verification": "Native renderer and web DOM verify default sm, xs/sm/md typography, lg-to-md mapping, nested scopes, and explicit xs override. Label owns no portal or submenu and is not a touch target; physical text scaling and assistive-technology behavior remain pending.",
     "parts": ["src/label/Label.tsx#Label"]
   },
+  "fab-action-size": {
+    "status": "applicable",
+    "reason": "Fab resolves diameter and icon/label recipe from explicit size or nearest BloomScope, defaulting to md. Its action-specific metrics are xs 40, sm 48, md 50 and lg 64 points/pixels; placement and positioning remain with the caller.",
+    "evidence": [
+      "src/fab/use-fab-props.ts",
+      "src/fab/constants.ts",
+      "src/__tests__/Fab.test.tsx",
+      "src/__tests__/FabPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and real web DOM verify default md, xs/sm/md/lg diameters, nested scopes and explicit sm override. Fab owns no portal or submenu; physical hit testing, label fit and device proportions remain pending.",
+    "parts": ["src/fab/Fab.tsx#Fab"]
+  },
   "select-field-size-delegation": {
     "status": "delegated",
     "reason": "SelectField adds the Field label, description and error layout, then forwards its optional size to the platform-specific Select root. Select remains the owner of trigger size resolution.",
@@ -1276,7 +1288,6 @@
       "src/eviction/EvictionReportCard.tsx#EvictionReportCard",
       "src/eviction/EvictionTimeline.tsx#EvictionTimeline",
       "src/expandable-text/ExpandableText.tsx#ExpandableText",
-      "src/fab/Fab.tsx#Fab",
       "src/fact-strip/FactStrip.tsx#FactStrip",
       "src/field/Field.tsx#Field",
       "src/file-upload/FileUpload.tsx#FileUpload",
