@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import { resolveAvatarCharacter, type AvatarCharacter } from './character';
-import { vectorAssetLoader } from './vector-assets';
+import { useVectorAssetLoader } from './default-catalog';
 import { loadVectorGeometry, vectorGeometryKey } from './vector-compose';
 
 /** Prepare two neighbors sequentially: browser idle time, deferred timer on native. */
 export function useVectorGeometryPreparation(characters: readonly AvatarCharacter[]): void {
+  const catalog = useVectorAssetLoader();
   const recipes = characters.slice(0, 2).map(resolveAvatarCharacter);
   const key = JSON.stringify(recipes.map(vectorGeometryKey));
   useEffect(() => {
@@ -17,7 +18,7 @@ export function useVectorGeometryPreparation(characters: readonly AvatarCharacte
       const prepare = () => {
         if (cancelled) return;
         const recipe = recipes[index++]!;
-        void loadVectorGeometry(recipe, vectorAssetLoader)
+        void loadVectorGeometry(recipe, catalog)
           .catch(() => undefined)
           .then(schedule);
       };
@@ -33,5 +34,5 @@ export function useVectorGeometryPreparation(characters: readonly AvatarCharacte
     };
     // Paint does not change geometry. The key captures the complete prepared recipes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  }, [key, catalog]);
 }

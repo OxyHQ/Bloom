@@ -33,3 +33,8 @@ export type {
 } from './catalog-ids';
 export { isSvgEyes, isSvgShape, SVG_EYES, SVG_SHAPES } from './svg-catalog';
 export type { SvgAvatarEyesId, SvgAvatarShapeId } from './svg-catalog';
+
+// Which vector assets an app ships: `createVectorAssetLoader` plus the per-asset modules
+// under `@oxy.so/bloom/agent-avatar/catalog/*` (docs/agent-avatar.mdx).
+export { createVectorAssetLoader } from './vector-loader';
+export type { VectorAssetImport, VectorAssetLoader, VectorAssetSources } from './vector-loader';
