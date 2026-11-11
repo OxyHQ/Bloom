@@ -606,11 +606,32 @@ toggle the containing row. Items expose `onPrefetch` (pointer/touch entry and
 selection) and `onLongPress`; retain a keyboard-accessible menu for touch actions.
 Collapsed folders remove both rows and action slots from interaction.
 
-`contentAlignment="center"` centers the logo, destinations, and primary action
-as a group in the space **above** the persistent footer, in both panel and rail.
-The destination region can still shrink and scroll on short screens. Keep an
-account control in `footer`; avoid centering the whole sidebar with `style`,
-which also moves its footer. The default `start` preserves existing placement.
+`arrangement` places the logo and the primary action one by one;
+`contentAlignment="center"` is the preset that groups both. Everything grouped
+is centred, with the destinations, as one block in the room **above** the
+persistent footer. The controls (collapse, mode toggle) stay pinned at the top
+and the `footer` at the bottom.
+
+```tsx
+<Sidebar arrangement={{ logo: 'group', primaryAction: 'group' }} footer={<Account />} />
+```
+
+| Part | Values | Default |
+| --- | --- | --- |
+| `logo` (with its account menu) | `top`, `group` | `top` |
+| `primaryAction` | `bottom`, `group` | `bottom` |
+
+A part that is given wins over the preset, so `contentAlignment="center"` with
+`arrangement={{ logo: 'top' }}` pins the logo and groups the action. A consumer's
+own `header` replaces the row the logo sits in, and the mobile drawer keeps its
+own header, so `logo: 'group'` applies to the panel's built-in header only. The
+destination region can still shrink and scroll on short screens. Keep an account
+control in `footer`; avoid centring the whole sidebar with `style`, which also
+moves its footer. A rail keeps its own column and does not read `arrangement`.
+
+The existing `primaryActionPlacement="top"` continues to pin the action in the
+header, including with `contentAlignment="center"`. An explicit
+`arrangement.primaryAction` overrides that placement.
 
 ## Shared material
 
