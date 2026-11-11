@@ -729,6 +729,21 @@
     "verification": "native mock measures body padding at xs 8px, sm 10px, md 12px and lg 14px; RNW DOM verifies the matching size-specific body CSS recipe under inherited, nested and explicit sizes; physical-device layout pending",
     "parts": ["src/accordion/Accordion.tsx#AccordionContent"]
   },
+  "text-field-core": {
+    "status": "applicable",
+    "reason": "TextField owns the shared field shell and propagates its resolved size to TextFieldInput; standalone TextFieldInput owns its own standard control geometry. Both participate in BloomScope sizing, with explicit size taking precedence. Adornments and hosted parts remain separately classified.",
+    "evidence": [
+      "src/text-field/TextField.tsx",
+      "src/text-field/shared.ts",
+      "src/__tests__/TextFieldPublicPartScope.test.tsx",
+      "src/__tests__/TextFieldPublicPartScope.web.test.tsx"
+    ],
+    "verification": "native renderer and RNW DOM verify default md (36px), inherited xs (28px), inherited lg (44px), explicit field lg and standalone input md overrides inside xs, nested xs/lg, and actual native/web portals; physical-device layout and accessibility remain pending",
+    "parts": [
+      "src/text-field/TextField.tsx#TextField",
+      "src/text-field/TextField.tsx#TextFieldInput"
+    ]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
@@ -1512,12 +1527,10 @@
       "src/tenancy/MaintenanceRequestCard.tsx#MaintenanceRequestCard",
       "src/tenancy/RentPaymentList.tsx#RentPaymentList",
       "src/tenancy/TenancyTimeline.tsx#TenancyTimeline",
-      "src/text-field/TextField.tsx#TextField",
       "src/text-field/TextField.tsx#TextFieldGhost",
       "src/text-field/TextField.tsx#TextFieldHint",
       "src/text-field/TextField.tsx#TextFieldHostedContent",
       "src/text-field/TextField.tsx#TextFieldIcon",
-      "src/text-field/TextField.tsx#TextFieldInput",
       "src/text-field/TextField.tsx#TextFieldLabel",
       "src/text-field/TextField.tsx#TextFieldPrefix",
       "src/text-field/TextField.tsx#TextFieldSuffix",
