@@ -853,6 +853,20 @@
       "src/select/shared.tsx#SelectSeparator"
     ]
   },
+  "breadcrumb-control-size": {
+    "status": "applicable",
+    "reason": "Breadcrumb and BreadcrumbItem resolve label typography, icon geometry and interactive hit-area recipe from the nearest BloomScope size. Explicit size wins, and native touch targets remain at least 44 points across visual size rungs.",
+    "evidence": [
+      "src/breadcrumb/create-breadcrumb.tsx",
+      "src/__tests__/Breadcrumb.test.tsx",
+      "src/__tests__/Breadcrumb.web.test.tsx"
+    ],
+    "verification": "Native renderer verifies inherited nested lg scope, explicit md item override, label typography and 44-point item target; existing web DOM tests verify inherited xs/sm/md/lg through the trail and explicit trail override. Physical device geometry and accessibility remain pending.",
+    "parts": [
+      "src/breadcrumb/Breadcrumb.tsx#Breadcrumb",
+      "src/breadcrumb/Breadcrumb.tsx#BreadcrumbItem"
+    ]
+  },
   "select-field-size-delegation": {
     "status": "delegated",
     "reason": "SelectField adds the Field label, description and error layout, then forwards its optional size to the platform-specific Select root. Select remains the owner of trigger size resolution.",
@@ -966,8 +980,6 @@
       "src/booking/TripCard.tsx#TripCard",
       "src/bottom-promo/BottomPromo.tsx#BottomPromo",
       "src/bottom-sheet/BottomSheet.tsx#BottomSheet",
-      "src/breadcrumb/Breadcrumb.tsx#Breadcrumb",
-      "src/breadcrumb/Breadcrumb.tsx#BreadcrumbItem",
       "src/button/CloseButton.tsx#CloseButton",
       "src/calendar/CalendarView.tsx#CalendarView",
       "src/calendar/CalendarViewEventDetails.tsx#CalendarViewEventDetails",
