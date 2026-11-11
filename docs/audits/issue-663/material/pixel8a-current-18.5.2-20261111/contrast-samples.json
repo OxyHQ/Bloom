@@ -1,0 +1,19 @@
+{
+  "method": "Relative luminance from actual Pixel PNGs. Background is the mean RGB of the blank-fill ROI; foreground is the 5th/95th luminance percentile inside the text ROI to estimate glyph color without using computed styles.",
+  "device": "Google Pixel 8a, Android 16 / API 36, 1080x2400",
+  "captures": {
+    "light-photo.png": {
+      "surface": { "backgroundRoi": [940, 630, 1000, 680], "textRoi": [70, 615, 350, 690], "backgroundRgb": [255, 247, 249], "textLuminanceP05": 0.0112, "contrast": 16.27 },
+      "nestedCard": { "backgroundRoi": [930, 850, 985, 885], "textRoi": [100, 835, 700, 895], "backgroundRgb": [240, 231, 235], "textLuminanceP05": 0.0112, "contrast": 14.15 },
+      "button": { "backgroundRoi": [90, 1190, 120, 1240], "textRoi": [130, 1190, 300, 1250], "backgroundRgb": [153, 43, 178], "textLuminanceP95": 0.8944, "contrast": 5.65 },
+      "island": { "backgroundRoi": [425, 1380, 450, 1430], "textRoi": [65, 1370, 400, 1440], "backgroundRgb": [255, 247, 249], "textLuminanceP05": 0.0112, "contrast": 16.27 }
+    },
+    "dark-photo.png": {
+      "surface": { "backgroundRoi": [940, 630, 1000, 680], "textRoi": [70, 615, 350, 690], "backgroundRgb": [75, 41, 71], "textLuminanceP95": 0.8544, "contrast": 10.59 },
+      "nestedCard": { "backgroundRoi": [930, 850, 985, 885], "textRoi": [100, 835, 700, 895], "backgroundRgb": [93, 60, 89], "textLuminanceP95": 0.8544, "contrast": 8.02 },
+      "button": { "backgroundRoi": [90, 1190, 120, 1240], "textRoi": [130, 1190, 300, 1250], "backgroundRgb": [229, 131, 247], "textLuminanceP05": 0, "contrast": 8.92 },
+      "island": { "backgroundRoi": [425, 1380, 450, 1430], "textRoi": [65, 1370, 400, 1440], "backgroundRgb": [76, 42, 72], "textLuminanceP95": 0.8544, "contrast": 10.44 }
+    }
+  },
+  "limit": "Selected photo-scene roles only. This is not a full role/platform matrix or a frame-performance measurement."
+}

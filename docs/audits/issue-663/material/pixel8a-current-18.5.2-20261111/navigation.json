@@ -1,0 +1,28 @@
+{
+  "device": "Google Pixel 8a",
+  "serial": "43221JEKB12200",
+  "android": "16 / API 36",
+  "packageVersion": "@oxy.so/bloom 18.5.2",
+  "apkSha256": "f1f72b8d0bf3cf1056e65ea62be3f72147152a010d4387305cdf5ee03449ee6c",
+  "steps": [
+    {
+      "action": "tap Search TabBarButton",
+      "deviceCoordinates": [
+        660,
+        2055
+      ],
+      "screenshot": "tab-search-selected.png",
+      "sha256": "9f4e576780a56ef1368bece853b58131fb617b15b186a8a45af74a013273832a"
+    },
+    {
+      "action": "tap Home TabBarButton",
+      "deviceCoordinates": [
+        400,
+        2055
+      ],
+      "screenshot": "tab-home-restored.png",
+      "sha256": "54e57518411e5ca47fae04ca32ea8e6e0ebcb8a572f3d7a391a29072bc6f773d"
+    }
+  ],
+  "result": "Search becomes selected, then Home becomes selected again; the material scene and its state remain mounted."
+}
