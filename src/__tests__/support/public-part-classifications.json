@@ -859,7 +859,6 @@
       "src/avatar-group/AvatarGroup.tsx#AvatarGroup",
       "src/avatar/Avatar.tsx#Avatar",
       "src/avatar/context.ts#AvatarPlaceholderProvider",
-      "src/badge/Badge.tsx#Badge",
       "src/booking/BookingBar.tsx#BookingBar",
       "src/booking/BookingCard.tsx#BookingCard",
       "src/booking/PriceBreakdown.tsx#PriceBreakdown",
@@ -998,7 +997,6 @@
       "src/checkout-summary/CheckoutSummary.tsx#CheckoutSummary",
       "src/checkout-summary/CheckoutSummaryRow.tsx#CheckoutSummaryRow",
       "src/chip/CappedChipRow.tsx#CappedChipRow",
-      "src/chip/Chip.tsx#Chip",
       "src/chip/ChipRow.tsx#ChipRow",
       "src/choice-list/ChoiceList.tsx#ChoiceList",
       "src/code/Code.tsx#Code",
@@ -1084,7 +1082,6 @@
       "src/earnings/EarningsBreakdown.tsx#EarningsBreakdown",
       "src/earnings/EarningsPayoutRow.tsx#EarningsPayoutRow",
       "src/earnings/EarningsSummary.tsx#EarningsSummary",
-      "src/empty-state/EmptyState.tsx#EmptyState",
       "src/engagement-bar/EngagementAction.tsx#EngagementAction",
       "src/engagement-bar/EngagementBar.tsx#EngagementBar",
       "src/engagement-bar/EngagementGroup.tsx#EngagementGroup",
@@ -1587,22 +1584,6 @@
       "src/track-list/TrackListHeader.tsx#TrackListHeader",
       "src/track-list/TrackRow.tsx#TrackRow",
       "src/track-list/TrackRowSkeleton.tsx#TrackRowSkeleton",
-      "src/typography/Typography.tsx#Blockquote",
-      "src/typography/Typography.tsx#H1",
-      "src/typography/Typography.tsx#H2",
-      "src/typography/Typography.tsx#H3",
-      "src/typography/Typography.tsx#H4",
-      "src/typography/Typography.tsx#H5",
-      "src/typography/Typography.tsx#H6",
-      "src/typography/Typography.tsx#Large",
-      "src/typography/Typography.tsx#Lead",
-      "src/typography/Typography.tsx#Muted",
-      "src/typography/Typography.tsx#P",
-      "src/typography/Typography.tsx#Small",
-      "src/typography/Typography.tsx#Subtitle",
-      "src/typography/Typography.tsx#Text",
-      "src/typography/Typography.tsx#Title",
-      "src/typography/TypographyScope.tsx#TypographyScope",
       "src/usage-card/UsageCard.tsx#UsageCard",
       "src/user-hover-card/UserHoverCard.tsx#UserHoverCard",
       "src/vehicle-picker/VehiclePicker.tsx#VehiclePicker",
@@ -1701,7 +1682,7 @@
   },
   "multi-agent-preview-parts": {
     "status": "independent-scale",
-    "reason": "SelectedAgentPreview owns a fixed 160×112px artwork viewport; avatar diameter and position are selected by participant count (80px for one, 62px for two or three, 48px for four or more), not by control size. It has no size prop, and its caption uses the standard Text family. Evidence: src/multi-agent-chat/SelectedAgentPreview.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.test.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.web.test.tsx. Both platform routes measure the viewport and each rendered avatar at counts 1, 2, 3 and 4 with no scope, xs, and nested xs/lg scopes; physical-device fit and responsive footprint remain pending.",
+    "reason": "SelectedAgentPreview owns a fixed 160\u00d7112px artwork viewport; avatar diameter and position are selected by participant count (80px for one, 62px for two or three, 48px for four or more), not by control size. It has no size prop, and its caption uses the standard Text family. Evidence: src/multi-agent-chat/SelectedAgentPreview.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.test.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.web.test.tsx. Both platform routes measure the viewport and each rendered avatar at counts 1, 2, 3 and 4 with no scope, xs, and nested xs/lg scopes; physical-device fit and responsive footprint remain pending.",
     "evidence": [
       "src/multi-agent-chat/SelectedAgentPreview.tsx",
       "src/__tests__/SelectedAgentPreviewPublicPartScope.test.tsx",
@@ -1710,7 +1691,7 @@
       "src/__tests__/SelectedAgentPreviewExport.test.ts",
       "src/__tests__/public-parts.test.ts"
     ],
-    "verification": "native renderer and RNW DOM measure the 160×112px viewport and count-specific 80/62/48px avatar geometry for 1/2/3/4 agents under no scope, xs and nested xs/lg scopes; device fit and responsive footprint pending",
+    "verification": "native renderer and RNW DOM measure the 160\u00d7112px viewport and count-specific 80/62/48px avatar geometry for 1/2/3/4 agents under no scope, xs and nested xs/lg scopes; device fit and responsive footprint pending",
     "parts": ["src/multi-agent-chat/SelectedAgentPreview.tsx#SelectedAgentPreview"]
   },
   "agent-creator-field-parts": {
@@ -1900,5 +1881,79 @@
     ],
     "verification": "Native renderer and DOM web confirm the CTA remains 32px and the xs close box remains 20px under default, xs, lg and nested scopes. Native additionally verifies the close glyph is 10.8px and its declared 10px hitSlop on each side.",
     "parts": ["src/announcement/Announcement.tsx#Announcement"]
+  },
+  "empty-state-owned-controls": {
+    "status": "independent-scale",
+    "reason": "EmptyState has no Bloom control-size prop. Its variant selects the fixed sizes of the family-owned action Buttons and suggestion Chips; caller-provided children remain under the caller's BloomScope and resolve their own control size.",
+    "evidence": [
+      "src/empty-state/EmptyState.tsx",
+      "src/empty-state/constants.ts",
+      "src/empty-state/types.ts",
+      "docs/empty-state.mdx",
+      "src/__tests__/EmptyStatePublicPartScope.test.tsx",
+      "src/__tests__/EmptyStatePublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify family-owned action Buttons at comfortable md (36px) and compact sm (32px), and suggestion Chips at 24px, unchanged under default, xs, lg and nested scopes. The caller-owned child Button resolves default md, nearest xs/lg, nested lg over xs, and explicit md over xs.",
+    "parts": ["src/empty-state/EmptyState.tsx#EmptyState"]
+  },
+  "semantic-typography": {
+    "status": "independent-scale",
+    "reason": "Semantic typography owns reading roles and the TypographyScope type ramp, not Bloom control size. Text/Span, headings, prose helpers and Blockquote keep their type recipes under BloomScope; TypographyScope selects its separate default or desktop text scale.",
+    "evidence": [
+      "src/typography/Typography.tsx",
+      "src/typography/TypographyScope.tsx",
+      "src/typography/scale.ts",
+      "src/typography/desktop-scale.ts",
+      "docs/typography.mdx",
+      "src/__tests__/TypographyPublicPartScope.test.tsx",
+      "src/__tests__/TypographyPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify font size, line height, weight and tracking for Text (including its Span alias), H1\u2013H6, Title, Subtitle, P, Lead, Large, Small and Muted, plus Blockquote spacing, remain stable under default, xs, lg and nested control scopes. An explicit desktop TypographyScope scale remains effective independently of BloomScope.",
+    "parts": [
+      "src/typography/Typography.tsx#Blockquote",
+      "src/typography/Typography.tsx#H1",
+      "src/typography/Typography.tsx#H2",
+      "src/typography/Typography.tsx#H3",
+      "src/typography/Typography.tsx#H4",
+      "src/typography/Typography.tsx#H5",
+      "src/typography/Typography.tsx#H6",
+      "src/typography/Typography.tsx#Large",
+      "src/typography/Typography.tsx#Lead",
+      "src/typography/Typography.tsx#Muted",
+      "src/typography/Typography.tsx#P",
+      "src/typography/Typography.tsx#Small",
+      "src/typography/Typography.tsx#Subtitle",
+      "src/typography/Typography.tsx#Text",
+      "src/typography/Typography.tsx#Title",
+      "src/typography/TypographyScope.tsx#TypographyScope"
+    ]
+  },
+  "badge-control-size": {
+    "status": "applicable",
+    "reason": "Badge owns counter-size aliases that follow BloomScope and word-specific label rungs that remain explicit. Explicit size wins; the two families keep their distinct geometry and typography recipes.",
+    "evidence": [
+      "src/badge/Badge.tsx",
+      "src/badge/shared.ts",
+      "src/badge/types.ts",
+      "docs/badge.mdx",
+      "src/__tests__/BadgeChipPublicPartScope.test.tsx",
+      "src/__tests__/BadgeChipPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify default md, inherited xs/lg, nested lg over xs, explicit md over xs, and the explicit label-medium rung under a surrounding lg scope. Physical-device label fit and hit testing remain unverified.",
+    "parts": ["src/badge/Badge.tsx#Badge"]
+  },
+  "chip-control-size": {
+    "status": "applicable",
+    "reason": "Chip owns control-size aliases xs/sm/md/lg that follow BloomScope, plus explicit xl/2xl filter and touch-target rungs. Explicit size takes precedence; the component retains its role-specific geometry.",
+    "evidence": [
+      "src/chip/Chip.tsx",
+      "src/chip/shared.ts",
+      "src/chip/types.ts",
+      "docs/chip.mdx",
+      "src/__tests__/BadgeChipPublicPartScope.test.tsx",
+      "src/__tests__/BadgeChipPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify default md, inherited xs/lg, nested lg over xs, explicit md over xs, and the explicit 2xl 40px touch rung under a surrounding lg scope. Physical-device fit and hit testing remain unverified.",
+    "parts": ["src/chip/Chip.tsx#Chip"]
   }
 }

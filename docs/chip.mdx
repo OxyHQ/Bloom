@@ -8,6 +8,10 @@ order: 23
 
 A labelled pill. A filter you can toggle, a tag you can remove, or a static token.
 
+## Size and control scopes
+
+`xs`, `sm`, `md` and `lg` follow the nearest `BloomScope`; an explicit `size` wins. `xl` and `2xl` are chip-specific filter and touch-target rungs, so they remain explicit sizes rather than being substituted by a control scope. `md` is the default.
+
 `Chip` is what shadcn calls `Badge`. Bloom's own [`Badge`](/docs/bloom/main/design-tokens) is a different component — a counter or a dot that rides on another control — so if you are porting a `<Badge>Draft</Badge>` from shadcn, this is the one you want.
 
 ## Basic
