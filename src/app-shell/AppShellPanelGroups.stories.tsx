@@ -83,16 +83,19 @@ function SplitExample({
               panels: [
                 {
                   id: 'main',
+                  minHeight: 120,
                   testID: 'groups-main',
                   resizable: true,
                   content: <ReadingPanel title="Post" onOpen={() => setOpen(true)} />,
                 },
                 {
                   id: 'likes',
+                  minHeight: 120,
                   testID: 'groups-likes',
                   visible: open,
                   floating: {
                     below: 'md',
+                    whenConstrained: true,
                     open,
                     onOpenChange: setOpen,
                     placement: 'bottom',
