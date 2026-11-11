@@ -63,7 +63,7 @@ function SplitExample({
   return (
     <AppShell
       testID="groups-shell"
-      contentMaxWidth={capped ? 360 : 'none'}
+      contentMaxWidth="none"
       header={null}
       gutter={8}
       scroll={documentFlow ? 'document' : 'fixed'}
@@ -73,6 +73,7 @@ function SplitExample({
         panels: [
           {
             id: 'workspace',
+            ...(capped ? { width: 360, minWidth: 360, maxWidth: 360 } : {}),
             testID: 'groups-workspace',
             group: {
               mode: 'split',
@@ -111,7 +112,7 @@ function SplitExample({
               ],
             },
           },
-          ...(mixed
+          ...(mixed || capped
             ? [{ id: 'aside', testID: 'groups-aside', content: <ReadingPanel title="Aside" /> }]
             : []),
         ],
