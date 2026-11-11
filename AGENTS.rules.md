@@ -1,6 +1,6 @@
 # Bloom (@oxy.so/bloom)
 
-> Standards: ~/AGENTS.md, ~/Oxy/AGENTS.md. Docs: `docs/*.mdx`; history: git. Rules only, under 24 KB. Compress; never delete measured hazards. Affects EVERY app - use `bloom` agent
+> Standards: ~/Oxy/AGENTS.md. Docs: `docs/*.mdx`; history: git. Rules only, under 24 KB. Compress; never delete measured hazards. Affects EVERY app - use `bloom` agent
 
 ```bash
 bun run build       # bob build → lib/ (commonjs + module + typescript)

@@ -1,6 +1,6 @@
 # Bloom (`@oxy.so/bloom`)
 
-This is the short entry point for Bloom work. Read `~/AGENTS.md` and `~/Oxy/AGENTS.md` first. The complete current Bloom rules, including measured hazards, remain in [`AGENTS.rules.md`](AGENTS.rules.md); do not treat this index as a replacement for those rules. Task-to-guide routing is in [`docs/agent-task-index.mdx`](docs/agent-task-index.mdx). Historical investigations and raw evidence live in `docs/audits/` and are not current product contracts unless a guide says so.
+This is the short entry point for Bloom work. Read `~/Oxy/AGENTS.md` first. The complete current Bloom rules, including measured hazards, remain in [`AGENTS.rules.md`](AGENTS.rules.md); do not treat this index as a replacement for those rules. Task-to-guide routing is in [`docs/agent-task-index.mdx`](docs/agent-task-index.mdx). Historical investigations and raw evidence live in `docs/audits/` and are not current product contracts unless a guide says so.
 
 ## Always
 
