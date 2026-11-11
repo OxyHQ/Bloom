@@ -24,9 +24,7 @@
       "src/__tests__/ConcentricViewPublicPartScope.web.test.tsx"
     ],
     "verification": "native renderer and DOM web verify default md, nearest xs/lg, nested lg over xs, explicit md over xs through nested ConcentricView wrappers; fixed radius 32 remains geometry-owned. ConcentricView owns no portal or submenu. Physical-device geometry remains unverified",
-    "parts": [
-      "src/concentric/ConcentricView.tsx#ConcentricView"
-    ]
+    "parts": ["src/concentric/ConcentricView.tsx#ConcentricView"]
   },
   "connection-status-toasts": {
     "status": "delegated",
@@ -41,9 +39,7 @@
       "src/__tests__/ConnectionStatusToastsPublicPartScope.web.test.tsx"
     ],
     "verification": "native renderer and DOM web prove the reporter emits no view under xs scope and delegates an offline message without a size value; ToastHost owns the rendered surface. Platform-specific network signals remain tested at their respective boundaries",
-    "parts": [
-      "src/connection-status/ConnectionStatusToasts.tsx#ConnectionStatusToasts"
-    ]
+    "parts": ["src/connection-status/ConnectionStatusToasts.tsx#ConnectionStatusToasts"]
   },
   "code-document": {
     "status": "independent-scale",
@@ -55,9 +51,7 @@
       "src/__tests__/PublicPartScope.web.test.tsx"
     ],
     "verification": "native mock and DOM web verify independent defaults under xs/lg control scopes and explicit document/artwork sizes; physical-device rendering pending",
-    "parts": [
-      "src/code/CodeLines.tsx#CodeLines"
-    ]
+    "parts": ["src/code/CodeLines.tsx#CodeLines"]
   },
   "markdown-document": {
     "status": "independent-scale",
@@ -70,9 +64,7 @@
       "src/__tests__/PublicPartScope.web.test.tsx"
     ],
     "verification": "native mock and DOM web verify independent defaults under xs/lg control scopes and explicit document/artwork sizes; physical-device rendering pending",
-    "parts": [
-      "src/markdown/Markdown.tsx#Markdown"
-    ]
+    "parts": ["src/markdown/Markdown.tsx#Markdown"]
   },
   "audio-art": {
     "status": "independent-scale",
@@ -84,9 +76,7 @@
       "src/__tests__/PublicPartScope.web.test.tsx"
     ],
     "verification": "native mock and DOM web verify independent defaults under xs/lg control scopes and explicit document/artwork sizes; physical-device rendering pending",
-    "parts": [
-      "src/voice/AudioWaveVisualizer.tsx#AudioWaveVisualizer"
-    ]
+    "parts": ["src/voice/AudioWaveVisualizer.tsx#AudioWaveVisualizer"]
   },
   "scrollbar-visual": {
     "status": "independent-scale",
@@ -99,9 +89,7 @@
       "src/__tests__/ScrollBarPublicPartScope.web.test.tsx"
     ],
     "verification": "native renderer returns no overlay for xs/lg scopes and sm/md thickness props; web measures track/thumb at 10/4px for sm and 12/6px for md under both xs and lg scopes; actual native platform indicator appearance remains OS-owned",
-    "parts": [
-      "src/layout/ScrollBar.tsx#ScrollBar"
-    ]
+    "parts": ["src/layout/ScrollBar.tsx#ScrollBar"]
   },
   "button-delegation": {
     "status": "delegated",
@@ -728,9 +716,7 @@
       "docs/accordion.mdx"
     ],
     "verification": "native mock and RNW DOM verify default md, inherited xs, nested xs then lg, and explicit root sm over inherited lg; descendants receive the resolved scope; physical-device layout pending",
-    "parts": [
-      "src/accordion/Accordion.tsx#Accordion"
-    ]
+    "parts": ["src/accordion/Accordion.tsx#Accordion"]
   },
   "accordion-item-part": {
     "status": "delegated",
@@ -742,9 +728,7 @@
       "src/__tests__/AccordionPublicPartScope.web.test.tsx"
     ],
     "verification": "native mock and RNW DOM exercise the actual AccordionItem > AccordionTrigger/AccordionContent composition under default md, inherited xs, nested xs/lg, and explicit root sm; physical-device layout pending",
-    "parts": [
-      "src/accordion/Accordion.tsx#AccordionItem"
-    ]
+    "parts": ["src/accordion/Accordion.tsx#AccordionItem"]
   },
   "accordion-trigger-part": {
     "status": "applicable",
@@ -757,9 +741,7 @@
       "src/__tests__/AccordionPublicPartScope.web.test.tsx"
     ],
     "verification": "native mock and RNW DOM measure md 15/12/8px, xs 12/8/6px, sm 13/10/8px and lg 17/14/10px typography/padding/gap under inherited, nested and explicit sizes; native touch renderer keeps 44px minimum height; physical-device target fit pending",
-    "parts": [
-      "src/accordion/Accordion.tsx#AccordionTrigger"
-    ]
+    "parts": ["src/accordion/Accordion.tsx#AccordionTrigger"]
   },
   "accordion-content-part": {
     "status": "applicable",
@@ -772,9 +754,7 @@
       "src/__tests__/AccordionPublicPartScope.web.test.tsx"
     ],
     "verification": "native mock measures body padding at xs 8px, sm 10px, md 12px and lg 14px; RNW DOM verifies the matching size-specific body CSS recipe under inherited, nested and explicit sizes; physical-device layout pending",
-    "parts": [
-      "src/accordion/Accordion.tsx#AccordionContent"
-    ]
+    "parts": ["src/accordion/Accordion.tsx#AccordionContent"]
   },
   "text-field-core": {
     "status": "applicable",
@@ -804,9 +784,7 @@
       "src/__tests__/ConnectionDotsPublicPartScope.web.test.tsx"
     ],
     "verification": "Native-renderer and DOM web checks verify default md endpoints, inherited xs, nested lg, explicit child size, and independent dot diameter/count. This family does not own portals or submenus; physical-device geometry remains unverified.",
-    "parts": [
-      "src/connection-dots/ConnectionDots.tsx#ConnectionDots"
-    ]
+    "parts": ["src/connection-dots/ConnectionDots.tsx#ConnectionDots"]
   },
   "pending": {
     "status": "pending",
@@ -1712,9 +1690,7 @@
       "src/__tests__/public-parts.test.ts"
     ],
     "verification": "native renderer and RNW DOM measure the 160×112px viewport and count-specific 80/62/48px avatar geometry for 1/2/3/4 agents under no scope, xs and nested xs/lg scopes; device fit and responsive footprint pending",
-    "parts": [
-      "src/multi-agent-chat/SelectedAgentPreview.tsx#SelectedAgentPreview"
-    ]
+    "parts": ["src/multi-agent-chat/SelectedAgentPreview.tsx#SelectedAgentPreview"]
   },
   "agent-creator-field-parts": {
     "status": "delegated",
@@ -1726,9 +1702,7 @@
       "src/__tests__/public-parts.test.ts"
     ],
     "verification": "mock-rendered native and DOM web measure child Button geometry through the field at default md, inherited sm, nested lg and explicit md, plus a real web body portal; responsive wrapping and device verification pending",
-    "parts": [
-      "src/agent-creator/AgentCreatorField.tsx#AgentCreatorField"
-    ]
+    "parts": ["src/agent-creator/AgentCreatorField.tsx#AgentCreatorField"]
   },
   "agent-creator-section-parts": {
     "status": "delegated",
@@ -1740,9 +1714,7 @@
       "src/__tests__/public-parts.test.ts"
     ],
     "verification": "mock-rendered native and DOM web measure child Button geometry at default md, inherited sm, nested lg and explicit md through the section; native and web portal behavior exercised; responsive overflow and device verification pending",
-    "parts": [
-      "src/agent-creator/AgentCreatorSection.tsx#AgentCreatorSection"
-    ]
+    "parts": ["src/agent-creator/AgentCreatorSection.tsx#AgentCreatorSection"]
   },
   "admonition-parts": {
     "status": "applicable",
@@ -1813,9 +1785,7 @@
       "src/__tests__/CanvasPublicPartScope.web.test.tsx"
     ],
     "verification": "Native renderer and DOM web verify default md (36px), inherited sm (32px), explicit md over inherited sm, nested lg (44px), and inherited/explicit geometry through Canvas, CanvasBackground, CanvasPanel, and actual Portal. Direct size tables verify xs/sm/md/lg geometry and touch accommodation; device-rendered fit and accessibility remain separate",
-    "parts": [
-      "src/button/Button.tsx#Button"
-    ]
+    "parts": ["src/button/Button.tsx#Button"]
   },
   "activity-feed-filter-parts": {
     "status": "independent-scale",
@@ -1828,9 +1798,7 @@
       "src/__tests__/ActivityFeedFiltersPublicPartScope.web.test.tsx"
     ],
     "verification": "Native renderer and DOM web verify the published ActivityFeedFilters export remains 32px high under default md, nearest xs/lg, and nested scopes; its Chip target geometry is explicit xl and independent of the surrounding control scope. Physical-device hit testing and accessibility remain unverified.",
-    "parts": [
-      "src/activity-feed/ActivityFeedFilters.tsx#ActivityFeedFilters"
-    ]
+    "parts": ["src/activity-feed/ActivityFeedFilters.tsx#ActivityFeedFilters"]
   },
   "glyph-button-size": {
     "status": "independent-scale",
@@ -1844,9 +1812,7 @@
       "src/__tests__/GlyphButtonPublicPartScope.web.test.tsx"
     ],
     "verification": "Native renderer and DOM web measure the default 36px diameter unchanged under xs, explicit 40px under xs, and explicit 28px under lg. Glyph ratio and explicit glyph size are covered by GlyphButton.test.tsx; device-rendered hit fit and visual balance remain unverified",
-    "parts": [
-      "src/button/GlyphButton.tsx#GlyphButton"
-    ]
+    "parts": ["src/button/GlyphButton.tsx#GlyphButton"]
   },
   "activity-heatmap-hit-target": {
     "status": "adaptation",
@@ -1859,9 +1825,7 @@
       "src/__tests__/ActivityHeatmapPublicPartScope.web.test.tsx"
     ],
     "verification": "native renderer and DOM web confirm interactive 12px cells and explicit 20px cells stay chart-sized under xs/lg/nested control scopes; activation and date/count payload work. Physical-device hit testing remains unverified; the 12px touch-target gap is unresolved",
-    "parts": [
-      "src/activity-heatmap/ActivityHeatmap.tsx#ActivityHeatmap"
-    ]
+    "parts": ["src/activity-heatmap/ActivityHeatmap.tsx#ActivityHeatmap"]
   },
   "composition-chart-target": {
     "status": "independent-scale",
@@ -1873,9 +1837,7 @@
       "src/__tests__/CompositionBarPublicPartScope.web.test.tsx"
     ],
     "verification": "native renderer and DOM web verify segment role and 44px hit height at default md, nearest xs/lg, and nested lg over xs. The component owns no explicit size prop, portal or submenu; physical-device hit testing remains unverified",
-    "parts": [
-      "src/composition-bar/CompositionBar.tsx#CompositionBar"
-    ]
+    "parts": ["src/composition-bar/CompositionBar.tsx#CompositionBar"]
   },
   "contact-card-controls": {
     "status": "delegated",
@@ -1888,9 +1850,7 @@
       "src/__tests__/ContactProfileCardPublicPartScope.web.test.tsx"
     ],
     "verification": "native renderer and DOM web verify channel Button size remains sm under xs/lg, the declared 6px hitSlop remains present, and caller action sizes follow default md, nearest xs/lg, nested lg over xs, and explicit md over xs. Physical-device hit testing remains unverified",
-    "parts": [
-      "src/contact-card/ContactProfileCard.tsx#ContactProfileCard"
-    ]
+    "parts": ["src/contact-card/ContactProfileCard.tsx#ContactProfileCard"]
   },
   "divider-role": {
     "status": "independent-scale",
@@ -1903,9 +1863,7 @@
       "src/__tests__/DividerPublicPartScope.web.test.tsx"
     ],
     "verification": "Native renderer and DOM web verify a 2px explicit separator weight remains stable at default, xs, lg and nested scopes; a child Button resolves default md, inherited xs/lg, nested lg over xs and explicit md over xs. Divider owns no portal or submenu.",
-    "parts": [
-      "src/divider/Divider.tsx#Divider"
-    ]
+    "parts": ["src/divider/Divider.tsx#Divider"]
   },
   "announcement-controls": {
     "status": "independent-scale",
@@ -1920,9 +1878,7 @@
       "src/__tests__/AnnouncementPublicPartScope.web.test.tsx"
     ],
     "verification": "Native renderer and DOM web confirm the CTA remains 32px and the xs close box remains 20px under default, xs, lg and nested scopes. Native additionally verifies the close glyph is 10.8px and its declared 10px hitSlop on each side.",
-    "parts": [
-      "src/announcement/Announcement.tsx#Announcement"
-    ]
+    "parts": ["src/announcement/Announcement.tsx#Announcement"]
   },
   "empty-state-owned-controls": {
     "status": "independent-scale",
@@ -1936,9 +1892,7 @@
       "src/__tests__/EmptyStatePublicPartScope.web.test.tsx"
     ],
     "verification": "Native renderer and DOM web verify family-owned action Buttons at comfortable md (36px) and compact sm (32px), and suggestion Chips at 24px, unchanged under default, xs, lg and nested scopes. The caller-owned child Button resolves default md, nearest xs/lg, nested lg over xs, and explicit md over xs.",
-    "parts": [
-      "src/empty-state/EmptyState.tsx#EmptyState"
-    ]
+    "parts": ["src/empty-state/EmptyState.tsx#EmptyState"]
   },
   "semantic-typography": {
     "status": "independent-scale",
@@ -1984,9 +1938,7 @@
       "src/__tests__/BadgeChipPublicPartScope.web.test.tsx"
     ],
     "verification": "Native renderer and DOM web verify default md, inherited xs/lg, nested lg over xs, explicit md over xs, and the explicit label-medium rung under a surrounding lg scope. Physical-device label fit and hit testing remain unverified.",
-    "parts": [
-      "src/badge/Badge.tsx#Badge"
-    ]
+    "parts": ["src/badge/Badge.tsx#Badge"]
   },
   "chip-control-size": {
     "status": "applicable",
@@ -2000,9 +1952,7 @@
       "src/__tests__/BadgeChipPublicPartScope.web.test.tsx"
     ],
     "verification": "Native renderer and DOM web verify default md, inherited xs/lg, nested lg over xs, explicit md over xs, and the explicit 2xl 44px visual target. A native test confirms 2dp vertical hit slop (48dp total) with zero horizontal expansion; the dedicated Pixel 8a fixture probe records live taps just outside both vertical edges. Other sizes and explicit styles remain outside this target claim.",
-    "parts": [
-      "src/chip/Chip.tsx#Chip"
-    ]
+    "parts": ["src/chip/Chip.tsx#Chip"]
   },
   "avatar-control-size": {
     "status": "applicable",
@@ -2016,9 +1966,7 @@
       "src/__tests__/AvatarPublicPartScope.web.test.tsx"
     ],
     "verification": "Native renderer and DOM web verify the unscoped 40px default, inherited xs/sm/md/lg rungs, nested lg over xs, explicit md over xs, and explicit 48px diameter over lg. Portal, device proportions, initials legibility and touch fit are outside this direct scope fixture.",
-    "parts": [
-      "src/avatar/Avatar.tsx#Avatar"
-    ]
+    "parts": ["src/avatar/Avatar.tsx#Avatar"]
   },
   "icon-circle-geometry": {
     "status": "independent-scale",
@@ -2033,8 +1981,6 @@
       "src/__tests__/IconCirclePublicPartScope.web.test.tsx"
     ],
     "verification": "Native renderer and DOM web verify the default xl disc/glyph (64/28px), explicit lg geometry (52/24px), and stable geometry under xs, lg and nested BloomScope. Native type-level fixtures use BloomIconComponent directly. Physical-device proportions remain unverified.",
-    "parts": [
-      "src/icon-circle/IconCircle.tsx#IconCircle"
-    ]
+    "parts": ["src/icon-circle/IconCircle.tsx#IconCircle"]
   }
 }
