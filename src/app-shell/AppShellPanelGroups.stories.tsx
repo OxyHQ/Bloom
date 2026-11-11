@@ -50,61 +50,76 @@ function ReadingPanel({ title, onOpen }: { title: string; onOpen?: () => void })
   );
 }
 
-export const NestedSplit: Story = {
-  render: function NestedSplit() {
-    const [open, setOpen] = useState(false);
-    return (
-      <AppShell
-        testID="groups-shell"
-        contentMaxWidth="none"
-        header={null}
-        gutter={8}
-        scroll="fixed"
-        panelLayout={{
-          mode: 'split',
-          flow: 'bounded',
-          panels: [
-            {
-              id: 'workspace',
-              testID: 'groups-workspace',
-              group: {
-                mode: 'split',
-                axis: 'vertical',
-                gap: 8,
-                resizeHandle: 'pill',
-                panels: [
-                  {
-                    id: 'main',
-                    testID: 'groups-main',
-                    resizable: true,
-                    content: <ReadingPanel title="Post" onOpen={() => setOpen(true)} />,
+function SplitExample({
+  documentFlow = false,
+  mixed = false,
+}: {
+  documentFlow?: boolean;
+  mixed?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <AppShell
+      testID="groups-shell"
+      contentMaxWidth="none"
+      header={null}
+      gutter={8}
+      scroll={documentFlow ? 'document' : 'fixed'}
+      panelLayout={{
+        mode: 'split',
+        flow: documentFlow ? 'document' : 'bounded',
+        panels: [
+          {
+            id: 'workspace',
+            testID: 'groups-workspace',
+            group: {
+              mode: 'split',
+              axis: 'vertical',
+              singlePanelFlow: documentFlow ? 'document' : undefined,
+              gap: 8,
+              resizeHandle: 'pill',
+              panels: [
+                {
+                  id: 'main',
+                  testID: 'groups-main',
+                  resizable: true,
+                  content: <ReadingPanel title="Post" onOpen={() => setOpen(true)} />,
+                },
+                {
+                  id: 'likes',
+                  testID: 'groups-likes',
+                  visible: open,
+                  floating: {
+                    below: 'md',
+                    open,
+                    onOpenChange: setOpen,
+                    placement: 'bottom',
+                    label: 'Likes',
                   },
-                  {
-                    id: 'likes',
-                    testID: 'groups-likes',
-                    visible: open,
-                    floating: {
-                      below: 'md',
-                      open,
-                      onOpenChange: setOpen,
-                      placement: 'bottom',
-                      label: 'Likes',
-                    },
-                    headerActions: (
-                      <Button testID="groups-close" onPress={() => setOpen(false)}>
-                        Close likes
-                      </Button>
-                    ),
-                    content: <ReadingPanel title="Likes" />,
-                  },
-                ],
-              },
+                  headerActions: (
+                    <Button testID="groups-close" onPress={() => setOpen(false)}>
+                      Close likes
+                    </Button>
+                  ),
+                  content: <ReadingPanel title="Likes" />,
+                },
+              ],
             },
-          ],
-        }}
-      />
-    );
-  },
+          },
+          ...(mixed
+            ? [{ id: 'aside', testID: 'groups-aside', content: <ReadingPanel title="Aside" /> }]
+            : []),
+        ],
+      }}
+    />
+  );
+}
+
+export const NestedSplit: Story = { render: () => <SplitExample /> };
+export const MixedAxes: Story = { render: () => <SplitExample mixed /> };
+export const DocumentSplit: Story = {
+  parameters: { bloomScroll: 'document' },
+  render: () => <SplitExample documentFlow />,
 };
 
 export const EmailFlow: Story = {
@@ -143,6 +158,42 @@ export const EmailFlow: Story = {
                 ))}
               </View>
             ),
+          })),
+        }}
+      />
+    );
+  },
+};
+
+export const HorizontalFlow: Story = {
+  render: function HorizontalFlow() {
+    const [count, setCount] = useState(4);
+    return (
+      <AppShell
+        testID="horizontal-shell"
+        contentMaxWidth="none"
+        header={null}
+        gutter={8}
+        scroll="fixed"
+        panelLayout={{
+          mode: 'flow',
+          axis: 'horizontal',
+          horizontalScroll: 'contained',
+          header: (
+            <PageHeader
+              title="Columns"
+              actions={
+                <Button testID="horizontal-add" onPress={() => setCount(count + 1)}>
+                  Add column
+                </Button>
+              }
+            />
+          ),
+          panels: Array.from({ length: count }, (_, index) => ({
+            id: `column-${index}`,
+            testID: `horizontal-column-${index}`,
+            width: 360,
+            content: <ReadingPanel title={`Column ${index + 1}`} />,
           })),
         }}
       />
