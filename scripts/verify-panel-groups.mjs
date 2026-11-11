@@ -252,6 +252,11 @@ try {
   await page.getByRole('dialog', { name: 'Likes', exact: true }).waitFor({ state: 'hidden' });
   await boundedSplit();
   await test('groups-close').click();
+  await page.waitForFunction((height) => {
+    const main = document.querySelector('[data-testid="groups-main"]')?.getBoundingClientRect();
+    const likes = document.querySelector('[data-testid="groups-likes"]')?.getBoundingClientRect();
+    return main && likes && Math.abs(main.height - height) < 1 && likes.height === 0;
+  }, originalMain.height);
   assert.equal(
     await test('groups-post-screen').getAttribute('data-retained-check'),
     'true',
@@ -461,6 +466,14 @@ try {
       frames.every((frame) => frame.retained === 'true' && !frame.hidden && frame.opacity >= 0.99),
       'main content stays mounted and opaque throughout mode changes',
     );
+    assert.ok(
+      frames.every(
+        (frame) =>
+          frame.width >= Math.min(beforeMode, targetWidth) - 2 &&
+          frame.width <= Math.max(beforeMode, targetWidth) + 2,
+      ),
+      'mode width stays between its starting and target sizes',
+    );
     const moving = frames.filter(
       (frame) =>
         frame.width > Math.min(beforeMode, targetWidth) + 2 &&
@@ -479,6 +492,11 @@ try {
     const unsplit = await test('groups-main').boundingBox();
     await test('groups-open').click();
     await boundedSplit();
+    const splitGrip = await test('groups-main-divider').boundingBox();
+    await page.mouse.move(splitGrip.x + splitGrip.width / 2, splitGrip.y + splitGrip.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(splitGrip.x + splitGrip.width / 2, 20, { steps: 12 });
+    await page.mouse.up();
     await test('groups-close').click();
     await page.waitForFunction((height) => {
       const main = document.querySelector('[data-testid="groups-main"]')?.getBoundingClientRect();
