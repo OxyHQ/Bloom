@@ -14,6 +14,18 @@
       "src/property-insights/EnergyBadge.tsx#EnergyBadge"
     ]
   },
+  "segmented-control-size": {
+    "status": "applicable",
+    "reason": "SegmentedControl owns a coherent interactive size scale for segment height, track geometry, text and focus target. It consumes all four BloomScope rungs directly; an explicit size overrides the nearest scope.",
+    "evidence": [
+      "src/segmented-control/SegmentedControl.tsx",
+      "docs/segmented-control.mdx",
+      "src/__tests__/SegmentedControlPublicPartScope.test.tsx",
+      "src/__tests__/SegmentedControlPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native-renderer and DOM web verify default md, xs/sm/md/lg geometry, nested lg over xs, explicit lg over xs, ordinary wrappers and an actual portal; physical touch-target fit and device accessibility remain pending",
+    "parts": ["src/segmented-control/SegmentedControl.tsx#SegmentedControl"]
+  },
   "concentric-geometry": {
     "status": "independent-scale",
     "reason": "ConcentricView owns rounded-corner geometry derived from radius, padding, border and margin; it has no Bloom control-size prop. It renders children inside its geometry context without replacing BloomScope, so child controls keep the nearest scope and explicit size precedence.",
@@ -1666,7 +1678,6 @@
       "src/screen/reselect.tsx#ScreenReselectScope",
       "src/scroll/context.tsx#ScrollRestorationProvider",
       "src/search/Search.tsx#Search",
-      "src/segmented-control/SegmentedControl.tsx#SegmentedControl",
       "src/segmented-control/SegmentedControl.tsx#SegmentedControlItem",
       "src/segmented-control/SegmentedControl.tsx#SegmentedControlItemText",
       "src/settings-list/SettingsList.tsx#SettingsListDivider",
