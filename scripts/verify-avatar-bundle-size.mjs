@@ -39,7 +39,12 @@ const SCENARIOS = {
   default: {
     entry: `import { Avatar } from ${JSON.stringify(lib('avatar/index.js'))}; console.log(Avatar);`,
     define: {},
-    budget: { initial: 0.14 * MiB, initialGzip: 0.05 * MiB, total: 32.8 * MiB, totalGzip: 7.5 * MiB },
+    budget: {
+      initial: 0.14 * MiB,
+      initialGzip: 0.05 * MiB,
+      total: 32.8 * MiB,
+      totalGzip: 7.5 * MiB,
+    },
   },
   'opt-out': {
     entry: [
