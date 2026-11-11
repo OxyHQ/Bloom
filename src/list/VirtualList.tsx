@@ -23,6 +23,8 @@
 import * as React from 'react';
 import Animated from 'react-native-reanimated';
 import { useScreenScroll } from '../screen/use-screen-scroll';
+import { useIntrinsicContentHeight } from '../screen/use-intrinsic-content-height';
+import { useScreenViewport } from '../screen/context';
 import { mergeRefs } from '../hooks/merge-refs';
 import { useHeaderDockInset } from '../layout/header-dock';
 import { useNativeScrollIndicator } from '../layout/use-native-scroll-indicator';
@@ -117,6 +119,8 @@ function VirtualListNativeInner<T>(
   // Optional: a list must work outside a provider, with the platform's spinner.
   const primary = React.useContext(BloomThemeContext)?.theme.colors.primary;
   const indicator = useNativeScrollIndicator(scrollbar);
+  const publishIntrinsic = useIntrinsicContentHeight();
+  const viewport = useScreenViewport();
   const stickyHeaderOffset = useHeaderDockInset();
   const header = renderSlot(ListHeaderComponent);
 
@@ -158,6 +162,20 @@ function VirtualListNativeInner<T>(
     onScroll: props.screenBinding?.onScroll,
     scrollEventThrottle: 16,
     contentContainerStyle,
+    onContentSizeChange: publishIntrinsic
+      ? (_width, height) => {
+          const flat = StyleSheet.flatten(contentContainerStyle);
+          publishIntrinsic(flat?.flexGrow || flat?.flex || flat?.minHeight ? -1 : height);
+          if (viewport?.active) viewport.metrics.contentHeight.value = height;
+        }
+      : undefined,
+    onLayout:
+      publishIntrinsic && viewport
+        ? (event) => {
+            if (viewport.active)
+              viewport.metrics.viewportHeight.value = event.nativeEvent.layout.height;
+          }
+        : undefined,
     numColumns,
     onEndReached: onEndReached ? () => onEndReached() : undefined,
     onEndReachedThreshold,

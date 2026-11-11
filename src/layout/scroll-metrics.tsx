@@ -6,6 +6,8 @@ export interface ScrollMetrics {
   scrollY: SharedValue<number>;
   contentHeight: SharedValue<number>;
   viewportHeight: SharedValue<number>;
+  /** Natural content extent, including viewport padding; -1 when unknown. */
+  intrinsicContentHeight?: SharedValue<number>;
 }
 
 /** Internal scope boundary; overlay screens must not follow the page beneath them. */

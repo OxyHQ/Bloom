@@ -37,6 +37,8 @@ export type FlashListLikeProps<T> = Pick<
   | 'ListFooterComponent'
   | 'style'
   | 'contentContainerStyle'
+  | 'onContentSizeChange'
+  | 'onLayout'
   | 'scrollEventThrottle'
   | 'onEndReached'
   | 'onEndReachedThreshold'

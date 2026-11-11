@@ -53,6 +53,9 @@ export interface ScreenViewportValue {
   metrics: ScrollMetrics;
   active: boolean;
   scrollTo(options: { x?: number; y?: number; animated?: boolean }): void;
+  /** Internal natural-content measurement, independent of the viewport's flex fill. */
+  contentRef?: RefObject<unknown>;
+  setIntrinsicContentHeight?: (source: object, height: number | null) => void;
 }
 export const ScreenViewportContext = createContext<ScreenViewportValue | null>(null);
 /** The screen's existing scroll owner; never creates another scroll container. */
