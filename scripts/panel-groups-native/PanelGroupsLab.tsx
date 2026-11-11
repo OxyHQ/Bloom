@@ -99,18 +99,21 @@ export function PanelGroupsLab() {
                             panels: [
                               {
                                 id: 'post',
+                                minHeight: 120,
                                 resizable: true,
                                 testID: 'native-post-panel',
                                 content: <Reading title="Post" />,
                               },
                               {
                                 id: 'likes',
+                                minHeight: 120,
                                 visible: open,
                                 testID: 'native-likes-panel',
                                 ...(floating
                                   ? {
                                       floating: {
                                         below: 'md' as const,
+                                        whenConstrained: true,
                                         open,
                                         onOpenChange: setOpen,
                                         placement: 'bottom' as const,

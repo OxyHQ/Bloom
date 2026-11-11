@@ -36,6 +36,7 @@ export function panelLayoutCss(
   heights: Readonly<Record<string, number>> = {},
   fillWidth = false,
   responsiveScope = scope,
+  fixedEnvelope = false,
 ) {
   const root = `[data-bloom-layout="${scope}"]`;
   const group = `[data-bloom-panel-group="${scope}"]`;
@@ -120,7 +121,7 @@ ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
     const envelope = deck ? '100%' : `${panelEnvelope(layout, lower, gap)}px`;
     let rules = `${root} [data-bloom-reading-envelope="${scope}"]{--bloom-reading-envelope:${envelope}}\n${row}{flex-direction:${vertical ? 'column' : 'row'}!important;--bloom-panel-axis:${axis}}\n`;
     const hidden = (index: number) =>
-      `${item(index)}{--bloom-panel-visible:0;--bloom-panel-fade-delay:0ms;scale:${ordered ? 0.98 : 1};flex:0 0 0px!important;display:none!important;width:0!important;height:auto!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;--bloom-surface-presence:0;margin:0!important;contain:size;overflow:hidden!important;pointer-events:none!important}\n${item(index)}:not(:has(${PANEL_MATERIAL})){opacity:0!important}\n`;
+      `${item(index)}{--bloom-panel-visible:0;--bloom-panel-fade-delay:0ms;scale:${ordered ? 0.98 : 1};flex:0 0 0px!important;display:none!important;width:${vertical ? '100%' : '0px'}!important;height:auto!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;--bloom-surface-presence:0;margin:0!important;contain:size;overflow:hidden!important;pointer-events:none!important}\n${item(index)}:not(:has(${PANEL_MATERIAL})){opacity:0!important}\n`;
     for (let index = 0; index < layout.panels.length; index++) {
       const p = layout.panels[index]!;
       rules += `${item(index)}{--bloom-panel-floating:${p.floating && lower < breakpointPx(p.floating.below) ? 1 : 0}}\n`;
@@ -133,27 +134,37 @@ ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
       const min = vertical ? p.minHeight : p.minWidth;
       const max = vertical ? p.maxHeight : p.maxWidth;
       const natural = vertical && (document || layout.mode === 'flow');
-      const basis = forced
-        ? natural
-          ? 'auto'
-          : '100%'
-        : dim !== undefined
-          ? `${dim}px`
-          : natural
+      const soleSplit = !deck && !natural && shown.length === 1;
+      const basis =
+        forced || soleSplit
+          ? natural
             ? 'auto'
+            : '100%'
+          : dim !== undefined
+            ? `${dim}px`
+            : natural
+              ? 'auto'
+              : deck
+                ? `${DEFAULT_PANEL_WIDTH}px`
+                : '0px';
+      const grow =
+        forced || soleSplit
+          ? 1
+          : natural
+            ? 0
             : deck
-              ? `${DEFAULT_PANEL_WIDTH}px`
-              : '0px';
-      const grow = forced
-        ? 1
-        : natural
-          ? 0
-          : deck
-            ? Math.max(0, p.span ?? 0)
-            : flexible && dim !== undefined
-              ? 0
-              : (p.span ?? 1);
-      rules += `${item(index)}{--bloom-panel-alone-display:${shown.length === 1 ? 'flex' : 'none'};--bloom-panel-multiple-display:${shown.length === 1 ? 'none' : 'flex'};--bloom-panel-visible:1;--bloom-surface-presence:1;--bloom-panel-fade-delay:${ordered ? 530 : 0}ms;scale:1;display:flex!important;flex:var(${panelGrowProperty(scope, index)}, ${grow}) ${deck || natural ? 0 : 1} ${liveSize(index, basis)}!important;width:${vertical ? '100%' : pageDeck ? (forced ? 'calc(var(--bloom-deck-viewport) - var(--bloom-frame-end))' : liveSize(index, `${dim ?? DEFAULT_PANEL_WIDTH}px`)) : dim !== undefined && !forced ? `${dim}px` : 'auto'}!important;height:auto!important;min-width:${vertical || forced ? 0 : (min ?? 0)}px!important;max-width:${vertical || forced ? '100%' : max === undefined ? 'none' : `${max}px`}!important;min-height:${vertical && !forced ? (min ?? 0) : 0}px!important;max-height:${vertical && !forced && max !== undefined ? `${max}px` : 'none'}!important;opacity:1!important;margin-inline-start:${!vertical && position > 0 ? gap : 0}px!important;margin-top:${vertical && position > 0 ? gap : 0}px!important}\n`;
+              ? Math.max(0, p.span ?? 0)
+              : fixedEnvelope && dim !== undefined && p.span === undefined
+                ? 0
+                : flexible && dim !== undefined
+                  ? 0
+                  : (p.span ?? 1);
+      rules += `${item(index)}{--bloom-panel-alone-display:${shown.length === 1 ? 'flex' : 'none'};--bloom-panel-multiple-display:${shown.length === 1 ? 'none' : 'flex'};--bloom-panel-visible:1;--bloom-surface-presence:1;--bloom-panel-fade-delay:${ordered ? 530 : 0}ms;scale:1;display:flex!important;flex:var(${panelGrowProperty(scope, index)}, ${grow}) ${deck || natural ? 0 : 1} ${liveSize(index, basis)}!important;width:${vertical ? '100%' : pageDeck ? (forced ? 'calc(var(--bloom-deck-viewport) - var(--bloom-frame-end))' : liveSize(index, `${dim ?? DEFAULT_PANEL_WIDTH}px`)) : dim !== undefined && !forced ? `${dim}px` : 'auto'}!important;height:auto!important;min-width:${vertical || forced ? 0 : (min ?? 0)}px!important;max-width:${vertical || forced ? '100%' : max === undefined ? (deck ? 'none' : '100%') : `${max}px`}!important;min-height:${vertical && !forced ? (min ?? 0) : 0}px!important;max-height:${vertical && !forced && max !== undefined ? `${max}px` : 'none'}!important;opacity:1!important;margin-inline-start:${!vertical && position > 0 ? gap : 0}px!important;margin-top:${vertical && position > 0 ? gap : 0}px!important}\n`;
+      // Intrinsic document content must exist at the owner handoff's first
+      // layout. Interpolating 0px -> auto temporarily collapses the document,
+      // clamps its transferred offset to zero, and flashes the first paragraph.
+      if (natural)
+        rules += `${item(index)}{interpolate-size:numeric-only;transition-property:width,min-width,max-width,margin-inline-start,margin-top,opacity,scale,display}\n`;
       const entering = item(index).replace(
         group,
         `${group}[data-bloom-panel-ready]:not([data-bloom-panel-ordering])`,
@@ -215,7 +226,8 @@ ${row}{width:100%!important;min-width:0!important}
         rules +=
           p.id === active?.id
             ? `${item(index)}{--bloom-panel-alone-display:flex;--bloom-panel-multiple-display:none;--bloom-panel-visible:1;display:flex!important;flex:1 1 0px!important;min-width:0!important;min-height:0!important;max-width:100%!important;max-height:none!important;margin:0!important;opacity:1!important;--bloom-surface-presence:1}`
-            : hidden(index);
+            : hidden(index) +
+              (p.floating?.whenConstrained ? `${item(index)}{--bloom-panel-floating:1}` : '');
       });
       rules += '}\n';
     }

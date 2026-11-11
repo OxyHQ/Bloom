@@ -267,7 +267,11 @@ export function resolvePanelFlex(
   return layout.panels.map((declared) => {
     const position = shown.findIndex((candidate) => candidate.id === declared.id);
     const floating = declared.floating
-      ? { floating: shellWidth < breakpointPx(declared.floating.below) }
+      ? {
+          floating:
+            shellWidth < breakpointPx(declared.floating.below) ||
+            (!!declared.floating.whenConstrained && compact && declared.id !== active?.id),
+        }
       : {};
     if (position < 0)
       return {
