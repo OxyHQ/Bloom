@@ -857,7 +857,6 @@
       "src/avatar-flight/AvatarAnchor.tsx#AvatarAnchor",
       "src/avatar-flight/AvatarFlightLayer.tsx#AvatarFlightLayer",
       "src/avatar-group/AvatarGroup.tsx#AvatarGroup",
-      "src/avatar/Avatar.tsx#Avatar",
       "src/avatar/context.ts#AvatarPlaceholderProvider",
       "src/badge/Badge.tsx#Badge",
       "src/booking/BookingBar.tsx#BookingBar",
@@ -1701,7 +1700,7 @@
   },
   "multi-agent-preview-parts": {
     "status": "independent-scale",
-    "reason": "SelectedAgentPreview owns a fixed 160×112px artwork viewport; avatar diameter and position are selected by participant count (80px for one, 62px for two or three, 48px for four or more), not by control size. It has no size prop, and its caption uses the standard Text family. Evidence: src/multi-agent-chat/SelectedAgentPreview.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.test.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.web.test.tsx. Both platform routes measure the viewport and each rendered avatar at counts 1, 2, 3 and 4 with no scope, xs, and nested xs/lg scopes; physical-device fit and responsive footprint remain pending.",
+    "reason": "SelectedAgentPreview owns a fixed 160\u00d7112px artwork viewport; avatar diameter and position are selected by participant count (80px for one, 62px for two or three, 48px for four or more), not by control size. It has no size prop, and its caption uses the standard Text family. Evidence: src/multi-agent-chat/SelectedAgentPreview.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.test.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.web.test.tsx. Both platform routes measure the viewport and each rendered avatar at counts 1, 2, 3 and 4 with no scope, xs, and nested xs/lg scopes; physical-device fit and responsive footprint remain pending.",
     "evidence": [
       "src/multi-agent-chat/SelectedAgentPreview.tsx",
       "src/__tests__/SelectedAgentPreviewPublicPartScope.test.tsx",
@@ -1710,7 +1709,7 @@
       "src/__tests__/SelectedAgentPreviewExport.test.ts",
       "src/__tests__/public-parts.test.ts"
     ],
-    "verification": "native renderer and RNW DOM measure the 160×112px viewport and count-specific 80/62/48px avatar geometry for 1/2/3/4 agents under no scope, xs and nested xs/lg scopes; device fit and responsive footprint pending",
+    "verification": "native renderer and RNW DOM measure the 160\u00d7112px viewport and count-specific 80/62/48px avatar geometry for 1/2/3/4 agents under no scope, xs and nested xs/lg scopes; device fit and responsive footprint pending",
     "parts": ["src/multi-agent-chat/SelectedAgentPreview.tsx#SelectedAgentPreview"]
   },
   "agent-creator-field-parts": {
@@ -1900,5 +1899,19 @@
     ],
     "verification": "Native renderer and DOM web confirm the CTA remains 32px and the xs close box remains 20px under default, xs, lg and nested scopes. Native additionally verifies the close glyph is 10.8px and its declared 10px hitSlop on each side.",
     "parts": ["src/announcement/Announcement.tsx#Announcement"]
+  },
+  "avatar-control-size": {
+    "status": "applicable",
+    "reason": "Avatar maps an inherited BloomScope size alias to its visual identity diameter when its own size is omitted; explicit named rungs and numeric diameters override the scope. The default without a size scope remains 40dp.",
+    "evidence": [
+      "src/avatar/Avatar.tsx",
+      "src/avatar/initials.ts",
+      "src/avatar/types.ts",
+      "docs/avatar.mdx",
+      "src/__tests__/AvatarPublicPartScope.test.tsx",
+      "src/__tests__/AvatarPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the unscoped 40px default, inherited xs/sm/md/lg rungs, nested lg over xs, explicit md over xs, and explicit 48px diameter over lg. Portal, device proportions, initials legibility and touch fit are outside this direct scope fixture.",
+    "parts": ["src/avatar/Avatar.tsx#Avatar"]
   }
 }
