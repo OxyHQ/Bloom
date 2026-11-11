@@ -33,6 +33,43 @@ function screenViewport(name) {
   return test(`groups-${name}-screen`).locator('[data-bloom-screen-viewport="element"]');
 }
 
+async function documentFrame(name) {
+  const mask = test('groups-main').getByTestId('content-panel-bleed-mask');
+  const frame = await mask.boundingBox();
+  const viewport = page.viewportSize();
+  assert.ok(frame && Math.abs(frame.y - 8) < 1, 'document mask stays at the top viewport gutter');
+  assert.ok(
+    Math.abs(frame.y + frame.height - viewport.height + 8) < 1,
+    'document mask stays at the bottom viewport gutter',
+  );
+  const png = await page.screenshot({ path: `${artifacts}/${name}.png` });
+  const painted = await page.evaluate(async (base64) => {
+    const image = new Image();
+    image.src = `data:image/png;base64,${base64}`;
+    await image.decode();
+    const canvas = document.createElement('canvas');
+    canvas.width = image.width;
+    canvas.height = image.height;
+    const context = canvas.getContext('2d');
+    context.drawImage(image, 0, 0);
+    const samples = [1, innerHeight - 2].map((y) =>
+      [...context.getImageData(Math.floor(innerWidth / 2), y, 1, 1).data].slice(0, 3),
+    );
+    context.fillStyle = getComputedStyle(
+      document.querySelector('[data-testid="groups-shell"]'),
+    ).backgroundColor;
+    context.fillRect(0, 0, 1, 1);
+    const expected = [...context.getImageData(0, 0, 1, 1).data].slice(0, 3);
+    return { samples, expected };
+  }, png.toString('base64'));
+  assert.ok(
+    painted.samples.every((sample) =>
+      sample.every((value, index) => Math.abs(value - painted.expected[index]) <= 2),
+    ),
+    'painted top and bottom gutters mask scrolling content',
+  );
+}
+
 async function splitGeometry() {
   return page.evaluate(() => {
     const box = (id) => {
@@ -205,6 +242,10 @@ try {
     sheet && sheet.y >= 0 && sheet.y + sheet.height <= 845,
     'mobile sheet stays within the viewport',
   );
+  assert.ok(
+    sheet.height <= 844 * 0.9 + 1 && sheet.y >= 844 * 0.1 - 1,
+    'actual sheet surface honors its 90% viewport ceiling',
+  );
   await page.screenshot({ path: `${artifacts}/mobile-sheet.png` });
   await test('groups-close').click();
   await page.getByRole('dialog', { name: 'Likes', exact: true }).waitFor({ state: 'hidden' });
@@ -243,6 +284,7 @@ try {
   await page.mouse.wheel(0, 200);
   await page.waitForFunction(() => window.scrollY >= 100);
   const documentOffset = await page.evaluate(() => window.scrollY);
+  await documentFrame('document-before-split');
   // Preserve the reading position while invoking an offscreen header action.
   // Actual pointer hit testing is required separately in the bounded fixture.
   await test('groups-open').evaluate((node) => node.click());
@@ -263,6 +305,7 @@ try {
   );
   await test('groups-close').evaluate((node) => node.click());
   await page.waitForFunction((offset) => Math.abs(window.scrollY - offset) < 2, documentOffset);
+  await documentFrame('document-after-split');
   assert.equal(
     await test('groups-post-screen').getAttribute('data-retained-check'),
     'true',
