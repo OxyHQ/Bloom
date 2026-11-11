@@ -76,3 +76,11 @@ not between items.
 `SettingsListDivider` is the inset variant for grouped rows; prefer it inside a
 settings group so the rule starts after the icon column instead of cutting the
 card in half.
+
+## Control scope
+
+`Divider` has no Bloom control-size prop. `thickness` and the variant geometry
+describe the separator, so they remain unchanged under `BloomScope`. A control
+passed as `children` remains caller-owned and inherits the caller's scope.
+Native-renderer and DOM web tests verify the separator weight and child Button
+at default, `xs`, `lg`, nested and explicit-size scopes.
