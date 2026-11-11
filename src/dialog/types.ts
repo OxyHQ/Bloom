@@ -337,6 +337,8 @@ export type DialogProps = React.PropsWithChildren<{
   maxWidth?: number;
   /** Bottom-sheet max height as a fraction of the viewport height. Defaults to `0.9`. */
   maxHeightRatio?: number;
+  /** Bottom placement: content grows intrinsically; fill bounds a Screen or virtualized list. */
+  sizing?: 'content' | 'fill';
   /**
    * How far the bottom sheet is presented, mirrored on the UI thread: `0`
    * closed, `1` fully up, every value in between while it is dragged or

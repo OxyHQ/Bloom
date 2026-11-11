@@ -459,12 +459,15 @@ flex, laid out by Yoga in the pass that lays the resized window out:
 - panel tracks are `resolvePanelFlex`'s flex values, the CSS compositor's
   (`flex: <span> 1 0px` for a flexible track, its width for a fixed one), moved
   by Reanimated only while the layout itself changes (`animatePanelFlex`);
-- flexible tracks with minimums keep the CSS answer, `clamp(λ · span, min, max)`:
-  Yoga would start them at their minimum and divide the rest, so a track the
-  room holds at its minimum is given to Yoga as a fixed track, at thresholds of
-  the room (`flexibleRoomThresholds`); `PanelNativeFlex.test.tsx` lays the very
-  tree React rendered out with real Yoga at several widths and holds every track
-  to `resolvePanelTracks`.
+- minimums and maximums remain direct flex constraints. Yoga starts flexible
+  tracks from their minimums while browser flexbox can distribute differently.
+  The former JS water-fill compensation reproduced browser pixel sizes but was
+  itself a second distribution engine. It has been removed: `PanelNativeFlex.test.tsx`
+  retains the unequal-minimum regression fixtures and lays the rendered tree out
+  with real Yoga to verify bounds, full space use and resize without a React render.
+  Equal constraints give equal splits; unequal bound constraints do not promise
+  identical cross-platform pixel ratios. Resize gestures read actual rendered sizes.
+
 
 Before, the shell and each panel group measured themselves with `onLayout` →
 `setState` and sized their regions in pixels: every frame of a resize was two

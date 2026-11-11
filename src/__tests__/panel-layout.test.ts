@@ -163,3 +163,19 @@ describe('vertical and responsive panel tracks', () => {
     ]);
   });
 });
+
+describe('growing panel layouts', () => {
+  it('keeps horizontal flow sizes beyond the available room', () => {
+    const layout: AppShellPanelLayout = {
+      mode: 'flow',
+      axis: 'horizontal',
+      panels: [
+        { id: 'a', width: 400 },
+        { id: 'b', width: 400 },
+      ],
+    };
+    expect(resolvePanelTracks(layout, 500, 1000, 12).map((track) => track.width)).toEqual([
+      400, 400,
+    ]);
+  });
+});

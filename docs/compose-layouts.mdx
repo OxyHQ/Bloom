@@ -498,3 +498,63 @@ Check document flow, bounded Deck, compact layout, Back, delayed loading and
 account switching before removing a legacy adapter. Cached data can render
 immediately; a cold network request still needs an accurate skeleton and error
 state rather than a promise of zero latency.
+
+## Nested splits and growing groups
+
+A panel descriptor can contain `group: AppShellPanelLayout`. This is a transparent
+layout node: it owns no Surface, Screen, navigation history or scroll-restoration
+namespace. Its leaves use the same panel renderer as root and Deck panels. IDs
+must be unique among siblings; the same ID can appear at another group depth.
+Keep the group and its primary leaf mounted when adding an auxiliary panel.
+
+```tsx
+const layout: AppShellPanelLayout = {
+  flow: 'document',
+  panels: [{
+    id: 'main',
+    group: {
+      mode: 'split',
+      axis: 'vertical',
+      flow: 'bounded',
+      singlePanelFlow: 'document',
+      panels: [
+        { id: 'main', resizable: true, content: postScreen },
+        {
+          id: 'likes', visible: likesOpen, content: likesScreen,
+          floating: {
+            below: 'md', open: likesOpen, onOpenChange: setLikesOpen,
+            label: likesLabel, placement: 'bottom',
+          },
+        },
+      ],
+    },
+  }],
+};
+```
+
+`split` distributes the group's bounded space using flex weights (`span`, default
+1). Each leaf Screen owns its own scroll. `flow` adds panels without shrinking
+existing panels to fit: horizontal flow uses each width (default 360), and vertical
+flow uses content height unless a height is declared. The group owns scrolling
+along its axis. Both modes accept either axis and groups can nest recursively.
+Existing `deck` retains its document-horizontal-scroll defaults; `flow` defaults
+to contained scrolling. Resizable split dividers redistribute a pair; flow
+resizing changes that panel's resting dimension.
+
+`singlePanelFlow: 'document'` explicitly lets a nested split's sole inline leaf
+return to document scrolling when its parent is a document region. When another
+inline leaf opens, the group occupies the available viewport height and the
+leaves scroll independently. Hidden and floating leaves do not count. Native
+continues using native scroll owners. The group and leaf identities stay stable.
+Compact presentation follows the enclosing shell's responsive scope, so a narrow
+column inside a desktop workspace does not accidentally become a phone sheet.
+
+Geometry is owned by CSS flexbox on web and Yoga on native. NativeWind classes
+express static structural layout; dynamic flex constraints and gesture values
+are applied by the shared renderer. There is no JavaScript water-fill pass in
+normal native layout. Native and browser flex engines can distribute spare space
+differently when unequal minimums bind; minimums remain explicit constraints.
+Use equal constraints (or zero minimums) for an equal split. Explicit minimums
+that cannot fit keep the existing active-panel capacity fallback; omit them when
+both panels must remain visible in very short windows. Direct resize gestures
+may measure a panel and commit weights or dimensions once the gesture ends.
