@@ -24,7 +24,13 @@ function ReadingPanel({ title, onOpen }: { title: string; onOpen?: () => void })
       header={
         <PageHeader
           title={title}
-          actions={onOpen ? <Button testID="groups-open" onPress={onOpen}>Likes</Button> : undefined}
+          actions={
+            onOpen ? (
+              <Button testID="groups-open" onPress={onOpen}>
+                Likes
+              </Button>
+            ) : undefined
+          }
         />
       }
     >
@@ -34,7 +40,9 @@ function ReadingPanel({ title, onOpen }: { title: string; onOpen?: () => void })
             {saved ? 'Saved' : 'Save'}
           </Button>
           {Array.from({ length: 35 }, (_, index) => (
-            <Text key={index} className="py-4">{title} paragraph {index + 1}. Each panel keeps its own reading position.</Text>
+            <Text key={index} className="py-4">
+              {title} paragraph {index + 1}. Each panel keeps its own reading position.
+            </Text>
           ))}
         </View>
       </ScreenScrollView>
@@ -82,7 +90,11 @@ export const NestedSplit: Story = {
                       placement: 'bottom',
                       label: 'Likes',
                     },
-                    headerActions: <Button testID="groups-close" onPress={() => setOpen(false)}>Close likes</Button>,
+                    headerActions: (
+                      <Button testID="groups-close" onPress={() => setOpen(false)}>
+                        Close likes
+                      </Button>
+                    ),
                     content: <ReadingPanel title="Likes" />,
                   },
                 ],
@@ -108,7 +120,16 @@ export const EmailFlow: Story = {
         panelLayout={{
           mode: 'flow',
           axis: 'vertical',
-          header: <PageHeader title="Emails" actions={<Button testID="flow-add" onPress={() => setCount(count + 1)}>Add email</Button>} />,
+          header: (
+            <PageHeader
+              title="Emails"
+              actions={
+                <Button testID="flow-add" onPress={() => setCount(count + 1)}>
+                  Add email
+                </Button>
+              }
+            />
+          ),
           panels: Array.from({ length: count }, (_, index) => ({
             id: `email-${index}`,
             testID: `flow-email-${index}`,
@@ -116,7 +137,9 @@ export const EmailFlow: Story = {
               <View className="gap-4 p-6">
                 <Text>Email {index + 1}</Text>
                 {Array.from({ length: index % 2 === 0 ? 5 : 8 }, (_, paragraph) => (
-                  <Text key={paragraph}>Message paragraph {paragraph + 1}. Messages add to the common scroll area.</Text>
+                  <Text key={paragraph}>
+                    Message paragraph {paragraph + 1}. Messages add to the common scroll area.
+                  </Text>
                 ))}
               </View>
             ),
