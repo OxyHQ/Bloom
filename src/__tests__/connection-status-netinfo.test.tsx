@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { render } from '@testing-library/react-native';
 import type NetInfo from '@react-native-community/netinfo';
 
@@ -50,6 +50,7 @@ const NETINFO_TYPES_STILL_MATCH: RealNetInfoIsCompatible = true;
 
 type Harness = {
   ConnectionStatusToasts: React.ComponentType<Record<string, never>>;
+  BloomScope: typeof import('../appearance').BloomScope;
   toast: { error: jest.Mock; warning: jest.Mock; success: jest.Mock };
 };
 
@@ -80,8 +81,9 @@ function loadWithNetInfo(factory: () => unknown): Harness {
     // ignored and the suite would silently exercise the REAL netinfo.
     const { ConnectionStatusToasts } =
       require('../connection-status') as typeof import('../connection-status');
+    const { BloomScope } = require('../appearance') as typeof import('../appearance');
 
-    harness = { ConnectionStatusToasts, toast };
+    harness = { ConnectionStatusToasts, BloomScope, toast };
   });
 
   if (!harness) throw new Error('module isolation did not run');
@@ -113,16 +115,24 @@ describe('ConnectionStatusToasts netinfo loading', () => {
   it('subscribes through the named export when the peer is installed', () => {
     const unsubscribe = jest.fn();
     const addEventListener = jest.fn().mockReturnValue(unsubscribe);
-    const { ConnectionStatusToasts, toast } = loadWithNetInfo(() => ({ addEventListener }));
+    const { ConnectionStatusToasts, BloomScope, toast } = loadWithNetInfo(() => ({
+      addEventListener,
+    }));
 
-    const view = render(<ConnectionStatusToasts />);
+    const subject = (
+      <BloomScope size="xs">
+        <ConnectionStatusToasts />
+      </BloomScope>
+    );
+    const view = render(subject);
+    expect(view.toJSON()).toBeNull();
     expect(addEventListener).toHaveBeenCalledTimes(1);
     expect(warn).not.toHaveBeenCalled();
 
     const emit = addEventListener.mock.calls[0][0] as (s: ReturnType<typeof state>) => void;
-    view.rerender(<ConnectionStatusToasts />);
+    view.rerender(subject);
     emit(state(false));
-    view.rerender(<ConnectionStatusToasts />);
+    view.rerender(subject);
 
     expect(toast.error).toHaveBeenCalledWith('No internet connection', expect.anything());
 
