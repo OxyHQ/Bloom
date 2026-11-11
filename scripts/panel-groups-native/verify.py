@@ -109,6 +109,8 @@ current = capture("native-closed")
 assert not rows(current, "Likes")
 assert rows(current, "Post")[0] == post_after[0]
 report["closeRetainsReadingPosition"] = True
+assert find(current, "native-open").get("content-desc") == "Split; completed exits 1"
+report["inlineExitCompletion"] = True
 
 tap(current, "native-sheet")
 current = capture("native-sheet")
@@ -124,6 +126,8 @@ adb("shell", "input", "keyevent", "4")
 current = capture("native-sheet-closed")
 assert not rows(current, "Likes")
 report["nativeSheetAndBackDismiss"] = True
+assert find(current, "native-open").get("content-desc") == "Split; completed exits 2"
+report["sheetExitCompletion"] = True
 
 tap(current, "native-flow")
 current = capture("native-flow")

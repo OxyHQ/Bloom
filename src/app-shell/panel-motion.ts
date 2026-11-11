@@ -3,6 +3,7 @@ import {
   cancelAnimation,
   withDelay,
   withTiming,
+  runOnJS,
   type SharedValue,
 } from 'react-native-reanimated';
 
@@ -90,6 +91,7 @@ export function animatePanelFlex(
   },
   ordered: boolean,
   immediate: boolean,
+  onExitComplete?: () => void,
 ) {
   'worklet';
   const geometry = [
@@ -110,24 +112,50 @@ export function animatePanelFlex(
     values.max.value = target.max;
     values.opacity.value = target.visible ? 1 : 0;
     values.scale.value = 1;
+    if (!target.visible) onExitComplete?.();
     return;
   }
   const geometryDelay = ordered ? PANEL_EXIT_MS : 0;
   const fadeDelay =
     ordered && target.visible && values.opacity.value < 1 ? PANEL_ENTER_DELAY_MS : 0;
   const timing = { duration: PANEL_LAYOUT_MS, easing: ease };
+  // Every geometry channel has the same delay/duration. Choose one that
+  // actually changes; a zero-basis split often animates only grow/minimums.
+  const completionOwner =
+    !target.visible && onExitComplete
+      ? (geometry.find(([shared, to]) => shared.value !== to)?.[0] ??
+        (Number.isFinite(values.max.value) &&
+        Number.isFinite(target.max) &&
+        values.max.value !== target.max
+          ? values.max
+          : values.opacity))
+      : undefined;
+  const completed = (finished?: boolean) => {
+    'worklet';
+    if (finished && onExitComplete) runOnJS(onExitComplete)();
+  };
   for (const [shared, to] of geometry)
-    shared.value = withDelay(geometryDelay, withTiming(to, timing));
+    shared.value = withDelay(
+      geometryDelay,
+      withTiming(to, timing, shared === completionOwner ? completed : undefined),
+    );
   values.max.value =
     Number.isFinite(values.max.value) && Number.isFinite(target.max)
-      ? withDelay(geometryDelay, withTiming(target.max, timing))
+      ? withDelay(
+          geometryDelay,
+          withTiming(target.max, timing, values.max === completionOwner ? completed : undefined),
+        )
       : target.max;
   values.opacity.value = withDelay(
     fadeDelay,
-    withTiming(target.visible ? 1 : 0, {
-      duration: ordered ? PANEL_EXIT_MS : PANEL_LAYOUT_MS,
-      easing: ease,
-    }),
+    withTiming(
+      target.visible ? 1 : 0,
+      {
+        duration: ordered ? PANEL_EXIT_MS : PANEL_LAYOUT_MS,
+        easing: ease,
+      },
+      values.opacity === completionOwner ? completed : undefined,
+    ),
   );
   values.scale.value = withDelay(
     fadeDelay,

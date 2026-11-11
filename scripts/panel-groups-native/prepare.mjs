@@ -15,6 +15,8 @@ const files = [
   'src/app-shell/AppShellPanelLayout.tsx',
   'src/app-shell/panel-layout.ts',
   'src/app-shell/panel-layout-types.ts',
+  'src/app-shell/panel-motion.ts',
+  'src/app-shell/use-panel-exit-completion.ts',
   'src/dialog/Dialog.tsx',
   'src/dialog/Dialog.web.tsx',
   'src/bottom-sheet/BottomSheetBase.tsx',

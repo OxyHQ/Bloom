@@ -46,6 +46,8 @@ export interface AppShellPanelDefinition extends Omit<AppShellPanelProps, 'child
   reorderLabel?: string;
   /** Explicit semantic visibility, independent of responsive eligibility. */
   visible?: boolean;
+  /** Actual exit completion; release payload after visible becomes false. Reopening cancels it. */
+  onExitComplete?: () => void;
   content?: ReactNode;
   /** A transparent, independently composed group. Keep its id and child ids stable. */
   group?: AppShellPanelLayout;

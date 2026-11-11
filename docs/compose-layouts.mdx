@@ -556,6 +556,23 @@ handoff, and reduced motion transfers immediately. Document restoration follows
 only the primary inline branch through transparent groups; a parent cannot restore
 the window while its primary descendant still owns bounded scrolling. The group
 and leaf identities stay stable.
+When application data should be released after closing, keep the descriptor and
+its payload while setting `visible: false`, then release that payload in
+`onExitComplete`. The callback belongs to that exit: reopening cancels it, and
+replacing a callback during the exit does not redirect the old completion. It
+runs after owned CSS/native geometry and paint finish, or after the floating
+Dialog closes. Reduced motion and nonanimated retained layouts complete without
+an extra delay. Initially hidden panels and responsive presentation changes do
+not count as exits. The app still owns account, route and request identity:
+guard a delayed release against those identities, and clear private data
+immediately when its account or host is removed. Bloom never caches the app's
+React content to manufacture an outgoing frame.
+
+Transparent groups pass entry/exit presence to their painted descendants.
+Surviving primary content stays opaque; an outgoing group fades before its
+children become narrow strips. Material hosts and their ancestors never fade,
+so backdrop sampling remains intact.
+
 Compact presentation follows the enclosing shell's responsive scope, so a narrow
 column inside a desktop workspace does not accidentally become a phone sheet.
 

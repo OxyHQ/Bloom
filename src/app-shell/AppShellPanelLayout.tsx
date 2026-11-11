@@ -48,6 +48,7 @@ import { ResizeHandle } from '../layout/ResizeHandle';
 import { PanelErrorBoundary } from '../error-boundary/PanelErrorBoundary';
 import { PANEL_EXIT_MS, PANEL_LAYOUT_MS, animatePanelFlex } from './panel-motion';
 import { panelGeometryTransitions } from './panel-transitions';
+import { usePanelExitCompletion } from './use-panel-exit-completion';
 import { UNSET } from '../styles/animated-style';
 import { useMeasuredSizeClass, useWindowSizeWhile } from '../hooks/use-width-class';
 import { IS_WEB } from '../styles/platform';
@@ -182,10 +183,12 @@ export function createPanelLayoutView(
     panel,
     open,
     children,
+    onClosed,
     testID,
   }: {
     panel: AppShellPanelDefinition;
     open: boolean;
+    onClosed: () => void;
     children: React.ReactNode;
     testID?: string;
   }) {
@@ -211,6 +214,7 @@ export function createPanelLayoutView(
           // An explicit state close already belongs to the host. Only surface
           // dismissal reports a new intent, after Dialog's exit completes.
           if (intent.current) panel.floating!.onOpenChange(false);
+          onClosed();
         }}
       >
         {children}
@@ -584,6 +588,14 @@ export function createPanelLayoutView(
         : transition === 'exit-before-enter'
           ? PANEL_EXIT_MS
           : PANEL_LAYOUT_MS;
+    const { captureNativeCompletion, completeFloating } = usePanelExitCompletion({
+      present: panel.visible !== false && (!track.floating || floatingOpen),
+      floating: !!track.floating,
+      css: !!cssScope,
+      reducedMotion: reduced,
+      owner: panelRef,
+      onExitComplete: panel.onExitComplete,
+    });
     useSurfacePresenceContent(cssScope ? null : panelRef, {
       presence: track.visible ? 1 : 0,
       duration: fadeMs,
@@ -609,6 +621,7 @@ export function createPanelLayoutView(
         },
         transition === 'exit-before-enter',
         reduced || resized || held,
+        track.floating ? undefined : captureNativeCompletion(),
       );
     }, [
       track.grow,
@@ -617,6 +630,8 @@ export function createPanelLayoutView(
       track.max,
       track.gap,
       track.visible,
+      track.floating,
+      panel.visible,
       grow,
       basis,
       min,
@@ -627,6 +642,7 @@ export function createPanelLayoutView(
       transition,
       reduced,
       cssScope,
+      captureNativeCompletion,
     ]);
     // Every key on every run (`styles/animated-style.ts`).
     // The track's basis is its main-axis SIZE (`width` across, `height` down)
@@ -963,7 +979,12 @@ export function createPanelLayoutView(
           </AnimatedView>
           {track.floating && panel.floating ? (
             <SafeAreaInsetsContext.Provider value={windowInsets}>
-              <PanelFloatingSurface panel={panel} open={floatingOpen} testID={testID}>
+              <PanelFloatingSurface
+                panel={panel}
+                open={floatingOpen}
+                onClosed={completeFloating}
+                testID={testID}
+              >
                 <SafeAreaInsetsContext.Provider value={{ ...windowInsets, top: 0 }}>
                   <AppShellPanelContext.Provider value={floatingValue}>
                     <ColorScope colorPreset={scopeColorPreset} seed={scopeSeed} asChild>

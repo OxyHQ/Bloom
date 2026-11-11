@@ -6,6 +6,7 @@
 
 - Panel descriptors accept a transparent `group` of horizontal or vertical panels, nested recursively. `mode: 'split'` divides available space; `mode: 'flow'` grows along its axis with a shared scroll owner. Existing Deck panels use the same renderer. Nested separated groups use their own shell gutter even when the parent group has no gap.
 - Nested splits can opt into `singlePanelFlow: 'document'`: the sole inline panel keeps document scrolling and its viewport mask; opening an auxiliary panel creates a bounded split and closing restores the document reading position. Compact panels support `floating.placement: 'bottom'` with one Dialog presentation.
+- Panel descriptors expose `onExitComplete` so apps can release outgoing payloads after their actual inline or sheet exit. Reopening cancels completion; no application content is cached by the layout.
 - `Dialog sizing="fill"` bounds a bottom sheet's own Screen or virtualized list. The existing `maxHeightRatio` now reaches the shared BottomSheet ceiling, including fill, safe-area and keyboard constraints.
 
 ### Changed
@@ -18,6 +19,7 @@
 - Opening a document-backed split and entering Deck keep the primary at its visible viewport instead of briefly collapsing to its minimum. Returning to document flow waits for ancestor geometry as well as the local split; shared transition observation replaces the special intrinsic-size transition override.
 - Document restoration is delegated through the primary group branch, preventing an outer layout from scrolling the window while its reading pane still owns a bounded scroller.
 - Virtual lists use one measurement model across window and element scroll owners. Row identities and measured heights survive repeated mode changes, and pending reading positions survive temporary geometry clamps and rapid reversal.
+- Transparent groups propagate paint presence to their children, so outgoing Deck columns fade before becoming narrow strips. Browser scrollbar suppression persists through owner changes and inactive outgoing Screens while Bloom bars retain their own visibility policy.
 - Vertical exits keep their width while closing. Reading-envelope tracks retain their resting widths through normal/Deck transitions instead of growing into temporary spare space.
 - Closing a scrolled split keeps the bounded owner through its actual exit transition, then transfers the latest reading position to the document without blanking content or clamping it to the top.
 - Nested native panels consume the top safe area once; floating sheets use physical insets for placement and consumed insets for their content.
