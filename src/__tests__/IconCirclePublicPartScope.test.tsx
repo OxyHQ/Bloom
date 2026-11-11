@@ -47,7 +47,7 @@ it('keeps its icon-token geometry independent from Bloom control scopes', () => 
   const screen = render(<Subject />);
   const baseline = dimensions(screen);
   expect(baseline).toEqual([64, 64, 28, 28]);
-  expect(seen.at(-1)).toMatchObject({ width: 28, height: 28 });
+  expect(seen[seen.length - 1]).toMatchObject({ width: 28, height: 28 });
 
   screen.rerender(<Subject scope="xs" />);
   expect(dimensions(screen)).toEqual(baseline);
