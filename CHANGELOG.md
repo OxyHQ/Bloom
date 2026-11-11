@@ -1,5 +1,11 @@
 # Changelog
 
+## 19.8.3
+
+### Fixed
+
+- **`AppShell`'s panels draw without a `SafeAreaProvider` again.** 19.6.0's nested panel groups read the insets with `useSafeAreaInsets()`, which throws outside a provider ("No safe area value available"), so an app mounted at its root without one, as `AppShell` has always allowed (`useShellInsets`), crashed as soon as it had a split or flow panel layout: OxyOS's sample Inbox and its window probes ended at their first frame. The panels read `SafeAreaInsetsContext` instead: a provider's insets as before, zeros without one.
+
 ## 19.8.1
 
 ### Fixed
