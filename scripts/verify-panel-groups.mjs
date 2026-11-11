@@ -4,7 +4,7 @@
  * The fixture exercises production AppShell, PanelHost, Screen and Dialog renderers.
  */
 import assert from 'node:assert/strict';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE ?? 'playwright');
@@ -121,6 +121,8 @@ async function boundedSplit() {
 
 try {
   await story('nested-split');
+  await test('groups-open').waitFor();
+  const originalMain = await test('groups-main').boundingBox();
   await test('groups-open').click();
   let geometry = await boundedSplit();
   assert.ok(
@@ -128,6 +130,11 @@ try {
     'split starts in equal halves',
   );
   await test('groups-close').click();
+  await page.waitForFunction((height) => {
+    const main = document.querySelector('[data-testid="groups-main"]')?.getBoundingClientRect();
+    const likes = document.querySelector('[data-testid="groups-likes"]')?.getBoundingClientRect();
+    return main && likes && Math.abs(main.height - height) < 1 && likes.height === 0;
+  }, originalMain.height);
   await test('groups-post-saved').click();
   await test('groups-post-screen').evaluate((node) =>
     node.setAttribute('data-retained-check', 'true'),
@@ -197,13 +204,33 @@ try {
   );
   await boundedSplit();
 
+  for (const targetY of [20, 880, 20, 880]) {
+    const grip = await divider.boundingBox();
+    await page.mouse.move(grip.x + grip.width / 2, grip.y + grip.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(grip.x + grip.width / 2, targetY, { steps: 12 });
+    await page.mouse.up();
+    const resized = await boundedSplit();
+    assert.ok(
+      resized.main.height >= 119 && resized.likes.height >= 119,
+      'pointer resize stops at both panel minimum heights',
+    );
+  }
+  await divider.focus();
+  for (let step = 0; step < 60; step++) await divider.press('ArrowUp');
+  geometry = await boundedSplit();
+  assert.ok(
+    geometry.main.height >= 119 && geometry.likes.height >= 119,
+    'keyboard resize respects both minimum heights',
+  );
+
   // Pause application JavaScript only within the same desktop presentation tier.
   // Browser CSS must still distribute both axes; presentation handoff is tested below.
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('Emulation.setScriptExecutionDisabled', { value: true });
   for (const [width, height] of [
     [1100, 420],
-    [900, 260],
+    [900, 320],
     [1440, 900],
   ]) {
     await page.setViewportSize({ width, height });
@@ -214,6 +241,16 @@ try {
     );
   }
   await cdp.send('Emulation.setScriptExecutionDisabled', { value: false });
+  await page.setViewportSize({ width: 1440, height: 240 });
+  await page.getByRole('dialog', { name: 'Likes', exact: true }).waitFor();
+  assert.equal(
+    await test('groups-likes-screen').count(),
+    1,
+    'insufficient split height uses one sheet content tree',
+  );
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.getByRole('dialog', { name: 'Likes', exact: true }).waitFor({ state: 'hidden' });
+  await boundedSplit();
   await test('groups-close').click();
   assert.equal(
     await test('groups-post-screen').getAttribute('data-retained-check'),
@@ -262,6 +299,20 @@ try {
   console.log(
     'PASS mobile web: one bottom-sheet content tree, pointer dismissal, trigger focus restoration',
   );
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await story('capped-responsive');
+  await test('groups-open').click();
+  const cappedWidth = (await test('groups-main').boundingBox()).width;
+  await page.setViewportSize({ width: 700, height: 900 });
+  await page.getByRole('dialog', { name: 'Likes', exact: true }).waitFor();
+  assert.ok(
+    Math.abs((await test('groups-main').boundingBox()).width - cappedWidth) < 1,
+    'shell breakpoint changes presentation while nested width stays capped',
+  );
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.getByRole('dialog', { name: 'Likes', exact: true }).waitFor({ state: 'hidden' });
+  await boundedSplit();
 
   await page.setViewportSize({ width: 1440, height: 900 });
   await story('mixed-axes');
@@ -321,13 +372,148 @@ try {
   }
   await test('groups-open').click();
   await boundedSplit();
+  const beforeClose = await splitGeometry();
+  await page.evaluate(() => {
+    window.__panelCloseFrames = [];
+    const capture = () => {
+      const main = document.querySelector('[data-testid="groups-main"]');
+      const likes = document.querySelector('[data-testid="groups-likes"]');
+      if (!main || !likes) return;
+      const mainBox = main.getBoundingClientRect();
+      const likesBox = likes.getBoundingClientRect();
+      window.__panelCloseFrames.push({
+        mainX: mainBox.x,
+        mainWidth: mainBox.width,
+        likesX: likesBox.x,
+        likesWidth: likesBox.width,
+        likesHeight: likesBox.height,
+      });
+      if (window.__panelCloseFrames.length < 60) requestAnimationFrame(capture);
+    };
+    requestAnimationFrame(capture);
+  });
   await test('groups-close').click();
+  await page.waitForFunction(() => window.__panelCloseFrames.length >= 60);
+  const closeFrames = await page.evaluate(() => window.__panelCloseFrames);
+  assert.ok(
+    closeFrames.every(
+      (frame) =>
+        Math.abs(frame.mainX - beforeClose.main.x) < 1 &&
+        Math.abs(frame.mainWidth - beforeClose.main.width) < 1,
+    ),
+    'vertical close keeps main panel horizontal geometry stable on every frame',
+  );
+  assert.ok(
+    closeFrames
+      .filter((frame) => frame.likesHeight > 1)
+      .every(
+        (frame) =>
+          Math.abs(frame.likesX - beforeClose.likes.x) < 1 &&
+          Math.abs(frame.likesWidth - beforeClose.likes.width) < 1,
+      ),
+    'vertical closing panel never collapses sideways',
+  );
   await page.waitForFunction(() => {
     const main = document.querySelector('[data-testid="groups-main"]')?.getBoundingClientRect();
     return main && main.height >= innerHeight - 20;
   });
   await page.emulateMedia({ reducedMotion: 'reduce' });
   console.log('PASS interrupted opening/closing with default motion');
+
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await story('deck-switch');
+  await test('groups-deck').waitFor();
+  await test('groups-post-screen').evaluate((node) =>
+    node.setAttribute('data-retained-check', 'true'),
+  );
+  const deckFrames = [];
+  for (const targetWidth of [390, 620]) {
+    const beforeMode = (await test('groups-main').boundingBox()).width;
+    await page.evaluate(() => {
+      window.__deckFrames = [];
+      const capture = (time) => {
+        const screen = document.querySelector('[data-testid="groups-post-screen"]');
+        const main = document.querySelector('[data-testid="groups-main"]');
+        let opacity = 1;
+        let hidden = !screen;
+        for (let node = screen; node; node = node.parentElement) {
+          const style = getComputedStyle(node);
+          opacity *= Number(style.opacity);
+          hidden ||= style.display === 'none' || style.visibility === 'hidden';
+        }
+        window.__deckFrames.push({
+          time,
+          width: main?.getBoundingClientRect().width ?? 0,
+          opacity,
+          hidden,
+          retained: screen?.getAttribute('data-retained-check'),
+        });
+        if (window.__deckFrames.length < 75) requestAnimationFrame(capture);
+      };
+      requestAnimationFrame(capture);
+    });
+    await test('groups-deck').click();
+    await page.waitForFunction(() => window.__deckFrames.length >= 75);
+    const frames = await page.evaluate(() => window.__deckFrames);
+    deckFrames.push({ beforeMode, targetWidth, frames });
+    await writeFile(`${artifacts}/deck-motion.json`, JSON.stringify(deckFrames, null, 2));
+    assert.ok(
+      frames.every((frame) => frame.retained === 'true' && !frame.hidden && frame.opacity >= 0.99),
+      'main content stays mounted and opaque throughout mode changes',
+    );
+    const moving = frames.filter(
+      (frame) =>
+        frame.width > Math.min(beforeMode, targetWidth) + 2 &&
+        frame.width < Math.max(beforeMode, targetWidth) - 2,
+    );
+    assert.ok(moving.length > 4, 'mode width interpolates through intermediate frames');
+    const fastSteps = frames.slice(1).map((frame, index) => ({
+      gap: frame.time - frames[index].time,
+      delta: Math.abs(frame.width - frames[index].width),
+    }));
+    assert.ok(
+      fastSteps.filter((step) => step.gap < 50).every((step) => step.delta < 80),
+      'mode width never jumps by a large step between adjacent normal frames',
+    );
+    assert.ok(Math.abs(frames.at(-1).width - targetWidth) < 2, 'mode settles at declared width');
+    const unsplit = await test('groups-main').boundingBox();
+    await test('groups-open').click();
+    await boundedSplit();
+    await test('groups-close').click();
+    await page.waitForFunction((height) => {
+      const main = document.querySelector('[data-testid="groups-main"]')?.getBoundingClientRect();
+      const likes = document.querySelector('[data-testid="groups-likes"]')?.getBoundingClientRect();
+      return main && likes && Math.abs(main.height - height) < 1 && likes.height === 0;
+    }, unsplit.height);
+  }
+  await writeFile(`${artifacts}/deck-motion.json`, JSON.stringify(deckFrames, null, 2));
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  console.log('PASS document/Deck mode motion: persistent opaque content and interpolated widths');
+
+  await story('short-deck-switch');
+  await test('groups-open').waitFor();
+  for (const deck of [false, true]) {
+    if (deck) {
+      await test('groups-deck').click();
+      await page.waitForFunction(
+        () =>
+          Math.abs(
+            document.querySelector('[data-testid="groups-main"]').getBoundingClientRect().width -
+              390,
+          ) < 1,
+      );
+    }
+    const closed = await test('groups-main').boundingBox();
+    await test('groups-open').click();
+    await boundedSplit();
+    await test('groups-close').click();
+    await page.waitForFunction((height) => {
+      const main = document.querySelector('[data-testid="groups-main"]')?.getBoundingClientRect();
+      const likes = document.querySelector('[data-testid="groups-likes"]')?.getBoundingClientRect();
+      return main && likes && Math.abs(main.height - height) < 1 && likes.height === 0;
+    }, closed.height);
+  }
+  console.log('PASS closing short and long panels leaves no empty region or separator gap');
 
   await page.setViewportSize({ width: 1200, height: 600 });
   await story('email-flow');
