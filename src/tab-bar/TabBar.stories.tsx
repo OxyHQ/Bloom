@@ -41,8 +41,7 @@ const meta: Meta<typeof TabBar> = {
   // The bar is a screen-level element: its highlight geometry comes from
   // `useWindowDimensions()`, so the demo has to be exactly window-wide or the
   // pill drifts out of step with the tabs and reads as a component bug.
-  // `fullscreen` drops Storybook's own canvas padding; the preview decorator's
-  // padding is cancelled by `Screen`'s negative margin.
+  // `fullscreen` drops Storybook's canvas padding, so the demo screen is window-wide.
   parameters: { layout: 'fullscreen' },
 };
 
@@ -57,8 +56,6 @@ const ITEMS: TabBarItem[] = [
   { name: 'profile', label: 'Profile', icon: <Icons.RiUserLine /> },
 ];
 
-/** Padding the preview decorator puts around every story (`.storybook/preview.tsx`). */
-const PREVIEW_PADDING = 24;
 /** Height of the demo viewport — a phone-ish screen for the bar to float over. */
 const SCREEN_HEIGHT = 560;
 /** Keeps the last rows scrollable clear of the pill. */
@@ -69,10 +66,10 @@ const ROWS = Array.from({ length: 18 }, (_, index) => index + 1);
 /**
  * The demo viewport.
  *
- * It bleeds past the preview decorator's padding on purpose: the bar is a
- * screen-level element and derives its highlight geometry from
- * `useWindowDimensions()`, so anything narrower than the window would put the
- * pill out of step with the tabs and look like a component bug.
+ * It is window-wide on purpose: the bar is a screen-level element and derives
+ * its highlight geometry from `useWindowDimensions()`, so anything narrower than
+ * the window would put the pill out of step with the tabs and look like a
+ * component bug.
  *
  * `SafeAreaProvider` is here because `TabBar` reads safe-area insets to sit
  * above the home indicator; a consuming app already has one at its root, the
@@ -81,7 +78,7 @@ const ROWS = Array.from({ length: 18 }, (_, index) => index + 1);
 function Screen({ children }: PropsWithChildren) {
   const { colors } = useTheme();
   return (
-    <SafeAreaProvider style={{ flex: 0, alignSelf: 'stretch', marginHorizontal: -PREVIEW_PADDING }}>
+    <SafeAreaProvider style={{ flex: 0, alignSelf: 'stretch' }}>
       <GestureHandlerRootView
         style={{
           height: SCREEN_HEIGHT,

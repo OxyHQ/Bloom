@@ -40,7 +40,9 @@ function Cycling() {
     return () => clearInterval(timer);
   }, []);
   return (
-    <View style={{ height: 360, borderRadius: 16, overflow: 'hidden' }}>
+    <View
+      style={{ width: '100%', maxWidth: 640, height: 360, borderRadius: 16, overflow: 'hidden' }}
+    >
       <AmbientPhoto
         source={PHOTOS[index % PHOTOS.length]}
         onShown={(source) => setShown(PHOTOS.indexOf(source) + 1)}
