@@ -315,6 +315,7 @@ export function DialogBottomSheet({
       // no "VirtualizedList inside a plain ScrollView" warning).
       scrollable={scrollableResolved}
       sizing={sizing}
+      maxHeightRatio={maxHeightRatio}
       // Declarative dialogs (title/description/actions) that overflow — AND every
       // nav-header page (its scroll content overflows by design) — need
       // gorhom-style pan coordination: the drag-to-dismiss pan only activates
