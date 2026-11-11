@@ -879,6 +879,21 @@
     "verification": "Native renderer and DOM web verify that lg scope leaves the xs default at 20 points/pixels and explicit lg overrides an xs scope to 44; existing native geometry coverage checks the component size table. Physical-device proportions and accessibility remain pending.",
     "parts": ["src/button/CloseButton.tsx#CloseButton"]
   },
+  "call-stage-control-size": {
+    "status": "applicable",
+    "reason": "CallControls and CallControlButton resolve call-stage button geometry from the nearest BloomScope. The specialized full-stage default is lg; the supported xs scope maps to sm because call controls have sm/md/lg geometry. An explicit size wins, while fixed caption typography and tones remain role-owned.",
+    "evidence": [
+      "src/call-ui/CallControls.tsx",
+      "src/call-ui/shared.ts",
+      "src/__tests__/CallControlsPublicPartScope.test.tsx",
+      "src/__tests__/CallControlsPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and web DOM verify default lg, xs-to-sm mapping, sm/md/lg scopes, explicit md override, nested lg over xs through a wrapper, group spacing, and standalone CallControlButton geometry. Call controls own no portal or submenu; physical-device proportions and accessibility remain pending.",
+    "parts": [
+      "src/call-ui/CallControls.tsx#CallControlButton",
+      "src/call-ui/CallControls.tsx#CallControls"
+    ]
+  },
   "select-field-size-delegation": {
     "status": "delegated",
     "reason": "SelectField adds the Field label, description and error layout, then forwards its optional size to the platform-specific Select root. Select remains the owner of trigger size resolution.",
@@ -998,8 +1013,6 @@
       "src/calendar/CalendarViewInboxMenu.tsx#CalendarViewInboxMenu",
       "src/calendar/CalendarViewMonthGrid.tsx#CalendarViewMonthGrid",
       "src/calendar/CalendarViewMonthSwitcher.tsx#CalendarViewMonthSwitcher",
-      "src/call-ui/CallControls.tsx#CallControlButton",
-      "src/call-ui/CallControls.tsx#CallControls",
       "src/call-ui/CallHistoryList.tsx#CallHistoryList",
       "src/call-ui/CallHistoryRow.tsx#CallHistoryRow",
       "src/call-ui/CallMinimisedPill.tsx#CallMinimisedPill",
