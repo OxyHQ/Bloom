@@ -307,6 +307,33 @@ describe("a menu bar's one popup changing from one menu into the next", () => {
     expect(stageOf(screen).width).toBeUndefined();
   });
 
+  it('crossfades through its frames when its first frame comes late, its clock starting there', () => {
+    const { screen } = open();
+    fireEvent.press(screen.getByText('File'));
+    laidOut(screen, 'New', 264, 80);
+    frames(48);
+    move(screen, 'help');
+    // A loaded machine: the change renders, then no frame comes for 140 ms of its 150
+    // (JavaScript preempted, the frame clock late). The crossfade begins at its first frame, as
+    // Core Animation's begins as its transaction is shown: it is not over before it is drawn.
+    const lateUntil = Date.now() + 140;
+    globalThis.requestAnimationFrame = (callback) =>
+      setTimeout(
+        () => callback(Date.now()),
+        Math.max(16, lateUntil - Date.now()),
+      ) as unknown as number;
+    laidOut(screen, 'Documentation', 300, 40);
+    const both: number[] = [];
+    frames(480, () => {
+      if (!screen.queryByText('New', { includeHiddenElements: true })) return;
+      if (opacityOf(screen, 'New') > 0 && opacityOf(screen, 'Documentation') > 0) {
+        both.push(opacityOf(screen, 'New'));
+      }
+    });
+    expect(both.length).toBeGreaterThan(4);
+    expect(screen.queryByText('New', { includeHiddenElements: true })).toBeNull();
+  });
+
   it('changes again from wherever it is, the menus it leaves fading from where they were', () => {
     const { screen } = open();
     fireEvent.press(screen.getByText('File'));

@@ -1,5 +1,11 @@
 # Changelog
 
+## 19.5.1
+
+### Fixed
+
+- **`useEasedValues` starts its clock at its first frame.** A change of its targets eased over its duration from the time the effect ran, before any frame: on a loaded machine (JavaScript preempted, the frame clock late) the duration was spent before the first frame was drawn, and the menu bar's 150 ms crossfade (`Menubar`'s one popup changing menus) showed both menus in one frame or none, its morph jumping. The clock now starts at the first animation frame's timestamp, as a web animation's start time resolves at the first frame after it plays and Core Animation's begins as its transaction is shown. Affects every `useEasedValues` transition (the menu bar's morph and crossfade, `ActivityRingsCard`, `SankeyChartCard`).
+
 ## 19.5.0
 
 ### Added
