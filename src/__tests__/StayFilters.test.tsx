@@ -385,7 +385,7 @@ describe('CountFilter', () => {
   });
 
   it.each(['light', 'dark'] as const)(
-    'paints the selected pill inverted, 40 tall and a full pill (%s)',
+    'paints the selected pill inverted, 44 tall and a full pill (%s)',
     (mode) => {
       mount(<H initial={2} />, mode);
       const on = byTestId('c-2');
@@ -397,7 +397,7 @@ describe('CountFilter', () => {
       expect(bg(off)).toBe('rgba(0, 0, 0, 0)');
 
       expect(getComputedStyle(off).borderTopColor).toBe(normalise(theme.colors.border));
-      expect(getComputedStyle(on).height).toBe('40px');
+      expect(getComputedStyle(on).height).toBe('44px');
       expect(getComputedStyle(on).borderTopLeftRadius).toBe('9999px');
     },
   );
