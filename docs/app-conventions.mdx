@@ -1,0 +1,128 @@
+---
+title: App conventions
+description: The rules an Oxy app follows when it composes Bloom - Bloom first, Tailwind and NativeWind CSS contracts, and Expo Router pitfalls.
+---
+
+# App conventions
+
+Rules for an application that consumes `@oxy.so/bloom`. Component contracts live in
+the family guides; start at the [UI architecture](./ui-architecture.mdx) and the
+[task catalog](./task-catalog.mdx). This page is what is true of every Oxy app,
+whichever screens it has.
+
+## Bloom first
+
+An app composes Bloom. It does not build UI of its own.
+
+- **Whole features live in Bloom.** State, persistence, the settings row and its
+  strings belong to the component, not to the app that happens to mount it. An
+  app passes domain data and actions and renders the result.
+- **Icons come from Bloom only** (`@oxy.so/bloom/icons`, one subpath per glyph;
+  see [Icons](./icons.mdx)). No app-local icon set, no inline SVG copies.
+- **Fix UI at the root.** A wrong or missing behavior is fixed in Bloom and
+  released, never patched in the app with a wrapper, an override or a
+  workaround. An app-level patch hides the defect from every other app.
+- **No app-local reimplementations.** Shared UI goes to Bloom; data goes through
+  React Query and the Oxy packages (`@oxy.so/services`, `@oxy.so/contracts`).
+  If two apps need the same thing, it moves to the shared owner, it is not copied.
+- Layout is NativeWind classes on the Bloom component's own node. No JS
+  measuring (`onLayout` plus state, effect tricks) to size things CSS can size;
+  only per-item data, such as an aspect ratio, belongs inline.
+- Keep `md` as the normal control size ([UI architecture](./ui-architecture.mdx)).
+
+### Media goes through one resolver
+
+Register one `ImageResolverProvider` at the app root and pass bare file ids to
+Bloom (`<Avatar source={id}>`). Never build a media URL in the app, hardcode a
+CDN host, or add a per-app URL helper. See [ImageResolver](./image-resolver.mdx).
+
+## CSS and tokens
+
+- **Consume Bloom base tokens as `var(--x)`, never `hsl(var(--x))`.** The values
+  are full colors; wrapping them again resolves to transparent. A static check
+  of built CSS does not catch it: inspect live computed styles.
+- **Import Bloom's theme, do not restate it.** Tailwind v4 apps add
+  `@import "@oxy.so/bloom/design-tokens/theme.css";` (see
+  [Design tokens](./design-tokens.mdx)). Bloom's components read those custom
+  properties, so an app that redeclares one is not duplicating it, it is
+  re-skinning Bloom from the inside: nothing errors, and type sizes, surfaces
+  and borders quietly stop being Bloom's. Keep only app-local seeds in
+  `global.css`. A hardcoded hex cannot follow light/dark mode or a preset at all.
+- **Find restatements by comparing, not by reading.** Build the CSS, read the
+  computed value of each token back, and diff it against Bloom's `theme.css`.
+  Normalise notation first (`hsl(0 0% 100%)` and `#ffffff` are the same color)
+  or the count is inflated.
+- **The CSS `@theme` block is the live layer.** Tailwind v4 does not load a
+  `tailwind.config.js` without an `@config` directive, so a JS config or preset
+  with no `@config` is dead code on web and native alike. Dead is not harmless:
+  adding the `@config` line later brings the whole stale layer back. Delete the
+  config when you trim the CSS.
+- **Diagnose by building the CSS and reading the value back.** Process
+  `global.css` with `@tailwindcss/postcss` and grep the output for the custom
+  property. Change one variable at a time, and make sure the file you edit is the
+  file you build. Use `@tailwindcss/postcss`, not `@tailwindcss/cli`: the CLI
+  auto-detects extra sources and can disagree on identical input. Name the
+  instrument next to every number you report.
+- **Native compiles the same way.** NativeWind delegates to `react-native-css`,
+  which has no Tailwind dependency; Expo's Metro config runs the app's
+  `postcss.config` over CSS. So the one `@tailwindcss/postcss` plugin that builds
+  the web CSS also builds the native styles. This holds only while Expo routes
+  CSS through PostCSS; if that changes, re-derive it.
+- **Web `className` layout is inert without the Tailwind pipeline and an
+  `@source` scan** of the installed `@oxy.so/bloom` and `@oxy.so/services`
+  `lib/` output. Colors still work (they are inline styles), which masks the
+  gap. Wiring: [Getting started](./getting-started.mdx#expo--metro-css).
+- **Bloom web forks inject their own CSS** with a constructed `CSSStyleSheet`
+  and `adoptedStyleSheets`, not a `<style>` element, so it is CSP-safe. An app
+  never copies Bloom CSS by hand ([Provider](./provider.mdx) covers SSR).
+- **Theme with className.** No custom color props, wrapper components or
+  Reanimated color workarounds. `BloomColorScope` emits scoped `--color-*`
+  aliases. Never replace brand colors with theme colors.
+
+## Platform forks and types
+
+- **A Bloom fork is two files.** `index.ts` is the native implementation and
+  `index.web.ts` the web one, selected by the `browser` export condition. A
+  neutral third default exists only when the native file imports something a web
+  bundler or `tsc` cannot resolve. Export conditions do not apply to relative
+  specifiers, so a web barrel must name its `.web` siblings explicitly. Details:
+  [`AGENTS.rules.md`](https://github.com/OxyHQ/Bloom/blob/main/AGENTS.rules.md#packaging).
+- **`useTheme` throws outside `<BloomThemeProvider>`.** Mount the provider above
+  any splash or loading branch in `app/_layout.tsx`. This is runtime-only;
+  verify it on a real cold start.
+- **`className` on `ScrollView` and `FlatList`** in a published React Native
+  package needs the heritage-free `declare module 'react-native'` augmentation
+  (Bloom's `src/react-native-className.d.ts`), pulled in with
+  `/// <reference path>`. Never `as any`.
+
+## Expo Router
+
+- **One authority for group-boundary swaps.** Only the root `<Stack>` swaps
+  `(auth)` and `(tabs)`. A child screen that navigates on the same signal commits
+  first on a cold load and leaves a blank route.
+- **Boot-mounted components never call suspenseful hooks.** A provider that
+  calls `useTranslation()` (suspense is on by default) deadlocks the app: the
+  child suspends, the root never commits, the init effect never runs, and the
+  screen stays white with no error. Mount `t()`-dependent UI on demand. Imperative
+  dialog refs bind during the commit's layout phase, so call `open()` from a mount
+  effect, never from a `setTimeout` that can run before mount.
+- **`typedRoutes: true` does nothing until `.expo/types/router.d.ts` exists
+  before `tsc` runs.** The file is gitignored and the Metro dev server is its
+  only default writer, so CI type-checks a tree without it, `Href` falls back to
+  `string | HrefObject`, and a bogus route compiles clean. Generate it inside the
+  app's own `typecheck` script with `@expo/cli`'s
+  `startTypescriptTypeGenerationAsync({ projectRoot })`, which needs no Metro.
+  Its regeneration is debounced and resolves about a second before the file is
+  written, so delete the old file and poll for the new one. Once armed, type a
+  nav model's `href` with `Href`, and build runtime routes in object form
+  (`{ pathname: '/p/[handle]', params }`): a computed `string` satisfies no route
+  union, which is what every `as Parameters<typeof router.push>[0]` cast is
+  hiding. Reference implementation:
+  [Mercaria `scripts/generate-router-types.mjs`](https://github.com/OxyHQ/Mercaria/blob/main/scripts/generate-router-types.mjs).
+  A hand-rolled route-resolution test is the fallback where the union is not
+  generated and is strictly weaker: it tends to fail permissive, missing routes
+  built by a helper and treating an interpolated query string as a wildcard.
+- `expo-crypto` exposes `randomUUID()`. Validate any `.d.ts` shim against the
+  real build output.
+- Jest catches no render race, navigation race or layout bug. Verify those in a
+  real, foregrounded tab or device ([Verification](./verification.mdx)).
