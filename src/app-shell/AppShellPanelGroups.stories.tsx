@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View } from 'react-native';
+import { StyledView as View } from '../styles/styled-primitives';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from '../button';
 import { PageHeader } from '../page-header';
