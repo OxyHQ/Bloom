@@ -2193,9 +2193,10 @@
       "src/button/shared.ts",
       "docs/chat-composer.mdx",
       "src/__tests__/ComposerIconButtonPublicPartScope.test.tsx",
-      "src/__tests__/ComposerIconButtonPublicPartScope.web.test.tsx"
+      "src/__tests__/ComposerIconButtonPublicPartScope.web.test.tsx",
+      "docs/audits/issue-663/composer-icon-touch-pixel8a-2026-11-12/README.md"
     ],
-    "verification": "Native renderer verifies numeric 28/32/36px boxes and 44pt iOS / 48dp Android hit regions across xs/sm/md/lg scopes. DOM web verifies those visual dimensions stay fixed, coarse pointers get a real 44px minimum target, and fine-pointer styles are restored without remounting; actual device touch precision remains pending.",
+    "verification": "Native renderer verifies numeric 28/32/36px boxes and 44pt iOS / 48dp Android hit regions across xs/sm/md/lg scopes. DOM web verifies those visual dimensions stay fixed, coarse pointers get a real 44px minimum target, and fine-pointer styles are restored without remounting. An ARM64 release build on a physical Pixel 8a (Android 16/API 36) measured 28/32/36dp boxes and passed inside/outside top- and left-edge taps for all three sizes; screenshot, hierarchy, APK and package attestation are recorded under docs/audits/issue-663/composer-icon-touch-pixel8a-2026-11-12. iOS device touch and performance benchmarking remain pending.",
     "parts": ["src/chat-composer/ComposerIconButton.tsx#ComposerIconButton"]
   },
   "loading-indicators": {

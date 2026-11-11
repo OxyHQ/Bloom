@@ -1,0 +1,206 @@
+{
+  "serial": "43221JEKB12200",
+  "model": "Pixel 8a",
+  "os": "16\r\n",
+  "api": "36\r\n",
+  "source": {
+    "commit": "b829786a0aefe4f601b217d1bc0f45e512caad0d",
+    "workingTree": "M scripts/material-lab/README.md\n M templates/material/MaterialScene.tsx\n?? scripts/material-lab/bloom-local/\n?? scripts/material-lab/composer-target-probe.mjs",
+    "fixtureSha256": "a99bacd5d701d4683909a8f073cbea1480656ea3b50d66d98a137369f7f5ea46",
+    "sourceSha256": "58dd8ce81a462bb94986cca55a798642f2a6ee10ba23576414a354c28a0848df",
+    "sourceFiles": 5187,
+    "nativeModulePackageVersion": "19.8.3",
+    "nativeModuleArtifact": "local packed Bloom snapshot",
+    "nativeModuleTarballSha256": "9a1a51dc70cca453025e0fc484b1c86572dfc4709fa1e511318103f6340897ab",
+    "lockSha256": "f2df323a08c2c77c02e09a9ce69aea9f4d90b0fad025ed75ac0551bdcea8dfa4",
+    "artifactKind": "Bloom source fixture with the installed native package recorded separately",
+    "reactCompiler": false,
+    "dependencies": {
+      "@oxy.so/bloom": "17.22.0",
+      "expo": "58.0.23",
+      "expo-asset": "58.0.20",
+      "expo-blur": "58.0.5",
+      "expo-font": "58.0.11",
+      "expo-image": "58.0.18",
+      "nativewind": "5.0.0-rc.0",
+      "react": "19.3.0",
+      "react-dom": "19.3.0",
+      "react-native": "0.88.1",
+      "react-native-css": "3.1.0-rc.0",
+      "react-native-gesture-handler": "3.3.0",
+      "react-native-reanimated": "4.7.1",
+      "react-native-safe-area-context": "5.11.1",
+      "react-native-screens": "4.30.1",
+      "react-native-svg": "15.16.0",
+      "react-native-web": "0.21.4",
+      "react-native-worklets": "0.13.0"
+    },
+    "apkSha256": "e446fdcbb8c949ce6752498d658730ffbd97d28d756b3f80ebdfe0a9ee6297c7",
+    "embeddedBundleSha256": "e3f7a960cb04f5228556e2d002df8d0c47fd412aae16fb4aef71f28fb4674608",
+    "embeddedBloomSourceSha256": "267cd9e939c13eb5a310df32521af7405334f53c1119cdc5b47ff5151cbc88d3",
+    "embeddedBloomFiles": 1571,
+    "nativeModulePackageListSha256": "339ca55d2d575c349c4dbbe8b247a153262bd5d0b4c24c94287abc31cacdae5f"
+  },
+  "displayDensity": 420,
+  "composerControls": [
+    {
+      "sizeDp": 28,
+      "boundsPx": {
+        "left": 84,
+        "top": 1511,
+        "right": 158,
+        "bottom": 1585
+      },
+      "widthDp": 28.19047619047619,
+      "heightDp": 28.19047619047619,
+      "expectedTargetDp": 48
+    },
+    {
+      "sizeDp": 32,
+      "boundsPx": {
+        "left": 263,
+        "top": 1505,
+        "right": 347,
+        "bottom": 1589
+      },
+      "widthDp": 32,
+      "heightDp": 32,
+      "expectedTargetDp": 48
+    },
+    {
+      "sizeDp": 36,
+      "boundsPx": {
+        "left": 452,
+        "top": 1500,
+        "right": 546,
+        "bottom": 1594
+      },
+      "widthDp": 35.80952380952381,
+      "heightDp": 35.80952380952381,
+      "expectedTargetDp": 48
+    }
+  ],
+  "cases": [
+    {
+      "size": 28,
+      "edge": "top",
+      "region": "inside",
+      "offsetDp": 9,
+      "point": {
+        "x": 121,
+        "y": 1487
+      }
+    },
+    {
+      "size": 28,
+      "edge": "top",
+      "region": "outside",
+      "offsetDp": 11,
+      "point": {
+        "x": 121,
+        "y": 1482
+      }
+    },
+    {
+      "size": 28,
+      "edge": "left",
+      "region": "inside",
+      "offsetDp": 9,
+      "point": {
+        "x": 60,
+        "y": 1548
+      }
+    },
+    {
+      "size": 28,
+      "edge": "left",
+      "region": "outside",
+      "offsetDp": 11,
+      "point": {
+        "x": 55,
+        "y": 1548
+      }
+    },
+    {
+      "size": 32,
+      "edge": "top",
+      "region": "inside",
+      "offsetDp": 7,
+      "point": {
+        "x": 305,
+        "y": 1486
+      }
+    },
+    {
+      "size": 32,
+      "edge": "top",
+      "region": "outside",
+      "offsetDp": 9,
+      "point": {
+        "x": 305,
+        "y": 1481
+      }
+    },
+    {
+      "size": 32,
+      "edge": "left",
+      "region": "inside",
+      "offsetDp": 7,
+      "point": {
+        "x": 244,
+        "y": 1547
+      }
+    },
+    {
+      "size": 32,
+      "edge": "left",
+      "region": "outside",
+      "offsetDp": 9,
+      "point": {
+        "x": 239,
+        "y": 1547
+      }
+    },
+    {
+      "size": 36,
+      "edge": "top",
+      "region": "inside",
+      "offsetDp": 5,
+      "point": {
+        "x": 499,
+        "y": 1486
+      }
+    },
+    {
+      "size": 36,
+      "edge": "top",
+      "region": "outside",
+      "offsetDp": 7,
+      "point": {
+        "x": 499,
+        "y": 1481
+      }
+    },
+    {
+      "size": 36,
+      "edge": "left",
+      "region": "inside",
+      "offsetDp": 5,
+      "point": {
+        "x": 438,
+        "y": 1547
+      }
+    },
+    {
+      "size": 36,
+      "edge": "left",
+      "region": "outside",
+      "offsetDp": 7,
+      "point": {
+        "x": 433,
+        "y": 1547
+      }
+    }
+  ],
+  "finalCount": 6
+}
