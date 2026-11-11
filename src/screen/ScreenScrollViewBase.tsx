@@ -29,6 +29,7 @@ import type { ScrollBarProps } from '../layout/types';
 import { StyledView } from '../styles/styled-primitives';
 import { useScreen } from './context';
 import { useScreenViewport } from './context';
+import { useIntrinsicContentHeight } from './use-intrinsic-content-height';
 import { END_SENTINEL_STYLE, useDocumentEndReached } from './use-document-end-reached';
 import { DEFAULT_END_REACHED_THRESHOLD, useEndReached } from './use-end-reached';
 import { useScreenScroll } from './use-screen-scroll';
@@ -95,6 +96,7 @@ export function createScreenScrollView(
     ...props
   }: InnerProps) {
     const viewport = useScreenViewport();
+    const publishIntrinsic = useIntrinsicContentHeight();
     const screen = useScreen();
     const activeRef = useRef(active !== false);
     activeRef.current = active !== false;
@@ -137,9 +139,27 @@ export function createScreenScrollView(
         if (!active) return;
         end.onContentSizeChange(width, height);
         if (viewport) viewport.metrics.contentHeight.value = height;
+        // A growing ScrollView content container reports at least its viewport,
+        // not its natural content extent. Keep that case explicitly unknown.
+        if (publishIntrinsic) {
+          const flat = StyleSheet.flatten(contentContainerStyle);
+          publishIntrinsic(
+            contentContainerClassName != null || flat?.flexGrow || flat?.flex || flat?.minHeight
+              ? -1
+              : height,
+          );
+        }
         onContentSizeChange?.(width, height);
       },
-      [active, end.onContentSizeChange, onContentSizeChange, viewport],
+      [
+        active,
+        end.onContentSizeChange,
+        onContentSizeChange,
+        viewport,
+        publishIntrinsic,
+        contentContainerStyle,
+        contentContainerClassName,
+      ],
     );
     // A class's padding cannot be read back to add the chrome footprint to it, and
     // an inline padding would override it — so with a class the footprint pads
@@ -260,6 +280,7 @@ export function createScreenScrollView(
   }: InnerProps) {
     const screen = useScreen();
     const viewport = useScreenViewport();
+    const publishIntrinsic = useIntrinsicContentHeight();
     const activeRef = useRef(active !== false);
     activeRef.current = active !== false;
     useEffect(() => {
@@ -374,10 +395,11 @@ export function createScreenScrollView(
       (event: LayoutChangeEvent) => {
         if (!active) return;
         const { width, height } = event.nativeEvent.layout;
+        publishIntrinsic?.(height, contentRef.current as unknown as HTMLElement | null);
         if (tracksEnd) setContentHeight(height);
         onContentSizeChange?.(width, height);
       },
-      [active, tracksEnd, onContentSizeChange],
+      [active, tracksEnd, onContentSizeChange, publishIntrinsic],
     );
     return (
       <View

@@ -119,6 +119,69 @@ interface Row {
 }
 
 describe('VirtualList (web)', () => {
+  it('reports the natural list container only when requested and does not remeasure it on viewport resize', () => {
+    let reads = 0;
+    const height = jest
+      .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this.style.paddingBottom === '7px') {
+          reads++;
+          return 167;
+        }
+        return 64;
+      });
+    const rects = jest
+      .spyOn(Element.prototype, 'getClientRects')
+      .mockReturnValue([{}] as unknown as DOMRectList);
+    const publish = jest.fn();
+    const metrics = {
+      scrollY: makeMutable(0),
+      contentHeight: makeMutable(800),
+      viewportHeight: makeMutable(800),
+    };
+    const ui = (requested: boolean) => (
+      <ScreenViewportContext.Provider
+        value={{
+          kind: 'document',
+          active: true,
+          scrollRef: null,
+          scrollTo: () => {},
+          contentRef: { current: container },
+          setIntrinsicContentHeight: publish,
+          metrics: requested ? { ...metrics, intrinsicContentHeight: makeMutable(-1) } : metrics,
+        }}
+      >
+        <VirtualList
+          data={['row']}
+          contentContainerStyle={{ paddingBottom: 7 }}
+          renderItem={({ item }) => <span>{item}</span>}
+          ListHeaderComponent={<span>Header</span>}
+          ListFooterComponent={<span>Footer</span>}
+        />
+      </ScreenViewportContext.Provider>
+    );
+    try {
+      mount(ui(false));
+      expect(reads).toBe(0);
+      mount(ui(true));
+      expect(publish).toHaveBeenCalledWith(expect.any(Object), 167);
+      const measured = reads;
+      act(() => {
+        for (const observer of ResizeObserverStub.instances) {
+          if (observer.targets.has(document.body))
+            observer.callback(
+              [{ target: document.body } as unknown as ResizeObserverEntry],
+              observer,
+            );
+        }
+      });
+      expect(reads).toBe(measured);
+    } finally {
+      height.mockRestore();
+      rects.mockRestore();
+    }
+  });
+
   it('mounts EVERY row of a short list in the first viewport (the empty-rows regression)', () => {
     const data: Row[] = Array.from({ length: 5 }, (_, i) => ({
       id: String(i),

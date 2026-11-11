@@ -43,6 +43,7 @@ import {
 } from '../scroll/context';
 import { deriveScrollKey, type ScrollOffsetStore } from '../scroll/store';
 import { useScreenViewport } from '../screen/context';
+import { useIntrinsicContentHeight } from '../screen/use-intrinsic-content-height';
 import { useScreenWindowScroll } from '../screen/use-screen-window-scroll';
 import { useDocumentEndReached } from '../screen/use-document-end-reached';
 import { DEFAULT_END_REACHED_THRESHOLD } from '../screen/use-end-reached';
@@ -244,7 +245,13 @@ function VirtualListWebInner<T>(
   // `scrollMargin` is its offset from the top of the scrolled content
   // (everything above the rows), so virtual offsets map to scroll offsets.
   const wrapperRef = React.useRef<HTMLDivElement | null>(null);
+  const intrinsicRef = React.useRef<HTMLDivElement | null>(null);
+  const publishIntrinsic = useIntrinsicContentHeight();
   const [scrollMargin, setScrollMargin] = React.useState(0);
+  const measureIntrinsic = React.useCallback(() => {
+    const content = intrinsicRef.current;
+    if (content) publishIntrinsic?.(content.offsetHeight, content);
+  }, [publishIntrinsic]);
 
   const measureScrollMargin = React.useCallback(() => {
     const node = wrapperRef.current;
@@ -265,7 +272,8 @@ function VirtualListWebInner<T>(
   // changes (content above/below the window shifts the wrapper).
   React.useLayoutEffect(() => {
     measureScrollMargin();
-  }, [measureScrollMargin, count]);
+    measureIntrinsic();
+  }, [measureScrollMargin, measureIntrinsic, count]);
 
   // Seed before the first virtual range and before scroll restoration runs.
   // The outer boundary remounts only when restoration identity changes.
@@ -332,12 +340,19 @@ function VirtualListWebInner<T>(
   React.useEffect(() => {
     if (typeof window === 'undefined') return;
     measureScrollMargin();
+    measureIntrinsic();
     window.addEventListener('resize', measureScrollMargin);
     // The wrapper gains its box when a retained screen is shown again, and moves
     // without resizing when content above it grows (a header, an embed).
     const observer =
-      typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measureScrollMargin);
+      typeof ResizeObserver === 'undefined'
+        ? null
+        : new ResizeObserver((entries) => {
+            measureScrollMargin();
+            if (entries.some((entry) => entry.target === intrinsicRef.current)) measureIntrinsic();
+          });
     const wrapper = wrapperRef.current;
+    if (publishIntrinsic && intrinsicRef.current) observer?.observe(intrinsicRef.current);
     if (wrapper) observer?.observe(wrapper);
     if (wrapper?.parentElement) observer?.observe(wrapper.parentElement);
     observer?.observe((scroller ? scrollElement : null) ?? document.body);
@@ -345,7 +360,7 @@ function VirtualListWebInner<T>(
       window.removeEventListener('resize', measureScrollMargin);
       observer?.disconnect();
     };
-  }, [measureScrollMargin, scroller, scrollElement, hasRows]);
+  }, [measureScrollMargin, measureIntrinsic, publishIntrinsic, scroller, scrollElement, hasRows]);
 
   React.useImperativeHandle(ref, () => {
     const scrollOwner = (top: number, animated?: boolean) => {
@@ -398,7 +413,7 @@ function VirtualListWebInner<T>(
   if (count === 0) {
     return (
       <View style={[{ minHeight: 0 }, flatStyle]} testID={testID}>
-        <div style={flatContentStyle}>
+        <div ref={intrinsicRef} style={flatContentStyle}>
           {header}
           {renderSlot(ListEmptyComponent)}
           {footer}
@@ -427,7 +442,7 @@ function VirtualListWebInner<T>(
       {/* Like FlatList's, the content container wraps the header, the rows and
           the footer, so its padding (a Screen's header and bar clearance) clears
           the whole list rather than the rows alone. */}
-      <div style={flatContentStyle}>
+      <div ref={intrinsicRef} style={flatContentStyle}>
         {header}
         {/* A column, so a sticky row's top margin never collapses through it. */}
         <div
