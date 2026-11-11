@@ -931,6 +931,19 @@
     "verification": "Native renderer and web DOM verify default md, xs/sm-to-small and md/lg-to-medium mappings, nested scopes, explicit sm override, and actual width/height. TimeField owns no portal or submenu; keyboard/IME and device input behavior remain covered by their separate field checks, while physical proportions remain pending.",
     "parts": ["src/date-picker/TimeField.tsx#TimeField"]
   },
+  "field-label-partial-size": {
+    "status": "applicable",
+    "reason": "Label owns field-name typography and resolves its type-ramp step from explicit size or the nearest BloomScope, defaulting to sm. Its three-step recipe maps lg to md; label size changes typography and spacing only, never the associated control's target.",
+    "evidence": [
+      "src/label/Label.tsx",
+      "src/label/types.ts",
+      "docs/label.mdx",
+      "src/__tests__/Label.test.tsx",
+      "src/__tests__/LabelPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and web DOM verify default sm, xs/sm/md typography, lg-to-md mapping, nested scopes, and explicit xs override. Label owns no portal or submenu and is not a touch target; physical text scaling and assistive-technology behavior remain pending.",
+    "parts": ["src/label/Label.tsx#Label"]
+  },
   "select-field-size-delegation": {
     "status": "delegated",
     "reason": "SelectField adds the Field label, description and error layout, then forwards its optional size to the platform-specific Select root. Select remains the owner of trigger size resolution.",
@@ -1297,7 +1310,6 @@
       "src/job-board/JobBoard.tsx#JobBoard",
       "src/job-board/JobCard.tsx#JobCard",
       "src/kbd/Kbd.tsx#Kbd",
-      "src/label/Label.tsx#Label",
       "src/layout/AutoHideBar.tsx#AutoHideBar",
       "src/layout/AutoHideBar.tsx#AutoHideBarBand",
       "src/layout/AutoHideBar.tsx#AutoHideBarBody",
