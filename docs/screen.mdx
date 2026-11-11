@@ -44,6 +44,10 @@ header, and `bottomBarPlacement="overlay"` lets a thread scroll under its reply
 prompt, the scroller padding its end clear of the bar (the default `inset`
 keeps a chat thread above the composer it is anchored to). Insets otherwise reserve the measured header/footer once.
 
+On web, chrome reads its border-box size from resize entries, without measuring
+positions through React Native Web. Wrapped titles, font changes and dynamic
+footers still update their reserved height. Native uses its normal layout events.
+
 On native, auto reserves chrome space but the screen's list or `ScreenScrollView`
 continues owning scrolling. `scroll="content"` keeps
 existing explicit list/inset bindings. `documentScroll` remains an explicit override.

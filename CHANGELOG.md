@@ -12,6 +12,7 @@
 
 ### Changed
 
+- Web Screen chrome and PageHeader consume border-box resize entries directly. Resizing a panel no longer schedules React Native Web position measurements for these size-only consumers; dynamic header/footer heights and native layout events remain supported.
 - Removed the unused width-animation helper and the remaining JavaScript track allocator used before gesture measurement. Gestures wait for real layout bounds; CSS tracks no longer subscribe to redundant per-frame `onLayout` callbacks.
 - Native panel sizes are distributed directly by Yoga. Removed the normal-layout JavaScript water-fill compensation for unequal minimum constraints; native flex and browser flex may divide spare space differently when those constraints bind. Split weights, minimums and maximums remain declarative, and direct resizing starts from actual rendered dimensions.
 
