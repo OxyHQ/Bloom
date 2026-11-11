@@ -41,6 +41,9 @@ try {
   await cdp.send('Page.startScreencast', { format: 'png', everyNthFrame: 1 });
   await page.evaluate(() => {
     window.__paintFrames = [];
+    const reading = document.querySelector('[data-testid="groups-post-screen-scroll-content"]');
+    window.__readingAnchor = [...reading.querySelectorAll('*')].find(node => !node.children.length && node.textContent.startsWith('Post paragraph') && node.getBoundingClientRect().top >= 64);
+    window.__readingAnchorY = window.__readingAnchor.getBoundingClientRect().y;
     const capture = time => {
       const screen = document.querySelector('[data-testid="groups-post-screen"]');
       const content = screen?.querySelector('[data-testid="groups-post-screen-scroll-content"]');
@@ -61,7 +64,7 @@ try {
         const y = Math.max(80, rect.y) + Math.min(rect.height, 20) / 2;
         return { text: node.textContent, x, y, hit: y < innerHeight - 8 && y >= rect.y && node.contains(document.elementFromPoint(x, y)) };
       }).filter(item => item.hit);
-      window.__paintFrames.push({ time, opacity, hidden, visible, scrollY, mainStyle: mainStyle && {interpolateSize:mainStyle.interpolateSize,flexBasis:mainStyle.flexBasis,flexGrow:mainStyle.flexGrow,minHeight:mainStyle.minHeight,maxHeight:mainStyle.maxHeight}, documentHeight: document.documentElement.scrollHeight, viewportHeight: innerHeight, elementOffset: screen?.querySelector('[data-bloom-screen-viewport="element"]')?.scrollTop, main: main?.getBoundingClientRect().toJSON(), likes: likes?.getBoundingClientRect().toJSON() });
+      window.__paintFrames.push({ time, opacity, hidden, visible, scrollY, anchorY: window.__readingAnchor?.getBoundingClientRect().y, anchorText: window.__readingAnchor?.textContent, mainStyle: mainStyle && {interpolateSize:mainStyle.interpolateSize,flexBasis:mainStyle.flexBasis,flexGrow:mainStyle.flexGrow,minHeight:mainStyle.minHeight,maxHeight:mainStyle.maxHeight}, documentHeight: document.documentElement.scrollHeight, viewportHeight: innerHeight, elementOffset: screen?.querySelector('[data-bloom-screen-viewport="element"]')?.scrollTop, main: main?.getBoundingClientRect().toJSON(), likes: likes?.getBoundingClientRect().toJSON() });
       if (window.__paintFrames.length < 90) requestAnimationFrame(capture);
     };
     requestAnimationFrame(capture);
@@ -77,6 +80,7 @@ try {
   assert.ok(frames.every(frame => frame.visible.length > 0), 'every animation frame exposes reading text at a real hit-test point');
   assert.equal(frames.at(-1).likes.height, 0, 'closed auxiliary occupies no height');
   assert.ok(Math.abs(frames.at(-1).scrollY - readingOffset) < 2, 'closing transfers the latest bounded reading offset to the document');
+  assert.ok(frames.every(frame => Math.abs(frame.anchorY - frames[0].anchorY) < 4), 'the same visible paragraph keeps its painted position throughout the owner change');
   console.log(`PASS split close paint continuity: ${frames.length} RAF samples and ${paints.length} compositor screenshots`);
 } finally {
   await browser.close();
