@@ -1,5 +1,11 @@
 # Changelog
 
+## 19.8.2
+
+### Fixed
+
+- On the web, `Menubar`'s panel changing from one menu into the next ends when its own transitions of its place and size have ended or been cancelled (`transitionend`, `transitioncancel`), not on a timer of the menu motion's length: under load the timer could cut the crossfade short or keep the leaving menu's rows too long. A change that moves and resizes nothing runs no transition and ends at once.
+
 ## 19.8.1
 
 ### Fixed
