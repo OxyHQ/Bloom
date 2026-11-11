@@ -82,6 +82,7 @@ import {
   LABEL_FONT_SIZE,
   LONG_PRESS_MIN_DURATION,
   MINIMIZED_HEIGHT,
+  DOCK_NAVIGATION_PHASE,
   MINIMIZED_INSET,
   ROW_PAD_H,
   useTabBarTheme,
@@ -219,7 +220,7 @@ function TabBarBody({
   const reducedMotion = usePrefersReducedMotion();
   const foldedProgress = useDerivedValue(() => {
     const amount = reducedMotion ? Number(sourceProgress.value > 0.01) : sourceProgress.value;
-    return Math.min(1, Math.max(0, amount / 0.6));
+    return Math.min(1, Math.max(0, amount / DOCK_NAVIGATION_PHASE));
   }, [reducedMotion, sourceProgress]);
   const progress = collapseActive ? foldedProgress : sourceProgress;
   const expand = useCallback(() => {

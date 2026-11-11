@@ -130,6 +130,46 @@ try {
       reports.push({ direction, height, frames });
     }
   }
+  await page.goto(url.replace('--docked-editor', '--deferred-docked-editor'));
+  await page.getByTestId('dock-ready').waitFor();
+  assert.equal(await page.getByTestId('dock-editor').count(), 0);
+  await page.evaluate(() => {
+    window.dockHost = document.querySelector('[data-testid="dock-bar"]');
+  });
+  await page.getByTestId('dock-ready').click();
+  await page.getByTestId('dock-editor').waitFor();
+  assert.ok(
+    await page.evaluate(
+      () => window.dockHost === document.querySelector('[data-testid="dock-bar"]'),
+    ),
+    'loading keeps the same bottom-bar host',
+  );
+  await page.getByTestId('dock-grow-long').click();
+  await page.waitForFunction(
+    () =>
+      document.querySelector('[data-testid="dock-editor"]').getBoundingClientRect().height >= 299.9,
+  );
+  const longBounds = await page.evaluate(() => ({
+    input: document.querySelector('[data-testid="dock-editor"]').getBoundingClientRect().toJSON(),
+    bar: document.querySelector('[data-testid="dock-bar"]').getBoundingClientRect().toJSON(),
+  }));
+  assert.ok(
+    longBounds.bar.height >= 368,
+    'late editor releases the old 58px row height and grows naturally',
+  );
+  assert.ok(longBounds.input.bottom <= longBounds.bar.bottom + 1);
+  await page.getByTestId('dock-ready').click();
+  assert.ok(
+    await page.evaluate(
+      () => window.dockHost === document.querySelector('[data-testid="dock-bar"]'),
+    ),
+    'removing the action keeps the navigation host',
+  );
+  const returned = await page.getByTestId('dock-bar-row').boundingBox();
+  assert.ok(
+    Math.abs(returned.height - 58) < 1,
+    'removing the action restores ordinary navigation geometry',
+  );
   await page.goto(url);
   await page.getByTestId('dock-editor').waitFor();
   const reverse = await page.evaluate(async () => {
@@ -171,7 +211,7 @@ try {
   assert.deepEqual(errors, []);
   await writeFile(
     `${artifacts}/report.json`,
-    JSON.stringify({ reports, reverse, errors }, null, 2),
+    JSON.stringify({ reports, reverse, longBounds, errors }, null, 2),
   );
   console.log(
     'PASS: dock trajectories, no overlap, 44/104px editor, focus/draft identity, RTL, responsive ownership, rapid reversal and reduced motion.',

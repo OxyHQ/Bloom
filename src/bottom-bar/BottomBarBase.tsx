@@ -24,6 +24,7 @@ import { useDirectionProps } from '../hooks/use-is-rtl';
 import { BottomBarSlotContext } from '../layout/bottom-bar-slot';
 import { ScreenFooterContext } from '../screen/context';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
 import { useClaimBottomEdge, useMeasuredBottomEdgeClaim } from '../layout/bottom-edge';
 import { FAB_METRICS } from '../fab/constants';
@@ -32,6 +33,7 @@ import { useMinimizeState } from '../tab-bar/context';
 import {
   EXPANDED_HEIGHT,
   MINIMIZED_HEIGHT,
+  DOCK_NAVIGATION_PHASE,
   BLUR_BLEED,
   MAX_EXPANDED_ITEM_WIDTH,
   ROW_PAD_H,
@@ -86,13 +88,18 @@ export function BottomBarBase({
     navigationVisibility !== 'never' &&
     (navigationVisibility !== 'compact' || sizeClass < BREAKPOINTS.md) &&
     !(dock && keyboardVisible);
+  const present = action != null || (showNavigation && items.length > 0);
   const selected = items.some((item) => item.name === value);
   const dockNavigation = dock && showNavigation && items.length > 0;
   // Folding frees the horizontal lane before the editor descends into it.
   // Both phases are reversible projections of the same scroll signal.
   const navigationProgress = useDerivedValue(() => {
     const amount = reducedMotion ? Number(progress.value > 0.01) : progress.value;
-    return dock ? (selected ? Math.min(1, Math.max(0, amount / 0.6)) : 0) : amount;
+    return dock
+      ? selected
+        ? Math.min(1, Math.max(0, amount / DOCK_NAVIGATION_PHASE))
+        : 0
+      : amount;
   }, [dock, reducedMotion, progress, selected]);
   const hideAction = actionBehavior === 'hide' && items.length > 0;
   const [actionHidden, setActionHidden] = useState(() => hideAction && progress.value > 0.01);
@@ -175,7 +182,9 @@ export function BottomBarBase({
     ? 0
     : Math.max(0, windowEdgeGap(insets.bottom) - (suppliedBottomInset ?? 0));
   useClaimBottomEdge(
-    dock || keyboardVisible || suppliedBottomInset !== undefined ? 0 : bottom + footprint,
+    dock || !present || keyboardVisible || suppliedBottomInset !== undefined
+      ? 0
+      : bottom + footprint,
   );
   const footerOwner = useContext(ScreenFooterContext);
   const claimMeasured = useMeasuredBottomEdgeClaim(
@@ -201,7 +210,7 @@ export function BottomBarBase({
   const rowStyle = useAnimatedStyle(
     () => ({
       height: dock
-        ? UNSET
+        ? ('auto' as const)
         : interpolate(
             reducedMotion ? Number(progress.value > 0.01) : progress.value,
             [0, 1],
@@ -220,7 +229,7 @@ export function BottomBarBase({
     return {
       width: !dock
         ? fallbackNavigationWidth
-        : Platform.OS === 'web'
+        : IS_WEB
           ? (`calc(${(1 - amount) * 100}% + ${amount * MINIMIZED_HEIGHT - (1 - amount) * inset * 2}px)` as `${number}%`)
           : amount === 0
             ? UNSET
@@ -235,7 +244,7 @@ export function BottomBarBase({
       minWidth: dock
         ? minimumNavigationWidth * (1 - navigationProgress.value) +
           MINIMIZED_HEIGHT * navigationProgress.value
-        : UNSET,
+        : minimumNavigationWidth,
     }),
     [dock, minimumNavigationWidth, navigationProgress],
   );
@@ -261,7 +270,11 @@ export function BottomBarBase({
         transform: [
           {
             translateY: dockNavigation
-              ? (EXPANDED_HEIGHT + 10) * Math.min(1, Math.max(0, (amount - 0.6) / 0.4))
+              ? (EXPANDED_HEIGHT + 10) *
+                Math.min(
+                  1,
+                  Math.max(0, (amount - DOCK_NAVIGATION_PHASE) / (1 - DOCK_NAVIGATION_PHASE)),
+                )
               : 0,
           },
         ],
@@ -299,7 +312,7 @@ export function BottomBarBase({
       transform: [{ translateY: amount * (dock ? naturalFootprint.value : bottom + footprint) }],
     };
   }, [hide, reducedMotion, bottom, footprint, dock, naturalFootprint]);
-  if ((keyboardVisible && !dock) || (!items.length && !action)) return null;
+  if ((keyboardVisible && !dock) || !present) return null;
   return (
     <Animated.View
       {...dirProps}
@@ -331,7 +344,7 @@ export function BottomBarBase({
       )}
       <Animated.View
         testID={testID ? `${testID}-row` : undefined}
-        {...rowMeasurement}
+        {...(dock && IS_WEB ? {} : rowMeasurement)}
         {...dataHook('bloomBottomBarRow')}
         pointerEvents="box-none"
         style={[
@@ -382,7 +395,7 @@ export function BottomBarBase({
                     : Platform.OS === 'web'
                       ? { width: '100%', minWidth: items.length * 44 + 8 }
                       : { width: Math.max(navigationWidth, items.length * 44 + 8) },
-                  dock ? navigationMinimumStyle : undefined,
+                  navigationMinimumStyle,
                 ]}
               >
                 <Navigation

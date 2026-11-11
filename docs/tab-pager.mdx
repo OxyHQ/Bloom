@@ -95,7 +95,7 @@ shell's.
 
 For a pushed detail screen that owns a docked editor, opt into
 `<TabPagerBottomBar routeBehavior="contextual" actionBehavior="dock"
-action={<ReplyEditor />} navigationVisibility="compact" />`. The bar reuses the
+action={<ReplyEditor />} navigationVisibility="compact" horizontalInset={8} />`. The bar reuses the
 provider's retained destination progress while the detail route has no selected
 page. A fresh deep link falls back to the first bar destination. It preserves
 that contextual selection and stays present instead of inheriting a no-bar

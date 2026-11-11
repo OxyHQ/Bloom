@@ -57,6 +57,7 @@ itself, without another `PageFooter`, surface, or exterior padding:
 
 ```tsx
 <Screen
+  bottomBarKeyboardBehavior="follow"
   bottomBar={
     <BottomBar
       items={items}
@@ -92,7 +93,8 @@ needed. The action does not join the navigation gesture.
 `navigationVisibility` defaults to `always`; `compact` shows navigation below
 Bloom's `md` breakpoint, and `never` leaves just the same action. Native keyboard
 visibility also removes only navigation in dock mode. Put the bar in
-`Screen.bottomBar` to use its existing keyboard-following host. The component
+`Screen.bottomBar` with `bottomBarKeyboardBehavior="follow"` to use its existing
+keyboard-following host (the Screen default hides its footer). The component
 adds no keyboard avoidance of its own. `horizontalInset` defaults to 12 and
 sets both siblings' common horizontal inset; `actionPlacement` applies to the
 other action behaviors.
