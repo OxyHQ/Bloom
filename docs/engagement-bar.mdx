@@ -10,6 +10,15 @@ The row of actions under a post. `EngagementBar` lays out `EngagementAction`s
 with an optional `trailing` group pushed to the far edge; `EngagementGroup` puts
 adjacent actions that read as one control (an up/down vote) on a single pill.
 
+For controls over video, use `orientation="vertical" size="lg" tone="onImage"`.
+The same actions stack vertically with counts below their 28px glyphs; accepted
+likes retain the existing pop and count-roll animations, haptics and accessibility.
+Resting glyphs and counts are white while active actions keep their semantic tone.
+Horizontal `md` remains the default. `size` inherits `BloomScope`; an explicit size
+wins. No animated nodes are mounted on idle actions in either orientation.
+Use `showZeroCounts` for a media rail that keeps its `0` labels visible and rolls
+the first `0→1` change. Post bars continue to hide zero counts by default.
+
 ```tsx
 import {
   EngagementAction,

@@ -4,6 +4,8 @@
 
 ### Added
 
+- `EngagementBar` supports vertical media rails, shared control sizes and `tone="onImage"`, retaining the same actions, activation pop and count roll as horizontal post bars.
+- `PageHeader.scrimFalloff="linear"` and `EdgeScrim falloff="linear"` provide a uniform opaque-to-transparent gradient; the existing smooth curve remains the default.
 - Panel descriptors accept a transparent `group` of horizontal or vertical panels, nested recursively. `mode: 'split'` divides available space; `mode: 'flow'` grows along its axis with a shared scroll owner. Existing Deck panels use the same renderer. Nested separated groups use their own shell gutter even when the parent group has no gap.
 - Nested splits can opt into `singlePanelFlow: 'document'`: the sole inline panel keeps document scrolling and its viewport mask; opening an auxiliary panel creates a bounded split and closing restores the document reading position. Compact panels support `floating.placement: 'bottom'` with one Dialog presentation.
 - `resizeMaxHeight: 'content'` limits vertical divider interaction to measured intrinsic content while preserving the initial split. Oversized panes can shrink without jumping or regaining the excess space; authored bounds remain in force.

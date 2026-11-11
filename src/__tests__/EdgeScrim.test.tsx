@@ -16,6 +16,19 @@ import { hostNodes } from './support/rendered-style';
 const gradientOf = (tree: unknown) => hostNodes(tree).find((n) => n.type === 'LinearGradient')!;
 
 describe('EdgeScrim', () => {
+  it('linear falloff uses exactly the opaque and transparent endpoints', () => {
+    const { toJSON } = render(<EdgeScrim color="#000000" falloff="linear" />);
+    const stops = hostNodes(toJSON())
+      .filter((node) => node.type === 'Stop')
+      .map((node) => ({ offset: node.props.offset, opacity: node.props.stopOpacity }));
+    expect(stops).toEqual([
+      { offset: '0', opacity: 1 },
+      { offset: '1', opacity: 0 },
+    ]);
+    expect(edgeScrimGradient('#000000', 'top', 'linear')).toBe(
+      'linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 100%)',
+    );
+  });
   it('is solid at the top and fades downward by default', () => {
     const { toJSON } = render(<EdgeScrim color="#1d3b53" />);
     const gradient = gradientOf(toJSON());
@@ -67,6 +80,14 @@ describe('EdgeScrim on Android', () => {
     const style = StyleSheet.flatten(view?.props.style as ViewStyle) ?? {};
     expect(style).toMatchObject({ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 });
     expect(style.experimental_backgroundImage).toBe(edgeScrimGradient('#1d3b53', 'top'));
+  });
+
+  it('renders the same linear falloff in the native background gradient', () => {
+    const { toJSON } = render(<EdgeScrim color="#000000" falloff="linear" testID="linear" />);
+    const view = hostNodes(toJSON()).find((node) => node.props.testID === 'linear')!;
+    expect(
+      (StyleSheet.flatten(view.props.style as ViewStyle) ?? {}).experimental_backgroundImage,
+    ).toBe('linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 100%)');
   });
 
   it('runs from the solid colour to nothing, through the same stops, both ways', () => {

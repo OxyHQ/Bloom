@@ -5,6 +5,8 @@ import type { ReactTestInstance } from 'react-test-renderer';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import type { BloomIconComponent } from '../icons/icon-component';
 import { EngagementAction, EngagementBar, EngagementGroup } from '../engagement-bar';
+import { BloomScope } from '../appearance';
+import { resolvedStyle } from './support/rendered-style';
 
 /**
  * `EngagementBar` is mounted once per row of a feed, with five or six actions
@@ -75,6 +77,49 @@ const animated = (renderer: Mounted) =>
   renderer.root.findAll((node) => String(node.type) === 'Animated.View');
 
 describe('EngagementAction at rest', () => {
+  it('uses the same lightweight action for a large media rail with its count below', () => {
+    const renderer = mount(
+      <EngagementBar orientation="vertical" size="lg" tone="onImage">
+        <EngagementAction icon={Glyph} accessibilityLabel="Like" count={3} />
+      </EngagementBar>,
+    );
+    const action = pressable(renderer, 'Like');
+    expect(action.props.style({ pressed: false })).toMatchObject({
+      flexDirection: 'column',
+      minWidth: 44,
+      minHeight: 44,
+    });
+    expect(renderer.root.findByType(Glyph).props).toMatchObject({
+      width: 28,
+      height: 28,
+      fill: '#FFFFFF',
+    });
+    expect(resolvedStyle(action.findByProps({ children: '3' }).props.style).color).toBe('#FFFFFF');
+    expect(cost(actions(renderer)[0]!)).toEqual({ fibers: 7, hooks: 1 });
+    expect(animated(renderer)).toHaveLength(0);
+    renderer.unmount();
+  });
+
+  it('inherits shared size while an explicit bar size wins', () => {
+    const inherited = mount(
+      <BloomScope size="xs">
+        <EngagementBar>
+          <EngagementAction icon={Glyph} accessibilityLabel="Like" />
+        </EngagementBar>
+      </BloomScope>,
+    );
+    expect(inherited.root.findByType(Glyph).props.width).toBe(16);
+    inherited.unmount();
+    const explicit = mount(
+      <BloomScope size="xs">
+        <EngagementBar size="lg">
+          <EngagementAction icon={Glyph} accessibilityLabel="Like" />
+        </EngagementBar>
+      </BloomScope>,
+    );
+    expect(explicit.root.findByType(Glyph).props.width).toBe(28);
+    explicit.unmount();
+  });
   it('is one pressable host, its glyph and, with a count, one text', () => {
     const renderer = mount(
       <EngagementBar trailing={<EngagementAction icon={Glyph} accessibilityLabel="Save" />}>
@@ -100,6 +145,7 @@ describe('EngagementAction at rest', () => {
     expect(like).toEqual({ fibers: 7, hooks: 1 });
     expect(animated(renderer)).toHaveLength(0);
     expect(renderer.root.findByType(ActiveGlyph)).toBeTruthy();
+    expect(renderer.root.findByType(ActiveGlyph).props.width).toBe(20);
     renderer.unmount();
   });
 
@@ -129,14 +175,19 @@ describe('EngagementAction motion', () => {
   beforeEach(() => jest.useFakeTimers());
   afterEach(() => jest.useRealTimers());
 
-  function Like({ onLike }: { onLike: () => boolean }) {
+  function Like({ onLike, vertical = false }: { onLike: () => boolean; vertical?: boolean }) {
     const [liked, setLiked] = React.useState(false);
     return (
-      <EngagementBar>
+      <EngagementBar
+        orientation={vertical ? 'vertical' : 'horizontal'}
+        size={vertical ? 'lg' : 'md'}
+        tone={vertical ? 'onImage' : 'default'}
+        showZeroCounts={vertical}
+      >
         <EngagementAction
           icon={Glyph}
           accessibilityLabel="Like"
-          count={liked ? 4 : 3}
+          count={vertical ? (liked ? 1 : 0) : liked ? 4 : 3}
           active={liked}
           tone="error"
           popOnActivate
@@ -150,18 +201,22 @@ describe('EngagementAction motion', () => {
     );
   }
 
-  it('animates only the press it accepted, and returns to rest when done', () => {
-    const rejected = mount(<Like onLike={() => false} />);
-    act(() => pressable(rejected, 'Like').props.onPress());
-    expect(animated(rejected)).toHaveLength(0);
-    rejected.unmount();
+  it.each([false, true])(
+    'animates only accepted presses and returns to rest (vertical: %s)',
+    (vertical) => {
+      const rejected = mount(<Like onLike={() => false} vertical={vertical} />);
+      act(() => pressable(rejected, 'Like').props.onPress());
+      expect(animated(rejected)).toHaveLength(0);
+      rejected.unmount();
 
-    const renderer = mount(<Like onLike={() => true} />);
-    act(() => pressable(renderer, 'Like').props.onPress());
-    // The pop's glyph and ring, and the roll's incoming and outgoing counts.
-    expect(animated(renderer)).toHaveLength(4);
-    act(() => jest.runAllTimers());
-    expect(animated(renderer)).toHaveLength(0);
-    renderer.unmount();
-  });
+      const renderer = mount(<Like onLike={() => true} vertical={vertical} />);
+      act(() => pressable(renderer, 'Like').props.onPress());
+      // The pop's glyph and ring, and the roll's incoming and outgoing counts.
+      expect(animated(renderer)).toHaveLength(4);
+      expect(renderer.root.findByType(Glyph).props.width).toBe(vertical ? 28 : 20);
+      act(() => jest.runAllTimers());
+      expect(animated(renderer)).toHaveLength(0);
+      renderer.unmount();
+    },
+  );
 });
