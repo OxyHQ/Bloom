@@ -24,6 +24,7 @@ import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'rea
 
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
 import { useAccessibilityFocus } from '../hooks/use-accessibility-focus';
+import { usePlatformKeyboard } from '../platform-surface/context';
 import { StyledView } from '../styles/styled-primitives';
 import { Z_INDEX } from '../styles/z-index';
 import { useTheme } from '../theme/use-theme';
@@ -80,7 +81,13 @@ export function SheetShell({
   // screen-reader focus move here is what gets it right for every one of them
   // instead of four times.
   const [presented, setPresented] = useState(false);
-  const bodyRef = useAccessibilityFocus<ComponentRef<typeof View>>(presented);
+  // A platform that gives Bloom the window's keys (OxyOS) moves its keyboard,
+  // and its screen reader with it, onto the sheet's first control as the sheet
+  // comes (a picker's chosen option): a focus moved here after the settle,
+  // later, would take the reader back off that control onto the sheet itself,
+  // and the option would never be said. There the platform's move is the one.
+  const platformKeys = usePlatformKeyboard() !== null;
+  const bodyRef = useAccessibilityFocus<ComponentRef<typeof View>>(presented && !platformKeys);
   // A desktop window presents a picker (Select) as the web presents a dialog:
   // a centred card, with no drag handle, Escape closing it. Anchored content
   // keeps the sheet.

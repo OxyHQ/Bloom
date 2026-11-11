@@ -1,5 +1,11 @@
 # Changelog
 
+## 19.8.1
+
+### Fixed
+
+- **A sheet leaves moving the screen reader into it to a platform that gives Bloom the keys.** `SheetShell` (a native `Select`'s picker, sheet menus, popovers) moved screen-reader focus onto its body 50ms after it presented, on every platform. OxyOS moves its keyboard and its reader onto the sheet's first control as the sheet comes (a picker's chosen option), so the later move took the reader back off it onto the sheet, and the chosen option was never said; which came last depended on timing (OxyOS's `settings-displays-keys`). With a platform keyboard (`usePlatformKeyboard()`) the sheet asks for no focus of its own; elsewhere it still does.
+
 ## 19.8.0
 
 ### Added
