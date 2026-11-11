@@ -22,6 +22,15 @@ function renderChip(props: React.ComponentProps<typeof Chip>) {
 const pressEvent = () => ({ nativeEvent: {}, stopPropagation: jest.fn() });
 
 describe('Chip onPress', () => {
+  it('gives the 2xl filter rung a 44px visual target and 48dp native hit height', () => {
+    const { getByTestId } = renderChip({ size: '2xl', onPress: () => {}, children: 'Filter' });
+    const chip = getByTestId('chip');
+    expect(chip.props.style).toEqual(
+      expect.arrayContaining([expect.objectContaining({ height: 44, minHeight: 44 })]),
+    );
+    expect(chip.props.hitSlop).toEqual({ top: 2, bottom: 2, left: 0, right: 0 });
+  });
+
   it('hands the press event to onPress', () => {
     const onPress = jest.fn();
     const { getByTestId } = renderChip({ onPress, children: 'Design' });

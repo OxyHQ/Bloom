@@ -16,7 +16,7 @@ import type { FilterIconComponent } from './types';
  * selection promoted to the brand tone. Both of those are now `Chip`'s (the
  * rung table and the `inverted` recipe are in `chip/shared.ts`):
  *
- *   geometry   40 tall, full pill, 1px border, px 16, 8 between icon (18) and
+ *   geometry   44 tall, full pill, 1px border, px 16, 8 between icon (18) and
  *              label; minWidth 48 so "1" is not a dot
  *   rest       transparent fill, border neutral-200 (dark neutral-700), text
  *   hover      border text (web pointer only)

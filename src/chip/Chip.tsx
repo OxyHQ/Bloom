@@ -218,6 +218,7 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
         ? {}
         : {
             height: geometry.height,
+            ...(size === '2xl' ? { minHeight: geometry.height } : null),
             borderRadius: borderRadius.full,
             paddingHorizontal: geometry.paddingHorizontal,
             backgroundColor: 'transparent',
@@ -243,7 +244,7 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
       // cannot know; native has no such style key and ignores it.
       '--bloom-chip-ring': ring,
     }),
-    [className, geometry, paint, ring, dimContent],
+    [className, geometry, paint, ring, dimContent, size],
   );
 
   const labelStyle = useMemo(
@@ -439,6 +440,7 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
         }
         onPressIn={onPressIn}
         onPressOut={onPressOut}
+        hitSlop={size === '2xl' ? { top: 2, bottom: 2, left: 0, right: 0 } : undefined}
         {...hoverHandlers}
         disabled={disabled}
         accessibilityLabel={accessibilityLabel}

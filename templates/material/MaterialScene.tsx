@@ -11,6 +11,7 @@ import Animated, {
 import { Surface } from '../../src/surface';
 import { Card } from '../../src/card';
 import { Button } from '../../src/button';
+import { Chip } from '../../src/chip';
 import { BlurIsland } from '../../src/blur';
 import { Text } from '../../src/typography';
 import { PageHeader } from '../../src/page-header';
@@ -108,6 +109,7 @@ export function MaterialScene({
   const [tab, setTab] = useState(0);
   const [busy, setBusy] = useState(true);
   const [draft, setDraft] = useState('Synthetic draft — no request is sent');
+  const [chipTargetPresses, setChipTargetPresses] = useState(0);
   const dialog = useDialogControl();
   const sheet = useRef<BottomSheetRef>(null);
   const theme = useTheme();
@@ -184,6 +186,19 @@ export function MaterialScene({
                   Outline
                 </Button>
                 <Button disabled>Disabled</Button>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <Chip
+                  size="2xl"
+                  role="button"
+                  selected={chipTargetPresses > 0}
+                  accessibilityLabel="Large filter touch target"
+                  onPress={() => setChipTargetPresses((count) => count + 1)}
+                  testID="material-chip-target"
+                >
+                  Filter target
+                </Chip>
+                <Text testID="material-chip-target-count">Taps: {chipTargetPresses}</Text>
               </View>
             </Card>
             <BlurIsland testID="material-island" style={{ padding: 12, alignSelf: 'flex-start' }}>

@@ -14,7 +14,7 @@ import type { CountFilterProps } from './types';
  * `min`..`max`, the last reading `8+`.
  *
  *   title   body-regular, text-primary, 16 above the pills
- *   pills   the filter pill (40 tall, full pill), 8 apart; the selected one is
+ *   pills   the filter pill (44 tall, full pill), 8 apart; the selected one is
  *           inverted. One row that scrolls sideways when it does not fit, so the
  *           counts stay in reading order on a narrow screen instead of wrapping.
  *
