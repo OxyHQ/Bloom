@@ -2,21 +2,24 @@
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
+let mockReduced = true;
 jest.mock('../hooks/use-prefers-reduced-motion', () => ({
-  usePrefersReducedMotion: () => true,
+  usePrefersReducedMotion: () => mockReduced,
 }));
 import { Collapsible } from '../collapsible/Collapsible.web';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let container: HTMLDivElement, root: Root;
-let resize: () => void;
+let observations = 0;
 let naturalHeight = 900;
 beforeEach(() => {
+  observations = 0;
+  mockReduced = true;
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
   global.ResizeObserver = class {
-    constructor(fn: () => void) {
-      resize = fn;
+    constructor() {
+      observations += 1;
     }
     observe() {}
     disconnect() {}
@@ -66,10 +69,13 @@ it('measures arbitrary content, retains its state and hides closed descendants w
   expect(panel.style.overflow).toBe('visible');
   expect(container.querySelector('.custom-body')?.getAttribute('style')).toContain('padding: 18px');
   naturalHeight = 1300;
-  act(() => resize());
+  draw(true);
+  expect(observations).toBe(0);
   expect(panel.style.maxHeight).toBe('');
   draw(false);
-  expect(parseFloat(panel.style.maxHeight)).toBe(0);
+  expect(panel.dataset.open).toBe('false');
+  expect(panel.classList.contains('bloom-collapsible-css')).toBe(true);
+  expect(panel.style.maxHeight).toBe('');
   draw(true);
   expect(container.querySelector('input')).toBe(input);
   expect(input.value).toBe('Edited');
@@ -136,4 +142,39 @@ it('unmounts its children once shut when keepMounted is false, and mounts them a
   draw(false);
   expect(container.querySelector('input')).toBeNull();
   expect(container.querySelector('[data-testid=body]')).not.toBeNull();
+});
+
+it('waits for its own CSS geometry completion, cancels closure on reopen and never starts Animated sizing', () => {
+  mockReduced = false;
+  const draw = (open: boolean) =>
+    act(() =>
+      root.render(
+        <Collapsible open={open} keepMounted={false} testID="lifecycle">
+          <input defaultValue="Saved" />
+        </Collapsible>,
+      ),
+    );
+  const end = (node: Element, propertyName: string) =>
+    act(() => {
+      const event = new Event('transitionend', { bubbles: true });
+      Object.defineProperty(event, 'propertyName', { value: propertyName });
+      node.dispatchEvent(event);
+    });
+  draw(true);
+  const panel = container.querySelector<HTMLElement>('[data-testid=lifecycle]')!;
+  const input = container.querySelector('input')!;
+  draw(false);
+  expect(container.querySelector('input')).toBe(input);
+  end(input, 'grid-template-rows');
+  end(panel, 'opacity');
+  expect(container.querySelector('input')).toBe(input);
+  draw(true);
+  end(panel, 'grid-template-rows');
+  expect(container.querySelector('input')).toBe(input);
+  expect(panel.dataset.settled).toBe('true');
+  draw(false);
+  end(panel, 'grid-template-rows');
+  expect(container.querySelector('input')).toBeNull();
+  expect(observations).toBe(0);
+  expect(HTMLElement.prototype.getBoundingClientRect).not.toHaveBeenCalled();
 });

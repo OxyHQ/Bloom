@@ -104,3 +104,12 @@ through the shell's existing `bottomBar={null}` contract. Do not render a second
 navigation copy or transfer an editor through a portal. Under a pager,
 `TabPagerBottomBar routeBehavior="contextual"` provides the same composition for
 a pushed detail route.
+
+Dock navigation visibility changes animate its reserved row, logical action inset
+and existing docking offset from one presence value. Web uses CSS and native uses
+a UI-thread shared value, with the same 300ms ease-in-out recipe as a collapsible
+editor. A focused editor therefore does not lose 68px of navigation space in one
+commit while its toolbar is still expanding. Reversal starts from the current
+presence; reduced motion removes or restores the exact footprint immediately.
+Native collapsible content retains its existing animation owner; frame-level
+synchronization with a physical keyboard is not implied by shared timing.

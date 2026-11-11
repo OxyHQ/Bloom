@@ -6,9 +6,10 @@ import {
   useState,
   useCallback,
   useInsertionEffect,
+  useLayoutEffect,
   type ComponentType,
 } from 'react';
-import { View, Platform } from 'react-native';
+import { View, Platform, type ViewStyle } from 'react-native';
 import { useKeyboardVisible } from '../hooks/use-keyboard-visible';
 import { useEffect } from 'react';
 import Animated, {
@@ -18,6 +19,8 @@ import Animated, {
   runOnJS,
   useSharedValue,
   useDerivedValue,
+  withTiming,
+  Easing,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDirectionProps } from '../hooks/use-is-rtl';
@@ -47,6 +50,12 @@ import { useBorderBoxSize } from '../hooks/use-border-box-size';
 import { useWindowWidthClass } from '../hooks/use-width-class';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import type { WebCssStyle } from '../styles/web-view-style';
+import { DEFAULT_COLLAPSIBLE_TRANSITION } from '../collapsible/use-collapsible-motion';
+import { resolveSurfaceTransition } from '../motion/surface-transition';
+
+const DOCK_PRESENCE = '--bloom-dock-navigation-presence';
+const DOCK_TRANSITION = resolveSurfaceTransition(DEFAULT_COLLAPSIBLE_TRANSITION);
 
 interface Props extends BottomBarProps {
   Navigation: ComponentType<TabBarProps>;
@@ -91,6 +100,29 @@ export function BottomBarBase({
   const present = action != null || (showNavigation && items.length > 0);
   const selected = items.some((item) => item.name === value);
   const dockNavigation = dock && showNavigation && items.length > 0;
+  // This is semantic visibility, separate from the scroll folding signal. It
+  // releases the navigation footprint continuously while a natural-height
+  // editor expands, instead of dropping its entire reserved row in one commit.
+  const navigationPresence = useSharedValue(dockNavigation ? 1 : 0);
+  useLayoutEffect(() => {
+    if (IS_WEB) return;
+    const target = dockNavigation ? 1 : 0;
+    navigationPresence.value = reducedMotion
+      ? target
+      : withTiming(target, {
+          duration: DOCK_TRANSITION.duration,
+          easing: Easing.bezier(...DOCK_TRANSITION.easing),
+        });
+  }, [dockNavigation, reducedMotion, navigationPresence]);
+  const navigationPresenceStyle: WebCssStyle | undefined =
+    dock && IS_WEB
+      ? {
+          [DOCK_PRESENCE]: dockNavigation ? '1' : '0',
+          transitionProperty: DOCK_PRESENCE,
+          transitionDuration: `${reducedMotion ? 0 : DOCK_TRANSITION.duration}ms`,
+          transitionTimingFunction: DOCK_TRANSITION.cssEasing,
+        }
+      : undefined;
   // Folding frees the horizontal lane before the editor descends into it.
   // Both phases are reversible projections of the same scroll signal.
   const navigationProgress = useDerivedValue(() => {
@@ -209,6 +241,11 @@ export function BottomBarBase({
   }, []);
   const rowStyle = useAnimatedStyle(
     () => ({
+      paddingBottom: !dock
+        ? 0
+        : IS_WEB
+          ? (`calc(var(--bloom-dock-navigation-presence) * ${EXPANDED_HEIGHT + 10}px)` as ViewStyle['paddingBottom'])
+          : (EXPANDED_HEIGHT + 10) * navigationPresence.value,
       height: dock
         ? ('auto' as const)
         : interpolate(
@@ -218,7 +255,7 @@ export function BottomBarBase({
             'clamp',
           ),
     }),
-    [progress, reducedMotion, dock, footprint],
+    [progress, reducedMotion, dock, footprint, navigationPresence],
   );
   // Not `items.length` in the mapper: a worklet copies `items` whole to the UI
   // runtime, icon elements and all (`worklet-captures.test.ts`).
@@ -259,23 +296,25 @@ export function BottomBarBase({
   });
   const actionStyle = useAnimatedStyle(() => {
     if (dock) {
-      const amount =
-        dockNavigation && selected
-          ? Math.min(1, Math.max(0, reducedMotion ? Number(progress.value > 0.01) : progress.value))
-          : 0;
+      const amount = selected
+        ? Math.min(1, Math.max(0, reducedMotion ? Number(progress.value > 0.01) : progress.value))
+        : 0;
       return {
         width: 'auto' as const,
         opacity: 1,
-        marginInlineStart: dockNavigation ? (MINIMIZED_HEIGHT + 10) * navigationProgress.value : 0,
+        marginInlineStart: IS_WEB
+          ? (`calc(var(--bloom-dock-navigation-presence) * ${(MINIMIZED_HEIGHT + 10) * navigationProgress.value}px)` as ViewStyle['marginInlineStart'])
+          : (MINIMIZED_HEIGHT + 10) * navigationProgress.value * navigationPresence.value,
         transform: [
           {
-            translateY: dockNavigation
-              ? (EXPANDED_HEIGHT + 10) *
+            translateY: IS_WEB
+              ? (`calc(var(--bloom-dock-navigation-presence) * ${(EXPANDED_HEIGHT + 10) * Math.min(1, Math.max(0, (amount - DOCK_NAVIGATION_PHASE) / (1 - DOCK_NAVIGATION_PHASE)))}px)` as `${number}%`)
+              : (EXPANDED_HEIGHT + 10) *
+                navigationPresence.value *
                 Math.min(
                   1,
                   Math.max(0, (amount - DOCK_NAVIGATION_PHASE) / (1 - DOCK_NAVIGATION_PHASE)),
-                )
-              : 0,
+                ),
           },
         ],
       };
@@ -300,7 +339,7 @@ export function BottomBarBase({
     hasItems,
     above,
     dock,
-    dockNavigation,
+    navigationPresence,
     navigationProgress,
     selected,
   ]);
@@ -357,10 +396,10 @@ export function BottomBarBase({
             paddingRight: inset,
             marginBottom: bottom,
             flexDirection: dock ? 'column' : 'row',
-            paddingBottom: dockNavigation ? EXPANDED_HEIGHT + 10 : 0,
             alignItems: dock ? 'stretch' : 'center',
           },
           rowStyle,
+          navigationPresenceStyle,
         ]}
       >
         {items.length > 0 && (
@@ -469,6 +508,15 @@ export function BottomBarBase({
 const COMPACT_THRESHOLDS = [BREAKPOINTS.md] as const;
 
 const DOCK_CSS = `
+@property --bloom-dock-navigation-presence {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-bloom-bottom-bar-row] { transition-duration: 0ms !important; }
+}
+
 @media (min-width: ${BREAKPOINTS.md}px) {
   [data-bloom-bottom-bar-dock="compact"] [data-bloom-bottom-bar-navigation] { display: none !important; }
   [data-bloom-bottom-bar-dock="compact"] [data-bloom-bottom-bar-row] { padding-bottom: 0 !important; }
