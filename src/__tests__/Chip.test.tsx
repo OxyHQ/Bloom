@@ -14,7 +14,7 @@
  * and a screenshot with a mouse all agree it is fine. Only a keyboard user on a
  * solid chip ever saw it, and only as "the ring did not appear".
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -106,7 +106,7 @@ describe('Chip rungs', () => {
     ['md', 24, 6],
     ['lg', 28, 6],
     ['xl', 32, 12],
-    ['2xl', 40, 16],
+    ['2xl', 44, 16],
   ] as const)('%s is %ipx tall with %ipx sides', (size, height, padding) => {
     mount(
       <Chip size={size} onPress={() => {}} testID="c">
@@ -121,7 +121,7 @@ describe('Chip rungs', () => {
   });
 
   it('the two new rungs are the ones five families had drawn by hand', () => {
-    // 32 with 12px sides (the filter/segment pill) and 40 with 16 (the filters
+    // 32 with 12px sides (the filter/segment pill) and 44 with 16 (the filters
     // sheet). Written as an EQUALITY: a rung drifting by a pixel puts every
     // folded family back where it started, silently.
     expect(CHIP_GEOMETRY.xl).toMatchObject({
@@ -132,7 +132,7 @@ describe('Chip rungs', () => {
       minWidth: 0,
     });
     expect(CHIP_GEOMETRY['2xl']).toMatchObject({
-      height: 40,
+      height: 44,
       paddingHorizontal: 16,
       iconGap: 8,
       icon: 18,

@@ -10,7 +10,7 @@ import type {
 import type { AccentFill, AccentTone } from '../theme/accent-colors';
 
 /**
- * 24 / 24 / 28 / 32 / 40 tall. `xl` and `2xl` are the filter rungs: the scale
+ * 24 / 24 / 28 / 32 / 44 tall. `xl` and `2xl` are the filter rungs: the scale
  * used to stop at 28, which is why five families drew their own pill. The table
  * is in `shared.ts`.
  */

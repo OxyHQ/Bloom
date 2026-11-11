@@ -27,6 +27,8 @@ import { RiShieldLine as ShieldIcon } from '@oxy.so/bloom/icons';
 | `style`     | the disc                                       |
 | `iconStyle` | the glyph                                      |
 
+`size` uses the icon-token vocabulary and does not inherit from `BloomScope`; the decorative disc and glyph keep their selected geometry unless the caller changes `size` or styles explicitly.
+
 `icon` takes the component itself (`icon={ShieldIcon}`), not an element
 (`icon={<ShieldIcon />}`), so the circle can size and colour it. The slot accepts the shared
 `BloomIconComponent` contract and passes numeric `width`/`height` (24px for

@@ -188,9 +188,9 @@ The close affordance is its own control inside the pill, with its own label and 
 | `md` (default) | 24 | 6 | 4 | 16 | `body-medium` |
 | `lg` | 28 | 6 | 4 | 16 | `body-medium` |
 | `xl` | 32 | 12 | 8 | 16 | `body-medium` |
-| `2xl` | 40 | 16 | 8 | 18 | `body-medium` |
+| `2xl` | 44 | 16 | 8 | 18 | `body-medium` |
 
-The scale used to stop at `lg`, which is why five families grew a pill of their own rather than use this one: 28 tall with 6px sides is a TAG, and a filter you tap needs a target. `xl` is the filter/segment pill; `2xl` is the filters-sheet pill, and it pins a `minWidth` of 48 so a one-character label ("1", "8+") stays a pill rather than collapsing to a dot — a rung with a `minWidth` also centres its contents.
+The scale used to stop at `lg`, which is why five families grew a pill of their own rather than use this one: 28 tall with 6px sides is a TAG, and a filter you tap needs a target. `xl` is the filter/segment pill; `2xl` is the filters-sheet pill at 44px tall, with 2px of native vertical hit slop reaching 48dp without side overlap. It pins a `minWidth` of 48 so a one-character label ("1", "8+") stays a pill rather than collapsing to a dot — a rung with a `minWidth` also centres its contents.
 
 **Override the side padding with `paddingHorizontal`, never `paddingLeft`/`paddingRight`.** react-native-web maps the shorthand this component uses to `padding-inline`, which its atomic sheet ranks above `padding-left` whatever the array order — so a longhand override drops on WEB and lands on native. Two families were overriding it that way and had been drawing 6px on the web since they shipped. Better still: pick the rung that already carries the padding you want.
 

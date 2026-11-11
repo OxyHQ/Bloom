@@ -5,7 +5,7 @@ import { FilterChip } from './FilterChip';
 import type { ToggleChipGroupProps } from './types';
 
 /**
- * Multi-select filter pills, wrapped: each option is the filter pill (40 tall,
+ * Multi-select filter pills, wrapped: each option is the filter pill (44 tall,
  * full pill, an optional 18px icon before the label), 8 apart in both
  * directions, the selected ones inverted.
  *

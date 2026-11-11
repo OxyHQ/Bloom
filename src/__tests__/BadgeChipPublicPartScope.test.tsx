@@ -62,5 +62,5 @@ it('preserves explicit Bloom aliases and component-specific rungs', () => {
   expect(heights()).toEqual([18, 24]);
 
   screen.rerender(<Subject scope="lg" badgeSize="label-medium" chipSize="2xl" />);
-  expect(heights()).toEqual([24, 40]);
+  expect(heights()).toEqual([24, 44]);
 });

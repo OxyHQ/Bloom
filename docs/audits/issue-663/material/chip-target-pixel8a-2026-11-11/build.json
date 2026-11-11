@@ -1,0 +1,33 @@
+{
+  "commit": "8d78ba880774376eaa43689ce64cb7bec01b5c38",
+  "workingTree": "M docs/public-parts.mdx\n M src/__tests__/support/public-part-classifications.json",
+  "fixtureSha256": "dec7e07b14bac4a9f7f87781d1aaadc48857024b8b91b6154ae9d7cd892f44af",
+  "sourceSha256": "67e9be906907d07b2050fafea70395838a7bcf108825bfe84043a06a6f4fbac6",
+  "sourceFiles": 5121,
+  "nativeModulePackageVersion": "17.22.0",
+  "nativeModuleArtifact": "installed package from consumer lockfile",
+  "nativeModuleTarballSha256": null,
+  "lockSha256": "f2df323a08c2c77c02e09a9ce69aea9f4d90b0fad025ed75ac0551bdcea8dfa4",
+  "artifactKind": "Bloom source fixture with the installed native package recorded separately",
+  "reactCompiler": false,
+  "dependencies": {
+    "@oxy.so/bloom": "17.22.0",
+    "expo": "58.0.23",
+    "expo-asset": "58.0.20",
+    "expo-blur": "58.0.5",
+    "expo-font": "58.0.11",
+    "expo-image": "58.0.18",
+    "nativewind": "5.0.0-rc.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-native": "0.88.1",
+    "react-native-css": "3.1.0-rc.0",
+    "react-native-gesture-handler": "3.3.0",
+    "react-native-reanimated": "4.7.1",
+    "react-native-safe-area-context": "5.11.1",
+    "react-native-screens": "4.30.1",
+    "react-native-svg": "15.16.0",
+    "react-native-web": "0.21.4",
+    "react-native-worklets": "0.13.0"
+  }
+}

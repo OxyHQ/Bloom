@@ -15,7 +15,7 @@ import type { ChipHue, ChipSize, ChipVariant } from './types';
  *   medium   24      6          4    16    body-medium         ← default
  *   large    28      6          4    16    body-medium
  *   xl       32      12         8    16    body-medium
- *   2xl      40      16         8    18    body-medium
+ *   2xl      44      16         8    18    body-medium
  *
  * The scale used to stop at `large`, which is why FIVE families grew their own
  * pill rather than use this one: 28 tall with 6px sides is a TAG, and a filter
@@ -52,7 +52,7 @@ export const CHIP_GEOMETRY: Readonly<Record<ChipSize, ChipGeometry>> = {
   md: rung(24, 'body-medium', 6, 4),
   lg: rung(28, 'body-medium', 6, 4),
   xl: rung(32, 'body-medium', 12, 8),
-  '2xl': rung(40, 'body-medium', 16, 8, 48, 18),
+  '2xl': rung(44, 'body-medium', 16, 8, 48, 18),
 };
 
 export interface ChipPaint {
