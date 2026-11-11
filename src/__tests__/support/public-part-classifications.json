@@ -867,6 +867,18 @@
       "src/breadcrumb/Breadcrumb.tsx#BreadcrumbItem"
     ]
   },
+  "close-button-independent-size": {
+    "status": "independent-scale",
+    "reason": "CloseButton owns a compact dismiss-action geometry with an xs default and explicit 2xs/xs/sm/md/lg overrides; the intentionally compact default does not inherit BloomScope size. Its dimensions describe the dismiss affordance, not surrounding content density.",
+    "evidence": [
+      "src/button/CloseButton.tsx",
+      "src/button/shared.ts",
+      "src/__tests__/Button.test.tsx",
+      "src/__tests__/CloseButtonPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify that lg scope leaves the xs default at 20 points/pixels and explicit lg overrides an xs scope to 44; existing native geometry coverage checks the component size table. Physical-device proportions and accessibility remain pending.",
+    "parts": ["src/button/CloseButton.tsx#CloseButton"]
+  },
   "select-field-size-delegation": {
     "status": "delegated",
     "reason": "SelectField adds the Field label, description and error layout, then forwards its optional size to the platform-specific Select root. Select remains the owner of trigger size resolution.",
@@ -980,7 +992,6 @@
       "src/booking/TripCard.tsx#TripCard",
       "src/bottom-promo/BottomPromo.tsx#BottomPromo",
       "src/bottom-sheet/BottomSheet.tsx#BottomSheet",
-      "src/button/CloseButton.tsx#CloseButton",
       "src/calendar/CalendarView.tsx#CalendarView",
       "src/calendar/CalendarViewEventDetails.tsx#CalendarViewEventDetails",
       "src/calendar/CalendarViewHeader.tsx#CalendarViewHeader",

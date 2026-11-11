@@ -783,6 +783,22 @@ describe('button details', () => {
     expect(style.height).toBe(box);
     expect(style.borderRadius).toBe(box / 2);
   });
+
+  it('keeps its compact default independent from BloomScope and honors explicit size', () => {
+    const scoped = renderWithTheme(
+      <BloomScope size="lg">
+        <CloseButton testID="close" accessibilityLabel="Close" />
+      </BloomScope>,
+    );
+    expect(resolvedStyle(scoped.getByTestId('close').props.style).width).toBe(20);
+
+    const explicit = renderWithTheme(
+      <BloomScope size="xs">
+        <CloseButton testID="close" accessibilityLabel="Close" size="lg" />
+      </BloomScope>,
+    );
+    expect(resolvedStyle(explicit.getByTestId('close').props.style).width).toBe(44);
+  });
 });
 
 describe('filled button material', () => {
