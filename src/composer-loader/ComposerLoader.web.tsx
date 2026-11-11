@@ -206,6 +206,7 @@ function ComposerLoaderComponent({
                 width={box.w}
                 height={box.h}
                 rx={geometry.rx}
+                ry={geometry.rx}
                 pathLength={100}
                 fill="none"
                 stroke={`url(#${gradientId})`}
