@@ -67,8 +67,13 @@
   "button-delegation": {
     "status": "delegated",
     "reason": "Each named Button composition renders the shared Button with the complete props spread and no size default. Both native/web implementations delegate size precedence directly; appearance/tone/iconOnly defaults do not consume or replace size.",
-    "evidence": ["src/button/Button.tsx", "src/button/Button.web.tsx"],
-    "verification": "direct JSX/props delegation inspected; per-wrapper runtime matrix pending",
+    "evidence": [
+      "src/button/Button.tsx",
+      "src/button/Button.web.tsx",
+      "src/__tests__/Button.test.tsx",
+      "src/__tests__/Button.web.test.tsx"
+    ],
+    "verification": "all nine public Button compositions render on native and DOM web; xs from nearest BloomScope and explicit lg override are measured for boxed wrappers and LinkButton typography; default/nested/portal matrix remains pending",
     "parts": [
       "src/button/Button.tsx#DestructiveButton",
       "src/button/Button.tsx#GhostButton",

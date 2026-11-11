@@ -10,8 +10,15 @@ import { getByRole, getByText, getByLabelText, fireEvent } from '@testing-librar
 import '@testing-library/jest-dom';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomScope } from '../appearance/BloomScope';
 import {
   Button,
+  DestructiveButton,
+  GhostButton,
+  IconButton,
+  OutlineButton,
+  PrimaryButton,
+  TextButton,
   LinkButton,
   SecondaryButton,
   InverseButton,
@@ -556,6 +563,72 @@ describe('Button.web', () => {
       expect(btn.style.height).toBe(height);
       expect(btn.style.paddingLeft).toBe('0px');
     });
+  });
+
+  it('delegates inherited and explicit size through every named composition', () => {
+    const draw = (size?: 'lg') => (
+      <BloomScope size="xs">
+        <>
+          <PrimaryButton testID="primary" size={size}>
+            Primary
+          </PrimaryButton>
+          <SecondaryButton testID="secondary" size={size}>
+            Secondary
+          </SecondaryButton>
+          <IconButton
+            testID="icon"
+            size={size}
+            icon={() => <span>+</span>}
+            accessibilityLabel="Add"
+          />
+          <GhostButton testID="ghost" size={size}>
+            Ghost
+          </GhostButton>
+          <InverseButton testID="inverse" size={size}>
+            Inverse
+          </InverseButton>
+          <TextButton testID="text" size={size}>
+            Text
+          </TextButton>
+          <OutlineButton testID="outline" size={size}>
+            Outline
+          </OutlineButton>
+          <LinkButton testID="link" size={size}>
+            Link
+          </LinkButton>
+          <DestructiveButton testID="destructive" size={size}>
+            Delete
+          </DestructiveButton>
+        </>
+      </BloomScope>
+    );
+    const ids = [
+      'primary',
+      'secondary',
+      'icon',
+      'ghost',
+      'inverse',
+      'text',
+      'outline',
+      'destructive',
+    ];
+    const inherited = mount(draw());
+    expect(
+      ids.map(
+        (id) => (inherited.querySelector(`[data-testid="${id}"]`) as HTMLElement).style.height,
+      ),
+    ).toEqual(ids.map(() => '24px'));
+    const inheritedLink = inherited.querySelector('[data-testid="link"]') as HTMLElement;
+    expect(inheritedLink.style.fontSize).toBe('12px');
+
+    const explicit = mount(draw('lg'));
+    expect(
+      ids.map(
+        (id) => (explicit.querySelector(`[data-testid="${id}"]`) as HTMLElement).style.height,
+      ),
+    ).toEqual(ids.map(() => '44px'));
+    const explicitLink = explicit.querySelector('[data-testid="link"]') as HTMLElement;
+    expect(explicitLink.style.fontSize).toBe('16px');
   });
 
   describe('shared semantic paint', () => {
