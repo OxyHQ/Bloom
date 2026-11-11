@@ -1,5 +1,11 @@
 # Changelog
 
+## 19.1.0
+
+### Added
+
+- **`formatRelativeTime(at, locale?, { now?, style? })`** from `@oxy.so/bloom/locale` and the root: "3 minutes ago" / "in 2 days" in the reader's locale through a cached `Intl.RelativeTimeFormat` (English words where the engine lacks it). Apps can use it in place of their own time-ago helpers.
+
 ## 19.0.0
 
 ### Breaking

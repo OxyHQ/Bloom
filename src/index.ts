@@ -133,9 +133,10 @@ export {
   formatMultiplier,
   formatNumber,
   formatPercent,
+  formatRelativeTime,
   formatSignedPercent,
 } from './locale';
-export type { BloomLanguage } from './locale';
+export type { BloomLanguage, RelativeTimeOptions, RelativeTimeStyle } from './locale';
 // A namespace, not seven loose verbs: `getAspectRatio`/`setAspectRatio`/
 // `hasAspectRatio` are exactly the collision-prone shape the namespace rule
 // covers.
