@@ -1811,7 +1811,7 @@
       "src/__tests__/CreatorStudio.test.tsx",
       "src/__tests__/OfferingBadge.test.tsx"
     ],
-    "verification": "existing web scope regressions rerun; native family regressions rerun but complete per-part native scope/portal and device matrix remains pending",
+    "verification": "On Bloom 6cae1312 (2026-11-12), reran InheritedControlSize.web, Voice, ChatPeople, CreatorStudio and OfferingBadge: 5 suites / 150 tests pass. This confirms the existing web regressions; complete per-part native scope/portal coverage, physical-device geometry and accessibility remain pending.",
     "parts": [
       "src/chat-people/ContactRow.tsx#ContactRow",
       "src/creator-studio/ReleaseCard.tsx#ReleaseStatusBadge",
