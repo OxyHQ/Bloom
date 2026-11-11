@@ -27,7 +27,7 @@ export function requireLabEmulator(
     return;
   }
   assert.equal(
-    avd.trim().split(/\r?\n/)[0],
+    avd.trim().split(/\r?\n/)[0].trim(),
     'bloom_material_663',
     'Refusing an existing/unrelated AVD',
   );

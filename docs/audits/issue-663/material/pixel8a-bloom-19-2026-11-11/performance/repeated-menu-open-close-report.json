@@ -1,0 +1,15 @@
+{
+  "case": "repeated-menu-open-close",
+  "serial": "43221JEKB12200",
+  "elapsedSeconds": 15.244,
+  "frames": 2821,
+  "jankyFrames": 39,
+  "frameP95ms": 19,
+  "gpuP95ms": 10,
+  "pssKb": 422124,
+  "rssKb": 595040,
+  "thermalBefore": 0,
+  "thermalAfter": 0,
+  "sampleCapturedAtAndroid": "Wed Nov 11 07:06:54 EET 2026",
+  "note": "Descriptive 15-second sample on Pixel 8a Android 16/API36. See README for limitations."
+}
