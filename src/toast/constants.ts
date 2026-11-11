@@ -69,7 +69,6 @@ export const toastDefaults: {
   gap: number;
   theme: ToastTheme;
   autoWiggleOnUpdate: AutoWiggle;
-  richColors: boolean;
   enableStacking: boolean;
   stackGap: number;
   allowFontScaling: boolean;
@@ -99,7 +98,6 @@ export const toastDefaults: {
   gap: 12,
   theme: 'system',
   autoWiggleOnUpdate: 'never',
-  richColors: false,
   /**
    * ON, unlike sonner-native — the same class of correction as `TOAST_MAX_ROW_WIDTH`.
    *

@@ -1,5 +1,6 @@
 import { useId, useRef } from 'react';
-import { Pressable, ScrollView, Text } from 'react-native';
+import { Pressable, ScrollView } from 'react-native';
+import { Text } from '../typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { ViewRef } from '../styles/native-refs';

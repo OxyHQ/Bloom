@@ -156,7 +156,6 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function Toast
     animation,
     unstyled: unstyledProp,
     important,
-    richColors: richColorsProp,
     onPress,
     allowFontScaling: allowFontScalingProp,
     maxFontSizeMultiplier: maxFontSizeMultiplierProp,
@@ -170,7 +169,6 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function Toast
   const {
     closeButton: closeButtonCtx,
     icons,
-    richColors: richColorsCtx,
     allowFontScaling: allowFontScalingCtx,
     maxFontSizeMultiplier: maxFontSizeMultiplierCtx,
     enableStacking,
@@ -184,7 +182,6 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function Toast
 
   const position = positionProp ?? positionCtx;
   const unstyled = unstyledProp ?? toastOptions.unstyled ?? unstyledCtx;
-  const richColors = richColorsProp ?? richColorsCtx;
   const closeButton = closeButtonProp ?? closeButtonCtx;
   const allowFontScaling = allowFontScalingProp ?? allowFontScalingCtx;
   const maxFontSizeMultiplier = maxFontSizeMultiplierProp ?? maxFontSizeMultiplierCtx;
@@ -531,7 +528,6 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function Toast
                     close={close}
                     closeButton={closeButton}
                     dismissible={dismissible}
-                    richColors={richColors}
                     promiseOptions={promiseOptions}
                     styles={mergedStyles}
                     style={style}

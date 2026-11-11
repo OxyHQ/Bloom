@@ -11,7 +11,7 @@ const meta: Meta<typeof DeliverySlotPicker> = {
   id: 'blocks-checkout-deliveryslot',
   title: 'Patterns/Checkout/Delivery Slot',
   component: DeliverySlotPicker,
-  parameters: { layout: 'fullscreen' },
+  parameters: { layout: 'padded' },
 };
 
 export default meta;

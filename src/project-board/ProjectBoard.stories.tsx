@@ -4,6 +4,7 @@ const meta: Meta<typeof ProjectBoard> = {
   id: 'blocks-project-board',
   title: 'Patterns/Productivity/Project Board',
   component: ProjectBoard,
+  parameters: { layout: 'fullscreen' },
   args: {
     ownerName: 'Maya',
     initialColumns: [

@@ -786,7 +786,11 @@ const UsageCardComponent: React.FC<UsageCardProps> = ({
           {title ? (
             <Text style={[BODY_MEDIUM, { color: palette.textSecondary }]}>{title}</Text>
           ) : null}
-          {fallback}
+          {typeof fallback === 'string' ? (
+            <Text style={[BODY_MEDIUM, { color: palette.textSecondary }]}>{fallback}</Text>
+          ) : (
+            fallback
+          )}
         </View>
       ) : null}
 

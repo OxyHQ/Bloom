@@ -33,7 +33,6 @@ export const areToastsEqual = (a: ToastProps, b: ToastProps) => {
     a.style === b.style &&
     a.styles === b.styles &&
     a.important === b.important &&
-    a.richColors === b.richColors &&
     a.promiseOptions === b.promiseOptions &&
     areActionsEqual(a.action, b.action) &&
     areActionsEqual(a.cancel, b.cancel)

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { useArgs } from 'storybook/preview-api';
 import { BloomColorScope } from './color-scope/ColorScope.web';
 import { useTheme } from './use-theme';
 import type { AppColorName } from './color-presets';
@@ -257,74 +256,11 @@ function Workspace({ direction }: Pick<PreviewArgs, 'direction'>) {
   );
 }
 
+/** Switch the preset and the direction in Controls; light and dark follow the toolbar. */
 export const FirstDirection: StoryObj<PreviewArgs> = {
-  render: function Render(args) {
-    const [, updateArgs] = useArgs<PreviewArgs>();
-    return <ColorRolesPreview args={args} updateArgs={updateArgs} />;
-  },
+  render: (args) => (
+    <BloomColorScope colorPreset={args.preset} style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+      <Workspace direction={args.direction} />
+    </BloomColorScope>
+  ),
 };
-
-function ColorRolesPreview({
-  args,
-  updateArgs,
-}: {
-  args: PreviewArgs;
-  updateArgs: (args: Partial<PreviewArgs>) => void;
-}) {
-  const { colors } = useTheme();
-  return (
-    <View
-      style={{
-        flex: 1,
-        minHeight: 0,
-        padding: 16,
-        gap: 18,
-        width: '100%',
-        backgroundColor: colors.background,
-      }}
-    >
-      <View style={{ gap: 12 }}>
-        <Text style={{ color: colors.text, fontSize: 16, fontWeight: '600' }}>
-          Color roles · first direction
-        </Text>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-          {presets.map((preset) => (
-            <Button
-              key={preset}
-              size="sm"
-              tone="neutral"
-              appearance={args.preset === preset ? 'subtle' : 'plain'}
-              onPress={() => updateArgs({ preset })}
-            >
-              {preset}
-            </Button>
-          ))}
-          <View style={{ width: 8 }} />
-          <Button
-            size="sm"
-            tone="neutral"
-            appearance={args.direction === 'roles' ? 'subtle' : 'plain'}
-            onPress={() => updateArgs({ direction: 'roles' })}
-          >
-            Color roles
-          </Button>
-          <Button
-            size="sm"
-            tone="neutral"
-            appearance={args.direction === 'single-accent' ? 'subtle' : 'plain'}
-            onPress={() => updateArgs({ direction: 'single-accent' })}
-          >
-            Single accent
-          </Button>
-        </View>
-        <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
-          Switch palettes and compare the same components. Light / dark follows the Storybook
-          toolbar.
-        </Text>
-      </View>
-      <BloomColorScope colorPreset={args.preset} style={{ display: 'flex', flex: 1, minHeight: 0 }}>
-        <Workspace direction={args.direction} />
-      </BloomColorScope>
-    </View>
-  );
-}

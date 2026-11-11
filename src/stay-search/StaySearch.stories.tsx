@@ -11,7 +11,6 @@ import { RiMapPinLine } from '../icons/remix/RiMapPinLine';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { Search } from '../search';
-import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
@@ -503,11 +502,8 @@ export const MobileFlowInDialog: Story = {
 
 /** Dark: the bar with the guests panel open, and the mobile flow. */
 export const Dark: Story = {
-  render: () => (
-    <BloomThemeProvider mode="dark">
-      <DarkCanvas />
-    </BloomThemeProvider>
-  ),
+  globals: { theme: 'dark' },
+  render: () => <DarkCanvas />,
 };
 
 function DarkCanvas() {

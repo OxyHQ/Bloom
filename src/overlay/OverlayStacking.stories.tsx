@@ -18,7 +18,8 @@
  * real browser.
  */
 import React, { useRef, useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '../typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';

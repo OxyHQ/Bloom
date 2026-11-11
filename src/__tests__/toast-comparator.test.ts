@@ -28,7 +28,6 @@ describe('areToastsEqual', () => {
     ['dismissible', { dismissible: false }],
     ['duration', { duration: 10 }],
     ['important', { important: true }],
-    ['richColors', { richColors: true }],
     ['style', { style: { opacity: 0.5 } }],
     ['styles', { styles: { title: { fontSize: 9 } } }],
   ])('reports a change of %s', (_field, overrides) => {

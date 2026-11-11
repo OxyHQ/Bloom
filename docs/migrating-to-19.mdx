@@ -1,0 +1,21 @@
+# Migrate from Bloom 18 to 19
+
+Bloom 19 removes the `richColors` toast option. This is a breaking type and runtime API change.
+
+## Toast options
+
+Remove `richColors` from per-toast calls and from `<ToastOutlet>` / `ToasterProps`:
+
+```tsx
+// Before
+toast.success('Saved', { richColors: true });
+<ToastOutlet richColors />
+
+// After
+toast.success('Saved');
+<ToastOutlet />
+```
+
+Toast variants keep a neutral card, border and title. The leading status disc carries the variant colour. Bloom 19 also applies the compact 12px vertical padding and 28px status disc to descriptions and actions; actions without a description sit inline, while actions with a description sit below the text. Review toast snapshots if they encoded the previous size or `richColors` treatment.
+
+No other toast option is removed by this migration.

@@ -210,20 +210,26 @@ describe('ToastContent', () => {
       {},
       { description: 'More detail' },
       { action: { label: 'Undo', onClick: jest.fn() } },
-    ])('adapts density to the content: %p', (content) => {
+    ])('stays compact whatever the content: %p', (content) => {
       const rendered = renderContent({ variant: 'success', ...content });
-      const detailed = 'description' in content || 'action' in content;
-      expect(flat(discsOf(rendered)[0]?.props.style)).toMatchObject({
-        width: detailed ? 40 : 28,
-        height: detailed ? 40 : 28,
-      });
+      expect(flat(discsOf(rendered)[0]?.props.style)).toMatchObject({ width: 28, height: 28 });
       const surface = rendered.UNSAFE_root.findAll(
         (n) => hostName(n) === 'View' && flat(n.props.style).borderRadius === 16,
       )[0];
-      expect(flat(surface?.props.style)).toMatchObject({
-        paddingTop: detailed ? 16 : 12,
-        paddingBottom: detailed ? 16 : 12,
-      });
+      expect(flat(surface?.props.style)).toMatchObject({ paddingTop: 12, paddingBottom: 12 });
+    });
+
+    it('puts the actions on the title row when there is no description, and under it otherwise', () => {
+      const action = { label: 'Undo', onClick: jest.fn() };
+      const buttonsRow = (r: ReturnType<typeof renderContent>) =>
+        r.UNSAFE_root.findAll(
+          (n) => hostName(n) === 'View' && flat(n.props.style).flexWrap === 'wrap',
+        )[0];
+      expect(flat(buttonsRow(renderContent({ action }))?.props.style).marginTop).toBeUndefined();
+      expect(
+        flat(buttonsRow(renderContent({ action, description: 'More detail' }))?.props.style)
+          .marginTop,
+      ).toBe(6);
     });
 
     it('keeps the disc for the spinner and for a caller icon', () => {
@@ -248,14 +254,14 @@ describe('ToastContent', () => {
       });
     });
 
-    it('places the close button at top 12 / right 12 of the card', () => {
+    it('places the close button on the first line, 12 from the right of the card', () => {
       const [close] = pressablesOf(
         renderContent({ dismissible: true, closeButton: true, description: 'More detail' }),
       );
-      // Offsets are from the row, which sits inside the card's 16 / 44 padding.
+      // Offsets are from the row, which sits inside the card's 12 / 44 padding.
       expect(flat(close?.props.style)).toMatchObject({
         position: 'absolute',
-        top: -4,
+        top: 0,
         right: -32,
         width: 20,
       });
@@ -308,7 +314,6 @@ it('publishes the default toast base while custom background renderers keep pare
           fill: resolveToastColors({
             theme: buildTheme('teal', 'light'),
             variant: undefined,
-            richColors: false,
           }).surface,
           parentFill: '#123456',
         }).publishedFill,

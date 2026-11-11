@@ -1,6 +1,7 @@
 import type { ComponentRef } from 'react';
 import React from 'react';
-import { Image, Pressable, View, Text } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
+import { Text } from '../typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '../typography';
 import { SlideInLeft } from 'react-native-reanimated';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -55,8 +56,7 @@ function Demo({ children, outlet }: { children: React.ReactNode; outlet?: Toaste
 
 /**
  * All six rows must share ONE neutral surface — only the leading icon changes
- * colour. Compare against `RichColors`, which keeps that same surface and adds the
- * status colour to the border and title.
+ * colour.
  */
 export const Variants: Story = {
   parameters: { controls: { disable: true } },
@@ -68,26 +68,6 @@ export const Variants: Story = {
       <Button onPress={() => toast.warning('Storage almost full')}>Warning</Button>
       <Button onPress={() => toast.info('New version available')}>Info</Button>
       <Button onPress={() => toast.loading('Uploading…')}>Loading</Button>
-    </Demo>
-  ),
-};
-
-/**
- * The direct comparison against `Variants`. The SURFACE is identical in both
- * stories — `richColors` only widens the status colour from the icon alone to the
- * border and title as well, so a success row here is a neutral card with a green
- * icon, green border and green title. Two failure modes to watch for: a tinted or
- * brand-coloured surface (the status/brand token families got mixed again), or a
- * row indistinguishable from `Variants` (the prop stopped doing anything).
- */
-export const RichColors: Story = {
-  parameters: { controls: { disable: true } },
-  render: () => (
-    <Demo outlet={{ richColors: true }}>
-      <Button onPress={() => toast.success('Profile updated')}>Success</Button>
-      <Button onPress={() => toast.error('Network error')}>Error</Button>
-      <Button onPress={() => toast.warning('Storage almost full')}>Warning</Button>
-      <Button onPress={() => toast.info('New version available')}>Info</Button>
     </Demo>
   ),
 };

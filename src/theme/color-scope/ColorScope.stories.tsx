@@ -23,9 +23,12 @@ function Probe({ name }: { name: string }) {
         backgroundColor: 'var(--background)',
         color: 'var(--color-text)',
         pointerEvents: 'auto',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
       }}
     >
-      Exact scoped surface
+      <span>Exact scoped surface</span>
       <input
         aria-label={`${name} draft`}
         value={value}
@@ -41,10 +44,18 @@ function ExactScopeFixture({ placement = 'end' }: { placement?: 'end' | 'bottom'
   const [alternate, setAlternate] = useState(false);
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ padding: 24 }}>
-      <button onClick={() => setExact((value) => !value)}>Toggle exact scope</button>
-      <button onClick={() => setAlternate((value) => !value)}>Switch scoped mode</button>
-      <button onClick={() => setOpen((value) => !value)}>Toggle scoped portal</button>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 12 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        <Button size="sm" tone="neutral" onPress={() => setExact((value) => !value)}>
+          Toggle exact scope
+        </Button>
+        <Button size="sm" tone="neutral" onPress={() => setAlternate((value) => !value)}>
+          Switch scoped mode
+        </Button>
+        <Button size="sm" tone="neutral" onPress={() => setOpen((value) => !value)}>
+          Toggle scoped portal
+        </Button>
+      </div>
       <Probe name="outside-scope" />
       <BloomColorScope
         mode={exact ? (alternate ? 'light' : 'dark') : undefined}
