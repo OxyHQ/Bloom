@@ -795,6 +795,24 @@
     "verification": "Native-renderer and DOM web checks verify default md endpoints, inherited xs, nested lg, explicit child size, and independent dot diameter/count. This family does not own portals or submenus; physical-device geometry remains unverified.",
     "parts": ["src/connection-dots/ConnectionDots.tsx#ConnectionDots"]
   },
+  "radio-control-size": {
+    "status": "applicable",
+    "reason": "Radio, RadioGroup and its default/chip/swatch variants, RadioChip, and RadioSwatch resolve the nearest BloomScope size. An explicit size overrides that scope; the variants retain distinct indicator, pill, and disc geometry.",
+    "evidence": [
+      "src/radio/Radio.tsx",
+      "src/radio/RadioChip.tsx",
+      "src/radio/RadioSwatch.tsx",
+      "src/__tests__/RadioPublicPartScope.test.tsx",
+      "src/__tests__/RadioPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native-renderer and DOM web suites verify unscoped md, nearest xs, nested lg over xs, explicit lg over xs, ordinary wrappers and a real portal for Radio, RadioGroup default/chip/swatch variants, RadioChip and RadioSwatch. These are renderer checks; physical geometry and device accessibility remain pending. These parts own no submenu",
+    "parts": [
+      "src/radio/Radio.tsx#Radio",
+      "src/radio/Radio.tsx#RadioGroup",
+      "src/radio/RadioChip.tsx#RadioChip",
+      "src/radio/RadioSwatch.tsx#RadioSwatch"
+    ]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
@@ -1410,11 +1428,7 @@
       "src/queue-panel/QueuePanelRow.tsx#QueuePanelRow",
       "src/queue-panel/RecentlyPlayedList.tsx#RecentlyPlayedList",
       "src/radio-indicator/RadioIndicator.tsx#RadioIndicator",
-      "src/radio/Radio.tsx#Radio",
-      "src/radio/Radio.tsx#RadioGroup",
       "src/radio/RadioCard.tsx#RadioCard",
-      "src/radio/RadioChip.tsx#RadioChip",
-      "src/radio/RadioSwatch.tsx#RadioSwatch",
       "src/rail/Rail.tsx#Rail",
       "src/rating/Rating.tsx#Rating",
       "src/rating/RatingBar.tsx#RatingBar",
