@@ -1,0 +1,50 @@
+Applications Memory Usage (in Kilobytes):
+Uptime: 6777209 Realtime: 6777209
+
+** MEMINFO in pid 7528 [so.oxy.bloom.materiallab] **
+                   Pss  Private  Private  SwapPss      Rss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty    Total     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------   ------
+  Native Heap    85727    85676        8       50    86924   100460    81997    13208
+  Dalvik Heap     8045     6176     1804       61     8940    12275     6138     6137
+ Dalvik Other     2584     2116       16       10     3620
+        Stack     1012     1012        0        0     1020
+       Ashmem        2        0        0        0       20
+    Other dev       18        0       16        0      236
+     .so mmap     8208      364     3692       46    41656
+    .jar mmap     2737        0      724        0    24632
+    .apk mmap    41391      888    39148        0    65032
+    .ttf mmap     1647        0     1584        0     1788
+    .dex mmap     8594       16     8576        0     8656
+    .oat mmap     1491        4      152        0    15648
+    .art mmap     3021     1400      916      160    16500
+   Other mmap      895       36      784        0     2416
+      Unknown    36277    36264        0        4    36492
+        TOTAL   201980   133952    57420      331   201980   112735    88135    19345
+
+ App Summary
+                       Pss(KB)                        Rss(KB)
+                        ------                         ------
+           Java Heap:     8492                          25440
+         Native Heap:    85676                          86924
+                Code:    55152                         158344
+               Stack:     1012                           1020
+            Graphics:        0                              0
+       Private Other:    41040
+              System:    10608
+             Unknown:                                   41852
+
+           TOTAL PSS:   201980            TOTAL RSS:   313580       TOTAL SWAP PSS:      331
+
+ Objects
+               Views:      205         ViewRootImpl:        2
+         AppContexts:        5           Activities:        1
+              Assets:       15        AssetManagers:        0
+       Local Binders:       44        Proxy Binders:       37
+       Parcel memory:        9         Parcel count:       32
+    Death Recipients:        0      OpenSSL Sockets:        0
+            WebViews:        0
+
+ SQL
+         MEMORY_USED:        0
+  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0

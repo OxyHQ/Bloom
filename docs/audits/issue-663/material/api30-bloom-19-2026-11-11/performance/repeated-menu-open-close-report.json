@@ -1,0 +1,17 @@
+{
+  "case": "repeated-menu-open-close",
+  "serial": "emulator-5580",
+  "os": "Android 11 / API 30",
+  "renderer": "Google SwiftShader x86_64 emulator",
+  "elapsedSeconds": 16.35,
+  "frames": 437,
+  "jankyFrames": 437,
+  "frameP95ms": 81,
+  "gpuP95ms": 20,
+  "pssKb": 201980,
+  "rssKb": 313580,
+  "thermalBefore": 0,
+  "thermalAfter": 0,
+  "sampleCapturedAtAndroid": "Wed Nov 11 08:12:23 EET 2026",
+  "note": "Descriptive 15-second software-emulator sample; not physical-device performance evidence."
+}

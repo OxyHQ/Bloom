@@ -1,0 +1,17 @@
+{
+  "case": "scroll-motion",
+  "serial": "emulator-5580",
+  "os": "Android 11 / API 30",
+  "renderer": "Google SwiftShader x86_64 emulator",
+  "elapsedSeconds": 17.117,
+  "frames": 193,
+  "jankyFrames": 193,
+  "frameP95ms": 200,
+  "gpuP95ms": 20,
+  "pssKb": 233836,
+  "rssKb": 345400,
+  "thermalBefore": 0,
+  "thermalAfter": 0,
+  "sampleCapturedAtAndroid": "Wed Nov 11 08:11:55 EET 2026",
+  "note": "Descriptive 15-second software-emulator sample; not physical-device performance evidence."
+}

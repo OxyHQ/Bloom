@@ -1,10 +1,17 @@
 # Changelog
 
-## 19.3.0
+## 19.4.0
 
 ### Added
 
 - **`Sidebar` `primaryActionPlacement: 'bottom' | 'top'`** (default `'bottom'`, unchanged). `'top'` draws the `primaryAction` button in the fixed header, under the header row and `toolbar` and above the modes and search, so an app's main command (Compose, New post) can lead the sidebar. It is the same button as in the footer: same `Fab`, same 2px inset that aligns it with the rows, same collapse to the named icon button. Before, an app that wanted it on top had to put its own `Fab` in `toolbar`, which has no such inset: the button overshot the rows by 2px on each side. `variant="rail"` keeps the action at the bottom. `AppShell` passes the prop through (`sidebar={{ primaryActionPlacement: 'top' }}`).
+
+## 19.3.0
+
+### Added
+
+- **`ColorSwatchPicker`** from `@oxy.so/bloom/color-swatch-picker` and the root: a wrapping row of colour swatches, one chosen, built on `ChoiceList` (one keyboard stop, arrows move, Space or Return chooses). `colors`, `value`, `onValueChange`, and `names` for the spoken name of each swatch. Apps drawing their own swatch row can use it. `docs/color-swatch-picker.mdx`.
+- **`Rail header` and `Rail footer`**: nodes pinned above and below the destinations (a brand mark, an account control), centred in the column. A rail without them is drawn exactly as before.
 
 ## 19.2.0
 

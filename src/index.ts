@@ -2138,6 +2138,7 @@ export * from './tabs';
 export * from './checkbox';
 export * from './radio';
 export * from './choice-list';
+export * from './color-swatch-picker';
 export * from './accordion';
 
 // Stat / profile widgets

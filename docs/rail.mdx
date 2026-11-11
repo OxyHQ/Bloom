@@ -54,6 +54,7 @@ export function Shell() {
 | `activeId` | which item's `id` is selected; an id naming no item selects none |
 | `onSelect` | called with an item's `id` on press                           |
 | `width`    | the column's width in px, default `80`                        |
+| `header` / `footer` | nodes pinned above and below the destinations (a brand mark, an account control), centred |
 
 ## Icons
 
@@ -98,6 +99,7 @@ alongside your content, the way the usage example above does.
 | `activeId?` | `string`                 | —       | `id` of the active item. An id naming no item selects nothing.      |
 | `onSelect`  | `(id: string) => void`   | —       | Called with an item's `id` when it is pressed.                      |
 | `width?`    | `number`                 | `80`    | Width of the column, in px.                                         |
+| `header?` / `footer?` | `ReactNode`    | —       | Pinned above and below the destinations, centred.                   |
 | `style?`    | `StyleProp<ViewStyle>`   | —       | Merged after the rail's own sticky/width positioning.                |
 | `testID?`   | `string`                 | —       | Forwarded to the outer container.                                   |
 

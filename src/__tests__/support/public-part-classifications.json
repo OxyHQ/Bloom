@@ -965,6 +965,7 @@
       "src/code/Code.tsx#Code",
       "src/code/CodeBlock.tsx#CodeBlock",
       "src/code/Pre.tsx#Pre",
+      "src/color-swatch-picker/ColorSwatchPicker.tsx#ColorSwatchPicker",
       "src/collapsible/Collapsible.tsx#Collapsible",
       "src/command/index.ts#Command",
       "src/composer-loader/ComposerLoader.tsx#ComposerLoader",
