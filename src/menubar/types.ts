@@ -44,6 +44,15 @@ export interface MenubarProps {
   focusValue?: string;
   /** The keyboard moved across the bar, or left it (`undefined`). */
   onFocusValueChange?: (value: string | undefined) => void;
+  /**
+   * Whether a closed menu's content is mounted headless, so its rows' `shortcut`s work while the
+   * menu is closed (the default, `true`). A bar whose rows run no chords of their own (an OS
+   * shell's, whose rows only show the chord another part runs) passes `false`: a closed menu then
+   * mounts nothing but its title, as a Mac's menu bar draws titles and builds a menu as it opens,
+   * and its rows render again only while it is open or the popup is changing from it. Ignored
+   * where the platform draws the bar (`menu-bar`), which needs every menu declared.
+   */
+  declareClosedMenus?: boolean;
   /** Accessible name for the bar. */
   label?: string;
   /** Appended to the bar's own classes — never substituted for them. */
