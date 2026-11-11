@@ -1,4 +1,10 @@
 export { Sidebar } from './Sidebar';
+export type {
+  ResolvedSidebarArrangement,
+  SidebarArrangement,
+  SidebarLogoPlacement,
+  SidebarPrimaryActionPlacement,
+} from './arrangement';
 export { SidebarFolder } from './SidebarFolder';
 export { SidebarItem } from './SidebarItem';
 export { SidebarToolbar } from './SidebarToolbar';
