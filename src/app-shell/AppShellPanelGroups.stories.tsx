@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { StyledView as View } from '../styles/styled-primitives';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from '../button';
@@ -176,20 +176,38 @@ export const DocumentSplit: Story = {
   parameters: { bloomScroll: 'document' },
   render: () => <SplitExample documentFlow />,
 };
+// Model the consumer's definite percent-height root, including classic scrollbars.
+function PercentHeightHost({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <style>{`
+        html:has([data-testid="groups-percent-host"]),
+        body:has([data-testid="groups-percent-host"]),
+        #storybook-root:has([data-testid="groups-percent-host"]),
+        #storybook-root div:has([data-testid="groups-percent-host"]) {
+          height: 100%;
+          min-height: 0 !important;
+        }
+      `}</style>
+      <View testID="groups-percent-host" className="h-full">{children}</View>
+    </>
+  );
+}
+
 export const DeckSwitch: Story = {
   parameters: { bloomScroll: 'document' },
   render: () => (
-    <View className="h-dvh">
+    <PercentHeightHost>
       <SplitExample documentFlow deckSwitch />
-    </View>
+    </PercentHeightHost>
   ),
 };
 export const ShortDeckSwitch: Story = {
   parameters: { bloomScroll: 'document' },
   render: () => (
-    <View className="h-dvh">
+    <PercentHeightHost>
       <SplitExample documentFlow deckSwitch short />
-    </View>
+    </PercentHeightHost>
   ),
 };
 
