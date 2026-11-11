@@ -1807,6 +1807,132 @@
         "default": "./lib/commonjs/icons/simple-icons/SiSubstack.js"
       }
     },
+    "./icons/MediaAttachmentIcon": {
+      "react-native": {
+        "types": "./lib/typescript/module/icons/social/MediaAttachmentIcon.d.ts",
+        "default": "./src/icons/social/MediaAttachmentIcon.tsx"
+      },
+      "import": {
+        "types": "./lib/typescript/module/icons/social/MediaAttachmentIcon.d.ts",
+        "default": "./lib/module/icons/social/MediaAttachmentIcon.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/icons/social/MediaAttachmentIcon.d.ts",
+        "default": "./lib/commonjs/icons/social/MediaAttachmentIcon.js"
+      }
+    },
+    "./icons/GifAttachmentIcon": {
+      "react-native": {
+        "types": "./lib/typescript/module/icons/social/GifAttachmentIcon.d.ts",
+        "default": "./src/icons/social/GifAttachmentIcon.tsx"
+      },
+      "import": {
+        "types": "./lib/typescript/module/icons/social/GifAttachmentIcon.d.ts",
+        "default": "./lib/module/icons/social/GifAttachmentIcon.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/icons/social/GifAttachmentIcon.d.ts",
+        "default": "./lib/commonjs/icons/social/GifAttachmentIcon.js"
+      }
+    },
+    "./icons/ReplyIcon": {
+      "react-native": {
+        "types": "./lib/typescript/module/icons/social/ReplyIcon.d.ts",
+        "default": "./src/icons/social/ReplyIcon.tsx"
+      },
+      "import": {
+        "types": "./lib/typescript/module/icons/social/ReplyIcon.d.ts",
+        "default": "./lib/module/icons/social/ReplyIcon.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/icons/social/ReplyIcon.d.ts",
+        "default": "./lib/commonjs/icons/social/ReplyIcon.js"
+      }
+    },
+    "./icons/RepostIcon": {
+      "react-native": {
+        "types": "./lib/typescript/module/icons/social/RepostIcon.d.ts",
+        "default": "./src/icons/social/RepostIcon.tsx"
+      },
+      "import": {
+        "types": "./lib/typescript/module/icons/social/RepostIcon.d.ts",
+        "default": "./lib/module/icons/social/RepostIcon.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/icons/social/RepostIcon.d.ts",
+        "default": "./lib/commonjs/icons/social/RepostIcon.js"
+      }
+    },
+    "./icons/LikeIcon": {
+      "react-native": {
+        "types": "./lib/typescript/module/icons/social/LikeIcon.d.ts",
+        "default": "./src/icons/social/LikeIcon.tsx"
+      },
+      "import": {
+        "types": "./lib/typescript/module/icons/social/LikeIcon.d.ts",
+        "default": "./lib/module/icons/social/LikeIcon.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/icons/social/LikeIcon.d.ts",
+        "default": "./lib/commonjs/icons/social/LikeIcon.js"
+      }
+    },
+    "./icons/LikeFillIcon": {
+      "react-native": {
+        "types": "./lib/typescript/module/icons/social/LikeFillIcon.d.ts",
+        "default": "./src/icons/social/LikeFillIcon.tsx"
+      },
+      "import": {
+        "types": "./lib/typescript/module/icons/social/LikeFillIcon.d.ts",
+        "default": "./lib/module/icons/social/LikeFillIcon.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/icons/social/LikeFillIcon.d.ts",
+        "default": "./lib/commonjs/icons/social/LikeFillIcon.js"
+      }
+    },
+    "./icons/BookmarkIcon": {
+      "react-native": {
+        "types": "./lib/typescript/module/icons/social/BookmarkIcon.d.ts",
+        "default": "./src/icons/social/BookmarkIcon.tsx"
+      },
+      "import": {
+        "types": "./lib/typescript/module/icons/social/BookmarkIcon.d.ts",
+        "default": "./lib/module/icons/social/BookmarkIcon.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/icons/social/BookmarkIcon.d.ts",
+        "default": "./lib/commonjs/icons/social/BookmarkIcon.js"
+      }
+    },
+    "./icons/BookmarkFillIcon": {
+      "react-native": {
+        "types": "./lib/typescript/module/icons/social/BookmarkFillIcon.d.ts",
+        "default": "./src/icons/social/BookmarkFillIcon.tsx"
+      },
+      "import": {
+        "types": "./lib/typescript/module/icons/social/BookmarkFillIcon.d.ts",
+        "default": "./lib/module/icons/social/BookmarkFillIcon.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/icons/social/BookmarkFillIcon.d.ts",
+        "default": "./lib/commonjs/icons/social/BookmarkFillIcon.js"
+      }
+    },
+    "./icons/ShareIcon": {
+      "react-native": {
+        "types": "./lib/typescript/module/icons/social/ShareIcon.d.ts",
+        "default": "./src/icons/social/ShareIcon.tsx"
+      },
+      "import": {
+        "types": "./lib/typescript/module/icons/social/ShareIcon.d.ts",
+        "default": "./lib/module/icons/social/ShareIcon.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/icons/social/ShareIcon.d.ts",
+        "default": "./lib/commonjs/icons/social/ShareIcon.js"
+      }
+    },
     "./typography": {
       "react-native": {
         "types": "./lib/typescript/module/typography/index.d.ts",
@@ -4920,6 +5046,33 @@
       ],
       "icons/SiSubstack": [
         "./lib/typescript/module/icons/simple-icons/SiSubstack.d.ts"
+      ],
+      "icons/MediaAttachmentIcon": [
+        "./lib/typescript/module/icons/social/MediaAttachmentIcon.d.ts"
+      ],
+      "icons/GifAttachmentIcon": [
+        "./lib/typescript/module/icons/social/GifAttachmentIcon.d.ts"
+      ],
+      "icons/ReplyIcon": [
+        "./lib/typescript/module/icons/social/ReplyIcon.d.ts"
+      ],
+      "icons/RepostIcon": [
+        "./lib/typescript/module/icons/social/RepostIcon.d.ts"
+      ],
+      "icons/LikeIcon": [
+        "./lib/typescript/module/icons/social/LikeIcon.d.ts"
+      ],
+      "icons/LikeFillIcon": [
+        "./lib/typescript/module/icons/social/LikeFillIcon.d.ts"
+      ],
+      "icons/BookmarkIcon": [
+        "./lib/typescript/module/icons/social/BookmarkIcon.d.ts"
+      ],
+      "icons/BookmarkFillIcon": [
+        "./lib/typescript/module/icons/social/BookmarkFillIcon.d.ts"
+      ],
+      "icons/ShareIcon": [
+        "./lib/typescript/module/icons/social/ShareIcon.d.ts"
       ],
       "typography": [
         "./lib/typescript/module/typography/index.d.ts"

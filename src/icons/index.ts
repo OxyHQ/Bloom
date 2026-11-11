@@ -1,4 +1,4 @@
-// Bloom's icon set is Remix Icon (Remix Icon License 1.0, `remix/LICENSE.txt`),
+// General glyphs use Remix Icon (Remix Icon License 1.0, `remix/LICENSE.txt`),
 // one file per icon under `remix/`. The few brand marks Remix lacks come from
 // Simple Icons (CC0 1.0) under `simple-icons/`. Old Bloom icon names map to
 // their Remix equivalents in `remix-mapping.json`;
@@ -10,3 +10,4 @@ export { resolveIconSlot } from './render-icon';
 export { sizes, useCommonSVGProps } from './shared';
 export * from './remix';
 export * from './simple-icons';
+export * from './social';
