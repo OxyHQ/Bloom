@@ -4,9 +4,22 @@ import { Stop } from 'react-native-svg';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomScope } from '../appearance/BloomScope';
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
-import { Button, CloseButton, LinkButton } from '../button';
+import {
+  Button,
+  CloseButton,
+  DestructiveButton,
+  GhostButton,
+  IconButton,
+  InverseButton,
+  LinkButton,
+  OutlineButton,
+  PrimaryButton,
+  SecondaryButton,
+  TextButton,
+} from '../button';
 import {
   BUTTON_GEOMETRY,
   BUTTON_RADIUS,
@@ -528,6 +541,70 @@ describe('Button geometry', () => {
 });
 
 describe('Button variants', () => {
+  it('delegates inherited and explicit size through every named composition', () => {
+    const draw = (size?: 'lg') => (
+      <BloomScope size="xs">
+        <>
+          <PrimaryButton testID="primary" size={size}>
+            Primary
+          </PrimaryButton>
+          <SecondaryButton testID="secondary" size={size}>
+            Secondary
+          </SecondaryButton>
+          <IconButton
+            testID="icon"
+            size={size}
+            icon={() => <Text>+</Text>}
+            accessibilityLabel="Add"
+          />
+          <GhostButton testID="ghost" size={size}>
+            Ghost
+          </GhostButton>
+          <InverseButton testID="inverse" size={size}>
+            Inverse
+          </InverseButton>
+          <TextButton testID="text" size={size}>
+            Text
+          </TextButton>
+          <OutlineButton testID="outline" size={size}>
+            Outline
+          </OutlineButton>
+          <LinkButton testID="link" size={size}>
+            Link
+          </LinkButton>
+          <DestructiveButton testID="destructive" size={size}>
+            Delete
+          </DestructiveButton>
+        </>
+      </BloomScope>
+    );
+    const ids = [
+      'primary',
+      'secondary',
+      'icon',
+      'ghost',
+      'inverse',
+      'text',
+      'outline',
+      'destructive',
+    ];
+    const inherited = renderWithTheme(draw());
+    expect(ids.map((id) => resolvedStyle(inherited.getByTestId(id).props.style).height)).toEqual(
+      ids.map(() => 24),
+    );
+    expect(resolvedStyle(inherited.getByText('Link').props.style).fontSize).toBe(
+      BUTTON_GEOMETRY.xs.fontSize,
+    );
+
+    const explicit = renderWithTheme(draw('lg'));
+    expect(ids.map((id) => resolvedStyle(explicit.getByTestId(id).props.style).height)).toEqual(
+      ids.map(() => 44),
+    );
+    expect(resolvedStyle(explicit.getByText('Link').props.style).fontSize).toBe(
+      BUTTON_GEOMETRY.lg.fontSize,
+    );
+  });
+
   it('PrimaryButton renders without crashing', () => {
     const { getByText } = renderWithTheme(
       <Button appearance="solid" tone="accent">

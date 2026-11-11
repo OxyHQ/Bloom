@@ -67,8 +67,13 @@
   "button-delegation": {
     "status": "delegated",
     "reason": "Each named Button composition renders the shared Button with the complete props spread and no size default. Both native/web implementations delegate size precedence directly; appearance/tone/iconOnly defaults do not consume or replace size.",
-    "evidence": ["src/button/Button.tsx", "src/button/Button.web.tsx"],
-    "verification": "direct JSX/props delegation inspected; per-wrapper runtime matrix pending",
+    "evidence": [
+      "src/button/Button.tsx",
+      "src/button/Button.web.tsx",
+      "src/__tests__/Button.test.tsx",
+      "src/__tests__/Button.web.test.tsx"
+    ],
+    "verification": "all nine public Button compositions render on native and DOM web; xs from nearest BloomScope and explicit lg override are measured for boxed wrappers and LinkButton typography; default/nested/portal matrix remains pending",
     "parts": [
       "src/button/Button.tsx#DestructiveButton",
       "src/button/Button.tsx#GhostButton",
@@ -724,6 +729,21 @@
     "verification": "native mock measures body padding at xs 8px, sm 10px, md 12px and lg 14px; RNW DOM verifies the matching size-specific body CSS recipe under inherited, nested and explicit sizes; physical-device layout pending",
     "parts": ["src/accordion/Accordion.tsx#AccordionContent"]
   },
+  "text-field-core": {
+    "status": "applicable",
+    "reason": "TextField owns the shared field shell and propagates its resolved size to TextFieldInput; standalone TextFieldInput owns its own standard control geometry. Both participate in BloomScope sizing, with explicit size taking precedence. Adornments and hosted parts remain separately classified.",
+    "evidence": [
+      "src/text-field/TextField.tsx",
+      "src/text-field/shared.ts",
+      "src/__tests__/TextFieldPublicPartScope.test.tsx",
+      "src/__tests__/TextFieldPublicPartScope.web.test.tsx"
+    ],
+    "verification": "native renderer and RNW DOM verify default md (36px), inherited xs (28px), inherited lg (44px), explicit field lg and standalone input md overrides inside xs, nested xs/lg, and actual native/web portals; physical-device layout and accessibility remain pending",
+    "parts": [
+      "src/text-field/TextField.tsx#TextField",
+      "src/text-field/TextField.tsx#TextFieldInput"
+    ]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
@@ -809,11 +829,7 @@
       "src/bottom-sheet/BottomSheet.tsx#BottomSheet",
       "src/breadcrumb/Breadcrumb.tsx#Breadcrumb",
       "src/breadcrumb/Breadcrumb.tsx#BreadcrumbItem",
-      "src/button-group/ButtonGroup.tsx#ButtonGroup",
-      "src/button-group/ButtonGroup.tsx#ButtonGroupItem",
-      "src/button/Button.tsx#Button",
       "src/button/CloseButton.tsx#CloseButton",
-      "src/button/GlyphButton.tsx#GlyphButton",
       "src/calendar/CalendarView.tsx#CalendarView",
       "src/calendar/CalendarViewEventDetails.tsx#CalendarViewEventDetails",
       "src/calendar/CalendarViewHeader.tsx#CalendarViewHeader",
@@ -1511,12 +1527,10 @@
       "src/tenancy/MaintenanceRequestCard.tsx#MaintenanceRequestCard",
       "src/tenancy/RentPaymentList.tsx#RentPaymentList",
       "src/tenancy/TenancyTimeline.tsx#TenancyTimeline",
-      "src/text-field/TextField.tsx#TextField",
       "src/text-field/TextField.tsx#TextFieldGhost",
       "src/text-field/TextField.tsx#TextFieldHint",
       "src/text-field/TextField.tsx#TextFieldHostedContent",
       "src/text-field/TextField.tsx#TextFieldIcon",
-      "src/text-field/TextField.tsx#TextFieldInput",
       "src/text-field/TextField.tsx#TextFieldLabel",
       "src/text-field/TextField.tsx#TextFieldPrefix",
       "src/text-field/TextField.tsx#TextFieldSuffix",
@@ -1723,5 +1737,51 @@
       "src/address/AddressRow.tsx#AddressRow",
       "src/item/Item.tsx#Item"
     ]
+  },
+  "button-group-parts": {
+    "status": "applicable",
+    "reason": "ButtonGroup resolves a size recipe for the joined control and provides that resolved size to its items; ButtonGroupItem can override the group size and owns the segment geometry. Scope therefore applies to both public parts, with explicit group and item sizes retaining precedence.",
+    "evidence": [
+      "src/button-group/ButtonGroupBase.tsx",
+      "src/button-group/types.ts",
+      "src/__tests__/ButtonGroupPublicPartScope.test.tsx",
+      "src/__tests__/ButtonGroupPublicPartScope.web.test.tsx",
+      "src/__tests__/ButtonGroupTrigger.web.test.tsx",
+      "src/__tests__/button-group-trigger.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify default md, inherited xs, lg scope clamped to md, explicit group md over xs, explicit item xs over group md, nested xs/lg scopes, and actual Portal inheritance. Popover asChild works with a single ButtonGroupItem control on native and web without nested buttons; physical-device layout and touch fit remain unverified",
+    "parts": [
+      "src/button-group/ButtonGroup.tsx#ButtonGroup",
+      "src/button-group/ButtonGroup.tsx#ButtonGroupItem"
+    ]
+  },
+  "button-core": {
+    "status": "applicable",
+    "reason": "Button owns the semantic control size recipe, including target geometry, typography and touch accommodation. Size scope applies to this control; the shared native/web implementations resolve the same public precedence.",
+    "evidence": [
+      "src/button/Button.tsx",
+      "src/button/Button.web.tsx",
+      "src/button/shared.ts",
+      "src/__tests__/Button.test.tsx",
+      "src/__tests__/Button.web.test.tsx",
+      "src/__tests__/CanvasPublicPartScope.test.tsx",
+      "src/__tests__/CanvasPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify default md (36px), inherited sm (32px), explicit md over inherited sm, nested lg (44px), and inherited/explicit geometry through Canvas, CanvasBackground, CanvasPanel, and actual Portal. Direct size tables verify xs/sm/md/lg geometry and touch accommodation; device-rendered fit and accessibility remain separate",
+    "parts": ["src/button/Button.tsx#Button"]
+  },
+  "glyph-button-size": {
+    "status": "independent-scale",
+    "reason": "GlyphButton exposes an arbitrary numeric diameter so consumers can preserve role-specific geometry such as 28, 40 or 44px. This is not the Bloom xs/sm/md/lg control-size vocabulary; BloomScope must not rewrite a caller-selected diameter.",
+    "evidence": [
+      "src/button/GlyphButton.tsx",
+      "src/button/types.ts",
+      "src/button/GlyphButton.stories.tsx",
+      "src/__tests__/GlyphButton.test.tsx",
+      "src/__tests__/GlyphButtonPublicPartScope.test.tsx",
+      "src/__tests__/GlyphButtonPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web measure the default 36px diameter unchanged under xs, explicit 40px under xs, and explicit 28px under lg. Glyph ratio and explicit glyph size are covered by GlyphButton.test.tsx; device-rendered hit fit and visual balance remain unverified",
+    "parts": ["src/button/GlyphButton.tsx#GlyphButton"]
   }
 }

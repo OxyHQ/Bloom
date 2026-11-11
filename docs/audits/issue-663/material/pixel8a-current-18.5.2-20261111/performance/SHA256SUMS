@@ -1,0 +1,9 @@
+544a12ac4aae57ab57ddf48dee39636ef927c75e980ff05309339a571b96aa5b  docs/audits/issue-663/material/pixel8a-current-18.5.2-20261111/performance/moving-photo-loader-gfx.txt
+fa7dfc76763e1ab867e756b6588d1dae9ed8b2f4b925df0b9966882dd2915c25  docs/audits/issue-663/material/pixel8a-current-18.5.2-20261111/performance/moving-photo-loader-repeat-gfx.txt
+7f19d6502d639359cecd157739209b063d237298b78f4188ab65df78f2af7d41  docs/audits/issue-663/material/pixel8a-current-18.5.2-20261111/performance/solid-loader-gfx.txt
+d266c22e85e66f0459b5db73e9e4f203e3c9e1008a5362b4c2c6e90edf9a6325  docs/audits/issue-663/material/pixel8a-current-18.5.2-20261111/performance/moving-photo-loader-meminfo.txt
+300bc12d204ce4142d72d8b3c2b1f1ee6120f3d478898a7ab4c7a16463ee2cda  docs/audits/issue-663/material/pixel8a-current-18.5.2-20261111/performance/moving-photo-loader-repeat-meminfo.txt
+28c0ae107d1b0fdc880b0bda6d5c93db18bef5a32d26302a6b75a1b623bb0f21  docs/audits/issue-663/material/pixel8a-current-18.5.2-20261111/performance/solid-loader-meminfo.txt
+ae06bdd200bb1560f85ac2a9204d5af2d864640a3d419693d21cad8217334b0b  docs/audits/issue-663/material/pixel8a-current-18.5.2-20261111/performance/moving-photo-loader-repeat-thermal.txt
+0dfc172ee40e8f7c86dd86dc33a6c431384450272d43997c20b4168223f0b583  docs/audits/issue-663/material/pixel8a-current-18.5.2-20261111/performance/moving-photo-loader-thermal.txt
+5e9e13d59981ff526b9a43a42ad210718d5a8401e2a04f3c01bfe01e6ef9192d  docs/audits/issue-663/material/pixel8a-current-18.5.2-20261111/performance/solid-loader-thermal.txt

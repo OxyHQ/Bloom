@@ -63,3 +63,14 @@ structurally withholds the root target from same-window surfaces. This run did
 not deliberately crash the device to repeat that historical failure. No GPU,
 frame-time or memory samples were collected. iOS validation remains deferred
 as requested; this does not establish web/iOS/Android parity.
+
+## Pixel 8a performance sample
+
+Three 15-second `gfxinfo` windows on the same offline APK measured the solid
+scene with its active loader and the animated-photo scene with its active
+loader. GPU P95 ranged from 6–9 ms, `gfxinfo` janky frames from 0–1 per
+1,816–1,829 frames, and app PSS from 360,795–377,428 KB; thermal status stayed
+at 0. The [raw outputs, method and limitations](./performance/README.md) are
+preserved separately. This is a single API 36 device sample, not a budget pass
+or evidence for the older API, dense-scroll, overlay-repeat or large-canvas
+matrix in §§7.3–7.4.
