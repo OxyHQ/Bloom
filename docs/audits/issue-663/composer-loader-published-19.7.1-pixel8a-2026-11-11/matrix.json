@@ -1,0 +1,1059 @@
+{
+  "device": {
+    "serial": "43221JEKB12200",
+    "package": "so.oxy.bloom.loaderpackagelab",
+    "apkSha256": "ba6c83c4e267ee81eb2d435d83dc161b2dd9df4099f8cd32aa875de446d7df0b",
+    "build": {
+      "commit": "0481ac7e0b0d1dad0df8c1b3e18c47d8db780177",
+      "workingTree": "",
+      "fixtureSha256": "4bb6bb5b66ecdb4bcf7c82bf774e2ba0ab1311d3b21e8fced7dc1029ed049903",
+      "packedTarballSha256": "98b1b770ce90bdc31b9c0c7740a7b77685a756692a159999e978b6fe2828ba7c",
+      "kind": "published npm tarball",
+      "npmIntegrity": "sha512-AFjfrf/WYg43eD0eHkcyuOBZNtlh8Mi2HgPbSkV93/QXKxbTktLNdMFf5qbEqb3k/HElD7ATUCj7lUbuxR9GDw==",
+      "aliaSdkVersion": "24.0.0",
+      "aliaComposerSha256": "33bee1e8b1d959adbe5406856fb0dca63c0df9ef9a2e57d21f523bc736d415c2",
+      "installed": "/home/nate/Oxy/Bloom/scripts/loader-package-lab/bloom-local/node_modules/@oxy.so/bloom",
+      "packageVersion": "19.7.1",
+      "nativeSha256": "5aa0123303dbb2f170077c2ddf6eac5933ee0c6269274422ed41ca10bf8f94ad",
+      "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+      "adapterSha256": "439368f05ea092a36619510ff3cf1d255d5e8da61ff52ab3490d0dd7dd6e4c21",
+      "lockSha256": "5c38ac4dbedbdcd9da152b86cdc76750eb4d436dd3288adbfd60c8c7264c5a69",
+      "reactCompiler": false,
+      "scene": "composers",
+      "softwareWindow": false,
+      "apkSha256": "ba6c83c4e267ee81eb2d435d83dc161b2dd9df4099f8cd32aa875de446d7df0b",
+      "embeddedBundleSha256": "b84b24401fd71a5c0dc409562a953a9f88261f977a5daa4078c45cdfdd58f385",
+      "embeddedBloomSourceSha256": "8a89c2ff0d53055e32ce4e7dc95593b0726ce72b5db8cedbd0c6234b633fe31b",
+      "embeddedBloomFiles": 1745,
+      "dex": [
+        {
+          "name": "classes.dex",
+          "sha256": "83710ad053d1aeb9d8f30937b3337cb3aa416bc8cb40853be0d72e23f96b1f43"
+        }
+      ],
+      "r8MappingSha256": "7fd7d8ec134ebaddb80d30f36a1d593b3264da834d4d611d6944f7e4a69e1db4",
+      "mappedNativeClass": "uc0",
+      "nativeEvidence": "compiled installed Kotlin input hash, DEX contract marker and full DEX hashes; no runtime source receipt"
+    },
+    "fingerprint": "google/akita/akita:16/BP4A.260205.001/14624666:user/release-keys",
+    "api": "36",
+    "abi": "arm64-v8a",
+    "density": "Physical density: 420",
+    "size": "Physical size: 1080x2400",
+    "fontScale": "1.15",
+    "thermal": "IsStatusOverride: false\nThermalEventListeners:\n\tcallbacks: 8\n\tkilled: false\n\tbroadcasts count: -1\nThermalStatusListeners:\n\tcallbacks: 4\n\tkilled: false\n\tbroadcasts count: -1\nThermal Status: 1\nCached temperatures:\n\tTemperature{mValue=72.0, mType=0, mName=LITTLE, mStatus=0}\n\tTemperature{mValue=30.659002, mType=-1, mName=display_therm, mStatus=0}\n\tTemperature{mValue=0.0, mType=4, mName=VIRTUAL-USB-UI, mStatus=0}\n\tTemperature{mValue=31.305002, mType=-1, mName=soc_therm, mStatus=0}\n\tTemperature{mValue=30.770002, mType=-1, mName=rffe_therm, mStatus=0}\n\tTemperature{mValue=30.971, mType=-1, mName=quiet_therm, mStatus=0}\n\tTemperature{mValue=-0.91300005, mType=-1, mName=USB-MINUS-CHARGER, mStatus=0}\n\tTemperature{mValue=31.978758, mType=-1, mName=VIRTUAL-SKIN-CHARGE, mStatus=0}\n\tTemperature{mValue=31.800001, mType=2, mName=battery, mStatus=0}\n\tTemperature{mValue=93.00001, mType=0, mName=BIG, mStatus=0}\n\tTemperature{mValue=56.000004, mType=1, mName=G3D, mStatus=0}\n\tTemperature{mValue=76.0, mType=0, mName=MID, mStatus=0}\n\tTemperature{mValue=48.000004, mType=9, mName=TPU, mStatus=0}\n\tTemperature{mValue=31.123802, mType=5, mName=cellular-emergency, mStatus=0}\n\tTemperature{mValue=30.770002, mType=-1, mName=usb_conn_therm, mStatus=0}\n\tTemperature{mValue=31.527002, mType=-1, mName=gnss_tcxo_therm, mStatus=0}\n\tTemperature{mValue=39.0857, mType=3, mName=VIRTUAL-SKIN, mStatus=1}\n\tTemperature{mValue=31.429068, mType=-1, mName=VIRTUAL-SKIN-CHARGE-WLC, mStatus=0}\n\tTemperature{mValue=31.171001, mType=-1, mName=modem_therm, mStatus=0}\n\tTemperature{mValue=31.683, mType=-1, mName=charger_therm, mStatus=0}\n\tTemperature{mValue=0.0, mType=4, mName=VIRTUAL-USB-THROTTLING, mStatus=0}\n\tTemperature{mValue=37.019104, mType=-1, mName=VIRTUAL-SKIN-SPEAKER, mStatus=1}\nHAL Ready: true\nHAL connection:\n\tThermalHAL AIDL 3  connected: yes\nCurrent temperatures from HAL:\n\tTemperature{mValue=52.000004, mType=1, mName=G3D, mStatus=0}\n\tTemperature{mValue=53.000004, mType=0, mName=BIG, mStatus=0}\n\tTemperature{mValue=52.000004, mType=0, mName=LITTLE, mStatus=0}\n\tTemperature{mValue=0.0, mType=4, mName=VIRTUAL-USB-UI, mStatus=0}\n\tTemperature{mValue=0.0, mType=4, mName=VIRTUAL-USB-THROTTLING, mStatus=0}\n\tTemperature{mValue=-5.8580003, mType=-1, mName=USB-MINUS-CHARGER, mStatus=0}\n\tTemperature{mValue=39.2054, mType=-1, mName=VIRTUAL-SKIN-SPEAKER, mStatus=1}\n\tTemperature{mValue=54.000004, mType=0, mName=MID, mStatus=0}\n\tTemperature{mValue=40.931553, mType=5, mName=cellular-emergency, mStatus=0}\n\tTemperature{mValue=50.000004, mType=9, mName=TPU, mStatus=0}\n\tTemperature{mValue=40.878017, mType=-1, mName=VIRTUAL-SKIN-CHARGE, mStatus=2}\n\tTemperature{mValue=41.433002, mType=-1, mName=gnss_tcxo_therm, mStatus=0}\n\tTemperature{mValue=43.907, mType=-1, mName=charger_therm, mStatus=1}\n\tTemperature{mValue=41.04003, mType=-1, mName=VIRTUAL-SKIN-CHARGE-WLC, mStatus=3}\n\tTemperature{mValue=39.2, mType=2, mName=battery, mStatus=0}\n\tTemperature{mValue=38.339, mType=-1, mName=rffe_therm, mStatus=0}\n\tTemperature{mValue=42.074, mType=-1, mName=modem_therm, mStatus=0}\n\tTemperature{mValue=38.049004, mType=-1, mName=usb_conn_therm, mStatus=1}\n\tTemperature{mValue=40.298, mType=-1, mName=quiet_therm, mStatus=0}\n\tTemperature{mValue=41.112003, mType=-1, mName=soc_therm, mStatus=1}\n\tTemperature{mValue=38.205, mType=-1, mName=display_therm, mStatus=0}\n\tTemperature{mValue=40.931553, mType=3, mName=VIRTUAL-SKIN, mStatus=1}\nCurrent cooling devices from HAL:\n\tCoolingDevice{mValue=25, mType=1, mName=dc_icl}\n\tCoolingDevice{mValue=0, mType=5, mName=gxp-cooling}\n\tCoolingDevice{mValue=0, mType=5, mName=tpu_cooling}\n\tCoolingDevice{mValue=0, mType=1, mName=usbc-port}\n\tCoolingDevice{mValue=9, mType=2, mName=thermal-cpufreq-1}\n\tCoolingDevice{mValue=21, mType=1, mName=fcc}\n\tCoolingDevice{mValue=0, mType=3, mName=thermal-gpufreq-0}\n\tCoolingDevice{mValue=12, mType=2, mName=thermal-cpufreq-2}\n\tCoolingDevice{mValue=3, mType=2, mName=thermal-cpufreq-0}\nTemperature static thresholds from HAL:\n\tTemperatureThreshold{mType=1, mName=G3D, mHotThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\n\tTemperatureThreshold{mType=0, mName=BIG, mHotThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\n\tTemperatureThreshold{mType=0, mName=LITTLE, mHotThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\n\tTemperatureThreshold{mType=4, mName=VIRTUAL-USB-UI, mHotThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, 2.0, NaN], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\n\tTemperatureThreshold{mType=4, mName=VIRTUAL-USB-THROTTLING, mHotThrottlingThresholds=[NaN, NaN, NaN, NaN, 2.0, NaN, NaN], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\n\tTemperatureThreshold{mType=-1, mName=USB-MINUS-CHARGER, mHotThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\n\tTemperatureThreshold{mType=-1, mName=VIRTUAL-SKIN-SPEAKER, mHotThrottlingThresholds=[NaN, 37.0, NaN, NaN, NaN, NaN, NaN], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\n\tTemperatureThreshold{mType=0, mName=MID, mHotThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\n\tTemperatureThreshold{mType=5, mName=cellular-emergency, mHotThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, 54.0, NaN], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\n\tTemperatureThreshold{mType=9, mName=TPU, mHotThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\n\tTemperatureThreshold{mType=-1, mName=VIRTUAL-SKIN-CHARGE, mHotThrottlingThresholds=[NaN, 34.0, 38.0, 41.0, 45.0, 47.0, 55.0], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\n\tTemperatureThreshold{mType=-1, mName=gnss_tcxo_therm, mHotThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\n\tTemperatureThreshold{mType=-1, mName=charger_therm, mHotThrottlingThresholds=[NaN, 36.5, NaN, NaN, NaN, NaN, NaN], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\n\tTemperatureThreshold{mType=-1, mName=VIRTUAL-SKIN-CHARGE-WLC, mHotThrottlingThresholds=[NaN, 34.0, 38.0, 41.0, 45.0, 47.0, 55.0], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\n\tTemperatureThreshold{mType=2, mName=battery, mHotThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\n\tTemperatureThreshold{mType=-1, mName=rffe_therm, mHotThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\n\tTemperatureThreshold{mType=-1, mName=modem_therm, mHotThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\n\tTemperatureThreshold{mType=-1, mName=usb_conn_therm, mHotThrottlingThresholds=[NaN, 36.0, NaN, NaN, NaN, NaN, NaN], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\n\tTemperatureThreshold{mType=-1, mName=quiet_therm, mHotThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\n\tTemperatureThreshold{mType=-1, mName=soc_therm, mHotThrottlingThresholds=[NaN, 36.0, NaN, NaN, NaN, NaN, NaN], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\n\tTemperatureThreshold{mType=-1, mName=display_therm, mHotThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\n\tTemperatureThreshold{mType=3, mName=VIRTUAL-SKIN, mHotThrottlingThresholds=[NaN, 39.0, 43.0, 45.0, 47.0, 52.0, 55.0], mColdThrottlingThresholds=[NaN, NaN, NaN, NaN, NaN, NaN, NaN]}\nTemperature headroom thresholds:\n[NaN, 0.8, 0.93333334, 1.0, 1.0666667, 1.2333333, 1.3333334]"
+  },
+  "fixtureSha256": "4bb6bb5b66ecdb4bcf7c82bf774e2ba0ab1311d3b21e8fced7dc1029ed049903",
+  "bloomVersion": "19.7.1",
+  "configurations": [
+    {
+      "id": "wide-short-no-taper",
+      "narrow": false,
+      "multiline": false,
+      "taper": "0",
+      "state": "busy=true phase=streaming narrow=false taper=0 multiline=false attached=false stops=0 submits=0 pending=none",
+      "inputBounds": [
+        {
+          "label": "Message",
+          "resourceId": "cases-pill-input",
+          "left": 216,
+          "top": 1311,
+          "right": 850,
+          "bottom": 1416,
+          "width": 634,
+          "height": 105
+        },
+        {
+          "label": "Message",
+          "resourceId": "cases-agent-pill-input",
+          "left": 95,
+          "top": 1563,
+          "right": 850,
+          "bottom": 1668,
+          "width": 755,
+          "height": 105
+        },
+        {
+          "label": "Message",
+          "resourceId": "",
+          "left": 95,
+          "top": 1909,
+          "right": 734,
+          "bottom": 2067,
+          "width": 639,
+          "height": 158
+        }
+      ],
+      "loaders": [
+        {
+          "id": "cases-isolated-loader",
+          "left": 74,
+          "top": 1006,
+          "right": 1007,
+          "bottom": 1184,
+          "width": 933,
+          "height": 178
+        },
+        {
+          "id": "cases-pill-loader",
+          "left": 74,
+          "top": 1248,
+          "right": 1007,
+          "bottom": 1437,
+          "width": 933,
+          "height": 189
+        },
+        {
+          "id": "cases-agent",
+          "left": 74,
+          "top": 1500,
+          "right": 1007,
+          "bottom": 1784,
+          "width": 933,
+          "height": 284
+        }
+      ],
+      "report": {
+        "apkSha256": "ba6c83c4e267ee81eb2d435d83dc161b2dd9df4099f8cd32aa875de446d7df0b",
+        "build": {
+          "commit": "0481ac7e0b0d1dad0df8c1b3e18c47d8db780177",
+          "workingTree": "",
+          "fixtureSha256": "4bb6bb5b66ecdb4bcf7c82bf774e2ba0ab1311d3b21e8fced7dc1029ed049903",
+          "packedTarballSha256": "98b1b770ce90bdc31b9c0c7740a7b77685a756692a159999e978b6fe2828ba7c",
+          "kind": "published npm tarball",
+          "npmIntegrity": "sha512-AFjfrf/WYg43eD0eHkcyuOBZNtlh8Mi2HgPbSkV93/QXKxbTktLNdMFf5qbEqb3k/HElD7ATUCj7lUbuxR9GDw==",
+          "aliaSdkVersion": "24.0.0",
+          "aliaComposerSha256": "33bee1e8b1d959adbe5406856fb0dca63c0df9ef9a2e57d21f523bc736d415c2",
+          "installed": "/home/nate/Oxy/Bloom/scripts/loader-package-lab/bloom-local/node_modules/@oxy.so/bloom",
+          "packageVersion": "19.7.1",
+          "nativeSha256": "5aa0123303dbb2f170077c2ddf6eac5933ee0c6269274422ed41ca10bf8f94ad",
+          "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+          "adapterSha256": "439368f05ea092a36619510ff3cf1d255d5e8da61ff52ab3490d0dd7dd6e4c21",
+          "lockSha256": "5c38ac4dbedbdcd9da152b86cdc76750eb4d436dd3288adbfd60c8c7264c5a69",
+          "reactCompiler": false,
+          "scene": "composers",
+          "softwareWindow": false,
+          "apkSha256": "ba6c83c4e267ee81eb2d435d83dc161b2dd9df4099f8cd32aa875de446d7df0b",
+          "embeddedBundleSha256": "b84b24401fd71a5c0dc409562a953a9f88261f977a5daa4078c45cdfdd58f385",
+          "embeddedBloomSourceSha256": "8a89c2ff0d53055e32ce4e7dc95593b0726ce72b5db8cedbd0c6234b633fe31b",
+          "embeddedBloomFiles": 1745,
+          "dex": [
+            {
+              "name": "classes.dex",
+              "sha256": "83710ad053d1aeb9d8f30937b3337cb3aa416bc8cb40853be0d72e23f96b1f43"
+            }
+          ],
+          "r8MappingSha256": "7fd7d8ec134ebaddb80d30f36a1d593b3264da834d4d611d6944f7e4a69e1db4",
+          "mappedNativeClass": "uc0",
+          "nativeEvidence": "compiled installed Kotlin input hash, DEX contract marker and full DEX hashes; no runtime source receipt"
+        },
+        "serial": "43221JEKB12200",
+        "case": "wide-short-no-taper",
+        "elapsedMs": 10553.684059,
+        "frames": 1261,
+        "jankyFrames": 0,
+        "histogramP50Ms": 12,
+        "histogramP95Ms": 14,
+        "gpuP50Ms": 6,
+        "gpuP95Ms": 9,
+        "recentFrameSamples": 117,
+        "recentFrameP50Ms": 12.697582,
+        "recentFrameP95Ms": 13.971073,
+        "recentFrameIntervalMs": 8.35394,
+        "cpuPercentOfOneCore": [
+          103,
+          105,
+          105
+        ],
+        "pssKb": 386878,
+        "rssKb": 564084,
+        "thermalStatusBefore": 1,
+        "thermalStatusAfter": 1,
+        "note": "Single controlled foreground window, no screen recording; frame timestamps are not an FPS guarantee. Preserve font/display settings and compare thermal state."
+      }
+    },
+    {
+      "id": "wide-short-taper",
+      "narrow": false,
+      "multiline": false,
+      "taper": "0.5",
+      "state": "busy=true phase=streaming narrow=false taper=0.5 multiline=false attached=false stops=0 submits=0 pending=none",
+      "inputBounds": [
+        {
+          "label": "Message",
+          "resourceId": "cases-pill-input",
+          "left": 216,
+          "top": 1311,
+          "right": 850,
+          "bottom": 1416,
+          "width": 634,
+          "height": 105
+        },
+        {
+          "label": "Message",
+          "resourceId": "cases-agent-pill-input",
+          "left": 95,
+          "top": 1563,
+          "right": 850,
+          "bottom": 1668,
+          "width": 755,
+          "height": 105
+        },
+        {
+          "label": "Message",
+          "resourceId": "",
+          "left": 95,
+          "top": 1909,
+          "right": 734,
+          "bottom": 2067,
+          "width": 639,
+          "height": 158
+        }
+      ],
+      "loaders": [
+        {
+          "id": "cases-isolated-loader",
+          "left": 74,
+          "top": 1006,
+          "right": 1007,
+          "bottom": 1184,
+          "width": 933,
+          "height": 178
+        },
+        {
+          "id": "cases-pill-loader",
+          "left": 74,
+          "top": 1248,
+          "right": 1007,
+          "bottom": 1437,
+          "width": 933,
+          "height": 189
+        },
+        {
+          "id": "cases-agent",
+          "left": 74,
+          "top": 1500,
+          "right": 1007,
+          "bottom": 1784,
+          "width": 933,
+          "height": 284
+        }
+      ],
+      "report": {
+        "apkSha256": "ba6c83c4e267ee81eb2d435d83dc161b2dd9df4099f8cd32aa875de446d7df0b",
+        "build": {
+          "commit": "0481ac7e0b0d1dad0df8c1b3e18c47d8db780177",
+          "workingTree": "",
+          "fixtureSha256": "4bb6bb5b66ecdb4bcf7c82bf774e2ba0ab1311d3b21e8fced7dc1029ed049903",
+          "packedTarballSha256": "98b1b770ce90bdc31b9c0c7740a7b77685a756692a159999e978b6fe2828ba7c",
+          "kind": "published npm tarball",
+          "npmIntegrity": "sha512-AFjfrf/WYg43eD0eHkcyuOBZNtlh8Mi2HgPbSkV93/QXKxbTktLNdMFf5qbEqb3k/HElD7ATUCj7lUbuxR9GDw==",
+          "aliaSdkVersion": "24.0.0",
+          "aliaComposerSha256": "33bee1e8b1d959adbe5406856fb0dca63c0df9ef9a2e57d21f523bc736d415c2",
+          "installed": "/home/nate/Oxy/Bloom/scripts/loader-package-lab/bloom-local/node_modules/@oxy.so/bloom",
+          "packageVersion": "19.7.1",
+          "nativeSha256": "5aa0123303dbb2f170077c2ddf6eac5933ee0c6269274422ed41ca10bf8f94ad",
+          "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+          "adapterSha256": "439368f05ea092a36619510ff3cf1d255d5e8da61ff52ab3490d0dd7dd6e4c21",
+          "lockSha256": "5c38ac4dbedbdcd9da152b86cdc76750eb4d436dd3288adbfd60c8c7264c5a69",
+          "reactCompiler": false,
+          "scene": "composers",
+          "softwareWindow": false,
+          "apkSha256": "ba6c83c4e267ee81eb2d435d83dc161b2dd9df4099f8cd32aa875de446d7df0b",
+          "embeddedBundleSha256": "b84b24401fd71a5c0dc409562a953a9f88261f977a5daa4078c45cdfdd58f385",
+          "embeddedBloomSourceSha256": "8a89c2ff0d53055e32ce4e7dc95593b0726ce72b5db8cedbd0c6234b633fe31b",
+          "embeddedBloomFiles": 1745,
+          "dex": [
+            {
+              "name": "classes.dex",
+              "sha256": "83710ad053d1aeb9d8f30937b3337cb3aa416bc8cb40853be0d72e23f96b1f43"
+            }
+          ],
+          "r8MappingSha256": "7fd7d8ec134ebaddb80d30f36a1d593b3264da834d4d611d6944f7e4a69e1db4",
+          "mappedNativeClass": "uc0",
+          "nativeEvidence": "compiled installed Kotlin input hash, DEX contract marker and full DEX hashes; no runtime source receipt"
+        },
+        "serial": "43221JEKB12200",
+        "case": "wide-short-taper",
+        "elapsedMs": 10592.53307,
+        "frames": 1269,
+        "jankyFrames": 5,
+        "histogramP50Ms": 18,
+        "histogramP95Ms": 24,
+        "gpuP50Ms": 8,
+        "gpuP95Ms": 14,
+        "recentFrameSamples": 117,
+        "recentFrameP50Ms": 24.276843,
+        "recentFrameP95Ms": 25.26797,
+        "recentFrameIntervalMs": 8.352922,
+        "cpuPercentOfOneCore": [
+          157,
+          118,
+          118
+        ],
+        "pssKb": 473495,
+        "rssKb": 650900,
+        "thermalStatusBefore": 1,
+        "thermalStatusAfter": 1,
+        "note": "Single controlled foreground window, no screen recording; frame timestamps are not an FPS guarantee. Preserve font/display settings and compare thermal state."
+      }
+    },
+    {
+      "id": "narrow-multiline-taper",
+      "narrow": true,
+      "multiline": true,
+      "taper": "0.5",
+      "state": "busy=true phase=streaming narrow=true taper=0.5 multiline=true attached=false stops=0 submits=0 pending=none",
+      "inputBounds": [
+        {
+          "label": "Message",
+          "resourceId": "cases-pill-input",
+          "left": 216,
+          "top": 895,
+          "right": 600,
+          "bottom": 1158,
+          "width": 384,
+          "height": 263
+        },
+        {
+          "label": "Message",
+          "resourceId": "cases-agent-pill-input",
+          "left": 95,
+          "top": 1304,
+          "right": 599,
+          "bottom": 1514,
+          "width": 504,
+          "height": 210
+        },
+        {
+          "label": "Message",
+          "resourceId": "",
+          "left": 95,
+          "top": 1756,
+          "right": 484,
+          "bottom": 2020,
+          "width": 389,
+          "height": 264
+        }
+      ],
+      "loaders": [
+        {
+          "id": "cases-isolated-loader",
+          "left": 74,
+          "top": 590,
+          "right": 756,
+          "bottom": 768,
+          "width": 682,
+          "height": 178
+        },
+        {
+          "id": "cases-pill-loader",
+          "left": 74,
+          "top": 832,
+          "right": 756,
+          "bottom": 1179,
+          "width": 682,
+          "height": 347
+        },
+        {
+          "id": "cases-agent",
+          "left": 74,
+          "top": 1241,
+          "right": 756,
+          "bottom": 1630,
+          "width": 682,
+          "height": 389
+        }
+      ],
+      "report": {
+        "apkSha256": "ba6c83c4e267ee81eb2d435d83dc161b2dd9df4099f8cd32aa875de446d7df0b",
+        "build": {
+          "commit": "0481ac7e0b0d1dad0df8c1b3e18c47d8db780177",
+          "workingTree": "",
+          "fixtureSha256": "4bb6bb5b66ecdb4bcf7c82bf774e2ba0ab1311d3b21e8fced7dc1029ed049903",
+          "packedTarballSha256": "98b1b770ce90bdc31b9c0c7740a7b77685a756692a159999e978b6fe2828ba7c",
+          "kind": "published npm tarball",
+          "npmIntegrity": "sha512-AFjfrf/WYg43eD0eHkcyuOBZNtlh8Mi2HgPbSkV93/QXKxbTktLNdMFf5qbEqb3k/HElD7ATUCj7lUbuxR9GDw==",
+          "aliaSdkVersion": "24.0.0",
+          "aliaComposerSha256": "33bee1e8b1d959adbe5406856fb0dca63c0df9ef9a2e57d21f523bc736d415c2",
+          "installed": "/home/nate/Oxy/Bloom/scripts/loader-package-lab/bloom-local/node_modules/@oxy.so/bloom",
+          "packageVersion": "19.7.1",
+          "nativeSha256": "5aa0123303dbb2f170077c2ddf6eac5933ee0c6269274422ed41ca10bf8f94ad",
+          "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+          "adapterSha256": "439368f05ea092a36619510ff3cf1d255d5e8da61ff52ab3490d0dd7dd6e4c21",
+          "lockSha256": "5c38ac4dbedbdcd9da152b86cdc76750eb4d436dd3288adbfd60c8c7264c5a69",
+          "reactCompiler": false,
+          "scene": "composers",
+          "softwareWindow": false,
+          "apkSha256": "ba6c83c4e267ee81eb2d435d83dc161b2dd9df4099f8cd32aa875de446d7df0b",
+          "embeddedBundleSha256": "b84b24401fd71a5c0dc409562a953a9f88261f977a5daa4078c45cdfdd58f385",
+          "embeddedBloomSourceSha256": "8a89c2ff0d53055e32ce4e7dc95593b0726ce72b5db8cedbd0c6234b633fe31b",
+          "embeddedBloomFiles": 1745,
+          "dex": [
+            {
+              "name": "classes.dex",
+              "sha256": "83710ad053d1aeb9d8f30937b3337cb3aa416bc8cb40853be0d72e23f96b1f43"
+            }
+          ],
+          "r8MappingSha256": "7fd7d8ec134ebaddb80d30f36a1d593b3264da834d4d611d6944f7e4a69e1db4",
+          "mappedNativeClass": "uc0",
+          "nativeEvidence": "compiled installed Kotlin input hash, DEX contract marker and full DEX hashes; no runtime source receipt"
+        },
+        "serial": "43221JEKB12200",
+        "case": "narrow-multiline-taper",
+        "elapsedMs": 10561.441359999999,
+        "frames": 1265,
+        "jankyFrames": 2,
+        "histogramP50Ms": 18,
+        "histogramP95Ms": 22,
+        "gpuP50Ms": 8,
+        "gpuP95Ms": 12,
+        "recentFrameSamples": 117,
+        "recentFrameP50Ms": 23.148739,
+        "recentFrameP95Ms": 26.279411,
+        "recentFrameIntervalMs": 8.353192,
+        "cpuPercentOfOneCore": [
+          114,
+          121,
+          118
+        ],
+        "pssKb": 458785,
+        "rssKb": 636300,
+        "thermalStatusBefore": 1,
+        "thermalStatusAfter": 1,
+        "note": "Single controlled foreground window, no screen recording; frame timestamps are not an FPS guarantee. Preserve font/display settings and compare thermal state."
+      }
+    },
+    {
+      "id": "narrow-multiline-no-taper",
+      "narrow": true,
+      "multiline": true,
+      "taper": "0",
+      "state": "busy=true phase=streaming narrow=true taper=0 multiline=true attached=false stops=0 submits=0 pending=none",
+      "inputBounds": [
+        {
+          "label": "Message",
+          "resourceId": "cases-pill-input",
+          "left": 216,
+          "top": 895,
+          "right": 600,
+          "bottom": 1158,
+          "width": 384,
+          "height": 263
+        },
+        {
+          "label": "Message",
+          "resourceId": "cases-agent-pill-input",
+          "left": 95,
+          "top": 1304,
+          "right": 599,
+          "bottom": 1514,
+          "width": 504,
+          "height": 210
+        },
+        {
+          "label": "Message",
+          "resourceId": "",
+          "left": 95,
+          "top": 1756,
+          "right": 484,
+          "bottom": 2020,
+          "width": 389,
+          "height": 264
+        }
+      ],
+      "loaders": [
+        {
+          "id": "cases-isolated-loader",
+          "left": 74,
+          "top": 590,
+          "right": 756,
+          "bottom": 768,
+          "width": 682,
+          "height": 178
+        },
+        {
+          "id": "cases-pill-loader",
+          "left": 74,
+          "top": 832,
+          "right": 756,
+          "bottom": 1179,
+          "width": 682,
+          "height": 347
+        },
+        {
+          "id": "cases-agent",
+          "left": 74,
+          "top": 1241,
+          "right": 756,
+          "bottom": 1630,
+          "width": 682,
+          "height": 389
+        }
+      ],
+      "report": {
+        "apkSha256": "ba6c83c4e267ee81eb2d435d83dc161b2dd9df4099f8cd32aa875de446d7df0b",
+        "build": {
+          "commit": "0481ac7e0b0d1dad0df8c1b3e18c47d8db780177",
+          "workingTree": "",
+          "fixtureSha256": "4bb6bb5b66ecdb4bcf7c82bf774e2ba0ab1311d3b21e8fced7dc1029ed049903",
+          "packedTarballSha256": "98b1b770ce90bdc31b9c0c7740a7b77685a756692a159999e978b6fe2828ba7c",
+          "kind": "published npm tarball",
+          "npmIntegrity": "sha512-AFjfrf/WYg43eD0eHkcyuOBZNtlh8Mi2HgPbSkV93/QXKxbTktLNdMFf5qbEqb3k/HElD7ATUCj7lUbuxR9GDw==",
+          "aliaSdkVersion": "24.0.0",
+          "aliaComposerSha256": "33bee1e8b1d959adbe5406856fb0dca63c0df9ef9a2e57d21f523bc736d415c2",
+          "installed": "/home/nate/Oxy/Bloom/scripts/loader-package-lab/bloom-local/node_modules/@oxy.so/bloom",
+          "packageVersion": "19.7.1",
+          "nativeSha256": "5aa0123303dbb2f170077c2ddf6eac5933ee0c6269274422ed41ca10bf8f94ad",
+          "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+          "adapterSha256": "439368f05ea092a36619510ff3cf1d255d5e8da61ff52ab3490d0dd7dd6e4c21",
+          "lockSha256": "5c38ac4dbedbdcd9da152b86cdc76750eb4d436dd3288adbfd60c8c7264c5a69",
+          "reactCompiler": false,
+          "scene": "composers",
+          "softwareWindow": false,
+          "apkSha256": "ba6c83c4e267ee81eb2d435d83dc161b2dd9df4099f8cd32aa875de446d7df0b",
+          "embeddedBundleSha256": "b84b24401fd71a5c0dc409562a953a9f88261f977a5daa4078c45cdfdd58f385",
+          "embeddedBloomSourceSha256": "8a89c2ff0d53055e32ce4e7dc95593b0726ce72b5db8cedbd0c6234b633fe31b",
+          "embeddedBloomFiles": 1745,
+          "dex": [
+            {
+              "name": "classes.dex",
+              "sha256": "83710ad053d1aeb9d8f30937b3337cb3aa416bc8cb40853be0d72e23f96b1f43"
+            }
+          ],
+          "r8MappingSha256": "7fd7d8ec134ebaddb80d30f36a1d593b3264da834d4d611d6944f7e4a69e1db4",
+          "mappedNativeClass": "uc0",
+          "nativeEvidence": "compiled installed Kotlin input hash, DEX contract marker and full DEX hashes; no runtime source receipt"
+        },
+        "serial": "43221JEKB12200",
+        "case": "narrow-multiline-no-taper",
+        "elapsedMs": 10656.211529,
+        "frames": 1271,
+        "jankyFrames": 0,
+        "histogramP50Ms": 12,
+        "histogramP95Ms": 14,
+        "gpuP50Ms": 5,
+        "gpuP95Ms": 9,
+        "recentFrameSamples": 118,
+        "recentFrameP50Ms": 12.4822,
+        "recentFrameP95Ms": 13.54793,
+        "recentFrameIntervalMs": 8.35256,
+        "cpuPercentOfOneCore": [
+          125,
+          116,
+          111
+        ],
+        "pssKb": 472785,
+        "rssKb": 650324,
+        "thermalStatusBefore": 1,
+        "thermalStatusAfter": 1,
+        "note": "Single controlled foreground window, no screen recording; frame timestamps are not an FPS guarantee. Preserve font/display settings and compare thermal state."
+      }
+    },
+    {
+      "id": "repeat-narrow-multiline-no-taper",
+      "narrow": true,
+      "multiline": true,
+      "taper": "0",
+      "state": "busy=true phase=streaming narrow=true taper=0 multiline=true attached=false stops=0 submits=0 pending=none",
+      "inputBounds": [
+        {
+          "label": "Message",
+          "resourceId": "cases-pill-input",
+          "left": 216,
+          "top": 895,
+          "right": 600,
+          "bottom": 1158,
+          "width": 384,
+          "height": 263
+        },
+        {
+          "label": "Message",
+          "resourceId": "cases-agent-pill-input",
+          "left": 95,
+          "top": 1304,
+          "right": 599,
+          "bottom": 1514,
+          "width": 504,
+          "height": 210
+        },
+        {
+          "label": "Message",
+          "resourceId": "",
+          "left": 95,
+          "top": 1756,
+          "right": 484,
+          "bottom": 2020,
+          "width": 389,
+          "height": 264
+        }
+      ],
+      "loaders": [
+        {
+          "id": "cases-isolated-loader",
+          "left": 74,
+          "top": 590,
+          "right": 756,
+          "bottom": 768,
+          "width": 682,
+          "height": 178
+        },
+        {
+          "id": "cases-pill-loader",
+          "left": 74,
+          "top": 832,
+          "right": 756,
+          "bottom": 1179,
+          "width": 682,
+          "height": 347
+        },
+        {
+          "id": "cases-agent",
+          "left": 74,
+          "top": 1241,
+          "right": 756,
+          "bottom": 1630,
+          "width": 682,
+          "height": 389
+        }
+      ],
+      "report": {
+        "apkSha256": "ba6c83c4e267ee81eb2d435d83dc161b2dd9df4099f8cd32aa875de446d7df0b",
+        "build": {
+          "commit": "0481ac7e0b0d1dad0df8c1b3e18c47d8db780177",
+          "workingTree": "",
+          "fixtureSha256": "4bb6bb5b66ecdb4bcf7c82bf774e2ba0ab1311d3b21e8fced7dc1029ed049903",
+          "packedTarballSha256": "98b1b770ce90bdc31b9c0c7740a7b77685a756692a159999e978b6fe2828ba7c",
+          "kind": "published npm tarball",
+          "npmIntegrity": "sha512-AFjfrf/WYg43eD0eHkcyuOBZNtlh8Mi2HgPbSkV93/QXKxbTktLNdMFf5qbEqb3k/HElD7ATUCj7lUbuxR9GDw==",
+          "aliaSdkVersion": "24.0.0",
+          "aliaComposerSha256": "33bee1e8b1d959adbe5406856fb0dca63c0df9ef9a2e57d21f523bc736d415c2",
+          "installed": "/home/nate/Oxy/Bloom/scripts/loader-package-lab/bloom-local/node_modules/@oxy.so/bloom",
+          "packageVersion": "19.7.1",
+          "nativeSha256": "5aa0123303dbb2f170077c2ddf6eac5933ee0c6269274422ed41ca10bf8f94ad",
+          "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+          "adapterSha256": "439368f05ea092a36619510ff3cf1d255d5e8da61ff52ab3490d0dd7dd6e4c21",
+          "lockSha256": "5c38ac4dbedbdcd9da152b86cdc76750eb4d436dd3288adbfd60c8c7264c5a69",
+          "reactCompiler": false,
+          "scene": "composers",
+          "softwareWindow": false,
+          "apkSha256": "ba6c83c4e267ee81eb2d435d83dc161b2dd9df4099f8cd32aa875de446d7df0b",
+          "embeddedBundleSha256": "b84b24401fd71a5c0dc409562a953a9f88261f977a5daa4078c45cdfdd58f385",
+          "embeddedBloomSourceSha256": "8a89c2ff0d53055e32ce4e7dc95593b0726ce72b5db8cedbd0c6234b633fe31b",
+          "embeddedBloomFiles": 1745,
+          "dex": [
+            {
+              "name": "classes.dex",
+              "sha256": "83710ad053d1aeb9d8f30937b3337cb3aa416bc8cb40853be0d72e23f96b1f43"
+            }
+          ],
+          "r8MappingSha256": "7fd7d8ec134ebaddb80d30f36a1d593b3264da834d4d611d6944f7e4a69e1db4",
+          "mappedNativeClass": "uc0",
+          "nativeEvidence": "compiled installed Kotlin input hash, DEX contract marker and full DEX hashes; no runtime source receipt"
+        },
+        "serial": "43221JEKB12200",
+        "case": "repeat-narrow-multiline-no-taper",
+        "elapsedMs": 10614.124045,
+        "frames": 1270,
+        "jankyFrames": 0,
+        "histogramP50Ms": 12,
+        "histogramP95Ms": 14,
+        "gpuP50Ms": 6,
+        "gpuP95Ms": 9,
+        "recentFrameSamples": 118,
+        "recentFrameP50Ms": 14.210358,
+        "recentFrameP95Ms": 15.700002,
+        "recentFrameIntervalMs": 8.351895,
+        "cpuPercentOfOneCore": [
+          117,
+          115,
+          105
+        ],
+        "pssKb": 469833,
+        "rssKb": 647412,
+        "thermalStatusBefore": 1,
+        "thermalStatusAfter": 1,
+        "note": "Single controlled foreground window, no screen recording; frame timestamps are not an FPS guarantee. Preserve font/display settings and compare thermal state."
+      }
+    },
+    {
+      "id": "repeat-narrow-multiline-taper",
+      "narrow": true,
+      "multiline": true,
+      "taper": "0.5",
+      "state": "busy=true phase=streaming narrow=true taper=0.5 multiline=true attached=false stops=0 submits=0 pending=none",
+      "inputBounds": [
+        {
+          "label": "Message",
+          "resourceId": "cases-pill-input",
+          "left": 216,
+          "top": 895,
+          "right": 600,
+          "bottom": 1158,
+          "width": 384,
+          "height": 263
+        },
+        {
+          "label": "Message",
+          "resourceId": "cases-agent-pill-input",
+          "left": 95,
+          "top": 1304,
+          "right": 599,
+          "bottom": 1514,
+          "width": 504,
+          "height": 210
+        },
+        {
+          "label": "Message",
+          "resourceId": "",
+          "left": 95,
+          "top": 1756,
+          "right": 484,
+          "bottom": 2020,
+          "width": 389,
+          "height": 264
+        }
+      ],
+      "loaders": [
+        {
+          "id": "cases-isolated-loader",
+          "left": 74,
+          "top": 590,
+          "right": 756,
+          "bottom": 768,
+          "width": 682,
+          "height": 178
+        },
+        {
+          "id": "cases-pill-loader",
+          "left": 74,
+          "top": 832,
+          "right": 756,
+          "bottom": 1179,
+          "width": 682,
+          "height": 347
+        },
+        {
+          "id": "cases-agent",
+          "left": 74,
+          "top": 1241,
+          "right": 756,
+          "bottom": 1630,
+          "width": 682,
+          "height": 389
+        }
+      ],
+      "report": {
+        "apkSha256": "ba6c83c4e267ee81eb2d435d83dc161b2dd9df4099f8cd32aa875de446d7df0b",
+        "build": {
+          "commit": "0481ac7e0b0d1dad0df8c1b3e18c47d8db780177",
+          "workingTree": "",
+          "fixtureSha256": "4bb6bb5b66ecdb4bcf7c82bf774e2ba0ab1311d3b21e8fced7dc1029ed049903",
+          "packedTarballSha256": "98b1b770ce90bdc31b9c0c7740a7b77685a756692a159999e978b6fe2828ba7c",
+          "kind": "published npm tarball",
+          "npmIntegrity": "sha512-AFjfrf/WYg43eD0eHkcyuOBZNtlh8Mi2HgPbSkV93/QXKxbTktLNdMFf5qbEqb3k/HElD7ATUCj7lUbuxR9GDw==",
+          "aliaSdkVersion": "24.0.0",
+          "aliaComposerSha256": "33bee1e8b1d959adbe5406856fb0dca63c0df9ef9a2e57d21f523bc736d415c2",
+          "installed": "/home/nate/Oxy/Bloom/scripts/loader-package-lab/bloom-local/node_modules/@oxy.so/bloom",
+          "packageVersion": "19.7.1",
+          "nativeSha256": "5aa0123303dbb2f170077c2ddf6eac5933ee0c6269274422ed41ca10bf8f94ad",
+          "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+          "adapterSha256": "439368f05ea092a36619510ff3cf1d255d5e8da61ff52ab3490d0dd7dd6e4c21",
+          "lockSha256": "5c38ac4dbedbdcd9da152b86cdc76750eb4d436dd3288adbfd60c8c7264c5a69",
+          "reactCompiler": false,
+          "scene": "composers",
+          "softwareWindow": false,
+          "apkSha256": "ba6c83c4e267ee81eb2d435d83dc161b2dd9df4099f8cd32aa875de446d7df0b",
+          "embeddedBundleSha256": "b84b24401fd71a5c0dc409562a953a9f88261f977a5daa4078c45cdfdd58f385",
+          "embeddedBloomSourceSha256": "8a89c2ff0d53055e32ce4e7dc95593b0726ce72b5db8cedbd0c6234b633fe31b",
+          "embeddedBloomFiles": 1745,
+          "dex": [
+            {
+              "name": "classes.dex",
+              "sha256": "83710ad053d1aeb9d8f30937b3337cb3aa416bc8cb40853be0d72e23f96b1f43"
+            }
+          ],
+          "r8MappingSha256": "7fd7d8ec134ebaddb80d30f36a1d593b3264da834d4d611d6944f7e4a69e1db4",
+          "mappedNativeClass": "uc0",
+          "nativeEvidence": "compiled installed Kotlin input hash, DEX contract marker and full DEX hashes; no runtime source receipt"
+        },
+        "serial": "43221JEKB12200",
+        "case": "repeat-narrow-multiline-taper",
+        "elapsedMs": 10610.639908,
+        "frames": 1272,
+        "jankyFrames": 0,
+        "histogramP50Ms": 14,
+        "histogramP95Ms": 17,
+        "gpuP50Ms": 6,
+        "gpuP95Ms": 9,
+        "recentFrameSamples": 117,
+        "recentFrameP50Ms": 13.381132,
+        "recentFrameP95Ms": 15.148125,
+        "recentFrameIntervalMs": 8.351942,
+        "cpuPercentOfOneCore": [
+          159,
+          127,
+          124
+        ],
+        "pssKb": 490636,
+        "rssKb": 668208,
+        "thermalStatusBefore": 1,
+        "thermalStatusAfter": 1,
+        "note": "Single controlled foreground window, no screen recording; frame timestamps are not an FPS guarantee. Preserve font/display settings and compare thermal state."
+      }
+    },
+    {
+      "id": "repeat-wide-short-taper",
+      "narrow": false,
+      "multiline": false,
+      "taper": "0.5",
+      "state": "busy=true phase=streaming narrow=false taper=0.5 multiline=false attached=false stops=0 submits=0 pending=none",
+      "inputBounds": [
+        {
+          "label": "Message",
+          "resourceId": "cases-pill-input",
+          "left": 216,
+          "top": 1154,
+          "right": 850,
+          "bottom": 1364,
+          "width": 634,
+          "height": 210
+        },
+        {
+          "label": "Message",
+          "resourceId": "cases-agent-pill-input",
+          "left": 95,
+          "top": 1511,
+          "right": 850,
+          "bottom": 1616,
+          "width": 755,
+          "height": 105
+        },
+        {
+          "label": "Message",
+          "resourceId": "",
+          "left": 95,
+          "top": 1857,
+          "right": 734,
+          "bottom": 2067,
+          "width": 639,
+          "height": 210
+        }
+      ],
+      "loaders": [
+        {
+          "id": "cases-isolated-loader",
+          "left": 74,
+          "top": 849,
+          "right": 1007,
+          "bottom": 1027,
+          "width": 933,
+          "height": 178
+        },
+        {
+          "id": "cases-pill-loader",
+          "left": 74,
+          "top": 1091,
+          "right": 1007,
+          "bottom": 1385,
+          "width": 933,
+          "height": 294
+        },
+        {
+          "id": "cases-agent",
+          "left": 74,
+          "top": 1448,
+          "right": 1007,
+          "bottom": 1732,
+          "width": 933,
+          "height": 284
+        }
+      ],
+      "report": {
+        "apkSha256": "ba6c83c4e267ee81eb2d435d83dc161b2dd9df4099f8cd32aa875de446d7df0b",
+        "build": {
+          "commit": "0481ac7e0b0d1dad0df8c1b3e18c47d8db780177",
+          "workingTree": "",
+          "fixtureSha256": "4bb6bb5b66ecdb4bcf7c82bf774e2ba0ab1311d3b21e8fced7dc1029ed049903",
+          "packedTarballSha256": "98b1b770ce90bdc31b9c0c7740a7b77685a756692a159999e978b6fe2828ba7c",
+          "kind": "published npm tarball",
+          "npmIntegrity": "sha512-AFjfrf/WYg43eD0eHkcyuOBZNtlh8Mi2HgPbSkV93/QXKxbTktLNdMFf5qbEqb3k/HElD7ATUCj7lUbuxR9GDw==",
+          "aliaSdkVersion": "24.0.0",
+          "aliaComposerSha256": "33bee1e8b1d959adbe5406856fb0dca63c0df9ef9a2e57d21f523bc736d415c2",
+          "installed": "/home/nate/Oxy/Bloom/scripts/loader-package-lab/bloom-local/node_modules/@oxy.so/bloom",
+          "packageVersion": "19.7.1",
+          "nativeSha256": "5aa0123303dbb2f170077c2ddf6eac5933ee0c6269274422ed41ca10bf8f94ad",
+          "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+          "adapterSha256": "439368f05ea092a36619510ff3cf1d255d5e8da61ff52ab3490d0dd7dd6e4c21",
+          "lockSha256": "5c38ac4dbedbdcd9da152b86cdc76750eb4d436dd3288adbfd60c8c7264c5a69",
+          "reactCompiler": false,
+          "scene": "composers",
+          "softwareWindow": false,
+          "apkSha256": "ba6c83c4e267ee81eb2d435d83dc161b2dd9df4099f8cd32aa875de446d7df0b",
+          "embeddedBundleSha256": "b84b24401fd71a5c0dc409562a953a9f88261f977a5daa4078c45cdfdd58f385",
+          "embeddedBloomSourceSha256": "8a89c2ff0d53055e32ce4e7dc95593b0726ce72b5db8cedbd0c6234b633fe31b",
+          "embeddedBloomFiles": 1745,
+          "dex": [
+            {
+              "name": "classes.dex",
+              "sha256": "83710ad053d1aeb9d8f30937b3337cb3aa416bc8cb40853be0d72e23f96b1f43"
+            }
+          ],
+          "r8MappingSha256": "7fd7d8ec134ebaddb80d30f36a1d593b3264da834d4d611d6944f7e4a69e1db4",
+          "mappedNativeClass": "uc0",
+          "nativeEvidence": "compiled installed Kotlin input hash, DEX contract marker and full DEX hashes; no runtime source receipt"
+        },
+        "serial": "43221JEKB12200",
+        "case": "repeat-wide-short-taper",
+        "elapsedMs": 10628.790707,
+        "frames": 1243,
+        "jankyFrames": 14,
+        "histogramP50Ms": 18,
+        "histogramP95Ms": 29,
+        "gpuP50Ms": 6,
+        "gpuP95Ms": 15,
+        "recentFrameSamples": 118,
+        "recentFrameP50Ms": 22.925529,
+        "recentFrameP95Ms": 34.287918,
+        "recentFrameIntervalMs": 8.353508,
+        "cpuPercentOfOneCore": [
+          185,
+          154,
+          159
+        ],
+        "pssKb": 493404,
+        "rssKb": 671012,
+        "thermalStatusBefore": 1,
+        "thermalStatusAfter": 1,
+        "note": "Single controlled foreground window, no screen recording; frame timestamps are not an FPS guarantee. Preserve font/display settings and compare thermal state."
+      }
+    },
+    {
+      "id": "repeat-wide-short-no-taper",
+      "narrow": false,
+      "multiline": false,
+      "taper": "0",
+      "state": "busy=true phase=streaming narrow=false taper=0 multiline=false attached=false stops=0 submits=0 pending=none",
+      "inputBounds": [
+        {
+          "label": "Message",
+          "resourceId": "cases-pill-input",
+          "left": 216,
+          "top": 1154,
+          "right": 850,
+          "bottom": 1364,
+          "width": 634,
+          "height": 210
+        },
+        {
+          "label": "Message",
+          "resourceId": "cases-agent-pill-input",
+          "left": 95,
+          "top": 1511,
+          "right": 850,
+          "bottom": 1616,
+          "width": 755,
+          "height": 105
+        },
+        {
+          "label": "Message",
+          "resourceId": "",
+          "left": 95,
+          "top": 1857,
+          "right": 734,
+          "bottom": 2067,
+          "width": 639,
+          "height": 210
+        }
+      ],
+      "loaders": [
+        {
+          "id": "cases-isolated-loader",
+          "left": 74,
+          "top": 849,
+          "right": 1007,
+          "bottom": 1027,
+          "width": 933,
+          "height": 178
+        },
+        {
+          "id": "cases-pill-loader",
+          "left": 74,
+          "top": 1091,
+          "right": 1007,
+          "bottom": 1385,
+          "width": 933,
+          "height": 294
+        },
+        {
+          "id": "cases-agent",
+          "left": 74,
+          "top": 1448,
+          "right": 1007,
+          "bottom": 1732,
+          "width": 933,
+          "height": 284
+        }
+      ],
+      "report": {
+        "apkSha256": "ba6c83c4e267ee81eb2d435d83dc161b2dd9df4099f8cd32aa875de446d7df0b",
+        "build": {
+          "commit": "0481ac7e0b0d1dad0df8c1b3e18c47d8db780177",
+          "workingTree": "",
+          "fixtureSha256": "4bb6bb5b66ecdb4bcf7c82bf774e2ba0ab1311d3b21e8fced7dc1029ed049903",
+          "packedTarballSha256": "98b1b770ce90bdc31b9c0c7740a7b77685a756692a159999e978b6fe2828ba7c",
+          "kind": "published npm tarball",
+          "npmIntegrity": "sha512-AFjfrf/WYg43eD0eHkcyuOBZNtlh8Mi2HgPbSkV93/QXKxbTktLNdMFf5qbEqb3k/HElD7ATUCj7lUbuxR9GDw==",
+          "aliaSdkVersion": "24.0.0",
+          "aliaComposerSha256": "33bee1e8b1d959adbe5406856fb0dca63c0df9ef9a2e57d21f523bc736d415c2",
+          "installed": "/home/nate/Oxy/Bloom/scripts/loader-package-lab/bloom-local/node_modules/@oxy.so/bloom",
+          "packageVersion": "19.7.1",
+          "nativeSha256": "5aa0123303dbb2f170077c2ddf6eac5933ee0c6269274422ed41ca10bf8f94ad",
+          "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+          "adapterSha256": "439368f05ea092a36619510ff3cf1d255d5e8da61ff52ab3490d0dd7dd6e4c21",
+          "lockSha256": "5c38ac4dbedbdcd9da152b86cdc76750eb4d436dd3288adbfd60c8c7264c5a69",
+          "reactCompiler": false,
+          "scene": "composers",
+          "softwareWindow": false,
+          "apkSha256": "ba6c83c4e267ee81eb2d435d83dc161b2dd9df4099f8cd32aa875de446d7df0b",
+          "embeddedBundleSha256": "b84b24401fd71a5c0dc409562a953a9f88261f977a5daa4078c45cdfdd58f385",
+          "embeddedBloomSourceSha256": "8a89c2ff0d53055e32ce4e7dc95593b0726ce72b5db8cedbd0c6234b633fe31b",
+          "embeddedBloomFiles": 1745,
+          "dex": [
+            {
+              "name": "classes.dex",
+              "sha256": "83710ad053d1aeb9d8f30937b3337cb3aa416bc8cb40853be0d72e23f96b1f43"
+            }
+          ],
+          "r8MappingSha256": "7fd7d8ec134ebaddb80d30f36a1d593b3264da834d4d611d6944f7e4a69e1db4",
+          "mappedNativeClass": "uc0",
+          "nativeEvidence": "compiled installed Kotlin input hash, DEX contract marker and full DEX hashes; no runtime source receipt"
+        },
+        "serial": "43221JEKB12200",
+        "case": "repeat-wide-short-no-taper",
+        "elapsedMs": 10611.181657000001,
+        "frames": 1269,
+        "jankyFrames": 0,
+        "histogramP50Ms": 12,
+        "histogramP95Ms": 14,
+        "gpuP50Ms": 5,
+        "gpuP95Ms": 8,
+        "recentFrameSamples": 117,
+        "recentFrameP50Ms": 12.102868,
+        "recentFrameP95Ms": 12.928093,
+        "recentFrameIntervalMs": 8.352447,
+        "cpuPercentOfOneCore": [
+          117,
+          126,
+          119
+        ],
+        "pssKb": 479195,
+        "rssKb": 656916,
+        "thermalStatusBefore": 1,
+        "thermalStatusAfter": 1,
+        "note": "Single controlled foreground window, no screen recording; frame timestamps are not an FPS guarantee. Preserve font/display settings and compare thermal state."
+      }
+    }
+  ],
+  "limits": "Descriptive Pixel 8a release samples, not a performance pass or approved threshold. AgentChatComposer retains its shipped taper; the taper switch applies to the isolated ComposerLoader and outer ComposerPill loader. AliaComposer does not expose a ComposerLoader. Each window runs all three visible loader views in one app tree; no screen recording is active during measurement."
+}

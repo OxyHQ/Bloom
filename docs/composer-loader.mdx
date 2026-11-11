@@ -148,6 +148,12 @@ gradient, radius, clipping, blend and layer order for web, iOS, Android SVG
 fallback and the Android hardware adapter. It separates source-level findings
 from device-confirmed appearance; iOS optical behavior remains unverified.
 
+The [published Bloom 19.7.1 Pixel 8a run](/docs/audits/issue-663/composer-loader-published-19.7.1-pixel8a-2026-11-11/)
+matches the Android fixture to npm `dist.integrity`, measures eight real-composer
+windows, and checks composer identity, draft, caret, selection, Stop and rotation.
+Its performance figures are descriptive samples, not an approved threshold; it
+does not establish iOS optics or full issue acceptance.
+
 On 2026-11-08, Chromium 146 reproduced three running CSS animations with
 `active=false` on baseline `e3996b93`; their timelines advanced 500 ms while
 invisible. The lifecycle correction passes suspension/resumption (including a real
