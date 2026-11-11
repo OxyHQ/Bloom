@@ -28,6 +28,11 @@ import { ConnectionDots } from '@oxy.so/bloom/connection-dots';
 | `accessibilityLabel` | what the whole illustration means                   |
 | `reducedMotion`      | render the dots static instead of animating         |
 
+The row has no Bloom control-size prop. Dot diameter and count are artwork
+dimensions; they do not shrink under a surrounding `BloomScope`. The `left`
+and `right` children are rendered as supplied, so their own controls inherit
+the caller's scope or an explicit nested scope normally.
+
 ## It illustrates a relationship, not progress
 
 The dots move continuously; they do not fill up. Nothing here says how far
