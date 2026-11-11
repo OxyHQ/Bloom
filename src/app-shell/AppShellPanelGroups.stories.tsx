@@ -21,12 +21,14 @@ function ReadingPanel({
   onOpen,
   onDeck,
   exitCount = 0,
+  resizeCommits = 0,
   short = false,
 }: {
   title: string;
   onOpen?: () => void;
   onDeck?: () => void;
   exitCount?: number;
+  resizeCommits?: number;
   short?: boolean;
 }) {
   const [saved, setSaved] = useState(false);
@@ -41,7 +43,7 @@ function ReadingPanel({
               <View className="flex-row gap-2">
                 <Button
                   testID="groups-open"
-                  accessibilityLabel={`Likes; completed exits ${exitCount}`}
+                  accessibilityLabel={`Likes; completed exits ${exitCount}; resize commits ${resizeCommits}`}
                   onPress={onOpen}
                 >
                   Likes
@@ -80,6 +82,7 @@ function SplitExample({
   deckSwitch = false,
   short = false,
   transition = 'exit-before-enter',
+  contentCap = false,
 }: {
   documentFlow?: boolean;
   mixed?: boolean;
@@ -87,9 +90,11 @@ function SplitExample({
   deckSwitch?: boolean;
   short?: boolean;
   transition?: 'simultaneous' | 'exit-before-enter';
+  contentCap?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [exitCount, setExitCount] = useState(0);
+  const [resizeCommits, setResizeCommits] = useState(0);
   const [deck, setDeck] = useState(false);
   return (
     <AppShell
@@ -115,6 +120,7 @@ function SplitExample({
               singlePanelFlow: documentFlow ? 'document' : undefined,
               gap: 8,
               resizeHandle: 'pill',
+              onSpansChange: () => setResizeCommits((count) => count + 1),
               panels: [
                 {
                   id: 'main',
@@ -125,6 +131,7 @@ function SplitExample({
                     <ReadingPanel
                       title="Post"
                       exitCount={exitCount}
+                      resizeCommits={resizeCommits}
                       short={short}
                       onOpen={() => setOpen(true)}
                       onDeck={deckSwitch ? () => setDeck(!deck) : undefined}
@@ -134,6 +141,7 @@ function SplitExample({
                 {
                   id: 'likes',
                   minHeight: 120,
+                  resizeMaxHeight: contentCap ? 'content' : undefined,
                   testID: 'groups-likes',
                   visible: open,
                   onExitComplete: () => setExitCount((count) => count + 1),
@@ -311,4 +319,8 @@ export const HorizontalFlow: Story = {
       />
     );
   },
+};
+
+export const ContentCappedSplit: Story = {
+  render: () => <SplitExample short contentCap />,
 };

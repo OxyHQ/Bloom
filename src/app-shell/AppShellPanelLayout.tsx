@@ -11,7 +11,7 @@ import React, {
   type ComponentType,
   type ComponentRef,
 } from 'react';
-import { Dimensions, Platform, type View as NativeView, type ViewStyle } from 'react-native';
+import { Platform, type View as NativeView, type ViewStyle } from 'react-native';
 import { StyledView as View } from '../styles/styled-primitives';
 import {
   SafeAreaInsetsContext,
@@ -87,12 +87,12 @@ import {
   applyPanelSpans,
   isFlexiblePanel,
   panelWindowChrome,
+  panelForAxis,
   eligiblePanels,
   panelLayoutMinimum,
   panelLayoutWidthThresholds,
   resolvePanelAxis,
   resolvePanelFlex,
-  resolvePanelTracks,
   splitPairSpans,
   type PanelFlexTrack,
 } from './panel-layout';
@@ -332,7 +332,6 @@ export function createPanelLayoutView(
     visibilityReady,
     index,
     getSize,
-    modelSize,
     vertical,
     naturalHeight,
     safeAreaTop,
@@ -363,8 +362,6 @@ export function createPanelLayoutView(
     visibilityReady: boolean;
     index: number;
     getSize: () => number;
-    /** Its size as the group's measured room divides it (`resolvePanelTracks`), where no layout can be read. */
-    modelSize: () => number;
     vertical: boolean;
     naturalHeight: boolean;
     safeAreaTop: number;
@@ -475,10 +472,17 @@ export function createPanelLayoutView(
     const screenRef = useRef<unknown>(null);
     const scrollY = useSharedValue(0);
     const contentHeight = useSharedValue(-1);
+    const intrinsicContentHeight = useSharedValue(-1);
     const scrollViewportHeight = useSharedValue(0);
     const metrics = useMemo(
-      () => ({ scrollY, contentHeight, viewportHeight: scrollViewportHeight }),
-      [scrollY, contentHeight, scrollViewportHeight],
+      () => ({
+        scrollY,
+        contentHeight,
+        intrinsicContentHeight:
+          panel.resizeMaxHeight === 'content' ? intrinsicContentHeight : undefined,
+        viewportHeight: scrollViewportHeight,
+      }),
+      [scrollY, contentHeight, intrinsicContentHeight, scrollViewportHeight, panel.resizeMaxHeight],
     );
     const [screenColor, claimPanelColor] = useLatestClaim<ProfileColor>();
     const claimShellColor = useContext(ShellColorClaimContext);
@@ -542,9 +546,8 @@ export function createPanelLayoutView(
     const start = useRef(0);
     const reduced = usePrefersReducedMotion();
     // The track's flex along the group's axis (`resolvePanelFlex`), as shared
-    // values: Yoga sizes it from these in the pass that lays the window out, so
-    // a resize runs no JavaScript; only a change of the layout itself (a panel
-    // shown, hidden, resized by its handle) moves them.
+    // values: Yoga distributes room without a React sizing pass. Semantic
+    // visibility changes and direct gestures update these declarative values.
     const grow = useSharedValue(track.grow);
     const basis = useSharedValue(track.basis);
     const min = useSharedValue(track.min);
@@ -568,8 +571,20 @@ export function createPanelLayoutView(
               ? vertical
                 ? box.height
                 : box.width
-              : (vertical ? lastHeight.value : lastWidth.value) || modelSize();
+              : vertical
+                ? lastHeight.value
+                : lastWidth.value;
           },
+          contentHeight:
+            panel.resizeMaxHeight === 'content'
+              ? (height) => {
+                  const intrinsic = intrinsicContentHeight.value;
+                  const viewport = scrollViewportHeight.value;
+                  return intrinsic >= 0 && viewport > 0
+                    ? Math.max(0, height - viewport) + intrinsic
+                    : undefined;
+                }
+              : undefined,
           update: (size) => {
             gestureHeld.current = true;
             cancelAnimation(grow);
@@ -578,7 +593,15 @@ export function createPanelLayoutView(
             basis.value = size;
           },
         }),
-      [registerResizePreview, grow, basis, vertical],
+      [
+        registerResizePreview,
+        grow,
+        basis,
+        vertical,
+        panel.resizeMaxHeight,
+        intrinsicContentHeight,
+        scrollViewportHeight,
+      ],
     );
     // The panel paints the material: on the web its fade is its presence, never
     // an opacity on the track above it (the CSS compositor does the same).
@@ -877,13 +900,17 @@ export function createPanelLayoutView(
               resizable ? { zIndex: 1 } : undefined,
               Platform.OS !== 'web' ? reorderStyle : undefined,
             ]}
-            onLayout={(event) => {
-              if (track.visible) {
-                lastHeight.value = event.nativeEvent.layout.height;
-                lastWidth.value = event.nativeEvent.layout.width;
-                if (sticky) setStickyHeight(event.nativeEvent.layout.height);
-              }
-            }}
+            onLayout={
+              cssScope && !sticky
+                ? undefined
+                : (event) => {
+                    if (track.visible) {
+                      lastHeight.value = event.nativeEvent.layout.height;
+                      lastWidth.value = event.nativeEvent.layout.width;
+                      if (sticky) setStickyHeight(event.nativeEvent.layout.height);
+                    }
+                  }
+            }
             aria-hidden={!active ? true : undefined}
             {...(Platform.OS === 'web' && !active ? { inert: true } : null)}
             importantForAccessibility={active ? 'auto' : 'no-hide-descendants'}
@@ -1319,23 +1346,6 @@ export function createPanelLayoutView(
           actualGap,
           dimensions,
         );
-    // A track's size in pixels, when a resize gesture starts and the platform
-    // gives no layout to read (`getBoundingClientRect`): the group's measured
-    // room as Yoga divides it, which `resolvePanelTracks` models.
-    const modelTrackSize = (id: string) => {
-      // The window until the group's first layout, as its size classes read it.
-      const measured = group.read() ?? Dimensions.get('window');
-      const exactRoom = vertical ? Math.max(0, measured.height - heightReserve) : measured.width;
-      return (
-        resolvePanelTracks(
-          { ...layout, flow: document ? 'document' : 'bounded' },
-          exactRoom,
-          eligibilityFromGroup ? measured.width : shellWidth,
-          actualGap,
-          dimensions,
-        ).find((track) => track.id === id)?.width ?? 0
-      );
-    };
     usePanelReveal({
       rootRef,
       request: layout.revealPanel,
@@ -1452,7 +1462,14 @@ export function createPanelLayoutView(
         )
       ) {
         const [first, second] = resized as [AppShellPanelDefinition, AppShellPanelDefinition];
-        const weights = splitPairSpans(first, second, pair[first.id]!, pair[second.id]!);
+        const axis = vertical ? 'vertical' : 'horizontal';
+        const weights = splitPairSpans(
+          panelForAxis(first, axis),
+          panelForAxis(second, axis),
+          pair[first.id]!,
+          pair[second.id]!,
+          Platform.OS !== 'web',
+        );
         const nextSpans = { ...spans, ...weights };
         if (declared.spans === undefined) setOwnSpans(nextSpans);
         declared.onSpansChange?.(nextSpans);
@@ -1586,7 +1603,6 @@ export function createPanelLayoutView(
             visibilityReady={visibilityReady && trackById.has(panel.id)}
             index={index}
             getSize={() => resize.size(panel.id)}
-            modelSize={() => modelTrackSize(panel.id)}
             vertical={vertical}
             shellWidth={shellWidth}
             safeAreaTop={

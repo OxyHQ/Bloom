@@ -12,12 +12,12 @@ import { PageHeader } from './.source/page-header';
 import { Button } from './.source/button';
 import { Text } from './.source/typography';
 
-function Reading({ title }: { title: string }) {
+function Reading({ title, short = false }: { title: string; short?: boolean }) {
   return (
     <Screen header={<PageHeader title={title} />} testID={`native-${title}`}>
       <ScreenScrollView>
         <View className="gap-4 p-4">
-          {Array.from({ length: 40 }, (_, index) => (
+          {Array.from({ length: short ? 3 : 40 }, (_, index) => (
             <Text key={`${title}-${index}`} className="py-4">
               {title} row {index + 1}
             </Text>
@@ -32,6 +32,7 @@ export function PanelGroupsLab() {
   const [exitCount, setExitCount] = useState(0);
   const [floating, setFloating] = useState(false);
   const [flow, setFlow] = useState(false);
+  const [short, setShort] = useState(false);
   const [count, setCount] = useState(3);
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -71,7 +72,10 @@ export function PanelGroupsLab() {
                           <Button testID="native-flow" onPress={() => setFlow(!flow)}>
                             Flow
                           </Button>
-                          <Button testID="native-add" onPress={() => setCount(count + 1)}>
+                          <Button
+                            testID="native-add"
+                            onPress={() => (flow ? setCount(count + 1) : setShort(!short))}
+                          >
                             Add
                           </Button>
                         </View>
@@ -111,6 +115,7 @@ export function PanelGroupsLab() {
                               },
                               {
                                 id: 'likes',
+                                resizeMaxHeight: 'content',
                                 minHeight: 120,
                                 visible: open,
                                 onExitComplete: () => setExitCount((count) => count + 1),
@@ -127,7 +132,7 @@ export function PanelGroupsLab() {
                                       },
                                     }
                                   : {}),
-                                content: <Reading title="Likes" />,
+                                content: <Reading title="Likes" short={short} />,
                               },
                             ],
                           },

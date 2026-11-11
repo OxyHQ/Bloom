@@ -4,8 +4,9 @@ import type { ComponentRef } from 'react';
 import {
   clampPanelWidth,
   panelForAxis,
+  panelContentResizeLimit,
   resizePanelPair,
-  type ResolvedPanelTrack,
+  type PanelFlexTrack,
 } from './panel-layout';
 import { panelSizeProperty, panelGrowProperty } from './panel-layout-css';
 import type { AppShellPanelDefinition, AppShellPanelLayout } from './panel-layout-types';
@@ -13,6 +14,8 @@ import type { AppShellPanelDefinition, AppShellPanelLayout } from './panel-layou
 type Sizes = Readonly<Record<string, number>>;
 export interface PanelResizePreview {
   read: () => number;
+  /** Intrinsic content plus chrome, read once at the start of a vertical gesture. */
+  contentHeight?: (panelHeight: number) => number | undefined;
   update: (size: number) => void;
 }
 
@@ -26,6 +29,8 @@ type Drag = {
   next?: AppShellPanelDefinition;
   firstSize: number;
   nextSize: number;
+  firstContentMax?: number;
+  nextContentMax?: number;
   values?: Sizes;
   properties: Map<CSSStyleDeclaration, Set<string>>;
 };
@@ -41,7 +46,7 @@ export function usePanelResize({
   onCommit,
 }: {
   layout: AppShellPanelLayout;
-  tracks: readonly Pick<ResolvedPanelTrack, 'id' | 'visible'>[];
+  tracks: readonly Pick<PanelFlexTrack, 'id' | 'visible'>[];
   vertical: boolean;
   document: boolean;
   scope: string | null;
@@ -128,11 +133,18 @@ export function usePanelResize({
       layout.mode !== 'deck' && layout.mode !== 'flow' && !(vertical && document)
         ? layout.panels.find((candidate) => candidate.id === nextId)
         : undefined;
+    const firstSize = size(panel.id);
+    const nextSize = next ? size(next.id) : 0;
     return {
       first: panelForAxis(panel, vertical ? 'vertical' : 'horizontal'),
       next: next ? panelForAxis(next, vertical ? 'vertical' : 'horizontal') : undefined,
-      firstSize: size(panel.id),
-      nextSize: next ? size(next.id) : 0,
+      firstSize,
+      nextSize,
+      firstContentMax: vertical
+        ? previews.current.get(panel.id)?.contentHeight?.(firstSize)
+        : undefined,
+      nextContentMax:
+        vertical && next ? previews.current.get(next.id)?.contentHeight?.(nextSize) : undefined,
     };
   };
   const control = {
@@ -145,6 +157,11 @@ export function usePanelResize({
       // Cancel the transition-restoration frame before starting a new transaction.
       if (frame.current !== null) cancelAnimationFrame(frame.current);
       frame.current = null;
+      const measured = snapshot(panel);
+      if (!(measured.firstSize > 0) || (measured.next && !(measured.nextSize > 0))) {
+        interrupted.current = true;
+        return;
+      }
       const root = scope ? (rootRef.current as unknown as HTMLElement) : null;
       const shell = root?.closest<HTMLElement>(`[data-bloom-layout="${scope}"]`);
       const targets = new Map<string, { node: HTMLElement; size: string; grow: string }>();
@@ -169,7 +186,7 @@ export function usePanelResize({
               null)
             : null,
         targets,
-        ...snapshot(panel),
+        ...measured,
         properties: new Map(),
       };
       root?.setAttribute('data-bloom-panel-resizing', vertical ? 'vertical' : 'horizontal');
@@ -177,10 +194,20 @@ export function usePanelResize({
     resize(panel: AppShellPanelDefinition, requested: number) {
       if (interrupted.current) return;
       const active = drag.current?.id === panel.id ? drag.current : null;
-      const { first, next, firstSize, nextSize } = active ?? snapshot(panel);
-      const values = next
-        ? resizePanelPair(first, next, firstSize, nextSize, requested)
-        : { [panel.id]: clampPanelWidth(first, requested) };
+      const { first, next, firstSize, nextSize, firstContentMax, nextContentMax } =
+        active ?? snapshot(panel);
+      if (!(firstSize > 0) || (next && !(nextSize > 0))) return;
+      const firstLimit = panelContentResizeLimit(
+        first,
+        active?.values?.[first.id] ?? firstSize,
+        firstContentMax,
+      );
+      const nextLimit = next
+        ? panelContentResizeLimit(next, active?.values?.[next.id] ?? nextSize, nextContentMax)
+        : undefined;
+      const values = nextLimit
+        ? resizePanelPair(firstLimit, nextLimit, firstSize, nextSize, requested)
+        : { [panel.id]: clampPanelWidth(firstLimit, requested) };
       if (!active) {
         onCommit(values);
         return;

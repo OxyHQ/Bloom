@@ -112,6 +112,10 @@ describe('root modular panels', () => {
     fireEvent(screen.getByTestId('shell-panels'), 'layout', {
       nativeEvent: { layout: { width: 800, height: 600, x: 0, y: 0 } },
     });
+    for (const id of ['a', 'b'])
+      fireEvent(screen.getByTestId(`shell-panels-${id}`), 'layout', {
+        nativeEvent: { layout: { width: 400, height: 600, x: 0, y: 0 } },
+      });
     fireEvent(screen.UNSAFE_getByType(ResizeHandle), 'nudge', 300);
     expect(onWidthsChange).toHaveBeenCalledWith({ a: 500, b: 300 });
   });
@@ -146,6 +150,13 @@ describe('root modular panels', () => {
     fireEvent(screen.getByTestId('shell-panels'), 'layout', {
       nativeEvent: { layout: { width: 800, height: 700, x: 0, y: 0 } },
     });
+    for (const [id, height] of [
+      ['a', 300],
+      ['b', 400],
+    ] as const)
+      fireEvent(screen.getByTestId(`shell-panels-${id}`), 'layout', {
+        nativeEvent: { layout: { width: 800, height, x: 0, y: 0 } },
+      });
     const grip = screen.UNSAFE_getByType(ResizeHandle);
     expect(grip.props.orientation).toBe('horizontal');
     fireEvent(grip, 'nudge', 500);
