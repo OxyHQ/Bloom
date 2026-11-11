@@ -701,7 +701,16 @@
       "src/icons/remix/RiWrenchLine.tsx#RiWrenchLine",
       "src/icons/remix/RiYoutubeFill.tsx#RiYoutubeFill",
       "src/icons/remix/RiYoutubeLine.tsx#RiYoutubeLine",
-      "src/icons/simple-icons/SiSubstack.tsx#SiSubstack"
+      "src/icons/simple-icons/SiSubstack.tsx#SiSubstack",
+      "src/icons/social/BookmarkFillIcon.tsx#BookmarkFillIcon",
+      "src/icons/social/BookmarkIcon.tsx#BookmarkIcon",
+      "src/icons/social/GifAttachmentIcon.tsx#GifAttachmentIcon",
+      "src/icons/social/LikeFillIcon.tsx#LikeFillIcon",
+      "src/icons/social/LikeIcon.tsx#LikeIcon",
+      "src/icons/social/MediaAttachmentIcon.tsx#MediaAttachmentIcon",
+      "src/icons/social/ReplyIcon.tsx#ReplyIcon",
+      "src/icons/social/RepostIcon.tsx#RepostIcon",
+      "src/icons/social/ShareIcon.tsx#ShareIcon"
     ]
   },
   "accordion-root-part": {
