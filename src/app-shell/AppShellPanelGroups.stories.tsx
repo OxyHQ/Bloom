@@ -153,7 +153,7 @@ function SplitExample({
                   id: 'context',
                   visible: !deck,
                   width: 350,
-                  content: <ReadingPanel title="Context" />,
+                  content: <ReadingPanel title="Context" short />,
                 },
                 {
                   id: 'column',

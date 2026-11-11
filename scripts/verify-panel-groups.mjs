@@ -449,6 +449,7 @@ try {
         window.__deckFrames.push({
           time,
           width: main?.getBoundingClientRect().width ?? 0,
+          x: main?.getBoundingClientRect().x ?? 0,
           opacity,
           hidden,
           retained: screen?.getAttribute('data-retained-check'),
