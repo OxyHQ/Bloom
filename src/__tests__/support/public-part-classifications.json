@@ -815,7 +815,6 @@
       "src/breadcrumb/Breadcrumb.tsx#Breadcrumb",
       "src/breadcrumb/Breadcrumb.tsx#BreadcrumbItem",
       "src/button/CloseButton.tsx#CloseButton",
-      "src/button/GlyphButton.tsx#GlyphButton",
       "src/calendar/CalendarView.tsx#CalendarView",
       "src/calendar/CalendarViewEventDetails.tsx#CalendarViewEventDetails",
       "src/calendar/CalendarViewHeader.tsx#CalendarViewHeader",
@@ -1757,5 +1756,19 @@
     ],
     "verification": "Native renderer and DOM web verify default md (36px), inherited sm (32px), explicit md over inherited sm, nested lg (44px), and inherited/explicit geometry through Canvas, CanvasBackground, CanvasPanel, and actual Portal. Direct size tables verify xs/sm/md/lg geometry and touch accommodation; device-rendered fit and accessibility remain separate",
     "parts": ["src/button/Button.tsx#Button"]
+  },
+  "glyph-button-size": {
+    "status": "independent-scale",
+    "reason": "GlyphButton exposes an arbitrary numeric diameter so consumers can preserve role-specific geometry such as 28, 40 or 44px. This is not the Bloom xs/sm/md/lg control-size vocabulary; BloomScope must not rewrite a caller-selected diameter.",
+    "evidence": [
+      "src/button/GlyphButton.tsx",
+      "src/button/types.ts",
+      "src/button/GlyphButton.stories.tsx",
+      "src/__tests__/GlyphButton.test.tsx",
+      "src/__tests__/GlyphButtonPublicPartScope.test.tsx",
+      "src/__tests__/GlyphButtonPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web measure the default 36px diameter unchanged under xs, explicit 40px under xs, and explicit 28px under lg. Glyph ratio and explicit glyph size are covered by GlyphButton.test.tsx; device-rendered hit fit and visual balance remain unverified",
+    "parts": ["src/button/GlyphButton.tsx#GlyphButton"]
   }
 }
