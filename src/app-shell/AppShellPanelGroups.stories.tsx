@@ -16,7 +16,15 @@ const meta: Meta<typeof AppShell> = {
 export default meta;
 type Story = StoryObj<typeof AppShell>;
 
-function ReadingPanel({ title, onOpen }: { title: string; onOpen?: () => void }) {
+function ReadingPanel({
+  title,
+  onOpen,
+  onDeck,
+}: {
+  title: string;
+  onOpen?: () => void;
+  onDeck?: () => void;
+}) {
   const [saved, setSaved] = useState(false);
   return (
     <Screen
@@ -26,9 +34,16 @@ function ReadingPanel({ title, onOpen }: { title: string; onOpen?: () => void })
           title={title}
           actions={
             onOpen ? (
-              <Button testID="groups-open" onPress={onOpen}>
-                Likes
-              </Button>
+              <View className="flex-row gap-2">
+                <Button testID="groups-open" onPress={onOpen}>
+                  Likes
+                </Button>
+                {onDeck ? (
+                  <Button testID="groups-deck" onPress={onDeck}>
+                    Deck
+                  </Button>
+                ) : null}
+              </View>
             ) : undefined
           }
         />
@@ -54,12 +69,15 @@ function SplitExample({
   documentFlow = false,
   mixed = false,
   capped = false,
+  deckSwitch = false,
 }: {
   documentFlow?: boolean;
   mixed?: boolean;
   capped?: boolean;
+  deckSwitch?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [deck, setDeck] = useState(false);
   return (
     <AppShell
       testID="groups-shell"
@@ -68,12 +86,14 @@ function SplitExample({
       gutter={8}
       scroll={documentFlow ? 'document' : 'fixed'}
       panelLayout={{
-        mode: 'split',
-        flow: documentFlow ? 'document' : 'bounded',
+        mode: deck ? 'deck' : 'split',
+        flow: documentFlow && !deck ? 'document' : 'bounded',
+        transition: 'exit-before-enter',
         panels: [
           {
             id: 'workspace',
             ...(capped ? { width: 360, minWidth: 360, maxWidth: 360 } : {}),
+            ...(deckSwitch ? { width: deck ? 390 : 620, maxWidth: deck ? 390 : undefined } : {}),
             testID: 'groups-workspace',
             group: {
               mode: 'split',
@@ -87,7 +107,13 @@ function SplitExample({
                   minHeight: 120,
                   testID: 'groups-main',
                   resizable: true,
-                  content: <ReadingPanel title="Post" onOpen={() => setOpen(true)} />,
+                  content: (
+                    <ReadingPanel
+                      title="Post"
+                      onOpen={() => setOpen(true)}
+                      onDeck={deckSwitch ? () => setDeck(!deck) : undefined}
+                    />
+                  ),
                 },
                 {
                   id: 'likes',
@@ -115,6 +141,22 @@ function SplitExample({
           ...(mixed || capped
             ? [{ id: 'aside', testID: 'groups-aside', content: <ReadingPanel title="Aside" /> }]
             : []),
+          ...(deckSwitch
+            ? [
+                {
+                  id: 'context',
+                  visible: !deck,
+                  width: 350,
+                  content: <ReadingPanel title="Context" />,
+                },
+                {
+                  id: 'column',
+                  visible: deck,
+                  width: 390,
+                  content: <ReadingPanel title="Column" />,
+                },
+              ]
+            : []),
         ],
       }}
     />
@@ -127,6 +169,10 @@ export const MixedAxes: Story = { render: () => <SplitExample mixed /> };
 export const DocumentSplit: Story = {
   parameters: { bloomScroll: 'document' },
   render: () => <SplitExample documentFlow />,
+};
+export const DeckSwitch: Story = {
+  parameters: { bloomScroll: 'document' },
+  render: () => <SplitExample documentFlow deckSwitch />,
 };
 
 export const EmailFlow: Story = {
