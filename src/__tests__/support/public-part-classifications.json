@@ -1733,9 +1733,11 @@
       "src/button-group/ButtonGroupBase.tsx",
       "src/button-group/types.ts",
       "src/__tests__/ButtonGroupPublicPartScope.test.tsx",
-      "src/__tests__/ButtonGroupPublicPartScope.web.test.tsx"
+      "src/__tests__/ButtonGroupPublicPartScope.web.test.tsx",
+      "src/__tests__/ButtonGroupTrigger.web.test.tsx",
+      "src/__tests__/button-group-trigger.test.tsx"
     ],
-    "verification": "Native renderer and DOM web verify default md, inherited xs, lg scope clamped to md, explicit group md over xs, explicit item xs over group md, nested xs/lg scopes, and actual Portal inheritance; physical-device layout and touch fit remain unverified.",
+    "verification": "Native renderer and DOM web verify default md, inherited xs, lg scope clamped to md, explicit group md over xs, explicit item xs over group md, nested xs/lg scopes, and actual Portal inheritance. Popover asChild works with a single ButtonGroupItem control on native and web without nested buttons; physical-device layout and touch fit remain unverified",
     "parts": [
       "src/button-group/ButtonGroup.tsx#ButtonGroup",
       "src/button-group/ButtonGroup.tsx#ButtonGroupItem"
@@ -1753,7 +1755,7 @@
       "src/__tests__/CanvasPublicPartScope.test.tsx",
       "src/__tests__/CanvasPublicPartScope.web.test.tsx"
     ],
-    "verification": "Native renderer and DOM web verify default md (36px), inherited sm (32px), explicit md over inherited sm, nested lg (44px), and inherited/explicit geometry through Canvas, CanvasBackground, CanvasPanel, and actual Portal. Direct size tables verify xs/sm/md/lg geometry and touch accommodation; device-rendered fit and accessibility remain separate.",
+    "verification": "Native renderer and DOM web verify default md (36px), inherited sm (32px), explicit md over inherited sm, nested lg (44px), and inherited/explicit geometry through Canvas, CanvasBackground, CanvasPanel, and actual Portal. Direct size tables verify xs/sm/md/lg geometry and touch accommodation; device-rendered fit and accessibility remain separate",
     "parts": ["src/button/Button.tsx#Button"]
   }
 }
