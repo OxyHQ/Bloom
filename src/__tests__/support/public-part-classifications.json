@@ -14,6 +14,33 @@
       "src/property-insights/EnergyBadge.tsx#EnergyBadge"
     ]
   },
+  "concentric-geometry": {
+    "status": "independent-scale",
+    "reason": "ConcentricView owns rounded-corner geometry derived from radius, padding, border and margin; it has no Bloom control-size prop. It renders children inside its geometry context without replacing BloomScope, so child controls keep the nearest scope and explicit size precedence.",
+    "evidence": [
+      "src/concentric/ConcentricView.tsx",
+      "docs/concentric.mdx",
+      "src/__tests__/ConcentricViewPublicPartScope.test.tsx",
+      "src/__tests__/ConcentricViewPublicPartScope.web.test.tsx"
+    ],
+    "verification": "native renderer and DOM web verify default md, nearest xs/lg, nested lg over xs, explicit md over xs through nested ConcentricView wrappers; fixed radius 32 remains geometry-owned. ConcentricView owns no portal or submenu. Physical-device geometry remains unverified",
+    "parts": ["src/concentric/ConcentricView.tsx#ConcentricView"]
+  },
+  "connection-status-toasts": {
+    "status": "delegated",
+    "reason": "ConnectionStatusToasts renders null and sends only messages, intent and duration to Bloom's shared Toast engine. ToastHost owns the visible notification and its size contract; this reporter has no UI whose size scope it could consume.",
+    "evidence": [
+      "src/connection-status/shared.ts",
+      "src/toast/Toaster.tsx",
+      "src/toast/ToastHost.tsx",
+      "src/toast/ToastHost.native.tsx",
+      "docs/connection-status.mdx",
+      "src/__tests__/connection-status-netinfo.test.tsx",
+      "src/__tests__/ConnectionStatusToastsPublicPartScope.web.test.tsx"
+    ],
+    "verification": "native renderer and DOM web prove the reporter emits no view under xs scope and delegates an offline message without a size value; ToastHost owns the rendered surface. Platform-specific network signals remain tested at their respective boundaries",
+    "parts": ["src/connection-status/ConnectionStatusToasts.tsx#ConnectionStatusToasts"]
+  },
   "code-document": {
     "status": "independent-scale",
     "reason": "CodeLines size selects code typography/line-number metrics (sm 11/18, md 13/23), not chrome or touch targets. CodeBlock passes its content size deliberately; surrounding control scope must not silently rewrite source-code reading density.",
@@ -990,8 +1017,6 @@
       "src/composer-panel/ComposerStatusBar.tsx#ComposerStatusBar",
       "src/composer-panel/ModelPicker.tsx#ModelPicker",
       "src/composition-bar/CompositionBar.tsx#CompositionBar",
-      "src/concentric/ConcentricView.tsx#ConcentricView",
-      "src/connection-status/ConnectionStatusToasts.tsx#ConnectionStatusToasts",
       "src/contact-card/ContactProfileCard.tsx#ContactProfileCard",
       "src/content-panel/ContentPanel.tsx#ContentPanel",
       "src/context-menu/ContextMenu.tsx#ContextMenu",

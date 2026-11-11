@@ -54,6 +54,11 @@ not inspected. Explicit `radius` takes precedence over utility classes.
 
 ## Scope
 
+`ConcentricView` has no Bloom control-size prop and does not change the size
+scope. Controls inside it inherit the closest `BloomScope` as usual; explicit
+control sizes and nested scopes keep their normal precedence. Radius, padding,
+and border geometry remain independent of control size.
+
 The calculation models circular corners in normal nested layout. It does not
 infer absolute-positioned offsets, sibling placement, transforms or elliptical
 radii. Numeric React Native styles work on both platforms; web-only length
