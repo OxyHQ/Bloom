@@ -334,6 +334,16 @@ describe('Menubar and ContextMenu (web) — the same keys', () => {
     expect(expanded('edit')).toBe(true);
     expect(expanded('file')).toBe(false);
     expect(row('Undo')).toBeTruthy();
+    // File's rows go as the panel's change into Edit's menu ends: its own transitions, which the
+    // browser ends (jsdom runs none).
+    act(() => {
+      const panel = document.querySelector<HTMLElement>('[role="menu"]') as HTMLElement;
+      for (const property of ['left', 'top', 'width', 'height']) {
+        const event = new Event('transitionend', { bubbles: true });
+        Object.defineProperty(event, 'propertyName', { value: property });
+        panel.dispatchEvent(event);
+      }
+    });
     expect(row('New')).toBeNull();
   });
 
