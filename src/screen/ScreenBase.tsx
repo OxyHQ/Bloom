@@ -644,12 +644,16 @@ export function createScreen(
                           ) : (
                             children
                           )}
-                          {ownWebViewport && active && !document ? (
-                            <ScrollBar target={scrollbarTarget} />
+                          {ownWebViewport && !document ? (
+                            <ScrollBar
+                              target={scrollbarTarget}
+                              scrollbar={active ? 'scroll' : 'never'}
+                            />
                           ) : null}
-                          {ownWebViewport && active && document && region?.flow !== 'document' ? (
+                          {ownWebViewport && document && region?.flow !== 'document' ? (
                             <ScrollBar
                               target="document"
+                              scrollbar={active ? 'scroll' : 'never'}
                               insets={{ start: reservedTop, end: reservedBottom }}
                             />
                           ) : null}
