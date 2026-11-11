@@ -436,8 +436,9 @@ export function createPanelLayoutView(
     ).height;
     const [stickyHeight, setStickyHeight] = useState(0);
     const document = documentFlow && !track.floating;
+    const documentFrame = document && (!vertical || alone);
     const floatingOpen = !!track.floating && !!panel.floating?.open && panel.visible !== false;
-    const sticky = !!panel.sticky && document && !vertical;
+    const sticky = !!panel.sticky && documentFrame;
     const parent = React.useContext(ScreenContext);
     const ancestorHost = useContext(ScreenHostContext);
     const active =
@@ -737,7 +738,7 @@ export function createPanelLayoutView(
       // Under the bottom bar a side-by-side panel reaches it: its content clears
       // the bar and drives it (the shell's navigation motion); a stacked one sits
       // above the group viewport's own clearance.
-      const underBar = !document && !vertical && !!region?.underBottomBar;
+      const underBar = !documentFrame && !!region?.underBottomBar;
       const body = panel.group ? (
         <ScreenHostContext.Provider value={{ ...ancestorHost, active }}>
           {content}
@@ -757,7 +758,7 @@ export function createPanelLayoutView(
               </ScrollMetricsContext.Provider>
             </ScreenHostContext.Provider>
           </ScreenScope>
-          <DocumentPanelReserve height={document && !vertical ? (region?.bottomReserve ?? 0) : 0} />
+          <DocumentPanelReserve height={documentFrame ? (region?.bottomReserve ?? 0) : 0} />
         </>
       );
       const framed = region?.framed ?? true;
@@ -784,11 +785,11 @@ export function createPanelLayoutView(
           errorBoundary={panel.errorBoundary}
           fill={!document && !naturalHeight}
           scrollable={false}
-          overlaySizing={document && !vertical ? 'viewport' : 'panel'}
-          overlayInset={document && !vertical ? region?.viewportInset : undefined}
+          overlaySizing={documentFrame ? 'viewport' : 'panel'}
+          overlayInset={documentFrame ? region?.viewportInset : undefined}
           surfaceStyle={[
             FILL,
-            document && !vertical && !sticky && region
+            documentFrame && !sticky && region
               ? {
                   minHeight: webViewportHeightMinus(
                     region.viewportInset.top + region.viewportInset.bottom,
@@ -1039,6 +1040,11 @@ export function createPanelLayoutView(
         : declared.panels,
       flow: document ? ('document' as const) : (declared.flow ?? ('bounded' as const)),
       horizontalScroll: 'contained' as const,
+      gap:
+        declared.gap ??
+        (declared.appearance === 'joined' || declared.appearance === 'plain'
+          ? 1
+          : (region?.gutter ?? gap)),
     };
     const nestedRegion = useMemo(
       () =>
