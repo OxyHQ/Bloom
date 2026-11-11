@@ -751,7 +751,6 @@
     "verification": "pending; not a passing adoption verdict",
     "parts": [
       "src/activity-feed/ActivityFeed.tsx#ActivityFeed",
-      "src/activity-feed/ActivityFeedFilters.tsx#ActivityFeedFilters",
       "src/activity-heatmap/ActivityHeatmap.tsx#ActivityHeatmap",
       "src/agent-avatar/AgentAvatar.tsx#AgentAvatar",
       "src/agent-avatar/AgentAvatarProvider.tsx#AgentAvatarProvider",
@@ -1774,6 +1773,19 @@
     ],
     "verification": "Native renderer and DOM web verify default md (36px), inherited sm (32px), explicit md over inherited sm, nested lg (44px), and inherited/explicit geometry through Canvas, CanvasBackground, CanvasPanel, and actual Portal. Direct size tables verify xs/sm/md/lg geometry and touch accommodation; device-rendered fit and accessibility remain separate",
     "parts": ["src/button/Button.tsx#Button"]
+  },
+  "activity-feed-filter-parts": {
+    "status": "independent-scale",
+    "reason": "ActivityFeedFilters is a domain filter row with no public size prop. Its Chip children deliberately use the xl touch geometry (32px height, 12px horizontal padding) regardless of BloomScope; the feed's comfortable/compact density is a separate content-rhythm choice. Caller-provided feed content remains caller-owned and can resolve its own scope.",
+    "evidence": [
+      "src/activity-feed/ActivityFeedFilters.tsx",
+      "src/chip/shared.ts",
+      "docs/activity-feed.mdx",
+      "src/__tests__/ActivityFeedFiltersPublicPartScope.test.tsx",
+      "src/__tests__/ActivityFeedFiltersPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the published ActivityFeedFilters export remains 32px high under default md, nearest xs/lg, and nested scopes; its Chip target geometry is explicit xl and independent of the surrounding control scope. Physical-device hit testing and accessibility remain unverified.",
+    "parts": ["src/activity-feed/ActivityFeedFilters.tsx#ActivityFeedFilters"]
   },
   "glyph-button-size": {
     "status": "independent-scale",
