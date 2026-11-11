@@ -81,7 +81,31 @@ try {
   assert.equal(frames.at(-1).likes.height, 0, 'closed auxiliary occupies no height');
   assert.ok(Math.abs(frames.at(-1).scrollY - readingOffset) < 2, 'closing transfers the latest bounded reading offset to the document');
   assert.ok(frames.every(frame => Math.abs(frame.anchorY - frames[0].anchorY) < 4), 'the same visible paragraph keeps its painted position throughout the owner change');
+  const boundedFrames = frames.filter(frame => frame.elementOffset !== undefined);
+  assert.ok(boundedFrames.filter(frame => frame.main.height > frames[0].main.height + 2 && frame.likes.height > 2).length >= 3, 'primary expands through intermediate painted heights');
+  assert.ok(boundedFrames.every((frame, index) => index === 0 || frame.main.height >= boundedFrames[index - 1].main.height - 1), 'primary expansion never reverses during close');
   console.log(`PASS split close paint continuity: ${frames.length} RAF samples and ${paints.length} compositor screenshots`);
+
+  // Reopening before exit finishes must cancel the old document-owner handoff.
+  await page.getByTestId('groups-open').evaluate(node => node.click());
+  await viewport.waitFor();
+  await page.waitForTimeout(650);
+  await page.getByTestId('groups-close').evaluate(node => node.click());
+  await page.waitForTimeout(120);
+  await page.getByTestId('groups-open').evaluate(node => node.click());
+  await page.waitForTimeout(750);
+  assert.equal(await viewport.count(), 1, 'rapid reopen keeps the element scroll owner');
+  assert.ok(Math.abs(await viewport.evaluate(node => node.scrollTop) - readingOffset) < 2, 'rapid reopen retains the latest reading offset');
+  assert.equal(await page.evaluate(() => scrollY), 0, 'cancelled handoff never scrolls the document');
+  assert.ok((await page.getByTestId('groups-likes').boundingBox()).height >= 119, 'reopened auxiliary remains visible after stale exit would finish');
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.getByTestId('groups-close').evaluate(node => node.click());
+  await page.waitForFunction(() => !document.querySelector('[data-testid="groups-post-screen"] [data-bloom-screen-viewport="element"]'));
+  assert.ok(Math.abs(await page.evaluate(() => scrollY) - readingOffset) < 2, 'reduced-motion close transfers reading immediately');
+  const activeTransitions = await page.getByTestId('groups-workspace').evaluate(node => node.getAnimations({ subtree: true }).filter(animation => animation instanceof CSSTransition && animation.playState === 'running').length);
+  assert.equal(activeTransitions, 0, 'reduced-motion closure has no running CSS transitions');
+  console.log('PASS rapid reopen cancels stale document handoff; reduced-motion close has zero active transitions');
 } finally {
   await browser.close();
 }
