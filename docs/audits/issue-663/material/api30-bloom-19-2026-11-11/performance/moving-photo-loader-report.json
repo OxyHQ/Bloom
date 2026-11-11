@@ -1,0 +1,17 @@
+{
+  "case": "moving-photo-loader",
+  "serial": "emulator-5580",
+  "os": "Android 11 / API 30",
+  "renderer": "Google SwiftShader x86_64 emulator",
+  "elapsedSeconds": 15.0,
+  "frames": 164,
+  "jankyFrames": 164,
+  "frameP95ms": 200,
+  "gpuP95ms": 4950,
+  "pssKb": 237898,
+  "rssKb": 349472,
+  "thermalBefore": 0,
+  "thermalAfter": 0,
+  "sampleCapturedAtAndroid": "Wed Nov 11 08:11:29 EET 2026",
+  "note": "Descriptive 15-second software-emulator sample; not physical-device performance evidence."
+}
