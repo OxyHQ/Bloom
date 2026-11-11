@@ -146,3 +146,19 @@ it('lets the native screen and its sole scroller contribute content size below t
   expect(panel(view.toJSON()).height).toBe(732);
   expect(view.getByTestId('native-draft')).toBe(draft);
 });
+
+it('keeps a filled panel below its fractional ceiling and still clears the keyboard', () => {
+  const draw = () => (
+    <BottomSheetBase open sizing="fill" maxHeightRatio={0.9} scrollable={false} Shell={Shell}>
+      <Body />
+    </BottomSheetBase>
+  );
+  const view = render(draw(), { wrapper });
+  expect(panel(view.toJSON()).height).toBe(720);
+  expect(panel(view.toJSON()).maxHeight).toBe(720);
+  act(() => {
+    keyboard.value = 300;
+  });
+  view.rerender(draw());
+  expect(panel(view.toJSON()).height).toBe(476);
+});

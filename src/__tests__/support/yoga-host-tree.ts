@@ -2,7 +2,36 @@ import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import { isHostNode, resolvedStyle, type HostNode } from './rendered-style';
+import { classNamesOn, isHostNode, resolvedStyle, type HostNode } from './rendered-style';
+import { buildTailwindCss } from './tailwind-css';
+
+type NativeRule = { s: number[]; d?: unknown[]; m?: unknown; cq?: unknown; p?: unknown };
+const compiledClasses = new Map<string, Map<string, NativeRule[]>>();
+
+/** Compile authored classes through the actual Tailwind and native compilers.
+ * The Yoga fixture only models unconditional static geometry; responsive and
+ * interaction rules require the real native runtime, exercised on-device. */
+function nativeClasses(candidates: string[]): Map<string, NativeRule[]> {
+  const key = candidates.sort().join(' ');
+  const cached = compiledClasses.get(key);
+  if (cached) return cached;
+  const css = buildTailwindCss(candidates);
+  const output = execFileSync(
+    process.execPath,
+    [
+      '-e',
+      `
+    const { compile } = require('react-native-css/compiler');
+    const css = require('node:fs').readFileSync(0, 'utf8');
+    process.stdout.write(JSON.stringify(compile(css).stylesheet().s ?? []));
+  `,
+    ],
+    { input: css, encoding: 'utf8' },
+  );
+  const rules = new Map(JSON.parse(output) as [string, NativeRule[]][]);
+  compiledClasses.set(key, rules);
+  return rules;
+}
 
 const geometry =
   /^(width|height|minWidth|maxWidth|minHeight|maxHeight|flex|flexGrow|flexShrink|flexBasis|flexDirection|flexWrap|justifyContent|alignItems|alignSelf|alignContent|gap|rowGap|columnGap|position|top|bottom|left|right|overflow|padding(?:Horizontal|Vertical|Left|Right|Top|Bottom|Start|End)?|margin(?:Horizontal|Vertical|Left|Right|Top|Bottom|Start|End)?|border(?:Left|Right|Top|Bottom|Start|End)?Width)$/;
@@ -80,10 +109,34 @@ export function createYogaHostRenderer() {
         for (const child of node.children ?? []) if (isHostNode(child)) visit(child, into);
       };
       visit(tree, -1);
+      const tokens = (node: HostNode) =>
+        classNamesOn(node.props.style).flatMap((value) => value.split(/\s+/).filter(Boolean));
+      const classes = nativeClasses([...new Set(nodes.flatMap(({ node }) => tokens(node)))]);
       const input = [
         `${nodes.length} ${Number(rtl)}`,
         ...nodes.map(({ node, parent }) => {
-          const styles = Object.entries(resolvedStyle(node.props.style))
+          const rules = tokens(node)
+            .flatMap((token) => classes.get(token) ?? [])
+            .filter((rule) => !rule.m && !rule.cq && !rule.p)
+            .sort((left, right) => {
+              for (let index = Math.max(left.s.length, right.s.length) - 1; index >= 0; index--) {
+                const difference = (left.s[index] ?? 0) - (right.s[index] ?? 0);
+                if (difference) return difference;
+              }
+              return 0;
+            });
+          const classStyle = Object.assign(
+            {},
+            ...rules
+              .flatMap((rule) => rule.d ?? [])
+              .filter(
+                (declaration) =>
+                  declaration !== null &&
+                  typeof declaration === 'object' &&
+                  !Array.isArray(declaration),
+              ),
+          );
+          const styles = Object.entries({ ...classStyle, ...resolvedStyle(node.props.style) })
             // React Native's logical inline edges are Yoga's start and end.
             .map(([key, value]) => [key.replace(/Inline(Start|End)$/, '$1'), value] as const)
             .filter(([key, value]) => geometry.test(key) && value != null);
