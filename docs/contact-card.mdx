@@ -134,6 +134,11 @@ the KIND still decides the verb and the word.
 The control DRAWS at 32, the size a card wants, and is HIT at 44 through
 `CONTACT_CHANNEL_HIT`, the size a thumb needs.
 
+The card has no Bloom control-size prop. Its channel actions delegate to
+`Button` with an explicit `sm` size, its chips use explicit `md`, and its
+`density` prop controls card layout. The caller-owned `actions` slot is passed
+through and inherits the nearest `BloomScope` normally.
+
 ## The press target is the identity block, not the card
 
 `onPress` is bound to the text (and, in a row, the mark with it), never to the
