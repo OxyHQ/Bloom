@@ -20,10 +20,12 @@ function ReadingPanel({
   title,
   onOpen,
   onDeck,
+  short = false,
 }: {
   title: string;
   onOpen?: () => void;
   onDeck?: () => void;
+  short?: boolean;
 }) {
   const [saved, setSaved] = useState(false);
   return (
@@ -54,7 +56,7 @@ function ReadingPanel({
           <Button testID={`groups-${title.toLowerCase()}-saved`} onPress={() => setSaved(!saved)}>
             {saved ? 'Saved' : 'Save'}
           </Button>
-          {Array.from({ length: 35 }, (_, index) => (
+          {Array.from({ length: short ? 2 : 35 }, (_, index) => (
             <Text key={index} className="py-4">
               {title} paragraph {index + 1}. Each panel keeps its own reading position.
             </Text>
@@ -70,11 +72,13 @@ function SplitExample({
   mixed = false,
   capped = false,
   deckSwitch = false,
+  short = false,
 }: {
   documentFlow?: boolean;
   mixed?: boolean;
   capped?: boolean;
   deckSwitch?: boolean;
+  short?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [deck, setDeck] = useState(false);
@@ -111,6 +115,7 @@ function SplitExample({
                   content: (
                     <ReadingPanel
                       title="Post"
+                      short={short}
                       onOpen={() => setOpen(true)}
                       onDeck={deckSwitch ? () => setDeck(!deck) : undefined}
                     />
@@ -134,7 +139,7 @@ function SplitExample({
                       Close likes
                     </Button>
                   ),
-                  content: <ReadingPanel title="Likes" />,
+                  content: <ReadingPanel title="Likes" short={short} />,
                 },
               ],
             },
@@ -176,6 +181,14 @@ export const DeckSwitch: Story = {
   render: () => (
     <View className="h-dvh">
       <SplitExample documentFlow deckSwitch />
+    </View>
+  ),
+};
+export const ShortDeckSwitch: Story = {
+  parameters: { bloomScroll: 'document' },
+  render: () => (
+    <View className="h-dvh">
+      <SplitExample documentFlow deckSwitch short />
     </View>
   ),
 };
