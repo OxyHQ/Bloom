@@ -19,6 +19,8 @@ bun run android:release
 export ANDROID_SERIAL=your-device-serial
 adb -s "$ANDROID_SERIAL" install -r android/app/build/outputs/apk/release/app-release.apk
 python3 verify.py
+# Keep the exact bundled receipt and APK with the run artifacts.
+ARTIFACT_DIR=.local/panel-groups-native python3 archive.py
 ```
 
 `prepare.mjs` records source hashes in build.json and displays an abbreviated
