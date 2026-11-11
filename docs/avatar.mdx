@@ -270,6 +270,8 @@ explain the move to direct SVG portraits and are not instructions for current co
 
 ## Props
 
+When `size` is omitted, the nearest `BloomScope` supplies the `xs`/`sm`/`md`/`lg` rung; without a size scope the avatar keeps its 40dp default. An explicit named or numeric `size` always takes precedence.
+
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `source?` | `string \| Shapes.ImageSource \| null` | — | Flexible image source. Takes precedence over `uri`. |
