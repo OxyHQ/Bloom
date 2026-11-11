@@ -1,5 +1,11 @@
 # Changelog
 
+## 18.5.2
+
+### Changed
+
+- **One release rule for every pan a bottom sheet owns.** Whether a released pan closes the sheet (a downward flick over 900 px/s, or a pull past the larger of 140 px and a quarter of the screen that is not already returning upward) was written out three times in `BottomSheetBase`; it is now one function. The thresholds are the same, so a sheet closes and springs back exactly as before.
+
 ## 18.5.1
 
 ### Fixed
