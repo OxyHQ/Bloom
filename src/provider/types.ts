@@ -4,6 +4,7 @@ import type { ScrollRouterAdapter } from '../scroll/types';
 import type { ImageResolver } from '../image-resolver';
 import type { PlatformSurfaceAdapter } from '../platform-surface/types';
 import type { BloomThemeProviderProps } from '../theme';
+import type { VectorAssetLoader } from '../agent-avatar/vector-types';
 
 export interface BloomProviderProps extends Omit<BloomThemeProviderProps, 'children'> {
   children: ReactNode;
@@ -51,4 +52,10 @@ export interface BloomProviderProps extends Omit<BloomThemeProviderProps, 'child
   locale?: string;
   /** @deprecated All bot characters use bundled SVG assets; this value is ignored. */
   characterRuntimeUrl?: string;
+  /**
+   * The bot-character vector assets this app ships (`createVectorAssetLoader` in
+   * `@oxy.so/bloom/agent-avatar`). Unset: Bloom's full catalog, linked lazily. With the
+   * full catalog dropped from the bundle (docs/agent-avatar.mdx), only the ones given here ship.
+   */
+  avatarCatalog?: VectorAssetLoader;
 }

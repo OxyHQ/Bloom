@@ -11,7 +11,11 @@ function fixture(run) {
     mkdirSync(join(root, 'src/agent-avatar/vector-assets'), { recursive: true });
     writeFileSync(
       join(root, 'src/agent-avatar/vector-assets/manifest.json'),
-      JSON.stringify({ version: 1, files: [{ file: 'shape-example.json' }] }),
+      JSON.stringify({
+        version: 1,
+        files: [{ file: 'shape-example.json', blobs: ['aaaa'] }],
+        blobs: { aaaa: {} },
+      }),
     );
     const packed = new Set();
     for (const p of [
@@ -21,6 +25,8 @@ function fixture(run) {
     ]) {
       packed.add(p + 'VectorCharacterAvatar.' + (p.startsWith('src/') ? 'tsx' : 'js'));
       packed.add(p + 'vector-assets/shape-example.json');
+      packed.add(p + 'vector-assets/blobs/aaaa.json');
+      packed.add(p + 'catalog/shape-example.' + (p.startsWith('src/') ? 'ts' : 'js'));
     }
     run(root, packed);
   } finally {
@@ -32,6 +38,12 @@ test('requires the actual SVG renderer and lazy assets on every published platfo
     assert.deepEqual(assertAvatarVectorsShip(packed, root), []);
     packed.delete('lib/commonjs/agent-avatar/vector-assets/shape-example.json');
     assert.match(assertAvatarVectorsShip(packed, root).join('\n'), /Vector asset absent/);
+    packed.add('lib/commonjs/agent-avatar/vector-assets/shape-example.json');
+    packed.delete('lib/commonjs/agent-avatar/vector-assets/blobs/aaaa.json');
+    assert.match(assertAvatarVectorsShip(packed, root).join('\n'), /payload absent/);
+    packed.add('lib/commonjs/agent-avatar/vector-assets/blobs/aaaa.json');
+    packed.delete('lib/commonjs/agent-avatar/catalog/shape-example.js');
+    assert.match(assertAvatarVectorsShip(packed, root).join('\n'), /catalog module absent/);
   }));
 test('rejects old hosted runtime, native bridge and offline source in a package', () =>
   fixture((root, packed) => {

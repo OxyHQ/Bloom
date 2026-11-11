@@ -103,6 +103,11 @@ const SUBPATHS = /** @type {const} */ ([
   ['./breadcrumb', 'breadcrumb/index.ts'],
   ['./pagination', 'pagination/index.ts'],
   ['./agent-avatar', 'agent-avatar/index.ts'],
+  // The avatar vector assets, one lazy module each. An app that lists the ones it draws
+  // in `createVectorAssetLoader` (and builds with EXPO_PUBLIC_BLOOM_AVATAR_CATALOG=none)
+  // ships those and none of the other 60-odd; `docs/agent-avatar.mdx`.
+  ['./agent-avatar/catalog', 'agent-avatar/catalog/index.ts'],
+  ['./agent-avatar/catalog/*', 'agent-avatar/catalog/*.ts'],
   // Avatars flying between places (web-forked: the layer is portaled).
   ['./avatar-flight', 'avatar-flight/index.ts'],
   // A sidebar of conversations (web-forked: the dropdown and context menu are).
@@ -602,6 +607,8 @@ function assertNodeSourceExists(name, paths) {
  * emitted as a live export.
  */
 const MIN_PATTERN_MATCHES = 100;
+/** Per-pattern floors for a folder that is smaller by nature (the avatar catalog has 70 assets). */
+const PATTERN_FLOORS = { './agent-avatar/catalog/*': 60 };
 
 /**
  * A pattern entry names no file, so `existsSync` cannot check it. Expand `*`
@@ -622,10 +629,11 @@ function assertPatternExpands(name, entrySrc) {
   const matches = existsSync(dir)
     ? readdirSync(dir).filter((f) => f.startsWith(base) && f.endsWith(suffix))
     : [];
-  if (matches.length < MIN_PATTERN_MATCHES) {
+  const floor = PATTERN_FLOORS[name] ?? MIN_PATTERN_MATCHES;
+  if (matches.length < floor) {
     throw new Error(
       `[generate-platform-exports] ${name} -> src/${entrySrc} expands to ${matches.length} ` +
-        `file(s), below the floor of ${MIN_PATTERN_MATCHES}. A pattern that matches nothing ` +
+        `file(s), below the floor of ${floor}. A pattern that matches nothing ` +
         `resolves to nothing in every consumer and is silent here.`,
     );
   }

@@ -37,6 +37,7 @@ export function BloomProvider({
   back,
   locale,
   characterRuntimeUrl,
+  avatarCatalog,
   ssrStyles,
   ...themeProps
 }: BloomProviderProps) {
@@ -114,6 +115,7 @@ export function BloomProvider({
                                 <AgentAvatarProvider
                                   runtimeUrl={characterRuntimeUrl}
                                   stillStorage={themeProps.storage}
+                                  catalog={avatarCatalog}
                                 >
                                   <ScreenHostContext.Provider value={host}>
                                     {children}

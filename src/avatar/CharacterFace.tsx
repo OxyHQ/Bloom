@@ -1,13 +1,20 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 
-import { AgentAvatar } from '../agent-avatar/AgentAvatar';
 import { AGENT_AVATAR_MESSAGES } from '../agent-avatar/messages';
 import { avatarCharacterOf, type ResolvedAvatarCharacter } from '../agent-avatar/character';
 import type { ImageSource } from '../shapes';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { useMessages } from '../locale/messages';
 import type { AvatarMotion } from './types';
+
+/**
+ * The renderer and its geometry code load on first use, so an app's first paint carries none
+ * of it. The placeholder is on screen until `onReady`, which is the same until the chunk is in.
+ */
+const AgentAvatar = lazy(() =>
+  import('../agent-avatar/AgentAvatar').then((module) => ({ default: module.AgentAvatar })),
+);
 
 /** Visible characters animate at every size; explicit never and reduced motion win. */
 export function characterIsLive({
@@ -86,14 +93,16 @@ export function CharacterFace({
       <View style={box}>
         {ready ? null : placeholder}
         <View style={ready ? box : { position: 'absolute', left: 0, top: 0, ...box }}>
-          <AgentAvatar
-            character={written}
-            size={size}
-            workingKey={workingKey ?? (episodes > 0 ? episodes : undefined)}
-            reactionKey={reactionKey}
-            onReady={() => setReady(true)}
-            accessibilityLabel={label}
-          />
+          <Suspense fallback={null}>
+            <AgentAvatar
+              character={written}
+              size={size}
+              workingKey={workingKey ?? (episodes > 0 ? episodes : undefined)}
+              reactionKey={reactionKey}
+              onReady={() => setReady(true)}
+              accessibilityLabel={label}
+            />
+          </Suspense>
         </View>
       </View>
     );
@@ -102,15 +111,17 @@ export function CharacterFace({
     <View style={box}>
       {ready ? null : placeholder}
       <View style={ready ? box : { position: 'absolute', left: 0, top: 0, ...box }}>
-        <AgentAvatar
-          character={written}
-          size={size}
-          portrait
-          paused
-          interactive={false}
-          accessibilityLabel={label}
-          onReady={() => setReady(true)}
-        />
+        <Suspense fallback={null}>
+          <AgentAvatar
+            character={written}
+            size={size}
+            portrait
+            paused
+            interactive={false}
+            accessibilityLabel={label}
+            onReady={() => setReady(true)}
+          />
+        </Suspense>
       </View>
     </View>
   );

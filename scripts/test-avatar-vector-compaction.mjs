@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { compactVectorAsset } from './avatar-vector/compact-assets.mjs';
+import { readVectorAsset } from './avatar-vector/pack-assets.mjs';
 
 test('removes only unused exporter adjacency from otherwise constant-free data', () => {
   const data = {
@@ -32,7 +33,7 @@ test('every shipped vector omits adjacency payload and has accurate manifest byt
   for (const record of manifest.files) {
     const raw = fs.readFileSync(directory + record.file, 'utf8');
     assert.equal(Buffer.byteLength(raw), record.bytes, record.file);
-    const data = JSON.parse(JSON.parse(raw).data);
+    const data = readVectorAsset(directory, record.file);
     for (const part of data.parts) assert.deepEqual(part.edges, [], `${record.file}/${part.id}`);
   }
 });

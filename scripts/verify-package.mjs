@@ -330,6 +330,8 @@ function collectTargetGroups(pkg) {
  * number here would go stale and then read as a measurement.
  */
 const MIN_PATTERN_EXPANSION = 100;
+/** Per-subpath floors for a pattern over a folder that is smaller by nature. */
+const PATTERN_EXPANSION_FLOORS = { './agent-avatar/catalog/*': 60 };
 
 /**
  * The `*` substitutions a pattern matches inside the tarball.
@@ -376,11 +378,12 @@ function assertPatternsExpand(groups, files) {
     /** @type {Map<string, Set<string>>} */
     const expansions = new Map(patterns.map((p) => [p, expandPattern(p, files)]));
 
-    const thin = [...expansions].filter(([, names]) => names.size < MIN_PATTERN_EXPANSION);
+    const floor = PATTERN_EXPANSION_FLOORS[subpath] ?? MIN_PATTERN_EXPANSION;
+    const thin = [...expansions].filter(([, names]) => names.size < floor);
     if (thin.length > 0) {
       problems.push(
         `${subpath}: ${thin.length} of ${patterns.length} pattern target(s) match fewer than ` +
-          `${MIN_PATTERN_EXPANSION} files in the tarball — the entry resolves to nothing for ` +
+          `${floor} files in the tarball — the entry resolves to nothing for ` +
           'every consumer and nothing else in this repo says so:\n' +
           thin.map(([p, names]) => `    - ${p} matched ${names.size}`).join('\n'),
       );

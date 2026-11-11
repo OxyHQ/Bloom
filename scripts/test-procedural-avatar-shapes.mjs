@@ -3,6 +3,7 @@ import test from 'node:test';
 import fs from 'node:fs';
 import { ShapeUtils, Vector2 } from 'three';
 import { proceduralShapes } from './avatar-vector/procedural-shapes.mjs';
+import { readVectorAsset } from './avatar-vector/pack-assets.mjs';
 const shapes = proceduralShapes();
 const area = (points) =>
   Math.abs(
@@ -11,14 +12,8 @@ const area = (points) =>
       return sum + a[0] * b[1] - b[0] * a[1];
     }, 0),
   ) / 2;
-const read = (name) => {
-  const packed = JSON.parse(
-    fs.readFileSync(
-      new URL(`../src/agent-avatar/vector-assets/shape-bot_${name}.json`, import.meta.url),
-    ),
-  );
-  return JSON.parse(packed.data);
-};
+const directory = new URL('../src/agent-avatar/vector-assets/', import.meta.url).pathname;
+const read = (name) => readVectorAsset(directory, `shape-bot_${name}.json`);
 test('all thirteen canonical silhouettes are deterministic, finite and triangulate without lost area', () => {
   assert.deepEqual(
     shapes.map((shape) => shape.name),
