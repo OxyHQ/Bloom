@@ -20,11 +20,13 @@ function ReadingPanel({
   title,
   onOpen,
   onDeck,
+  exitCount = 0,
   short = false,
 }: {
   title: string;
   onOpen?: () => void;
   onDeck?: () => void;
+  exitCount?: number;
   short?: boolean;
 }) {
   const [saved, setSaved] = useState(false);
@@ -37,7 +39,11 @@ function ReadingPanel({
           actions={
             onOpen ? (
               <View className="flex-row gap-2">
-                <Button testID="groups-open" onPress={onOpen}>
+                <Button
+                  testID="groups-open"
+                  accessibilityLabel={`Likes; completed exits ${exitCount}`}
+                  onPress={onOpen}
+                >
                   Likes
                 </Button>
                 {onDeck ? (
@@ -83,6 +89,7 @@ function SplitExample({
   transition?: 'simultaneous' | 'exit-before-enter';
 }) {
   const [open, setOpen] = useState(false);
+  const [exitCount, setExitCount] = useState(0);
   const [deck, setDeck] = useState(false);
   return (
     <AppShell
@@ -117,6 +124,7 @@ function SplitExample({
                   content: (
                     <ReadingPanel
                       title="Post"
+                      exitCount={exitCount}
                       short={short}
                       onOpen={() => setOpen(true)}
                       onDeck={deckSwitch ? () => setDeck(!deck) : undefined}
@@ -128,6 +136,7 @@ function SplitExample({
                   minHeight: 120,
                   testID: 'groups-likes',
                   visible: open,
+                  onExitComplete: () => setExitCount((count) => count + 1),
                   floating: {
                     below: 'md',
                     whenConstrained: true,
@@ -161,7 +170,9 @@ function SplitExample({
                   id: 'column',
                   visible: deck,
                   width: 390,
-                  content: <ReadingPanel title="Column" />,
+                  group: {
+                    panels: [{ id: 'column-content', content: <ReadingPanel title="Column" /> }],
+                  },
                 },
               ]
             : []),

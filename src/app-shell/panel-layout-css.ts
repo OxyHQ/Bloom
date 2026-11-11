@@ -90,7 +90,7 @@ ${root} [data-bloom-reading-content="${scope}"]{width:100%!important;flex-basis:
 ${row}{gap:0!important}
 ${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index]{interpolate-size:allow-keywords;transition:${geometryTransitions},opacity ${ordered ? 150 : 380}ms cubic-bezier(.4,0,.2,1) var(--bloom-panel-fade-delay,0ms),scale 150ms ease var(--bloom-panel-fade-delay,0ms),display 380ms allow-discrete ${geometryDelay}ms;transition-behavior:allow-discrete}
 ${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index]{--bloom-surface-presence-ms:${fadeMs}ms}
-${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index] ${PANEL_MATERIAL}>*{opacity:var(--bloom-surface-presence,1);transition:opacity ${fadeMs}ms cubic-bezier(.4,0,.2,1) var(--bloom-panel-fade-delay,0ms)}
+${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index] ${PANEL_MATERIAL}>*{opacity:var(--bloom-surface-presence,1);transition:opacity var(--bloom-surface-presence-ms,${fadeMs}ms) cubic-bezier(.4,0,.2,1) var(--bloom-panel-fade-delay,0ms)}
 ${group}:not([data-bloom-panel-ready]) [data-bloom-panel-owner="${scope}"][data-bloom-panel-index],${root}:not(:has(${group}[data-bloom-panel-ready])) :is([data-bloom-reading-envelope="${scope}"],[data-bloom-shell-frame="${scope}"],[data-bloom-shell-nav="${scope}"]){transition:none!important}
 ${group}[data-bloom-panel-resizing] [data-bloom-panel-owner="${scope}"][data-bloom-panel-index],${root}:has(${group}[data-bloom-panel-resizing]) [data-bloom-reading-envelope="${scope}"]{transition:none!important}
 ${group}[data-bloom-panel-resizing]{user-select:none;cursor:col-resize}
@@ -121,7 +121,7 @@ ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
     const envelope = deck ? '100%' : `${panelEnvelope(layout, lower, gap)}px`;
     let rules = `${root} [data-bloom-reading-envelope="${scope}"]{--bloom-reading-envelope:${envelope}}\n${row}{flex-direction:${vertical ? 'column' : 'row'}!important;--bloom-panel-axis:${axis}}\n`;
     const hidden = (index: number) =>
-      `${item(index)}{--bloom-panel-visible:0;--bloom-panel-fade-delay:0ms;scale:${ordered ? 0.98 : 1};flex:0 0 0px!important;display:none!important;width:${vertical ? '100%' : '0px'}!important;height:auto!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;--bloom-surface-presence:0;margin:0!important;contain:size;overflow:hidden!important;pointer-events:none!important}\n${item(index)}:not(:has(${PANEL_MATERIAL})){opacity:0!important}\n`;
+      `${item(index)}{--bloom-panel-visible:0;--bloom-panel-fade-delay:0ms;scale:${ordered ? 0.98 : 1};flex:0 0 0px!important;display:none!important;width:${vertical ? '100%' : '0px'}!important;height:auto!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;--bloom-surface-presence:0;margin:0!important;contain:size;overflow:hidden!important;pointer-events:none!important}\n${item(index)} [data-bloom-panel-owner]{--bloom-surface-presence:0!important;--bloom-surface-presence-ms:${fadeMs}ms!important;--bloom-panel-fade-delay:0ms!important}\n${item(index)}:not(:has(${PANEL_MATERIAL})){opacity:0!important}\n`;
     for (let index = 0; index < layout.panels.length; index++) {
       const p = layout.panels[index]!;
       rules += `${item(index)}{--bloom-panel-floating:${p.floating && lower < breakpointPx(p.floating.below) ? 1 : 0}}\n`;
@@ -169,7 +169,7 @@ ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
         group,
         `${group}[data-bloom-panel-ready]:not([data-bloom-panel-ordering])`,
       );
-      rules += `@starting-style{${entering}{scale:${ordered ? 0.98 : 1};flex:0 0 0px!important;width:${vertical ? '100%' : '0px'}!important;min-width:0!important;min-height:0!important;--bloom-surface-presence:0;margin-inline-start:0!important;margin-top:0!important}${entering}:not(:has(${PANEL_MATERIAL})){opacity:0!important}}\n`;
+      rules += `@starting-style{${entering}{scale:${ordered ? 0.98 : 1};flex:0 0 0px!important;width:${vertical ? '100%' : '0px'}!important;min-width:0!important;min-height:0!important;--bloom-surface-presence:0;margin-inline-start:0!important;margin-top:0!important}${entering} [data-bloom-panel-owner]{--bloom-surface-presence:0!important}${entering}:not(:has(${PANEL_MATERIAL})){opacity:0!important}}\n`;
     }
     if (pageDeck && !vertical) {
       const trackWidths = shown.map((panel) =>

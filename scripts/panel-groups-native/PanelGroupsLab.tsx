@@ -29,6 +29,7 @@ function Reading({ title }: { title: string }) {
 }
 export function PanelGroupsLab() {
   const [open, setOpen] = useState(false);
+  const [exitCount, setExitCount] = useState(0);
   const [floating, setFloating] = useState(false);
   const [flow, setFlow] = useState(false);
   const [count, setCount] = useState(3);
@@ -51,7 +52,11 @@ export function PanelGroupsLab() {
                       title={`Panels ${build.identity.slice(0, 8)}`}
                       actions={
                         <View className="flex-row gap-2">
-                          <Button testID="native-open" onPress={() => setOpen(!open)}>
+                          <Button
+                            testID="native-open"
+                            accessibilityLabel={`Split; completed exits ${exitCount}`}
+                            onPress={() => setOpen(!open)}
+                          >
                             Split
                           </Button>
                           <Button
@@ -108,6 +113,7 @@ export function PanelGroupsLab() {
                                 id: 'likes',
                                 minHeight: 120,
                                 visible: open,
+                                onExitComplete: () => setExitCount((count) => count + 1),
                                 testID: 'native-likes-panel',
                                 ...(floating
                                   ? {

@@ -69,6 +69,19 @@ beforeEach(() => {
 afterEach(() => jest.restoreAllMocks());
 
 describe('retained panels (native)', () => {
+  it('reports an explicit hide immediately, once, without an initial hidden exit', () => {
+    const complete = jest.fn();
+    const screen = render(
+      ui([{ id: 'main' }, { id: 'side', visible: false, onExitComplete: complete }]),
+    );
+    expect(complete).not.toHaveBeenCalled();
+    screen.rerender(ui([{ id: 'main' }, { id: 'side', visible: true, onExitComplete: complete }]));
+    screen.rerender(ui([{ id: 'main' }, { id: 'side', visible: false, onExitComplete: complete }]));
+    expect(complete).toHaveBeenCalledTimes(1);
+    screen.rerender(ui([{ id: 'main' }, { id: 'side', visible: false, onExitComplete: complete }]));
+    expect(complete).toHaveBeenCalledTimes(1);
+  });
+
   it('publishes resolved visibility for shown and retained hidden panels', () => {
     function Probe({ id }: { id: string }) {
       const panel = useAppShellPanel();

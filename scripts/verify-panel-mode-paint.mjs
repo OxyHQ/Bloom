@@ -63,8 +63,15 @@ try {
             opacity *= Number(style.opacity);
             hidden ||= style.display === 'none' || style.visibility === 'hidden';
           }
+          const aux = document.querySelector('[data-testid="groups-column-screen"]');
+          let auxOpacity = aux ? 1 : 0;
+          for (let node = aux; node; node = node.parentElement)
+            auxOpacity *= Number(getComputedStyle(node).opacity);
+          const auxWidth = aux?.getBoundingClientRect().width ?? 0;
           const kind = viewport?.dataset.bloomScreenViewport;
           window.__modePaint.push({
+            auxOpacity,
+            auxWidth,
             time: time - start,
             main: main?.getBoundingClientRect().toJSON(),
             likes: likes?.getBoundingClientRect().toJSON(),
@@ -101,11 +108,24 @@ try {
           frames.every((frame) => frame.main.height >= 882),
           `${mode}: main never collapses below its visible viewport`,
         );
-        if (mode === 'exit')
+        assert.ok(
+          frames
+            .filter((frame) => frame.auxWidth > 0 && frame.auxWidth < 20)
+            .every((frame) => frame.auxOpacity < 0.1),
+          'group paint stays transparent while its track is only a narrow strip',
+        );
+        if (mode === 'exit') {
           assert.ok(
             Math.abs(frames.at(-1).offset - 300) < 2,
             'round trip preserves reading position after width reflow',
           );
+          assert.ok(
+            frames.some(
+              (frame) => frame.auxWidth > 10 && frame.auxOpacity > 0 && frame.auxOpacity < 0.95,
+            ),
+            'transparent group content visibly fades while exiting',
+          );
+        }
       }
     }
     for (const mode of ['normal', 'deck']) {
