@@ -41,7 +41,10 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useScrollRestorationContext } from './context';
-import { SCROLL_USER_TAKEOVER_EVENTS } from './constants';
+import {
+  SCROLL_RESTORE_TOLERANCE_PX as RESTORE_STICK_TOLERANCE_PX,
+  SCROLL_USER_TAKEOVER_EVENTS,
+} from './constants';
 import { createScroller, resolveScrollTarget } from './scrollable.web';
 import { deriveScrollKey } from './store';
 import { takeScrollOwnerHandoff } from './owner-handoff';
@@ -60,15 +63,6 @@ import type {
  * earlier — as soon as the write sticks.
  */
 const RESTORE_FRAME_CAP = 30;
-
-/**
- * Tolerance (in CSS pixels) for considering a restore "stuck". After writing
- * `element.scrollTop = target`, the browser may clamp it to the current
- * `scrollHeight - clientHeight`; if the resulting offset is within this many
- * pixels of the target we treat the restore as complete. Sub-pixel rounding and
- * fractional device-pixel ratios make an exact equality check unreliable.
- */
-const RESTORE_STICK_TOLERANCE_PX = 2;
 
 /**
  * This platform observes offsets by subscribing to the resolved DOM node's own

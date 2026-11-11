@@ -966,6 +966,67 @@ describe('VirtualList retained row geometry', () => {
       Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 });
     }
   });
+  it('retains offscreen measurements and row identity across repeated document/panel switches', () => {
+    const data = Array.from({ length: 60 }, (_, index) => ({
+      id: String(index),
+      height: heights[index % heights.length] ?? 140,
+    }));
+    const panel = document.createElement('div');
+    panel.getBoundingClientRect = () => ({
+      x: 0,
+      y: 0,
+      top: 0,
+      bottom: 768,
+      left: 0,
+      right: 600,
+      width: 600,
+      height: 768,
+      toJSON: () => ({}),
+    });
+    document.body.append(panel);
+    const scrollRef = { current: panel };
+    const metrics = {
+      scrollY: makeMutable(5400),
+      contentHeight: makeMutable(24000),
+      viewportHeight: makeMutable(768),
+    };
+    const ui = (kind: 'document' | 'element') => (
+      <ScreenViewportContext.Provider
+        value={{ kind, active: true, scrollRef, metrics, scrollTo: () => {} }}
+      >
+        <VirtualList
+          data={data}
+          estimatedItemSize={400}
+          overscan={1}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <div data-height={item.height}>Transfer {item.id}</div>}
+        />
+      </ScreenViewportContext.Provider>
+    );
+    jest.useFakeTimers();
+    try {
+      mount(ui('document'));
+      act(() => ResizeObserverStub.deliverRows());
+      for (const offset of [1800, 3600, 5400]) scrollWindowAndSettle(offset);
+      expect(container.querySelector('[data-index="0"]')).toBeNull();
+      const anchor = container.querySelector<HTMLDivElement>('[data-index]');
+      if (!anchor) throw new Error('Expected a mounted deep row');
+      const index = anchor.dataset.index;
+      const transform = anchor.style.transform;
+      for (const kind of ['element', 'document', 'element', 'document'] as const) {
+        panel.scrollTop = 5400;
+        mount(ui(kind));
+        expect(container.querySelector(`[data-index="${index}"]`)).toBe(anchor);
+        expect(anchor).toHaveStyle({ transform });
+        act(() => ResizeObserverStub.deliverRows());
+        expect(anchor).toHaveStyle({ transform });
+      }
+    } finally {
+      panel.remove();
+      jest.useRealTimers();
+      Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 });
+    }
+  });
   it('keeps measured row heights when an Activity restores the same content', () => {
     mount(<React.Activity mode="visible">{list}</React.Activity>);
     act(() => ResizeObserverStub.deliverRows());

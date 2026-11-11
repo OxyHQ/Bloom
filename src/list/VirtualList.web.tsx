@@ -53,9 +53,16 @@ import type { CSSProperties } from 'react';
 import { StyleSheet, View } from 'react-native';
 import {
   defaultRangeExtractor,
+  elementScroll,
+  observeElementOffset,
+  observeElementRect,
+  observeWindowOffset,
+  observeWindowRect,
   useVirtualizer,
-  useWindowVirtualizer,
+  windowScroll,
   type Range,
+  type ReactVirtualizer,
+  type ReactVirtualizerOptions,
 } from '@tanstack/react-virtual';
 
 import type { VirtualListHandle, VirtualListProps, VirtualListSlot } from './types';
@@ -80,6 +87,28 @@ const END_MARKER_STYLE: CSSProperties = {
 };
 
 const NO_ROWS: readonly number[] = [];
+
+type ScrollOwner = HTMLElement | Window;
+type OwnerOptions = ReactVirtualizerOptions<ScrollOwner, HTMLDivElement>;
+type OwnerAdapters = Pick<
+  OwnerOptions,
+  'observeElementRect' | 'observeElementOffset' | 'scrollToFn'
+>;
+// The core supports either owner. The convenience hooks only narrow their
+// defaults; supply the matching adapters while retaining one measurement model.
+const useOwnerVirtualizer = useVirtualizer as (
+  options: OwnerOptions,
+) => ReactVirtualizer<ScrollOwner, HTMLDivElement>;
+const documentAdapters = {
+  observeElementRect: observeWindowRect,
+  observeElementOffset: observeWindowOffset,
+  scrollToFn: windowScroll,
+} as OwnerAdapters;
+const elementAdapters = {
+  observeElementRect,
+  observeElementOffset,
+  scrollToFn: elementScroll,
+} as OwnerAdapters;
 
 /** One grid row: its items, each with the columns it spans. */
 type GridRow = { index: number; span: number }[];
@@ -224,7 +253,7 @@ function VirtualListWebInner<T>(
     // No box: a retained screen at `display: none`. Its reading would be the
     // visible screen's scroll offset, stored as this list's origin.
     if (rect.width === 0 && rect.height === 0) return;
-    const owner = scroller ? scrollElement : null;
+    const owner = (scroller?.current as HTMLElement | null | undefined) ?? null;
     const top = owner
       ? rect.top - owner.getBoundingClientRect().top - owner.clientTop + owner.scrollTop
       : rect.top + window.scrollY;
@@ -263,21 +292,24 @@ function VirtualListWebInner<T>(
     rangeExtractor,
     getItemKey: keyExtractor ? (row: number) => itemKey(firstItemOf(row)) : undefined,
   };
-  // Enable only the model matching the scroller. Inactivity detaches its scroll
-  // owner instead of disabling it: TanStack clears offscreen measurements when
-  // disabled, which moves the saved reading position when a screen returns.
-  // A null owner disconnects its observers while preserving the layout model.
-  const windowVirtualizer = useWindowVirtualizer<HTMLDivElement>({
+  // Owner changes and inactivity detach observers, not the measurement model.
+  // Disabling a second model discarded offscreen sizes on every Deck switch.
+  const virtualizer = useOwnerVirtualizer({
     ...options,
-    enabled: !scroller,
-    getScrollElement: () => (active && !scroller && typeof window !== 'undefined' ? window : null),
+    ...(scroller ? elementAdapters : documentAdapters),
+    getScrollElement: () =>
+      active && typeof window !== 'undefined'
+        ? scroller
+          ? ((scroller.current as HTMLElement | null) ?? null)
+          : window
+        : null,
+    initialOffset: () =>
+      scroller
+        ? ((scroller.current as HTMLElement | null)?.scrollTop ?? 0)
+        : typeof window !== 'undefined'
+          ? window.scrollY
+          : 0,
   });
-  const elementVirtualizer = useVirtualizer<HTMLElement, HTMLDivElement>({
-    ...options,
-    enabled: scroller !== null,
-    getScrollElement: () => (active ? scrollElement : null),
-  });
-  const virtualizer = scroller ? elementVirtualizer : windowVirtualizer;
   React.useLayoutEffect(
     () => () => {
       if (!measurementRestoration) return;
@@ -333,8 +365,8 @@ function VirtualListWebInner<T>(
   // the ref only fires on real mount/unmount.
   const measureElement = virtualizer.measureElement;
   const getRowRef = React.useMemo(() => {
-    // A different scroll owner uses a different virtualizer. Its rows must
-    // attach to that instance, even when their keys and DOM nodes are retained.
+    // The model and row refs survive owner changes; only activation reattaches
+    // measurements whose boxes were unavailable while the screen was hidden.
     const cache = new Map<string, (node: HTMLDivElement | null) => void>();
     return (key: string) => {
       const existing = cache.get(key);
