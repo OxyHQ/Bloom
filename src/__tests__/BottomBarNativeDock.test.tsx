@@ -65,6 +65,11 @@ it.each([
     const view = render(element());
     const editor = view.getByTestId('editor');
     try {
+      const initial = yoga.layout(required(findHost(view.toJSON(), 'fixture')), rtl);
+      expect(required(initial.get('dock-navigation')).width).toBeCloseTo(
+        390 - horizontalInset * 2,
+        3,
+      );
       act(() => {
         view
           .getByTestId('dock-row')

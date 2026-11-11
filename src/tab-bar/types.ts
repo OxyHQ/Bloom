@@ -75,6 +75,8 @@ export type TabBarProps = ViewProps & {
   scrollable?: boolean;
   /** One motion signal shared with screen chrome. */
   minimizeProgress?: SharedValue<number>;
+  /** Fold to the active destination instead of retaining every compact icon. */
+  minimizeBehavior?: 'compact' | 'active';
   /**
    * CONTROLLED path — the index of the focused tab. The bar owns the sliding
    * highlight and springs it here whenever this changes. Use this when there is

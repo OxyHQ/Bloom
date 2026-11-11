@@ -9,6 +9,7 @@ import type { ThemeColors } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { SurfaceLevelProvider, useSurfaceFill, surfaceFillOn } from '../styles/surface-levels';
 import { TabBar, TabBarButton } from '../tab-bar';
+import { ScreenContext, type ScreenContextValue } from '../screen/context';
 import { TabBarGlyph } from '../tab-bar/glyph';
 import { resolveTabBarTheme } from '../tab-bar/shared';
 import type { TabBarItem, TabBarTheme } from '../tab-bar/types';
@@ -501,4 +502,73 @@ describe('TabBar shared surface hierarchy', () => {
       expect(actual).toBe(expected);
     },
   );
+});
+
+it('keeps folded destinations out of interaction and expands the same controlled signal', () => {
+  const progress = { value: 1 } as NonNullable<
+    React.ComponentProps<typeof TabBar>['minimizeProgress']
+  >;
+  const select = jest.fn();
+  const view = render(
+    <BloomThemeProvider>
+      <TabBar
+        embedded
+        minimizeBehavior="active"
+        minimizeProgress={progress}
+        activeIndex={1}
+        onIndexChange={select}
+      >
+        {ITEMS.map((item, index) => (
+          <TabBarButton key={item.name} item={item} index={index} />
+        ))}
+      </TabBar>
+    </BloomThemeProvider>,
+  );
+  expect(view.queryByLabelText('Home')).toBeNull();
+  fireEvent.press(view.getByLabelText('Search'));
+  expect(progress.value).toBe(0);
+  expect(select).not.toHaveBeenCalled();
+});
+
+it('retains destination long presses when the folding bar uses direct button gestures', () => {
+  const longPress = jest.fn();
+  const view = render(
+    <BloomThemeProvider>
+      <TabBar embedded minimizeBehavior="active" activeIndex={1} onIndexLongPress={longPress}>
+        {ITEMS.map((item, index) => (
+          <TabBarButton key={item.name} item={item} index={index} />
+        ))}
+      </TabBar>
+    </BloomThemeProvider>,
+  );
+  fireEvent(view.getByLabelText('Search'), 'longPress');
+  expect(longPress).toHaveBeenCalledWith(1);
+});
+
+it('expanding a local screen bar also resets its scroll target', () => {
+  const progress = { value: 1 } as ScreenContextValue['collapseProgress'];
+  const target = { value: 1 } as ScreenContextValue['collapseTarget'];
+  const screen = {
+    active: true,
+    collapseProgress: progress,
+    collapseTarget: target,
+    scrollY: { value: 0 },
+    activeScrollerId: { value: null },
+    topInset: 0,
+    bottomInset: 0,
+  } as ScreenContextValue;
+  const view = render(
+    <BloomThemeProvider>
+      <ScreenContext.Provider value={screen}>
+        <TabBar embedded minimizeBehavior="active" minimizeProgress={progress} activeIndex={1}>
+          {ITEMS.map((item, index) => (
+            <TabBarButton key={item.name} item={item} index={index} />
+          ))}
+        </TabBar>
+      </ScreenContext.Provider>
+    </BloomThemeProvider>,
+  );
+  fireEvent.press(view.getByLabelText('Search'));
+  expect(progress.value).toBe(0);
+  expect(target.value).toBe(0);
 });

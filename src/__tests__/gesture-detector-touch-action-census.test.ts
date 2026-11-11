@@ -92,9 +92,9 @@ const DECISIONS: Record<string, readonly string[]> = {
   // Toasts float in an overlay above the page, never inside a scroller; a swipe
   // may dismiss them vertically.
   'toast/ToastSwipeHandler.tsx': ['default'],
-  // `OptionalGesture` forwards its props; its one call site passes none, and it
-  // is mounted only when the bar is NOT scrollable — the bar is fixed chrome.
-  'tab-bar/TabBarBase.tsx': ['spread'],
+  // Fixed navigation chrome owns its scrub gesture; scrollable and folding
+  // bars use their direct buttons instead and do not mount this detector.
+  'tab-bar/TabBarBase.tsx': ['none'],
 };
 
 function files(dir: string): string[] {

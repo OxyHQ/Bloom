@@ -112,4 +112,7 @@ export interface TabPagerState {
 export type TabPagerBottomBarProps = Omit<
   BottomBarProps,
   'items' | 'value' | 'onValueChange' | 'activeProgress' | 'hideProgress'
->;
+> & {
+  /** Keep the last pager destination selected on a pushed route; deep links use the first item. */
+  routeBehavior?: 'current' | 'contextual';
+};
