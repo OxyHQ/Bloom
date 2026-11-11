@@ -1831,13 +1831,18 @@
     ]
   },
   "external-router-parts": {
-    "status": "pending",
-    "reason": "Expo Router Link static parts are forwarded by Object.assign in the router adapter. Their declarations and implementations belong to the external package; inclusion records the public contract, not BloomScope adoption or a Bloom-owned implementation. Each part still needs semantic and platform review.",
+    "status": "delegated",
+    "reason": "Bloom's Link adapter forwards Menu, Trigger, Preview, MenuAction, AppleZoom and AppleZoomTarget by reference from Expo Router; it does not wrap them or remap their props. Expo Router owns their platform semantics and visual sizing. Menu exposes the system elementSize preference on iOS, Preview exposes preferred width/height, and the remaining parts coordinate link triggers, actions or Apple zoom geometry; none is a Bloom control-size API. Custom preview children remain caller-owned, and a system preview/menu boundary is not proof that arbitrary child scope propagates.",
     "evidence": [
       "src/panel-routing/expo-router/PanelRouterAdapter.tsx",
-      "src/__tests__/public-parts.test.ts"
+      "src/__tests__/public-parts.test.ts",
+      "src/__tests__/panel-router-expo.test.tsx",
+      "node_modules/expo-router/build/link/Link.d.ts",
+      "node_modules/expo-router/build/link/elements.d.ts",
+      "node_modules/expo-router/build/link/zoom/link-apple-zoom.d.ts",
+      "node_modules/expo-router/build/link/zoom/link-apple-zoom-target.d.ts"
     ],
-    "verification": "Type-resolved native/web routes and declaration provenance only; external runtime behavior and size semantics remain unaudited",
+    "verification": "For the lock-resolved expo-router@58.0.30, declaration review records the iOS-only system menu/preview/zoom behavior and the external elementSize/preferred preview dimensions. The Bloom adapter test proves all six static references are forwarded unchanged; the package's native/web runtime implementations remain owned by Expo Router and are outside Bloom's size-scale guarantee.",
     "parts": [
       "node_modules/expo-router/build/link/elements.d.ts#LinkMenuAction",
       "node_modules/expo-router/build/link/elements.d.ts#LinkPreview",

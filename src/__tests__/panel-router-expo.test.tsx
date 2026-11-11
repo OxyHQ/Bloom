@@ -8,6 +8,12 @@ const mockGlobal = { push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGo
 jest.mock('expo-router', () => ({
   Link: Object.assign((props: object) => React.createElement('Link', props), {
     resolveHref: (href: string) => href,
+    Menu: (props: object) => React.createElement('Menu', props),
+    Trigger: (props: object) => React.createElement('Trigger', props),
+    Preview: (props: object) => React.createElement('Preview', props),
+    MenuAction: (props: object) => React.createElement('MenuAction', props),
+    AppleZoom: (props: object) => React.createElement('AppleZoom', props),
+    AppleZoomTarget: (props: object) => React.createElement('AppleZoomTarget', props),
   }),
   useRouter: () => mockGlobal,
   usePathname: () => '/deck',
@@ -31,6 +37,19 @@ const options = {
   initialEntries: [{ key: 'root', name: '/' }],
   render: () => <PanelRouterProvider routes={routes} />,
 };
+it('forwards Expo Link system subcomponents without wrapping or remapping them', () => {
+  const expoLink = jest.requireMock('expo-router').Link as typeof Link;
+  for (const name of [
+    'Menu',
+    'Trigger',
+    'Preview',
+    'MenuAction',
+    'AppleZoom',
+    'AppleZoomTarget',
+  ] as const) {
+    expect(Link[name]).toBe(expoLink[name]);
+  }
+});
 it.each([undefined, 'metaKey', 'ctrlKey', 'altKey', 'shiftKey'] as const)(
   'handles only ordinary panel links (%s)',
   (modifier) => {
