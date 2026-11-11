@@ -15,6 +15,7 @@ import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import { dataHook, dataHooks } from '../styles/data-hook';
 import { Platform, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { useMeasuredSizeClass } from '../hooks/use-width-class';
+import { useBorderBoxSize } from '../hooks/use-border-box-size';
 import Animated, {
   Extrapolation,
   interpolate,
@@ -190,6 +191,7 @@ function PageHeaderComponent({
   border = 'auto',
   transparent = false,
   scrim = 'auto',
+  scrimFalloff = 'smooth',
   scrimColor,
   scrollY: externalScrollY,
   scrollThreshold = DEFAULT_THRESHOLD,
@@ -374,11 +376,13 @@ function PageHeaderComponent({
     setNativeLeadingPresent(e.nativeEvent.layout.width > 0);
     updateActionBudget();
   };
-  const onContainerLayout = (e: LayoutChangeEvent) => {
-    const nextWidth = e.nativeEvent.layout.width;
+  const containerSize = useBorderBoxSize(({ width: nextWidth, height: nextHeight }) => {
     actionGeometry.current.width = nextWidth;
     updateActionBudget();
-    if (!isWeb) measured.onLayout(e);
+    if (!isWeb)
+      measured.onLayout({
+        nativeEvent: { layout: { width: nextWidth, height: nextHeight, x: 0, y: 0 } },
+      } as LayoutChangeEvent);
     const nextCompact = nextWidth < BREAKPOINTS.sm;
     if (lastActionsCompact.current !== nextCompact) {
       lastActionsCompact.current = nextCompact;
@@ -389,12 +393,11 @@ function PageHeaderComponent({
       lastActionsSpacious.current = nextSpacious;
       setActionsSpacious(nextSpacious);
     }
-    const nextHeight = e.nativeEvent.layout.height;
     if (lastHeight.current !== nextHeight) {
       lastHeight.current = nextHeight;
       setMeasuredHeight(nextHeight);
     }
-  };
+  });
 
   // An overlaying header occupies no layout, so it declares what it covers and
   // the content reads it back. Measured rather than computed: a second title
@@ -782,6 +785,7 @@ function PageHeaderComponent({
         // Fade into the containing surface (ContentPanel publishes its fill),
         // falling back to the page. Explicit scrimColor remains an override.
         color={scrimColor ?? surfaceFill}
+        falloff={scrimFalloff}
         testID={testID ? `${testID}-scrim-gradient` : undefined}
       />
     </Animated.View>
@@ -841,7 +845,7 @@ function PageHeaderComponent({
           bloomPageHeaderPresentation: presentation,
         })}
         testID={testID}
-        onLayout={onContainerLayout}
+        {...containerSize}
         style={[
           [
             styles.container,

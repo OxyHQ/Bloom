@@ -5,7 +5,7 @@ import { GestureDetector } from 'react-native-gesture-handler';
 import { PanelReorderHandle } from '../app-shell/PanelReorderHandle';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { panelReorderPreview } from '../app-shell/panel-reorder';
-import { animatePanelLayout } from '../app-shell/panel-motion';
+import { animatePanelFlex } from '../app-shell/panel-motion';
 import * as Reanimated from 'react-native-reanimated';
 import type { MockGesture } from '../../__mocks__/react-native-gesture-handler';
 
@@ -76,21 +76,42 @@ it('shares preview geometry for variable-width native/web panels and fixed slots
 });
 it('orders native exit, geometry and incoming disclosure, with immediate reduced motion', () => {
   const delay = jest.spyOn(Reanimated, 'withDelay');
+  const cancel = jest.spyOn(Reanimated, 'cancelAnimation');
   const values = {
-    width: { value: 0 },
+    grow: { value: 0 },
+    basis: { value: 0 },
+    min: { value: 0 },
+    max: { value: Infinity },
     gap: { value: 0 },
     opacity: { value: 0 },
     scale: { value: 1 },
-  } as Parameters<typeof animatePanelLayout>[0];
-  animatePanelLayout(values, { width: 390, gap: 8, visible: true }, true, false);
-  expect(delay.mock.calls.map(([ms]) => ms)).toEqual([150, 150, 530, 530]);
+  } as Parameters<typeof animatePanelFlex>[0];
+  animatePanelFlex(
+    values,
+    { grow: 0, basis: 390, min: 120, max: Infinity, gap: 8, visible: true },
+    true,
+    false,
+  );
+  expect(delay.mock.calls.map(([ms]) => ms)).toEqual([150, 150, 150, 150, 530, 530]);
   delay.mockClear();
-  animatePanelLayout(values, { width: 0, gap: 0, visible: false }, true, false);
-  expect(delay.mock.calls.map(([ms]) => ms)).toEqual([150, 150, 0, 0]);
+  animatePanelFlex(
+    values,
+    { grow: 0, basis: 0, min: 0, max: Infinity, gap: 0, visible: false },
+    true,
+    false,
+  );
+  expect(delay.mock.calls.map(([ms]) => ms)).toEqual([150, 150, 150, 150, 0, 0]);
   delay.mockClear();
-  animatePanelLayout(values, { width: 620, gap: 0, visible: true }, true, true);
+  animatePanelFlex(
+    values,
+    { grow: 0, basis: 620, min: 120, max: Infinity, gap: 0, visible: true },
+    true,
+    true,
+  );
   expect(delay).not.toHaveBeenCalled();
-  expect(values.width.value).toBe(620);
+  expect(values.basis.value).toBe(620);
   expect(values.opacity.value).toBe(1);
+  expect(cancel).toHaveBeenCalledTimes(21);
+  cancel.mockRestore();
   delay.mockRestore();
 });

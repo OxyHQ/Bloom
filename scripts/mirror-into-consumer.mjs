@@ -210,6 +210,10 @@ function mirrorAll() {
     if (keep(join(BLOOM, 'src', rel)) && statSync(join(BLOOM, 'src', rel)).isFile()) scanCopy(rel);
   // Remove generated WebGL assets left by an older local mirror.
   rmSync(join(MIRROR, 'assets', 'character-runtime'), { recursive: true, force: true });
+  // Expo resolves config plugins before Metro; source-only mirrors still need the package plugin.
+  if (existsSync(join(BLOOM, 'app.plugin.js')))
+    cpSync(join(BLOOM, 'app.plugin.js'), join(MIRROR, 'app.plugin.js'));
+  else rmSync(join(MIRROR, 'app.plugin.js'), { force: true });
   writeFileSync(join(MIRROR, 'package.json'), `${JSON.stringify(mirroredPackage(), null, 2)}\n`);
 }
 

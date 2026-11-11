@@ -119,6 +119,69 @@ interface Row {
 }
 
 describe('VirtualList (web)', () => {
+  it('reports the natural list container only when requested and does not remeasure it on viewport resize', () => {
+    let reads = 0;
+    const height = jest
+      .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this.style.paddingBottom === '7px') {
+          reads++;
+          return 167;
+        }
+        return 64;
+      });
+    const rects = jest
+      .spyOn(Element.prototype, 'getClientRects')
+      .mockReturnValue([{}] as unknown as DOMRectList);
+    const publish = jest.fn();
+    const metrics = {
+      scrollY: makeMutable(0),
+      contentHeight: makeMutable(800),
+      viewportHeight: makeMutable(800),
+    };
+    const ui = (requested: boolean) => (
+      <ScreenViewportContext.Provider
+        value={{
+          kind: 'document',
+          active: true,
+          scrollRef: null,
+          scrollTo: () => {},
+          contentRef: { current: container },
+          setIntrinsicContentHeight: publish,
+          metrics: requested ? { ...metrics, intrinsicContentHeight: makeMutable(-1) } : metrics,
+        }}
+      >
+        <VirtualList
+          data={['row']}
+          contentContainerStyle={{ paddingBottom: 7 }}
+          renderItem={({ item }) => <span>{item}</span>}
+          ListHeaderComponent={<span>Header</span>}
+          ListFooterComponent={<span>Footer</span>}
+        />
+      </ScreenViewportContext.Provider>
+    );
+    try {
+      mount(ui(false));
+      expect(reads).toBe(0);
+      mount(ui(true));
+      expect(publish).toHaveBeenCalledWith(expect.any(Object), 167);
+      const measured = reads;
+      act(() => {
+        for (const observer of ResizeObserverStub.instances) {
+          if (observer.targets.has(document.body))
+            observer.callback(
+              [{ target: document.body } as unknown as ResizeObserverEntry],
+              observer,
+            );
+        }
+      });
+      expect(reads).toBe(measured);
+    } finally {
+      height.mockRestore();
+      rects.mockRestore();
+    }
+  });
+
   it('mounts EVERY row of a short list in the first viewport (the empty-rows regression)', () => {
     const data: Row[] = Array.from({ length: 5 }, (_, i) => ({
       id: String(i),
@@ -962,6 +1025,67 @@ describe('VirtualList retained row geometry', () => {
       act(() => ResizeObserverStub.deliverRows());
       expect(container.querySelector(`[data-index="${index}"]`)).toHaveStyle({ transform });
     } finally {
+      jest.useRealTimers();
+      Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 });
+    }
+  });
+  it('retains offscreen measurements and row identity across repeated document/panel switches', () => {
+    const data = Array.from({ length: 60 }, (_, index) => ({
+      id: String(index),
+      height: heights[index % heights.length] ?? 140,
+    }));
+    const panel = document.createElement('div');
+    panel.getBoundingClientRect = () => ({
+      x: 0,
+      y: 0,
+      top: 0,
+      bottom: 768,
+      left: 0,
+      right: 600,
+      width: 600,
+      height: 768,
+      toJSON: () => ({}),
+    });
+    document.body.append(panel);
+    const scrollRef = { current: panel };
+    const metrics = {
+      scrollY: makeMutable(5400),
+      contentHeight: makeMutable(24000),
+      viewportHeight: makeMutable(768),
+    };
+    const ui = (kind: 'document' | 'element') => (
+      <ScreenViewportContext.Provider
+        value={{ kind, active: true, scrollRef, metrics, scrollTo: () => {} }}
+      >
+        <VirtualList
+          data={data}
+          estimatedItemSize={400}
+          overscan={1}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <div data-height={item.height}>Transfer {item.id}</div>}
+        />
+      </ScreenViewportContext.Provider>
+    );
+    jest.useFakeTimers();
+    try {
+      mount(ui('document'));
+      act(() => ResizeObserverStub.deliverRows());
+      for (const offset of [1800, 3600, 5400]) scrollWindowAndSettle(offset);
+      expect(container.querySelector('[data-index="0"]')).toBeNull();
+      const anchor = container.querySelector<HTMLDivElement>('[data-index]');
+      if (!anchor) throw new Error('Expected a mounted deep row');
+      const index = anchor.dataset.index;
+      const transform = anchor.style.transform;
+      for (const kind of ['element', 'document', 'element', 'document'] as const) {
+        panel.scrollTop = 5400;
+        mount(ui(kind));
+        expect(container.querySelector(`[data-index="${index}"]`)).toBe(anchor);
+        expect(anchor).toHaveStyle({ transform });
+        act(() => ResizeObserverStub.deliverRows());
+        expect(anchor).toHaveStyle({ transform });
+      }
+    } finally {
+      panel.remove();
       jest.useRealTimers();
       Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 });
     }

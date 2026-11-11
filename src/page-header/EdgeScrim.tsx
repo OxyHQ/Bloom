@@ -88,6 +88,10 @@ export const SCRIM_STOPS = [
   { offset: 0.72, opacity: 0.38 },
   { offset: 1, opacity: 0 },
 ] as const;
+const LINEAR_STOPS = [
+  { offset: 0, opacity: 1 },
+  { offset: 1, opacity: 0 },
+] as const;
 
 export interface EdgeScrimProps {
   /** The page colour the ramp starts from — opaque, alpha travels separately. */
@@ -99,6 +103,8 @@ export interface EdgeScrimProps {
    * put it on every platform.
    */
   edge?: 'top' | 'bottom';
+  /** Smooth legibility curve by default; linear has only the opaque and transparent endpoints. */
+  falloff?: 'smooth' | 'linear';
   testID?: string;
 }
 
@@ -112,29 +118,43 @@ export interface EdgeScrimProps {
  * spans exactly that view. Alpha travels in the colour here, which a CSS
  * gradient honours (the `stopOpacity` reason above is react-native-svg's).
  */
-export function edgeScrimGradient(color: string, edge: 'top' | 'bottom'): string {
-  const stops = SCRIM_STOPS.map(
-    (stop) => `${withAlpha(color, stop.opacity)} ${Math.round(stop.offset * 100)}%`,
-  ).join(', ');
+export function edgeScrimGradient(
+  color: string,
+  edge: 'top' | 'bottom',
+  falloff: 'smooth' | 'linear' = 'smooth',
+): string {
+  const stops = (falloff === 'linear' ? LINEAR_STOPS : SCRIM_STOPS)
+    .map((stop) => `${withAlpha(color, stop.opacity)} ${Math.round(stop.offset * 100)}%`)
+    .join(', ');
   return `linear-gradient(to ${edge === 'bottom' ? 'top' : 'bottom'}, ${stops})`;
 }
 
-const EdgeScrimComponent: React.FC<EdgeScrimProps> = ({ color, edge = 'top', testID }) => {
+const EdgeScrimComponent: React.FC<EdgeScrimProps> = ({
+  color,
+  edge = 'top',
+  falloff = 'smooth',
+  testID,
+}) => {
   if (Platform.OS === 'android') {
     return (
       <View
         testID={testID}
         style={[
           StyleSheet.absoluteFill,
-          { experimental_backgroundImage: edgeScrimGradient(color, edge) },
+          { experimental_backgroundImage: edgeScrimGradient(color, edge, falloff) },
         ]}
       />
     );
   }
-  return <SvgEdgeScrim color={color} edge={edge} testID={testID} />;
+  return <SvgEdgeScrim color={color} edge={edge} falloff={falloff} testID={testID} />;
 };
 
-const SvgEdgeScrim: React.FC<EdgeScrimProps> = ({ color, edge = 'top', testID }) => {
+const SvgEdgeScrim: React.FC<EdgeScrimProps> = ({
+  color,
+  edge = 'top',
+  falloff = 'smooth',
+  testID,
+}) => {
   const id = `${useSvgIdPrefix('bloom-page-header-scrim')}gradient`;
   const fromBottom = edge === 'bottom';
   return (
@@ -147,7 +167,7 @@ const SvgEdgeScrim: React.FC<EdgeScrimProps> = ({ color, edge = 'top', testID })
           x2="0"
           y2={fromBottom ? '0' : '1'}
         >
-          {SCRIM_STOPS.map((stop) => (
+          {(falloff === 'linear' ? LINEAR_STOPS : SCRIM_STOPS).map((stop) => (
             <Stop
               key={stop.offset}
               offset={String(stop.offset)}

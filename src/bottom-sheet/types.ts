@@ -94,6 +94,8 @@ export interface BottomSheetProps {
    * keyboard and detached-edge calculation. It does not add a scroll owner.
    */
   sizing?: 'content' | 'fill';
+  /** Ceiling as a fraction of window height, also constrained by keyboard and safe areas. */
+  maxHeightRatio?: number;
   /**
    * When `true`, the body pan uses RNGH's `manualActivation` and only
    * activates when (a) the inner ScrollView is at the top AND (b) the user

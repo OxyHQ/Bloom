@@ -5,7 +5,7 @@ import { Pressable, Text, type PressableStateCallbackType, type ViewStyle } from
 import { SpinnerIcon } from '../loading/SpinnerIcon';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import { IS_WEB } from '../styles/platform';
-import { ENGAGEMENT_HIT_SLOP, ENGAGEMENT_ICON_SIZE, ENGAGEMENT_SPINNER_SIZE } from './constants';
+import { ENGAGEMENT_HIT_SLOP } from './constants';
 import { EngagementBarContext, type EngagementPress } from './context';
 import { EngagementCountRoll } from './EngagementCountRoll';
 import { EngagementPop } from './EngagementPop';
@@ -58,7 +58,7 @@ function EngagementActionComponent({
   const on = active === true;
   const tonePaint = bar.paint.tones[tone];
   const color = on ? tonePaint.color : bar.paint.restColor;
-  const shown = count != null && count !== 0 ? count : null;
+  const shown = count != null && (count !== 0 || bar.showZeroCounts) ? count : null;
   const label = shown === null ? null : bar.formatCount(shown);
 
   const popping = press !== null && popOnActivate && on && !press.active;
@@ -69,20 +69,21 @@ function EngagementActionComponent({
 
   let glyph: React.ReactNode;
   if (busy) {
-    glyph = <SpinnerIcon key="busy" size={ENGAGEMENT_SPINNER_SIZE} color={bar.paint.restColor} />;
+    glyph = <SpinnerIcon key="busy" size={bar.paint.spinnerSize} color={bar.paint.restColor} />;
   } else if (popping) {
     glyph = (
       <EngagementPop
         key={`pop-${press.id}`}
         icon={Glyph}
         color={color}
+        size={bar.paint.iconSize}
         // The roll outlasts the pop, so whichever is running last clears the press.
         onDone={rolling ? undefined : setPress}
       />
     );
   } else {
     glyph = (
-      <Glyph key="glyph" width={ENGAGEMENT_ICON_SIZE} height={ENGAGEMENT_ICON_SIZE} fill={color} />
+      <Glyph key="glyph" width={bar.paint.iconSize} height={bar.paint.iconSize} fill={color} />
     );
   }
 

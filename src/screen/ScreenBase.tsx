@@ -10,6 +10,7 @@ import type React from 'react';
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, View, StyleSheet } from 'react-native';
 import { useKeyboardVisible } from '../hooks/use-keyboard-visible';
+import { useBorderBoxSize } from '../hooks/use-border-box-size';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { useBottomEdgeInset } from '../layout/bottom-edge';
 import { windowEdgeGap } from '../layout/edge';
@@ -226,6 +227,8 @@ export function createScreen(
       lastBottom.current = height;
       setMeasuredBottom(height);
     };
+    const headerSize = useBorderBoxSize(({ height }) => setTop(height));
+    const footerSize = useBorderBoxSize(({ height }) => setBottom(height));
     const top =
       measuredTop ?? headerHeight ?? 56 + (Platform.OS === 'web' ? 0 : (insets?.top ?? 0));
     const bottom = measuredBottom ?? bottomBarHeight ?? 58 + windowEdgeGap(insets?.bottom ?? 0);
@@ -376,7 +379,7 @@ export function createScreen(
           disabled={windowChrome == null}
           testID={testID ? `${testID}-header` : undefined}
           pointerEvents={windowChrome == null ? 'box-none' : undefined}
-          onLayout={(event) => setTop(event.nativeEvent.layout.height)}
+          {...headerSize}
           style={headerSlotStyle}
         >
           <WindowChromeProvider value={windowChrome}>
@@ -387,7 +390,7 @@ export function createScreen(
         <View
           testID={testID ? `${testID}-header` : undefined}
           pointerEvents="box-none"
-          onLayout={(event) => setTop(event.nativeEvent.layout.height)}
+          {...headerSize}
           style={headerSlotStyle}
         >
           <ScreenHeaderContext.Provider value={value}>{header}</ScreenHeaderContext.Provider>
@@ -436,7 +439,7 @@ export function createScreen(
         {...(keyboardFollow ? { enabled: active } : {})}
         testID={testID ? `${testID}-bottom` : undefined}
         pointerEvents="box-none"
-        onLayout={(event) => setBottom(event.nativeEvent.layout.height)}
+        {...footerSize}
         style={
           document
             ? {
@@ -644,12 +647,16 @@ export function createScreen(
                           ) : (
                             children
                           )}
-                          {ownWebViewport && active && !document ? (
-                            <ScrollBar target={scrollbarTarget} />
+                          {ownWebViewport && !document ? (
+                            <ScrollBar
+                              target={scrollbarTarget}
+                              scrollbar={active ? 'scroll' : 'never'}
+                            />
                           ) : null}
-                          {ownWebViewport && active && document && region?.flow !== 'document' ? (
+                          {ownWebViewport && document && region?.flow !== 'document' ? (
                             <ScrollBar
                               target="document"
+                              scrollbar={active ? 'scroll' : 'never'}
                               insets={{ start: reservedTop, end: reservedBottom }}
                             />
                           ) : null}

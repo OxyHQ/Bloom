@@ -46,7 +46,13 @@ export interface AppShellPanelDefinition extends Omit<AppShellPanelProps, 'child
   reorderLabel?: string;
   /** Explicit semantic visibility, independent of responsive eligibility. */
   visible?: boolean;
+  /** Actual exit completion; release payload after visible becomes false. Reopening cancels it. */
+  onExitComplete?: () => void;
+  /** Vertical resize gestures stop at measured content; initial layout stays unchanged. */
+  resizeMaxHeight?: 'content';
   content?: ReactNode;
+  /** A transparent, independently composed group. Keep its id and child ids stable. */
+  group?: AppShellPanelLayout;
   /** Host controls composed into the route Screen's existing PageHeader actions. */
   headerActions?: ReactNode;
   /** Panel footer composed below the route Screen bottom bar, measured and pinned by that Screen. */
@@ -102,8 +108,11 @@ export interface AppShellPanelLayout {
   onViewportScroll?: (offset: { x: number; y: number }) => void;
   /** Commit a full ID permutation after a handle drag or keyboard move. The host applies this order. */
   onPanelOrderChange?: (ids: readonly string[]) => void;
-  mode?: 'split' | 'deck';
-  /** Fade outgoing panels before moving tracks, then reveal incoming content at its settled width. */
+  /** Split divides available space; flow grows and scrolls along its axis. */
+  mode?: 'split' | 'flow' | 'deck';
+  /** Nested split only: let its sole inline panel use the web document scroll. */
+  singlePanelFlow?: 'document';
+  /** Simultaneous by default. Opt into exit-before-enter to stage outgoing, geometry and incoming motion. */
   transition?: 'simultaneous' | 'exit-before-enter';
   /** Web horizontal decks use the document scrollbar by default. Native remains native-scrolling. */
   horizontalScroll?: 'document' | 'contained';

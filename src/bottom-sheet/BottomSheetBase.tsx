@@ -87,6 +87,7 @@ export const BottomSheetBase = forwardRef(
       backdropOpacity = BACKDROP_DIM_OPACITY,
       scrollable = true,
       sizing = 'content',
+      maxHeightRatio = 1,
       manualActivation = false,
       animatedProgress,
       handleComponent,
@@ -634,13 +635,16 @@ export const BottomSheetBase = forwardRef(
     const sheetHeightStyle = useAnimatedStyle(() => {
       const availableHeight = Math.max(
         0,
-        screenHeightSV.value - keyboardHeight.value - topGap - detachedGap,
+        Math.min(
+          screenHeightSV.value * Math.max(0, Math.min(1, maxHeightRatio)),
+          screenHeightSV.value - keyboardHeight.value - topGap - detachedGap,
+        ),
       );
       return {
         maxHeight: availableHeight,
         height: sizing === 'fill' ? availableHeight : UNSET,
       };
-    }, [sizing, topGap, detachedGap, screenHeightSV, keyboardHeight]);
+    }, [sizing, maxHeightRatio, topGap, detachedGap, screenHeightSV, keyboardHeight]);
 
     const sheetMarginStyle = useAnimatedStyle(() => {
       // Only add margin when detached, otherwise extend behind safe area

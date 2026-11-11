@@ -74,6 +74,7 @@ export function DialogBottomSheet({
   dismissOnBackdrop = true,
   contentPadding = DEFAULT_DIALOG_CONTENT_PADDING,
   scrollable,
+  sizing = 'content',
   morph,
   style,
   panelStyle,
@@ -226,9 +227,16 @@ export function DialogBottomSheet({
       panelStyle,
       // Drives the card's `height` only while a morph is in flight; at rest it
       // resolves to `height: 'auto'` — the sheet's normal content sizing.
-      morphState.panelStyle,
+      sizing === 'content' ? morphState.panelStyle : undefined,
     ];
-  }, [theme.colors.background, detached, maxHeightRatio, panelStyle, morphState.panelStyle]);
+  }, [
+    theme.colors.background,
+    detached,
+    maxHeightRatio,
+    panelStyle,
+    morphState.panelStyle,
+    sizing,
+  ]);
 
   // Does this dialog render bloom's declarative chrome (title / description /
   // actions)? This no longer gates the SCROLL decision (that is now the explicit
@@ -306,6 +314,8 @@ export function DialogBottomSheet({
       // opt OUT so there is exactly ONE scroll container (no scroll-in-scroll,
       // no "VirtualizedList inside a plain ScrollView" warning).
       scrollable={scrollableResolved}
+      sizing={sizing}
+      maxHeightRatio={maxHeightRatio}
       // Declarative dialogs (title/description/actions) that overflow — AND every
       // nav-header page (its scroll content overflows by design) — need
       // gorhom-style pan coordination: the drag-to-dismiss pan only activates
@@ -447,6 +457,7 @@ export type DialogBottomSheetProps = DialogPresentationLifecycle &
     | 'dismissOnBackdrop'
     | 'contentPadding'
     | 'scrollable'
+    | 'sizing'
     | 'morph'
     | 'style'
     | 'panelStyle'

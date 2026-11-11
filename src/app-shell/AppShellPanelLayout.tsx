@@ -7,10 +7,17 @@ import React, {
   useContext,
   useRef,
   useState,
+  useId,
   type ComponentType,
   type ComponentRef,
 } from 'react';
-import { Dimensions, Platform, View, type ViewStyle } from 'react-native';
+import { Platform, type View as NativeView, type ViewStyle } from 'react-native';
+import { StyledView as View } from '../styles/styled-primitives';
+import {
+  SafeAreaInsetsContext,
+  useSafeAreaInsets,
+  type EdgeInsets,
+} from 'react-native-safe-area-context';
 import Animated, {
   cancelAnimation,
   useAnimatedStyle,
@@ -18,6 +25,7 @@ import Animated, {
   withTiming,
   runOnJS,
 } from 'react-native-reanimated';
+import { ContentPanelNestingContext } from '../content-panel/context';
 import type { ContentPanelProps } from '../content-panel/types';
 import type { DialogProps } from '../dialog/types';
 import { useDialogControl, useDialogContext } from '../dialog/context';
@@ -26,8 +34,8 @@ import { useCommonMessages } from '../locale/common-messages';
 import type { BloomColorScopeProps } from '../theme/color-scope/ColorScope';
 import type { ScrollAreaProps, ScrollBarProps } from '../layout/types';
 import type { useScrollRestoration as UseScrollRestoration } from '../scroll/use-scroll-restoration';
-import { useAppShellRegion } from '../layout/app-shell-region';
-import { useBottomEdgeInset } from '../layout/bottom-edge';
+import { AppShellRegionContext, useAppShellRegion } from '../layout/app-shell-region';
+import { BottomEdgeProvider, useBottomEdgeInset } from '../layout/bottom-edge';
 import { ScrollMetricsContext } from '../layout/scroll-metrics';
 import { ScrollOffsetProvider } from '../layout/scroll-offset';
 import { ScreenScope } from '../layout/screen-scope';
@@ -39,6 +47,8 @@ import type { ScreenProps } from '../screen/types';
 import { ResizeHandle } from '../layout/ResizeHandle';
 import { PanelErrorBoundary } from '../error-boundary/PanelErrorBoundary';
 import { PANEL_EXIT_MS, PANEL_LAYOUT_MS, animatePanelFlex } from './panel-motion';
+import { panelGeometryTransitions } from './panel-transitions';
+import { usePanelExitCompletion } from './use-panel-exit-completion';
 import { UNSET } from '../styles/animated-style';
 import { useMeasuredSizeClass, useWindowSizeWhile } from '../hooks/use-width-class';
 import { IS_WEB } from '../styles/platform';
@@ -56,7 +66,12 @@ import { PanelReorderHandle } from './PanelReorderHandle';
 import { usePanelReveal } from './use-panel-reveal';
 import { usePanelResize, type PanelResizePreview } from './use-panel-resize';
 import { useRoomChanged } from './use-room-changed';
-import { PanelCssContext, panelLayoutCss } from './panel-layout-css';
+import {
+  PanelCssContext,
+  PanelResponsiveScopeContext,
+  panelCssScope,
+  panelLayoutCss,
+} from './panel-layout-css';
 import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import {
   AppShellPanelContext,
@@ -72,17 +87,22 @@ import {
   applyPanelSpans,
   isFlexiblePanel,
   panelWindowChrome,
-  flexibleRoomThresholds,
+  panelForAxis,
+  eligiblePanels,
   panelLayoutMinimum,
   panelLayoutWidthThresholds,
   resolvePanelAxis,
   resolvePanelFlex,
-  resolvePanelTracks,
   splitPairSpans,
   type PanelFlexTrack,
 } from './panel-layout';
 import { PanelDropProvider, PanelDropZones, usePanelDropCoordinator } from './PanelDropZones';
 import { RetainedPanelLayout } from './RetainedPanelLayout';
+
+const PanelWindowInsetsContext = React.createContext<EdgeInsets | null>(null);
+// The document is one scroll owner. Transparent groups delegate its restoration
+// down the primary branch instead of each layout restoring the same window.
+const PanelDocumentRestorationContext = React.createContext(true);
 
 /** A track the CSS compositor sizes: its flex values are the stylesheet's, never read. */
 const CSS_TRACK: Omit<PanelFlexTrack, 'id' | 'visible'> = {
@@ -163,10 +183,12 @@ export function createPanelLayoutView(
     panel,
     open,
     children,
+    onClosed,
     testID,
   }: {
     panel: AppShellPanelDefinition;
     open: boolean;
+    onClosed: () => void;
     children: React.ReactNode;
     testID?: string;
   }) {
@@ -181,16 +203,18 @@ export function createPanelLayoutView(
       <Dialog
         control={control}
         label={panel.floating!.label}
-        placement="end"
+        placement={panel.floating?.placement ?? 'end'}
         width={panel.floating!.width ?? panel.width ?? 410}
         inset={{ top: 12, bottom: 12, left: 12, right: 12 }}
         scrollable={false}
+        sizing="fill"
         contentPadding={0}
         testID={testID ? `${testID}-floating` : undefined}
         onClose={() => {
           // An explicit state close already belongs to the host. Only surface
           // dismissal reports a new intent, after Dialog's exit completes.
           if (intent.current) panel.floating!.onOpenChange(false);
+          onClosed();
         }}
       >
         {children}
@@ -308,12 +332,14 @@ export function createPanelLayoutView(
     visibilityReady,
     index,
     getSize,
-    modelSize,
     vertical,
     naturalHeight,
+    safeAreaTop,
+    shellWidth,
     track,
     alone,
     document: documentFlow,
+    documentRestorationOwner,
     joined,
     gap,
     onResize,
@@ -336,13 +362,14 @@ export function createPanelLayoutView(
     visibilityReady: boolean;
     index: number;
     getSize: () => number;
-    /** Its size as the group's measured room divides it (`resolvePanelTracks`), where no layout can be read. */
-    modelSize: () => number;
     vertical: boolean;
     naturalHeight: boolean;
+    safeAreaTop: number;
+    shellWidth: number;
     track: PanelFlexTrack;
     alone: boolean;
     document: boolean;
+    documentRestorationOwner: boolean;
     joined: boolean;
     gap: number;
     onResize: (width: number) => void;
@@ -358,6 +385,13 @@ export function createPanelLayoutView(
     testID?: string;
   }) {
     const layoutReady = useShellLayoutReady();
+    const fallbackInsets = useSafeAreaInsets();
+    const safeArea = useContext(SafeAreaInsetsContext) ?? fallbackInsets;
+    const windowInsets = useContext(PanelWindowInsetsContext) ?? safeArea;
+    const inlineInsets = useMemo(
+      () => ({ ...safeArea, top: safeAreaTop }),
+      [safeArea, safeAreaTop],
+    );
     // One tree whether or not the panel holds the window's chrome right now.
     const platformWindow = usePlatformWindow();
     const windowed = platformWindow != null;
@@ -367,7 +401,7 @@ export function createPanelLayoutView(
       windowChrome != null && platformWindow != null
         ? windowEdgeTopCorners(platformWindow.metrics)
         : null;
-    const panelRef = useRef<ComponentRef<typeof View>>(null);
+    const panelRef = useRef<ComponentRef<typeof NativeView>>(null);
     const dragOffset = useSharedValue(0);
     const dragLayer = useSharedValue(0);
     useEffect(
@@ -420,21 +454,35 @@ export function createPanelLayoutView(
     const theme = useTheme();
     const rtl = useIsRtl();
     // Only the web places a sticky panel from the viewport's height.
-    const viewportHeight = useWindowSizeWhile(Platform.OS === 'web').height;
+    const viewportHeight = useWindowSizeWhile(
+      Platform.OS === 'web' && !!panel.sticky && documentFlow,
+    ).height;
     const [stickyHeight, setStickyHeight] = useState(0);
     const document = documentFlow && !track.floating;
+    const documentFrame = document && (!vertical || alone);
     const floatingOpen = !!track.floating && !!panel.floating?.open && panel.visible !== false;
-    const sticky = !!panel.sticky && document && !vertical;
+    const sticky = !!panel.sticky && documentFrame;
     const parent = React.useContext(ScreenContext);
+    const ancestorHost = useContext(ScreenHostContext);
     const active =
-      panel.visible !== false && (track.visible || floatingOpen) && (parent?.active ?? true);
+      panel.visible !== false &&
+      (track.visible || floatingOpen) &&
+      (parent?.active ?? true) &&
+      ancestorHost.active;
     const screenRef = useRef<unknown>(null);
     const scrollY = useSharedValue(0);
     const contentHeight = useSharedValue(-1);
+    const intrinsicContentHeight = useSharedValue(-1);
     const scrollViewportHeight = useSharedValue(0);
     const metrics = useMemo(
-      () => ({ scrollY, contentHeight, viewportHeight: scrollViewportHeight }),
-      [scrollY, contentHeight, scrollViewportHeight],
+      () => ({
+        scrollY,
+        contentHeight,
+        intrinsicContentHeight:
+          panel.resizeMaxHeight === 'content' ? intrinsicContentHeight : undefined,
+        viewportHeight: scrollViewportHeight,
+      }),
+      [scrollY, contentHeight, intrinsicContentHeight, scrollViewportHeight, panel.resizeMaxHeight],
     );
     const [screenColor, claimPanelColor] = useLatestClaim<ProfileColor>();
     const claimShellColor = useContext(ShellColorClaimContext);
@@ -458,6 +506,7 @@ export function createPanelLayoutView(
     const host = useMemo(
       () => ({
         active,
+        sizing: naturalHeight ? ('content' as const) : ('fill' as const),
         back,
         restoresDocument: document,
         kind: (Platform.OS !== 'web' ? 'native' : document ? 'document' : 'element') as
@@ -481,6 +530,7 @@ export function createPanelLayoutView(
       }),
       [
         active,
+        naturalHeight,
         back,
         document,
         metrics,
@@ -496,9 +546,8 @@ export function createPanelLayoutView(
     const start = useRef(0);
     const reduced = usePrefersReducedMotion();
     // The track's flex along the group's axis (`resolvePanelFlex`), as shared
-    // values: Yoga sizes it from these in the pass that lays the window out, so
-    // a resize runs no JavaScript; only a change of the layout itself (a panel
-    // shown, hidden, resized by its handle) moves them.
+    // values: Yoga distributes room without a React sizing pass. Semantic
+    // visibility changes and direct gestures update these declarative values.
     const grow = useSharedValue(track.grow);
     const basis = useSharedValue(track.basis);
     const min = useSharedValue(track.min);
@@ -507,6 +556,7 @@ export function createPanelLayoutView(
     const opacity = useSharedValue(track.visible ? 1 : 0);
     const panelScale = useSharedValue(1);
     const lastHeight = useSharedValue(0);
+    const lastWidth = useSharedValue(0);
     // A resize gesture holds the track at the size it drags to (a frozen
     // basis), and its commit lands at once: what it settled on is already drawn.
     const gestureHeld = useRef(false);
@@ -517,8 +567,24 @@ export function createPanelLayoutView(
             const box = (
               panelRef.current as unknown as MeasurableNode | null
             )?.getBoundingClientRect?.();
-            return box ? (vertical ? box.height : box.width) : modelSize();
+            return box
+              ? vertical
+                ? box.height
+                : box.width
+              : vertical
+                ? lastHeight.value
+                : lastWidth.value;
           },
+          contentHeight:
+            panel.resizeMaxHeight === 'content'
+              ? (height) => {
+                  const intrinsic = intrinsicContentHeight.value;
+                  const viewport = scrollViewportHeight.value;
+                  return intrinsic >= 0 && viewport > 0
+                    ? Math.max(0, height - viewport) + intrinsic
+                    : undefined;
+                }
+              : undefined,
           update: (size) => {
             gestureHeld.current = true;
             cancelAnimation(grow);
@@ -527,7 +593,15 @@ export function createPanelLayoutView(
             basis.value = size;
           },
         }),
-      [registerResizePreview, grow, basis, vertical],
+      [
+        registerResizePreview,
+        grow,
+        basis,
+        vertical,
+        panel.resizeMaxHeight,
+        intrinsicContentHeight,
+        scrollViewportHeight,
+      ],
     );
     // The panel paints the material: on the web its fade is its presence, never
     // an opacity on the track above it (the CSS compositor does the same).
@@ -537,6 +611,14 @@ export function createPanelLayoutView(
         : transition === 'exit-before-enter'
           ? PANEL_EXIT_MS
           : PANEL_LAYOUT_MS;
+    const { captureNativeCompletion, completeFloating } = usePanelExitCompletion({
+      present: panel.visible !== false && (!track.floating || floatingOpen),
+      floating: !!track.floating,
+      css: !!cssScope,
+      reducedMotion: reduced,
+      owner: panelRef,
+      onExitComplete: panel.onExitComplete,
+    });
     useSurfacePresenceContent(cssScope ? null : panelRef, {
       presence: track.visible ? 1 : 0,
       duration: fadeMs,
@@ -562,6 +644,7 @@ export function createPanelLayoutView(
         },
         transition === 'exit-before-enter',
         reduced || resized || held,
+        track.floating ? undefined : captureNativeCompletion(),
       );
     }, [
       track.grow,
@@ -570,6 +653,8 @@ export function createPanelLayoutView(
       track.max,
       track.gap,
       track.visible,
+      track.floating,
+      panel.visible,
       grow,
       basis,
       min,
@@ -580,6 +665,7 @@ export function createPanelLayoutView(
       transition,
       reduced,
       cssScope,
+      captureNativeCompletion,
     ]);
     // Every key on every run (`styles/animated-style.ts`).
     // The track's basis is its main-axis SIZE (`width` across, `height` down)
@@ -713,8 +799,12 @@ export function createPanelLayoutView(
       // Under the bottom bar a side-by-side panel reaches it: its content clears
       // the bar and drives it (the shell's navigation motion); a stacked one sits
       // above the group viewport's own clearance.
-      const underBar = !document && !vertical && !!region?.underBottomBar;
-      const body = (
+      const underBar = !documentFrame && !!region?.underBottomBar;
+      const body = panel.group ? (
+        <ScreenHostContext.Provider value={{ ...ancestorHost, active }}>
+          {content}
+        </ScreenHostContext.Provider>
+      ) : (
         <>
           <ScreenScope inheritBottomEdge={document || underBar} inheritNavigation={underBar}>
             <ScreenHostContext.Provider value={navigation ? { ...host, navigation } : host}>
@@ -729,11 +819,13 @@ export function createPanelLayoutView(
               </ScrollMetricsContext.Provider>
             </ScreenHostContext.Provider>
           </ScreenScope>
-          <DocumentPanelReserve height={document && !vertical ? (region?.bottomReserve ?? 0) : 0} />
+          <DocumentPanelReserve height={documentFrame ? (region?.bottomReserve ?? 0) : 0} />
         </>
       );
       const framed = region?.framed ?? true;
-      const surface = joined ? (
+      const surface = panel.group ? (
+        body
+      ) : joined ? (
         <View style={FILL}>
           {panel.errorBoundary ? (
             <PanelErrorBoundary {...(panel.errorBoundary === true ? {} : panel.errorBoundary)}>
@@ -752,13 +844,13 @@ export function createPanelLayoutView(
           framed={cssScope && cssFraming ? true : framed}
           maskColor={region?.maskColor}
           errorBoundary={panel.errorBoundary}
-          fill={!document}
+          fill={!document && !naturalHeight}
           scrollable={false}
-          overlaySizing={document && !vertical ? 'viewport' : 'panel'}
-          overlayInset={document && !vertical ? region?.viewportInset : undefined}
+          overlaySizing={documentFrame ? 'viewport' : 'panel'}
+          overlayInset={documentFrame ? region?.viewportInset : undefined}
           surfaceStyle={[
             FILL,
-            document && !vertical && !sticky && region
+            documentFrame && !sticky && region
               ? {
                   minHeight: webViewportHeightMinus(
                     region.viewportInset.top + region.viewportInset.bottom,
@@ -808,12 +900,17 @@ export function createPanelLayoutView(
               resizable ? { zIndex: 1 } : undefined,
               Platform.OS !== 'web' ? reorderStyle : undefined,
             ]}
-            onLayout={(event) => {
-              if (track.visible) {
-                lastHeight.value = event.nativeEvent.layout.height;
-                if (sticky) setStickyHeight(event.nativeEvent.layout.height);
-              }
-            }}
+            onLayout={
+              cssScope && !sticky
+                ? undefined
+                : (event) => {
+                    if (track.visible) {
+                      lastHeight.value = event.nativeEvent.layout.height;
+                      lastWidth.value = event.nativeEvent.layout.width;
+                      if (sticky) setStickyHeight(event.nativeEvent.layout.height);
+                    }
+                  }
+            }
             aria-hidden={!active ? true : undefined}
             {...(Platform.OS === 'web' && !active ? { inert: true } : null)}
             importantForAccessibility={active ? 'auto' : 'no-hide-descendants'}
@@ -847,7 +944,9 @@ export function createPanelLayoutView(
                           : undefined,
                       ]}
                     >
-                      {surface}
+                      <SafeAreaInsetsContext.Provider value={inlineInsets}>
+                        {surface}
+                      </SafeAreaInsetsContext.Provider>
                     </View>
                   </ColorScope>
                 </PlacementBoundaryContext.Provider>
@@ -906,27 +1005,53 @@ export function createPanelLayoutView(
             ) : null}
           </AnimatedView>
           {track.floating && panel.floating ? (
-            <PanelFloatingSurface panel={panel} open={floatingOpen} testID={testID}>
-              <AppShellPanelContext.Provider value={floatingValue}>
-                <ColorScope colorPreset={scopeColorPreset} seed={scopeSeed} asChild>
-                  <View style={FILL}>
-                    {panel.errorBoundary ? (
-                      <PanelErrorBoundary
-                        {...(panel.errorBoundary === true ? {} : panel.errorBoundary)}
-                      >
-                        {body}
-                      </PanelErrorBoundary>
-                    ) : (
-                      body
-                    )}
-                  </View>
-                </ColorScope>
-              </AppShellPanelContext.Provider>
-            </PanelFloatingSurface>
+            <SafeAreaInsetsContext.Provider value={windowInsets}>
+              <PanelFloatingSurface
+                panel={panel}
+                open={floatingOpen}
+                onClosed={completeFloating}
+                testID={testID}
+              >
+                <SafeAreaInsetsContext.Provider value={{ ...windowInsets, top: 0 }}>
+                  <AppShellPanelContext.Provider value={floatingValue}>
+                    <ColorScope colorPreset={scopeColorPreset} seed={scopeSeed} asChild>
+                      <View style={FILL}>
+                        {panel.errorBoundary ? (
+                          <PanelErrorBoundary
+                            {...(panel.errorBoundary === true ? {} : panel.errorBoundary)}
+                          >
+                            {body}
+                          </PanelErrorBoundary>
+                        ) : (
+                          body
+                        )}
+                      </View>
+                    </ColorScope>
+                  </AppShellPanelContext.Provider>
+                </SafeAreaInsetsContext.Provider>
+              </PanelFloatingSurface>
+            </SafeAreaInsetsContext.Provider>
           ) : null}
         </>
       );
     };
+    if (panel.group)
+      return renderPanel(
+        <PanelDocumentRestorationContext.Provider value={documentRestorationOwner && active}>
+          <NestedPanelGroup
+            layout={panel.group}
+            groupActions={
+              <>
+                {reorderHandle}
+                {panel.headerActions}
+              </>
+            }
+            shellWidth={shellWidth}
+            gap={gap}
+            testID={testID ? `${testID}-group` : undefined}
+          />
+        </PanelDocumentRestorationContext.Provider>,
+      );
     // Navigation and restoration belong to the persistent descriptor, above
     // the inline/portal presentation boundary. Closing or docking a surface
     // does not recreate its history or scroll store.
@@ -955,6 +1080,144 @@ export function createPanelLayoutView(
       </PanelScrollScope>
     );
   }
+  function NestedPanelGroup({
+    layout: declared,
+    shellWidth,
+    gap,
+    testID,
+    groupActions,
+  }: PanelLayoutViewProps & { groupActions?: React.ReactNode }) {
+    const region = useAppShellRegion();
+    const parentScope = useContext(PanelCssContext);
+    const inheritedResponsiveScope = useContext(PanelResponsiveScopeContext);
+    const scope = panelCssScope(useId());
+    const groupRef = useRef<ComponentRef<typeof NativeView>>(null);
+    const reducedMotion = usePrefersReducedMotion();
+    const wantsDocument =
+      Platform.OS === 'web' &&
+      region?.flow === 'document' &&
+      declared.singlePanelFlow === 'document' &&
+      declared.mode !== 'flow' &&
+      declared.mode !== 'deck' &&
+      eligiblePanels(declared, shellWidth).length === 1;
+    const [documentReady, setDocumentReady] = useState(wantsDocument);
+    const document = wantsDocument && documentReady;
+    // Keep the same bounded owner while the outgoing track closes and the
+    // survivor expands, including ancestor width changes when leaving Deck.
+    // Transfer to document scrolling only when those actual CSS transitions
+    // finish: no timeout or JavaScript geometry calculation.
+    useLayoutEffect(() => {
+      if (!wantsDocument) {
+        setDocumentReady(false);
+        return;
+      }
+      if (documentReady) return;
+      const node = groupRef.current as unknown as HTMLElement | null;
+      const ancestors = new Set<HTMLElement>();
+      for (let ancestor = node?.parentElement; ancestor; ancestor = ancestor.parentElement) {
+        if (
+          ancestor.dataset.bloomPanelOwner ||
+          ancestor.dataset.bloomReadingEnvelope ||
+          ancestor.dataset.bloomShellFrame
+        )
+          ancestors.add(ancestor);
+      }
+      let cancelled = false;
+      const finishWhenSettled = () => {
+        if (cancelled) return;
+        const owners = node?.querySelectorAll<HTMLElement>(`[data-bloom-panel-owner="${scope}"]`);
+        const animations = reducedMotion
+          ? []
+          : panelGeometryTransitions([...(owners ?? []), ...ancestors]);
+        if (!animations.length) {
+          setDocumentReady(true);
+          return;
+        }
+        // A resize can replace an in-flight transition without changing the
+        // requested owner. Recheck its replacement before committing the handoff.
+        void Promise.allSettled(animations.map((animation) => animation.finished)).then(
+          finishWhenSettled,
+        );
+      };
+      finishWhenSettled();
+      return () => {
+        cancelled = true;
+      };
+    }, [wantsDocument, documentReady, reducedMotion, scope]);
+    const firstInline = eligiblePanels(declared, shellWidth)[0]?.id;
+    const layout = {
+      ...declared,
+      panels: groupActions
+        ? declared.panels.map((panel) =>
+            panel.id === firstInline
+              ? {
+                  ...panel,
+                  headerActions: (
+                    <>
+                      {groupActions}
+                      {panel.headerActions}
+                    </>
+                  ),
+                }
+              : panel,
+          )
+        : declared.panels,
+      flow: document ? ('document' as const) : (declared.flow ?? ('bounded' as const)),
+      horizontalScroll: 'contained' as const,
+      gap:
+        declared.gap ??
+        (declared.appearance === 'joined' || declared.appearance === 'plain'
+          ? 1
+          : (region?.gutter ?? gap)),
+    };
+    const nestedRegion = useMemo(
+      () =>
+        region
+          ? {
+              ...region,
+              flow: document ? ('document' as const) : ('bounded' as const),
+              bottomReserve: document ? region.bottomReserve : 0,
+              underBottomBar: false,
+            }
+          : null,
+      [region, document],
+    );
+    return (
+      <View
+        ref={groupRef}
+        className="min-h-0 min-w-0 self-stretch grow shrink basis-auto"
+        {...(parentScope ? { dataSet: { bloomLayout: scope } } : {})}
+        style={
+          !document && region?.flow === 'document'
+            ? {
+                height: webViewportHeightMinus(
+                  region.viewportInset.top + region.viewportInset.bottom,
+                ),
+                flexGrow: 0,
+                flexShrink: 0,
+              }
+            : undefined
+        }
+      >
+        <PanelCssContext.Provider value={parentScope ? scope : null}>
+          <PanelResponsiveScopeContext.Provider value={inheritedResponsiveScope ?? parentScope}>
+            <AppShellRegionContext.Provider value={nestedRegion}>
+              <BottomEdgeProvider inherit={document}>
+                <ContentPanelNestingContext.Provider value={false}>
+                  <PanelLayoutView
+                    layout={layout}
+                    shellWidth={shellWidth}
+                    gap={gap}
+                    testID={testID}
+                  />
+                </ContentPanelNestingContext.Provider>
+              </BottomEdgeProvider>
+            </AppShellRegionContext.Provider>
+          </PanelResponsiveScopeContext.Provider>
+        </PanelCssContext.Provider>
+      </View>
+    );
+  }
   function PanelLayoutTracks({
     layout: declared,
     surfaceOwned = false,
@@ -970,16 +1233,22 @@ export function createPanelLayoutView(
     const layout = useMemo(() => applyPanelSpans(declared, spans), [declared, spans]);
     const region = useAppShellRegion();
     const restoration = useOptionalScrollRestorationContext();
+    const canRestoreDocument = useContext(PanelDocumentRestorationContext);
     const ancestorHost = useContext(ScreenHostContext);
+    const parentScreen = useContext(ScreenContext);
+    const fallbackInsets = useSafeAreaInsets();
+    const safeArea = useContext(SafeAreaInsetsContext) ?? fallbackInsets;
+    const windowInsets = useContext(PanelWindowInsetsContext) ?? safeArea;
     const cssScope = useContext(PanelCssContext);
-    const rootRef = useRef<ComponentRef<typeof View>>(null);
+    const responsiveScope = useContext(PanelResponsiveScopeContext);
+    const rootRef = useRef<ComponentRef<typeof NativeView>>(null);
     const reorderScrollRef = useRef<unknown>(null);
     const reorderScrollOffset = useRef({ x: 0, y: 0 });
     const nativeReorderScroll = useMemo<PanelReorderScroll>(
       () => ({
         measure: () =>
           new Promise((resolve) => {
-            const node = reorderScrollRef.current as ComponentRef<typeof View> | null;
+            const node = reorderScrollRef.current as ComponentRef<typeof NativeView> | null;
             if (!node?.measureInWindow) {
               resolve(null);
               return;
@@ -1020,10 +1289,18 @@ export function createPanelLayoutView(
     const dimensions = vertical ? (layout.heights ?? ownHeights) : (layout.widths ?? ownWidths);
     const joined = layout.appearance === 'joined' || layout.appearance === 'plain';
     const actualGap = layout.gap ?? (joined ? 1 : gap);
-    const document = layout.flow === 'document' && layout.mode !== 'deck' && Platform.OS === 'web';
-    const deck = layout.mode === 'deck';
+    const document =
+      layout.flow === 'document' &&
+      layout.mode !== 'deck' &&
+      layout.mode !== 'flow' &&
+      Platform.OS === 'web';
+    const deck = layout.mode === 'deck' || layout.mode === 'flow';
     const documentHorizontal =
-      !!cssScope && deck && !vertical && layout.horizontalScroll !== 'contained';
+      !!cssScope &&
+      deck &&
+      layout.mode !== 'flow' &&
+      !vertical &&
+      layout.horizontalScroll !== 'contained';
     const reducedMotion = usePrefersReducedMotion();
     // The group's own size matters only at thresholds: the room below which a
     // split shows its active track alone (its minimum, in every range of the
@@ -1032,13 +1309,8 @@ export function createPanelLayoutView(
     // size only when it crosses one of these (`useMeasuredSizeClass`).
     const shellRanges = panelLayoutWidthThresholds(layout);
     const minima = shellRanges.map((lower) => panelLayoutMinimum(layout, lower, actualGap));
-    // And where flexible tracks with minimums stop being held at them
-    // (`flexibleRoomThresholds`): Yoga divides the room between those.
-    const regimes = shellRanges.flatMap((lower) =>
-      flexibleRoomThresholds(layout, lower, actualGap, dimensions),
-    );
     const heightReserve = document ? 0 : bottomEdge;
-    const roomThresholds = [...minima, ...regimes];
+    const roomThresholds = minima;
     const group = useMeasuredSizeClass(
       vertical
         ? eligibilityFromGroup
@@ -1074,23 +1346,6 @@ export function createPanelLayoutView(
           actualGap,
           dimensions,
         );
-    // A track's size in pixels, when a resize gesture starts and the platform
-    // gives no layout to read (`getBoundingClientRect`): the group's measured
-    // room as Yoga divides it, which `resolvePanelTracks` models.
-    const modelTrackSize = (id: string) => {
-      // The window until the group's first layout, as its size classes read it.
-      const measured = group.read() ?? Dimensions.get('window');
-      const exactRoom = vertical ? Math.max(0, measured.height - heightReserve) : measured.width;
-      return (
-        resolvePanelTracks(
-          { ...layout, flow: document ? 'document' : 'bounded' },
-          exactRoom,
-          eligibilityFromGroup ? measured.width : shellWidth,
-          actualGap,
-          dimensions,
-        ).find((track) => track.id === id)?.width ?? 0
-      );
-    };
     usePanelReveal({
       rootRef,
       request: layout.revealPanel,
@@ -1108,6 +1363,8 @@ export function createPanelLayoutView(
           layout.widths ?? ownWidths,
           layout.heights ?? ownHeights,
           fillWidth,
+          responsiveScope ?? cssScope,
+          !fillWidth && !eligibilityFromGroup && responsiveScope === null,
         )
       : '';
     const visibilityReady = cssScope ? cssState.measured : layoutReady;
@@ -1115,7 +1372,7 @@ export function createPanelLayoutView(
       if (!cssScope || !rootRef.current || typeof getComputedStyle !== 'function') return;
       const root = rootRef.current as unknown as HTMLElement;
       const read = () => {
-        const row = root.querySelector<HTMLElement>('[data-bloom-panel-row]');
+        const row = root.querySelector<HTMLElement>(`[data-bloom-panel-row="${cssScope}"]`);
         if (!row) return;
         const axis = getComputedStyle(row).getPropertyValue('--bloom-panel-axis').trim();
         const next = layout.panels.map((panel, index) => {
@@ -1154,11 +1411,21 @@ export function createPanelLayoutView(
               if (!root.hasAttribute('data-bloom-panel-resizing')) read();
             });
       observer?.observe(root);
-      const shell = root.closest('[data-bloom-layout]');
+      const shell = root.closest(`[data-bloom-layout="${responsiveScope ?? cssScope}"]`);
       if (shell) observer?.observe(shell);
       return () => observer?.disconnect();
-    }, [cssScope, cssRules, layout.panels]);
+    }, [cssScope, responsiveScope, cssRules, layout.panels]);
     const visible = tracks.filter((track) => track.visible);
+    // Selection can survive Deck exit on a secondary column. Only actual
+    // inline order (already resolved for expansion/compact mode) owns the page.
+    const primaryId = visible[0]?.id;
+    const primaryPanel = layout.panels.find((panel) => panel.id === primaryId);
+    const ownsDocumentRestoration =
+      canRestoreDocument &&
+      ancestorHost.active !== false &&
+      parentScreen?.active !== false &&
+      primaryPanel !== undefined &&
+      !primaryPanel.group;
     const handedWindowChrome = useWindowChrome();
     const platformWindow = usePlatformWindow();
     // A web page deck scrolls the document from the shell's own start edge (the
@@ -1195,7 +1462,14 @@ export function createPanelLayoutView(
         )
       ) {
         const [first, second] = resized as [AppShellPanelDefinition, AppShellPanelDefinition];
-        const weights = splitPairSpans(first, second, pair[first.id]!, pair[second.id]!);
+        const axis = vertical ? 'vertical' : 'horizontal';
+        const weights = splitPairSpans(
+          panelForAxis(first, axis),
+          panelForAxis(second, axis),
+          pair[first.id]!,
+          pair[second.id]!,
+          Platform.OS !== 'web',
+        );
         const nextSpans = { ...spans, ...weights };
         if (declared.spans === undefined) setOwnSpans(nextSpans);
         declared.onSpansChange?.(nextSpans);
@@ -1301,15 +1575,7 @@ export function createPanelLayoutView(
     const row = (
       <View
         {...(cssScope ? { dataSet: { bloomPanelRow: cssScope } } : {})}
-        style={{
-          flexDirection: vertical ? 'column' : 'row',
-          alignItems: 'stretch',
-          flexGrow: 1,
-          flexShrink: document ? 0 : 1,
-          flexBasis: document ? 'auto' : 0,
-          minHeight: 0,
-          minWidth: 0,
-        }}
+        className={`min-h-0 min-w-0 items-stretch grow ${vertical ? 'flex-col' : 'flex-row'} ${document || (deck && vertical) ? 'shrink-0 basis-auto' : 'shrink basis-0'}`}
       >
         {layout.panels.map((panel, index) => (
           <PanelHost
@@ -1337,17 +1603,23 @@ export function createPanelLayoutView(
             visibilityReady={visibilityReady && trackById.has(panel.id)}
             index={index}
             getSize={() => resize.size(panel.id)}
-            modelSize={() => modelTrackSize(panel.id)}
             vertical={vertical}
+            shellWidth={shellWidth}
+            safeAreaTop={
+              (parentScreen?.topInset ?? 0) > 0 || (vertical && visible[0]?.id !== panel.id)
+                ? 0
+                : safeArea.top
+            }
             naturalHeight={
               vertical &&
-              document &&
+              (document || layout.mode === 'flow') &&
               panel.height === undefined &&
               dimensions[panel.id] === undefined
             }
             track={trackById.get(panel.id) ?? { ...CSS_TRACK, id: panel.id, visible: false }}
             alone={visible.length === 1}
             document={document}
+            documentRestorationOwner={canRestoreDocument && panel.id === primaryId}
             joined={joined}
             gap={actualGap}
             hasNext={visible[visible.length - 1]?.id !== panel.id}
@@ -1380,98 +1652,100 @@ export function createPanelLayoutView(
       </Viewport>
     );
     return (
-      <PanelDropProvider value={drop}>
-        <PanelOrderBoundary ids={layout.panels.map((panel) => panel.id)} rootRef={rootRef}>
-          <ServerStyleSheet id={cssScope ?? ''} css={cssRules} />
-          <View
-            ref={rootRef}
-            {...(cssScope
-              ? {
-                  dataSet: {
-                    bloomPanelGroup: cssScope,
-                    bloomPanelOrdering: reorder.ordering ? 'true' : undefined,
-                  },
-                }
-              : {})}
-            testID={testID}
-            onLayout={cssScope ? undefined : group.onLayout}
-            style={[
-              {
-                minWidth: 0,
-                alignSelf: 'stretch',
-                // Horizontal document panels reserve inside their own surface.
-                // A bounded group reserves the bottom bar, or — when the app keeps
-                // the bar over its content — fills under it and what scrolls clears
-                // it (`useBottomEdgeInset`, the panel scroller, the vertical deck).
-                paddingBottom: document
-                  ? vertical
-                    ? (region?.bottomReserve ?? 0)
-                    : 0
-                  : region?.underBottomBar
-                    ? 0
-                    : bottomEdge,
-                ...(cssScope
-                  ? {
-                      containerType: document ? 'inline-size' : 'size',
-                      containerName: `${cssScope}-group`,
-                    }
-                  : {}),
-              } as WebCssStyle,
-              document ? {} : FILL,
-            ]}
-          >
-            {Platform.OS === 'web' && restoration && !ancestorHost.restoresDocument ? (
-              <DocumentRestoration enabled={document} />
-            ) : null}
-            {joined && !surfaceOwned ? (
-              <ContentPanel
-                appearance={layout.appearance === 'plain' ? 'plain' : undefined}
-                framed={cssScope && !eligibilityFromGroup ? true : (region?.framed ?? true)}
-                fill={!document}
-                scrollable={false}
-                overlaySizing={document ? 'viewport' : 'panel'}
-                overlayInset={document ? region?.viewportInset : undefined}
-                surfaceStyle={
-                  groupWindowChrome && platformWindow
-                    ? [FILL, windowEdgeTopCorners(platformWindow.metrics)]
-                    : FILL
-                }
-                contentStyle={FILL}
-              >
-                {content}
-              </ContentPanel>
-            ) : (
-              content
-            )}
-            {layout.onPanelOrderChange ? (
-              <Text
-                accessibilityLiveRegion="polite"
-                aria-live="polite"
-                style={{
-                  position: 'absolute',
-                  width: 1,
-                  height: 1,
-                  overflow: 'hidden',
-                  opacity: 0,
-                }}
-              >
-                {reorder.announcement}
-              </Text>
-            ) : null}
-            {documentHorizontal ? (
-              <ScrollBar target="document" horizontal offset={bottomEdge} />
-            ) : null}
-            {documentHorizontal && layout.trailingAction ? (
-              <View
-                {...{ dataSet: { bloomDeckTrailing: cssScope ?? undefined } }}
-                testID={testID ? `${testID}-trailing-action` : undefined}
-              >
-                {layout.trailingAction}
-              </View>
-            ) : null}
-          </View>
-        </PanelOrderBoundary>
-      </PanelDropProvider>
+      <PanelWindowInsetsContext.Provider value={windowInsets}>
+        <PanelDropProvider value={drop}>
+          <PanelOrderBoundary ids={layout.panels.map((panel) => panel.id)} rootRef={rootRef}>
+            <ServerStyleSheet id={cssScope ?? ''} css={cssRules} />
+            <View
+              ref={rootRef}
+              {...(cssScope
+                ? {
+                    dataSet: {
+                      bloomPanelGroup: cssScope,
+                      bloomPanelOrdering: reorder.ordering ? 'true' : undefined,
+                    },
+                  }
+                : {})}
+              testID={testID}
+              onLayout={cssScope ? undefined : group.onLayout}
+              style={[
+                {
+                  minWidth: 0,
+                  alignSelf: 'stretch',
+                  // Horizontal document panels reserve inside their own surface.
+                  // A bounded group reserves the bottom bar, or — when the app keeps
+                  // the bar over its content — fills under it and what scrolls clears
+                  // it (`useBottomEdgeInset`, the panel scroller, the vertical deck).
+                  paddingBottom: document
+                    ? vertical && visible.length > 1
+                      ? (region?.bottomReserve ?? 0)
+                      : 0
+                    : region?.underBottomBar
+                      ? 0
+                      : bottomEdge,
+                  ...(cssScope
+                    ? {
+                        containerType: document ? 'inline-size' : 'size',
+                        containerName: `${cssScope}-group`,
+                      }
+                    : {}),
+                } as WebCssStyle,
+                document ? {} : FILL,
+              ]}
+            >
+              {Platform.OS === 'web' && restoration && !ancestorHost.restoresDocument ? (
+                <DocumentRestoration enabled={document && ownsDocumentRestoration} />
+              ) : null}
+              {joined && !surfaceOwned ? (
+                <ContentPanel
+                  appearance={layout.appearance === 'plain' ? 'plain' : undefined}
+                  framed={cssScope && !eligibilityFromGroup ? true : (region?.framed ?? true)}
+                  fill={!document}
+                  scrollable={false}
+                  overlaySizing={document ? 'viewport' : 'panel'}
+                  overlayInset={document ? region?.viewportInset : undefined}
+                  surfaceStyle={
+                    groupWindowChrome && platformWindow
+                      ? [FILL, windowEdgeTopCorners(platformWindow.metrics)]
+                      : FILL
+                  }
+                  contentStyle={FILL}
+                >
+                  {content}
+                </ContentPanel>
+              ) : (
+                content
+              )}
+              {layout.onPanelOrderChange ? (
+                <Text
+                  accessibilityLiveRegion="polite"
+                  aria-live="polite"
+                  style={{
+                    position: 'absolute',
+                    width: 1,
+                    height: 1,
+                    overflow: 'hidden',
+                    opacity: 0,
+                  }}
+                >
+                  {reorder.announcement}
+                </Text>
+              ) : null}
+              {documentHorizontal ? (
+                <ScrollBar target="document" horizontal offset={bottomEdge} />
+              ) : null}
+              {documentHorizontal && layout.trailingAction ? (
+                <View
+                  {...{ dataSet: { bloomDeckTrailing: cssScope ?? undefined } }}
+                  testID={testID ? `${testID}-trailing-action` : undefined}
+                >
+                  {layout.trailingAction}
+                </View>
+              ) : null}
+            </View>
+          </PanelOrderBoundary>
+        </PanelDropProvider>
+      </PanelWindowInsetsContext.Provider>
     );
   }
   function PanelLayoutView(props: PanelLayoutViewProps) {
@@ -1483,7 +1757,10 @@ export function createPanelLayoutView(
       return <RetainedPanelLayout layout={props.layout} gap={props.gap} testID={props.testID} />;
     if (props.layout.header === undefined) return <PanelLayoutTracks {...props} />;
     const document =
-      props.layout.flow === 'document' && props.layout.mode !== 'deck' && Platform.OS === 'web';
+      props.layout.flow === 'document' &&
+      props.layout.mode !== 'deck' &&
+      props.layout.mode !== 'flow' &&
+      Platform.OS === 'web';
     const joined = props.layout.appearance === 'joined' || props.layout.appearance === 'plain';
     const workspace = (
       <Screen

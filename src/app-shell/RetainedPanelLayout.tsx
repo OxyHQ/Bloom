@@ -13,7 +13,7 @@
  * accessibility tree, so showing it again is one style change with no relayout
  * of its content.
  */
-import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { ResizeHandle } from '../layout/ResizeHandle';
@@ -107,6 +107,12 @@ function RetainedHost({
   testID?: string;
 }) {
   const shown = box !== undefined;
+  const wasPresent = useRef(panel.visible !== false);
+  useLayoutEffect(() => {
+    const present = panel.visible !== false;
+    if (wasPresent.current && !present) panel.onExitComplete?.();
+    wasPresent.current = present;
+  }, [panel.visible, panel.onExitComplete]);
   const value = useMemo(
     () => ({
       id: panel.id,

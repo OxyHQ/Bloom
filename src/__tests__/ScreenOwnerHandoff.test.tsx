@@ -3,6 +3,7 @@ import { act, renderHook } from '@testing-library/react-native';
 import { Platform } from 'react-native';
 import { useScreenViewportBinding } from '../screen/use-screen-viewport';
 import type { ScreenContextValue } from '../screen/context';
+import { takeScrollOwnerHandoff } from '../scroll/owner-handoff';
 
 const originalOS = Platform.OS;
 beforeAll(() => Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' }));
@@ -74,4 +75,56 @@ it('does not transfer offsets from inactive retained screens or reset on initial
   tree.rerender({ documentFlow: true, active: false });
   tree.rerender({ documentFlow: true, active: true });
   expect(tree.writeWindow).not.toHaveBeenCalled();
+});
+
+it('preserves a pending offset when the owner reverses before its content can scroll', () => {
+  const tree = setup();
+  tree.scrollDocument(508);
+  Object.defineProperty(tree.element, 'scrollTop', {
+    configurable: true,
+    get: () => 0,
+    set: () => {},
+  });
+  window.scrollY = 0;
+  tree.rerender({ documentFlow: false, active: true });
+  // The router consumes the handoff before a virtual list has finished binding.
+  expect(takeScrollOwnerHandoff(tree.element)).toBe(508);
+  act(() => tree.element.dispatchEvent(new Event('scroll')));
+  tree.rerender({ documentFlow: true, active: true });
+  expect(window.scrollY).toBe(508);
+});
+
+it('lets explicit user input replace a pending offset before a rapid reverse', () => {
+  const tree = setup();
+  tree.scrollDocument(508);
+  Object.defineProperty(tree.element, 'scrollTop', {
+    configurable: true,
+    get: () => 0,
+    set: () => {},
+  });
+  window.scrollY = 0;
+  tree.rerender({ documentFlow: false, active: true });
+  expect(takeScrollOwnerHandoff(tree.element)).toBe(508);
+  act(() => tree.element.dispatchEvent(new Event('wheel')));
+  tree.rerender({ documentFlow: true, active: true });
+  expect(window.scrollY).toBe(0);
+});
+
+it('accepts browser rounding before recording subsequent scrolling', () => {
+  const tree = setup();
+  tree.scrollDocument(508.6);
+  let offset = 0;
+  Object.defineProperty(tree.element, 'scrollTop', {
+    configurable: true,
+    get: () => offset,
+    set: (value: number) => {
+      offset = Math.floor(value);
+    },
+  });
+  window.scrollY = 0;
+  tree.rerender({ documentFlow: false, active: true });
+  expect(takeScrollOwnerHandoff(tree.element)).toBe(508.6);
+  tree.scrollElement(600);
+  tree.rerender({ documentFlow: true, active: true });
+  expect(window.scrollY).toBe(600);
 });

@@ -18,6 +18,7 @@ import type { AppShellPanelLayout } from './panel-layout-types';
 const PANEL_MATERIAL = '[data-bloom-panel-material]';
 
 export const PanelCssContext = createContext<string | null>(null);
+export const PanelResponsiveScopeContext = createContext<string | null>(null);
 export const PanelCssLayoutContext = createContext<{
   layout: AppShellPanelLayout;
   gap: number;
@@ -34,6 +35,8 @@ export function panelLayoutCss(
   widths: Readonly<Record<string, number>> = {},
   heights: Readonly<Record<string, number>> = {},
   fillWidth = false,
+  responsiveScope = scope,
+  fixedEnvelope = false,
 ) {
   const root = `[data-bloom-layout="${scope}"]`;
   const group = `[data-bloom-panel-group="${scope}"]`;
@@ -42,7 +45,7 @@ export function panelLayoutCss(
     `${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index="${index}"]`;
   const liveSize = (index: number, fallback: string) =>
     `var(${panelSizeProperty(scope, index)}, ${fallback})`;
-  const deck = layout.mode === 'deck';
+  const deck = layout.mode === 'deck' || layout.mode === 'flow';
   const ordered = layout.transition === 'exit-before-enter';
   const geometryDelay = ordered ? 150 : 0;
   const fadeMs = ordered ? 150 : 380;
@@ -63,7 +66,7 @@ export function panelLayoutCss(
     .map((property) => `${property} 380ms cubic-bezier(.4,0,.2,1) ${geometryDelay}ms`)
     .join(',');
   const document = layout.flow === 'document' && !deck;
-  const pageDeck = deck && layout.horizontalScroll !== 'contained';
+  const pageDeck = deck && layout.mode !== 'flow' && layout.horizontalScroll !== 'contained';
   const thresholds = new Set<number>([0]);
   for (const panel of layout.panels) {
     if (panel.hideBelow !== undefined) thresholds.add(breakpointPx(panel.hideBelow));
@@ -87,7 +90,7 @@ ${root} [data-bloom-reading-content="${scope}"]{width:100%!important;flex-basis:
 ${row}{gap:0!important}
 ${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index]{interpolate-size:allow-keywords;transition:${geometryTransitions},opacity ${ordered ? 150 : 380}ms cubic-bezier(.4,0,.2,1) var(--bloom-panel-fade-delay,0ms),scale 150ms ease var(--bloom-panel-fade-delay,0ms),display 380ms allow-discrete ${geometryDelay}ms;transition-behavior:allow-discrete}
 ${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index]{--bloom-surface-presence-ms:${fadeMs}ms}
-${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index] ${PANEL_MATERIAL}>*{opacity:var(--bloom-surface-presence,1);transition:opacity ${fadeMs}ms cubic-bezier(.4,0,.2,1) var(--bloom-panel-fade-delay,0ms)}
+${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index] ${PANEL_MATERIAL}>*{opacity:var(--bloom-surface-presence,1);transition:opacity var(--bloom-surface-presence-ms,${fadeMs}ms) cubic-bezier(.4,0,.2,1) var(--bloom-panel-fade-delay,0ms)}
 ${group}:not([data-bloom-panel-ready]) [data-bloom-panel-owner="${scope}"][data-bloom-panel-index],${root}:not(:has(${group}[data-bloom-panel-ready])) :is([data-bloom-reading-envelope="${scope}"],[data-bloom-shell-frame="${scope}"],[data-bloom-shell-nav="${scope}"]){transition:none!important}
 ${group}[data-bloom-panel-resizing] [data-bloom-panel-owner="${scope}"][data-bloom-panel-index],${root}:has(${group}[data-bloom-panel-resizing]) [data-bloom-reading-envelope="${scope}"]{transition:none!important}
 ${group}[data-bloom-panel-resizing]{user-select:none;cursor:col-resize}
@@ -118,7 +121,7 @@ ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
     const envelope = deck ? '100%' : `${panelEnvelope(layout, lower, gap)}px`;
     let rules = `${root} [data-bloom-reading-envelope="${scope}"]{--bloom-reading-envelope:${envelope}}\n${row}{flex-direction:${vertical ? 'column' : 'row'}!important;--bloom-panel-axis:${axis}}\n`;
     const hidden = (index: number) =>
-      `${item(index)}{--bloom-panel-visible:0;--bloom-panel-fade-delay:0ms;scale:${ordered ? 0.98 : 1};flex:0 0 0px!important;display:none!important;width:0!important;height:auto!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;--bloom-surface-presence:0;margin:0!important;contain:size;overflow:hidden!important;pointer-events:none!important}\n${item(index)}:not(:has(${PANEL_MATERIAL})){opacity:0!important}\n`;
+      `${item(index)}{--bloom-panel-visible:0;--bloom-panel-fade-delay:0ms;scale:${ordered ? 0.98 : 1};flex:0 0 0px!important;display:none!important;width:${vertical ? '100%' : '0px'}!important;height:auto!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;--bloom-surface-presence:0;margin:0!important;contain:size;overflow:hidden!important;pointer-events:none!important}\n${item(index)} [data-bloom-panel-owner]{--bloom-surface-presence:0!important;--bloom-surface-presence-ms:${fadeMs}ms!important;--bloom-panel-fade-delay:0ms!important}\n${item(index)}:not(:has(${PANEL_MATERIAL})){opacity:0!important}\n`;
     for (let index = 0; index < layout.panels.length; index++) {
       const p = layout.panels[index]!;
       rules += `${item(index)}{--bloom-panel-floating:${p.floating && lower < breakpointPx(p.floating.below) ? 1 : 0}}\n`;
@@ -130,33 +133,43 @@ ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
       const dim = vertical ? (heights[p.id] ?? p.height) : (widths[p.id] ?? p.width);
       const min = vertical ? p.minHeight : p.minWidth;
       const max = vertical ? p.maxHeight : p.maxWidth;
-      const natural = vertical && document;
-      const basis = forced
-        ? natural
-          ? 'auto'
-          : '100%'
-        : dim !== undefined
-          ? `${dim}px`
-          : deck
-            ? `${DEFAULT_PANEL_WIDTH}px`
+      const natural = vertical && (document || layout.mode === 'flow');
+      const soleSplit = !deck && !natural && shown.length === 1;
+      // A percentage basis resolves to intrinsic content in an indefinite
+      // document column, and to its viewport in a bounded column. Keeping this
+      // basis across owner changes avoids an auto -> length interpolation that
+      // briefly collapses the persistent pane to its minimum.
+      const soleDocument = document && vertical && shown.length === 1 && dim === undefined;
+      const basis =
+        forced || soleSplit || soleDocument
+          ? natural && !soleDocument
+            ? 'auto'
+            : '100%'
+          : dim !== undefined
+            ? `${dim}px`
             : natural
               ? 'auto'
-              : '0px';
-      const grow = forced
-        ? 1
-        : natural
-          ? 0
-          : deck
-            ? Math.max(0, p.span ?? 0)
-            : flexible && dim !== undefined
-              ? 0
-              : (p.span ?? 1);
-      rules += `${item(index)}{--bloom-panel-alone-display:${shown.length === 1 ? 'flex' : 'none'};--bloom-panel-multiple-display:${shown.length === 1 ? 'none' : 'flex'};--bloom-panel-visible:1;--bloom-surface-presence:1;--bloom-panel-fade-delay:${ordered ? 530 : 0}ms;scale:1;display:flex!important;flex:var(${panelGrowProperty(scope, index)}, ${grow}) ${deck || natural ? 0 : 1} ${liveSize(index, basis)}!important;width:${vertical ? '100%' : pageDeck ? (forced ? 'calc(var(--bloom-deck-viewport) - var(--bloom-frame-end))' : liveSize(index, `${dim ?? DEFAULT_PANEL_WIDTH}px`)) : dim !== undefined && !forced ? `${dim}px` : 'auto'}!important;height:auto!important;min-width:${vertical || forced ? 0 : (min ?? 0)}px!important;max-width:${vertical || forced ? '100%' : max === undefined ? 'none' : `${max}px`}!important;min-height:${vertical && !forced ? (min ?? 0) : 0}px!important;max-height:${vertical && !forced && max !== undefined ? `${max}px` : 'none'}!important;opacity:1!important;margin-inline-start:${!vertical && position > 0 ? gap : 0}px!important;margin-top:${vertical && position > 0 ? gap : 0}px!important}\n`;
+              : deck
+                ? `${DEFAULT_PANEL_WIDTH}px`
+                : '0px';
+      const grow =
+        forced || soleSplit || soleDocument
+          ? 1
+          : natural
+            ? 0
+            : deck
+              ? Math.max(0, p.span ?? 0)
+              : fixedEnvelope && dim !== undefined && p.span === undefined
+                ? 0
+                : flexible && dim !== undefined
+                  ? 0
+                  : (p.span ?? 1);
+      rules += `${item(index)}{--bloom-panel-alone-display:${shown.length === 1 ? 'flex' : 'none'};--bloom-panel-multiple-display:${shown.length === 1 ? 'none' : 'flex'};--bloom-panel-visible:1;--bloom-surface-presence:1;--bloom-panel-fade-delay:${ordered ? 530 : 0}ms;scale:1;display:flex!important;flex:var(${panelGrowProperty(scope, index)}, ${grow}) ${deck || natural ? 0 : 1} ${liveSize(index, basis)}!important;width:${vertical ? '100%' : pageDeck ? (forced ? 'calc(var(--bloom-deck-viewport) - var(--bloom-frame-end))' : liveSize(index, `${dim ?? DEFAULT_PANEL_WIDTH}px`)) : dim !== undefined && !forced ? `${dim}px` : 'auto'}!important;height:auto!important;min-width:${vertical || forced ? 0 : (min ?? 0)}px!important;max-width:${vertical || forced ? '100%' : max === undefined ? (deck ? 'none' : '100%') : `${max}px`}!important;min-height:${vertical && !forced ? (min ?? 0) : 0}px!important;max-height:${vertical && !forced && max !== undefined ? `${max}px` : 'none'}!important;opacity:1!important;margin-inline-start:${!vertical && position > 0 ? gap : 0}px!important;margin-top:${vertical && position > 0 ? gap : 0}px!important}\n`;
       const entering = item(index).replace(
         group,
         `${group}[data-bloom-panel-ready]:not([data-bloom-panel-ordering])`,
       );
-      rules += `@starting-style{${entering}{scale:${ordered ? 0.98 : 1};flex:0 0 0px!important;width:${vertical ? '100%' : '0px'}!important;min-width:0!important;min-height:0!important;--bloom-surface-presence:0;margin-inline-start:0!important;margin-top:0!important}${entering}:not(:has(${PANEL_MATERIAL})){opacity:0!important}}\n`;
+      rules += `@starting-style{${entering}{scale:${ordered ? 0.98 : 1};flex:0 0 0px!important;width:${vertical ? '100%' : '0px'}!important;min-width:0!important;min-height:0!important;--bloom-surface-presence:0;margin-inline-start:0!important;margin-top:0!important}${entering} [data-bloom-panel-owner]{--bloom-surface-presence:0!important}${entering}:not(:has(${PANEL_MATERIAL})){opacity:0!important}}\n`;
     }
     if (pageDeck && !vertical) {
       const trackWidths = shown.map((panel) =>
@@ -213,11 +226,12 @@ ${row}{width:100%!important;min-width:0!important}
         rules +=
           p.id === active?.id
             ? `${item(index)}{--bloom-panel-alone-display:flex;--bloom-panel-multiple-display:none;--bloom-panel-visible:1;display:flex!important;flex:1 1 0px!important;min-width:0!important;min-height:0!important;max-width:100%!important;max-height:none!important;margin:0!important;opacity:1!important;--bloom-surface-presence:1}`
-            : hidden(index);
+            : hidden(index) +
+              (p.floating?.whenConstrained ? `${item(index)}{--bloom-panel-floating:1}` : '');
       });
       rules += '}\n';
     }
-    css += `@container ${scope} ${query}{${rules}}\n`;
+    css += `@container ${responsiveScope} ${query}{${rules}}\n`;
   }
   return css;
 }

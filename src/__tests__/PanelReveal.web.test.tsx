@@ -167,3 +167,13 @@ it('ignores content transitions and scroll-driven animations', () => {
   act(() => root.render(<Harness request={{ id: 'last', requestKey: 1 }} />));
   expect(scroll).toHaveBeenCalledTimes(1);
 });
+
+it('does not delay geometry completion for content fades or decorative animations', () => {
+  act(() => root.render(<Harness />));
+  const last = host.querySelector('[data-bloom-panel-index="1"]');
+  if (!last) throw new Error('Missing panel host');
+  transition(last, 'opacity');
+  animations.get(last)?.push({ playState: 'running', pending: false } as Animation);
+  act(() => root.render(<Harness request={{ id: 'last', requestKey: 'paint-only' }} />));
+  expect(scroll).toHaveBeenCalledTimes(1);
+});

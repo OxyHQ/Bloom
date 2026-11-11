@@ -1,4 +1,11 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, type MutableRefObject } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  type MutableRefObject,
+} from 'react';
 import { Platform } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { animateMotion } from '../motion/recipes';
@@ -6,10 +13,15 @@ import type { useScrollRestoration as UseScrollRestoration } from '../scroll/use
 import type { ScrollRestorationTarget } from '../scroll/types';
 import type { ScreenContextValue } from './context';
 import { useOptionalScrollRestorationContext } from '../scroll/context';
-import { recordScrollOwnerHandoff } from '../scroll/owner-handoff';
+import { readScrollOwnerHandoff, recordScrollOwnerHandoff } from '../scroll/owner-handoff';
 import type { ScreenViewportValue, ScreenHostValue } from './context';
 import { useRegisterScreenScroller } from './reselect';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import type { ScrollMetrics } from '../layout/scroll-metrics';
+
+// Retained route Screens can share one panel metric. An outgoing cleanup must
+// not clear the next Screen's measurement.
+const intrinsicOwners = new WeakMap<ScrollMetrics, object>();
 
 const useNoContentId = () => null;
 
@@ -32,7 +44,7 @@ export function useScreenViewportBinding(
   const contentRef = useRef<unknown>(null);
   const contentHeight = useSharedValue(-1);
   const viewportHeight = useSharedValue(0);
-  const metrics = useMemo(
+  const metrics = useMemo<ScrollMetrics>(
     () =>
       enabled && host?.metrics
         ? host.metrics
@@ -43,6 +55,37 @@ export function useScreenViewportBinding(
   const restoring = useRef(false);
   const active = useRef(screen.active);
   active.current = screen.active;
+  const intrinsicScope = useMemo(
+    () => ({ sources: new Map<object, number>() }),
+    [contentId, metrics],
+  );
+  const currentIntrinsicScope = useRef(intrinsicScope);
+  currentIntrinsicScope.current = intrinsicScope;
+  const setIntrinsicContentHeight = useCallback(
+    (source: object, height: number | null) => {
+      const metric = metrics.intrinsicContentHeight;
+      if (!metric || currentIntrinsicScope.current !== intrinsicScope) return;
+      if (height === null) intrinsicScope.sources.delete(source);
+      else if (enabled && active.current) intrinsicScope.sources.set(source, height);
+      else return;
+      if (height !== null) intrinsicOwners.set(metrics, intrinsicScope);
+      if (intrinsicOwners.get(metrics) !== intrinsicScope) return;
+      const values = [...intrinsicScope.sources.values()];
+      metric.value =
+        values.length && values.every((value) => value >= 0) ? Math.max(...values) : -1;
+    },
+    [enabled, intrinsicScope, metrics],
+  );
+  useLayoutEffect(() => {
+    if (!enabled || !screen.active) return;
+    return () => {
+      intrinsicScope.sources.clear();
+      if (intrinsicOwners.get(metrics) === intrinsicScope) {
+        intrinsicOwners.delete(metrics);
+        if (metrics.intrinsicContentHeight) metrics.intrinsicContentHeight.value = -1;
+      }
+    };
+  }, [enabled, screen.active, intrinsicScope, metrics]);
   const reducedMotion = usePrefersReducedMotion();
   const owner = useRef<{
     documentFlow: boolean;
@@ -56,6 +99,8 @@ export function useScreenViewportBinding(
   useLayoutEffect(() => {
     if (!enabled || !web || typeof window === 'undefined') return;
     const previous = owner.current;
+    const element = scrollRef.current as HTMLElement | null;
+    const target = documentFlow ? window : element;
     let releaseHandoff: (() => void) | undefined;
     if (
       previous &&
@@ -64,9 +109,10 @@ export function useScreenViewportBinding(
       previous.active &&
       screen.active
     ) {
-      const element = scrollRef.current as HTMLElement | null;
-      const target = documentFlow ? window : element;
-      if (target) releaseHandoff = recordScrollOwnerHandoff(target, previous.offset);
+      if (target)
+        releaseHandoff = recordScrollOwnerHandoff(target, previous.offset, (offset) => {
+          if (owner.current?.documentFlow === documentFlow) owner.current.offset = offset;
+        });
       if (documentFlow) window.scrollTo({ top: previous.offset, behavior: 'instant' });
       else if (element) element.scrollTop = previous.offset;
     }
@@ -74,9 +120,9 @@ export function useScreenViewportBinding(
       contentId,
       documentFlow,
       active: screen.active,
-      offset: documentFlow
-        ? window.scrollY
-        : ((scrollRef.current as HTMLElement | null)?.scrollTop ?? 0),
+      offset:
+        (target ? readScrollOwnerHandoff(target) : undefined) ??
+        (documentFlow ? window.scrollY : (element?.scrollTop ?? 0)),
     };
     // A newly mounted router sidecar can focus on a later commit. Retain the
     // transfer for this active owner lifetime instead of expiring it during
@@ -95,7 +141,8 @@ export function useScreenViewportBinding(
         ? (document.scrollingElement ?? document.documentElement)
         : element!;
       const y = documentFlow ? window.scrollY : node.scrollTop;
-      if (owner.current?.documentFlow === documentFlow) owner.current.offset = Math.max(0, y);
+      if (owner.current?.documentFlow === documentFlow)
+        owner.current.offset = readScrollOwnerHandoff(target) ?? Math.max(0, y);
       metrics.scrollY.value = Math.max(0, y);
       metrics.contentHeight.value = node.scrollHeight;
       metrics.viewportHeight.value = Math.max(0, node.clientHeight - (documentFlow ? reserved : 0));
@@ -127,6 +174,8 @@ export function useScreenViewportBinding(
       scrollRef: documentFlow ? null : scrollRef,
       metrics,
       active: screen.active,
+      contentRef,
+      setIntrinsicContentHeight,
       scrollTo(options) {
         if (!active.current) return;
         if (web) {
@@ -146,7 +195,7 @@ export function useScreenViewportBinding(
         }
       },
     }),
-    [web, documentFlow, metrics, screen.active, scrollRef],
+    [web, documentFlow, metrics, screen.active, scrollRef, setIntrinsicContentHeight],
   );
   // The screen's own viewport answers a reselect, as the page: a list scrolling
   // inside it wins.

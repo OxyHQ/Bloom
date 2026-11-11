@@ -60,118 +60,12 @@ export function panelEnvelope(layout: AppShellPanelLayout, shellWidth: number, g
   );
 }
 
-export interface ResolvedPanelTrack {
-  id: string;
-  width: number;
-  visible: boolean;
-  gap: number;
-  /** Responsive presentation, independent of its open intent. */
-  floating?: boolean;
-}
-export function resolvePanelTracks(
-  layout: AppShellPanelLayout,
-  available: number,
-  shellWidth: number,
-  gap: number,
-  widths: Readonly<Record<string, number>> = {},
-): ResolvedPanelTrack[] {
-  const axis = resolvePanelAxis(layout, shellWidth);
-  const eligible = eligiblePanels(layout, shellWidth).map((panel) => panelForAxis(panel, axis));
-  const natural = axis === 'vertical' && layout.flow === 'document' && layout.mode !== 'deck';
-  const deck = layout.mode === 'deck' || natural;
-  const minimum =
-    eligible.reduce((sum, panel) => sum + panelMinimum(panel), 0) +
-    Math.max(0, eligible.length - 1) * gap;
-  const compact =
-    layout.mode !== 'deck' &&
-    ((layout.collapseBelow !== undefined && shellWidth < breakpointPx(layout.collapseBelow)) ||
-      (!natural && available < minimum));
-  const active =
-    eligible.find((panel) => panel.id === (layout.expandedPanel ?? layout.activePanel)) ??
-    eligible[0];
-  const shown =
-    layout.expandedPanel || compact
-      ? eligible.filter((panel) => panel.id === active?.id)
-      : eligible;
-  const room = Math.max(0, available - Math.max(0, shown.length - 1) * gap);
-  // A flexible split track grows from a zero basis, as the CSS compositor's
-  // `flex: <span> 1 0px` does: its share is proportional to its span, and only
-  // a min/max boundary freezes it. Starting it at its minimum gave native a
-  // `min + share` split that the browser never drew.
-  const fromZero = (panel: AppShellPanelDefinition) =>
-    !deck &&
-    !natural &&
-    widths[panel.id] === undefined &&
-    panel.width === undefined &&
-    shown.length > 1 &&
-    !layout.expandedPanel;
-  const sizes = shown.map((panel) =>
-    fromZero(panel)
-      ? 0
-      : clampPanelWidth(
-          panel,
-          positive(
-            widths[panel.id],
-            positive(panel.width, deck && !natural ? DEFAULT_PANEL_WIDTH : panelMinimum(panel)),
-          ),
-        ),
-  );
-  if ((!deck || layout.expandedPanel) && shown.length === 1) sizes[0] = available;
-  else if (!deck || (!natural && shown.some((panel) => (panel.span ?? 0) > 0))) {
-    // Water-fill available room, freezing tracks at their min/max boundaries.
-    for (let pass = 0; pass <= shown.length; pass++) {
-      const delta = room - sizes.reduce((sum, value) => sum + value, 0);
-      if (Math.abs(delta) < 0.01) break;
-      // Deck columns may opt into spare room, but never shrink to fit:
-      // overflow remains owned by the compositor's horizontal viewport.
-      if (deck && delta < 0) break;
-      let candidates = shown
-        .map((panel, index) => ({ panel, index }))
-        .filter(({ panel }) => !deck || (panel.span ?? 0) > 0)
-        .filter(({ panel, index }) =>
-          delta > 0 ? sizes[index]! < panelMaximum(panel) : sizes[index]! > panelMinimum(panel),
-        );
-      if (delta > 0 && !deck) {
-        const flexible = candidates.filter(
-          ({ panel }) => panel.width === undefined && widths[panel.id] === undefined,
-        );
-        if (flexible.length) candidates = flexible;
-      }
-      const weight = candidates.reduce(
-        (sum, { panel }) => sum + Math.max(Number.EPSILON, positive(panel.span, 1)),
-        0,
-      );
-      if (!weight) break;
-      candidates.forEach(({ panel, index }) => {
-        sizes[index] = clampPanelWidth(
-          panel,
-          sizes[index]! + (delta * Math.max(Number.EPSILON, positive(panel.span, 1))) / weight,
-        );
-      });
-    }
-  }
-  shown.forEach((panel, index) => {
-    if (sizes[index]! < panelMinimum(panel)) sizes[index] = panelMinimum(panel);
-  });
-  return layout.panels.map((panel) => {
-    const index = shown.findIndex((candidate) => candidate.id === panel.id);
-    return {
-      id: panel.id,
-      width: index < 0 ? 0 : sizes[index]!,
-      visible: index >= 0,
-      gap: index > 0 ? gap : 0,
-      ...(panel.floating ? { floating: shellWidth < breakpointPx(panel.floating.below) } : {}),
-    };
-  });
-}
-
 /**
  * A track as native flex lays it out: what `panelLayoutCss` writes for the web,
- * as Yoga's flex values along the group's axis. The room is never an input:
- * Yoga divides whatever room the group has in the same pass as a resize, so a
- * window resizing runs no JavaScript. Only the thresholds a width is compared
- * against decide anything here (the shell's breakpoints, the group's minimum),
- * so `shellWidth` and `room` may be quantized (`quantizeWidth`).
+ * as Yoga's flex values along the group's axis. Room only selects semantic
+ * capacity/floating states. Yoga divides the room continuously; React hears
+ * only threshold changes (shell breakpoints and group minimum capacity), so
+ * `shellWidth` and `room` may be quantized (`quantizeWidth`).
  */
 export interface PanelFlexTrack {
   id: string;
@@ -195,6 +89,8 @@ export interface PanelFlexTrack {
 export function panelLayoutWidthThresholds(layout: AppShellPanelLayout): number[] {
   const thresholds = new Set<number>([0]);
   for (const panel of layout.panels) {
+    if (panel.group)
+      for (const threshold of panelLayoutWidthThresholds(panel.group)) thresholds.add(threshold);
     if (panel.hideBelow !== undefined) thresholds.add(breakpointPx(panel.hideBelow));
     if (panel.floating) thresholds.add(breakpointPx(panel.floating.below));
   }
@@ -223,112 +119,8 @@ export function panelLayoutMinimum(
 }
 
 /**
- * Flexible split tracks with minimums, as the CSS compositor divides room:
- * each takes `clamp(λ · span, min, max)` for the one `λ` that fills the room,
- * growing from a zero basis. Yoga instead starts a track at its minimum and
- * divides what is left (its flex basis is bounded by min and max), which would
- * draw `min + share`. So native gives Yoga the CSS answer piecewise: a track
- * held at its minimum is a fixed track of that size, and every other track
- * grows from zero with no minimum; which tracks are held changes only at
- * thresholds of the room (`flexibleRoomThresholds`), where React redraws.
- */
-interface FlexibleTrack {
-  id: string;
-  span: number;
-  min: number;
-  max: number;
-}
-
-/** Below this a track's minimum and its share are the same size (px). */
-const HELD_TOLERANCE = 1e-6;
-
-/** What `λ` fills `available` (the water level), and the room each breakpoint needs. */
-function waterLevel(tracks: readonly FlexibleTrack[], available: number): number {
-  const filled = (level: number) =>
-    tracks.reduce(
-      (sum, track) => sum + Math.min(track.max, Math.max(track.min, level * track.span)),
-      0,
-    );
-  const breakpoints = [
-    0,
-    ...tracks.flatMap((track) => [track.min / track.span, track.max / track.span]),
-  ]
-    .filter((level) => Number.isFinite(level))
-    .sort((a, b) => a - b);
-  // The highest level that fills no more than `available`: on a stretch where
-  // every track is held (filling does not grow), the level is that stretch's
-  // end, so a room exactly at a threshold holds no track that it fills.
-  let low = 0;
-  for (const level of breakpoints) {
-    if (filled(level) > available) {
-      const from = filled(low);
-      return low + ((available - from) / (filled(level) - from)) * (level - low);
-    }
-    low = level;
-  }
-  const free = tracks.filter((track) => !Number.isFinite(track.max));
-  const span = free.reduce((sum, track) => sum + track.span, 0);
-  return span > 0 ? low + (available - filled(low)) / span : low;
-}
-
-/** The split's shown tracks and what of the room is theirs to divide, as `resolvePanelFlex` decides them. */
-function splitShape(
-  layout: AppShellPanelLayout,
-  shellWidth: number,
-  gap: number,
-  dimensions: Readonly<Record<string, number>>,
-) {
-  const axis = resolvePanelAxis(layout, shellWidth);
-  const eligible = eligiblePanels(layout, shellWidth).map((panel) => panelForAxis(panel, axis));
-  const own = (panel: AppShellPanelDefinition) => dimensions[panel.id] ?? panel.width;
-  const flexible: FlexibleTrack[] = eligible
-    .filter((panel) => own(panel) === undefined)
-    .map((panel) => ({
-      id: panel.id,
-      span: Math.max(Number.EPSILON, positive(panel.span, 1)),
-      min: panelMinimum(panel),
-      max: panelMaximum(panel),
-    }));
-  const fixed =
-    eligible
-      .filter((panel) => own(panel) !== undefined)
-      .reduce((sum, panel) => sum + clampPanelWidth(panel, own(panel)!), 0) +
-    Math.max(0, eligible.length - 1) * gap;
-  return { flexible, fixed };
-}
-
-/**
- * The room at which a flexible track with a minimum stops being held at it
- * (`waterLevel` reaching `min / span`), for the group's size classes: between
- * two of these, which tracks are held does not change, and Yoga divides the
- * room alone.
- */
-export function flexibleRoomThresholds(
-  layout: AppShellPanelLayout,
-  shellWidth: number,
-  gap: number,
-  dimensions: Readonly<Record<string, number>> = {},
-): number[] {
-  if (layout.mode === 'deck' || layout.expandedPanel) return [];
-  const { flexible, fixed } = splitShape(layout, shellWidth, gap, dimensions);
-  if (flexible.length < 2) return [];
-  return flexible
-    .filter((track) => track.min > 0)
-    .map(
-      (held) =>
-        fixed +
-        flexible.reduce(
-          (sum, track) =>
-            sum + Math.min(track.max, Math.max(track.min, (held.min / held.span) * track.span)),
-          0,
-        ),
-    );
-}
-
-/**
- * Each panel's flex along the group's axis, decided as `resolvePanelTracks`
- * decides which tracks show (eligibility, collapse, the active one alone in too
- * little room) and sized as the CSS compositor sizes them: a flexible split
+ * Each panel's declarative flex constraints and responsive eligibility.
+ * The native engine distributes the actual room: a flexible split
  * track grows by its span from a zero basis; one with a width of its own keeps
  * it beside flexible ones and grows by its span when none is; a deck column
  * keeps its width and takes spare room only by an explicit span; a track shown
@@ -344,13 +136,15 @@ export function resolvePanelFlex(
   const axis = resolvePanelAxis(layout, shellWidth);
   const vertical = axis === 'vertical';
   const eligible = eligiblePanels(layout, shellWidth).map((panel) => panelForAxis(panel, axis));
-  const natural = vertical && layout.flow === 'document' && layout.mode !== 'deck';
-  const deck = layout.mode === 'deck' || natural;
+  const natural =
+    vertical && (layout.mode === 'flow' || (layout.flow === 'document' && layout.mode !== 'deck'));
+  const deck = layout.mode === 'deck' || layout.mode === 'flow' || natural;
   const minimum =
     eligible.reduce((sum, panel) => sum + panelMinimum(panel), 0) +
     Math.max(0, eligible.length - 1) * gap;
   const compact =
     layout.mode !== 'deck' &&
+    layout.mode !== 'flow' &&
     ((layout.collapseBelow !== undefined && shellWidth < breakpointPx(layout.collapseBelow)) ||
       (!natural && room < minimum));
   const active =
@@ -360,26 +154,14 @@ export function resolvePanelFlex(
   const shown = forced ? eligible.filter((panel) => panel.id === active?.id) : eligible;
   const own = (panel: AppShellPanelDefinition) => dimensions[panel.id] ?? panel.width;
   const flexible = shown.some((panel) => own(panel) === undefined);
-  // Two or more flexible split tracks: those the room holds at their minimum
-  // (`waterLevel`, `flexibleRoomThresholds`).
-  const held = new Set<string>();
-  let regime = false;
-  if (!forced && !deck) {
-    const shape = splitShape(layout, shellWidth, gap, dimensions);
-    if (shape.flexible.length > 1 && shape.flexible.some((track) => track.min > 0)) {
-      regime = true;
-      const level = waterLevel(shape.flexible, Math.max(0, room - shape.fixed));
-      // A room exactly at a threshold (a size class's lower bound is one) is
-      // past it: the track there no longer needs holding. Rounding must not
-      // say otherwise.
-      for (const track of shape.flexible)
-        if (track.min > level * track.span + HELD_TOLERANCE) held.add(track.id);
-    }
-  }
   return layout.panels.map((declared) => {
     const position = shown.findIndex((candidate) => candidate.id === declared.id);
     const floating = declared.floating
-      ? { floating: shellWidth < breakpointPx(declared.floating.below) }
+      ? {
+          floating:
+            shellWidth < breakpointPx(declared.floating.below) ||
+            (!!declared.floating.whenConstrained && compact && declared.id !== active?.id),
+        }
       : {};
     if (position < 0)
       return {
@@ -409,19 +191,6 @@ export function resolvePanelFlex(
         max: Number.POSITIVE_INFINITY,
         gap: leading,
       };
-    // Held at its minimum by the room: a fixed track of that size.
-    if (held.has(panel.id))
-      return {
-        id: declared.id,
-        visible: true,
-        ...floating,
-        grow: 0,
-        shrink: 0,
-        basis: panelMinimum(panel),
-        min: panelMinimum(panel),
-        max: panelMinimum(panel),
-        gap: leading,
-      };
     const basis =
       dimension !== undefined
         ? clampPanelWidth(panel, dimension)
@@ -443,9 +212,8 @@ export function resolvePanelFlex(
       shrink: deck ? 0 : 1,
       basis,
       ...(natural && dimension === undefined ? { basisAuto: true } : {}),
-      // A flexible split track the room does not hold grows from zero with no
-      // minimum for Yoga to start it at (the room keeps it above it).
-      min: dimension === undefined && !deck && regime ? 0 : panelMinimum(panel),
+      // Min/max remain native flex constraints; no JS water-fill distribution.
+      min: panelMinimum(panel),
       max: panelMaximum(panel),
       gap: leading,
     };
@@ -465,6 +233,23 @@ export function resizePanelPair(
   const maximum = Math.min(panelMaximum(first), total - panelMinimum(second));
   const width = Math.max(minimum, Math.min(maximum, requested));
   return { [first.id]: width, [second.id]: total - width };
+}
+
+/** A gesture may reduce an oversized pane, but cannot grow its excess back. */
+export function panelContentResizeLimit(
+  panel: AppShellPanelDefinition,
+  currentSize: number,
+  contentMaximum: number | undefined,
+): AppShellPanelDefinition {
+  if (contentMaximum === undefined || !Number.isFinite(contentMaximum) || contentMaximum < 0)
+    return panel;
+  return {
+    ...panel,
+    maxWidth: Math.min(
+      panelMaximum(panel),
+      Math.max(panelMinimum(panel), currentSize, contentMaximum),
+    ),
+  };
 }
 
 /** Committed weights override descriptor spans, in the resolver and the CSS compiler alike. */
@@ -499,19 +284,27 @@ export function isFlexiblePanel(
  * The weights that draw a resized pair of flexible tracks at the sizes it
  * settled on. The pair keeps its combined span, so every other track keeps its
  * share; the split is the settled pixel ratio, so the proportion survives the
- * region growing or shrinking.
+ * region growing or shrinking. Native Yoga allocates free space beyond each
+ * minimum, so its gesture commit converts only that free portion to weights.
+ * This conversion runs once per gesture; it does not distribute layout.
  */
 export function splitPairSpans(
   first: AppShellPanelDefinition,
   second: AppShellPanelDefinition,
   firstSize: number,
   secondSize: number,
+  minimumBasis = false,
 ): Record<string, number> {
   const total = positive(first.span, 1) + positive(second.span, 1);
-  const pixels = firstSize + secondSize;
+  const firstFree = minimumBasis ? Math.max(0, firstSize - panelMinimum(first)) : firstSize;
+  const secondFree = minimumBasis ? Math.max(0, secondSize - panelMinimum(second)) : secondSize;
+  const pixels = firstFree + secondFree;
   if (!(pixels > 0) || !(total > 0)) return {};
-  const share = Math.max(0, Math.min(1, firstSize / pixels));
-  return { [first.id]: total * share, [second.id]: total * (1 - share) };
+  const share = Math.max(0, Math.min(1, firstFree / pixels));
+  return {
+    [first.id]: minimumBasis ? Math.max(Number.EPSILON, total * share) : total * share,
+    [second.id]: minimumBasis ? Math.max(Number.EPSILON, total * (1 - share)) : total * (1 - share),
+  };
 }
 
 /** A panel along the window's top edge, away from the controls: its header moves the window. */
@@ -525,7 +318,7 @@ export const WINDOW_TOP_EDGE: WindowChrome = { leading: 0 };
  */
 export function panelWindowChrome(
   chrome: WindowChrome | null,
-  tracks: readonly Pick<ResolvedPanelTrack, 'visible' | 'floating'>[],
+  tracks: readonly Pick<PanelFlexTrack, 'visible' | 'floating'>[],
   vertical: boolean,
 ): (WindowChrome | null)[] {
   const shown = (index: number) => !!tracks[index]?.visible && !tracks[index]?.floating;

@@ -29,6 +29,7 @@ beforeEach(() => {
   target = join(consumer, 'node_modules/.bun/bloom@published/node_modules/@oxy.so/bloom');
   mkdirSync(join(source, 'src'), { recursive: true });
   writeFileSync(join(source, 'src/index.ts'), 'export const localMarker = 1;\n');
+  writeFileSync(join(source, 'app.plugin.js'), 'module.exports = (config) => config;\n');
   mkdirSync(join(source, 'lib'), { recursive: true });
   writeFileSync(join(source, 'lib/index.js'), 'module.exports = "local-built-marker";\n');
   writeFileSync(
@@ -60,6 +61,7 @@ it('mirrors an isolated Bun symlink idempotently and restores the original link'
   expect(readlinkSync(install)).toBe(relative(dirname(install), join(consumer, 'bloom-local')));
   expect(readlinkSync(join(dirname(install), '.bloom-published'))).toBe(originalLink);
   expect(readFileSync(join(install, 'src/index.ts'), 'utf8')).toContain('localMarker');
+  expect(readFileSync(join(install, 'app.plugin.js'), 'utf8')).toContain('module.exports');
   run(`--source=${source}`);
   run('--restore');
   expect(lstatSync(install).isSymbolicLink()).toBe(true);
@@ -126,6 +128,7 @@ it('retains an active mirror if its original backup is missing', () => {
   const result = spawnSync(process.execPath, [script, consumer, '--restore'], { encoding: 'utf8' });
   expect(result.status).not.toBe(0);
   expect(readFileSync(join(install, 'src/index.ts'), 'utf8')).toContain('localMarker');
+  expect(readFileSync(join(install, 'app.plugin.js'), 'utf8')).toContain('module.exports');
 });
 
 it('refuses restore when an install link was removed and retains its backup and mirror', () => {

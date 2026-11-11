@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useEffect } from 'react';
 import * as Native from 'react-native';
+import { SafeAreaInsetsContext, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { render, fireEvent } from '@testing-library/react-native';
 import { AppShell, useAppShellPanel, usePanelNavigation } from '../app-shell';
 import type { AppShellPanelLayout } from '../app-shell';
@@ -11,6 +12,15 @@ import { resolvedStyle } from './support/rendered-style';
 import { Screen } from '../screen';
 import { buildThemeFromSeed } from '../theme/build-theme-from-seed';
 import { mockWindowSize } from './support/window-size';
+jest.mock('react-native-safe-area-context', () => {
+  const actual = jest.requireActual('../../__mocks__/react-native-safe-area-context');
+  const React = jest.requireActual('react');
+  return {
+    ...actual,
+    useSafeAreaInsets: () =>
+      React.useContext(actual.SafeAreaInsetsContext) ?? { top: 0, bottom: 0, left: 0, right: 0 },
+  };
+});
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <BloomThemeProvider mode="light" colorPreset="teal">
     {children}
@@ -102,6 +112,10 @@ describe('root modular panels', () => {
     fireEvent(screen.getByTestId('shell-panels'), 'layout', {
       nativeEvent: { layout: { width: 800, height: 600, x: 0, y: 0 } },
     });
+    for (const id of ['a', 'b'])
+      fireEvent(screen.getByTestId(`shell-panels-${id}`), 'layout', {
+        nativeEvent: { layout: { width: 400, height: 600, x: 0, y: 0 } },
+      });
     fireEvent(screen.UNSAFE_getByType(ResizeHandle), 'nudge', 300);
     expect(onWidthsChange).toHaveBeenCalledWith({ a: 500, b: 300 });
   });
@@ -136,6 +150,13 @@ describe('root modular panels', () => {
     fireEvent(screen.getByTestId('shell-panels'), 'layout', {
       nativeEvent: { layout: { width: 800, height: 700, x: 0, y: 0 } },
     });
+    for (const [id, height] of [
+      ['a', 300],
+      ['b', 400],
+    ] as const)
+      fireEvent(screen.getByTestId(`shell-panels-${id}`), 'layout', {
+        nativeEvent: { layout: { width: 800, height, x: 0, y: 0 } },
+      });
     const grip = screen.UNSAFE_getByType(ResizeHandle);
     expect(grip.props.orientation).toBe('horizontal');
     fireEvent(grip, 'nudge', 500);
@@ -378,4 +399,123 @@ describe('a screen colour preset', () => {
     for (const id of ['sidebar', 'main', 'side'])
       expect(tree.getByTestId(id).props.children).toBe(seeded);
   });
+});
+
+describe('nested panel groups', () => {
+  it('keeps the main content mounted through split insertion, closure and flow changes', () => {
+    const mounts = jest.fn();
+    function Main() {
+      useEffect(mounts, []);
+      const panel = useAppShellPanel();
+      return <Native.Text testID="nested-main">{panel.id}</Native.Text>;
+    }
+    const layout = (visible: boolean, mode: 'split' | 'flow' = 'split'): AppShellPanelLayout => ({
+      panels: [
+        {
+          id: 'workspace',
+          group: {
+            mode,
+            axis: 'vertical',
+            panels: [
+              { id: 'post', content: <Main /> },
+              { id: 'likes', visible, content: <Native.Text>Likes</Native.Text> },
+            ],
+          },
+        },
+      ],
+    });
+    const screen = render(<AppShell panelLayout={layout(false)} />, { wrapper });
+    expect(screen.getByTestId('nested-main').props.children).toBe('post');
+    screen.rerender(<AppShell panelLayout={layout(true)} />);
+    expect(screen.getByText('Likes')).toBeTruthy();
+    screen.rerender(<AppShell panelLayout={layout(false)} />);
+    screen.rerender(<AppShell panelLayout={layout(true, 'flow')} />);
+    expect(mounts).toHaveBeenCalledTimes(1);
+  });
+
+  it('composes horizontal and vertical groups recursively without replacing leaf identity', () => {
+    function Leaf() {
+      return <Native.Text>{useAppShellPanel().id}</Native.Text>;
+    }
+    const screen = render(
+      <AppShell
+        panelLayout={{
+          panels: [
+            {
+              id: 'row',
+              group: {
+                axis: 'horizontal',
+                panels: [
+                  {
+                    id: 'column',
+                    group: { axis: 'vertical', panels: [{ id: 'leaf', content: <Leaf /> }] },
+                  },
+                ],
+              },
+            },
+          ],
+        }}
+      />,
+      { wrapper },
+    );
+    expect(screen.getByText('leaf')).toBeTruthy();
+  });
+});
+
+it('deactivates retained leaves when their transparent group closes', () => {
+  function Leaf() {
+    return <Native.Text testID="group-active">{String(useAppShellPanel().active)}</Native.Text>;
+  }
+  const layout = (visible: boolean): AppShellPanelLayout => ({
+    panels: [
+      {
+        id: 'group',
+        visible,
+        keepMounted: true,
+        group: {
+          panels: [{ id: 'leaf', content: <Leaf /> }],
+        },
+      },
+    ],
+  });
+  const screen = render(<AppShell panelLayout={layout(true)} />, { wrapper });
+  expect(screen.getByTestId('group-active').props.children).toBe('true');
+  screen.rerender(<AppShell panelLayout={layout(false)} />);
+  expect(screen.getByTestId('group-active', { includeHiddenElements: true }).props.children).toBe(
+    'false',
+  );
+});
+
+it('consumes the physical top safe area once across nested vertical panels', () => {
+  function Probe({ name }: { name: string }) {
+    return <Native.Text testID={name}>{useSafeAreaInsets().top}</Native.Text>;
+  }
+  const layout: AppShellPanelLayout = {
+    panels: [
+      {
+        id: 'group',
+        group: {
+          axis: 'vertical',
+          panels: [
+            { id: 'first', content: <Probe name="first-inset" /> },
+            { id: 'second', content: <Probe name="second-inset" /> },
+          ],
+        },
+      },
+    ],
+  };
+  const draw = (header?: React.ReactNode) => (
+    <SafeAreaInsetsContext.Provider value={{ top: 24, bottom: 12, left: 0, right: 0 }}>
+      <AppShell testID="safe-shell" panelLayout={{ ...layout, header }} />
+    </SafeAreaInsetsContext.Provider>
+  );
+  const screen = render(draw(), { wrapper });
+  expect(screen.getByTestId('first-inset').props.children).toBe(24);
+  expect(screen.getByTestId('second-inset').props.children).toBe(0);
+  screen.rerender(draw(<Native.View />));
+  fireEvent(screen.getByTestId('safe-shell-panels-workspace-header'), 'layout', {
+    nativeEvent: { layout: { width: 1000, height: 80, x: 0, y: 0 } },
+  });
+  expect(screen.getByTestId('first-inset').props.children).toBe(0);
+  expect(screen.getByTestId('second-inset').props.children).toBe(0);
 });

@@ -245,7 +245,6 @@ export function PageWorkspace({
         mode: deck ? 'deck' : 'split',
         flow: deck ? 'bounded' : 'document',
         horizontalScroll: 'document',
-        transition: 'exit-before-enter',
         activePanel: 'main',
         onPanelOrderChange: (ids) => {
           const customizable = new Set(extraPanels.map((panel) => panel.id));
@@ -279,7 +278,9 @@ motion applies to later insertions and visibility changes, not the first screen.
 
 `transition: 'exit-before-enter'` lets outgoing panels fade/recede before track
 geometry changes, then reveals incoming content at its usable width. The reverse
-follows the same policy. Default `simultaneous` changes those phases together.
+follows the same policy. Default `simultaneous` changes those phases together
+and responds immediately to a mode switch. The retained primary content and shell
+chrome stay painted in both directions; fades belong to entering or exiting panels.
 Reduced motion settles immediately; applications supply no transition timers,
 window measurements or duplicate page animations.
 
@@ -498,3 +499,114 @@ Check document flow, bounded Deck, compact layout, Back, delayed loading and
 account switching before removing a legacy adapter. Cached data can render
 immediately; a cold network request still needs an accurate skeleton and error
 state rather than a promise of zero latency.
+
+## Nested splits and growing groups
+
+A panel descriptor can contain `group: AppShellPanelLayout`. This is a transparent
+layout node: it owns no Surface, Screen, navigation history or scroll-restoration
+namespace. Its leaves use the same panel renderer as root and Deck panels. IDs
+must be unique among siblings; the same ID can appear at another group depth.
+Keep the group and its primary leaf mounted when adding an auxiliary panel.
+
+```tsx
+const layout: AppShellPanelLayout = {
+  flow: 'document',
+  panels: [{
+    id: 'main',
+    group: {
+      mode: 'split',
+      axis: 'vertical',
+      flow: 'bounded',
+      singlePanelFlow: 'document',
+      panels: [
+        { id: 'main', minHeight: 160, resizable: true, content: postScreen },
+        {
+          id: 'likes', minHeight: 160, visible: likesOpen, content: likesScreen,
+          floating: {
+            below: 'md', open: likesOpen, onOpenChange: setLikesOpen,
+            label: likesLabel, placement: 'bottom', whenConstrained: true,
+          },
+        },
+      ],
+    },
+  }],
+};
+```
+
+`split` distributes the group's bounded space using flex weights (`span`, default
+1). Each leaf Screen owns its own scroll. `flow` adds panels without shrinking
+existing panels to fit: horizontal flow uses each width (default 360), and vertical
+flow uses content height unless a height is declared. The group owns scrolling
+along its axis. Both modes accept either axis and groups can nest recursively.
+Existing `deck` retains its document-horizontal-scroll defaults; `flow` defaults
+to contained scrolling. Resizable split dividers redistribute a pair; flow
+resizing changes that panel's resting dimension.
+
+`singlePanelFlow: 'document'` explicitly lets a nested split's sole inline leaf
+return to document scrolling when its parent is a document region. When another
+inline leaf opens, the group occupies the available viewport height and the
+leaves scroll independently. Hidden and floating leaves do not count. Native
+continues using native scroll owners. On close, the primary fills the bounded
+viewport during the outgoing track's CSS transition and any ancestor geometry
+transition (such as a Deck column widening). Its reading offset transfers to the
+document after those transitions finish. The sole reading pane keeps one flex
+basis across document and bounded owners, so opening starts at the full viewport
+instead of collapsing to its minimum. Reopening cancels the pending
+handoff, and reduced motion transfers immediately. Document restoration follows
+only the primary inline branch through transparent groups; a parent cannot restore
+the window while its primary descendant still owns bounded scrolling. The group
+and leaf identities stay stable.
+When application data should be released after closing, keep the descriptor and
+its payload while setting `visible: false`, then release that payload in
+`onExitComplete`. The callback belongs to that exit: reopening cancels it, and
+replacing a callback during the exit does not redirect the old completion. It
+runs after owned CSS/native geometry and paint finish, or after the floating
+Dialog closes. Reduced motion and nonanimated retained layouts complete without
+an extra delay. Initially hidden panels and responsive presentation changes do
+not count as exits. The app still owns account, route and request identity:
+guard a delayed release against those identities, and clear private data
+immediately when its account or host is removed. Bloom never caches the app's
+React content to manufacture an outgoing frame.
+
+Transparent groups pass entry/exit presence to their painted descendants.
+Surviving primary content stays opaque; an outgoing group fades before its
+children become narrow strips. Material hosts and their ancestors never fade,
+so backdrop sampling remains intact.
+
+Compact presentation follows the enclosing shell's responsive scope, so a narrow
+column inside a desktop workspace does not accidentally become a phone sheet.
+
+Geometry is owned by CSS flexbox on web and Yoga on native. NativeWind classes
+express static structural layout; dynamic flex constraints and gesture values
+are applied by the shared renderer. There is no JavaScript water-fill pass in
+normal native layout. Native and browser flex engines can distribute spare space
+differently when unequal minimums bind; minimums remain explicit constraints.
+Use equal constraints for an equal split. Without a floating fallback, minimums
+that cannot fit retain the existing active-panel capacity behavior; configure
+`floating.whenConstrained` for an auxiliary sheet. Direct resize gestures may
+measure a panel and commit weights or dimensions once the gesture ends.
+
+Give resizable panes explicit `minWidth`/`minHeight` to set their stop (for
+example, `minHeight: 160` on both sides of a vertical split). An auxiliary panel
+with `floating.whenConstrained: true` uses its configured sheet when those
+minimums and the group gap cannot fit. This is a container-capacity decision,
+shared by CSS queries and native breakpoint subscriptions, not a consumer window
+measurement. A capacity fallback keeps the group bounded, avoiding a loop with
+`singlePanelFlow`; a width-based mobile fallback can still restore document flow.
+
+`resizeMaxHeight: 'content'` optionally limits vertical divider interaction to a
+Screen's measured intrinsic content plus its chrome. It does not change the
+initial split, its flex weights or its default size. If a pane starts larger
+than its content, it cannot grow further; it can shrink progressively without a
+jump, and reversing the gesture cannot restore the excess space already removed.
+Below the content ceiling, normal resizing remains available. Authored minimums
+and maximums still apply. Unknown content measurements keep those existing
+constraints rather than guessing from item counts or viewport `scrollHeight`.
+The gesture reads the published extent once at its start; CSS/Yoga continue
+laying out the panels, with no content measurement loop during dragging.
+
+Nested native panels consume the top safe area once: a first panel at the physical
+window edge keeps it, while lower vertical panels and panels below a workspace
+header receive an already-consumed top inset. Floating sheets use the original
+window insets to position their surface, while their content receives an already
+consumed top inset. Consumers do not add safe-area offsets to compensate for nesting.

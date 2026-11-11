@@ -152,7 +152,9 @@ ${root} [data-bloom-dock-moving] :is([data-bloom-shell-nav="${scope}"],[data-blo
     // Express that alignment as a length so the browser can interpolate the
     // same frame in both directions, including RTL, without measured FLIP boxes.
     const alignmentEnvelope =
-      layout.mode === 'deck' ? '100cqw' : `${panelEnvelope(layout, width, gap)}px`;
+      layout.mode === 'deck' || layout.mode === 'flow'
+        ? '100cqw'
+        : `${panelEnvelope(layout, width, gap)}px`;
     const alignment =
       aligned && !options.fillWidth
         ? `max(var(--bloom-frame-start), calc((100cqw - var(--bloom-nav-width) - var(--bloom-nav-gap) - ${alignmentEnvelope} - var(--bloom-frame-end) + var(--bloom-frame-start)) / 2))`
@@ -168,7 +170,9 @@ ${root} [data-bloom-panel-group="${scope}"] [data-bloom-panel-mask],${root} [dat
 ${root} [data-bloom-panel-group="${scope}"] [data-bloom-panel],${root} [data-bloom-panel-group="${scope}"] [data-bloom-panel-content]{border-radius:0!important;--bloom-panel-sticky-top:0px!important}`;
     if (mode === 'panel') {
       const preferred =
-        layout.mode === 'deck' ? options.contentWidth : panelEnvelope(layout, width, gap);
+        layout.mode === 'deck' || layout.mode === 'flow'
+          ? options.contentWidth
+          : panelEnvelope(layout, width, gap);
       const required = metrics.expanded + preferred + navigationGap + gutter * 2;
       rules += `@container ${scope} (width < ${required}px){${state(force ?? true, true)}}`;
     }
