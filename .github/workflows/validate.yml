@@ -116,6 +116,13 @@ jobs:
             scripts/test-avatar-surface-transport.mjs \
             scripts/test-avatar-webgpu-presenter.mjs \
             scripts/test-procedural-avatar-shapes.mjs
+      # Packed vector assets are lossless and content-addressed; the manifest, the package
+      # gate and the byte budgets keep the catalog from growing back (docs/agent-avatar.mdx).
+      - name: Avatar vector packing and bundle budgets
+        run: |
+          node --test scripts/test-avatar-vector-pack.mjs \
+            scripts/test-avatar-vector-compaction.mjs scripts/test-avatar-vector-package.mjs
+          node scripts/verify-avatar-bundle-size.mjs
       - name: Generated sources are committed
         run: |
           git diff --exit-code

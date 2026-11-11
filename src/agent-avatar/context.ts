@@ -1,4 +1,5 @@
 import { createContext } from 'react';
+import type { VectorAssetLoader } from './vector-types';
 
 export type AvatarSnapshot = Readonly<{ uri: string }>;
 export type CaptureAvatarSnapshot = () => Promise<AvatarSnapshot | null>;
@@ -24,3 +25,6 @@ export const CharacterCapabilitiesContext = createContext<{
   capabilities?: CharacterCapabilities;
   capabilitiesByKey?: ReadonlyMap<string, CharacterCapabilities>;
 }>({});
+
+/** The vector assets an app ships, set by `AgentAvatarProvider catalog`. Unset: Bloom's own full catalog. */
+export const VectorCatalogContext = createContext<VectorAssetLoader | undefined>(undefined);

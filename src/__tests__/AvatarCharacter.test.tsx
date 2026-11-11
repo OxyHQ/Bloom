@@ -25,6 +25,12 @@ const wrap = (ui: React.ReactElement) => (
   </BloomThemeProvider>
 );
 const draw = (ui: React.ReactElement) => render(wrap(ui));
+// The renderer loads on first use; once it has, every later render is synchronous.
+beforeAll(async () => {
+  const view = render(wrap(<Avatar account={bot} size={36} />));
+  await act(async () => {});
+  view.unmount();
+});
 beforeEach(() => {
   mockReduced = false;
   mockAgentAvatar.mockClear();

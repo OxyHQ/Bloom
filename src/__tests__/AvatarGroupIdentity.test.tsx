@@ -10,7 +10,7 @@
  * placeholder that says nothing about who the person is, in the exact case
  * where the handle's initial was available all along.
  *
- * The org rule (`~/AGENTS.md`) is `displayName?.trim() || handle`, and every
+ * The Oxy org rule is `displayName?.trim() || handle`, and every
  * assertion here is that rule read back off the rendered tree rather than off
  * the helper: a prop-level check would pass on a component that resolved the
  * name correctly and then handed it to the wrong slot.

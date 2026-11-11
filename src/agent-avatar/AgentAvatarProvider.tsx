@@ -4,6 +4,7 @@ import {
   type CharacterCapabilities,
   CharacterRuntimeContext,
   CharacterCapabilitiesContext,
+  VectorCatalogContext,
 } from './context';
 
 function sameRecord<T>(left: Record<string, T>, right: Record<string, T>) {
@@ -12,7 +13,7 @@ function sameRecord<T>(left: Record<string, T>, right: Record<string, T>) {
 }
 
 /** Shares SVG catalog capabilities; no hosted module or hidden render surface. */
-export function AgentAvatarProvider({ children }: AgentAvatarProviderProps) {
+export function AgentAvatarProvider({ catalog, children }: AgentAvatarProviderProps) {
   const [capabilitiesByKey, setCapabilities] = useState<ReadonlyMap<string, CharacterCapabilities>>(
     () => new Map(),
   );
@@ -33,11 +34,11 @@ export function AgentAvatarProvider({ children }: AgentAvatarProviderProps) {
     });
   }, []);
   const value = useMemo(() => ({ reportCapabilities }), [reportCapabilities]);
-  const catalog = useMemo(() => ({ capabilitiesByKey }), [capabilitiesByKey]);
+  const capabilities = useMemo(() => ({ capabilitiesByKey }), [capabilitiesByKey]);
   return (
     <CharacterRuntimeContext.Provider value={value}>
-      <CharacterCapabilitiesContext.Provider value={catalog}>
-        {children}
+      <CharacterCapabilitiesContext.Provider value={capabilities}>
+        <VectorCatalogContext.Provider value={catalog}>{children}</VectorCatalogContext.Provider>
       </CharacterCapabilitiesContext.Provider>
     </CharacterRuntimeContext.Provider>
   );

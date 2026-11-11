@@ -116,7 +116,9 @@ The old geometry engine under `runtime/` is an **offline extraction tool**, not 
 renderer. `bun run build:avatar-vectors` (`scripts/build-avatar-vector-assets.mjs`) samples its shapes, parts and authored
 motion into vector data. Keep generated assets, import mappings and static portraits in
 sync when rebuilding that source data. Normal library builds and package verification
-must ship all vector imports; no consumer can depend on the extractor's filesystem.
+must ship all vector assets; no consumer can depend on the extractor's filesystem. The generator
+ends by packing the assets (shared payloads in `vector-assets/blobs/`, one `catalog/<kind>-<id>.ts`
+module per asset); do not edit those files by hand.
 
 `renderer`, including its historical `'webgl'` value, is a deprecated compatibility
 prop and no longer selects another renderer. `AgentAvatarProvider.runtimeUrl`,
@@ -124,6 +126,83 @@ prop and no longer selects another renderer. `AgentAvatarProvider.runtimeUrl`,
 deprecated and inert. `BLOOM_CHARACTER_RUNTIME_URL` remains exported as an empty
 string for source compatibility; it is not a fetch location. The provider maintains
 only a bounded capability map, not an offscreen rendering queue.
+
+## Choosing which assets an app ships
+
+Bloom ships 70 vector assets (shapes, eyes, eyewear, accessories and authored templates), about
+30 MB of JSON before compression. Each is a lazy module, so none is in an app's first paint, but
+a bundler that sees an `import()` emits the file, and Metro and `expo export` link every one of
+them. The default build therefore ships all of them, whether the app draws one character or all.
+
+Three things keep that bounded:
+
+- **One copy of every payload.** Assets share most of their geometry and many animation tracks.
+  Each distinct payload is stored once under `vector-assets/blobs/<hash>.json`; an asset file keeps
+  only its small metadata and the hashes (`scripts/avatar-vector/pack-assets.mjs`, lossless:
+  `scripts/test-avatar-vector-pack.mjs` and the manifest gate check it). 58 MB became 30 MB with no
+  app change.
+- **The renderer is not in the first chunk.** `Avatar` loads the character renderer on first use
+  (`React.lazy`), so a screen that draws no bot character carries none of the geometry code.
+- **An app can ship only what it draws.** List the assets you use, hand the loader to the
+  provider, and build with the full catalog switched off:
+
+```tsx
+import { BloomProvider } from '@oxy.so/bloom/provider';
+import { createVectorAssetLoader } from '@oxy.so/bloom/agent-avatar/catalog';
+import circle from '@oxy.so/bloom/agent-avatar/catalog/shape-circle';
+import oval from '@oxy.so/bloom/agent-avatar/catalog/eyes-oval';
+import blueBeret from '@oxy.so/bloom/agent-avatar/catalog/template-blue_beret';
+
+const avatarCatalog = createVectorAssetLoader({
+  shape: { circle },
+  eyes: { oval },
+  template: { blue_beret: blueBeret },
+});
+
+<BloomProvider avatarCatalog={avatarCatalog}>{/* ... */}</BloomProvider>;
+```
+
+Then keep Bloom's own copy of the full catalog out of the bundle. It is linked from one place,
+`agent-avatar/default-catalog`, through a single lazy `import('./vector-assets')`.
+
+**Metro (Expo native and web).** Metro inlines no environment variable inside `node_modules`, so
+resolve that one import to an empty module in `metro.config.js`:
+
+```js
+const upstream = config.resolver.resolveRequest;
+config.resolver.resolveRequest = (context, moduleName, platform) =>
+  moduleName === './vector-assets' &&
+  /agent-avatar[\\/]default-catalog\.(ts|js)$/.test(context.originModulePath)
+    ? { type: 'empty' }
+    : (upstream ?? context.resolveRequest)(context, moduleName, platform);
+```
+
+**Vite, webpack, esbuild.** Define `process.env.EXPO_PUBLIC_BLOOM_AVATAR_CATALOG` as `"none"`
+(`define: { 'process.env.EXPO_PUBLIC_BLOOM_AVATAR_CATALOG': '"none"' }`); the condition is
+folded and the import disappears.
+
+`AgentAvatarProvider catalog={...}` and the `catalog` prop of `AgentAvatar` do the same at a
+narrower scope. Module names are `<kind>-<id>` with kind `shape`, `eyes`, `eyewear`, `accessory` or
+`template` (the `bot` face is `shape-bot_blob`); the ids are in `catalog-ids.ts` and
+`vector-assets/manifest.json`. An id that is not listed fails to load exactly like an unknown id (the
+avatar keeps its placeholder), so list every shape, eyes, eyewear and accessory your characters use,
+and a `template` entry for each preset you draw as authored (a preset that is not listed as a
+template still renders, retargeted from its parts, without its authored animation).
+
+Without any of this nothing changes: the default is the full catalog, loaded lazily on first use,
+and apps that do nothing keep working. `scripts/verify-avatar-bundle-size.mjs` bundles the built
+package both ways and fails CI past its budgets.
+
+### Measured (19.3.1 against this change)
+
+`Avatar` from `lib/module`, esbuild production splitting; native is Metro `export:embed` for iOS
+(Hermes bytecode is not compiled; bundle bytes). The package source sits in `node_modules`.
+
+| | before | default now | opt-out (3 assets) |
+| --- | --- | --- | --- |
+| Web, first chunks (raw / gzip) | 0.37 / 0.10 MiB | 0.11 / 0.04 MiB | 0.12 / 0.05 MiB |
+| Web, all JS (raw / gzip) | 57.9 / 11.8 MiB | 31.3 / 7.1 MiB | 4.0 / 0.9 MiB |
+| Native bundle | 63.3 MiB | 33.6 MiB | 6.4 MiB |
 
 ## Portraits
 
@@ -227,6 +306,8 @@ bun run typescript
 bun run build
 bun run verify:package
 node scripts/verify-avatar-cutover.mjs
+node --test scripts/test-avatar-vector-pack.mjs
+node scripts/verify-avatar-bundle-size.mjs   # after bun run build
 node scripts/avatar-vector/build-procedural-assets.mjs
 node --test scripts/test-procedural-avatar-shapes.mjs
 bun scripts/test-procedural-avatar-gaze.ts

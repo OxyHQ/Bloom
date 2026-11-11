@@ -46,7 +46,7 @@ import { AGENT_AVATAR_MESSAGES } from './messages';
 import type { AgentAvatarProps } from './types';
 import { VectorStaticPortrait } from './VectorStaticPortrait';
 import { vectorEyePortraits } from './vector-static';
-import { vectorAssetLoader } from './vector-assets';
+import { useVectorAssetLoader } from './default-catalog';
 import { loadVectorGeometry, paintVectorCharacter, vectorGeometryKey } from './vector-compose';
 import { renderVectorFrame } from './vector-frame';
 import type { VectorAction, VectorData, VectorFrame } from './vector-types';
@@ -85,6 +85,7 @@ export function VectorCharacterAvatar(props: Props) {
 function AnimatedVectorCharacterAvatar(props: Props) {
   const { character, size = 64, paused, portrait, interactive, previewPart } = props;
   const { messages } = useMessages(AGENT_AVATAR_MESSAGES, props.locale);
+  const catalog = useVectorAssetLoader(props.catalog);
   const reduced = usePrefersReducedMotion(),
     foreground = useAppForeground();
   const { reportCapabilities } = useContext(CharacterRuntimeContext);
@@ -182,7 +183,7 @@ function AnimatedVectorCharacterAvatar(props: Props) {
     let current = true;
     setFailed(false);
     reportLoading(true);
-    void loadVectorGeometry(latestResolved.current, vectorAssetLoader)
+    void loadVectorGeometry(latestResolved.current, catalog)
       .then((value) => {
         if (!current) return;
         state.current = {
@@ -232,7 +233,7 @@ function AnimatedVectorCharacterAvatar(props: Props) {
     return () => {
       current = false;
     };
-  }, [geometryKey, reportCapabilities]);
+  }, [geometryKey, reportCapabilities, catalog]);
   useEffect(() => {
     if (props.reactionKey !== previous.current.reaction) {
       previous.current.reaction = props.reactionKey;

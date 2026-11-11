@@ -1,10 +1,32 @@
 # Changelog
 
-## 19.4.0
+## 19.5.0
 
 ### Added
 
 - **`Sidebar` `primaryActionPlacement: 'bottom' | 'top'`** (default `'bottom'`, unchanged). `'top'` draws the `primaryAction` button in the fixed header, under the header row and `toolbar` and above the modes and search, so an app's main command (Compose, New post) can lead the sidebar. It is the same button as in the footer: same `Fab`, same 2px inset that aligns it with the rows, same collapse to the named icon button. Before, an app that wanted it on top had to put its own `Fab` in `toolbar`, which has no such inset: the button overshot the rows by 2px on each side. `variant="rail"` keeps the action at the bottom. `AppShell` passes the prop through (`sidebar={{ primaryActionPlacement: 'top' }}`).
+
+## 19.4.0
+
+### Changed
+
+- **The avatar vector catalog is half the size, with no app change.** The 70 character assets shared most of their geometry and many animation tracks, each stored once per asset (58 MB of JSON). Each distinct payload is now stored once under `vector-assets/blobs/` and the asset files point at it, losslessly (every asset round-trips to its previous data, checked by `scripts/test-avatar-vector-pack.mjs`): 30 MB. A web export of `Avatar` goes from 57.9 MiB to 31.3 MiB of JavaScript (11.8 to 7.1 MiB gzip) and a Metro iOS bundle from 63.3 to 33.6 MiB. Since 17.22.0 the catalogs have been `import()`ed lazily, which keeps them out of the first paint but not out of the export: Metro and `expo export` emit every one.
+- **`Avatar` no longer carries the character renderer in its first chunk.** `CharacterFace` loads it on first use (`React.lazy`, the placeholder is already shown until the first frame). The first chunks of a page importing `Avatar` drop from 0.37 to 0.11 MiB (gzip 0.10 to 0.04).
+
+### Added
+
+- **Ship only the avatar assets an app draws.** `createVectorAssetLoader` (from `@oxy.so/bloom/agent-avatar` and `@oxy.so/bloom/agent-avatar/catalog`) builds a catalog from per-asset modules, `@oxy.so/bloom/agent-avatar/catalog/<kind>-<id>`, and `BloomProvider avatarCatalog`, `AgentAvatarProvider catalog` and the `AgentAvatar catalog` prop take it. With Bloom's full catalog resolved out of the bundle (a Metro `resolveRequest` snippet, or `define` of `EXPO_PUBLIC_BLOOM_AVATAR_CATALOG` to `"none"` for Vite, webpack and esbuild), an app drawing one character ships 6.4 MiB natively and 4.0 MiB on the web instead of 33.6 and 31.3. Nothing changes for an app that does neither: the default is still the full catalog, loaded lazily. Migration and the measured table: `docs/agent-avatar.mdx`.
+- **Bundle-size guard.** `node scripts/verify-avatar-bundle-size.mjs` (CI, after the build) bundles the built package for the web and as a Metro iOS bundle, with and without the full catalog, and fails past its budgets.
+
+### Fixed
+
+- `scripts/test-avatar-vector-compaction.mjs` and `scripts/test-avatar-vector-package.mjs` now run in CI.
+
+## 19.3.1
+
+### Fixed
+
+- **`ComposerLoader`: the light follows the composer rim again.** The loader passed the composer's single-line corner radius (`9999`) straight through as the SVG rect `rx`; browsers clamp `rx` against the width and `ry` against the height separately, so the rim became an ellipse and the light left the composer outline. `composerLoaderGeometry` now returns the clamped radius (half the smaller side) as `rx`, drawn as both `rx` and `ry` on web and native, and as the Android light's corner radius. Affected `@oxy.so/bloom` 17.38.0 through 19.3.0 whenever the composer reported a radius larger than its half-height.
 
 ## 19.3.0
 

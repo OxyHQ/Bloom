@@ -13,7 +13,7 @@
  * `Animations` map — which every custom `Keyframe` is, since they mint a fresh
  * `REA-ENTERING-n` rule — also gets a `scheduleAnimationCleanup` that pins the
  * element with `position: absolute` and a frozen box at `duration x 5`. That is
- * failure mode (C) in `~/Oxy/AGENTS.md`.
+ * failure mode (C) in the Oxy build-and-runtime-traps doc.
  *
  * So the invariant is asymmetric, and BOTH halves are load-bearing:
  *   entering -> a PREDEFINED builder (its `presetName` is in `Animations`, so no

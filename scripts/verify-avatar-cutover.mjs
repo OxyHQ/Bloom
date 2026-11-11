@@ -54,6 +54,18 @@ export function assertAvatarVectorsShip(packed, root = process.cwd()) {
       if (!packed.has(`${prefix}vector-assets/${file}`))
         problems.push(`Vector asset absent from package: ${prefix}vector-assets/${file}`);
     }
+    // Packed assets point at shared payloads and are imported through one module each.
+    for (const hash of Object.keys(manifest.blobs ?? {}))
+      if (!packed.has(`${prefix}vector-assets/blobs/${hash}.json`))
+        problems.push(
+          `Vector payload absent from package: ${prefix}vector-assets/blobs/${hash}.json`,
+        );
+    for (const { file, blobs } of manifest.files) {
+      if (!blobs || typeof file !== 'string') continue;
+      const module = `${prefix}catalog/${file.replace(/\.json$/, '')}.${prefix.startsWith('src/') ? 'ts' : 'js'}`;
+      if (!packed.has(module))
+        problems.push(`Vector catalog module absent from package: ${module}`);
+    }
   }
   return problems;
 }

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import type { BloomThemeStorage } from '../theme/persistence';
 import type { AvatarCharacter } from './character';
+import type { VectorAssetLoader } from './vector-types';
 
 export type AgentAvatarProps = {
   /** @deprecated All characters use SVG. The legacy selector is accepted but has no effect. */
@@ -27,6 +28,8 @@ export type AgentAvatarProps = {
   onReady?: () => void;
   /** Reports selected geometry preparation; paint-only changes do not reload. */
   onLoadingChange?: (loading: boolean) => void;
+  /** The vector assets to draw from, overriding the provider's. See `createVectorAssetLoader`. */
+  catalog?: VectorAssetLoader;
   className?: string;
   style?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;
@@ -39,5 +42,10 @@ export type AgentAvatarProviderProps = {
   runtimeUrl?: string;
   /** @deprecated SVG portrait frames are cached in memory; raster storage is no longer used. */
   stillStorage?: BloomThemeStorage;
+  /**
+   * The vector assets this app ships (`createVectorAssetLoader`). Unset: Bloom's full catalog,
+   * linked lazily; drop it from the bundle as docs/agent-avatar.mdx describes.
+   */
+  catalog?: VectorAssetLoader;
   children: ReactNode;
 };

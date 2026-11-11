@@ -1,13 +1,13 @@
 # Bloom (@oxy.so/bloom)
 
-> Standards: ~/AGENTS.md, ~/Oxy/AGENTS.md. Docs: `docs/*.mdx`; history: git. Rules only, under 24 KB. Compress; never delete measured hazards. Affects EVERY app - use `bloom` agent
+> Standards: https://github.com/OxyHQ/oxy/blob/main/docs/engineering/standards.md. Docs: `docs/*.mdx`; history: git. Rules only, under 24 KB. Compress; never delete measured hazards. Affects EVERY app - use `bloom` agent
 
 ```bash
 bun run build       # bob build → lib/ (commonjs + module + typescript)
 bun run test / typescript / lint / format / clean / verify:package
 ```
 
-npm: version-bump merge to main publishes via Oxy's shared Release packages workflow after that commit passes CI; gates = CI - ~/Oxy/docs/npm-releases.md
+npm: version-bump merge to main publishes via Oxy's shared Release packages workflow after that commit passes CI; gates = CI - https://github.com/OxyHQ/oxy/blob/main/docs/npm-releases.md
 
 RN + Web. Families: `src/<name>/`, published subpaths/root exports
 
@@ -23,7 +23,7 @@ RN + Web. Families: `src/<name>/`, published subpaths/root exports
 
 ## Reanimated web layout
 
-Failures: ~/Oxy/AGENTS.md. Direction/freeze (two regressions)/trade-offs: docs/motion.mdx. src/motion/motion.web.ts, src/toast/animations.ts
+Failure modes A to C: https://github.com/OxyHQ/oxy/blob/main/docs/engineering/build-and-runtime-traps.md. Direction/freeze (two regressions)/trade-offs: docs/motion.mdx. src/motion/motion.web.ts, src/toast/animations.ts
 
 Web loaders: RNW Animated JS-frame renders can starve Suspense retries. Use CSS; docs/skeleton.mdx
 
@@ -188,7 +188,7 @@ Font hazards: base64 `.woff2` inlining, apply-font-faces.ts empty stub, `FontLoa
 
 ## ImageResolver
 
-Universal pure JS: `ImageResolver = (id, variant?) => string | undefined`. `Avatar` resolves non-URL string `source` only; URLs/`{uri}` pass through. Wiring: ~/Oxy/AGENTS.md
+Universal pure JS: `ImageResolver = (id, variant?) => string | undefined`. `Avatar` resolves non-URL string `source` only; URLs/`{uri}` pass through. Wiring: docs/app-conventions.mdx
 
 ## Consumer checks
 

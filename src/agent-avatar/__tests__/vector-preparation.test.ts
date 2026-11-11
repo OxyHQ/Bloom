@@ -2,7 +2,7 @@ import { useVectorGeometryPreparation } from '../use-vector-geometry-preparation
 import { loadVectorGeometry } from '../vector-compose';
 const mockEffects: Array<() => () => void> = [];
 jest.mock('react', () => ({ useEffect: (effect: () => () => void) => mockEffects.push(effect) }));
-jest.mock('../vector-assets', () => ({ vectorAssetLoader: {} }));
+jest.mock('../default-catalog', () => ({ useVectorAssetLoader: () => ({}) }));
 jest.mock('../vector-compose', () => ({
   loadVectorGeometry: jest.fn(),
   vectorGeometryKey: (c: { shape: string }) => c.shape,

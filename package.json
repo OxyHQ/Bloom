@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "19.4.0",
+  "version": "19.5.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -637,6 +637,34 @@
       "require": {
         "types": "./lib/typescript/commonjs/agent-avatar/index.d.ts",
         "default": "./lib/commonjs/agent-avatar/index.js"
+      }
+    },
+    "./agent-avatar/catalog": {
+      "react-native": {
+        "types": "./lib/typescript/module/agent-avatar/catalog/index.d.ts",
+        "default": "./src/agent-avatar/catalog/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/agent-avatar/catalog/index.d.ts",
+        "default": "./lib/module/agent-avatar/catalog/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/agent-avatar/catalog/index.d.ts",
+        "default": "./lib/commonjs/agent-avatar/catalog/index.js"
+      }
+    },
+    "./agent-avatar/catalog/*": {
+      "react-native": {
+        "types": "./lib/typescript/module/agent-avatar/catalog/*.d.ts",
+        "default": "./src/agent-avatar/catalog/*.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/agent-avatar/catalog/*.d.ts",
+        "default": "./lib/module/agent-avatar/catalog/*.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/agent-avatar/catalog/*.d.ts",
+        "default": "./lib/commonjs/agent-avatar/catalog/*.js"
       }
     },
     "./avatar-flight": {
@@ -4350,6 +4378,7 @@
     "build": "bob build",
     "postbuild": "node scripts/verify-package.mjs && node scripts/verify-build-freshness.mjs --worktree && bun run verify:task-catalog",
     "verify:package": "node scripts/verify-package.mjs",
+    "verify:avatar-bundle": "node scripts/verify-avatar-bundle-size.mjs",
     "verify:build-freshness": "node scripts/verify-build-freshness.mjs --worktree",
     "verify:consumer-types": "node scripts/verify-consumer-typecheck.mjs",
     "test": "jest",
@@ -4381,6 +4410,7 @@
     "@types/react-test-renderer": "~19.3.0",
     "@types/three": "^0.186.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "esbuild": "0.27.7",
     "expo": "~58.0.23",
     "expo-blur": "~58.0.5",
     "expo-font": "~58.0.11",
@@ -4659,6 +4689,12 @@
       ],
       "agent-avatar": [
         "./lib/typescript/module/agent-avatar/index.d.ts"
+      ],
+      "agent-avatar/catalog": [
+        "./lib/typescript/module/agent-avatar/catalog/index.d.ts"
+      ],
+      "agent-avatar/catalog/*": [
+        "./lib/typescript/module/agent-avatar/catalog/*.d.ts"
       ],
       "avatar-flight": [
         "./lib/typescript/module/avatar-flight/index.d.ts"
