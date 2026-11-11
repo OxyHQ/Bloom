@@ -1,25 +1,46 @@
-import { SCROLL_USER_TAKEOVER_EVENTS } from './constants';
+import { SCROLL_RESTORE_TOLERANCE_PX, SCROLL_USER_TAKEOVER_EVENTS } from './constants';
 
-/** An active Screen's owner transfer, consumed once when restoration focuses. */
-const offsets = new WeakMap<object, { offset: number; release(): void }>();
+/** One restoration claim; keep its intent until the owner accepts it or the user takes over. */
+const offsets = new WeakMap<
+  object,
+  {
+    offset: number;
+    consumed: boolean;
+    pending: boolean;
+    current(): number | undefined;
+    release(): void;
+  }
+>();
 
-export function recordScrollOwnerHandoff(owner: object, offset: number) {
+export function recordScrollOwnerHandoff(
+  owner: object,
+  offset: number,
+  onTakeOver?: (offset: number) => void,
+) {
   offsets.get(owner)?.release();
   const target = owner as Partial<EventTarget> & { scrollTop?: number };
   let userTookOver = false;
+  const current = () =>
+    typeof window !== 'undefined' && owner === window ? window.scrollY : target.scrollTop;
   const observe = () => {
-    if (!userTookOver) return;
-    const current =
-      typeof window !== 'undefined' && owner === window ? window.scrollY : target.scrollTop;
-    if (typeof current === 'number' && Number.isFinite(current))
-      transfer.offset = Math.max(0, current);
+    const value = current();
+    if (value !== undefined && Math.abs(value - transfer.offset) <= SCROLL_RESTORE_TOLERANCE_PX)
+      transfer.pending = false;
+    if (userTookOver && typeof value === 'number' && Number.isFinite(value))
+      transfer.offset = Math.max(0, value);
+    if (transfer.consumed && !transfer.pending) transfer.release();
   };
   const takeOver = () => {
     userTookOver = true;
+    transfer.pending = false;
     observe();
+    onTakeOver?.(transfer.offset);
   };
   const transfer = {
     offset,
+    consumed: false,
+    pending: true,
+    current,
     release() {
       // A departed Screen must not delete a newer Screen's transfer on the
       // shared window owner. Release belongs to this transfer, not its node.
@@ -41,6 +62,19 @@ export function recordScrollOwnerHandoff(owner: object, offset: number) {
 
 export function takeScrollOwnerHandoff(owner: object): number | undefined {
   const transfer = offsets.get(owner);
-  transfer?.release();
-  return transfer?.offset;
+  if (!transfer || transfer.consumed) return undefined;
+  transfer.consumed = true;
+  readScrollOwnerHandoff(owner);
+  return transfer.offset;
+}
+
+/** Geometry can clamp a receiving owner before its virtual content is ready. */
+export function readScrollOwnerHandoff(owner: object): number | undefined {
+  const transfer = offsets.get(owner);
+  if (!transfer) return undefined;
+  const current = transfer.current();
+  if (current !== undefined && Math.abs(current - transfer.offset) <= SCROLL_RESTORE_TOLERANCE_PX)
+    transfer.pending = false;
+  if (transfer.consumed && !transfer.pending) transfer.release();
+  return transfer.pending ? transfer.offset : undefined;
 }

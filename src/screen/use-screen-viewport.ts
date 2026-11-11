@@ -6,7 +6,7 @@ import type { useScrollRestoration as UseScrollRestoration } from '../scroll/use
 import type { ScrollRestorationTarget } from '../scroll/types';
 import type { ScreenContextValue } from './context';
 import { useOptionalScrollRestorationContext } from '../scroll/context';
-import { recordScrollOwnerHandoff } from '../scroll/owner-handoff';
+import { readScrollOwnerHandoff, recordScrollOwnerHandoff } from '../scroll/owner-handoff';
 import type { ScreenViewportValue, ScreenHostValue } from './context';
 import { useRegisterScreenScroller } from './reselect';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
@@ -56,6 +56,8 @@ export function useScreenViewportBinding(
   useLayoutEffect(() => {
     if (!enabled || !web || typeof window === 'undefined') return;
     const previous = owner.current;
+    const element = scrollRef.current as HTMLElement | null;
+    const target = documentFlow ? window : element;
     let releaseHandoff: (() => void) | undefined;
     if (
       previous &&
@@ -64,9 +66,10 @@ export function useScreenViewportBinding(
       previous.active &&
       screen.active
     ) {
-      const element = scrollRef.current as HTMLElement | null;
-      const target = documentFlow ? window : element;
-      if (target) releaseHandoff = recordScrollOwnerHandoff(target, previous.offset);
+      if (target)
+        releaseHandoff = recordScrollOwnerHandoff(target, previous.offset, (offset) => {
+          if (owner.current?.documentFlow === documentFlow) owner.current.offset = offset;
+        });
       if (documentFlow) window.scrollTo({ top: previous.offset, behavior: 'instant' });
       else if (element) element.scrollTop = previous.offset;
     }
@@ -74,9 +77,9 @@ export function useScreenViewportBinding(
       contentId,
       documentFlow,
       active: screen.active,
-      offset: documentFlow
-        ? window.scrollY
-        : ((scrollRef.current as HTMLElement | null)?.scrollTop ?? 0),
+      offset:
+        (target ? readScrollOwnerHandoff(target) : undefined) ??
+        (documentFlow ? window.scrollY : (element?.scrollTop ?? 0)),
     };
     // A newly mounted router sidecar can focus on a later commit. Retain the
     // transfer for this active owner lifetime instead of expiring it during
@@ -95,7 +98,8 @@ export function useScreenViewportBinding(
         ? (document.scrollingElement ?? document.documentElement)
         : element!;
       const y = documentFlow ? window.scrollY : node.scrollTop;
-      if (owner.current?.documentFlow === documentFlow) owner.current.offset = Math.max(0, y);
+      if (owner.current?.documentFlow === documentFlow)
+        owner.current.offset = readScrollOwnerHandoff(target) ?? Math.max(0, y);
       metrics.scrollY.value = Math.max(0, y);
       metrics.contentHeight.value = node.scrollHeight;
       metrics.viewportHeight.value = Math.max(0, node.clientHeight - (documentFlow ? reserved : 0));
