@@ -221,6 +221,70 @@ try {
     'PASS mobile web: one bottom-sheet content tree, pointer dismissal, trigger focus restoration',
   );
 
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await story('mixed-axes');
+  await test('groups-open').click();
+  geometry = await boundedSplit();
+  const aside = await test('groups-aside').boundingBox();
+  assert.ok(
+    aside.x >= geometry.main.x + geometry.main.width,
+    'horizontal sibling sits beside the vertical split',
+  );
+  assert.ok(aside.height > geometry.main.height, 'horizontal sibling keeps its full height');
+  assert.ok(Math.abs(aside.y - geometry.main.y) < 1, 'mixed-axis groups align at their top');
+
+  await story('document-split');
+  await test('groups-open').waitFor();
+  await test('groups-post-screen').evaluate((node) =>
+    node.setAttribute('data-retained-check', 'true'),
+  );
+  await page.mouse.move(500, 500);
+  await page.mouse.wheel(0, 200);
+  await page.waitForFunction(() => window.scrollY >= 100);
+  const documentOffset = await page.evaluate(() => window.scrollY);
+  // Preserve the reading position while invoking an offscreen header action.
+  // Actual pointer hit testing is required separately in the bounded fixture.
+  await test('groups-open').evaluate((node) => node.click());
+  await boundedSplit();
+  assert.equal(
+    await test('groups-post-screen').getAttribute('data-retained-check'),
+    'true',
+    'document handoff retains the route DOM',
+  );
+  await page.waitForFunction(
+    (offset) =>
+      Math.abs(
+        (document.querySelector(
+          '[data-testid="groups-post-screen"] [data-bloom-screen-viewport="element"]',
+        )?.scrollTop ?? 0) - offset,
+      ) < 2,
+    documentOffset,
+  );
+  await test('groups-close').evaluate((node) => node.click());
+  await page.waitForFunction((offset) => Math.abs(window.scrollY - offset) < 2, documentOffset);
+  assert.equal(
+    await test('groups-post-screen').getAttribute('data-retained-check'),
+    'true',
+    'document restoration retains the route DOM',
+  );
+  console.log('PASS mixed axes and document/element scroll-owner handoff');
+
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await story('nested-split');
+  for (let iteration = 0; iteration < 3; iteration++) {
+    await test('groups-open').click();
+    await test('groups-close').click();
+  }
+  await test('groups-open').click();
+  await boundedSplit();
+  await test('groups-close').click();
+  await page.waitForFunction(() => {
+    const main = document.querySelector('[data-testid="groups-main"]')?.getBoundingClientRect();
+    return main && main.height >= innerHeight - 20;
+  });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  console.log('PASS interrupted opening/closing with default motion');
+
   await page.setViewportSize({ width: 1200, height: 600 });
   await story('email-flow');
   await test('flow-email-2').waitFor();
@@ -291,6 +355,57 @@ try {
   assert.deepEqual(errors, [], 'no browser runtime errors');
   console.log(
     'PASS email flow: natural heights, one common real scroller, growing content, retained panels, CSS-only resizing',
+  );
+  await page.setViewportSize({ width: 1100, height: 700 });
+  await story('horizontal-flow');
+  await test('horizontal-column-3').waitFor();
+  const horizontalMetrics = () =>
+    test('horizontal-shell').evaluate((shell) => {
+      const owner = [...shell.querySelectorAll('*')].find(
+        (node) =>
+          ['auto', 'scroll'].includes(getComputedStyle(node).overflowX) &&
+          node.scrollWidth > node.clientWidth + 1,
+      );
+      if (!owner) return null;
+      owner.setAttribute('data-horizontal-scroll-check', 'true');
+      return { content: owner.scrollWidth, width: owner.clientWidth };
+    });
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll('[data-testid="horizontal-shell"] *')].some(
+      (node) =>
+        ['auto', 'scroll'].includes(getComputedStyle(node).overflowX) &&
+        node.scrollWidth > node.clientWidth + 1,
+    ),
+  );
+  const beforeHorizontal = await horizontalMetrics();
+  const columnWidth = (await test('horizontal-column-0').boundingBox()).width;
+  await test('horizontal-add').click();
+  await test('horizontal-column-4').waitFor();
+  assert.ok(
+    (await horizontalMetrics()).content > beforeHorizontal.content + 300,
+    'horizontal flow adds scroll extent',
+  );
+  assert.ok(
+    Math.abs((await test('horizontal-column-0').boundingBox()).width - columnWidth) < 1,
+    'horizontal flow does not shrink existing columns',
+  );
+  await page.locator('[data-horizontal-scroll-check="true"]').hover();
+  await page.mouse.wheel(400, 0);
+  await page.waitForFunction(
+    () => (document.querySelector('[data-horizontal-scroll-check="true"]')?.scrollLeft ?? 0) > 100,
+  );
+  assert.equal(
+    await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth <= innerWidth + 1 &&
+        document.documentElement.scrollHeight <= innerHeight + 1,
+    ),
+    true,
+    'contained horizontal flow does not scroll the document',
+  );
+  assert.deepEqual(errors, [], 'no browser runtime errors');
+  console.log(
+    'PASS horizontal flow: columns add real horizontal scroll without shrinking or document overflow',
   );
 } finally {
   await browser.close();
