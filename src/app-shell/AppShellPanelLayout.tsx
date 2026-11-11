@@ -13,11 +13,8 @@ import React, {
 } from 'react';
 import { Platform, type View as NativeView, type ViewStyle } from 'react-native';
 import { StyledView as View } from '../styles/styled-primitives';
-import {
-  SafeAreaInsetsContext,
-  useSafeAreaInsets,
-  type EdgeInsets,
-} from 'react-native-safe-area-context';
+import { SafeAreaInsetsContext, type EdgeInsets } from 'react-native-safe-area-context';
+import { NO_SAFE_AREA_INSETS } from '../hooks/use-css-safe-area-insets';
 import Animated, {
   cancelAnimation,
   useAnimatedStyle,
@@ -385,8 +382,9 @@ export function createPanelLayoutView(
     testID?: string;
   }) {
     const layoutReady = useShellLayoutReady();
-    const fallbackInsets = useSafeAreaInsets();
-    const safeArea = useContext(SafeAreaInsetsContext) ?? fallbackInsets;
+    // The context, never `useSafeAreaInsets()`, which throws outside a provider: an app at
+    // whose root `AppShell` is mounted need not have one (`useShellInsets`), and has no insets.
+    const safeArea = useContext(SafeAreaInsetsContext) ?? NO_SAFE_AREA_INSETS;
     const windowInsets = useContext(PanelWindowInsetsContext) ?? safeArea;
     const inlineInsets = useMemo(
       () => ({ ...safeArea, top: safeAreaTop }),
@@ -1236,8 +1234,9 @@ export function createPanelLayoutView(
     const canRestoreDocument = useContext(PanelDocumentRestorationContext);
     const ancestorHost = useContext(ScreenHostContext);
     const parentScreen = useContext(ScreenContext);
-    const fallbackInsets = useSafeAreaInsets();
-    const safeArea = useContext(SafeAreaInsetsContext) ?? fallbackInsets;
+    // The context, never `useSafeAreaInsets()`, which throws outside a provider: an app at
+    // whose root `AppShell` is mounted need not have one (`useShellInsets`), and has no insets.
+    const safeArea = useContext(SafeAreaInsetsContext) ?? NO_SAFE_AREA_INSETS;
     const windowInsets = useContext(PanelWindowInsetsContext) ?? safeArea;
     const cssScope = useContext(PanelCssContext);
     const responsiveScope = useContext(PanelResponsiveScopeContext);
