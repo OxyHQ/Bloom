@@ -29,6 +29,73 @@ Use the existing subgroups before creating another root. New siblings sort
 alphabetically; the curated order only brings shared contracts and common
 controls to the front. Add a new subgroup to `storySort` when its position matters.
 
+## Writing a story
+
+The preview decorator (`preview.tsx`) owns the providers, the theme and the canvas
+host. A story supplies content and nothing else. These rules come from a visual and
+geometric audit of every story in light and dark (2026-11-11).
+
+### The host
+
+`parameters.layout` chooses the host:
+
+- `padded` (the default) pads the canvas and **shrink-wraps** the story
+  (`align-items: flex-start`). A component that fills its parent's width or needs a
+  bounded height collapses there: Panel Routing rendered 0px wide and Project Board had
+  no height. Give the story an explicit `width`, or use `fullscreen`.
+- `fullscreen` has no padding, stretches the story to the canvas width and gives it a
+  bounded viewport (`100dvh`). Use it for screens, shells and boards. A story that
+  demonstrates document scrolling adds `bloomScroll: 'document'` (see
+  `docs/screen.mdx`).
+- A component that bleeds past its edge with a negative margin (`ListingCardGrid`'s
+  gutters, `DeliverySlot`'s focus clearance) needs a host that pads: use `padded`.
+  `fullscreen` makes it overflow the page sideways.
+- Never cancel the canvas padding with a negative margin: `fullscreen` has none, so the
+  margin clips the story's own edge (the Tab Bar story lost its left edge that way).
+
+### Theme and colour
+
+The toolbar owns the theme, the colour preset and the material. Every story must follow
+it.
+
+- A story that is meant for one mode sets `globals: { theme: 'dark' }`. The toolbar
+  still changes it afterwards. Do **not** wrap it in `<BloomThemeProvider mode>`: the
+  canvas keeps the toolbar's mode, so the content and the page disagree and the text
+  becomes unreadable. Do not paint a fixed page background (`#000`) either.
+- Panes that show both modes side by side are the exception: each pane carries its own
+  background, so it can keep a provider or a `BloomColorScope mode`.
+- Use Bloom's `Text`. React Native Web paints its own `Text` black whatever the page
+  colour, so it vanishes in dark.
+- Read colour from `useTheme()`, not from hex literals. A fixture that a script measures
+  at fixed colours (`Foundations/Shapes`) is the only reason to keep them, and its
+  comment says so.
+- To see every preset and role at once, open **Foundations / Color / Palette**: presets
+  as columns, roles as rows, in the toolbar's mode.
+
+### Controls
+
+Use `args` and `argTypes` so the Controls panel is the way to change a story. Do not
+draw a second picker for the same arguments. A fixture that a browser verification
+script drives by `testid` (the width buttons in `HeaderActions`, the size group in
+`Composition`) may keep its own controls; its comment says which script depends on it.
+
+### Workspace packages
+
+Stories under `packages/*` import Bloom by its published name
+(`@oxy.so/bloom/button`). `main.ts` resolves that name to this checkout's source through
+the `exports` map of `package.json`, so a story never renders against the older copy in
+`node_modules` (a second theme store, and exports this checkout added later). Do not alias
+individual subpaths.
+
+### Checking a story
+
+- Open it in light and dark and switch the toolbar while it is open.
+- Wait for the story before capturing it: `document.body` gets `sb-show-main` and
+  `#storybook-root` has children. A capture after a fixed delay can show Storybook's own
+  spinner and read as a blank story.
+- To change globals from a script, emit `updateGlobals` on
+  `window.__STORYBOOK_ADDONS_CHANNEL__`, the channel the toolbar uses.
+
 ## Stable links
 
 Existing CSF groups have an explicit `id` when their title was moved. Preserve that
