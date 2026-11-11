@@ -1381,9 +1381,6 @@
       "src/listing-editor/ListingQualityMeter.tsx#ListingQualityMeter",
       "src/listing-editor/OfferingEditor.tsx#OfferingEditor",
       "src/listing-editor/PropertyTypeSelector.tsx#PropertyTypeSelector",
-      "src/loading/Loading.tsx#Loading",
-      "src/loading/SpinnerIcon.tsx#SpinnerIcon",
-      "src/loading/StatusRing.tsx#StatusRing",
       "src/locale/context.ts#LocaleProvider",
       "src/location-puck/LocationPuck.tsx#LocationPuck",
       "src/lockup/Lockup.tsx#Lockup",
@@ -2200,5 +2197,4 @@
       "src/loading/StatusRing.tsx#StatusRing"
     ]
   }
-
 }
