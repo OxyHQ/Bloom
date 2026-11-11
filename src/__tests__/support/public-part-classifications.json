@@ -793,7 +793,6 @@
     "verification": "pending; not a passing adoption verdict",
     "parts": [
       "src/activity-feed/ActivityFeed.tsx#ActivityFeed",
-      "src/activity-heatmap/ActivityHeatmap.tsx#ActivityHeatmap",
       "src/agent-avatar/AgentAvatar.tsx#AgentAvatar",
       "src/agent-avatar/AgentAvatarProvider.tsx#AgentAvatarProvider",
       "src/agent-chat/AgentChat.tsx#AgentChat",
@@ -1016,8 +1015,6 @@
       "src/composer-panel/ComposerPill.tsx#ComposerPill",
       "src/composer-panel/ComposerStatusBar.tsx#ComposerStatusBar",
       "src/composer-panel/ModelPicker.tsx#ModelPicker",
-      "src/composition-bar/CompositionBar.tsx#CompositionBar",
-      "src/contact-card/ContactProfileCard.tsx#ContactProfileCard",
       "src/content-panel/ContentPanel.tsx#ContentPanel",
       "src/context-menu/ContextMenu.tsx#ContextMenu",
       "src/context-menu/ContextMenu.tsx#ContextMenuCheckboxItem",
@@ -1839,5 +1836,43 @@
     ],
     "verification": "Native renderer and DOM web measure the default 36px diameter unchanged under xs, explicit 40px under xs, and explicit 28px under lg. Glyph ratio and explicit glyph size are covered by GlyphButton.test.tsx; device-rendered hit fit and visual balance remain unverified",
     "parts": ["src/button/GlyphButton.tsx#GlyphButton"]
+  },
+  "activity-heatmap-hit-target": {
+    "status": "adaptation",
+    "reason": "ActivityHeatmap's cellSize is chart-cell geometry, not Bloom control size. In interactive mode the pressable target equals each cell; the 12px default is a real touch-target gap, and expanding adjacent hit regions would overlap across the dense 3px grid gaps. Preserve the finding until a non-overlapping touch interaction is designed.",
+    "evidence": [
+      "src/activity-heatmap/ActivityHeatmap.tsx",
+      "src/activity-heatmap/types.ts",
+      "docs/activity-heatmap.mdx",
+      "src/__tests__/ActivityHeatmapPublicPartScope.test.tsx",
+      "src/__tests__/ActivityHeatmapPublicPartScope.web.test.tsx"
+    ],
+    "verification": "native renderer and DOM web confirm interactive 12px cells and explicit 20px cells stay chart-sized under xs/lg/nested control scopes; activation and date/count payload work. Physical-device hit testing remains unverified; the 12px touch-target gap is unresolved",
+    "parts": ["src/activity-heatmap/ActivityHeatmap.tsx#ActivityHeatmap"]
+  },
+  "composition-chart-target": {
+    "status": "independent-scale",
+    "reason": "CompositionBar has no Bloom control-size prop. Each category is an interactive chart segment with a fixed 44px touch height; shrinking that role-specific target under a compact control scope would reduce touch safety without expressing chart density.",
+    "evidence": [
+      "src/composition-bar/CompositionBar.tsx",
+      "docs/composition-bar.mdx",
+      "src/__tests__/CompositionBarPublicPartScope.test.tsx",
+      "src/__tests__/CompositionBarPublicPartScope.web.test.tsx"
+    ],
+    "verification": "native renderer and DOM web verify segment role and 44px hit height at default md, nearest xs/lg, and nested lg over xs. The component owns no explicit size prop, portal or submenu; physical-device hit testing remains unverified",
+    "parts": ["src/composition-bar/CompositionBar.tsx#CompositionBar"]
+  },
+  "contact-card-controls": {
+    "status": "delegated",
+    "reason": "ContactProfileCard has no Bloom control-size prop. Its channel actions are Buttons with explicit sm size, its chips use explicit md, and its separate density prop controls card layout; the caller-owned actions slot is passed through unchanged and keeps the caller's BloomScope.",
+    "evidence": [
+      "src/contact-card/ContactProfileCard.tsx",
+      "src/contact-card/types.ts",
+      "docs/contact-card.mdx",
+      "src/__tests__/ContactProfileCardPublicPartScope.test.tsx",
+      "src/__tests__/ContactProfileCardPublicPartScope.web.test.tsx"
+    ],
+    "verification": "native renderer and DOM web verify channel Button size remains sm under xs/lg, the declared 6px hitSlop remains present, and caller action sizes follow default md, nearest xs/lg, nested lg over xs, and explicit md over xs. Physical-device hit testing remains unverified",
+    "parts": ["src/contact-card/ContactProfileCard.tsx#ContactProfileCard"]
   }
 }
