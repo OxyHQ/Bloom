@@ -1084,7 +1084,6 @@
       "src/earnings/EarningsBreakdown.tsx#EarningsBreakdown",
       "src/earnings/EarningsPayoutRow.tsx#EarningsPayoutRow",
       "src/earnings/EarningsSummary.tsx#EarningsSummary",
-      "src/empty-state/EmptyState.tsx#EmptyState",
       "src/engagement-bar/EngagementAction.tsx#EngagementAction",
       "src/engagement-bar/EngagementBar.tsx#EngagementBar",
       "src/engagement-bar/EngagementGroup.tsx#EngagementGroup",
@@ -1900,5 +1899,19 @@
     ],
     "verification": "Native renderer and DOM web confirm the CTA remains 32px and the xs close box remains 20px under default, xs, lg and nested scopes. Native additionally verifies the close glyph is 10.8px and its declared 10px hitSlop on each side.",
     "parts": ["src/announcement/Announcement.tsx#Announcement"]
+  },
+  "empty-state-owned-controls": {
+    "status": "independent-scale",
+    "reason": "EmptyState has no Bloom control-size prop. Its variant selects the fixed sizes of the family-owned action Buttons and suggestion Chips; caller-provided children remain under the caller's BloomScope and resolve their own control size.",
+    "evidence": [
+      "src/empty-state/EmptyState.tsx",
+      "src/empty-state/constants.ts",
+      "src/empty-state/types.ts",
+      "docs/empty-state.mdx",
+      "src/__tests__/EmptyStatePublicPartScope.test.tsx",
+      "src/__tests__/EmptyStatePublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify family-owned action Buttons at comfortable md (36px) and compact sm (32px), and suggestion Chips at 24px, unchanged under default, xs, lg and nested scopes. The caller-owned child Button resolves default md, nearest xs/lg, nested lg over xs, and explicit md over xs.",
+    "parts": ["src/empty-state/EmptyState.tsx#EmptyState"]
   }
 }

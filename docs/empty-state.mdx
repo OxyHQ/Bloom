@@ -67,6 +67,14 @@ fact box or a list rather than centred text. `order-confirmation` is built on ex
 that: a "done" screen is the same object as a "nothing here" screen with a different
 reason for existing.
 
+## Control scope
+
+`variant` selects the empty-state layout rung and the explicit sizes of its own
+actions and suggestion pills; `BloomScope` does not replace those role sizes.
+The caller-owned `children` slot retains the surrounding scope and explicit
+child sizes. Native-renderer and DOM web tests verify both behaviors for
+comfortable and compact variants.
+
 ## `suggestions`: pills under the description
 
 `suggestions` is `{ id, label, icon?, onPress }[]`, drawn as a centred, wrapping row of
