@@ -303,6 +303,14 @@ const CARD_FORM_MESSAGES: Translations['CARD_FORM_MESSAGES'] = {
   selectCountry: 'اختر دولة',
 };
 
+const COMPACT_COMPOSER_MESSAGES: Translations['COMPACT_COMPOSER_MESSAGES'] = {
+  input: 'اكتب رسالة',
+  expand: 'فتح المحرر الكامل',
+  characterCount: 'الأحرف',
+  characterCountValue: (count, max) => `${count} من ${max} حرفًا`,
+  limitHint: (max) => `تسمح الرسائل المختصرة بـ ${max} حرفًا. وسّع المحرر لكتابة المزيد.`,
+};
+
 const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   attach: 'إرفاق',
   emoji: 'رموز تعبيرية',
@@ -3466,6 +3474,7 @@ const translations: Translations = {
   SIDEBAR_MESSAGES,
   FILE_SIZE_UNITS,
   CARD_FORM_MESSAGES,
+  COMPACT_COMPOSER_MESSAGES,
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
   MEDIA_PLAYER_MESSAGES,

@@ -93,6 +93,16 @@ What the app passes itself still wins — `sidebar.items`, or a `bottomBar`
 composer). `TabPagerBottomBar` is the same bar for an app that replaces the
 shell's.
 
+For a pushed detail screen that owns a docked editor, opt into
+`<TabPagerBottomBar routeBehavior="contextual" actionBehavior="dock"
+action={<ReplyEditor />} navigationVisibility="compact" horizontalInset={8} />`. The bar reuses the
+provider's retained destination progress while the detail route has no selected
+page. A fresh deep link falls back to the first bar destination. It preserves
+that contextual selection and stays present instead of inheriting a no-bar
+page's hidden chrome. Default `routeBehavior="current"` keeps the existing
+unselected/pager-driven behavior. The app declares which host owns navigation;
+this option does not register, portal, or duplicate bars.
+
 The pages are the app's top-level destinations, so their screens carry no route
 Back (`BloomProvider back`): a page's `PageHeader` shows no back button unless
 given an `onBack`. A screen pushed over the pager keeps its own.

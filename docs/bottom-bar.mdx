@@ -26,7 +26,7 @@ screen chrome; otherwise it reads the nearest `TabBarMinimizeProvider`.
 The root occupies its expanded footprint, including the bottom safe area.
 `Screen.bottomBar` positions it and reserves that footprint for scrolling content.
 `actionBehavior="hide"` (the default) fades out the accessory and releases its width and gap while minimizing, centering the navigation. Upward scroll brings it back. `visible` keeps the accessory available. An action without navigation always stays visible. Hidden accessories are removed from hit testing and accessibility; web also marks the subtree inert to prevent keyboard focus. Reduced motion snaps the geometry. Native keyboard visibility hides
-this bottom region. BottomBar always uses the shared `SurfacePaint` ([Surface](./surface.mdx)): a 72% body over a frosted backdrop on web, opaque on native, with the shared edge light. There is no material variant. Native uses the same body and edge paint without requiring Apple-only glass peers or a per-control blur. Add `blur` explicitly for the separate screen-edge band; it is off by default. `maxWidth` defaults to 560 points.
+this bottom region in the default modes; `dock` keeps its editor mounted. BottomBar always uses the shared `SurfacePaint` ([Surface](./surface.mdx)): a 72% body over a frosted backdrop on web, opaque on native, with the shared edge light. There is no material variant. Native uses the same body and edge paint without requiring Apple-only glass peers or a per-control blur. Add `blur` explicitly for the separate screen-edge band; it is off by default. `maxWidth` defaults to 560 points.
 
 Neither the universal entry nor the specialized `tab-bar` subpath uses an
 Apple-only peer.
@@ -48,3 +48,68 @@ themselves. Setup: [`AppShell`, Right-to-left](/docs/bloom/main/app-shell).
 Inside an `AppShell` bottom-bar slot, the shell owns measurement and the bottom safe area. `BottomBar` automatically consumes that ownership, so the inset is applied once. Standalone bars retain their own edge claim and inset.
 
 Navigation publishes its tint composited against the parent as an estimated backing to nested surface consumers; custom tab-bar theme fills are preserved. Surface painting does not add a hit target or change navigation geometry.
+
+## An editor that docks beside navigation
+
+Use `actionBehavior="dock"` for an editable accessory that moves from a row
+above navigation to the same row as its active destination. Supply the editor
+itself, without another `PageFooter`, surface, or exterior padding:
+
+```tsx
+<Screen
+  bottomBarKeyboardBehavior="follow"
+  bottomBar={
+    <BottomBar
+      items={items}
+      value={destination}
+      onValueChange={setDestination}
+      action={<ReplyEditor />}
+      actionBehavior="dock"
+      navigationVisibility="compact"
+      horizontalInset={8}
+      minimizeProgress={collapseProgress}
+    />
+  }
+>
+  {content}
+</Screen>
+```
+
+The same editor remains mounted while scrolling, resizing or showing the
+keyboard. Its height is natural, including a multiline or expanding field;
+CSS/Yoga lays it out without a measure→React state→height loop. The existing
+shared minimize signal first frees the horizontal lane, then lowers the editor
+into it. Reversing scroll reverses that trajectory. Reduced motion snaps it.
+The reserved scroll footprint remains the expanded footprint, so minimizing
+chrome does not move the reading position.
+
+Navigation folds to its active 44-point destination. Pressing that circle opens
+all destinations; it does not navigate or reset the page. Folded destinations
+leave hit testing, keyboard traversal and accessibility, and a keyboard-focused
+destination transfers focus to the active one. The editor's focus is untouched.
+Expanded destinations retain their minimum width and overflow horizontally when
+needed. The action does not join the navigation gesture.
+
+`navigationVisibility` defaults to `always`; `compact` shows navigation below
+Bloom's `md` breakpoint, and `never` leaves just the same action. Native keyboard
+visibility also removes only navigation in dock mode. Put the bar in
+`Screen.bottomBar` with `bottomBarKeyboardBehavior="follow"` to use its existing
+keyboard-following host (the Screen default hides its footer). The component
+adds no keyboard avoidance of its own. `horizontalInset` defaults to 12 and
+sets both siblings' common horizontal inset; `actionPlacement` applies to the
+other action behaviors.
+
+A screen that owns this bar must suppress the shell's global bottom bar
+through the shell's existing `bottomBar={null}` contract. Do not render a second
+navigation copy or transfer an editor through a portal. Under a pager,
+`TabPagerBottomBar routeBehavior="contextual"` provides the same composition for
+a pushed detail route.
+
+Dock navigation visibility changes animate its reserved row, logical action inset
+and existing docking offset from one presence value. Web uses CSS and native uses
+a UI-thread shared value, with the same 300ms ease-in-out recipe as a collapsible
+editor. A focused editor therefore does not lose 68px of navigation space in one
+commit while its toolbar is still expanding. Reversal starts from the current
+presence; reduced motion removes or restores the exact footprint immediately.
+Native collapsible content retains its existing animation owner; frame-level
+synchronization with a physical keyboard is not implied by shared timing.

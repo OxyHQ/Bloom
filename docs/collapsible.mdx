@@ -47,11 +47,13 @@ siblings of the radio, never children of its decorative label.
 | `keepMounted` | Default `true`: children stay mounted while shut. `false` unmounts them once the exit finishes and mounts them again on opening, for a closed branch that should cost nothing (a large tree, an empty attachment strip). |
 | `returnFocusRef` | DOM or native focusable host to receive focus only when closing content owned it. Accepts `RadioOptionState.controlRef` directly. |
 | `className`, `style` | Outer frame, the node its parent lays out. Height clipping and opacity are animated by Bloom. |
-| `contentClassName`, `contentStyle` | Measured body; place padding/gaps and content decoration here. |
+| `contentClassName`, `contentStyle` | Natural body; place padding/gaps and content decoration here. |
 | `nativeID`, `testID` | Outer host identity. No role or labelled-by relationship is invented. |
 
-The inner body's natural height is measured again when content or width changes;
-there is no fixed maximum height. Children stay mounted so edits and selections
+Standalone web reveals use a CSS Grid row from `0fr` to `1fr`, so content and width
+changes remain intrinsic without a height observer or JavaScript animation loop.
+Native and the accordion's spring-driven frame use their existing measured-body
+motion. Neither path imposes a fixed maximum height. Children stay mounted so edits and selections
 survive closure, unless `keepMounted={false}`. Web uses `inert` and `aria-hidden` immediately. Native disables
 pointer interaction and removes descendants from accessibility immediately, then
 removes the body from layout when the exit finishes. Live reduced motion cancels
@@ -71,7 +73,7 @@ portaled control must likewise coordinate its own open state with visibility.
 
 ## `useCollapsibleMotion`
 
-The motion owner behind `Collapsible` and `Accordion`, public for a part that
+The motion owner behind native `Collapsible` and spring-driven `Accordion`, public for a part that
 moves with a reveal it does not draw — a chevron that turns as a body opens, a
 header that follows it. Do not rebuild a height-and-opacity reveal on top of it;
 render `Collapsible`.
@@ -98,3 +100,10 @@ Live reduced motion settles immediately.
 The old pre-1.0 `Collapsible` implementation was removed for a module-scope
 Android layout-animation side effect. The controlled API introduced in 7.22 is
 a new implementation and does not restore that behavior or the old props.
+
+Standalone web completion follows only its own `grid-template-rows` transition.
+Closing makes descendants inert immediately; `keepMounted={false}` removes them
+after geometry finishes. Reopening cancels the pending close without replacing
+retained children. Reduced motion settles directly. This shares the CSS clock
+with docked navigation presence, avoiding a one-frame footer-space jump when an
+editor expands as its navigation disappears.

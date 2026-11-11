@@ -61,6 +61,28 @@ This entry exposes the same sizes, props and theme/gradient handling as the
 barrel. It links no Remix or Simple Icons glyph modules. Keep ordinary glyph
 imports on their individual `icons/Ri…` or `icons/Si…` subpaths.
 
+### Social and attachment glyphs
+
+The social glyphs use the same SVG renderer, sizing and state colour contract
+as the general icon catalogue. Each has its own import path:
+
+```tsx
+import { MediaAttachmentIcon } from '@oxy.so/bloom/icons/MediaAttachmentIcon';
+import { GifAttachmentIcon } from '@oxy.so/bloom/icons/GifAttachmentIcon';
+import { LikeIcon } from '@oxy.so/bloom/icons/LikeIcon';
+import { LikeFillIcon } from '@oxy.so/bloom/icons/LikeFillIcon';
+
+<GlyphButton icon={MediaAttachmentIcon} accessibilityLabel="Add media" />
+<EngagementAction icon={LikeIcon} activeIcon={LikeFillIcon} active={liked}
+  onPress={toggleLike} accessibilityLabel="Like" />
+```
+
+`ReplyIcon`, `RepostIcon`, `BookmarkIcon`, `BookmarkFillIcon` and `ShareIcon`
+complete this set. Outline hearts and reply bubbles retain their 18-unit view
+boxes; attachment, bookmark and share glyphs use 24 units. Their controls still
+own target size, hover, focus, disabled state, haptics and animation. The glyphs
+add no interaction or animation wrappers.
+
 ### The barrel still works, and stays supported
 
 `@oxy.so/bloom/icons` is an **exact** `exports` key and the per-glyph entry is a

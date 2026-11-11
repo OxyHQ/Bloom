@@ -52,3 +52,11 @@ export type {
   VoiceRecorderProps,
   VoiceRecorderState,
 } from './types';
+
+export { CompactComposer } from './CompactComposer.web';
+export { acceptsComposerText } from './compact-text';
+export type {
+  CompactComposerProps,
+  CompactComposerLabels,
+  CompactComposerAction,
+} from './compact-types';

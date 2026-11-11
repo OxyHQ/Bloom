@@ -284,6 +284,14 @@ const CARD_FORM_MESSAGES: Translations['CARD_FORM_MESSAGES'] = {
   selectCountry: 'देश चुनें',
 };
 
+const COMPACT_COMPOSER_MESSAGES: Translations['COMPACT_COMPOSER_MESSAGES'] = {
+  input: 'संदेश लिखें',
+  expand: 'पूरा संपादक खोलें',
+  characterCount: 'अक्षर',
+  characterCountValue: (count, max) => `${max} में से ${count} अक्षर`,
+  limitHint: (max) => `संक्षिप्त संदेशों में ${max} अक्षर हो सकते हैं। अधिक लिखने के लिए संपादक विस्तृत करें।`,
+};
+
 const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   attach: 'अटैच करें',
   emoji: 'इमोजी',
@@ -3006,6 +3014,7 @@ const translations: Translations = {
   SIDEBAR_MESSAGES,
   FILE_SIZE_UNITS,
   CARD_FORM_MESSAGES,
+  COMPACT_COMPOSER_MESSAGES,
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
   MEDIA_PLAYER_MESSAGES,

@@ -288,6 +288,15 @@ const CARD_FORM_MESSAGES: Translations['CARD_FORM_MESSAGES'] = {
   selectCountry: 'Ülke seçin',
 };
 
+const COMPACT_COMPOSER_MESSAGES: Translations['COMPACT_COMPOSER_MESSAGES'] = {
+  input: 'Mesaj yazın',
+  expand: 'Tam düzenleyiciyi aç',
+  characterCount: 'Karakterler',
+  characterCountValue: (count, max) => `${max} karakterden ${count}`,
+  limitHint: (max) =>
+    `Kısa mesajlar ${max} karakterle sınırlıdır. Daha fazla yazmak için düzenleyiciyi genişletin.`,
+};
+
 const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   attach: 'Ekle',
   emoji: 'Emoji',
@@ -3040,6 +3049,7 @@ const translations: Translations = {
   SIDEBAR_MESSAGES,
   FILE_SIZE_UNITS,
   CARD_FORM_MESSAGES,
+  COMPACT_COMPOSER_MESSAGES,
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
   MEDIA_PLAYER_MESSAGES,

@@ -22,6 +22,7 @@ const HANDLE_CSS = interactiveWebCss({
 
 export function PanelReorderHandle({
   id,
+  scope,
   label,
   onMove,
   onStart,
@@ -31,6 +32,7 @@ export function PanelReorderHandle({
   testID,
 }: {
   id: string;
+  scope: string | null;
   label: string;
   onMove: (delta: number) => void;
   onStart: (id: string, x: number, y: number) => void;
@@ -91,7 +93,7 @@ export function PanelReorderHandle({
           onAccessibilityAction={(event) =>
             onMove(event.nativeEvent.actionName === 'decrement' ? -1 : 1)
           }
-          {...{ dataSet: { bloomPanelReorder: id } }}
+          {...{ dataSet: { bloomPanelReorder: id, bloomPanelReorderOwner: scope ?? undefined } }}
           testID={testID}
           hitSlop={4}
           style={

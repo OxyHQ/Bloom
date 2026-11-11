@@ -1,5 +1,14 @@
 import { ScrollArea } from '../layout/ScrollArea';
-import { type ComponentRef, useContext, useRef, useState, type ComponentType } from 'react';
+import {
+  type ComponentRef,
+  useContext,
+  useRef,
+  useState,
+  useCallback,
+  useInsertionEffect,
+  useLayoutEffect,
+  type ComponentType,
+} from 'react';
 import { View, Platform } from 'react-native';
 import { useKeyboardVisible } from '../hooks/use-keyboard-visible';
 import { useEffect } from 'react';
@@ -9,17 +18,25 @@ import Animated, {
   interpolate,
   runOnJS,
   useSharedValue,
+  useDerivedValue,
+  withTiming,
+  Easing,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDirectionProps } from '../hooks/use-is-rtl';
 import { BottomBarSlotContext } from '../layout/bottom-bar-slot';
-import { useClaimBottomEdge } from '../layout/bottom-edge';
+import { ScreenFooterContext } from '../screen/context';
+import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { IS_WEB } from '../styles/platform';
+import { dataHook } from '../styles/data-hook';
+import { useClaimBottomEdge, useMeasuredBottomEdgeClaim } from '../layout/bottom-edge';
 import { FAB_METRICS } from '../fab/constants';
 import { windowEdgeGap } from '../layout/edge';
 import { useMinimizeState } from '../tab-bar/context';
 import {
   EXPANDED_HEIGHT,
   MINIMIZED_HEIGHT,
+  DOCK_NAVIGATION_PHASE,
   BLUR_BLEED,
   MAX_EXPANDED_ITEM_WIDTH,
   ROW_PAD_H,
@@ -29,7 +46,16 @@ import type { ProgressiveBlurProps } from '../progressive-blur/types';
 import type { BottomBarProps } from './types';
 import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 import { UNSET } from '../styles/animated-style';
+import { useBorderBoxSize } from '../hooks/use-border-box-size';
+import { useWindowWidthClass } from '../hooks/use-width-class';
+import { BREAKPOINTS } from '../styles/breakpoints';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { cssLength, type WebCssStyle } from '../styles/web-view-style';
+import { DEFAULT_COLLAPSIBLE_TRANSITION } from '../collapsible/use-collapsible-motion';
+import { resolveSurfaceTransition } from '../motion/surface-transition';
+
+const DOCK_PRESENCE = '--bloom-dock-navigation-presence';
+const DOCK_TRANSITION = resolveSurfaceTransition(DEFAULT_COLLAPSIBLE_TRANSITION);
 
 interface Props extends BottomBarProps {
   Navigation: ComponentType<TabBarProps>;
@@ -48,19 +74,65 @@ export function BottomBarBase({
   action,
   actionPlacement = 'auto',
   actionBehavior = 'hide',
+  navigationVisibility = 'always',
   minimizeProgress,
   hideProgress,
   blur = false,
   maxWidth = 560,
+  horizontalInset = 12,
   style,
   testID,
 }: Props) {
+  const inset = Math.max(0, Number.isFinite(horizontalInset) ? horizontalInset : 12);
   const insets = useCssSafeAreaInsets(useSafeAreaInsets());
   // Logical insets below; react-native-web needs the direction handed to it.
   const dirProps = useDirectionProps();
   const minimize = useMinimizeState();
   const progress = minimizeProgress ?? minimize.progress;
   const reducedMotion = usePrefersReducedMotion();
+  const dock = actionBehavior === 'dock' && action != null;
+  const sizeClass = useWindowWidthClass(COMPACT_THRESHOLDS);
+  const keyboardVisible = useKeyboardVisible();
+  const showNavigation =
+    navigationVisibility !== 'never' &&
+    (navigationVisibility !== 'compact' || sizeClass < BREAKPOINTS.md) &&
+    !(dock && keyboardVisible);
+  const present = action != null || (showNavigation && items.length > 0);
+  const selected = items.some((item) => item.name === value);
+  const dockNavigation = dock && showNavigation && items.length > 0;
+  // This is semantic visibility, separate from the scroll folding signal. It
+  // releases the navigation footprint continuously while a natural-height
+  // editor expands, instead of dropping its entire reserved row in one commit.
+  const navigationPresence = useSharedValue(dockNavigation ? 1 : 0);
+  useLayoutEffect(() => {
+    if (IS_WEB) return;
+    const target = dockNavigation ? 1 : 0;
+    navigationPresence.value = reducedMotion
+      ? target
+      : withTiming(target, {
+          duration: DOCK_TRANSITION.duration,
+          easing: Easing.bezier(...DOCK_TRANSITION.easing),
+        });
+  }, [dockNavigation, reducedMotion, navigationPresence]);
+  const navigationPresenceStyle: WebCssStyle | undefined =
+    dock && IS_WEB
+      ? {
+          [DOCK_PRESENCE]: dockNavigation ? '1' : '0',
+          transitionProperty: DOCK_PRESENCE,
+          transitionDuration: `${reducedMotion ? 0 : DOCK_TRANSITION.duration}ms`,
+          transitionTimingFunction: DOCK_TRANSITION.cssEasing,
+        }
+      : undefined;
+  // Folding frees the horizontal lane before the editor descends into it.
+  // Both phases are reversible projections of the same scroll signal.
+  const navigationProgress = useDerivedValue(() => {
+    const amount = reducedMotion ? Number(progress.value > 0.01) : progress.value;
+    return dock
+      ? selected
+        ? Math.min(1, Math.max(0, amount / DOCK_NAVIGATION_PHASE))
+        : 0
+      : amount;
+  }, [dock, reducedMotion, progress, selected]);
   const hideAction = actionBehavior === 'hide' && items.length > 0;
   const [actionHidden, setActionHidden] = useState(() => hideAction && progress.value > 0.01);
   const actionRef = useRef<ComponentRef<typeof View>>(null);
@@ -69,12 +141,13 @@ export function BottomBarBase({
   const [rowWidth, setRowWidth] = useState(0);
   const actionSpace = action ? (actionWidth ?? FAB_METRICS.md.diameter) + 10 : 0;
   const above = Boolean(
-    action &&
+    !dock &&
+      action &&
       items.length &&
       (actionPlacement === 'above' ||
         (actionPlacement === 'auto' &&
           rowWidth > 0 &&
-          rowWidth - 24 - actionSpace < items.length * 56 + ROW_PAD_H * 2)),
+          rowWidth - inset * 2 - actionSpace < items.length * 56 + ROW_PAD_H * 2)),
   );
   const footprint =
     EXPANDED_HEIGHT +
@@ -82,7 +155,7 @@ export function BottomBarBase({
   const navigationWidth = Math.max(
     0,
     Math.min(
-      rowWidth - 24 - (above ? 0 : actionSpace),
+      rowWidth - inset * 2 - (above ? 0 : actionSpace),
       items.length * MAX_EXPANDED_ITEM_WIDTH + ROW_PAD_H * 2,
     ),
   );
@@ -136,25 +209,118 @@ export function BottomBarBase({
       (document.activeElement as HTMLElement | null)?.blur?.();
     node.inert = barHidden;
   }, [barHidden]);
-  const keyboardVisible = useKeyboardVisible();
   const suppliedBottomInset = useContext(BottomBarSlotContext);
-  const bottom = Math.max(0, windowEdgeGap(insets.bottom) - (suppliedBottomInset ?? 0));
-  useClaimBottomEdge(keyboardVisible || suppliedBottomInset !== undefined ? 0 : bottom + footprint);
+  const bottom = keyboardVisible
+    ? 0
+    : Math.max(0, windowEdgeGap(insets.bottom) - (suppliedBottomInset ?? 0));
+  useClaimBottomEdge(
+    dock || !present || keyboardVisible || suppliedBottomInset !== undefined
+      ? 0
+      : bottom + footprint,
+  );
+  const footerOwner = useContext(ScreenFooterContext);
+  const claimMeasured = useMeasuredBottomEdgeClaim(
+    dock && footerOwner == null && suppliedBottomInset === undefined,
+  );
+  const naturalFootprint = useSharedValue(0);
+  const rootMeasurement = useBorderBoxSize(({ height }) => {
+    if (dock) {
+      naturalFootprint.value = height;
+      claimMeasured(height);
+    }
+  });
+  const attachRoot = useCallback(
+    (node: ComponentRef<typeof View> | null) => {
+      rootRef.current = node;
+      rootMeasurement.ref?.(node);
+    },
+    [rootMeasurement.ref],
+  );
+  useInsertionEffect(() => {
+    if (Platform.OS === 'web') adoptStyleSheet('bloom-bottom-bar-dock', DOCK_CSS);
+  }, []);
   const rowStyle = useAnimatedStyle(
     () => ({
-      height: interpolate(
-        reducedMotion ? Number(progress.value > 0.01) : progress.value,
-        [0, 1],
-        [EXPANDED_HEIGHT, MINIMIZED_HEIGHT],
-        'clamp',
-      ),
+      paddingBottom: !dock
+        ? 0
+        : IS_WEB
+          ? cssLength(`calc(var(--bloom-dock-navigation-presence) * ${EXPANDED_HEIGHT + 10}px)`)
+          : (EXPANDED_HEIGHT + 10) * navigationPresence.value,
+      height: dock
+        ? ('auto' as const)
+        : interpolate(
+            reducedMotion ? Number(progress.value > 0.01) : progress.value,
+            [0, 1],
+            [EXPANDED_HEIGHT, MINIMIZED_HEIGHT],
+            'clamp',
+          ),
     }),
-    [progress, reducedMotion],
+    [progress, reducedMotion, dock, footprint, navigationPresence],
   );
   // Not `items.length` in the mapper: a worklet copies `items` whole to the UI
   // runtime, icon elements and all (`worklet-captures.test.ts`).
   const hasItems = items.length > 0;
+  const fallbackNavigationWidth = navigationStyle.width;
+  const dockNavigationStyle = useAnimatedStyle(() => {
+    const amount = navigationProgress.value;
+    return {
+      width: !dock
+        ? fallbackNavigationWidth
+        : IS_WEB
+          ? (`calc(${(1 - amount) * 100}% + ${amount * MINIMIZED_HEIGHT - (1 - amount) * inset * 2}px)` as `${number}%`)
+          : amount === 0
+            ? UNSET
+            : Math.max(MINIMIZED_HEIGHT, rowWidth - inset * 2) * (1 - amount) +
+              MINIMIZED_HEIGHT * amount,
+      alignSelf: dock ? ('flex-end' as const) : ('auto' as const),
+    };
+  }, [dock, navigationProgress, rowWidth, inset, fallbackNavigationWidth]);
+  const minimumNavigationWidth = items.length * 44 + ROW_PAD_H * 2;
+  const navigationMinimumStyle = useAnimatedStyle(
+    () => ({
+      minWidth: dock
+        ? minimumNavigationWidth * (1 - navigationProgress.value) +
+          MINIMIZED_HEIGHT * navigationProgress.value
+        : minimumNavigationWidth,
+    }),
+    [dock, minimumNavigationWidth, navigationProgress],
+  );
+  const actionMeasurement = useBorderBoxSize(({ width, height }) => {
+    if (!dock) {
+      setActionWidth(width);
+      setActionHeight(height);
+    }
+  });
+  const rowMeasurement = useBorderBoxSize(({ width }) => {
+    if (!dock || Platform.OS !== 'web') setRowWidth(width);
+  });
   const actionStyle = useAnimatedStyle(() => {
+    if (dock) {
+      const amount = selected
+        ? Math.min(1, Math.max(0, reducedMotion ? Number(progress.value > 0.01) : progress.value))
+        : 0;
+      return {
+        width: 'auto' as const,
+        opacity: 1,
+        marginInlineStart: IS_WEB
+          ? cssLength(
+              `calc(var(--bloom-dock-navigation-presence) * ${(MINIMIZED_HEIGHT + 10) * navigationProgress.value}px)`,
+            )
+          : (MINIMIZED_HEIGHT + 10) * navigationProgress.value * navigationPresence.value,
+        transform: [
+          {
+            translateY: IS_WEB
+              ? (`calc(var(--bloom-dock-navigation-presence) * ${(EXPANDED_HEIGHT + 10) * Math.min(1, Math.max(0, (amount - DOCK_NAVIGATION_PHASE) / (1 - DOCK_NAVIGATION_PHASE)))}px)` as `${number}%`)
+              : (EXPANDED_HEIGHT + 10) *
+                navigationPresence.value *
+                Math.min(
+                  1,
+                  Math.max(0, (amount - DOCK_NAVIGATION_PHASE) / (1 - DOCK_NAVIGATION_PHASE)),
+                ),
+          },
+        ],
+      };
+    }
     const amount = hideAction
       ? Math.min(1, Math.max(0, reducedMotion ? Number(progress.value > 0.01) : progress.value))
       : 0;
@@ -167,26 +333,43 @@ export function BottomBarBase({
       opacity: 1 - amount,
       transform: [{ scale: 1 - amount * 0.15 }],
     };
-  }, [progress, hideAction, reducedMotion, actionWidth, hasItems, above]);
+  }, [
+    progress,
+    hideAction,
+    reducedMotion,
+    actionWidth,
+    hasItems,
+    above,
+    dock,
+    navigationPresence,
+    navigationProgress,
+    selected,
+  ]);
   const presenceStyle = useAnimatedStyle(() => {
     const amount = Math.min(1, Math.max(0, reducedMotion ? Number(hide.value > 0.5) : hide.value));
     // The whole footprint, so a gone bar leaves no sliver above the edge.
     return {
       opacity: 1 - amount,
-      transform: [{ translateY: amount * (bottom + footprint) }],
+      transform: [{ translateY: amount * (dock ? naturalFootprint.value : bottom + footprint) }],
     };
-  }, [hide, reducedMotion, bottom, footprint]);
-  if (keyboardVisible || (!items.length && !action)) return null;
+  }, [hide, reducedMotion, bottom, footprint, dock, naturalFootprint]);
+  if ((keyboardVisible && !dock) || !present) return null;
   return (
     <Animated.View
       {...dirProps}
-      ref={rootRef}
+      ref={dock ? attachRoot : rootRef}
+      onLayout={dock ? rootMeasurement.onLayout : undefined}
+      {...dataHook('bloomBottomBarDock', dock ? navigationVisibility : undefined)}
       testID={testID}
       pointerEvents={barHidden ? 'none' : 'box-none'}
       accessibilityElementsHidden={barHidden}
       importantForAccessibility={barHidden ? 'no-hide-descendants' : 'auto'}
       aria-hidden={barHidden}
-      style={[{ height: bottom + footprint, justifyContent: 'flex-end' }, style, presenceStyle]}
+      style={[
+        { height: dock ? undefined : bottom + footprint, justifyContent: 'flex-end' },
+        style,
+        presenceStyle,
+      ]}
     >
       {blur && (
         <Blur
@@ -196,48 +379,74 @@ export function BottomBarBase({
             left: 0,
             right: 0,
             bottom: 0,
-            height: bottom + footprint + BLUR_BLEED,
+            height: dock ? '100%' : bottom + footprint + BLUR_BLEED,
           }}
         />
       )}
       <Animated.View
         testID={testID ? `${testID}-row` : undefined}
-        onLayout={(event) => setRowWidth(event.nativeEvent.layout.width)}
+        {...(dock && IS_WEB ? {} : rowMeasurement)}
+        {...dataHook('bloomBottomBarRow')}
         pointerEvents="box-none"
         style={[
           {
-            justifyContent: items.length ? 'center' : 'flex-end',
+            justifyContent: dock ? 'flex-start' : items.length ? 'center' : 'flex-end',
             alignSelf: 'center',
             width: '100%',
             maxWidth,
-            paddingLeft: 12,
-            paddingRight: 12,
+            paddingLeft: inset,
+            paddingRight: inset,
             marginBottom: bottom,
-            flexDirection: 'row',
-            alignItems: 'center',
+            flexDirection: dock ? 'column' : 'row',
+            alignItems: dock ? 'stretch' : 'center',
           },
           rowStyle,
+          navigationPresenceStyle,
         ]}
       >
         {items.length > 0 && (
-          <View testID={testID ? `${testID}-navigation` : undefined} style={navigationStyle}>
+          <Animated.View
+            testID={testID ? `${testID}-navigation` : undefined}
+            {...dataHook('bloomBottomBarNavigation')}
+            style={[
+              dock
+                ? {
+                    position: 'absolute',
+                    bottom: 0,
+                    insetInlineStart: inset,
+                    insetInlineEnd: inset,
+                    minWidth: MINIMIZED_HEIGHT,
+                    flexShrink: 0,
+                  }
+                : navigationStyle,
+              !showNavigation ? { display: 'none' } : undefined,
+              dockNavigationStyle,
+            ]}
+          >
             <ScrollArea
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ minWidth: '100%' }}
+              contentContainerStyle={dock ? { width: '100%', minWidth: 0 } : { minWidth: '100%' }}
+              scrollbar="never"
             >
-              <View
-                style={
-                  Platform.OS === 'web'
-                    ? { width: '100%', minWidth: items.length * 44 + 8 }
-                    : { width: Math.max(navigationWidth, items.length * 44 + 8) }
-                }
+              <Animated.View
+                style={[
+                  dock
+                    ? { width: '100%' }
+                    : Platform.OS === 'web'
+                      ? { width: '100%', minWidth: items.length * 44 + 8 }
+                      : { width: Math.max(navigationWidth, items.length * 44 + 8) },
+                  navigationMinimumStyle,
+                ]}
               >
                 <Navigation
-                  scrollable={navigationWidth > 0 && navigationWidth < items.length * 44 + 8}
+                  minimizeBehavior={dock ? 'active' : 'compact'}
+                  scrollable={
+                    !dock && navigationWidth > 0 && navigationWidth < items.length * 44 + 8
+                  }
                   embedded
                   blur={false}
-                  minimizeProgress={progress}
+                  minimizeProgress={dock && !selected ? shown : progress}
                   activeProgress={activeProgress}
                   onIndexLongPress={
                     onValueLongPress
@@ -255,9 +464,9 @@ export function BottomBarBase({
                     <Item key={item.name} item={item} index={index} />
                   ))}
                 </Navigation>
-              </View>
+              </Animated.View>
             </ScrollArea>
-          </View>
+          </Animated.View>
         )}
         {action && (
           <Animated.View
@@ -267,21 +476,27 @@ export function BottomBarBase({
             importantForAccessibility={actionHidden ? 'no-hide-descendants' : 'auto'}
             aria-hidden={actionHidden}
             testID={testID ? `${testID}-action` : undefined}
+            {...dataHook('bloomBottomBarAction')}
             style={[
-              { flexShrink: 0, alignItems: 'flex-start', justifyContent: 'center' },
+              {
+                flexShrink: 0,
+                alignItems: dock ? 'stretch' : 'flex-start',
+                justifyContent: 'center',
+              },
+
               above
-                ? { position: 'absolute', insetInlineEnd: 12, bottom: '100%', marginBottom: 10 }
+                ? { position: 'absolute', insetInlineEnd: inset, bottom: '100%', marginBottom: 10 }
                 : undefined,
               actionStyle,
             ]}
           >
             <View
               testID={testID ? `${testID}-action-content` : undefined}
-              onLayout={(event) => {
-                setActionWidth(event.nativeEvent.layout.width);
-                setActionHeight(event.nativeEvent.layout.height);
+              {...(dock ? {} : actionMeasurement)}
+              style={{
+                flexShrink: 0,
+                ...(dock || actionWidth == null ? {} : { width: actionWidth }),
               }}
-              style={{ flexShrink: 0, ...(actionWidth == null ? {} : { width: actionWidth }) }}
             >
               {action}
             </View>
@@ -291,3 +506,22 @@ export function BottomBarBase({
     </Animated.View>
   );
 }
+
+const COMPACT_THRESHOLDS = [BREAKPOINTS.md] as const;
+
+const DOCK_CSS = `
+@property --bloom-dock-navigation-presence {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-bloom-bottom-bar-row] { transition-duration: 0ms !important; }
+}
+
+@media (min-width: ${BREAKPOINTS.md}px) {
+  [data-bloom-bottom-bar-dock="compact"] [data-bloom-bottom-bar-navigation] { display: none !important; }
+  [data-bloom-bottom-bar-dock="compact"] [data-bloom-bottom-bar-row] { padding-bottom: 0 !important; }
+  [data-bloom-bottom-bar-dock="compact"] [data-bloom-bottom-bar-action] { margin-inline-start: 0 !important; transform: none !important; }
+}
+`;

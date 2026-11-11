@@ -1,0 +1,24 @@
+Tasks: 1 total,   0 running,   1 sleeping,   0 stopped,   0 zombie
+  Mem:  7755004K total,  5643800K used,  2111204K free,     2852K buffers
+ Swap:  3877496K total,  1756036K used,  2121460K free,  1814080K cached
+900%cpu 221%user   0%nice 296%sys 332%idle   0%iow  43%irq   7%sirq   0%host
+  PID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ ARGS
+21376 u0_a239       0 -10  49G 585M 417M S  117   7.7   7:03.78 so.oxy.bloom.loaderpackagelab
+
+
+
+Tasks: 1 total,   1 running,   0 sleeping,   0 stopped,   0 zombie
+  Mem:  7755004K total,  5697460K used,  2057544K free,     2852K buffers
+ Swap:  3877496K total,  1699716K used,  2177780K free,  1814664K cached
+900%cpu 140%user   0%nice 108%sys 601%idle   0%iow  43%irq   7%sirq   0%host
+  PID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ ARGS
+21376 u0_a239       0 -10  49G 585M 417M R  126   7.7   7:04.11 so.oxy.bloom.loaderpackagelab
+
+
+
+Tasks: 1 total,   0 running,   1 sleeping,   0 stopped,   0 zombie
+  Mem:  7755004K total,  5706832K used,  2048172K free,     2852K buffers
+ Swap:  3877496K total,  1701360K used,  2176136K free,  1811260K cached
+900%cpu 145%user   2%nice 115%sys 587%idle   0%iow  42%irq   8%sirq   0%host
+  PID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ ARGS
+21376 u0_a239       0 -10  49G 585M 417M S  119   7.7   7:10.45 so.oxy.bloom.loaderpackagelab

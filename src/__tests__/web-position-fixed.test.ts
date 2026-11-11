@@ -6,6 +6,7 @@ import {
   WEB_POSITION_FIXED,
   WEB_POSITION_STICKY,
   WEB_SURFACE_STICKY_TOP,
+  cssLength,
 } from '../styles/web-view-style';
 
 /**
@@ -41,6 +42,9 @@ const files = sourceFiles(SRC);
 
 describe('web position: fixed', () => {
   it('resolves to the CSS value at runtime', () => {
+    expect(cssLength('calc(var(--bloom-dock-navigation-presence) * 68px)')).toBe(
+      'calc(var(--bloom-dock-navigation-presence) * 68px)',
+    );
     expect(WEB_POSITION_FIXED).toBe('fixed');
     expect(WEB_POSITION_STICKY).toBe('sticky');
     expect(WEB_SURFACE_STICKY_TOP).toBe('var(--bloom-panel-sticky-top, 0px)');
@@ -113,6 +117,7 @@ describe('web position: fixed', () => {
       'webViewportHeightMinus',
       'WEB_OVERFLOW_CLIP',
       'webSurfaceStickyTopPlus',
+      'cssLength',
     ]);
     expect(crossings).toEqual([
       { owner: 'WEB_POSITION_FIXED', type: "ViewStyle['position']" },
@@ -122,6 +127,7 @@ describe('web position: fixed', () => {
       { owner: 'webViewportHeightMinus', type: "ViewStyle['height']" },
       { owner: 'WEB_OVERFLOW_CLIP', type: "ViewStyle['overflow']" },
       { owner: 'webSurfaceStickyTopPlus', type: "ViewStyle['top']" },
+      { owner: 'cssLength', type: "ViewStyle['width']" },
     ]);
   });
 

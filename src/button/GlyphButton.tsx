@@ -13,6 +13,7 @@ import {
   resolveGlyphButtonPaint,
 } from './shared';
 import type { GlyphButtonProps } from './types';
+import { GlyphAttention } from './GlyphAttention';
 import { IS_WEB } from '../styles/platform';
 import type { RefComponent } from '../styles/native-refs';
 
@@ -27,7 +28,7 @@ import type { RefComponent } from '../styles/native-refs';
  *   disabled   `aria-disabled`, no press, dimmed to `disabledOpacity` (0.5)
  *   busy       `aria-busy`, no press, NOT dimmed — working, not unavailable
  *
- * Colour change only, no scale, 150ms. Focus is a 2px ring at a 2px offset,
+ * Default feedback changes colour only, with no scale, in 150ms. Focus is a 2px ring at a 2px offset,
  * `:focus-visible` so a mouse press leaves none behind; `ring` is a PROP because
  * these sit on surfaces Bloom does not own (artwork, a player bar) where the
  * accent ring disappears.
@@ -86,10 +87,13 @@ function GlyphButtonComponent(
   {
     size = GLYPH_BUTTON_SIZE,
     glyphSize,
+    attention,
     icon: Icon,
     children,
     onPress,
     onLongPress,
+    onFocus,
+    onBlur,
     disabled = false,
     busy = false,
     pressed,
@@ -149,6 +153,11 @@ function GlyphButtonComponent(
     '--bloom-glyph-button-ring': ring ?? paint.ring,
   };
 
+  const glyphContent =
+    typeof children === 'function'
+      ? children(foreground)
+      : (children ?? (Icon ? <Icon width={glyph} height={glyph} fill={foreground} /> : null));
+
   return (
     <Pressable
       ref={ref}
@@ -181,6 +190,8 @@ function GlyphButtonComponent(
             }
           : undefined
       }
+      onFocus={onFocus}
+      onBlur={onBlur}
       onHoverIn={onHoverIn}
       onHoverOut={onHoverOut}
       onPressIn={onPressIn}
@@ -189,11 +200,15 @@ function GlyphButtonComponent(
       style={[rootStyle, style]}
       testID={testID}
     >
-      <View pointerEvents="none" style={{ alignItems: 'center', justifyContent: 'center' }}>
-        {typeof children === 'function'
-          ? children(foreground)
-          : (children ?? (Icon ? <Icon width={glyph} height={glyph} fill={foreground} /> : null))}
-      </View>
+      {attention === undefined ? (
+        <View pointerEvents="none" style={{ alignItems: 'center', justifyContent: 'center' }}>
+          {glyphContent}
+        </View>
+      ) : (
+        <GlyphAttention token={attention} blocked={blocked}>
+          {glyphContent}
+        </GlyphAttention>
+      )}
       {decoration}
     </Pressable>
   );

@@ -34,7 +34,7 @@ function nativeClasses(candidates: string[]): Map<string, NativeRule[]> {
 }
 
 const geometry =
-  /^(width|height|minWidth|maxWidth|minHeight|maxHeight|flex|flexGrow|flexShrink|flexBasis|flexDirection|flexWrap|justifyContent|alignItems|alignSelf|alignContent|gap|rowGap|columnGap|position|top|bottom|left|right|overflow|padding(?:Horizontal|Vertical|Left|Right|Top|Bottom|Start|End)?|margin(?:Horizontal|Vertical|Left|Right|Top|Bottom|Start|End)?|border(?:Left|Right|Top|Bottom|Start|End)?Width)$/;
+  /^(width|height|minWidth|maxWidth|minHeight|maxHeight|flex|flexGrow|flexShrink|flexBasis|flexDirection|flexWrap|justifyContent|alignItems|alignSelf|alignContent|gap|rowGap|columnGap|position|top|bottom|left|right|start|end|display|overflow|padding(?:Horizontal|Vertical|Left|Right|Top|Bottom|Start|End)?|margin(?:Horizontal|Vertical|Left|Right|Top|Bottom|Start|End)?|border(?:Left|Right|Top|Bottom|Start|End)?Width)$/;
 export interface NativeBox {
   x: number;
   y: number;
@@ -138,7 +138,17 @@ export function createYogaHostRenderer() {
           );
           const styles = Object.entries({ ...classStyle, ...resolvedStyle(node.props.style) })
             // React Native's logical inline edges are Yoga's start and end.
-            .map(([key, value]) => [key.replace(/Inline(Start|End)$/, '$1'), value] as const)
+            .map(
+              ([key, value]) =>
+                [
+                  key === 'insetInlineStart'
+                    ? 'start'
+                    : key === 'insetInlineEnd'
+                      ? 'end'
+                      : key.replace(/Inline(Start|End)$/, '$1'),
+                  value,
+                ] as const,
+            )
             .filter(([key, value]) => geometry.test(key) && value != null);
           return `${parent} ${node.type === 'Text' ? textWidth : -1} 20 ${styles.length}\n${styles.map(([key, value]) => `${key} ${value}`).join('\n')}`;
         }),

@@ -31,10 +31,10 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
   type ComponentType,
-  type ComponentProps,
 } from 'react';
 import {
   Platform,
@@ -42,6 +42,7 @@ import {
   StyleSheet,
   View,
   type GestureResponderEvent,
+  type PressableStateCallbackType,
   type ViewStyle,
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -53,6 +54,8 @@ import Animated, {
   useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
+  useDerivedValue,
+  withSpring,
   type SharedValue,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -79,13 +82,16 @@ import {
   LABEL_FONT_SIZE,
   LONG_PRESS_MIN_DURATION,
   MINIMIZED_HEIGHT,
+  DOCK_NAVIGATION_PHASE,
   MINIMIZED_INSET,
   ROW_PAD_H,
   useTabBarTheme,
   type TabBarGlyphProps,
-  type TabBarSurfaceComponent,
 } from './shared';
 import type { TabBarButtonProps, TabBarProps, TabBarTheme } from './types';
+import { useScreenContext } from '../screen/context';
+import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { MINIMIZE_SPRING } from './context';
 import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 
 /**
@@ -95,6 +101,8 @@ import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
  */
 type BarContextValue = {
   scrollable: boolean;
+  collapseActive: boolean;
+  expand: () => void;
   /** Live highlight position, in tab units. Fractional while scrubbing. */
   progress: SharedValue<number>;
   slideIndex: SharedValue<number>;
@@ -119,7 +127,10 @@ type BarContextValue = {
   driven: boolean;
   /** Report a selection made by a button press. */
   selectIndex: (index: number) => void;
+  longPressIndex: ((index: number) => void) | undefined;
 };
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const BarContext = createContext<BarContextValue | null>(null);
 const subscribeHydration = () => () => {};
@@ -151,10 +162,16 @@ function gestureReportedPress(event: GestureResponderEvent): boolean {
 function OptionalGesture({
   enabled,
   children,
-  ...props
-}: ComponentProps<typeof GestureDetector> & { enabled: boolean }) {
-  return enabled ? (
-    <GestureDetector {...props}>{children}</GestureDetector>
+  gesture,
+}: {
+  enabled: boolean;
+  children: React.ReactNode;
+  gesture: ReturnType<typeof Gesture.Race> | undefined;
+}) {
+  return enabled && gesture ? (
+    <GestureDetector gesture={gesture} touchAction="none">
+      {children}
+    </GestureDetector>
   ) : (
     <Fragment>{children}</Fragment>
   );
@@ -182,6 +199,7 @@ function TabBarBody({
   embedded = false,
   scrollable = false,
   minimizeProgress,
+  minimizeBehavior = 'compact',
   onLayout,
   style,
   ...viewProps
@@ -189,8 +207,28 @@ function TabBarBody({
   const insets = useCssSafeAreaInsets(useSafeAreaInsets());
   const [containerWidth, setContainerWidth] = useState(0);
   const minimized = useMinimizeState();
-  const progress = minimizeProgress ?? minimized.progress;
+  const sourceProgress = minimizeProgress ?? minimized.progress;
+  const screen = useScreenContext();
+  const sourceTarget =
+    screen?.collapseProgress === sourceProgress ? screen.collapseTarget : undefined;
   const tabCount = Math.max(Children.count(children), 1);
+  const collapseActive =
+    minimizeBehavior === 'active' &&
+    activeIndex != null &&
+    activeIndex >= 0 &&
+    activeIndex < tabCount;
+  const reducedMotion = usePrefersReducedMotion();
+  const foldedProgress = useDerivedValue(() => {
+    const amount = reducedMotion ? Number(sourceProgress.value > 0.01) : sourceProgress.value;
+    return Math.min(1, Math.max(0, amount / DOCK_NAVIGATION_PHASE));
+  }, [reducedMotion, sourceProgress]);
+  const progress = collapseActive ? foldedProgress : sourceProgress;
+  const expand = useCallback(() => {
+    setMinimized(minimized, 0);
+    if (sourceTarget) sourceTarget.value = 0;
+    if (sourceProgress !== minimized.progress)
+      sourceProgress.value = reducedMotion ? 0 : withSpring(0, MINIMIZE_SPRING);
+  }, [minimized, sourceProgress, sourceTarget, reducedMotion]);
 
   // Is a tab selected at all?
   //
@@ -373,6 +411,7 @@ function TabBarBody({
   // produced both, ~600ms apart on a busy JS thread, so every consumer got two
   // selections per tap. `TabBarButtonBody` is where that is resolved.
   const gesture = useMemo(() => {
+    if (collapseActive || scrollable) return undefined;
     const indexAtX = (x: number, minimizedValue: number) => {
       'worklet';
       const sideInset = interpolate(
@@ -477,6 +516,8 @@ function TabBarBody({
 
     return Gesture.Race(pan, tap, longPress);
   }, [
+    collapseActive,
+    scrollable,
     barOuterWidth,
     minimizeInset,
     tabCount,
@@ -574,6 +615,41 @@ function TabBarBody({
     };
   }, [progress, slideIndex, highlightOpacity, barOuterWidth, tabCount, minimizeInset, dir]);
 
+  // Flex owns the folding highlight just as it owns the destination cells.
+  // No measured positions or React render is needed during the motion.
+  const leadingFoldStyle = useAnimatedStyle(
+    () => ({
+      flexGrow: Math.max(0, activeIndex ?? 0) * (1 - Math.min(1, Math.max(0, progress.value))),
+    }),
+    [activeIndex, progress],
+  );
+  const trailingFoldStyle = useAnimatedStyle(
+    () => ({
+      flexGrow:
+        Math.max(0, tabCount - (activeIndex ?? 0) - 1) *
+        (1 - Math.min(1, Math.max(0, progress.value))),
+    }),
+    [activeIndex, tabCount, progress],
+  );
+  const foldingRowStyle = useAnimatedStyle(
+    () => ({
+      paddingLeft: ROW_PAD_H * (1 - Math.min(1, Math.max(0, progress.value))),
+      paddingRight: ROW_PAD_H * (1 - Math.min(1, Math.max(0, progress.value))),
+    }),
+    [progress],
+  );
+  const foldingHighlightStyle = useAnimatedStyle(
+    () => ({
+      height: interpolate(
+        progress.value,
+        [0, 1],
+        [HIGHLIGHT_EXPANDED, HIGHLIGHT_MINIMIZED],
+        Extrapolation.CLAMP,
+      ),
+    }),
+    [progress],
+  );
+
   // Shared with `useTabBarFootprint`, so a consumer accounting for the bar in
   // its own layout can never drift from where the bar actually sits.
   const bottomOffset = embedded ? 0 : windowEdgeGap(insets.bottom);
@@ -599,10 +675,14 @@ function TabBarBody({
   // item count or by `maxWidth` gets one definite centred width so layout,
   // highlight geometry and hit-testing all share the same coordinate space.
   const constrainedWrapStyle: ViewStyle | null =
-    barOuterWidth === availableWidth ? null : { width: barOuterWidth, alignSelf: 'center' };
+    collapseActive || barOuterWidth === availableWidth
+      ? null
+      : { width: barOuterWidth, alignSelf: 'center' };
   const barContext = useMemo(
     () => ({
-      scrollable,
+      scrollable: scrollable || collapseActive,
+      collapseActive,
+      expand,
       progress,
       slideIndex,
       highlightOpacity,
@@ -612,9 +692,12 @@ function TabBarBody({
       activeIndex,
       driven,
       selectIndex,
+      longPressIndex: onIndexLongPress ? longPressIndex : undefined,
     }),
     [
       scrollable,
+      collapseActive,
+      expand,
       progress,
       slideIndex,
       highlightOpacity,
@@ -623,6 +706,8 @@ function TabBarBody({
       activeIndex,
       driven,
       selectIndex,
+      onIndexLongPress,
+      longPressIndex,
       recipe.paint.theme,
     ],
   );
@@ -632,7 +717,7 @@ function TabBarBody({
       {...viewProps}
       {...dirProps}
       onLayout={(event) => {
-        setContainerWidth(event.nativeEvent.layout.width);
+        if (!collapseActive) setContainerWidth(event.nativeEvent.layout.width);
         onLayout?.(event);
       }}
       style={[[embedded ? { width: '100%' } : styles.root, style], pointerEventsStyle('box-none')]}
@@ -669,24 +754,57 @@ function TabBarBody({
           pointerEventsStyle('box-none'),
         ]}
       >
-        <OptionalGesture enabled={!scrollable} gesture={gesture}>
+        <OptionalGesture enabled={!scrollable && !collapseActive} gesture={gesture}>
           <Animated.View style={[barStyle, surfaceFillVars(recipe.paint.material.publishedFill)]}>
             <TabBarSurface
               theme={theme}
               paintFill={recipe.paint.material.paintFill}
               style={shapeStyle}
             />
-            <Animated.View style={[styles.highlight, highlightStyle]}>
-              <SurfacePaint
-                fill={recipe.paint.theme.highlight}
-                radius={borderRadius.full}
-                composite
-                backing={publishedFill}
-                presence={IS_WEB ? (highlightPresent ? 1 : 0) : undefined}
-                presenceMs={SELECTION_FADE.duration}
-              />
-            </Animated.View>
-            <View collapsable={false} accessibilityRole="tablist" style={styles.itemRow}>
+            {collapseActive ? (
+              <View
+                pointerEvents="none"
+                style={[
+                  StyleSheet.absoluteFill,
+                  { flexDirection: 'row', alignItems: 'center', paddingHorizontal: ROW_PAD_H },
+                ]}
+              >
+                <Animated.View style={[{ flexBasis: 0 }, leadingFoldStyle]} />
+                <Animated.View
+                  style={[
+                    { flexGrow: 1, flexBasis: 0, borderRadius: borderRadius.full },
+                    foldingHighlightStyle,
+                  ]}
+                >
+                  <SurfacePaint
+                    fill={recipe.paint.theme.highlight}
+                    radius={borderRadius.full}
+                    composite
+                    backing={publishedFill}
+                  />
+                </Animated.View>
+                <Animated.View style={[{ flexBasis: 0 }, trailingFoldStyle]} />
+              </View>
+            ) : (
+              <Animated.View style={[styles.highlight, highlightStyle]}>
+                <SurfacePaint
+                  fill={recipe.paint.theme.highlight}
+                  radius={borderRadius.full}
+                  composite
+                  backing={publishedFill}
+                  presence={IS_WEB ? (highlightPresent ? 1 : 0) : undefined}
+                  presenceMs={SELECTION_FADE.duration}
+                />
+              </Animated.View>
+            )}
+            <Animated.View
+              collapsable={false}
+              accessibilityRole="tablist"
+              style={[
+                styles.itemRow,
+                collapseActive ? [{ alignItems: 'stretch' }, foldingRowStyle] : undefined,
+              ]}
+            >
               <SurfaceLevelProvider
                 level={layer.level}
                 fill={publishedFill}
@@ -699,7 +817,7 @@ function TabBarBody({
               >
                 <BarContext.Provider value={barContext}>{children}</BarContext.Provider>
               </SurfaceLevelProvider>
-            </View>
+            </Animated.View>
           </Animated.View>
         </OptionalGesture>
       </View>
@@ -742,6 +860,30 @@ function TabBarButtonBody({
   // The two paths meet here: an explicit `isFocused` (router adapter) wins;
   // otherwise focus comes from the bar's controlled `activeIndex`.
   const focused = isFocused ?? bar?.activeIndex === index;
+  const collapseActive = bar?.collapseActive ?? false;
+  const buttonRef = useRef<React.ComponentRef<typeof Pressable>>(null);
+  const [folded, setFolded] = useState(() => collapseActive && !focused && progress.value > 0.5);
+  useAnimatedReaction(
+    () => collapseActive && !focused && progress.value > 0.5,
+    (next, previous) => {
+      if (next !== previous) runOnJS(setFolded)(next);
+    },
+    [collapseActive, focused, progress, setFolded],
+  );
+  useEffect(() => {
+    if (!IS_WEB || !buttonRef.current) return;
+    const button = buttonRef.current as unknown as HTMLElement;
+    if (folded && button.contains(document.activeElement))
+      button
+        .closest('[role="tablist"]')
+        ?.querySelector<HTMLElement>('[aria-selected="true"]')
+        ?.focus();
+    button.inert = folded;
+  }, [folded]);
+  const foldStyle = useAnimatedStyle(() => {
+    const amount = collapseActive && !focused ? Math.min(1, Math.max(0, progress.value)) : 0;
+    return { flexGrow: 1 - amount, opacity: 1 - amount };
+  }, [collapseActive, focused, progress]);
 
   // FOCUS-DRIVEN path only. Covers programmatic navigation too (deep links,
   // back gestures) — the trigger re-renders focused and the highlight follows.
@@ -807,15 +949,25 @@ function TabBarButtonBody({
   );
 
   return (
-    <Pressable
+    <AnimatedPressable
+      ref={buttonRef}
       // Accessibility defaults come BEFORE the spread so an explicit prop — or
       // one injected by a router trigger — still wins.
       accessibilityRole="tab"
+      accessibilityElementsHidden={folded}
+      importantForAccessibility={folded ? 'no-hide-descendants' : 'auto'}
+      aria-hidden={folded}
+      tabIndex={folded ? -1 : undefined}
+      pointerEvents={folded ? 'none' : 'auto'}
       // `aria-selected` is the state ARIA defines for `role="tab"`, and the one
       // spelling both platforms read: react-native-web ignores
       // `accessibilityState`, React Native folds `aria-selected` into it.
       aria-selected={focused}
       accessibilityLabel={item.label}
+      onLongPress={
+        collapseActive && bar?.longPressIndex ? () => bar.longPressIndex?.(index) : undefined
+      }
+      delayLongPress={LONG_PRESS_MIN_DURATION}
       {...pressableProps}
       // ASSISTIVE TECHNOLOGY, on native, is the one activation the bar's gesture
       // cannot see: TalkBack and VoiceOver activate a view without ever
@@ -824,9 +976,17 @@ function TabBarButtonBody({
       accessibilityActions={ACTIVATE_ACTIONS}
       onAccessibilityAction={(event) => {
         if (event.nativeEvent.actionName !== 'activate') return;
+        if (collapseActive && progress.value > 0.5) {
+          bar?.expand();
+          return;
+        }
         if (isFocused === undefined) bar?.selectIndex(index);
       }}
       onPress={(event) => {
+        if (collapseActive && progress.value > 0.5) {
+          bar?.expand();
+          return;
+        }
         // Fires for keyboard and assistive-technology activation, and on
         // Android and web also for the pointer taps the gesture reports.
         if (bar) {
@@ -857,8 +1017,12 @@ function TabBarButtonBody({
       // or scale a tab on press without losing the layout.
       style={
         typeof style === 'function'
-          ? (state) => [styles.button, style(state)]
-          : [styles.button, style]
+          ? (state: PressableStateCallbackType) => [
+              styles.button,
+              style(state),
+              collapseActive ? foldStyle : undefined,
+            ]
+          : [styles.button, style, collapseActive ? foldStyle : undefined]
       }
     >
       <Animated.View style={[styles.itemBox, boxStyle]}>
@@ -885,7 +1049,7 @@ function TabBarButtonBody({
           {item.label}
         </Animated.Text>
       </Animated.View>
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 
@@ -934,6 +1098,8 @@ const styles = StyleSheet.create({
   },
   button: {
     flex: 1,
+    minWidth: 0,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
   },

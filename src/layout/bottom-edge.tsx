@@ -59,6 +59,7 @@
  */
 import {
   createContext,
+  useCallback,
   useContext,
   useId,
   useMemo,
@@ -177,4 +178,20 @@ export function useClaimBottomEdge(height: number): void {
     store.claim(id, height);
     return () => store.release(id);
   }, [store, id, height]);
+}
+
+/** Publish a naturally laid-out host without using its height to lay it out again. */
+export function useMeasuredBottomEdgeClaim(active: boolean): (height: number) => void {
+  const store = useContext(BottomEdgeContext);
+  const id = useId();
+  useIsomorphicLayoutEffect(() => {
+    if (!active) store?.release(id);
+    return () => store?.release(id);
+  }, [active, store, id]);
+  return useCallback(
+    (height: number) => {
+      if (active && Number.isFinite(height)) store?.claim(id, Math.max(0, height));
+    },
+    [active, store, id],
+  );
 }

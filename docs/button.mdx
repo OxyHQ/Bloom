@@ -282,3 +282,22 @@ hover/press (including pressed-toggle) feedback; rest remains transparent and
 `colors.foreground` stays paired with that feedback. A transparent background
 keeps the historical provider-derived interaction tint, as used by composer icon
 controls. Omitting `colors` leaves every semantic default unchanged.
+
+## Attention feedback
+
+`GlyphButton` accepts an optional numeric `attention` token. Initialize it to
+`0` and change it when an action needs attention, such as offering a larger
+editor after a compact field reaches its limit. Each changed token restarts a
+320 ms scale pulse on the glyph; mounting or rendering the same value stays
+quiet. The target keeps its geometry and identity, and focus stays where it was.
+
+```tsx
+<GlyphButton icon={RiExpandDiagonalSLine} attention={rejectedAttempts}
+  accessibilityLabel="Open full editor" onPress={openFullEditor} />
+```
+
+Keep the token present for the button's lifetime. Reduced motion, disabled and
+busy suppress the pulse. A counter or descriptive label must still explain the
+limit: motion is optional feedback, not an accessibility announcement. Ordinary
+buttons do not mount the attention animation. Web uses CSS keyframes; native
+uses Reanimated timing on the UI thread, with no layout animation or timer.

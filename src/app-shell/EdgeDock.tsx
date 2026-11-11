@@ -16,7 +16,7 @@ import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { motionCss, type MotionSpec } from '../motion/spec';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { PanelChrome } from '../styles/panel-chrome';
-import type { WebCssStyle } from '../styles/web-view-style';
+import { cssLength, type WebCssStyle } from '../styles/web-view-style';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { useSurfacePresenceContent } from '../surface/use-surface-presence';
 import {
@@ -30,11 +30,10 @@ import {
 import type { EdgeDock } from './use-edge-dock';
 
 /**
- * The two VALUE-level crossings into web CSS: a length or a transform written
- * as a `calc()` of the progress property, which React Native's unions cannot
- * name. Native never reaches them.
+ * A VALUE-level crossing into a CSS transform written as a `calc()` of the
+ * progress property. Lengths use the shared styles adapter; native never
+ * reaches either CSS crossing.
  */
-const cssLength = (css: string) => css as ViewStyle['width'];
 const cssTransform = (css: string) => css as unknown as ViewStyle['transform'];
 
 export type DockAxis = 'start' | 'top';

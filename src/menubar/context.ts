@@ -109,6 +109,11 @@ export function useMenubarMenu(): MenubarMenuContextValue {
 export interface MenubarScope {
   readonly registry: MenubarRegistry;
   readonly headless: boolean;
+  /**
+   * A closed menu's content is mounted headless (its shortcuts work while closed); false when the
+   * bar is `declareClosedMenus={false}` (see `MenubarProps`). Absent means true.
+   */
+  readonly declareClosed?: boolean;
   /** The menu or submenu the parts here are in; null directly in the bar. */
   readonly parent: string | null;
   /** The position here in the declaration (see `registry.ts`). */

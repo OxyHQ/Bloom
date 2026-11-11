@@ -16,7 +16,10 @@ jest.mock('react-native-reanimated', () => {
 jest.mock('../layout/ScrollArea', () => ({
   ScrollArea: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
-jest.mock('../layout/bottom-edge', () => ({ useClaimBottomEdge: jest.fn() }));
+jest.mock('../layout/bottom-edge', () => ({
+  ...jest.requireActual('../layout/bottom-edge'),
+  useClaimBottomEdge: jest.fn(),
+}));
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

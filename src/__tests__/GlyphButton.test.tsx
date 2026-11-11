@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { Text as RNText, View } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
@@ -328,4 +328,27 @@ describe('GlyphButton accessibility and disabled', () => {
     fireEvent(getByTestId('g'), 'hoverIn');
     expect(lastCall(Glyph)).toMatchObject({ fill: '#111111' });
   });
+});
+
+it('forwards original focus events independently of press and busy state', () => {
+  const onFocus = jest.fn();
+  const onBlur = jest.fn();
+  const onPress = jest.fn();
+  const screen = renderWithTheme(
+    <GlyphButton
+      testID="focus-host"
+      accessibilityLabel="Expand"
+      busy
+      onFocus={onFocus}
+      onBlur={onBlur}
+      onPress={onPress}
+    />,
+  );
+  const host = screen.getByTestId('focus-host');
+  const event = { nativeEvent: { target: 7 }, relatedTarget: { id: 'next-control' } };
+  fireEvent(host, 'focus', event);
+  fireEvent(host, 'blur', event);
+  expect(onFocus.mock.calls[0]?.[0]).toBe(event);
+  expect(onBlur.mock.calls[0]?.[0]).toBe(event);
+  expect(onPress).not.toHaveBeenCalled();
 });

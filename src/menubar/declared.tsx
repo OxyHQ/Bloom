@@ -215,7 +215,9 @@ export function createMenubarContent(
     if (scope?.headless) return <DeclaredChildren>{props.children}</DeclaredChildren>;
     return (
       <>
-        {menu.open ? null : <HeadlessDeclaration>{props.children}</HeadlessDeclaration>}
+        {menu.open || scope?.declareClosed === false ? null : (
+          <HeadlessDeclaration>{props.children}</HeadlessDeclaration>
+        )}
         <Panel {...props} />
       </>
     );

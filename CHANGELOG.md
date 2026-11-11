@@ -1,10 +1,16 @@
 # Changelog
 
-## 19.6.1
+## 19.8.1
 
 ### Fixed
 
 - **A sheet leaves moving the screen reader into it to a platform that gives Bloom the keys.** `SheetShell` (a native `Select`'s picker, sheet menus, popovers) moved screen-reader focus onto its body 50ms after it presented, on every platform. OxyOS moves its keyboard and its reader onto the sheet's first control as the sheet comes (a picker's chosen option), so the later move took the reader back off it onto the sheet, and the chosen option was never said; which came last depended on timing (OxyOS's `settings-displays-keys`). With a platform keyboard (`usePlatformKeyboard()`) the sheet asks for no focus of its own; elsewhere it still does.
+
+## 19.8.0
+
+### Added
+
+- `Menubar`'s `declareClosedMenus` (default `true`): `false` mounts nothing of a closed menu but its title, instead of its content headless for its shortcuts. For a bar whose rows run no chords of their own, an OS shell's: its closed menus cost no renders, as a Mac's bar builds a menu as it opens, and the panel changing from one menu into the next still crossfades its rows. Ignored where the platform draws the bar (`menu-bar`).
 
 ## 19.6.0
 

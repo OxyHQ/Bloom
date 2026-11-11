@@ -304,6 +304,15 @@ const CARD_FORM_MESSAGES: Translations['CARD_FORM_MESSAGES'] = {
   selectCountry: 'Выберите страну',
 };
 
+const COMPACT_COMPOSER_MESSAGES: Translations['COMPACT_COMPOSER_MESSAGES'] = {
+  input: 'Напишите сообщение',
+  expand: 'Открыть полный редактор',
+  characterCount: 'Символы',
+  characterCountValue: (count, max) => `${count} из ${max} символов`,
+  limitHint: (max) =>
+    `Компактные сообщения ограничены ${max} символами. Разверните редактор, чтобы написать больше.`,
+};
+
 const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   attach: 'Прикрепить',
   emoji: 'Эмодзи',
@@ -3410,6 +3419,7 @@ const translations: Translations = {
   SIDEBAR_MESSAGES,
   FILE_SIZE_UNITS,
   CARD_FORM_MESSAGES,
+  COMPACT_COMPOSER_MESSAGES,
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
   MEDIA_PLAYER_MESSAGES,
