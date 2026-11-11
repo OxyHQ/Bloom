@@ -1,3 +1,4 @@
+import type { ReactTestInstance } from 'react-test-renderer';
 import {
   SurfaceLevelProvider,
   useSurfaceFill,
@@ -861,32 +862,91 @@ describe('Sidebar application tree', () => {
   });
 });
 
-it.each(['panel', 'rail'] as const)(
-  'centers only the %s main group, keeping its footer outside the flexible region',
-  (variant) => {
-    const tree = renderIn(
+const isInside = (node: { parent: unknown } | null, ancestor: unknown) => {
+  for (
+    let parent = node?.parent as { parent: unknown } | null;
+    parent;
+    parent = parent.parent as never
+  )
+    if (parent === ancestor) return true;
+  return false;
+};
+
+it('centers only the rail main group, keeping its footer outside the flexible region', () => {
+  const tree = renderIn(
+    <Sidebar
+      variant="rail"
+      testID="aligned"
+      contentAlignment="center"
+      items={ITEMS}
+      footer={<Text>Account</Text>}
+    />,
+  );
+  const region = tree.getByTestId('aligned-main-region');
+  const footer = tree.getByTestId('aligned-footer');
+  expect(resolvedStyle(region.props.style)).toMatchObject({
+    flexGrow: 1,
+    justifyContent: 'center',
+  });
+  expect(resolvedStyle(footer.props.style).flexShrink).toBe(0);
+  expect(isInside(footer, region)).toBe(false);
+});
+
+describe('panel arrangement', () => {
+  const logo = { icon: <Text>Mark</Text>, accessibilityLabel: 'Brand' };
+  const primaryAction = { label: 'New', icon: RiHomeLine, onPress: () => {} };
+  const mount = (props: Partial<React.ComponentProps<typeof Sidebar>>) =>
+    renderIn(
       <Sidebar
-        variant={variant}
         testID="aligned"
-        contentAlignment="center"
         items={ITEMS}
+        logo={logo}
+        primaryAction={primaryAction}
         footer={<Text>Account</Text>}
+        {...props}
       />,
     );
+  /** The block centred in the room above the footer: the destinations' parent. */
+  const group = (tree: ReturnType<typeof mount>) =>
+    tree.getByTestId('aligned-main-region').parent as ReactTestInstance;
+
+  it('pins the logo and the primary action by default and centres nothing', () => {
+    const tree = mount({});
     const region = tree.getByTestId('aligned-main-region');
-    const footer = tree.getByTestId('aligned-footer');
-    expect(resolvedStyle(region.props.style)).toMatchObject({
+    expect(resolvedStyle(region.props.style).justifyContent).toBeUndefined();
+    expect(isInside(tree.getByTestId('sidebar-logo'), group(tree))).toBe(false);
+    expect(isInside(tree.getByTestId('aligned-primary-action'), group(tree))).toBe(false);
+  });
+
+  it('centres the logo, the destinations and the primary action as one group under "center"', () => {
+    const tree = mount({ contentAlignment: 'center' });
+    const block = group(tree);
+    expect(resolvedStyle(block.props.style)).toMatchObject({
       flexGrow: 1,
       justifyContent: 'center',
     });
-    expect(resolvedStyle(footer.props.style).flexShrink).toBe(0);
-    let parent = footer.parent;
-    while (parent) {
-      expect(parent).not.toBe(region);
-      parent = parent.parent;
-    }
-  },
-);
+    expect(isInside(tree.getByTestId('sidebar-logo'), block)).toBe(true);
+    expect(isInside(tree.getByTestId('aligned-primary-action'), block)).toBe(true);
+    // The controls and the footer stay pinned, outside the group.
+    expect(isInside(tree.getByTestId('aligned-footer'), block)).toBe(false);
+    expect(isInside(tree.getByTestId('sidebar-header-control'), block)).toBe(false);
+  });
+
+  it('places each part on its own: the logo grouped, the primary action pinned', () => {
+    const tree = mount({ arrangement: { logo: 'group' } });
+    const block = group(tree);
+    expect(isInside(tree.getByTestId('sidebar-logo'), block)).toBe(true);
+    expect(isInside(tree.getByTestId('aligned-primary-action'), block)).toBe(false);
+    expect(isInside(tree.getByTestId('sidebar-header-control'), block)).toBe(false);
+  });
+
+  it('lets a part that is given win over the "center" preset', () => {
+    const tree = mount({ contentAlignment: 'center', arrangement: { logo: 'top' } });
+    const block = group(tree);
+    expect(isInside(tree.getByTestId('sidebar-logo'), block)).toBe(false);
+    expect(isInside(tree.getByTestId('aligned-primary-action'), block)).toBe(true);
+  });
+});
 
 function SidebarSurfaceProbe() {
   return (

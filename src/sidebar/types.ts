@@ -1,3 +1,4 @@
+import type { SidebarArrangement } from './arrangement';
 import type { ComponentRef, ReactNode, Ref } from 'react';
 import type { ScrollAreaScrollbarSide } from '../layout/types';
 import type { DropZoneProps } from '../drop-zone/types';
@@ -378,8 +379,19 @@ export interface SidebarProps {
   toolbar?: ReactNode | ((state: { collapsed: boolean }) => ReactNode);
   /** Expanded panel inset, also used to measure app-owned scroll content. Defaults to the size's inset. */
   contentPadding?: number;
-  /** Center the main navigation group in space above the persistent footer. */
+  /**
+   * `center` is the preset that centres the logo, the destinations and the primary action as one
+   * group in the room above the persistent footer; `start` (default) pins the logo at the top and
+   * the primary action above the footer. Say `arrangement` for a part-by-part choice.
+   */
   contentAlignment?: 'start' | 'center';
+  /**
+   * Where each part sits, overriding what `contentAlignment` implies: the logo pinned at the top
+   * or grouped with the destinations, the primary action pinned above the footer or grouped with
+   * them. The controls (collapse, mode toggle) are always pinned at the top and the `footer` at
+   * the bottom. Panel variant; a rail keeps its own column.
+   */
+  arrangement?: SidebarArrangement;
   /** App-owned destination content after the built-in rows/tree, inside the same
    * scroll viewport. Hidden and noninteractive while collapsed; remains mounted
    * so pagination and disclosure state survive. Not rendered in variant="rail".

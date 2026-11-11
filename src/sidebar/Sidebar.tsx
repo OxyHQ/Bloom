@@ -1,3 +1,4 @@
+import { resolveSidebarArrangement } from './arrangement';
 import { resolvePaintMode } from '../theme/paint';
 import {
   SurfaceLevelProvider,
@@ -199,6 +200,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   items = [],
   primaryAction,
   contentAlignment = 'start',
+  arrangement,
   content,
   onScroll,
   footer,
@@ -883,6 +885,11 @@ const SidebarPanel: React.FC<SidebarProps> = ({
 
   // Keep the same children mounted while the header changes from a row to a
   // column. Numeric positions share the panel clock, including reversals.
+  const placed = resolveSidebarArrangement(contentAlignment, arrangement);
+  // The logo and its account menu move into the centred group only where the panel draws its own
+  // header row: a consumer's `header` replaces the row, and the mobile drawer keeps its own.
+  const identityGrouped =
+    !mobile && header == null && Boolean(logo || accountMenu) && placed.logo === 'group';
   const headerRow = mobile ? (
     <>
       <View
@@ -920,7 +927,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         testID="sidebar-header"
         style={[{ width: '100%', position: 'relative' }, headerGeometry]}
       >
-        {logo || accountMenu ? (
+        {!identityGrouped && (logo || accountMenu) ? (
           <Animated.View
             style={[
               { position: 'absolute', insetInlineStart: 0, minWidth: 0 },
@@ -946,7 +953,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
           {headerControl}
         </Animated.View>
       </Animated.View>
-      {logo ? accountMenu : null}
+      {!identityGrouped && logo ? accountMenu : null}
     </>
   );
 
@@ -963,6 +970,132 @@ const SidebarPanel: React.FC<SidebarProps> = ({
       palette={palette}
     />
   ));
+
+  // Anything grouped is centred with the destinations in the room above the persistent footer;
+  // what is not stays pinned (the controls at the top, the footer at the bottom).
+  const { centred } = placed;
+  const identityNode = identityGrouped ? (
+    <Animated.View style={[{ width: '100%', gap: 12, paddingBottom: 12 }, scrollInsets]}>
+      {logo ? (
+        <SidebarLogoView logo={logo} collapsed={collapsed} testID="sidebar-logo" />
+      ) : (
+        accountMenu
+      )}
+      {logo ? accountMenu : null}
+    </Animated.View>
+  ) : null;
+  const headerNode = (
+    <Animated.View
+      testID={`${testID ?? 'sidebar'}-fixed-header`}
+      style={[
+        {
+          width: '100%',
+          gap: 12,
+          paddingTop: Math.max(expandedPadding, windowControlsRoom),
+          paddingBottom: 12,
+        },
+        scrollInsets,
+      ]}
+    >
+      {header != null ? (typeof header === 'function' ? header({ collapsed }) : header) : headerRow}
+      {typeof toolbar === 'function' ? toolbar({ collapsed }) : toolbar}
+      {inlineModes ? null : modeSwitcher}
+      {showSearch && !flatMobile ? searchButton : null}
+    </Animated.View>
+  );
+  const primaryActionNode = primaryAction ? (
+    <Animated.View style={[{ width: '100%' }, scrollInsets]}>
+      <SidebarPrimaryAction
+        action={primaryAction}
+        collapsed={collapsed}
+        testID={testID ? `${testID}-primary-action` : undefined}
+      />
+    </Animated.View>
+  ) : null;
+  const mainRegion = (
+    <Animated.View
+      testID={`${testID ?? 'sidebar'}-main-region`}
+      style={[
+        {
+          width: '100%',
+          flexGrow: centred ? 0 : 1,
+          paddingBottom: 8,
+          gap: hasSections ? 24 : 0,
+        },
+        scrollInsets,
+      ]}
+    >
+      {shownItems.length > 0 || !hasTree ? (
+        <Animated.View
+          collapsable={false}
+          role="navigation"
+          style={[{ width: '100%', gap: 4 }, !hasTree && navInset]}
+        >
+          {nothingMatches && !hasTree ? (
+            <Text
+              variant="body-regular"
+              style={{
+                paddingLeft: 8,
+                paddingRight: 8,
+                paddingTop: 12,
+                paddingBottom: 12,
+                color: palette.textTertiary,
+              }}
+            >
+              {noResultsLabel}
+            </Text>
+          ) : (
+            shownItems.map(renderRow)
+          )}
+        </Animated.View>
+      ) : null}
+      {onboarding && !collapsed ? (
+        <SidebarOnboardingCard
+          {...onboarding}
+          testID={onboarding.testID ?? `${testID ?? 'sidebar'}-onboarding`}
+        />
+      ) : null}
+      {collapsed || shownSections.length === 0 ? null : onTreeItemDrop ? (
+        <TreeDragProvider
+          sections={sections}
+          onDrop={onTreeItemDrop}
+          movedLabel={messages.moved}
+          scroll={treeScroll}
+        >
+          {treeView}
+        </TreeDragProvider>
+      ) : (
+        treeView
+      )}
+      {content != null ? (
+        <Animated.View
+          testID={`${testID ?? 'sidebar'}-content`}
+          pointerEvents={collapsed ? 'none' : 'auto'}
+          aria-hidden={collapsed}
+          accessibilityElementsHidden={collapsed}
+          importantForAccessibility={collapsed ? 'no-hide-descendants' : 'auto'}
+          {...(IS_WEB && collapsed ? { inert: true } : {})}
+          ref={contentFade.ref}
+          style={[{ overflow: 'hidden', flexShrink: 0 }, contentMorph, contentFade.style]}
+        >
+          <Animated.View
+            onLayout={(event) => setContentHeight(event.nativeEvent.layout.height)}
+            style={contentWidth}
+          >
+            {content}
+          </Animated.View>
+        </Animated.View>
+      ) : null}
+      {nothingMatches && hasTree ? (
+        <Text
+          variant="body-regular"
+          style={{ paddingLeft: 8, paddingRight: 8, color: palette.textTertiary }}
+        >
+          {noResultsLabel}
+        </Text>
+      ) : null}
+    </Animated.View>
+  );
 
   const sidebar = (
     <SidebarSizeProvider value={size}>
@@ -1024,29 +1157,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                 overflow: 'hidden',
               }}
               contentContainerStyle={{ flexGrow: 1 }}
-              stickyHeader={
-                <Animated.View
-                  testID={`${testID ?? 'sidebar'}-fixed-header`}
-                  style={[
-                    {
-                      width: '100%',
-                      gap: 12,
-                      paddingTop: Math.max(expandedPadding, windowControlsRoom),
-                      paddingBottom: 12,
-                    },
-                    scrollInsets,
-                  ]}
-                >
-                  {header != null
-                    ? typeof header === 'function'
-                      ? header({ collapsed })
-                      : header
-                    : headerRow}
-                  {typeof toolbar === 'function' ? toolbar({ collapsed }) : toolbar}
-                  {inlineModes ? null : modeSwitcher}
-                  {showSearch && !flatMobile ? searchButton : null}
-                </Animated.View>
-              }
+              stickyHeader={headerNode}
               stickyFooter={
                 <Animated.View
                   testID={`${testID ?? 'sidebar'}-sticky-footer`}
@@ -1060,13 +1171,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                     scrollInsets,
                   ]}
                 >
-                  {primaryAction ? (
-                    <SidebarPrimaryAction
-                      action={primaryAction}
-                      collapsed={collapsed}
-                      testID={testID ? `${testID}-primary-action` : undefined}
-                    />
-                  ) : null}
+                  {placed.primaryAction === 'group' ? null : primaryActionNode}
                   {showThemeToggle ? (
                     <Animated.View
                       testID="sidebar-theme-morph"
@@ -1151,89 +1256,15 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                 </Animated.View>
               }
             >
-              <Animated.View
-                testID={`${testID ?? 'sidebar'}-main-region`}
-                style={[
-                  {
-                    width: '100%',
-                    flexGrow: 1,
-                    paddingBottom: 8,
-                    gap: hasSections ? 24 : 0,
-                    justifyContent: contentAlignment === 'center' ? 'center' : undefined,
-                  },
-                  scrollInsets,
-                ]}
-              >
-                {shownItems.length > 0 || !hasTree ? (
-                  <Animated.View
-                    collapsable={false}
-                    role="navigation"
-                    style={[{ width: '100%', gap: 4 }, !hasTree && navInset]}
-                  >
-                    {nothingMatches && !hasTree ? (
-                      <Text
-                        variant="body-regular"
-                        style={{
-                          paddingLeft: 8,
-                          paddingRight: 8,
-                          paddingTop: 12,
-                          paddingBottom: 12,
-                          color: palette.textTertiary,
-                        }}
-                      >
-                        {noResultsLabel}
-                      </Text>
-                    ) : (
-                      shownItems.map(renderRow)
-                    )}
-                  </Animated.View>
-                ) : null}
-                {onboarding && !collapsed ? (
-                  <SidebarOnboardingCard
-                    {...onboarding}
-                    testID={onboarding.testID ?? `${testID ?? 'sidebar'}-onboarding`}
-                  />
-                ) : null}
-                {collapsed || shownSections.length === 0 ? null : onTreeItemDrop ? (
-                  <TreeDragProvider
-                    sections={sections}
-                    onDrop={onTreeItemDrop}
-                    movedLabel={messages.moved}
-                    scroll={treeScroll}
-                  >
-                    {treeView}
-                  </TreeDragProvider>
-                ) : (
-                  treeView
-                )}
-                {content != null ? (
-                  <Animated.View
-                    testID={`${testID ?? 'sidebar'}-content`}
-                    pointerEvents={collapsed ? 'none' : 'auto'}
-                    aria-hidden={collapsed}
-                    accessibilityElementsHidden={collapsed}
-                    importantForAccessibility={collapsed ? 'no-hide-descendants' : 'auto'}
-                    {...(IS_WEB && collapsed ? { inert: true } : {})}
-                    ref={contentFade.ref}
-                    style={[{ overflow: 'hidden', flexShrink: 0 }, contentMorph, contentFade.style]}
-                  >
-                    <Animated.View
-                      onLayout={(event) => setContentHeight(event.nativeEvent.layout.height)}
-                      style={contentWidth}
-                    >
-                      {content}
-                    </Animated.View>
-                  </Animated.View>
-                ) : null}
-                {nothingMatches && hasTree ? (
-                  <Text
-                    variant="body-regular"
-                    style={{ paddingLeft: 8, paddingRight: 8, color: palette.textTertiary }}
-                  >
-                    {noResultsLabel}
-                  </Text>
-                ) : null}
-              </Animated.View>
+              {centred ? (
+                <View style={{ flexGrow: 1, justifyContent: 'center' }}>
+                  {identityNode}
+                  {mainRegion}
+                  {placed.primaryAction === 'group' ? primaryActionNode : null}
+                </View>
+              ) : (
+                mainRegion
+              )}
             </SidebarScrollArea>
           </AnimatedStyledView>
         </CollapseProvider>
