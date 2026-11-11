@@ -288,6 +288,15 @@ const CARD_FORM_MESSAGES: Translations['CARD_FORM_MESSAGES'] = {
   selectCountry: 'Pilih negara',
 };
 
+const COMPACT_COMPOSER_MESSAGES: Translations['COMPACT_COMPOSER_MESSAGES'] = {
+  input: 'Tulis pesan',
+  expand: 'Buka editor lengkap',
+  characterCount: 'Karakter',
+  characterCountValue: (count, max) => `${count} dari ${max} karakter`,
+  limitHint: (max) =>
+    `Pesan ringkas dibatasi ${max} karakter. Perluas editor untuk menulis lebih banyak.`,
+};
+
 const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   attach: 'Lampirkan',
   emoji: 'Emoji',
@@ -3069,6 +3078,7 @@ const translations: Translations = {
   SIDEBAR_MESSAGES,
   FILE_SIZE_UNITS,
   CARD_FORM_MESSAGES,
+  COMPACT_COMPOSER_MESSAGES,
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
   MEDIA_PLAYER_MESSAGES,

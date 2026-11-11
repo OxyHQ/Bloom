@@ -287,6 +287,14 @@ const CARD_FORM_MESSAGES: Translations['CARD_FORM_MESSAGES'] = {
   selectCountry: 'একটি দেশ বেছে নিন',
 };
 
+const COMPACT_COMPOSER_MESSAGES: Translations['COMPACT_COMPOSER_MESSAGES'] = {
+  input: 'একটি বার্তা লিখুন',
+  expand: 'সম্পূর্ণ সম্পাদক খুলুন',
+  characterCount: 'অক্ষর',
+  characterCountValue: (count, max) => `${max}টির মধ্যে ${count}টি অক্ষর`,
+  limitHint: (max) => `সংক্ষিপ্ত বার্তায় ${max}টি অক্ষর লেখা যায়। আরও লিখতে সম্পাদক প্রসারিত করুন।`,
+};
+
 const CHAT_COMPOSER_MESSAGES: Translations['CHAT_COMPOSER_MESSAGES'] = {
   attach: 'সংযুক্ত করুন',
   emoji: 'ইমোজি',
@@ -2987,6 +2995,7 @@ const translations: Translations = {
   SIDEBAR_MESSAGES,
   FILE_SIZE_UNITS,
   CARD_FORM_MESSAGES,
+  COMPACT_COMPOSER_MESSAGES,
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
   MEDIA_PLAYER_MESSAGES,

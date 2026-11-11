@@ -20,7 +20,10 @@ import type { SIDEBAR_MESSAGES } from '../../sidebar/messages';
 import type { FILE_SIZE_UNITS } from '../format-number';
 import type { COMMON_MESSAGES } from '../common-messages';
 import type { CARD_FORM_MESSAGES } from '../../card-form/messages';
-import type { CHAT_COMPOSER_MESSAGES } from '../../chat-composer/messages';
+import type {
+  COMPACT_COMPOSER_MESSAGES,
+  CHAT_COMPOSER_MESSAGES,
+} from '../../chat-composer/messages';
 import type { MAIL_COMPOSE_MESSAGES } from '../../mail-compose/messages';
 import type { MEDIA_PLAYER_MESSAGES } from '../../media-player/messages';
 import type { ADDRESS_MESSAGES } from '../../address/messages';
@@ -170,6 +173,7 @@ export interface Translations {
   readonly FILE_SIZE_UNITS: CatalogMessages<typeof FILE_SIZE_UNITS>;
   readonly COMMON_MESSAGES: CatalogMessages<typeof COMMON_MESSAGES>;
   readonly CARD_FORM_MESSAGES: CatalogMessages<typeof CARD_FORM_MESSAGES>;
+  readonly COMPACT_COMPOSER_MESSAGES: CatalogMessages<typeof COMPACT_COMPOSER_MESSAGES>;
   readonly CHAT_COMPOSER_MESSAGES: CatalogMessages<typeof CHAT_COMPOSER_MESSAGES>;
   readonly MAIL_COMPOSE_MESSAGES: CatalogMessages<typeof MAIL_COMPOSE_MESSAGES>;
   readonly MEDIA_PLAYER_MESSAGES: CatalogMessages<typeof MEDIA_PLAYER_MESSAGES>;

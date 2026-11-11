@@ -108,3 +108,19 @@ export const CHAT_COMPOSER_MESSAGES: MessageCatalog<ChatComposerMessages> =
       music: 'Music',
     },
   });
+
+export interface CompactComposerMessages {
+  input: string;
+  expand: string;
+  characterCount: string;
+  characterCountValue: (count: number, max: number) => string;
+  limitHint: (max: number) => string;
+}
+export const COMPACT_COMPOSER_MESSAGES: MessageCatalog<CompactComposerMessages> =
+  defineMessages<CompactComposerMessages>('COMPACT_COMPOSER_MESSAGES', {
+    input: 'Write a message',
+    expand: 'Open full composer',
+    characterCount: 'Characters',
+    characterCountValue: (count, max) => `${count} of ${max} characters`,
+    limitHint: (max) => `Compact messages allow ${max} characters. Expand to write more.`,
+  });

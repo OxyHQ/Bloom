@@ -13,6 +13,7 @@ import Animated, {
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { IS_WEB } from '../styles/platform';
+import { dataHook } from '../styles/data-hook';
 
 interface Props {
   token: number;
@@ -62,12 +63,7 @@ function WebGlyphAttention({ token, blocked, children }: Props) {
   }, [token, blocked, reducedMotion]);
 
   return (
-    <View
-      ref={ref}
-      pointerEvents="none"
-      {...({ dataSet: { bloomGlyphAttention: '' } } as Record<string, unknown>)}
-      style={CENTER}
-    >
+    <View ref={ref} pointerEvents="none" {...dataHook('bloomGlyphAttention')} style={CENTER}>
       {children}
     </View>
   );
