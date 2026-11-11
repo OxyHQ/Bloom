@@ -1,0 +1,64 @@
+Applications Graphics Acceleration Info:
+Uptime: 6692159 Realtime: 6692159
+
+** Graphics info for pid 7528 [so.oxy.bloom.materiallab] **
+
+Stats since: 6301490064625ns
+Total frames rendered: 3967
+Janky frames: 3967 (100.00%)
+50th percentile: 150ms
+90th percentile: 200ms
+95th percentile: 200ms
+99th percentile: 250ms
+Number Missed Vsync: 3964
+Number High input latency: 0
+Number Slow UI thread: 3966
+Number Slow bitmap uploads: 34
+Number Slow issue draw commands: 2681
+Number Frame deadline missed: 3967
+HISTOGRAM: 5ms=0 6ms=0 7ms=0 8ms=0 9ms=0 10ms=0 11ms=0 12ms=0 13ms=0 14ms=0 15ms=0 16ms=0 17ms=0 18ms=0 19ms=0 20ms=0 21ms=0 22ms=0 23ms=0 24ms=0 25ms=0 26ms=0 27ms=0 28ms=0 29ms=0 30ms=1 31ms=0 32ms=0 34ms=0 36ms=0 38ms=0 40ms=0 42ms=1 44ms=0 46ms=0 48ms=0 53ms=0 57ms=0 61ms=0 65ms=0 69ms=0 73ms=0 77ms=0 81ms=0 85ms=0 89ms=0 93ms=0 97ms=0 101ms=0 105ms=0 109ms=0 113ms=2 117ms=1 121ms=3 125ms=21 129ms=28 133ms=40 150ms=2545 200ms=1230 250ms=90 300ms=5 350ms=0 400ms=0 450ms=0 500ms=0 550ms=0 600ms=0 650ms=0 700ms=0 750ms=0 800ms=0 850ms=0 900ms=0 950ms=0 1000ms=0 1050ms=0 1100ms=0 1150ms=0 1200ms=0 1250ms=0 1300ms=0 1350ms=0 1400ms=0 1450ms=0 1500ms=0 1550ms=0 1600ms=0 1650ms=0 1700ms=0 1750ms=0 1800ms=0 1850ms=0 1900ms=0 1950ms=0 2000ms=0 2050ms=0 2100ms=0 2150ms=0 2200ms=0 2250ms=0 2300ms=0 2350ms=0 2400ms=0 2450ms=0 2500ms=0 2550ms=0 2600ms=0 2650ms=0 2700ms=0 2750ms=0 2800ms=0 2850ms=0 2900ms=0 2950ms=0 3000ms=0 3050ms=0 3100ms=0 3150ms=0 3200ms=0 3250ms=0 3300ms=0 3350ms=0 3400ms=0 3450ms=0 3500ms=0 3550ms=0 3600ms=0 3650ms=0 3700ms=0 3750ms=0 3800ms=0 3850ms=0 3900ms=0 3950ms=0 4000ms=0 4050ms=0 4100ms=0 4150ms=0 4200ms=0 4250ms=0 4300ms=0 4350ms=0 4400ms=0 4450ms=0 4500ms=0 4550ms=0 4600ms=0 4650ms=0 4700ms=0 4750ms=0 4800ms=0 4850ms=0 4900ms=0 4950ms=0
+50th gpu percentile: 6ms
+90th gpu percentile: 22ms
+95th gpu percentile: 4950ms
+99th gpu percentile: 4950ms
+GPU HISTOGRAM: 1ms=0 2ms=0 3ms=52 4ms=442 5ms=830 6ms=958 7ms=419 8ms=206 9ms=115 10ms=47 11ms=38 12ms=29 13ms=31 14ms=31 15ms=33 16ms=65 17ms=44 18ms=43 19ms=51 20ms=54 21ms=54 22ms=44 23ms=39 24ms=38 25ms=35 4950ms=269
+Font Cache (CPU):
+  Size: 2139.11 kB
+  Glyph Count: 199
+CPU Caches:
+GPU Caches:
+  1-D Circular Blur:
+    Texture: 1.00 KB (2 entries)
+  Shadow Gaussian Falloff:
+    Texture: 128.00 bytes (1 entry)
+  Mask Filtered Masks:
+    RenderTarget: 2.88 MB (16 entries)
+  Other:
+    Other: 26.64 KB (1 entry)
+    Stencil: 3.12 MB (15 entries)
+  Image:
+    Texture: 4.36 MB (11 entries)
+  Scratch:
+    RenderTarget: 16.88 MB (41 entries)
+    Texture: 21.46 MB (109 entries)
+    Buffer Object: 272.00 KB (5 entries)
+Other Caches:
+                         Current / Maximum
+  Layers Total           0.00 KB (numLayers = 0)
+Total GPU memory usage:
+  51358880 bytes, 48.98 MB (36.99 MB is purgeable)
+
+
+Pipeline=Skia (OpenGL)
+Profile data in ms:
+
+	so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity/android.view.ViewRootImpl@1b5eae8 (visibility=0)
+View hierarchy:
+
+  so.oxy.bloom.materiallab/so.oxy.bloom.materiallab.MainActivity/android.view.ViewRootImpl@1b5eae8
+  191 views, 391.23 kB of render nodes
+
+
+Total ViewRootImpl   : 1
+Total attached Views : 191
+Total RenderNode     : 391.23 kB (used) / 1353.40 kB (capacity)

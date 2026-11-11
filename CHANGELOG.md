@@ -1,10 +1,17 @@
 # Changelog
 
-## 19.2.1
+## 19.3.1
 
 ### Fixed
 
-- **`ComposerLoader`: the light follows the composer rim again.** The loader passed the composer's single-line corner radius (`9999`) straight through as the SVG rect `rx`; browsers clamp `rx` against the width and `ry` against the height separately, so the rim became an ellipse and the light left the composer outline. `composerLoaderGeometry` now returns the clamped radius (half the smaller side) as `rx`, drawn as both `rx` and `ry` on web and native, and as the Android light's corner radius. Affected `@oxy.so/bloom` 17.38.0 through 19.2.0 whenever the composer reported a radius larger than its half-height.
+- **`ComposerLoader`: the light follows the composer rim again.** The loader passed the composer's single-line corner radius (`9999`) straight through as the SVG rect `rx`; browsers clamp `rx` against the width and `ry` against the height separately, so the rim became an ellipse and the light left the composer outline. `composerLoaderGeometry` now returns the clamped radius (half the smaller side) as `rx`, drawn as both `rx` and `ry` on web and native, and as the Android light's corner radius. Affected `@oxy.so/bloom` 17.38.0 through 19.3.0 whenever the composer reported a radius larger than its half-height.
+
+## 19.3.0
+
+### Added
+
+- **`ColorSwatchPicker`** from `@oxy.so/bloom/color-swatch-picker` and the root: a wrapping row of colour swatches, one chosen, built on `ChoiceList` (one keyboard stop, arrows move, Space or Return chooses). `colors`, `value`, `onValueChange`, and `names` for the spoken name of each swatch. Apps drawing their own swatch row can use it. `docs/color-swatch-picker.mdx`.
+- **`Rail header` and `Rail footer`**: nodes pinned above and below the destinations (a brand mark, an account control), centred in the column. A rail without them is drawn exactly as before.
 
 ## 19.2.0
 

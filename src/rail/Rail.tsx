@@ -41,7 +41,8 @@ import { ScrollArea } from '../layout/ScrollArea';
  *    in this file rather than letting an inline `as ViewStyle` cast come back
  *    unnoticed anywhere else.
  */
-import React, { memo } from 'react';
+import type React from 'react';
+import { memo } from 'react';
 import { Platform, type ViewStyle } from 'react-native';
 
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
@@ -67,6 +68,8 @@ const RailComponent: React.FC<RailProps> = ({
   activeId,
   onSelect,
   width = DEFAULT_WIDTH,
+  header,
+  footer,
   style,
   testID,
 }) => {
@@ -76,6 +79,7 @@ const RailComponent: React.FC<RailProps> = ({
       className="h-full shrink-0"
       style={[webStickyStyle, { width }, style]}
     >
+      {header ? <StyledView className="items-center px-2 pt-4">{header}</StyledView> : null}
       <ScrollArea
         style={{ flex: 1 }}
         contentInsetAdjustmentBehavior="never"
@@ -119,6 +123,7 @@ const RailComponent: React.FC<RailProps> = ({
           );
         })}
       </ScrollArea>
+      {footer ? <StyledView className="items-center px-2 pb-4">{footer}</StyledView> : null}
     </StyledView>
   );
 };
