@@ -31,7 +31,7 @@ const [stars, setStars] = useState<number | null>(null);
 | `countStyle`         | `'parenthesis'` → "(128)" (default) or `'reviews'` → "· 128 reviews"                    |
 | `reviewsLabel`       | the word after the count, English `"reviews"`, pluralised and localised via `BloomProvider locale` |
 | `newLabel`           | drawn instead of the value when there is no rating yet, English `"New"`, localised via `BloomProvider locale` |
-| `size`               | `'sm'` (14px star, body-2 text) or `'md'` (default, 16px star, body text)        |
+| `size`               | `'sm'` (14px star, body-2 text) or `'md'` (default, 16px star, body text); omitted size inherits `BloomScope`, mapping `xs`/`sm` to `sm` and `md`/`lg` to `md`; explicit size wins |
 | `showValue` | default `true`; `false` hides the numeric label while retaining its accessible name; the unrated fallback remains visible |
 | `starSize` | positive glyph size independent of text size; defaults to the selected size scale |
 | `variant`            | `'compact'` (default, one star) or `'stars'` (five stars, filled fractionally, before the value) |
@@ -155,7 +155,7 @@ while nothing is chosen, and `onChange` fires with the star that was chosen.
 | `value`              | the chosen rating, or `null` for nothing chosen yet                                          |
 | `onChange`           | called with the chosen rating; never called with the value already chosen                    |
 | `max`                | how many stars, default `5`                                                                  |
-| `size`               | `'sm'` (24px star), `'md'` (default, 32) or `'lg'` (40)                            |
+| `size`               | `'sm'` (24px star), `'md'` (default, 32) or `'lg'` (40); omitted size inherits `BloomScope`, mapping `xs` to `sm`; explicit size wins |
 | `disabled`           | no press, no keyboard, the group at `DISABLED_OPACITY`                                       |
 | `accessibilityLabel` | **required** — the name of what is being rated ("Overall rating")                            |
 | `formatStarLabel`    | each star's own name, English `"1 star"` / `"4 stars"`, localised via `BloomProvider locale` |

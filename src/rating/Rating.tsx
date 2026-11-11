@@ -1,6 +1,7 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { View } from 'react-native';
 
+import { useBloomAppearance } from '../appearance';
 import { RiStarFill } from '../icons/remix/RiStarFill';
 import { useDirectionProps } from '../hooks/use-is-rtl';
 import { useMessages } from '../locale/messages';
@@ -145,7 +146,7 @@ function RatingComponent({
   countStyle = 'parenthesis',
   reviewsLabel,
   newLabel: newLabelProp,
-  size = 'md',
+  size: sizeProp,
   variant = 'compact',
   showValue = true,
   starSize,
@@ -158,6 +159,11 @@ function RatingComponent({
   style,
   testID,
 }: RatingProps) {
+  const { size: scopedSize } = useBloomAppearance(
+    { size: sizeProp },
+    { size: 'md', tone: 'neutral' },
+  );
+  const size: RatingSize = scopedSize === 'xs' || scopedSize === 'sm' ? 'sm' : 'md';
   const theme = useTheme();
   const { messages } = useMessages(RATING_MESSAGES);
   const newLabel = newLabelProp ?? messages.newRating;
