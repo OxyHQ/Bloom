@@ -114,6 +114,9 @@ tap(current, "native-sheet")
 current = capture("native-sheet")
 sheet = bounds(find(current, "native-likes-panel-floating"))
 assert sheet[1] >= height * 0.1 - 2 and sheet[3] - sheet[1] <= height * 0.9 + 2
+sheet_header = bounds(find(current, "native-Likes-header"))
+assert abs(sheet_header[3] - sheet_header[1] - 56 * density) < 3, "Floating header duplicates the safe-area inset"
+report["floatingHeaderOwnsNoDuplicateInset"] = True
 report["sheetBounds"] = sheet
 report["sheetMaxHeightRatio"] = 0.9
 assert rows(current, "Likes")
