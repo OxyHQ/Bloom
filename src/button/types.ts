@@ -347,6 +347,14 @@ export interface CloseButtonProps {
  * 0.6 is the middle of it (and exactly what the 40-box media header used).
  */
 export interface GlyphButtonProps {
+  /**
+   * Opt-in attention token. Initialize it (for example to 0), then change it for
+   * each event that should softly pulse the glyph. Mounting is silent; repeated
+   * values do nothing. The button and its target keep their size and identity.
+   * Reduced motion, disabled and busy suppress the pulse. Supply a label or
+   * other visible feedback too: this motion carries no accessibility message.
+   */
+  attention?: number;
   /** Diameter of the round target. Default 36. */
   size?: number;
   /**
