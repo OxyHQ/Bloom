@@ -198,6 +198,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   contentPadding,
   items = [],
   primaryAction,
+  primaryActionPlacement = 'bottom',
   contentAlignment = 'start',
   content,
   onScroll,
@@ -1043,6 +1044,14 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                       : header
                     : headerRow}
                   {typeof toolbar === 'function' ? toolbar({ collapsed }) : toolbar}
+                  {primaryAction && primaryActionPlacement === 'top' ? (
+                    <SidebarPrimaryAction
+                      action={primaryAction}
+                      collapsed={collapsed}
+                      placement="top"
+                      testID={testID ? `${testID}-primary-action` : undefined}
+                    />
+                  ) : null}
                   {inlineModes ? null : modeSwitcher}
                   {showSearch && !flatMobile ? searchButton : null}
                 </Animated.View>
@@ -1060,7 +1069,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                     scrollInsets,
                   ]}
                 >
-                  {primaryAction ? (
+                  {primaryAction && primaryActionPlacement === 'bottom' ? (
                     <SidebarPrimaryAction
                       action={primaryAction}
                       collapsed={collapsed}

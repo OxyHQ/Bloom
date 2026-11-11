@@ -1110,6 +1110,14 @@ export const PrimaryAction: Story = {
   },
 };
 
+/** `primaryActionPlacement="top"`: the same button, above the destinations instead of in the footer. */
+export const PrimaryActionTop: Story = {
+  args: { ...PrimaryAction.args, primaryActionPlacement: 'top' },
+  parameters: Playground.parameters,
+  argTypes: Playground.argTypes,
+  render: PrimaryAction.render,
+};
+
 /** Shared material while retaining the current sidebar navigation API. */
 export const BlurPanel: Story = {
   render: () => (

@@ -403,6 +403,13 @@ export interface SidebarProps {
     onPress: (event: GestureResponderEvent) => void;
     disabled?: boolean;
   };
+  /**
+   * Where `primaryAction` sits. `bottom` (the default) is the sticky footer, below the destinations.
+   * `top` draws the same button in the fixed header, under the header row and `toolbar` and above the
+   * modes and search, so the app's main command (Compose, New post) leads the sidebar. `variant="rail"`
+   * keeps it at the bottom.
+   */
+  primaryActionPlacement?: 'bottom' | 'top';
   /** Defaults to `panel`. */
   variant?: SidebarVariant;
   /** Rail captions; hidden retains accessible names and native browser tooltips. */

@@ -10,11 +10,14 @@ export function SidebarPrimaryAction({
   action,
   collapsed = false,
   rail = false,
+  placement = 'bottom',
   testID,
 }: {
   action: NonNullable<SidebarProps['primaryAction']>;
   collapsed?: boolean;
   rail?: boolean;
+  /** `top` sits in a header that already spaces its children, so it adds no air above. */
+  placement?: NonNullable<SidebarProps['primaryActionPlacement']>;
   testID?: string;
 }) {
   const geometry = useSidebarGeometry();
@@ -29,7 +32,9 @@ export function SidebarPrimaryAction({
   );
   const diameter = SIDEBAR_ACTION_DIAMETER;
   return (
-    <Animated.View style={[{ flexShrink: 0, width: '100%', paddingTop: 12 }, inset]}>
+    <Animated.View
+      style={[{ flexShrink: 0, width: '100%', paddingTop: placement === 'top' ? 0 : 12 }, inset]}
+    >
       <Fab
         testID={testID ?? 'sidebar-primary-action'}
         size="md"
