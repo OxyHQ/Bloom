@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { StyledView as View } from '../styles/styled-primitives';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from '../button';
@@ -16,7 +16,17 @@ const meta: Meta<typeof AppShell> = {
 export default meta;
 type Story = StoryObj<typeof AppShell>;
 
-function ReadingPanel({ title, onOpen }: { title: string; onOpen?: () => void }) {
+function ReadingPanel({
+  title,
+  onOpen,
+  onDeck,
+  short = false,
+}: {
+  title: string;
+  onOpen?: () => void;
+  onDeck?: () => void;
+  short?: boolean;
+}) {
   const [saved, setSaved] = useState(false);
   return (
     <Screen
@@ -26,9 +36,16 @@ function ReadingPanel({ title, onOpen }: { title: string; onOpen?: () => void })
           title={title}
           actions={
             onOpen ? (
-              <Button testID="groups-open" onPress={onOpen}>
-                Likes
-              </Button>
+              <View className="flex-row gap-2">
+                <Button testID="groups-open" onPress={onOpen}>
+                  Likes
+                </Button>
+                {onDeck ? (
+                  <Button testID="groups-deck" onPress={onDeck}>
+                    Deck
+                  </Button>
+                ) : null}
+              </View>
             ) : undefined
           }
         />
@@ -39,7 +56,7 @@ function ReadingPanel({ title, onOpen }: { title: string; onOpen?: () => void })
           <Button testID={`groups-${title.toLowerCase()}-saved`} onPress={() => setSaved(!saved)}>
             {saved ? 'Saved' : 'Save'}
           </Button>
-          {Array.from({ length: 35 }, (_, index) => (
+          {Array.from({ length: short ? 2 : 35 }, (_, index) => (
             <Text key={index} className="py-4">
               {title} paragraph {index + 1}. Each panel keeps its own reading position.
             </Text>
@@ -54,25 +71,34 @@ function SplitExample({
   documentFlow = false,
   mixed = false,
   capped = false,
+  deckSwitch = false,
+  short = false,
 }: {
   documentFlow?: boolean;
   mixed?: boolean;
   capped?: boolean;
+  deckSwitch?: boolean;
+  short?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [deck, setDeck] = useState(false);
   return (
     <AppShell
       testID="groups-shell"
-      contentMaxWidth={capped ? 360 : 'none'}
+      variant={deckSwitch ? 'feed' : undefined}
+      contentMaxWidth={deckSwitch ? undefined : 'none'}
       header={null}
       gutter={8}
       scroll={documentFlow ? 'document' : 'fixed'}
       panelLayout={{
-        mode: 'split',
-        flow: documentFlow ? 'document' : 'bounded',
+        mode: deck ? 'deck' : 'split',
+        flow: documentFlow && !deck ? 'document' : 'bounded',
+        transition: 'exit-before-enter',
         panels: [
           {
             id: 'workspace',
+            ...(capped ? { width: 360, minWidth: 360, maxWidth: 360 } : {}),
+            ...(deckSwitch ? { width: deck ? 390 : 620, maxWidth: deck ? 390 : undefined } : {}),
             testID: 'groups-workspace',
             group: {
               mode: 'split',
@@ -83,16 +109,26 @@ function SplitExample({
               panels: [
                 {
                   id: 'main',
+                  minHeight: 120,
                   testID: 'groups-main',
                   resizable: true,
-                  content: <ReadingPanel title="Post" onOpen={() => setOpen(true)} />,
+                  content: (
+                    <ReadingPanel
+                      title="Post"
+                      short={short}
+                      onOpen={() => setOpen(true)}
+                      onDeck={deckSwitch ? () => setDeck(!deck) : undefined}
+                    />
+                  ),
                 },
                 {
                   id: 'likes',
+                  minHeight: 120,
                   testID: 'groups-likes',
                   visible: open,
                   floating: {
                     below: 'md',
+                    whenConstrained: true,
                     open,
                     onOpenChange: setOpen,
                     placement: 'bottom',
@@ -103,13 +139,29 @@ function SplitExample({
                       Close likes
                     </Button>
                   ),
-                  content: <ReadingPanel title="Likes" />,
+                  content: <ReadingPanel title="Likes" short={short} />,
                 },
               ],
             },
           },
-          ...(mixed
+          ...(mixed || capped
             ? [{ id: 'aside', testID: 'groups-aside', content: <ReadingPanel title="Aside" /> }]
+            : []),
+          ...(deckSwitch
+            ? [
+                {
+                  id: 'context',
+                  visible: !deck,
+                  width: 350,
+                  content: <ReadingPanel title="Context" short />,
+                },
+                {
+                  id: 'column',
+                  visible: deck,
+                  width: 390,
+                  content: <ReadingPanel title="Column" />,
+                },
+              ]
             : []),
         ],
       }}
@@ -123,6 +175,42 @@ export const MixedAxes: Story = { render: () => <SplitExample mixed /> };
 export const DocumentSplit: Story = {
   parameters: { bloomScroll: 'document' },
   render: () => <SplitExample documentFlow />,
+};
+// Model the consumer's definite percent-height root, including classic scrollbars.
+function PercentHeightHost({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <style>{`
+        html:has([data-testid="groups-percent-host"]),
+        body:has([data-testid="groups-percent-host"]),
+        #storybook-root:has([data-testid="groups-percent-host"]),
+        #storybook-root div:has([data-testid="groups-percent-host"]) {
+          height: 100%;
+          min-height: 0 !important;
+        }
+      `}</style>
+      <View testID="groups-percent-host" className="h-full">
+        {children}
+      </View>
+    </>
+  );
+}
+
+export const DeckSwitch: Story = {
+  parameters: { bloomScroll: 'document' },
+  render: () => (
+    <PercentHeightHost>
+      <SplitExample documentFlow deckSwitch />
+    </PercentHeightHost>
+  ),
+};
+export const ShortDeckSwitch: Story = {
+  parameters: { bloomScroll: 'document' },
+  render: () => (
+    <PercentHeightHost>
+      <SplitExample documentFlow deckSwitch short />
+    </PercentHeightHost>
+  ),
 };
 
 export const EmailFlow: Story = {

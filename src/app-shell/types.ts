@@ -582,6 +582,8 @@ export interface AppShellPanelProps {
   floating?: {
     /** Compact presentation; end is the default for existing side panels. */
     placement?: 'bottom' | 'end' | 'center';
+    /** Also present as a sheet when the group's explicit split minimums cannot fit. */
+    whenConstrained?: boolean;
     below: AppShellBreakpoint;
     open: boolean;
     onOpenChange: (open: boolean) => void;
