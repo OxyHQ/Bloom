@@ -81,7 +81,8 @@ function SplitExample({
   return (
     <AppShell
       testID="groups-shell"
-      contentMaxWidth="none"
+      variant={deckSwitch ? 'feed' : undefined}
+      contentMaxWidth={deckSwitch ? undefined : 'none'}
       header={null}
       gutter={8}
       scroll={documentFlow ? 'document' : 'fixed'}
@@ -172,7 +173,11 @@ export const DocumentSplit: Story = {
 };
 export const DeckSwitch: Story = {
   parameters: { bloomScroll: 'document' },
-  render: () => <SplitExample documentFlow deckSwitch />,
+  render: () => (
+    <View className="h-dvh">
+      <SplitExample documentFlow deckSwitch />
+    </View>
+  ),
 };
 
 export const EmailFlow: Story = {
