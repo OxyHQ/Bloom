@@ -15,5 +15,10 @@ export {
   formatPercent,
   formatSignedPercent,
 } from './format-number';
+export {
+  formatRelativeTime,
+  type RelativeTimeOptions,
+  type RelativeTimeStyle,
+} from './format-relative-time';
 // `messages.ts` and `plural.ts` are how families localise themselves, not app
 // API: an app speaks through `locale` and each family's `labels` overrides.

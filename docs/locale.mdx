@@ -60,6 +60,7 @@ back to plain English formatting rather than throwing.
 | `formatCurrency(amount, currency, locale?, digits?)` | `385000, 'EUR'` → `€385,000` (`385.000 €` in `es`); `digits` `'currency'` → `$9.99`, `¥980` |
 | `formatCompactCurrency(amount, currency, locale?)` | `385000, 'EUR'` → `€385K` |
 | `formatMultiplier(value, locale?)` | `1.5` → `1.5×` |
+| `formatRelativeTime(at, locale?, { now?, style? })` | 3 minutes ago → `3 minutes ago` (`hace 3 minutos` in `es`); within 45 s → `now`; `style: 'short'` → `3 min. ago`; a future time → `in 3 minutes` |
 | `formatClock(seconds)` | `83` → `1:23`, the same in every locale |
 
 ```tsx
@@ -70,6 +71,9 @@ const locale = useBloomLocale();
 Each formatter is built once per locale and set of options and then reused
 (`src/locale/formatter-cache.ts`), the dates' `formatGregorian` too, so a
 long list of prices or dates constructs one `Intl` formatter, not one per row.
+
+`formatRelativeTime` uses `Intl.RelativeTimeFormat`, which Hermes lacks; there it
+falls back to English words (`3 minutes ago`) rather than throwing.
 
 A file size is `formatFileSize` from `@oxy.so/bloom/file-upload`.
 
