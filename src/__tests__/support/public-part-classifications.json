@@ -842,7 +842,6 @@
       "src/alert-dialog/index.ts#AlertDialog",
       "src/ambient-photo/AmbientPhoto.tsx#AmbientPhoto",
       "src/animated-check/AnimatedCheck.tsx#AnimatedCheck",
-      "src/announcement/Announcement.tsx#Announcement",
       "src/app-shell/AppShellHeader.tsx#AppShellHeader",
       "src/app-shell/AppShellMenuButton.tsx#AppShellMenuButton",
       "src/app-shell/AppShellPanelVisibility.tsx#AppShellPanelVisibility",
@@ -1066,7 +1065,6 @@
       "src/directions/DirectionsSteps.tsx#DirectionsSteps",
       "src/directions/DirectionsSummary.tsx#DirectionsSummary",
       "src/directions/TransitLineBadge.tsx#TransitLineBadge",
-      "src/divider/Divider.tsx#Divider",
       "src/drop-zone/DropZone.tsx#DropZone",
       "src/dropdown-menu/DropdownMenu.tsx#DropdownMenu",
       "src/dropdown-menu/DropdownMenu.tsx#DropdownMenuCheckboxItem",
@@ -1874,5 +1872,33 @@
     ],
     "verification": "native renderer and DOM web verify channel Button size remains sm under xs/lg, the declared 6px hitSlop remains present, and caller action sizes follow default md, nearest xs/lg, nested lg over xs, and explicit md over xs. Physical-device hit testing remains unverified",
     "parts": ["src/contact-card/ContactProfileCard.tsx#ContactProfileCard"]
+  },
+  "divider-role": {
+    "status": "independent-scale",
+    "reason": "Divider has no Bloom control-size prop. Its thickness and variant determine separator geometry; caller-provided children stay under the caller's BloomScope and controls resolve size normally.",
+    "evidence": [
+      "src/divider/Divider.tsx",
+      "src/divider/types.ts",
+      "docs/divider.mdx",
+      "src/__tests__/DividerPublicPartScope.test.tsx",
+      "src/__tests__/DividerPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify a 2px explicit separator weight remains stable at default, xs, lg and nested scopes; a child Button resolves default md, inherited xs/lg, nested lg over xs and explicit md over xs. Divider owns no portal or submenu.",
+    "parts": ["src/divider/Divider.tsx#Divider"]
+  },
+  "announcement-controls": {
+    "status": "independent-scale",
+    "reason": "Announcement has no Bloom control-size prop. The CTA uses an explicit sm Button, while the dismiss control uses an explicit xs CloseButton; its own control recipe stays independent of surrounding scope.",
+    "evidence": [
+      "src/announcement/Announcement.tsx",
+      "src/announcement/types.ts",
+      "src/button/CloseButton.tsx",
+      "src/button/shared.ts",
+      "docs/announcement.mdx",
+      "src/__tests__/AnnouncementPublicPartScope.test.tsx",
+      "src/__tests__/AnnouncementPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web confirm the CTA remains 32px and the xs close box remains 20px under default, xs, lg and nested scopes. Native additionally verifies the close glyph is 10.8px and its declared 10px hitSlop on each side.",
+    "parts": ["src/announcement/Announcement.tsx#Announcement"]
   }
 }
