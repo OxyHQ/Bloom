@@ -744,6 +744,21 @@
       "src/text-field/TextField.tsx#TextFieldInput"
     ]
   },
+  "connection-dots-art": {
+    "status": "independent-scale",
+    "reason": "ConnectionDots is a relationship illustration, not a control. dotSize and dotCount are explicit artwork dimensions, so the row and dots do not consume BloomScope control size. The left/right endpoints are rendered as supplied and preserve caller and nested child-control scopes.",
+    "evidence": [
+      "src/connection-dots/ConnectionDots.tsx",
+      "src/connection-dots/ConnectionDots.web.tsx",
+      "src/connection-dots/ConnectionDotsBase.tsx",
+      "src/connection-dots/types.ts",
+      "docs/connection-dots.mdx",
+      "src/__tests__/ConnectionDotsPublicPartScope.test.tsx",
+      "src/__tests__/ConnectionDotsPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native-renderer and DOM web checks verify default md endpoints, inherited xs, nested lg, explicit child size, and independent dot diameter/count. This family does not own portals or submenus; physical-device geometry remains unverified.",
+    "parts": ["src/connection-dots/ConnectionDots.tsx#ConnectionDots"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
@@ -976,7 +991,6 @@
       "src/composer-panel/ModelPicker.tsx#ModelPicker",
       "src/composition-bar/CompositionBar.tsx#CompositionBar",
       "src/concentric/ConcentricView.tsx#ConcentricView",
-      "src/connection-dots/ConnectionDots.tsx#ConnectionDots",
       "src/connection-status/ConnectionStatusToasts.tsx#ConnectionStatusToasts",
       "src/contact-card/ContactProfileCard.tsx#ContactProfileCard",
       "src/content-panel/ContentPanel.tsx#ContentPanel",
