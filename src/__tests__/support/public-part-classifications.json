@@ -1122,7 +1122,6 @@
       "src/hover-card/HoverCard.tsx#HoverCard",
       "src/hover-card/HoverCard.tsx#HoverCardContent",
       "src/hover-card/HoverCard.tsx#HoverCardTrigger",
-      "src/icon-circle/IconCircle.tsx#IconCircle",
       "src/image-resolver/context.ts#ImageResolverProvider",
       "src/important-alerts-card/ImportantAlertsCard.tsx#ImportantAlertsCard",
       "src/input-group/InputGroup.tsx#InputGroup",
@@ -1701,7 +1700,7 @@
   },
   "multi-agent-preview-parts": {
     "status": "independent-scale",
-    "reason": "SelectedAgentPreview owns a fixed 160×112px artwork viewport; avatar diameter and position are selected by participant count (80px for one, 62px for two or three, 48px for four or more), not by control size. It has no size prop, and its caption uses the standard Text family. Evidence: src/multi-agent-chat/SelectedAgentPreview.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.test.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.web.test.tsx. Both platform routes measure the viewport and each rendered avatar at counts 1, 2, 3 and 4 with no scope, xs, and nested xs/lg scopes; physical-device fit and responsive footprint remain pending.",
+    "reason": "SelectedAgentPreview owns a fixed 160\u00d7112px artwork viewport; avatar diameter and position are selected by participant count (80px for one, 62px for two or three, 48px for four or more), not by control size. It has no size prop, and its caption uses the standard Text family. Evidence: src/multi-agent-chat/SelectedAgentPreview.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.test.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.web.test.tsx. Both platform routes measure the viewport and each rendered avatar at counts 1, 2, 3 and 4 with no scope, xs, and nested xs/lg scopes; physical-device fit and responsive footprint remain pending.",
     "evidence": [
       "src/multi-agent-chat/SelectedAgentPreview.tsx",
       "src/__tests__/SelectedAgentPreviewPublicPartScope.test.tsx",
@@ -1710,7 +1709,7 @@
       "src/__tests__/SelectedAgentPreviewExport.test.ts",
       "src/__tests__/public-parts.test.ts"
     ],
-    "verification": "native renderer and RNW DOM measure the 160×112px viewport and count-specific 80/62/48px avatar geometry for 1/2/3/4 agents under no scope, xs and nested xs/lg scopes; device fit and responsive footprint pending",
+    "verification": "native renderer and RNW DOM measure the 160\u00d7112px viewport and count-specific 80/62/48px avatar geometry for 1/2/3/4 agents under no scope, xs and nested xs/lg scopes; device fit and responsive footprint pending",
     "parts": ["src/multi-agent-chat/SelectedAgentPreview.tsx#SelectedAgentPreview"]
   },
   "agent-creator-field-parts": {
@@ -1900,5 +1899,20 @@
     ],
     "verification": "Native renderer and DOM web confirm the CTA remains 32px and the xs close box remains 20px under default, xs, lg and nested scopes. Native additionally verifies the close glyph is 10.8px and its declared 10px hitSlop on each side.",
     "parts": ["src/announcement/Announcement.tsx#Announcement"]
+  },
+  "icon-circle-geometry": {
+    "status": "independent-scale",
+    "reason": "IconCircle uses the icon-token size vocabulary to select a decorative disc and glyph box; it does not consume BloomScope control size. BloomIconComponent is its public glyph contract and receives the resolved width, height and fill.",
+    "evidence": [
+      "src/icon-circle/IconCircle.tsx",
+      "src/icon-circle/types.ts",
+      "src/icons/icon-component.ts",
+      "docs/icon-circle.mdx",
+      "src/__tests__/IconCircleRadioIndicator.test.tsx",
+      "src/__tests__/IconCirclePublicPartScope.test.tsx",
+      "src/__tests__/IconCirclePublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the default xl disc/glyph (64/28px), explicit lg geometry (52/24px), and stable geometry under xs, lg and nested BloomScope. Native type-level fixtures use BloomIconComponent directly. Physical-device proportions remain unverified.",
+    "parts": ["src/icon-circle/IconCircle.tsx#IconCircle"]
   }
 }
