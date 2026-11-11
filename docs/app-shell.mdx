@@ -1392,11 +1392,15 @@ const [spans, setSpans] = useState({ left: 1, right: 1 });
 }} />
 ```
 
-Flexible tracks grow from a zero basis, exactly as the CSS compositor's
-`flex: <span> 1 0px` does, and only a `minWidth`/`maxWidth` freezes one. The
-native resolver used to start them at their minimum, which gave native a
-`min + share` split the browser never drew (1:2 spans with 100 minimums in 800
-were 300/500 natively and 267/533 on the web; both are now 267/533).
+Flexible tracks declare a zero basis (`flex: <span> 1 0px`) and explicit
+`minWidth`/`maxWidth` constraints. A measured historical difference remains
+relevant: 1:2 spans with 100 minimums in 800 produced 300/500 in Yoga and 267/533
+in browser flexbox. Earlier releases compensated with a JavaScript water-fill
+pass to force browser sizes. Version 19.6 removes that second distribution
+engine and gives the constraints directly to each platform. The native Yoga
+regression fixtures retain this case and verify bounds and complete space use;
+identical pixels across platforms are not promised when unequal constraints
+bind. Resize gestures start from the actual rendered size, not that old model.
 
 A slot of the split that stacks two panes is a nested
 `AppShellPanels scope="local"` with `axis: 'vertical'` inside a pane with

@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useEffect } from 'react';
 import * as Native from 'react-native';
+import { SafeAreaInsetsContext, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { render, fireEvent } from '@testing-library/react-native';
 import { AppShell, useAppShellPanel, usePanelNavigation } from '../app-shell';
 import type { AppShellPanelLayout } from '../app-shell';
@@ -11,6 +12,15 @@ import { resolvedStyle } from './support/rendered-style';
 import { Screen } from '../screen';
 import { buildThemeFromSeed } from '../theme/build-theme-from-seed';
 import { mockWindowSize } from './support/window-size';
+jest.mock('react-native-safe-area-context', () => {
+  const actual = jest.requireActual('../../__mocks__/react-native-safe-area-context');
+  const React = jest.requireActual('react');
+  return {
+    ...actual,
+    useSafeAreaInsets: () =>
+      React.useContext(actual.SafeAreaInsetsContext) ?? { top: 0, bottom: 0, left: 0, right: 0 },
+  };
+});
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <BloomThemeProvider mode="light" colorPreset="teal">
     {children}
@@ -463,4 +473,38 @@ it('deactivates retained leaves when their transparent group closes', () => {
   expect(screen.getByTestId('group-active', { includeHiddenElements: true }).props.children).toBe(
     'false',
   );
+});
+
+it('consumes the physical top safe area once across nested vertical panels', () => {
+  function Probe({ name }: { name: string }) {
+    return <Native.Text testID={name}>{useSafeAreaInsets().top}</Native.Text>;
+  }
+  const layout: AppShellPanelLayout = {
+    panels: [
+      {
+        id: 'group',
+        group: {
+          axis: 'vertical',
+          panels: [
+            { id: 'first', content: <Probe name="first-inset" /> },
+            { id: 'second', content: <Probe name="second-inset" /> },
+          ],
+        },
+      },
+    ],
+  };
+  const draw = (header?: React.ReactNode) => (
+    <SafeAreaInsetsContext.Provider value={{ top: 24, bottom: 12, left: 0, right: 0 }}>
+      <AppShell testID="safe-shell" panelLayout={{ ...layout, header }} />
+    </SafeAreaInsetsContext.Provider>
+  );
+  const screen = render(draw(), { wrapper });
+  expect(screen.getByTestId('first-inset').props.children).toBe(24);
+  expect(screen.getByTestId('second-inset').props.children).toBe(0);
+  screen.rerender(draw(<Native.View />));
+  fireEvent(screen.getByTestId('safe-shell-panels-workspace-header'), 'layout', {
+    nativeEvent: { layout: { width: 1000, height: 80, x: 0, y: 0 } },
+  });
+  expect(screen.getByTestId('first-inset').props.children).toBe(0);
+  expect(screen.getByTestId('second-inset').props.children).toBe(0);
 });

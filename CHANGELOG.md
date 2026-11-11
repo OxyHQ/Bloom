@@ -1,5 +1,25 @@
 # Changelog
 
+## 19.6.0
+
+### Added
+
+- Panel descriptors accept a transparent `group` of horizontal or vertical panels, nested recursively. `mode: 'split'` divides available space; `mode: 'flow'` grows along its axis with a shared scroll owner. Existing Deck panels use the same renderer. Nested separated groups use their own shell gutter even when the parent group has no gap.
+- Nested splits can opt into `singlePanelFlow: 'document'`: the sole inline panel keeps document scrolling and its viewport mask; opening an auxiliary panel creates a bounded split and closing restores the document reading position. Compact panels support `floating.placement: 'bottom'` with one Dialog presentation.
+- `Dialog sizing="fill"` bounds a bottom sheet's own Screen or virtualized list. The existing `maxHeightRatio` now reaches the shared BottomSheet ceiling, including fill, safe-area and keyboard constraints.
+
+### Changed
+
+- Native panel sizes are distributed directly by Yoga. Removed the normal-layout JavaScript water-fill compensation for unequal minimum constraints; native flex and browser flex may divide spare space differently when those constraints bind. Split weights, minimums and maximums remain declarative, and direct resizing starts from actual rendered dimensions.
+
+### Fixed
+
+- Divider minimums can opt an auxiliary panel into its sheet with `floating.whenConstrained` when the bounded split no longer fits. Closing a resized split restores all space to the remaining pane, including fractional split weights.
+- Vertical exits keep their width while closing. Reading-envelope tracks retain their resting widths through normal/Deck transitions instead of growing into temporary spare space.
+- Closing a scrolled split keeps the bounded owner through its actual exit transition, then transfers the latest reading position to the document without blanking content or clamping it to the top.
+- Nested native panels consume the top safe area once; floating sheets use physical insets for placement and consumed insets for their content.
+- Local consumer mirrors include the Expo config plugin alongside package metadata.
+
 ## 19.5.0
 
 ### Added
