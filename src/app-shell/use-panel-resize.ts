@@ -125,7 +125,7 @@ export function usePanelResize({
     const visible = tracks.filter((track) => track.visible);
     const nextId = visible[visible.findIndex((track) => track.id === panel.id) + 1]?.id;
     const next =
-      layout.mode !== 'deck' && !(vertical && document)
+      layout.mode !== 'deck' && layout.mode !== 'flow' && !(vertical && document)
         ? layout.panels.find((candidate) => candidate.id === nextId)
         : undefined;
     return {

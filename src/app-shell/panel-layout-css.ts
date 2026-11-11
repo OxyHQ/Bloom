@@ -18,6 +18,7 @@ import type { AppShellPanelLayout } from './panel-layout-types';
 const PANEL_MATERIAL = '[data-bloom-panel-material]';
 
 export const PanelCssContext = createContext<string | null>(null);
+export const PanelResponsiveScopeContext = createContext<string | null>(null);
 export const PanelCssLayoutContext = createContext<{
   layout: AppShellPanelLayout;
   gap: number;
@@ -34,6 +35,7 @@ export function panelLayoutCss(
   widths: Readonly<Record<string, number>> = {},
   heights: Readonly<Record<string, number>> = {},
   fillWidth = false,
+  responsiveScope = scope,
 ) {
   const root = `[data-bloom-layout="${scope}"]`;
   const group = `[data-bloom-panel-group="${scope}"]`;
@@ -42,7 +44,7 @@ export function panelLayoutCss(
     `${group} [data-bloom-panel-owner="${scope}"][data-bloom-panel-index="${index}"]`;
   const liveSize = (index: number, fallback: string) =>
     `var(${panelSizeProperty(scope, index)}, ${fallback})`;
-  const deck = layout.mode === 'deck';
+  const deck = layout.mode === 'deck' || layout.mode === 'flow';
   const ordered = layout.transition === 'exit-before-enter';
   const geometryDelay = ordered ? 150 : 0;
   const fadeMs = ordered ? 150 : 380;
@@ -63,7 +65,7 @@ export function panelLayoutCss(
     .map((property) => `${property} 380ms cubic-bezier(.4,0,.2,1) ${geometryDelay}ms`)
     .join(',');
   const document = layout.flow === 'document' && !deck;
-  const pageDeck = deck && layout.horizontalScroll !== 'contained';
+  const pageDeck = deck && layout.mode !== 'flow' && layout.horizontalScroll !== 'contained';
   const thresholds = new Set<number>([0]);
   for (const panel of layout.panels) {
     if (panel.hideBelow !== undefined) thresholds.add(breakpointPx(panel.hideBelow));
@@ -130,17 +132,17 @@ ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
       const dim = vertical ? (heights[p.id] ?? p.height) : (widths[p.id] ?? p.width);
       const min = vertical ? p.minHeight : p.minWidth;
       const max = vertical ? p.maxHeight : p.maxWidth;
-      const natural = vertical && document;
+      const natural = vertical && (document || layout.mode === 'flow');
       const basis = forced
         ? natural
           ? 'auto'
           : '100%'
         : dim !== undefined
           ? `${dim}px`
-          : deck
-            ? `${DEFAULT_PANEL_WIDTH}px`
-            : natural
-              ? 'auto'
+          : natural
+            ? 'auto'
+            : deck
+              ? `${DEFAULT_PANEL_WIDTH}px`
               : '0px';
       const grow = forced
         ? 1
@@ -217,7 +219,7 @@ ${row}{width:100%!important;min-width:0!important}
       });
       rules += '}\n';
     }
-    css += `@container ${scope} ${query}{${rules}}\n`;
+    css += `@container ${responsiveScope} ${query}{${rules}}\n`;
   }
   return css;
 }

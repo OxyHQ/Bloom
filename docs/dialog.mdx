@@ -613,3 +613,10 @@ reordering or translating dynamic command sets; an index fallback cannot provide
 the identity of a command moved to a different index. Dialog actions stay
 icon-only by default to preserve existing header presentation; explicitly choose
 `labelVisibility` when the label should participate in adaptation.
+
+For a bottom dialog whose Screen or virtualized list owns scrolling, use
+`scrollable={false} sizing="fill"`. This explicitly fills the sheet's available
+height (bounded by `maxHeightRatio`) instead of asking flexible children for an
+intrinsic height. The default `sizing="content"` preserves content-sized dialogs.
+Height morphing applies to content sizing; fill sizing stays attached to its
+available bounds.

@@ -488,8 +488,12 @@ export function createAppShell(
       layout.gap ??
       (layout.appearance === 'joined' ? 1 : (props.gutter ?? APP_SHELL_DEFAULTS.gutter));
     const envelope = panelEnvelope(layout, cssLayout ? Number.MAX_SAFE_INTEGER : width, gap);
-    const document = layout.flow === 'document' && layout.mode !== 'deck' && Platform.OS === 'web';
-    const deck = layout.mode === 'deck';
+    const document =
+      layout.flow === 'document' &&
+      layout.mode !== 'deck' &&
+      layout.mode !== 'flow' &&
+      Platform.OS === 'web';
+    const deck = layout.mode === 'deck' || layout.mode === 'flow';
     const [shellColor, claimShellColor] = useLatestClaim<ProfileColor>();
     const normalized: AppShellProps = {
       ...props,
@@ -517,7 +521,7 @@ export function createAppShell(
     };
     const shell = (
       <View
-        onLayout={cssLayout ? undefined : onLayout}
+        onLayout={onLayout}
         {...(cssLayout ? { dataSet: { bloomLayout: scope } } : {})}
         style={
           {
