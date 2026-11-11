@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text } from 'react-native';
+import { AccessibilityInfo, Text } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 import type { ReactTestInstance } from 'react-test-renderer';
 
@@ -8,6 +8,8 @@ import { useDialogControl } from '../dialog/context';
 import { SheetShell } from '../dialog/SheetShell';
 import { Z_INDEX } from '../styles/z-index';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { PlatformSurfaceProvider } from '../platform-surface/context';
+import type { PlatformSurfaceAdapter } from '../platform-surface/types';
 import { classNamesOn } from './support/rendered-style';
 
 /**
@@ -100,5 +102,47 @@ describe('SheetShell drag handle', () => {
 
       expect(sheetHandles(UNSAFE_root).length).toBeGreaterThan(0);
     });
+  });
+});
+
+describe('SheetShell screen-reader focus', () => {
+  const focusRequests = AccessibilityInfo.sendAccessibilityEvent as jest.Mock;
+  // Host refs resolve to null in the test renderer unless told what a node is.
+  const nodes = { createNodeMock: () => ({}) };
+
+  function requests(adapter: PlatformSurfaceAdapter | null) {
+    focusRequests.mockClear();
+    jest.useFakeTimers();
+    try {
+      render(
+        <PlatformSurfaceProvider value={adapter}>
+          <BloomThemeProvider mode="light" colorPreset="teal">
+            <OpenSheetShell />
+          </BloomThemeProvider>
+        </PlatformSurfaceProvider>,
+        nodes,
+      );
+      act(() => {
+        jest.advanceTimersByTime(500);
+      });
+      return focusRequests.mock.calls.length;
+    } finally {
+      jest.useRealTimers();
+    }
+  }
+
+  it('moves the reader into the sheet once it has settled', () => {
+    expect(requests(null)).toBeGreaterThan(0);
+  });
+
+  it('leaves that move to a platform that gives Bloom the keys, which makes it as the sheet comes', () => {
+    // OxyOS: its keyboard and its reader go onto the sheet's first control (a
+    // picker's chosen option); a later move onto the sheet would say only its title.
+    const oxyos: PlatformSurfaceAdapter = {
+      platform: 'desktop',
+      capabilities: new Set(['window', 'pointer']),
+      keyboard: { subscribe: () => () => {} },
+    };
+    expect(requests(oxyos)).toBe(0);
   });
 });
