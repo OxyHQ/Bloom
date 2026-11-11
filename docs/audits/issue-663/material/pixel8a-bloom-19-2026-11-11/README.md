@@ -28,6 +28,25 @@ the runner records a stable accessibility snapshot while taking fresh pixels;
 `hierarchyFresh` in `captures.json` distinguishes those snapshots from fresh
 layout measurements.
 
+## Contrast samples
+
+The estimates in `contrast-samples.json` use blank-fill background regions and
+the 5th/95th luminance percentile inside tightly bounded text regions from the
+PNG raster; they do not use computed styles. Surface, nested Card, primary
+Button and BlurIsland were sampled on solid, striped and photographic content
+in light and dark themes.
+
+| Role | Light range | Dark range |
+| --- | ---: | ---: |
+| Surface text | 16.27:1 | 10.59:1 |
+| Nested Card text | 14.15:1 | 7.94:1 |
+| Primary Button text | 5.65:1 | 8.92:1 |
+| BlurIsland text | 14.10–16.35:1 | 6.15–8.28:1 |
+
+These samples support the selected Android fixture states only. They do not
+cover every semantic role, product screen, system accessibility preference or
+platform.
+
 ## Performance sample
 
 Four release-mode 15-second windows on this device. Raw `gfxinfo`, `meminfo`,

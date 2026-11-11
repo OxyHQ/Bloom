@@ -1,0 +1,523 @@
+{
+  "method": "Relative luminance estimated from PNG raster pixels: mean RGB in blank-fill background regions and the 5th/95th luminance percentile inside tightly bounded text regions. No computed styles are used.",
+  "device": "Google Pixel 8a, Android 16 / API 36, 1080x2400 at 420 dpi.",
+  "captures": {
+    "light-solid.png": {
+      "surface": {
+        "backgroundRoi": [
+          940,
+          600,
+          1000,
+          680
+        ],
+        "textRoi": [
+          80,
+          610,
+          300,
+          670
+        ],
+        "backgroundRgb": [
+          255,
+          247,
+          249
+        ],
+        "textLuminanceP05": 0.0112,
+        "contrast": 16.27
+      },
+      "nestedCard": {
+        "backgroundRoi": [
+          930,
+          850,
+          990,
+          925
+        ],
+        "textRoi": [
+          110,
+          865,
+          800,
+          920
+        ],
+        "backgroundRgb": [
+          240,
+          231,
+          235
+        ],
+        "textLuminanceP05": 0.0112,
+        "contrast": 14.15
+      },
+      "primaryButton": {
+        "backgroundRoi": [
+          90,
+          1190,
+          120,
+          1240
+        ],
+        "textRoi": [
+          120,
+          1180,
+          300,
+          1260
+        ],
+        "backgroundRgb": [
+          153,
+          43,
+          178
+        ],
+        "textLuminanceP95": 0.8944,
+        "contrast": 5.65
+      },
+      "island": {
+        "backgroundRoi": [
+          400,
+          1350,
+          425,
+          1363
+        ],
+        "textRoi": [
+          60,
+          1365,
+          420,
+          1425
+        ],
+        "backgroundRgb": [
+          254,
+          247,
+          248
+        ],
+        "textLuminanceP05": 0.0112,
+        "contrast": 16.23
+      }
+    },
+    "light-stripes.png": {
+      "surface": {
+        "backgroundRoi": [
+          940,
+          600,
+          1000,
+          680
+        ],
+        "textRoi": [
+          80,
+          610,
+          300,
+          670
+        ],
+        "backgroundRgb": [
+          255,
+          247,
+          249
+        ],
+        "textLuminanceP05": 0.0112,
+        "contrast": 16.27
+      },
+      "nestedCard": {
+        "backgroundRoi": [
+          930,
+          850,
+          990,
+          925
+        ],
+        "textRoi": [
+          110,
+          865,
+          800,
+          920
+        ],
+        "backgroundRgb": [
+          240,
+          231,
+          235
+        ],
+        "textLuminanceP05": 0.0112,
+        "contrast": 14.15
+      },
+      "primaryButton": {
+        "backgroundRoi": [
+          90,
+          1190,
+          120,
+          1240
+        ],
+        "textRoi": [
+          120,
+          1180,
+          300,
+          1260
+        ],
+        "backgroundRgb": [
+          153,
+          43,
+          178
+        ],
+        "textLuminanceP95": 0.8944,
+        "contrast": 5.65
+      },
+      "island": {
+        "backgroundRoi": [
+          400,
+          1350,
+          425,
+          1363
+        ],
+        "textRoi": [
+          60,
+          1365,
+          420,
+          1425
+        ],
+        "backgroundRgb": [
+          254,
+          248,
+          250
+        ],
+        "textLuminanceP05": 0.0112,
+        "contrast": 16.35
+      }
+    },
+    "light-photo.png": {
+      "surface": {
+        "backgroundRoi": [
+          940,
+          600,
+          1000,
+          680
+        ],
+        "textRoi": [
+          80,
+          610,
+          300,
+          670
+        ],
+        "backgroundRgb": [
+          255,
+          247,
+          249
+        ],
+        "textLuminanceP05": 0.0112,
+        "contrast": 16.27
+      },
+      "nestedCard": {
+        "backgroundRoi": [
+          930,
+          850,
+          990,
+          925
+        ],
+        "textRoi": [
+          110,
+          865,
+          800,
+          920
+        ],
+        "backgroundRgb": [
+          240,
+          231,
+          235
+        ],
+        "textLuminanceP05": 0.0112,
+        "contrast": 14.15
+      },
+      "primaryButton": {
+        "backgroundRoi": [
+          90,
+          1190,
+          120,
+          1240
+        ],
+        "textRoi": [
+          120,
+          1180,
+          300,
+          1260
+        ],
+        "backgroundRgb": [
+          153,
+          43,
+          178
+        ],
+        "textLuminanceP95": 0.8944,
+        "contrast": 5.65
+      },
+      "island": {
+        "backgroundRoi": [
+          400,
+          1350,
+          425,
+          1363
+        ],
+        "textRoi": [
+          60,
+          1365,
+          420,
+          1425
+        ],
+        "backgroundRgb": [
+          243,
+          230,
+          230
+        ],
+        "textLuminanceP05": 0.0112,
+        "contrast": 14.1
+      }
+    },
+    "dark-solid.png": {
+      "surface": {
+        "backgroundRoi": [
+          940,
+          600,
+          1000,
+          680
+        ],
+        "textRoi": [
+          80,
+          610,
+          300,
+          670
+        ],
+        "backgroundRgb": [
+          75,
+          41,
+          71
+        ],
+        "textLuminanceP95": 0.8544,
+        "contrast": 10.59
+      },
+      "nestedCard": {
+        "backgroundRoi": [
+          930,
+          850,
+          990,
+          925
+        ],
+        "textRoi": [
+          110,
+          865,
+          800,
+          920
+        ],
+        "backgroundRgb": [
+          93,
+          61,
+          89
+        ],
+        "textLuminanceP95": 0.8544,
+        "contrast": 7.94
+      },
+      "primaryButton": {
+        "backgroundRoi": [
+          90,
+          1190,
+          120,
+          1240
+        ],
+        "textRoi": [
+          120,
+          1180,
+          300,
+          1260
+        ],
+        "backgroundRgb": [
+          229,
+          131,
+          247
+        ],
+        "textLuminanceP05": 0,
+        "contrast": 8.92
+      },
+      "island": {
+        "backgroundRoi": [
+          400,
+          1350,
+          425,
+          1363
+        ],
+        "textRoi": [
+          60,
+          1365,
+          420,
+          1425
+        ],
+        "backgroundRgb": [
+          89,
+          59,
+          86
+        ],
+        "textLuminanceP95": 0.8544,
+        "contrast": 8.28
+      }
+    },
+    "dark-stripes.png": {
+      "surface": {
+        "backgroundRoi": [
+          940,
+          600,
+          1000,
+          680
+        ],
+        "textRoi": [
+          80,
+          610,
+          300,
+          670
+        ],
+        "backgroundRgb": [
+          75,
+          41,
+          71
+        ],
+        "textLuminanceP95": 0.8544,
+        "contrast": 10.59
+      },
+      "nestedCard": {
+        "backgroundRoi": [
+          930,
+          850,
+          990,
+          925
+        ],
+        "textRoi": [
+          110,
+          865,
+          800,
+          920
+        ],
+        "backgroundRgb": [
+          93,
+          61,
+          89
+        ],
+        "textLuminanceP95": 0.8544,
+        "contrast": 7.94
+      },
+      "primaryButton": {
+        "backgroundRoi": [
+          90,
+          1190,
+          120,
+          1240
+        ],
+        "textRoi": [
+          120,
+          1180,
+          300,
+          1260
+        ],
+        "backgroundRgb": [
+          229,
+          131,
+          247
+        ],
+        "textLuminanceP05": 0,
+        "contrast": 8.92
+      },
+      "island": {
+        "backgroundRoi": [
+          400,
+          1350,
+          425,
+          1363
+        ],
+        "textRoi": [
+          60,
+          1365,
+          420,
+          1425
+        ],
+        "backgroundRgb": [
+          107,
+          79,
+          103
+        ],
+        "textLuminanceP95": 0.8544,
+        "contrast": 6.15
+      }
+    },
+    "dark-photo.png": {
+      "surface": {
+        "backgroundRoi": [
+          940,
+          600,
+          1000,
+          680
+        ],
+        "textRoi": [
+          80,
+          610,
+          300,
+          670
+        ],
+        "backgroundRgb": [
+          75,
+          41,
+          71
+        ],
+        "textLuminanceP95": 0.8544,
+        "contrast": 10.59
+      },
+      "nestedCard": {
+        "backgroundRoi": [
+          930,
+          850,
+          990,
+          925
+        ],
+        "textRoi": [
+          110,
+          865,
+          800,
+          920
+        ],
+        "backgroundRgb": [
+          93,
+          61,
+          89
+        ],
+        "textLuminanceP95": 0.8544,
+        "contrast": 7.94
+      },
+      "primaryButton": {
+        "backgroundRoi": [
+          90,
+          1190,
+          120,
+          1240
+        ],
+        "textRoi": [
+          120,
+          1180,
+          300,
+          1260
+        ],
+        "backgroundRgb": [
+          229,
+          131,
+          247
+        ],
+        "textLuminanceP05": 0,
+        "contrast": 8.92
+      },
+      "island": {
+        "backgroundRoi": [
+          400,
+          1350,
+          425,
+          1363
+        ],
+        "textRoi": [
+          60,
+          1365,
+          420,
+          1425
+        ],
+        "backgroundRgb": [
+          95,
+          60,
+          83
+        ],
+        "textLuminanceP95": 0.8544,
+        "contrast": 8.01
+      }
+    }
+  },
+  "limit": "Selected roles and solid, striped, and photographic backdrops in one fixture. These measurements do not establish every role, screen, platform, system accessibility setting, or acceptance threshold."
+}
