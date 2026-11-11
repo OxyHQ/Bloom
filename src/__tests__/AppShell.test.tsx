@@ -47,7 +47,7 @@ const ITEMS: NotificationCenterItem[] = [
   { id: 'c', category: 'system', group: 'Today', title: 'C', description: 'c', timestamp: '3m' },
 ];
 
-function renderIn(ui: React.ReactElement) {
+function renderIn(ui: React.ReactElement, options?: Parameters<typeof render>[1]) {
   return render(
     <BloomThemeProvider mode="light" colorPreset="teal">
       <PortalProvider>
@@ -55,6 +55,7 @@ function renderIn(ui: React.ReactElement) {
         <PortalOutlet />
       </PortalProvider>
     </BloomThemeProvider>,
+    options,
   );
 }
 
@@ -62,7 +63,13 @@ function setWidth(width: number) {
   mockWindowSize({ width, height: 900, scale: 1, fontScale: 1 });
 }
 
-afterEach(() => jest.restoreAllMocks());
+const originalRequestFrame = globalThis.requestAnimationFrame;
+const originalCancelFrame = globalThis.cancelAnimationFrame;
+afterEach(() => {
+  jest.restoreAllMocks();
+  globalThis.requestAnimationFrame = originalRequestFrame;
+  globalThis.cancelAnimationFrame = originalCancelFrame;
+});
 
 describe('AppShellHeader', () => {
   it('title is a level-1 heading in title-2-medium with the px4 inset', () => {
@@ -1639,6 +1646,8 @@ describe('AppShellPanels', () => {
 
   it('names the divider, and a keyboard nudge moves the width within its range', () => {
     setWidth(1440);
+    globalThis.requestAnimationFrame = jest.fn(() => 1);
+    globalThis.cancelAnimationFrame = jest.fn();
     const onWidthChange = jest.fn();
     const screen = renderIn(
       <AppShell variant="feed" panels scroll="fixed" sidebar={{ items: NAV }}>
@@ -1658,12 +1667,16 @@ describe('AppShellPanels', () => {
           </AppShellPanel>
         </AppShellPanels>
       </AppShell>,
+      { createNodeMock: () => ({}) },
     );
     const divider = screen.getByTestId('list-divider');
     expect(divider.props.accessibilityLabel).toBe('Resize panes');
     expect(divider.props['aria-orientation']).toBe('vertical');
     fireEvent(screen.getByTestId('list'), 'layout', {
       nativeEvent: { layout: { width: 360, height: 600 } },
+    });
+    fireEvent(screen.getByTestId('detail'), 'layout', {
+      nativeEvent: { layout: { width: 600, height: 600 } },
     });
     // The grip reports arrow keys (±16) through `onNudge` and a drag through
     // `onResize`, measured from the width the panel was DRAWN at.
@@ -1674,8 +1687,15 @@ describe('AppShellPanels', () => {
       grip.props.onResizeStart();
       grip.props.onResize(-500);
     });
+    expect(onWidthChange).toHaveBeenCalledTimes(1);
+    act(() => grip.props.onResizeEnd());
     expect(onWidthChange).toHaveBeenLastCalledWith(280);
-    act(() => grip.props.onResize(500));
+    act(() => {
+      grip.props.onResizeStart();
+      grip.props.onResize(500);
+    });
+    expect(onWidthChange).toHaveBeenCalledTimes(2);
+    act(() => grip.props.onResizeEnd());
     expect(onWidthChange).toHaveBeenLastCalledWith(520);
     // The anchor sits in the middle of the gap, on the panel's end edge.
     expect(resolvedStyle(screen.getByTestId('list-resize-anchor').props.style)).toMatchObject({
