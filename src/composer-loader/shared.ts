@@ -77,7 +77,11 @@ export interface ComposerLoaderGeometryInput {
 }
 
 export interface ComposerLoaderGeometry {
-  /** Rect `rx`: the radius, or half the height for a pill. */
+  /**
+   * Rect `rx` and `ry`: the radius clamped to half the smaller side (half the height for a
+   * pill). Never the raw radius: browsers clamp `rx` against the width and `ry` against the
+   * height separately, so an unclamped `9999` would draw an ellipse, not a pill.
+   */
   rx: number;
   /** Rounded-rect perimeter, px. */
   perimeter: number;
@@ -100,11 +104,11 @@ export function composerLoaderGeometry(input: ComposerLoaderGeometryInput): Comp
     offset,
   } = input;
   const band = (arc / 360) * 100;
-  const rx = input.radius ?? h / 2;
+  const requestedRadius = input.radius ?? h / 2;
 
   // Straight runs plus the four corner arcs (for the default pill, rx = h/2
   // and this reduces to 2(w − h) + πh).
-  const cornerR = Math.min(rx, w / 2, h / 2);
+  const cornerR = Math.min(requestedRadius, w / 2, h / 2);
   const perimeter = Math.max(1, 2 * (w + h) - 8 * cornerR + 2 * Math.PI * cornerR);
   const pxUnits = (px: number) => (px * 100) / perimeter;
   // A layer's phase: the larger, the further BACK along the lap the band sits.
@@ -145,7 +149,7 @@ export function composerLoaderGeometry(input: ComposerLoaderGeometryInput): Comp
   // crisp refraction line, tip leading
   if (!bloomOnly) layer('line', line, crispBlur, 1, band, 0);
 
-  return { rx, perimeter, blurs: [14, 6, crispBlur], strokes };
+  return { rx: cornerR, perimeter, blurs: [14, 6, crispBlur], strokes };
 }
 
 /**

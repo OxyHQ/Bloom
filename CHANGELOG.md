@@ -1,5 +1,11 @@
 # Changelog
 
+## 19.3.1
+
+### Fixed
+
+- **`ComposerLoader`: the light follows the composer rim again.** The loader passed the composer's single-line corner radius (`9999`) straight through as the SVG rect `rx`; browsers clamp `rx` against the width and `ry` against the height separately, so the rim became an ellipse and the light left the composer outline. `composerLoaderGeometry` now returns the clamped radius (half the smaller side) as `rx`, drawn as both `rx` and `ry` on web and native, and as the Android light's corner radius. Affected `@oxy.so/bloom` 17.38.0 through 19.3.0 whenever the composer reported a radius larger than its half-height.
+
 ## 19.3.0
 
 ### Added
