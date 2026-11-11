@@ -1,10 +1,6 @@
 import React, { memo } from 'react';
 import { CollapsibleFrame } from './CollapsibleFrame.web';
-import {
-  DEFAULT_COLLAPSIBLE_TRANSITION,
-  useAppearingOpen,
-  useCollapsibleMotion,
-} from './use-collapsible-motion';
+import { DEFAULT_COLLAPSIBLE_TRANSITION, useAppearingOpen } from './use-collapsible-motion';
 import type { CollapsibleProps } from './types';
 
 export const Collapsible = memo(function Collapsible({
@@ -13,6 +9,5 @@ export const Collapsible = memo(function Collapsible({
   ...props
 }: CollapsibleProps) {
   const open = useAppearingOpen(props.open, appear);
-  const motion = useCollapsibleMotion(open, transition);
-  return <CollapsibleFrame {...props} open={open} transition={transition} {...motion} />;
+  return <CollapsibleFrame {...props} open={open} appear={appear} transition={transition} />;
 });

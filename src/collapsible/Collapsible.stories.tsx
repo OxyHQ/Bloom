@@ -97,3 +97,37 @@ export const ComposedOptions: Story = {
   render: () => <Composed />,
   parameters: { bloomScroll: 'document' },
 };
+
+function LifecycleDemo() {
+  const [open, setOpen] = useState(false);
+  const [appear, setAppear] = useState(false);
+  const [tall, setTall] = useState(false);
+  return (
+    <View style={{ width: 360, gap: 12 }}>
+      <Button testID="lifecycle-toggle" onPress={() => setOpen((value) => !value)}>
+        Toggle
+      </Button>
+      <Button testID="lifecycle-grow" onPress={() => setTall((value) => !value)}>
+        Grow content
+      </Button>
+      <Button testID="lifecycle-appear" onPress={() => setAppear((value) => !value)}>
+        Mount appearing content
+      </Button>
+      <Collapsible
+        open={open}
+        keepMounted={false}
+        testID="lifecycle-body"
+        contentStyle={{ padding: 12 }}
+      >
+        <TextInput testID="lifecycle-input" defaultValue="Retained" />
+        <View style={{ height: tall ? 300 : 90 }} />
+      </Collapsible>
+      {appear ? (
+        <Collapsible open appear testID="appearing-body">
+          <View style={{ height: 120 }} />
+        </Collapsible>
+      ) : null}
+    </View>
+  );
+}
+export const Lifecycle: Story = { render: () => <LifecycleDemo />, args: { open: false } };

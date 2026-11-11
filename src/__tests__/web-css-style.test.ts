@@ -59,9 +59,9 @@ const ALLOWED: Record<string, { count: number; reason: string }> = {
       "The compositor's CSS custom property resolves display to flex/none before hydration. This VALUE-level cast bridges RN's narrower display union only when web CSS visibility is active; native and legacy contexts use their own boolean. SSR and native visibility suites assert both paths and retained content.",
   },
   'app-shell/EdgeDock.tsx': {
-    count: 2,
+    count: 1,
     reason:
-      "`cssLength` and `cssTransform`: the dock's slot extent and its content's offset are `calc()`s of a registered progress property (`--bloom-nav-dock`), which RN's `DimensionValue` and transform array cannot name. VALUE-level, web-only (native returns numbers from a shared value first), and the only two crossings in the file.",
+      "`cssTransform`: the dock's content offset is a CSS transform of the registered progress property. Its former cssLength crossing moved unchanged to styles/web-view-style.ts for reuse by BottomBar; this transfer does not add a cast exemption.",
   },
   'concentric/use-concentric-geometry.ts': {
     count: 1,
@@ -69,9 +69,9 @@ const ALLOWED: Record<string, { count: number; reason: string }> = {
       'cssRadius narrows a web-only CSS length expression to RN borderRadius at the geometry owner boundary. Native returns numeric corners before this branch; no style object or unsupported key is cast.',
   },
   'styles/web-view-style.ts': {
-    count: 7,
+    count: 8,
     reason:
-      "`WEB_POSITION_FIXED`, `WEB_POSITION_STICKY`, `WEB_SURFACE_STICKY_TOP`, `webSurfaceStickyTopPlus` (measured header clearance plus the inherited panel inset), `WEB_VIEWPORT_HEIGHT`, `webViewportHeightMinus` and `WEB_OVERFLOW_CLIP` — VALUE-level casts on keys RN does model (`position`, `top`, `height`, `overflow`), just with a narrower union. Their exact names and types are pinned by web-position-fixed.test.ts. They are the documented crossing points and cannot be annotations, because `'fixed'`/`'sticky'`/`100dvh`/`'clip'` have to be writable inside an ordinary style object.",
+      "`cssLength` (the existing EdgeDock adapter relocated here), `WEB_POSITION_FIXED`, `WEB_POSITION_STICKY`, `WEB_SURFACE_STICKY_TOP`, `webSurfaceStickyTopPlus` (measured header clearance plus the inherited panel inset), `WEB_VIEWPORT_HEIGHT`, `webViewportHeightMinus` and `WEB_OVERFLOW_CLIP` — VALUE-level casts on keys RN does model (`position`, `top`, `height`, `overflow`), just with a narrower union. Their exact names and types are pinned by web-position-fixed.test.ts. They are the documented crossing points and cannot be annotations, because `'fixed'`/`'sticky'`/`100dvh`/`'clip'` have to be writable inside an ordinary style object.",
   },
   'skeleton/Skeleton.tsx': {
     count: 1,

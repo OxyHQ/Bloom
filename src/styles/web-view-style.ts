@@ -128,3 +128,10 @@ export interface WebCssStyle extends ViewStyle {
 export function webSurfaceStickyTopPlus(px: number): ViewStyle['top'] {
   return `calc(var(--bloom-panel-sticky-top, 0px) + ${px}px)` as ViewStyle['top'];
 }
+
+/** A web-only CSS length, shared by dock geometry owners. Native uses numeric values.
+ * Relocated from EdgeDock: this is the same single value-level type crossing. */
+export function cssLength(css: string): ViewStyle['width'] {
+  'worklet';
+  return css as ViewStyle['width'];
+}

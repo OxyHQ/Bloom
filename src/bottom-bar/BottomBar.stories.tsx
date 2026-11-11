@@ -3,6 +3,7 @@ import { View, TextInput, Text } from 'react-native';
 import { useState, Profiler } from 'react';
 import Animated, { useSharedValue, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 import { Button } from '../button/index.web';
+import { CompactComposer } from '../chat-composer/CompactComposer.web';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { BottomBar } from './BottomBar.web';
 import { Fab } from '../fab/index.web';
@@ -169,3 +170,59 @@ function DockedEditorDemo({ deferred = false }: { deferred?: boolean }) {
 }
 export const DockedEditor: Story = { render: () => <DockedEditorDemo /> };
 export const DeferredDockedEditor: Story = { render: () => <DockedEditorDemo deferred /> };
+
+/** A natural-height action changes while its navigation footprint is released. */
+function FocusedComposerDemo() {
+  const [focused, setFocused] = useState(false);
+  const [text, setText] = useState('');
+  const progress = useSharedValue(0);
+  return (
+    <View style={{ height: 700, width: 390, maxWidth: '100%', justifyContent: 'space-between' }}>
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <Button testID="focus-dock-outside">Outside</Button>
+        <Button
+          testID="focus-dock-fold"
+          onPress={() => {
+            progress.value = 1;
+          }}
+        >
+          Fold
+        </Button>
+        <Button
+          testID="focus-dock-unfold"
+          onPress={() => {
+            progress.value = 0;
+          }}
+        >
+          Unfold
+        </Button>
+      </View>
+      <BottomBar
+        testID="focus-dock"
+        value="home"
+        onValueChange={() => {}}
+        actionBehavior="dock"
+        navigationVisibility={focused ? 'never' : 'always'}
+        minimizeProgress={progress}
+        horizontalInset={8}
+        items={[
+          { name: 'home', label: 'Home', icon: <Icons.RiHomeLine /> },
+          { name: 'search', label: 'Explore', icon: <Icons.RiSearchLine /> },
+        ]}
+        action={
+          <CompactComposer
+            value={text}
+            onChangeText={setText}
+            maxLength={250}
+            onSubmit={() => {}}
+            onExpand={() => {}}
+            onFocusChange={setFocused}
+            avatar={<View style={{ width: 32, height: 32 }} />}
+            testID="focus-composer"
+          />
+        }
+      />
+    </View>
+  );
+}
+export const FocusedComposer: Story = { render: () => <FocusedComposerDemo /> };
