@@ -6,6 +6,7 @@ import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import { IS_WEB } from '../styles/platform';
 import { useRingOffsetStyle } from '../styles/surface-levels';
+import { useTouchInput } from '../styles/pointer';
 import { DISABLED_OPACITY, space } from '../styles/tokens';
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -64,6 +65,7 @@ export function ChoiceList<Value extends string = string>({
   const rtl = useIsRtl();
   const direction = useDirectionProps();
   const ringOffset = useRingOffsetStyle();
+  const touchInput = useTouchInput();
   useInteractiveWebCss('bloom-choice-list-web-css', CSS);
   const listRef = useRef<ComponentRef<typeof View> | null>(null);
   useRovingTabIndex(() => listRef.current as unknown as Element | null, OPTION, isChosen, LIST);
@@ -146,6 +148,7 @@ export function ChoiceList<Value extends string = string>({
               { alignItems: 'center', opacity: optionDisabled ? DISABLED_OPACITY : 1 },
               optionLook as object,
               optionStyle,
+              touchInput ? { minWidth: 44, minHeight: 44 } : undefined,
             ]}
           >
             {renderContent(option, { selected, disabled: optionDisabled })}

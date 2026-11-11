@@ -956,6 +956,20 @@
     "verification": "Native renderer and real web DOM verify default md, xs/sm/md/lg diameters, nested scopes and explicit sm override. Fab owns no portal or submenu; physical hit testing, label fit and device proportions remain pending.",
     "parts": ["src/fab/Fab.tsx#Fab"]
   },
+  "color-swatch-art-size": {
+    "status": "independent-scale",
+    "reason": "ColorSwatchPicker's numeric size is the swatch artwork diameter, not a Bloom control rung. The selected ring adds a fixed 10-point frame, while ChoiceList owns the accessible option target; BloomScope does not reinterpret a caller's color-swatch dimensions.",
+    "evidence": [
+      "src/color-swatch-picker/ColorSwatchPicker.tsx",
+      "src/color-swatch-picker/types.ts",
+      "src/choice-list/ChoiceList.tsx",
+      "docs/color-swatch-picker.mdx",
+      "src/__tests__/ColorSwatchPicker.test.tsx",
+      "src/__tests__/ColorSwatchPickerPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and web DOM verify default 40-point swatch plus 50-point ringed option remains fixed under lg scope, explicit 24-point artwork plus 34-point visual option remains fixed under xs scope, and ChoiceList expands coarse-pointer option hit regions to at least 44px while retaining compact fine-pointer geometry. ChoiceList owns keyboard semantics; physical option hit testing and device proportions remain pending.",
+    "parts": ["src/color-swatch-picker/ColorSwatchPicker.tsx#ColorSwatchPicker"]
+  },
   "select-field-size-delegation": {
     "status": "delegated",
     "reason": "SelectField adds the Field label, description and error layout, then forwards its optional size to the platform-specific Select root. Select remains the owner of trigger size resolution.",
@@ -1200,7 +1214,6 @@
       "src/code/Code.tsx#Code",
       "src/code/CodeBlock.tsx#CodeBlock",
       "src/code/Pre.tsx#Pre",
-      "src/color-swatch-picker/ColorSwatchPicker.tsx#ColorSwatchPicker",
       "src/collapsible/Collapsible.tsx#Collapsible",
       "src/command/index.ts#Command",
       "src/composer-loader/ComposerLoader.tsx#ComposerLoader",
