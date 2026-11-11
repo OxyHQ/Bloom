@@ -1,5 +1,6 @@
 import { useLayoutEffect, useMemo, useState } from 'react';
 import { BREAKPOINTS } from '../styles/breakpoints';
+import { responsiveThresholds } from '../styles/responsive';
 import type { SidebarMetrics } from '../sidebar/metrics';
 import { resolveSidebarGeometry } from '../sidebar/geometry';
 import { SIDEBAR_RAIL_WIDTH } from '../sidebar/SidebarRail';
@@ -73,9 +74,7 @@ export function shellLayoutCss(scope: string, options: Options) {
     if (panel.hideBelow !== undefined) thresholds.add(breakpointPx(panel.hideBelow));
     if (panel.floating) thresholds.add(breakpointPx(panel.floating.below));
   }
-  if (typeof layout.axis === 'object')
-    for (const key of Object.keys(BREAKPOINTS) as (keyof typeof BREAKPOINTS)[])
-      if (layout.axis[key]) thresholds.add(BREAKPOINTS[key]);
+  for (const threshold of responsiveThresholds(layout.axis)) thresholds.add(threshold);
   const ranges = [...thresholds].sort((a, b) => a - b);
   let css = `${frame}{padding-block-start:var(--bloom-frame-top)!important;padding-block-end:var(--bloom-frame-bottom)!important;padding-inline-start:var(--bloom-frame-alignment, var(--bloom-frame-start))!important;padding-inline-end:var(--bloom-frame-end)!important;gap:var(--bloom-nav-gap)!important;transition:padding-inline-start 380ms cubic-bezier(.4,0,.2,1)}
 ${root} [data-bloom-reading-envelope="${scope}"]{padding-block-start:var(--bloom-body-gutter-top)!important;padding-block-end:var(--bloom-body-gutter-bottom)!important}

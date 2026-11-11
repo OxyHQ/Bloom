@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { BREAKPOINTS } from '../styles/breakpoints';
+import { responsiveThresholds } from '../styles/responsive';
 import { surfaceRevealCss } from '../surface/use-surface-presence';
 import { breakpointPx } from './constants';
 import {
@@ -70,9 +70,7 @@ export function panelLayoutCss(
     if (panel.floating) thresholds.add(breakpointPx(panel.floating.below));
   }
   if (layout.collapseBelow !== undefined) thresholds.add(breakpointPx(layout.collapseBelow));
-  if (typeof layout.axis === 'object')
-    for (const name of Object.keys(BREAKPOINTS) as (keyof typeof BREAKPOINTS)[])
-      if (layout.axis[name]) thresholds.add(BREAKPOINTS[name]);
+  for (const threshold of responsiveThresholds(layout.axis)) thresholds.add(threshold);
   // Both envelope constraints interpolate as lengths. Switching max-width from
   // `none` to the reading width clamps an exiting workspace immediately, making
   // its surviving track shrink before it grows while outgoing tracks fade.

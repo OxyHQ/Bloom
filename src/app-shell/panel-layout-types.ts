@@ -1,10 +1,8 @@
 import type { ScrollRestorationPersistence } from '../scroll/types';
 import type { ReactNode, Ref } from 'react';
-import type { Breakpoint } from '../styles/breakpoints';
+import type { Responsive } from '../styles/responsive';
 export type PanelAxis = 'horizontal' | 'vertical';
-export type ResponsivePanelAxis =
-  | PanelAxis
-  | ({ base?: PanelAxis } & Partial<Record<Breakpoint, PanelAxis>>);
+export type ResponsivePanelAxis = Responsive<PanelAxis>;
 import type { AppShellBreakpoint, AppShellPanelProps } from './types';
 import type { MotionSpec } from '../motion/spec';
 import type { ResizeHandleVariant } from '../layout/types';

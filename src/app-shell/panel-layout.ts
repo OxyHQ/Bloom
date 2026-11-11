@@ -1,15 +1,10 @@
 import type { WindowChrome } from '../window/context';
 import { breakpointPx } from './constants';
-import { BREAKPOINTS } from '../styles/breakpoints';
+import { resolveResponsive, responsiveThresholds } from '../styles/responsive';
 import type { AppShellPanelDefinition, AppShellPanelLayout, PanelAxis } from './panel-layout-types';
 
 export function resolvePanelAxis(layout: AppShellPanelLayout, width: number): PanelAxis {
-  const axis = layout.axis;
-  if (typeof axis === 'string') return axis;
-  let result = axis?.base ?? 'horizontal';
-  for (const key of Object.keys(BREAKPOINTS) as (keyof typeof BREAKPOINTS)[])
-    if (width >= BREAKPOINTS[key] && axis?.[key]) result = axis[key]!;
-  return result;
+  return resolveResponsive(layout.axis, width) ?? 'horizontal';
 }
 export function panelForAxis(
   panel: AppShellPanelDefinition,
@@ -199,9 +194,7 @@ export function panelLayoutWidthThresholds(layout: AppShellPanelLayout): number[
     if (panel.floating) thresholds.add(breakpointPx(panel.floating.below));
   }
   if (layout.collapseBelow !== undefined) thresholds.add(breakpointPx(layout.collapseBelow));
-  if (typeof layout.axis === 'object')
-    for (const name of Object.keys(BREAKPOINTS) as (keyof typeof BREAKPOINTS)[])
-      if (layout.axis[name]) thresholds.add(BREAKPOINTS[name]);
+  for (const threshold of responsiveThresholds(layout.axis)) thresholds.add(threshold);
   return [...thresholds].sort((a, b) => a - b);
 }
 
