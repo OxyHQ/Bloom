@@ -12,7 +12,7 @@ passed before the scene mounted.
 the emulator, OS, display, GPU, package dependencies and build identity. The
 selected direct screenshots cover light/dark material, solid/striped/photo and
 moving backgrounds, composer, menu/dialog/sheet open and dismissed states, and
-reduced transparency. `screenshot-hashes.json` verifies these PNGs.
+reduced transparency. `screenshot-hashes.sha256` verifies these PNGs.
 
 The capture runner now scrolls overlay triggers clear of the floating TabBar,
 refreshes accessibility bounds after each dismissal, and returns to the top
