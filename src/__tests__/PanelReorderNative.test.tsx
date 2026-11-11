@@ -20,6 +20,7 @@ it('uses one Pan gesture on native with shared-value pointer frames and JS only 
     const view = render(
       <BloomThemeProvider>
         <PanelReorderHandle
+          scope={null}
           id="a"
           label="Inbox"
           onStart={onStart}

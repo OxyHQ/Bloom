@@ -230,7 +230,7 @@ export function usePanelReorder({
         .find(
           (node) =>
             node.dataset.bloomPanelReorder === pendingFocus.current &&
-            node.closest('[data-bloom-panel-group]') === root,
+            node.dataset.bloomPanelReorderOwner === scope,
         )
         ?.focus({ preventScroll: true });
       pendingFocus.current = null;
@@ -426,8 +426,7 @@ export function usePanelReorder({
           root.querySelectorAll<HTMLElement>('[data-bloom-panel-reorder]'),
         ).find(
           (node) =>
-            node.dataset.bloomPanelReorder === id &&
-            node.closest('[data-bloom-panel-group]') === root,
+            node.dataset.bloomPanelReorder === id && node.dataset.bloomPanelReorderOwner === scope,
         );
         handle?.focus({ preventScroll: true });
         let owner: Window | HTMLElement = window;
@@ -587,7 +586,7 @@ export function usePanelReorder({
       if (
         !handle ||
         !root?.contains(handle) ||
-        handle.closest('[data-bloom-panel-group]') !== root ||
+        handle.dataset.bloomPanelReorderOwner !== scope ||
         !id ||
         !state.movable.includes(id)
       )
@@ -617,7 +616,7 @@ export function usePanelReorder({
       window.removeEventListener('blur', reset);
       window.removeEventListener('resize', reset);
     };
-  }, [rootElement, move, reset]);
+  }, [rootElement, move, reset, scope]);
   const measure = useCallback(
     async (id: string): Promise<PanelReorderRect | null> => {
       if (Platform.OS !== 'web') return hosts.current.get(id)?.measure() ?? null;

@@ -1,5 +1,5 @@
 /** @jest-environment jsdom */
-import { act, useRef } from 'react';
+import { act, useRef, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Platform } from 'react-native';
 import { usePanelReorder } from '../app-shell/use-panel-reorder';
@@ -15,13 +15,25 @@ const panels = [
   { id: 'c', reorderable: true },
 ];
 let controller: ReturnType<typeof usePanelReorder>;
-function Harness({ layout }: { layout: AppShellPanelLayout }) {
+function Harness({
+  layout,
+  scope = 'test',
+  vertical = false,
+  nested = false,
+  children,
+}: {
+  layout: AppShellPanelLayout;
+  scope?: string;
+  vertical?: boolean;
+  nested?: boolean;
+  children?: ReactNode;
+}) {
   const rootRef = useRef<HTMLDivElement>(null);
   const control = usePanelReorder({
     layout,
     rootRef,
-    scope: 'test',
-    vertical: false,
+    scope,
+    vertical,
     documentHorizontal: true,
     tracks: layout.panels.map((panel) => ({
       id: panel.id,
@@ -30,22 +42,51 @@ function Harness({ layout }: { layout: AppShellPanelLayout }) {
       visible: panel.visible !== false,
     })),
   });
-  controller = control;
+  if (scope === 'test') controller = control;
   return (
     <div
       ref={rootRef}
-      data-bloom-panel-group="test"
+      data-bloom-panel-group={scope}
       data-bloom-panel-ordering={control.ordering ? 'true' : undefined}
     >
+      {children}
       {layout.panels.map((panel, index) => (
         <div
           key={panel.id}
-          data-bloom-panel-owner="test"
+          data-bloom-panel-owner={scope}
           data-bloom-panel-index={index}
           data-panel-id={panel.id}
         >
-          {control.canReorder(panel.id) ? (
-            <button data-bloom-panel-reorder={panel.id}>{panel.id}</button>
+          {nested ? (
+            <Harness
+              scope={`${scope}-${panel.id}`}
+              vertical
+              layout={{
+                panels: [
+                  { id: 'a', reorderable: true },
+                  { id: 'b', reorderable: true },
+                ],
+                onPanelOrderChange: nestedOrder,
+              }}
+            >
+              {control.canReorder(panel.id) ? (
+                <button
+                  type="button"
+                  data-bloom-panel-reorder={panel.id}
+                  data-bloom-panel-reorder-owner={scope}
+                >
+                  {panel.id}
+                </button>
+              ) : null}
+            </Harness>
+          ) : control.canReorder(panel.id) ? (
+            <button
+              type="button"
+              data-bloom-panel-reorder={panel.id}
+              data-bloom-panel-reorder-owner={scope}
+            >
+              {panel.id}
+            </button>
           ) : null}
         </div>
       ))}
@@ -53,11 +94,13 @@ function Harness({ layout }: { layout: AppShellPanelLayout }) {
     </div>
   );
 }
+const nestedOrder = jest.fn();
 let host: HTMLDivElement;
 let root: Root;
 let previousPlatform: typeof Platform.OS;
 let frames: Map<number, FrameRequestCallback>;
 beforeEach(() => {
+  nestedOrder.mockClear();
   previousPlatform = Platform.OS;
   Platform.OS = 'web';
   host = document.createElement('div');
@@ -78,10 +121,11 @@ afterEach(() => {
   act(() => root.unmount());
   host.remove();
   Platform.OS = previousPlatform;
+  document.documentElement.dir = '';
   jest.restoreAllMocks();
 });
-function render(layout: AppShellPanelLayout) {
-  act(() => root.render(<Harness layout={layout} />));
+function render(layout: AppShellPanelLayout, nested = false) {
+  act(() => root.render(<Harness layout={layout} nested={nested} />));
   let position = 0;
   for (const node of host.querySelectorAll<HTMLElement>('[data-panel-id]')) {
     const id = node.dataset.panelId;
@@ -101,7 +145,9 @@ function render(layout: AppShellPanelLayout) {
   }
 }
 function handle(id: string) {
-  const node = host.querySelector<HTMLElement>(`[data-bloom-panel-reorder="${id}"]`);
+  const node = host.querySelector<HTMLElement>(
+    `[data-bloom-panel-reorder="${id}"][data-bloom-panel-reorder-owner="test"]`,
+  );
   if (!node) throw new Error(`Missing handle ${id}`);
   return node;
 }
@@ -274,3 +320,43 @@ it('cleans the semantic move transaction when a controlled host repeatedly rejec
   key('a', 'ArrowRight');
   expect(host.querySelector('[data-bloom-panel-ordering]')).toBeNull();
 });
+
+it.each(['ltr', 'rtl'])(
+  'keeps a forwarded handle owned by its horizontal group in %s',
+  async (direction) => {
+    document.documentElement.dir = direction;
+    const onPanelOrderChange = jest.fn(() => {
+      // A renderer can lose focus while committing a reordered host.
+      (document.activeElement as HTMLElement | null)?.blur();
+    });
+    render({ panels, onPanelOrderChange }, true);
+    const original = handle('a');
+    original.focus();
+    key('a', 'ArrowDown');
+    expect(onPanelOrderChange).not.toHaveBeenCalled();
+    expect(nestedOrder).not.toHaveBeenCalled();
+    key('a', direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight');
+    expect(onPanelOrderChange).toHaveBeenCalledTimes(1);
+    expect(onPanelOrderChange).toHaveBeenLastCalledWith(['main', 'b', 'hidden', 'a', 'c']);
+    const nextPanels = ['main', 'b', 'hidden', 'a', 'c'].flatMap((id) =>
+      panels.filter((panel) => panel.id === id),
+    );
+    render({ panels: nextPanels, onPanelOrderChange }, true);
+    expect(handle('a')).toBe(original);
+    expect(document.activeElement).toBe(original);
+    expect(nestedOrder).not.toHaveBeenCalled();
+    const inner = host.querySelector<HTMLElement>(
+      '[data-bloom-panel-reorder-owner="test-a"][data-bloom-panel-reorder="a"]',
+    );
+    act(() =>
+      inner?.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
+      ),
+    );
+    expect(nestedOrder).toHaveBeenCalledTimes(1);
+    expect(nestedOrder).toHaveBeenLastCalledWith(['b', 'a']);
+    expect(onPanelOrderChange).toHaveBeenCalledTimes(1);
+    key('a', 'Home');
+    expect(onPanelOrderChange).toHaveBeenLastCalledWith(['main', 'a', 'hidden', 'b', 'c']);
+  },
+);

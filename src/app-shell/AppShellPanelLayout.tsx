@@ -1587,6 +1587,7 @@ export function createPanelLayoutView(
             reorderHandle={
               reorder.canReorder(panel.id) ? (
                 <PanelReorderHandle
+                  scope={cssScope}
                   id={panel.id}
                   label={panel.reorderLabel ?? panel.id}
                   onMove={(delta) => reorder.move(panel.id, delta)}

@@ -291,6 +291,8 @@ arrows and Home/End, plus native accessibility move actions. The compositor
 scrolls its actual horizontal owner at an edge, preserves panel content identity
 and reading offsets, and commits after the drag lands. Reordering does not replay
 a panel entrance; DOM order follows the accepted visual order for accessibility.
+A group handle rendered in a nested panel header keeps the outer group’s axis,
+logical direction and focus ownership; nested groups may reuse local panel IDs.
 
 Persist only accepted order. Capture the current account/workspace generation in
 the callback and reject stale callbacks after switching accounts; a gesture uses
