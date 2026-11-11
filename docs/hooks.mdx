@@ -371,3 +371,43 @@ Bloom's families that open the web call it: `LinkPreviewCard` and
 <Button onPress={() => openExternal('https://oxy.so/terms')}>Terms</Button>
 ```
 
+## `useDebouncedCallback`
+
+`useDebouncedCallback(callback, delay, { flushOnUnmount? })` debounces an
+ACTION — an autosave, a search request — where `useDebouncedValue` debounces a
+value a render reads. The latest `run(...args)` within `delay` ms is the only one
+that fires, with the latest `callback`; `flush()` runs what is pending now (on
+blur or submit) and `cancel()` drops it. `run`, `flush` and `cancel` keep one
+identity. An unmount drops the pending call, or runs it with
+`flushOnUnmount: true` so an editor closing inside the delay does not lose its
+last edit.
+
+```tsx
+const save = useDebouncedCallback((text: string) => api.saveDraft(id, text), 800, {
+  flushOnUnmount: true,
+});
+<TextInput onChangeText={save.run} onBlur={save.flush} />
+```
+
+## `useShare`, `shareUrl`, `shareFile`
+
+`shareUrl({ url, title?, message?, copyText? })` shares a link through the best
+transport the platform has — the Web Share API in a browser, the system sheet on
+native, the clipboard where there is neither or sharing throws — and resolves
+`'shared' | 'copied' | 'dismissed' | 'failed'` (`failed`: neither sharing nor
+copying was possible). It never throws; the caller chooses the toast. Android's
+sheet takes only a message, so the link rides in it after any `message`.
+
+`shareFile({ uri, filename, mimeType? })` hands a file on and resolves
+`'shared' | 'unavailable' | 'failed'`: a download in a browser, the system file
+sheet on native through the optional `expo-sharing` peer
+(`npx expo install expo-sharing`), `unavailable` without it. A cancelled file
+sheet reports `shared`; neither platform tells the difference.
+
+`useShare()` returns both with the last outcome kept as state (`outcome`,
+`copied`, `reset`) for a button that turns into "Link copied".
+
+```tsx
+const { shareUrl, copied } = useShare();
+<Button onPress={() => shareUrl({ title, url })}>{copied ? t('linkCopied') : t('share')}</Button>
+```

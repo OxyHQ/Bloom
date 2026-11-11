@@ -313,6 +313,14 @@ export const Linking = {
   getInitialURL: () => Promise.resolve(null),
 };
 
+export const Share = {
+  sharedAction: 'sharedAction' as const,
+  dismissedAction: 'dismissedAction' as const,
+  share: jest.fn((_content: Record<string, unknown>) =>
+    Promise.resolve({ action: 'sharedAction' as const }),
+  ),
+};
+
 export const Keyboard = {
   addListener: jest.fn((_name: string, _listener: () => void) => ({ remove: jest.fn() })),
   dismiss: jest.fn(),

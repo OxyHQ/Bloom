@@ -1786,10 +1786,23 @@ const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
   density: { md: 'সাধারণ', sm: 'সংক্ষিপ্ত' },
 };
 
+const NOTIFICATIONS_MESSAGES: Translations['NOTIFICATIONS_MESSAGES'] = {
+  permissionTitle: 'বিজ্ঞপ্তি চালু করুন',
+  permissionBody: 'অ্যাপ বন্ধ থাকলেও নতুন কার্যকলাপের বিজ্ঞপ্তি পান।',
+  enable: 'বিজ্ঞপ্তি চালু করুন',
+  later: 'এখন নয়',
+  pushTitle: 'পুশ বিজ্ঞপ্তি',
+  pushDescription: 'এই ডিভাইসে সতর্কতা পান।',
+  pushBlocked: 'সিস্টেম সেটিংসে বিজ্ঞপ্তি বন্ধ আছে।',
+  loadError: 'বিজ্ঞপ্তি লোড করা যায়নি',
+};
+
 const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = {
   title: 'কিছু একটা ভুল হয়েছে',
   message: 'একটি অপ্রত্যাশিত ত্রুটি ঘটেছে',
   retry: 'আবার চেষ্টা করুন',
+  copyDetails: 'ত্রুটির বিবরণ কপি করুন',
+  exhausted: 'সমস্যাটি থেকেই যাচ্ছে। অ্যাপটি বন্ধ করে আবার খুলুন।',
 };
 
 const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
@@ -3043,6 +3056,7 @@ const translations: Translations = {
   TENANCY_MESSAGES,
   DATA_TABLE_MESSAGES,
   ERROR_BOUNDARY_MESSAGES,
+  NOTIFICATIONS_MESSAGES,
   AI_PROFILE_CARD_MESSAGES,
   BREADCRUMB_MESSAGES,
   MESSAGE_MEDIA_MESSAGES,

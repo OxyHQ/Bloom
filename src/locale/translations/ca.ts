@@ -1852,10 +1852,23 @@ const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
   density: { md: 'Normal', sm: 'Compacta' },
 };
 
+const NOTIFICATIONS_MESSAGES: Translations['NOTIFICATIONS_MESSAGES'] = {
+  permissionTitle: 'Activa les notificacions',
+  permissionBody: 'Rep avisos d’activitat nova, fins i tot amb l’aplicació tancada.',
+  enable: 'Activa les notificacions',
+  later: 'Ara no',
+  pushTitle: 'Notificacions push',
+  pushDescription: 'Rep avisos en aquest dispositiu.',
+  pushBlocked: 'Les notificacions estan desactivades a la configuració del sistema.',
+  loadError: 'No s’han pogut carregar les notificacions',
+};
+
 const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = {
   title: 'Alguna cosa ha anat malament',
   message: "S'ha produït un error inesperat",
   retry: 'Torna-ho a provar',
+  copyDetails: 'Copia els detalls de l’error',
+  exhausted: 'Això continua fallant. Tanca i torna a obrir l’aplicació.',
 };
 
 const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
@@ -3139,6 +3152,7 @@ const translations: Translations = {
   TENANCY_MESSAGES,
   DATA_TABLE_MESSAGES,
   ERROR_BOUNDARY_MESSAGES,
+  NOTIFICATIONS_MESSAGES,
   AI_PROFILE_CARD_MESSAGES,
   BREADCRUMB_MESSAGES,
   MESSAGE_MEDIA_MESSAGES,

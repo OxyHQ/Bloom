@@ -1805,10 +1805,23 @@ const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
   density: { md: '標準', sm: 'コンパクト' },
 };
 
+const NOTIFICATIONS_MESSAGES: Translations['NOTIFICATIONS_MESSAGES'] = {
+  permissionTitle: '通知をオンにする',
+  permissionBody: 'アプリを閉じていても、新しいアクティビティをお知らせします。',
+  enable: '通知をオンにする',
+  later: '今はしない',
+  pushTitle: 'プッシュ通知',
+  pushDescription: 'このデバイスで通知を受け取ります。',
+  pushBlocked: '通知はシステム設定でオフになっています。',
+  loadError: '通知を読み込めませんでした',
+};
+
 const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = {
   title: '問題が発生しました',
   message: '予期しないエラーが発生しました',
   retry: 'もう一度試す',
+  copyDetails: 'エラーの詳細をコピー',
+  exhausted: '問題が解決しません。アプリを閉じてもう一度開いてください。',
 };
 
 const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
@@ -3076,6 +3089,7 @@ const translations: Translations = {
   TENANCY_MESSAGES,
   DATA_TABLE_MESSAGES,
   ERROR_BOUNDARY_MESSAGES,
+  NOTIFICATIONS_MESSAGES,
   AI_PROFILE_CARD_MESSAGES,
   BREADCRUMB_MESSAGES,
   MESSAGE_MEDIA_MESSAGES,

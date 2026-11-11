@@ -1753,10 +1753,23 @@ const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
   density: { md: '标准', sm: '紧凑' },
 };
 
+const NOTIFICATIONS_MESSAGES: Translations['NOTIFICATIONS_MESSAGES'] = {
+  permissionTitle: '开启通知',
+  permissionBody: '即使应用已关闭，也能收到新动态的提醒。',
+  enable: '开启通知',
+  later: '暂不',
+  pushTitle: '推送通知',
+  pushDescription: '在此设备上接收提醒。',
+  pushBlocked: '通知已在系统设置中关闭。',
+  loadError: '无法加载通知',
+};
+
 const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = {
   title: '出了点问题',
   message: '发生了意外错误',
   retry: '重试',
+  copyDetails: '复制错误详情',
+  exhausted: '问题仍然存在。请关闭并重新打开应用。',
 };
 
 const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
@@ -3002,6 +3015,7 @@ const translations: Translations = {
   TENANCY_MESSAGES,
   DATA_TABLE_MESSAGES,
   ERROR_BOUNDARY_MESSAGES,
+  NOTIFICATIONS_MESSAGES,
   AI_PROFILE_CARD_MESSAGES,
   BREADCRUMB_MESSAGES,
   MESSAGE_MEDIA_MESSAGES,

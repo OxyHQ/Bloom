@@ -30,6 +30,43 @@ import { ErrorBoundary } from '@oxy.so/bloom/error-boundary';
 | `fallback`   | replaces it entirely — a node, or a function                 |
 | `onError`    | reporting; called with the error and the React error info    |
 
+## `AppErrorFallback`: the app-root recovery screen
+
+For the boundary at the app root, `AppErrorFallback` is the whole screen:
+title, message, "Try again", "Copy error details", the stacks in development and
+slots for your own actions. Pass it the render-prop context.
+
+```tsx
+<ErrorBoundary
+  onError={reportToSentry}
+  fallback={(ctx) => (
+    <AppErrorFallback
+      {...ctx}
+      maxRetries={3}
+      deviceInfo={() => `${appVersion} ${Platform.OS} ${locale}`}
+      actions={<Button onPress={sendFeedback}>Send feedback</Button>}
+      footer={<SupportLine />}
+    />
+  )}
+/>
+```
+
+| prop | does |
+| --- | --- |
+| `error`, `errorInfo`, `retry`, `retryCount` | from the boundary's context |
+| `maxRetries` | once `retryCount` reaches it the retry button is replaced by `exhaustedMessage` ("This keeps failing. Close and reopen the app.") |
+| `title` / `message` / `retryLabel` / `exhaustedMessage` | wording; localised when unset |
+| `showDetails` | the error name, message and stacks, scrollable. Default: development only |
+| `copyDetails` | the copy button (default on); copies name, message, stack, component stack and `deviceInfo` |
+| `deviceInfo` | a string or function appended to the copied report |
+| `onCopied` | called with the copied text |
+| `actions` / `footer` | slots: extra buttons beside retry, content under everything |
+
+Like the default fallback it reads no theme, router or navigation context (the
+tree above has already crashed): literal colours that follow the device's
+light/dark setting, built-in primitives, and the locale for its words.
+`buildErrorReport(error, errorInfo?, deviceInfo?)` is the report text on its own.
+
 ## Place it where a failure should cost a section, not the screen
 
 Around a feed, a widget, a tab's content, a third-party embed. One boundary at

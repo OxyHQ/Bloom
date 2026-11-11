@@ -182,6 +182,10 @@ const SUBPATHS = /** @type {const} */ ([
   ['./toast', 'toast/index.ts'],
   ['./styles', 'styles/index.ts'],
   ['./hooks', 'hooks/index.ts'],
+  // Key-value storage as typed JSON under a namespace (`createStorage`).
+  ['./storage', 'storage/index.ts'],
+  // The notifications list, its permission prompt and gate.
+  ['./notifications', 'notifications/index.ts'],
   ['./icons', 'icons/index.ts'],
   // Custom glyphs share painting props without linking every Remix glyph.
   ['./icons/shared', 'icons/shared.tsx'],

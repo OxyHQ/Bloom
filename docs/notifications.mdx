@@ -1,0 +1,87 @@
+---
+title: Notifications
+description: The notifications list of an app and the prompt that asks for push permission.
+order: 82
+---
+
+# Notifications
+
+`@oxy.so/bloom/notifications` holds the two pieces every app re-implemented: the
+screen that lists notifications and the sheet that asks to send them. Bloom owns
+the layout and the words; the app owns the data, the storage and the OS permission,
+passed in through props and a two-method adapter, so it works on an Oxy services
+hook, a React Query list or anything else.
+
+```tsx
+import { NotificationsScreen, NotificationPermissionGate } from '@oxy.so/bloom/notifications';
+```
+
+## `NotificationsScreen`
+
+The body of the notifications page: an optional heading, the push row, "Mark all
+read", and the rows with their loading, error, empty and next-page states. Place
+it inside the app's `Screen`; it scrolls with it, as `VirtualList` does.
+
+```tsx
+<NotificationsScreen
+  notifications={data?.map(toItem)}
+  loading={isLoading}
+  error={isError}
+  onRetry={refetch}
+  onEndReached={hasNextPage ? fetchNextPage : undefined}
+  loadingMore={isFetchingNextPage}
+  onNotificationPress={(id) => {
+    markRead(id);
+    open(id);
+  }}
+  onMarkAllRead={markAllRead}
+  push={{ enabled: pushOn, onChange: setPushEnabled, blocked: permission === 'denied' }}
+/>
+```
+
+| prop | does |
+| --- | --- |
+| `notifications` | `{ id, title, description?, timestamp?, unread?, status?, icon?, avatar? }[]`; `undefined` before the first page. `timestamp` is pre-formatted (`formatRelativeTime`) |
+| `loading` / `error` / `onRetry` | the first-load spinner; the error state with a retry button when there is nothing to show |
+| `refreshing` / `onRefresh` | pull-to-refresh (native) |
+| `onEndReached` / `loadingMore` | next page |
+| `onNotificationPress(id)` | a row was pressed — mark it read and navigate here |
+| `onMarkAllRead` | "Mark all read", drawn only while something is unread |
+| `push` | the push toggle row; `blocked` disables it and says the system settings turned it off; omit it to draw no row |
+| `title`, `header`, `emptyTitle`, `emptyDescription` | the heading, a node above the push row, the empty-state words |
+
+Read state is the caller's: a row is unread while `unread` is true. The strings
+(heading words, "Mark all read", empty state, "Push notifications", the load error,
+"Retry") come from Bloom's catalogs in every Bloom language.
+
+## `NotificationPermissionGate`
+
+Mount it once in the root layout. After `delayMs` (default 3000) it asks, unless
+the permission is granted (or `denied`, which most platforms will not re-prompt;
+`askWhenDenied` overrides) or the person already said "Not now". It presents a
+sheet on the surface stack: a bell, why, "Enable notifications", "Not now".
+
+```tsx
+const permission: NotificationPermissionAdapter = {
+  getStatus: async () => (await Notifications.getPermissionsAsync()).status,
+  request: async () => (await Notifications.requestPermissionsAsync()).status,
+};
+
+<NotificationPermissionGate
+  permission={permission}
+  storage={AsyncStorage}
+  enabled={isSignedIn}
+  onGranted={registerPushToken}
+/>
+```
+
+| prop | does |
+| --- | --- |
+| `permission` | `{ getStatus(), request() }` resolving `'granted' \| 'denied' \| 'undetermined'` (expo-notifications' `status` already is one) |
+| `storage` | remembers "Not now" under `storageKey`. `localStorage` on web, memory elsewhere: a native app passes its `AsyncStorage` or it asks at every launch |
+| `delayMs`, `enabled`, `repromptAfterMs`, `askWhenDenied` | when to ask; `repromptAfterMs` defaults to never |
+| `onGranted` / `onDenied` / `onDismissed` | the outcomes; register the push token in `onGranted` |
+| `title`, `body`, `enableLabel`, `laterLabel`, `icon` | override the sheet's words and glyph |
+
+`NotificationPermissionSheet` is the sheet's content on its own, for an app that
+presents it from a settings row.

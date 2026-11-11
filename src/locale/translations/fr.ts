@@ -1885,10 +1885,23 @@ const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
   density: { md: 'Normale', sm: 'Compacte' },
 };
 
+const NOTIFICATIONS_MESSAGES: Translations['NOTIFICATIONS_MESSAGES'] = {
+  permissionTitle: 'Activer les notifications',
+  permissionBody: 'Soyez averti des nouvelles activités, même lorsque l’application est fermée.',
+  enable: 'Activer les notifications',
+  later: 'Pas maintenant',
+  pushTitle: 'Notifications push',
+  pushDescription: 'Recevez des alertes sur cet appareil.',
+  pushBlocked: 'Les notifications sont désactivées dans les réglages du système.',
+  loadError: 'Impossible de charger les notifications',
+};
+
 const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = {
   title: 'Un problème est survenu',
   message: 'Une erreur inattendue s’est produite',
   retry: 'Réessayer',
+  copyDetails: 'Copier les détails de l’erreur',
+  exhausted: 'Le problème persiste. Fermez puis rouvrez l’application.',
 };
 
 const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
@@ -3181,6 +3194,7 @@ const translations: Translations = {
   TENANCY_MESSAGES,
   DATA_TABLE_MESSAGES,
   ERROR_BOUNDARY_MESSAGES,
+  NOTIFICATIONS_MESSAGES,
   AI_PROFILE_CARD_MESSAGES,
   BREADCRUMB_MESSAGES,
   MESSAGE_MEDIA_MESSAGES,

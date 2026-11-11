@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "package": {
     "name": "@oxy.so/bloom",
-    "version": "19.1.0",
+    "version": "19.2.0",
     "peers": {
       "@lottiefiles/dotlottie-react": ">=0.13.0",
       "@react-native-community/netinfo": ">=11.1.0",
@@ -13,6 +13,7 @@
       "expo-font": "*",
       "expo-haptics": "*",
       "expo-image": "*",
+      "expo-sharing": "*",
       "expo-router": ">=3.0.0",
       "expo-video": "*",
       "expo-web-browser": "*",
@@ -49,6 +50,9 @@
         "optional": true
       },
       "expo-haptics": {
+        "optional": true
+      },
+      "expo-sharing": {
         "optional": true
       },
       "expo-router": {

@@ -1802,10 +1802,23 @@ const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
   density: { md: 'सामान्य', sm: 'संक्षिप्त' },
 };
 
+const NOTIFICATIONS_MESSAGES: Translations['NOTIFICATIONS_MESSAGES'] = {
+  permissionTitle: 'सूचनाएँ चालू करें',
+  permissionBody: 'ऐप बंद होने पर भी नई गतिविधि की सूचना पाएँ।',
+  enable: 'सूचनाएँ चालू करें',
+  later: 'अभी नहीं',
+  pushTitle: 'पुश सूचनाएँ',
+  pushDescription: 'इस डिवाइस पर अलर्ट पाएँ।',
+  pushBlocked: 'सिस्टम सेटिंग में सूचनाएँ बंद हैं।',
+  loadError: 'सूचनाएँ लोड नहीं हो सकीं',
+};
+
 const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = {
   title: 'कुछ गलत हो गया',
   message: 'एक अनपेक्षित त्रुटि हुई',
   retry: 'फिर से कोशिश करें',
+  copyDetails: 'त्रुटि विवरण कॉपी करें',
+  exhausted: 'यह समस्या बनी हुई है। ऐप बंद करके फिर से खोलें।',
 };
 
 const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
@@ -3062,6 +3075,7 @@ const translations: Translations = {
   TENANCY_MESSAGES,
   DATA_TABLE_MESSAGES,
   ERROR_BOUNDARY_MESSAGES,
+  NOTIFICATIONS_MESSAGES,
   AI_PROFILE_CARD_MESSAGES,
   BREADCRUMB_MESSAGES,
   MESSAGE_MEDIA_MESSAGES,

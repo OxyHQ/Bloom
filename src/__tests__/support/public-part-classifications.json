@@ -1054,6 +1054,7 @@
       "src/engagement-bar/EngagementAction.tsx#EngagementAction",
       "src/engagement-bar/EngagementBar.tsx#EngagementBar",
       "src/engagement-bar/EngagementGroup.tsx#EngagementGroup",
+      "src/error-boundary/AppErrorFallback.tsx#AppErrorFallback",
       "src/error-boundary/ErrorBoundary.tsx#ErrorBoundary",
       "src/error-boundary/PanelErrorBoundary.tsx#PanelErrorBoundary",
       "src/eviction/EvictionReportCard.tsx#EvictionReportCard",
@@ -1617,6 +1618,9 @@
     "parts": [
       "src/chat-people/ContactRow.tsx#ContactRow",
       "src/creator-studio/ReleaseCard.tsx#ReleaseStatusBadge",
+      "src/notifications/NotificationPermissionGate.tsx#NotificationPermissionGate",
+      "src/notifications/NotificationPermissionSheet.tsx#NotificationPermissionSheet",
+      "src/notifications/NotificationsScreen.tsx#NotificationsScreen",
       "src/offering-badge/OfferingBadge.tsx#OfferingBadge",
       "src/tooltip/Tooltip.tsx#TooltipContent",
       "src/tooltip/Tooltip.tsx#TooltipTextBubble",

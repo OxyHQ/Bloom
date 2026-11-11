@@ -11,6 +11,7 @@ const exceptions = new Set([
   'carousel/Carousel.tsx', // discrete pages, navigated by arrows/dots
   'listing-card/ListingCard.tsx', // discrete image pager
   'zoomable-media-gallery/ZoomableMediaGalleryBase.tsx', // zoom-locked image pager
+  'error-boundary/AppErrorFallback.tsx', // the last-resort fallback reads no theme or scope context, which ScrollArea does
 ]);
 function files(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {

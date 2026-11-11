@@ -2101,10 +2101,23 @@ const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
   density: { md: 'عادية', sm: 'مضغوطة' },
 };
 
+const NOTIFICATIONS_MESSAGES: Translations['NOTIFICATIONS_MESSAGES'] = {
+  permissionTitle: 'فعّل الإشعارات',
+  permissionBody: 'تلقَّ تنبيهات بالنشاط الجديد حتى عندما يكون التطبيق مغلقًا.',
+  enable: 'تفعيل الإشعارات',
+  later: 'ليس الآن',
+  pushTitle: 'الإشعارات الفورية',
+  pushDescription: 'تلقَّ التنبيهات على هذا الجهاز.',
+  pushBlocked: 'الإشعارات متوقفة في إعدادات النظام.',
+  loadError: 'تعذّر تحميل الإشعارات',
+};
+
 const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = {
   title: 'حدث خطأ ما',
   message: 'حدث خطأ غير متوقع',
   retry: 'إعادة المحاولة',
+  copyDetails: 'نسخ تفاصيل الخطأ',
+  exhausted: 'لا تزال المشكلة قائمة. أغلق التطبيق ثم افتحه من جديد.',
 };
 
 const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
@@ -3522,6 +3535,7 @@ const translations: Translations = {
   TENANCY_MESSAGES,
   DATA_TABLE_MESSAGES,
   ERROR_BOUNDARY_MESSAGES,
+  NOTIFICATIONS_MESSAGES,
   AI_PROFILE_CARD_MESSAGES,
   BREADCRUMB_MESSAGES,
   MESSAGE_MEDIA_MESSAGES,

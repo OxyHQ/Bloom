@@ -1812,10 +1812,23 @@ const DATA_TABLE_MESSAGES: Translations['DATA_TABLE_MESSAGES'] = {
   density: { md: 'Normal', sm: 'Sıkı' },
 };
 
+const NOTIFICATIONS_MESSAGES: Translations['NOTIFICATIONS_MESSAGES'] = {
+  permissionTitle: 'Bildirimleri aç',
+  permissionBody: 'Uygulama kapalıyken bile yeni etkinliklerden haberdar olun.',
+  enable: 'Bildirimleri aç',
+  later: 'Şimdi değil',
+  pushTitle: 'Anlık bildirimler',
+  pushDescription: 'Bu cihazda uyarı alın.',
+  pushBlocked: 'Bildirimler sistem ayarlarında kapalı.',
+  loadError: 'Bildirimler yüklenemedi',
+};
+
 const ERROR_BOUNDARY_MESSAGES: Translations['ERROR_BOUNDARY_MESSAGES'] = {
   title: 'Bir şeyler ters gitti',
   message: 'Beklenmeyen bir hata oluştu',
   retry: 'Tekrar dene',
+  copyDetails: 'Hata ayrıntılarını kopyala',
+  exhausted: 'Bu sorun devam ediyor. Uygulamayı kapatıp yeniden açın.',
 };
 
 const AI_PROFILE_CARD_MESSAGES: Translations['AI_PROFILE_CARD_MESSAGES'] = {
@@ -3096,6 +3109,7 @@ const translations: Translations = {
   TENANCY_MESSAGES,
   DATA_TABLE_MESSAGES,
   ERROR_BOUNDARY_MESSAGES,
+  NOTIFICATIONS_MESSAGES,
   AI_PROFILE_CARD_MESSAGES,
   BREADCRUMB_MESSAGES,
   MESSAGE_MEDIA_MESSAGES,

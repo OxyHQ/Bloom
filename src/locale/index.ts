@@ -5,16 +5,19 @@ export { BLOOM_LANGUAGES, resolveBloomLanguage, type BloomLanguage } from './lan
 // format them: pass the locale `useBloomLocale()` resolved. (`formatFileSize`
 // is `@oxy.so/bloom/file-upload`'s.)
 export {
+  formatBytes,
   formatClock,
   formatCompactCurrency,
   formatCompactNumber,
   formatCurrency,
+  formatDurationText,
   formatInteger,
   formatMultiplier,
   formatNumber,
   formatPercent,
   formatSignedPercent,
 } from './format-number';
+export type { DurationStyle } from './format-number';
 export {
   formatRelativeTime,
   type RelativeTimeOptions,
