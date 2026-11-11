@@ -813,6 +813,18 @@
       "src/radio/RadioSwatch.tsx#RadioSwatch"
     ]
   },
+  "checkbox-switch-controls": {
+    "status": "applicable",
+    "reason": "Checkbox and Switch own interactive controls whose box, label recipe, track and thumb geometry resolve BloomScope size. Explicit size overrides the nearest scope; this is the standard control size contract, not content or artwork density.",
+    "evidence": [
+      "src/checkbox/Checkbox.tsx",
+      "src/switch/Switch.tsx",
+      "src/__tests__/CheckboxSwitchPublicPartScope.test.tsx",
+      "src/__tests__/CheckboxSwitchPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native-renderer and DOM web suites verify default md, nearest xs, nested lg over xs, explicit lg over xs, ordinary wrappers and an actual portal for both controls; physical geometry, assistive-technology behavior and device accessibility remain pending. These parts own no submenu",
+    "parts": ["src/checkbox/Checkbox.tsx#Checkbox", "src/switch/Switch.tsx#Switch"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
@@ -1016,7 +1028,6 @@
       "src/chat-screen/PinnedMessageBar.tsx#PinnedMessageBar",
       "src/chat-screen/ScrollToBottomButton.tsx#JumpToMentionButton",
       "src/chat-screen/ScrollToBottomButton.tsx#ScrollToBottomButton",
-      "src/checkbox/Checkbox.tsx#Checkbox",
       "src/checkbox/CheckboxCard.tsx#CheckboxCard",
       "src/checkout-sheet/CheckoutSheet.tsx#CheckoutSheet",
       "src/checkout-summary/CheckoutConfirm.tsx#CheckoutConfirm",
@@ -1552,7 +1563,6 @@
       "src/surfaces/index.ts#SurfaceHost",
       "src/surfaces/index.ts#SurfaceProvider",
       "src/swipe-row/SwipeRow.tsx#SwipeRow",
-      "src/switch/Switch.tsx#Switch",
       "src/tab-bar/context.tsx#TabBarMinimizeProvider",
       "src/tab-bar/expo-router/RouterTabBar.tsx#RouterTabBar",
       "src/tab-bar/expo-router/RouterTabBar.tsx#RouterTabBarButton",
