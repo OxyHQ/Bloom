@@ -61,6 +61,7 @@ async function boundedSplit() {
       likes &&
       main.height > 0 &&
       likes.height > 0 &&
+      Math.abs(main.width - likes.width) < 0.1 &&
       main.bottom <= likes.top + 1 &&
       likes.bottom <= innerHeight + 1
     );
