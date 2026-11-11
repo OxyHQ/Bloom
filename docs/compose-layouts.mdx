@@ -518,12 +518,12 @@ const layout: AppShellPanelLayout = {
       flow: 'bounded',
       singlePanelFlow: 'document',
       panels: [
-        { id: 'main', resizable: true, content: postScreen },
+        { id: 'main', minHeight: 160, resizable: true, content: postScreen },
         {
-          id: 'likes', visible: likesOpen, content: likesScreen,
+          id: 'likes', minHeight: 160, visible: likesOpen, content: likesScreen,
           floating: {
             below: 'md', open: likesOpen, onOpenChange: setLikesOpen,
-            label: likesLabel, placement: 'bottom',
+            label: likesLabel, placement: 'bottom', whenConstrained: true,
           },
         },
       ],
@@ -558,10 +558,10 @@ express static structural layout; dynamic flex constraints and gesture values
 are applied by the shared renderer. There is no JavaScript water-fill pass in
 normal native layout. Native and browser flex engines can distribute spare space
 differently when unequal minimums bind; minimums remain explicit constraints.
-Use equal constraints (or zero minimums) for an equal split. Explicit minimums
-that cannot fit keep the existing active-panel capacity fallback; omit them when
-both panels must remain visible in very short windows. Direct resize gestures
-may measure a panel and commit weights or dimensions once the gesture ends.
+Use equal constraints for an equal split. Without a floating fallback, minimums
+that cannot fit retain the existing active-panel capacity behavior; configure
+`floating.whenConstrained` for an auxiliary sheet. Direct resize gestures may
+measure a panel and commit weights or dimensions once the gesture ends.
 
 Give resizable panes explicit `minWidth`/`minHeight` to set their stop (for
 example, `minHeight: 160` on both sides of a vertical split). An auxiliary panel
