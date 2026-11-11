@@ -49,57 +49,54 @@ type Story = StoryObj<typeof ActivityHeatmap>;
 
 export const Light: Story = {
   parameters: { controls: { disable: true } },
+  globals: { theme: 'light' },
   render: () => (
-    <BloomThemeProvider mode="light">
-      <View style={{ padding: 24 }}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <ActivityHeatmap
-            data={DATA}
-            endDate={END_DATE}
-            weekdayLabels={['', 'Mon', '', 'Wed', '', 'Fri', '']}
-          />
-        </ScrollView>
-      </View>
-    </BloomThemeProvider>
+    <View style={{ padding: 24 }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <ActivityHeatmap
+          data={DATA}
+          endDate={END_DATE}
+          weekdayLabels={['', 'Mon', '', 'Wed', '', 'Fri', '']}
+        />
+      </ScrollView>
+    </View>
   ),
 };
 
 export const Dark: Story = {
   parameters: { controls: { disable: true } },
+  globals: { theme: 'dark' },
   render: () => (
-    <BloomThemeProvider mode="dark">
-      <View style={{ padding: 24, backgroundColor: '#000' }}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <ActivityHeatmap
-            data={DATA}
-            endDate={END_DATE}
-            weekdayLabels={['', 'Mon', '', 'Wed', '', 'Fri', '']}
-          />
-        </ScrollView>
-      </View>
-    </BloomThemeProvider>
+    <View style={{ padding: 24 }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <ActivityHeatmap
+          data={DATA}
+          endDate={END_DATE}
+          weekdayLabels={['', 'Mon', '', 'Wed', '', 'Fri', '']}
+        />
+      </ScrollView>
+    </View>
   ),
 };
 
 export const CustomScale: Story = {
   args: { numDays: 140, cellSize: 14, gap: 4 },
   parameters: { controls: { include: ['numDays', 'cellSize', 'gap', 'emptyColor'] } },
+  globals: { theme: 'dark' },
   render: (args) => (
-    <BloomThemeProvider mode="dark">
-      <View style={{ padding: 24, backgroundColor: '#000' }}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <ActivityHeatmap
-            {...args}
-            data={DATA}
-            endDate={END_DATE}
-            // One colour per threshold, PLUS one for "positive but below the
-            // first" — pass five here and `#7DF3BD` would never paint, which is
-            // the bug the defaults used to have.
-            colorScale={['#0E3B2E', '#146B4C', '#1FA971', '#38D896']}
-          />
-        </ScrollView>
-      </View>
-    </BloomThemeProvider>
+    <View style={{ padding: 24 }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <ActivityHeatmap
+          {...args}
+          data={DATA}
+          endDate={END_DATE}
+          // One colour per threshold, PLUS one for "positive but below the
+          // first" — pass five here and `#7DF3BD` would never paint, which is
+          // the bug the defaults used to have.
+          colorScale={['#0E3B2E', '#146B4C', '#1FA971', '#38D896']}
+        />
+      </ScrollView>
+    </View>
   ),
 };
 

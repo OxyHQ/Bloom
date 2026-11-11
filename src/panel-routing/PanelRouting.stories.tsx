@@ -15,6 +15,7 @@ import {
 const meta: Meta = {
   id: 'navigation-panel-routing',
   title: 'Composition/Navigation/Panel Routing',
+  parameters: { layout: 'fullscreen' },
 };
 export default meta;
 type Story = StoryObj;

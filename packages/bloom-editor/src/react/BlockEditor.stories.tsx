@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useMemo, useSyncExternalStore } from 'react';
+import { useTheme } from '@oxy.so/bloom/theme';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import {
   appendChild,
@@ -15,6 +16,26 @@ import type { FormatAction, MentionSource } from './context';
 import { useEditorController } from './controller';
 import { BlockDecorations } from './decorations';
 import { EditorToolbar } from './EditorToolbar';
+import { blockColors, type EditorTheme } from './theme';
+
+/** What an app does: derive the editor's look from its design system, here Bloom's theme. */
+function useEditorTheme(): EditorTheme {
+  const { colors, isDark } = useTheme();
+  return useMemo(
+    () => ({
+      text: colors.text,
+      textMuted: colors.textSecondary,
+      background: colors.background,
+      border: colors.border,
+      accent: colors.primary,
+      accentText: colors.primaryForeground,
+      selection: colors.primarySubtle,
+      codeBackground: colors.backgroundSecondary,
+      colors: blockColors(isDark ? 'dark' : 'light'),
+    }),
+    [colors, isDark],
+  );
+}
 
 let counter = 0;
 const newId = () => `id-${Date.now().toString(36)}-${(++counter).toString(36)}`;
@@ -219,6 +240,7 @@ function EditorDemo({ toolbar = false }: { toolbar?: boolean }) {
   (globalThis as { __bloomEditorStore?: EditorStore }).__bloomEditorStore = store;
   (globalThis as { __bloomDecorations?: BlockDecorations }).__bloomDecorations = decorations;
   const controller = useEditorController(store);
+  const theme = useEditorTheme();
   return (
     <View style={{ flex: 1, height: '100vh' as unknown as number }}>
       <ScrollView style={{ flex: 1 }}>
@@ -236,6 +258,7 @@ function EditorDemo({ toolbar = false }: { toolbar?: boolean }) {
             slashItems={SLASH_ITEMS}
             mentions={MENTIONS}
             controller={controller}
+            theme={theme}
             onOpenLink={recordOpened}
             onOpenMention={(mention) =>
               recordOpened(`${mention.attributes.kind}:${mention.attributes.id}`)
@@ -250,7 +273,9 @@ function EditorDemo({ toolbar = false }: { toolbar?: boolean }) {
           />
         </View>
       </ScrollView>
-      {toolbar ? <EditorToolbar controller={controller} mentionIndicator="@" /> : null}
+      {toolbar ? (
+        <EditorToolbar controller={controller} theme={theme} mentionIndicator="@" />
+      ) : null}
     </View>
   );
 }
@@ -308,9 +333,10 @@ function SurfaceDemo() {
     [],
   );
   (globalThis as { __bloomEditorStore?: EditorStore }).__bloomEditorStore = store;
+  const theme = useEditorTheme();
   const notes = useSyncExternalStore(store.subscribe, () => store.getSnapshot().doc.root);
   return (
-    <EditorSurface store={store} slashItems={SLASH_ITEMS} mentions={MENTIONS}>
+    <EditorSurface store={store} slashItems={SLASH_ITEMS} mentions={MENTIONS} theme={theme}>
       <View style={{ flexDirection: 'row', gap: 32, padding: 48 }}>
         {notes.map((id, i) => (
           <NoteDemo key={id} store={store} id={id} label={`Add to note ${i + 1}`} />
@@ -321,12 +347,21 @@ function SurfaceDemo() {
 }
 
 function NoteDemo({ store, id, label }: { store: EditorStore; id: string; label: string }) {
+  const { colors } = useTheme();
   const children = useSyncExternalStore(
     store.subscribe,
     () => store.getSnapshot().doc.blocks[id]?.children ?? [],
   );
   return (
-    <View style={{ width: 320, padding: 16, borderWidth: 1, borderColor: '#ddd', borderRadius: 8 }}>
+    <View
+      style={{
+        width: 320,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: colors.border,
+        borderRadius: 8,
+      }}
+    >
       <BlockList ids={children} depth={0} />
       <Pressable
         accessibilityRole="button"

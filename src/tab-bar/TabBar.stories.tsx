@@ -1,6 +1,7 @@
 import { useArgs } from 'storybook/preview-api';
 import React, { useState, type PropsWithChildren } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
+import { Text } from '../typography';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';

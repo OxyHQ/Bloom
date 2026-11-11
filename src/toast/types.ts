@@ -109,7 +109,6 @@ export type ToastProps = StyleProps & {
   cancel?: ToastAction | React.ReactNode;
   close?: React.ReactNode;
   closeButton?: boolean;
-  richColors?: boolean;
   onDismiss?: (id: string | number) => void;
   onAutoClose?: (id: string | number) => void;
   promiseOptions?: PromiseOptions;
@@ -201,7 +200,6 @@ export type ToasterProps = Omit<StyleProps, 'style'> & {
   };
   gap?: number;
   loadingIcon?: React.ReactNode;
-  richColors?: boolean;
   icons?: {
     success?: React.ReactNode;
     error?: React.ReactNode;
@@ -265,7 +263,6 @@ export type StableToastContextType = Required<
     | 'theme'
     | 'toastOptions'
     | 'autoWiggleOnUpdate'
-    | 'richColors'
     | 'unstyled'
     | 'enableStacking'
     | 'visibleToasts'

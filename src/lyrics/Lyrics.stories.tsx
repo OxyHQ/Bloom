@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { LyricsPreviewCard, LyricsView, type LyricLine } from './index';
@@ -216,21 +215,20 @@ export const PreviewCard: Story = {
 
 /** Dark mode: the neutral and artwork variants side by side. */
 export const Dark: Story = {
+  globals: { theme: 'dark' },
   render: () => (
-    <BloomThemeProvider mode="dark">
-      <Page>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
-          <View style={{ flexGrow: 1, flexBasis: 300 }}>
-            <SyncedDemo height={520} />
-          </View>
-          <View style={{ flexGrow: 1, flexBasis: 300 }}>
-            <SyncedDemo artworkColor="#6d4bd8" height={520} startAt={30} />
-          </View>
+    <Page>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
+        <View style={{ flexGrow: 1, flexBasis: 300 }}>
+          <SyncedDemo height={520} />
         </View>
-        <View style={{ flexGrow: 1, flexBasis: 300, maxWidth: 400 }}>
-          <PreviewDemo />
+        <View style={{ flexGrow: 1, flexBasis: 300 }}>
+          <SyncedDemo artworkColor="#6d4bd8" height={520} startAt={30} />
         </View>
-      </Page>
-    </BloomThemeProvider>
+      </View>
+      <View style={{ flexGrow: 1, flexBasis: 300, maxWidth: 400 }}>
+        <PreviewDemo />
+      </View>
+    </Page>
   ),
 };

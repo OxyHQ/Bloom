@@ -3,7 +3,6 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { ContextMenuItem, ContextMenuSeparator } from '../context-menu';
-import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { LibraryItem } from './LibraryItem';
@@ -368,24 +367,23 @@ export const Mobile: Story = {
 };
 
 export const Dark: Story = {
+  globals: { theme: 'dark' },
   render: () => (
-    <BloomThemeProvider mode="dark">
-      <Page>
-        <InteractivePanel />
-        <LibraryPanel
-          items={LIBRARY}
-          view="grid"
-          nowPlayingId="night-drive"
-          style={{ width: '100%', maxWidth: 360, height: 720 }}
-        />
-        <LibraryPanel
-          items={LIBRARY}
-          collapsed
-          onCollapsedChange={() => {}}
-          onCreatePress={() => {}}
-          style={{ height: 720 }}
-        />
-      </Page>
-    </BloomThemeProvider>
+    <Page>
+      <InteractivePanel />
+      <LibraryPanel
+        items={LIBRARY}
+        view="grid"
+        nowPlayingId="night-drive"
+        style={{ width: '100%', maxWidth: 360, height: 720 }}
+      />
+      <LibraryPanel
+        items={LIBRARY}
+        collapsed
+        onCollapsedChange={() => {}}
+        onCreatePress={() => {}}
+        style={{ height: 720 }}
+      />
+    </Page>
   ),
 };

@@ -14,7 +14,10 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
  * description, small `Button`s for the actions and an xs CloseButton at
  * top 12 / right 12. Toast-only adaptations:
  *
- * - Title-only messages use 12px vertical padding and a 28px disc.
+ * - Every toast is compact: 12px vertical padding and a 28px disc, so a toast with a
+ *   description or actions stays close to the height of a one-line one. Actions
+ *   sit at the end of the row when there is no description, and under the text
+ *   when there is one.
  * - The right padding is a 44px close-button lane ONLY when a close
  *   button renders. `closeButton` defaults to false for toasts, and a one-line
  *   `toast('Saved')` with a permanently empty 28px lane reads as misaligned.
@@ -62,7 +65,6 @@ export type ToastContentProps = Pick<
   | 'close'
   | 'closeButton'
   | 'dismissible'
-  | 'richColors'
   | 'promiseOptions'
   | 'styles'
   | 'style'
@@ -97,7 +99,6 @@ export function ToastContent({
   close,
   closeButton,
   dismissible,
-  richColors = false,
   promiseOptions,
   styles: styleOverrides,
   style,
@@ -111,12 +112,14 @@ export function ToastContent({
   maxFontSizeMultiplier,
   backgroundComponent,
 }: ToastContentProps) {
-  const colors = useToastColors({ variant, richColors });
+  const colors = useToastColors({ variant });
   const isLoading = Boolean(promiseOptions) || variant === 'loading';
   // Only the built-in button is absolutely placed; a caller `close` node stays in the row.
   const showsClose = Boolean(dismissible && !close && closeButton);
-  const titleOnly = !description && !action && !cancel;
-  const visualSize = titleOnly ? 28 : G.visual;
+  const hasActions = Boolean(action || cancel);
+  // With no description the row is one line of text, so the actions join it.
+  const inlineActions = hasActions && !description;
+  const visualSize = COMPACT_VISUAL;
   const hasVisual = Boolean(variant || icon || isLoading);
 
   const surfaceStyle: WebCssStyle | undefined = unstyled
@@ -125,8 +128,8 @@ export function ToastContent({
         backgroundColor: 'transparent',
         borderColor: colors.border,
         boxShadow: colors.shadow,
-        paddingTop: titleOnly ? 12 : G.padding,
-        paddingBottom: titleOnly ? 12 : G.padding,
+        paddingTop: COMPACT_PADDING,
+        paddingBottom: COMPACT_PADDING,
         paddingRight: showsClose ? G.paddingRight : G.padding,
       };
 
@@ -143,6 +146,44 @@ export function ToastContent({
     ? resolveSurfaceMaterial({ fill: fill, parentFill: parentFill }).publishedFill
     : undefined;
   const textProps = { allowFontScaling, maxFontSizeMultiplier };
+
+  const actions = hasActions ? (
+    <View
+      style={[
+        unstyled ? undefined : styles.buttons,
+        !unstyled && !inlineActions ? styles.buttonsBelow : undefined,
+        styleOverrides?.buttons,
+      ]}
+    >
+      {/* Order: the secondary (cancel) first, the primary after. */}
+      {isToastAction(cancel) ? (
+        <ToastActionButton
+          action={{
+            label: cancel.label,
+            onClick: () => {
+              cancel.onClick();
+              onDismiss(id);
+            },
+          }}
+          variant="secondary"
+          buttonStyle={cancelButtonStyle}
+          textStyle={cancelButtonTextStyle}
+        />
+      ) : (
+        cancel
+      )}
+      {isToastAction(action) ? (
+        <ToastActionButton
+          action={action}
+          variant="primary"
+          buttonStyle={actionButtonStyle}
+          textStyle={actionButtonTextStyle}
+        />
+      ) : (
+        action
+      )}
+    </View>
+  ) : null;
 
   const content = (
     <View
@@ -165,9 +206,9 @@ export function ToastContent({
       <View
         style={[
           unstyled ? undefined : styles.row,
-          // A title on its own centres against its compact disc instead of hugging
-          // its top and leaving an empty band where a description would sit.
-          !unstyled && titleOnly ? styles.rowCentered : undefined,
+          // A single line (a title, or a title with inline actions) centres against its
+          // compact disc instead of hugging its top.
+          !unstyled && !description ? styles.rowCentered : undefined,
           backgroundComponent ? styles.aboveBackground : undefined,
           styleOverrides?.toastContent,
         ]}
@@ -207,38 +248,9 @@ export function ToastContent({
             </Text>
           ) : null}
 
-          {action || cancel ? (
-            <View style={[unstyled ? undefined : styles.buttons, styleOverrides?.buttons]}>
-              {/* Order: the secondary (cancel) first, the primary after. */}
-              {isToastAction(cancel) ? (
-                <ToastActionButton
-                  action={{
-                    label: cancel.label,
-                    onClick: () => {
-                      cancel.onClick();
-                      onDismiss(id);
-                    },
-                  }}
-                  variant="secondary"
-                  buttonStyle={cancelButtonStyle}
-                  textStyle={cancelButtonTextStyle}
-                />
-              ) : (
-                cancel
-              )}
-              {isToastAction(action) ? (
-                <ToastActionButton
-                  action={action}
-                  variant="primary"
-                  buttonStyle={actionButtonStyle}
-                  textStyle={actionButtonTextStyle}
-                />
-              ) : (
-                action
-              )}
-            </View>
-          ) : null}
+          {hasActions && !inlineActions ? actions : null}
         </View>
+        {inlineActions ? actions : null}
 
         <ToastCloseButton
           id={id}
@@ -248,7 +260,7 @@ export function ToastContent({
           onDismiss={onDismiss}
           // Title-only: the ✕ centres on the row like the title does.
           buttonStyle={[
-            titleOnly ? { top: hasVisual ? (visualSize - CLOSE_XS) / 2 : 0 } : undefined,
+            { top: hasVisual ? (visualSize - CLOSE_XS) / 2 : 0 },
             styleOverrides?.closeButton,
           ]}
         />
@@ -395,6 +407,10 @@ function ToastCloseButton({
 /** `CloseButton size="xs"`'s box. */
 const CLOSE_XS = 20;
 
+/** The toast's own scale, tighter than the notification card it shares tokens with. */
+const COMPACT_VISUAL = 28;
+const COMPACT_PADDING = 12;
+
 const styles = StyleSheet.create({
   surface: {
     justifyContent: 'center',
@@ -447,6 +463,8 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     alignItems: 'center',
     gap: G.actionsGap,
+  },
+  buttonsBelow: {
     marginTop: G.actionsMarginTop,
   },
   // Relative to the SURFACE: the row sits inside the surface's padding, so the

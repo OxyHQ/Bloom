@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Portal, PortalHost, PortalProvider } from './index';

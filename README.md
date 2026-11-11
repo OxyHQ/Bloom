@@ -86,7 +86,7 @@ The icon codemod ships with the package:
 node node_modules/@oxy.so/bloom/scripts/migrate-icons-to-remix.mjs <app-root> --dry-run --diff
 ```
 
-Coming from 0.x, read [`docs/migrating-to-1.0.mdx`](./docs/migrating-to-1.0.mdx) first. Both guides ship inside the package, so the copy under `node_modules/@oxy.so/bloom/docs/` describes the version you installed.
+Coming from 18.x, read [`docs/migrating-to-19.mdx`](./docs/migrating-to-19.mdx) for the toast API and layout changes. Coming from 0.x, read [`docs/migrating-to-1.0.mdx`](./docs/migrating-to-1.0.mdx) first. These guides ship inside the package, so the copy under `node_modules/@oxy.so/bloom/docs/` describes the version you installed.
 
 ## Getting started
 

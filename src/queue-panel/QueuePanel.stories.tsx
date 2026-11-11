@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { QueuePanel } from './QueuePanel';
@@ -251,11 +250,8 @@ export const Wide: Story = {
 
 /** Dark mode: the panel and the sheet. */
 export const Dark: Story = {
-  render: () => (
-    <BloomThemeProvider mode="dark">
-      <DarkCanvas />
-    </BloomThemeProvider>
-  ),
+  globals: { theme: 'dark' },
+  render: () => <DarkCanvas />,
 };
 
 function DarkCanvas() {

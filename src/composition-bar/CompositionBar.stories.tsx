@@ -4,7 +4,6 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { CompositionBar } from './index';
 import type { CompositionCategory } from './index';
-import { BloomThemeProvider } from '../theme';
 
 const CATEGORIES: CompositionCategory[] = [
   { key: 'content', name: 'Content', amount: 320, color: '#6366F1' },
@@ -41,34 +40,31 @@ type Story = StoryObj<typeof CompositionBar>;
 
 export const Light: Story = {
   parameters: { controls: { disable: true } },
+  globals: { theme: 'light' },
   render: () => (
-    <BloomThemeProvider mode="light">
-      <View style={{ maxWidth: '100%', padding: 24, width: 360 }}>
-        <Demo />
-      </View>
-    </BloomThemeProvider>
+    <View style={{ maxWidth: '100%', padding: 24, width: 360 }}>
+      <Demo />
+    </View>
   ),
 };
 
 export const Dark: Story = {
   parameters: { controls: { disable: true } },
+  globals: { theme: 'dark' },
   render: () => (
-    <BloomThemeProvider mode="dark">
-      <View style={{ maxWidth: '100%', padding: 24, width: 360, backgroundColor: '#000' }}>
-        <Demo />
-      </View>
-    </BloomThemeProvider>
+    <View style={{ maxWidth: '100%', padding: 24, width: 360 }}>
+      <Demo />
+    </View>
   ),
 };
 
 export const Empty: Story = {
   args: { hintLabel: 'No data yet' },
   parameters: { controls: { include: ['hintLabel'] } },
+  globals: { theme: 'light' },
   render: (args) => (
-    <BloomThemeProvider mode="light">
-      <View style={{ maxWidth: '100%', padding: 24, width: 360 }}>
-        <CompositionBar {...args} categories={[]} selectedKey={null} onSelect={() => {}} />
-      </View>
-    </BloomThemeProvider>
+    <View style={{ maxWidth: '100%', padding: 24, width: 360 }}>
+      <CompositionBar {...args} categories={[]} selectedKey={null} onSelect={() => {}} />
+    </View>
   ),
 };

@@ -1,6 +1,7 @@
 import React from 'react';
 // Aliased: this file already exports a story named `Pressable`.
-import { Pressable as RNPressable, Text, View } from 'react-native';
+import { Pressable as RNPressable, View } from 'react-native';
+import { Text } from '../typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { AvatarGroup } from './AvatarGroup';

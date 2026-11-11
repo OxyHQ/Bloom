@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '../typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';

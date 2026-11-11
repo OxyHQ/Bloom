@@ -81,7 +81,7 @@ an xs `CloseButton` at top 12 / right 12.
 
 Toasts adapt this geometry to their content:
 
-- A title without description or actions uses 12px vertical padding and a 28px status disc (20px glyph). Its height remains content-driven, so long titles and larger text can wrap. Description and action toasts retain the full geometry above.
+- Every toast uses 12px vertical padding and a 28px status disc (20px glyph), whether or not it has a description or actions. Height remains content-driven, so long titles and larger text can wrap. Without a description, actions sit inline at the end of the text row; with a description, they sit below the text.
 - The 44px close-button lane on the right is reserved **only when the close
   button renders** (`closeButton` defaults to `false`); otherwise the right
   padding is 16.
@@ -94,8 +94,7 @@ ignored: the close glyph is now two drawn strokes, not an icon component.
 
 ### The variant colours the status disc, not the surface
 
-Every toast renders the SAME neutral card whatever its `type`, and with
-`richColors` on or off. The variant shows up only in the leading **status disc**
+Every toast renders the SAME neutral card whatever its `type`. The variant shows up only in the leading **status disc**
 — a tinted background with the glyph on it, built from the theme's first-class
 status tokens (`success`, `error`, `warning`, `info`) through the ramp:
 `<hue>-100` behind `<hue>-600` in light mode, `<hue>-800` at 50% over the card
@@ -106,25 +105,12 @@ the neutral disc).
 That is deliberate, and matches sonner. `toast.success('Saved')` should read as a
 normal toast with a green check, not as a full brand-coloured card.
 
-`richColors` lifts the status glyph colour to the **border and
-title** as well. That is all it does: the surface stays the neutral card, and
-the description and close button stay neutral, so a rich-coloured
-row still reads as a toast rather than a status banner. All four status variants
-behave identically under it — `warning` and `info` are not special-cased and get
-exactly the same border+title treatment as `success` and `error`, because the
-lift is the only tinting mechanism there is. `loading` and a variant-less toast
-have no status colour, so `richColors` has nothing to make more prominent and
-they stay fully neutral either way.
-
-<Callout variant="info" title="Tinted status surfaces need new tokens">
-There is no `warningSubtle` / `infoSubtle` (or `successSubtle` / `errorSubtle`)
-pair to tint a surface with, which is why every variant gets the same border+title
-lift instead. Bloom has `*Subtle` / `*SubtleForeground` pairs for the **brand**
-roles (`primarySubtle`, `negativeSubtle`) only — those are not status colours, and
-reaching for them here is what once made a success toast render brand-purple.
-Genuinely tinted status surfaces would need that missing status token family: a
-theme addition affecting every app, not something to fake from a brand pair or a
-derived alpha.
+<Callout variant="info" title="Status tokens do not change the toast surface">
+Bloom has `successSubtle`, `errorSubtle`, `warningSubtle` and `infoSubtle` pairs.
+Toasts deliberately keep their card, border and title neutral: the leading disc
+already carries the transient status signal, and tinting the whole card would
+make it read like a status banner. Do not substitute the brand pairs
+(`primarySubtle`, `negativeSubtle`) or derive a status fill from alpha.
 </Callout>
 
 ### Recolouring toasts with `BloomColorScope`
@@ -154,9 +140,8 @@ in the tree will not tint toasts fired from that screen — they follow the root
 preset. To recolour toasts, move the scope up so it wraps the provider.
 
 What a scope changes is the **preset-derived** roles: the surface, text and
-border. Status colours are fixed theme tokens, so a `success` disc (and, under
-`richColors`, the border and title) is the same green whichever preset is in
-scope — only the neutral card around it moves.
+border. Status colours are fixed theme tokens, so a `success` disc is the same
+green whichever preset is in scope — only the neutral card around it moves.
 
 ### Width
 
@@ -243,7 +228,6 @@ Per-toast options (`ToastOptions`):
 | `dismissible?` | `boolean` | Allow swipe / close. Defaults to `true`. |
 | `position?` | `'top-center' \| 'bottom-center' \| 'bottom-right' \| 'center'` | Override the outlet's position for this toast. |
 | `icon?` | `ReactNode` | Replaces the variant icon. |
-| `richColors?` | `boolean` | Show the status colour more prominently: the status glyph colour moves to the border and title as well. The surface stays neutral, as do the description and close button. No effect on `loading` or a variant-less toast, which have no status colour. |
 | `important?` | `boolean` | Announce assertively to screen readers. Defaults to `true` for an `error` toast and `false` for the rest; `important: false` keeps an error polite. |
 | `onDismiss?` / `onAutoClose?` | `(id) => void` | Called when the toast goes away. |
 | `onPress?` | `() => void` | Press anywhere on the row. |
@@ -251,7 +235,7 @@ Per-toast options (`ToastOptions`):
 | `animation?` | `{ enter?, exit? }` | A predefined Reanimated builder, a `Keyframe`, or `'default'`. On web, prefer a **predefined** builder for `enter`: a custom `Keyframe` handed to Reanimated's `entering` gets frozen in place by its web layout-animation cleanup, which breaks the stack. Bloom's own default enter avoids that path entirely. |
 
 Outlet options (`ToasterProps`) cover `position`, `offset`, `gap`, `visibleToasts`,
-`duration`, `swipeToDismissDirection`, `closeButton`, `richColors`,
+`duration`, `swipeToDismissDirection`, `closeButton`,
 `enableStacking`, `autoWiggleOnUpdate`, `pauseWhenPageIsHidden`, `icons`,
 `toastOptions` and `positionerStyle`. Toasts default to `bottom-right`; their
 defaults all come from the exported `toastDefaults`, so

@@ -1,6 +1,7 @@
 import { useArgs } from 'storybook/preview-api';
 import React, { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '../typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { useTheme } from '../theme/use-theme';

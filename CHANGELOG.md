@@ -1,5 +1,15 @@
 # Changelog
 
+## 19.0.0
+
+### Breaking
+
+- **Remove `richColors` from toast options and `ToasterProps`.** Remove the prop from `toast.*(...)` calls and `<ToastOutlet>` configuration. The toast card, border and title remain neutral for every variant; status is conveyed by the leading disc. `richColors` no longer changes toast paint.
+
+### Changed
+
+- **Use compact toast geometry for every content shape.** Toasts with descriptions or actions now use the same 12px vertical padding and 28px status disc as a one-line toast. Actions without a description sit inline; actions with a description sit below the text.
+
 ## 18.5.2
 
 ### Changed

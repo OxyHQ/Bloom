@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text } from '../typography';
 import Animated from 'react-native-reanimated';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 

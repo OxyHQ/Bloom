@@ -11,23 +11,19 @@
  *
  * THE SURFACE IS ALWAYS NEUTRAL — the notification card (`notification/
  * shared.ts`: card surface, border/button/default, text/primary, text/secondary),
- * for every variant, with `richColors` on or off. The variant only ever colours
- * the leading STATUS DISC (tinted background + glyph), and `richColors` only ever
- * widens the glyph colour to the border and title as well. Exactly like sonner.
+ * for every variant. The variant only ever colours the leading STATUS DISC (tinted
+ * background + glyph); the card, border and title never take a status colour.
  *
  * NOTHING HERE MAY REACH FOR A BRAND TOKEN. `success` / `error` / `warning` /
  * `info` are STATUS colours; `primarySubtle` is the BRAND pair; `negativeSubtle` aliases error.
  * Mixing the families is what made `toast.success('Saved')` render as a
- * brand-purple card, and what made a success icon flip from green to purple when
- * `richColors` was switched on. `richColors` means "show the status colour more
- * prominently", never "switch to the brand palette".
+ * brand-purple card.
  *
  * That family now EXISTS — `successSubtle` / `errorSubtle` / `warningSubtle` /
  * `infoSubtle`, each with its legible `*SubtleForeground` — so a tinted status
  * surface is finally expressible without faking one from a brand pair or a
- * derived alpha. The toast still does not take it: the neutral surface is the
- * sonner behaviour Bloom deliberately matches, and `richColors` means "show the
- * status colour more prominently", never "tint the card". Anything that DOES want
+ * derived alpha. The toast still does not take it: the neutral surface is what
+ * Bloom deliberately keeps. Anything that DOES want
  * a tinted status surface (a status pill, chip or badge) reads the pair.
  *
  * An ABSENT variant is a first-class case: a plain `toast('Saved')` renders the
@@ -58,8 +54,8 @@ export type ToastColors = {
 /**
  * The variant's STATUS disc, or `undefined` for the variants that have none.
  * `loading` and an absent variant are deliberately in the second group: they carry
- * no status meaning, so `richColors` has nothing to make more prominent and both
- * stay fully neutral (`loading` still gets the neutral disc for its spinner).
+ * no status meaning and stay fully neutral (`loading` still gets the neutral disc
+ * for its spinner).
  */
 function statusOf(variant: ToastVariant | undefined): NotificationStatus | undefined {
   switch (variant) {
@@ -77,26 +73,19 @@ function statusOf(variant: ToastVariant | undefined): NotificationStatus | undef
   }
 }
 
-/**
- * `richColors` widens the status colour from the disc alone to the border and
- * title as well. It does NOT tint the surface, and it does not touch the
- * description or close button — those stay neutral so the row still reads as a
- * toast rather than a status banner. Pure, so it can be walked over presets.
- */
+/** Pure, so it can be walked over presets. */
 export function resolveToastColors({
   variant,
-  richColors,
   theme,
 }: {
   variant: ToastVariant | undefined;
-  richColors: boolean;
   theme: Theme;
 }): ToastColors {
   const paint = resolveNotificationPaint(theme);
   const status = statusOf(variant);
   const disc = paint.status[status ?? 'neutral'];
 
-  const neutral: ToastColors = {
+  return {
     surface: paint.surface,
     border: paint.border,
     shadow: paint.shadow,
@@ -106,23 +95,9 @@ export function resolveToastColors({
     iconBackground: disc.background,
     closeButton: resolveCloseButtonPaint(theme).foreground,
   };
-
-  if (!richColors || status === undefined) {
-    return neutral;
-  }
-  return { ...neutral, border: disc.foreground, title: disc.foreground };
 }
 
-export function useToastColors({
-  variant,
-  richColors,
-}: {
-  variant: ToastVariant | undefined;
-  richColors: boolean;
-}): ToastColors {
+export function useToastColors({ variant }: { variant: ToastVariant | undefined }): ToastColors {
   const theme = useTheme();
-  return useMemo(
-    () => resolveToastColors({ variant, richColors, theme }),
-    [variant, richColors, theme],
-  );
+  return useMemo(() => resolveToastColors({ variant, theme }), [variant, theme]);
 }

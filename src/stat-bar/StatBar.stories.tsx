@@ -3,7 +3,6 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { StatBar } from './index';
-import { BloomThemeProvider } from '../theme';
 import { RiStarFill as StarIcon } from '../icons/remix/RiStarFill';
 
 function Demo() {
@@ -43,23 +42,21 @@ type Story = StoryObj<typeof StatBar>;
 
 export const Light: Story = {
   parameters: { controls: { disable: true } },
+  globals: { theme: 'light' },
   render: () => (
-    <BloomThemeProvider mode="light">
-      <View style={{ padding: 24, width: 320, maxWidth: '100%' }}>
-        <Demo />
-      </View>
-    </BloomThemeProvider>
+    <View style={{ padding: 24, width: 320, maxWidth: '100%' }}>
+      <Demo />
+    </View>
   ),
 };
 
 export const Dark: Story = {
   parameters: { controls: { disable: true } },
+  globals: { theme: 'dark' },
   render: () => (
-    <BloomThemeProvider mode="dark">
-      <View style={{ padding: 24, width: 320, maxWidth: '100%', backgroundColor: '#000' }}>
-        <Demo />
-      </View>
-    </BloomThemeProvider>
+    <View style={{ padding: 24, width: 320, maxWidth: '100%' }}>
+      <Demo />
+    </View>
   ),
 };
 
