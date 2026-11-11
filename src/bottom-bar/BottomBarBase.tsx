@@ -9,7 +9,7 @@ import {
   useLayoutEffect,
   type ComponentType,
 } from 'react';
-import { View, Platform, type ViewStyle } from 'react-native';
+import { View, Platform } from 'react-native';
 import { useKeyboardVisible } from '../hooks/use-keyboard-visible';
 import { useEffect } from 'react';
 import Animated, {
@@ -50,7 +50,7 @@ import { useBorderBoxSize } from '../hooks/use-border-box-size';
 import { useWindowWidthClass } from '../hooks/use-width-class';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
-import type { WebCssStyle } from '../styles/web-view-style';
+import { cssLength, type WebCssStyle } from '../styles/web-view-style';
 import { DEFAULT_COLLAPSIBLE_TRANSITION } from '../collapsible/use-collapsible-motion';
 import { resolveSurfaceTransition } from '../motion/surface-transition';
 
@@ -244,7 +244,7 @@ export function BottomBarBase({
       paddingBottom: !dock
         ? 0
         : IS_WEB
-          ? (`calc(var(--bloom-dock-navigation-presence) * ${EXPANDED_HEIGHT + 10}px)` as ViewStyle['paddingBottom'])
+          ? cssLength(`calc(var(--bloom-dock-navigation-presence) * ${EXPANDED_HEIGHT + 10}px)`)
           : (EXPANDED_HEIGHT + 10) * navigationPresence.value,
       height: dock
         ? ('auto' as const)
@@ -303,7 +303,9 @@ export function BottomBarBase({
         width: 'auto' as const,
         opacity: 1,
         marginInlineStart: IS_WEB
-          ? (`calc(var(--bloom-dock-navigation-presence) * ${(MINIMIZED_HEIGHT + 10) * navigationProgress.value}px)` as ViewStyle['marginInlineStart'])
+          ? cssLength(
+              `calc(var(--bloom-dock-navigation-presence) * ${(MINIMIZED_HEIGHT + 10) * navigationProgress.value}px)`,
+            )
           : (MINIMIZED_HEIGHT + 10) * navigationProgress.value * navigationPresence.value,
         transform: [
           {
