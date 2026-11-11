@@ -45,6 +45,7 @@ try {
       const screen = document.querySelector('[data-testid="groups-post-screen"]');
       const content = screen?.querySelector('[data-testid="groups-post-screen-scroll-content"]');
       const main = document.querySelector('[data-testid="groups-main"]');
+      const mainStyle = main && getComputedStyle(main);
       const likes = document.querySelector('[data-testid="groups-likes"]');
       let opacity = 1;
       let hidden = !content;
@@ -60,7 +61,7 @@ try {
         const y = Math.max(80, rect.y) + Math.min(rect.height, 20) / 2;
         return { text: node.textContent, x, y, hit: y < innerHeight - 8 && y >= rect.y && node.contains(document.elementFromPoint(x, y)) };
       }).filter(item => item.hit);
-      window.__paintFrames.push({ time, opacity, hidden, visible, scrollY, elementOffset: screen?.querySelector('[data-bloom-screen-viewport="element"]')?.scrollTop, main: main?.getBoundingClientRect().toJSON(), likes: likes?.getBoundingClientRect().toJSON() });
+      window.__paintFrames.push({ time, opacity, hidden, visible, scrollY, mainStyle: mainStyle && {interpolateSize:mainStyle.interpolateSize,flexBasis:mainStyle.flexBasis,flexGrow:mainStyle.flexGrow,minHeight:mainStyle.minHeight,maxHeight:mainStyle.maxHeight}, documentHeight: document.documentElement.scrollHeight, viewportHeight: innerHeight, elementOffset: screen?.querySelector('[data-bloom-screen-viewport="element"]')?.scrollTop, main: main?.getBoundingClientRect().toJSON(), likes: likes?.getBoundingClientRect().toJSON() });
       if (window.__paintFrames.length < 90) requestAnimationFrame(capture);
     };
     requestAnimationFrame(capture);

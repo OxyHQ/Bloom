@@ -656,6 +656,10 @@ try {
   console.log(
     'PASS horizontal flow: columns add real horizontal scroll without shrinking or document overflow',
   );
+} catch (error) {
+  await page.screenshot({ path: `${artifacts}/failure.png` });
+  await writeFile(`${artifacts}/failure-geometry.json`, JSON.stringify(await splitGeometry(), null, 2));
+  throw error;
 } finally {
   await browser.close();
 }
