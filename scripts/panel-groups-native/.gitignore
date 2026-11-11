@@ -1,0 +1,8 @@
+node_modules/
+android/
+.source
+.expo/
+build.json
+
+__pycache__/
+.local/
