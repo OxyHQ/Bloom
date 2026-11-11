@@ -1176,7 +1176,6 @@
       "src/chat-composer/ChatComposer.tsx#ChatComposer",
       "src/chat-composer/ComposerAttachmentStrip.tsx#ComposerAttachmentStrip",
       "src/chat-composer/ComposerBanner.tsx#ComposerBanner",
-      "src/chat-composer/ComposerIconButton.tsx#ComposerIconButton",
       "src/chat-composer/EmojiPicker.tsx#EmojiPicker",
       "src/chat-composer/MessageContextMenu.tsx#MessageContextMenu",
       "src/chat-composer/ReactionPicker.tsx#ReactionPicker",
@@ -2185,6 +2184,19 @@
     ],
     "verification": "Native-renderer behavior tests and Chromium input/scroll/focus validation; physical IME and device geometry not established by these checks.",
     "parts": ["src/chat-composer/CompactComposer.tsx#CompactComposer"]
+  },
+  "composer-icon-button-geometry": {
+    "status": "independent-scale",
+    "reason": "ComposerIconButton exposes a numeric box size (default 36) rather than BloomSize. Its visual bounds and glyph size are recipe-owned and stay fixed under BloomScope; Button owns paint and interaction, while the hit target expands from the numeric box to the platform minimum.",
+    "evidence": [
+      "src/chat-composer/create-composer-icon-button.tsx",
+      "src/button/shared.ts",
+      "docs/chat-composer.mdx",
+      "src/__tests__/ComposerIconButtonPublicPartScope.test.tsx",
+      "src/__tests__/ComposerIconButtonPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer verifies numeric 28/32/36px boxes and 44pt iOS / 48dp Android hit regions across xs/sm/md/lg scopes. DOM web verifies those visual dimensions stay fixed, coarse pointers get a real 44px minimum target, and fine-pointer styles are restored without remounting; actual device touch precision remains pending.",
+    "parts": ["src/chat-composer/ComposerIconButton.tsx#ComposerIconButton"]
   },
   "loading-indicators": {
     "status": "applicable",

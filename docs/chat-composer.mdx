@@ -8,7 +8,7 @@ order: 64
 
 Emoji, suggestion and recording panels share Surface's next neutral layer above their actual parent; ReactionPicker with `surface={false}` keeps its enclosing material. Surface fill overrides publish the same backing to descendants.
 
-`ComposerIconButton` is a sizing adapter over Bloom's `Button`: focus, disabled state, press preview and long press use the shared implementation. Reaction and emoji actions and the recorder's cancel action also use `Button`; tabs, options and menu items retain their own roles.
+`ComposerIconButton` is a sizing adapter over Bloom's `Button`: its numeric visual box (36px by default) stays recipe-owned under `BloomScope`, while native hit slop expands it to 44pt on iOS and 48dp on Android. Coarse-pointer web reserves a real 44px target and restores the visual size for a fine pointer. Focus, disabled state, press preview and long press use the shared implementation. Reaction and emoji actions and the recorder's cancel action also use `Button`; tabs, options and menu items retain their own roles.
 
 ```tsx
 import {

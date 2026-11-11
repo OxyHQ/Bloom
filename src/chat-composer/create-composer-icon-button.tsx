@@ -4,9 +4,14 @@ import React, {
   type ComponentType,
   type RefAttributes,
 } from 'react';
-import type { View } from 'react-native';
+import { Platform, type View } from 'react-native';
 import type { ButtonProps } from '../button/types';
 import { useTheme } from '../theme/use-theme';
+import {
+  ANDROID_BUTTON_TOUCH_TARGET,
+  BUTTON_TOUCH_TARGET,
+  resolveSquareButtonHitSlop,
+} from '../button/shared';
 import { CONTROL_SIZE, resolveChatComposerPalette } from './shared';
 import type { ComposerIconButtonProps } from './types';
 import type { RefComponent } from '../styles/native-refs';
@@ -37,6 +42,8 @@ export function createComposerIconButton(
   ) {
     const palette = resolveChatComposerPalette(useTheme());
     const accent = tone === 'accent';
+    const touchTarget =
+      Platform.OS === 'android' ? ANDROID_BUTTON_TOUCH_TARGET : BUTTON_TOUCH_TARGET;
     return (
       <Button
         ref={ref}
@@ -58,6 +65,7 @@ export function createComposerIconButton(
         onPressIn={onPressIn}
         onPressOut={onPressOut}
         disabled={disabled}
+        hitSlop={resolveSquareButtonHitSlop(size, touchTarget)}
         style={[
           {
             width: size,

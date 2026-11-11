@@ -20,6 +20,17 @@ import type { ButtonIconComponent, ButtonLinkTone, ButtonUnderline } from './typ
 
 /** Coarse web controls reserve this real layout box; native uses platform hitSlop. */
 export const BUTTON_TOUCH_TARGET = 44;
+/** Android's native touch-target floor is 48dp. */
+export const ANDROID_BUTTON_TOUCH_TARGET = BUTTON_TOUCH_TARGET + 4;
+
+/** Expand an icon square without changing its painted bounds. */
+export function resolveSquareButtonHitSlop(
+  boxSize: number,
+  targetSize: number = BUTTON_TOUCH_TARGET,
+): { top: number; bottom: number; left: number; right: number } {
+  const inset = Math.max(0, (targetSize - boxSize) / 2);
+  return { top: inset, bottom: inset, left: inset, right: inset };
+}
 
 /** Every size is a full pill. */
 export const BUTTON_RADIUS = borderRadius.full;
