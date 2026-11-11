@@ -226,6 +226,9 @@ try {
 
   // Pause application JavaScript only within the same desktop presentation tier.
   // Browser CSS must still distribute both axes; presentation handoff is tested below.
+  // Native pointer/keyboard commits finish their cleanup on animation frames.
+  // Freeze only settled layout, not an in-flight user gesture transaction.
+  await page.waitForFunction(() => !document.querySelector('[data-bloom-panel-resizing]'));
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('Emulation.setScriptExecutionDisabled', { value: true });
   for (const [width, height] of [
@@ -242,7 +245,33 @@ try {
   }
   await cdp.send('Emulation.setScriptExecutionDisabled', { value: false });
   await page.setViewportSize({ width: 1440, height: 240 });
-  await page.getByRole('dialog', { name: 'Likes', exact: true }).waitFor();
+  await page
+    .getByRole('dialog', { name: 'Likes', exact: true })
+    .waitFor()
+    .catch(async (error) => {
+      await writeFile(
+        `${artifacts}/capacity-failure.json`,
+        JSON.stringify(
+          await page.evaluate(() => ({
+            nodes: [
+              ...document.querySelectorAll(
+                '[data-bloom-panel-group],[data-bloom-panel-owner],[role="dialog"]',
+              ),
+            ].map((node) => ({
+              id: node.dataset.testid,
+              role: node.getAttribute('role'),
+              rect: node.getBoundingClientRect().toJSON(),
+              floating: getComputedStyle(node).getPropertyValue('--bloom-panel-floating'),
+              visible: getComputedStyle(node).getPropertyValue('--bloom-panel-visible'),
+              html: node.outerHTML.slice(0, 700),
+            })),
+          })),
+          null,
+          2,
+        ),
+      );
+      throw error;
+    });
   assert.equal(
     await test('groups-likes-screen').count(),
     1,

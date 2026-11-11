@@ -15,6 +15,9 @@
 ### Fixed
 
 - Divider minimums can opt an auxiliary panel into its sheet with `floating.whenConstrained` when the bounded split no longer fits. Closing a resized split restores all space to the remaining pane, including fractional split weights.
+- Opening a document-backed split and entering Deck keep the primary at its visible viewport instead of briefly collapsing to its minimum. Returning to document flow waits for ancestor geometry as well as the local split; shared transition observation replaces the special intrinsic-size transition override.
+- Document restoration is delegated through the primary group branch, preventing an outer layout from scrolling the window while its reading pane still owns a bounded scroller.
+- Virtual lists use one measurement model across window and element scroll owners. Row identities and measured heights survive repeated mode changes, and pending reading positions survive temporary geometry clamps and rapid reversal.
 - Vertical exits keep their width while closing. Reading-envelope tracks retain their resting widths through normal/Deck transitions instead of growing into temporary spare space.
 - Closing a scrolled split keeps the bounded owner through its actual exit transition, then transfers the latest reading position to the document without blanking content or clamping it to the top.
 - Nested native panels consume the top safe area once; floating sheets use physical insets for placement and consumed insets for their content.

@@ -108,7 +108,7 @@ export interface AppShellPanelLayout {
   mode?: 'split' | 'flow' | 'deck';
   /** Nested split only: let its sole inline panel use the web document scroll. */
   singlePanelFlow?: 'document';
-  /** Fade outgoing panels before moving tracks, then reveal incoming content at its settled width. */
+  /** Simultaneous by default. Opt into exit-before-enter to stage outgoing, geometry and incoming motion. */
   transition?: 'simultaneous' | 'exit-before-enter';
   /** Web horizontal decks use the document scrollbar by default. Native remains native-scrolling. */
   horizontalScroll?: 'document' | 'contained';

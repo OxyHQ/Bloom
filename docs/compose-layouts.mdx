@@ -245,7 +245,6 @@ export function PageWorkspace({
         mode: deck ? 'deck' : 'split',
         flow: deck ? 'bounded' : 'document',
         horizontalScroll: 'document',
-        transition: 'exit-before-enter',
         activePanel: 'main',
         onPanelOrderChange: (ids) => {
           const customizable = new Set(extraPanels.map((panel) => panel.id));
@@ -279,7 +278,9 @@ motion applies to later insertions and visibility changes, not the first screen.
 
 `transition: 'exit-before-enter'` lets outgoing panels fade/recede before track
 geometry changes, then reveals incoming content at its usable width. The reverse
-follows the same policy. Default `simultaneous` changes those phases together.
+follows the same policy. Default `simultaneous` changes those phases together
+and responds immediately to a mode switch. The retained primary content and shell
+chrome stay painted in both directions; fades belong to entering or exiting panels.
 Reduced motion settles immediately; applications supply no transition timers,
 window measurements or duplicate page animations.
 
@@ -546,10 +547,15 @@ return to document scrolling when its parent is a document region. When another
 inline leaf opens, the group occupies the available viewport height and the
 leaves scroll independently. Hidden and floating leaves do not count. Native
 continues using native scroll owners. On close, the primary fills the bounded
-viewport during the outgoing track's CSS transition; its reading offset transfers
-to the document after that transition finishes. Reopening cancels the pending
-handoff, and reduced motion transfers immediately. The group and leaf identities
-stay stable.
+viewport during the outgoing track's CSS transition and any ancestor geometry
+transition (such as a Deck column widening). Its reading offset transfers to the
+document after those transitions finish. The sole reading pane keeps one flex
+basis across document and bounded owners, so opening starts at the full viewport
+instead of collapsing to its minimum. Reopening cancels the pending
+handoff, and reduced motion transfers immediately. Document restoration follows
+only the primary inline branch through transparent groups; a parent cannot restore
+the window while its primary descendant still owns bounded scrolling. The group
+and leaf identities stay stable.
 Compact presentation follows the enclosing shell's responsive scope, so a narrow
 column inside a desktop workspace does not accidentally become a phone sheet.
 

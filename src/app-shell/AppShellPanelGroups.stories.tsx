@@ -73,12 +73,14 @@ function SplitExample({
   capped = false,
   deckSwitch = false,
   short = false,
+  transition = 'exit-before-enter',
 }: {
   documentFlow?: boolean;
   mixed?: boolean;
   capped?: boolean;
   deckSwitch?: boolean;
   short?: boolean;
+  transition?: 'simultaneous' | 'exit-before-enter';
 }) {
   const [open, setOpen] = useState(false);
   const [deck, setDeck] = useState(false);
@@ -93,7 +95,7 @@ function SplitExample({
       panelLayout={{
         mode: deck ? 'deck' : 'split',
         flow: documentFlow && !deck ? 'document' : 'bounded',
-        transition: 'exit-before-enter',
+        transition,
         panels: [
           {
             id: 'workspace',
@@ -201,6 +203,14 @@ export const DeckSwitch: Story = {
   render: () => (
     <PercentHeightHost>
       <SplitExample documentFlow deckSwitch />
+    </PercentHeightHost>
+  ),
+};
+export const SimultaneousDeckSwitch: Story = {
+  parameters: { bloomScroll: 'document' },
+  render: () => (
+    <PercentHeightHost>
+      <SplitExample documentFlow deckSwitch transition="simultaneous" />
     </PercentHeightHost>
   ),
 };
