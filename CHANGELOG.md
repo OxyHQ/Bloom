@@ -1,5 +1,11 @@
 # Changelog
 
+## 19.5.2
+
+### Fixed
+
+- **The Chip 2xl filter target now meets the 48dp touch target.** Its visible height is 44dp, with 2dp of vertical native hit slop and no horizontal expansion, so neighboring chips do not acquire overlapping tap areas.
+
 ## 19.5.1
 
 ### Fixed
