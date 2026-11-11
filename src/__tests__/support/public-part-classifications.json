@@ -814,8 +814,6 @@
       "src/bottom-sheet/BottomSheet.tsx#BottomSheet",
       "src/breadcrumb/Breadcrumb.tsx#Breadcrumb",
       "src/breadcrumb/Breadcrumb.tsx#BreadcrumbItem",
-      "src/button-group/ButtonGroup.tsx#ButtonGroup",
-      "src/button-group/ButtonGroup.tsx#ButtonGroupItem",
       "src/button/Button.tsx#Button",
       "src/button/CloseButton.tsx#CloseButton",
       "src/button/GlyphButton.tsx#GlyphButton",
@@ -1727,6 +1725,21 @@
       "src/address/AddressList.tsx#AddressList",
       "src/address/AddressRow.tsx#AddressRow",
       "src/item/Item.tsx#Item"
+    ]
+  },
+  "button-group-parts": {
+    "status": "applicable",
+    "reason": "ButtonGroup resolves a size recipe for the joined control and provides that resolved size to its items; ButtonGroupItem can override the group size and owns the segment geometry. Scope therefore applies to both public parts, with explicit group and item sizes retaining precedence.",
+    "evidence": [
+      "src/button-group/ButtonGroupBase.tsx",
+      "src/button-group/types.ts",
+      "src/__tests__/ButtonGroupPublicPartScope.test.tsx",
+      "src/__tests__/ButtonGroupPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify default md, inherited xs, lg scope clamped to md, explicit group md over xs, explicit item xs over group md, and nested xs/lg scopes; physical-device layout and touch fit remain unverified.",
+    "parts": [
+      "src/button-group/ButtonGroup.tsx#ButtonGroup",
+      "src/button-group/ButtonGroup.tsx#ButtonGroupItem"
     ]
   }
 }
