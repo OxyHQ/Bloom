@@ -53,15 +53,17 @@ function ReadingPanel({ title, onOpen }: { title: string; onOpen?: () => void })
 function SplitExample({
   documentFlow = false,
   mixed = false,
+  capped = false,
 }: {
   documentFlow?: boolean;
   mixed?: boolean;
+  capped?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   return (
     <AppShell
       testID="groups-shell"
-      contentMaxWidth="none"
+      contentMaxWidth={capped ? 360 : 'none'}
       header={null}
       gutter={8}
       scroll={documentFlow ? 'document' : 'fixed'}
@@ -116,6 +118,7 @@ function SplitExample({
 }
 
 export const NestedSplit: Story = { render: () => <SplitExample /> };
+export const CappedResponsive: Story = { render: () => <SplitExample capped /> };
 export const MixedAxes: Story = { render: () => <SplitExample mixed /> };
 export const DocumentSplit: Story = {
   parameters: { bloomScroll: 'document' },
