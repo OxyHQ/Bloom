@@ -35,6 +35,15 @@ describe('Rail', () => {
     expect(getByText('Devices')).toBeTruthy();
   });
 
+  it('draws a header and a footer around the destinations', () => {
+    const { getByTestId } = renderRail({
+      header: <BareIcon id="rail-header" />,
+      footer: <BareIcon id="rail-footer" />,
+    });
+    expect(getByTestId('rail-header')).toBeTruthy();
+    expect(getByTestId('rail-footer')).toBeTruthy();
+  });
+
   it('announces the active item as selected and every other item as not', () => {
     const { getByLabelText } = renderRail({ activeId: 'home' });
     expect(getByLabelText('Home').props['aria-selected']).toBe(true);

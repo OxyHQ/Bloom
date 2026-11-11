@@ -389,6 +389,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./badge', 'badge/index.ts'],
   ['./chip', 'chip/index.ts'],
   ['./choice-list', 'choice-list/index.ts'],
+  ['./color-swatch-picker', 'color-swatch-picker/index.ts'],
   ['./tabs', 'tabs/index.ts'],
   ['./tabs/expo-router', 'tabs/expo-router/index.ts'],
   ['./checkbox', 'checkbox/index.ts'],

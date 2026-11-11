@@ -41,6 +41,10 @@ export interface RailProps {
    * icon-plus-label item.
    */
   width?: number;
+  /** Pinned above the destinations (a brand mark), centred. */
+  header?: ReactNode;
+  /** Pinned below the destinations (an account control), centred. */
+  footer?: ReactNode;
   /** Container style override, merged after the rail's own positioning. */
   style?: StyleProp<ViewStyle>;
   testID?: string;
