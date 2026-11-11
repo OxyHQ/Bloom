@@ -1,0 +1,43 @@
+---
+title: ColorSwatchPicker
+description: A wrapping row of colour swatches, one chosen — a brand colour, a tag colour, a label colour.
+order: 32
+---
+
+# ColorSwatchPicker
+
+A row of colour swatches, one of them chosen. For a brand colour, a tag colour
+or a calendar colour picked from a short list the app offers.
+
+```tsx
+import { ColorSwatchPicker } from '@oxy.so/bloom/color-swatch-picker';
+
+<ColorSwatchPicker
+  label="Brand colour"
+  value={brandColor}
+  onValueChange={setBrandColor}
+  colors={['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981']}
+  names={{ '#3b82f6': 'Blue', '#8b5cf6': 'Purple' }}
+/>
+```
+
+## Which prop decides what
+
+| prop | decides |
+| --- | --- |
+| `label` | the picker's name, required: what a screen reader says of the whole |
+| `value` / `onValueChange` | the chosen colour; the picker is controlled |
+| `colors` | the swatches, any CSS colour strings, each its own value |
+| `names` | a swatch's spoken name by colour; a colour without one is named by its string |
+| `size` | the swatch diameter, 40 by default |
+| `disabled` | the whole picker |
+| `style` | the row's layout (it wraps) |
+
+## Keyboard and screen reader
+
+It is a [`ChoiceList`](./choice-list.mdx): one keyboard stop (the chosen swatch),
+the arrows move between swatches and Space or Return chooses, and each swatch is
+said by its name with its place ("Red, 3 of 8"). The chosen swatch is ringed in
+the text colour with a gap between ring and colour, so it reads on every swatch
+in both modes without a check glyph that would have to contrast with each one.
+Pass `names`: a hex string is a poor thing to hear.
