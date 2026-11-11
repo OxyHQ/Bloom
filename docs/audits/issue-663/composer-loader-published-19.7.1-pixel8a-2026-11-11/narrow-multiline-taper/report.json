@@ -1,0 +1,58 @@
+{
+  "apkSha256": "ba6c83c4e267ee81eb2d435d83dc161b2dd9df4099f8cd32aa875de446d7df0b",
+  "build": {
+    "commit": "0481ac7e0b0d1dad0df8c1b3e18c47d8db780177",
+    "workingTree": "",
+    "fixtureSha256": "4bb6bb5b66ecdb4bcf7c82bf774e2ba0ab1311d3b21e8fced7dc1029ed049903",
+    "packedTarballSha256": "98b1b770ce90bdc31b9c0c7740a7b77685a756692a159999e978b6fe2828ba7c",
+    "kind": "published npm tarball",
+    "npmIntegrity": "sha512-AFjfrf/WYg43eD0eHkcyuOBZNtlh8Mi2HgPbSkV93/QXKxbTktLNdMFf5qbEqb3k/HElD7ATUCj7lUbuxR9GDw==",
+    "aliaSdkVersion": "24.0.0",
+    "aliaComposerSha256": "33bee1e8b1d959adbe5406856fb0dca63c0df9ef9a2e57d21f523bc736d415c2",
+    "installed": "/home/nate/Oxy/Bloom/scripts/loader-package-lab/bloom-local/node_modules/@oxy.so/bloom",
+    "packageVersion": "19.7.1",
+    "nativeSha256": "5aa0123303dbb2f170077c2ddf6eac5933ee0c6269274422ed41ca10bf8f94ad",
+    "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+    "adapterSha256": "439368f05ea092a36619510ff3cf1d255d5e8da61ff52ab3490d0dd7dd6e4c21",
+    "lockSha256": "5c38ac4dbedbdcd9da152b86cdc76750eb4d436dd3288adbfd60c8c7264c5a69",
+    "reactCompiler": false,
+    "scene": "composers",
+    "softwareWindow": false,
+    "apkSha256": "ba6c83c4e267ee81eb2d435d83dc161b2dd9df4099f8cd32aa875de446d7df0b",
+    "embeddedBundleSha256": "b84b24401fd71a5c0dc409562a953a9f88261f977a5daa4078c45cdfdd58f385",
+    "embeddedBloomSourceSha256": "8a89c2ff0d53055e32ce4e7dc95593b0726ce72b5db8cedbd0c6234b633fe31b",
+    "embeddedBloomFiles": 1745,
+    "dex": [
+      {
+        "name": "classes.dex",
+        "sha256": "83710ad053d1aeb9d8f30937b3337cb3aa416bc8cb40853be0d72e23f96b1f43"
+      }
+    ],
+    "r8MappingSha256": "7fd7d8ec134ebaddb80d30f36a1d593b3264da834d4d611d6944f7e4a69e1db4",
+    "mappedNativeClass": "uc0",
+    "nativeEvidence": "compiled installed Kotlin input hash, DEX contract marker and full DEX hashes; no runtime source receipt"
+  },
+  "serial": "43221JEKB12200",
+  "case": "narrow-multiline-taper",
+  "elapsedMs": 10561.441359999999,
+  "frames": 1265,
+  "jankyFrames": 2,
+  "histogramP50Ms": 18,
+  "histogramP95Ms": 22,
+  "gpuP50Ms": 8,
+  "gpuP95Ms": 12,
+  "recentFrameSamples": 117,
+  "recentFrameP50Ms": 23.148739,
+  "recentFrameP95Ms": 26.279411,
+  "recentFrameIntervalMs": 8.353192,
+  "cpuPercentOfOneCore": [
+    114,
+    121,
+    118
+  ],
+  "pssKb": 458785,
+  "rssKb": 636300,
+  "thermalStatusBefore": 1,
+  "thermalStatusAfter": 1,
+  "note": "Single controlled foreground window, no screen recording; frame timestamps are not an FPS guarantee. Preserve font/display settings and compare thermal state."
+}

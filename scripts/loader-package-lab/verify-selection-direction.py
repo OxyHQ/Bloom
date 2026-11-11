@@ -28,7 +28,8 @@ def inputs():
     old=len(rows()); adb('shell','am','start','-n',pkg+'/.MainActivity','--es','bloomProbe','inputs')
     for _ in range(20):
         new=rows()[old:]
-        if len(new)>=1: return {n['testID']:n for n in new}
+        identified={n.get('testID'):n for n in new if n.get('testID')}
+        if owner in identified: return identified
         time.sleep(.1)
     raise AssertionError('Input receipt missing')
 def shot(name):
