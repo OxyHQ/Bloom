@@ -120,6 +120,15 @@ scale="desktop"` asks for these styles off a desktop platform and
 `scale="default"` keeps Bloom's ramp on one; `useDesktopTypography()` reads the
 answer.
 
+## Bloom control size is a separate scope
+
+Semantic text variants, headings, prose helpers and `Blockquote` keep their
+typographic recipes under `BloomScope`; a compact control scope does not shrink
+the text a person is reading. `TypographyScope scale="desktop"` selects the
+desktop text ramp independently of control size. Native-renderer and DOM web
+tests compare the exported typography parts under default, `xs`, `lg` and
+nested control scopes.
+
 ## Local system-font scope
 
 `<TypographyScope mode="system">` changes the font family of Bloom text and composed controls in its subtree to the platform system font. Semantic variants retain their size, weight and spacing. It applies to headings, body text, buttons and segmented controls without changing global fonts. `mode="default"` explicitly returns to Bloom families; omitted mode inherits the enclosing scope. The provider is stable across mode changes, preserving mounted controls and media.
