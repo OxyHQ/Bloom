@@ -147,6 +147,11 @@ describe('composerLoaderGeometry', () => {
     expect(g.rx).toBe(16);
     expect(g.perimeter).toBeCloseTo(2 * (640 + 120) - 8 * 16 + 2 * Math.PI * 16, 6);
   });
+
+  it('clamps the pill radius (9999) to half the smaller side, so rx = ry draws a pill', () => {
+    expect(composerLoaderGeometry({ ...BASE, radius: 9999 }).rx).toBe(26);
+    expect(composerLoaderGeometry({ ...BASE, height: 120, radius: 16 }).rx).toBe(16);
+  });
 });
 
 describe('dashOffsetAt (the CSS animation, as a function of time)', () => {
