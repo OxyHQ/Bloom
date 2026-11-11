@@ -6,8 +6,15 @@ import { borderRadius, fontSize } from '../styles/tokens';
 import { IS_WEB } from '../styles/platform';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { SANS_FONT_FAMILY } from '../text-field/shared';
-import { ENGAGEMENT_COUNT_GAP, ENGAGEMENT_PAD_X, ENGAGEMENT_PAD_Y } from './constants';
-import type { EngagementTone } from './types';
+import {
+  ENGAGEMENT_COUNT_GAP,
+  ENGAGEMENT_PAD_X,
+  ENGAGEMENT_PAD_Y,
+  ENGAGEMENT_ICON_SIZE,
+  ENGAGEMENT_SPINNER_SIZE,
+} from './constants';
+import type { EngagementBarProps, EngagementTone } from './types';
+import type { BloomSize } from '../appearance/types';
 
 const TONES: readonly EngagementTone[] = [
   'primary',
@@ -39,6 +46,8 @@ export interface EngagementTonePaint {
  * action reads one context and allocates no style of its own.
  */
 export interface EngagementPaint {
+  iconSize: number;
+  spinnerSize: number;
   /** Glyph and count colour at rest. */
   restColor: string;
   restCount: TextStyle;
@@ -64,31 +73,69 @@ const COUNT_BASE: TextStyle = {
   fontVariant: ['tabular-nums'],
 };
 
-export function resolveEngagementPaint(colors: ThemeColors): EngagementPaint {
+const GEOMETRY: Record<BloomSize, { iconSize: number; spinnerSize: number; countSize: number }> = {
+  xs: { iconSize: 16, spinnerSize: 12, countSize: fontSize.xs },
+  sm: { iconSize: 18, spinnerSize: 14, countSize: 12 },
+  md: {
+    iconSize: ENGAGEMENT_ICON_SIZE,
+    spinnerSize: ENGAGEMENT_SPINNER_SIZE,
+    countSize: fontSize.sm,
+  },
+  lg: { iconSize: 28, spinnerSize: 24, countSize: fontSize.sm },
+};
+
+export function resolveEngagementPaint(
+  colors: ThemeColors,
+  {
+    orientation = 'horizontal',
+    size = 'md',
+    tone: surface = 'default',
+  }: Pick<EngagementBarProps, 'orientation' | 'size' | 'tone'> = {},
+): EngagementPaint {
+  const vertical = orientation === 'vertical';
+  const onImage = surface === 'onImage';
+  const geometry = GEOMETRY[size];
+  const actionBase = vertical
+    ? {
+        ...ACTION_BASE,
+        flexDirection: 'column' as const,
+        minWidth: 44,
+        minHeight: 44,
+        paddingTop: 4,
+        paddingBottom: 4,
+      }
+    : ACTION_BASE;
+  const countBase: TextStyle = { ...COUNT_BASE, fontSize: geometry.countSize };
+  const restColor = onImage ? '#FFFFFF' : colors.textSecondary;
   const tones = {} as Record<EngagementTone, EngagementTonePaint>;
   for (const tone of TONES) {
     const color = resolveAccentColors(colors, tone, 'outlined').foreground;
-    const wash = resolveAccentColors(colors, tone, 'subtle').background;
-    const webRest: WebCssStyle = { ...ACTION_BASE, [WASH_VAR]: wash };
-    const rest: ViewStyle = IS_WEB ? webRest : ACTION_BASE;
+    const wash = onImage
+      ? 'rgba(255,255,255,0.16)'
+      : resolveAccentColors(colors, tone, 'subtle').background;
+    const webRest = { ...actionBase, [WASH_VAR]: wash } as WebCssStyle;
+    const rest: ViewStyle = IS_WEB ? webRest : actionBase;
     tones[tone] = {
       color,
       rest,
       pressed: { ...rest, backgroundColor: wash },
-      activeCount: { ...COUNT_BASE, color, fontWeight: '600' },
+      activeCount: { ...countBase, color, fontWeight: '600' },
     };
   }
   const neutral = resolveAccentColors(colors, 'default', 'subtle');
   return {
-    restColor: colors.textSecondary,
-    restCount: { ...COUNT_BASE, color: colors.textSecondary },
+    iconSize: geometry.iconSize,
+    spinnerSize: geometry.spinnerSize,
+    restColor,
+    restCount: { ...countBase, color: restColor },
     tones,
     bar: {
-      flexDirection: 'row',
+      flexDirection: vertical ? 'column' : 'row',
       alignItems: 'center',
-      marginLeft: -ENGAGEMENT_PAD_X,
-      marginRight: -ENGAGEMENT_PAD_X,
-      ...(IS_WEB ? { [RING_VAR]: colors.primary } : null),
+      marginLeft: vertical ? 0 : -ENGAGEMENT_PAD_X,
+      marginRight: vertical ? 0 : -ENGAGEMENT_PAD_X,
+      ...(vertical ? { gap: 8 } : null),
+      ...(IS_WEB ? { [RING_VAR]: onImage ? '#FFFFFF' : colors.primary } : null),
     },
     // Gives the bar's bleed back: the pill's own edge, not its first glyph,
     // lines up with the content edge.

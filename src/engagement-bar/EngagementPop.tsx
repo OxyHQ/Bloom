@@ -47,10 +47,12 @@ const BURST = { duration: POP_MS, easing: EASE_OUT, reduceMotion: ReduceMotion.S
 export function EngagementPop({
   icon: Icon,
   color,
+  size = ENGAGEMENT_ICON_SIZE,
   onDone,
 }: {
   icon: BloomIconComponent;
   color: string;
+  size?: number;
   onDone?: EngagementMotionDone;
 }) {
   const scale = useSharedValue(1);
@@ -81,10 +83,16 @@ export function EngagementPop({
   );
 
   return (
-    <View style={BOX}>
-      <Animated.View style={[RING, { borderColor: color }, ringStyle]} />
+    <View style={[BOX, { width: size, height: size }]}>
+      <Animated.View
+        style={[
+          RING,
+          { width: size, height: size, borderRadius: size / 2, borderColor: color },
+          ringStyle,
+        ]}
+      />
       <Animated.View style={glyphStyle}>
-        <Icon width={ENGAGEMENT_ICON_SIZE} height={ENGAGEMENT_ICON_SIZE} fill={color} />
+        <Icon width={size} height={size} fill={color} />
       </Animated.View>
     </View>
   );

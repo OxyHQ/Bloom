@@ -109,6 +109,23 @@ describe('PageHeader, floating', () => {
     expect(opacity(none.getByTestId('h-scrim'))).toBe(0);
   });
 
+  it('passes a linear falloff to its edge effect without dimming the title', () => {
+    const screen = renderHeader({
+      title: 'Video',
+      titleReveal: 'always',
+      scrim: 'always',
+      scrimColor: '#000000',
+      scrimFalloff: 'linear',
+    });
+    expect(
+      hostNodes(screen.toJSON())
+        .filter((node) => node.type === 'Stop')
+        .map((node) => node.props.stopOpacity),
+    ).toEqual([1, 0]);
+    expect(opacity(screen.getByTestId('h-title-block'))).toBe(1);
+    expect(opacity(screen.getByTestId('h-scrim'))).toBe(1);
+  });
+
   it('ends the gradient BELOW its own box, so the fade has nowhere to make a line', () => {
     const screen = renderHeader({ title: 'A', scrim: 'always' });
     act(() => {

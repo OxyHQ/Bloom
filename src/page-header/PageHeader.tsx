@@ -191,6 +191,7 @@ function PageHeaderComponent({
   border = 'auto',
   transparent = false,
   scrim = 'auto',
+  scrimFalloff = 'smooth',
   scrimColor,
   scrollY: externalScrollY,
   scrollThreshold = DEFAULT_THRESHOLD,
@@ -784,6 +785,7 @@ function PageHeaderComponent({
         // Fade into the containing surface (ContentPanel publishes its fill),
         // falling back to the page. Explicit scrimColor remains an override.
         color={scrimColor ?? surfaceFill}
+        falloff={scrimFalloff}
         testID={testID ? `${testID}-scrim-gradient` : undefined}
       />
     </Animated.View>

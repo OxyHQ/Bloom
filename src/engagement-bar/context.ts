@@ -5,6 +5,7 @@ import type { EngagementPaint } from './paint';
 
 export interface EngagementBarContextValue {
   paint: EngagementPaint;
+  showZeroCounts: boolean;
   formatCount: (count: number) => string;
   haptic: (strength: HapticStrength) => void;
 }

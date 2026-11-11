@@ -139,6 +139,12 @@ It is an opacity ramp of one flat colour, not a blur of varying intensity. `back
 
 `scrim="auto"` fades it in over `[0, scrollThreshold]`, so it appears when content starts passing under. `"always"` paints it at rest — for a header born over a photograph. `"none"` removes it and leaves legibility to the islands alone.
 
+`scrimFalloff="linear"` fades uniformly from fully opaque at the top to transparent
+at the bottom, with half opacity at the midpoint. The default `"smooth"` retains
+the existing legibility curve. Both extend below the header and leave title/action
+opacity unchanged. `EdgeScrim falloff="linear"` exposes the same option for other
+floating chrome; Android's background gradient and the SVG use the same stops.
+
 **The colour follows the containing surface.** The ramp inherits the fill published by ContentPanel/SurfaceLevelProvider, falling back to the page background. A custom background unknown to that context must publish its resolved fill (for a panel, `surfaceColor`) or explicitly pass `scrimColor`. Pass an **opaque** colour: the alpha belongs to the ramp, and a colour carrying its own would multiply with it.
 
 **The islands protect themselves; the title does not.** An island carries its own material and is legible over both ends of the backdrop range (measured, in [Blur](/docs/blur)). A title is bare text on whatever is behind it, and with `scrim="auto"` there is nothing behind it until the page scrolls. So a header that sits over a photograph **at rest** needs a declared heading relationship or a choice that keeps its title readable:
@@ -183,6 +189,7 @@ The scrim sizes to its parent, so the parent carries the height — extend it AB
 | `leading` | — | After the back capsule, before the title (an avatar, a logo). |
 | `actions` | — | End of the bar. Floating: wrapped in a blur `BloomScope`. |
 | `scrim` | `'auto'` | `presentation="floating"` only. `auto` \| `always` \| `none`. |
+| `scrimFalloff` | `'smooth'` | Floating ramp curve; `linear` fades uniformly from opaque to transparent. |
 | `scrimColor` | Inherited surface fill | The opaque colour the edge effect fades from. Pass it when the screen paints a background the theme does not know about. |
 | `border` | `'auto'` | `bar` and `navigation` only. `auto` fades the separator in with scroll; `always`; `none`. |
 | `transparent` | `false` | `bar` and `navigation` only: background and shadow fade in with scroll. It no longer hides the title. |

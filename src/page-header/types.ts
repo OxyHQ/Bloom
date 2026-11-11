@@ -149,6 +149,8 @@ export interface PageHeaderProps {
   transparent?: boolean;
   /** `presentation="floating"` only. Default `auto`. */
   scrim?: PageHeaderScrim;
+  /** Floating gradient curve. Default smooth; linear fades uniformly from opaque to transparent. */
+  scrimFalloff?: 'smooth' | 'linear';
   /**
    * The colour the edge effect fades FROM. Defaults to `theme.colors.background`
    * — the page colour, which is what the content scrolling under the header is

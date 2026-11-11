@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { EngagementAction, EngagementBar, EngagementGroup } from './index';
+import { PageHeader } from '../page-header';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { RiArrowUpSLine } from '../icons/remix/RiArrowUpSLine';
 import { RiBarChartBoxLine } from '../icons/remix/RiBarChartBoxLine';
@@ -24,6 +25,63 @@ const meta: Meta<typeof EngagementBar> = {
 export default meta;
 
 type Story = StoryObj<typeof EngagementBar>;
+
+function MediaRailExample() {
+  const [liked, setLiked] = useState(false);
+  return (
+    <View testID="media-example" style={{ width: 320, height: 480, backgroundColor: '#808080' }}>
+      <PageHeader
+        testID="media-header"
+        title="Video"
+        placement="overlay"
+        tone="onImage"
+        safeArea={false}
+        scrim="always"
+        scrimColor="#000000"
+        scrimFalloff="linear"
+      />
+      <View style={{ position: 'absolute', right: 8, top: 140 }}>
+        <EngagementBar
+          testID="media-actions"
+          orientation="vertical"
+          size="lg"
+          tone="onImage"
+          showZeroCounts
+          trailing={
+            <EngagementAction
+              testID="media-share"
+              icon={RiUpload2Line}
+              accessibilityLabel="Share"
+              onPress={() => {}}
+            />
+          }
+        >
+          <EngagementAction
+            testID="media-like"
+            icon={RiHeart3Line}
+            activeIcon={RiHeart3Fill}
+            accessibilityLabel="Like"
+            count={liked ? 1 : 0}
+            active={liked}
+            tone="error"
+            popOnActivate
+            rollCount
+            onPress={() => setLiked(!liked)}
+          />
+          <EngagementAction
+            testID="media-replies"
+            icon={RiChat3Line}
+            accessibilityLabel="Replies"
+            count={12}
+            onPress={() => {}}
+          />
+        </EngagementBar>
+      </View>
+    </View>
+  );
+}
+
+export const MediaRail: Story = { render: () => <MediaRailExample /> };
 
 function Post() {
   const [liked, setLiked] = useState(false);

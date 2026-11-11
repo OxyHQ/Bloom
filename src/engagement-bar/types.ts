@@ -9,11 +9,20 @@ import type {
 
 import type { BloomIconComponent } from '../icons/icon-component';
 import type { AccentTone } from '../theme/accent-colors';
+import type { BloomSize } from '../appearance/types';
 
 /** The colour an action takes while `active`: any accent tone but the neutral one. */
 export type EngagementTone = Exclude<AccentTone, 'default'>;
 
 export interface EngagementBarProps {
+  /** Vertical rails stack actions and put each count below its glyph. Default horizontal. */
+  orientation?: 'horizontal' | 'vertical';
+  /** Inherits BloomScope (default md). Large uses 28px glyphs for media rails. */
+  size?: BloomSize;
+  /** White resting glyphs/counts over media; active actions retain their semantic tone. */
+  tone?: 'default' | 'onImage';
+  /** Keep zero counts visible, including the first 0→1 roll. Default false. */
+  showZeroCounts?: boolean;
   /** The leading actions, in reading order. */
   children: ReactNode;
   /** Actions pushed to the far edge of the row (save, translate, insights). */
@@ -39,7 +48,7 @@ export interface EngagementActionProps {
   /** Required: the action is a glyph, so nothing else names it. */
   accessibilityLabel: string;
   accessibilityHint?: string;
-  /** Drawn beside the glyph through the bar's `formatCount`; hidden when `0` or absent. */
+  /** Beside the glyph, or below in a vertical bar; zero follows the bar's showZeroCounts. */
   count?: number | null;
   /**
    * Whether the viewer has done this (liked, reposted, saved). Defined makes the
