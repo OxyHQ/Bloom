@@ -15,8 +15,14 @@ export interface BottomBarProps {
   action?: ReactNode;
   /** Auto places the action above navigation when side-by-side targets would be cramped. */
   actionPlacement?: 'auto' | 'beside' | 'above';
-  /** Hide the accessory while minimizing, returning on upward scroll. Default hide; standalone actions remain visible. */
-  actionBehavior?: 'hide' | 'visible';
+  /**
+   * `hide` fades the accessory on scroll (default), `visible` retains it.
+   * `dock` keeps one editable action: above expanded navigation, beside the
+   * active destination when minimized. It stays mounted with the keyboard.
+   */
+  actionBehavior?: 'hide' | 'visible' | 'dock';
+  /** Keep the same action mounted while navigation is absent (for example on desktop). */
+  navigationVisibility?: 'always' | 'compact' | 'never';
   minimizeProgress?: SharedValue<number>;
   /**
    * The bar's presence, 0 (shown) to 1 (gone), on the UI thread. The bar fades
@@ -28,6 +34,8 @@ export interface BottomBarProps {
   /** Optional screen-edge blur band; disabled by default. */
   blur?: boolean;
   maxWidth?: number;
+  /** Horizontal breathing room shared by navigation and action. Default 12. */
+  horizontalInset?: number;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }

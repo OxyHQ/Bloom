@@ -1,4 +1,4 @@
-import { useCallback, useContext } from 'react';
+import { useCallback, useContext, useMemo } from 'react';
 import { BottomBar } from '../bottom-bar';
 import type { BottomBarProps } from '../bottom-bar/types';
 import { useHapticFeedback } from '../hooks/use-haptics';
@@ -53,7 +53,27 @@ export function useTabPagerBottomBar(): Required<
  * else is `BottomBar`'s own props — `action` for a compose button,
  * `minimizeProgress`.
  */
-export function TabPagerBottomBar(props: TabPagerBottomBarProps) {
+export function TabPagerBottomBar({ routeBehavior = 'current', ...props }: TabPagerBottomBarProps) {
   const { onValueLongPress, ...bound } = useTabPagerBottomBar();
-  return <BottomBar onValueLongPress={onValueLongPress} {...props} {...bound} />;
+  // The provider already preserves progress on pushed routes. Read that
+  // existing selection only when route identity changes, never per frame.
+  const contextualValue = useMemo(
+    () =>
+      bound.value ||
+      bound.items[Math.round(bound.activeProgress.value)]?.name ||
+      bound.items[0]?.name ||
+      '',
+    [bound.value, bound.items, bound.activeProgress],
+  );
+  const contextual = routeBehavior === 'contextual' && !bound.value;
+  return (
+    <BottomBar
+      onValueLongPress={onValueLongPress}
+      {...props}
+      {...bound}
+      value={contextual ? contextualValue : bound.value}
+      activeProgress={contextual ? undefined : bound.activeProgress}
+      hideProgress={contextual ? undefined : bound.hideProgress}
+    />
+  );
 }
