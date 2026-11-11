@@ -2021,5 +2021,22 @@
     "parts": [
       "src/avatar/Avatar.tsx#Avatar"
     ]
+  },
+  "icon-circle-geometry": {
+    "status": "independent-scale",
+    "reason": "IconCircle uses the icon-token size vocabulary to select a decorative disc and glyph box; it does not consume BloomScope control size. BloomIconComponent is its public glyph contract and receives the resolved width, height and fill.",
+    "evidence": [
+      "src/icon-circle/IconCircle.tsx",
+      "src/icon-circle/types.ts",
+      "src/icons/icon-component.ts",
+      "docs/icon-circle.mdx",
+      "src/__tests__/IconCircleRadioIndicator.test.tsx",
+      "src/__tests__/IconCirclePublicPartScope.test.tsx",
+      "src/__tests__/IconCirclePublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the default xl disc/glyph (64/28px), explicit lg geometry (52/24px), and stable geometry under xs, lg and nested BloomScope. Native type-level fixtures use BloomIconComponent directly. Physical-device proportions remain unverified.",
+    "parts": [
+      "src/icon-circle/IconCircle.tsx#IconCircle"
+    ]
   }
 }
