@@ -2181,5 +2181,24 @@
     ],
     "verification": "Native-renderer behavior tests and Chromium input/scroll/focus validation; physical IME and device geometry not established by these checks.",
     "parts": ["src/chat-composer/CompactComposer.tsx#CompactComposer"]
+  },
+  "loading-indicators": {
+    "status": "applicable",
+    "reason": "Loading consumes the nearest BloomScope size for spinner diameter and label typography across spinner, inline and top variants; explicit size and iconSize retain their own precedence. SpinnerIcon and StatusRing expose numeric artwork geometry and remain independent from Bloom control scope.",
+    "evidence": [
+      "src/loading/LoadingBase.tsx",
+      "src/loading/SpinnerIcon.tsx",
+      "src/loading/StatusRing.tsx",
+      "docs/loading.mdx",
+      "src/__tests__/LoadingPublicPartScope.test.tsx",
+      "src/__tests__/LoadingPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and web DOM verify Loading default md, xs/sm/md/lg scope rungs, and explicit lg over xs. Both renderers verify numeric SpinnerIcon dimensions stay fixed under lg scope; native renderer verifies StatusRing dimensions stay fixed under lg scope. Physical device geometry pending.",
+    "parts": [
+      "src/loading/Loading.tsx#Loading",
+      "src/loading/SpinnerIcon.tsx#SpinnerIcon",
+      "src/loading/StatusRing.tsx#StatusRing"
+    ]
   }
+
 }
