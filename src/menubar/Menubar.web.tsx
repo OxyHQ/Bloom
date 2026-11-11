@@ -18,6 +18,7 @@ import { BloomScope } from '../appearance';
 import React, {
   type ComponentRef,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -61,6 +62,8 @@ export { MenubarMenu, MenubarTrigger } from './MenubarBase';
 
 /** The panel's 1px edge, inside which the layers sit. */
 const EDGE = 1;
+/** The panel's own transitions while it changes from one menu into the next: its place and size. */
+const MORPHED = ['left', 'top', 'width', 'height'];
 
 const NO_ANCHOR = { current: null };
 
@@ -130,21 +133,70 @@ function MenubarViewport() {
   });
 
   // Once the panel has reached the open menu, the menus it changed from go; then it rests,
-  // sized by the open menu again.
+  // sized by the open menu again. "Reached" is the end of the panel's own transitions of its
+  // place and size, never a time: each of them that changed is pending until the browser runs it
+  // (`transitionrun`), then running until it ends or is cancelled. Nothing changed (the new menu
+  // at the old one's place and size) or Reduce Motion, nothing is pending, so it rests at once.
   const leaving = useRef(layers);
   leaving.current = layers;
   const currentKey = current?.key;
+  const morph = useRef({
+    pending: new Set<string>(),
+    running: new Set<string>(),
+    last: new Map<string, string>(),
+    settle: () => {},
+  });
+  morph.current.settle = () => {
+    const { pending, running } = morph.current;
+    if (!target || target.key !== currentKey || pending.size > 0 || running.size > 0) return;
+    for (const layer of leaving.current) if (layer.exiting) retire(layer.key);
+    setTarget((now) => (now === target ? null : now));
+  };
   useLayoutEffect(() => {
-    if (!target || target.key !== currentKey) return undefined;
-    const timer = setTimeout(
-      () => {
-        for (const layer of leaving.current) if (layer.exiting) retire(layer.key);
-        setTarget((now) => (now === target ? null : now));
-      },
-      instant ? 0 : MENU_MORPH_MOTION.duration,
-    );
-    return () => clearTimeout(timer);
-  }, [target, currentKey, retire, instant]);
+    const element = hostElement(panel);
+    const { pending, running, last } = morph.current;
+    if (element) {
+      for (const property of MORPHED) {
+        const value = element.style.getPropertyValue(property);
+        const before = last.get(property);
+        last.set(property, value);
+        // A transition runs only from a value to another while morphing, never from `auto`.
+        if (morphing && !instant && before && value && before !== value) pending.add(property);
+      }
+    }
+    if (!morphing || instant) {
+      pending.clear();
+      running.clear();
+    }
+    morph.current.settle();
+  });
+  useEffect(() => {
+    const element = hostElement(panel);
+    if (!element) return undefined;
+    const ours = (event: Event) =>
+      event.target === element && MORPHED.includes((event as TransitionEvent).propertyName);
+    const run = (event: Event) => {
+      if (!ours(event)) return;
+      const property = (event as TransitionEvent).propertyName;
+      morph.current.pending.delete(property);
+      morph.current.running.add(property);
+    };
+    const end = (event: Event) => {
+      if (!ours(event)) return;
+      const property = (event as TransitionEvent).propertyName;
+      morph.current.pending.delete(property);
+      morph.current.running.delete(property);
+      morph.current.settle();
+    };
+    element.addEventListener('transitionrun', run);
+    element.addEventListener('transitionend', end);
+    element.addEventListener('transitioncancel', end);
+    return () => {
+      element.removeEventListener('transitionrun', run);
+      element.removeEventListener('transitionend', end);
+      element.removeEventListener('transitioncancel', end);
+    };
+  }, [panel]);
 
   if (!entry || !showing) return null;
   const { props } = entry;

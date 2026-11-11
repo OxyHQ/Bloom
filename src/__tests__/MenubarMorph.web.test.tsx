@@ -104,6 +104,21 @@ function layerOf(text: string): HTMLElement | null {
   return node;
 }
 
+/** The browser ending (or cancelling) the panel's own transitions of `properties`. */
+function transitions(
+  panel: HTMLElement,
+  kind: 'transitionend' | 'transitioncancel',
+  properties: string[],
+) {
+  act(() => {
+    for (const property of properties) {
+      const event = new Event(kind, { bubbles: true });
+      Object.defineProperty(event, 'propertyName', { value: property });
+      panel.dispatchEvent(event);
+    }
+  });
+}
+
 function pointerOver(testID: string) {
   act(() => {
     const event = new MouseEvent('pointermove', { bubbles: true, cancelable: true });
@@ -152,8 +167,17 @@ describe("a menu bar's one panel changing from one menu into the next (web)", ()
     expect(open.hasAttribute('inert')).toBe(false);
     expect(open.style.opacity).toBe('1');
 
-    // Once the transition has run: File's rows gone, the panel at rest on Edit's menu.
-    wait(200);
+    // However long it takes: it rests only when its transitions have ended, never on a timer.
+    wait(1000);
+    expect(layerOf('New')).not.toBeNull();
+    expect(panel.style.transitionProperty).toBe('box-shadow, left, top, width, height');
+    // A row's own transition ending is not the panel's.
+    transitions(layerOf('Undo') as HTMLElement, 'transitionend', ['opacity']);
+    expect(layerOf('New')).not.toBeNull();
+    // Once its size has transitioned: File's rows gone, the panel at rest on Edit's menu.
+    transitions(panel, 'transitionend', ['width']);
+    expect(layerOf('New')).not.toBeNull();
+    transitions(panel, 'transitionend', ['height', 'left']);
     expect(layerOf('New')).toBeNull();
     expect(panels()).toEqual([panel]);
     expect(panel.style.width).toBe('');
@@ -190,5 +214,44 @@ describe("a menu bar's one panel changing from one menu into the next (web)", ()
     expect(layerOf('New')).toBeNull();
     expect((layerOf('Undo') as HTMLElement).style.opacity).toBe('1');
     expect(panel?.style.transitionDuration.startsWith('0ms')).toBe(true);
+  });
+
+  it('rests once its transitions are cancelled, as when they end', () => {
+    mount();
+    act(() => trigger('file').click());
+    wait(200);
+    const panel = panels()[0] as HTMLElement;
+    pointerOver('edit');
+    expect(layerOf('New')).not.toBeNull();
+    transitions(panel, 'transitioncancel', ['left', 'width', 'height']);
+    expect(layerOf('New')).toBeNull();
+    expect(panel.style.transitionProperty).toBe('box-shadow');
+  });
+
+  it("rests at once when the new menu is at the old one's place and size: no transition runs", () => {
+    // The panel's place and size the same throughout (the new menu as big as the old, under a
+    // title at the same place): the browser runs no transition of them, so no transitionend will
+    // come, and nothing may wait for one.
+    const same = new Set(['left', 'top', 'width', 'height']);
+    const read = CSSStyleDeclaration.prototype.getPropertyValue;
+    const values = jest
+      .spyOn(CSSStyleDeclaration.prototype, 'getPropertyValue')
+      .mockImplementation(function (this: CSSStyleDeclaration, property: string) {
+        return same.has(property) ? '100px' : read.call(this, property);
+      });
+    try {
+      mount();
+      act(() => trigger('file').click());
+      wait(200);
+      const panel = panels()[0] as HTMLElement;
+      pointerOver('edit');
+      expect(panels()).toEqual([panel]);
+      expect(panel.getAttribute('aria-label')).toBe('Edit');
+      expect(layerOf('New')).toBeNull();
+      expect(panel.style.transitionProperty).toBe('box-shadow');
+      expect((layerOf('Undo') as HTMLElement).style.opacity).toBe('1');
+    } finally {
+      values.mockRestore();
+    }
   });
 });
