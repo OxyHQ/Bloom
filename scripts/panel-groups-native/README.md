@@ -27,8 +27,8 @@ hash with the screenshots/report. The sourcemap is the authoritative source of
 what was bundled if the source checkout changes during compilation. No source
 mirror result should be presented as a published-package result.
 
-The smoke test checks native equal-height splitting, separate touch scrolling,
+The smoke test checks native equal-height splitting, divider minimum stops, separate touch scrolling,
 reading position after closing, sheet presentation and Android Back dismissal,
-and adding email content to the common scroll viewport. It uses only this app's
+a 90% sheet height ceiling, and adding email content to the common scroll viewport. It uses only this app's
 controls and captures only while this app is foregrounded. It does not establish
 iOS behavior, production Mention integration or a performance benchmark.

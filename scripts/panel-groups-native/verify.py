@@ -25,6 +25,16 @@ screen=bounds(next(t.iter('node')));center=str((screen[0]+screen[2])//2);height=
 tap(t,'native-open');t=tree('native-split')
 report['split']={k:bounds(node(t,k)) for k in ['native-post-panel','native-likes-panel']}
 p=report['split']['native-post-panel'];l=report['split']['native-likes-panel'];assert p[3]<=l[1] and l[3]>l[1] and abs((p[3]-p[1])-(l[3]-l[1]))<5
+density=int(re.findall(r'\d+',adb('shell','wm','density').decode())[-1])/160
+for target in [p[1]+20,l[3]-250,p[3]]:
+ grip=bounds(node(t,'native-post-panel-divider'))
+ adb('shell','input','swipe',center,str((grip[1]+grip[3])//2),center,str(target),'500')
+ t=tree('native-resized-'+str(target))
+ resizedPost=bounds(node(t,'native-post-panel'));resizedLikes=bounds(node(t,'native-likes-panel'))
+ assert resizedPost[3]-resizedPost[1]>=120*density-3
+ assert resizedLikes[3]-resizedLikes[1]>=120*density-3
+report['nativeResizeMinimums']=True
+p=bounds(node(t,'native-post-panel'));l=bounds(node(t,'native-likes-panel'))
 before=rows(t,'Post'); likesBefore=rows(t,'Likes')
 adb('shell','input','swipe',center,str(p[3]-50),center,str(p[1]+250),'450');t=tree('native-post-scrolled')
 assert rows(t,'Post')!=before;assert rows(t,'Likes')==likesBefore
@@ -34,6 +44,8 @@ report['independentNativeScroll']=True
 tap(t,'native-open');t=tree('native-closed');assert not rows(t,'Likes');assert rows(t,'Post')[0]==postAfter[0]
 report['closeRetainsReadingPosition']=True
 tap(t,'native-sheet');t=tree('native-sheet');report['sheetText']=[n.get('text') for n in t.iter('node') if n.get('text')]
+sheet=bounds(node(t,'native-likes-panel-floating'));assert sheet[1]>=height*.1-2 and sheet[3]-sheet[1]<=height*.9+2
+report['sheetBounds']=sheet;report['sheetMaxHeightRatio']=0.9
 assert rows(t,'Likes');adb('shell','input','keyevent','4');t=tree('native-sheet-closed');assert not rows(t,'Likes')
 report['nativeSheetAndBackDismiss']=True
 tap(t,'native-flow');t=tree('native-flow');report['flowInitial']=[n.get('text') for n in t.iter('node') if n.get('text','').startswith('Email ')]
