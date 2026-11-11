@@ -5,7 +5,7 @@
  *
  * The obvious shape is `useDerivedValue(() => withTiming(target))`, which is what
  * sonner-native does for both the stack offset and the stack scale. Returning an
- * animation from a mapper does not tick on WEB (`~/Oxy/AGENTS.md`, reanimated web
+ * animation from a mapper does not tick on WEB (Oxy build-and-runtime-traps doc, reanimated web
  * failure mode A): the value jumps to or freezes at a static frame, so the stack
  * lands on the right numbers without ever animating. The pattern that works on
  * every platform is to assign the animation from JS — `sv.value = withTiming(…)`

@@ -30,7 +30,7 @@
  *     `setElementPosition` at `duration x 5` — `position: absolute`, a frozen
  *     `top`/`left`/`width`/`height` snapshot, `transform` cleared. The animation
  *     plays and the element is then pinned, silently, one and a half seconds
- *     later. That is failure mode (C) in `~/Oxy/AGENTS.md` and it is strictly
+ *     later. That is failure mode (C) in the Oxy build-and-runtime-traps doc and it is strictly
  *     worse than the inert animation it would replace.
  *
  * So the enter uses a PREDEFINED builder, whose `presetName` IS in `Animations`
