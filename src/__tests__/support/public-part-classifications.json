@@ -1944,7 +1944,7 @@
   },
   "chip-control-size": {
     "status": "applicable",
-    "reason": "Chip owns control-size aliases xs/sm/md/lg that follow BloomScope, plus explicit xl/2xl filter and touch-target rungs. Explicit size takes precedence; the component retains its role-specific geometry.",
+    "reason": "Chip owns control-size aliases xs/sm/md/lg that follow BloomScope, plus explicit xl filter/segment and 2xl touch-target rungs. Explicit size takes precedence; the 2xl rung is 44px tall with 2dp vertical native hit slop reaching 48dp without side overlap.",
     "evidence": [
       "src/chip/Chip.tsx",
       "src/chip/shared.ts",
@@ -1953,7 +1953,7 @@
       "src/__tests__/BadgeChipPublicPartScope.test.tsx",
       "src/__tests__/BadgeChipPublicPartScope.web.test.tsx"
     ],
-    "verification": "Native renderer and DOM web verify default md, inherited xs/lg, nested lg over xs, explicit md over xs, and the explicit 2xl 40px touch rung under a surrounding lg scope. Physical-device fit and hit testing remain unverified.",
+    "verification": "Native renderer and DOM web verify default md, inherited xs/lg, nested lg over xs, explicit md over xs, and the explicit 2xl 44px visual target. A native test confirms 2dp vertical hit slop (48dp total) with zero horizontal expansion; the dedicated Pixel 8a fixture probe records live taps just outside both vertical edges. Other sizes and explicit styles remain outside this target claim.",
     "parts": ["src/chip/Chip.tsx#Chip"]
   }
 }

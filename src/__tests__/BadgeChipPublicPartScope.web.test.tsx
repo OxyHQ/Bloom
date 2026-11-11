@@ -71,7 +71,7 @@ it('resolves Badge and Chip Bloom size aliases from the nearest scope in DOM web
     renderSubject({ scope: 'xs', badgeSize: 'md', chipSize: 'md' });
     expect(heights()).toEqual(['18px', '24px']);
     renderSubject({ scope: 'lg', badgeSize: 'label-medium', chipSize: '2xl' });
-    expect(heights()).toEqual(['24px', '40px']);
+    expect(heights()).toEqual(['24px', '44px']);
   } finally {
     act(() => root.unmount());
     host.remove();
