@@ -92,6 +92,8 @@ function GlyphButtonComponent(
     children,
     onPress,
     onLongPress,
+    onFocus,
+    onBlur,
     disabled = false,
     busy = false,
     pressed,
@@ -188,6 +190,8 @@ function GlyphButtonComponent(
             }
           : undefined
       }
+      onFocus={onFocus}
+      onBlur={onBlur}
       onHoverIn={onHoverIn}
       onHoverOut={onHoverOut}
       onPressIn={onPressIn}
