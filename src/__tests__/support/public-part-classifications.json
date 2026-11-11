@@ -1023,7 +1023,6 @@
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/activity-feed/ActivityFeed.tsx#ActivityFeed",
       "src/agent-avatar/AgentAvatar.tsx#AgentAvatar",
       "src/agent-avatar/AgentAvatarProvider.tsx#AgentAvatarProvider",
       "src/agent-chat/AgentChat.tsx#AgentChat",
@@ -1981,6 +1980,19 @@
     ],
     "verification": "Native renderer and DOM web verify default md (36px), inherited sm (32px), explicit md over inherited sm, nested lg (44px), and inherited/explicit geometry through Canvas, CanvasBackground, CanvasPanel, and actual Portal. Direct size tables verify xs/sm/md/lg geometry and touch accommodation; device-rendered fit and accessibility remain separate",
     "parts": ["src/button/Button.tsx#Button"]
+  },
+  "activity-feed-parts": {
+    "status": "delegated",
+    "reason": "ActivityFeed has no Bloom control-size prop: its actor artwork follows the separate comfortable/compact density axis, and its built-in reveal action selects an explicit xs Button. Caller-supplied entry content and actions remain in the inherited BloomScope and resolve their own control sizes through the feed's ordinary View wrappers.",
+    "evidence": [
+      "src/activity-feed/ActivityFeed.tsx",
+      "src/activity-feed/types.ts",
+      "docs/activity-feed.mdx",
+      "src/__tests__/ActivityFeedPublicPartScope.test.tsx",
+      "src/__tests__/ActivityFeedPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web measure the 32px comfortable and 24px compact actor artwork unchanged under default, xs, lg and nested scopes, while a caller-supplied Button follows xs/lg through the feed wrapper. Physical-device layout and touch fit remain unverified.",
+    "parts": ["src/activity-feed/ActivityFeed.tsx#ActivityFeed"]
   },
   "activity-feed-filter-parts": {
     "status": "independent-scale",
