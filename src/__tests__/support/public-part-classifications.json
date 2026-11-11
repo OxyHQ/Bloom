@@ -894,6 +894,43 @@
       "src/call-ui/CallControls.tsx#CallControls"
     ]
   },
+  "input-group-control-size": {
+    "status": "applicable",
+    "reason": "InputGroup owns the single input shell and resolves its field geometry from the explicit size or nearest BloomScope, defaulting to md. It also publishes the resolved size through TextFieldGroupContext so its field and addons remain one coordinated control.",
+    "evidence": [
+      "src/input-group/InputGroup.tsx",
+      "src/input-group/types.ts",
+      "src/__tests__/InputGroupPublicPartScope.test.tsx",
+      "src/__tests__/InputGroupPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and web DOM verify default md, xs/sm/md/lg scope geometry, nested scopes, explicit sm override, and noPadding addon insets derived from each rung. The group owns no portal or submenu; physical-device proportions and input hit testing remain pending.",
+    "parts": ["src/input-group/InputGroup.tsx#InputGroup"]
+  },
+  "input-group-addon-size-delegation": {
+    "status": "delegated",
+    "reason": "InputGroupAddon has no public size prop; inside a group it consumes the group's resolved size to calculate noPadding inset and follows the group's shared shell context. Outside a group its fallback geometry remains md.",
+    "evidence": [
+      "src/input-group/InputGroup.tsx",
+      "src/input-group/types.ts",
+      "src/__tests__/InputGroupPublicPartScope.test.tsx",
+      "src/__tests__/InputGroupPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and web DOM verify that the addon inset follows xs/sm/md/lg group geometry and an explicit nested sm group size; addon label typography remains the fixed body-regular role. Physical-device layout remains pending.",
+    "parts": ["src/input-group/InputGroup.tsx#InputGroupAddon"]
+  },
+  "time-field-partial-size": {
+    "status": "applicable",
+    "reason": "TimeField resolves its text-field geometry from the explicit size or nearest BloomScope, defaulting to md. Its two-step recipe maps xs/sm to the small 96×32 field and md/lg to the medium 104×38 field; the intermediate rungs are intentionally not distinct geometries.",
+    "evidence": [
+      "src/date-picker/TimeField.tsx",
+      "src/date-picker/types.ts",
+      "docs/date-picker.mdx",
+      "src/__tests__/TimeField.test.tsx",
+      "src/__tests__/TimeFieldPublicPartScope.test.tsx"
+    ],
+    "verification": "Native renderer and web DOM verify default md, xs/sm-to-small and md/lg-to-medium mappings, nested scopes, explicit sm override, and actual width/height. TimeField owns no portal or submenu; keyboard/IME and device input behavior remain covered by their separate field checks, while physical proportions remain pending.",
+    "parts": ["src/date-picker/TimeField.tsx#TimeField"]
+  },
   "select-field-size-delegation": {
     "status": "delegated",
     "reason": "SelectField adds the Field label, description and error layout, then forwards its optional size to the platform-specific Select root. Select remains the owner of trigger size resolution.",
@@ -1191,7 +1228,6 @@
       "src/date-picker/DatePicker.tsx#DatePicker",
       "src/date-picker/DateRangePicker.tsx#DateRangePicker",
       "src/date-picker/MeetingScheduler.tsx#MeetingScheduler",
-      "src/date-picker/TimeField.tsx#TimeField",
       "src/delivery-slot/DeliverySlotDays.tsx#DeliverySlotDays",
       "src/delivery-slot/DeliverySlotOption.tsx#DeliverySlotOption",
       "src/delivery-slot/DeliverySlotPicker.tsx#DeliverySlotPicker",
@@ -1257,8 +1293,6 @@
       "src/hover-card/HoverCard.tsx#HoverCardTrigger",
       "src/image-resolver/context.ts#ImageResolverProvider",
       "src/important-alerts-card/ImportantAlertsCard.tsx#ImportantAlertsCard",
-      "src/input-group/InputGroup.tsx#InputGroup",
-      "src/input-group/InputGroup.tsx#InputGroupAddon",
       "src/input-otp/InputOtp.tsx#InputOtp",
       "src/job-board/JobBoard.tsx#JobBoard",
       "src/job-board/JobCard.tsx#JobCard",

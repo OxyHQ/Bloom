@@ -5,13 +5,14 @@
  * react-native-web so the assertions read the emitted DOM — the `<input>`, its
  * name, its disabled state and the text it actually shows.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomScope } from '../appearance';
 import { TimeField } from '../date-picker';
 import {
   formatTime,
@@ -382,5 +383,46 @@ describe('TimeField', () => {
       <TimeField value="09:00" onChange={() => {}} width={140} accessibilityLabel="T" testID="t" />,
     );
     expect(getComputedStyle(field('t')).width).toBe('140px');
+  });
+
+  it.each([
+    ['xs', '96px', '32px'],
+    ['sm', '96px', '32px'],
+    ['md', '104px', '38px'],
+    ['lg', '104px', '38px'],
+  ] as const)(
+    'maps the %s BloomScope size to TimeField density in the DOM',
+    (size, width, height) => {
+      mount(
+        <div>
+          <BloomScope size={size}>
+            <TimeField value="09:00" onChange={() => {}} accessibilityLabel="Time" testID="t" />
+          </BloomScope>
+        </div>,
+      );
+      expect(getComputedStyle(field('t')).width).toBe(width);
+      expect(getComputedStyle(field('t')).height).toBe(height);
+    },
+  );
+
+  it('keeps the md default and lets explicit sm override nested web scopes', () => {
+    mount(<TimeField value="09:00" onChange={() => {}} accessibilityLabel="Time" testID="t" />);
+    expect(getComputedStyle(field('t')).width).toBe('104px');
+
+    mount(
+      <BloomScope size="xs">
+        <BloomScope size="lg">
+          <TimeField
+            value="09:00"
+            onChange={() => {}}
+            size="sm"
+            accessibilityLabel="Time"
+            testID="t"
+          />
+        </BloomScope>
+      </BloomScope>,
+    );
+    expect(getComputedStyle(field('t')).width).toBe('96px');
+    expect(getComputedStyle(field('t')).height).toBe('32px');
   });
 });
