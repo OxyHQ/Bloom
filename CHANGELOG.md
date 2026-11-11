@@ -1,5 +1,11 @@
 # Changelog
 
+## 19.3.0
+
+### Added
+
+- **`Sidebar` `primaryActionPlacement: 'bottom' | 'top'`** (default `'bottom'`, unchanged). `'top'` draws the `primaryAction` button in the fixed header, under the header row and `toolbar` and above the modes and search, so an app's main command (Compose, New post) can lead the sidebar. It is the same button as in the footer: same `Fab`, same 2px inset that aligns it with the rows, same collapse to the named icon button. Before, an app that wanted it on top had to put its own `Fab` in `toolbar`, which has no such inset: the button overshot the rows by 2px on each side. `variant="rail"` keeps the action at the bottom. `AppShell` passes the prop through (`sidebar={{ primaryActionPlacement: 'top' }}`).
+
 ## 19.2.0
 
 ### Added

@@ -48,6 +48,22 @@ import { RiAddLine } from '@oxy.so/bloom/icons/RiAddLine';
 component. `onPress` owns the command and is never called while `disabled` is true.
 The sidebar does not create a composer or any other application-specific UI.
 
+By default the action sits at the bottom. `primaryActionPlacement="top"` draws the same
+button — same `Fab`, same 2px inset that lines it up with the rows, same collapse to the
+named icon button — in the fixed header instead: under the header row and `toolbar`, above
+the modes and search. Use it when the main command (Compose, New post) should lead the
+sidebar. `variant="rail"` keeps the action at the bottom, and the collapsed lane stays at
+least 50px wide in both placements. `AppShell` passes it through
+(`sidebar={{ primaryActionPlacement: 'top' }}`).
+
+```tsx
+<Sidebar
+  items={navigation}
+  primaryActionPlacement="top"
+  primaryAction={{ label: 'Compose', icon: RiEditLine, onPress: openComposer }}
+/>
+```
+
 ## Parts
 
 | export | |

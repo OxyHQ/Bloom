@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { act, render } from '@testing-library/react-native';
 import { Fab } from '../fab';
 import { Sidebar } from '../sidebar';
@@ -87,4 +87,96 @@ it('keeps its accessible name and callback across collapse and expansion', () =>
     pressHost(tree.getByLabelText('New post'));
   }
   expect(onPress).toHaveBeenCalledTimes(3);
+});
+
+describe('primaryActionPlacement', () => {
+  const insideTestID = (node: { parent: unknown }, testID: string) => {
+    for (
+      let ancestor = node.parent as { props: { testID?: string }; parent: unknown } | null;
+      ancestor;
+      ancestor = ancestor.parent as typeof ancestor | null
+    ) {
+      if (ancestor.props.testID === testID) return true;
+    }
+    return false;
+  };
+
+  it('draws the action in the sticky footer by default and leaves the header without it', () => {
+    const tree = mount({
+      testID: 'nav',
+      items,
+      primaryAction: { label: 'New post', icon: RiAddLine, onPress: () => {} },
+    });
+    const button = tree.getByLabelText('New post');
+    expect(insideTestID(button, 'nav-sticky-footer')).toBe(true);
+    expect(insideTestID(button, 'nav-fixed-header')).toBe(false);
+  });
+
+  it.each([false, true])(
+    'draws one named, operable action in the fixed header above the destinations when top (collapsed=%s)',
+    (collapsed) => {
+      const onPress = jest.fn();
+      const tree = mount({
+        testID: 'nav',
+        items,
+        collapsed,
+        primaryActionPlacement: 'top',
+        primaryAction: { label: 'New post', icon: RiAddLine, onPress },
+      });
+      expect(tree.getAllByLabelText('New post')).toHaveLength(1);
+      const button = tree.getByLabelText('New post');
+      expect(button.props.accessibilityRole).toBe('button');
+      expect(insideTestID(button, 'nav-fixed-header')).toBe(true);
+      expect(insideTestID(button, 'nav-sticky-footer')).toBe(false);
+      expect(insideTestID(button, 'nav-scroll')).toBe(true);
+      pressHost(button);
+      expect(onPress).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it('sits after the toolbar and adds no air of its own above, since the header already gaps its children', () => {
+    const tree = mount({
+      testID: 'nav',
+      items,
+      toolbar: <RiHome5Line testID="toolbar-mark" />,
+      primaryActionPlacement: 'top',
+      primaryAction: { label: 'New post', icon: RiAddLine, onPress: () => {} },
+    });
+    const header = tree.getByTestId('nav-fixed-header');
+    const order = (testID: string) =>
+      header.children.findIndex(
+        (child) =>
+          typeof child !== 'string' &&
+          (child.props.testID === testID ||
+            child.findAll((n) => n.props.testID === testID).length > 0),
+      );
+    expect(order('toolbar-mark')).toBeGreaterThanOrEqual(0);
+    expect(order('nav-primary-action')).toBeGreaterThan(order('toolbar-mark'));
+    const wrapper = tree.getByTestId('nav-primary-action').parent;
+    expect(wrapper).toBeTruthy();
+    let paddingTop: unknown;
+    for (
+      let node = tree.getByTestId('nav-primary-action').parent;
+      node && paddingTop === undefined;
+      node = node.parent
+    ) {
+      const flat = ([] as unknown[]).concat(node.props.style ?? []).flat(4) as Record<
+        string,
+        unknown
+      >[];
+      for (const entry of flat) if (entry && 'paddingTop' in entry) paddingTop = entry.paddingTop;
+    }
+    expect(paddingTop).toBe(0);
+  });
+
+  it('keeps the rail variant at the bottom whatever the placement', () => {
+    const tree = mount({
+      variant: 'rail',
+      testID: 'nav',
+      items,
+      primaryActionPlacement: 'top',
+      primaryAction: { label: 'New post', icon: RiAddLine, onPress: () => {} },
+    });
+    expect(tree.getAllByLabelText('New post')).toHaveLength(1);
+  });
 });
