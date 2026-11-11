@@ -1,5 +1,11 @@
 # Changelog
 
+## 19.8.0
+
+### Added
+
+- `Menubar`'s `declareClosedMenus` (default `true`): `false` mounts nothing of a closed menu but its title, instead of its content headless for its shortcuts. For a bar whose rows run no chords of their own, an OS shell's: its closed menus cost no renders, as a Mac's bar builds a menu as it opens, and the panel changing from one menu into the next still crossfades its rows. Ignored where the platform draws the bar (`menu-bar`).
+
 ## 19.6.0
 
 ### Added

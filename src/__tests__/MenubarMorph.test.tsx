@@ -79,14 +79,37 @@ function desktop() {
   return { adapter, mounts, latest, press };
 }
 
-function Bar({ chosen, initialFocus }: { chosen: (row: string) => void; initialFocus?: string }) {
+/** Renders of File's content (a part of the declaration that draws: it mounts where the content
+    is mounted, headless or open). */
+const fileRenders = { count: 0 };
+function FileProbe() {
+  fileRenders.count += 1;
+  return null;
+}
+
+function Bar({
+  chosen,
+  initialFocus,
+  declareClosedMenus,
+}: {
+  chosen: (row: string) => void;
+  initialFocus?: string;
+  declareClosedMenus?: boolean;
+}) {
   const [open, setOpen] = useState<string | undefined>(undefined);
   const [focus, setFocus] = useState<string | undefined>(initialFocus);
   return (
-    <Menubar value={open} onValueChange={setOpen} focusValue={focus} onFocusValueChange={setFocus}>
+    <Menubar
+      value={open}
+      onValueChange={setOpen}
+      focusValue={focus}
+      onFocusValueChange={setFocus}
+      declareClosedMenus={declareClosedMenus}
+    >
       <MenubarMenu value="file">
         <MenubarTrigger testID="file">File</MenubarTrigger>
         <MenubarContent testID="file-menu" label="File">
+          <FileProbe />
           <MenubarItem shortcut="Mod+N" onPress={() => chosen('New')}>
             New
           </MenubarItem>
@@ -109,7 +132,7 @@ const isMorphAnchor = (node: ReactTestInstance) =>
   node.props.importantForAccessibility === 'no-hide-descendants' &&
   node.props.accessible === false;
 
-function open(chosen = jest.fn(), initialFocus?: string) {
+function open(chosen = jest.fn(), initialFocus?: string, declareClosedMenus?: boolean) {
   const platform = desktop();
   let screen: RenderResult | null = null;
   // Fabric's measurement, against the frames above: a title's frame in the bar, the anchor's at
@@ -142,7 +165,7 @@ function open(chosen = jest.fn(), initialFocus?: string) {
   };
   screen = render(
     <BloomProvider mode="light" platform={platform.adapter}>
-      <Bar chosen={chosen} initialFocus={initialFocus} />
+      <Bar chosen={chosen} initialFocus={initialFocus} declareClosedMenus={declareClosedMenus} />
     </BloomProvider>,
     { createNodeMock },
   );
@@ -472,5 +495,65 @@ describe('a menu with no title measurement (a platform that cannot measure)', ()
     expect(screen.getByText('Documentation')).toBeTruthy();
     expect(platform.mounts).toEqual(['mount']);
     expect(Text).toBeTruthy();
+  });
+});
+
+describe('a bar that declares no closed menus (declareClosedMenus={false})', () => {
+  beforeEach(() => {
+    fileRenders.count = 0;
+  });
+
+  it('mounts nothing of a closed menu, where by default its content is mounted headless', () => {
+    open();
+    // By default File's content is declared while it is closed, so its shortcuts work.
+    expect(fileRenders.count).toBeGreaterThan(0);
+    fileRenders.count = 0;
+    const { screen } = open(jest.fn(), undefined, false);
+    expect(fileRenders.count).toBe(0);
+    // Open, its content mounts as it draws.
+    fireEvent.press(screen.getByText('File'));
+    expect(fileRenders.count).toBeGreaterThan(0);
+    expect(screen.getByText('New')).toBeTruthy();
+  });
+
+  it("runs a closed menu's shortcut only by default: its rows are not declared", () => {
+    const declared = open();
+    declared.platform.press('n', { metaKey: true });
+    expect(declared.chosen).toHaveBeenCalledWith('New');
+    const undeclared = open(jest.fn(), undefined, false);
+    undeclared.platform.press('n', { metaKey: true });
+    expect(undeclared.chosen).not.toHaveBeenCalled();
+  });
+
+  it('still changes its one popup from one menu into the next, the rows crossfading', () => {
+    const { screen, platform } = open(jest.fn(), undefined, false);
+    fireEvent.press(screen.getByText('File'));
+    laidOut(screen, 'New', 264, 80);
+    frames(48);
+    move(screen, 'help');
+    // File's rows go on showing as they leave, its content read as it is.
+    expect(screen.getByText('New', { includeHiddenElements: true })).toBeTruthy();
+    expect(opacityOf(screen, 'New')).toBe(1);
+    laidOut(screen, 'Documentation', 300, 40);
+    const fades: Array<[number, number]> = [];
+    frames(200, () => {
+      if (!screen.queryByText('New', { includeHiddenElements: true })) return;
+      fades.push([opacityOf(screen, 'New'), opacityOf(screen, 'Documentation')]);
+    });
+    expect(fades.some(([file, help]) => file > 0 && file < 1 && help > 0 && help < 1)).toBe(true);
+    expect(screen.queryByText('New', { includeHiddenElements: true })).toBeNull();
+    expect(screen.getByText('Documentation')).toBeTruthy();
+    expect(platform.mounts).toEqual(['mount']);
+    // File closed again: nothing of it mounted.
+    fileRenders.count = 0;
+    move(screen, 'file');
+    laidOut(screen, 'New', 264, 80);
+    frames(200);
+    move(screen, 'help');
+    laidOut(screen, 'Documentation', 300, 40);
+    frames(200);
+    const settled = fileRenders.count;
+    frames(200);
+    expect(fileRenders.count).toBe(settled);
   });
 });

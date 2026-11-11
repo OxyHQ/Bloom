@@ -111,6 +111,7 @@ function MenubarRoot(props: MenubarProps & { Viewport: ComponentType }) {
     onValueChange,
     focusValue: focusValueProp,
     onFocusValueChange,
+    declareClosedMenus = true,
     label: labelProp,
     className,
     style,
@@ -175,9 +176,11 @@ function MenubarRoot(props: MenubarProps & { Viewport: ComponentType }) {
     [openValue, setValue],
   );
   useMenuShortcuts(registry, menuBar === null || publishing, onShortcut);
+  // The platform's bar needs every menu declared, closed or not.
+  const declareClosed = declareClosedMenus || menuBar !== null;
   const scope = useMemo<MenubarScope>(
-    () => ({ registry, headless: menuBar !== null, parent: null, path: [] }),
-    [registry, menuBar],
+    () => ({ registry, headless: menuBar !== null, declareClosed, parent: null, path: [] }),
+    [registry, menuBar, declareClosed],
   );
   const palette = useMenuPalette();
   const barPaint = {
