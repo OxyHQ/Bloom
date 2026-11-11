@@ -4,6 +4,7 @@ import { requireLabEmulator, requireLabForeground, requireOfflineApk } from './a
 const devices = 'List of devices attached\nemulator-5580\tdevice\n';
 test('accepts only the named isolated emulator', () => {
   requireLabEmulator('emulator-5580', devices, 'bloom_material_663\nOK', '1');
+  requireLabEmulator('emulator-5580', devices, 'bloom_material_663\r\nOK\r\n', '1');
   assert.throws(() => requireLabEmulator('phone123', 'phone123 device', 'bloom_material_663', '1'));
   assert.throws(() => requireLabEmulator('emulator-5580', devices, 'my_existing_avd', '1'));
   assert.throws(() =>

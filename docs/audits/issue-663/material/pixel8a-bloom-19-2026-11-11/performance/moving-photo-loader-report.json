@@ -1,0 +1,15 @@
+{
+  "case": "moving-photo-loader",
+  "serial": "43221JEKB12200",
+  "elapsedSeconds": 15.0,
+  "frames": 1808,
+  "jankyFrames": 0,
+  "frameP95ms": 11,
+  "gpuP95ms": 5,
+  "pssKb": 357439,
+  "rssKb": 529832,
+  "thermalBefore": 0,
+  "thermalAfter": 0,
+  "sampleCapturedAtAndroid": "Wed Nov 11 07:06:12 EET 2026",
+  "note": "Descriptive 15-second sample on Pixel 8a Android 16/API36. See README for limitations."
+}

@@ -1,0 +1,33 @@
+{
+  "commit": "49b36029ffcc30ee3150b4c8d9490c25aecdeec7",
+  "workingTree": "M scripts/material-lab/android-capture.mjs\n M scripts/material-lab/android-gate.mjs\n M scripts/material-lab/android-gate.test.mjs\n?? scripts/material-lab/bloom-local/",
+  "fixtureSha256": "0db3aa4d1d4e91bfe33ac0ef5d84352e77367c9e93d1f21fd3c976ce1d4e610c",
+  "sourceSha256": "4633c2bf9719d9429088676a8814d8204dd0bff24bf03ed4c3730bbb56356af2",
+  "sourceFiles": 4431,
+  "nativeModulePackageVersion": "19.0.0",
+  "nativeModuleArtifact": "local packed Bloom snapshot",
+  "nativeModuleTarballSha256": "a51c71bca5201bd50329fd4bf9da1a317667c9585ca7252da70a5b62ab25e38c",
+  "lockSha256": "f2df323a08c2c77c02e09a9ce69aea9f4d90b0fad025ed75ac0551bdcea8dfa4",
+  "artifactKind": "Bloom source fixture with the installed native package recorded separately",
+  "reactCompiler": false,
+  "dependencies": {
+    "@oxy.so/bloom": "17.22.0",
+    "expo": "58.0.23",
+    "expo-asset": "58.0.20",
+    "expo-blur": "58.0.5",
+    "expo-font": "58.0.11",
+    "expo-image": "58.0.18",
+    "nativewind": "5.0.0-rc.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-native": "0.88.1",
+    "react-native-css": "3.1.0-rc.0",
+    "react-native-gesture-handler": "3.3.0",
+    "react-native-reanimated": "4.7.1",
+    "react-native-safe-area-context": "5.11.1",
+    "react-native-screens": "4.30.1",
+    "react-native-svg": "15.16.0",
+    "react-native-web": "0.21.4",
+    "react-native-worklets": "0.13.0"
+  }
+}

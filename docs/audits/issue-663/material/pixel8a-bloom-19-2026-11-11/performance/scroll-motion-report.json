@@ -1,0 +1,15 @@
+{
+  "case": "scroll-motion",
+  "serial": "43221JEKB12200",
+  "elapsedSeconds": 15.214,
+  "frames": 1845,
+  "jankyFrames": 0,
+  "frameP95ms": 13,
+  "gpuP95ms": 9,
+  "pssKb": 362630,
+  "rssKb": 535108,
+  "thermalBefore": 0,
+  "thermalAfter": 0,
+  "sampleCapturedAtAndroid": "Wed Nov 11 07:06:33 EET 2026",
+  "note": "Descriptive 15-second sample on Pixel 8a Android 16/API36. See README for limitations."
+}

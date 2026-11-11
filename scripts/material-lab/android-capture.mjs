@@ -139,13 +139,21 @@ for (const theme of ['light', 'dark']) {
     // accessibility bounds. Refresh after the motion has settled so overlay
     // taps use current hit-test coordinates rather than the pre-scroll tree.
     actionHierarchy = xml();
+    // Keep overlay triggers clear of the floating TabBar. On API 30 the
+    // Dialog trigger shares its old top-of-scroll bounds with the TabBar, so
+    // tapping the stale/covered point selects a tab instead of opening Dialog.
+    await scroll(true, actionHierarchy);
+    actionHierarchy = xml();
     for (const overlay of ['menu', 'dialog', 'sheet']) {
       await tap(`material-${overlay}-trigger`, actionHierarchy);
       capture(`${theme}-${background}-${overlay}`, actionHierarchy);
       adb('shell', 'input', 'keyevent', '4');
       await pause(700);
       capture(`${theme}-${background}-${overlay}-dismissed`, actionHierarchy);
+      actionHierarchy = xml();
     }
+    await scroll(false, actionHierarchy);
+    actionHierarchy = xml();
   }
   // The moving photograph keeps Android's accessibility tree continuously
   // active, so capture its pixels from the last stable geometry and return to
