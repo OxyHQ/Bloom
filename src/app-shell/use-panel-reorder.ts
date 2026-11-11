@@ -12,7 +12,7 @@ import { useMessages } from '../locale/messages';
 import { APP_SHELL_MESSAGES } from './messages';
 import { reorderPanelIds, panelReorderPreview, type PanelReorderGeometry } from './panel-reorder';
 import type { AppShellPanelLayout } from './panel-layout-types';
-import type { ResolvedPanelTrack } from './panel-layout';
+import type { PanelFlexTrack } from './panel-layout';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 export interface PanelReorderPoint {
@@ -75,7 +75,7 @@ export function usePanelReorder({
   nativeScroll,
 }: {
   layout: AppShellPanelLayout;
-  tracks: readonly Pick<ResolvedPanelTrack, 'id' | 'visible' | 'floating'>[];
+  tracks: readonly Pick<PanelFlexTrack, 'id' | 'visible' | 'floating'>[];
   vertical: boolean;
   documentHorizontal: boolean;
   scope: string | null;

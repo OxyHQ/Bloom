@@ -141,5 +141,33 @@ adb("shell", "input", "swipe", center, str(round(height * 0.85)), center, str(ro
 current = capture("native-flow-added")
 assert any(node.get("text") == "Email 4" for node in current.iter("node"))
 report["nativeFlowAddsScrollContent"] = True
+# A fresh session verifies the default split is unchanged by the interaction cap.
+adb("shell", "am", "force-stop", package)
+adb("shell", "am", "start", "-n", package + "/.MainActivity")
+time.sleep(2)
+current = capture("native-cap-initial")
+tap(current, "native-add")  # three real rows; no panel dimensions are authored by the fixture.
+tap(current, "native-open")
+current = capture("native-cap-split")
+initial_post = bounds(find(current, "native-post-panel"))
+initial_likes = bounds(find(current, "native-likes-panel"))
+initial_height = initial_likes[3] - initial_likes[1]
+assert abs(initial_height - (initial_post[3] - initial_post[1])) < 5
+for direction in ["grow", "shrink", "grow-to-content"]:
+    grip = bounds(find(current, "native-post-panel-divider"))
+    start_y = (grip[1] + grip[3]) // 2
+    target_y = initial_post[1] + 10 if direction != "shrink" else initial_likes[3] - 20
+    adb("shell", "input", "swipe", center, str(start_y), center, str(target_y), "500")
+    current = capture("native-cap-" + direction)
+    panel = bounds(find(current, "native-likes-panel"))
+    actual = panel[3] - panel[1]
+    if direction == "grow":
+        assert abs(actual - initial_height) < 5, "Oversized pane grew beyond its initial size"
+    elif direction == "shrink":
+        assert abs(actual - 120 * density) < 5, "Minimum must remain usable"
+    else:
+        assert 120 * density < actual < initial_height - 30, "Intrinsic content did not cap growth"
+        assert all(f"Likes row {number}" in rows(current, "Likes") for number in [1, 2, 3])
+        report["nativeContentResizeCap"] = {"initial": initial_height, "capped": actual}
 (output / "native-report.json").write_text(json.dumps(report, indent=2) + "\n")
 print(json.dumps(report, indent=2))

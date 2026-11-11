@@ -28,14 +28,14 @@ try {
     );
     await open.evaluate((node) => node.click());
     await page.waitForTimeout(800);
-    assert.match(await open.getAttribute('aria-label'), /completed exits 0$/);
+    assert.match(await open.getAttribute('aria-label'), /completed exits 0;/);
     if (mobile) await page.getByRole('dialog', { name: 'Likes' }).waitFor();
     await page.getByTestId('groups-close').click();
     await page.waitForFunction(() =>
       document
         .querySelector('[data-testid="groups-open"]')
         ?.getAttribute('aria-label')
-        ?.endsWith('completed exits 1'),
+        ?.includes('completed exits 1;'),
     );
     if (mobile) await page.getByRole('dialog', { name: 'Likes' }).waitFor({ state: 'hidden' });
     await open.click();
@@ -44,7 +44,7 @@ try {
       document
         .querySelector('[data-testid="groups-open"]')
         ?.getAttribute('aria-label')
-        ?.endsWith('completed exits 2'),
+        ?.includes('completed exits 2;'),
     );
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await open.click();
@@ -53,7 +53,7 @@ try {
       document
         .querySelector('[data-testid="groups-open"]')
         ?.getAttribute('aria-label')
-        ?.endsWith('completed exits 3'),
+        ?.includes('completed exits 3;'),
     );
     console.log(
       `PASS ${mobile ? 'mobile actual Dialog' : 'desktop CSS'}: completion once, reopen cancellation, next exit, reduced motion`,

@@ -594,6 +594,17 @@ shared by CSS queries and native breakpoint subscriptions, not a consumer window
 measurement. A capacity fallback keeps the group bounded, avoiding a loop with
 `singlePanelFlow`; a width-based mobile fallback can still restore document flow.
 
+`resizeMaxHeight: 'content'` optionally limits vertical divider interaction to a
+Screen's measured intrinsic content plus its chrome. It does not change the
+initial split, its flex weights or its default size. If a pane starts larger
+than its content, it cannot grow further; it can shrink progressively without a
+jump, and reversing the gesture cannot restore the excess space already removed.
+Below the content ceiling, normal resizing remains available. Authored minimums
+and maximums still apply. Unknown content measurements keep those existing
+constraints rather than guessing from item counts or viewport `scrollHeight`.
+The gesture reads the published extent once at its start; CSS/Yoga continue
+laying out the panels, with no content measurement loop during dragging.
+
 Nested native panels consume the top safe area once: a first panel at the physical
 window edge keeps it, while lower vertical panels and panels below a workspace
 header receive an already-consumed top inset. Floating sheets use the original

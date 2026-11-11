@@ -48,6 +48,8 @@ export interface AppShellPanelDefinition extends Omit<AppShellPanelProps, 'child
   visible?: boolean;
   /** Actual exit completion; release payload after visible becomes false. Reopening cancels it. */
   onExitComplete?: () => void;
+  /** Vertical resize gestures stop at measured content; initial layout stays unchanged. */
+  resizeMaxHeight?: 'content';
   content?: ReactNode;
   /** A transparent, independently composed group. Keep its id and child ids stable. */
   group?: AppShellPanelLayout;

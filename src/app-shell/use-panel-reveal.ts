@@ -1,7 +1,7 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import { panelGeometryTransitions } from './panel-transitions';
 import type { PanelRevealRequest, AppShellPanelDefinition } from './panel-layout-types';
-import type { ResolvedPanelTrack } from './panel-layout';
+import type { PanelFlexTrack } from './panel-layout';
 
 /** Selection can hydrate at any time. Only a new explicit action may move the page. */
 export function usePanelReveal({
@@ -18,7 +18,7 @@ export function usePanelReveal({
   enabled: boolean;
   scope: string | null;
   panels: readonly AppShellPanelDefinition[];
-  tracks: readonly Pick<ResolvedPanelTrack, 'id' | 'visible'>[];
+  tracks: readonly Pick<PanelFlexTrack, 'id' | 'visible'>[];
   reducedMotion: boolean;
 }) {
   const consumed = useRef<PanelRevealRequest | undefined>(undefined);

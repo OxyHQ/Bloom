@@ -6,11 +6,13 @@
 
 - Panel descriptors accept a transparent `group` of horizontal or vertical panels, nested recursively. `mode: 'split'` divides available space; `mode: 'flow'` grows along its axis with a shared scroll owner. Existing Deck panels use the same renderer. Nested separated groups use their own shell gutter even when the parent group has no gap.
 - Nested splits can opt into `singlePanelFlow: 'document'`: the sole inline panel keeps document scrolling and its viewport mask; opening an auxiliary panel creates a bounded split and closing restores the document reading position. Compact panels support `floating.placement: 'bottom'` with one Dialog presentation.
+- `resizeMaxHeight: 'content'` limits vertical divider interaction to measured intrinsic content while preserving the initial split. Oversized panes can shrink without jumping or regaining the excess space; authored bounds remain in force.
 - Panel descriptors expose `onExitComplete` so apps can release outgoing payloads after their actual inline or sheet exit. Reopening cancels completion; no application content is cached by the layout.
 - `Dialog sizing="fill"` bounds a bottom sheet's own Screen or virtualized list. The existing `maxHeightRatio` now reaches the shared BottomSheet ceiling, including fill, safe-area and keyboard constraints.
 
 ### Changed
 
+- Removed the unused width-animation helper and the remaining JavaScript track allocator used before gesture measurement. Gestures wait for real layout bounds; CSS tracks no longer subscribe to redundant per-frame `onLayout` callbacks.
 - Native panel sizes are distributed directly by Yoga. Removed the normal-layout JavaScript water-fill compensation for unequal minimum constraints; native flex and browser flex may divide spare space differently when those constraints bind. Split weights, minimums and maximums remain declarative, and direct resizing starts from actual rendered dimensions.
 
 ### Fixed

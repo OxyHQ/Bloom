@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 import { AppShell } from '../app-shell';
+import { splitPairSpans } from '../app-shell/panel-layout';
 import type { AppShellPanelLayout } from '../app-shell/panel-layout-types';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { findHost, type HostNode } from './support/rendered-style';
@@ -94,3 +95,40 @@ describe.each(Object.entries(LAYOUTS))('%s', (_, layout) => {
     },
   );
 });
+
+it.each([240, 120])(
+  'keeps a gesture result of %i after committing native split weights',
+  (desired) => {
+    const spans = splitPairSpans(
+      { id: 'main', minWidth: 120 },
+      { id: 'likes', minWidth: 120 },
+      800 - desired,
+      desired,
+      true,
+    );
+    const boxes = yoga.layout({
+      type: 'View',
+      props: { testID: 'group', style: { width: 400, height: 800, flexDirection: 'column' } },
+      children: [
+        {
+          type: 'View',
+          props: {
+            testID: 'main',
+            style: { flexGrow: spans.main, flexShrink: 1, height: 0, minHeight: 120 },
+          },
+          children: [],
+        },
+        {
+          type: 'View',
+          props: {
+            testID: 'likes',
+            style: { flexGrow: spans.likes, flexShrink: 1, height: 0, minHeight: 120 },
+          },
+          children: [],
+        },
+      ],
+    });
+    expect(boxes.get('likes')!.height).toBeCloseTo(desired, 0);
+    expect(boxes.get('main')!.height).toBeCloseTo(800 - desired, 0);
+  },
+);

@@ -1,11 +1,11 @@
-import React from 'react';
+import type React from 'react';
 import * as Native from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 import { AppShell, AppShellPanels } from '../app-shell';
 import type { AppShellPanelLayout } from '../app-shell';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { ResizeHandle } from '../layout/ResizeHandle';
-import { applyPanelSpans, resolvePanelTracks, splitPairSpans } from '../app-shell/panel-layout';
+import { applyPanelSpans, splitPairSpans } from '../app-shell/panel-layout';
 import { panelLayoutCss } from '../app-shell/panel-layout-css';
 import { mockWindowSize } from './support/window-size';
 
@@ -16,9 +16,6 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 );
 beforeEach(() => mockWindowSize({ width: 1440, height: 900, scale: 1, fontScale: 1 }));
 afterEach(() => jest.restoreAllMocks());
-
-const widths = (layout: AppShellPanelLayout, room: number, gap = 7) =>
-  resolvePanelTracks(layout, room, 1440, gap).map((track) => track.width);
 
 describe('proportional split weights', () => {
   const split: AppShellPanelLayout = {
@@ -41,42 +38,6 @@ describe('proportional split weights', () => {
     });
   });
 
-  it('draws the committed fractions at every region width, as fractions of the free room', () => {
-    const layout = applyPanelSpans(split, { a: 2, b: 1, c: 1 });
-    for (const room of [1214, 1600, 2414]) {
-      const free = room - 2 * 7;
-      const [a, b, c] = widths(layout, room);
-      expect(a).toBeCloseTo(free * 0.5, 6);
-      expect(c).toBeCloseTo(free * 0.25, 6);
-      expect(b).toBeCloseTo(free * 0.25, 6);
-    }
-  });
-
-  it('starts flexible tracks from a zero basis, so minimums do not skew the split', () => {
-    expect(
-      widths(
-        {
-          panels: [
-            { id: 'a', minWidth: 220 },
-            { id: 'b', minWidth: 220 },
-          ],
-        },
-        1007,
-      ),
-    ).toEqual([500, 500]);
-    expect(
-      widths(
-        {
-          panels: [
-            { id: 'a', span: 3, minWidth: 220 },
-            { id: 'b', minWidth: 220 },
-          ],
-        },
-        607,
-      ),
-    ).toEqual([380, 220]);
-  });
-
   it('compiles the weights into the CSS flex-grow of each track', () => {
     const css = panelLayoutCss('t', applyPanelSpans(split, { a: 1.25, b: 0.75 }), 7);
     expect(css).toContain('flex:var(--t-panel-grow-0, 1.25) 1 var(--t-panel-size-0, 0px)');
@@ -90,10 +51,32 @@ describe('proportional split weights', () => {
 });
 
 describe('resizing a split', () => {
-  const measure = (screen: ReturnType<typeof render>, width = 800) =>
+  const measure = (screen: ReturnType<typeof render>, first = 400, second = 400) => {
     fireEvent(screen.getByTestId('shell-panels'), 'layout', {
-      nativeEvent: { layout: { width, height: 600, x: 0, y: 0 } },
+      nativeEvent: { layout: { width: first + second, height: 600, x: 0, y: 0 } },
     });
+    for (const [id, width] of [
+      ['a', first],
+      ['b', second],
+    ] as const)
+      fireEvent(screen.getByTestId(`shell-panels-${id}`), 'layout', {
+        nativeEvent: { layout: { width, height: 600, x: 0, y: 0 } },
+      });
+  };
+
+  it('declines a gesture until actual panel bounds exist, then uses those bounds', () => {
+    const onSpansChange = jest.fn();
+    const layout: AppShellPanelLayout = {
+      onSpansChange,
+      panels: [{ id: 'a', resizable: true }, { id: 'b' }],
+    };
+    const screen = render(<AppShell testID="shell" panelLayout={layout} />, { wrapper });
+    fireEvent(screen.UNSAFE_getByType(ResizeHandle), 'nudge', 100);
+    expect(onSpansChange).not.toHaveBeenCalled();
+    measure(screen);
+    fireEvent(screen.UNSAFE_getByType(ResizeHandle), 'nudge', 100);
+    expect(onSpansChange).toHaveBeenLastCalledWith({ a: 1.25, b: 0.75 });
+  });
 
   it('commits weights, not pixels, between two flexible tracks (uncontrolled)', () => {
     const onSpansChange = jest.fn();
@@ -112,11 +95,14 @@ describe('resizing a split', () => {
     measure(screen);
     fireEvent(screen.UNSAFE_getByType(ResizeHandle), 'nudge', 100);
     expect(onWidthsChange).not.toHaveBeenCalled();
-    expect(onSpansChange).toHaveBeenLastCalledWith({ a: 1.25, b: 0.75 });
+    expect(onSpansChange.mock.lastCall?.[0].a).toBeCloseTo(280 / 180);
+    expect(onSpansChange.mock.lastCall?.[0].b).toBeCloseTo(80 / 180);
     expect(onWidthChange).toHaveBeenLastCalledWith(500);
     screen.rerender(<AppShell testID="shell" panelLayout={layout} />);
+    measure(screen, 500, 300);
     fireEvent(screen.UNSAFE_getByType(ResizeHandle), 'nudge', -50);
-    expect(onSpansChange).toHaveBeenLastCalledWith({ a: 1.125, b: 0.875 });
+    expect(onSpansChange.mock.lastCall?.[0].a).toBeCloseTo(230 / 180);
+    expect(onSpansChange.mock.lastCall?.[0].b).toBeCloseTo(130 / 180);
   });
 
   it('keeps a controlled split where its owner puts it', () => {
@@ -135,7 +121,8 @@ describe('resizing a split', () => {
     const grip = screen.UNSAFE_getByType(ResizeHandle);
     fireEvent(grip, 'nudge', 100);
     fireEvent(grip, 'nudge', 100);
-    expect(onSpansChange).toHaveBeenLastCalledWith({ a: 1.25, b: 0.75 });
+    expect(onSpansChange.mock.lastCall?.[0].a).toBeCloseTo(280 / 180);
+    expect(onSpansChange.mock.lastCall?.[0].b).toBeCloseTo(80 / 180);
   });
 
   it('keeps pixels for a pair with a fixed width', () => {
@@ -204,4 +191,10 @@ describe('resizing a split', () => {
     expect(screen.getByText('Bottom')).toBeTruthy();
     expect(screen.UNSAFE_getAllByType(ResizeHandle).length).toBe(2);
   });
+});
+
+it('does not normalize a native gesture when the minimums consume all room', () => {
+  expect(
+    splitPairSpans({ id: 'a', minWidth: 120 }, { id: 'b', minWidth: 160 }, 120, 160, true),
+  ).toEqual({});
 });
