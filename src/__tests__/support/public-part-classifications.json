@@ -1028,6 +1028,17 @@
     "verification": "Native renderer and DOM web verify fixed 14px title typography and 6px gap/4px vertical spacing under default md, xs and lg; optional child geometry and physical-device proportions remain unverified.",
     "parts": ["src/agent-log/AgentLogToolCall.tsx#AgentLogToolCall"]
   },
+  "agent-reply-actions-row": {
+    "status": "independent-scale",
+    "reason": "AgentReplyActions sizes its built-in voting and copy buttons explicitly as sm, while caller-provided children pass through unchanged and retain their own nearest BloomScope size contract.",
+    "evidence": [
+      "src/agent-reply/AgentReplyActions.tsx",
+      "src/__tests__/AgentReplyActionsPublicPartScope.test.tsx",
+      "src/__tests__/AgentReplyActionsPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the three built-in buttons remain 32px under default md, xs and lg, while a caller Button child follows all three scopes; touch hit regions and accessibility remain unverified.",
+    "parts": ["src/agent-reply/AgentReplyActions.tsx#AgentReplyActions"]
+  },
   "agent-reply-action-fixed-size": {
     "status": "independent-scale",
     "reason": "AgentReplyAction is a bare icon Button that explicitly sets size=sm, so its 32px visual control recipe is independent of the caller's nearest BloomScope.",
@@ -1093,7 +1104,6 @@
       "src/agent-creator/AgentCreator.tsx#AgentCreator",
       "src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard",
       "src/agent-reply/AgentProfile.tsx#AgentProfile",
-      "src/agent-reply/AgentReplyActions.tsx#AgentReplyActions",
       "src/agent-reply/AgentReplyBubble.tsx#AgentReplyBubble",
       "src/agent-reply/AgentReplyIdentity.tsx#AgentReplyIdentity",
       "src/agent-reply/AgentStack.tsx#AgentStack",
