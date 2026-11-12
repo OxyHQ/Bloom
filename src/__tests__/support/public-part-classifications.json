@@ -1593,13 +1593,24 @@
     "verification": "Native-renderer and DOM web verify default, xs/sm/md/lg, and nested lg-over-xs: email field geometry follows scope and the submit CTA remains 36px. Physical platform layout and touch interaction remain device-owned.",
     "parts": ["src/auth-card/AuthCard.tsx#AuthCard"]
   },
+  "auth-media-carousel-fixed-geometry": {
+    "status": "independent-scale",
+    "reason": "AuthMediaCarousel owns numeric artwork poses, perspective, timing and fixed-size CarouselDots; it has no Bloom size prop or descendant interactive controls. Dot geometry and image dimensions therefore remain independent of surrounding control scale.",
+    "evidence": [
+      "src/auth-card/AuthMediaCarousel.tsx",
+      "src/carousel/CarouselDots.tsx",
+      "src/__tests__/AuthCard.test.tsx",
+      "src/__tests__/AuthMediaCarouselPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer verifies fixed dot-row geometry across default/xs/sm/md/lg and nested lg-over-xs; DOM web measures all three 6px-high dots and 20/6/6px widths across default and all four scopes. Existing native tests cover measured slides and transition timing; physical motion quality remains device-owned.",
+    "parts": ["src/auth-card/AuthMediaCarousel.tsx#AuthMediaCarousel"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/auth-card/AuthMediaCarousel.tsx#AuthMediaCarousel",
       "src/avatar-flight/AvatarAnchor.tsx#AvatarAnchor",
       "src/avatar-flight/AvatarFlightLayer.tsx#AvatarFlightLayer",
       "src/avatar-group/AvatarGroup.tsx#AvatarGroup",

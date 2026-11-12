@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
 import { BloomImage } from '../image';
 import Animated, {
@@ -250,6 +250,7 @@ function AuthMediaCarouselComponent({
         : null}
 
       <CarouselDots
+        testID={testID ? `${testID}-dots` : undefined}
         count={count}
         index={index}
         appearance="onMedia"

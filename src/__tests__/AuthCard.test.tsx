@@ -2,7 +2,7 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { surfaceFillOn } from '../styles/surface-levels';
 import { resolveSurfaceTint } from '../surface/shared';
 import { cardLayout, cardFill } from './support/card-surface';
-import React from 'react';
+import type React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { AuthCard, AuthMediaCarousel } from '../auth-card';
@@ -224,6 +224,38 @@ describe('AuthCard', () => {
 
 describe('AuthMediaCarousel', () => {
   const slides = [{ source: 'a.png' }, { source: 'b.png', alt: 'Kitchen' }];
+
+  it.each([undefined, 'xs', 'sm', 'md', 'lg'] as const)(
+    'keeps carousel dot-row geometry fixed under %s scope',
+    (size) => {
+      const ui = <AuthMediaCarousel testID="carousel" slides={slides} />;
+      const tree = renderCard(size ? <BloomScope size={size}>{ui}</BloomScope> : ui);
+      expect(
+        resolvedStyle(
+          tree.getByTestId('carousel-dots', { includeHiddenElements: true }).props.style,
+        ),
+      ).toMatchObject({
+        gap: 6,
+        minHeight: 6,
+      });
+    },
+  );
+
+  it('keeps carousel dot-row geometry fixed under the nearest nested scope', () => {
+    const tree = renderCard(
+      <BloomScope size="xs">
+        <BloomScope size="lg">
+          <AuthMediaCarousel testID="carousel" slides={slides} />
+        </BloomScope>
+      </BloomScope>,
+    );
+    expect(
+      resolvedStyle(tree.getByTestId('carousel-dots', { includeHiddenElements: true }).props.style),
+    ).toMatchObject({
+      gap: 6,
+      minHeight: 6,
+    });
+  });
 
   it('renders no slide until measured, then every slide and one dot each', () => {
     const { getByTestId, queryByTestId } = renderCard(
