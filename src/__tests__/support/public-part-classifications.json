@@ -1028,6 +1028,17 @@
     "verification": "Native renderer and DOM web verify fixed 14px title typography and 6px gap/4px vertical spacing under default md, xs and lg; optional child geometry and physical-device proportions remain unverified.",
     "parts": ["src/agent-log/AgentLogToolCall.tsx#AgentLogToolCall"]
   },
+  "agent-reply-bubble-text-geometry": {
+    "status": "independent-scale",
+    "reason": "AgentReplyBubble calculates vertical inset from explicit text font/line metrics to balance its fixed 12px side inset; it has no Bloom control-size input. Caller content remains nested in the current scope.",
+    "evidence": [
+      "src/agent-reply/AgentReplyBubble.tsx",
+      "src/__tests__/AgentReplyBubblePublicPartScope.test.tsx",
+      "src/__tests__/AgentReplyBubblePublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the default 9px vertical inset stays fixed under default md, xs and lg while a nested Button follows those scopes; custom text metrics and physical material remain unverified.",
+    "parts": ["src/agent-reply/AgentReplyBubble.tsx#AgentReplyBubble"]
+  },
   "agent-reply-actions-row": {
     "status": "independent-scale",
     "reason": "AgentReplyActions sizes its built-in voting and copy buttons explicitly as sm, while caller-provided children pass through unchanged and retain their own nearest BloomScope size contract.",
@@ -1104,7 +1115,6 @@
       "src/agent-creator/AgentCreator.tsx#AgentCreator",
       "src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard",
       "src/agent-reply/AgentProfile.tsx#AgentProfile",
-      "src/agent-reply/AgentReplyBubble.tsx#AgentReplyBubble",
       "src/agent-reply/AgentReplyIdentity.tsx#AgentReplyIdentity",
       "src/agent-reply/AgentStack.tsx#AgentStack",
       "src/agent-thinking/AgentThinking.tsx#AgentThinking",
