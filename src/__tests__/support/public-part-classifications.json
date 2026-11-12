@@ -1605,13 +1605,23 @@
     "verification": "Native renderer verifies fixed dot-row geometry across default/xs/sm/md/lg and nested lg-over-xs; DOM web measures all three 6px-high dots and 20/6/6px widths across default and all four scopes. Existing native tests cover measured slides and transition timing; physical motion quality remains device-owned.",
     "parts": ["src/auth-card/AuthMediaCarousel.tsx#AuthMediaCarousel"]
   },
+  "avatar-anchor-delegation": {
+    "status": "delegated",
+    "reason": "AvatarAnchor owns only ref registration, snapshot context and hidden-while-flying opacity. Its children remain inside the nearest BloomScope and keep their own explicit-size precedence.",
+    "evidence": [
+      "src/avatar-flight/AvatarAnchor.tsx",
+      "src/avatar-flight/__tests__/AvatarAnchor.test.tsx",
+      "src/avatar-flight/__tests__/AvatarAnchorPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web measure a child Button at default md, xs/sm/md/lg and nested lg-over-xs through AvatarAnchor; existing native tests verify registration and hide/show lifecycle. Device layout remains unverified.",
+    "parts": ["src/avatar-flight/AvatarAnchor.tsx#AvatarAnchor"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/avatar-flight/AvatarAnchor.tsx#AvatarAnchor",
       "src/avatar-flight/AvatarFlightLayer.tsx#AvatarFlightLayer",
       "src/avatar-group/AvatarGroup.tsx#AvatarGroup",
       "src/avatar/context.ts#AvatarPlaceholderProvider",
