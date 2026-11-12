@@ -1582,13 +1582,23 @@
     "verification": "Native renderer and DOM web measure caller-owned Buttons in both the header slot and page body at default md, inherited xs/sm/md/lg and nested lg-over-xs. The shell's built-in menu, navigation, panels and notifications are separately classified by their own public parts.",
     "parts": ["src/app-shell/index.ts#AppShell"]
   },
+  "auth-card-mixed-size": {
+    "status": "applicable",
+    "reason": "AuthCard's TextField controls inherit BloomScope size, while its submit Button is explicitly md and its remember Checkbox explicitly sm. The composition therefore honors scope for consumer-facing fields alongside fixed internal recipes.",
+    "evidence": [
+      "src/auth-card/AuthCard.tsx",
+      "src/__tests__/AuthCard.test.tsx",
+      "src/__tests__/AuthCardPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native-renderer and DOM web verify default, xs/sm/md/lg, and nested lg-over-xs: email field geometry follows scope and the submit CTA remains 36px. Physical platform layout and touch interaction remain device-owned.",
+    "parts": ["src/auth-card/AuthCard.tsx#AuthCard"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/auth-card/AuthCard.tsx#AuthCard",
       "src/auth-card/AuthMediaCarousel.tsx#AuthMediaCarousel",
       "src/avatar-flight/AvatarAnchor.tsx#AvatarAnchor",
       "src/avatar-flight/AvatarFlightLayer.tsx#AvatarFlightLayer",

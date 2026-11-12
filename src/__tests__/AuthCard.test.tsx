@@ -10,6 +10,7 @@ import { AUTH_CARD_WEB_CSS } from '../auth-card/AuthCard';
 
 import { resolveButtonPalette } from '../button/shared';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomScope } from '../appearance';
 import { buildTheme } from '../theme/build-theme';
 import { resolvedStyle } from './support/rendered-style';
 import { mockWindowSize } from './support/window-size';
@@ -28,6 +29,38 @@ describe('AuthCard', () => {
   }
 
   afterEach(() => jest.restoreAllMocks());
+
+  it.each([
+    ['default', undefined, 36],
+    ['xs', 'xs', 28],
+    ['sm', 'sm', 32],
+    ['md', 'md', 36],
+    ['lg', 'lg', 44],
+  ] as const)('inherits %s for fields while keeping the CTA medium', (_name, size, height) => {
+    const card = renderCard(
+      size ? (
+        <BloomScope size={size}>
+          <AuthCard testID="auth" providers={[]} />
+        </BloomScope>
+      ) : (
+        <AuthCard testID="auth" providers={[]} />
+      ),
+    );
+    expect(resolvedStyle(card.getByTestId('auth-email').props.style).height).toBe(height);
+    expect(resolvedStyle(card.getByTestId('auth-submit').props.style).height).toBe(36);
+  });
+
+  it('uses the nearest nested field scope while keeping the CTA medium', () => {
+    const card = renderCard(
+      <BloomScope size="xs">
+        <BloomScope size="lg">
+          <AuthCard testID="auth" providers={[]} />
+        </BloomScope>
+      </BloomScope>,
+    );
+    expect(resolvedStyle(card.getByTestId('auth-email').props.style).height).toBe(44);
+    expect(resolvedStyle(card.getByTestId('auth-submit').props.style).height).toBe(36);
+  });
 
   it('pads 24 on a phone and 32 from the sm breakpoint', () => {
     const phone = renderCard(<AuthCard testID="auth" />);
