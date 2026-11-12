@@ -1797,14 +1797,39 @@
     "verification": "Native renderer and DOM web verify the callback target remains 36px under default md and xs/sm/md/lg scopes, while preserving the row's accessible callback name. Existing CallUi tests verify row naming, callback separation and count behavior. Physical hit testing remains device-owned.",
     "parts": ["src/call-ui/CallHistoryRow.tsx#CallHistoryRow"]
   },
+  "call-screen-slot-delegation": {
+    "status": "delegated",
+    "reason": "CallScreen forwards caller content through topBarSlot and controlsSlot (as well as its other documented ReactNode slots) without replacing the nearest BloomScope. Its built-in controls have their own explicit control-size contract.",
+    "evidence": [
+      "src/call-ui/CallScreen.tsx",
+      "src/call-ui/types.ts",
+      "src/__tests__/CallUi.test.tsx",
+      "src/__tests__/CallScreenSlotsPublicPartScope.test.tsx",
+      "src/__tests__/CallScreenSlotsPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify Button controls in topBarSlot and controlsSlot inherit default md and xs/sm/md/lg. Existing CallUi tests cover live controls, minimised mode and PiP interaction. Platform layout and hit targets remain device-owned.",
+    "parts": ["src/call-ui/CallScreen.tsx#CallScreen"]
+  },
+  "call-minimised-pill-fixed-shell": {
+    "status": "independent-scale",
+    "reason": "CallMinimisedPill has no size prop or arbitrary control slots; its 48px shell and 32px mode glyph are its own compact-call recipe. Optional mute and end controls select explicit sm CallControlButton sizes.",
+    "evidence": [
+      "src/call-ui/CallMinimisedPill.tsx",
+      "src/call-ui/CallControls.tsx",
+      "src/call-ui/types.ts",
+      "src/__tests__/CallUi.test.tsx",
+      "src/__tests__/CallScreenSlotsPublicPartScope.test.tsx",
+      "src/__tests__/CallScreenSlotsPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the 48px shell min-height remains fixed under default md and xs/sm/md/lg scopes. Existing CallUi tests cover the accessible expand action and status-line precedence. Physical hit testing remains device-owned.",
+    "parts": ["src/call-ui/CallMinimisedPill.tsx#CallMinimisedPill"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/call-ui/CallMinimisedPill.tsx#CallMinimisedPill",
-      "src/call-ui/CallScreen.tsx#CallScreen",
       "src/call-ui/GroupCallBar.tsx#GroupCallBar",
       "src/call-ui/GroupCallGrid.tsx#GroupCallGrid",
       "src/call-ui/GroupCallTile.tsx#GroupCallTile",
