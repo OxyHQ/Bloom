@@ -1040,6 +1040,17 @@
     "verification": "Native renderer and DOM web verify a numeric 48px canvas stays fixed under default md, xs and lg scopes; physical avatar proportions remain unverified.",
     "parts": ["src/agent-reply/AgentStack.tsx#AgentStack"]
   },
+  "agent-profile-avatar-canvas": {
+    "status": "independent-scale",
+    "reason": "AgentProfile composes fixed 56px avatar-canvas geometry and numeric 56px/36px artwork sizes for one agent or an overlapping team. These illustration dimensions describe identity artwork, not a Bloom control-size rung.",
+    "evidence": [
+      "src/agent-reply/AgentProfile.tsx",
+      "src/__tests__/AgentProfilePublicPartScope.test.tsx",
+      "src/__tests__/AgentProfilePublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the fixed 56px canvas stays unchanged under default md, xs and lg scopes; physical avatar proportions remain unverified.",
+    "parts": ["src/agent-reply/AgentProfile.tsx#AgentProfile"]
+  },
   "agent-reply-bubble-text-geometry": {
     "status": "independent-scale",
     "reason": "AgentReplyBubble calculates vertical inset from explicit text font/line metrics to balance its fixed 12px side inset; it has no Bloom control-size input. Caller content remains nested in the current scope.",
@@ -1126,7 +1137,6 @@
       "src/agent-chat/AgentChatMessage.tsx#AgentChatMessage",
       "src/agent-creator/AgentCreator.tsx#AgentCreator",
       "src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard",
-      "src/agent-reply/AgentProfile.tsx#AgentProfile",
       "src/agent-reply/AgentReplyIdentity.tsx#AgentReplyIdentity",
       "src/agent-thinking/AgentThinking.tsx#AgentThinking",
       "src/agent-thinking/ThinkingReasoning.tsx#ThinkingReasoning",
