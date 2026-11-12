@@ -34,6 +34,7 @@ import { AiChatHeader, AiChatMobileHeader } from '../ai-chat/AiChatShell';
 import { AiChatImageGeneration } from '../ai-chat/AiChat.web';
 import { AiChatFeedbackRow } from '../ai-chat/AiChat.web';
 import { AiChatCodePanel } from '../ai-chat/AiChat.web';
+import { AiChatContainer } from '../ai-chat/AiChat.web';
 import { AiChatShellContext } from '../ai-chat/context';
 import type { AiChatShellState } from '../ai-chat/context';
 import { RiCodeSLine } from '../icons/remix/RiCodeSLine';
@@ -234,6 +235,48 @@ it('keeps code-panel width and code typography fixed while actions delegate scop
     renderPanel('xs');
     expect(geometry()).toEqual({ ...normal, action: '24px' });
     renderPanel('lg');
+    expect(geometry()).toEqual(normal);
+  } finally {
+    act(() => root.unmount());
+    host.remove();
+  }
+});
+
+it('delegates container header action size to PageHeader on web', () => {
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  const root: Root = createRoot(host);
+  const renderContainer = (size?: 'xs' | 'lg') =>
+    act(() => {
+      const container = (
+        <AiChatContainer title="Conversation" onMore={() => {}} composer={<Text>Composer</Text>}>
+          <Text>Thread</Text>
+        </AiChatContainer>
+      );
+      root.render(
+        <BloomThemeProvider mode="light" fonts={false}>
+          {size ? <BloomScope size={size}>{container}</BloomScope> : container}
+        </BloomThemeProvider>,
+      );
+    });
+  const geometry = () => {
+    const action = host.querySelector<HTMLElement>('[aria-label="More options"]');
+    const composer = Array.from(host.querySelectorAll<HTMLElement>('*')).some(
+      (element) => element.textContent === 'Composer',
+    );
+    const thread = Array.from(host.querySelectorAll<HTMLElement>('*')).some(
+      (element) => element.textContent === 'Thread',
+    );
+    if (!action) throw new Error('AiChat container header action is missing');
+    return { action: action.style.height, composer, thread };
+  };
+  try {
+    renderContainer();
+    const normal = geometry();
+    expect(normal).toEqual({ action: '34px', composer: true, thread: true });
+    renderContainer('xs');
+    expect(geometry()).toEqual({ ...normal, action: '24px' });
+    renderContainer('lg');
     expect(geometry()).toEqual(normal);
   } finally {
     act(() => root.unmount());

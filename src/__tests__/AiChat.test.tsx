@@ -684,6 +684,39 @@ describe('AiChatGalleryPanel', () => {
 });
 
 describe('AiChatContainer', () => {
+  it('delegates header action size to PageHeader while the screen owns chat chrome', () => {
+    const subject = (size?: 'xs' | 'lg') => {
+      const container = (
+        <AiChatContainer
+          testID="chat"
+          title="Conversation"
+          onMore={() => {}}
+          composer={<Text>Composer</Text>}
+        >
+          <Text>Thread</Text>
+        </AiChatContainer>
+      );
+      return (
+        <BloomThemeProvider>
+          {size ? <BloomScope size={size}>{container}</BloomScope> : container}
+        </BloomThemeProvider>
+      );
+    };
+    const screen = render(subject());
+    const geometry = () => ({
+      action: resolvedStyle(screen.getByLabelText('More options').props.style).height,
+      header: !!screen.getByTestId('chat-header'),
+      composer: !!screen.getByText('Composer'),
+      thread: !!screen.getByText('Thread'),
+    });
+    const normal = geometry();
+    expect(normal).toEqual({ action: 34, header: true, composer: true, thread: true });
+    screen.rerender(subject('xs'));
+    expect(geometry()).toEqual({ ...normal, action: 24 });
+    screen.rerender(subject('lg'));
+    expect(geometry()).toEqual(normal);
+  });
+
   it('draws the breadcrumb, the thread, and AgentThinking only while working', () => {
     const { getByText, queryByText, rerender } = renderIn(
       <AiChatContainer project="vibl" title="coding scenario" composer={null}>
