@@ -1770,14 +1770,39 @@
       "src/calendar/CalendarViewMonthSwitcher.tsx#CalendarViewMonthSwitcher"
     ]
   },
+  "call-history-list-slot-delegation": {
+    "status": "delegated",
+    "reason": "CallHistoryList owns section layout but forwards consumer header, footer and emptyState content unchanged. Controls in those slots retain the nearest caller BloomScope; CallHistoryRow owns its own fixed row recipe.",
+    "evidence": [
+      "src/call-ui/CallHistoryList.tsx",
+      "src/call-ui/CallHistoryRow.tsx",
+      "src/call-ui/types.ts",
+      "src/__tests__/CallUi.test.tsx",
+      "src/__tests__/CallHistoryPublicPartScope.test.tsx",
+      "src/__tests__/CallHistoryPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify a consumer Button in the header slot inherits default md and xs/sm/md/lg sizes. Existing CallUi tests verify empty sections, callbacks and emptyState rendering. Header/footer child layout remains consumer-owned.",
+    "parts": ["src/call-ui/CallHistoryList.tsx#CallHistoryList"]
+  },
+  "call-history-row-fixed-callback": {
+    "status": "independent-scale",
+    "reason": "CallHistoryRow has no Bloom size prop or caller control slots. It composes semantic text, a fixed 44px avatar and a round 36px callback target; its row and action recipe remains component-owned across surrounding BloomScope sizes.",
+    "evidence": [
+      "src/call-ui/CallHistoryRow.tsx",
+      "src/call-ui/types.ts",
+      "src/__tests__/CallUi.test.tsx",
+      "src/__tests__/CallHistoryPublicPartScope.test.tsx",
+      "src/__tests__/CallHistoryPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the callback target remains 36px under default md and xs/sm/md/lg scopes, while preserving the row's accessible callback name. Existing CallUi tests verify row naming, callback separation and count behavior. Physical hit testing remains device-owned.",
+    "parts": ["src/call-ui/CallHistoryRow.tsx#CallHistoryRow"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/call-ui/CallHistoryList.tsx#CallHistoryList",
-      "src/call-ui/CallHistoryRow.tsx#CallHistoryRow",
       "src/call-ui/CallMinimisedPill.tsx#CallMinimisedPill",
       "src/call-ui/CallScreen.tsx#CallScreen",
       "src/call-ui/GroupCallBar.tsx#GroupCallBar",
