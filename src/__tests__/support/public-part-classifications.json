@@ -1700,13 +1700,23 @@
     "verification": "Native renderer and DOM web verify an action Button at default/xs/sm/md/lg and nested lg-over-xs. Responsive card layout and physical touch reach remain device-owned.",
     "parts": ["src/booking/TripCard.tsx#TripCard"]
   },
+  "bottom-promo-fixed-action": {
+    "status": "independent-scale",
+    "reason": "BottomPromo is a fixed bottom-slot call-to-action with semantic title/body typography and a full-width InverseButton explicitly sized lg. Its fade, padding and safe-area inset are layout geometry, not Bloom control size.",
+    "evidence": [
+      "src/bottom-promo/BottomPromo.tsx",
+      "src/__tests__/BottomPromoPublicPartScope.test.tsx",
+      "src/__tests__/BottomPromoPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the action remains 44px under default, xs/sm/md/lg and nested lg-over-xs scopes. Physical bottom-inset reach and text scaling remain device-owned.",
+    "parts": ["src/bottom-promo/BottomPromo.tsx#BottomPromo"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/bottom-promo/BottomPromo.tsx#BottomPromo",
       "src/bottom-sheet/BottomSheet.tsx#BottomSheet",
       "src/calendar/CalendarView.tsx#CalendarView",
       "src/calendar/CalendarViewEventDetails.tsx#CalendarViewEventDetails",
