@@ -1711,13 +1711,26 @@
     "verification": "Native renderer and DOM web verify the action remains 44px under default, xs/sm/md/lg and nested lg-over-xs scopes. Physical bottom-inset reach and text scaling remain device-owned.",
     "parts": ["src/bottom-promo/BottomPromo.tsx#BottomPromo"]
   },
+  "bottom-sheet-screen-scope": {
+    "status": "delegated",
+    "reason": "BottomSheet owns the modal surface, screen and scroll scopes, while caller-owned controls in the body, footer and header overlay retain the nearest BloomScope; explicit child sizes remain authoritative.",
+    "evidence": [
+      "src/bottom-sheet/BottomSheetBase.tsx",
+      "src/bottom-sheet/BottomSheet.tsx",
+      "src/bottom-sheet/BottomSheet.web.tsx",
+      "src/layout/screen-scope.tsx",
+      "src/__tests__/BottomSheetPublicPartScope.test.tsx",
+      "src/__tests__/BottomSheetPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web measure child controls in the body, footer and headerOverlay at default/xs/sm/md/lg and nested lg-over-xs; an explicitly large header control stays 44px. The scope crosses native Modal and web Portal; physical keyboard and gesture behavior remains device-owned.",
+    "parts": ["src/bottom-sheet/BottomSheet.tsx#BottomSheet"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/bottom-sheet/BottomSheet.tsx#BottomSheet",
       "src/calendar/CalendarView.tsx#CalendarView",
       "src/calendar/CalendarViewEventDetails.tsx#CalendarViewEventDetails",
       "src/calendar/CalendarViewHeader.tsx#CalendarViewHeader",
