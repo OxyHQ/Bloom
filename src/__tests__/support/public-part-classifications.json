@@ -1616,13 +1616,25 @@
     "verification": "Native renderer and DOM web measure a child Button at default md, xs/sm/md/lg and nested lg-over-xs through AvatarAnchor; existing native tests verify registration and hide/show lifecycle. Device layout remains unverified.",
     "parts": ["src/avatar-flight/AvatarAnchor.tsx#AvatarAnchor"]
   },
+  "avatar-flight-layer-independent-geometry": {
+    "status": "independent-scale",
+    "reason": "AvatarFlightLayer draws captured or generated avatar artwork at the measured source/target rectangle and animates its transform between rectangles. It exposes no Bloom size prop or interactive control recipe; figure dimensions are measured geometry.",
+    "evidence": [
+      "src/avatar-flight/create-avatar-flight-layer.tsx",
+      "src/avatar-flight/AvatarFlightLayer.tsx",
+      "src/avatar-flight/AvatarFlightLayer.web.tsx",
+      "src/avatar-flight/__tests__/AvatarFlightLayerPublicPartScope.test.tsx",
+      "src/avatar-flight/__tests__/AvatarFlightLayerPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web measure the portalled/in-tree snapshot artwork at its 48×40 source rectangle under default and xs/sm/md/lg scopes. The scale remains the anchor's measured geometry; physical motion and frame performance remain device-owned.",
+    "parts": ["src/avatar-flight/AvatarFlightLayer.tsx#AvatarFlightLayer"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/avatar-flight/AvatarFlightLayer.tsx#AvatarFlightLayer",
       "src/avatar-group/AvatarGroup.tsx#AvatarGroup",
       "src/avatar/context.ts#AvatarPlaceholderProvider",
       "src/booking/BookingBar.tsx#BookingBar",
