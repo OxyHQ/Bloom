@@ -1142,6 +1142,18 @@
     "verification": "Native renderer and DOM web verify rail width, thread-row insets and trailing slot stay fixed under default md, xs and lg scopes; row touch fit, open menus, account flows and physical layout remain unverified.",
     "parts": ["src/agent-chat/AgentChat.tsx#AgentChatHistory"]
   },
+  "agent-chat-message-fixed-recipe": {
+    "status": "independent-scale",
+    "reason": "AgentChatMessage authors the user bubble with fixed 12px horizontal and 11px vertical insets, uses named text variants, and sets reply action targets to 28px. Optional reasoning, tool-call and Markdown blocks delegate to their own components; the message has no Bloom control-size prop.",
+    "evidence": [
+      "src/agent-chat/AgentChatMessage.tsx",
+      "src/agent-chat/AgentChatControls.tsx",
+      "src/__tests__/AgentChatMessagePublicPartScope.test.tsx",
+      "src/__tests__/AgentChatMessagePublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify authored user-bubble insets and 28px reply actions stay fixed under default md, xs and lg; Markdown descendants, multiline wrapping and physical touch fit remain separately unverified.",
+    "parts": ["src/agent-chat/AgentChatMessage.tsx#AgentChatMessage"]
+  },
   "agent-progress-fixed-recipe": {
     "status": "independent-scale",
     "reason": "AgentProgress and AgentProgressPlan own fixed 341px card geometry; their rows and labels use fixed typography and their decision buttons/badges choose explicit size tokens. AgentProgressLoadingText consumes an explicit typography variant, not BloomScope control size.",
@@ -1178,7 +1190,6 @@
     "verification": "pending; not a passing adoption verdict",
     "parts": [
       "src/agent-chat/AgentChat.tsx#AgentChat",
-      "src/agent-chat/AgentChatMessage.tsx#AgentChatMessage",
       "src/agent-creator/AgentCreator.tsx#AgentCreator",
       "src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard",
       "src/agent-thinking/AgentThinking.tsx#AgentThinking",
