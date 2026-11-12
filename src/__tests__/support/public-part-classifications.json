@@ -1976,19 +1976,90 @@
     "verification": "Native renderer and DOM web verify 44px interactive targets at default md and xs/sm/md/lg, nested lg over xs, and unchanged 6px/16px artwork. Native tests verify decorative dots expose no interactive target. Touch classification is mocked in renderer tests; physical Android geometry remains pending.",
     "parts": ["src/carousel/CarouselDots.tsx#CarouselDots"]
   },
+  "commerce-quote-fixed-controls": {
+    "status": "independent-scale",
+    "reason": "CarrierQuoteCard fixes its built-in action buttons at md and CarrierQuoteList fixes its sort chips at xl; those recipes are independent of BloomScope. Caller-provided card actions and the list empty action remain ordinary descendants and preserve the nearest scope.",
+    "evidence": [
+      "src/carrier-quote/CarrierQuoteCard.tsx",
+      "src/carrier-quote/CarrierQuoteList.tsx",
+      "src/__tests__/CarrierQuote.test.tsx",
+      "src/__tests__/CommercePartPublicPartScope.test.tsx",
+      "src/__tests__/CommercePartPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify fixed md/36px actions and xl/32px sort pills under default md and xs/sm/md/lg scopes, plus caller actions and empty-state actions at all rungs and nearest nested lg-over-xs through wrappers. Neither component owns a portal or submenu; physical layout remains pending.",
+    "parts": [
+      "src/carrier-quote/CarrierQuoteCard.tsx#CarrierQuoteCard",
+      "src/carrier-quote/CarrierQuoteList.tsx#CarrierQuoteList"
+    ]
+  },
+  "cart-line-fixed-controls": {
+    "status": "independent-scale",
+    "reason": "CartLine fixes its quantity Stepper at sm/32px and its remove affordance at 32px; comfortable/compact density changes the row and image recipe separately from Bloom control scale.",
+    "evidence": [
+      "src/cart-panel/CartLine.tsx",
+      "src/__tests__/CartPanel.test.tsx",
+      "src/__tests__/CommercePartPublicPartScope.test.tsx",
+      "src/__tests__/CommercePartPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the sm stepper remains 32px under default md and xs/sm/md/lg scopes, including nested scope through a wrapper. The fixed row/action recipe owns no portal or submenu; physical layout remains pending.",
+    "parts": ["src/cart-panel/CartLine.tsx#CartLine"]
+  },
+  "cart-panel-composition": {
+    "status": "applicable",
+    "reason": "CartPanel owns a fixed lg/44px checkout action and composes CartLine's fixed sm stepper while CartPromoField's text input reads the nearest BloomScope; line density is an independent content decision.",
+    "evidence": [
+      "src/cart-panel/CartPanel.tsx",
+      "src/cart-panel/CartLine.tsx",
+      "src/cart-panel/CartPromoField.tsx",
+      "src/__tests__/CartPanel.test.tsx",
+      "src/__tests__/CommercePartPublicPartScope.test.tsx",
+      "src/__tests__/CommercePartPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify checkout at 44px, line stepper at 32px, and promo input mapping (xs 24, sm 28, md 32, lg 40px) under default md and all scopes. Its promo apply action remains sm/32px; no portal or submenu is owned. Physical layout remains pending.",
+    "parts": ["src/cart-panel/CartPanel.tsx#CartPanel"]
+  },
+  "cart-promo-input": {
+    "status": "applicable",
+    "reason": "CartPromoField's TextFieldInput follows the nearest BloomScope mapping while the apply Button remains explicitly sm and the applied-code Chip remains explicitly xl; input density and action scale are distinct recipes.",
+    "evidence": [
+      "src/cart-panel/CartPromoField.tsx",
+      "src/__tests__/CartPanel.test.tsx",
+      "src/__tests__/CommercePartPublicPartScope.test.tsx",
+      "src/__tests__/CommercePartPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify input heights xs 24, sm 28, md 32, lg 40px, including nested lg-over-xs through a wrapper; Apply stays 32px at every rung. The applied state keeps its explicit xl chip. No portal or submenu is owned; physical layout remains pending.",
+    "parts": ["src/cart-panel/CartPromoField.tsx#CartPromoField"]
+  },
+  "cart-tip-target": {
+    "status": "independent-scale",
+    "reason": "CartTipPicker explicitly selects the lg SegmentedControl recipe, whose component surface is 44px with the internal hit target; this touch-sized domain choice is intentionally independent of surrounding BloomScope.",
+    "evidence": [
+      "src/cart-panel/CartTipPicker.tsx",
+      "src/__tests__/CartPanel.test.tsx",
+      "src/__tests__/CommercePartPublicPartScope.test.tsx",
+      "src/__tests__/CommercePartPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the 44px explicit lg selection surface under default md and xs/sm/md/lg scopes. The picker owns no portal or submenu; physical touch use remains pending.",
+    "parts": ["src/cart-panel/CartTipPicker.tsx#CartTipPicker"]
+  },
+  "category-bar-slot": {
+    "status": "delegated",
+    "reason": "CategoryBar owns its icon-over-label tab and compact edge-arrow recipes while its pinned trailing slot contains caller-owned controls that retain the nearest BloomScope.",
+    "evidence": [
+      "src/category-bar/CategoryBar.tsx",
+      "src/__tests__/CategoryBar.test.tsx",
+      "src/__tests__/CommercePartPublicPartScope.test.tsx",
+      "src/__tests__/CommercePartPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify a trailing Button at default md and xs/sm/md/lg and nearest nested lg-over-xs through a wrapper. CategoryBar owns no portal or submenu; physical keyboard and layout behavior remains device-owned.",
+    "parts": ["src/category-bar/CategoryBar.tsx#CategoryBar"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/carrier-quote/CarrierQuoteCard.tsx#CarrierQuoteCard",
-      "src/carrier-quote/CarrierQuoteList.tsx#CarrierQuoteList",
-      "src/cart-panel/CartLine.tsx#CartLine",
-      "src/cart-panel/CartPanel.tsx#CartPanel",
-      "src/cart-panel/CartPromoField.tsx#CartPromoField",
-      "src/cart-panel/CartTipPicker.tsx#CartTipPicker",
-      "src/category-bar/CategoryBar.tsx#CategoryBar",
       "src/chart-cards/ActivityRingsCard.tsx#ActivityRingsCard",
       "src/chart-cards/AgentsChartCard.tsx#AgentsChartCard",
       "src/chart-cards/AreaChartCard.tsx#AreaChartCard",
