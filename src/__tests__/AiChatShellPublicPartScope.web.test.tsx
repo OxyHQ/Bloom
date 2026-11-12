@@ -35,6 +35,8 @@ import { AiChatImageGeneration } from '../ai-chat/AiChat.web';
 import { AiChatFeedbackRow } from '../ai-chat/AiChat.web';
 import { AiChatCodePanel } from '../ai-chat/AiChat.web';
 import { AiChatContainer } from '../ai-chat/AiChat.web';
+import { AiChatThread } from '../ai-chat/AiChat.web';
+import { Button } from '../button/index.web';
 import { AiChatShellContext } from '../ai-chat/context';
 import type { AiChatShellState } from '../ai-chat/context';
 import { RiCodeSLine } from '../icons/remix/RiCodeSLine';
@@ -278,6 +280,43 @@ it('delegates container header action size to PageHeader on web', () => {
     expect(geometry()).toEqual({ ...normal, action: '24px' });
     renderContainer('lg');
     expect(geometry()).toEqual(normal);
+  } finally {
+    act(() => root.unmount());
+    host.remove();
+  }
+});
+
+it('keeps thread child control sizing delegated through the web scroller', () => {
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  const root: Root = createRoot(host);
+  const renderThread = (size?: 'xs' | 'lg') =>
+    act(() => {
+      const thread = (
+        <AiChatThread testID="thread">
+          <Button testID="thread-button" onPress={() => {}}>
+            Reply
+          </Button>
+        </AiChatThread>
+      );
+      root.render(
+        <BloomThemeProvider mode="light" fonts={false}>
+          {size ? <BloomScope size={size}>{thread}</BloomScope> : thread}
+        </BloomThemeProvider>,
+      );
+    });
+  const buttonHeight = () =>
+    host.querySelector<HTMLElement>('[data-testid="thread-button"]')?.style.height;
+  try {
+    renderThread();
+    const normal = buttonHeight();
+    renderThread('xs');
+    const compact = buttonHeight();
+    renderThread('lg');
+    const large = buttonHeight();
+    expect(normal).toBe('36px');
+    expect(compact).toBe('24px');
+    expect(large).toBe('44px');
   } finally {
     act(() => root.unmount());
     host.remove();

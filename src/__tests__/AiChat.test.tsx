@@ -5,6 +5,7 @@ import { useContext } from 'react';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { BottomBarSlotContext } from '../layout/bottom-bar-slot';
 import { ResizeHandle } from '../layout/ResizeHandle';
+import { Button } from '../button';
 import { SurfaceLevelProvider, useSurfaceFill } from '../styles/surface-levels';
 import * as Native from 'react-native';
 import { Text, View } from 'react-native';
@@ -684,6 +685,33 @@ describe('AiChatGalleryPanel', () => {
 });
 
 describe('AiChatContainer', () => {
+  it('keeps caller control sizing delegated through the thread scroller', () => {
+    const subject = (size?: 'xs' | 'lg') => {
+      const thread = (
+        <AiChatThread testID="thread">
+          <Button testID="thread-button" onPress={() => {}}>
+            Reply
+          </Button>
+        </AiChatThread>
+      );
+      return (
+        <BloomThemeProvider>
+          {size ? <BloomScope size={size}>{thread}</BloomScope> : thread}
+        </BloomThemeProvider>
+      );
+    };
+    const screen = render(subject());
+    const size = () =>
+      Number(resolvedStyle(screen.getByTestId('thread-button').props.style).height);
+    const normal = size();
+    expect(normal).toBeGreaterThan(0);
+    screen.rerender(subject('xs'));
+    const compact = size();
+    expect(compact).toBeLessThan(normal);
+    screen.rerender(subject('lg'));
+    expect(size()).toBeGreaterThan(normal);
+  });
+
   it('delegates header action size to PageHeader while the screen owns chat chrome', () => {
     const subject = (size?: 'xs' | 'lg') => {
       const container = (

@@ -1355,6 +1355,20 @@
     "verification": "Native renderer and DOM web verify the More options action follows the shared header owner at 34px for default md/lg and 24px for xs, while caller thread and composer content remain mounted. Scroll restoration, keyboard/IME behavior, system text scaling and physical interaction remain unverified.",
     "parts": ["src/ai-chat/AiChat.tsx#AiChatContainer"]
   },
+  "ai-chat-thread-delegation": {
+    "status": "delegated",
+    "reason": "AiChatThread owns follow-to-end, pagination and scroll-event coordination, but delegates viewport/scroll ownership to Screen and ScreenScrollView. Its caller-supplied child controls retain the nearest BloomScope and explicit size contract.",
+    "evidence": [
+      "src/ai-chat/AiChatContainer.tsx",
+      "src/screen/ScreenBase.tsx",
+      "src/screen/ScreenScrollView.tsx",
+      "src/__tests__/AiChat.test.tsx",
+      "src/__tests__/AiChatShellPublicPartScope.web.test.tsx",
+      "src/__tests__/AiChatDocumentScroll.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify a caller Button inside AiChatThread follows its own size scale: 36/28/44px at md/xs/lg natively and 36/24/44px on web. Existing thread tests cover follow/pagination contracts; restoration, IME interaction, and physical scroll/touch behavior remain unverified.",
+    "parts": ["src/ai-chat/AiChat.tsx#AiChatThread"]
+  },
   "agent-progress-fixed-recipe": {
     "status": "independent-scale",
     "reason": "AgentProgress and AgentProgressPlan own fixed 341px card geometry; their rows and labels use fixed typography and their decision buttons/badges choose explicit size tokens. AgentProgressLoadingText consumes an explicit typography variant, not BloomScope control size.",
@@ -1392,7 +1406,6 @@
     "parts": [
       "src/ai-chat/AiChat.tsx#AiChatGalleryPanel",
       "src/ai-chat/AiChat.tsx#AiChatShell",
-      "src/ai-chat/AiChat.tsx#AiChatThread",
       "src/ai-profile-card/AiProfileCard.tsx#AiProfileCard",
       "src/alert-dialog/index.ts#AlertDialog",
       "src/app-shell/AppShellHeader.tsx#AppShellHeader",
