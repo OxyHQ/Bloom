@@ -72,4 +72,5 @@ export const PRESET_ACCENT_HUES: Readonly<Record<string, AccentHues>> = {
   '#202f44': { secondary: 27.4409360729245, tertiary: 108.4409360729245 },
   '#303a35': { secondary: 19.79320836229283, tertiary: 319.79320836229283 },
   '#47515b': { secondary: 27.225713710228433, tertiary: 95.22571371022843 },
+  '#1dfc00': { secondary: 291.7944104258015, tertiary: 351.7944104258015 },
 };

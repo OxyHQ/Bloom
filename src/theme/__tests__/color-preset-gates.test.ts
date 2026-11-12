@@ -33,7 +33,7 @@ describe('colour preset gates', () => {
   // The specific assignment, stated so a change to it is a deliberate edit here
   // rather than a silent consequence of adding a preset.
   it('reserves the brand colours by handle and sells the colourless one', () => {
-    expect([...HANDLE_COLOR_NAMES].sort()).toEqual(['faircoin', 'oxy']);
+    expect([...HANDLE_COLOR_NAMES].sort()).toEqual(['faircoin', 'gemies', 'oxy']);
     expect(PREMIUM_COLOR_NAMES).toEqual(['mono']);
     expect(FREE_COLOR_NAMES).not.toContain('mono');
     expect(FREE_COLOR_NAMES).toContain('teal');

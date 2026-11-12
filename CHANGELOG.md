@@ -1,5 +1,11 @@
 # Changelog
 
+## 19.9.0
+
+### Added
+
+- **`gemies` brand preset** (`#1dfc00`, `vivid`, derived accents), reserved by handle like `oxy` and `faircoin`: it joins `HANDLE_COLOR_NAMES`, so a picker built from the gate groups only offers it to the Gemies identity. A gate never stops an app passing it as its own `defaultColorPreset`, which is how Gemies starts. The engine keeps it legible without a hand-drawn scheme: dark mode paints the seed itself (`--primary` `rgb(29 252 1)` with a black label), light mode a deeper tone of the same green (`rgb(10 123 0)` with a white label) so text and buttons hold AA on the light surfaces, as it already does for FairCoin's lime. The catalog is 65 recipes; the new one is appended, so every existing name keeps its position.
+
 ## 19.8.3
 
 ### Fixed
