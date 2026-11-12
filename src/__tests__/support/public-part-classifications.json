@@ -2054,6 +2054,19 @@
     "verification": "Native renderer and DOM web verify a trailing Button at default md and xs/sm/md/lg and nearest nested lg-over-xs through a wrapper. CategoryBar owns no portal or submenu; physical keyboard and layout behavior remains device-owned.",
     "parts": ["src/category-bar/CategoryBar.tsx#CategoryBar"]
   },
+  "composer-loader-child-delegation": {
+    "status": "delegated",
+    "reason": "ComposerLoader owns its surface and decorative perimeter geometry and renders caller children over them without replacing BloomScope; controls inside the pill retain the caller's nearest size context.",
+    "evidence": [
+      "src/composer-loader/ComposerLoader.tsx",
+      "src/composer-loader/ComposerLoader.web.tsx",
+      "src/__tests__/ComposerLoader.test.tsx",
+      "src/__tests__/ComposerLoaderPublicPartScope.test.tsx",
+      "src/__tests__/ComposerLoaderPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify child Button default md and xs/sm/md/lg heights through the loader, plus nested lg-over-xs through a wrapper. Loader artwork and Surface retain their own geometry; there is no portal or submenu. Mocked renderers establish context/declaration behavior, not device-optical or performance acceptance.",
+    "parts": ["src/composer-loader/ComposerLoader.tsx#ComposerLoader"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
@@ -2152,7 +2165,6 @@
       "src/code/Pre.tsx#Pre",
       "src/collapsible/Collapsible.tsx#Collapsible",
       "src/command/index.ts#Command",
-      "src/composer-loader/ComposerLoader.tsx#ComposerLoader",
       "src/composer-panel/ComposerAttachments.tsx#ComposerAttachments",
       "src/composer-panel/ComposerPanel.tsx#ComposerPanel",
       "src/composer-panel/ComposerPanelStatusTab.tsx#ComposerPanelStatusTab",
