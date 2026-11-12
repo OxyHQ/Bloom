@@ -1629,13 +1629,24 @@
     "verification": "Native renderer and DOM web measure the portalled/in-tree snapshot artwork at its 48×40 source rectangle under default and xs/sm/md/lg scopes. The scale remains the anchor's measured geometry; physical motion and frame performance remain device-owned.",
     "parts": ["src/avatar-flight/AvatarFlightLayer.tsx#AvatarFlightLayer"]
   },
+  "avatar-group-numeric-geometry": {
+    "status": "independent-scale",
+    "reason": "AvatarGroup exposes a numeric pixel size and derives stack, row and cluster diameters, overlap/gaps and overflow text from that value. Every Avatar receives an explicit numeric size; BloomScope does not redefine the facepile recipe.",
+    "evidence": [
+      "src/avatar-group/AvatarGroupBase.tsx",
+      "src/avatar-group/types.ts",
+      "src/__tests__/AvatarGroupPublicPartScope.test.tsx",
+      "src/__tests__/AvatarGroupPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web measure stack/row avatar cells at 48px and cluster bounds at 64px under default, xs and lg scopes. Existing cluster layout tests cover packing and overflow; physical target fit remains device-owned.",
+    "parts": ["src/avatar-group/AvatarGroup.tsx#AvatarGroup"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/avatar-group/AvatarGroup.tsx#AvatarGroup",
       "src/avatar/context.ts#AvatarPlaceholderProvider",
       "src/booking/BookingBar.tsx#BookingBar",
       "src/booking/BookingCard.tsx#BookingCard",
