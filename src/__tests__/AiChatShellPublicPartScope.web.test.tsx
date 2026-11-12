@@ -36,6 +36,7 @@ import { AiChatFeedbackRow } from '../ai-chat/AiChat.web';
 import { AiChatCodePanel } from '../ai-chat/AiChat.web';
 import { AiChatContainer } from '../ai-chat/AiChat.web';
 import { AiChatThread } from '../ai-chat/AiChat.web';
+import { AiChatGalleryPanel } from '../ai-chat/AiChat.web';
 import { Button } from '../button/index.web';
 import { AiChatShellContext } from '../ai-chat/context';
 import type { AiChatShellState } from '../ai-chat/context';
@@ -317,6 +318,53 @@ it('keeps thread child control sizing delegated through the web scroller', () =>
     expect(normal).toBe('36px');
     expect(compact).toBe('24px');
     expect(large).toBe('44px');
+  } finally {
+    act(() => root.unmount());
+    host.remove();
+  }
+});
+
+it('keeps gallery width and artwork ratios fixed while panel actions delegate scope on web', () => {
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  const root: Root = createRoot(host);
+  const renderGallery = (size?: 'xs' | 'lg') =>
+    act(() => {
+      const gallery = (
+        <AiChatGalleryPanel
+          testID="gallery"
+          generations={[
+            { id: 'tall', prompt: 'Tall', aspectRatio: 0.5 },
+            { id: 'square', prompt: 'Square', aspectRatio: 1 },
+            { id: 'wide', prompt: 'Wide', aspectRatio: 2 },
+          ]}
+        />
+      );
+      root.render(
+        <BloomThemeProvider mode="light" fonts={false}>
+          {size ? <BloomScope size={size}>{gallery}</BloomScope> : gallery}
+        </BloomThemeProvider>,
+      );
+    });
+  const geometry = () => {
+    const panel = host.querySelector<HTMLElement>('[role="complementary"]');
+    const action = host.querySelector<HTMLElement>('[aria-label="New generation"]');
+    const aspectRatios = Array.from(host.querySelectorAll<HTMLElement>('*'))
+      .map((element) => element.style.aspectRatio)
+      .filter(Boolean);
+    if (!panel || !action) throw new Error('AiChat gallery geometry is missing');
+    return { width: panel.style.width, action: action.style.height, aspectRatios };
+  };
+  try {
+    renderGallery();
+    const normal = geometry();
+    expect(normal.width).toBe('410px');
+    expect(normal.action).toBe('34px');
+    expect(normal.aspectRatios).toEqual(expect.arrayContaining(['0.5', '1', '2']));
+    renderGallery('xs');
+    expect(geometry()).toEqual({ ...normal, action: '24px' });
+    renderGallery('lg');
+    expect(geometry()).toEqual(normal);
   } finally {
     act(() => root.unmount());
     host.remove();

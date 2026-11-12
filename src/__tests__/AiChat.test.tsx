@@ -629,6 +629,34 @@ describe('AiChatCodePanel', () => {
 });
 
 describe('AiChatGalleryPanel', () => {
+  it('keeps gallery width and artwork ratios fixed while panel actions delegate scope', () => {
+    const subject = (size?: 'xs' | 'lg') => {
+      const panel = <AiChatGalleryPanel testID="gallery" generations={WALL} />;
+      return (
+        <BloomThemeProvider>
+          {size ? <BloomScope size={size}>{panel}</BloomScope> : panel}
+        </BloomThemeProvider>
+      );
+    };
+    const screen = render(subject());
+    const geometry = () => {
+      const width = resolvedStyle(screen.getByTestId('gallery').props.style).width;
+      const action = resolvedStyle(screen.getByLabelText('New generation').props.style).height;
+      const aspectRatios = screen.UNSAFE_root.findAll(
+        (node) => resolvedStyle(node.props.style).aspectRatio !== undefined,
+      ).map((node) => resolvedStyle(node.props.style).aspectRatio);
+      return { width, action, aspectRatios };
+    };
+    const normal = geometry();
+    expect(normal.width).toBe(410);
+    expect(normal.action).toBe(34);
+    expect(normal.aspectRatios).toEqual(expect.arrayContaining([0.5, 1, 2]));
+    screen.rerender(subject('xs'));
+    expect(geometry()).toEqual({ ...normal, action: 24 });
+    screen.rerender(subject('lg'));
+    expect(geometry()).toEqual(normal);
+  });
+
   it('balances the wall into shortest-first columns with a top-left → bottom-right cascade', () => {
     const columns = distributeGenerations(WALL, 3);
     expect(columns.map((c) => c.map((g) => g.id))).toEqual([
