@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Platform, Text, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BloomProvider } from '@oxy.so/bloom/provider';
+import { BloomThemeProvider } from '@oxy.so/bloom/theme';
 import { PortalProvider, PortalOutlet } from '@oxy.so/bloom/portal';
 import { SurfaceProvider } from '@oxy.so/bloom/surfaces';
 import { Button } from '@oxy.so/bloom/button';
 import { LoaderBenchmark } from './LoaderBenchmark';
 import { ComposerCases } from './ComposerCases';
 import { RawInputControl } from './RawInputControl';
+import { AiProfileCardCases } from './AiProfileCardCases';
 import build from './build.json';
 
 /** Negative probes run before the scene. Timeout never proves isolation.
@@ -58,6 +60,16 @@ export function PackageLab({
       <View style={{ padding: 32 }}>
         <Text testID="isolation-status">{isolation}</Text>
       </View>
+    );
+  if ((scene ?? build.scene) === 'ai-profile-card')
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <BloomThemeProvider mode={mode} colorPreset="oxy">
+            <AiProfileCardCases />
+          </BloomThemeProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
     );
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

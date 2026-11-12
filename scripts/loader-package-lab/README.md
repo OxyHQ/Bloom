@@ -1,5 +1,11 @@
 # Packaged Android loader validation
 
+The `ai-profile-card` scene also serves as an isolated physical-layout consumer
+for #663. It switches the same mounted card between 390px and 700px local widths
+so a Pixel run can check that card layout follows its container, not app-window
+width. Its receipt identifies the local packed Bloom snapshot; it is not release
+acceptance.
+
 This isolated consumer imports public Bloom subpaths, with no copied renderer and no
 relative imports into the checkout. The package is `so.oxy.bloom.loaderpackagelab`;
 no production services or accounts are configured. Its release manifest denies

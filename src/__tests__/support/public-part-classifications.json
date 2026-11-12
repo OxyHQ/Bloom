@@ -1402,6 +1402,22 @@
     "verification": "Native renderer confirms 410/320/560px context width constraints and shell flex geometry are unchanged under md/xs/lg while drawer actions follow ButtonGroupItem at 34/24/34px. Web DOM tests verify compact header action delegation and retained hidden navigation behavior; AppShell owns track rendering. Physical responsive layout, touch fit and device accessibility remain unverified.",
     "parts": ["src/ai-chat/AiChat.tsx#AiChatShell"]
   },
+  "ai-profile-card-local-responsive-recipe": {
+    "status": "delegated",
+    "reason": "AiProfileCard owns its fixed cover/avatar/card recipe and adapts its stats and heatmap from its measured local width. The embedded SegmentedControl inherits BloomScope size; caller actions retain their own explicit size. CoverHeader forwards its local layout event to support the measurement.",
+    "evidence": [
+      "src/ai-profile-card/AiProfileCard.tsx",
+      "src/cover-header/CoverHeader.tsx",
+      "src/cover-header/types.ts",
+      "src/segmented-control/SegmentedControl.tsx",
+      "docs/ai-profile-card.mdx",
+      "docs/cover-header.mdx",
+      "src/__tests__/AiProfileCard.test.tsx",
+      "src/__tests__/AiProfileCardPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer resizes the same card from 1440px window width through 390px and 720px local widths, switching stats rows correctly; card recipe stays fixed under md/xs/lg while the period SegmentedControl maps to 28/20/36px. DOM web uses ResizeObserver-backed local layout at 390px and 720px within a 1024px window and verifies the same row change. Physical panel fit, touch fit and assistive technology remain unverified.",
+    "parts": ["src/ai-profile-card/AiProfileCard.tsx#AiProfileCard"]
+  },
   "agent-progress-fixed-recipe": {
     "status": "independent-scale",
     "reason": "AgentProgress and AgentProgressPlan own fixed 341px card geometry; their rows and labels use fixed typography and their decision buttons/badges choose explicit size tokens. AgentProgressLoadingText consumes an explicit typography variant, not BloomScope control size.",
@@ -1437,7 +1453,6 @@
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/ai-profile-card/AiProfileCard.tsx#AiProfileCard",
       "src/alert-dialog/index.ts#AlertDialog",
       "src/app-shell/AppShellHeader.tsx#AppShellHeader",
       "src/app-shell/AppShellMenuButton.tsx#AppShellMenuButton",

@@ -7,6 +7,7 @@ import type { AiProfileCardStat } from '../ai-profile-card';
 import { Button } from '../button';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
+import { BloomScope } from '../appearance';
 import { mockWindowSize } from './support/window-size';
 
 const STATS: AiProfileCardStat[] = [
@@ -152,8 +153,8 @@ describe('AiProfileCard', () => {
   });
 
   it('lays the tiles in one row from 640px and two columns below', () => {
-    viewport(1024);
-    const wide = renderCard(
+    viewport(1440);
+    const screen = renderCard(
       <AiProfileCard
         testID="card"
         name="M"
@@ -163,20 +164,63 @@ describe('AiProfileCard', () => {
         cells={CELLS}
       />,
     );
-    expect(wide.getByTestId('card-stats').props.children).toHaveLength(1);
-    wide.unmount();
-    viewport(390);
-    const narrow = renderCard(
-      <AiProfileCard
-        testID="card"
-        name="M"
-        contributions={1}
-        countUpDuration={0}
-        stats={STATS}
-        cells={CELLS}
-      />,
+    const rowCount = () => screen.getByTestId('card-stats').props.children.length;
+    expect(rowCount()).toBe(1);
+    act(() => {
+      fireEvent(screen.getByTestId('card'), 'layout', {
+        nativeEvent: { layout: { width: 390, height: 700, x: 0, y: 0 } },
+      });
+    });
+    expect(rowCount()).toBe(2);
+    act(() => {
+      fireEvent(screen.getByTestId('card'), 'layout', {
+        nativeEvent: { layout: { width: 720, height: 700, x: 0, y: 0 } },
+      });
+    });
+    expect(rowCount()).toBe(1);
+  });
+
+  it('keeps card artwork fixed while the embedded period control follows scope', () => {
+    viewport(1440);
+    const subject = (size?: 'xs' | 'lg') => {
+      const card = (
+        <AiProfileCard
+          testID="scoped-card"
+          name="Maya"
+          countUpDuration={0}
+          stats={STATS}
+          cells={CELLS}
+          actions={<Button size="sm">Share</Button>}
+        />
+      );
+      return size ? <BloomScope size={size}>{card}</BloomScope> : card;
+    };
+    const screen = renderCard(subject());
+    const geometry = () => ({
+      card: resolvedStyle(screen.getByTestId('scoped-card').props.style),
+      cover: resolvedStyle(screen.getByTestId('scoped-card-cover').props.style),
+      content: resolvedStyle(screen.getByTestId('scoped-card-content').props.style),
+      period: resolvedStyle(screen.getByTestId('scoped-card-period-weekly').props.style).height,
+    });
+    const normal = geometry();
+    expect(normal.card).toMatchObject({ borderRadius: 24, borderWidth: 1 });
+    expect(normal.cover.height).toBe(165);
+    expect(normal.content).toMatchObject({ gap: 15, paddingLeft: 16, paddingRight: 16 });
+    expect(normal.period).toBe(28);
+
+    screen.rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        {subject('xs')}
+      </BloomThemeProvider>,
     );
-    expect(narrow.getByTestId('card-stats').props.children).toHaveLength(2);
+    expect(geometry()).toMatchObject({ card: normal.card, cover: normal.cover, period: 20 });
+
+    screen.rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        {subject('lg')}
+      </BloomThemeProvider>,
+    );
+    expect(geometry()).toMatchObject({ card: normal.card, cover: normal.cover, period: 36 });
   });
 
   it('lands the mount count-up on the total (jest snaps the roll) and follows a new total', () => {
