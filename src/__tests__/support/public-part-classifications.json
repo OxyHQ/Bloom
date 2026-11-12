@@ -1028,6 +1028,23 @@
     "verification": "Native renderer and DOM web verify fixed 14px title typography and 6px gap/4px vertical spacing under default md, xs and lg; optional child geometry and physical-device proportions remain unverified.",
     "parts": ["src/agent-log/AgentLogToolCall.tsx#AgentLogToolCall"]
   },
+  "agent-progress-fixed-recipe": {
+    "status": "independent-scale",
+    "reason": "AgentProgress and AgentProgressPlan own fixed 341px card geometry; their rows and labels use fixed typography and their decision buttons/badges choose explicit size tokens. AgentProgressLoadingText consumes an explicit typography variant, not BloomScope control size.",
+    "evidence": [
+      "src/agent-progress/AgentProgress.tsx",
+      "src/agent-progress/AgentProgressPlan.tsx",
+      "src/agent-progress/AgentProgressLoadingText.tsx",
+      "src/__tests__/AgentProgressPublicPartScope.test.tsx",
+      "src/__tests__/AgentProgressPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify 341px progress/plan cards, 32px explicitly small decision action, and 14px default loading text under default md, xs and lg scopes; physical layout, interaction targets and assistive technology remain unverified.",
+    "parts": [
+      "src/agent-progress/AgentProgress.tsx#AgentProgress",
+      "src/agent-progress/AgentProgressLoadingText.tsx#AgentProgressLoadingText",
+      "src/agent-progress/AgentProgressPlan.tsx#AgentProgressPlan"
+    ]
+  },
   "agent-log-tool-calls": {
     "status": "delegated",
     "reason": "AgentLogToolCalls only provides list semantics and wraps each caller supplied child in AgentLogRow. Row guide geometry belongs to AgentLogRow; size behavior of caller controls stays with those controls and the nearest BloomScope.",
@@ -1053,9 +1070,6 @@
       "src/agent-chat/AgentChatMessage.tsx#AgentChatMessage",
       "src/agent-creator/AgentCreator.tsx#AgentCreator",
       "src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard",
-      "src/agent-progress/AgentProgress.tsx#AgentProgress",
-      "src/agent-progress/AgentProgressLoadingText.tsx#AgentProgressLoadingText",
-      "src/agent-progress/AgentProgressPlan.tsx#AgentProgressPlan",
       "src/agent-reply/AgentProfile.tsx#AgentProfile",
       "src/agent-reply/AgentReply.tsx#AgentReply",
       "src/agent-reply/AgentReplyActions.tsx#AgentReplyAction",
