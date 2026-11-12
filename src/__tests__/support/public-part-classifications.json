@@ -2150,6 +2150,17 @@
     "verification": "Native renderer and DOM web verify fixed 32px height and 16px icon at default and xs/sm/md/lg scope; physical layout pending.",
     "parts": ["src/chart-cards/primitives/ChartRangePill.tsx#ChartRangePill"]
   },
+  "chart-center-readout-fixed-recipe": {
+    "status": "independent-scale",
+    "reason": "ChartCenterReadout uses the component's explicit display/title chart recipe and an absolute full-inset, pointer-transparent frame. BloomScope size does not change that local visual recipe; a separate size prop selects its two intentional chart contexts.",
+    "evidence": [
+      "src/chart-cards/primitives/ChartCenterReadout.tsx",
+      "src/__tests__/ChartCenterReadoutPublicPartScope.test.tsx",
+      "src/__tests__/ChartCenterReadoutPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the explicit display/title variant and pointer-transparent frame at default and xs/sm/md/lg scopes; physical layout pending.",
+    "parts": ["src/chart-cards/primitives/ChartCenterReadout.tsx#ChartCenterReadout"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
@@ -2182,7 +2193,6 @@
       "src/chart-cards/medical-parts.tsx#WeekRangePill",
       "src/chart-cards/primitives/CartesianPlot.tsx#CartesianPlot",
       "src/chart-cards/primitives/ChartCardSurface.tsx#ChartCardSurface",
-      "src/chart-cards/primitives/ChartCenterReadout.tsx#ChartCenterReadout",
       "src/chart-cards/primitives/ChartHeader.tsx#ChartHeader",
       "src/chart-cards/primitives/ChartHeader.tsx#ChartHeadline",
       "src/chart-cards/primitives/ChartLegend.tsx#ChartLegend",
