@@ -1017,6 +1017,18 @@
     "verification": "The provider itself emits no UI; native locale coverage confirms it supplies scroll state and localized labels to the optional affordances when mounted.",
     "parts": ["src/select/shared.tsx#SelectScrollProvider"]
   },
+  "agent-log-tool-calls": {
+    "status": "delegated",
+    "reason": "AgentLogToolCalls only provides list semantics and wraps each caller supplied child in AgentLogRow. Row guide geometry belongs to AgentLogRow; size behavior of caller controls stays with those controls and the nearest BloomScope.",
+    "evidence": [
+      "src/agent-log/AgentLogToolCall.tsx",
+      "src/agent-log/AgentLog.tsx",
+      "src/__tests__/AgentLogToolCallsPublicPartScope.test.tsx",
+      "src/__tests__/AgentLogToolCallsPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the list label and that a caller supplied Button follows default md, xs and lg scope through AgentLogRow; device layout and accessibility remain unverified.",
+    "parts": ["src/agent-log/AgentLogToolCall.tsx#AgentLogToolCalls"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
@@ -1031,7 +1043,6 @@
       "src/agent-creator/AgentCreator.tsx#AgentCreator",
       "src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard",
       "src/agent-log/AgentLogToolCall.tsx#AgentLogToolCall",
-      "src/agent-log/AgentLogToolCall.tsx#AgentLogToolCalls",
       "src/agent-progress/AgentProgress.tsx#AgentProgress",
       "src/agent-progress/AgentProgressLoadingText.tsx#AgentProgressLoadingText",
       "src/agent-progress/AgentProgressPlan.tsx#AgentProgressPlan",
