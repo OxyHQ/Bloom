@@ -747,6 +747,47 @@ describe('AiChatShell', () => {
     expect(getByLabelText('Code')).toBeTruthy();
   });
 
+  it('keeps header chrome fixed while shell actions follow their delegated control scale', () => {
+    const subject = (size?: 'xs' | 'lg') => {
+      const shell = (
+        <AiChatShell sidebar={null} mobileSidebar={<Text>nav</Text>} panel={() => null}>
+          <AiChatHeader testID="header">
+            <Text>Alia</Text>
+          </AiChatHeader>
+        </AiChatShell>
+      );
+      return size ? <BloomScope size={size}>{shell}</BloomScope> : shell;
+    };
+    const screen = renderWithPortal(subject());
+    const geometry = () => ({
+      header: classNamesOn(screen.getByTestId('header-bar').props.style),
+      navigation: resolvedStyle(screen.getByLabelText('Open navigation').props.style).height,
+      panel: resolvedStyle(screen.getByLabelText('Open code').props.style).height,
+    });
+    const normal = geometry();
+    expect(normal.header).toContain('min-h-14 py-2');
+    expect(normal.navigation).toBe(34);
+    expect(normal.panel).toBe(34);
+    screen.rerender(
+      <BloomThemeProvider>
+        <PortalProvider>
+          {subject('xs')}
+          <PortalOutlet />
+        </PortalProvider>
+      </BloomThemeProvider>,
+    );
+    expect(geometry()).toEqual({ ...normal, navigation: 24, panel: 24 });
+    screen.rerender(
+      <BloomThemeProvider>
+        <PortalProvider>
+          {subject('lg')}
+          <PortalOutlet />
+        </PortalProvider>
+      </BloomThemeProvider>,
+    );
+    expect(geometry()).toEqual(normal);
+  });
+
   it('draws a header with its title alone outside a shell', () => {
     const { getByText, queryByLabelText } = renderIn(
       <AiChatHeader>
