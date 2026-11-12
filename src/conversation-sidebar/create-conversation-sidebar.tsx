@@ -148,7 +148,7 @@ export function createConversationSidebar({
         showThemeToggle={false}
         {...sidebar}
         // Under the panel's own header (logo, account, collapse control), which stays; a rail has
-        // no room for the three tools.
+        // no room for the tools (search, then the store and "+" buttons the app passes).
         toolbar={({ collapsed }) =>
           collapsed ? null : (
             <SidebarToolbar
@@ -168,9 +168,10 @@ export function createConversationSidebar({
         content={
           <StyledView className="flex flex-col gap-2" accessibilityLabel={l.list}>
             {heading && conversations.length ? (
+              // Inset 6, as the rows' padding: the heading starts where their avatars do.
               <Text
                 role="heading"
-                className="px-2 pt-1 text-body-2-medium text-text-secondary"
+                className="px-1.5 pt-1 text-body-2-medium text-text-secondary"
                 numberOfLines={1}
               >
                 {heading}

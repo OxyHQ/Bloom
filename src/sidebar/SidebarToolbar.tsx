@@ -22,8 +22,14 @@ const AnimatedView = Animated.createAnimatedComponent(StyledView);
 
 /** How long after the field loses focus the empty search closes. */
 const BLUR_CLOSE_MS = 150;
+/** Between two slots of the row. */
+const SLOT_GAP = 8;
 
-/** Search and fixed action slots share one row; the sidebar owns its viewport. */
+/**
+ * The search's slot and one per action share the row in equal parts, however many actions there
+ * are; the closed search covers the first slot and opens across all of them. The sidebar owns its
+ * viewport.
+ */
 export function SidebarToolbar({ actions = [], search, style, testID }: SidebarToolbarProps) {
   const common = useCommonMessages();
   const palette = useSidebarPalette();
@@ -54,17 +60,21 @@ export function SidebarToolbar({ actions = [], search, style, testID }: SidebarT
     return undefined;
   }, [search.open, reduced, progress, actionsProgress]);
   const slots = actions.length + 1;
-  const collapsedWidth = width > 0 ? (width - 8 * (slots - 1)) / slots : 76;
+  const gaps = SLOT_GAP * (slots - 1);
+  // The first slot's width. Web states it in CSS, so it holds before any layout and through
+  // resizes; native animates between numbers, so it measures the row (a share of it until then).
+  const webCollapsedWidth = slots === 1 ? '100%' : `calc((100% - ${gaps}px) / ${slots})`;
+  const collapsedWidth = width > 0 ? (width - gaps) / slots : null;
   const searchWidth = useAnimatedStyle(
     () => ({
       width:
-        width > 0
+        collapsedWidth != null
           ? collapsedWidth + (width - collapsedWidth) * progress.value
           : progress.value > 0
             ? '100%'
-            : collapsedWidth,
+            : `${100 / slots}%`,
     }),
-    [width, collapsedWidth, progress],
+    [width, collapsedWidth, slots, progress],
   );
   const actionsStyle = useAnimatedStyle(() => {
     const hidden = actionsProgress.value;
@@ -99,15 +109,16 @@ export function SidebarToolbar({ actions = [], search, style, testID }: SidebarT
       onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
     >
       <StyledView
-        className="grid h-full grid-cols-3 gap-2"
-        style={{ flexDirection: 'row', gap: 8 }}
+        testID={testID ? `${testID}-slots` : undefined}
+        className="h-full flex-row gap-2"
+        style={{ height: '100%', flexDirection: 'row', gap: SLOT_GAP }}
       >
-        <StyledView aria-hidden style={{ flex: 1 }} />
+        <StyledView aria-hidden style={{ flex: 1, minWidth: 0 }} />
         {actions.map((action, index) => (
           <AnimatedView
             key={index}
             className={`flex ${IS_WEB ? `transition-[opacity,transform] duration-200 motion-reduce:transition-none ${search.open ? `pointer-events-none ${rtl ? '-translate-x-2' : 'translate-x-2'} scale-95 opacity-0` : 'translate-x-0 scale-100 opacity-100'}` : ''}`}
-            style={[{ flex: 1 }, !IS_WEB && actionsStyle]}
+            style={[{ flex: 1, minWidth: 0 }, !IS_WEB && actionsStyle]}
             pointerEvents={search.open ? 'none' : 'auto'}
             aria-hidden={search.open}
             accessibilityElementsHidden={search.open}
@@ -119,6 +130,7 @@ export function SidebarToolbar({ actions = [], search, style, testID }: SidebarT
         ))}
       </StyledView>
       <AnimatedView
+        testID={testID ? `${testID}-search` : undefined}
         className={`absolute inset-y-0 start-0 z-10 overflow-hidden rounded-full bg-background-tertiary-default ${IS_WEB ? 'transition-[width] duration-300 ease-in-out motion-reduce:transition-none' : ''}`}
         style={[
           {
@@ -129,7 +141,7 @@ export function SidebarToolbar({ actions = [], search, style, testID }: SidebarT
             borderRadius: 999,
             backgroundColor: palette.tertiary,
           },
-          IS_WEB ? { width: search.open ? '100%' : collapsedWidth } : searchWidth,
+          IS_WEB ? { width: search.open ? '100%' : webCollapsedWidth } : searchWidth,
         ]}
       >
         {!search.open ? (

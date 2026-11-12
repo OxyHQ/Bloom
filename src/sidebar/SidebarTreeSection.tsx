@@ -48,6 +48,13 @@ import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 const EASE_IN_OUT = Easing.bezier(0.4, 0, 0.2, 1);
 /** One level of nesting: a row's content starts this much further in than its parent's. */
 export const TREE_INDENT = 16;
+/**
+ * Where a top-level row's content starts (its disclosure, glyph, avatar or label), and so where
+ * the section's label and status start: one edge from the title down.
+ */
+export const TREE_INSET = 8;
+/** Where a row's `actions` end: the section's own `actions` end there too. */
+const TREE_ACTIONS_INSET = 4;
 /** Long enough that a press opens the row and a swipe still scrolls the sidebar. */
 const LIFT_AFTER_MS = 350;
 const DRAG_MIME = 'application/x-bloom-sidebar-row';
@@ -57,7 +64,8 @@ type TreePress = (item: SidebarTreeItem, folder?: SidebarTreeFolder) => void;
 /**
  * One labelled section of the sidebar's tree.
  *
- *   label     `tree.label` text-secondary, its `actions` at the end. A
+ *   label     `tree.label` text-secondary, inset 8 like the rows' content (its
+ *             `actions` at the end, inset 4 like theirs). A
  *             `collapsible` section's label is a disclosure (16px chevron,
  *             turning 90° open) that shows and hides the rows (300ms).
  *   status    `loading` / `error` (an alert, in the danger role) / `emptyLabel`,
@@ -177,7 +185,7 @@ export const SidebarTreeSection = memo(function SidebarTreeSection({
   );
 });
 
-const statusStyle = { paddingLeft: 8, paddingRight: 8 };
+const statusStyle = { paddingLeft: TREE_INSET, paddingRight: TREE_INSET };
 
 function SectionLabel({
   section,
@@ -224,6 +232,9 @@ function SectionLabel({
         alignItems: 'center',
         justifyContent: 'space-between',
         gap: 8,
+        // The title starts where its rows' content does, and its actions end where theirs do.
+        paddingInlineStart: TREE_INSET,
+        paddingInlineEnd: section.actions != null ? TREE_ACTIONS_INSET : TREE_INSET,
         borderRadius: borderRadius.full,
         ...(dropHere ? { boxShadow: `inset 0 0 0 2px ${palette.ring}` } : null),
       }}
@@ -522,7 +533,7 @@ const TreeRow = memo(function TreeRow({
   // A row with a description is a contact (picture, name, last line): its picture is as tall as the
   // two lines. Any other `leading` stays in the glyph's box.
   const leadingBox = item.leading != null && item.description != null ? tree.avatar : tree.icon;
-  const inset = 8 + depth * TREE_INDENT;
+  const inset = TREE_INSET + depth * TREE_INDENT;
   const Icon = item.icon;
   const row = (
     <View
@@ -544,7 +555,7 @@ const TreeRow = memo(function TreeRow({
         // With a disclosure lane the inset comes before it; without one it is
         // part of the row's press target, as a folder's row is.
         paddingInlineStart: nests ? inset : 0,
-        paddingInlineEnd: item.actions != null ? 4 : 0,
+        paddingInlineEnd: item.actions != null ? TREE_ACTIONS_INSET : 0,
         backgroundColor: lit
           ? palette.selected
           : indicator === 'inside'

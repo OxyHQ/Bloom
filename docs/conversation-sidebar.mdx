@@ -40,7 +40,7 @@ import { ConversationSidebar } from '@oxy.so/bloom/conversation-sidebar';
 
 | Part | Props |
 | --- | --- |
-| **Three tools** on top | search (always; `query` / `onQueryChange`, `searchOpen` / `onSearchOpenChange`), the store button (`onMarketplace`), and the "+" button: `onCreate` makes it act directly (a new conversation), `createOptions` makes it open a menu instead. Each of the last two is absent without its prop. |
+| **Tools** on top | search (always; `query` / `onQueryChange`, `searchOpen` / `onSearchOpenChange`), the store button (`onMarketplace`), and the "+" button: `onCreate` makes it act directly (a new conversation), `createOptions` makes it open a menu instead. Each of the last two is absent without its prop, and the row is shared in equal parts by the tools there are (search and "+" are two halves). |
 | **Rows** | `conversations`: `title`, `description`, `agents` (stacked as the avatar; one agent is drawn larger) and `pinned` (a pin). `activeId` selects one; `onSelect` opens it. |
 | **Context menu** | `actions(conversation)` returns a menu per row (right-click, long press); `onAction(conversation, key)` runs it. A `destructive` action is drawn as one. No actions, no menu. |
 | **Words** | `labels`: every string defaults to Bloom's localized copy. |
