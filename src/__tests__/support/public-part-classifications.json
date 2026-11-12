@@ -2067,6 +2067,18 @@
     "verification": "Native renderer and DOM web verify child Button default md and xs/sm/md/lg heights through the loader, plus nested lg-over-xs through a wrapper. Loader artwork and Surface retain their own geometry; there is no portal or submenu. Mocked renderers establish context/declaration behavior, not device-optical or performance acceptance.",
     "parts": ["src/composer-loader/ComposerLoader.tsx#ComposerLoader"]
   },
+  "frosted-icon-button-size": {
+    "status": "applicable",
+    "reason": "FrostedIconButton owns the 28/32/36/44px xs/sm/md/lg diameter and icon-box mapping, reads BloomScope for its default, and lets an explicit preset or numeric diameter win. Button retains the shared material and interaction contract; native hitSlop remains independent from the visible diameter.",
+    "evidence": [
+      "src/frosted-icon-button/FrostedIconButtonBase.tsx",
+      "src/frosted-icon-button/shared.ts",
+      "src/__tests__/FrostedIconButton.test.tsx",
+      "src/__tests__/FrostedIconButton.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify inherited xs/sm/md/lg, default md and explicit size precedence, plus existing numeric geometry, interaction, disabled and accessible-name tests. It owns no portal or submenu. Renderer tests do not establish physical hit testing; device touch remains pending.",
+    "parts": ["src/frosted-icon-button/FrostedIconButton.tsx#FrostedIconButton"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
@@ -2256,7 +2268,6 @@
       "src/fill/SurfaceFade.tsx#SurfaceFade",
       "src/fonts/BloomFontHead.tsx#BloomFontHead",
       "src/fonts/FontLoader.tsx#FontLoader",
-      "src/frosted-icon-button/FrostedIconButton.tsx#FrostedIconButton",
       "src/grid/Grid.tsx#Col",
       "src/grid/Grid.tsx#Row",
       "src/grid/ResponsiveGrid.tsx#ResponsiveGrid",

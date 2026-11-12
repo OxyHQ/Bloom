@@ -1,5 +1,5 @@
 /** @jest-environment jsdom */
-import React, { act } from 'react';
+import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 jest.mock('../theme/use-theme', () => ({
@@ -24,7 +24,19 @@ jest.mock('../theme/use-theme', () => ({
   }),
 }));
 import { FrostedIconButton } from '../frosted-icon-button/FrostedIconButton.web';
+import { BloomScope } from '../appearance';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+function Icon({ width, height }: { width?: number; height?: number }) {
+  return <svg data-testid="glyph" width={width} height={height} />;
+}
+
+function getButton() {
+  const button = container.querySelector('button');
+  if (!button) throw new Error('Missing FrostedIconButton');
+  return button;
+}
+
 let container: HTMLDivElement;
 let root: Root;
 beforeEach(() => {
@@ -40,9 +52,6 @@ afterEach(() => {
 });
 
 it('composes the actual Button root with numeric size, icon size and caller layout', () => {
-  const Icon = ({ width, height }: { width?: number; height?: number }) => (
-    <svg data-testid="glyph" width={width} height={height} />
-  );
   act(() =>
     root.render(
       <FrostedIconButton
@@ -54,7 +63,7 @@ it('composes the actual Button root with numeric size, icon size and caller layo
       />,
     ),
   );
-  const button = container.querySelector('button')!;
+  const button = getButton();
   expect(container.children).toHaveLength(1);
   expect(button.className).toContain('bloom-btn--surface');
   expect(button.className).toContain('caller');
@@ -63,7 +72,7 @@ it('composes the actual Button root with numeric size, icon size and caller layo
   expect(button.style.height).toBe('40px');
   expect(button.style.marginTop).toBe('8px');
   expect(button.style.borderRadius).toBe('12px');
-  expect(container.querySelector('svg')!.getAttribute('width')).toBe('22');
+  expect(container.querySelector('svg')?.getAttribute('width')).toBe('22');
 });
 it('forwards each activation and controlled toggle once; disabled stays inert', () => {
   const press = jest.fn(),
@@ -80,7 +89,7 @@ it('forwards each activation and controlled toggle once; disabled stays inert', 
     />
   );
   act(() => root.render(ui()));
-  const button = container.querySelector('button')!;
+  const button = getButton();
   expect(button.getAttribute('aria-pressed')).toBe('true');
   act(() => button.click());
   expect(press).toHaveBeenCalledTimes(1);
@@ -99,7 +108,22 @@ it.each([
   ['lg', 44],
 ] as const)('preserves %s diameter', (size, diameter) => {
   act(() => root.render(<FrostedIconButton size={size} accessibilityLabel="Back" />));
-  expect(container.querySelector('button')!.style.width).toBe(`${diameter}px`);
+  expect(getButton().style.width).toBe(`${diameter}px`);
+});
+it.each([
+  ['xs', 28],
+  ['sm', 32],
+  ['md', 36],
+  ['lg', 44],
+] as const)('inherits %s scope diameter', (size, diameter) => {
+  act(() =>
+    root.render(
+      <BloomScope size={size}>
+        <FrostedIconButton accessibilityLabel="Back" />
+      </BloomScope>,
+    ),
+  );
+  expect(getButton().style.width).toBe(`${diameter}px`);
 });
 it('honours the web accessible name and form type', () => {
   act(() =>
@@ -107,7 +131,7 @@ it('honours the web accessible name and form type', () => {
       <FrostedIconButton accessibilityLabel="Old" aria-label="Save" type="submit" id="save" />,
     ),
   );
-  const button = container.querySelector('button')!;
+  const button = getButton();
   expect(button.getAttribute('aria-label')).toBe('Save');
   expect(button.type).toBe('submit');
   expect(button.id).toBe('save');

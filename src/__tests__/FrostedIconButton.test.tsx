@@ -1,6 +1,7 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 import { render } from '@testing-library/react-native';
+import { BloomScope } from '../appearance';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { FrostedIconButton } from '../frosted-icon-button';
@@ -22,6 +23,36 @@ function MockIcon({ fill, testID }: { fill?: string; testID?: string }) {
 }
 
 describe('FrostedIconButton (native)', () => {
+  it.each([
+    [undefined, 36],
+    ['xs', 28],
+    ['sm', 32],
+    ['md', 36],
+    ['lg', 44],
+  ] as const)('inherits %s scope while retaining its diameter recipe', (size, diameter) => {
+    const button = (
+      <FrostedIconButton testID="btn" accessibilityLabel="Back" icon={() => <Text>x</Text>} />
+    );
+    const { getByTestId } = renderWithTheme(
+      size ? <BloomScope size={size}>{button}</BloomScope> : button,
+    );
+    expect(resolvedStyle(getByTestId('btn').props.style).width).toBe(diameter);
+  });
+
+  it('explicit size wins over the nearest scope', () => {
+    const { getByTestId } = renderWithTheme(
+      <BloomScope size="xs">
+        <FrostedIconButton
+          testID="btn"
+          size="lg"
+          accessibilityLabel="Back"
+          icon={() => <Text>x</Text>}
+        />
+      </BloomScope>,
+    );
+    expect(resolvedStyle(getByTestId('btn').props.style).width).toBe(44);
+  });
+
   it('renders its icon content', () => {
     const { getByText } = renderWithTheme(
       <FrostedIconButton
