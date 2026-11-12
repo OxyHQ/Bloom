@@ -1908,19 +1908,56 @@
       "src/card-form/CardFormParts.tsx#CardFormSecurityCode"
     ]
   },
+  "card-slot-size-delegation": {
+    "status": "delegated",
+    "reason": "Card and its Header, Body and Footer parts are structural containers that forward caller children without introducing a size scope. Consumer controls in those surfaces retain the nearest BloomScope.",
+    "evidence": [
+      "src/card/Card.tsx",
+      "src/card/types.ts",
+      "src/__tests__/Card.test.tsx",
+      "src/__tests__/CardCompositionPublicPartScope.test.tsx",
+      "src/__tests__/CardCompositionPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify a caller Button in Card, CardHeader, CardBody and CardFooter under default md and xs/sm/md/lg, plus nearest nested lg-over-xs. Existing Card tests cover rendering, appearance and interaction; card geometry stays on its explicit radius, border and elevation axes.",
+    "parts": [
+      "src/card/Card.tsx#Card",
+      "src/card/Card.tsx#CardHeader",
+      "src/card/Card.tsx#CardBody",
+      "src/card/Card.tsx#CardFooter"
+    ]
+  },
+  "selection-card-content-delegation": {
+    "status": "delegated",
+    "reason": "SelectionCard owns its radio/checkbox head and fixed card recipe, while rendering caller children in the separate body outside the selection press target. Controls in the body preserve the nearest BloomScope.",
+    "evidence": [
+      "src/card/SelectionCard.tsx",
+      "src/card/types.ts",
+      "src/__tests__/FieldMembership.test.tsx",
+      "src/__tests__/CardCompositionPublicPartScope.test.tsx",
+      "src/__tests__/CardCompositionPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify a caller Button in the SelectionCard body under default md and xs/sm/md/lg, plus nearest nested lg-over-xs. Existing FieldMembership tests cover the labelled selection head and field state; selection indicator geometry remains component-owned.",
+    "parts": ["src/card/SelectionCard.tsx#SelectionCard"]
+  },
+  "card-text-fixed-typography": {
+    "status": "independent-scale",
+    "reason": "CardTitle and CardDescription are semantic text leaves with explicit 17px and 14px recipes and no interactive controls or size API; surrounding BloomScope must not rewrite their typography.",
+    "evidence": [
+      "src/card/Card.tsx",
+      "src/card/types.ts",
+      "src/__tests__/CardText.test.tsx",
+      "src/__tests__/CardCompositionPublicPartScope.test.tsx",
+      "src/__tests__/CardCompositionPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify CardTitle remains 17px and CardDescription 14px under default md and xs/sm/md/lg scopes. Existing CardText tests cover explicit className typography utilities.",
+    "parts": ["src/card/Card.tsx#CardTitle", "src/card/Card.tsx#CardDescription"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/card/Card.tsx#Card",
-      "src/card/Card.tsx#CardBody",
-      "src/card/Card.tsx#CardDescription",
-      "src/card/Card.tsx#CardFooter",
-      "src/card/Card.tsx#CardHeader",
-      "src/card/Card.tsx#CardTitle",
-      "src/card/SelectionCard.tsx#SelectionCard",
       "src/carousel/Carousel.tsx#Carousel",
       "src/carousel/Carousel.tsx#CarouselItem",
       "src/carousel/CarouselDots.tsx#CarouselDots",
