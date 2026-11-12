@@ -1017,6 +1017,17 @@
     "verification": "The provider itself emits no UI; native locale coverage confirms it supplies scroll state and localized labels to the optional affordances when mounted.",
     "parts": ["src/select/shared.tsx#SelectScrollProvider"]
   },
+  "agent-log-tool-call": {
+    "status": "independent-scale",
+    "reason": "AgentLogToolCall owns a fixed body-regular/caption-1 row recipe, 14px status glyph and 6px/4px row spacing rather than a Bloom control-size prop. Optional result children remain caller-owned and keep their nearest scope.",
+    "evidence": [
+      "src/agent-log/AgentLogToolCall.tsx",
+      "src/__tests__/AgentLogToolCallPublicPartScope.test.tsx",
+      "src/__tests__/AgentLogToolCallPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify fixed 14px title typography and 6px gap/4px vertical spacing under default md, xs and lg; optional child geometry and physical-device proportions remain unverified.",
+    "parts": ["src/agent-log/AgentLogToolCall.tsx#AgentLogToolCall"]
+  },
   "agent-log-tool-calls": {
     "status": "delegated",
     "reason": "AgentLogToolCalls only provides list semantics and wraps each caller supplied child in AgentLogRow. Row guide geometry belongs to AgentLogRow; size behavior of caller controls stays with those controls and the nearest BloomScope.",
@@ -1042,7 +1053,6 @@
       "src/agent-chat/AgentChatMessage.tsx#AgentChatMessage",
       "src/agent-creator/AgentCreator.tsx#AgentCreator",
       "src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard",
-      "src/agent-log/AgentLogToolCall.tsx#AgentLogToolCall",
       "src/agent-progress/AgentProgress.tsx#AgentProgress",
       "src/agent-progress/AgentProgressLoadingText.tsx#AgentProgressLoadingText",
       "src/agent-progress/AgentProgressPlan.tsx#AgentProgressPlan",
