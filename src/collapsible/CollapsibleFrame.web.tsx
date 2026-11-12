@@ -13,9 +13,9 @@ import { DEFAULT_COLLAPSIBLE_TRANSITION } from './use-collapsible-motion';
 
 const CSS = `@layer base {
 .bloom-collapsible-panel,.bloom-collapsible-content { box-sizing:border-box;display:flex;flex-direction:column;flex-shrink:0;min-width:0; }
-.bloom-collapsible-css { display:grid;grid-template-rows:minmax(0,0fr);transition:grid-template-rows var(--bloom-collapsible-duration) var(--bloom-collapsible-easing); }
+.bloom-collapsible-css { display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,0fr);transition:grid-template-rows var(--bloom-collapsible-duration) var(--bloom-collapsible-easing); }
 .bloom-collapsible-css[data-open="true"] { grid-template-rows:minmax(0,1fr); }
-.bloom-collapsible-clip { min-height:0;overflow:hidden; }
+.bloom-collapsible-clip { min-height:0;min-width:0;overflow:hidden; }
 .bloom-collapsible-css[data-settled="true"] > .bloom-collapsible-clip { overflow:visible; }
 @starting-style { .bloom-collapsible-css[data-appear="true"] { grid-template-rows:minmax(0,0fr); } }
 @media (prefers-reduced-motion:reduce) { .bloom-collapsible-css { transition-duration:0ms; } }

@@ -1,5 +1,11 @@
 # Changelog
 
+## 19.10.1
+
+### Fixed
+
+- **A `Collapsible` on the web is as wide as its container, never as its widest line.** Since 19.7.1 its panel is a CSS grid (rows `0fr`/`1fr`), whose implicit column is `auto` and whose clip kept `min-width: auto`, so a line that does not wrap widened the panel past its container. In the sidebar's tree sections (Alia's and Gemies' "Chats") a long title pushed the rows past the sidebar's edge, their time and menu with them. The grid's column is `minmax(0, 1fr)` and the clip's `min-width` is 0: the title is cut to one line and the row ends at the sidebar's edge.
+
 ## 19.10.0
 
 ### Changed
