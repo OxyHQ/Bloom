@@ -20,6 +20,7 @@ import {
 import { RiHomeLine } from '../icons/remix';
 import type { NotificationCenterItem } from '../notification-center';
 import { ContentPanel } from '../content-panel';
+import { BloomScope } from '../appearance';
 import { useTheme } from '../theme/use-theme';
 import { resolvedStyle } from './support/rendered-style';
 import { mockWindowSize } from './support/window-size';
@@ -87,6 +88,34 @@ describe('AppShellHeader', () => {
 });
 
 describe('AppShell', () => {
+  it.each([
+    { name: 'default md', size: undefined },
+    { name: 'xs', size: 'xs' },
+    { name: 'sm', size: 'sm' },
+    { name: 'md', size: 'md' },
+    { name: 'lg', size: 'lg' },
+  ] as const)(
+    'AppShellMenuButton keeps its md recipe under $name and opens the drawer',
+    ({ size }) => {
+      setWidth(700);
+      const menuElement = <AppShellMenuButton testID="scoped-menu" />;
+      const screen = renderIn(
+        size ? (
+          <BloomScope size={size}>
+            <AppShell sidebar={{ items: NAV }} header={menuElement} />
+          </BloomScope>
+        ) : (
+          <AppShell sidebar={{ items: NAV }} header={menuElement} />
+        ),
+      );
+      const menu = screen.getByTestId('scoped-menu');
+      expect(resolvedStyle(menu.props.style).height).toBe(36);
+      expect(menu.props.accessibilityLabel).toBe('Open navigation');
+      fireEvent.press(menu);
+      expect(screen.getByTestId('sidebar-item-home')).toBeTruthy();
+    },
+  );
+
   it('wide: the rail is in flow and there is no menu button', () => {
     setWidth(1440);
     const screen = renderIn(<AppShell testID="shell" title="Home" sidebar={{ items: NAV }} />);

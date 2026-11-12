@@ -1473,13 +1473,26 @@
     "verification": "Native renderer verifies the semantic title metrics and explicit menu Button size at all four inherited sizes through a wrapper. DOM web verifies the rendered md geometry and accessible heading under default, xs, nested lg-over-xs and lg scopes. The title is semantic typography; menu geometry is delegated to Button; no portal or submenu is rendered by this part.",
     "parts": ["src/app-shell/AppShellHeader.tsx#AppShellHeader"]
   },
+  "app-shell-menu-button-independent-scale": {
+    "status": "independent-scale",
+    "reason": "AppShellMenuButton exposes no size prop and explicitly delegates its icon control to Button at md. The nearest BloomScope therefore does not change the menu control recipe; the AppShell context owns drawer visibility and toggle behavior.",
+    "evidence": [
+      "src/app-shell/AppShellMenuButton.tsx",
+      "src/app-shell/context.ts",
+      "src/button/Button.tsx",
+      "src/button/Button.web.tsx",
+      "src/__tests__/AppShell.test.tsx",
+      "src/__tests__/AppShellHeaderPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify default md plus xs, sm, md and lg scopes through AppShell. Both paths measure the md control recipe; tests also verify its accessible name and drawer toggle. AppShellMenuButton has no portal or submenu; physical device target fit remains covered by the platform-specific Button evidence.",
+    "parts": ["src/app-shell/AppShellMenuButton.tsx#AppShellMenuButton"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/app-shell/AppShellMenuButton.tsx#AppShellMenuButton",
       "src/app-shell/AppShellPanelVisibility.tsx#AppShellPanelVisibility",
       "src/app-shell/NotificationBell.tsx#NotificationBell",
       "src/app-shell/ProOfferCard.tsx#ProOfferCard",
