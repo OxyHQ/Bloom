@@ -2092,6 +2092,19 @@
     "verification": "Native renderer and DOM web verify the fixed 16px mark at default md and xs/sm/md/lg, plus nested scope, wrappers and an actual portal with the Checkbox/Switch matrix. Interaction tests cover selected, mixed and disabled semantics; device proportions and accessibility remain pending. This card owns no submenu.",
     "parts": ["src/checkbox/CheckboxCard.tsx#CheckboxCard"]
   },
+  "field-child-scope-delegation": {
+    "status": "delegated",
+    "reason": "Field owns label, help/error and field-membership association, but has no control-size prop. Its caller-owned control remains in the nearest BloomScope through the field stack and caller-owned wrappers or portals.",
+    "evidence": [
+      "src/field/Field.tsx",
+      "src/field/context.ts",
+      "src/__tests__/FieldMembership.test.tsx",
+      "src/__tests__/FieldPublicPartScope.test.tsx",
+      "src/__tests__/FieldPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify child Buttons at default md and xs/sm/md/lg, explicit lg precedence, nearest nested scope, ordinary wrappers and a real caller-owned Portal. Field itself owns no portal or submenu; physical field/control layout and assistive-technology behavior remain pending.",
+    "parts": ["src/field/Field.tsx#Field"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
@@ -2274,7 +2287,6 @@
       "src/eviction/EvictionTimeline.tsx#EvictionTimeline",
       "src/expandable-text/ExpandableText.tsx#ExpandableText",
       "src/fact-strip/FactStrip.tsx#FactStrip",
-      "src/field/Field.tsx#Field",
       "src/file-upload/FileUpload.tsx#FileUpload",
       "src/fill/Fill.tsx#Fill",
       "src/fill/SurfaceFade.tsx#SurfaceFade",
