@@ -16,7 +16,10 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
+import { BloomScope } from '../appearance';
 import { AspectRatio } from '../aspect-ratio';
+import { Button } from '../button';
+import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { findHost, hostNodes, renderedChildren, resolvedStyle } from './support/rendered-style';
 
 /** The style that actually landed on the box, later entries winning. */
@@ -27,6 +30,36 @@ function boxStyle(ui: React.ReactElement): Record<string, unknown> {
 }
 
 describe('AspectRatio', () => {
+  it.each([
+    { name: 'default md', sizes: [], height: 36 },
+    { name: 'xs', sizes: ['xs'], height: 24 },
+    { name: 'sm', sizes: ['sm'], height: 32 },
+    { name: 'md', sizes: ['md'], height: 36 },
+    { name: 'lg', sizes: ['lg'], height: 44 },
+    { name: 'nested lg over xs', sizes: ['xs', 'lg'], height: 44 },
+  ] as const)('keeps ratio geometry and delegates child size under $name', ({ sizes, height }) => {
+    const aspect = (
+      <AspectRatio testID="scoped-box" ratio={2}>
+        <Button testID="scoped-child">Continue</Button>
+      </AspectRatio>
+    );
+    const scoped = [...sizes].reverse().reduce(
+      (children, size) => (
+        <BloomScope key={size} size={size}>
+          {children}
+        </BloomScope>
+      ),
+      aspect,
+    );
+    const screen = render(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        {scoped}
+      </BloomThemeProvider>,
+    );
+    expect(resolvedStyle(screen.getByTestId('scoped-box').props.style).aspectRatio).toBe(2);
+    expect(resolvedStyle(screen.getByTestId('scoped-child').props.style).height).toBe(height);
+  });
+
   it('puts the caller’s ratio on `aspectRatio`, unmodified', () => {
     // Two ratios, because a single one cannot tell `ratio` from `1 / ratio` when
     // the value is 1, nor a hardcoded constant from the prop.

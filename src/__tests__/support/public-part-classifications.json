@@ -28,6 +28,18 @@
     "verification": "Native renderer and DOM web exercise default, nearest scope, partial xs/lg mappings, explicit-size precedence, nested scopes in both override orders, and ordinary wrappers for real controls. Both suites repeat the inheritance matrix through Portal; independent document/artwork subjects remain unchanged under xs/lg scopes.",
     "parts": ["src/appearance/BloomScope.tsx#BloomScope"]
   },
+  "aspect-ratio-independent-scale": {
+    "status": "independent-scale",
+    "reason": "AspectRatio owns a numeric width-to-height geometry with a square fallback; it has no Bloom size prop. Its single host keeps that ratio while caller controls inside it continue to resolve the nearest BloomScope.",
+    "evidence": [
+      "src/aspect-ratio/AspectRatio.tsx",
+      "src/aspect-ratio/types.ts",
+      "src/__tests__/AspectRatio.test.tsx",
+      "src/__tests__/AspectRatioPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the 2:1 aspect geometry and 100% width while a nested Button resolves default md, inherited xs/sm/md/lg and nested lg-over-xs. Existing native tests cover ratio fallback, style precedence and single-host structure; physical layout remains device-owned.",
+    "parts": ["src/aspect-ratio/AspectRatio.tsx#AspectRatio"]
+  },
   "segmented-control-size": {
     "status": "applicable",
     "reason": "SegmentedControl owns a coherent interactive size scale for segment height, track geometry, text and focus target. It consumes all four BloomScope rungs directly; an explicit size overrides the nearest scope.",
@@ -1576,7 +1588,6 @@
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/aspect-ratio/AspectRatio.tsx#AspectRatio",
       "src/auth-card/AuthCard.tsx#AuthCard",
       "src/auth-card/AuthMediaCarousel.tsx#AuthMediaCarousel",
       "src/avatar-flight/AvatarAnchor.tsx#AvatarAnchor",
