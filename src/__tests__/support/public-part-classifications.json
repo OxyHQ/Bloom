@@ -1198,6 +1198,33 @@
     "verification": "Native renderer and DOM web verify undo/redo controls in the actual AgentCreator compose at 34px under default md, 24px under xs and 34px under lg, while its explicit 20px close control remains fixed; child rows, portals and nested/explicit sizes are separately covered, while editor responsiveness and physical fit remain unverified.",
     "parts": ["src/agent-creator/AgentCreator.tsx#AgentCreator"]
   },
+  "usage-card-fixed-recipe": {
+    "status": "independent-scale",
+    "reason": "UsageCard is a domain-specific usage visualization with named body typography and authored fixed geometry for cards, bars, legends and limit rows. It exposes no control size prop; BloomScope must not silently change chart or data density.",
+    "evidence": [
+      "src/usage-card/UsageCard.tsx",
+      "src/usage-card/types.ts",
+      "docs/usage-card.mdx",
+      "src/__tests__/UsageCard.test.tsx",
+      "src/__tests__/UsageCardPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the default card inset, named 14/20 title typography and 6px usage tracks stay fixed under default md, xs and lg BloomScope. Physical-device proportions, dense dashboards and accessibility behavior remain unverified.",
+    "parts": ["src/usage-card/UsageCard.tsx#UsageCard"]
+  },
+  "agent-limits-card-delegation": {
+    "status": "delegated",
+    "reason": "Deprecated AgentLimitsCard converts token-domain values and labels to the canonical UsageCard contract, selects its legacy 16px radius, and delegates all visible usage geometry and rendering. It owns no independent control-size scale.",
+    "evidence": [
+      "src/agent-limits-card/AgentLimitsCard.tsx",
+      "src/agent-limits-card/types.ts",
+      "src/usage-card/UsageCard.tsx",
+      "src/__tests__/AgentLimitsCard.test.tsx",
+      "src/__tests__/UsageCard.test.tsx",
+      "src/__tests__/UsageCardPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify token context is rendered through the fixed UsageCard recipe under default md, xs and lg scopes; the adapter's 16px radius, caller format, and labels remain preserved. Device layout and adoption of the non-deprecated UsageCard API remain unverified.",
+    "parts": ["src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard"]
+  },
   "agent-progress-fixed-recipe": {
     "status": "independent-scale",
     "reason": "AgentProgress and AgentProgressPlan own fixed 341px card geometry; their rows and labels use fixed typography and their decision buttons/badges choose explicit size tokens. AgentProgressLoadingText consumes an explicit typography variant, not BloomScope control size.",
@@ -1233,7 +1260,6 @@
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard",
       "src/ai-chat/AiChat.tsx#AiChatAssistantMessage",
       "src/ai-chat/AiChat.tsx#AiChatCodePanel",
       "src/ai-chat/AiChat.tsx#AiChatContainer",
@@ -1953,7 +1979,6 @@
       "src/track-list/TrackListHeader.tsx#TrackListHeader",
       "src/track-list/TrackRow.tsx#TrackRow",
       "src/track-list/TrackRowSkeleton.tsx#TrackRowSkeleton",
-      "src/usage-card/UsageCard.tsx#UsageCard",
       "src/user-hover-card/UserHoverCard.tsx#UserHoverCard",
       "src/vehicle-picker/VehiclePicker.tsx#VehiclePicker",
       "src/vendor-card/VendorCard.tsx#VendorCard",
