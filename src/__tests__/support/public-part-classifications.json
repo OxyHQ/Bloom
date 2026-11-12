@@ -1028,6 +1028,17 @@
     "verification": "Native renderer and DOM web verify fixed 14px title typography and 6px gap/4px vertical spacing under default md, xs and lg; optional child geometry and physical-device proportions remain unverified.",
     "parts": ["src/agent-log/AgentLogToolCall.tsx#AgentLogToolCall"]
   },
+  "agent-reply-action-fixed-size": {
+    "status": "independent-scale",
+    "reason": "AgentReplyAction is a bare icon Button that explicitly sets size=sm, so its 32px visual control recipe is independent of the caller's nearest BloomScope.",
+    "evidence": [
+      "src/agent-reply/AgentReplyActions.tsx",
+      "src/__tests__/AgentReplyActionPublicPartScope.test.tsx",
+      "src/__tests__/AgentReplyActionPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the 32px button under default md, xs and lg scopes; physical hit-region geometry and accessibility remain unverified.",
+    "parts": ["src/agent-reply/AgentReplyActions.tsx#AgentReplyAction"]
+  },
   "agent-reply-layout-delegation": {
     "status": "delegated",
     "reason": "AgentReply owns only the reply wrapper's width and spacing. It passes children, identity and actions through as caller-owned nodes without replacing their BloomScope; the embedded controls keep their own size contracts.",
@@ -1082,7 +1093,6 @@
       "src/agent-creator/AgentCreator.tsx#AgentCreator",
       "src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard",
       "src/agent-reply/AgentProfile.tsx#AgentProfile",
-      "src/agent-reply/AgentReplyActions.tsx#AgentReplyAction",
       "src/agent-reply/AgentReplyActions.tsx#AgentReplyActions",
       "src/agent-reply/AgentReplyBubble.tsx#AgentReplyBubble",
       "src/agent-reply/AgentReplyIdentity.tsx#AgentReplyIdentity",
