@@ -2139,6 +2139,17 @@
       "src/skeleton/Skeleton.tsx#Col"
     ]
   },
+  "chart-range-pill-fixed-geometry": {
+    "status": "independent-scale",
+    "reason": "ChartRangePill is a non-interactive fixed 32px period label with fixed 16px calendar artwork. It has no size prop and intentionally keeps chart-specific geometry under BloomScope; its surrounding chart content may still inherit scope independently.",
+    "evidence": [
+      "src/chart-cards/primitives/ChartRangePill.tsx",
+      "src/__tests__/ChartRangePillPublicPartScope.test.tsx",
+      "src/__tests__/ChartRangePillPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify fixed 32px height and 16px icon at default and xs/sm/md/lg scope; physical layout pending.",
+    "parts": ["src/chart-cards/primitives/ChartRangePill.tsx#ChartRangePill"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
@@ -2175,7 +2186,6 @@
       "src/chart-cards/primitives/ChartHeader.tsx#ChartHeader",
       "src/chart-cards/primitives/ChartHeader.tsx#ChartHeadline",
       "src/chart-cards/primitives/ChartLegend.tsx#ChartLegend",
-      "src/chart-cards/primitives/ChartRangePill.tsx#ChartRangePill",
       "src/chart-cards/primitives/ChartRangePill.tsx#ChartRangeSelect",
       "src/chart-cards/primitives/ChartStatTiles.tsx#ChartStatTiles",
       "src/chart-cards/primitives/MultiAxisPlot.tsx#MultiAxisPlot",
