@@ -1641,13 +1641,25 @@
     "verification": "Native renderer and DOM web measure stack/row avatar cells at 48px and cluster bounds at 64px under default, xs and lg scopes. Existing cluster layout tests cover packing and overflow; physical target fit remains device-owned.",
     "parts": ["src/avatar-group/AvatarGroup.tsx#AvatarGroup"]
   },
+  "avatar-placeholder-provider-delegation": {
+    "status": "delegated",
+    "reason": "AvatarPlaceholderProvider supplies an icon factory to Avatar and defines no geometry or size policy. Avatar resolves the nearest BloomScope or an explicit size, then passes 60% of that resolved diameter to the factory.",
+    "evidence": [
+      "src/avatar/context.ts",
+      "src/avatar/Avatar.tsx",
+      "src/avatar/initials.ts",
+      "src/__tests__/AvatarPlaceholderProviderPublicPartScope.test.tsx",
+      "src/__tests__/AvatarPlaceholderProviderPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify default and xs/sm/md/lg Avatar sizes through the provider and ordinary wrappers; an explicit Avatar lg size wins over xs scope. Provider-owned geometry is absent; device rendering of consumer-supplied icon content remains consumer-owned.",
+    "parts": ["src/avatar/context.ts#AvatarPlaceholderProvider"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/avatar/context.ts#AvatarPlaceholderProvider",
       "src/booking/BookingBar.tsx#BookingBar",
       "src/booking/BookingCard.tsx#BookingCard",
       "src/booking/PriceBreakdown.tsx#PriceBreakdown",
