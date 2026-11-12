@@ -1106,6 +1106,18 @@
     "verification": "Native renderer and DOM web verify the 20px resting wrapper and 32px artwork canvas stay unchanged under default md, xs and lg scopes; thinking animation and device proportions remain separately unverified.",
     "parts": ["src/agent-reply/AgentReplyIdentity.tsx#AgentReplyIdentity"]
   },
+  "agent-chat-actions-delegation": {
+    "status": "delegated",
+    "reason": "AgentChatActions composes ButtonGroup and ButtonGroupItem for its share and menu trigger controls. Their shared control recipes consume the nearest BloomScope; the composite adds labels, callbacks and menu content but owns no separate size recipe.",
+    "evidence": [
+      "src/agent-chat/AgentChatActionsBase.tsx",
+      "src/button-group/ButtonGroupBase.tsx",
+      "src/__tests__/AgentChatActionsPublicPartScope.test.tsx",
+      "src/__tests__/AgentChatActionsPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify share and menu controls at 34px under default md, 24px under xs and 34px under lg (the group clamps lg to md); open-menu geometry and physical touch behavior remain unverified.",
+    "parts": ["src/agent-chat/AgentChat.tsx#AgentChatActions"]
+  },
   "agent-progress-fixed-recipe": {
     "status": "independent-scale",
     "reason": "AgentProgress and AgentProgressPlan own fixed 341px card geometry; their rows and labels use fixed typography and their decision buttons/badges choose explicit size tokens. AgentProgressLoadingText consumes an explicit typography variant, not BloomScope control size.",
@@ -1142,7 +1154,6 @@
     "verification": "pending; not a passing adoption verdict",
     "parts": [
       "src/agent-chat/AgentChat.tsx#AgentChat",
-      "src/agent-chat/AgentChat.tsx#AgentChatActions",
       "src/agent-chat/AgentChat.tsx#AgentChatComposer",
       "src/agent-chat/AgentChat.tsx#AgentChatHistory",
       "src/agent-chat/AgentChatMessage.tsx#AgentChatMessage",
