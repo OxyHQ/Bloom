@@ -40,6 +40,7 @@ import {
   useAiChatShell,
 } from '../ai-chat';
 import type { AiChatGeneration } from '../ai-chat';
+import { AppShell as AppShellImplementation } from '../app-shell';
 import { distributeGenerations } from '../ai-chat/AiChatGalleryPanelBase';
 import { AI_CHAT_WEB_CSS, resolveAiChatPalette } from '../ai-chat/shared';
 import { SwapGlyph } from '../ai-chat/AiChatControls';
@@ -859,6 +860,75 @@ describe('AiChatContainer host slots', () => {
 });
 
 describe('AiChatShell', () => {
+  it('keeps its panel recipe independent of control scope while header actions delegate size', () => {
+    const dimensions = mockWindowSize({ width: 400, height: 900, scale: 1, fontScale: 1 });
+    try {
+      const subject = (size?: 'xs' | 'lg') => {
+        const shell = (
+          <AiChatShell
+            sidebar={null}
+            mobileSidebar={<Text>nav</Text>}
+            defaultPanelWidth={410}
+            minPanelWidth={320}
+            maxPanelWidth={560}
+            panelLabel="Code"
+            panel={() => <Text>Panel</Text>}
+          >
+            <AiChatHeader testID="scope-header">Alia</AiChatHeader>
+          </AiChatShell>
+        );
+        return size ? <BloomScope size={size}>{shell}</BloomScope> : shell;
+      };
+      const screen = renderWithPortal(subject());
+      const geometry = () => {
+        const appShell = screen.UNSAFE_getByType(AppShellImplementation);
+        const panelLayout = appShell.props.panelLayout;
+        const context = panelLayout.panels[1];
+        return {
+          shell: resolvedStyle(screen.getByTestId('ai-chat-shell').props.style),
+          context: {
+            width: context.width,
+            minWidth: context.minWidth,
+            maxWidth: context.maxWidth,
+            visible: context.visible,
+            floatingBelow: context.floating.below,
+          },
+          header: classNamesOn(screen.getByTestId('scope-header-bar').props.style),
+          navigation: resolvedStyle(screen.getByLabelText('Open navigation').props.style).height,
+          panelAction: resolvedStyle(screen.getByLabelText('Open code').props.style).height,
+        };
+      };
+      const normal = geometry();
+      expect(normal.shell).toMatchObject({ flexGrow: 1, flexBasis: 0, height: '100%' });
+      expect(normal.context).toMatchObject({ width: 410, minWidth: 320, maxWidth: 560 });
+      expect(normal.header).toContain('min-h-14 py-2');
+      expect(normal.navigation).toBe(34);
+      expect(normal.panelAction).toBe(34);
+
+      screen.rerender(
+        <BloomThemeProvider>
+          <PortalProvider>
+            {subject('xs')}
+            <PortalOutlet />
+          </PortalProvider>
+        </BloomThemeProvider>,
+      );
+      expect(geometry()).toEqual({ ...normal, navigation: 24, panelAction: 24 });
+
+      screen.rerender(
+        <BloomThemeProvider>
+          <PortalProvider>
+            {subject('lg')}
+            <PortalOutlet />
+          </PortalProvider>
+        </BloomThemeProvider>,
+      );
+      expect(geometry()).toEqual(normal);
+    } finally {
+      dimensions.mockRestore();
+    }
+  });
+
   it('opens the context panel as a side sheet over the retained conversation', () => {
     // Below `xl` the context panel floats as a side sheet named by `panelLabel`;
     // the conversation stays mounted beneath it rather than being replaced.
