@@ -178,3 +178,20 @@ it('waits for its own CSS geometry completion, cancels closure on reopen and nev
   expect(observations).toBe(0);
   expect(HTMLElement.prototype.getBoundingClientRect).not.toHaveBeenCalled();
 });
+
+it('is as wide as its container, never as its widest line', () => {
+  // A grid's implicit column is `auto` and its item's min-width is `auto`, so a line that cannot
+  // wrap (a one-line sidebar title) widened the panel past its container: the sidebar's rows ran
+  // out under its edge, their time and menu with them. jsdom lays nothing out, so this pins the
+  // two declarations that hold the column to the container.
+  act(() =>
+    root.render(
+      <Collapsible open testID="body">
+        <input defaultValue="x" />
+      </Collapsible>,
+    ),
+  );
+  const css = document.getElementById('bloom-collapsible')?.textContent ?? '';
+  expect(css).toMatch(/\.bloom-collapsible-css \{[^}]*grid-template-columns:minmax\(0,1fr\)/);
+  expect(css).toMatch(/\.bloom-collapsible-clip \{[^}]*min-width:0/);
+});

@@ -107,7 +107,7 @@ export const Default: Story = {
 /**
  * As Alia and Gemies draw it: search and "+" only (no store button), and the conversations as
  * titled tree sections, one of contacts (an avatar, a name and their last line) and one of
- * title-only chats. Each section's title starts where its rows' content does.
+ * title-only chats, one longer than the sidebar. Each section's title starts where its rows' content does.
  */
 export const Sections: Story = {
   render: () => {
@@ -141,6 +141,12 @@ export const Sections: Story = {
                 { key: 'c1', label: 'Launch plan', icon: RiPushpinLine, meta: '2h' },
                 { key: 'c2', label: 'Landing page', meta: '1d' },
                 { key: 'c3', label: 'Security review', meta: '3d' },
+                // Longer than the sidebar: one line, cut, and its time still at the row's end.
+                {
+                  key: 'c4',
+                  label: 'Notes from the quarterly planning session with the whole design team',
+                  meta: '5d',
+                },
               ],
             },
           ]}
