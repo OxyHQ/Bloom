@@ -215,6 +215,38 @@ describe('AiChat messages', () => {
 });
 
 describe('AiChatFeedbackRow', () => {
+  it('keeps its authored action recipe independent from BloomScope', () => {
+    const subject = (size?: 'xs' | 'lg') => (
+      <BloomThemeProvider>
+        {size ? (
+          <BloomScope size={size}>
+            <AiChatFeedbackRow testID="feedback" onCopy={() => false} />
+          </BloomScope>
+        ) : (
+          <AiChatFeedbackRow testID="feedback" onCopy={() => false} />
+        )}
+      </BloomThemeProvider>
+    );
+    const screen = render(subject());
+    const geometry = () => {
+      const row = resolvedStyle(screen.getByTestId('feedback').props.style);
+      const like = screen.getByTestId('feedback-like');
+      const action = resolvedStyle(like.props.style);
+      const glyph = like.find((node) => node.props.width === 16 && node.props.height === 16);
+      return {
+        rowGap: row.gap,
+        padding: [action.paddingVertical, action.paddingHorizontal],
+        glyph: [glyph?.props.width, glyph?.props.height],
+      };
+    };
+    const normal = geometry();
+    expect(normal).toEqual({ rowGap: 2, padding: [8, 8], glyph: [16, 16] });
+    screen.rerender(subject('xs'));
+    expect(geometry()).toEqual(normal);
+    screen.rerender(subject('lg'));
+    expect(geometry()).toEqual(normal);
+  });
+
   it('calls each handler from its own button', () => {
     jest.useFakeTimers();
     const onLike = jest.fn();

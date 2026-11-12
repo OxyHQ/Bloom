@@ -32,6 +32,7 @@ import { Text } from 'react-native';
 import { BloomScope } from '../appearance';
 import { AiChatHeader, AiChatMobileHeader } from '../ai-chat/AiChatShell';
 import { AiChatImageGeneration } from '../ai-chat/AiChat.web';
+import { AiChatFeedbackRow } from '../ai-chat/AiChat.web';
 import { AiChatShellContext } from '../ai-chat/context';
 import type { AiChatShellState } from '../ai-chat/context';
 import { RiCodeSLine } from '../icons/remix/RiCodeSLine';
@@ -153,6 +154,46 @@ it('keeps the image-generation artwork canvas independent from control-size scop
     expect(canvasGeometry()).toEqual(initial);
     renderGeneration('lg');
     expect(canvasGeometry()).toEqual(initial);
+  } finally {
+    act(() => root.unmount());
+    host.remove();
+  }
+});
+
+it('keeps feedback-row visual geometry independent from control-size scope on web', () => {
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  const root: Root = createRoot(host);
+  const renderFeedback = (size?: 'xs' | 'lg') =>
+    act(() => {
+      const row = <AiChatFeedbackRow testID="feedback" onCopy={() => false} />;
+      root.render(
+        <BloomThemeProvider mode="light" fonts={false}>
+          {size ? <BloomScope size={size}>{row}</BloomScope> : row}
+        </BloomThemeProvider>,
+      );
+    });
+  const geometry = () => {
+    const button = host.querySelector<HTMLElement>('[aria-label="Good response"]');
+    const glyph = button?.querySelector<SVGElement>('svg');
+    const group = Array.from(host.querySelectorAll<HTMLElement>('*')).find(
+      (element) => element.style.gap === '2px' && element.style.flexDirection === 'row',
+    );
+    if (!button || !glyph || !group) throw new Error('AiChat feedback row geometry is missing');
+    return {
+      rowGap: group.style.gap,
+      padding: [button.style.paddingTop, button.style.paddingRight],
+      glyph: [glyph.getAttribute('width'), glyph.getAttribute('height')],
+    };
+  };
+  try {
+    renderFeedback();
+    const normal = geometry();
+    expect(normal).toEqual({ rowGap: '2px', padding: ['8px', '8px'], glyph: ['16', '16'] });
+    renderFeedback('xs');
+    expect(geometry()).toEqual(normal);
+    renderFeedback('lg');
+    expect(geometry()).toEqual(normal);
   } finally {
     act(() => root.unmount());
     host.remove();
