@@ -68,9 +68,9 @@ export function actionShortcut(
 const subscribeNowhere = () => () => undefined;
 
 /** What a field can do with `action` now: 'none' with no field focused. */
-type Responder = 'none' | 'enabled' | 'disabled';
+export type Responder = 'none' | 'enabled' | 'disabled';
 
-function responderOf(
+export function responderOf(
   editing: PlatformEditing | null,
   action: PlatformEditAction | undefined,
 ): Responder {

@@ -1,5 +1,11 @@
 # Changelog
 
+## 19.10.0
+
+### Changed
+
+- **A closed menu's rows are never mounted; its shortcuts are read from its declaration.** A `Menubar` drawn in the window mounted every closed menu's content headless so its rows' chords worked while it was closed, so every render of the bar rendered every closed menu's rows (OxyOS's shell: a Window menu of some 27). A closed menu's (and a closed submenu's) entries are now read from its content's elements (`menubar/description.ts`): each of Bloom's parts gives its label, chord, state and handler at the place its row would take, registered as data, as a Mac's bar keeps a menu's items and builds its rows as it opens. Shortcuts, their order, a disabled item's chord, check and radio items, submenus and editing actions (the focused field first) work as before; the rows mount as the menu opens and unmount once it has faded out. An application's own component placed in a menu cannot be read without rendering it and is still mounted headless at its place. This is the default for every bar; `declareClosedMenus={false}` (19.8.0) still declares nothing of a closed menu.
+
 ## 19.9.1
 
 ### Fixed

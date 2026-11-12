@@ -79,8 +79,8 @@ function desktop() {
   return { adapter, mounts, latest, press };
 }
 
-/** Renders of File's content (a part of the declaration that draws: it mounts where the content
-    is mounted, headless or open). */
+/** Renders of an application's own component in File's content: Bloom cannot read it without
+    mounting it, so it mounts headless while File is closed (by default) and as File draws. */
 const fileRenders = { count: 0 };
 function FileProbe() {
   fileRenders.count += 1;
@@ -503,9 +503,10 @@ describe('a bar that declares no closed menus (declareClosedMenus={false})', () 
     fileRenders.count = 0;
   });
 
-  it('mounts nothing of a closed menu, where by default its content is mounted headless', () => {
+  it('mounts nothing of a closed menu, where by default what Bloom cannot read is headless', () => {
     open();
-    // By default File's content is declared while it is closed, so its shortcuts work.
+    // By default File's content is declared while it is closed, so its shortcuts work: its rows
+    // are read from their elements, an application's own component mounted to be read.
     expect(fileRenders.count).toBeGreaterThan(0);
     fileRenders.count = 0;
     const { screen } = open(jest.fn(), undefined, false);
