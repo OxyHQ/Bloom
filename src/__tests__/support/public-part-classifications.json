@@ -1028,6 +1028,18 @@
     "verification": "Native renderer and DOM web verify fixed 14px title typography and 6px gap/4px vertical spacing under default md, xs and lg; optional child geometry and physical-device proportions remain unverified.",
     "parts": ["src/agent-log/AgentLogToolCall.tsx#AgentLogToolCall"]
   },
+  "agent-stack-numeric-size": {
+    "status": "independent-scale",
+    "reason": "AgentStack's public size prop is numeric and sets the avatar canvas directly; this artwork geometry has no relationship to BloomScope control-size tokens.",
+    "evidence": [
+      "src/agent-reply/AgentStack.tsx",
+      "src/agent-reply/types.ts",
+      "src/__tests__/AgentStackPublicPartScope.test.tsx",
+      "src/__tests__/AgentStackPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify a numeric 48px canvas stays fixed under default md, xs and lg scopes; physical avatar proportions remain unverified.",
+    "parts": ["src/agent-reply/AgentStack.tsx#AgentStack"]
+  },
   "agent-reply-bubble-text-geometry": {
     "status": "independent-scale",
     "reason": "AgentReplyBubble calculates vertical inset from explicit text font/line metrics to balance its fixed 12px side inset; it has no Bloom control-size input. Caller content remains nested in the current scope.",
@@ -1116,7 +1128,6 @@
       "src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard",
       "src/agent-reply/AgentProfile.tsx#AgentProfile",
       "src/agent-reply/AgentReplyIdentity.tsx#AgentReplyIdentity",
-      "src/agent-reply/AgentStack.tsx#AgentStack",
       "src/agent-thinking/AgentThinking.tsx#AgentThinking",
       "src/agent-thinking/ThinkingReasoning.tsx#ThinkingReasoning",
       "src/ai-chat/AiChat.tsx#AiChatAssistantMessage",
