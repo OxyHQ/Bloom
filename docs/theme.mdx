@@ -76,6 +76,9 @@ adds picker metadata such as display name, family, description, pairing and
 access gate. `FREE_COLOR_NAMES`, `HANDLE_COLOR_NAMES` and `PREMIUM_COLOR_NAMES`
 partition that registry by availability; consumers own the corresponding
 identity or entitlement checks.
+A gate only decides what a picker offers a person: an app may still pass a
+reserved brand preset as its own `defaultColorPreset` (Gemies starts on
+`gemies`), and anyone keeps choosing any preset they are entitled to.
 
 Each preset supplies light and dark tokens. The public `seed` prop can drive
 an app-wide dynamic palette; clearing it restores the named preset.
