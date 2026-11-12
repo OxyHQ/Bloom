@@ -90,6 +90,39 @@ describe('AppShellHeader', () => {
 
 describe('AppShell', () => {
   it.each([
+    { name: 'default md', sizes: [], height: 36 },
+    { name: 'xs', sizes: ['xs'], height: 24 },
+    { name: 'sm', sizes: ['sm'], height: 32 },
+    { name: 'md', sizes: ['md'], height: 36 },
+    { name: 'lg', sizes: ['lg'], height: 44 },
+    { name: 'nested lg over xs', sizes: ['xs', 'lg'], height: 44 },
+  ] as const)('passes $name to caller-owned header and page controls', ({ sizes, height }) => {
+    setWidth(1440);
+    const shell = (
+      <AppShell
+        testID="scope-shell"
+        sidebar={{ items: NAV }}
+        header={<Button testID="scope-header-button">Header action</Button>}
+      >
+        <Button testID="scope-page-button">Page action</Button>
+      </AppShell>
+    );
+    const scoped = [...sizes].reverse().reduce(
+      (children, size) => (
+        <BloomScope key={size} size={size}>
+          {children}
+        </BloomScope>
+      ),
+      shell,
+    );
+    const screen = renderIn(scoped);
+    expect(resolvedStyle(screen.getByTestId('scope-header-button').props.style).height).toBe(
+      height,
+    );
+    expect(resolvedStyle(screen.getByTestId('scope-page-button').props.style).height).toBe(height);
+  });
+
+  it.each([
     { name: 'default md', size: undefined },
     { name: 'xs', size: 'xs' },
     { name: 'sm', size: 'sm' },

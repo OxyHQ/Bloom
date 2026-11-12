@@ -1556,13 +1556,26 @@
     "verification": "Native renderer and DOM web verify Button geometry through both AppShellPanel and AppShellPanels at default md, inherited xs/sm/md/lg and nested lg-over-xs. Native exercises the measured panel renderer; DOM web verifies package web resolution and server markup. Physical layout remains covered by the AppShell platform suites.",
     "parts": ["src/app-shell/index.ts#AppShellPanel", "src/app-shell/index.ts#AppShellPanels"]
   },
+  "app-shell-composition-delegation": {
+    "status": "delegated",
+    "reason": "AppShell owns responsive screen/navigation structure, not caller control scale. It has no size prop and leaves caller-owned header and page content under the nearest BloomScope; built-in controls keep their component-specific recipes.",
+    "evidence": [
+      "src/app-shell/AppShell.tsx",
+      "src/app-shell/index.ts",
+      "src/app-shell/index.web.ts",
+      "src/__tests__/AppShell.test.tsx",
+      "src/__tests__/AppShellSsr.web.test.tsx",
+      "docs/app-shell.mdx"
+    ],
+    "verification": "Native renderer and DOM web measure caller-owned Buttons in both the header slot and page body at default md, inherited xs/sm/md/lg and nested lg-over-xs. The shell's built-in menu, navigation, panels and notifications are separately classified by their own public parts.",
+    "parts": ["src/app-shell/index.ts#AppShell"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/app-shell/index.ts#AppShell",
       "src/aspect-ratio/AspectRatio.tsx#AspectRatio",
       "src/auth-card/AuthCard.tsx#AuthCard",
       "src/auth-card/AuthMediaCarousel.tsx#AuthMediaCarousel",

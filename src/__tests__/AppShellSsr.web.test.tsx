@@ -202,6 +202,48 @@ describe('AppShell server layout', () => {
         ?.style.getPropertyValue('--bloom-btn-height'),
     ).toBe(height);
   });
+
+  it.each([
+    { name: 'default md', sizes: [], height: '36px' },
+    { name: 'xs', sizes: ['xs'], height: '24px' },
+    { name: 'sm', sizes: ['sm'], height: '32px' },
+    { name: 'md', sizes: ['md'], height: '36px' },
+    { name: 'lg', sizes: ['lg'], height: '44px' },
+    { name: 'nested lg over xs', sizes: ['xs', 'lg'], height: '44px' },
+  ] as const)('passes $name to caller-owned AppShell slots on web', ({ sizes, height }) => {
+    const shell = (
+      <AppShell
+        variant="feed"
+        sidebar={{ items: [] }}
+        header={<Button testID="scope-header-button">Header action</Button>}
+      >
+        <Button testID="scope-page-button">Page action</Button>
+      </AppShell>
+    );
+    const scoped = [...sizes].reverse().reduce<React.ReactNode>(
+      (children, size) => (
+        <BloomScope key={size} size={size}>
+          {children}
+        </BloomScope>
+      ),
+      shell,
+    );
+    host.innerHTML = renderToString(
+      <BloomProvider fonts={false} ssrStyles="inline">
+        {scoped}
+      </BloomProvider>,
+    );
+    expect(
+      host
+        .querySelector<HTMLElement>('[data-testid="scope-header-button"]')
+        ?.style.getPropertyValue('--bloom-btn-height'),
+    ).toBe(height);
+    expect(
+      host
+        .querySelector<HTMLElement>('[data-testid="scope-page-button"]')
+        ?.style.getPropertyValue('--bloom-btn-height'),
+    ).toBe(height);
+  });
   afterEach(async () => {
     if (root) await act(async () => root!.unmount());
     root = undefined;
