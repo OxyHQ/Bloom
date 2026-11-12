@@ -1666,15 +1666,46 @@
     "verification": "Native renderer and DOM web measure the Reserve button at 44px under default, xs/sm/md/lg and nested lg-over-xs scopes. The dates action maps to ActionBar's subtitle contract; device touch reach remains device-owned.",
     "parts": ["src/booking/BookingBar.tsx#BookingBar"]
   },
+  "booking-card-consumer-slots": {
+    "status": "applicable",
+    "reason": "BookingCard's footer slot preserves caller-owned Button size from BloomScope, while its Reserve action stays explicitly large and its rating uses an explicit small recipe.",
+    "evidence": [
+      "src/booking/BookingCard.tsx",
+      "src/__tests__/BookingCompositionPublicPartScope.test.tsx",
+      "src/__tests__/BookingCompositionPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify footer Button default/xs/sm/md/lg and nested lg-over-xs; the internal Reserve CTA remains 44px across all scopes. Device layout and guest-picker touch fit remain device-owned.",
+    "parts": ["src/booking/BookingCard.tsx#BookingCard"]
+  },
+  "price-breakdown-details-slot": {
+    "status": "applicable",
+    "reason": "PriceBreakdown owns semantic price rows and a fixed small text-link recipe, but its caller-provided details content is rendered inside a popover and must preserve the caller's BloomScope for controls.",
+    "evidence": [
+      "src/booking/PriceBreakdown.tsx",
+      "src/booking/BookingLink.tsx",
+      "src/__tests__/PriceBreakdownPublicPartScope.test.tsx",
+      "src/__tests__/PriceBreakdownPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native portal and DOM web verify that a caller Button in row details inherits default/xs/sm/md/lg and nested lg-over-xs after opening the popover. Device placement and touch fit remain device-owned.",
+    "parts": ["src/booking/PriceBreakdown.tsx#PriceBreakdown"]
+  },
+  "trip-card-actions-slot": {
+    "status": "applicable",
+    "reason": "TripCard's caller-owned actions slot preserves the surrounding BloomScope; the internal status Badge explicitly uses its md recipe and does not take over action sizing.",
+    "evidence": [
+      "src/booking/TripCard.tsx",
+      "src/__tests__/BookingCompositionPublicPartScope.test.tsx",
+      "src/__tests__/BookingCompositionPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify an action Button at default/xs/sm/md/lg and nested lg-over-xs. Responsive card layout and physical touch reach remain device-owned.",
+    "parts": ["src/booking/TripCard.tsx#TripCard"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/booking/BookingCard.tsx#BookingCard",
-      "src/booking/PriceBreakdown.tsx#PriceBreakdown",
-      "src/booking/TripCard.tsx#TripCard",
       "src/bottom-promo/BottomPromo.tsx#BottomPromo",
       "src/bottom-sheet/BottomSheet.tsx#BottomSheet",
       "src/calendar/CalendarView.tsx#CalendarView",
