@@ -1,5 +1,12 @@
 # Changelog
 
+## 19.9.1
+
+### Fixed
+
+- **`SidebarToolbar` shares its row in equal slots for any number of actions.** On the web the slots row was a fixed three-column grid while the closed search was sized for `actions.length + 1` slots, so with one action (`ConversationSidebar` with `onCreate` and no `onMarketplace`, as Alia passes it) the search covered half the row and the "+" sat in the middle column, under it. The row is one flex row of equal slots on every platform, and on the web the closed search's width is the first slot's in CSS (`calc((100% - gaps) / slots)`), so it holds before layout and through resizes; native measures it as before, falling back to a share of the row instead of a fixed 76.
+- **A tree section's title lines up with its rows.** `SidebarTreeSection`'s label had no inset while its rows' content (disclosure, glyph, avatar or title-only label) starts 8 in, so "Chats" or "Your gemies" stood 8 to the start of their rows. The label now starts at that edge (`TREE_INSET`, shared with the rows and the status line), and its `actions` end 4 in, where the rows' do. `ConversationSidebar`'s flat-list `heading` starts at its rows' 6.
+
 ## 19.9.0
 
 ### Added

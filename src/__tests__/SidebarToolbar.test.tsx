@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, Pressable } from 'react-native';
+import { Pressable, StyleSheet, Text } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { Sidebar, SidebarItem, SidebarToolbar } from '../sidebar';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -212,4 +212,41 @@ describe('the toolbar slot', () => {
     expect(none.queryByText('Alia')).toBeNull();
     expect(none.getByText('tools')).toBeTruthy();
   });
+});
+
+describe('the slots', () => {
+  const tools = (count: number) =>
+    ['Store', 'New'].slice(0, count).map((name) => (
+      <Pressable key={name} accessibilityLabel={name}>
+        <Text>{name}</Text>
+      </Pressable>
+    ));
+  const search = { open: false, onOpenChange: () => {}, value: '', onValueChange: () => {} };
+
+  // Alia's sidebar passes only "+" (search and "+" are halves); one with the store passes two.
+  // A row laid out for three columns put the "+" under the wider search in the first case.
+  it.each([
+    [0, 244],
+    [1, 118],
+    [2, 76],
+  ])(
+    'with %i actions, the row is that many equal slots plus the search, which covers the first (%ipx of 244)',
+    (count, share) => {
+      const screen = render(
+        scope(<SidebarToolbar testID="tools" search={search} actions={tools(count)} />),
+      );
+      const row = screen.getByTestId('tools-slots');
+      expect(String(row.props.className ?? '')).not.toMatch(/grid/);
+      const slots = row.children.filter((child) => typeof child !== 'string');
+      expect(slots).toHaveLength(count + 1);
+      for (const slot of slots) {
+        if (typeof slot === 'string') continue;
+        expect(StyleSheet.flatten(slot.props.style)).toMatchObject({ flex: 1 });
+      }
+      fireEvent(screen.getByTestId('tools'), 'layout', {
+        nativeEvent: { layout: { x: 0, y: 0, width: 244, height: 36 } },
+      });
+      expect(StyleSheet.flatten(screen.getByTestId('tools-search').props.style).width).toBe(share);
+    },
+  );
 });
