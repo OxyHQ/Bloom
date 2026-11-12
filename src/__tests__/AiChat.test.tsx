@@ -118,15 +118,12 @@ describe('AiChat messages', () => {
     const subject = (size?: 'xs' | 'lg') => {
       const content = (
         <>
-          {/* biome-ignore lint/correctness/noReactNativeRawText: AiChatMessageLine renders its children inside Bloom Text. */}
           <AiChatMessageLine tone="secondary">status</AiChatMessageLine>
           <AiChatBulletList>
             <AiChatBullet>
-              {/* biome-ignore lint/correctness/noReactNativeRawText: AiChatStrong renders its children inside Bloom Text. */}
               <AiChatStrong>Important</AiChatStrong>
             </AiChatBullet>
           </AiChatBulletList>
-          {/* biome-ignore lint/correctness/noReactNativeRawText: AiChatLinkChip renders its children inside Bloom Text. */}
           <AiChatLinkChip>resource</AiChatLinkChip>
         </>
       );
@@ -169,6 +166,47 @@ describe('AiChat messages', () => {
     expect(initial.linkGlyph).toMatchObject({ width: 16, height: 16 });
     expect(initial.message).toMatchObject(TYPE_SCALE['body-regular']);
     expect(initial.strong).toMatchObject(TYPE_SCALE['body-medium']);
+    view.rerender(subject('xs'));
+    expect(geometry()).toEqual(initial);
+    view.rerender(subject('lg'));
+    expect(geometry()).toEqual(initial);
+  });
+
+  it('keeps authored user and assistant turn layouts independent from BloomScope', () => {
+    const subject = (size?: 'xs' | 'lg') => {
+      const messages = (
+        <>
+          <AiChatUserMessage testID="turn-user" animate={false}>
+            <Text>question</Text>
+          </AiChatUserMessage>
+          <AiChatAssistantMessage testID="turn-assistant" animate={false} feedback={false}>
+            <Text>answer</Text>
+          </AiChatAssistantMessage>
+        </>
+      );
+      return (
+        <BloomThemeProvider mode="light">
+          {size ? <BloomScope size={size}>{messages}</BloomScope> : messages}
+        </BloomThemeProvider>
+      );
+    };
+    const view = render(subject());
+    const geometry = () => ({
+      user: resolvedStyle(view.getByTestId('turn-user').props.style),
+      bubble: resolvedStyle(view.getByTestId('turn-user-bubble').props.style),
+      assistant: resolvedStyle(view.getByTestId('turn-assistant').props.style),
+    });
+    const initial = geometry();
+    expect(initial.user).toMatchObject({ width: '100%', alignItems: 'flex-end' });
+    expect(initial.bubble).toMatchObject({
+      maxWidth: '50%',
+      borderRadius: 16,
+      paddingLeft: 12,
+      paddingRight: 12,
+      paddingTop: 11,
+      paddingBottom: 11,
+    });
+    expect(initial.assistant).toMatchObject({ width: '100%', flexDirection: 'column', gap: 8 });
     view.rerender(subject('xs'));
     expect(geometry()).toEqual(initial);
     view.rerender(subject('lg'));

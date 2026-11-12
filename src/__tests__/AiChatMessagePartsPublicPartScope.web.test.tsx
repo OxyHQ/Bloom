@@ -45,7 +45,10 @@ import {
   AiChatLinkChip,
   AiChatMessageLine,
   AiChatStrong,
+  AiChatUserMessageBase,
+  AiChatAssistantMessageBase,
 } from '../ai-chat/AiChatMessages';
+import { Text } from 'react-native';
 import { BloomScope } from '../appearance';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
@@ -60,15 +63,12 @@ it('keeps authored AiChat message part geometry independent from BloomScope on w
       act(() => {
         const parts = (
           <>
-            {/* biome-ignore lint/correctness/noReactNativeRawText: AiChatMessageLine renders its children inside Bloom Text. */}
             <AiChatMessageLine tone="secondary">status</AiChatMessageLine>
             <AiChatBulletList>
               <AiChatBullet>
-                {/* biome-ignore lint/correctness/noReactNativeRawText: AiChatStrong renders its children inside Bloom Text. */}
                 <AiChatStrong>Important</AiChatStrong>
               </AiChatBullet>
             </AiChatBulletList>
-            {/* biome-ignore lint/correctness/noReactNativeRawText: AiChatLinkChip renders its children inside Bloom Text. */}
             <AiChatLinkChip>resource</AiChatLinkChip>
           </>
         );
@@ -120,6 +120,63 @@ it('keeps authored AiChat message part geometry independent from BloomScope on w
     renderParts('xs');
     expect(geometry()).toEqual(initial);
     renderParts('lg');
+    expect(geometry()).toEqual(initial);
+  } finally {
+    act(() => root.unmount());
+    host.remove();
+  }
+});
+
+it('keeps authored user and assistant turn layouts independent from BloomScope on web', () => {
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  const root: Root = createRoot(host);
+  const renderTurns = (size?: 'xs' | 'lg') =>
+    act(() => {
+      const turns = (
+        <>
+          <AiChatUserMessageBase testID="turn-user" animate={false}>
+            <Text>question</Text>
+          </AiChatUserMessageBase>
+          <AiChatAssistantMessageBase testID="turn-assistant" animate={false} feedback={false}>
+            <Text>answer</Text>
+          </AiChatAssistantMessageBase>
+        </>
+      );
+      root.render(
+        <BloomThemeProvider mode="light" fonts={false}>
+          {size ? <BloomScope size={size}>{turns}</BloomScope> : turns}
+        </BloomThemeProvider>,
+      );
+    });
+  const geometry = () => {
+    const user = host.querySelector<HTMLElement>('[data-testid="turn-user"]');
+    const bubble = host.querySelector<HTMLElement>('[data-testid="turn-user-bubble"]');
+    const assistant = host.querySelector<HTMLElement>('[data-testid="turn-assistant"]');
+    if (!user || !bubble || !assistant) throw new Error('AiChat turn layout is missing');
+    const userStyle = getComputedStyle(user);
+    const bubbleStyle = getComputedStyle(bubble);
+    const assistantStyle = getComputedStyle(assistant);
+    return {
+      user: [userStyle.width, userStyle.alignItems],
+      bubble: [
+        bubbleStyle.maxWidth,
+        bubble.style.paddingLeft,
+        bubble.style.paddingTop,
+        bubbleStyle.borderTopLeftRadius,
+      ],
+      assistant: [assistantStyle.width, assistantStyle.flexDirection, assistantStyle.gap],
+    };
+  };
+  try {
+    renderTurns();
+    const initial = geometry();
+    expect(initial.user).toEqual(['100%', 'flex-end']);
+    expect(initial.bubble).toEqual(['50%', '12px', '11px', '16px']);
+    expect(initial.assistant).toEqual(['100%', 'column', '8px']);
+    renderTurns('xs');
+    expect(geometry()).toEqual(initial);
+    renderTurns('lg');
     expect(geometry()).toEqual(initial);
   } finally {
     act(() => root.unmount());
