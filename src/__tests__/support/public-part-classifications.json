@@ -1030,7 +1030,6 @@
       "src/agent-chat/AgentChatMessage.tsx#AgentChatMessage",
       "src/agent-creator/AgentCreator.tsx#AgentCreator",
       "src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard",
-      "src/agent-log/AgentLog.tsx#AgentLogReveal",
       "src/agent-log/AgentLog.tsx#AgentLogRow",
       "src/agent-log/AgentLog.tsx#AgentLogRowConnector",
       "src/agent-log/AgentLog.tsx#AgentLogShimmerText",
@@ -2014,6 +2013,18 @@
     ],
     "verification": "Native renderer and DOM web measure width 1px, height 6px, top -6px and left 7px unchanged under default, xs and lg BloomScope. Device-rendered proportions remain unverified.",
     "parts": ["src/agent-log/AgentLog.tsx#AgentLogGuideBridge"]
+  },
+  "agent-log-reveal": {
+    "status": "delegated",
+    "reason": "AgentLogReveal owns only animated clipping and reveal timing. Its ordinary Animated.View content wrapper adds no size recipe, so supplied controls inherit the surrounding BloomScope unchanged.",
+    "evidence": [
+      "src/agent-log/AgentLog.tsx",
+      "src/agent-log/types.ts",
+      "src/__tests__/AgentLogRevealPublicPartScope.test.tsx",
+      "src/__tests__/AgentLogRevealPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify a caller Button changes from inherited md to xs and lg through AgentLogReveal, with nested xs/lg resolving to the nearer lg scope. Portal behavior does not apply to this wrapper.",
+    "parts": ["src/agent-log/AgentLog.tsx#AgentLogReveal"]
   },
   "activity-feed-parts": {
     "status": "delegated",
