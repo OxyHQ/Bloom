@@ -1251,6 +1251,25 @@
     "verification": "Native renderer and DOM web verify default 24px and explicit 48px SVG canvases remain fixed under xs and lg BloomScope; animation timing and physical optical proportions remain unverified.",
     "parts": ["src/animated-check/AnimatedCheck.tsx#AnimatedCheck"]
   },
+  "ai-chat-message-content-recipes": {
+    "status": "independent-scale",
+    "reason": "AiChatBullet, BulletList, LinkChip, MessageLine and Strong encode semantic message content with authored list indentation, marker/artwork geometry, chip padding and named body typography. They expose no control-size scale; feedback and turn-action controls remain owned by their respective button families.",
+    "evidence": [
+      "src/ai-chat/AiChatMessages.tsx",
+      "src/ai-chat/types.ts",
+      "docs/agent-chat.mdx",
+      "src/__tests__/AiChat.test.tsx",
+      "src/__tests__/AiChatMessagePartsPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify 21px list indentation, 8px item gap, 5px bullet, 16px link glyph, fixed chip padding and 14/20 body typography under default md, xs and lg scopes. Platform wrapping, long localized content and physical proportions remain unverified.",
+    "parts": [
+      "src/ai-chat/AiChatMessages.tsx#AiChatBullet",
+      "src/ai-chat/AiChatMessages.tsx#AiChatBulletList",
+      "src/ai-chat/AiChatMessages.tsx#AiChatLinkChip",
+      "src/ai-chat/AiChatMessages.tsx#AiChatMessageLine",
+      "src/ai-chat/AiChatMessages.tsx#AiChatStrong"
+    ]
+  },
   "agent-progress-fixed-recipe": {
     "status": "independent-scale",
     "reason": "AgentProgress and AgentProgressPlan own fixed 341px card geometry; their rows and labels use fixed typography and their decision buttons/badges choose explicit size tokens. AgentProgressLoadingText consumes an explicit typography variant, not BloomScope control size.",
@@ -1295,11 +1314,6 @@
       "src/ai-chat/AiChat.tsx#AiChatShell",
       "src/ai-chat/AiChat.tsx#AiChatThread",
       "src/ai-chat/AiChat.tsx#AiChatUserMessage",
-      "src/ai-chat/AiChatMessages.tsx#AiChatBullet",
-      "src/ai-chat/AiChatMessages.tsx#AiChatBulletList",
-      "src/ai-chat/AiChatMessages.tsx#AiChatLinkChip",
-      "src/ai-chat/AiChatMessages.tsx#AiChatMessageLine",
-      "src/ai-chat/AiChatMessages.tsx#AiChatStrong",
       "src/ai-chat/AiChatShell.tsx#AiChatHeader",
       "src/ai-chat/AiChatShell.tsx#AiChatMobileHeader",
       "src/ai-profile-card/AiProfileCard.tsx#AiProfileCard",

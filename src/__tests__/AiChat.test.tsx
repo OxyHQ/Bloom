@@ -51,6 +51,8 @@ import { RiVolumeUpLine } from '../icons/remix/RiVolumeUpLine';
 import { resolvedStyle, classNamesOn } from './support/rendered-style';
 import { buildTheme } from '../theme/build-theme';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomScope } from '../appearance';
+import { TYPE_SCALE } from '../typography';
 import { PortalOutlet, PortalProvider } from '../portal';
 import { pressHost } from './support/press-host';
 import { mockWindowSize } from './support/window-size';
@@ -110,6 +112,67 @@ describe('AiChat messages', () => {
     expect(on.getByLabelText('Good response')).toBeTruthy();
     const off = renderIn(<AiChatAssistantMessage feedback={false}>Reply</AiChatAssistantMessage>);
     expect(off.queryByLabelText('Good response')).toBeNull();
+  });
+
+  it('keeps authored message block geometry independent from BloomScope', () => {
+    const subject = (size?: 'xs' | 'lg') => {
+      const content = (
+        <>
+          {/* biome-ignore lint/correctness/noReactNativeRawText: AiChatMessageLine renders its children inside Bloom Text. */}
+          <AiChatMessageLine tone="secondary">status</AiChatMessageLine>
+          <AiChatBulletList>
+            <AiChatBullet>
+              {/* biome-ignore lint/correctness/noReactNativeRawText: AiChatStrong renders its children inside Bloom Text. */}
+              <AiChatStrong>Important</AiChatStrong>
+            </AiChatBullet>
+          </AiChatBulletList>
+          {/* biome-ignore lint/correctness/noReactNativeRawText: AiChatLinkChip renders its children inside Bloom Text. */}
+          <AiChatLinkChip>resource</AiChatLinkChip>
+        </>
+      );
+      return (
+        <BloomThemeProvider mode="light">
+          {size ? <BloomScope size={size}>{content}</BloomScope> : content}
+        </BloomThemeProvider>
+      );
+    };
+    const view = render(subject());
+    const geometry = () => {
+      const bulletList = view.UNSAFE_root.findAll((node) => {
+        const style = resolvedStyle(node.props.style);
+        return style.paddingLeft === 21 && style.gap === 8;
+      })[0];
+      const bullet = view.UNSAFE_root.findAll((node) => {
+        const style = resolvedStyle(node.props.style);
+        return style.width === 5 && style.height === 5 && style.borderRadius === 2.5;
+      })[0];
+      if (!bulletList || !bullet) throw new Error('AiChat message list geometry is missing');
+      const link = view.getByLabelText('resource');
+      const linkGlyph = link.findAll((node) => {
+        const style = resolvedStyle(node.props.style);
+        return style.width === 16 && style.height === 16;
+      })[0];
+      if (!linkGlyph) throw new Error('AiChat link glyph geometry is missing');
+      return {
+        list: resolvedStyle(bulletList.props.style),
+        bullet: resolvedStyle(bullet.props.style),
+        link: resolvedStyle(link.props.style),
+        linkGlyph: resolvedStyle(linkGlyph.props.style),
+        message: resolvedStyle(view.getByText('status').props.style),
+        strong: resolvedStyle(view.getByText('Important').props.style),
+      };
+    };
+    const initial = geometry();
+    expect(initial.list).toMatchObject({ paddingLeft: 21, gap: 8 });
+    expect(initial.bullet).toMatchObject({ width: 5, height: 5, borderRadius: 2.5 });
+    expect(initial.link).toMatchObject({ paddingLeft: 4, paddingTop: 3, borderRadius: 8 });
+    expect(initial.linkGlyph).toMatchObject({ width: 16, height: 16 });
+    expect(initial.message).toMatchObject(TYPE_SCALE['body-regular']);
+    expect(initial.strong).toMatchObject(TYPE_SCALE['body-medium']);
+    view.rerender(subject('xs'));
+    expect(geometry()).toEqual(initial);
+    view.rerender(subject('lg'));
+    expect(geometry()).toEqual(initial);
   });
 });
 
