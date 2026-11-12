@@ -1882,11 +1882,21 @@
     "verification": "Native renderer and DOM web verify overlay Button children inherit default md and xs/sm/md/lg. Both also verify built-in answer controls resolve to 56/40/40/48/56px at default/xs/sm/md/lg. Existing CallUi tests cover press and slide answers plus reduced motion. Gesture and target fit remain device-owned.",
     "parts": ["src/call-ui/IncomingCallScreen.tsx#IncomingCallScreen"]
   },
-  "pending": {
-    "status": "pending",
-    "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
-    "evidence": [],
-    "verification": "pending; not a passing adoption verdict",
+  "card-form-input-size-delegation": {
+    "status": "applicable",
+    "reason": "CardForm composes Bloom TextField controls for its local entries and a Bloom Select for country; both inherit the surrounding size. Its standalone field parts preserve the same primitive contract, and CardFormHostedField keeps the hosted control inside TextField's scoped surface while passing its accessibility state to the consumer renderer.",
+    "evidence": [
+      "src/card-form/CardForm.tsx",
+      "src/card-form/CardFormParts.tsx",
+      "src/card-form/types.ts",
+      "src/text-field/TextField.tsx",
+      "src/select/Select.tsx",
+      "src/select/Select.web.tsx",
+      "src/__tests__/CardForm.test.tsx",
+      "src/__tests__/CardFormPublicPartScope.test.tsx",
+      "src/__tests__/CardFormPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify CardForm's number, expiry, security-code, name and postcode inputs inherit TextField heights 36/28/32/36/44px at default/xs/sm/md/lg; the country trigger's padding follows Select scope; and each standalone part resolves the same behavior. Hosted control children retain their BloomScope. Existing CardForm tests cover field accessibility, state, formatting and scheme behavior.",
     "parts": [
       "src/card-form/CardForm.tsx#CardForm",
       "src/card-form/CardFormParts.tsx#CardFormCountry",
@@ -1895,7 +1905,15 @@
       "src/card-form/CardFormParts.tsx#CardFormName",
       "src/card-form/CardFormParts.tsx#CardFormNumber",
       "src/card-form/CardFormParts.tsx#CardFormPostcode",
-      "src/card-form/CardFormParts.tsx#CardFormSecurityCode",
+      "src/card-form/CardFormParts.tsx#CardFormSecurityCode"
+    ]
+  },
+  "pending": {
+    "status": "pending",
+    "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
+    "evidence": [],
+    "verification": "pending; not a passing adoption verdict",
+    "parts": [
       "src/card/Card.tsx#Card",
       "src/card/Card.tsx#CardBody",
       "src/card/Card.tsx#CardDescription",
