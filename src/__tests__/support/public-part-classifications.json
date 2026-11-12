@@ -1824,16 +1824,56 @@
     "verification": "Native renderer and DOM web verify the 48px shell min-height remains fixed under default md and xs/sm/md/lg scopes. Existing CallUi tests cover the accessible expand action and status-line precedence. Physical hit testing remains device-owned.",
     "parts": ["src/call-ui/CallMinimisedPill.tsx#CallMinimisedPill"]
   },
+  "incoming-call-banner-fixed-recipe": {
+    "status": "independent-scale",
+    "reason": "IncomingCallBanner has no Bloom size prop or caller control slots. Its two answer actions explicitly use 40px circular CallControlButton targets, and its card, avatar and labels use a call-specific recipe.",
+    "evidence": [
+      "src/call-ui/IncomingCallBanner.tsx",
+      "src/call-ui/CallControls.tsx",
+      "src/call-ui/types.ts",
+      "src/__tests__/CallUi.test.tsx",
+      "src/__tests__/CallGroupPartsPublicPartScope.test.tsx",
+      "src/__tests__/CallGroupPartsPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify both answer controls remain 40px under default md and xs/sm/md/lg scopes. Existing CallUi tests verify the call-mode announcement and sibling control accessibility. Physical hit testing remains device-owned.",
+    "parts": ["src/call-ui/IncomingCallBanner.tsx#IncomingCallBanner"]
+  },
+  "group-call-bar-fixed-controls": {
+    "status": "independent-scale",
+    "reason": "GroupCallBar has no size prop or arbitrary control slots. Its Join and Leave Buttons explicitly use sm, and its mute toggle has an explicit 32px target within the compact group-call strip.",
+    "evidence": [
+      "src/call-ui/GroupCallBar.tsx",
+      "src/call-ui/types.ts",
+      "src/__tests__/CallUi.test.tsx",
+      "src/__tests__/CallGroupPartsPublicPartScope.test.tsx",
+      "src/__tests__/CallGroupPartsPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the Join button remains 32px under default md and xs/sm/md/lg scopes. Existing CallUi tests cover status and Join/Leave behavior. Physical layout and target fit remain device-owned.",
+    "parts": ["src/call-ui/GroupCallBar.tsx#GroupCallBar"]
+  },
+  "group-call-video-slot-delegation": {
+    "status": "delegated",
+    "reason": "GroupCallTile accepts a participant video ReactNode and GroupCallGrid forwards each participant's video node into that tile. Those caller-owned descendants remain under the nearest BloomScope while tile dimensions continue to come from the explicit grid geometry.",
+    "evidence": [
+      "src/call-ui/GroupCallTile.tsx",
+      "src/call-ui/GroupCallGrid.tsx",
+      "src/call-ui/types.ts",
+      "src/__tests__/CallUi.test.tsx",
+      "src/__tests__/CallGroupPartsPublicPartScope.test.tsx",
+      "src/__tests__/CallGroupPartsPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify Button controls supplied as participant video nodes inherit default md and xs/sm/md/lg through both GroupCallTile and GroupCallGrid. Both renderers also verify the explicit tile width and height are unaffected. Existing CallUi tests cover grid layout and participant selection.",
+    "parts": [
+      "src/call-ui/GroupCallTile.tsx#GroupCallTile",
+      "src/call-ui/GroupCallGrid.tsx#GroupCallGrid"
+    ]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/call-ui/GroupCallBar.tsx#GroupCallBar",
-      "src/call-ui/GroupCallGrid.tsx#GroupCallGrid",
-      "src/call-ui/GroupCallTile.tsx#GroupCallTile",
-      "src/call-ui/IncomingCallBanner.tsx#IncomingCallBanner",
       "src/call-ui/IncomingCallScreen.tsx#IncomingCallScreen",
       "src/card-form/CardForm.tsx#CardForm",
       "src/card-form/CardFormParts.tsx#CardFormCountry",
