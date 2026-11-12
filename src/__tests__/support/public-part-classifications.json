@@ -1131,6 +1131,17 @@
     "verification": "Native renderer and DOM web verify the 20px prompt field and 36px add/send controls remain fixed under default md, xs and lg; loader material, multiline growth and physical geometry require separate verification.",
     "parts": ["src/agent-chat/AgentChat.tsx#AgentChatComposer"]
   },
+  "agent-chat-history-fixed-recipe": {
+    "status": "independent-scale",
+    "reason": "AgentChatHistory owns a fixed 260px rail and domain-specific thread rows, including fixed 6px vertical row insets and a 28px age/menu slot. Its labels use named typography variants, and its compact rail geometry has no Bloom control-size prop.",
+    "evidence": [
+      "src/agent-chat/AgentChatHistoryBase.tsx",
+      "src/__tests__/AgentChatHistoryPublicPartScope.test.tsx",
+      "src/__tests__/AgentChatHistoryPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify rail width, thread-row insets and trailing slot stay fixed under default md, xs and lg scopes; row touch fit, open menus, account flows and physical layout remain unverified.",
+    "parts": ["src/agent-chat/AgentChat.tsx#AgentChatHistory"]
+  },
   "agent-progress-fixed-recipe": {
     "status": "independent-scale",
     "reason": "AgentProgress and AgentProgressPlan own fixed 341px card geometry; their rows and labels use fixed typography and their decision buttons/badges choose explicit size tokens. AgentProgressLoadingText consumes an explicit typography variant, not BloomScope control size.",
@@ -1167,7 +1178,6 @@
     "verification": "pending; not a passing adoption verdict",
     "parts": [
       "src/agent-chat/AgentChat.tsx#AgentChat",
-      "src/agent-chat/AgentChat.tsx#AgentChatHistory",
       "src/agent-chat/AgentChatMessage.tsx#AgentChatMessage",
       "src/agent-creator/AgentCreator.tsx#AgentCreator",
       "src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard",
