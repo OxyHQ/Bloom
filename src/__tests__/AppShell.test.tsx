@@ -646,6 +646,36 @@ describe('AppShell variant="canvas"', () => {
 });
 
 describe('NotificationBell', () => {
+  it.each([
+    { name: 'default md', sizes: [], height: 28 },
+    { name: 'xs', sizes: ['xs'], height: 20 },
+    { name: 'sm', sizes: ['sm'], height: 24 },
+    { name: 'md', sizes: ['md'], height: 28 },
+    { name: 'lg', sizes: ['lg'], height: 36 },
+    { name: 'nested lg over xs', sizes: ['xs', 'lg'], height: 36 },
+  ] as const)(
+    'keeps the trigger fixed and applies $name to the notification tabs',
+    ({ sizes, height }) => {
+      setWidth(1440);
+      const bell = <NotificationBell testID="scoped-bell" notifications={ITEMS} />;
+      const scoped = [...sizes].reverse().reduce(
+        (children, size) => (
+          <BloomScope key={size} size={size}>
+            {children}
+          </BloomScope>
+        ),
+        bell,
+      );
+      const screen = renderIn(scoped);
+      expect(resolvedStyle(screen.getByTestId('scoped-bell').props.style).height).toBe(36);
+      fireEvent.press(screen.getByTestId('scoped-bell'));
+      let tab = screen.getByText('All').parent;
+      while (tab && resolvedStyle(tab.props.style).height === undefined) tab = tab.parent;
+      expect(tab).toBeTruthy();
+      expect(resolvedStyle(tab!.props.style).height).toBe(height);
+    },
+  );
+
   it('shows the unread count on the glyph, and an explicit override', () => {
     setWidth(1440);
     const screen = renderIn(<NotificationBell testID="bell" notifications={ITEMS} />);

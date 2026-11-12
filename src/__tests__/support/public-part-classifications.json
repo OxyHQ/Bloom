@@ -1500,13 +1500,26 @@
     "verification": "Native renderer and DOM web measure a nested Button at default md and inherited xs/sm/md/lg scopes through AppShellPanelVisibility; both verify a nested lg scope overrides xs. Existing native tests confirm display changes keep children mounted. Physical layout and accessibility remain platform-owned.",
     "parts": ["src/app-shell/AppShellPanelVisibility.tsx#AppShellPanelVisibility"]
   },
+  "app-shell-notification-bell-applicable": {
+    "status": "applicable",
+    "reason": "NotificationBell has a fixed md trigger and explicit sm notification action buttons, while the SegmentedControl inside its popover inherits the caller's BloomScope through the portal. The unread-count marker and notification copy use role-specific fixed geometry and semantic typography.",
+    "evidence": [
+      "src/app-shell/NotificationBell.tsx",
+      "src/notification-center/NotificationCenter.tsx",
+      "src/segmented-control/SegmentedControl.tsx",
+      "src/portal/Portal.tsx",
+      "src/__tests__/AppShell.test.tsx",
+      "src/__tests__/NotificationBellPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web open the actual popover at default md, inherited xs/sm/md/lg and nested lg-over-xs. Both measure the trigger fixed at 36px and the portal tab geometry at 20/24/28/36px respectively; the existing native test covers unread count geometry. This verifies scope through the popover/portal for the scaled tab controls while fixed notification recipes remain independent.",
+    "parts": ["src/app-shell/NotificationBell.tsx#NotificationBell"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/app-shell/NotificationBell.tsx#NotificationBell",
       "src/app-shell/ProOfferCard.tsx#ProOfferCard",
       "src/app-shell/index.ts#AppShell",
       "src/app-shell/index.ts#AppShellPanel",
