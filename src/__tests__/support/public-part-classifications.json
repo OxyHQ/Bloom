@@ -2105,6 +2105,40 @@
     "verification": "Native renderer and DOM web verify child Buttons at default md and xs/sm/md/lg, explicit lg precedence, nearest nested scope, ordinary wrappers and a real caller-owned Portal. Field itself owns no portal or submenu; physical field/control layout and assistive-technology behavior remain pending.",
     "parts": ["src/field/Field.tsx#Field"]
   },
+  "skeleton-artwork-geometry": {
+    "status": "independent-scale",
+    "reason": "Skeleton.Box, Circle and Pill use caller-supplied dimensions; Skeleton.Text follows its explicit lineHeight/maxWidth recipe. These are placeholder artwork and content geometry, not Bloom control sizes, so BloomScope must not distort them.",
+    "evidence": [
+      "src/skeleton/Skeleton.tsx",
+      "src/__tests__/Skeleton.test.tsx",
+      "src/__tests__/SkeletonPublicPartScope.test.tsx",
+      "src/__tests__/SkeletonPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify Box 60×18, Circle 24×24, Pill 32.36×20 and Text 14px line geometry under default md and xs/sm/md/lg scopes; the Text max width remains caller-owned. These parts own no portal or submenu; rendered device proportions remain pending.",
+    "parts": [
+      "src/skeleton/Skeleton.tsx#Box",
+      "src/skeleton/Skeleton.tsx#Circle",
+      "src/skeleton/Skeleton.tsx#Pill",
+      "src/skeleton/Skeleton.tsx#Text"
+    ]
+  },
+  "skeleton-layout-scope-delegation": {
+    "status": "delegated",
+    "reason": "Skeleton.Region owns loading announcement and shimmer context; Row and Col own only layout direction/flex. All three render caller children without replacing BloomScope.",
+    "evidence": [
+      "src/skeleton/Skeleton.tsx",
+      "src/__tests__/Skeleton.test.tsx",
+      "src/__tests__/Skeleton.web.test.tsx",
+      "src/__tests__/SkeletonPublicPartScope.test.tsx",
+      "src/__tests__/SkeletonPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify a child Button at default md and xs/sm/md/lg through Region/Row/Col, plus a caller-owned actual Portal under xs. Skeleton parts own no portal or submenu; physical layout and accessibility remain pending.",
+    "parts": [
+      "src/skeleton/Skeleton.tsx#Region",
+      "src/skeleton/Skeleton.tsx#Row",
+      "src/skeleton/Skeleton.tsx#Col"
+    ]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
@@ -2644,13 +2678,6 @@
       "src/sidebar/SidebarToolbar.tsx#SidebarToolbar",
       "src/sidebar/SidebarUserMenu.tsx#SidebarAccountMenuContent",
       "src/sidebar/SidebarUserMenu.tsx#SidebarUserMenu",
-      "src/skeleton/Skeleton.tsx#Box",
-      "src/skeleton/Skeleton.tsx#Circle",
-      "src/skeleton/Skeleton.tsx#Col",
-      "src/skeleton/Skeleton.tsx#Pill",
-      "src/skeleton/Skeleton.tsx#Region",
-      "src/skeleton/Skeleton.tsx#Row",
-      "src/skeleton/Skeleton.tsx#Text",
       "src/slider/Slider.tsx#RangeSlider",
       "src/slider/Slider.tsx#Slider",
       "src/social-button/SocialButton.tsx#SocialButton",
