@@ -2079,6 +2079,19 @@
     "verification": "Native renderer and DOM web verify inherited xs/sm/md/lg, default md and explicit size precedence, plus existing numeric geometry, interaction, disabled and accessible-name tests. It owns no portal or submenu. Renderer tests do not establish physical hit testing; device touch remains pending.",
     "parts": ["src/frosted-icon-button/FrostedIconButton.tsx#FrostedIconButton"]
   },
+  "checkbox-card-fixed-geometry": {
+    "status": "independent-scale",
+    "reason": "CheckboxCard is a domain selection card with a fixed md/16px CheckboxGlyph and a fixed row/text recipe; it intentionally exposes no Bloom size prop and does not rewrite surrounding scope. Selection semantics and semantic tone remain intact.",
+    "evidence": [
+      "src/checkbox/CheckboxCard.tsx",
+      "src/checkbox/shared.tsx",
+      "src/__tests__/CheckboxCard.test.tsx",
+      "src/__tests__/CheckboxSwitchPublicPartScope.test.tsx",
+      "src/__tests__/CheckboxSwitchPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the fixed 16px mark at default md and xs/sm/md/lg, plus nested scope, wrappers and an actual portal with the Checkbox/Switch matrix. Interaction tests cover selected, mixed and disabled semantics; device proportions and accessibility remain pending. This card owns no submenu.",
+    "parts": ["src/checkbox/CheckboxCard.tsx#CheckboxCard"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
@@ -2164,7 +2177,6 @@
       "src/chat-screen/PinnedMessageBar.tsx#PinnedMessageBar",
       "src/chat-screen/ScrollToBottomButton.tsx#JumpToMentionButton",
       "src/chat-screen/ScrollToBottomButton.tsx#ScrollToBottomButton",
-      "src/checkbox/CheckboxCard.tsx#CheckboxCard",
       "src/checkout-sheet/CheckoutSheet.tsx#CheckoutSheet",
       "src/checkout-summary/CheckoutConfirm.tsx#CheckoutConfirm",
       "src/checkout-summary/CheckoutSummary.tsx#CheckoutSummary",
