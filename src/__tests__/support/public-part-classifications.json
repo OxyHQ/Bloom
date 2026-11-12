@@ -1154,6 +1154,20 @@
     "verification": "Native renderer and DOM web verify authored user-bubble insets and 28px reply actions stay fixed under default md, xs and lg; Markdown descendants, multiline wrapping and physical touch fit remain separately unverified.",
     "parts": ["src/agent-chat/AgentChatMessage.tsx#AgentChatMessage"]
   },
+  "agent-chat-composition-delegation": {
+    "status": "delegated",
+    "reason": "AgentChat owns conversation state and composes AppShell, Screen, PageHeader, PageFooter, AgentChatHistory, AgentChatComposer and AgentChatMessage. It defines no independent size scale; layout and leaf-control recipes belong to those shared owners, while the inherited BloomScope remains active through the shell and header.",
+    "evidence": [
+      "src/agent-chat/AgentChatBase.tsx",
+      "src/agent-chat/AgentChat.tsx",
+      "src/app-shell/AppShell.tsx",
+      "src/screen/Screen.tsx",
+      "src/__tests__/AgentChatPublicPartScope.test.tsx",
+      "src/__tests__/AgentChatPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify an xs scope reaches the share control through AgentChat → AppShell → Screen → PageHeader as 24px, with default md and lg clamped by ButtonGroup to 34px; responsive layouts and other leaf recipes remain separately verified.",
+    "parts": ["src/agent-chat/AgentChat.tsx#AgentChat"]
+  },
   "agent-progress-fixed-recipe": {
     "status": "independent-scale",
     "reason": "AgentProgress and AgentProgressPlan own fixed 341px card geometry; their rows and labels use fixed typography and their decision buttons/badges choose explicit size tokens. AgentProgressLoadingText consumes an explicit typography variant, not BloomScope control size.",
@@ -1189,7 +1203,6 @@
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/agent-chat/AgentChat.tsx#AgentChat",
       "src/agent-creator/AgentCreator.tsx#AgentCreator",
       "src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard",
       "src/agent-thinking/AgentThinking.tsx#AgentThinking",
