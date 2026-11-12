@@ -1750,16 +1750,32 @@
     "verification": "Native renderer and DOM web measure a caller Button in the actions slot at default/xs/sm/md/lg; nested lg-over-xs is verified through CalendarView, which composes this header.",
     "parts": ["src/calendar/CalendarViewHeader.tsx#CalendarViewHeader"]
   },
+  "calendar-fixed-geometry-subparts": {
+    "status": "independent-scale",
+    "reason": "CalendarViewEventDetails owns a fixed panel and explicit-size row actions; CalendarViewInboxMenu owns an md trigger, sm footer action and fixed feed rows; CalendarViewMonthGrid owns responsive calendar geometry plus fixed compact cards; CalendarViewMonthSwitcher owns a fixed 36px footprint and explicit navigation controls. None accepts caller control slots whose sizing should follow BloomScope.",
+    "evidence": [
+      "src/calendar/CalendarViewEventDetails.tsx",
+      "src/calendar/CalendarViewInboxMenu.tsx",
+      "src/calendar/CalendarViewMonthGrid.tsx",
+      "src/calendar/CalendarViewMonthSwitcher.tsx",
+      "src/__tests__/CalendarView.test.tsx",
+      "src/__tests__/CalendarSubpartsPublicPartScope.test.tsx",
+      "src/__tests__/CalendarSubpartsPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the fixed panel width, md inbox trigger, compact 76px day card and 36px month-switcher footprint under default and xs/sm/md/lg scopes. Existing CalendarView tests cover event detail actions, responsive month-grid geometry and switcher interaction. Physical layout, popup interaction and hit targets remain device-owned.",
+    "parts": [
+      "src/calendar/CalendarViewEventDetails.tsx#CalendarViewEventDetails",
+      "src/calendar/CalendarViewInboxMenu.tsx#CalendarViewInboxMenu",
+      "src/calendar/CalendarViewMonthGrid.tsx#CalendarViewMonthGrid",
+      "src/calendar/CalendarViewMonthSwitcher.tsx#CalendarViewMonthSwitcher"
+    ]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/calendar/CalendarViewEventDetails.tsx#CalendarViewEventDetails",
-      "src/calendar/CalendarViewInboxMenu.tsx#CalendarViewInboxMenu",
-      "src/calendar/CalendarViewMonthGrid.tsx#CalendarViewMonthGrid",
-      "src/calendar/CalendarViewMonthSwitcher.tsx#CalendarViewMonthSwitcher",
       "src/call-ui/CallHistoryList.tsx#CallHistoryList",
       "src/call-ui/CallHistoryRow.tsx#CallHistoryRow",
       "src/call-ui/CallMinimisedPill.tsx#CallMinimisedPill",
