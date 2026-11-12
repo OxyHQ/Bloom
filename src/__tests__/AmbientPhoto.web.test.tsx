@@ -1,6 +1,8 @@
 /** @jest-environment jsdom */
-import React, { act } from 'react';
+import type React from 'react';
+import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import { BloomScope } from '../appearance';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
@@ -121,6 +123,57 @@ it('shows only the newest of photos asked for while an earlier one decoded', asy
   await decode('b.jpg');
   expect(onShown).toHaveBeenCalledTimes(1);
   expect(onShown).toHaveBeenCalledWith('https://cdn.example/b.jpg');
+});
+
+it('keeps its full-bleed photo layers independent from BloomScope on web', () => {
+  const renderScoped = (size?: 'xs' | 'lg') =>
+    act(() =>
+      root.render(
+        size ? (
+          <BloomScope size={size}>
+            <AmbientPhoto testID="photo" source="https://cdn.example/a.jpg" />
+          </BloomScope>
+        ) : (
+          <AmbientPhoto testID="photo" source="https://cdn.example/a.jpg" />
+        ),
+      ),
+    );
+  const geometry = () => {
+    const host = container.querySelector<HTMLElement>('[data-testid="photo"]');
+    const layers = Array.from(
+      container.querySelectorAll<HTMLElement>('[data-testid="photo"] > div'),
+    );
+    if (!host || layers.length !== 2) throw new Error('AmbientPhoto layers are missing');
+    const rootStyle = getComputedStyle(host);
+    return [
+      [
+        rootStyle.position,
+        rootStyle.top,
+        rootStyle.right,
+        rootStyle.bottom,
+        rootStyle.left,
+        rootStyle.pointerEvents,
+      ],
+      ...layers.map((layer) => [
+        layer.style.position,
+        layer.style.inset,
+        layer.style.backgroundPosition,
+        layer.style.backgroundSize,
+        layer.style.backgroundRepeat,
+      ]),
+    ];
+  };
+  renderScoped();
+  const initial = geometry();
+  expect(initial).toEqual([
+    ['absolute', '0px', '0px', '0px', '0px', 'none'],
+    ['absolute', '0', 'center', 'cover', 'no-repeat'],
+    ['absolute', '0', 'center', 'cover', 'no-repeat'],
+  ]);
+  renderScoped('xs');
+  expect(geometry()).toEqual(initial);
+  renderScoped('lg');
+  expect(geometry()).toEqual(initial);
 });
 
 it('keeps the photo on screen when the next one cannot load', async () => {

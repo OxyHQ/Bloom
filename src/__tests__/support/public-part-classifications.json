@@ -1225,6 +1225,19 @@
     "verification": "Native renderer and DOM web verify token context is rendered through the fixed UsageCard recipe under default md, xs and lg scopes; the adapter's 16px radius, caller format, and labels remain preserved. Device layout and adoption of the non-deprecated UsageCard API remain unverified.",
     "parts": ["src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard"]
   },
+  "ambient-photo-independent-geometry": {
+    "status": "independent-scale",
+    "reason": "AmbientPhoto is a decorative full-bleed image layer with no control-size prop or content recipe. Its host and photo layers fill the caller-owned region; BloomScope must not alter that geometry.",
+    "evidence": [
+      "src/ambient-photo/AmbientPhoto.tsx",
+      "src/ambient-photo/AmbientPhoto.web.tsx",
+      "src/ambient-photo/types.ts",
+      "src/__tests__/AmbientPhoto.test.tsx",
+      "src/__tests__/AmbientPhoto.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify full-bleed absolute-fill host/layers remain identical under default md, xs and lg BloomScope. Cropping quality, decoded image memory and platform motion/performance remain separately unverified.",
+    "parts": ["src/ambient-photo/AmbientPhoto.tsx#AmbientPhoto"]
+  },
   "agent-progress-fixed-recipe": {
     "status": "independent-scale",
     "reason": "AgentProgress and AgentProgressPlan own fixed 341px card geometry; their rows and labels use fixed typography and their decision buttons/badges choose explicit size tokens. AgentProgressLoadingText consumes an explicit typography variant, not BloomScope control size.",
@@ -1278,7 +1291,6 @@
       "src/ai-chat/AiChatShell.tsx#AiChatMobileHeader",
       "src/ai-profile-card/AiProfileCard.tsx#AiProfileCard",
       "src/alert-dialog/index.ts#AlertDialog",
-      "src/ambient-photo/AmbientPhoto.tsx#AmbientPhoto",
       "src/animated-check/AnimatedCheck.tsx#AnimatedCheck",
       "src/app-shell/AppShellHeader.tsx#AppShellHeader",
       "src/app-shell/AppShellMenuButton.tsx#AppShellMenuButton",

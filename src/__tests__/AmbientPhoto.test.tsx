@@ -1,6 +1,7 @@
-import React from 'react';
 import { act, render } from '@testing-library/react-native';
 import type { ReactTestInstance } from 'react-test-renderer';
+import { BloomScope } from '../appearance';
+import { resolvedStyle } from './support/rendered-style';
 
 // Jest resolves the bare path to the native implementation (`.web` is never picked).
 import { AmbientPhoto } from '../ambient-photo/AmbientPhoto';
@@ -73,4 +74,36 @@ it('is decorative to assistive technology', () => {
   const host = view.getByTestId('photo', { includeHiddenElements: true });
   expect(host.props.accessibilityElementsHidden).toBe(true);
   expect(host.props.importantForAccessibility).toBe('no-hide-descendants');
+});
+
+it('keeps its full-bleed photo layer independent from BloomScope on native', () => {
+  const geometry = (size?: 'xs' | 'lg') => {
+    const subject = <AmbientPhoto source="a.jpg" testID="photo" />;
+    const view = render(size ? <BloomScope size={size}>{subject}</BloomScope> : subject);
+    const host = view.getByTestId('photo', { includeHiddenElements: true });
+    const image = photos(view.UNSAFE_root)[0];
+    const result = {
+      root: resolvedStyle(host.props.style),
+      layer: resolvedStyle(image?.props.style),
+    };
+    view.unmount();
+    return result;
+  };
+  const initial = geometry();
+  expect(initial.root).toMatchObject({
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+  });
+  expect(initial.layer).toMatchObject({
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+  });
+  expect(geometry('xs')).toEqual(initial);
+  expect(geometry('lg')).toEqual(initial);
 });
