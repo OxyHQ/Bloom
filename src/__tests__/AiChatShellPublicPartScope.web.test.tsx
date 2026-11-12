@@ -33,6 +33,7 @@ import { BloomScope } from '../appearance';
 import { AiChatHeader, AiChatMobileHeader } from '../ai-chat/AiChatShell';
 import { AiChatImageGeneration } from '../ai-chat/AiChat.web';
 import { AiChatFeedbackRow } from '../ai-chat/AiChat.web';
+import { AiChatCodePanel } from '../ai-chat/AiChat.web';
 import { AiChatShellContext } from '../ai-chat/context';
 import type { AiChatShellState } from '../ai-chat/context';
 import { RiCodeSLine } from '../icons/remix/RiCodeSLine';
@@ -193,6 +194,46 @@ it('keeps feedback-row visual geometry independent from control-size scope on we
     renderFeedback('xs');
     expect(geometry()).toEqual(normal);
     renderFeedback('lg');
+    expect(geometry()).toEqual(normal);
+  } finally {
+    act(() => root.unmount());
+    host.remove();
+  }
+});
+
+it('keeps code-panel width and code typography fixed while actions delegate scope on web', () => {
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  const root: Root = createRoot(host);
+  const renderPanel = (size?: 'xs' | 'lg') =>
+    act(() => {
+      const panel = (
+        <AiChatCodePanel testID="code-panel" code="const x = 1" changeCount={1} browser={null} />
+      );
+      root.render(
+        <BloomThemeProvider mode="light" fonts={false}>
+          {size ? <BloomScope size={size}>{panel}</BloomScope> : panel}
+        </BloomThemeProvider>,
+      );
+    });
+  const geometry = () => {
+    const panel = host.querySelector<HTMLElement>('[role="complementary"]');
+    const action = host.querySelector<HTMLElement>('[aria-label="Open terminal"]');
+    const code = host.querySelector<HTMLElement>('pre');
+    if (!panel || !action || !code) throw new Error('AiChat code-panel geometry is missing');
+    return {
+      width: panel.style.width,
+      action: action.style.height,
+      code: [code.style.fontSize, code.style.lineHeight],
+    };
+  };
+  try {
+    renderPanel();
+    const normal = geometry();
+    expect(normal).toEqual({ width: '410px', action: '34px', code: ['13px', '23px'] });
+    renderPanel('xs');
+    expect(geometry()).toEqual({ ...normal, action: '24px' });
+    renderPanel('lg');
     expect(geometry()).toEqual(normal);
   } finally {
     act(() => root.unmount());

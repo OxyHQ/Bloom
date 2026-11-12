@@ -539,6 +539,32 @@ describe('AiChatImageGeneration', () => {
 });
 
 describe('AiChatCodePanel', () => {
+  it('keeps panel width and code typography fixed while actions delegate size to Bloom scope', () => {
+    const subject = (size?: 'xs' | 'lg') => {
+      const panel = (
+        <AiChatCodePanel testID="code-panel" code="const x = 1" changeCount={1} browser={null} />
+      );
+      return (
+        <BloomThemeProvider>
+          {size ? <BloomScope size={size}>{panel}</BloomScope> : panel}
+        </BloomThemeProvider>
+      );
+    };
+    const screen = render(subject());
+    const geometry = () => {
+      const width = resolvedStyle(screen.getByTestId('code-panel').props.style).width;
+      const action = resolvedStyle(screen.getByLabelText('Open terminal').props.style).height;
+      const code = resolvedStyle(screen.getByText('const x = 1').props.style);
+      return { width, action, code: [code.fontSize, code.lineHeight] };
+    };
+    expect(geometry()).toEqual({ width: 410, action: 34, code: [13, 23] });
+    const normal = geometry();
+    screen.rerender(subject('xs'));
+    expect(geometry()).toEqual({ ...normal, action: 24 });
+    screen.rerender(subject('lg'));
+    expect(geometry()).toEqual(normal);
+  });
+
   it('draws its title and tabs in a PageHeader that grows with the system font', () => {
     const { getByLabelText, getByText } = renderIn(
       <AiChatCodePanel code="x" changeCount={1} additions={1} />,
