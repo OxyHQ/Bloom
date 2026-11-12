@@ -429,6 +429,48 @@ describe('turn actions', () => {
 });
 
 describe('AiChatImageGeneration', () => {
+  it('keeps its fixed artwork canvas independent from the control-size scope', () => {
+    const screen = renderIn(
+      <BloomScope size="xs">
+        <AiChatImageGeneration
+          testID="generation"
+          source={{ uri: 'x.png' }}
+          alt="A player"
+          ready={false}
+        />
+      </BloomScope>,
+    );
+    const geometry = () => {
+      const canvas = screen.UNSAFE_root.findAll((node) => {
+        const style = resolvedStyle(node.props.style);
+        return style.width === 200 && style.height === 250;
+      });
+      return [
+        ...new Set(
+          canvas.map((node) => {
+            const style = resolvedStyle(node.props.style);
+            return `${style.width}x${style.height}`;
+          }),
+        ),
+      ];
+    };
+    expect(geometry()).toContain('200x250');
+    const compact = geometry();
+    screen.rerender(
+      <BloomThemeProvider>
+        <BloomScope size="lg">
+          <AiChatImageGeneration
+            testID="generation"
+            source={{ uri: 'x.png' }}
+            alt="A player"
+            ready={false}
+          />
+        </BloomScope>
+      </BloomThemeProvider>,
+    );
+    expect(geometry()).toEqual(compact);
+  });
+
   it('counts down, lands after `duration` and fires onGenerated once', () => {
     jest.useFakeTimers();
     const onGenerated = jest.fn();

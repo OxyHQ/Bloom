@@ -31,6 +31,7 @@ jest.mock('react-native-svg', () => {
 import { Text } from 'react-native';
 import { BloomScope } from '../appearance';
 import { AiChatHeader, AiChatMobileHeader } from '../ai-chat/AiChatShell';
+import { AiChatImageGeneration } from '../ai-chat/AiChat.web';
 import { AiChatShellContext } from '../ai-chat/context';
 import type { AiChatShellState } from '../ai-chat/context';
 import { RiCodeSLine } from '../icons/remix/RiCodeSLine';
@@ -110,6 +111,48 @@ it('keeps chat header chrome fixed and delegates its action sizes to Bloom scope
     expect(geometry()).toEqual({ ...mobile, navigation: '24px', panel: '24px' });
     renderHeader('lg', true);
     expect(geometry()).toEqual(mobile);
+  } finally {
+    act(() => root.unmount());
+    host.remove();
+  }
+});
+
+it('keeps the image-generation artwork canvas independent from control-size scope on web', () => {
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  const root: Root = createRoot(host);
+  const renderGeneration = (size?: 'xs' | 'lg') =>
+    act(() => {
+      const generation = (
+        <AiChatImageGeneration
+          testID="generation"
+          source={{ uri: 'x.png' }}
+          alt="A player"
+          ready={false}
+        />
+      );
+      root.render(
+        <BloomThemeProvider mode="light" fonts={false}>
+          {size ? <BloomScope size={size}>{generation}</BloomScope> : generation}
+        </BloomThemeProvider>,
+      );
+    });
+  const canvasGeometry = () =>
+    Array.from(
+      new Set(
+        Array.from(host.querySelectorAll<HTMLElement>('*'))
+          .filter((element) => element.style.width === '200px' && element.style.height === '250px')
+          .map((element) => `${element.style.width}x${element.style.height}`),
+      ),
+    );
+  try {
+    renderGeneration();
+    const initial = canvasGeometry();
+    expect(initial).toContain('200pxx250px');
+    renderGeneration('xs');
+    expect(canvasGeometry()).toEqual(initial);
+    renderGeneration('lg');
+    expect(canvasGeometry()).toEqual(initial);
   } finally {
     act(() => root.unmount());
     host.remove();

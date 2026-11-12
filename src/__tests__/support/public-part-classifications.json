@@ -1302,6 +1302,18 @@
       "src/ai-chat/AiChatShell.tsx#AiChatMobileHeader"
     ]
   },
+  "ai-chat-image-generation-artwork": {
+    "status": "independent-scale",
+    "reason": "AiChatImageGeneration's artwork owns a fixed 200×250 preview frame and 9px decorative dot field, independent of control size. Its feedback actions keep their own shared turn-action control contract.",
+    "evidence": [
+      "src/ai-chat/AiChatImageGenerationBase.tsx",
+      "src/ai-chat/AiChatControls.tsx",
+      "src/__tests__/AiChat.test.tsx",
+      "src/__tests__/AiChatShellPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the authored 200×250 image canvas under default md, xs and lg scopes. Generation timing, image loading, responsive fit and physical raster quality remain separate claims.",
+    "parts": ["src/ai-chat/AiChat.tsx#AiChatImageGeneration"]
+  },
   "agent-progress-fixed-recipe": {
     "status": "independent-scale",
     "reason": "AgentProgress and AgentProgressPlan own fixed 341px card geometry; their rows and labels use fixed typography and their decision buttons/badges choose explicit size tokens. AgentProgressLoadingText consumes an explicit typography variant, not BloomScope control size.",
@@ -1341,7 +1353,6 @@
       "src/ai-chat/AiChat.tsx#AiChatContainer",
       "src/ai-chat/AiChat.tsx#AiChatFeedbackRow",
       "src/ai-chat/AiChat.tsx#AiChatGalleryPanel",
-      "src/ai-chat/AiChat.tsx#AiChatImageGeneration",
       "src/ai-chat/AiChat.tsx#AiChatShell",
       "src/ai-chat/AiChat.tsx#AiChatThread",
       "src/ai-profile-card/AiProfileCard.tsx#AiProfileCard",
