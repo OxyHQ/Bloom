@@ -1030,8 +1030,6 @@
       "src/agent-chat/AgentChatMessage.tsx#AgentChatMessage",
       "src/agent-creator/AgentCreator.tsx#AgentCreator",
       "src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard",
-      "src/agent-log/AgentLog.tsx#AgentLogRow",
-      "src/agent-log/AgentLog.tsx#AgentLogRowConnector",
       "src/agent-log/AgentLog.tsx#AgentLogShimmerText",
       "src/agent-log/AgentLog.tsx#AgentLogWorkingRow",
       "src/agent-log/AgentLogToolCall.tsx#AgentLogToolCall",
@@ -2025,6 +2023,30 @@
     ],
     "verification": "Native renderer and DOM web verify a caller Button changes from inherited md to xs and lg through AgentLogReveal, with nested xs/lg resolving to the nearer lg scope. Portal behavior does not apply to this wrapper.",
     "parts": ["src/agent-log/AgentLog.tsx#AgentLogReveal"]
+  },
+  "agent-log-row-connector": {
+    "status": "independent-scale",
+    "reason": "AgentLogRowConnector draws a structural guide beside a row, not a control. Its 12px guide lane, 1px trunk and fixed branch path describe tree geometry and remain independent of BloomScope.",
+    "evidence": [
+      "src/agent-log/AgentLog.tsx",
+      "src/agent-log/constants.ts",
+      "src/__tests__/AgentLogRowConnectorPublicPartScope.test.tsx",
+      "src/__tests__/AgentLogRowConnectorPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web measure the guide lane at 12px and the trunk at 1px with its fixed 8px top offset under default, xs and lg BloomScope. Device-rendered proportions remain unverified.",
+    "parts": ["src/agent-log/AgentLog.tsx#AgentLogRowConnector"]
+  },
+  "agent-log-row": {
+    "status": "delegated",
+    "reason": "AgentLogRow owns the reveal wrapper and a fixed 16px guide inset while its row content remains caller-owned. The row adds no control-size recipe and passes BloomScope through to supplied controls.",
+    "evidence": [
+      "src/agent-log/AgentLog.tsx",
+      "src/agent-log/types.ts",
+      "src/__tests__/AgentLogRowPublicPartScope.test.tsx",
+      "src/__tests__/AgentLogRowPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify a caller Button follows default, xs and lg scopes through the row, nested xs/lg resolves to lg, and the guide inset stays 16px. Device layout and touch fit remain unverified.",
+    "parts": ["src/agent-log/AgentLog.tsx#AgentLogRow"]
   },
   "activity-feed-parts": {
     "status": "delegated",
