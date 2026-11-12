@@ -1030,7 +1030,6 @@
       "src/agent-chat/AgentChatMessage.tsx#AgentChatMessage",
       "src/agent-creator/AgentCreator.tsx#AgentCreator",
       "src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard",
-      "src/agent-log/AgentLog.tsx#AgentLogWorkingRow",
       "src/agent-log/AgentLogToolCall.tsx#AgentLogToolCall",
       "src/agent-log/AgentLogToolCall.tsx#AgentLogToolCalls",
       "src/agent-progress/AgentProgress.tsx#AgentProgress",
@@ -2059,6 +2058,20 @@
     ],
     "verification": "Native renderer verifies the body-regular parent owns nested shimmer text typography under default, xs and lg scopes. DOM web verifies the shimmer stays nested with no font-size override while the parent's computed type remains unchanged; browser paint is not inferred from jsdom.",
     "parts": ["src/agent-log/AgentLog.tsx#AgentLogShimmerText"]
+  },
+  "agent-log-working-row": {
+    "status": "independent-scale",
+    "reason": "AgentLogWorkingRow is a pending-work indicator, not a control. It composes the explicit AgentThinking stars variant with 4px vertical padding; both the artwork box and label recipe have fixed roles outside Bloom's control-size scale.",
+    "evidence": [
+      "src/agent-log/AgentLog.tsx",
+      "src/agent-thinking/AgentThinking.tsx",
+      "docs/agent-log.mdx",
+      "src/__tests__/AgentLog.test.tsx",
+      "src/__tests__/AgentLogWorkingRowPublicPartScope.test.tsx",
+      "src/__tests__/AgentLogWorkingRowPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the 21px stars artwork and 14px body-medium label remain fixed under default, xs and lg BloomScope. Physical-device visual fit remains unverified.",
+    "parts": ["src/agent-log/AgentLog.tsx#AgentLogWorkingRow"]
   },
   "activity-feed-parts": {
     "status": "delegated",
