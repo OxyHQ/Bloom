@@ -1168,6 +1168,21 @@
     "verification": "Native renderer and DOM web verify an xs scope reaches the share control through AgentChat → AppShell → Screen → PageHeader as 24px, with default md and lg clamped by ButtonGroup to 34px; responsive layouts and other leaf recipes remain separately verified.",
     "parts": ["src/agent-chat/AgentChat.tsx#AgentChat"]
   },
+  "agent-thinking-fixed-recipes": {
+    "status": "independent-scale",
+    "reason": "AgentThinking is a status indicator with fixed art boxes, a named body-medium label and a 10px row gap; ThinkingReasoning uses fixed spacing tokens, a 2px rule and body-2 text. Neither exposes Bloom control sizing, and their role-specific geometry must not be mistaken for button size.",
+    "evidence": [
+      "src/agent-thinking/AgentThinking.tsx",
+      "src/agent-thinking/ThinkingReasoning.tsx",
+      "src/__tests__/AgentThinkingPublicPartScope.test.tsx",
+      "src/__tests__/AgentThinkingPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify fixed status-row gap, 16px dot grid, 14/20 label typography and reasoning vertical insets under default md, xs and lg; animated frame timing and physical proportions remain unverified.",
+    "parts": [
+      "src/agent-thinking/AgentThinking.tsx#AgentThinking",
+      "src/agent-thinking/ThinkingReasoning.tsx#ThinkingReasoning"
+    ]
+  },
   "agent-progress-fixed-recipe": {
     "status": "independent-scale",
     "reason": "AgentProgress and AgentProgressPlan own fixed 341px card geometry; their rows and labels use fixed typography and their decision buttons/badges choose explicit size tokens. AgentProgressLoadingText consumes an explicit typography variant, not BloomScope control size.",
@@ -1205,8 +1220,6 @@
     "parts": [
       "src/agent-creator/AgentCreator.tsx#AgentCreator",
       "src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard",
-      "src/agent-thinking/AgentThinking.tsx#AgentThinking",
-      "src/agent-thinking/ThinkingReasoning.tsx#ThinkingReasoning",
       "src/ai-chat/AiChat.tsx#AiChatAssistantMessage",
       "src/ai-chat/AiChat.tsx#AiChatCodePanel",
       "src/ai-chat/AiChat.tsx#AiChatContainer",
