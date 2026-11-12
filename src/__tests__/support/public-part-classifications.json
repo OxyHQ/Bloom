@@ -1095,6 +1095,17 @@
     "verification": "Native renderer and DOM web verify caller Button children follow default md, xs and lg while the wrapper keeps its 12px top margin; other slot recipes and physical geometry remain separately unverified.",
     "parts": ["src/agent-reply/AgentReply.tsx#AgentReply"]
   },
+  "agent-reply-identity-artwork": {
+    "status": "independent-scale",
+    "reason": "AgentReplyIdentity uses its own thinking-state animation to size a fixed 32px AgentAvatar artwork canvas and fixed body typography. These identity and animation dimensions have no Bloom control-size input.",
+    "evidence": [
+      "src/agent-reply/AgentReplyIdentity.tsx",
+      "src/__tests__/AgentReplyIdentityPublicPartScope.test.tsx",
+      "src/__tests__/AgentReplyIdentityPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the 20px resting wrapper and 32px artwork canvas stay unchanged under default md, xs and lg scopes; thinking animation and device proportions remain separately unverified.",
+    "parts": ["src/agent-reply/AgentReplyIdentity.tsx#AgentReplyIdentity"]
+  },
   "agent-progress-fixed-recipe": {
     "status": "independent-scale",
     "reason": "AgentProgress and AgentProgressPlan own fixed 341px card geometry; their rows and labels use fixed typography and their decision buttons/badges choose explicit size tokens. AgentProgressLoadingText consumes an explicit typography variant, not BloomScope control size.",
@@ -1137,7 +1148,6 @@
       "src/agent-chat/AgentChatMessage.tsx#AgentChatMessage",
       "src/agent-creator/AgentCreator.tsx#AgentCreator",
       "src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard",
-      "src/agent-reply/AgentReplyIdentity.tsx#AgentReplyIdentity",
       "src/agent-thinking/AgentThinking.tsx#AgentThinking",
       "src/agent-thinking/ThinkingReasoning.tsx#ThinkingReasoning",
       "src/ai-chat/AiChat.tsx#AiChatAssistantMessage",
