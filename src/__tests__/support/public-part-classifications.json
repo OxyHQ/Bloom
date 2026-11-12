@@ -14,6 +14,20 @@
       "src/property-insights/EnergyBadge.tsx#EnergyBadge"
     ]
   },
+  "bloom-scope-applicable": {
+    "status": "applicable",
+    "reason": "BloomScope is the public owner of inherited Bloom size, tone, control-density, content-density and panel-radius context. Nearest scopes override parent values while omitted fields inherit independently; children remain mounted under ordinary wrappers and portals.",
+    "evidence": [
+      "src/appearance/BloomScope.tsx",
+      "src/appearance/context.ts",
+      "src/appearance/types.ts",
+      "src/__tests__/support/indicator-scope-cases.tsx",
+      "src/__tests__/PublicPartScope.test.tsx",
+      "src/__tests__/PublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web exercise default, nearest scope, partial xs/lg mappings, explicit-size precedence, nested scopes in both override orders, and ordinary wrappers for real controls. Both suites repeat the inheritance matrix through Portal; independent document/artwork subjects remain unchanged under xs/lg scopes.",
+    "parts": ["src/appearance/BloomScope.tsx#BloomScope"]
+  },
   "segmented-control-size": {
     "status": "applicable",
     "reason": "SegmentedControl owns a coherent interactive size scale for segment height, track geometry, text and focus target. It consumes all four BloomScope rungs directly; an explicit size overrides the nearest scope.",
@@ -1549,7 +1563,6 @@
     "verification": "pending; not a passing adoption verdict",
     "parts": [
       "src/app-shell/index.ts#AppShell",
-      "src/appearance/BloomScope.tsx#BloomScope",
       "src/aspect-ratio/AspectRatio.tsx#AspectRatio",
       "src/auth-card/AuthCard.tsx#AuthCard",
       "src/auth-card/AuthMediaCarousel.tsx#AuthMediaCarousel",
