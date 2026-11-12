@@ -1030,7 +1030,6 @@
       "src/agent-chat/AgentChatMessage.tsx#AgentChatMessage",
       "src/agent-creator/AgentCreator.tsx#AgentCreator",
       "src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard",
-      "src/agent-log/AgentLog.tsx#AgentLogGuideBridge",
       "src/agent-log/AgentLog.tsx#AgentLogReveal",
       "src/agent-log/AgentLog.tsx#AgentLogRow",
       "src/agent-log/AgentLog.tsx#AgentLogRowConnector",
@@ -2002,6 +2001,19 @@
     ],
     "verification": "Source and the provider context suite confirm the export only wraps children in capability/catalog contexts; it paints no UI, exposes no size prop and owns no portal.",
     "parts": ["src/agent-avatar/AgentAvatarProvider.tsx#AgentAvatarProvider"]
+  },
+  "agent-log-guide-bridge": {
+    "status": "independent-scale",
+    "reason": "AgentLogGuideBridge draws a structural connector between nested log rows. Its numeric height and offset express tree geometry, not a control-size rung; the one-pixel stroke and caller-supplied coordinates remain fixed under BloomScope.",
+    "evidence": [
+      "src/agent-log/AgentLog.tsx",
+      "src/agent-log/types.ts",
+      "docs/agent-log.mdx",
+      "src/__tests__/AgentLogGuideBridgePublicPartScope.test.tsx",
+      "src/__tests__/AgentLogGuideBridgePublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web measure width 1px, height 6px, top -6px and left 7px unchanged under default, xs and lg BloomScope. Device-rendered proportions remain unverified.",
+    "parts": ["src/agent-log/AgentLog.tsx#AgentLogGuideBridge"]
   },
   "activity-feed-parts": {
     "status": "delegated",
