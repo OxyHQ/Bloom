@@ -697,6 +697,42 @@ describe('NotificationBell', () => {
 });
 
 describe('ProOfferCard', () => {
+  it.each([
+    { name: 'default md', sizes: [] },
+    { name: 'xs', sizes: ['xs'] },
+    { name: 'sm', sizes: ['sm'] },
+    { name: 'md', sizes: ['md'] },
+    { name: 'lg', sizes: ['lg'] },
+    { name: 'nested lg over xs', sizes: ['xs', 'lg'] },
+  ] as const)('keeps explicit CTA and close sizes under $name', ({ sizes }) => {
+    setWidth(1440);
+    const card = (
+      <ProOfferCard
+        testID="scoped-offer"
+        title="Pro"
+        description="More"
+        ctaLabel="Get Pro"
+        onDismiss={() => {}}
+        placement="inline"
+        enterDelay={0}
+      />
+    );
+    const scoped = [...sizes].reverse().reduce(
+      (children, size) => (
+        <BloomScope key={size} size={size}>
+          {children}
+        </BloomScope>
+      ),
+      card,
+    );
+    const screen = renderIn(scoped);
+    let cta = screen.getByText('Get Pro').parent;
+    while (cta && resolvedStyle(cta.props.style).height === undefined) cta = cta.parent;
+    expect(cta).toBeTruthy();
+    expect(resolvedStyle(cta!.props.style).height).toBe(36);
+    expect(resolvedStyle(screen.getByTestId('scoped-offer-dismiss').props.style).height).toBe(20);
+  });
+
   it('keeps the card geometry and a named dismiss', () => {
     setWidth(1440);
     const onDismiss = jest.fn();

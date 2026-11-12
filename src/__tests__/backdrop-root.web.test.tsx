@@ -45,6 +45,7 @@ jest.mock('react-native-reanimated', () => {
 });
 
 import { materialHostSelector } from '../surface/web-material';
+import { BloomScope } from '../appearance';
 import { backdropRootViolations, materialHostCount } from './support/backdrop-root';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PortalOutlet, PortalProvider } from '../portal/index.web';
@@ -177,6 +178,45 @@ function check(subject: Subject, state: State) {
   }
   return { hosts: materialHostCount(), violations: backdropRootViolations() };
 }
+
+describe('ProOfferCard scale ownership on web', () => {
+  it.each([
+    { name: 'default md', sizes: [] },
+    { name: 'xs', sizes: ['xs'] },
+    { name: 'sm', sizes: ['sm'] },
+    { name: 'md', sizes: ['md'] },
+    { name: 'lg', sizes: ['lg'] },
+    { name: 'nested lg over xs', sizes: ['xs', 'lg'] },
+  ] as const)('keeps explicit CTA and close sizes under $name', ({ sizes }) => {
+    const card = (
+      <ProOfferCard
+        testID="scoped-offer"
+        title="Pro"
+        description="More"
+        ctaLabel="Get Pro"
+        onDismiss={() => {}}
+        placement="inline"
+        enterDelay={0}
+      />
+    );
+    const scoped = [...sizes].reverse().reduce<React.ReactNode>(
+      (children, size) => (
+        <BloomScope key={size} size={size}>
+          {children}
+        </BloomScope>
+      ),
+      card,
+    );
+    mount(scoped);
+    settle();
+    const cta = [...container.querySelectorAll<HTMLElement>('button')].find(
+      (button) => button.textContent === 'Get Pro',
+    );
+    const close = container.querySelector<HTMLElement>('[data-bloom-button-close]');
+    expect(cta?.style.height).toBe('36px');
+    expect(close?.style.height).toBe('20px');
+  });
+});
 
 function Controlled({ open, children }: { open: boolean; children: React.ReactNode }) {
   return <>{open ? children : null}</>;

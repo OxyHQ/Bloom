@@ -1514,13 +1514,26 @@
     "verification": "Native renderer and DOM web open the actual popover at default md, inherited xs/sm/md/lg and nested lg-over-xs. Both measure the trigger fixed at 36px and the portal tab geometry at 20/24/28/36px respectively; the existing native test covers unread count geometry. This verifies scope through the popover/portal for the scaled tab controls while fixed notification recipes remain independent.",
     "parts": ["src/app-shell/NotificationBell.tsx#NotificationBell"]
   },
+  "app-shell-pro-offer-independent-scale": {
+    "status": "independent-scale",
+    "reason": "ProOfferCard has no public size prop and owns a product-specific floating-card recipe. Its CTA explicitly selects Button md, CloseButton explicitly selects xs, and copy uses semantic body variants; a surrounding BloomScope should not rewrite this fixed offer composition.",
+    "evidence": [
+      "src/app-shell/ProOfferCard.tsx",
+      "src/app-shell/types.ts",
+      "src/button/Button.tsx",
+      "src/button/CloseButton.tsx",
+      "src/__tests__/AppShell.test.tsx",
+      "src/__tests__/backdrop-root.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify default md, inherited xs/sm/md/lg and nested lg-over-xs. Both measure the CTA at 36px and close control at 20px across scopes. ProOfferCard owns no portal or submenu; rendered material/interaction quality remains covered by its other platform-specific evidence.",
+    "parts": ["src/app-shell/ProOfferCard.tsx#ProOfferCard"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/app-shell/ProOfferCard.tsx#ProOfferCard",
       "src/app-shell/index.ts#AppShell",
       "src/app-shell/index.ts#AppShellPanel",
       "src/app-shell/index.ts#AppShellPanels",
