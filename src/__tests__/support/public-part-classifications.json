@@ -1528,6 +1528,20 @@
     "verification": "Native renderer and DOM web verify default md, inherited xs/sm/md/lg and nested lg-over-xs. Both measure the CTA at 36px and close control at 20px across scopes. ProOfferCard owns no portal or submenu; rendered material/interaction quality remains covered by its other platform-specific evidence.",
     "parts": ["src/app-shell/ProOfferCard.tsx#ProOfferCard"]
   },
+  "app-shell-panel-composition-delegation": {
+    "status": "delegated",
+    "reason": "AppShellPanel and AppShellPanels own panel surfaces and group geometry, not control scale. They do not accept or replace BloomScope; controls in a sole panel and in grouped panel content resolve the nearest caller scope.",
+    "evidence": [
+      "src/app-shell/AppShellPanels.tsx",
+      "src/app-shell/index.ts",
+      "src/app-shell/index.web.ts",
+      "src/__tests__/AppShell.test.tsx",
+      "src/__tests__/AppShellSsr.web.test.tsx",
+      "docs/app-shell.mdx"
+    ],
+    "verification": "Native renderer and DOM web verify Button geometry through both AppShellPanel and AppShellPanels at default md, inherited xs/sm/md/lg and nested lg-over-xs. Native exercises the measured panel renderer; DOM web verifies package web resolution and server markup. Physical layout remains covered by the AppShell platform suites.",
+    "parts": ["src/app-shell/index.ts#AppShellPanel", "src/app-shell/index.ts#AppShellPanels"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
@@ -1535,8 +1549,6 @@
     "verification": "pending; not a passing adoption verdict",
     "parts": [
       "src/app-shell/index.ts#AppShell",
-      "src/app-shell/index.ts#AppShellPanel",
-      "src/app-shell/index.ts#AppShellPanels",
       "src/appearance/BloomScope.tsx#BloomScope",
       "src/aspect-ratio/AspectRatio.tsx#AspectRatio",
       "src/auth-card/AuthCard.tsx#AuthCard",

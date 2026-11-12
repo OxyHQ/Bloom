@@ -59,12 +59,16 @@ jest.mock('react-native-svg', () => {
 });
 
 import { Text, View } from 'react-native';
+import { Button } from '../button/index.web';
+import { BloomScope } from '../appearance';
 import { useBottomEdgeInset } from '../layout/bottom-edge';
 import { AppShellPanelContext } from '../app-shell/context';
 import { PanelCssContext } from '../app-shell/panel-layout-css';
 import {
   AppShell,
   AppShellMenuButton,
+  AppShellPanel,
+  AppShellPanels,
   AppShellPanelVisibility,
   useAppShellPanel,
 } from '../app-shell/index.web';
@@ -142,6 +146,61 @@ describe('AppShell server layout', () => {
     consoleErrors = jest.spyOn(console, 'error').mockImplementation(() => {});
     host = document.createElement('div');
     document.body.append(host);
+  });
+
+  it.each([
+    { name: 'default md', sizes: [], height: '36px' },
+    { name: 'xs', sizes: ['xs'], height: '24px' },
+    { name: 'sm', sizes: ['sm'], height: '32px' },
+    { name: 'md', sizes: ['md'], height: '36px' },
+    { name: 'lg', sizes: ['lg'], height: '44px' },
+    { name: 'nested lg over xs', sizes: ['xs', 'lg'], height: '44px' },
+  ] as const)('delegates $name through panel and group composition on web', ({ sizes, height }) => {
+    const single = (
+      <AppShell variant="feed" panels scroll="fixed" sidebar={{ items: [] }}>
+        <AppShellPanel>
+          <Button testID="single-panel-button">Continue</Button>
+        </AppShellPanel>
+      </AppShell>
+    );
+    const grouped = (
+      <AppShell variant="feed" panels scroll="fixed" sidebar={{ items: [] }}>
+        <AppShellPanels>
+          <AppShellPanel id="main">
+            <Button testID="group-panel-button">Continue</Button>
+          </AppShellPanel>
+          <AppShellPanel id="detail">
+            <Text>Details</Text>
+          </AppShellPanel>
+        </AppShellPanels>
+      </AppShell>
+    );
+    const scoped = [...sizes].reverse().reduce<React.ReactNode>(
+      (children, size) => (
+        <BloomScope key={size} size={size}>
+          {children}
+        </BloomScope>
+      ),
+      <>
+        {single}
+        {grouped}
+      </>,
+    );
+    host.innerHTML = renderToString(
+      <BloomProvider fonts={false} ssrStyles="inline">
+        {scoped}
+      </BloomProvider>,
+    );
+    expect(
+      host
+        .querySelector<HTMLElement>('[data-testid="single-panel-button"]')
+        ?.style.getPropertyValue('--bloom-btn-height'),
+    ).toBe(height);
+    expect(
+      host
+        .querySelector<HTMLElement>('[data-testid="group-panel-button"]')
+        ?.style.getPropertyValue('--bloom-btn-height'),
+    ).toBe(height);
   });
   afterEach(async () => {
     if (root) await act(async () => root!.unmount());

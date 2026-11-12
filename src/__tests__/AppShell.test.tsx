@@ -21,6 +21,7 @@ import { RiHomeLine } from '../icons/remix';
 import type { NotificationCenterItem } from '../notification-center';
 import { ContentPanel } from '../content-panel';
 import { BloomScope } from '../appearance';
+import { Button } from '../button';
 import { useTheme } from '../theme/use-theme';
 import { resolvedStyle } from './support/rendered-style';
 import { mockWindowSize } from './support/window-size';
@@ -1525,6 +1526,34 @@ describe('AppShell panels: the frame', () => {
 });
 
 describe('AppShellPanel alone in the region', () => {
+  it.each([
+    { name: 'default md', sizes: [], height: 36 },
+    { name: 'xs', sizes: ['xs'], height: 24 },
+    { name: 'sm', sizes: ['sm'], height: 32 },
+    { name: 'md', sizes: ['md'], height: 36 },
+    { name: 'lg', sizes: ['lg'], height: 44 },
+    { name: 'nested lg over xs', sizes: ['xs', 'lg'], height: 44 },
+  ] as const)('delegates $name to panel children', ({ sizes, height }) => {
+    setWidth(1440);
+    const panel = (
+      <AppShell testID="shell" variant="feed" panels scroll="fixed" sidebar={{ items: NAV }}>
+        <AppShellPanel>
+          <Button testID="panel-button">Continue</Button>
+        </AppShellPanel>
+      </AppShell>
+    );
+    const scoped = [...sizes].reverse().reduce(
+      (children, size) => (
+        <BloomScope key={size} size={size}>
+          {children}
+        </BloomScope>
+      ),
+      panel,
+    );
+    const screen = renderIn(scoped);
+    expect(resolvedStyle(screen.getByTestId('panel-button').props.style).height).toBe(height);
+  });
+
   function insidePage(screen: ReturnType<typeof renderIn>, id: string): boolean {
     for (let n = screen.getByTestId(id).parent; n; n = n.parent) {
       if (n.props?.testID === 'shell-page') return true;
@@ -1670,6 +1699,28 @@ describe('AppShellPanels', () => {
       </AppShellPanels>
     </AppShell>
   );
+
+  it.each([
+    { name: 'default md', sizes: [], height: 36 },
+    { name: 'xs', sizes: ['xs'], height: 24 },
+    { name: 'sm', sizes: ['sm'], height: 32 },
+    { name: 'md', sizes: ['md'], height: 36 },
+    { name: 'lg', sizes: ['lg'], height: 44 },
+    { name: 'nested lg over xs', sizes: ['xs', 'lg'], height: 44 },
+  ] as const)('delegates $name to grouped panel children', ({ sizes, height }) => {
+    setWidth(1440);
+    const grouped = twoPanels({}, { a: <Button testID="group-button">Continue</Button> });
+    const scoped = [...sizes].reverse().reduce(
+      (children, size) => (
+        <BloomScope key={size} size={size}>
+          {children}
+        </BloomScope>
+      ),
+      grouped,
+    );
+    const screen = renderIn(scoped);
+    expect(resolvedStyle(screen.getByTestId('group-button').props.style).height).toBe(height);
+  });
 
   it('separated: the gap between panels is the shell gutter, each its own framed surface', () => {
     setWidth(1440);
