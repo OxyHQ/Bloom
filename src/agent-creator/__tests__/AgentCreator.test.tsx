@@ -11,6 +11,8 @@ import { CustomColorPicker } from '../CustomColorPicker';
 import { GlossArt } from '../GlossArt';
 import { EmotionPicker } from '../EmotionPicker';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
+import { BloomScope } from '../../appearance';
+import { resolvedStyle } from '../../__tests__/support/rendered-style';
 import { AgentCreator } from '../AgentCreator';
 import { AgentCreatorField } from '../AgentCreatorField';
 import { AgentCreatorSection } from '../AgentCreatorSection';
@@ -46,6 +48,34 @@ describe('controlled agent creator', () => {
   beforeEach(() => {
     global.requestAnimationFrame = jest.fn(() => 1);
     global.cancelAnimationFrame = jest.fn();
+  });
+  it('delegates header size through the editor while keeping its explicit close size', () => {
+    function Subject({ size }: { size?: 'xs' | 'lg' }) {
+      return (
+        <CharacterRuntimeFixture value={{}}>
+          <BloomThemeProvider mode="light">
+            {size ? (
+              <BloomScope size={size}>
+                <AgentCreator agent={agent} onChange={jest.fn()} onClose={jest.fn()} />
+              </BloomScope>
+            ) : (
+              <AgentCreator agent={agent} onChange={jest.fn()} onClose={jest.fn()} />
+            )}
+          </BloomThemeProvider>
+        </CharacterRuntimeFixture>
+      );
+    }
+    const view = render(<Subject />);
+    const geometry = () => ({
+      undo: resolvedStyle(view.getByLabelText('Undo').props.style).height,
+      redo: resolvedStyle(view.getByLabelText('Redo').props.style).height,
+      close: resolvedStyle(view.getByLabelText('Close agent editor').props.style).height,
+    });
+    expect(geometry()).toEqual({ undo: 34, redo: 34, close: 20 });
+    view.rerender(<Subject size="xs" />);
+    expect(geometry()).toEqual({ undo: 24, redo: 24, close: 20 });
+    view.rerender(<Subject size="lg" />);
+    expect(geometry()).toEqual({ undo: 34, redo: 34, close: 20 });
   });
   it('edits each profile field while retaining the agent identity, avatar and preferences', () => {
     const onChange = jest.fn();

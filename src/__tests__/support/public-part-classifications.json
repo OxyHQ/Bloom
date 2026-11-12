@@ -1183,6 +1183,21 @@
       "src/agent-thinking/ThinkingReasoning.tsx#ThinkingReasoning"
     ]
   },
+  "agent-creator-composition-delegation": {
+    "status": "delegated",
+    "reason": "AgentCreator composes Screen, PageHeader, ButtonGroup, CloseButton, AgentCreatorField/Section, preference controls and numeric AgentAvatar artwork. It defines no editor-wide size scale; shared controls receive the nearest BloomScope, CloseButton explicitly selects xs, and artwork geometry stays numeric.",
+    "evidence": [
+      "src/agent-creator/AgentCreatorBase.tsx",
+      "src/agent-creator/AgentCreatorField.tsx",
+      "src/agent-creator/AgentCreatorSection.tsx",
+      "src/__tests__/AgentCreatorPublicPartScope.test.tsx",
+      "src/__tests__/AgentCreatorPublicPartScope.web.test.tsx",
+      "src/agent-creator/__tests__/AgentCreator.test.tsx",
+      "src/__tests__/AgentCreatorRootPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify undo/redo controls in the actual AgentCreator compose at 34px under default md, 24px under xs and 34px under lg, while its explicit 20px close control remains fixed; child rows, portals and nested/explicit sizes are separately covered, while editor responsiveness and physical fit remain unverified.",
+    "parts": ["src/agent-creator/AgentCreator.tsx#AgentCreator"]
+  },
   "agent-progress-fixed-recipe": {
     "status": "independent-scale",
     "reason": "AgentProgress and AgentProgressPlan own fixed 341px card geometry; their rows and labels use fixed typography and their decision buttons/badges choose explicit size tokens. AgentProgressLoadingText consumes an explicit typography variant, not BloomScope control size.",
@@ -1218,7 +1233,6 @@
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/agent-creator/AgentCreator.tsx#AgentCreator",
       "src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard",
       "src/ai-chat/AiChat.tsx#AiChatAssistantMessage",
       "src/ai-chat/AiChat.tsx#AiChatCodePanel",
