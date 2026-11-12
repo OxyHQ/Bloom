@@ -1654,13 +1654,24 @@
     "verification": "Native renderer and DOM web verify default and xs/sm/md/lg Avatar sizes through the provider and ordinary wrappers; an explicit Avatar lg size wins over xs scope. Provider-owned geometry is absent; device rendering of consumer-supplied icon content remains consumer-owned.",
     "parts": ["src/avatar/context.ts#AvatarPlaceholderProvider"]
   },
+  "booking-bar-fixed-recipe": {
+    "status": "independent-scale",
+    "reason": "BookingBar is the stay-worded preset of ActionBar. ActionBar owns the fixed large primary/secondary button recipe and semantic price/date typography; BookingBar exposes no size prop or BloomScope-dependent geometry.",
+    "evidence": [
+      "src/booking/BookingBar.tsx",
+      "src/listing-actions/ActionBar.tsx",
+      "src/__tests__/BookingBarPublicPartScope.test.tsx",
+      "src/__tests__/BookingBarPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web measure the Reserve button at 44px under default, xs/sm/md/lg and nested lg-over-xs scopes. The dates action maps to ActionBar's subtitle contract; device touch reach remains device-owned.",
+    "parts": ["src/booking/BookingBar.tsx#BookingBar"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/booking/BookingBar.tsx#BookingBar",
       "src/booking/BookingCard.tsx#BookingCard",
       "src/booking/PriceBreakdown.tsx#PriceBreakdown",
       "src/booking/TripCard.tsx#TripCard",
