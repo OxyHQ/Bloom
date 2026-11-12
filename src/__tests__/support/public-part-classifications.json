@@ -1487,13 +1487,25 @@
     "verification": "Native renderer and DOM web verify default md plus xs, sm, md and lg scopes through AppShell. Both paths measure the md control recipe; tests also verify its accessible name and drawer toggle. AppShellMenuButton has no portal or submenu; physical device target fit remains covered by the platform-specific Button evidence.",
     "parts": ["src/app-shell/AppShellMenuButton.tsx#AppShellMenuButton"]
   },
+  "app-shell-panel-visibility-delegation": {
+    "status": "delegated",
+    "reason": "AppShellPanelVisibility owns only the display rule that keeps a panel's content mounted. It neither accepts nor replaces BloomScope, so descendants continue to resolve size from the nearest caller scope.",
+    "evidence": [
+      "src/app-shell/AppShellPanelVisibility.tsx",
+      "src/app-shell/context.ts",
+      "src/__tests__/AppShellPanelVisibility.test.tsx",
+      "src/__tests__/AppShellPanelVisibilityPublicPartScope.web.test.tsx",
+      "docs/app-shell.mdx"
+    ],
+    "verification": "Native renderer and DOM web measure a nested Button at default md and inherited xs/sm/md/lg scopes through AppShellPanelVisibility; both verify a nested lg scope overrides xs. Existing native tests confirm display changes keep children mounted. Physical layout and accessibility remain platform-owned.",
+    "parts": ["src/app-shell/AppShellPanelVisibility.tsx#AppShellPanelVisibility"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/app-shell/AppShellPanelVisibility.tsx#AppShellPanelVisibility",
       "src/app-shell/NotificationBell.tsx#NotificationBell",
       "src/app-shell/ProOfferCard.tsx#ProOfferCard",
       "src/app-shell/index.ts#AppShell",
