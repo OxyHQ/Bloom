@@ -1447,13 +1447,24 @@
     "verification": "Native renderer and DOM web verify the list label and that a caller supplied Button follows default md, xs and lg scope through AgentLogRow; device layout and accessibility remain unverified.",
     "parts": ["src/agent-log/AgentLogToolCall.tsx#AgentLogToolCalls"]
   },
+  "alert-dialog-independent-size": {
+    "status": "independent-scale",
+    "reason": "AlertDialog is a controlled composition over Dialog and has no Bloom size prop. It delegates modal geometry and action layout to Dialog; the shared ActionButton explicitly selects its mobile or desktop size recipe, so an ancestor BloomScope does not control this alert composition.",
+    "evidence": [
+      "src/alert-dialog/AlertDialog.tsx",
+      "src/alert-dialog/types.ts",
+      "src/dialog/DialogContent.tsx",
+      "src/__tests__/AlertDialog.test.tsx"
+    ],
+    "verification": "Native renderer compares the actual AlertDialog confirm action under xs and lg scopes and confirms identical rendered geometry. Source review confirms the shared Dialog action chooses its own responsive sm/lg recipe and AlertDialog exposes no size prop. Web/native device layout and assistive-technology behavior remain outside this size classification.",
+    "parts": ["src/alert-dialog/index.ts#AlertDialog"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/alert-dialog/index.ts#AlertDialog",
       "src/app-shell/AppShellHeader.tsx#AppShellHeader",
       "src/app-shell/AppShellMenuButton.tsx#AppShellMenuButton",
       "src/app-shell/AppShellPanelVisibility.tsx#AppShellPanelVisibility",
