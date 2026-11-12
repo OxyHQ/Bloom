@@ -1459,13 +1459,26 @@
     "verification": "Native renderer compares the actual AlertDialog confirm action under xs and lg scopes and confirms identical rendered geometry. Source review confirms the shared Dialog action chooses its own responsive sm/lg recipe and AlertDialog exposes no size prop. Web/native device layout and assistive-technology behavior remain outside this size classification.",
     "parts": ["src/alert-dialog/index.ts#AlertDialog"]
   },
+  "app-shell-header-independent-scale": {
+    "status": "independent-scale",
+    "reason": "AppShellHeader has no public size prop. Its title keeps the semantic title-2-medium text variant; the optional menu control explicitly delegates geometry to Button at md, while action nodes remain caller-owned. Width measurement controls whether the menu exists, not its size.",
+    "evidence": [
+      "src/app-shell/AppShellHeader.tsx",
+      "src/app-shell/types.ts",
+      "src/button/Button.web.tsx",
+      "src/__tests__/AppShellNavigation.test.tsx",
+      "src/__tests__/AppShellHeaderPublicPartScope.web.test.tsx",
+      "docs/app-shell.mdx"
+    ],
+    "verification": "Native renderer verifies the semantic title metrics and explicit menu Button size at all four inherited sizes through a wrapper. DOM web verifies the rendered md geometry and accessible heading under default, xs, nested lg-over-xs and lg scopes. The title is semantic typography; menu geometry is delegated to Button; no portal or submenu is rendered by this part.",
+    "parts": ["src/app-shell/AppShellHeader.tsx#AppShellHeader"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/app-shell/AppShellHeader.tsx#AppShellHeader",
       "src/app-shell/AppShellMenuButton.tsx#AppShellMenuButton",
       "src/app-shell/AppShellPanelVisibility.tsx#AppShellPanelVisibility",
       "src/app-shell/NotificationBell.tsx#NotificationBell",

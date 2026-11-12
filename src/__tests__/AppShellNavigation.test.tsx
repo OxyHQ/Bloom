@@ -5,6 +5,7 @@ import * as ReactNative from 'react-native';
 import { fireEvent, render, within } from '@testing-library/react-native';
 
 import { ContentPanel } from '../content-panel';
+import { BloomScope } from '../appearance';
 import { Screen, ScreenScrollView, useScreen } from '../screen';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PortalOutlet, PortalProvider } from '../portal';
@@ -75,6 +76,27 @@ describe('AppShellHeader', () => {
       paddingRight: 4,
     });
   });
+
+  it.each(['xs', 'sm', 'md', 'lg'] as const)(
+    'keeps its semantic title and explicit menu Button at md inside a %s scope and wrapper',
+    (size) => {
+      setWidth(700);
+      const screen = renderIn(
+        <BloomScope size={size}>
+          <ReactNative.View>
+            <AppShellHeader testID="scoped-header" title="Welcome" onMenuPress={() => {}} />
+          </ReactNative.View>
+        </BloomScope>,
+      );
+      const menu = screen.getByTestId('scoped-header-menu');
+      expect(resolvedStyle(menu.props.style).height).toBe(36);
+      expect(menu.props.hitSlop).toMatchObject({ top: 4, bottom: 4, left: 4, right: 4 });
+      expect(resolvedStyle(screen.getByText('Welcome').props.style)).toMatchObject({
+        fontSize: 20,
+        lineHeight: 26,
+      });
+    },
+  );
 });
 
 describe('AppShell', () => {
