@@ -1798,8 +1798,8 @@
     "parts": ["src/call-ui/CallHistoryRow.tsx#CallHistoryRow"]
   },
   "call-screen-slot-delegation": {
-    "status": "delegated",
-    "reason": "CallScreen forwards caller content through topBarSlot and controlsSlot (as well as its other documented ReactNode slots) without replacing the nearest BloomScope. Its built-in controls have their own explicit control-size contract.",
+    "status": "applicable",
+    "reason": "CallScreen forwards caller content through topBarSlot, controlsSlot and its other documented ReactNode slots, preserving the nearest BloomScope. Its built-in CallControls also consume that inherited size unless the caller supplies an explicit controls.size.",
     "evidence": [
       "src/call-ui/CallScreen.tsx",
       "src/call-ui/types.ts",
@@ -1807,7 +1807,7 @@
       "src/__tests__/CallScreenSlotsPublicPartScope.test.tsx",
       "src/__tests__/CallScreenSlotsPublicPartScope.web.test.tsx"
     ],
-    "verification": "Native renderer and DOM web verify Button controls in topBarSlot and controlsSlot inherit default md and xs/sm/md/lg. Existing CallUi tests cover live controls, minimised mode and PiP interaction. Platform layout and hit targets remain device-owned.",
+    "verification": "Native renderer and DOM web verify Button controls in topBarSlot and controlsSlot inherit default md and xs/sm/md/lg, and the built-in mute control resolves to 56/40/40/48/56px at default/xs/sm/md/lg. Existing CallUi tests cover live controls, minimised mode and PiP interaction. Platform layout and hit targets remain device-owned.",
     "parts": ["src/call-ui/CallScreen.tsx#CallScreen"]
   },
   "call-minimised-pill-fixed-shell": {
@@ -1868,13 +1868,26 @@
       "src/call-ui/GroupCallGrid.tsx#GroupCallGrid"
     ]
   },
+  "incoming-call-screen-scale-and-slot": {
+    "status": "applicable",
+    "reason": "IncomingCallScreen accepts caller overlay children and preserves their BloomScope. Its built-in CallControlButtons inherit the surrounding scale (xs maps to the smallest supported 40px call control), while slide geometry and quiet stage actions remain role-specific.",
+    "evidence": [
+      "src/call-ui/IncomingCallScreen.tsx",
+      "src/call-ui/CallControls.tsx",
+      "src/call-ui/types.ts",
+      "src/__tests__/CallUi.test.tsx",
+      "src/__tests__/CallScreenSlotsPublicPartScope.test.tsx",
+      "src/__tests__/CallScreenSlotsPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify overlay Button children inherit default md and xs/sm/md/lg. Both also verify built-in answer controls resolve to 56/40/40/48/56px at default/xs/sm/md/lg. Existing CallUi tests cover press and slide answers plus reduced motion. Gesture and target fit remain device-owned.",
+    "parts": ["src/call-ui/IncomingCallScreen.tsx#IncomingCallScreen"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/call-ui/IncomingCallScreen.tsx#IncomingCallScreen",
       "src/card-form/CardForm.tsx#CardForm",
       "src/card-form/CardFormParts.tsx#CardFormCountry",
       "src/card-form/CardFormParts.tsx#CardFormExpiry",
