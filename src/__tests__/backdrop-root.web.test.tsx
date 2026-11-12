@@ -199,7 +199,7 @@ describe('ProOfferCard scale ownership on web', () => {
         enterDelay={0}
       />
     );
-    const scoped = [...sizes].reverse().reduce<React.ReactNode>(
+    const scoped = [...sizes].reverse().reduce<React.ReactElement>(
       (children, size) => (
         <BloomScope key={size} size={size}>
           {children}

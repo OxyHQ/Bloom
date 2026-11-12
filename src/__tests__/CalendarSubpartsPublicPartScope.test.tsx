@@ -12,6 +12,7 @@ import { resolvedStyle } from './support/rendered-style';
 const month = new Date(2026, 7, 1);
 const event = {
   id: 'birthday',
+  color: 'blue' as const,
   date: new Date(2026, 7, 11),
   title: 'Birthday',
   time: '20:30',
@@ -62,9 +63,8 @@ it.each(sizes)(
         compact
       />,
     );
-    const card = result.getByTestId('grid-day-2026-7-20').children[0] as {
-      props: { style: unknown };
-    };
+    const card = result.getByTestId('grid-day-2026-7-20').children[0];
+    if (!card || typeof card === 'string') throw new Error('Missing calendar day card');
     expect(resolvedStyle(card.props.style)).toMatchObject({ minHeight: 76 });
   },
 );

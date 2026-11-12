@@ -61,10 +61,10 @@ it.each(sizes)(
           </BloomThemeProvider>,
         ),
       );
-      const trigger = document.querySelector('button[aria-label="Taxes"]');
+      const trigger = document.querySelector<HTMLElement>('button[aria-label="Taxes"]');
       if (!trigger) throw new Error('Missing PriceBreakdown details trigger');
       act(() => trigger.click());
-      const button = document.querySelector('[data-testid="details-action"]');
+      const button = document.querySelector<HTMLElement>('[data-testid="details-action"]');
       if (!button) throw new Error('Missing control inside price details');
       expect(getComputedStyle(button).height).toBe(height);
     } finally {
@@ -102,10 +102,10 @@ it('PriceBreakdown detail controls inherit the nearest nested scope through the 
         </BloomThemeProvider>,
       ),
     );
-    const trigger = document.querySelector('button[aria-label="Taxes"]');
+    const trigger = document.querySelector<HTMLElement>('button[aria-label="Taxes"]');
     if (!trigger) throw new Error('Missing PriceBreakdown details trigger');
     act(() => trigger.click());
-    const button = document.querySelector('[data-testid="details-action"]');
+    const button = document.querySelector<HTMLElement>('[data-testid="details-action"]');
     if (!button) throw new Error('Missing control inside price details');
     expect(getComputedStyle(button).height).toBe('44px');
   } finally {

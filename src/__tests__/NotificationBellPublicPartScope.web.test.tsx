@@ -14,7 +14,14 @@ import type { NotificationCenterItem } from '../notification-center';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const notifications: NotificationCenterItem[] = [
-  { id: 'one', category: 'system', group: 'Today', title: 'Update', description: 'Ready' },
+  {
+    id: 'one',
+    category: 'system',
+    group: 'Today',
+    title: 'Update',
+    description: 'Ready',
+    timestamp: '2026-11-12T12:00:00Z',
+  },
 ];
 
 function Fixture({ scopes }: { scopes: BloomSize[] }) {

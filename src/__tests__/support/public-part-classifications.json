@@ -1952,15 +1952,36 @@
     "verification": "Native renderer and DOM web verify CardTitle remains 17px and CardDescription 14px under default md and xs/sm/md/lg scopes. Existing CardText tests cover explicit className typography utilities.",
     "parts": ["src/card/Card.tsx#CardTitle", "src/card/Card.tsx#CardDescription"]
   },
+  "carousel-composition": {
+    "status": "applicable",
+    "reason": "Carousel owns explicit sizes for its built-in arrows while header, footer, custom renderControls and CarouselItem descendants preserve the nearest BloomScope for caller-owned controls. Explicit arrowButtonProps size takes precedence over scope.",
+    "evidence": [
+      "src/carousel/Carousel.tsx",
+      "src/carousel/CarouselDots.tsx",
+      "src/__tests__/CarouselCompositionPublicPartScope.test.tsx",
+      "src/__tests__/CarouselCompositionPublicPartScope.web.test.tsx",
+      "src/__tests__/Carousel.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify default md and xs/sm/md/lg for header, footer, custom controls and slide descendants, explicit lg arrow override, default sm non-overlay arrows, and nested lg over xs. CarouselItem delegates its child controls to scope. Carousel owns no portal or submenu; device layout remains pending.",
+    "parts": ["src/carousel/Carousel.tsx#Carousel", "src/carousel/Carousel.tsx#CarouselItem"]
+  },
+  "carousel-dots-touch-target": {
+    "status": "independent-scale",
+    "reason": "CarouselDots owns fixed 6px dot artwork (16px when active), independent of BloomScope. Interactive touch mode supplies 44px targets while retaining the artwork; decorative dots and non-touch pointer behavior remain separate.",
+    "evidence": [
+      "src/carousel/CarouselDots.tsx",
+      "src/__tests__/CarouselDotsTouchTarget.test.tsx",
+      "src/__tests__/CarouselDotsTouchTarget.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify 44px interactive targets at default md and xs/sm/md/lg, nested lg over xs, and unchanged 6px/16px artwork. Native tests verify decorative dots expose no interactive target. Touch classification is mocked in renderer tests; physical Android geometry remains pending.",
+    "parts": ["src/carousel/CarouselDots.tsx#CarouselDots"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/carousel/Carousel.tsx#Carousel",
-      "src/carousel/Carousel.tsx#CarouselItem",
-      "src/carousel/CarouselDots.tsx#CarouselDots",
       "src/carrier-quote/CarrierQuoteCard.tsx#CarrierQuoteCard",
       "src/carrier-quote/CarrierQuoteList.tsx#CarrierQuoteList",
       "src/cart-panel/CartLine.tsx#CartLine",

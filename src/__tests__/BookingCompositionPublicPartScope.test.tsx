@@ -21,6 +21,7 @@ it.each(sizes)(
       <BookingCard
         testID="booking"
         price="$120"
+        guests="2 guests"
         footer={
           <Button testID="booking-footer-action">
             <Text>Details</Text>
@@ -48,6 +49,7 @@ it('BookingCard footer controls inherit the nearest nested scope', () => {
           <BookingCard
             testID="booking"
             price="$120"
+            guests="2 guests"
             footer={
               <Button testID="booking-footer-action">
                 <Text>Details</Text>

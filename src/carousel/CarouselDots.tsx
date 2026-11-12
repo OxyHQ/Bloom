@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useRef } from 'react';
+import { memo, useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, Pressable, View } from 'react-native';
 
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -6,6 +6,7 @@ import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { useMessages } from '../locale/messages';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { IS_WEB } from '../styles/platform';
+import { useTouchInput } from '../styles/pointer';
 import { pointerEventsStyles } from '../styles/pointer-events';
 import { borderRadius } from '../styles/tokens';
 import { webDataSet } from '../styles/web-data';
@@ -76,6 +77,8 @@ function useDrivenGeometry(target: DotGeometry, duration: number) {
     opacity: new Animated.Value(target.opacity),
   }).current;
 
+  // target is reconstructed from scalar geometry each render; depending on it would restart native animation every render.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scalar geometry fields are the intended animation dependencies.
   useEffect(() => {
     if (IS_WEB) return;
     const keys = ['width', 'height', 'opacity'] as const;
@@ -108,6 +111,7 @@ function Dot({
   opacity,
   colors,
   duration,
+  touch,
   label,
   onPress,
 }: {
@@ -117,6 +121,7 @@ function Dot({
   opacity: number;
   colors: { active: string; rest: string; hover: string };
   duration: number;
+  touch: boolean;
   label?: string;
   onPress?: () => void;
 }) {
@@ -129,6 +134,9 @@ function Dot({
   const driven = useDrivenGeometry(geometry, duration);
   const backgroundColor = slot.active ? colors.active : hovered ? colors.hover : colors.rest;
   const painted = { ...geometry, borderRadius: borderRadius.full, backgroundColor };
+  const targetStyle = touch
+    ? { width: 44, height: 44, alignItems: 'center' as const, justifyContent: 'center' as const }
+    : painted;
   const data = webDataSet({ bloomCarouselDot: slot.active ? 'active' : '' });
   const nativeDot = (
     <Animated.View
@@ -146,10 +154,10 @@ function Dot({
       onPress={onPress}
       onHoverIn={onIn}
       onHoverOut={onOut}
-      hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
-      style={IS_WEB ? painted : undefined}
+      hitSlop={touch ? undefined : { top: 8, bottom: 8, left: 4, right: 4 }}
+      style={IS_WEB || touch ? targetStyle : undefined}
     >
-      {IS_WEB ? null : nativeDot}
+      {IS_WEB ? touch ? <View style={painted} /> : null : nativeDot}
     </Pressable>
   );
 }
@@ -181,6 +189,7 @@ function CarouselDotsComponent({
   const reducedMotion = usePrefersReducedMotion();
   const paint = useMemo(() => resolveCarouselPaint(theme), [theme]);
   const onMedia = appearance === 'onMedia';
+  const touch = useTouchInput();
   const colors = useMemo(() => dotColors(paint, onMedia), [paint, onMedia]);
   const restOpacity = inactiveOpacity ?? (onMedia ? 0.6 : 1);
   const ms = reducedMotion ? 0 : duration;
@@ -192,7 +201,7 @@ function CarouselDotsComponent({
     alignItems: 'center',
     justifyContent: 'center',
     gap: shape === 'pill' ? 6 : 5,
-    minHeight: CAROUSEL_DOT_SIZE,
+    minHeight: onIndexChange && touch ? 44 : CAROUSEL_DOT_SIZE,
     '--bloom-carousel-ring': paint.ring,
     '--bloom-carousel-dots-ms': `${ms}ms`,
   };
@@ -218,6 +227,7 @@ function CarouselDotsComponent({
           opacity={slot.active ? activeOpacity : restOpacity}
           colors={colors}
           duration={ms}
+          touch={touch && onIndexChange !== undefined}
           label={
             onIndexChange
               ? dotLabel
