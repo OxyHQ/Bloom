@@ -9,17 +9,21 @@
  * handlers stay the application's closures, and choosing an item anywhere runs
  * exactly what a press on its row runs.
  *
- * A declaration is mounted HEADLESS where it must be known but not drawn: the
- * whole bar with the `menu-bar` capability (the platform draws it), and a
- * closed menu's or submenu's content without it (so its shortcuts work while
- * it is closed). A headless part registers and renders nothing; its containers
- * (a menu's content, a group, a radio group, a submenu) render only their
- * children, each in a slot that records its position for the description's
- * order. Open, the parts draw exactly as before and register too.
+ * With the `menu-bar` capability (the platform draws the bar) the whole bar
+ * is mounted HEADLESS: known but not drawn. A headless part registers and
+ * renders nothing; its containers (a menu's content, a group, a radio group, a
+ * submenu) render only their children, each in a slot that records its
+ * position for the description's order.
+ *
+ * Without it, a CLOSED menu's or submenu's content is not mounted at all: its
+ * entries are read from its elements (`description.ts`, `StaticDeclaration`)
+ * so that its shortcuts work while it is closed, and its rows mount as it
+ * opens, register, and draw. Only an element that is not one of Bloom's parts
+ * (an application's own component rendering rows) is mounted headless there,
+ * since it cannot be read without rendering it.
  *
  * A menu's content is its rows. Anything else placed inside one (a bare
- * `View` or `Text`) is mounted with the declaration and so would draw where
- * the declaration is mounted headless; it is not part of the description.
+ * `View` or `Text`) is not part of the description.
  */
 import {
   type ComponentType,
@@ -28,9 +32,11 @@ import {
   type ReactNode,
   createContext,
   useContext,
+  useCallback,
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from 'react';
 import { openHref } from '../hooks/link-activation';
 
@@ -38,6 +44,7 @@ import { MenuRadioGroupProvider, useMenuRadioGroup } from '../floating/context';
 import { useControllableState } from '../hooks/use-controllable-state';
 import type { MenuRowParts } from '../floating/types';
 import { type Chord, formatChord, parseChord } from '../kbd/chord';
+import { usePlatformEditing } from '../platform-surface/context';
 import { useIsomorphicLayoutEffect } from '../theme/use-isomorphic-layout-effect';
 import {
   type MenubarScope,
@@ -45,8 +52,15 @@ import {
   useMenubarMenu,
   useMenubarScope,
 } from './context';
+import {
+  type DescribedEntry,
+  describeMenu,
+  markMenubarHint,
+  markMenubarPart,
+  textOf,
+} from './description';
 import { type MenuEntry, nextMenuEntryId } from './registry';
-import { actionShortcut, isMenuAction, useEditAction } from './use-edit-action';
+import { actionShortcut, isMenuAction, responderOf, useEditAction } from './use-edit-action';
 import { useMenubarLeaving } from './viewport';
 import type {
   MenubarCheckboxItemProps,
@@ -99,23 +113,7 @@ export function useMenuEntry(
   return id;
 }
 
-/**
- * The text of a part's children, as the platform's bar shows it: every string
- * and number under it, element children included, except a shortcut hint
- * (`isHint`), which is not part of the name.
- */
-export function textOf(children: ReactNode, isHint: (type: unknown) => boolean): string {
-  const parts: string[] = [];
-  const visit = (node: ReactNode) => {
-    if (typeof node === 'string' || typeof node === 'number') parts.push(String(node));
-    else if (Array.isArray(node)) node.forEach(visit);
-    else if (isValidElement<{ children?: ReactNode }>(node) && !isHint(node.type)) {
-      visit(node.props.children);
-    }
-  };
-  visit(children);
-  return parts.join('').replace(/\s+/g, ' ').trim();
-}
+export { textOf };
 
 /** Whether the drawn submenu around a `MenubarSubContent` is open. */
 const SubOpenContext = createContext(false);
@@ -189,22 +187,139 @@ export function DeclaredChildren({ children }: { children?: ReactNode }) {
   return <>{slots}</>;
 }
 
-/** Mounts a declaration to be known but not drawn (see the file comment). */
-export function HeadlessDeclaration({ children }: { children?: ReactNode }) {
+const subscribeNowhere = () => () => undefined;
+
+/**
+ * A closed menu's or submenu's content, KNOWN to its bar without being
+ * mounted: its entries read from its elements (`describeMenu`) and registered
+ * here, each at the place its row would take; what is not one of Bloom's parts
+ * is mounted headless at its place, as before.
+ *
+ * An entry's `run` is stable while it keeps its place and calls the current
+ * element's handler, so a re-render of the application's bar is no change to
+ * the registry unless what the menu says changed. An item with an editing
+ * action follows the focused field, as its row would (`use-edit-action.ts`).
+ */
+export function StaticDeclaration({ children }: { children?: ReactNode }) {
   const scope = useMenubarScope();
-  const value = useMemo(() => (scope ? { ...scope, headless: true } : null), [scope]);
-  if (!value) return null;
+  const description = useMemo(() => describeMenu(children), [children]);
+  const editing = usePlatformEditing();
+  const edits = description.entries.some((entry) => entry.editAction !== undefined);
+  // What a focused field can do with each editing action, as one value: a change re-renders.
+  const listen = useCallback(
+    (listener: () => void) => (edits && editing ? editing.subscribe(listener) : subscribeNowhere()),
+    [edits, editing],
+  );
+  useSyncExternalStore(
+    listen,
+    () =>
+      edits
+        ? description.entries.map((entry) => responderOf(editing, entry.editAction)).join()
+        : '',
+    () => '',
+  );
+
+  const registry = scope?.registry;
+  const parent = scope?.parent ?? null;
+  const idOf = useCallback((key: string) => `${parent ?? 'bar'}/${key}`, [parent]);
+  const latest = useRef(new Map<string, DescribedEntry>());
+  const latestEditing = useRef(editing);
+  const runs = useRef(new Map<string, () => void>());
+  const registered = useRef(new Set<string>());
+  const runFor = (key: string) => {
+    let run = runs.current.get(key);
+    if (!run) {
+      run = () => {
+        const entry = latest.current.get(key);
+        if (!entry) return;
+        const field = latestEditing.current;
+        if (entry.editAction && field && responderOf(field, entry.editAction) !== 'none') {
+          field.perform(entry.editAction);
+          return;
+        }
+        entry.run?.();
+      };
+      runs.current.set(key, run);
+    }
+    return run;
+  };
+
+  useIsomorphicLayoutEffect(() => {
+    if (!registry || !scope) return;
+    latest.current = new Map(description.entries.map((entry) => [entry.key, entry]));
+    latestEditing.current = editing;
+    const now = new Set<string>();
+    for (const entry of description.entries) {
+      const id = idOf(entry.key);
+      now.add(id);
+      const responder = responderOf(editing, entry.editAction);
+      registry.set({
+        id,
+        kind: entry.kind,
+        parent: entry.parentKey === null ? parent : idOf(entry.parentKey),
+        path: [...scope.path, ...entry.path],
+        label: entry.label,
+        enabled: responder === 'none' ? entry.enabled : responder === 'enabled',
+        shortcut: entry.shortcut,
+        ...(entry.checked === undefined ? null : { checked: entry.checked }),
+        ...(entry.keepOpen === undefined ? null : { keepOpen: entry.keepOpen }),
+        ...(entry.action ? { action: entry.action } : null),
+        run: entry.runs ? runFor(entry.key) : undefined,
+      });
+    }
+    for (const id of registered.current) if (!now.has(id)) registry.delete(id);
+    registered.current = now;
+    for (const key of runs.current.keys()) if (!latest.current.has(key)) runs.current.delete(key);
+  });
+  useIsomorphicLayoutEffect(() => {
+    if (!registry) return undefined;
+    return () => {
+      for (const id of registered.current) registry.delete(id);
+      registered.current = new Set();
+    };
+  }, [registry, idOf]);
+
+  if (!scope) return null;
   return (
-    <MenubarScopeProvider value={value}>
-      <DeclaredChildren>{children}</DeclaredChildren>
-    </MenubarScopeProvider>
+    <>
+      {description.unread.map((element) => {
+        const subKey = element.parentKey;
+        const path = [...scope.path, ...element.path];
+        const { owner } = element;
+        const value: MenubarScope = {
+          ...scope,
+          headless: true,
+          parent: subKey === null ? parent : idOf(subKey),
+          path,
+          owner:
+            owner && subKey !== null
+              ? {
+                  kind: 'submenu',
+                  id: idOf(subKey),
+                  parent: owner.parentKey === null ? parent : idOf(owner.parentKey),
+                  path,
+                }
+              : undefined,
+        };
+        const node = element.radio ? (
+          <MenuRadioGroupProvider value={element.radio}>{element.node}</MenuRadioGroupProvider>
+        ) : (
+          element.node
+        );
+        return (
+          <MenubarScopeProvider key={`${subKey ?? ''}@${element.path.join('.')}`} value={value}>
+            {node}
+          </MenubarScopeProvider>
+        );
+      })}
+    </>
   );
 }
 
 /**
  * A fork's `MenubarContent`: its panel (`Panel`, the sheet or the anchored
- * panel) as before, with the content headless beside it while the menu is
- * closed; only the headless content with the capability.
+ * panel) as before, with the content known to the bar while the menu is
+ * closed (`StaticDeclaration`); only the headless content with the capability.
  */
 export function createMenubarContent(
   Panel: ComponentType<MenubarContentProps>,
@@ -216,7 +331,7 @@ export function createMenubarContent(
     return (
       <>
         {menu.open || scope?.declareClosed === false ? null : (
-          <HeadlessDeclaration>{props.children}</HeadlessDeclaration>
+          <StaticDeclaration>{props.children}</StaticDeclaration>
         )}
         <Panel {...props} />
       </>
@@ -431,16 +546,28 @@ export function createMenubarRows(rows: MenuRowParts): MenubarRowParts {
   }
   MenubarSubContent.displayName = 'MenubarSubContent';
 
-  /** Drawn: the fork's sub content, with its content headless beside it while it is closed. */
+  /** Drawn: the fork's sub content, with its content known to the bar while it is closed. */
   function DrawnSubContent(props: MenubarSubContentProps) {
     const open = useContext(SubOpenContext);
     return (
       <>
-        {open ? null : <HeadlessDeclaration>{props.children}</HeadlessDeclaration>}
+        {open ? null : <StaticDeclaration>{props.children}</StaticDeclaration>}
         <rows.SubContent {...props} />
       </>
     );
   }
+
+  markMenubarHint(Shortcut);
+  markMenubarPart(MenubarItem, 'item');
+  markMenubarPart(MenubarCheckboxItem, 'checkbox');
+  markMenubarPart(MenubarRadioGroup, 'radioGroup');
+  markMenubarPart(MenubarRadioItem, 'radio');
+  markMenubarPart(MenubarLabel, 'label');
+  markMenubarPart(MenubarSeparator, 'separator');
+  markMenubarPart(MenubarGroup, 'group');
+  markMenubarPart(MenubarSub, 'sub');
+  markMenubarPart(MenubarSubTrigger, 'subTrigger');
+  markMenubarPart(MenubarSubContent, 'subContent');
 
   return {
     Item: MenubarItem,
