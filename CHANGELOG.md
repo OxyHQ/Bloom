@@ -1,5 +1,15 @@
 # Changelog
 
+## 21.2.0
+
+### Changed
+
+- **An avatar fetches only the clips it draws.** The vector catalogue moves to pack format 2: each part's animation tracks are stored per clip (`idle`, `reaction`, `work`), each its own shared payload, losslessly (all 70 assets unpack to the same data as format 1; the catalogue goes from 30.56 to 29.06 MB as identical clip tracks now share a payload). An avatar loads its character at rest first (`VECTOR_REST_CLIPS`): the idle tracks and the geometry they draw. A mood is drawn on the idle clip, so the empty state's gemie shaking its head "no" needs nothing more, and a portrait reads only what its still frame draws. `reaction` and `work`, with the computer, hands and screens only `work` shows, are fetched the first time a gesture plays; the idle animation carries on until the gesture's tracks arrive, and an interactive avatar asks ahead when the pointer reaches it. In Gemies' web export the empty state of `/shows` and `/notifications` loads 135 KB brotli of avatar data instead of 281 KB, and `/shows` makes 31 requests instead of 52. Format 2 is internal to Bloom's generated catalogue; nothing to change in an app.
+
+### Added
+
+- **`VectorAssetLoader` methods and `VectorAssetImport` take the clips to read** (optional, `readonly VectorAction[]`). A custom loader or importer that ignores them hands back the whole asset, as before.
+
 ## 21.1.1
 
 ### Fixed

@@ -45,12 +45,27 @@ export type VectorData = {
   parts: VectorPart[];
   clips: Record<VectorAction, VectorClip>;
 };
+/**
+ * Where a character's vector assets come from. `clips`, when given, is the clips the caller will
+ * draw: a loader may load only those (Bloom's own do, see `vector-pack.ts`), and a clip it leaves
+ * out keeps its duration with `null` tracks. A loader that ignores it and loads everything is
+ * still correct, only heavier.
+ */
 export type VectorAssetLoader = {
-  shape(id: ResolvedAvatarCharacter['shape']): Promise<VectorData>;
-  eyes(id: ResolvedAvatarCharacter['eyes']): Promise<VectorData>;
-  eyewear(id: ResolvedAvatarCharacter['eyewear']): Promise<VectorData>;
-  accessory(id: ResolvedAvatarCharacter['accessory']): Promise<VectorData>;
-  template(character: ResolvedAvatarCharacter): Promise<VectorData | undefined>;
+  shape(id: ResolvedAvatarCharacter['shape'], clips?: readonly VectorAction[]): Promise<VectorData>;
+  eyes(id: ResolvedAvatarCharacter['eyes'], clips?: readonly VectorAction[]): Promise<VectorData>;
+  eyewear(
+    id: ResolvedAvatarCharacter['eyewear'],
+    clips?: readonly VectorAction[],
+  ): Promise<VectorData>;
+  accessory(
+    id: ResolvedAvatarCharacter['accessory'],
+    clips?: readonly VectorAction[],
+  ): Promise<VectorData>;
+  template(
+    character: ResolvedAvatarCharacter,
+    clips?: readonly VectorAction[],
+  ): Promise<VectorData | undefined>;
 };
 export type VectorDrawPath = {
   id: string;

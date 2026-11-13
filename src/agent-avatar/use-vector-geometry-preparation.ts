@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { resolveAvatarCharacter, type AvatarCharacter } from './character';
 import { useVectorAssetLoader } from './default-catalog';
-import { loadVectorGeometry, vectorGeometryKey } from './vector-compose';
+import { loadVectorGeometry, VECTOR_REST_CLIPS, vectorGeometryKey } from './vector-compose';
 
 /** Prepare two neighbors sequentially: browser idle time, deferred timer on native. */
 export function useVectorGeometryPreparation(characters: readonly AvatarCharacter[]): void {
@@ -18,7 +18,8 @@ export function useVectorGeometryPreparation(characters: readonly AvatarCharacte
       const prepare = () => {
         if (cancelled) return;
         const recipe = recipes[index++]!;
-        void loadVectorGeometry(recipe, catalog)
+        // At rest, as the avatar first draws it: gestures load when one plays.
+        void loadVectorGeometry(recipe, catalog, VECTOR_REST_CLIPS)
           .catch(() => undefined)
           .then(schedule);
       };

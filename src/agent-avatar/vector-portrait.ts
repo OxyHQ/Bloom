@@ -1,5 +1,5 @@
 import { resolveAvatarCharacter, type AvatarCharacter } from './character';
-import { composeVectorCharacter } from './vector-compose';
+import { composeVectorCharacter, VECTOR_REST_CLIPS } from './vector-compose';
 import { renderVectorFrame } from './vector-frame';
 import type { VectorAssetLoader, VectorFrame } from './vector-types';
 
@@ -8,7 +8,10 @@ const pending = new Map<string, Promise<VectorFrame>>();
 export const vectorPortraitKey = (character: AvatarCharacter) =>
   JSON.stringify(resolveAvatarCharacter(character));
 export const peekVectorPortrait = (key: string) => frames.get(key);
-/** A shared resolution-independent SVG frame, with no animation clock or persistent raster. */
+/**
+ * A shared resolution-independent SVG frame, with no animation clock or persistent raster. It is
+ * the idle clip's first frame, so it loads the character at rest: no gesture tracks, no work parts.
+ */
 export function loadVectorPortrait(
   character: AvatarCharacter,
   loader: VectorAssetLoader,
@@ -18,7 +21,11 @@ export function loadVectorPortrait(
   if (frame) return Promise.resolve(frame);
   const existing = pending.get(key);
   if (existing) return existing;
-  const result = composeVectorCharacter(resolveAvatarCharacter(character), loader)
+  const result = composeVectorCharacter(
+    resolveAvatarCharacter(character),
+    loader,
+    VECTOR_REST_CLIPS,
+  )
     .then((asset) => {
       const frame = renderVectorFrame(asset, { action: 'idle', time: 0 });
       frames.set(key, frame);
