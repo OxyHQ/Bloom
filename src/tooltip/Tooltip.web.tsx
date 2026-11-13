@@ -157,32 +157,8 @@ export function TooltipTrigger({ children }: { children: React.ReactNode }) {
  * Non-interactive (`pointer-events-none select-none`), so a press on the bubble
  * falls through to the dismiss layer.
  */
-export function TooltipContent({
-  children,
-  label,
-  size: sizeProp,
-}: {
-  children: React.ReactNode;
-  label: string;
-  size?: TooltipSize;
-}) {
-  const size = useTooltipSize(sizeProp);
-  const parentFill = useSurfaceFill();
-  const palette = useMenuPalette();
-  const publishedFill = resolveSurfaceMaterial({
-    fill: palette.surface,
-    parentFill: parentFill,
-  }).publishedFill;
-  const materialStyle = useSurfaceMaterial(
-    '[data-bloom-tooltip]',
-    'bloom-tooltip-surface-css',
-    palette.surface,
-    true,
-    undefined,
-    undefined,
-    TOOLTIP_SIZES[size].borderRadius,
-  );
-  const { position, visible, triggerRef } = useContext(TooltipContext);
+export function TooltipContent(props: TooltipContentProps) {
+  const { visible } = useContext(TooltipContext);
 
   // `visible` drives an `open` → `closing` → unmounted cycle, so the exit has
   // the animation's length to play before the bubble leaves the tree. Adjusted
@@ -209,23 +185,52 @@ export function TooltipContent({
     return () => clearTimeout(timer);
   }, [visible, mounted]);
 
+  // A closed tooltip is nothing but this state. Every icon button in a list carries one, so its
+  // palette, material and anchor are resolved only while the bubble is up (`TooltipBubble`).
+  return mounted ? <TooltipBubble {...props} /> : null;
+}
+
+interface TooltipContentProps {
+  children: React.ReactNode;
+  label: string;
+  size?: TooltipSize;
+}
+
+function TooltipBubble({ children, label, size: sizeProp }: TooltipContentProps) {
+  const size = useTooltipSize(sizeProp);
+  const parentFill = useSurfaceFill();
+  const palette = useMenuPalette();
+  const publishedFill = resolveSurfaceMaterial({
+    fill: palette.surface,
+    parentFill: parentFill,
+  }).publishedFill;
+  const materialStyle = useSurfaceMaterial(
+    '[data-bloom-tooltip]',
+    'bloom-tooltip-surface-css',
+    palette.surface,
+    true,
+    undefined,
+    undefined,
+    TOOLTIP_SIZES[size].borderRadius,
+  );
+  const { position, visible, triggerRef } = useContext(TooltipContext);
+
   // The TRIGGER's viewport box, re-measured on scroll and resize. The bubble is
   // portaled and `position: fixed` against it. It used to be `position:
   // absolute` inside the tree, which on react-native-web (every `View` is
   // `position: relative`) anchored it to whatever box happened to contain the
   // Tooltip — the column, the card — rather than to its trigger.
-  const anchor = useTrackedAnchor(triggerRef, mounted);
+  const anchor = useTrackedAnchor(triggerRef);
   const [bubbleWidth, setBubbleWidth] = useState(0);
   const [bubble, setBubble] = useState<ComponentRef<typeof View> | null>(null);
   const reducedMotion = usePrefersReducedMotion();
   // Present once it has been measured (the frame before, it would show at the
   // wrong place) and a frame has painted at zero for the fade to start from.
-  const presence =
-    useEnteredPresence(visible, mounted && anchor !== null) && bubbleWidth > 0 ? 1 : 0;
+  const presence = useEnteredPresence(visible, anchor !== null) && bubbleWidth > 0 ? 1 : 0;
   const presenceMs = reducedMotion ? 0 : TOOLTIP_MOTION_DURATION;
   useSurfacePresenceContent(bubble, { presence, duration: presenceMs, blur: 4 });
 
-  if (!mounted || !anchor) return null;
+  if (!anchor) return null;
 
   const box = TOOLTIP_SIZES[size];
   const bubbleStyle: WebCssStyle = {
@@ -324,14 +329,10 @@ export function TooltipContent({
  */
 function useTrackedAnchor(
   ref: React.RefObject<ComponentRef<typeof View> | null>,
-  active: boolean,
 ): FloatingAnchor | null {
   const [anchor, setAnchor] = useState<FloatingAnchor | null>(null);
   useEffect(() => {
-    if (!active || typeof window === 'undefined') {
-      setAnchor(null);
-      return;
-    }
+    if (typeof window === 'undefined') return;
     let frame = 0;
     let last: FloatingAnchor | null = null;
     const tick = () => {
@@ -353,7 +354,7 @@ function useTrackedAnchor(
     };
     tick();
     return () => window.cancelAnimationFrame(frame);
-  }, [ref, active]);
+  }, [ref]);
   return anchor;
 }
 

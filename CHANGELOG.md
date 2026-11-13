@@ -1,5 +1,11 @@
 # Changelog
 
+## 19.10.3
+
+### Fixed
+
+- **A closed tooltip costs nothing but its state.** On the web, `TooltipContent` resolved its menu palette (colour parsing and contrast math), its surface material and its anchor on every render and only then returned nothing while closed, and `TooltipTextBubble` resolved the palette for its text too. Every icon button in a list carries one (a chat's message actions), so switching to a conversation of a thousand messages spent 143 ms of 8 switches in `parseRgba` alone. The bubble is now its own component, mounted only while it is shown, and the text bubble reads its colour inside it: 33 ms in the same profile, and the switch's median from 214 to 193 ms (Gemies' fixtures, 1× CPU). Opening, closing and the exit animation are unchanged (`tooltip-closed-cost.web.test.tsx`).
+
 ## 19.10.2
 
 ### Fixed
