@@ -8,9 +8,18 @@ const modulePath =
   process.env.BLOOM_VECTOR_FRAME_MODULE || path.join(root, 'src/agent-avatar/vector-frame.ts');
 const { renderVectorFrame } = await import(pathToFileURL(modulePath).href);
 const manifest = JSON.parse(await fs.readFile(path.join(assetRoot, 'manifest.json'), 'utf8'));
+const sharedGeometry = new Map();
+for (const group of manifest.sharedGeometry ?? []) {
+  const packed = JSON.parse(await fs.readFile(path.join(assetRoot, group.file), 'utf8'));
+  for (const [key, geometry] of Object.entries(JSON.parse(packed.data)))
+    sharedGeometry.set(key, geometry);
+}
 const read = async (file) => {
   const packed = JSON.parse(await fs.readFile(path.join(assetRoot, file), 'utf8'));
-  return packed.encoding === 'json' ? JSON.parse(packed.data) : packed;
+  const data = packed.encoding === 'json' ? JSON.parse(packed.data) : packed;
+  for (const part of data.parts ?? [])
+    if (part.geometryRef) Object.assign(part, sharedGeometry.get(part.geometryRef));
+  return data;
 };
 const shapeFrames = {},
   eyeFrames = {};

@@ -34,7 +34,7 @@ export const vectorAssetLoader: VectorAssetLoader = {
   shape: (id) => load(vectorShapeImports[id]),
   eyes: (id) => load(id === 'none' ? undefined : vectorEyeImports[id]),
   eyewear: (id) => load(id === 'none' ? undefined : vectorEyewearImports[id]),
-  accessory: (id) => load(id === 'none' ? undefined : vectorAccessoryImports[id]),
+  accessory: (id) => load(id === 'none' || id === 'orb' ? undefined : vectorAccessoryImports[id]),
   template: (character) => {
     if (character.eyeSpacing !== undefined) return Promise.resolve(undefined);
     const match = templates.find(

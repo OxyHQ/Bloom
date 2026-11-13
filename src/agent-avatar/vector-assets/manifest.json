@@ -5,8 +5,8 @@
       "kind": "template",
       "id": "peri",
       "file": "template-peri.json",
-      "bytes": 1097335,
-      "gzipBytes": 231936,
+      "bytes": 822024,
+      "gzipBytes": 152933,
       "parts": 14,
       "roles": [
         "body",
@@ -21,8 +21,8 @@
       "kind": "template",
       "id": "blue_beret",
       "file": "template-blue_beret.json",
-      "bytes": 1369129,
-      "gzipBytes": 285414,
+      "bytes": 1025881,
+      "gzipBytes": 183997,
       "parts": 15,
       "roles": [
         "body",
@@ -37,9 +37,9 @@
       "kind": "template",
       "id": "alfred",
       "file": "template-alfred.json",
-      "bytes": 1724544,
-      "gzipBytes": 362841,
-      "parts": 15,
+      "bytes": 814293,
+      "gzipBytes": 160353,
+      "parts": 12,
       "roles": [
         "body",
         "eye",
@@ -54,8 +54,8 @@
       "kind": "template",
       "id": "purple_heart",
       "file": "template-purple_heart.json",
-      "bytes": 965175,
-      "gzipBytes": 193154,
+      "bytes": 689864,
+      "gzipBytes": 113666,
       "parts": 14,
       "roles": [
         "body",
@@ -69,8 +69,8 @@
       "kind": "template",
       "id": "lime_frog",
       "file": "template-lime_frog.json",
-      "bytes": 1760286,
-      "gzipBytes": 324655,
+      "bytes": 1417299,
+      "gzipBytes": 220146,
       "parts": 15,
       "roles": [
         "body",
@@ -85,8 +85,8 @@
       "kind": "template",
       "id": "coral_monocle",
       "file": "template-coral_monocle.json",
-      "bytes": 1803950,
-      "gzipBytes": 346457,
+      "bytes": 1460736,
+      "gzipBytes": 243567,
       "parts": 15,
       "roles": [
         "body",
@@ -101,8 +101,8 @@
       "kind": "template",
       "id": "gus",
       "file": "template-gus.json",
-      "bytes": 812596,
-      "gzipBytes": 187939,
+      "bytes": 537285,
+      "gzipBytes": 108556,
       "parts": 10,
       "roles": [
         "body",
@@ -116,8 +116,8 @@
       "kind": "template",
       "id": "blue_spectacles",
       "file": "template-blue_spectacles.json",
-      "bytes": 1265009,
-      "gzipBytes": 249760,
+      "bytes": 989698,
+      "gzipBytes": 170650,
       "parts": 17,
       "roles": [
         "body",
@@ -133,8 +133,8 @@
       "kind": "template",
       "id": "lime_headphones",
       "file": "template-lime_headphones.json",
-      "bytes": 1203711,
-      "gzipBytes": 242544,
+      "bytes": 928400,
+      "gzipBytes": 163493,
       "parts": 16,
       "roles": [
         "body",
@@ -149,8 +149,8 @@
       "kind": "template",
       "id": "clippo",
       "file": "template-clippo.json",
-      "bytes": 1546838,
-      "gzipBytes": 266061,
+      "bytes": 1231463,
+      "gzipBytes": 176637,
       "parts": 14,
       "roles": [
         "body",
@@ -164,8 +164,8 @@
       "kind": "shape",
       "id": "circle",
       "file": "shape-circle.json",
-      "bytes": 915998,
-      "gzipBytes": 182119,
+      "bytes": 474089,
+      "gzipBytes": 57245,
       "parts": 10,
       "roles": [
         "body",
@@ -179,8 +179,8 @@
       "kind": "shape",
       "id": "clippo",
       "file": "shape-clippo.json",
-      "bytes": 891900,
-      "gzipBytes": 178538,
+      "bytes": 576525,
+      "gzipBytes": 89014,
       "parts": 10,
       "roles": [
         "body",
@@ -194,8 +194,8 @@
       "kind": "shape",
       "id": "todd",
       "file": "shape-todd.json",
-      "bytes": 925113,
-      "gzipBytes": 193187,
+      "bytes": 479447,
+      "gzipBytes": 57421,
       "parts": 10,
       "roles": [
         "body",
@@ -209,8 +209,8 @@
       "kind": "shape",
       "id": "rounded_triangle",
       "file": "shape-rounded_triangle.json",
-      "bytes": 914631,
-      "gzipBytes": 193180,
+      "bytes": 468441,
+      "gzipBytes": 58847,
       "parts": 10,
       "roles": [
         "body",
@@ -224,8 +224,8 @@
       "kind": "shape",
       "id": "capsule",
       "file": "shape-capsule.json",
-      "bytes": 913910,
-      "gzipBytes": 180702,
+      "bytes": 640508,
+      "gzipBytes": 102155,
       "parts": 10,
       "roles": [
         "body",
@@ -239,8 +239,8 @@
       "kind": "shape",
       "id": "rounded_head_two_ears",
       "file": "shape-rounded_head_two_ears.json",
-      "bytes": 925181,
-      "gzipBytes": 193211,
+      "bytes": 479515,
+      "gzipBytes": 57432,
       "parts": 10,
       "roles": [
         "body",
@@ -254,8 +254,8 @@
       "kind": "shape",
       "id": "six_lobed_flower",
       "file": "shape-six_lobed_flower.json",
-      "bytes": 907854,
-      "gzipBytes": 191814,
+      "bytes": 564606,
+      "gzipBytes": 89519,
       "parts": 10,
       "roles": [
         "body",
@@ -269,8 +269,8 @@
       "kind": "shape",
       "id": "heart",
       "file": "shape-heart.json",
-      "bytes": 916505,
-      "gzipBytes": 194672,
+      "bytes": 643103,
+      "gzipBytes": 115446,
       "parts": 10,
       "roles": [
         "body",
@@ -284,8 +284,8 @@
       "kind": "shape",
       "id": "four_lobed_butterfly",
       "file": "shape-four_lobed_butterfly.json",
-      "bytes": 923834,
-      "gzipBytes": 183044,
+      "bytes": 650432,
+      "gzipBytes": 104479,
       "parts": 10,
       "roles": [
         "body",
@@ -299,8 +299,8 @@
       "kind": "shape",
       "id": "circle_two_ears",
       "file": "shape-circle_two_ears.json",
-      "bytes": 912950,
-      "gzipBytes": 189712,
+      "bytes": 639548,
+      "gzipBytes": 110259,
       "parts": 10,
       "roles": [
         "body",
@@ -314,8 +314,8 @@
       "kind": "shape",
       "id": "twelve_scalloped_rosette",
       "file": "shape-twelve_scalloped_rosette.json",
-      "bytes": 912973,
-      "gzipBytes": 189745,
+      "bytes": 569759,
+      "gzipBytes": 86946,
       "parts": 10,
       "roles": [
         "body",
@@ -329,8 +329,8 @@
       "kind": "shape",
       "id": "rounded_cube",
       "file": "shape-rounded_cube.json",
-      "bytes": 920726,
-      "gzipBytes": 192579,
+      "bytes": 647324,
+      "gzipBytes": 113219,
       "parts": 10,
       "roles": [
         "body",
@@ -344,8 +344,8 @@
       "kind": "shape",
       "id": "rounded_diamond",
       "file": "shape-rounded_diamond.json",
-      "bytes": 901487,
-      "gzipBytes": 187886,
+      "bytes": 628085,
+      "gzipBytes": 108680,
       "parts": 10,
       "roles": [
         "body",
@@ -359,8 +359,8 @@
       "kind": "shape",
       "id": "slender",
       "file": "shape-slender.json",
-      "bytes": 916491,
-      "gzipBytes": 183486,
+      "bytes": 643089,
+      "gzipBytes": 104852,
       "parts": 10,
       "roles": [
         "body",
@@ -374,8 +374,8 @@
       "kind": "shape",
       "id": "pocket",
       "file": "shape-pocket.json",
-      "bytes": 917083,
-      "gzipBytes": 183856,
+      "bytes": 643681,
+      "gzipBytes": 105195,
       "parts": 10,
       "roles": [
         "body",
@@ -389,8 +389,8 @@
       "kind": "shape",
       "id": "petal",
       "file": "shape-petal.json",
-      "bytes": 916755,
-      "gzipBytes": 183741,
+      "bytes": 643353,
+      "gzipBytes": 105076,
       "parts": 10,
       "roles": [
         "body",
@@ -404,8 +404,8 @@
       "kind": "shape",
       "id": "star",
       "file": "shape-star.json",
-      "bytes": 915004,
-      "gzipBytes": 183149,
+      "bytes": 641602,
+      "gzipBytes": 104638,
       "parts": 10,
       "roles": [
         "body",
@@ -419,8 +419,8 @@
       "kind": "shape",
       "id": "cloud",
       "file": "shape-cloud.json",
-      "bytes": 918020,
-      "gzipBytes": 184165,
+      "bytes": 644618,
+      "gzipBytes": 105482,
       "parts": 10,
       "roles": [
         "body",
@@ -434,8 +434,8 @@
       "kind": "shape",
       "id": "shield",
       "file": "shape-shield.json",
-      "bytes": 915453,
-      "gzipBytes": 183095,
+      "bytes": 642051,
+      "gzipBytes": 104516,
       "parts": 10,
       "roles": [
         "body",
@@ -449,8 +449,8 @@
       "kind": "shape",
       "id": "pebble",
       "file": "shape-pebble.json",
-      "bytes": 917397,
-      "gzipBytes": 183914,
+      "bytes": 643995,
+      "gzipBytes": 105232,
       "parts": 10,
       "roles": [
         "body",
@@ -464,8 +464,8 @@
       "kind": "shape",
       "id": "squircle",
       "file": "shape-squircle.json",
-      "bytes": 915997,
-      "gzipBytes": 182528,
+      "bytes": 642595,
+      "gzipBytes": 104006,
       "parts": 10,
       "roles": [
         "body",
@@ -479,8 +479,8 @@
       "kind": "eyes",
       "id": "swept_lids",
       "file": "eyes-swept_lids.json",
-      "bytes": 744182,
-      "gzipBytes": 176888,
+      "bytes": 678494,
+      "gzipBytes": 160272,
       "parts": 3,
       "roles": [
         "body",
@@ -491,8 +491,8 @@
       "kind": "eyes",
       "id": "oval",
       "file": "eyes-oval.json",
-      "bytes": 387187,
-      "gzipBytes": 78507,
+      "bytes": 218680,
+      "gzipBytes": 32349,
       "parts": 3,
       "roles": [
         "body",
@@ -503,8 +503,8 @@
       "kind": "eyes",
       "id": "sparkle_capsules",
       "file": "eyes-sparkle_capsules.json",
-      "bytes": 898034,
-      "gzipBytes": 174253,
+      "bytes": 832346,
+      "gzipBytes": 159212,
       "parts": 7,
       "roles": [
         "body",
@@ -515,8 +515,8 @@
       "kind": "eyes",
       "id": "highlight_capsules",
       "file": "eyes-highlight_capsules.json",
-      "bytes": 613477,
-      "gzipBytes": 118574,
+      "bytes": 547789,
+      "gzipBytes": 103525,
       "parts": 5,
       "roles": [
         "body",
@@ -527,8 +527,8 @@
       "kind": "eyes",
       "id": "dots",
       "file": "eyes-dots.json",
-      "bytes": 353049,
-      "gzipBytes": 69740,
+      "bytes": 287361,
+      "gzipBytes": 54670,
       "parts": 3,
       "roles": [
         "body",
@@ -539,8 +539,8 @@
       "kind": "eyes",
       "id": "double_highlights",
       "file": "eyes-double_highlights.json",
-      "bytes": 692718,
-      "gzipBytes": 150547,
+      "bytes": 627030,
+      "gzipBytes": 135645,
       "parts": 5,
       "roles": [
         "body",
@@ -551,8 +551,8 @@
       "kind": "eyes",
       "id": "round_inset",
       "file": "eyes-round_inset.json",
-      "bytes": 1372543,
-      "gzipBytes": 290432,
+      "bytes": 1306855,
+      "gzipBytes": 275142,
       "parts": 7,
       "roles": [
         "body",
@@ -563,8 +563,8 @@
       "kind": "eyes",
       "id": "crescent_inset",
       "file": "eyes-crescent_inset.json",
-      "bytes": 2037490,
-      "gzipBytes": 437236,
+      "bytes": 1971802,
+      "gzipBytes": 422115,
       "parts": 9,
       "roles": [
         "body",
@@ -575,8 +575,8 @@
       "kind": "eyes",
       "id": "sleepy_lids",
       "file": "eyes-sleepy_lids.json",
-      "bytes": 577143,
-      "gzipBytes": 111724,
+      "bytes": 511455,
+      "gzipBytes": 96343,
       "parts": 5,
       "roles": [
         "body",
@@ -587,8 +587,8 @@
       "kind": "eyes",
       "id": "todd",
       "file": "eyes-todd.json",
-      "bytes": 947399,
-      "gzipBytes": 152763,
+      "bytes": 881711,
+      "gzipBytes": 137340,
       "parts": 5,
       "roles": [
         "body",
@@ -599,8 +599,8 @@
       "kind": "eyes",
       "id": "clippo",
       "file": "eyes-clippo.json",
-      "bytes": 1065850,
-      "gzipBytes": 172732,
+      "bytes": 1000162,
+      "gzipBytes": 156560,
       "parts": 7,
       "roles": [
         "body",
@@ -611,8 +611,8 @@
       "kind": "eyes",
       "id": "cyclops",
       "file": "eyes-cyclops.json",
-      "bytes": 855660,
-      "gzipBytes": 140926,
+      "bytes": 789972,
+      "gzipBytes": 125513,
       "parts": 6,
       "roles": [
         "body",
@@ -623,8 +623,8 @@
       "kind": "eyewear",
       "id": "monocle",
       "file": "eyewear-monocle.json",
-      "bytes": 583083,
-      "gzipBytes": 139795,
+      "bytes": 414576,
+      "gzipBytes": 93983,
       "parts": 4,
       "roles": [
         "body",
@@ -636,8 +636,8 @@
       "kind": "eyewear",
       "id": "tall_oval_frames",
       "file": "eyewear-tall_oval_frames.json",
-      "bytes": 666382,
-      "gzipBytes": 151408,
+      "bytes": 497875,
+      "gzipBytes": 105340,
       "parts": 5,
       "roles": [
         "body",
@@ -649,8 +649,8 @@
       "kind": "eyewear",
       "id": "separate_trapezoid_lenses",
       "file": "eyewear-separate_trapezoid_lenses.json",
-      "bytes": 593387,
-      "gzipBytes": 123880,
+      "bytes": 424880,
+      "gzipBytes": 77884,
       "parts": 5,
       "roles": [
         "body",
@@ -662,8 +662,8 @@
       "kind": "eyewear",
       "id": "classic_sunglasses",
       "file": "eyewear-classic_sunglasses.json",
-      "bytes": 550160,
-      "gzipBytes": 124488,
+      "bytes": 381653,
+      "gzipBytes": 78408,
       "parts": 4,
       "roles": [
         "body",
@@ -675,8 +675,8 @@
       "kind": "eyewear",
       "id": "round_sunglasses",
       "file": "eyewear-round_sunglasses.json",
-      "bytes": 599760,
-      "gzipBytes": 143117,
+      "bytes": 431253,
+      "gzipBytes": 97278,
       "parts": 4,
       "roles": [
         "body",
@@ -688,8 +688,8 @@
       "kind": "accessory",
       "id": "headphones",
       "file": "accessory-headphones.json",
-      "bytes": 536657,
-      "gzipBytes": 90582,
+      "bytes": 368150,
+      "gzipBytes": 44787,
       "parts": 6,
       "roles": [
         "body",
@@ -701,8 +701,8 @@
       "kind": "accessory",
       "id": "bow",
       "file": "accessory-bow.json",
-      "bytes": 539950,
-      "gzipBytes": 120173,
+      "bytes": 371443,
+      "gzipBytes": 74177,
       "parts": 4,
       "roles": [
         "body",
@@ -714,8 +714,8 @@
       "kind": "accessory",
       "id": "beanie",
       "file": "accessory-beanie.json",
-      "bytes": 488258,
-      "gzipBytes": 101552,
+      "bytes": 319751,
+      "gzipBytes": 55675,
       "parts": 4,
       "roles": [
         "body",
@@ -727,8 +727,8 @@
       "kind": "accessory",
       "id": "hat",
       "file": "accessory-hat.json",
-      "bytes": 499639,
-      "gzipBytes": 104111,
+      "bytes": 331132,
+      "gzipBytes": 58058,
       "parts": 4,
       "roles": [
         "body",
@@ -740,21 +740,8 @@
       "kind": "accessory",
       "id": "beret",
       "file": "accessory-beret.json",
-      "bytes": 479600,
-      "gzipBytes": 98521,
-      "parts": 4,
-      "roles": [
-        "body",
-        "eye",
-        "accessory"
-      ]
-    },
-    {
-      "kind": "accessory",
-      "id": "orb",
-      "file": "accessory-orb.json",
-      "bytes": 432430,
-      "gzipBytes": 84497,
+      "bytes": 311093,
+      "gzipBytes": 52755,
       "parts": 4,
       "roles": [
         "body",
@@ -766,8 +753,8 @@
       "kind": "accessory",
       "id": "three_lobe",
       "file": "accessory-three_lobe.json",
-      "bytes": 475775,
-      "gzipBytes": 100562,
+      "bytes": 372956,
+      "gzipBytes": 70158,
       "parts": 4,
       "roles": [
         "body",
@@ -779,8 +766,8 @@
       "kind": "accessory",
       "id": "crown",
       "file": "accessory-crown.json",
-      "bytes": 679186,
-      "gzipBytes": 153693,
+      "bytes": 510679,
+      "gzipBytes": 107892,
       "parts": 4,
       "roles": [
         "body",
@@ -792,8 +779,8 @@
       "kind": "accessory",
       "id": "felipe_beret",
       "file": "accessory-felipe_beret.json",
-      "bytes": 661754,
-      "gzipBytes": 139411,
+      "bytes": 493247,
+      "gzipBytes": 93551,
       "parts": 6,
       "roles": [
         "body",
@@ -806,14 +793,14 @@
       "id": "bot_blob",
       "name": "blob",
       "file": "shape-bot_blob.json",
-      "bytes": 577914,
-      "gzipBytes": 110611,
-      "points": 5536,
+      "bytes": 302603,
+      "gzipBytes": 31649,
+      "points": 5426,
       "parts": 11,
-      "bodySamples": 96,
+      "bodySamples": 128,
       "eyeSamples": [
-        143,
-        127
+        64,
+        64
       ],
       "roles": [
         "body",
@@ -828,14 +815,14 @@
       "id": "bot_star",
       "name": "star",
       "file": "shape-bot_star.json",
-      "bytes": 575208,
-      "gzipBytes": 109860,
-      "points": 5641,
+      "bytes": 299897,
+      "gzipBytes": 30841,
+      "points": 5346,
       "parts": 11,
-      "bodySamples": 216,
+      "bodySamples": 48,
       "eyeSamples": [
-        128,
-        127
+        64,
+        64
       ],
       "roles": [
         "body",
@@ -850,14 +837,14 @@
       "id": "bot_hex",
       "name": "hex",
       "file": "shape-bot_hex.json",
-      "bytes": 573792,
-      "gzipBytes": 109468,
-      "points": 5516,
+      "bytes": 298481,
+      "gzipBytes": 30415,
+      "points": 5304,
       "parts": 11,
-      "bodySamples": 47,
+      "bodySamples": 6,
       "eyeSamples": [
-        148,
-        151
+        64,
+        64
       ],
       "roles": [
         "body",
@@ -872,14 +859,14 @@
       "id": "bot_heart",
       "name": "heart",
       "file": "shape-bot_heart.json",
-      "bytes": 576823,
-      "gzipBytes": 110419,
-      "points": 5884,
+      "bytes": 301512,
+      "gzipBytes": 31416,
+      "points": 5394,
       "parts": 11,
-      "bodySamples": 480,
+      "bodySamples": 96,
       "eyeSamples": [
-        117,
-        117
+        64,
+        64
       ],
       "roles": [
         "body",
@@ -894,14 +881,14 @@
       "id": "bot_square",
       "name": "square",
       "file": "shape-bot_square.json",
-      "bytes": 575653,
-      "gzipBytes": 109987,
-      "points": 5653,
+      "bytes": 300342,
+      "gzipBytes": 30951,
+      "points": 5362,
       "parts": 11,
-      "bodySamples": 238,
+      "bodySamples": 64,
       "eyeSamples": [
-        123,
-        122
+        64,
+        64
       ],
       "roles": [
         "body",
@@ -916,14 +903,14 @@
       "id": "bot_tablet",
       "name": "tablet",
       "file": "shape-bot_tablet.json",
-      "bytes": 575640,
-      "gzipBytes": 109991,
-      "points": 5504,
+      "bytes": 300329,
+      "gzipBytes": 30965,
+      "points": 5362,
       "parts": 11,
       "bodySamples": 64,
       "eyeSamples": [
-        134,
-        136
+        64,
+        64
       ],
       "roles": [
         "body",
@@ -938,14 +925,14 @@
       "id": "bot_sparkle",
       "name": "sparkle",
       "file": "shape-bot_sparkle.json",
-      "bytes": 578003,
-      "gzipBytes": 110629,
-      "points": 5773,
+      "bytes": 302692,
+      "gzipBytes": 31664,
+      "points": 5426,
       "parts": 11,
-      "bodySamples": 345,
+      "bodySamples": 128,
       "eyeSamples": [
-        129,
-        129
+        64,
+        64
       ],
       "roles": [
         "body",
@@ -960,14 +947,14 @@
       "id": "bot_flower",
       "name": "flower",
       "file": "shape-bot_flower.json",
-      "bytes": 577956,
-      "gzipBytes": 110615,
-      "points": 5646,
+      "bytes": 302645,
+      "gzipBytes": 31654,
+      "points": 5426,
       "parts": 11,
-      "bodySamples": 228,
+      "bodySamples": 128,
       "eyeSamples": [
-        124,
-        124
+        64,
+        64
       ],
       "roles": [
         "body",
@@ -982,14 +969,14 @@
       "id": "bot_wedge",
       "name": "wedge",
       "file": "shape-bot_wedge.json",
-      "bytes": 577774,
-      "gzipBytes": 111240,
-      "points": 5480,
+      "bytes": 302463,
+      "gzipBytes": 32295,
+      "points": 5418,
       "parts": 11,
-      "bodySamples": 61,
+      "bodySamples": 120,
       "eyeSamples": [
-        131,
-        118
+        64,
+        64
       ],
       "roles": [
         "body",
@@ -1004,14 +991,14 @@
       "id": "bot_clover",
       "name": "clover",
       "file": "shape-bot_clover.json",
-      "bytes": 577925,
-      "gzipBytes": 110625,
-      "points": 5718,
+      "bytes": 302614,
+      "gzipBytes": 31647,
+      "points": 5426,
       "parts": 11,
-      "bodySamples": 314,
+      "bodySamples": 128,
       "eyeSamples": [
-        117,
-        117
+        64,
+        64
       ],
       "roles": [
         "body",
@@ -1026,14 +1013,14 @@
       "id": "bot_teardrop",
       "name": "teardrop",
       "file": "shape-bot_teardrop.json",
-      "bytes": 576112,
-      "gzipBytes": 110128,
-      "points": 5481,
+      "bytes": 300801,
+      "gzipBytes": 31113,
+      "points": 5370,
       "parts": 11,
-      "bodySamples": 61,
+      "bodySamples": 72,
       "eyeSamples": [
-        129,
-        121
+        64,
+        64
       ],
       "roles": [
         "body",
@@ -1048,14 +1035,14 @@
       "id": "bot_pebble",
       "name": "pebble",
       "file": "shape-bot_pebble.json",
-      "bytes": 577977,
-      "gzipBytes": 110711,
-      "points": 5506,
+      "bytes": 302666,
+      "gzipBytes": 31765,
+      "points": 5426,
       "parts": 11,
-      "bodySamples": 66,
+      "bodySamples": 128,
       "eyeSamples": [
-        140,
-        130
+        64,
+        64
       ],
       "roles": [
         "body",
@@ -1070,14 +1057,14 @@
       "id": "bot_cloud",
       "name": "cloud",
       "file": "shape-bot_cloud.json",
-      "bytes": 576875,
-      "gzipBytes": 110673,
-      "points": 5526,
+      "bytes": 301564,
+      "gzipBytes": 31676,
+      "points": 5394,
       "parts": 11,
-      "bodySamples": 92,
+      "bodySamples": 96,
       "eyeSamples": [
-        132,
-        132
+        64,
+        64
       ],
       "roles": [
         "body",
@@ -1156,7 +1143,6 @@
       "beanie",
       "hat",
       "beret",
-      "orb",
       "three_lobe",
       "crown",
       "felipe_beret"
@@ -1173,5 +1159,67 @@
       "lime_headphones",
       "clippo"
     ]
-  }
+  },
+  "sharedGeometry": [
+    {
+      "file": "geometry-12.json",
+      "geometries": 3,
+      "bytes": 80948,
+      "gzipBytes": 22059
+    },
+    {
+      "file": "geometry-14.json",
+      "geometries": 3,
+      "bytes": 222681,
+      "gzipBytes": 64777
+    },
+    {
+      "file": "geometry-15.json",
+      "geometries": 1,
+      "bytes": 120057,
+      "gzipBytes": 35205
+    },
+    {
+      "file": "geometry-13.json",
+      "geometries": 4,
+      "bytes": 173018,
+      "gzipBytes": 52666
+    },
+    {
+      "file": "geometry-06.json",
+      "geometries": 1,
+      "bytes": 1881,
+      "gzipBytes": 461
+    },
+    {
+      "file": "geometry-05.json",
+      "geometries": 1,
+      "bytes": 1909,
+      "gzipBytes": 457
+    },
+    {
+      "file": "geometry-02.json",
+      "geometries": 3,
+      "bytes": 141653,
+      "gzipBytes": 50613
+    },
+    {
+      "file": "geometry-03.json",
+      "geometries": 1,
+      "bytes": 69918,
+      "gzipBytes": 22857
+    },
+    {
+      "file": "geometry-10.json",
+      "geometries": 2,
+      "bytes": 93996,
+      "gzipBytes": 25098
+    },
+    {
+      "file": "geometry-11.json",
+      "geometries": 1,
+      "bytes": 65760,
+      "gzipBytes": 14999
+    }
+  ]
 }

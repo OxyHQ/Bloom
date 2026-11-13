@@ -36,3 +36,29 @@ test('every shipped vector omits adjacency payload and has accurate manifest byt
     for (const part of data.parts) assert.deepEqual(part.edges, [], `${record.file}/${part.id}`);
   }
 });
+test('shared meshes resolve exactly and stay in lazily loaded groups', () => {
+  const directory = fileURLToPath(new URL('../src/agent-avatar/vector-assets/', import.meta.url));
+  const manifest = JSON.parse(fs.readFileSync(directory + 'manifest.json', 'utf8'));
+  const geometry = new Map();
+  for (const group of manifest.sharedGeometry ?? []) {
+    const raw = fs.readFileSync(directory + group.file, 'utf8');
+    assert.equal(Buffer.byteLength(raw), group.bytes, group.file);
+    const values = JSON.parse(JSON.parse(raw).data);
+    assert.equal(Object.keys(values).length, group.geometries, group.file);
+    for (const [key, value] of Object.entries(values)) geometry.set(key, value);
+  }
+  let references = 0;
+  for (const record of manifest.files) {
+    const raw = fs.readFileSync(directory + record.file, 'utf8');
+    const data = JSON.parse(JSON.parse(raw).data);
+    for (const part of data.parts) {
+      if (!part.geometryRef) continue;
+      const shared = geometry.get(part.geometryRef);
+      assert.ok(shared, `${record.file}/${part.id} references missing geometry`);
+      assert.equal(part.points, undefined, `${record.file}/${part.id} retained duplicate points`);
+      assert.equal(part.faces, undefined, `${record.file}/${part.id} retained duplicate faces`);
+      references++;
+    }
+  }
+  assert.ok(references > 0, 'expected repeated meshes to be extracted');
+});

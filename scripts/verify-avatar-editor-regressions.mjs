@@ -159,7 +159,14 @@ try {
       }
     throw Error(`Missing action ${label}`);
   };
-  await press('Work');
+  // Agent Creator exposes template/appearance controls, not animation actions.
+  // Exercise work/reaction in the canonical Agent Avatar playground instead.
+  await page.goto(
+    `${process.env.STORYBOOK_URL || 'http://localhost:6006'}/iframe.html?id=agents-agent-avatar--playground&viewMode=story`,
+    { waitUntil: 'networkidle2' },
+  );
+  await page.waitForSelector('[data-bloom-vector-avatar]', { timeout: 30000 });
+  await press('Trabajar');
   await page.waitForFunction(
     () => document.querySelector('[data-bloom-vector-avatar]').dataset.action === 'work',
   );
@@ -173,9 +180,9 @@ try {
       path: `${output}/work-${time}.png`,
     });
   }
-  await press('React');
+  await press('Reacción');
   await wait(100);
-  await press('Work');
+  await press('Trabajar');
   await page.waitForFunction(
     () => document.querySelector('[data-bloom-vector-avatar]').dataset.action === 'idle',
     { timeout: 15000 },

@@ -9,13 +9,7 @@ export const vectorTemplateCharacters = {
     accessory: 'felipe_beret',
     bodyColor: '#ff9547',
   },
-  alfred: {
-    preset: 'alfred',
-    eyes: 'cyclops',
-    eyewear: 'monocle',
-    accessory: 'bow',
-    color: 'cyan',
-  },
+  alfred: { preset: 'alfred', eyes: 'oval', eyewear: 'monocle', accessory: 'bow', color: 'cyan' },
   purple_heart: { preset: 'purple_heart' },
   lime_frog: {
     preset: 'lime_frog',

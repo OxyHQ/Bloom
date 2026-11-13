@@ -1,9 +1,11 @@
 import { CHARACTER_OPTIONS, CHARACTER_TEMPLATES } from '../../agent-creator/constants';
 import { resolveAvatarCharacter } from '../character';
 import { vectorAssetLoader } from '../vector-assets';
+import { vectorAccessoryImports } from '../vector-asset-imports';
 
 it('never offers or supplies the retired bulb in current characters', () => {
   expect(CHARACTER_OPTIONS.accessory.some(([id]) => id === ('orb' as string))).toBe(false);
+  expect('orb' in vectorAccessoryImports).toBe(false);
   for (const character of Object.values(CHARACTER_TEMPLATES)) {
     expect(resolveAvatarCharacter(character).accessory).not.toBe('orb');
   }

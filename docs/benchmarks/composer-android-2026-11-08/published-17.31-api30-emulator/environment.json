@@ -1,0 +1,42 @@
+{
+  "serial": "emulator-5582",
+  "package": "so.oxy.bloom.loaderpackagelab",
+  "apkSha256": "c05f70fcddc625968620b82eb70b7fd11b5dcf359c286580aed8bd8b6884f82e",
+  "build": {
+    "commit": "f3042c2c1aee6f3bf54732d6b5514e915e826f4a",
+    "workingTree": "",
+    "fixtureSha256": "8a6a72933d0fe4f2babc49ef4431906eeafe58c8c9fdb007a93755ae7dd76f1e",
+    "packedTarballSha256": "39b26660d1a97209180aa0f57659288e0c4128825e5d22360ed5f3a0627ac946",
+    "kind": "published npm tarball",
+    "npmIntegrity": "sha512-4UDbz9DRu+TuMyTUP146aoqLtoyytmOSTvlHrLFss2zQ3bY7O5/Rm9rZsInmUtB7D4NTNlk/FMmcood/5HXYVQ==",
+    "installed": "/home/nate/Oxy/Bloom/.worktrees/avatar-vector-asset-payloads/scripts/loader-package-lab/bloom-local/node_modules/@oxy.so/bloom",
+    "packageVersion": "17.31.0",
+    "nativeSha256": "5aa0123303dbb2f170077c2ddf6eac5933ee0c6269274422ed41ca10bf8f94ad",
+    "nativeSourcesSha256": "0514455de9016ed5926acd90666d532a1aa1e1cb64da596e42bb94bacc96252f",
+    "adapterSha256": "439368f05ea092a36619510ff3cf1d255d5e8da61ff52ab3490d0dd7dd6e4c21",
+    "lockSha256": "f2df323a08c2c77c02e09a9ce69aea9f4d90b0fad025ed75ac0551bdcea8dfa4",
+    "reactCompiler": false,
+    "scene": "benchmark",
+    "softwareWindow": false,
+    "apkSha256": "c05f70fcddc625968620b82eb70b7fd11b5dcf359c286580aed8bd8b6884f82e",
+    "embeddedBundleSha256": "6c377faa16a2e2636809a7fffeb06ab707066aafc627e9207aa5472c0bb6fd3e",
+    "embeddedBloomSourceSha256": "0cd66f353dc0b5d1c3e8f888e12c8e2aa14a933bde34b1a38b6a2ff377c9f131",
+    "embeddedBloomFiles": 844,
+    "dex": [
+      {
+        "name": "classes.dex",
+        "sha256": "21d9a6529299a1758ed60166166893d26eeaaa87a69c7aef40f511936e204580"
+      }
+    ],
+    "r8MappingSha256": "44e328b1f6bf30d09c1c801a4e3513e8dd5b2e814ade03bb23ae2d64d8967da1",
+    "mappedNativeClass": "n10",
+    "nativeEvidence": "compiled installed Kotlin input hash, DEX contract marker and full DEX hashes; no runtime source receipt"
+  },
+  "fingerprint": "google/sdk_gphone_x86_64/generic_x86_64_arm64:11/RSR1.240422.006/12134477:userdebug/dev-keys",
+  "api": "30",
+  "abi": "x86_64",
+  "density": "Physical density: 420",
+  "size": "Physical size: 1080x2400",
+  "fontScale": "null",
+  "thermal": "IsStatusOverride: false\nThermalEventListeners:\n\tcallbacks: 2\n\tkilled: false\n\tbroadcasts count: -1\nThermalStatusListeners:\n\tcallbacks: 1\n\tkilled: false\n\tbroadcasts count: -1\nThermal Status: 0\nCached temperatures:\n\tTemperature{mValue=30.8, mType=3, mName=test temperature sensor, mStatus=0}\nHAL Ready: true\nHAL connection:\n\tThermalHAL 2.0 connected: yes\nCurrent temperatures from HAL:\n\tTemperature{mValue=30.8, mType=3, mName=test temperature sensor, mStatus=0}\nCurrent cooling devices from HAL:\n\tCoolingDevice{mValue=100, mType=0, mName=test cooling device}"
+}
