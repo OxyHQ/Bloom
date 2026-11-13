@@ -575,7 +575,7 @@ Code that cannot render React (an API making a bot's profile photo, an image car
 character with `@oxy.so/bloom/agent-avatar/svg`: `renderAgentAvatarSvg(character, options)` answers
 the same still frame `VectorStaticPortrait` draws, as an SVG string, and `renderAgentAvatarPicture
 (character, color)` a profile picture (painted in the account colour, centred with room for a
-circular crop, on a much lighter tint of that colour that always keeps the character visible).
+circular crop, on a much, much lighter tint of that colour; only a body nearly as light gets a darker tint, so the character is always visible).
 Rasterize it with whatever the server has. The entry imports no React or React Native; it draws from
 the full catalog unless `catalog` is passed.
 

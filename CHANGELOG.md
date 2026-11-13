@@ -1,5 +1,11 @@
 # Changelog
 
+## 21.3.1
+
+### Fixed
+
+- **A picture's background is a much, much lighter tint of the colour, for light colours too.** `avatarPictureBackground` stood a light body (a lime, a pure green) on a dark olive, because it asked the light tint for 2.4:1 contrast. It is now tone 97 of the body's softened hue whenever that still shows the character (1.25:1), and a darker tint only for a body nearly as light as that (a pale yellow, a white).
+
 ## 21.3.0
 
 ### Added
