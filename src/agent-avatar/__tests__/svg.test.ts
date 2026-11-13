@@ -88,14 +88,22 @@ describe('a character’s picture', () => {
     '#ffeb3b',
     '#00ff00',
     '#7f7f7f',
+    '#b6d80d',
   ])('stands %s on a tint of its own hue it can be seen against', (body) => {
     const background = avatarPictureBackground(body);
-    expect(ratioOfTones(tone(body), tone(background))).toBeGreaterThanOrEqual(2.3);
+    expect(ratioOfTones(tone(body), tone(background))).toBeGreaterThanOrEqual(1.25);
   });
 
-  it('is a much lighter tint of the colour whenever the colour allows it', () => {
-    for (const body of ['#4778ff', '#ff0000', '#000000', '#2e7d32', '#6a1b9a']) {
-      expect(tone(avatarPictureBackground(body))).toBeGreaterThanOrEqual(94);
+  it('is a much, much lighter tint of the colour, light colours too', () => {
+    // A lime (a gemie's own colour in production) stays on a pale tint, never on a dark one.
+    for (const body of ['#4778ff', '#ff0000', '#000000', '#2e7d32', '#6a1b9a', '#b6d80d']) {
+      expect(tone(avatarPictureBackground(body))).toBeGreaterThanOrEqual(96);
+    }
+  });
+
+  it('goes darker only for a body nearly as light as the tint', () => {
+    for (const body of ['#ffffff', '#fff9c4']) {
+      expect(tone(avatarPictureBackground(body))).toBeLessThan(tone(body));
     }
   });
 

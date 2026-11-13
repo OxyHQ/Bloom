@@ -105,18 +105,24 @@ export async function renderAgentAvatarSvg(
   return vectorFrameToSvg(frame, options);
 }
 
-/** The contrast the picture's background keeps with the character's body, at least. */
-const PICTURE_CONTRAST = 2.4;
-/** How light the background is when the body allows it: a much lighter tint of its own colour. */
-const PICTURE_LIGHT_TONE = 95;
+/** How light the background is: a much, much lighter tint of the body's own colour. */
+const PICTURE_LIGHT_TONE = 97;
+/**
+ * The least contrast with the body at which that light tint still shows the character (a lime or
+ * a pure green on its own pale tint reads clearly; a pale yellow or a white would vanish).
+ */
+const PICTURE_MIN_CONTRAST = 1.25;
+/** The contrast a body too light for the tint gets instead, from a darker tint of its hue. */
+const PICTURE_FALLBACK_CONTRAST = 1.6;
 /** The tint keeps the body's hue, softened so it reads as a background and not a second colour. */
 const PICTURE_MAX_CHROMA = 20;
 
 /**
- * The background a character's picture stands on: its body colour's own hue, in a much lighter
- * tint (tone 95 of a softened tonal palette, as Bloom's themes derive their surfaces). A body too
- * light for that to show it (a pale yellow, a white) gets the darkest tint that keeps the same
- * contrast instead, so the character is always visible against it.
+ * The background a character's picture stands on: its body colour's own hue in a much, much
+ * lighter tint (tone 97 of a softened tonal palette, as Bloom's themes derive their surfaces),
+ * for every colour that still shows against it, light ones included. Only a body nearly as light
+ * as that (a pale yellow, a white) gets a darker tint of its hue instead, so the character is
+ * never the same as what it stands on.
  */
 export function avatarPictureBackground(bodyHex: string): string {
   const body = Hct.fromInt(argbFromHex(bodyHex));
@@ -124,10 +130,10 @@ export function avatarPictureBackground(bodyHex: string): string {
     body.hue,
     Math.min(body.chroma, PICTURE_MAX_CHROMA),
   );
-  if (ratioOfTones(body.tone, PICTURE_LIGHT_TONE) >= PICTURE_CONTRAST) {
+  if (ratioOfTones(body.tone, PICTURE_LIGHT_TONE) >= PICTURE_MIN_CONTRAST) {
     return hexFromArgb(palette.tone(PICTURE_LIGHT_TONE));
   }
-  const dark = darker(body.tone, PICTURE_CONTRAST);
+  const dark = darker(body.tone, PICTURE_FALLBACK_CONTRAST);
   return hexFromArgb(palette.tone(dark < 0 ? 0 : dark));
 }
 
