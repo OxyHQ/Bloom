@@ -1,5 +1,18 @@
 # Changelog
 
+## 20.0.0
+
+### Breaking
+
+- **An agent's colour is its account's colour, not its character's paint.** `AgentCreatorAgent` gains a required `color`: a Bloom colour preset key, what Oxy stores as the account's `User.color`. The editor draws every character in it and hands back characters with their parts only: `agent.avatar` never carries `color` or `bodyColor` again, undo and redo included, and a change of paint alone is no edit. A host stores the character's parts and the colour where its account keeps it. `MultiAgentChat`'s agents are `AgentCreatorAgent`s and carry a `color` too; a workspace saved without one restores in `blue`.
+- **The paint picker is gone; one colour control picks the account colour.** The nine named character paints and the custom `#rrggbb` picker (saturation/brightness field, hue rail, hex entry) are replaced by a `ColorSwatchPicker` of colour presets, each named by its `displayName`. `AgentCreatorProps.colors` (default `FREE_COLOR_NAMES`) is what it offers: a host passes exactly what its account service accepts. Choosing one calls `onChange` with the new `color`. The creator's bindings no longer take `Popover`, `PopoverTrigger` and `PopoverContent`.
+- **The paint picker's message keys are removed** from `AgentCreatorMessages` and every locale: `customColor`, `hexColor`, `hue`, `saturationBrightness`, `increaseBrightness`, `decreaseBrightness`, `increaseHue`, `decreaseHue`, `saturationBrightnessValue`, `avatarColorLabel` and `colors`. `color` now reads "Color" (it labels the agent's colour, not the avatar's).
+
+### Added
+
+- **`avatarCharacterInColor(character, color)`** (`@oxy.so/bloom/agent-avatar`): a character painted in its account's colour. `color` is `User.color`, a colour preset key or a legacy `#rgb`/`#rrggbb`; the body takes the preset's identity seed lifted to the skin floor (`bodyColor`), every part is kept and `color` is dropped. A colour that does not resolve returns the character unchanged. It is the one place a colour preset becomes an avatar paint, so a bot is drawn in the colour its profile is themed with.
+- **`AvatarAccount.color`**: `<Avatar account={user} />` draws a `kind: 'bot'` account's `character` painted in the account's `color`, so a bot looks the colour of its account wherever its account is drawn. Without a colour the character's own paint applies, as before.
+
 ## 19.11.0
 
 ### Added

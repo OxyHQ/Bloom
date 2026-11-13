@@ -85,6 +85,7 @@ function UniversalCustomizationLab({ singleEye = false }: { singleEye?: boolean 
     avatar: singleEye
       ? { preset: 'lime_frog', eyes: 'cyclops' }
       : (CHARACTER_TEMPLATES.lime_frog as AvatarCharacter),
+    color: 'green',
   });
   const [reaction, setReaction] = useState(0);
   const [working, setWorking] = useState(0);

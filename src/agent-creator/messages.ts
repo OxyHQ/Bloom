@@ -16,7 +16,6 @@ export interface AgentCreatorMessages {
   closeEditor: string;
   details: string;
   color: string;
-  customColor: string;
   name: string;
   label: string;
   description: string;
@@ -39,13 +38,6 @@ export interface AgentCreatorMessages {
   playbackSpeed: string;
   emotion: string;
   shape: string;
-  hexColor: string;
-  hue: string;
-  saturationBrightness: string;
-  increaseBrightness: string;
-  decreaseBrightness: string;
-  increaseHue: string;
-  decreaseHue: string;
   nextShape: string;
   previousShape: string;
   newAgent: string;
@@ -72,16 +64,10 @@ export interface AgentCreatorMessages {
     'slender' | 'pocket' | 'petal' | 'flower' | 'star' | 'heart' | 'cloud' | 'diamond' | 'shield',
     string
   >;
-  colors: Record<
-    'Blue' | 'Teal' | 'Violet' | 'Pink' | 'Red' | 'Orange' | 'Cyan' | 'Lime' | 'Green',
-    string
-  >;
   languages: Record<'auto' | 'en' | 'tr' | 'es' | 'fr' | 'de' | 'ja' | 'pt', string>;
-  avatarColorLabel: (name: string) => string;
   shapeLabel: (name: string) => string;
   silhouetteLabel: (name: string) => string;
   livePreview: (name: string) => string;
-  saturationBrightnessValue: (s: number, v: number) => string;
   playbackSpeedLabel: (speed: number) => string;
 }
 
@@ -101,8 +87,7 @@ export const AGENT_CREATOR_MESSAGES: MessageCatalog<AgentCreatorMessages> =
     newBot: 'New bot',
     closeEditor: 'Close agent editor',
     details: 'Agent appearance and details',
-    color: 'Avatar color',
-    customColor: 'Custom avatar color',
+    color: 'Color',
     name: 'Name',
     label: 'Label',
     description: 'Description',
@@ -125,13 +110,6 @@ export const AGENT_CREATOR_MESSAGES: MessageCatalog<AgentCreatorMessages> =
     playbackSpeed: 'Playback speed',
     emotion: 'Agent emotion',
     shape: 'Avatar shape',
-    hexColor: 'Hex color',
-    hue: 'Hue',
-    saturationBrightness: 'Saturation and brightness',
-    increaseBrightness: 'Increase brightness',
-    decreaseBrightness: 'Decrease brightness',
-    increaseHue: 'Increase hue',
-    decreaseHue: 'Decrease hue',
     nextShape: 'Next shape',
     previousShape: 'Previous shape',
     newAgent: 'New agent',
@@ -164,17 +142,6 @@ export const AGENT_CREATOR_MESSAGES: MessageCatalog<AgentCreatorMessages> =
       diamond: 'Diamond',
       shield: 'Shield',
     },
-    colors: {
-      Blue: 'Blue',
-      Teal: 'Teal',
-      Violet: 'Violet',
-      Pink: 'Pink',
-      Red: 'Red',
-      Orange: 'Orange',
-      Cyan: 'Cyan',
-      Lime: 'Lime',
-      Green: 'Green',
-    },
     languages: {
       auto: 'Auto-detect',
       en: 'English',
@@ -185,11 +152,8 @@ export const AGENT_CREATOR_MESSAGES: MessageCatalog<AgentCreatorMessages> =
       ja: 'Japanese',
       pt: 'Portuguese',
     },
-    avatarColorLabel: (name) => '{name} avatar'.replace('{name}', name),
     shapeLabel: (name) => '{name} shape'.replace('{name}', name),
     silhouetteLabel: (name) => '{name} silhouette'.replace('{name}', name),
     livePreview: (name) => '{name}, live avatar preview'.replace('{name}', name),
-    saturationBrightnessValue: (s, v) =>
-      'saturation {s}%, brightness {v}%'.replace('{s}', String(s)).replace('{v}', String(v)),
     playbackSpeedLabel: (speed) => '{speed} times playback speed'.replace('{speed}', String(speed)),
   });

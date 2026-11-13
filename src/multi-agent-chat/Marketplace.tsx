@@ -7,7 +7,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { SvgXml } from 'react-native-svg';
-import { AgentAvatar } from '../agent-avatar';
+import { AgentAvatar, avatarCharacterInColor } from '../agent-avatar';
 import { Button, CloseButton } from '../button';
 import { RiArrowLeftLine } from '../icons/remix/RiArrowLeftLine';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
@@ -105,7 +105,11 @@ function ItemIcon({ item, size = 44 }: { item: MarketplaceItem; size?: number })
   if (item.avatar)
     return (
       <StyledView className="shrink-0">
-        <AgentAvatar character={item.avatar} size={size} label={item.name} />
+        <AgentAvatar
+          character={avatarCharacterInColor(item.avatar, item.color)}
+          size={size}
+          label={item.name}
+        />
       </StyledView>
     );
   const key = item.logo!,

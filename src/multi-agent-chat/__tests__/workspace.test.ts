@@ -78,8 +78,9 @@ describe('multi-agent workspace', () => {
       eyes: 'oval',
       eyewear: 'none',
       accessory: 'none',
-      bodyColor: '#ff0000',
     });
+    // The paint is the agent's colour, not the character's.
+    expect(restored.agents[0]!.color).toBe(first!.color);
     expect(restored.agents[1]!.avatar).toEqual(second!.avatar);
     // And what was restored is a character, so saving it and restoring it again changes nothing.
     expect(restoreWorkspace(JSON.stringify(restored))!.agents[0]!.avatar).toEqual(
@@ -89,12 +90,22 @@ describe('multi-agent workspace', () => {
       restoreWorkspace(JSON.stringify({ ...saved, agents: withAvatar({ shape: 'blob' }) })),
     ).toBeNull();
   });
+  it('restores an agent saved without a colour in the default one', () => {
+    const [first] = INITIAL_WORKSPACE.agents;
+    const { color: _color, ...uncoloured } = first!;
+    const saved = {
+      ...INITIAL_WORKSPACE,
+      agents: INITIAL_WORKSPACE.agents.map((agent) => (agent === first ? uncoloured : agent)),
+    };
+    expect(restoreWorkspace(JSON.stringify(saved))!.agents[0]!.color).toBe('blue');
+  });
   it('creates unused identities and installs marketplace bots once', () => {
     const identity = nextAgentIdentity(INITIAL_WORKSPACE.agents);
     expect(INITIAL_WORKSPACE.agents.some((a) => a.name === identity.name)).toBe(false);
     const bot = MARKETPLACE_ITEMS.find((item) => item.kind === 'bot')!;
     const next = addMarketplaceBot(INITIAL_WORKSPACE, bot);
     expect(next.agents).toHaveLength(INITIAL_WORKSPACE.agents.length + 1);
+    expect(next.agents[next.agents.length - 1]).toMatchObject({ avatar: bot.avatar, color: bot.color });
     expect(addMarketplaceBot(next, bot)).toBe(next);
     expect(filterMarketplace('research', 'bot').every((item) => item.kind === 'bot')).toBe(true);
   });

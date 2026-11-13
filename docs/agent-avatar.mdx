@@ -97,6 +97,26 @@ in current choices or templates.
   `bodyColor` and the other way round; the two are never held together.
 - `characterFromLegacy(saved)` migrates an avatar saved before 10 (see
   [Migrating to 10.0](/docs/migrating-to-10.0)).
+- `avatarCharacterInColor(character, color)` paints a character in its ACCOUNT's colour:
+  `color` is what Oxy stores as `User.color`, a Bloom colour preset key (or a legacy `#rgb` /
+  `#rrggbb`). The body takes the preset's identity seed, lifted to the skin floor, as
+  `bodyColor`; every part is kept and `color` is dropped. A colour that does not resolve
+  (`null`, `undefined`, an unknown key) returns the character unchanged. This is the one place a
+  colour preset becomes an avatar paint: a bot is drawn in the colour its profile is themed with.
+
+### A bot is drawn in its account's colour
+
+An agent's colour belongs to its account, not to its character. Store the character's parts
+(no `color`, no `bodyColor`) and paint it at the edge:
+
+```tsx
+<AgentAvatar character={avatarCharacterInColor(agent.character, agent.account.color)} />
+```
+
+`Avatar` does it for you: a `kind: 'bot'` account (`<Avatar account={user} />`) is drawn as its
+`character` painted in the account's `color` (`AvatarAccount.color`). Without a colour the
+character's own paint (or its preset's) applies, and a character with no paint at all falls back to
+the account's image and initials as any undrawable character does.
 
 ### Which animation plays
 

@@ -391,10 +391,20 @@ const AvatarComponent: React.FC<AvatarProps> = ({
 
   // Resolution order: character, then image, then initials.
   // An invalid stored character resolves to nothing, which sends this avatar to its image.
-  const pickedCharacter = pickAccountCharacter({ character, account });
+  // A bot account's character is painted in the account's colour: a new object per call, so the
+  // memo keys are what it is made of, not the object.
+  const accountKind = account?.kind;
+  const accountCharacter = account?.character;
+  const accountColor = account?.color;
   const resolvedCharacter = useMemo(
-    () => tryResolveAvatarCharacter(pickedCharacter),
-    [pickedCharacter],
+    () =>
+      tryResolveAvatarCharacter(
+        pickAccountCharacter({
+          character,
+          account: { kind: accountKind, character: accountCharacter, color: accountColor },
+        }),
+      ),
+    [character, accountKind, accountCharacter, accountColor],
   );
   const placeholderProps = {
     shape,

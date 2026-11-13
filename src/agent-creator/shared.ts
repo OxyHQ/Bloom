@@ -16,30 +16,3 @@ export function normalizeAgentPreferences(
     notifications: typeof value?.notifications === 'boolean' ? value.notifications : true,
   };
 }
-export type Hsv = { h: number; s: number; v: number };
-export function hexToHsv(hex: string): Hsv | null {
-  const match = hex.trim().match(/^#?([0-9a-f]{6})$/i);
-  if (!match?.[1]) return null;
-  const [r = 0, g = 0, b = 0] = [0, 2, 4].map((i) => parseInt(match[1]!.slice(i, i + 2), 16) / 255);
-  const max = Math.max(r, g, b),
-    min = Math.min(r, g, b),
-    delta = max - min;
-  let h = 0;
-  if (delta)
-    h =
-      max === r
-        ? ((g - b) / delta + (g < b ? 6 : 0)) * 60
-        : max === g
-          ? ((b - r) / delta + 2) * 60
-          : ((r - g) / delta + 4) * 60;
-  return { h, s: max === 0 ? 0 : delta / max, v: max };
-}
-export function hsvToHex({ h, s, v }: Hsv) {
-  const channel = (n: number) => {
-    const k = (n + h / 60) % 6;
-    return Math.round((v - v * s * Math.max(0, Math.min(k, 4 - k, 1))) * 255)
-      .toString(16)
-      .padStart(2, '0');
-  };
-  return `#${channel(5)}${channel(3)}${channel(1)}`;
-}

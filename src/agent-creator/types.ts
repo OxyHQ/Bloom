@@ -15,7 +15,16 @@ export type AgentCreatorAgent = {
   name: string;
   label: string;
   description: string;
+  /**
+   * The character's parts (shape, eyes, eyewear, accessory, preset, eye spacing). The creator
+   * hands it back without paint: the agent's colour is `color`, never the character's.
+   */
   avatar: AvatarCharacter;
+  /**
+   * The agent's colour: its account's, a Bloom colour preset key (`User.color` in Oxy). It paints
+   * the avatar, and the colour control changes it (`onChange` with a new `color`).
+   */
+  color: string;
   preferences?: AgentPreferences;
 };
 export type AgentVoice = { id: string; name: string; language: string };
@@ -25,6 +34,11 @@ export interface AgentCreatorProps {
   agent: AgentCreatorAgent;
   onChange: (agent: AgentCreatorAgent) => void;
   onClose?: () => void;
+  /**
+   * The colour preset keys the colour control offers, in order. Default `FREE_COLOR_NAMES`. A host
+   * passes exactly what its account service accepts, so no colour offered is refused on save.
+   */
+  colors?: readonly string[];
   className?: string;
   style?: StyleProp<ViewStyle>;
   /** Native hosts can supply their speech provider's catalog. Web uses local device voices by default. */

@@ -48,7 +48,6 @@ jest.mock('react-native', () => {
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Field } from '../field';
 import { PageHeaderTitleInput } from '../page-header';
-import { CustomColorPicker } from '../agent-creator/CustomColorPicker';
 import { SelectionCard } from '../card';
 import { CardFormNumber } from '../card-form';
 import { Checkbox } from '../checkbox';
@@ -133,17 +132,6 @@ const SUBJECTS: Subject[] = [
     describedBy: true,
     invalid: true,
     id: true,
-  },
-  {
-    name: 'agent-creator',
-    render: (p) => <CustomColorPicker value="#ff0000" onChange={() => {}} {...p} />,
-    ownNameProp: null,
-    isInert: inputInert,
-    node: 'byName',
-    describedBy: true,
-    invalid: true,
-    id: true,
-    lastResortName: 'Hex color',
   },
   {
     name: 'search',
