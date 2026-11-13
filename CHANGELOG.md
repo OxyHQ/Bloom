@@ -1,5 +1,12 @@
 # Changelog
 
+## 19.11.0
+
+### Added
+
+- **`AgentAvatar` says "no": `mood="sad"`.** A held state for an empty or not-found state, a refusal, something that could not be done. As the mood starts (or the avatar mounts sad) the character shakes its head three times in 1.4 s, the widest turn first, and then stays downcast on top of its idle: looking down and aside, sunk, slightly deflated, head tilted, lids heavy, still breathing and blinking. Back to `neutral` (the default) it eases out, and a neutral avatar draws exactly as before. It is procedural, so every preset, edited character and flat form has it; reduced motion and `paused` show the settled pose with no shake (`vector-mood.test.ts` on every template, `AgentAvatar-mood.test.tsx`). Exports the `AgentAvatarMood` type; Storybook **Agent Avatar / Sad**.
+- **`EMPTY_STATE_GEOMETRY[variant].illustration`**: the box for a figure passed as `EmptyState`'s `illustration` (112, or 72 at the panel rung), so an app showing an agent's avatar there does not pick its own size. Storybook **Empty State / Agent Not Found** pairs it with the sad avatar.
+
 ## 19.10.3
 
 ### Fixed

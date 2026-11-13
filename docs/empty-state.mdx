@@ -48,7 +48,26 @@ every author who noticed picked a different cap. 360 is roughly sixty characters
   block is the whole screen, or when it is INVITING rather than reporting.
 - **`illustration`** is an arbitrary node and wins over `icon`, drawn exactly as it comes
   with no tile of its own. It is read for PRESENCE, so `illustration={null}` draws no
-  mark at all even when an `icon` arrived from a default two levels up.
+  mark at all even when an `icon` arrived from a default two levels up. A figure that has
+  to be read rather than recognised (an agent's avatar) takes the rung's
+  `EMPTY_STATE_GEOMETRY[variant].illustration` box (112, or 72 in a panel); an agent that
+  has nothing to show, or was not found, says so with `<AgentAvatar mood="sad" />`, which
+  shakes its head "no" and stays downcast (see [Agent Avatar](/docs/agent-avatar)):
+
+  ```tsx
+  <EmptyState
+    illustration={
+      <AgentAvatar
+        character={{ preset: 'blue_beret' }}
+        size={EMPTY_STATE_GEOMETRY.comfortable.illustration}
+        mood="sad"
+        accessibilityLabel=""
+      />
+    }
+    title="Agent not found"
+    description="It may have been deleted, or the link is wrong."
+  />
+  ```
 
 There is no fourth. A neutral "well" and a tinted disc side by side were two answers to
 one question, and both shipped in this repo.

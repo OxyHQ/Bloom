@@ -19,6 +19,14 @@ import { vectorWorkLook } from './vector-work-look';
 import { sampleVectorPose, blendVectorPose, type VectorPose } from './vector-pose';
 import { sampleVectorMotion, referenceWorkTime, type VectorMotionPose } from './vector-motion';
 import {
+  advanceVectorMood,
+  initialVectorMood,
+  setVectorMood,
+  settleVectorMood,
+  vectorMoodActive,
+  vectorMoodFrame,
+} from './vector-mood';
+import {
   useCallback,
   useContext,
   useEffect,
@@ -83,7 +91,7 @@ export function VectorCharacterAvatar(props: Props) {
   return <AnimatedVectorCharacterAvatar {...props} />;
 }
 function AnimatedVectorCharacterAvatar(props: Props) {
-  const { character, size = 64, paused, portrait, interactive, previewPart } = props;
+  const { character, size = 64, paused, portrait, interactive, previewPart, mood } = props;
   const { messages } = useMessages(AGENT_AVATAR_MESSAGES, props.locale);
   const catalog = useVectorAssetLoader(props.catalog);
   const reduced = usePrefersReducedMotion(),
@@ -166,13 +174,17 @@ function AnimatedVectorCharacterAvatar(props: Props) {
     motionFrom: undefined as VectorMotionPose | undefined,
     transitionStarted: 0,
     transitionDuration: VECTOR_TRANSITION_SECONDS,
+    mood: initialVectorMood(mood),
   });
   const previous = useRef({
     idle: props.idleKey,
     reaction: props.reactionKey,
     work: props.workingKey,
     entrance: props.entranceKey,
+    mood,
   });
+  const latestMood = useRef(mood);
+  latestMood.current = mood;
   const cycles = useRef(props.workingCycles);
   cycles.current = props.workingCycles;
   const play = useCallback((action: VectorAction) => {
@@ -254,6 +266,13 @@ function AnimatedVectorCharacterAvatar(props: Props) {
     }
   }, [props.idleKey, props.reactionKey, props.workingKey, props.entranceKey, play]);
   useEffect(() => {
+    if (mood === previous.current.mood) return;
+    setVectorMood(state.current.mood, mood, previous.current.mood);
+    previous.current.mood = mood;
+    // A still character repaints into the new mood; a running one restarts its frame loop.
+    setRevision((value) => value + 1);
+  }, [mood]);
+  useEffect(() => {
     if (Platform.OS !== 'web' || typeof IntersectionObserver === 'undefined' || !host.current)
       return;
     const observer = new IntersectionObserver(([entry]) =>
@@ -289,7 +308,8 @@ function AnimatedVectorCharacterAvatar(props: Props) {
         motion.yaw += (motion.targetYaw - motion.yaw) * follow;
         motion.pitch += (motion.targetPitch - motion.pitch) * follow;
         motion.lookMix += ((motion.pointerActive ? 1 : 0) - motion.lookMix) * follow;
-      }
+        advanceVectorMood(motion.mood, latestMood.current, delta);
+      } else settleVectorMood(motion.mood, latestMood.current);
       if (!painted || stopped || now - painted >= 1000 / 30) {
         painted = painted ? now - ((now - painted) % (1000 / 30)) : now;
         const action = portrait ? 'idle' : motion.action,
@@ -299,6 +319,7 @@ function AnimatedVectorCharacterAvatar(props: Props) {
           Math.max(0, (motion.clock - motion.transitionStarted) / motion.transitionDuration),
         );
         const eased = transition * transition * (3 - 2 * transition);
+        const feeling = !portrait && vectorMoodActive(motion.mood) ? { ...motion.mood } : undefined;
         const sharedKey = JSON.stringify([
           latestFrameRecipe.current,
           action,
@@ -312,10 +333,12 @@ function AnimatedVectorCharacterAvatar(props: Props) {
           motion.transitionDuration,
           vectorStateIdentity(motion.poseFrom),
           vectorStateIdentity(motion.motionFrom),
+          feeling?.sadness,
+          feeling?.declineTime,
           portrait,
           previewPart,
         ]);
-        const { pose, procedural, drawing } = shareVectorFrame(sharedKey, () => {
+        const { pose, procedural, gaze, drawing } = shareVectorFrame(sharedKey, () => {
           const poseTime =
             asset.referenceFace && action === 'work' ? referenceWorkTime(time) : time;
           const targetPose = sampleVectorPose(asset, action, poseTime);
@@ -346,17 +369,22 @@ function AnimatedVectorCharacterAvatar(props: Props) {
                     : undefined,
               })
             : undefined;
+          // The mood goes over the blended motion, never into it: a transition captures the
+          // motion without the mood, which carries on through the transition on its own clock.
+          const framed = vectorMoodFrame(
+            asset,
+            procedural,
+            { yaw: portrait ? 0 : motion.yaw, pitch: portrait ? 0 : motion.pitch },
+            feeling,
+          );
           const drawing = renderVectorFrame(asset, {
             action,
             time,
-            yaw: portrait ? 0 : motion.yaw,
-            pitch: portrait ? 0 : motion.pitch,
+            ...framed,
             eyesOnly: previewPart === 'eyes',
             pose,
-            motion: procedural,
-            look: procedural ? { yaw: procedural.yaw, pitch: procedural.pitch, mix: 1 } : undefined,
           });
-          return { pose, procedural, drawing };
+          return { pose, procedural, gaze: framed.look ?? framed, drawing };
         });
         motion.lastPose = pose;
         motion.lastMotion = procedural;
@@ -372,8 +400,8 @@ function AnimatedVectorCharacterAvatar(props: Props) {
           time,
           count: motion.count,
           entrance: stopped ? 1 : motion.entrance,
-          gazeYaw: procedural?.yaw ?? motion.yaw,
-          gazePitch: procedural?.pitch ?? motion.pitch,
+          gazeYaw: gaze.yaw,
+          gazePitch: gaze.pitch,
           tracking: motion.lookMix,
         });
       }
@@ -424,6 +452,7 @@ function AnimatedVectorCharacterAvatar(props: Props) {
               gazeYaw: String(display?.gazeYaw ?? 0),
               gazePitch: String(display?.gazePitch ?? 0),
               tracking: String(display?.tracking ?? 0),
+              mood: mood ?? 'neutral',
             },
           }
         : {})}

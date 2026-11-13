@@ -2,7 +2,7 @@ export { AgentAvatar } from './AgentAvatar';
 export { AgentAvatarProvider } from './AgentAvatarProvider';
 export { BLOOM_CHARACTER_RUNTIME_URL } from './context';
 export { useAvatarRendererCapabilities } from './use-avatar-renderer-capabilities';
-export type { AgentAvatarProps, AgentAvatarProviderProps } from './types';
+export type { AgentAvatarMood, AgentAvatarProps, AgentAvatarProviderProps } from './types';
 
 // One model: a character. `resolveAvatarCharacter` fills it in, `parseAvatarCharacter`
 // checks saved JSON, `characterFromLegacy` migrates an avatar saved before 10.
