@@ -1,5 +1,11 @@
 # Changelog
 
+## 21.3.0
+
+### Added
+
+- **`@oxy.so/bloom/agent-avatar/svg`: a character as an SVG document, for a server.** No React, no native module: `renderAgentAvatarSvg(character, { size, background, margin })` draws the frame `VectorStaticPortrait` draws (`loadVectorPortrait`, through the same crop), from the full catalog unless a `catalog` is passed, and `vectorFrameToSvg` serializes any frame. `renderAgentAvatarPicture(character, color)` is a profile picture: the character painted in an account colour (a preset key or a hex), centred with room for a circular crop, on a much lighter tint of that colour from Bloom's tonal palettes (`avatarPictureBackground`); a body too light for a light tint to show it stands on the darkest tint that keeps a 2.4:1 contrast instead. One drawing for every place a character leaves an app as an image (Gemies renders a gemie's Telegram bot photo with it). The subpath loads in Bun and through `require`; it also re-exports the pure `avatarCharacterInColor` and `parseAvatarCharacter`.
+
 ## 21.2.0
 
 ### Changed
