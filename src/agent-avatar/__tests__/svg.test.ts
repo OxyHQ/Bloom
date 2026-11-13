@@ -38,32 +38,67 @@ describe('@oxy.so/bloom/agent-avatar/svg', () => {
 });
 
 describe('the svg entry runs where React cannot', () => {
+  const fs = require('node:fs') as typeof import('node:fs');
+  const path = require('node:path') as typeof import('node:path');
+  /** App-only packages: a server that renders a picture must neither import nor install them. */
+  const APP_ONLY =
+    /^(react-native|@react-native|expo|@expo|nativewind|lottie|@lottiefiles|@shopify)/;
+
   it('reaches no React, React Native or native module through its imports', () => {
-    const fs = require('node:fs') as typeof import('node:fs');
-    const path = require('node:path') as typeof import('node:path');
     const seen = new Set<string>();
     const external = new Set<string>();
     const visit = (file: string) => {
       if (seen.has(file)) return;
       seen.add(file);
       const source = fs.readFileSync(file, 'utf8');
-      for (const match of source.matchAll(/(?:from|import\()\s*'([^']+)'/g)) {
-        const spec = match[1];
+      // Static imports and re-exports, dynamic imports and requires, in either quote.
+      const specifiers = source.matchAll(
+        /(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|^\s*import\s+)(['"])([^'"]+)\1/gm,
+      );
+      for (const match of specifiers) {
+        const spec = match[2];
         if (!spec) continue;
         if (!spec.startsWith('.')) {
           external.add(spec);
           continue;
         }
         const base = path.resolve(path.dirname(file), spec);
-        const next = [`${base}.ts`, `${base}/index.ts`].find((candidate) =>
-          fs.existsSync(candidate),
+        const next = [`${base}.ts`, `${base}.tsx`, `${base}/index.ts`, `${base}/index.tsx`].find(
+          (candidate) => fs.existsSync(candidate),
         );
         if (next) visit(next);
       }
     };
     visit(path.resolve(__dirname, '../svg/index.ts'));
     expect(seen.size).toBeGreaterThan(10);
-    expect([...external].filter((spec) => /^(react|react-native|expo)/.test(spec))).toEqual([]);
+    expect([...seen].filter((file) => file.endsWith('.tsx'))).toEqual([]);
+    expect(
+      [...external].filter((spec) => /^(react|react-dom)(\/|$)/.test(spec) || APP_ONLY.test(spec)),
+    ).toEqual([]);
+  });
+
+  it('depends on nothing of React Native or Expo: a server installs it with peers omitted', () => {
+    // Peers are the app's to provide (React Native, Expo, NativeWind's react-native-css). A hard
+    // dependency is installed everywhere, so none may be an app-only package or require one.
+    const manifest = JSON.parse(
+      fs.readFileSync(path.resolve(__dirname, '../../../package.json'), 'utf8'),
+    ) as { dependencies?: Record<string, string> };
+    for (const name of Object.keys(manifest.dependencies ?? {})) {
+      expect(name).not.toMatch(APP_ONLY);
+      const dependency = JSON.parse(
+        fs.readFileSync(require.resolve(`${name}/package.json`), 'utf8'),
+      ) as {
+        peerDependencies?: Record<string, string>;
+        peerDependenciesMeta?: Record<string, { optional?: boolean }>;
+      };
+      const itsRequired = Object.keys(dependency.peerDependencies ?? {}).filter(
+        (peer) => !dependency.peerDependenciesMeta?.[peer]?.optional,
+      );
+      expect({ name, peers: itsRequired.filter((peer) => APP_ONLY.test(peer)) }).toEqual({
+        name,
+        peers: [],
+      });
+    }
   });
 });
 

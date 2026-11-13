@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "21.3.1",
+  "version": "21.4.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -4579,6 +4579,7 @@
     "react-dom": "19.3.0",
     "react-native": "0.88.1",
     "react-native-builder-bob": "^0.44.1",
+    "react-native-css": "3.1.0-rc.0",
     "react-native-gesture-handler": "~3.3.0",
     "react-native-reanimated": "4.7.1",
     "react-native-safe-area-context": "~5.11.1",
@@ -4613,6 +4614,7 @@
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
     "react-native": ">=0.73.0",
+    "react-native-css": ">=3.1.0-rc.0",
     "react-native-gesture-handler": ">=2.16.1",
     "react-native-keyboard-controller": ">=1.11.4",
     "react-native-pager-view": ">=6.0.0",
@@ -4698,7 +4700,6 @@
   },
   "dependencies": {
     "@tanstack/react-virtual": "^3.14.23",
-    "react-native-css": "3.1.0-rc.0",
     "react-remove-scroll-bar": "^2.3.8"
   },
   "overrides": {
