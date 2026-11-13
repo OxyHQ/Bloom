@@ -105,7 +105,10 @@ describe('multi-agent workspace', () => {
     const bot = MARKETPLACE_ITEMS.find((item) => item.kind === 'bot')!;
     const next = addMarketplaceBot(INITIAL_WORKSPACE, bot);
     expect(next.agents).toHaveLength(INITIAL_WORKSPACE.agents.length + 1);
-    expect(next.agents[next.agents.length - 1]).toMatchObject({ avatar: bot.avatar, color: bot.color });
+    expect(next.agents[next.agents.length - 1]).toMatchObject({
+      avatar: bot.avatar,
+      color: bot.color,
+    });
     expect(addMarketplaceBot(next, bot)).toBe(next);
     expect(filterMarketplace('research', 'bot').every((item) => item.kind === 'bot')).toBe(true);
   });
