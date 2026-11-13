@@ -5,7 +5,7 @@ import {
   parseAvatarCharacter,
 } from '../agent-avatar';
 import { withoutPaint } from '../agent-creator/paint';
-import { APP_COLOR_PRESETS, FREE_COLOR_NAMES } from '../theme/color-presets';
+import { FREE_COLOR_NAMES, resolveProfileColor } from '../theme/color-presets';
 import { pickMessages, formatMessage } from '../locale/messages';
 import { MULTI_AGENT_CHAT_MESSAGES } from './messages';
 
@@ -42,9 +42,11 @@ export type Workspace = {
   installedPlugins?: string[];
 };
 
-/** A saved colour: a Bloom colour preset key, else the default. */
+/** A saved colour: any account colour Bloom can draw (a preset key or a `#rrggbb`), else the default. */
 function readColor(saved: unknown): string {
-  return typeof saved === 'string' && saved in APP_COLOR_PRESETS ? saved : DEFAULT_AGENT_COLOR;
+  return typeof saved === 'string' && resolveProfileColor(saved) !== undefined
+    ? saved
+    : DEFAULT_AGENT_COLOR;
 }
 
 /**

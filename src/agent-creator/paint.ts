@@ -4,7 +4,7 @@ import {
   tryResolveAvatarCharacter,
   type AvatarCharacter,
 } from '../agent-avatar/character';
-import { FREE_COLOR_NAMES } from '../theme/color-presets';
+import { CHARACTER_COLORS } from '../agent-avatar/character-colors';
 
 /**
  * The creator's colour is the agent's account colour (`agent.color`), never the character's: a
@@ -20,19 +20,29 @@ export function withoutPaint(character: AvatarCharacter): AvatarCharacter {
   return parts;
 }
 
+/** What a character with no paint and no resolvable colour wears: the first named swatch. */
+const FALLBACK_COLOR = CHARACTER_COLORS.pink;
+
 /**
- * The character as the creator draws it: in the agent's colour. A colour Bloom cannot resolve
- * leaves the character's own paint (or its preset's); a character with neither wears the first
- * colour the creator offers, so nothing it draws is undrawable.
+ * The character as the creator draws it: in the agent's colour (a preset key or a `#rrggbb`). A
+ * colour Bloom cannot resolve leaves the character's own paint (or its preset's); a character with
+ * neither wears the first named swatch, so nothing it draws is undrawable.
  */
 export function drawnCharacter(
   character: AvatarCharacter,
   color: string | null | undefined,
-  colors: readonly string[],
 ): AvatarCharacter {
   const painted = avatarCharacterInColor(character, color);
   if (tryResolveAvatarCharacter(painted)) return painted;
-  return avatarCharacterInColor(character, colors[0] ?? FREE_COLOR_NAMES[0]);
+  return avatarCharacterInColor(character, FALLBACK_COLOR);
+}
+
+/**
+ * The body paint an account colour draws, `#rrggbb`, or `undefined` for a colour that does not
+ * resolve. Read through `avatarCharacterInColor`, the one mapping from a colour to a paint.
+ */
+export function accountBodyHex(color: string | null | undefined): string | undefined {
+  return avatarCharacterInColor({}, color).bodyColor;
 }
 
 /**
@@ -41,7 +51,7 @@ export function drawnCharacter(
  */
 export function characterPartsKey(character: AvatarCharacter): string {
   const parts: Partial<ReturnType<typeof resolveAvatarCharacter>> = resolveAvatarCharacter(
-    drawnCharacter(character, undefined, FREE_COLOR_NAMES),
+    drawnCharacter(character, undefined),
   );
   delete parts.paint;
   return JSON.stringify(parts);

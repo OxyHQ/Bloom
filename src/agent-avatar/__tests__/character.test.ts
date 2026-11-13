@@ -253,9 +253,20 @@ describe('avatarCharacterInColor', () => {
     );
   });
 
-  it('paints a legacy hex colour, short or long, case-insensitively', () => {
+  it('paints a hex account colour, short or long, case-insensitively', () => {
     expect(avatarCharacterInColor(parts, '#4778FF').bodyColor).toBe('#4778ff');
     expect(avatarCharacterInColor(parts, '#fff').bodyColor).toBe('#ffffff');
+  });
+
+  it('round-trips a hex: the colour an editor writes is the paint it draws', () => {
+    expect(avatarCharacterInColor(parts, '#ff8b67')).toEqual({
+      ...parts,
+      bodyColor: normalizeAvatarSkinColor('#ff8b67'),
+    });
+    // A dark hex is lifted once; writing the lifted one back paints the same body.
+    const lifted = normalizeAvatarSkinColor('#123456');
+    expect(avatarCharacterInColor(parts, '#123456').bodyColor).toBe(lifted);
+    expect(avatarCharacterInColor(parts, lifted).bodyColor).toBe(lifted);
   });
 
   it('replaces the character’s own paint and keeps every part of a preset character', () => {

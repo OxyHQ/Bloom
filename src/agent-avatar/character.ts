@@ -208,10 +208,10 @@ export function updateAvatarCharacter(
  * A character painted in its account's colour.
  *
  * `color` is the colour of the account the character stands for, as Oxy stores `User.color`: a
- * Bloom colour preset key (`'lagoon'`), or a legacy `#rgb`/`#rrggbb`. The body takes the preset's
- * identity seed (or the legacy colour), lifted to the avatar skin floor, so an agent is drawn in
- * the same colour its profile is themed with. This is the one place a colour preset becomes an
- * avatar paint.
+ * Bloom colour preset key (`'lagoon'`) or a hex (`'#ff8b67'`, `'#f80'`), both ordinary account
+ * colours. A preset paints the body its identity seed, a hex paints it that hex, each lifted to the
+ * avatar skin floor (`normalizeAvatarSkinColor`), so a hex an editor wrote back comes out exactly as
+ * written. This is the one place an account colour becomes an avatar paint.
  *
  * The result carries `bodyColor` and no `color`; every part is kept. A colour that does not resolve
  * (`null`, `undefined`, an unknown key) returns the character unchanged, so its own paint (or its

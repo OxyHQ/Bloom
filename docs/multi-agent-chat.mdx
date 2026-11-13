@@ -54,7 +54,7 @@ edits for host persistence. The workspace persists in `storage` — the same
 Invalid stored data falls back to the initial demo.
 
 An agent is an [`AgentCreatorAgent`](./agent-creator.mdx): its `avatar` holds the character's
-parts and its `color` (a Bloom colour preset key) is its colour. Every avatar the workspace draws
+parts and its `color` (an account colour: a Bloom colour preset key or a `#rrggbb`) is its colour. Every avatar the workspace draws
 for an agent, the marketplace's bots included, is `avatarCharacterInColor(agent.avatar,
 agent.color)`. A workspace saved before agents had a colour restores them in `blue`.
 
