@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "21.2.0",
+  "version": "21.3.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -665,6 +665,20 @@
       "require": {
         "types": "./lib/typescript/commonjs/agent-avatar/catalog/*.d.ts",
         "default": "./lib/commonjs/agent-avatar/catalog/*.js"
+      }
+    },
+    "./agent-avatar/svg": {
+      "react-native": {
+        "types": "./lib/typescript/module/agent-avatar/svg/index.d.ts",
+        "default": "./src/agent-avatar/svg/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/agent-avatar/svg/index.d.ts",
+        "default": "./lib/module/agent-avatar/svg/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/agent-avatar/svg/index.d.ts",
+        "default": "./lib/commonjs/agent-avatar/svg/index.js"
       }
     },
     "./avatar-flight": {
@@ -4835,6 +4849,9 @@
       ],
       "agent-avatar/catalog/*": [
         "./lib/typescript/module/agent-avatar/catalog/*.d.ts"
+      ],
+      "agent-avatar/svg": [
+        "./lib/typescript/module/agent-avatar/svg/index.d.ts"
       ],
       "avatar-flight": [
         "./lib/typescript/module/avatar-flight/index.d.ts"
