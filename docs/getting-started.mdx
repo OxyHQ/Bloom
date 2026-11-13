@@ -17,6 +17,10 @@ package's `peerDependencies` and `peerDependenciesMeta` distinguish required and
 optional packages. A permissive peer range is not proof that every combination
 has been tested. Do not install arbitrary latest native peers into an older SDK.
 
+A server that uses only a server-safe entry (`@oxy.so/bloom/agent-avatar/svg`, which draws
+a character as SVG with no React in its import graph) installs Bloom with peers omitted
+(`bun install --omit=peer`): none of Bloom's own dependencies needs React Native or Expo.
+
 - **Expo / Metro:** use the SDK-compatible dependencies and the app-preset setup below.
 - **Vite web:** use the complete [Vite host recipe](./vite.mdx), including dependency
   transforms. Typechecking alone cannot validate worklets or CSS.

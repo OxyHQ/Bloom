@@ -1,5 +1,11 @@
 # Changelog
 
+## 21.4.0
+
+### Changed
+
+- **`react-native-css` is a peer (`>=3.1.0-rc.0`), no longer a hard dependency.** Its own required peers (`react-native`, `@expo/metro-config`) made every install of Bloom bring React Native and Expo, even a server's installed with peers omitted, and an app on another release candidate (Mention's 3.1.0-rc.1) got two copies. Apps already install it with NativeWind, and package managers install a required peer by themselves, so nothing changes for them. A server that uses only a server-safe entry (`@oxy.so/bloom/agent-avatar/svg`, whose import graph reaches no React, React Native or Expo) installs Bloom with peers omitted (`bun install --omit=peer`) and gets none of them; a test keeps every hard dependency, and its required peers, free of app-only packages.
+
 ## 21.3.1
 
 ### Fixed
