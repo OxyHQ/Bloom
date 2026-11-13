@@ -184,7 +184,7 @@ for owner in ['cases-pill-input','cases-agent-pill-input']:
     dismiss_ime()
     stop_tree=ui()
     stop_nodes=[n for n in stop_tree.iter('node') if n.get('content-desc')=='Stop generating' and n.get('clickable')=='true']
-    # AliaComposer is also present in this fixture; the tested Bloom owners
+    # GemieComposer is also present in this fixture; the tested Bloom owners
     # are the first two stop controls in the packaged tree.
     assert len(stop_nodes)>=2
     stop_node=stop_nodes[0 if owner=='cases-pill-input' else 1]

@@ -42,7 +42,7 @@ continuous budget windows, temporary bitmap and software-host fallback, and a
 JS-only update into the previous native binary. API 30 emulator startup and reduced-motion
 suspension/resumption pass; its SVG halo and runtime cost are not accepted. The
 physical packaged lifecycle and ComposerPill/AgentChatComposer checks are recorded
-in `docs/benchmarks/composer-android-2026-11-08/`; AliaComposer’s offline fixture
+in `docs/benchmarks/composer-android-2026-11-08/`; GemieComposer’s offline fixture
 checks are recorded there separately. Pending: fallback visual/performance policy,
 old RN/legacy runtime, production consumer adoption and published-package acceptance.
 iPhone testing is explicitly deferred by the user.

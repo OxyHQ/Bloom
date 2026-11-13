@@ -8,7 +8,7 @@ import { ComposerLoader } from '@oxy.so/bloom/composer-loader';
 import type { ComposerLoaderPhase } from '@oxy.so/bloom/composer-loader';
 import { ComposerPill } from '@oxy.so/bloom/composer-panel';
 import { AgentChatComposer } from '@oxy.so/bloom/agent-chat';
-import { AliaComposer } from './node_modules/@alia.onl/sdk/src/components/AliaComposer';
+import { GemieComposer } from './node_modules/@gemies/sdk/src/components/GemieComposer';
 import { OxyProvider } from '@oxy.so/services/ui/client';
 
 /** Real packaged owners with synthetic state; no chat service or copied input. */
@@ -22,7 +22,7 @@ export function ComposerCases({
   const [multiline, setMultiline] = useState(false);
   const [pill, setPill] = useState('Draft retained through resize');
   const [agent, setAgent] = useState('Agent draft retained through resize');
-  const [alia, setAlia] = useState('Alia draft retained through resize');
+  const [gemie, setGemie] = useState('Gemie draft retained through resize');
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<ComposerLoaderPhase>('idle');
   const phaseTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -73,17 +73,17 @@ export function ComposerCases({
       ? {
           pill: 'A longer draft wraps across lines as the loader tracks its height.',
           agent: 'An agent reply grows across lines while the active loader follows.',
-          alia: 'An Alia message wraps across lines in the packaged composer.',
+          gemie: 'A gemie message wraps across lines in the packaged composer.',
         }
       : {
           pill: 'Draft retained through resize',
           agent: 'Agent draft retained through resize',
-          alia: 'Alia draft retained through resize',
+          gemie: 'Gemie draft retained through resize',
         };
     setMultiline(next);
     setPill(drafts.pill);
     setAgent(drafts.agent);
-    setAlia(drafts.alia);
+    setGemie(drafts.gemie);
   };
   const stop = () => {
     cancelPhaseTimers();
@@ -258,9 +258,9 @@ export function ComposerCases({
               composerProps={{ showVoice: false, addMenu: [], effortLevels: [] }}
             />
             <OxyProvider baseURL="https://example.invalid" clientId="offline-fixture">
-              <AliaComposer
-                value={alia}
-                onValueChange={setAlia}
+              <GemieComposer
+                value={gemie}
+                onValueChange={setGemie}
                 onSubmit={submit}
                 onStop={stop}
                 busy={busy}
