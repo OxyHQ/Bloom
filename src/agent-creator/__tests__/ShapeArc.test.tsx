@@ -8,6 +8,10 @@ import { StyledImage } from '../../styles/styled-primitives';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
 import { ShapeArc, type ShapeArcChoice } from '../ShapeArc';
 import { ShapeSilhouette } from '../ShapeSilhouette';
+import { loadStaticPortraits } from '../../agent-avatar/use-static-portraits';
+
+// The portraits load on first use; these tests are about what is drawn once they have.
+beforeAll(() => loadStaticPortraits());
 
 jest.mock('../../agent-avatar/VectorStaticPortrait', () => ({
   VectorStaticPortrait: jest.fn(() => null),

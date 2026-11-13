@@ -115,6 +115,8 @@ const SUBPATHS = /** @type {const} */ ([
   ['./agent-creator', 'agent-creator/index.ts'],
   ['./project-board', 'project-board/index.ts'],
   ['./multi-agent-chat', 'multi-agent-chat/index.ts'],
+  // The selected-agents preview alone, without the multi-agent template it ships in.
+  ['./multi-agent-chat/selected-agent-preview', 'multi-agent-chat/selected-agent-preview.ts'],
   ['./agent-limits-card', 'agent-limits-card/index.ts'],
   ['./usage-card', 'usage-card/index.ts'],
   ['./subscription-plans', 'subscription-plans/index.ts'],

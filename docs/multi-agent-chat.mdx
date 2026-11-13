@@ -35,10 +35,14 @@ the chosen agents as one large avatar, a trio, or a ring from four up. Each avat
 fly into the empty chat and from there into the header's profile.
 
 ```tsx
-import { SelectedAgentPreview } from '@oxy.so/bloom/multi-agent-chat';
+import { SelectedAgentPreview } from '@oxy.so/bloom/multi-agent-chat/selected-agent-preview';
 
 <SelectedAgentPreview agents={agents} flights={flights} anchor="empty" />
 ```
+
+Import it from its own entry, `multi-agent-chat/selected-agent-preview`. The `multi-agent-chat`
+barrel is the whole template (its chat, sidebar, marketplace, agent creator and settings pages);
+a host that imported the preview from it linked ~140 KB of template it never drew.
 
 Without `onRespond`, the workspace returns sample responses. Each participant
 responds in conversation order. Stop cancels the request and reveal timers;
