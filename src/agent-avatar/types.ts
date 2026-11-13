@@ -4,6 +4,14 @@ import type { BloomThemeStorage } from '../theme/persistence';
 import type { AvatarCharacter } from './character';
 import type { VectorAssetLoader } from './vector-types';
 
+/**
+ * How the character feels, held for as long as it is set. `neutral` is its usual idle. `sad` is
+ * for an empty or not-found state, a refusal, something that could not be done: the character
+ * shakes its head "no" once as the mood starts, then stays dejected (looking down, drooping, lids
+ * heavy) on top of its idle until the mood changes.
+ */
+export type AgentAvatarMood = 'neutral' | 'sad';
+
 export type AgentAvatarProps = {
   /** @deprecated All characters use SVG. The legacy selector is accepted but has no effect. */
   renderer?: 'svg' | 'webgl';
@@ -24,6 +32,13 @@ export type AgentAvatarProps = {
   entranceKey?: number;
   workingKey?: number;
   workingCycles?: number;
+  /**
+   * Default `neutral`. Becoming `sad` (or mounting sad) shakes the head "no" once, then holds a
+   * dejected idle; back to `neutral` the droop eases out. Reactions, work and pointer gaze still
+   * play on top. Reduced motion and `paused` show the settled pose with no shake; a `portrait`
+   * still is always neutral.
+   */
+  mood?: AgentAvatarMood;
   /** The first picture of the character has been painted. Fires once per mounted renderer. */
   onReady?: () => void;
   /** Reports selected geometry preparation; paint-only changes do not reload. */

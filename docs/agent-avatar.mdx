@@ -254,6 +254,28 @@ interrupted transition. The final Computer episode includes its screen and hands
 exit in its last 280 ms, so work props do not linger after completion. Earlier
 repeats remain working; pausing freezes the transition clock.
 
+`mood` is a state rather than a key: it holds for as long as it is set. `mood="sad"` is for
+an empty or not-found state, a refusal, something that could not be done. As the mood starts
+(or the avatar mounts sad) the character shakes its head "no": three turns in 1.4 s, the first
+the widest, starting and ending at rest. Then it stays downcast on top of its idle: looking
+down and a little aside, sunk, slightly deflated, head tilted, lids heavy, still breathing and
+blinking. Back to `neutral` the droop eases out over about a second, and a neutral avatar draws
+exactly as it did before moods existed.
+
+```tsx
+<AgentAvatar character={{ preset: 'blue_beret' }} size={112} mood="sad" />
+```
+
+The mood is procedural (`vector-mood.ts`), like gaze and blinking, so every body has it: the
+presets, edited characters and the 13 flat forms. A reference face shakes and lowers its head
+through its look direction (its hats follow); any other body turns and tilts whole. Reactions,
+work and pointer gaze still play underneath; a transition between them never captures the mood,
+which runs on its own clock. Reduced motion and `paused` show the settled sad pose with no shake;
+a `portrait` still is always neutral. In an `EmptyState`, pass it as the `illustration` at
+`EMPTY_STATE_GEOMETRY[variant].illustration` (see [Empty State](/docs/empty-state)).
+`vector-mood.test.ts` checks the shake and the sad pose on every template through the real
+compositor, and `AgentAvatar-mood.test.tsx` the reduced-motion still.
+
 The panel, screen glyphs and hands share the panel's visibility envelope, including
 fractional camera visibility. Independent glyph coverage previously left text floating
 after the panel vanished. The regression checks intermediate rendered paths and opacity
