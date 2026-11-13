@@ -1,5 +1,11 @@
 # Changelog
 
+## 19.10.2
+
+### Fixed
+
+- **A vector avatar asks for all its assets at once.** `loadVectorGeometry` awaited the shape, then the eyes, eyewear and accessory, then the circle the eyes are fitted against, and each is its own chunk on the web: a first avatar waited one round trip per step. Measured on Alia's home (alia.onl, Bloom's default catalog), Alia's avatar resolved after five rounds of chunk requests. Everything the character names is now requested before the shape arrives (`vector-compose-parallel.test.ts`); only bot eyes wait for the shape, which decides whether they are drawn.
+
 ## 19.10.1
 
 ### Fixed

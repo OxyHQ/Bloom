@@ -597,7 +597,21 @@ async function composeVectorGeometry(
   const template = await loader.template(character);
   if (template)
     return seatLegacyAssemblies(sizedShapeFace(template, character.shape), character.accessory);
-  const base = centeredShapeFace(await loader.shape(character.shape), character.shape);
+  // Every asset the character names starts loading now, side by side. On the web each one is its
+  // own chunk, and awaiting them in turn made a first avatar wait one round trip per asset: the
+  // shape, then its eyes, eyewear and accessory, then the circle the eyes are fitted against.
+  // Bot eyes wait for the shape, which decides whether they are drawn at all (`preserveEyes`).
+  const eyesKnown = character.eyes !== 'none' && character.eyes !== 'bot';
+  const shapeAsset = loader.shape(character.shape);
+  const eyesAsset = eyesKnown ? loader.eyes(character.eyes) : undefined;
+  const circleAsset = eyesKnown ? loader.shape('circle') : undefined;
+  const eyewearAsset = character.eyewear !== 'none' ? loader.eyewear(character.eyewear) : undefined;
+  const accessoryAsset =
+    character.accessory !== 'none' ? loader.accessory(character.accessory) : undefined;
+  // Each is awaited below, or dropped when the shape fails first; never an unhandled rejection.
+  for (const pending of [eyesAsset, circleAsset, eyewearAsset, accessoryAsset])
+    void pending?.catch(() => {});
+  const base = centeredShapeFace(await shapeAsset, character.shape);
   const preserveEyes = !!base.referenceFace && character.eyes === 'bot';
   const kept = base.parts.flatMap((p, i) =>
     ['eyewear', 'accessory'].includes(p.role ?? '') || (p.role === 'eye' && !preserveEyes)
@@ -674,19 +688,19 @@ async function composeVectorGeometry(
     selections.push({
       role: 'eye',
       id: character.eyes,
-      data: loader.eyes(character.eyes),
+      data: eyesAsset ?? loader.eyes(character.eyes),
     });
-  if (character.eyewear !== 'none')
+  if (eyewearAsset)
     selections.push({
       role: 'eyewear',
       id: character.eyewear,
-      data: loader.eyewear(character.eyewear),
+      data: eyewearAsset,
     });
-  if (character.accessory !== 'none')
+  if (accessoryAsset)
     selections.push({
       role: 'accessory',
       id: character.accessory,
-      data: loader.accessory(character.accessory),
+      data: accessoryAsset,
     });
   if (preserveEyes && character.eyeSpacing !== undefined && character.eyeSpacing !== 1) {
     const selected = indices(result, 'eye'),
@@ -717,7 +731,7 @@ async function composeVectorGeometry(
       group = bounds(donor, selected),
       donorFace = bounds(donor, indices(donor, 'eye'));
     const facial = role === 'eye' || role === 'eyewear';
-    const circle = await loader.shape('circle');
+    const circle = await (circleAsset ?? loader.shape('circle'));
     const finalEyes = indices(result, 'eye');
     const fittedFace = role === 'eyewear' && finalEyes.length ? bounds(result, finalEyes) : face;
     const targetPair = eyePair(
