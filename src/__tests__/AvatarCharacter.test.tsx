@@ -102,6 +102,11 @@ it('paints a bot in its account colour, and in its own paint without one', () =>
     ...parts,
     bodyColor: normalizeAvatarSkinColor(APP_COLOR_PRESETS.mint.hex),
   });
+  view.rerender(wrap(<Avatar account={{ ...bot, color: '#ff8b67' }} size={32} />));
+  expect(last().character).toMatchObject({
+    preset: 'blue_beret',
+    bodyColor: normalizeAvatarSkinColor('#ff8b67'),
+  });
   view.rerender(wrap(<Avatar account={{ ...bot, color: null }} size={32} />));
   expect(last().character).toMatchObject({ preset: 'blue_beret', color: 'blue' });
 });

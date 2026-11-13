@@ -18,8 +18,7 @@ export interface AvatarAccount {
   /** Stored bot character data, validated before rendering. Unknown recipes fall back to its image. */
   character?: unknown;
   /**
-   * The account's colour, as Oxy stores `User.color`: a Bloom colour preset key (or a legacy
-   * `#rrggbb`). A bot's character is drawn in it (`avatarCharacterInColor`), so a bot looks the
+   * The account's colour, as Oxy stores `User.color`: a Bloom colour preset key or a `#rrggbb`. A bot's character is drawn in it (`avatarCharacterInColor`), so a bot looks the
    * colour of its account everywhere its account is drawn.
    */
   color?: string | null;

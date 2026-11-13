@@ -1,6 +1,8 @@
 import { normalizeAvatarSkinColor } from '../../agent-avatar/skin-color';
-import { ColorSwatchPicker } from '../../color-swatch-picker';
-import { APP_COLOR_PRESETS, FREE_COLOR_NAMES } from '../../theme/color-presets';
+import { CHARACTER_COLORS } from '../../agent-avatar/character-colors';
+import { APP_COLOR_PRESETS } from '../../theme/color-presets';
+import { CustomColorPicker } from '../CustomColorPicker';
+import { GlossArt } from '../GlossArt';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { useState } from 'react';
 import { CharacterAvatar } from '../../agent-avatar/CharacterAvatar';
@@ -197,33 +199,50 @@ describe('the character editor', () => {
     global.cancelAnimationFrame = jest.fn();
   });
 
-  it('changes the agent colour among the offered presets, outside the character history', () => {
+  it('writes a named swatch as the account colour, outside the character history', () => {
     const { view, onChange } = controlled();
-    const picker = () => view.UNSAFE_getByType(ColorSwatchPicker).props;
-    expect(picker().colors).toEqual(FREE_COLOR_NAMES.map((name) => APP_COLOR_PRESETS[name].hex));
-    expect(picker().value).toBe(APP_COLOR_PRESETS.teal.hex);
-    act(() => picker().onValueChange(APP_COLOR_PRESETS.lagoon.hex));
-    expect(onChange).toHaveBeenLastCalledWith({ ...agent, color: 'lagoon' });
-    expect(picker().value).toBe(APP_COLOR_PRESETS.lagoon.hex);
+    fireEvent.press(view.getByLabelText('Blue avatar'));
+    const blue = normalizeAvatarSkinColor(CHARACTER_COLORS.blue);
+    expect(onChange).toHaveBeenLastCalledWith({ ...agent, color: blue });
+    expect(view.getByLabelText('Blue avatar').props['aria-pressed']).toBe(true);
+    expect(view.getByLabelText('Custom avatar color').props['aria-pressed']).toBe(false);
     // A colour is the account's, not a character edit: there is nothing to undo.
     expect(view.getByLabelText('Undo').props.accessibilityState?.disabled ?? true).toBe(true);
-    expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe(
-      normalizeAvatarSkinColor(APP_COLOR_PRESETS.lagoon.hex),
-    );
+    expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe(blue);
   });
 
-  it('offers exactly the colours the host passes, by name', () => {
-    const { view } = controlled();
-    view.unmount();
-    const onChange = jest.fn();
-    const only = render(
-      <BloomThemeProvider>
-        <AgentCreator agent={agent} onChange={onChange} colors={['teal', 'mint', 'not-a-preset']} />
-      </BloomThemeProvider>,
-    );
-    const picker = only.UNSAFE_getByType(ColorSwatchPicker).props;
-    expect(picker.colors).toEqual([APP_COLOR_PRESETS.teal.hex, APP_COLOR_PRESETS.mint.hex]);
-    expect(Object.keys(picker.names)).toEqual(picker.colors);
+  it('writes any custom colour as the account colour, as the hex the avatar is drawn in', () => {
+    const { view, onChange } = controlled();
+    fireEvent.press(view.getByLabelText('Custom avatar color'));
+    const picker = () => view.UNSAFE_getByType(CustomColorPicker);
+    act(() => picker().props.onChange('#445566'));
+    expect(onChange.mock.lastCall![0]).toEqual({
+      ...agent,
+      color: normalizeAvatarSkinColor('#445566'),
+    });
+    expect(view.getAllByLabelText('Custom avatar color')[0]!.props['aria-pressed']).toBe(true);
+    expect(picker().props.value).toBe(normalizeAvatarSkinColor('#445566'));
+    const calls = onChange.mock.calls.length;
+    act(() => picker().props.onChange('not-a-color'));
+    expect(onChange).toHaveBeenCalledTimes(calls);
+  });
+
+  it('marks the named swatch whose hex the account colour is, and the custom one otherwise', () => {
+    const named = controlled({ ...agent, color: '#4778FF' });
+    expect(named.view.getByLabelText('Blue avatar').props['aria-pressed']).toBe(true);
+    expect(named.view.getByLabelText('Custom avatar color').props['aria-pressed']).toBe(false);
+    named.view.unmount();
+    const preset = controlled({ ...agent, color: 'lagoon' });
+    expect(preset.view.getByLabelText('Custom avatar color').props['aria-pressed']).toBe(true);
+    expect(
+      preset.view
+        .UNSAFE_getAllByType(GlossArt)
+        .some(
+          (art) =>
+            art.props.center === normalizeAvatarSkinColor(APP_COLOR_PRESETS.lagoon.hex) &&
+            art.props.active,
+        ),
+    ).toBe(true);
   });
 
   it('draws a character in the agent colour, never its own paint, and hands it back paintless', () => {
@@ -241,14 +260,14 @@ describe('the character editor', () => {
     expect(last()).toMatchObject({ eyes: 'dots' });
   });
 
-  it('draws a paintless character whose colour does not resolve in the first offered colour', () => {
+  it('draws a paintless character whose colour does not resolve in the first named swatch', () => {
     const { view } = controlled({
       ...agent,
       color: 'not-a-preset',
       avatar: { shape: 'heart', eyes: 'oval', eyewear: 'none', accessory: 'none' },
     });
     expect(view.UNSAFE_getByType(EmotionPicker).props.backgroundColor).toBe(
-      normalizeAvatarSkinColor(APP_COLOR_PRESETS[FREE_COLOR_NAMES[0]!].hex),
+      normalizeAvatarSkinColor(CHARACTER_COLORS.pink),
     );
   });
 
@@ -312,7 +331,7 @@ describe('the character editor', () => {
       </CharacterRuntimeFixture>,
     );
     expect(view.getByTestId('agent-creator-character-controls')).toBeTruthy();
-    expect(view.UNSAFE_getByType(ColorSwatchPicker)).toBeTruthy();
+    expect(view.getByLabelText('Blue avatar')).toBeTruthy();
     expect(view.UNSAFE_getByType(ShapeArc)).toBeTruthy();
     expect(view.UNSAFE_getByType(EmotionPicker)).toBeTruthy();
     for (const avatar of view.UNSAFE_getAllByType(CharacterAvatar)) {
@@ -394,9 +413,7 @@ describe('the character editor', () => {
     fireEvent.press(view.getByLabelText('Dots'));
     fireEvent(controls()[0]!, 'valueChange', 'round_sunglasses');
     fireEvent(controls()[1]!, 'valueChange', 'crown');
-    act(() =>
-      view.UNSAFE_getByType(ColorSwatchPicker).props.onValueChange(APP_COLOR_PRESETS.mint.hex),
-    );
+    fireEvent.press(view.getByLabelText('Coral avatar'));
     expect(last()).toEqual({
       preset: 'blue_beret',
       shape: 'cloud',
@@ -404,7 +421,7 @@ describe('the character editor', () => {
       eyewear: 'round_sunglasses',
       accessory: 'crown',
     });
-    expect(onChange.mock.lastCall![0].color).toBe('mint');
+    expect(onChange.mock.lastCall![0].color).toBe(normalizeAvatarSkinColor(CHARACTER_COLORS.coral));
   });
 
   it('offers every eye but the single one the catalogue draws separately', () => {

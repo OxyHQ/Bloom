@@ -21,8 +21,10 @@ export type AgentCreatorAgent = {
    */
   avatar: AvatarCharacter;
   /**
-   * The agent's colour: its account's, a Bloom colour preset key (`User.color` in Oxy). It paints
-   * the avatar, and the colour control changes it (`onChange` with a new `color`).
+   * The agent's colour: its ACCOUNT's (`User.color` in Oxy), a Bloom colour preset key or a
+   * `#rrggbb`. It paints the avatar, and the colour control changes it: `onChange` with a new
+   * `color`, always a `#rrggbb` lifted to the avatar skin floor, so the stored colour is exactly
+   * the drawn one.
    */
   color: string;
   preferences?: AgentPreferences;
@@ -34,11 +36,6 @@ export interface AgentCreatorProps {
   agent: AgentCreatorAgent;
   onChange: (agent: AgentCreatorAgent) => void;
   onClose?: () => void;
-  /**
-   * The colour preset keys the colour control offers, in order. Default `FREE_COLOR_NAMES`. A host
-   * passes exactly what its account service accepts, so no colour offered is refused on save.
-   */
-  colors?: readonly string[];
   className?: string;
   style?: StyleProp<ViewStyle>;
   /** Native hosts can supply their speech provider's catalog. Web uses local device voices by default. */

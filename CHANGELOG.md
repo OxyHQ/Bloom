@@ -1,5 +1,16 @@
 # Changelog
 
+## 21.0.0
+
+### Breaking
+
+- **`AgentCreatorProps.colors` is removed.** Nothing restricts the agent's colour to presets: an account colour can be any colour, so a host no longer passes the list of colours its account service accepts.
+
+### Changed
+
+- **The free colour picker is back, and it writes the agent's account colour.** The creator's colour control is the one before 20.0.0 again: the nine glossy named swatches and the custom `#rrggbb` picker behind the rainbow swatch (saturation/brightness field, hue rail, hex entry), with their messages in every locale. Choosing either calls `onChange({ ...agent, color })` with the hex lifted to the avatar skin floor (`normalizeAvatarSkinColor`), so the account stores exactly the colour the avatar is drawn in. `agent.color` is any account colour, a preset key or a `#rrggbb`: a named swatch is active when its lifted hex equals the colour's body hex, the custom swatch when it equals none of them, and the custom picker opens on that hex. The character stays paintless: it is drawn with `avatarCharacterInColor(avatar, agent.color)` and handed back without `color`/`bodyColor`. A colour change is not a character edit and stays out of undo.
+- **A hex is an ordinary account colour.** `avatarCharacterInColor` and `AvatarAccount.color` take a `#rrggbb` (or `#rgb`) as readily as a preset key, and a hex round-trips: `avatarCharacterInColor(c, '#ff8b67')` paints `normalizeAvatarSkinColor('#ff8b67')`. `MultiAgentChat` restores any colour Bloom can draw.
+
 ## 20.0.0
 
 ### Breaking

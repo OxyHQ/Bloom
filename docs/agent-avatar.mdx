@@ -98,11 +98,11 @@ in current choices or templates.
 - `characterFromLegacy(saved)` migrates an avatar saved before 10 (see
   [Migrating to 10.0](/docs/migrating-to-10.0)).
 - `avatarCharacterInColor(character, color)` paints a character in its ACCOUNT's colour:
-  `color` is what Oxy stores as `User.color`, a Bloom colour preset key (or a legacy `#rgb` /
-  `#rrggbb`). The body takes the preset's identity seed, lifted to the skin floor, as
-  `bodyColor`; every part is kept and `color` is dropped. A colour that does not resolve
+  `color` is what Oxy stores as `User.color`: a Bloom colour preset key or a hex (`#rrggbb`,
+  `#rgb`), both ordinary account colours. The body takes the preset's identity seed, or the hex,
+  lifted to the skin floor, as `bodyColor` (so a hex an editor wrote back paints exactly itself); every part is kept and `color` is dropped. A colour that does not resolve
   (`null`, `undefined`, an unknown key) returns the character unchanged. This is the one place a
-  colour preset becomes an avatar paint: a bot is drawn in the colour its profile is themed with.
+  account colour becomes an avatar paint: a bot is drawn in the colour its profile is themed with.
 
 ### A bot is drawn in its account's colour
 

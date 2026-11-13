@@ -1,4 +1,5 @@
 import { Screen, ScreenScrollView } from '../screen/index';
+import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import {
   Select,
   SelectContent,
@@ -22,6 +23,9 @@ const bindings = {
   SelectContent,
   SelectItem,
   SelectItemText,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
   SettingsSelect,
 };
 export function AgentCreator(props: AgentCreatorProps) {

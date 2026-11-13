@@ -389,11 +389,6 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
       verdict: 'does-not-apply',
       reason: SELECTION_ROW,
     },
-    'agent-creator': {
-      verdict: 'does-not-apply',
-      reason:
-        'the only form role is the `[role="textbox"]` selector its undo shortcut uses to leave keystrokes typed into a field alone, not a node it renders. Its fields are `TextFieldInput` and `Textarea`, which read the contract themselves, and its colour control is a `ColorSwatchPicker`.',
-    },
     styles: {
       verdict: 'does-not-apply',
       reason:

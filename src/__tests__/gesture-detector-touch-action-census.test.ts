@@ -73,6 +73,9 @@ const DECISIONS: Record<string, readonly string[]> = {
   'app-shell/PanelReorderHandle.tsx': ['none'],
   // Rotary drag — both axes are the gesture, and the dial says `touch-none`.
   'agent-creator/EmotionPicker.tsx': ['default'],
+  // 2-D saturation/value field, then a hue rail that takes its value on
+  // touch-down (`minDistance(0)`) like `Slider`, which is `touch-action: none`.
+  'agent-creator/CustomColorPicker.tsx': ['default', 'default'],
   // Sheet drag handle; body pan over the sheet; the native wrapper around the
   // sheet's ScrollView (RNGH's Native handler sets `auto` itself on web). The
   // sheet is an overlay, not scroll content, and dragging it is vertical.
