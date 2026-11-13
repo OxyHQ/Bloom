@@ -1,5 +1,11 @@
 # Changelog
 
+## 21.1.1
+
+### Fixed
+
+- **The custom-colour swatch no longer adds ~262 KB to every app that loads the agent editor.** Its rainbow (light and dark) was embedded as two 390 × 390 px PNGs, 346 KB of base64 that does not compress again (~262 KB gzipped), for a swatch drawn at 26 px; Allo and Homiio raised their bundle budgets for it. They are now 96 × 96 px (3.7× the swatch, past a 3× screen): 8.5 KB gzipped for both, matching the originals to within 42–47 dB PSNR at 26, 52 and 78 px, so the picker looks the same. `rainbow-artwork-size.test.ts` holds the module to 16 KB gzipped and the bitmaps to at most 4× the swatch.
+
 ## 21.1.0
 
 ### Added
