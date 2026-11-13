@@ -1,0 +1,501 @@
+--------- beginning of main
+11-09 03:05:53.295  3059  3059 W oaderpackagela: Unexpected CPU variant for X86 using defaults: x86_64
+11-09 03:05:53.375  3059  3059 I oaderpackagela: The ClassLoaderContext is a special shared library.
+11-09 03:05:53.393  3059  3059 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-09 03:05:53.393  3059  3059 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-09 03:05:53.404  3059  3059 W SoLoader: Initializing SoLoader: 0
+11-09 03:05:53.404  3059  3059 W SoLoader: Recording new base apk path: /data/app/~~n8sAGHVxcKBVsoJJaKeL8Q==/so.oxy.bloom.loaderpackagelab-EpsX83Fw656Caxxj_5Zvrw==/base.apk
+11-09 03:05:53.404  3059  3059 W SoLoader: Previously recorded 0 base apk paths.
+11-09 03:05:53.405  3059  3059 I SoLoader: Preparing SO source: DirectorySoSource[root = /vendor/lib64 flags = 2]
+11-09 03:05:53.405  3059  3059 I SoLoader: Preparing SO source: DirectorySoSource[root = /system/lib64 flags = 2]
+11-09 03:05:53.405  3059  3059 I SoLoader: Preparing SO source: DirectApkSoSource[root = [/data/app/~~n8sAGHVxcKBVsoJJaKeL8Q==/so.oxy.bloom.loaderpackagelab-EpsX83Fw656Caxxj_5Zvrw==/base.apk!/lib/x86_64]]
+11-09 03:05:53.408  3059  3059 I SoLoader: Preparing SO source: ApplicationSoSource[DirectorySoSource[root = /data/app/~~n8sAGHVxcKBVsoJJaKeL8Q==/so.oxy.bloom.loaderpackagelab-EpsX83Fw656Caxxj_5Zvrw==/lib/x86_64 flags = 0]]
+11-09 03:05:53.408  3059  3059 I SoLoader: init finish: 4 SO sources prepared
+11-09 03:05:53.408  3059  3059 W SoLoader: SoLoader initialized: 8
+11-09 03:05:53.423  3059  3059 D jni_lib_merge: Entering merged library JNI_OnLoad.
+11-09 03:05:53.423  3059  3059 D jni_lib_merge: Preparing 13 pre-merged libs (including stub)
+11-09 03:05:53.423  3059  3059 D jni_lib_merge: Preparing to register libfabricjni_so.  onload_func: 0x73d0d95bcae0
+11-09 03:05:53.423  3059  3059 D jni_lib_merge: Preparing to register libreact_devsupportjni_so.  onload_func: 0x73d0d96ab3a0
+11-09 03:05:53.423  3059  3059 D jni_lib_merge: Preparing to register libreact_featureflagsjni_so.  onload_func: 0x73d0d96bcfe0
+11-09 03:05:53.423  3059  3059 D jni_lib_merge: Preparing to register libreact_newarchdefaults_so.  onload_func: 0x73d0d96fc7d0
+11-09 03:05:53.423  3059  3059 D jni_lib_merge: Preparing to register libreact_tracingjni_so.  onload_func: 0x73d0d980bc00
+11-09 03:05:53.423  3059  3059 D jni_lib_merge: Preparing to register libreactnativeblob_so.  onload_func: 0x73d0d9810f70
+11-09 03:05:53.423  3059  3059 D jni_lib_merge: Preparing to register libreactnativejni_so.  onload_func: 0x73d0d981d4f0
+11-09 03:05:53.423  3059  3059 D jni_lib_merge: Preparing to register libreactnativejni_common_so.  onload_func: 0x73d0d9821c40
+11-09 03:05:53.423  3059  3059 D jni_lib_merge: Preparing to register librninstance_so.  onload_func: 0x73d0d9849d70
+11-09 03:05:53.423  3059  3059 D jni_lib_merge: Preparing to register libturbomodulejsijni_so.  onload_func: 0x73d0d98f2630
+11-09 03:05:53.423  3059  3059 D jni_lib_merge: Preparing to register libuimanagerjni_so.  onload_func: 0x73d0d98f9590
+11-09 03:05:53.423  3059  3059 D jni_lib_merge: Preparing to register libyoga_so.  onload_func: 0x73d0d9901130
+11-09 03:05:53.423  3059  3059 D jni_lib_merge: About to register 12 actual methods.
+11-09 03:05:53.430  3059  3059 D jni_lib_merge: Entering merged library JNI_OnLoad.
+11-09 03:05:53.430  3059  3059 D jni_lib_merge: Preparing 13 pre-merged libs (including stub)
+11-09 03:05:53.430  3059  3059 D jni_lib_merge: Preparing to register libfabricjni_so.  onload_func: 0x73d0d95bcae0
+11-09 03:05:53.430  3059  3059 D jni_lib_merge: Preparing to register libreact_devsupportjni_so.  onload_func: 0x73d0d96ab3a0
+11-09 03:05:53.430  3059  3059 D jni_lib_merge: Preparing to register libreact_featureflagsjni_so.  onload_func: 0x73d0d96bcfe0
+11-09 03:05:53.430  3059  3059 D jni_lib_merge: Preparing to register libreact_newarchdefaults_so.  onload_func: 0x73d0d96fc7d0
+11-09 03:05:53.430  3059  3059 D jni_lib_merge: Preparing to register libreact_tracingjni_so.  onload_func: 0x73d0d980bc00
+11-09 03:05:53.430  3059  3059 D jni_lib_merge: Preparing to register libreactnativeblob_so.  onload_func: 0x73d0d9810f70
+11-09 03:05:53.430  3059  3059 D jni_lib_merge: Preparing to register libreactnativejni_so.  onload_func: 0x73d0d981d4f0
+11-09 03:05:53.430  3059  3059 D jni_lib_merge: Preparing to register libreactnativejni_common_so.  onload_func: 0x73d0d9821c40
+11-09 03:05:53.430  3059  3059 D jni_lib_merge: Preparing to register librninstance_so.  onload_func: 0x73d0d9849d70
+11-09 03:05:53.430  3059  3059 D jni_lib_merge: Preparing to register libturbomodulejsijni_so.  onload_func: 0x73d0d98f2630
+11-09 03:05:53.430  3059  3059 D jni_lib_merge: Preparing to register libuimanagerjni_so.  onload_func: 0x73d0d98f9590
+11-09 03:05:53.430  3059  3059 D jni_lib_merge: Preparing to register libyoga_so.  onload_func: 0x73d0d9901130
+11-09 03:05:53.430  3059  3059 D jni_lib_merge: About to register 12 actual methods.
+11-09 03:05:53.438  3059  3059 D jni_lib_merge: Entering merged library JNI_OnLoad.
+11-09 03:05:53.438  3059  3059 D jni_lib_merge: Preparing 13 pre-merged libs (including stub)
+11-09 03:05:53.438  3059  3059 D jni_lib_merge: Preparing to register libfabricjni_so.  onload_func: 0x73d0d95bcae0
+11-09 03:05:53.438  3059  3059 D jni_lib_merge: Preparing to register libreact_devsupportjni_so.  onload_func: 0x73d0d96ab3a0
+11-09 03:05:53.438  3059  3059 D jni_lib_merge: Preparing to register libreact_featureflagsjni_so.  onload_func: 0x73d0d96bcfe0
+11-09 03:05:53.438  3059  3059 D jni_lib_merge: Preparing to register libreact_newarchdefaults_so.  onload_func: 0x73d0d96fc7d0
+11-09 03:05:53.438  3059  3059 D jni_lib_merge: Preparing to register libreact_tracingjni_so.  onload_func: 0x73d0d980bc00
+11-09 03:05:53.438  3059  3059 D jni_lib_merge: Preparing to register libreactnativeblob_so.  onload_func: 0x73d0d9810f70
+11-09 03:05:53.438  3059  3059 D jni_lib_merge: Preparing to register libreactnativejni_so.  onload_func: 0x73d0d981d4f0
+11-09 03:05:53.438  3059  3059 D jni_lib_merge: Preparing to register libreactnativejni_common_so.  onload_func: 0x73d0d9821c40
+11-09 03:05:53.438  3059  3059 D jni_lib_merge: Preparing to register librninstance_so.  onload_func: 0x73d0d9849d70
+11-09 03:05:53.438  3059  3059 D jni_lib_merge: Preparing to register libturbomodulejsijni_so.  onload_func: 0x73d0d98f2630
+11-09 03:05:53.438  3059  3059 D jni_lib_merge: Preparing to register libuimanagerjni_so.  onload_func: 0x73d0d98f9590
+11-09 03:05:53.438  3059  3059 D jni_lib_merge: Preparing to register libyoga_so.  onload_func: 0x73d0d9901130
+11-09 03:05:53.438  3059  3059 D jni_lib_merge: About to register 12 actual methods.
+11-09 03:05:53.440  3059  3059 D jni_lib_merge: Entering merged library JNI_OnLoad.
+11-09 03:05:53.440  3059  3059 D jni_lib_merge: Preparing 13 pre-merged libs (including stub)
+11-09 03:05:53.440  3059  3059 D jni_lib_merge: Preparing to register libfabricjni_so.  onload_func: 0x73d0d95bcae0
+11-09 03:05:53.440  3059  3059 D jni_lib_merge: Preparing to register libreact_devsupportjni_so.  onload_func: 0x73d0d96ab3a0
+11-09 03:05:53.440  3059  3059 D jni_lib_merge: Preparing to register libreact_featureflagsjni_so.  onload_func: 0x73d0d96bcfe0
+11-09 03:05:53.440  3059  3059 D jni_lib_merge: Preparing to register libreact_newarchdefaults_so.  onload_func: 0x73d0d96fc7d0
+11-09 03:05:53.440  3059  3059 D jni_lib_merge: Preparing to register libreact_tracingjni_so.  onload_func: 0x73d0d980bc00
+11-09 03:05:53.440  3059  3059 D jni_lib_merge: Preparing to register libreactnativeblob_so.  onload_func: 0x73d0d9810f70
+11-09 03:05:53.440  3059  3059 D jni_lib_merge: Preparing to register libreactnativejni_so.  onload_func: 0x73d0d981d4f0
+11-09 03:05:53.440  3059  3059 D jni_lib_merge: Preparing to register libreactnativejni_common_so.  onload_func: 0x73d0d9821c40
+11-09 03:05:53.440  3059  3059 D jni_lib_merge: Preparing to register librninstance_so.  onload_func: 0x73d0d9849d70
+11-09 03:05:53.440  3059  3059 D jni_lib_merge: Preparing to register libturbomodulejsijni_so.  onload_func: 0x73d0d98f2630
+11-09 03:05:53.440  3059  3059 D jni_lib_merge: Preparing to register libuimanagerjni_so.  onload_func: 0x73d0d98f9590
+11-09 03:05:53.440  3059  3059 D jni_lib_merge: Preparing to register libyoga_so.  onload_func: 0x73d0d9901130
+11-09 03:05:53.440  3059  3059 D jni_lib_merge: About to register 12 actual methods.
+11-09 03:05:53.457  3059  3059 D AppCompatDelegate: Checking for metadata for AppLocalesMetadataHolderService : Service not found
+11-09 03:05:53.493  3059  3059 D jni_lib_merge: Entering merged library JNI_OnLoad.
+11-09 03:05:53.493  3059  3059 D jni_lib_merge: Preparing 4 pre-merged libs (including stub)
+11-09 03:05:53.493  3059  3059 D jni_lib_merge: Preparing to register libhermes_executor_so.  onload_func: 0x73d0d8fa60d0
+11-09 03:05:53.493  3059  3059 D jni_lib_merge: Preparing to register libhermesinstancejni_so.  onload_func: 0x73d0d8fad8b0
+11-09 03:05:53.493  3059  3059 D jni_lib_merge: Preparing to register libjsijniprofiler_so.  onload_func: 0x73d0d8fae0f0
+11-09 03:05:53.493  3059  3059 D jni_lib_merge: About to register 3 actual methods.
+11-09 03:05:53.529  3059  3059 W unknown:BridgelessReact: ReactHost{0}.startSurface(surfaceId = 0): Schedule
+11-09 03:05:53.529  3059  3059 W unknown:BridgelessReact: ReactHost{0}.attachSurface(surfaceId = 0)
+11-09 03:05:53.573  3059  3115 D libEGL  : loaded /vendor/lib64/egl/libEGL_emulation.so
+11-09 03:05:53.575  3059  3115 D libEGL  : loaded /vendor/lib64/egl/libGLESv1_CM_emulation.so
+11-09 03:05:53.577  3059  3115 D libEGL  : loaded /vendor/lib64/egl/libGLESv2_emulation.so
+11-09 03:05:53.599  3059  3059 W unknown:BridgelessReact: ReactHost{0}.onHostResume(activity)
+11-09 03:05:53.602  3059  3118 W unknown:BridgelessReact: ReactHost{0}.getOrCreateReactInstanceTask()
+11-09 03:05:53.602  3059  3118 W unknown:BridgelessReact: ReactHost{0}.getOrCreateReactInstanceTask(): Start
+11-09 03:05:53.602  3059  3118 W unknown:BridgelessReact: ReactHost{0}.getJSBundleLoader()
+11-09 03:05:53.603  3059  3118 W unknown:BridgelessReact: ReactHost{0}.getOrCreateReactInstanceTask(): Creating BridgelessReactContext
+11-09 03:05:53.604  3059  3118 W unknown:BridgelessReact: ReactHost{0}.getOrCreateReactInstanceTask(): Creating ReactInstance
+11-09 03:05:53.655  3059  3105 D HostConnection: HostConnection::get() New Host Connection established 0x73d1c28a9750, tid 3105
+11-09 03:05:53.659  3059  3105 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-09 03:05:53.664  3059  3105 D EGL_emulation: eglCreateContext: 0x73d1b28cc0d0: maj 3 min 0 rcv 3
+11-09 03:05:53.679  3059  3105 D EGL_emulation: eglMakeCurrent: 0x73d1b28cc0d0: ver 3 0 (tinfo 0x73d1528f05e0) (first time)
+11-09 03:05:53.710  3059  3105 I Gralloc4: mapper 4.x is not supported
+11-09 03:05:53.711  3059  3105 D HostConnection: createUnique: call
+11-09 03:05:53.711  3059  3105 D HostConnection: HostConnection::get() New Host Connection established 0x73d1c28a6990, tid 3105
+11-09 03:05:53.724  3059  3105 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-09 03:05:53.805  3059  3118 I ExpoModulesCore: ✅ AppContext was initialized
+11-09 03:05:54.000  3059  3118 W unknown:BridgelessReact: ReactHost{0}.getOrCreateReactInstanceTask(): Loading JS Bundle
+11-09 03:05:54.001  3059  3118 W unknown:BridgelessReact: ReactHost{0}.getOrCreateReactInstanceTask(): DevSupportManager.onNewReactContextCreated()
+11-09 03:05:54.001  3059  3118 W unknown:BridgelessReact: ReactHost{0}.startSurface(surfaceId = 0): Execute
+11-09 03:05:54.006  3059  3059 W unknown:BridgelessReact: ReactHost{0}.ReactContext.onHostResume()
+11-09 03:05:54.022  3059  3059 W unknown:BridgelessReact: ReactHost{0}.getOrCreateReactInstanceTask(): Executing ReactInstanceEventListeners
+11-09 03:05:54.038  3059  3130 W fp      : [WARNING] Bridgeless doesn't support CatalystInstance. Accessing an API that's not part of the new architecture is not encouraged usage.
+11-09 03:05:54.041  3059  3130 I ExpoModulesCore: ✅ JSI interop was installed
+11-09 03:05:54.045  3059  3130 W ExpoModulesV2: hh0 does not implement io.github.expo.modules.v2.Enumerable. It crosses to JavaScript here, but R8 keeps an enum's entries and its property only when it does, so a release build may fail on it or send its entry names instead
+11-09 03:05:54.045  3059  3130 I ExpoModulesCore: ✅ Expo Modules v2 installed 1 module(s) on globalThis.expo.modules
+11-09 03:05:54.047  3059  3130 I ExpoModulesCore: ✅ Constants were exported
+11-09 03:05:54.074  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.reactnativekeyboardcontroller.OverKeyboardViewManager
+11-09 03:05:54.075  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class wk2
+11-09 03:05:54.076  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.reactnativekeyboardcontroller.KeyboardToolbarGroupViewManager
+11-09 03:05:54.076  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class az1
+11-09 03:05:54.076  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.rnscreens.ScreenFooterManager
+11-09 03:05:54.076  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class expo.modules.kotlin.views.GroupViewManagerWrapper
+11-09 03:05:54.077  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.rnscreens.ScreenContainerViewManager
+11-09 03:05:54.077  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.rnscreens.ModalScreenViewManager
+11-09 03:05:54.077  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.reactnativekeyboardcontroller.KeyboardGestureAreaViewManager
+11-09 03:05:54.077  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.th3rdwave.safeareacontext.SafeAreaViewManager
+11-09 03:05:54.077  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class ak3
+11-09 03:05:54.077  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.rnscreens.safearea.SafeAreaViewManager
+11-09 03:05:54.078  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.rnscreens.ScreenViewManager
+11-09 03:05:54.078  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.reanimated.view.REASharedTransitionBoundaryManager
+11-09 03:05:54.078  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.rnscreens.ScreenStackViewManager
+11-09 03:05:54.078  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.rnscreens.gamma.stack.header.config.StackHeaderConfigViewManager
+11-09 03:05:54.078  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.th3rdwave.safeareacontext.SafeAreaProviderManager
+11-09 03:05:54.079  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.rnscreens.SearchBarManager
+11-09 03:05:54.079  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.reactnativekeyboardcontroller.ClippingScrollViewDecoratorViewManager
+11-09 03:05:54.079  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.rnscreens.gamma.tabs.host.TabsHostViewManager
+11-09 03:05:54.079  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.rnscreens.gamma.stack.header.subview.StackHeaderSubviewViewManager
+11-09 03:05:54.079  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.reactnativekeyboardcontroller.KeyboardControllerViewManager
+11-09 03:05:54.079  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.rnscreens.gamma.scrollviewmarker.ScrollViewMarkerViewManager
+11-09 03:05:54.080  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.rnscreens.ScreenStackHeaderConfigViewManager
+11-09 03:05:54.080  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.rnscreens.gamma.modals.formsheet.FormSheetContentWrapperViewManager
+11-09 03:05:54.080  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.rnscreens.ScreenContentWrapperManager
+11-09 03:05:54.081  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.rnscreens.gamma.stack.host.StackHostViewManager
+11-09 03:05:54.091  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.rnscreens.ScreenStackHeaderSubviewManager
+11-09 03:05:54.092  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.rnscreens.gamma.stack.screen.StackScreenViewManager
+11-09 03:05:54.092  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.rnscreens.gamma.modals.formsheet.FormSheetHostViewManager
+11-09 03:05:54.092  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.reactnativekeyboardcontroller.KeyboardBackgroundViewManager
+11-09 03:05:54.092  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.rnscreens.gamma.tabs.screen.TabsScreenViewManager
+11-09 03:05:54.146  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$DefsViewManager
+11-09 03:05:54.146  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class ni4
+11-09 03:05:54.156  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$FeMergeManager
+11-09 03:05:54.158  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.facebook.react.views.safeareaview.ReactSafeAreaViewManager
+11-09 03:05:54.158  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.gesturehandler.react.RNGestureHandlerDetectorViewManager
+11-09 03:05:54.159  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$LinearGradientManager
+11-09 03:05:54.159  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$FeGaussianBlurManager
+11-09 03:05:54.160  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.facebook.react.views.progressbar.ReactProgressBarViewManager
+11-09 03:05:54.161  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.facebook.react.views.scroll.ReactHorizontalScrollViewManager
+11-09 03:05:54.173  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.facebook.react.views.text.ReactTextViewManager
+11-09 03:05:54.175  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$FeColorMatrixManager
+11-09 03:05:54.176  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.facebook.react.views.scroll.ReactHorizontalScrollContainerViewManager
+11-09 03:05:54.177  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$ClipPathViewManager
+11-09 03:05:54.181  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$SymbolManager
+11-09 03:05:54.184  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$PatternManager
+11-09 03:05:54.187  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$FeBlendManager
+11-09 03:05:54.188  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.facebook.react.views.view.ReactViewManager
+11-09 03:05:54.189  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.SvgViewManager
+11-09 03:05:54.190  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.facebook.react.views.switchview.ReactSwitchManager
+11-09 03:05:54.191  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$UseViewManager
+11-09 03:05:54.192  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$CircleViewManager
+11-09 03:05:54.193  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$TSpanViewManager
+11-09 03:05:54.195  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$FilterManager
+11-09 03:05:54.196  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$MarkerManager
+11-09 03:05:54.199  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.gesturehandler.react.RNGestureHandlerButtonViewManager
+11-09 03:05:54.201  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.facebook.react.views.modal.ReactModalHostManager
+11-09 03:05:54.203  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$ForeignObjectManager
+11-09 03:05:54.204  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$EllipseViewManager
+11-09 03:05:54.205  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$LineViewManager
+11-09 03:05:54.206  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$FeFloodManager
+11-09 03:05:54.207  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$GroupViewManager
+11-09 03:05:54.207  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$TextViewManager
+11-09 03:05:54.208  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$ImageViewManager
+11-09 03:05:54.209  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$FeCompositeManager
+11-09 03:05:54.209  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.facebook.react.views.image.ReactImageManager
+11-09 03:05:54.210  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$RadialGradientManager
+11-09 03:05:54.211  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$MaskManager
+11-09 03:05:54.212  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.facebook.react.views.unimplementedview.ReactUnimplementedViewManager
+11-09 03:05:54.213  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$RectViewManager
+11-09 03:05:54.214  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$TextPathViewManager
+11-09 03:05:54.220  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.facebook.react.views.scroll.ReactScrollViewManager
+11-09 03:05:54.221  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$FeOffsetManager
+11-09 03:05:54.224  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.horcrux.svg.RenderableViewManager$PathViewManager
+11-09 03:05:54.225  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.facebook.react.views.drawer.ReactDrawerLayoutManager
+11-09 03:05:54.227  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.facebook.react.views.swiperefresh.SwipeRefreshLayoutManager
+11-09 03:05:54.228  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.facebook.react.views.textinput.ReactTextInputManager
+11-09 03:05:54.229  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.facebook.react.views.text.SelectableTextViewManager
+11-09 03:05:54.233  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.swmansion.gesturehandler.react.RNGestureHandlerRootViewManager
+11-09 03:05:54.233  3059  3130 W unknown:ViewManagerPropertyUpdater: Could not find generated setter for class com.facebook.react.views.virtual.view.ReactVirtualViewManager
+11-09 03:05:54.389  3059  3130 I ReactNativeJS: Running "main"
+11-09 03:05:54.453  3059  3207 I WebViewFactory: Loading com.google.android.webview version 83.0.4103.106 (code 410410686)
+11-09 03:05:54.488  3059  3207 I oaderpackagela: The ClassLoaderContext is a special shared library.
+11-09 03:05:54.489  3059  3207 D nativeloader: classloader namespace configured for unbundled product apk. library_path=/product/app/WebViewGoogle/lib/x86_64:/product/app/WebViewGoogle/WebViewGoogle.apk!/lib/x86_64:/product/app/TrichromeLibrary/TrichromeLibrary.apk!/lib/x86_64:/product/lib64:/system/product/lib64
+11-09 03:05:54.490  3059  3207 I oaderpackagela: The ClassLoaderContext is a special shared library.
+11-09 03:05:54.491  3059  3207 D nativeloader: classloader namespace configured for unbundled product apk. library_path=/product/app/WebViewGoogle/lib/x86_64:/product/app/WebViewGoogle/WebViewGoogle.apk!/lib/x86_64:/product/app/TrichromeLibrary/TrichromeLibrary.apk!/lib/x86_64:/product/lib64:/system/product/lib64
+11-09 03:05:54.585  3059  3232 I cr_VariationsUtils: Requesting new seed from IVariationsSeedServer
+11-09 03:05:54.646  3059  3207 I cr_LibraryLoader: Loaded native library version number "83.0.4103.106"
+11-09 03:05:54.661  3059  3207 I cr_CachingUmaRecorder: Flushed 7 samples from 7 histograms.
+11-09 03:05:54.753  3059  3207 I BloomOfflineProbe: OS denied DNS: example.com
+11-09 03:05:54.766  3059  3263 I BloomOfflineProbe: OS denied DNS: example.com
+11-09 03:05:54.782  3059  3059 I ReactNative: [GESTURE HANDLER] Initialize gesture handler for root view w53{757c1bd V.E...... ......ID 0,0-1080,2400 #1}
+11-09 03:05:54.906  3059  3130 I ReactNativeJS: BloomBenchmarkState: count=1 taper=0 active=true speed=4.5 narrow=false radius=9999 paused=false layer=all reverse=false screen=off clockLog=false
+11-09 03:05:55.409  3059  3076 I oaderpackagela: Background young concurrent copying GC freed 144771(7897KB) AllocSpace objects, 7(140KB) LOS objects, 82% free, 5227KB/29MB, paused 124us total 113.764ms
+11-09 03:05:57.095  3059  3105 I OpenGLRenderer: Davey! duration=2213ms; Flags=0, IntendedVsync=45239115574, Vsync=45239115574, OldestInputEvent=9223372036854775807, NewestInputEvent=0, HandleInputStart=45239402413, AnimationStart=45239403672, PerformTraversalsStart=45251191138, DrawStart=45251305191, SyncQueued=45258881488, SyncStart=45259007174, IssueDrawCommandsStart=45261174511, SwapBuffers=47447762030, FrameCompleted=47453016045, DequeueBufferDuration=73076, QueueBufferDuration=844939, GpuCompleted=-2239837583208078083, 
+11-09 03:05:57.188  3059  3059 I Choreographer: Skipped 136 frames!  The application may be doing too much work on its main thread.
+11-09 03:05:57.206  3059  3059 D RenderScript HIDL Adaptation: IRenderScriptDevice::getService()
+11-09 03:05:57.208  3059  3059 D RenderScript HIDL Adaptation: IRenderScriptDevice::getService() returned 0x0
+11-09 03:05:57.208  3059  3059 D RenderScript HIDL Adaptation: Using Fallback Path.
+11-09 03:05:57.266  3059  3059 D oaderpackagela: Successfully queried cache dir: /data/user_de/0/so.oxy.bloom.loaderpackagelab/code_cache
+11-09 03:05:57.266  3059  3059 D RenderScript: Setting cache dir: /data/user_de/0/so.oxy.bloom.loaderpackagelab/code_cache
+11-09 03:05:57.398  3059  3105 I OpenGLRenderer: Davey! duration=2483ms; Flags=0, IntendedVsync=45272451531, Vsync=47539118107, OldestInputEvent=9223372036854775807, NewestInputEvent=0, HandleInputStart=47545926184, AnimationStart=47545928154, PerformTraversalsStart=47551401101, DrawStart=47551515557, SyncQueued=47683052667, SyncStart=47683274300, IssueDrawCommandsStart=47683845735, SwapBuffers=47747311403, FrameCompleted=47755901177, DequeueBufferDuration=41203, QueueBufferDuration=296684, GpuCompleted=6208480346025067157, 
+11-09 03:05:57.664  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:05:57.665  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 13 lines
+11-09 03:05:57.665  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:05:57.896  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:05:57.896  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 10 lines
+11-09 03:05:57.896  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:05:58.208  3059  3076 I oaderpackagela: NativeAlloc concurrent copying GC freed 3728(149KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 5350KB/10MB, paused 12us total 183.201ms
+11-09 03:05:58.211  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:05:58.212  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 12 lines
+11-09 03:05:58.212  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:05:58.386  3059  3085 I oaderpackagela: Waiting for a blocking GC ProfileSaver
+11-09 03:05:58.437  3059  3085 I oaderpackagela: WaitForGcToComplete blocked ProfileSaver on ClassLinker for 51.392ms
+11-09 03:05:58.475  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:05:58.475  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 13 lines
+11-09 03:05:58.475  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:05:58.636  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:05:58.636  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 12 lines
+11-09 03:05:58.636  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:05:58.777  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:05:58.777  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 9 lines
+11-09 03:05:58.777  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:05:59.010  3059  3076 I oaderpackagela: NativeAlloc concurrent copying GC freed 3053(116KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 5339KB/10MB, paused 8us total 122.061ms
+11-09 03:05:59.013  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:05:59.013  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 8 lines
+11-09 03:05:59.014  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:05:59.252  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:05:59.252  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 14 lines
+11-09 03:05:59.252  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:05:59.546  3059  3685 D ProfileInstaller: Installing profile for so.oxy.bloom.loaderpackagelab
+11-09 03:05:59.571  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:05:59.571  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 14 lines
+11-09 03:05:59.571  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:00.116  3059  3076 I oaderpackagela: NativeAlloc concurrent copying GC freed 10336(362KB) AllocSpace objects, 3(48KB) LOS objects, 49% free, 5445KB/10MB, paused 11us total 370.182ms
+11-09 03:06:00.134  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:00.134  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 14 lines
+11-09 03:06:00.134  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:00.495  3059  3076 I oaderpackagela: NativeAlloc concurrent copying GC freed 6980(256KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 5428KB/10MB, paused 15us total 240.042ms
+11-09 03:06:00.503  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:00.503  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 25 lines
+11-09 03:06:00.503  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:00.778  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:00.778  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 16 lines
+11-09 03:06:00.778  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:02.073  3059  3076 I oaderpackagela: NativeAlloc concurrent copying GC freed 6016(216KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 5539KB/10MB, paused 7us total 661.925ms
+11-09 03:06:02.199  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:02.199  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 19 lines
+11-09 03:06:02.199  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:02.413  3059  3076 I oaderpackagela: NativeAlloc concurrent copying GC freed 13287(467KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 5440KB/10MB, paused 12us total 102.450ms
+11-09 03:06:02.704  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:02.705  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 54 lines
+11-09 03:06:02.705  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:03.005  3059  3076 I oaderpackagela: NativeAlloc concurrent copying GC freed 11813(432KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 5392KB/10MB, paused 12us total 192.071ms
+11-09 03:06:03.185  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:03.185  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 31 lines
+11-09 03:06:03.185  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:03.452  3059  3076 I oaderpackagela: NativeAlloc concurrent copying GC freed 8729(310KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 5337KB/10MB, paused 13us total 161.788ms
+11-09 03:06:03.541  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:03.541  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 25 lines
+11-09 03:06:03.541  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:03.821  3059  3076 I oaderpackagela: NativeAlloc concurrent copying GC freed 6398(234KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 5326KB/10MB, paused 8us total 144.842ms
+11-09 03:06:04.055  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:04.056  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 17 lines
+11-09 03:06:04.056  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:04.151  3059  3076 I oaderpackagela: NativeAlloc concurrent copying GC freed 4371(145KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 5405KB/10MB, paused 15us total 171.642ms
+11-09 03:06:04.240  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:04.240  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 16 lines
+11-09 03:06:04.241  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:04.473  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:04.473  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 19 lines
+11-09 03:06:04.473  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:04.806  3059  3076 I oaderpackagela: NativeAlloc concurrent copying GC freed 5910(215KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 5422KB/10MB, paused 20us total 214.730ms
+11-09 03:06:04.900  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:04.900  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 17 lines
+11-09 03:06:04.900  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:05.095  3059  3076 I oaderpackagela: NativeAlloc concurrent copying GC freed 7872(288KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 5389KB/10MB, paused 10us total 107.220ms
+11-09 03:06:05.311  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:05.312  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 28 lines
+11-09 03:06:05.312  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:05.659  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:05.660  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 29 lines
+11-09 03:06:05.660  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:05.883  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:05.883  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 19 lines
+11-09 03:06:05.883  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:06.176  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:06.176  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 11 lines
+11-09 03:06:06.176  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:06.425  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:06.425  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 15 lines
+11-09 03:06:06.425  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:06.722  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:06.722  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 13 lines
+11-09 03:06:06.722  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:06.912  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:06.912  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 14 lines
+11-09 03:06:06.912  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:07.122  3059  3076 I oaderpackagela: NativeAlloc concurrent copying GC freed 4546(179KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 5376KB/10MB, paused 13us total 108.617ms
+11-09 03:06:07.150  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:07.150  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 13 lines
+11-09 03:06:07.150  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:07.430  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:07.431  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 21 lines
+11-09 03:06:07.431  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:07.661  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:07.661  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 11 lines
+11-09 03:06:07.661  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:07.853  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:07.853  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 9 lines
+11-09 03:06:07.853  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:08.180  3059  3076 I oaderpackagela: NativeAlloc concurrent copying GC freed 3320(128KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 5345KB/10MB, paused 24us total 189.006ms
+11-09 03:06:08.255  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:08.255  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 8 lines
+11-09 03:06:08.255  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:08.521  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:08.522  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 20 lines
+11-09 03:06:08.522  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:08.746  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:08.746  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 12 lines
+11-09 03:06:08.746  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:09.004  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:09.005  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 12 lines
+11-09 03:06:09.005  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:09.185  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:09.185  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 11 lines
+11-09 03:06:09.185  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:09.346  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:09.346  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 8 lines
+11-09 03:06:09.346  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:09.585  3059  3076 I oaderpackagela: NativeAlloc concurrent copying GC freed 4022(161KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 5295KB/10MB, paused 14us total 110.552ms
+11-09 03:06:09.700  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:09.708  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 14 lines
+11-09 03:06:09.708  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:09.885  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:09.885  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 12 lines
+11-09 03:06:09.885  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:10.094  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:10.094  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 10 lines
+11-09 03:06:10.094  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:10.398  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:10.398  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 10 lines
+11-09 03:06:10.398  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:10.587  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:10.588  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 14 lines
+11-09 03:06:10.588  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:10.944  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:10.945  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 13 lines
+11-09 03:06:10.945  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:11.197  3059  3076 I oaderpackagela: NativeAlloc concurrent copying GC freed 7088(262KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 5369KB/10MB, paused 11us total 178.873ms
+11-09 03:06:11.442  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:11.442  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 26 lines
+11-09 03:06:11.442  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:11.689  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:11.689  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 22 lines
+11-09 03:06:11.689  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:11.860  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:12.017  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 39 lines
+11-09 03:06:12.017  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:12.156  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:12.596  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 39 lines
+11-09 03:06:12.596  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:12.806  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:13.182  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 30 lines
+11-09 03:06:13.182  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:13.367  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:13.368  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 9 lines
+11-09 03:06:13.368  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:13.552  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:13.552  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 9 lines
+11-09 03:06:13.552  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:13.729  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:14.643  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 70 lines
+11-09 03:06:14.643  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:14.809  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:15.902  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 93 lines
+11-09 03:06:15.902  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:16.045  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:16.046  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 22 lines
+11-09 03:06:16.046  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:16.174  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:16.346  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 20 lines
+11-09 03:06:16.346  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:16.545  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:17.442  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 65 lines
+11-09 03:06:17.442  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:17.722  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:18.558  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 63 lines
+11-09 03:06:18.558  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:18.729  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:18.729  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 7 lines
+11-09 03:06:18.729  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:18.943  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:18.943  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 9 lines
+11-09 03:06:18.943  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:19.214  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:19.214  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 14 lines
+11-09 03:06:19.214  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:19.446  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:19.446  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 13 lines
+11-09 03:06:19.446  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:19.653  3059  3076 I oaderpackagela: NativeAlloc concurrent copying GC freed 4776(173KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 5331KB/10MB, paused 12us total 109.928ms
+11-09 03:06:19.703  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:19.704  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 14 lines
+11-09 03:06:19.704  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:19.895  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:19.895  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 15 lines
+11-09 03:06:19.895  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:20.048  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:20.804  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 76 lines
+11-09 03:06:20.804  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:20.986  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:21.181  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 17 lines
+11-09 03:06:21.182  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:21.369  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:21.369  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 8 lines
+11-09 03:06:21.369  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:21.604  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:21.604  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 8 lines
+11-09 03:06:21.604  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:21.801  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:22.911  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 83 lines
+11-09 03:06:22.911  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:23.085  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:23.402  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 29 lines
+11-09 03:06:23.402  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:23.580  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:23.775  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 17 lines
+11-09 03:06:23.775  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:24.033  3059  3076 I oaderpackagela: NativeAlloc concurrent copying GC freed 3919(158KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 5342KB/10MB, paused 20us total 147.407ms
+11-09 03:06:24.080  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:24.080  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 12 lines
+11-09 03:06:24.080  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:24.326  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:24.326  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 18 lines
+11-09 03:06:24.326  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:24.493  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:24.494  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 14 lines
+11-09 03:06:24.494  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:24.818  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:24.818  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 12 lines
+11-09 03:06:24.818  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:25.141  3059  3076 I oaderpackagela: NativeAlloc concurrent copying GC freed 4155(160KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 5338KB/10MB, paused 14us total 178.270ms
+11-09 03:06:25.216  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:25.216  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 11 lines
+11-09 03:06:25.216  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:25.417  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:25.845  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 36 lines
+11-09 03:06:25.845  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:26.087  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:26.282  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 21 lines
+11-09 03:06:26.287  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:26.535  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:28.187  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 82 lines
+11-09 03:06:28.187  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:28.434  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:28.434  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 7 lines
+11-09 03:06:28.434  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:28.778  3059  3076 I oaderpackagela: NativeAlloc concurrent copying GC freed 4321(167KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 5300KB/10MB, paused 25us total 176.893ms
+11-09 03:06:28.792  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:28.792  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 14 lines
+11-09 03:06:28.792  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:28.952  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:28.952  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 8 lines
+11-09 03:06:28.953  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:29.115  3059  3059 W unknown:BridgelessReact: ReactHost{0}.onHostPause(activity)
+11-09 03:06:29.115  3059  3059 W unknown:BridgelessReact: ReactHost{0}.ReactContext.onHostPause()
+11-09 03:06:29.117  3059  3059 W unknown:BridgelessReact: ReactHost{0}.onHostResume(activity)
+11-09 03:06:29.117  3059  3059 W unknown:BridgelessReact: ReactHost{0}.ReactContext.onHostResume()
+11-09 03:06:29.167  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:29.441  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 32 lines
+11-09 03:06:29.441  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:29.636  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:29.637  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 7 lines
+11-09 03:06:29.637  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:29.678  3059  3059 I BloomCanvasProbe: before count=0 mode=snapshot
+11-09 03:06:29.819  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:30.200  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 27 lines
+11-09 03:06:30.200  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:30.402  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:30.765  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 27 lines
+11-09 03:06:30.769  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:30.921  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:31.038  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 15 lines
+11-09 03:06:31.038  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:31.260  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:31.260  3059  3078 I chatty  : uid=10167(so.oxy.bloom.loaderpackagelab) FinalizerDaemon identical 8 lines
+11-09 03:06:31.260  3059  3078 W System  : A resource failed to call destroy. 
+11-09 03:06:31.261  3059  3059 I BloomCanvasProbe: after count=0 mode=snapshot

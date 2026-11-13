@@ -1,0 +1,16 @@
+{
+  "api": 30,
+  "managerViewCount": 0,
+  "svgVisible": true,
+  "reducedMotionIdenticalPixels": true,
+  "motionResumes": true,
+  "bounds": [
+    42,
+    353,
+    1038,
+    489
+  ],
+  "originalTransitionAnimationScale": "1.0",
+  "restoredExactly": true,
+  "limitation": "SwiftShader compatibility only, no physical frame budget or optical parity claim"
+}
