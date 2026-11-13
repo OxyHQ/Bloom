@@ -55,7 +55,12 @@ import type { AgentAvatarProps } from './types';
 import { VectorStaticPortrait } from './VectorStaticPortrait';
 import { useStaticPortraits } from './use-static-portraits';
 import { useVectorAssetLoader } from './default-catalog';
-import { loadVectorGeometry, paintVectorCharacter, vectorGeometryKey } from './vector-compose';
+import {
+  loadVectorGeometry,
+  paintVectorCharacter,
+  VECTOR_REST_CLIPS,
+  vectorGeometryKey,
+} from './vector-compose';
 import { renderVectorFrame } from './vector-frame';
 import type { VectorAction, VectorData, VectorFrame } from './vector-types';
 
@@ -190,17 +195,63 @@ function AnimatedVectorCharacterAvatar(props: Props) {
   latestMood.current = mood;
   const cycles = useRef(props.workingCycles);
   cycles.current = props.workingCycles;
-  const play = useCallback((action: VectorAction) => {
-    playVectorAction(state.current, action, action === 'work' ? cycles.current : 1);
-    setRevision((value) => value + 1);
+  const catalogRef = useRef(catalog);
+  catalogRef.current = catalog;
+  /**
+   * The character is first loaded at rest (`VECTOR_REST_CLIPS`): its idle tracks and the geometry
+   * they draw, which is what an avatar shows almost always (a mood is drawn on the idle clip). Its
+   * gestures (`reaction`, and `work` with the computer and hands only it shows) are loaded the
+   * first time one is asked for; meanwhile the idle animation carries on, and the gesture starts
+   * when its tracks arrive. An interactive avatar asks ahead, when the pointer reaches it.
+   */
+  const fullGeometry = useRef<string | null>(null);
+  const loadingFull = useRef<string | null>(null);
+  const pendingAction = useRef<VectorAction | null>(null);
+  const ensureFull = useCallback(() => {
+    const key = vectorGeometryKey(latestResolved.current);
+    if (fullGeometry.current === key || loadingFull.current === key) return;
+    loadingFull.current = key;
+    void loadVectorGeometry(latestResolved.current, catalogRef.current).then(
+      (value) => {
+        if (vectorGeometryKey(latestResolved.current) !== key) return;
+        fullGeometry.current = key;
+        loadedGeometry.current = key;
+        if (value.referenceFace) state.current.workLook = vectorWorkLook(value);
+        setAsset(value);
+        const action = pendingAction.current;
+        pendingAction.current = null;
+        if (action) playVectorAction(state.current, action, action === 'work' ? cycles.current : 1);
+        setRevision((revision) => revision + 1);
+      },
+      () => {
+        if (loadingFull.current === key) loadingFull.current = null;
+      },
+    );
   }, []);
+  const play = useCallback(
+    (action: VectorAction) => {
+      if (action !== 'idle' && fullGeometry.current !== vectorGeometryKey(latestResolved.current)) {
+        pendingAction.current = action;
+        ensureFull();
+        return;
+      }
+      pendingAction.current = null;
+      playVectorAction(state.current, action, action === 'work' ? cycles.current : 1);
+      setRevision((value) => value + 1);
+    },
+    [ensureFull],
+  );
   useEffect(() => {
     let current = true;
     setFailed(false);
     reportLoading(true);
-    void loadVectorGeometry(latestResolved.current, catalog)
+    // A new character starts at rest again; its gestures load when one is first asked for.
+    fullGeometry.current = null;
+    loadingFull.current = null;
+    void loadVectorGeometry(latestResolved.current, catalog, VECTOR_REST_CLIPS)
       .then((value) => {
-        if (!current) return;
+        // Gone, or overtaken by the full character a gesture asked for in the meantime.
+        if (!current || fullGeometry.current === geometryKey) return;
         state.current = {
           ...state.current,
           action: 'idle',
@@ -459,6 +510,9 @@ function AnimatedVectorCharacterAvatar(props: Props) {
             },
           }
         : {})}
+      onPointerEnter={() => {
+        if (interactive && !paused && !portrait && !reduced) ensureFull();
+      }}
       onPointerMove={(event) => {
         if (Platform.OS !== 'web' || !host.current) return;
         const box = (host.current as unknown as HTMLElement).getBoundingClientRect();

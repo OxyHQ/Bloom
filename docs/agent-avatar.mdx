@@ -164,6 +164,18 @@ Three things keep that bounded:
   only its small metadata and the hashes (`scripts/avatar-vector/pack-assets.mjs`, lossless:
   `scripts/test-avatar-vector-pack.mjs` and the manifest gate check it). 58 MB became 30 MB with no
   app change.
+- **Only the clips that are drawn are fetched.** An asset (pack format 2) keeps each part's tracks
+  per clip, `tracks[i] = { idle, reaction, work }`, each its own payload. An avatar first loads its
+  character at rest (`VECTOR_REST_CLIPS`, `['idle']`): the idle tracks and the geometry they draw.
+  A mood (`mood="sad"`, the empty state's gemie shaking its head "no") is drawn on the idle clip
+  and needs nothing more, and a portrait is the idle clip's first frame. `reaction` and `work`
+  (with the computer, hands and screens only `work` draws, the `workOnly` parts) are fetched the
+  first time one plays: the idle animation carries on meanwhile, the gesture starts when its
+  tracks arrive, and an interactive avatar asks ahead when the pointer reaches it. Every
+  `VectorAssetLoader` method and `VectorAssetImport` takes the clips it should read; a loader or
+  importer that ignores them hands back the whole asset, as before. For the empty state's
+  character in Gemies this is 135 KB brotli instead of 281 KB, and 21 fewer requests
+  (`vector-clips-on-demand.test.tsx`).
 - **The renderer is not in the first chunk.** `Avatar` loads the character renderer on first use
   (`React.lazy`), so a screen that draws no bot character carries none of the geometry code.
 - **An app can ship only what it draws.** List the assets you use, hand the loader to the
