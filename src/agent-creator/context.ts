@@ -1,6 +1,5 @@
 import { createContext, useContext, useMemo } from 'react';
 import { useMessages } from '../locale/messages';
-import type * as PopoverParts from '../popover/Popover';
 import type * as SelectParts from '../select';
 import { AGENT_CREATOR_MESSAGES, type AgentCreatorMessages } from './messages';
 
@@ -14,7 +13,6 @@ export type AgentCreatorBindings = Pick<
   | 'SelectItem'
   | 'SelectItemText'
 > &
-  Pick<typeof PopoverParts, 'Popover' | 'PopoverTrigger' | 'PopoverContent'> &
   Pick<typeof import('../settings-modal/SettingsSelect'), 'SettingsSelect'> &
   import('../screen/types').ScreenComponents;
 export const AgentCreatorContext = createContext<AgentCreatorBindings | null>(null);

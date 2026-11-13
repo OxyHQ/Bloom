@@ -357,6 +357,22 @@ export const BotCharacter: Story = {
   ),
 };
 
+/**
+ * A bot is drawn in its ACCOUNT's colour (`account.color`, a Bloom colour preset key): one
+ * character, three accounts, three colours. The character keeps its parts; the paint is the
+ * account's (`avatarCharacterInColor`).
+ */
+export const BotInAccountColor: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <View style={{ flexDirection: 'row', gap: 24, alignItems: 'center' }}>
+      <Avatar account={{ ...BOT, color: 'lagoon' }} size={64} />
+      <Avatar account={{ ...BOT, color: 'pink' }} size={64} />
+      <Avatar account={{ ...BOT, color: 'mint' }} size={64} />
+    </View>
+  ),
+};
+
 /** Resolution order: character, then the account's image, then initials. */
 export const CharacterOrImageOrInitials: Story = {
   parameters: { controls: { disable: true } },

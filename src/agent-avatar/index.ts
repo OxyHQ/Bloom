@@ -8,6 +8,7 @@ export type { AgentAvatarMood, AgentAvatarProps, AgentAvatarProviderProps } from
 // checks saved JSON, `characterFromLegacy` migrates an avatar saved before 10.
 export {
   avatarBodyHex,
+  avatarCharacterInColor,
   avatarCharacterOf,
   parseAvatarCharacter,
   resolveAvatarCharacter,

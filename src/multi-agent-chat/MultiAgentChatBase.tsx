@@ -37,6 +37,7 @@ import { SupportCopy } from './SupportCopy';
 import { ChatSidebar } from './ChatSidebar';
 import { useChatComponents } from './context';
 import {
+  agentCharacter,
   conversationFor,
   formatDemoReply,
   nextAgentIdentity,
@@ -256,7 +257,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
       ids.length > 1
         ? selectedAgents.map((agent, index) => ({
             key: agent.id,
-            character: agent.avatar,
+            character: agentCharacter(agent),
             from: `picker:${agent.id}`,
             to: `empty:${agent.id}`,
             path: 'straight' as const,
@@ -343,7 +344,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
         ? [
             {
               key: responder.id,
-              character: responder.avatar,
+              character: agentCharacter(responder),
               from: `empty:${responder.id}`,
               to: `reply:${responder.id}`,
               duration: REPLY_DELAY_MS,
@@ -351,7 +352,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
             ...avatarJoinFlights(waiting, {
               from: (agent) => `empty:${agent.id}`,
               to: 'profile',
-              character: (agent) => agent.avatar,
+              character: agentCharacter,
             }),
           ]
         : [],
@@ -522,7 +523,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                     <D.DropdownMenuItem
                       key={agent.id}
                       onPress={() => edit(agent)}
-                      leading={<AgentAvatar character={agent.avatar} size={20} />}
+                      leading={<AgentAvatar character={agentCharacter(agent)} size={20} />}
                       className="px-2 py-1.5 text-body-medium"
                     >
                       {formatMessage(messages.editAgent, agent.name)}
@@ -654,7 +655,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                   identity={
                     agent && (
                       <AgentReplyIdentity
-                        character={agent.avatar}
+                        character={agentCharacter(agent)}
                         name={agent.name}
                         thinking={thinking}
                         workingKey={replies.pending[chat.id] ?? agent.id}
@@ -865,7 +866,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                   <StyledView className="inline-flex items-center justify-center px-1 shrink-0 flex-row">
                     <StyledView className="flex min-w-0 items-center gap-2 flex-row">
                       <StyledView className="size-6 shrink-0" aria-hidden>
-                        <AgentAvatar character={agent.avatar} size={24} />
+                        <AgentAvatar character={agentCharacter(agent)} size={24} />
                       </StyledView>
                       <Text
                         className={`truncate text-body-medium ${picked ? 'text-text-primary' : 'text-text-secondary'}`}

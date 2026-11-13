@@ -16,6 +16,7 @@ const agent: Agent = {
   label: 'Research',
   description: '',
   avatar: { preset: 'blue_beret' },
+  color: 'teal',
 };
 function Preview({ caption }: { caption?: boolean }) {
   const flights = useAvatarFlights();

@@ -53,6 +53,11 @@ edits for host persistence. The workspace persists in `storage` — the same
 `localStorage` on the web; native keeps session state unless one is passed.
 Invalid stored data falls back to the initial demo.
 
+An agent is an [`AgentCreatorAgent`](./agent-creator.mdx): its `avatar` holds the character's
+parts and its `color` (a Bloom colour preset key) is its colour. Every avatar the workspace draws
+for an agent, the marketplace's bots included, is `avatarCharacterInColor(agent.avatar,
+agent.color)`. A workspace saved before agents had a colour restores them in `blue`.
+
 `defaultEditorId` initially opens an agent's editor on desktop. On compact
 layouts the editor becomes the selected panel; its back action returns to the
 conversation. `voices` and `onPreviewVoice` connect a native speech provider;

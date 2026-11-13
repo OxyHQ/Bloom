@@ -95,7 +95,6 @@ describe('the field contract', () => {
     // Named rather than counted: a count moves for the wrong reasons, and this
     // list is the deliverable of the adoption work.
     expect(READERS).toEqual([
-      'agent-creator',
       'card',
       'card-form',
       'checkbox',

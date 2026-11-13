@@ -37,7 +37,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 
 | contract | applies to | reads | delegated | n/a¹ | adaptation |
 | --- | --- | --- | --- | --- | --- |
-| Field membership | 54 | 31 | 0 | 23 | 0 |
+| Field membership | 54 | 30 | 0 | 24 | 0 |
 | Control presentation | 64 | 63 | 1 | 0 | 0 |
 | Trigger composition | 11 | 8 | 0 | 3 | 0 |
 | Controlled / uncontrolled state | 61 | 58 | 2 | 1 | 0 |
@@ -53,6 +53,7 @@ None.
 
 - `address` (does-not-apply) — writes a selection role on a ROW or a chip rather than on a form control — a list the user picks from, inside its own container, never inside a `Field`.
 - `agent-chat` (does-not-apply) — renders a bare `TextInput` deliberately — a composer or a search box that draws its own chrome and is not a form field a `Field` wraps. Wiring it to `TextFieldInput` would give it the field shell it exists not to draw.
+- `agent-creator` (does-not-apply) — the only form role is the `[role="textbox"]` selector its undo shortcut uses to leave keystrokes typed into a field alone, not a node it renders. Its fields are `TextFieldInput` and `Textarea`, which read the contract themselves, and its colour control is a `ColorSwatchPicker`.
 - `canvas` (does-not-apply) — The adjustable handle changes panel detents, not a form value; its name comes from the panel accessibilityLabel.
 - `carrier-quote` (does-not-apply) — writes a selection role on a ROW or a chip rather than on a form control — a list the user picks from, inside its own container, never inside a `Field`.
 - `chat-composer` (does-not-apply) — renders a bare `TextInput` deliberately — a composer or a search box that draws its own chrome and is not a form field a `Field` wraps. Wiring it to `TextFieldInput` would give it the field shell it exists not to draw.
@@ -100,9 +101,9 @@ None.
 | `activity-heatmap` | `@oxy.so/bloom/activity-heatmap` + barrel | universal | `activity-heatmap.mdx` | yes | 3 |  |  |  |  |
 | `address` | `@oxy.so/bloom/address` + barrel | universal | `address.mdx` | yes | 4 | n/a¹ | reads |  |  |
 | `admonition` | `@oxy.so/bloom/admonition` + barrel | universal | `admonition.mdx` | yes | 6 |  | reads |  |  |
-| `agent-avatar` | `@oxy.so/bloom/agent-avatar` + barrel | universal | `agent-avatar.mdx` | yes | 48 |  |  |  |  |
+| `agent-avatar` | `@oxy.so/bloom/agent-avatar` + barrel | universal | `agent-avatar.mdx` | yes | 47 |  |  |  |  |
 | `agent-chat` | `@oxy.so/bloom/agent-chat` + barrel | web fork | `agent-chat.mdx` | yes | 3 | n/a¹ |  |  | reads |
-| `agent-creator` | `@oxy.so/bloom/agent-creator` + barrel | web fork | `agent-creator.mdx` | yes | 17 | reads |  |  |  |
+| `agent-creator` | `@oxy.so/bloom/agent-creator` + barrel | web fork | `agent-creator.mdx` | yes | 15 | n/a¹ |  |  |  |
 | `agent-limits-card` | `@oxy.so/bloom/agent-limits-card` + barrel | universal | `agent-limits-card.mdx` | yes | 2 |  |  |  | delegated |
 | `agent-log` | `@oxy.so/bloom/agent-log` + barrel | universal | `agent-log.mdx` | yes | 3 |  | reads |  | reads |
 | `agent-progress` | `@oxy.so/bloom/agent-progress` + barrel | universal | `agent-progress.mdx` | yes | 5 |  |  |  | reads |
@@ -152,7 +153,7 @@ None.
 | `choice-list` | `@oxy.so/bloom/choice-list` + barrel | universal | `choice-list.mdx` | yes | 2 |  |  |  |  |
 | `code` | `@oxy.so/bloom/code` + barrel | universal | `code.mdx` | yes | 5 |  |  |  |  |
 | `collapsible` | `@oxy.so/bloom/collapsible` + barrel | web fork | `collapsible.mdx` | yes | 5 |  |  |  |  |
-| `color-swatch-picker` | `@oxy.so/bloom/color-swatch-picker` + barrel | universal | `color-swatch-picker.mdx` | yes | 1 |  |  |  |  |
+| `color-swatch-picker` | `@oxy.so/bloom/color-swatch-picker` + barrel | universal | `color-swatch-picker.mdx` | yes | 2 |  |  |  |  |
 | `command` | `@oxy.so/bloom/command` + barrel | web fork | `command.mdx` | yes | 2 | n/a¹ |  |  | reads |
 | `composer-loader` | `@oxy.so/bloom/composer-loader` + barrel | web fork | `composer-loader.mdx` | yes | 5 |  |  |  |  |
 | `composer-panel` | `@oxy.so/bloom/composer-panel` + barrel | web fork | `composer-panel.mdx` | yes | 12 | n/a¹ |  |  | reads |
@@ -183,7 +184,7 @@ None.
 | `expandable-text` | `@oxy.so/bloom/expandable-text` + barrel | universal | `expandable-text.mdx` | yes | 1 |  |  |  | reads |
 | `fab` | `@oxy.so/bloom/fab` + barrel | web fork | `fab.mdx` | yes | 4 |  | reads |  |  |
 | `fact-strip` | `@oxy.so/bloom/fact-strip` + barrel | universal | `fact-strip.mdx` | yes | 1 |  |  |  |  |
-| `field` | `@oxy.so/bloom/field` + barrel | universal | `field.mdx` | yes | 21 | reads |  |  |  |
+| `field` | `@oxy.so/bloom/field` + barrel | universal | `field.mdx` | yes | 19 | reads |  |  |  |
 | `file-upload` | `@oxy.so/bloom/file-upload` + barrel | universal | `file-upload.mdx` | yes | 5 | reads |  |  |  |
 | `fill` | `@oxy.so/bloom/fill` + barrel | universal | `fill.mdx` | yes | 2 |  |  |  |  |
 | `floating` | internal | universal | — | — | 31 | n/a¹ | reads | reads | reads |

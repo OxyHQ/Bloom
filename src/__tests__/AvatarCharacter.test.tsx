@@ -5,6 +5,8 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { AvatarGroup } from '../avatar-group';
 import { Avatar, AVATAR_LIVE_SIZE } from '../avatar';
 import { resolveAvatarCharacter } from '../agent-avatar/character';
+import { normalizeAvatarSkinColor } from '../agent-avatar/skin-color';
+import { APP_COLOR_PRESETS } from '../theme/color-presets';
 import type { AgentAvatarProps } from '../agent-avatar/types';
 const mockAgentAvatar = jest.fn((_props: AgentAvatarProps) => null);
 jest.mock('../agent-avatar/AgentAvatar', () => ({
@@ -85,6 +87,23 @@ it('keeps image and initials fallbacks for people, remote bots and explicit opt-
     expect.arrayContaining(['https://person/image.png', 'https://remote/image.png']),
   );
   expect(view.queryByText('P')).toBeTruthy();
+});
+it('paints a bot in its account colour, and in its own paint without one', () => {
+  const view = draw(<Avatar account={{ ...bot, color: 'lagoon' }} size={32} />);
+  expect(last().character).toMatchObject({
+    preset: 'blue_beret',
+    bodyColor: normalizeAvatarSkinColor(APP_COLOR_PRESETS.lagoon.hex),
+  });
+  expect(last().character).not.toHaveProperty('color');
+  // A paintless stored character is drawn once its account has a colour.
+  const parts = { shape: 'heart', eyes: 'oval', eyewear: 'none', accessory: 'none' };
+  view.rerender(wrap(<Avatar account={{ kind: 'bot', character: parts, color: 'mint' }} />));
+  expect(last().character).toMatchObject({
+    ...parts,
+    bodyColor: normalizeAvatarSkinColor(APP_COLOR_PRESETS.mint.hex),
+  });
+  view.rerender(wrap(<Avatar account={{ ...bot, color: null }} size={32} />));
+  expect(last().character).toMatchObject({ preset: 'blue_beret', color: 'blue' });
 });
 it('rejects incomplete stored recipes to the existing initials fallback', () => {
   const view = draw(
