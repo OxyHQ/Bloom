@@ -1,5 +1,15 @@
 # Changelog
 
+## 21.1.0
+
+### Added
+
+- **`@oxy.so/bloom/multi-agent-chat/selected-agent-preview`**, an entry for `SelectedAgentPreview` and `previewAvatarGeometry` alone. The `multi-agent-chat` barrel is the whole multi-agent template, and Gemies imported the preview from it (its group picker and `@gemies/sdk`'s group welcome): in its web export the barrel put 149,484 B of `multi-agent-chat` in the chunk every route loads first, and 9,309 B with this entry.
+
+### Changed
+
+- **The offline portraits load on first use.** `vector-static` (312 KB of shape and eye paths) is drawn only by the agent creator's shape arc and eye picker, but `VectorCharacterAvatar` imported it for its eye-preview branch, so every app that shows an avatar carried it in its first paint. Both callers now read it through `use-static-portraits` (one `import()`, cached): it is its own chunk, fetched when the creator first draws a portrait. The portrait keeps its size while it loads, as it did for no eyes. In Gemies' web export the two changes take the first-paint chunk from 7,814,752 to 7,332,136 B. `static-portraits-lazy.test.ts` keeps any other module from importing it.
+
 ## 21.0.0
 
 ### Breaking

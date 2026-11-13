@@ -53,7 +53,7 @@ import { AvatarSnapshotObserver, CharacterRuntimeContext } from './context';
 import { AGENT_AVATAR_MESSAGES } from './messages';
 import type { AgentAvatarProps } from './types';
 import { VectorStaticPortrait } from './VectorStaticPortrait';
-import { vectorEyePortraits } from './vector-static';
+import { useStaticPortraits } from './use-static-portraits';
 import { useVectorAssetLoader } from './default-catalog';
 import { loadVectorGeometry, paintVectorCharacter, vectorGeometryKey } from './vector-compose';
 import { renderVectorFrame } from './vector-frame';
@@ -73,22 +73,25 @@ type Display = {
 };
 /** Shared browser/native SVG host; loading, composition and projection never start the 3D runtime. */
 export function VectorCharacterAvatar(props: Props) {
-  if (props.previewPart === 'eyes') {
-    const resolved = resolveAvatarCharacter(props.character),
-      eyes = resolved.eyes;
-    const frame = eyes === 'none' ? undefined : vectorEyePortraits[eyes];
-    const paint =
-      'bodyColor' in resolved.paint
-        ? resolved.paint.bodyColor
-        : CHARACTER_COLORS[resolved.paint.color];
-    return (
-      <VectorStaticPortrait
-        {...props}
-        frame={frame ? paintVectorEyeFrame(frame, paint, eyes) : frame}
-      />
-    );
-  }
+  if (props.previewPart === 'eyes') return <VectorEyePreview {...props} />;
   return <AnimatedVectorCharacterAvatar {...props} />;
+}
+/** The eye picker's still eyes, from the offline portraits (loaded on first use). */
+function VectorEyePreview(props: Props) {
+  const portraits = useStaticPortraits();
+  const resolved = resolveAvatarCharacter(props.character),
+    eyes = resolved.eyes;
+  const frame = eyes === 'none' ? undefined : portraits?.vectorEyePortraits[eyes];
+  const paint =
+    'bodyColor' in resolved.paint
+      ? resolved.paint.bodyColor
+      : CHARACTER_COLORS[resolved.paint.color];
+  return (
+    <VectorStaticPortrait
+      {...props}
+      frame={frame ? paintVectorEyeFrame(frame, paint, eyes) : frame}
+    />
+  );
 }
 function AnimatedVectorCharacterAvatar(props: Props) {
   const { character, size = 64, paused, portrait, interactive, previewPart, mood } = props;

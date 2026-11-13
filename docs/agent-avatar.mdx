@@ -135,7 +135,10 @@ composition and projection; native drawing uses `react-native-svg`.
 The old geometry engine under `runtime/` is an **offline extraction tool**, not an app
 renderer. `bun run build:avatar-vectors` (`scripts/build-avatar-vector-assets.mjs`) samples its shapes, parts and authored
 motion into vector data. Keep generated assets, import mappings and static portraits in
-sync when rebuilding that source data. Normal library builds and package verification
+sync when rebuilding that source data. The static portraits (`vector-static`, ~310 KB of paths)
+are drawn only by the agent creator's shape arc and eye picker, never by an avatar; they load on
+first use through `use-static-portraits` (`import()`), and `static-portraits-lazy.test.ts` keeps
+every other module from importing them. Normal library builds and package verification
 must ship all vector assets; no consumer can depend on the extractor's filesystem. The generator
 ends by packing the assets (shared payloads in `vector-assets/blobs/`, one `catalog/<kind>-<id>.ts`
 module per asset); do not edit those files by hand.

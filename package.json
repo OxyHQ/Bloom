@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "21.0.0",
+  "version": "21.1.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -760,6 +760,20 @@
       "require": {
         "types": "./lib/typescript/commonjs/multi-agent-chat/index.d.ts",
         "default": "./lib/commonjs/multi-agent-chat/index.js"
+      }
+    },
+    "./multi-agent-chat/selected-agent-preview": {
+      "react-native": {
+        "types": "./lib/typescript/module/multi-agent-chat/selected-agent-preview.d.ts",
+        "default": "./src/multi-agent-chat/selected-agent-preview.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/multi-agent-chat/selected-agent-preview.d.ts",
+        "default": "./lib/module/multi-agent-chat/selected-agent-preview.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/multi-agent-chat/selected-agent-preview.d.ts",
+        "default": "./lib/commonjs/multi-agent-chat/selected-agent-preview.js"
       }
     },
     "./agent-limits-card": {
@@ -4836,6 +4850,9 @@
       ],
       "multi-agent-chat": [
         "./lib/typescript/module/multi-agent-chat/index.d.ts"
+      ],
+      "multi-agent-chat/selected-agent-preview": [
+        "./lib/typescript/module/multi-agent-chat/selected-agent-preview.d.ts"
       ],
       "agent-limits-card": [
         "./lib/typescript/module/agent-limits-card/index.d.ts"
