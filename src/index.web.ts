@@ -112,6 +112,7 @@ export type {
   PlatformEditingState,
   PlatformKeyboard,
   PlatformKeyEvent,
+  PlatformModifiers,
   PlatformMenu,
   PlatformMenuBar,
   PlatformMenuAction,

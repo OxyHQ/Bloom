@@ -23,7 +23,7 @@
 import { Fragment, isValidElement, type ReactNode } from 'react';
 
 import { openHref } from '../hooks/link-activation';
-import { type Chord, parseChord } from '../kbd/chord';
+import { type Chord, modifiersText, parseChord, parseModifiers } from '../kbd/chord';
 import type { PlatformEditAction, PlatformMenuAction } from '../platform-surface/types';
 import type { MenuEntryKind } from './registry';
 import { actionShortcut, isMenuAction } from './use-edit-action';
@@ -106,6 +106,8 @@ export interface DescribedEntry {
   readonly checked?: boolean;
   readonly keepOpen?: boolean;
   readonly action?: PlatformMenuAction;
+  /** The modifiers that show it in place of the item before it (`MenuEntry.alternate`). */
+  readonly alternate?: string;
   /** An editing action: its state and what choosing it does are the focused field's while one is. */
   readonly editAction?: PlatformEditAction;
   /** The element's own handler, as a press on its row would run it; undefined for none. */
@@ -140,6 +142,7 @@ interface ItemProps {
   keepOpen?: boolean;
   shortcut?: string;
   action?: PlatformEditAction | PlatformMenuAction;
+  alternate?: string;
   onPress?: () => void;
   href?: string;
   checked?: boolean;
@@ -149,7 +152,7 @@ interface ItemProps {
 }
 
 /** The children of a container as `DeclaredChildren` places them: one per place. */
-function places(children: ReactNode): ReactNode[] {
+export function places(children: ReactNode): ReactNode[] {
   const out: ReactNode[] = [];
   const visit = (node: ReactNode) => {
     if (Array.isArray(node)) {
@@ -173,6 +176,39 @@ function chordOf(shortcut: string | undefined): Chord | null {
 
 const keyOf = (path: readonly number[]) => `d${path.join('.')}`;
 
+const isItem = (node: ReactNode) => isValidElement(node) && partOf(node.type) === 'item';
+
+/**
+ * For each of a container's places (`places`), whether it is an ALTERNATE
+ * (`MenubarItemProps.alternate`): an item declaring modifiers that is placed
+ * right after an item (or after another alternate of one). The first item of
+ * the run is the one they are shown in place of. An empty place, a separator,
+ * a label or anything else breaks the run: an alternate after one is an
+ * ordinary item.
+ */
+export function alternatePlaces(nodes: readonly ReactNode[]): boolean[] {
+  let afterItem = false;
+  return nodes.map((node) => {
+    const alternate =
+      afterItem &&
+      isValidElement<ItemProps>(node) &&
+      isItem(node) &&
+      alternateOf(node.props.alternate).alternate !== undefined;
+    afterItem = isItem(node);
+    return alternate;
+  });
+}
+
+/**
+ * An item's `alternate` as an entry carries it: its modifiers in their canonical spelling; nothing
+ * when it has none, or declares none that are modifiers (the mounted row warns once).
+ */
+export function alternateOf(alternate: string | undefined): { alternate?: string } {
+  if (alternate === undefined) return {};
+  const modifiers = parseModifiers(alternate);
+  return modifiers ? { alternate: modifiersText(modifiers) } : {};
+}
+
 /**
  * `children`'s description: its entries, each at `[...path, place]` under
  * `parentKey`, and what it could not read.
@@ -187,7 +223,9 @@ export function describeMenu(children: ReactNode): MenuDescription {
     parentKey: string | null,
     radio: RadioSelection | null,
   ) => {
-    places(nodes).forEach((node, place) => {
+    const placed = places(nodes);
+    const alternates = alternatePlaces(placed);
+    placed.forEach((node, place) => {
       const at = [...path, place];
       if (node === null || node === undefined || typeof node === 'boolean') return;
       if (!isValidElement<ItemProps>(node)) {
@@ -219,6 +257,7 @@ export function describeMenu(children: ReactNode): MenuDescription {
             keepOpen: props.keepOpen ?? false,
             ...(menuAction ? { action: menuAction } : null),
             ...(editAction ? { editAction } : null),
+            ...(alternates[place] ? alternateOf(props.alternate) : null),
             run: handler,
             runs: true,
           });
