@@ -334,6 +334,15 @@ nesting interactive controls. Primary activation cancels pending/open hover and
 its open popup suppresses further hover. Escape returns focus without restarting
 the dismissed preview. Default click activation is unchanged.
 
+**Native, in a platform's popup** (a desktop with a pointer, OxyOS: the adapter reports
+`popup-surface`), hover opens it as on the web: the pointer resting on the trigger for
+`openDelay` opens the menu in the popup; leaving the trigger and the panel closes it after
+`closeDelay` unless the pointer is back on either by then. The popup goes on tracking the pointer
+over the trigger while it holds its grab (`PopupSurfaceProps.trackingRef`), so leaving the trigger
+is heard. A key used in the panel (its arrows, typeahead) keeps it open, as focus does on the web,
+and a menu opened by a long press or the keyboard closes only by a choice, Escape or a press
+outside. A touch never opens it by hover, nor does a mouse where the menu is a phone's sheet.
+
 Keyboard opening retains its requested first/last row while lazy content loads;
 arrival of an enabled row completes focus, and dismissal cancels the wait. Entering
 with arrows also cancels a pending pointer-leave close.

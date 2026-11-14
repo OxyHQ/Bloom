@@ -20,6 +20,8 @@ export interface DropdownMenuContextValue extends OverlayShellContextValue {
     hide: () => void;
     hold: () => void;
     dismiss: () => void;
+    /** A key used in the open panel (native): a menu opened by hover then stays open. */
+    key?: () => void;
   };
 }
 
