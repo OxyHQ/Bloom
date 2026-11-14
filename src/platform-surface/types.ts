@@ -11,6 +11,11 @@ import type { FloatingAlign, FloatingSide } from '../floating/types';
  *   (close, minimize, zoom) in its top leading corner, and can be moved,
  *   zoomed and minimized. Bloom keeps the controls' room and, where the
  *   platform asks it to, draws them (`@oxy.so/bloom/window`).
+ * - `window-layout`: with `window`, the platform lays the window out on its
+ *   display as a Mac tiles windows since macOS 15 (`PlatformWindow.layOut`),
+ *   and moves it between its desktops where it has them
+ *   (`PlatformWindow.moveToDesktop`, `PlatformWindowState.desktops`): the
+ *   zoom control shows the layouts on hover and long press.
  * - `menu-bar`: the platform shows the active window's menus in a bar of its
  *   own (the top of the screen, as on a Mac). A `Menubar` then draws nothing in
  *   the window: it describes its menus to the platform (`PlatformMenuBar`) and
@@ -39,6 +44,7 @@ import type { FloatingAlign, FloatingSide } from '../floating/types';
 export type SurfaceCapability =
   | 'popup-surface'
   | 'window'
+  | 'window-layout'
   | 'pointer'
   | 'menu-bar'
   | 'appearance'
@@ -394,11 +400,15 @@ export interface PlatformWindow {
    */
   setSizeLimits?(limits: PlatformWindowSizeLimits): void;
   /**
-   * Lays the window out (`PlatformWindowLayout`), as the platform's own tiling does. Optional: with
-   * it the zoom control shows the layouts on hover and long press, as a Mac's green button does.
+   * Lays the window out (`PlatformWindowLayout`), as the platform's own tiling does: required with
+   * the `window-layout` capability, which makes the zoom control show the layouts on hover and
+   * long press, as a Mac's green button does.
    */
   layOut?(layout: PlatformWindowLayout): void;
-  /** Moves the window to another of the platform's desktops (`PlatformWindowState.desktops`). */
+  /**
+   * Moves the window to another of the platform's desktops, numbered from 0
+   * (`PlatformWindowState.desktops`), with `window-layout`, where the platform has desktops.
+   */
   moveToDesktop?(desktop: number): void;
 }
 

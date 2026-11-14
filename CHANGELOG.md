@@ -1,5 +1,12 @@
 # Changelog
 
+## 21.7.0
+
+### Added
+
+- **The zoom control's layouts, as a Mac's green button since macOS 15** (the `window-layout` capability). Where the platform lays windows out, `WindowControls`' zoom control opens a menu of the window's layouts on hover, a long press or the screen reader's "Show menu": Move & Resize (the halves, then the quarters), Fill & Arrange (Fill, Center and the arrangements with the windows behind), Return to Previous Size, and Move to Desktop *n* for each other desktop. A row asks the platform (`PlatformWindow.layOut`, `moveToDesktop`); the control's press still zooms. Bloom's menu, so its rows take the arrows, typeahead and Return and are named in each of Bloom's languages.
+- **`PlatformWindow.layOut`, `moveToDesktop`, `PlatformWindowState.desktops` and `PlatformWindowLayout`**, the `window-layout` capability and `usePlatformWindowLayout()`; `useWindow()` carries them.
+
 ## 21.5.0
 
 ### Added

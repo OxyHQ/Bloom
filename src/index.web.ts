@@ -122,6 +122,7 @@ export type {
   PlatformWindowMetrics,
   PlatformWindowSizeLimits,
   PlatformWindowState,
+  PlatformWindowLayout,
   PopupDismissReason,
   PopupSurfaceProps,
   SurfaceCapability,

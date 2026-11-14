@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 
-import { usePlatformWindow } from '../platform-surface/context';
+import { usePlatformWindow, usePlatformWindowLayout } from '../platform-surface/context';
 import { useWindowChrome } from './context';
 import type { PlatformWindowLayout, PlatformWindowState } from '../platform-surface/types';
 import type { WindowControlsRoom, WindowHandle, WindowSizeLimits } from './types';
@@ -16,6 +16,7 @@ function unsubscribed() {}
  */
 export function useWindow(): WindowHandle | null {
   const platform = usePlatformWindow();
+  const layouts = usePlatformWindowLayout();
   // `useSyncExternalStore` compares snapshots by identity, so an adapter that
   // builds a fresh object on every `getState()` must not read as a change.
   const last = useRef<PlatformWindowState | null>(null);
@@ -56,15 +57,15 @@ export function useWindow(): WindowHandle | null {
             minimize: () => platform.minimize(),
             zoom: () => platform.zoom(),
             startMove: () => platform.startMove(),
-            ...(platform.layOut
-              ? { layOut: (layout: PlatformWindowLayout) => platform.layOut?.(layout) }
+            ...(layouts?.layOut
+              ? { layOut: (layout: PlatformWindowLayout) => layouts.layOut?.(layout) }
               : null),
-            ...(platform.moveToDesktop
-              ? { moveToDesktop: (desktop: number) => platform.moveToDesktop?.(desktop) }
+            ...(layouts?.moveToDesktop
+              ? { moveToDesktop: (desktop: number) => layouts.moveToDesktop?.(desktop) }
               : null),
           }
         : null,
-    [platform, state],
+    [platform, layouts, state],
   );
 }
 

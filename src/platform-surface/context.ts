@@ -58,6 +58,23 @@ export function usePlatformWindow(): PlatformWindow | null {
 }
 
 /**
+ * The window's layouts when the adapter reports `window` and `window-layout` (`PlatformWindow`'s
+ * `layOut`, and `moveToDesktop` where it has desktops), otherwise null. Throws for
+ * `window-layout` without `layOut`.
+ */
+export function usePlatformWindowLayout(): Pick<PlatformWindow, 'layOut' | 'moveToDesktop'> | null {
+  const adapter = useContext(PlatformSurfaceContext);
+  const window = usePlatformWindow();
+  if (!window || !adapter?.capabilities.has('window-layout')) return null;
+  if (!window.layOut) {
+    throw new Error(
+      `Bloom: the ${adapter.platform} platform adapter reports 'window-layout' without a window's layOut.`,
+    );
+  }
+  return window;
+}
+
+/**
  * The platform's menu bar when the adapter reports `menu-bar`, otherwise null
  * (a `Menubar` draws itself in the window). An adapter that reports the
  * capability without the bar throws, as `usePopupSurface` does.
