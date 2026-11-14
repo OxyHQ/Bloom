@@ -17,7 +17,13 @@
 import type React from 'react';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { ComponentRef, ComponentType, RefObject } from 'react';
-import { StyleSheet, type View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  type PointerEvent,
+  StyleSheet,
+  type View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { StyledView } from '../styles/styled-primitives';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import type { PopupDismissReason, PopupSurfaceProps } from '../platform-surface/types';
@@ -71,12 +77,17 @@ export function PopupPanelSurface({
   style,
   panelRef,
   edge = POPUP_PANEL_BORDER,
+  onPointerEnter,
+  onPointerLeave,
   children,
 }: {
   className?: string;
   style?: StyleProp<ViewStyle>;
   panelRef?: React.Ref<ComponentRef<typeof View>>;
   edge?: number;
+  /** The pointer coming onto the panel and leaving it: a hover menu stays open while it is on it. */
+  onPointerEnter?: (event: PointerEvent) => void;
+  onPointerLeave?: (event: PointerEvent) => void;
   children?: React.ReactNode;
 }) {
   const palette = useMenuPalette();
@@ -86,6 +97,8 @@ export function PopupPanelSurface({
     <StyledView
       ref={panelRef}
       className={className}
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={onPointerLeave}
       style={[
         styles.panel,
         { borderWidth: edge, boxShadow: palette.shadow },
@@ -120,6 +133,8 @@ export function PopupPanelChrome({
   className,
   style,
   panelRef,
+  onPointerEnter,
+  onPointerLeave,
   children,
 }: {
   minWidth?: number;
@@ -128,12 +143,16 @@ export function PopupPanelChrome({
   className?: string;
   style?: StyleProp<ViewStyle>;
   panelRef?: React.Ref<ComponentRef<typeof View>>;
+  onPointerEnter?: (event: PointerEvent) => void;
+  onPointerLeave?: (event: PointerEvent) => void;
   children?: React.ReactNode;
 }) {
   const density = useMenuDensity();
   return (
     <PopupPanelSurface
       panelRef={panelRef}
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={onPointerLeave}
       className={className}
       style={[
         // `MENU_WIDTH`, or a desktop's floor: there a menu is as wide as its widest row.
@@ -168,6 +187,14 @@ export interface PopupPanelProps extends FloatingPositionProps {
   focusIntent?: MenuFocusIntent;
   /** Given the panel's keyboard navigation (a menu bar asks it which arrows it takes). */
   navigationRef?: React.MutableRefObject<PopupNavigation | null>;
+  /**
+   * The pointer coming onto the panel and leaving it, and a key pressed in it before its rows
+   * take it: a menu opened by hover stays open while the pointer is on it, and once its keys
+   * are used.
+   */
+  onPointerEnter?: (event: PointerEvent) => void;
+  onPointerLeave?: (event: PointerEvent) => void;
+  onKey?: (key: string) => void;
   minWidth?: number;
   maxWidth?: number;
   maxHeight?: number;
@@ -192,6 +219,9 @@ export function PopupPanel({
   onClose,
   focusIntent,
   navigationRef,
+  onPointerEnter,
+  onPointerLeave,
+  onKey,
   minWidth,
   maxWidth,
   maxHeight,
@@ -235,13 +265,22 @@ export function PopupPanel({
       role={role}
       label={label}
       onDismiss={onDismiss}
-      onKey={navigation.onKey}
+      onKey={
+        onKey
+          ? (key) => {
+              onKey(key);
+              navigation.onKey(key);
+            }
+          : navigation.onKey
+      }
       testID={testID}
     >
       {/* The popup surface carries the content's role and label; labelling the panel too
           would announce the menu's name twice. */}
       <PopupPanelChrome
         panelRef={panelRef}
+        onPointerEnter={onPointerEnter}
+        onPointerLeave={onPointerLeave}
         minWidth={minWidth}
         maxWidth={maxWidth}
         maxHeight={maxHeight}
