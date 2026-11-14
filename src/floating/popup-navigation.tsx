@@ -214,7 +214,17 @@ export interface PopupNavigation {
 
 export function usePopupNavigation(onClose: () => void, intent?: MenuFocusIntent): PopupNavigation {
   const rows = useRef<Row[]>([]);
-  const [activeId, setActive] = useState<number | null>(null);
+  const [activeId, setActiveState] = useState<number | null>(null);
+  // The active row as the keys see it, current at once: the platform can deliver several keys in
+  // one turn (a loaded machine, a person typing ahead), and each must move on from where the one
+  // before it left the highlight, not from the render the keys arrived in — two ↓ in one turn
+  // are two rows down, as on a Mac.
+  const active = useRef<number | null>(null);
+  const setActive = useCallback((next: number | null | ((now: number | null) => number | null)) => {
+    const value = typeof next === 'function' ? next(active.current) : next;
+    active.current = value;
+    setActiveState(value);
+  }, []);
   // The keyboard moved the active row last (the pointer's hover clears it): a screen reader's
   // focus follows the row then, as VoiceOver's follows a menu's highlight, never the pointer.
   const [byKeys, setByKeys] = useState(false);
@@ -230,18 +240,21 @@ export function usePopupNavigation(onClose: () => void, intent?: MenuFocusIntent
     intent.edge.current = null;
     if (edge === 'first' || edge === 'last') opening.current = edge;
   }
-  const register = useCallback((row: Row) => {
-    rows.current = [...rows.current, row];
-    if (opening.current) setRegistered((count) => count + 1);
-    if (entering.current && row.owner === entering.current && !row.disabled) {
-      entering.current = null;
-      setActive(row.id);
-    }
-    return () => {
-      rows.current = rows.current.filter((other) => other !== row);
-      setActive((active) => (active === row.id ? null : active));
-    };
-  }, []);
+  const register = useCallback(
+    (row: Row) => {
+      rows.current = [...rows.current, row];
+      if (opening.current) setRegistered((count) => count + 1);
+      if (entering.current && row.owner === entering.current && !row.disabled) {
+        entering.current = null;
+        setActive(row.id);
+      }
+      return () => {
+        rows.current = rows.current.filter((other) => other !== row);
+        setActive((active) => (active === row.id ? null : active));
+      };
+    },
+    [setActive],
+  );
   // Flyouts the pointer left, closing once FLYOUT_CLOSE_MS has passed unless it comes back.
   const closing = useRef(new Map<PopupSubmenu, ReturnType<typeof setTimeout>>());
   useEffect(() => {
@@ -251,38 +264,44 @@ export function usePopupNavigation(onClose: () => void, intent?: MenuFocusIntent
       timers.clear();
     };
   }, []);
-  const hover = useCallback((id: number) => {
-    setActive(id);
-    setByKeys(false);
-    const row = rows.current.find((each) => each.id === id);
-    if (!row) return;
-    // The submenus the row is in, innermost first: each is open while the pointer is on it.
-    const within = new Set<PopupSubmenu>();
-    for (let owner = row.owner; owner && !within.has(owner); ) {
-      within.add(owner);
-      owner = rows.current.find((each) => each.submenu === owner)?.owner ?? null;
-    }
-    if (row.submenu) within.add(row.submenu);
-    for (const each of rows.current) {
-      const submenu = each.submenu;
-      if (!submenu?.flyout) continue;
-      const timer = closing.current.get(submenu);
-      if (within.has(submenu)) {
-        if (timer !== undefined) clearTimeout(timer);
-        closing.current.delete(submenu);
-      } else if (submenu.open && timer === undefined) {
-        closing.current.set(
-          submenu,
-          setTimeout(() => {
-            closing.current.delete(submenu);
-            submenu.setOpen(false);
-          }, FLYOUT_CLOSE_MS),
-        );
+  const hover = useCallback(
+    (id: number) => {
+      setActive(id);
+      setByKeys(false);
+      const row = rows.current.find((each) => each.id === id);
+      if (!row) return;
+      // The submenus the row is in, innermost first: each is open while the pointer is on it.
+      const within = new Set<PopupSubmenu>();
+      for (let owner = row.owner; owner && !within.has(owner); ) {
+        within.add(owner);
+        owner = rows.current.find((each) => each.submenu === owner)?.owner ?? null;
       }
-    }
-    if (row.submenu?.flyout && !row.submenu.open && !row.disabled) row.submenu.setOpen(true);
-  }, []);
-  const registry = useMemo<Registry>(() => ({ register, setActive, hover }), [register, hover]);
+      if (row.submenu) within.add(row.submenu);
+      for (const each of rows.current) {
+        const submenu = each.submenu;
+        if (!submenu?.flyout) continue;
+        const timer = closing.current.get(submenu);
+        if (within.has(submenu)) {
+          if (timer !== undefined) clearTimeout(timer);
+          closing.current.delete(submenu);
+        } else if (submenu.open && timer === undefined) {
+          closing.current.set(
+            submenu,
+            setTimeout(() => {
+              closing.current.delete(submenu);
+              submenu.setOpen(false);
+            }, FLYOUT_CLOSE_MS),
+          );
+        }
+      }
+      if (row.submenu?.flyout && !row.submenu.open && !row.disabled) row.submenu.setOpen(true);
+    },
+    [setActive],
+  );
+  const registry = useMemo<Registry>(
+    () => ({ register, setActive, hover }),
+    [register, setActive, hover],
+  );
   useEffect(() => {
     const edge = opening.current;
     if (!edge) return;
@@ -292,13 +311,13 @@ export function usePopupNavigation(onClose: () => void, intent?: MenuFocusIntent
     opening.current = null;
     setActive(row.id);
     setByKeys(true);
-  }, [registered]);
+  }, [registered, setActive]);
 
   const onKey = useCallback(
     (key: string) => {
       setByKeys(true);
       const enabled = rows.current.filter((row) => !row.disabled);
-      const index = enabled.findIndex((row) => row.id === activeId);
+      const index = enabled.findIndex((row) => row.id === active.current);
       const move = (to: number) => {
         const row = enabled[Math.max(0, Math.min(enabled.length - 1, to))];
         if (row) setActive(row.id);
@@ -370,17 +389,14 @@ export function usePopupNavigation(onClose: () => void, intent?: MenuFocusIntent
         if (row?.label?.toLocaleLowerCase().startsWith(query)) return setActive(row.id);
       }
     },
-    [activeId, onClose],
+    [onClose, setActive],
   );
 
-  const takes = useCallback(
-    (key: 'ArrowLeft' | 'ArrowRight') => {
-      const current = rows.current.find((row) => row.id === activeId && !row.disabled);
-      if (current?.across?.takes(key)) return true;
-      return key === 'ArrowRight' ? current?.submenu !== undefined : current?.owner != null;
-    },
-    [activeId],
-  );
+  const takes = useCallback((key: 'ArrowLeft' | 'ArrowRight') => {
+    const current = rows.current.find((row) => row.id === active.current && !row.disabled);
+    if (current?.across?.takes(key)) return true;
+    return key === 'ArrowRight' ? current?.submenu !== undefined : current?.owner != null;
+  }, []);
 
   const provider = useCallback(
     (children: React.ReactNode) => (
