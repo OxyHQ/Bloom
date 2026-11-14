@@ -59,6 +59,7 @@ const hash = (value) => createHash('sha256').update(value).digest('hex');
 const fixtureDigest = createHash('sha256');
 for (const name of [
   'PackageLab.tsx',
+  'AiProfileCardCases.tsx',
   'LoaderBenchmark.tsx',
   'ComposerCases.tsx',
   'RawInputControl.tsx',

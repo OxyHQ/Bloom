@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
 import { Avatar } from '../avatar';
@@ -117,7 +117,7 @@ function ActivityFeedComponent({
         }}
         testID={eid('entry')}
       >
-        <View style={{ width: avatarSize, height: avatarSize }}>
+        <View style={{ width: avatarSize, height: avatarSize }} testID={eid('avatar')}>
           <Avatar size={avatarSize} source={entry.actor.avatar} name={entry.actor.name} />
           {KindIcon && markPaint ? (
             <View

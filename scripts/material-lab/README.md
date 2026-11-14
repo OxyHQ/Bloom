@@ -100,6 +100,12 @@ under `.local/material-android` (override with `OUT`). It records OS/API,
 architecture, display size/density/fingerprint and display modes alongside APK
 and build identity. Raw display modes do not measure frame performance.
 
+The material scene includes 28/32/36dp `ComposerIconButton` controls under an
+`lg` `BloomScope`. On the explicitly authorized physical Android device, run
+`node composer-target-probe.mjs` after the gate. It verifies the visual bounds,
+then taps just inside and outside the 48dp target edges on top and left; its
+JSON, screenshot and hierarchy remain in the same evidence directory.
+
 ```sh
 node --test android-gate.test.mjs
 ```

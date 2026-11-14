@@ -4,8 +4,10 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { AlertDialog } from '../alert-dialog';
 import { createAlertDialog } from '../alert-dialog/AlertDialog';
+import { BloomScope } from '../appearance';
 import type { DialogProps } from '../dialog';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { resolvedStyle } from './support/rendered-style';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -53,6 +55,24 @@ describe('AlertDialog (built on Dialog)', () => {
     expect(getByText('This cannot be undone.')).toBeTruthy();
     expect(getByText('Delete')).toBeTruthy();
     expect(getByText('Keep')).toBeTruthy();
+  });
+
+  it('keeps action geometry owned by Dialog across surrounding size scopes', () => {
+    const renderAction = (size: 'xs' | 'lg') => {
+      const tree = renderWithTheme(
+        <BloomScope size={size}>
+          <AlertDialog open onOpenChange={() => {}} title="Delete app?" confirmLabel="Delete" />
+        </BloomScope>,
+      );
+      const action = tree.UNSAFE_getByProps({ accessibilityLabel: 'Delete' });
+      const geometry = resolvedStyle(action.props.style);
+      tree.unmount();
+      return geometry;
+    };
+
+    // Dialog's shared ActionButton explicitly selects its platform recipe
+    // (large on mobile); AlertDialog does not expose a competing size contract.
+    expect(renderAction('xs')).toEqual(renderAction('lg'));
   });
 
   it('runs onConfirm then onOpenChange when the confirm button is pressed', () => {

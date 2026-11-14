@@ -5,6 +5,7 @@ import { useContext } from 'react';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { BottomBarSlotContext } from '../layout/bottom-bar-slot';
 import { ResizeHandle } from '../layout/ResizeHandle';
+import { Button } from '../button';
 import { SurfaceLevelProvider, useSurfaceFill } from '../styles/surface-levels';
 import * as Native from 'react-native';
 import { Text, View } from 'react-native';
@@ -39,6 +40,7 @@ import {
   useAiChatShell,
 } from '../ai-chat';
 import type { AiChatGeneration } from '../ai-chat';
+import { AppShell as AppShellImplementation } from '../app-shell';
 import { distributeGenerations } from '../ai-chat/AiChatGalleryPanelBase';
 import { AI_CHAT_WEB_CSS, resolveAiChatPalette } from '../ai-chat/shared';
 import { SwapGlyph } from '../ai-chat/AiChatControls';
@@ -51,6 +53,8 @@ import { RiVolumeUpLine } from '../icons/remix/RiVolumeUpLine';
 import { resolvedStyle, classNamesOn } from './support/rendered-style';
 import { buildTheme } from '../theme/build-theme';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomScope } from '../appearance';
+import { TYPE_SCALE } from '../typography';
 import { PortalOutlet, PortalProvider } from '../portal';
 import { pressHost } from './support/press-host';
 import { mockWindowSize } from './support/window-size';
@@ -111,9 +115,140 @@ describe('AiChat messages', () => {
     const off = renderIn(<AiChatAssistantMessage feedback={false}>Reply</AiChatAssistantMessage>);
     expect(off.queryByLabelText('Good response')).toBeNull();
   });
+
+  it('keeps authored message block geometry independent from BloomScope', () => {
+    const subject = (size?: 'xs' | 'lg') => {
+      const content = (
+        <>
+          <AiChatMessageLine tone="secondary">status</AiChatMessageLine>
+          <AiChatBulletList>
+            <AiChatBullet>
+              <AiChatStrong>Important</AiChatStrong>
+            </AiChatBullet>
+          </AiChatBulletList>
+          <AiChatLinkChip>resource</AiChatLinkChip>
+        </>
+      );
+      return (
+        <BloomThemeProvider mode="light">
+          {size ? <BloomScope size={size}>{content}</BloomScope> : content}
+        </BloomThemeProvider>
+      );
+    };
+    const view = render(subject());
+    const geometry = () => {
+      const bulletList = view.UNSAFE_root.findAll((node) => {
+        const style = resolvedStyle(node.props.style);
+        return style.paddingLeft === 21 && style.gap === 8;
+      })[0];
+      const bullet = view.UNSAFE_root.findAll((node) => {
+        const style = resolvedStyle(node.props.style);
+        return style.width === 5 && style.height === 5 && style.borderRadius === 2.5;
+      })[0];
+      if (!bulletList || !bullet) throw new Error('AiChat message list geometry is missing');
+      const link = view.getByLabelText('resource');
+      const linkGlyph = link.findAll((node) => {
+        const style = resolvedStyle(node.props.style);
+        return style.width === 16 && style.height === 16;
+      })[0];
+      if (!linkGlyph) throw new Error('AiChat link glyph geometry is missing');
+      return {
+        list: resolvedStyle(bulletList.props.style),
+        bullet: resolvedStyle(bullet.props.style),
+        link: resolvedStyle(link.props.style),
+        linkGlyph: resolvedStyle(linkGlyph.props.style),
+        message: resolvedStyle(view.getByText('status').props.style),
+        strong: resolvedStyle(view.getByText('Important').props.style),
+      };
+    };
+    const initial = geometry();
+    expect(initial.list).toMatchObject({ paddingLeft: 21, gap: 8 });
+    expect(initial.bullet).toMatchObject({ width: 5, height: 5, borderRadius: 2.5 });
+    expect(initial.link).toMatchObject({ paddingLeft: 4, paddingTop: 3, borderRadius: 8 });
+    expect(initial.linkGlyph).toMatchObject({ width: 16, height: 16 });
+    expect(initial.message).toMatchObject(TYPE_SCALE['body-regular']);
+    expect(initial.strong).toMatchObject(TYPE_SCALE['body-medium']);
+    view.rerender(subject('xs'));
+    expect(geometry()).toEqual(initial);
+    view.rerender(subject('lg'));
+    expect(geometry()).toEqual(initial);
+  });
+
+  it('keeps authored user and assistant turn layouts independent from BloomScope', () => {
+    const subject = (size?: 'xs' | 'lg') => {
+      const messages = (
+        <>
+          <AiChatUserMessage testID="turn-user" animate={false}>
+            <Text>question</Text>
+          </AiChatUserMessage>
+          <AiChatAssistantMessage testID="turn-assistant" animate={false} feedback={false}>
+            <Text>answer</Text>
+          </AiChatAssistantMessage>
+        </>
+      );
+      return (
+        <BloomThemeProvider mode="light">
+          {size ? <BloomScope size={size}>{messages}</BloomScope> : messages}
+        </BloomThemeProvider>
+      );
+    };
+    const view = render(subject());
+    const geometry = () => ({
+      user: resolvedStyle(view.getByTestId('turn-user').props.style),
+      bubble: resolvedStyle(view.getByTestId('turn-user-bubble').props.style),
+      assistant: resolvedStyle(view.getByTestId('turn-assistant').props.style),
+    });
+    const initial = geometry();
+    expect(initial.user).toMatchObject({ width: '100%', alignItems: 'flex-end' });
+    expect(initial.bubble).toMatchObject({
+      maxWidth: '50%',
+      borderRadius: 16,
+      paddingLeft: 12,
+      paddingRight: 12,
+      paddingTop: 11,
+      paddingBottom: 11,
+    });
+    expect(initial.assistant).toMatchObject({ width: '100%', flexDirection: 'column', gap: 8 });
+    view.rerender(subject('xs'));
+    expect(geometry()).toEqual(initial);
+    view.rerender(subject('lg'));
+    expect(geometry()).toEqual(initial);
+  });
 });
 
 describe('AiChatFeedbackRow', () => {
+  it('keeps its authored action recipe independent from BloomScope', () => {
+    const subject = (size?: 'xs' | 'lg') => (
+      <BloomThemeProvider>
+        {size ? (
+          <BloomScope size={size}>
+            <AiChatFeedbackRow testID="feedback" onCopy={() => false} />
+          </BloomScope>
+        ) : (
+          <AiChatFeedbackRow testID="feedback" onCopy={() => false} />
+        )}
+      </BloomThemeProvider>
+    );
+    const screen = render(subject());
+    const geometry = () => {
+      const row = resolvedStyle(screen.getByTestId('feedback').props.style);
+      const like = screen.getByTestId('feedback-like');
+      const action = resolvedStyle(like.props.style);
+      const glyph = like.find((node) => node.props.width === 16 && node.props.height === 16);
+      return {
+        rowGap: row.gap,
+        padding: [action.paddingVertical, action.paddingHorizontal],
+        glyph: [glyph?.props.width, glyph?.props.height],
+      };
+    };
+    const normal = geometry();
+    expect(normal).toEqual({ rowGap: 2, padding: [8, 8], glyph: [16, 16] });
+    screen.rerender(subject('xs'));
+    expect(geometry()).toEqual(normal);
+    screen.rerender(subject('lg'));
+    expect(geometry()).toEqual(normal);
+  });
+
   it('calls each handler from its own button', () => {
     jest.useFakeTimers();
     const onLike = jest.fn();
@@ -328,6 +463,48 @@ describe('turn actions', () => {
 });
 
 describe('AiChatImageGeneration', () => {
+  it('keeps its fixed artwork canvas independent from the control-size scope', () => {
+    const screen = renderIn(
+      <BloomScope size="xs">
+        <AiChatImageGeneration
+          testID="generation"
+          source={{ uri: 'x.png' }}
+          alt="A player"
+          ready={false}
+        />
+      </BloomScope>,
+    );
+    const geometry = () => {
+      const canvas = screen.UNSAFE_root.findAll((node) => {
+        const style = resolvedStyle(node.props.style);
+        return style.width === 200 && style.height === 250;
+      });
+      return [
+        ...new Set(
+          canvas.map((node) => {
+            const style = resolvedStyle(node.props.style);
+            return `${style.width}x${style.height}`;
+          }),
+        ),
+      ];
+    };
+    expect(geometry()).toContain('200x250');
+    const compact = geometry();
+    screen.rerender(
+      <BloomThemeProvider>
+        <BloomScope size="lg">
+          <AiChatImageGeneration
+            testID="generation"
+            source={{ uri: 'x.png' }}
+            alt="A player"
+            ready={false}
+          />
+        </BloomScope>
+      </BloomThemeProvider>,
+    );
+    expect(geometry()).toEqual(compact);
+  });
+
   it('counts down, lands after `duration` and fires onGenerated once', () => {
     jest.useFakeTimers();
     const onGenerated = jest.fn();
@@ -364,6 +541,32 @@ describe('AiChatImageGeneration', () => {
 });
 
 describe('AiChatCodePanel', () => {
+  it('keeps panel width and code typography fixed while actions delegate size to Bloom scope', () => {
+    const subject = (size?: 'xs' | 'lg') => {
+      const panel = (
+        <AiChatCodePanel testID="code-panel" code="const x = 1" changeCount={1} browser={null} />
+      );
+      return (
+        <BloomThemeProvider>
+          {size ? <BloomScope size={size}>{panel}</BloomScope> : panel}
+        </BloomThemeProvider>
+      );
+    };
+    const screen = render(subject());
+    const geometry = () => {
+      const width = resolvedStyle(screen.getByTestId('code-panel').props.style).width;
+      const action = resolvedStyle(screen.getByLabelText('Open terminal').props.style).height;
+      const code = resolvedStyle(screen.getByText('const x = 1').props.style);
+      return { width, action, code: [code.fontSize, code.lineHeight] };
+    };
+    expect(geometry()).toEqual({ width: 410, action: 34, code: [13, 23] });
+    const normal = geometry();
+    screen.rerender(subject('xs'));
+    expect(geometry()).toEqual({ ...normal, action: 24 });
+    screen.rerender(subject('lg'));
+    expect(geometry()).toEqual(normal);
+  });
+
   it('draws its title and tabs in a PageHeader that grows with the system font', () => {
     const { getByLabelText, getByText } = renderIn(
       <AiChatCodePanel code="x" changeCount={1} additions={1} />,
@@ -427,6 +630,34 @@ describe('AiChatCodePanel', () => {
 });
 
 describe('AiChatGalleryPanel', () => {
+  it('keeps gallery width and artwork ratios fixed while panel actions delegate scope', () => {
+    const subject = (size?: 'xs' | 'lg') => {
+      const panel = <AiChatGalleryPanel testID="gallery" generations={WALL} />;
+      return (
+        <BloomThemeProvider>
+          {size ? <BloomScope size={size}>{panel}</BloomScope> : panel}
+        </BloomThemeProvider>
+      );
+    };
+    const screen = render(subject());
+    const geometry = () => {
+      const width = resolvedStyle(screen.getByTestId('gallery').props.style).width;
+      const action = resolvedStyle(screen.getByLabelText('New generation').props.style).height;
+      const aspectRatios = screen.UNSAFE_root.findAll(
+        (node) => resolvedStyle(node.props.style).aspectRatio !== undefined,
+      ).map((node) => resolvedStyle(node.props.style).aspectRatio);
+      return { width, action, aspectRatios };
+    };
+    const normal = geometry();
+    expect(normal.width).toBe(410);
+    expect(normal.action).toBe(34);
+    expect(normal.aspectRatios).toEqual(expect.arrayContaining([0.5, 1, 2]));
+    screen.rerender(subject('xs'));
+    expect(geometry()).toEqual({ ...normal, action: 24 });
+    screen.rerender(subject('lg'));
+    expect(geometry()).toEqual(normal);
+  });
+
   it('balances the wall into shortest-first columns with a top-left → bottom-right cascade', () => {
     const columns = distributeGenerations(WALL, 3);
     expect(columns.map((c) => c.map((g) => g.id))).toEqual([
@@ -483,6 +714,66 @@ describe('AiChatGalleryPanel', () => {
 });
 
 describe('AiChatContainer', () => {
+  it('keeps caller control sizing delegated through the thread scroller', () => {
+    const subject = (size?: 'xs' | 'lg') => {
+      const thread = (
+        <AiChatThread testID="thread">
+          <Button testID="thread-button" onPress={() => {}}>
+            Reply
+          </Button>
+        </AiChatThread>
+      );
+      return (
+        <BloomThemeProvider>
+          {size ? <BloomScope size={size}>{thread}</BloomScope> : thread}
+        </BloomThemeProvider>
+      );
+    };
+    const screen = render(subject());
+    const size = () =>
+      Number(resolvedStyle(screen.getByTestId('thread-button').props.style).height);
+    const normal = size();
+    expect(normal).toBeGreaterThan(0);
+    screen.rerender(subject('xs'));
+    const compact = size();
+    expect(compact).toBeLessThan(normal);
+    screen.rerender(subject('lg'));
+    expect(size()).toBeGreaterThan(normal);
+  });
+
+  it('delegates header action size to PageHeader while the screen owns chat chrome', () => {
+    const subject = (size?: 'xs' | 'lg') => {
+      const container = (
+        <AiChatContainer
+          testID="chat"
+          title="Conversation"
+          onMore={() => {}}
+          composer={<Text>Composer</Text>}
+        >
+          <Text>Thread</Text>
+        </AiChatContainer>
+      );
+      return (
+        <BloomThemeProvider>
+          {size ? <BloomScope size={size}>{container}</BloomScope> : container}
+        </BloomThemeProvider>
+      );
+    };
+    const screen = render(subject());
+    const geometry = () => ({
+      action: resolvedStyle(screen.getByLabelText('More options').props.style).height,
+      header: !!screen.getByTestId('chat-header'),
+      composer: !!screen.getByText('Composer'),
+      thread: !!screen.getByText('Thread'),
+    });
+    const normal = geometry();
+    expect(normal).toEqual({ action: 34, header: true, composer: true, thread: true });
+    screen.rerender(subject('xs'));
+    expect(geometry()).toEqual({ ...normal, action: 24 });
+    screen.rerender(subject('lg'));
+    expect(geometry()).toEqual(normal);
+  });
+
   it('draws the breadcrumb, the thread, and AgentThinking only while working', () => {
     const { getByText, queryByText, rerender } = renderIn(
       <AiChatContainer project="vibl" title="coding scenario" composer={null}>
@@ -569,6 +860,75 @@ describe('AiChatContainer host slots', () => {
 });
 
 describe('AiChatShell', () => {
+  it('keeps its panel recipe independent of control scope while header actions delegate size', () => {
+    const dimensions = mockWindowSize({ width: 400, height: 900, scale: 1, fontScale: 1 });
+    try {
+      const subject = (size?: 'xs' | 'lg') => {
+        const shell = (
+          <AiChatShell
+            sidebar={null}
+            mobileSidebar={<Text>nav</Text>}
+            defaultPanelWidth={410}
+            minPanelWidth={320}
+            maxPanelWidth={560}
+            panelLabel="Code"
+            panel={() => <Text>Panel</Text>}
+          >
+            <AiChatHeader testID="scope-header">Alia</AiChatHeader>
+          </AiChatShell>
+        );
+        return size ? <BloomScope size={size}>{shell}</BloomScope> : shell;
+      };
+      const screen = renderWithPortal(subject());
+      const geometry = () => {
+        const appShell = screen.UNSAFE_getByType(AppShellImplementation);
+        const panelLayout = appShell.props.panelLayout;
+        const context = panelLayout.panels[1];
+        return {
+          shell: resolvedStyle(screen.getByTestId('ai-chat-shell').props.style),
+          context: {
+            width: context.width,
+            minWidth: context.minWidth,
+            maxWidth: context.maxWidth,
+            visible: context.visible,
+            floatingBelow: context.floating.below,
+          },
+          header: classNamesOn(screen.getByTestId('scope-header-bar').props.style),
+          navigation: resolvedStyle(screen.getByLabelText('Open navigation').props.style).height,
+          panelAction: resolvedStyle(screen.getByLabelText('Open code').props.style).height,
+        };
+      };
+      const normal = geometry();
+      expect(normal.shell).toMatchObject({ flexGrow: 1, flexBasis: 0, height: '100%' });
+      expect(normal.context).toMatchObject({ width: 410, minWidth: 320, maxWidth: 560 });
+      expect(normal.header).toContain('min-h-14 py-2');
+      expect(normal.navigation).toBe(34);
+      expect(normal.panelAction).toBe(34);
+
+      screen.rerender(
+        <BloomThemeProvider>
+          <PortalProvider>
+            {subject('xs')}
+            <PortalOutlet />
+          </PortalProvider>
+        </BloomThemeProvider>,
+      );
+      expect(geometry()).toEqual({ ...normal, navigation: 24, panelAction: 24 });
+
+      screen.rerender(
+        <BloomThemeProvider>
+          <PortalProvider>
+            {subject('lg')}
+            <PortalOutlet />
+          </PortalProvider>
+        </BloomThemeProvider>,
+      );
+      expect(geometry()).toEqual(normal);
+    } finally {
+      dimensions.mockRestore();
+    }
+  });
+
   it('opens the context panel as a side sheet over the retained conversation', () => {
     // Below `xl` the context panel floats as a side sheet named by `panelLabel`;
     // the conversation stays mounted beneath it rather than being replaced.
@@ -644,6 +1004,47 @@ describe('AiChatShell', () => {
     expect(getByLabelText('Open navigation')).toBeTruthy();
     fireEvent.press(getByLabelText('Open code'));
     expect(getByLabelText('Code')).toBeTruthy();
+  });
+
+  it('keeps header chrome fixed while shell actions follow their delegated control scale', () => {
+    const subject = (size?: 'xs' | 'lg') => {
+      const shell = (
+        <AiChatShell sidebar={null} mobileSidebar={<Text>nav</Text>} panel={() => null}>
+          <AiChatHeader testID="header">
+            <Text>Alia</Text>
+          </AiChatHeader>
+        </AiChatShell>
+      );
+      return size ? <BloomScope size={size}>{shell}</BloomScope> : shell;
+    };
+    const screen = renderWithPortal(subject());
+    const geometry = () => ({
+      header: classNamesOn(screen.getByTestId('header-bar').props.style),
+      navigation: resolvedStyle(screen.getByLabelText('Open navigation').props.style).height,
+      panel: resolvedStyle(screen.getByLabelText('Open code').props.style).height,
+    });
+    const normal = geometry();
+    expect(normal.header).toContain('min-h-14 py-2');
+    expect(normal.navigation).toBe(34);
+    expect(normal.panel).toBe(34);
+    screen.rerender(
+      <BloomThemeProvider>
+        <PortalProvider>
+          {subject('xs')}
+          <PortalOutlet />
+        </PortalProvider>
+      </BloomThemeProvider>,
+    );
+    expect(geometry()).toEqual({ ...normal, navigation: 24, panel: 24 });
+    screen.rerender(
+      <BloomThemeProvider>
+        <PortalProvider>
+          {subject('lg')}
+          <PortalOutlet />
+        </PortalProvider>
+      </BloomThemeProvider>,
+    );
+    expect(geometry()).toEqual(normal);
   });
 
   it('draws a header with its title alone outside a shell', () => {

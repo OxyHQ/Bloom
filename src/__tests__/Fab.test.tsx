@@ -48,6 +48,38 @@ describe('Fab action primitive', () => {
     expect(style.zIndex).toBeUndefined();
   });
   it.each([
+    ['xs', 40],
+    ['sm', 48],
+    ['md', 50],
+    ['lg', 64],
+  ] as const)('maps %s scope to the matching Fab diameter', (size, diameter) => {
+    const view = themed(
+      <BloomScope size={size}>
+        <Fab icon={Icon} accessibilityLabel="Create" testID="fab" />
+      </BloomScope>,
+    );
+    expect(resolvedStyle(view.getByTestId('fab').props.style)).toMatchObject({
+      width: diameter,
+      height: diameter,
+    });
+  });
+  it('uses md by default and honors explicit size over nested scopes', () => {
+    const defaults = themed(<Fab icon={Icon} accessibilityLabel="Create" testID="fab" />);
+    expect(resolvedStyle(defaults.getByTestId('fab').props.style).width).toBe(50);
+
+    const explicit = themed(
+      <BloomScope size="xs">
+        <BloomScope size="lg">
+          <Fab size="sm" icon={Icon} accessibilityLabel="Create" testID="fab" />
+        </BloomScope>
+      </BloomScope>,
+    );
+    expect(resolvedStyle(explicit.getByTestId('fab').props.style)).toMatchObject({
+      width: 48,
+      height: 48,
+    });
+  });
+  it.each([
     ['native', Fab],
     ['web', WebFab],
   ] as const)(

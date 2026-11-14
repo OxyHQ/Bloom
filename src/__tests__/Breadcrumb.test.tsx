@@ -3,6 +3,7 @@ import { I18nManager, Linking, Text, View } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomScope } from '../appearance';
 import { Breadcrumb, BreadcrumbItem } from '../breadcrumb';
 import { DropdownMenuItem } from '../dropdown-menu';
 import { MenuSurfaceProvider } from '../floating/context';
@@ -18,6 +19,34 @@ function renderWithTheme(ui: React.ReactElement) {
 }
 
 describe('Breadcrumb', () => {
+  it('resolves trail and item geometry from the nearest BloomScope, with explicit size taking precedence', () => {
+    const renderSubject = (itemSize?: 'md') =>
+      renderWithTheme(
+        <BloomScope size="xs">
+          <BloomScope size="lg">
+            <Breadcrumb testID="scoped-trail">
+              <BreadcrumbItem size={itemSize} onPress={() => {}} testID="scoped-item">
+                Home
+              </BreadcrumbItem>
+            </Breadcrumb>
+          </BloomScope>
+        </BloomScope>,
+      );
+
+    const scoped = renderSubject();
+    expect(resolvedStyle(scoped.getByText('Home').props.style)).toMatchObject({
+      fontSize: 16,
+      lineHeight: 22,
+    });
+    expect(resolvedStyle(scoped.getByTestId('scoped-item').props.style).minHeight).toBe(44);
+
+    const explicit = renderSubject('md');
+    expect(resolvedStyle(explicit.getByText('Home').props.style)).toMatchObject({
+      fontSize: 14,
+      lineHeight: 20,
+    });
+  });
+
   it('is a named navigation landmark with a chevron BETWEEN items only', () => {
     const { getByTestId, getByLabelText } = renderWithTheme(
       <Breadcrumb testID="nav">

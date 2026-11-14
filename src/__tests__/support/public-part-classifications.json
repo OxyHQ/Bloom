@@ -14,6 +14,18 @@
       "src/property-insights/EnergyBadge.tsx#EnergyBadge"
     ]
   },
+  "segmented-control-size": {
+    "status": "applicable",
+    "reason": "SegmentedControl owns a coherent interactive size scale for segment height, track geometry, text and focus target. It consumes all four BloomScope rungs directly; an explicit size overrides the nearest scope.",
+    "evidence": [
+      "src/segmented-control/SegmentedControl.tsx",
+      "docs/segmented-control.mdx",
+      "src/__tests__/SegmentedControlPublicPartScope.test.tsx",
+      "src/__tests__/SegmentedControlPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native-renderer and DOM web verify default md, xs/sm/md/lg geometry, nested lg over xs, explicit lg over xs, ordinary wrappers and an actual portal; physical touch-target fit and device accessibility remain pending",
+    "parts": ["src/segmented-control/SegmentedControl.tsx#SegmentedControl"]
+  },
   "concentric-geometry": {
     "status": "independent-scale",
     "reason": "ConcentricView owns rounded-corner geometry derived from radius, padding, border and margin; it has no Bloom control-size prop. It renders children inside its geometry context without replacing BloomScope, so child controls keep the nearest scope and explicit size precedence.",
@@ -825,62 +837,634 @@
     "verification": "Native-renderer and DOM web suites verify default md, nearest xs, nested lg over xs, explicit lg over xs, ordinary wrappers and an actual portal for both controls; physical geometry, assistive-technology behavior and device accessibility remain pending. These parts own no submenu",
     "parts": ["src/checkbox/Checkbox.tsx#Checkbox", "src/switch/Switch.tsx#Switch"]
   },
+  "select-control-size": {
+    "status": "applicable",
+    "reason": "Select resolves trigger geometry, value typography and chevron size from its explicit size or nearest BloomScope. SelectContent establishes an independent menu density for option rows, group spacing, indicators and separators; SelectField delegates its trigger size to Select. The option list and trigger are separate size owners by design.",
+    "evidence": [
+      "src/select/Select.tsx",
+      "src/select/Select.web.tsx",
+      "src/select/shared.tsx",
+      "src/select/SelectField.tsx",
+      "docs/select.mdx",
+      "src/__tests__/SelectPublicPartScope.test.tsx",
+      "src/__tests__/SelectPublicPartScope.web.test.tsx",
+      "src/__tests__/SelectItemLabel.test.tsx",
+      "src/__tests__/MenuDensity.web.test.tsx"
+    ],
+    "verification": "Native renderer verifies trigger padding, 44dp touch target, value and chevron at default md, xs/sm/md/lg scopes, nested scope, actual React portal, explicit override, SelectField delegation and an open sm content list under an xs scope and lg trigger. Web DOM verifies trigger geometry/type/glyph across md defaults and all scale rungs, wrappers, nested scopes, portal and explicit override; a real FloatingPanel portal verifies independent sm option density, row text, selected indicator, group spacing and separator margin under xs scope/lg trigger. Physical Android rendering and accessibility remain pending.",
+    "parts": [
+      "src/select/Select.tsx#Select",
+      "src/select/Select.tsx#SelectContent",
+      "src/select/Select.tsx#SelectIcon",
+      "src/select/Select.tsx#SelectItem",
+      "src/select/Select.tsx#SelectTrigger",
+      "src/select/Select.tsx#SelectValue",
+      "src/select/shared.tsx#SelectGroup",
+      "src/select/shared.tsx#SelectItemIndicator",
+      "src/select/shared.tsx#SelectItemText",
+      "src/select/shared.tsx#SelectSeparator"
+    ]
+  },
+  "breadcrumb-control-size": {
+    "status": "applicable",
+    "reason": "Breadcrumb and BreadcrumbItem resolve label typography, icon geometry and interactive hit-area recipe from the nearest BloomScope size. Explicit size wins, and native touch targets remain at least 44 points across visual size rungs.",
+    "evidence": [
+      "src/breadcrumb/create-breadcrumb.tsx",
+      "src/__tests__/Breadcrumb.test.tsx",
+      "src/__tests__/Breadcrumb.web.test.tsx"
+    ],
+    "verification": "Native renderer verifies inherited nested lg scope, explicit md item override, label typography and 44-point item target; existing web DOM tests verify inherited xs/sm/md/lg through the trail and explicit trail override. Physical device geometry and accessibility remain pending.",
+    "parts": [
+      "src/breadcrumb/Breadcrumb.tsx#Breadcrumb",
+      "src/breadcrumb/Breadcrumb.tsx#BreadcrumbItem"
+    ]
+  },
+  "close-button-independent-size": {
+    "status": "independent-scale",
+    "reason": "CloseButton owns a compact dismiss-action geometry with an xs default and explicit 2xs/xs/sm/md/lg overrides; the intentionally compact default does not inherit BloomScope size. Its dimensions describe the dismiss affordance, not surrounding content density.",
+    "evidence": [
+      "src/button/CloseButton.tsx",
+      "src/button/shared.ts",
+      "src/__tests__/Button.test.tsx",
+      "src/__tests__/CloseButtonPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify that lg scope leaves the xs default at 20 points/pixels and explicit lg overrides an xs scope to 44; existing native geometry coverage checks the component size table. Physical-device proportions and accessibility remain pending.",
+    "parts": ["src/button/CloseButton.tsx#CloseButton"]
+  },
+  "call-stage-control-size": {
+    "status": "applicable",
+    "reason": "CallControls and CallControlButton resolve call-stage button geometry from the nearest BloomScope. The specialized full-stage default is lg; the supported xs scope maps to sm because call controls have sm/md/lg geometry. An explicit size wins, while fixed caption typography and tones remain role-owned.",
+    "evidence": [
+      "src/call-ui/CallControls.tsx",
+      "src/call-ui/shared.ts",
+      "src/__tests__/CallControlsPublicPartScope.test.tsx",
+      "src/__tests__/CallControlsPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and web DOM verify default lg, xs-to-sm mapping, sm/md/lg scopes, explicit md override, nested lg over xs through a wrapper, group spacing, and standalone CallControlButton geometry. Call controls own no portal or submenu; physical-device proportions and accessibility remain pending.",
+    "parts": [
+      "src/call-ui/CallControls.tsx#CallControlButton",
+      "src/call-ui/CallControls.tsx#CallControls"
+    ]
+  },
+  "input-group-control-size": {
+    "status": "applicable",
+    "reason": "InputGroup owns the single input shell and resolves its field geometry from the explicit size or nearest BloomScope, defaulting to md. It also publishes the resolved size through TextFieldGroupContext so its field and addons remain one coordinated control.",
+    "evidence": [
+      "src/input-group/InputGroup.tsx",
+      "src/input-group/types.ts",
+      "src/__tests__/InputGroupPublicPartScope.test.tsx",
+      "src/__tests__/InputGroupPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and web DOM verify default md, xs/sm/md/lg scope geometry, nested scopes, explicit sm override, and noPadding addon insets derived from each rung. The group owns no portal or submenu; physical-device proportions and input hit testing remain pending.",
+    "parts": ["src/input-group/InputGroup.tsx#InputGroup"]
+  },
+  "input-group-addon-size-delegation": {
+    "status": "delegated",
+    "reason": "InputGroupAddon has no public size prop; inside a group it consumes the group's resolved size to calculate noPadding inset and follows the group's shared shell context. Outside a group its fallback geometry remains md.",
+    "evidence": [
+      "src/input-group/InputGroup.tsx",
+      "src/input-group/types.ts",
+      "src/__tests__/InputGroupPublicPartScope.test.tsx",
+      "src/__tests__/InputGroupPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and web DOM verify that the addon inset follows xs/sm/md/lg group geometry and an explicit nested sm group size; addon label typography remains the fixed body-regular role. Physical-device layout remains pending.",
+    "parts": ["src/input-group/InputGroup.tsx#InputGroupAddon"]
+  },
+  "time-field-partial-size": {
+    "status": "applicable",
+    "reason": "TimeField resolves its text-field geometry from the explicit size or nearest BloomScope, defaulting to md. Its two-step recipe maps xs/sm to the small 96×32 field and md/lg to the medium 104×38 field; the intermediate rungs are intentionally not distinct geometries.",
+    "evidence": [
+      "src/date-picker/TimeField.tsx",
+      "src/date-picker/types.ts",
+      "docs/date-picker.mdx",
+      "src/__tests__/TimeField.test.tsx",
+      "src/__tests__/TimeFieldPublicPartScope.test.tsx"
+    ],
+    "verification": "Native renderer and web DOM verify default md, xs/sm-to-small and md/lg-to-medium mappings, nested scopes, explicit sm override, and actual width/height. TimeField owns no portal or submenu; keyboard/IME and device input behavior remain covered by their separate field checks, while physical proportions remain pending.",
+    "parts": ["src/date-picker/TimeField.tsx#TimeField"]
+  },
+  "field-label-partial-size": {
+    "status": "applicable",
+    "reason": "Label owns field-name typography and resolves its type-ramp step from explicit size or the nearest BloomScope, defaulting to sm. Its three-step recipe maps lg to md; label size changes typography and spacing only, never the associated control's target.",
+    "evidence": [
+      "src/label/Label.tsx",
+      "src/label/types.ts",
+      "docs/label.mdx",
+      "src/__tests__/Label.test.tsx",
+      "src/__tests__/LabelPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and web DOM verify default sm, xs/sm/md typography, lg-to-md mapping, nested scopes, and explicit xs override. Label owns no portal or submenu and is not a touch target; physical text scaling and assistive-technology behavior remain pending.",
+    "parts": ["src/label/Label.tsx#Label"]
+  },
+  "fab-action-size": {
+    "status": "applicable",
+    "reason": "Fab resolves diameter and icon/label recipe from explicit size or nearest BloomScope, defaulting to md. Its action-specific metrics are xs 40, sm 48, md 50 and lg 64 points/pixels; placement and positioning remain with the caller.",
+    "evidence": [
+      "src/fab/use-fab-props.ts",
+      "src/fab/constants.ts",
+      "src/__tests__/Fab.test.tsx",
+      "src/__tests__/FabPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and real web DOM verify default md, xs/sm/md/lg diameters, nested scopes and explicit sm override. Fab owns no portal or submenu; physical hit testing, label fit and device proportions remain pending.",
+    "parts": ["src/fab/Fab.tsx#Fab"]
+  },
+  "color-swatch-art-size": {
+    "status": "independent-scale",
+    "reason": "ColorSwatchPicker's numeric size is the swatch artwork diameter, not a Bloom control rung. The selected ring adds a fixed 10-point frame, while ChoiceList owns the accessible option target; BloomScope does not reinterpret a caller's color-swatch dimensions.",
+    "evidence": [
+      "src/color-swatch-picker/ColorSwatchPicker.tsx",
+      "src/color-swatch-picker/types.ts",
+      "src/choice-list/ChoiceList.tsx",
+      "docs/color-swatch-picker.mdx",
+      "src/__tests__/ColorSwatchPicker.test.tsx",
+      "src/__tests__/ColorSwatchPickerPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and web DOM verify default 40-point swatch plus 50-point ringed option remains fixed under lg scope, explicit 24-point artwork plus 34-point visual option remains fixed under xs scope, and ChoiceList expands coarse-pointer option hit regions to at least 44px while retaining compact fine-pointer geometry. ChoiceList owns keyboard semantics; physical option hit testing and device proportions remain pending.",
+    "parts": ["src/color-swatch-picker/ColorSwatchPicker.tsx#ColorSwatchPicker"]
+  },
+  "select-field-size-delegation": {
+    "status": "delegated",
+    "reason": "SelectField adds the Field label, description and error layout, then forwards its optional size to the platform-specific Select root. Select remains the owner of trigger size resolution.",
+    "evidence": [
+      "src/select/SelectField.tsx",
+      "src/__tests__/SelectPublicPartScope.test.tsx",
+      "src/__tests__/SelectPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and web DOM each pass size xs through SelectField and measure the resulting trigger at its platform geometry and type; physical-device fit remains pending.",
+    "parts": ["src/select/Select.tsx#SelectField"]
+  },
+  "select-fixed-menu-parts": {
+    "status": "independent-scale",
+    "reason": "SelectLabel is a semantic group heading with a fixed caption type. SelectScrollUpButton and SelectScrollDownButton are optional scroll affordances with fixed 16px glyphs and padding; SelectContent does not mount them, but callers can compose them through SelectScrollProvider on either platform. Their documented roles do not scale with option density.",
+    "evidence": [
+      "src/select/shared.tsx",
+      "docs/select.mdx",
+      "src/__tests__/core-locale-auth.test.tsx",
+      "src/__tests__/SelectPublicPartScope.test.tsx",
+      "src/__tests__/SelectPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web compare custom scroll-button glyphs and classes under xs and lg, and verify the fixed caption type beside a differently sized option list; actual device painting remains unverified.",
+    "parts": [
+      "src/select/shared.tsx#SelectLabel",
+      "src/select/shared.tsx#SelectScrollDownButton",
+      "src/select/shared.tsx#SelectScrollUpButton"
+    ]
+  },
+  "select-scroll-provider": {
+    "status": "does-not-apply",
+    "reason": "SelectScrollProvider only publishes canScrollUp/canScrollDown and a scroll callback; it renders no visual surface or control geometry for BloomScope to size.",
+    "evidence": ["src/select/shared.tsx", "src/__tests__/core-locale-auth.test.tsx"],
+    "verification": "The provider itself emits no UI; native locale coverage confirms it supplies scroll state and localized labels to the optional affordances when mounted.",
+    "parts": ["src/select/shared.tsx#SelectScrollProvider"]
+  },
+  "agent-log-tool-call": {
+    "status": "independent-scale",
+    "reason": "AgentLogToolCall owns a fixed body-regular/caption-1 row recipe, 14px status glyph and 6px/4px row spacing rather than a Bloom control-size prop. Optional result children remain caller-owned and keep their nearest scope.",
+    "evidence": [
+      "src/agent-log/AgentLogToolCall.tsx",
+      "src/__tests__/AgentLogToolCallPublicPartScope.test.tsx",
+      "src/__tests__/AgentLogToolCallPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify fixed 14px title typography and 6px gap/4px vertical spacing under default md, xs and lg; optional child geometry and physical-device proportions remain unverified.",
+    "parts": ["src/agent-log/AgentLogToolCall.tsx#AgentLogToolCall"]
+  },
+  "agent-stack-numeric-size": {
+    "status": "independent-scale",
+    "reason": "AgentStack's public size prop is numeric and sets the avatar canvas directly; this artwork geometry has no relationship to BloomScope control-size tokens.",
+    "evidence": [
+      "src/agent-reply/AgentStack.tsx",
+      "src/agent-reply/types.ts",
+      "src/__tests__/AgentStackPublicPartScope.test.tsx",
+      "src/__tests__/AgentStackPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify a numeric 48px canvas stays fixed under default md, xs and lg scopes; physical avatar proportions remain unverified.",
+    "parts": ["src/agent-reply/AgentStack.tsx#AgentStack"]
+  },
+  "agent-profile-avatar-canvas": {
+    "status": "independent-scale",
+    "reason": "AgentProfile composes fixed 56px avatar-canvas geometry and numeric 56px/36px artwork sizes for one agent or an overlapping team. These illustration dimensions describe identity artwork, not a Bloom control-size rung.",
+    "evidence": [
+      "src/agent-reply/AgentProfile.tsx",
+      "src/__tests__/AgentProfilePublicPartScope.test.tsx",
+      "src/__tests__/AgentProfilePublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the fixed 56px canvas stays unchanged under default md, xs and lg scopes; physical avatar proportions remain unverified.",
+    "parts": ["src/agent-reply/AgentProfile.tsx#AgentProfile"]
+  },
+  "agent-reply-bubble-text-geometry": {
+    "status": "independent-scale",
+    "reason": "AgentReplyBubble calculates vertical inset from explicit text font/line metrics to balance its fixed 12px side inset; it has no Bloom control-size input. Caller content remains nested in the current scope.",
+    "evidence": [
+      "src/agent-reply/AgentReplyBubble.tsx",
+      "src/__tests__/AgentReplyBubblePublicPartScope.test.tsx",
+      "src/__tests__/AgentReplyBubblePublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the default 9px vertical inset stays fixed under default md, xs and lg while a nested Button follows those scopes; custom text metrics and physical material remain unverified.",
+    "parts": ["src/agent-reply/AgentReplyBubble.tsx#AgentReplyBubble"]
+  },
+  "agent-reply-actions-row": {
+    "status": "independent-scale",
+    "reason": "AgentReplyActions sizes its built-in voting and copy buttons explicitly as sm, while caller-provided children pass through unchanged and retain their own nearest BloomScope size contract.",
+    "evidence": [
+      "src/agent-reply/AgentReplyActions.tsx",
+      "src/__tests__/AgentReplyActionsPublicPartScope.test.tsx",
+      "src/__tests__/AgentReplyActionsPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the three built-in buttons remain 32px under default md, xs and lg, while a caller Button child follows all three scopes; touch hit regions and accessibility remain unverified.",
+    "parts": ["src/agent-reply/AgentReplyActions.tsx#AgentReplyActions"]
+  },
+  "agent-reply-action-fixed-size": {
+    "status": "independent-scale",
+    "reason": "AgentReplyAction is a bare icon Button that explicitly sets size=sm, so its 32px visual control recipe is independent of the caller's nearest BloomScope.",
+    "evidence": [
+      "src/agent-reply/AgentReplyActions.tsx",
+      "src/__tests__/AgentReplyActionPublicPartScope.test.tsx",
+      "src/__tests__/AgentReplyActionPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the 32px button under default md, xs and lg scopes; physical hit-region geometry and accessibility remain unverified.",
+    "parts": ["src/agent-reply/AgentReplyActions.tsx#AgentReplyAction"]
+  },
+  "agent-reply-layout-delegation": {
+    "status": "delegated",
+    "reason": "AgentReply owns only the reply wrapper's width and spacing. It passes children, identity and actions through as caller-owned nodes without replacing their BloomScope; the embedded controls keep their own size contracts.",
+    "evidence": [
+      "src/agent-reply/AgentReply.tsx",
+      "src/__tests__/AgentReplyPublicPartScope.test.tsx",
+      "src/__tests__/AgentReplyPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify caller Button children follow default md, xs and lg while the wrapper keeps its 12px top margin; other slot recipes and physical geometry remain separately unverified.",
+    "parts": ["src/agent-reply/AgentReply.tsx#AgentReply"]
+  },
+  "agent-reply-identity-artwork": {
+    "status": "independent-scale",
+    "reason": "AgentReplyIdentity uses its own thinking-state animation to size a fixed 32px AgentAvatar artwork canvas and fixed body typography. These identity and animation dimensions have no Bloom control-size input.",
+    "evidence": [
+      "src/agent-reply/AgentReplyIdentity.tsx",
+      "src/__tests__/AgentReplyIdentityPublicPartScope.test.tsx",
+      "src/__tests__/AgentReplyIdentityPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the 20px resting wrapper and 32px artwork canvas stay unchanged under default md, xs and lg scopes; thinking animation and device proportions remain separately unverified.",
+    "parts": ["src/agent-reply/AgentReplyIdentity.tsx#AgentReplyIdentity"]
+  },
+  "agent-chat-actions-delegation": {
+    "status": "delegated",
+    "reason": "AgentChatActions composes ButtonGroup and ButtonGroupItem for its share and menu trigger controls. Their shared control recipes consume the nearest BloomScope; the composite adds labels, callbacks and menu content but owns no separate size recipe.",
+    "evidence": [
+      "src/agent-chat/AgentChatActionsBase.tsx",
+      "src/button-group/ButtonGroupBase.tsx",
+      "src/__tests__/AgentChatActionsPublicPartScope.test.tsx",
+      "src/__tests__/AgentChatActionsPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify share and menu controls at 34px under default md, 24px under xs and 34px under lg (the group clamps lg to md); open-menu geometry and physical touch behavior remain unverified.",
+    "parts": ["src/agent-chat/AgentChat.tsx#AgentChatActions"]
+  },
+  "agent-chat-composer-fixed-recipe": {
+    "status": "independent-scale",
+    "reason": "AgentChatComposer delegates its pill animation to ComposerLoader and prompt implementation to ComposerPill, whose one-line field is fixed at 20px and whose add/send controls set explicit md and 36px geometry. The surrounding 26px status row is domain metadata, not a control-size rung.",
+    "evidence": [
+      "src/agent-chat/AgentChatComposerBase.tsx",
+      "src/composer-panel/ComposerPillBase.tsx",
+      "src/composer-panel/ComposerControls.tsx",
+      "src/__tests__/AgentChatComposerPublicPartScope.test.tsx",
+      "src/__tests__/AgentChatComposerPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the 20px prompt field and 36px add/send controls remain fixed under default md, xs and lg; loader material, multiline growth and physical geometry require separate verification.",
+    "parts": ["src/agent-chat/AgentChat.tsx#AgentChatComposer"]
+  },
+  "agent-chat-history-fixed-recipe": {
+    "status": "independent-scale",
+    "reason": "AgentChatHistory owns a fixed 260px rail and domain-specific thread rows, including fixed 6px vertical row insets and a 28px age/menu slot. Its labels use named typography variants, and its compact rail geometry has no Bloom control-size prop.",
+    "evidence": [
+      "src/agent-chat/AgentChatHistoryBase.tsx",
+      "src/__tests__/AgentChatHistoryPublicPartScope.test.tsx",
+      "src/__tests__/AgentChatHistoryPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify rail width, thread-row insets and trailing slot stay fixed under default md, xs and lg scopes; row touch fit, open menus, account flows and physical layout remain unverified.",
+    "parts": ["src/agent-chat/AgentChat.tsx#AgentChatHistory"]
+  },
+  "agent-chat-message-fixed-recipe": {
+    "status": "independent-scale",
+    "reason": "AgentChatMessage authors the user bubble with fixed 12px horizontal and 11px vertical insets, uses named text variants, and sets reply action targets to 28px. Optional reasoning, tool-call and Markdown blocks delegate to their own components; the message has no Bloom control-size prop.",
+    "evidence": [
+      "src/agent-chat/AgentChatMessage.tsx",
+      "src/agent-chat/AgentChatControls.tsx",
+      "src/__tests__/AgentChatMessagePublicPartScope.test.tsx",
+      "src/__tests__/AgentChatMessagePublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify authored user-bubble insets and 28px reply actions stay fixed under default md, xs and lg; Markdown descendants, multiline wrapping and physical touch fit remain separately unverified.",
+    "parts": ["src/agent-chat/AgentChatMessage.tsx#AgentChatMessage"]
+  },
+  "agent-chat-composition-delegation": {
+    "status": "delegated",
+    "reason": "AgentChat owns conversation state and composes AppShell, Screen, PageHeader, PageFooter, AgentChatHistory, AgentChatComposer and AgentChatMessage. It defines no independent size scale; layout and leaf-control recipes belong to those shared owners, while the inherited BloomScope remains active through the shell and header.",
+    "evidence": [
+      "src/agent-chat/AgentChatBase.tsx",
+      "src/agent-chat/AgentChat.tsx",
+      "src/app-shell/AppShell.tsx",
+      "src/screen/Screen.tsx",
+      "src/__tests__/AgentChatPublicPartScope.test.tsx",
+      "src/__tests__/AgentChatPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify an xs scope reaches the share control through AgentChat → AppShell → Screen → PageHeader as 24px, with default md and lg clamped by ButtonGroup to 34px; responsive layouts and other leaf recipes remain separately verified.",
+    "parts": ["src/agent-chat/AgentChat.tsx#AgentChat"]
+  },
+  "agent-thinking-fixed-recipes": {
+    "status": "independent-scale",
+    "reason": "AgentThinking is a status indicator with fixed art boxes, a named body-medium label and a 10px row gap; ThinkingReasoning uses fixed spacing tokens, a 2px rule and body-2 text. Neither exposes Bloom control sizing, and their role-specific geometry must not be mistaken for button size.",
+    "evidence": [
+      "src/agent-thinking/AgentThinking.tsx",
+      "src/agent-thinking/ThinkingReasoning.tsx",
+      "src/__tests__/AgentThinkingPublicPartScope.test.tsx",
+      "src/__tests__/AgentThinkingPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify fixed status-row gap, 16px dot grid, 14/20 label typography and reasoning vertical insets under default md, xs and lg; animated frame timing and physical proportions remain unverified.",
+    "parts": [
+      "src/agent-thinking/AgentThinking.tsx#AgentThinking",
+      "src/agent-thinking/ThinkingReasoning.tsx#ThinkingReasoning"
+    ]
+  },
+  "agent-creator-composition-delegation": {
+    "status": "delegated",
+    "reason": "AgentCreator composes Screen, PageHeader, ButtonGroup, CloseButton, AgentCreatorField/Section, preference controls and numeric AgentAvatar artwork. It defines no editor-wide size scale; shared controls receive the nearest BloomScope, CloseButton explicitly selects xs, and artwork geometry stays numeric.",
+    "evidence": [
+      "src/agent-creator/AgentCreatorBase.tsx",
+      "src/agent-creator/AgentCreatorField.tsx",
+      "src/agent-creator/AgentCreatorSection.tsx",
+      "src/__tests__/AgentCreatorPublicPartScope.test.tsx",
+      "src/__tests__/AgentCreatorPublicPartScope.web.test.tsx",
+      "src/agent-creator/__tests__/AgentCreator.test.tsx",
+      "src/__tests__/AgentCreatorRootPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify undo/redo controls in the actual AgentCreator compose at 34px under default md, 24px under xs and 34px under lg, while its explicit 20px close control remains fixed; child rows, portals and nested/explicit sizes are separately covered, while editor responsiveness and physical fit remain unverified.",
+    "parts": ["src/agent-creator/AgentCreator.tsx#AgentCreator"]
+  },
+  "usage-card-fixed-recipe": {
+    "status": "independent-scale",
+    "reason": "UsageCard is a domain-specific usage visualization with named body typography and authored fixed geometry for cards, bars, legends and limit rows. It exposes no control size prop; BloomScope must not silently change chart or data density.",
+    "evidence": [
+      "src/usage-card/UsageCard.tsx",
+      "src/usage-card/types.ts",
+      "docs/usage-card.mdx",
+      "src/__tests__/UsageCard.test.tsx",
+      "src/__tests__/UsageCardPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the default card inset, named 14/20 title typography and 6px usage tracks stay fixed under default md, xs and lg BloomScope. Physical-device proportions, dense dashboards and accessibility behavior remain unverified.",
+    "parts": ["src/usage-card/UsageCard.tsx#UsageCard"]
+  },
+  "agent-limits-card-delegation": {
+    "status": "delegated",
+    "reason": "Deprecated AgentLimitsCard converts token-domain values and labels to the canonical UsageCard contract, selects its legacy 16px radius, and delegates all visible usage geometry and rendering. It owns no independent control-size scale.",
+    "evidence": [
+      "src/agent-limits-card/AgentLimitsCard.tsx",
+      "src/agent-limits-card/types.ts",
+      "src/usage-card/UsageCard.tsx",
+      "src/__tests__/AgentLimitsCard.test.tsx",
+      "src/__tests__/UsageCard.test.tsx",
+      "src/__tests__/UsageCardPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify token context is rendered through the fixed UsageCard recipe under default md, xs and lg scopes; the adapter's 16px radius, caller format, and labels remain preserved. Device layout and adoption of the non-deprecated UsageCard API remain unverified.",
+    "parts": ["src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard"]
+  },
+  "ambient-photo-independent-geometry": {
+    "status": "independent-scale",
+    "reason": "AmbientPhoto is a decorative full-bleed image layer with no control-size prop or content recipe. Its host and photo layers fill the caller-owned region; BloomScope must not alter that geometry.",
+    "evidence": [
+      "src/ambient-photo/AmbientPhoto.tsx",
+      "src/ambient-photo/AmbientPhoto.web.tsx",
+      "src/ambient-photo/types.ts",
+      "src/__tests__/AmbientPhoto.test.tsx",
+      "src/__tests__/AmbientPhoto.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify full-bleed absolute-fill host/layers remain identical under default md, xs and lg BloomScope. Cropping quality, decoded image memory and platform motion/performance remain separately unverified.",
+    "parts": ["src/ambient-photo/AmbientPhoto.tsx#AmbientPhoto"]
+  },
+  "animated-check-artwork-geometry": {
+    "status": "independent-scale",
+    "reason": "AnimatedCheck draws fixed ring and check artwork into a square 52-unit viewBox. Its numeric size prop sets only the authored artwork's canvas; the surrounding BloomScope does not define a second control-size contract.",
+    "evidence": [
+      "src/animated-check/AnimatedCheck.tsx",
+      "src/animated-check/types.ts",
+      "src/__tests__/AnimatedCheck.test.tsx",
+      "src/__tests__/AnimatedCheckPublicPartScope.web.test.tsx",
+      "src/__tests__/animated-style-deps.test.ts"
+    ],
+    "verification": "Native renderer and DOM web verify default 24px and explicit 48px SVG canvases remain fixed under xs and lg BloomScope; animation timing and physical optical proportions remain unverified.",
+    "parts": ["src/animated-check/AnimatedCheck.tsx#AnimatedCheck"]
+  },
+  "ai-chat-message-content-recipes": {
+    "status": "independent-scale",
+    "reason": "AiChatBullet, BulletList, LinkChip, MessageLine and Strong encode semantic message content with authored list indentation, marker/artwork geometry, chip padding and named body typography. They expose no control-size scale; feedback and turn-action controls remain owned by their respective button families.",
+    "evidence": [
+      "src/ai-chat/AiChatMessages.tsx",
+      "src/ai-chat/types.ts",
+      "docs/agent-chat.mdx",
+      "src/__tests__/AiChat.test.tsx",
+      "src/__tests__/AiChatMessagePartsPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify 21px list indentation, 8px item gap, 5px bullet, 16px link glyph, fixed chip padding and 14/20 body typography under default md, xs and lg scopes. Platform wrapping, long localized content and physical proportions remain unverified.",
+    "parts": [
+      "src/ai-chat/AiChatMessages.tsx#AiChatBullet",
+      "src/ai-chat/AiChatMessages.tsx#AiChatBulletList",
+      "src/ai-chat/AiChatMessages.tsx#AiChatLinkChip",
+      "src/ai-chat/AiChatMessages.tsx#AiChatMessageLine",
+      "src/ai-chat/AiChatMessages.tsx#AiChatStrong"
+    ]
+  },
+  "ai-chat-turn-layout-recipes": {
+    "status": "independent-scale",
+    "reason": "AiChatUserMessage owns the right-aligned fixed-inset bubble and its width-relative cap; AiChatAssistantMessage owns a full-width vertical stack with an 8px block gap. Neither exposes a control-size scale. Feedback and user-turn actions delegate to their shared button owners.",
+    "evidence": [
+      "src/ai-chat/AiChatMessages.tsx",
+      "src/ai-chat/bindAiChat.tsx",
+      "src/ai-chat/types.ts",
+      "src/__tests__/AiChat.test.tsx",
+      "src/__tests__/AiChatMessagePartsPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify 50% user-bubble max width, fixed 12/11px bubble insets and 16px radius, plus the assistant's full-width 8px-gap stack under default md, xs and lg scopes. Feedback/action controls, responsive message wrapping and physical fit remain separately verified.",
+    "parts": [
+      "src/ai-chat/AiChat.tsx#AiChatAssistantMessage",
+      "src/ai-chat/AiChat.tsx#AiChatUserMessage"
+    ]
+  },
+  "ai-chat-shell-headers": {
+    "status": "independent-scale",
+    "reason": "AiChatHeader and AiChatMobileHeader compose fixed PageHeader chrome and the shell's navigation/panel islands without exposing their own control-size scale. PageHeader owns the header recipe, while ButtonGroupItem owns and inherits the action control size.",
+    "evidence": [
+      "src/ai-chat/AiChatShell.tsx",
+      "src/page-header/PageHeader.tsx",
+      "src/button-group/ButtonGroupBase.tsx",
+      "src/__tests__/AiChat.test.tsx",
+      "src/__tests__/AiChatShellPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify fixed 56px header chrome and delegated 34px default/lg versus 24px xs navigation and panel actions. Compact versus expanded shell selection and physical layout, touch target accessibility, and system text scaling remain separately verified.",
+    "parts": [
+      "src/ai-chat/AiChatShell.tsx#AiChatHeader",
+      "src/ai-chat/AiChatShell.tsx#AiChatMobileHeader"
+    ]
+  },
+  "ai-chat-image-generation-artwork": {
+    "status": "independent-scale",
+    "reason": "AiChatImageGeneration's artwork owns a fixed 200×250 preview frame and 9px decorative dot field, independent of control size. Its feedback actions keep their own shared turn-action control contract.",
+    "evidence": [
+      "src/ai-chat/AiChatImageGenerationBase.tsx",
+      "src/ai-chat/AiChatControls.tsx",
+      "src/__tests__/AiChat.test.tsx",
+      "src/__tests__/AiChatShellPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the authored 200×250 image canvas under default md, xs and lg scopes. Generation timing, image loading, responsive fit and physical raster quality remain separate claims.",
+    "parts": ["src/ai-chat/AiChat.tsx#AiChatImageGeneration"]
+  },
+  "ai-chat-feedback-row": {
+    "status": "independent-scale",
+    "reason": "AiChatFeedbackRow uses an authored fixed 32px visual recipe (8px padding around 16px glyphs) and has no control-size prop. It does not establish that the interactive hit region meets touch accessibility targets.",
+    "evidence": [
+      "src/ai-chat/AiChatFeedbackRowBase.tsx",
+      "src/ai-chat/AiChatControls.tsx",
+      "src/__tests__/AiChat.test.tsx",
+      "src/__tests__/AiChatShellPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify 2px action spacing, 8px button padding and 16px glyphs remain unchanged under default md, xs and lg scopes. Actual touch hit regions, keyboard/touch interaction and assistive-technology behavior remain pending.",
+    "parts": ["src/ai-chat/AiChat.tsx#AiChatFeedbackRow"]
+  },
+  "ai-chat-code-panel-delegation": {
+    "status": "delegated",
+    "reason": "AiChatCodePanel owns its explicit width prop and panel composition, but delegates screen scroll/chrome to Screen and PageHeader, action sizing to ButtonGroupItem, tabs to Tabs and code reading typography to CodeLines with an explicit md document size.",
+    "evidence": [
+      "src/ai-chat/AiChatCodePanel.tsx",
+      "src/screen/ScreenBase.tsx",
+      "src/page-header/PageHeader.tsx",
+      "src/button-group/ButtonGroupBase.tsx",
+      "src/code/CodeLines.tsx",
+      "src/__tests__/AiChat.test.tsx",
+      "src/__tests__/AiChatShellPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the default 410px panel width and 13/23 code typography remain fixed under default md, xs and lg scopes, while header action geometry follows its owner at 34px for md/lg and 24px for xs. Narrow-panel wrapping, keyboard access and physical fit remain unverified.",
+    "parts": ["src/ai-chat/AiChat.tsx#AiChatCodePanel"]
+  },
+  "ai-chat-container-delegation": {
+    "status": "delegated",
+    "reason": "AiChatContainer is a conversation composition adapter: Screen owns viewport, scroll and header/footer slots; PageHeader and PageFooter own the rendered chrome; caller content and composer retain their own control-size owners. The container has no separate size scale.",
+    "evidence": [
+      "src/ai-chat/AiChatContainer.tsx",
+      "src/screen/ScreenBase.tsx",
+      "src/page-header/PageHeader.tsx",
+      "src/page-footer/PageFooter.tsx",
+      "src/__tests__/AiChat.test.tsx",
+      "src/__tests__/AiChatShellPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the More options action follows the shared header owner at 34px for default md/lg and 24px for xs, while caller thread and composer content remain mounted. Scroll restoration, keyboard/IME behavior, system text scaling and physical interaction remain unverified.",
+    "parts": ["src/ai-chat/AiChat.tsx#AiChatContainer"]
+  },
+  "ai-chat-thread-delegation": {
+    "status": "delegated",
+    "reason": "AiChatThread owns follow-to-end, pagination and scroll-event coordination, but delegates viewport/scroll ownership to Screen and ScreenScrollView. Its caller-supplied child controls retain the nearest BloomScope and explicit size contract.",
+    "evidence": [
+      "src/ai-chat/AiChatContainer.tsx",
+      "src/screen/ScreenBase.tsx",
+      "src/screen/ScreenScrollView.tsx",
+      "src/__tests__/AiChat.test.tsx",
+      "src/__tests__/AiChatShellPublicPartScope.web.test.tsx",
+      "src/__tests__/AiChatDocumentScroll.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify a caller Button inside AiChatThread follows its own size scale: 36/28/44px at md/xs/lg natively and 36/24/44px on web. Existing thread tests cover follow/pagination contracts; restoration, IME interaction, and physical scroll/touch behavior remain unverified.",
+    "parts": ["src/ai-chat/AiChat.tsx#AiChatThread"]
+  },
+  "ai-chat-gallery-panel-delegation": {
+    "status": "delegated",
+    "reason": "AiChatGalleryPanel owns its explicit panel width, generation-column distribution and each tile's supplied aspect ratio. Screen/PageHeader own panel chrome, Tabs own view selection, and ButtonGroupItem owns header action sizing; generation data remains caller-owned.",
+    "evidence": [
+      "src/ai-chat/AiChatGalleryPanelBase.tsx",
+      "src/ai-chat/AiChatCodePanel.tsx",
+      "src/screen/ScreenBase.tsx",
+      "src/page-header/PageHeader.tsx",
+      "src/tabs/Tabs.tsx",
+      "src/button-group/ButtonGroupBase.tsx",
+      "src/__tests__/AiChat.test.tsx",
+      "src/__tests__/AiChatShellPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the default 410px panel width and 0.5/1/2 generation aspect ratios remain fixed under md/xs/lg scopes, while header actions follow their owner at 34px for md/lg and 24px for xs. Narrow-panel columns, tile touch targets, animation performance and physical image fit remain unverified.",
+    "parts": ["src/ai-chat/AiChat.tsx#AiChatGalleryPanel"]
+  },
+  "ai-chat-shell-layout-delegation": {
+    "status": "delegated",
+    "reason": "AiChatShell owns conversation/context panel roles and supplies explicit sidebar and context width constraints to AppShell. AppShell owns panel layout, resize and responsive presentation; PageHeader/ButtonGroupItem own compact chrome and action sizing.",
+    "evidence": [
+      "src/ai-chat/AiChatShell.tsx",
+      "src/app-shell/AppShellPanelLayout.tsx",
+      "src/app-shell/panel-layout-types.ts",
+      "src/page-header/PageHeader.tsx",
+      "src/button-group/ButtonGroupBase.tsx",
+      "src/__tests__/AiChat.test.tsx",
+      "src/__tests__/AppShellPanelLayout.test.tsx",
+      "src/__tests__/AiChatShellPublicPartScope.web.test.tsx",
+      "src/__tests__/AiChatShellClosedDrawerWeb.test.tsx"
+    ],
+    "verification": "Native renderer confirms 410/320/560px context width constraints and shell flex geometry are unchanged under md/xs/lg while drawer actions follow ButtonGroupItem at 34/24/34px. Web DOM tests verify compact header action delegation and retained hidden navigation behavior; AppShell owns track rendering. Physical responsive layout, touch fit and device accessibility remain unverified.",
+    "parts": ["src/ai-chat/AiChat.tsx#AiChatShell"]
+  },
+  "ai-profile-card-local-responsive-recipe": {
+    "status": "delegated",
+    "reason": "AiProfileCard owns its fixed cover/avatar/card recipe and adapts its stats and heatmap from its measured local width. The embedded SegmentedControl inherits BloomScope size; caller actions retain their own explicit size. CoverHeader forwards its local layout event to support the measurement.",
+    "evidence": [
+      "src/ai-profile-card/AiProfileCard.tsx",
+      "src/cover-header/CoverHeader.tsx",
+      "src/cover-header/types.ts",
+      "src/segmented-control/SegmentedControl.tsx",
+      "docs/ai-profile-card.mdx",
+      "docs/cover-header.mdx",
+      "src/__tests__/AiProfileCard.test.tsx",
+      "src/__tests__/AiProfileCardPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer resizes the same card from 1440px window width through 390px and 720px local widths, switching stats rows correctly; card recipe stays fixed under md/xs/lg while the period SegmentedControl maps to 28/20/36px. DOM web uses ResizeObserver-backed local layout at 390px and 720px within a 1024px window and verifies the same row change. Physical panel fit, touch fit and assistive technology remain unverified.",
+    "parts": ["src/ai-profile-card/AiProfileCard.tsx#AiProfileCard"]
+  },
+  "agent-progress-fixed-recipe": {
+    "status": "independent-scale",
+    "reason": "AgentProgress and AgentProgressPlan own fixed 341px card geometry; their rows and labels use fixed typography and their decision buttons/badges choose explicit size tokens. AgentProgressLoadingText consumes an explicit typography variant, not BloomScope control size.",
+    "evidence": [
+      "src/agent-progress/AgentProgress.tsx",
+      "src/agent-progress/AgentProgressPlan.tsx",
+      "src/agent-progress/AgentProgressLoadingText.tsx",
+      "src/__tests__/AgentProgressPublicPartScope.test.tsx",
+      "src/__tests__/AgentProgressPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify 341px progress/plan cards, 32px explicitly small decision action, and 14px default loading text under default md, xs and lg scopes; physical layout, interaction targets and assistive technology remain unverified.",
+    "parts": [
+      "src/agent-progress/AgentProgress.tsx#AgentProgress",
+      "src/agent-progress/AgentProgressLoadingText.tsx#AgentProgressLoadingText",
+      "src/agent-progress/AgentProgressPlan.tsx#AgentProgressPlan"
+    ]
+  },
+  "agent-log-tool-calls": {
+    "status": "delegated",
+    "reason": "AgentLogToolCalls only provides list semantics and wraps each caller supplied child in AgentLogRow. Row guide geometry belongs to AgentLogRow; size behavior of caller controls stays with those controls and the nearest BloomScope.",
+    "evidence": [
+      "src/agent-log/AgentLogToolCall.tsx",
+      "src/agent-log/AgentLog.tsx",
+      "src/__tests__/AgentLogToolCallsPublicPartScope.test.tsx",
+      "src/__tests__/AgentLogToolCallsPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the list label and that a caller supplied Button follows default md, xs and lg scope through AgentLogRow; device layout and accessibility remain unverified.",
+    "parts": ["src/agent-log/AgentLogToolCall.tsx#AgentLogToolCalls"]
+  },
+  "alert-dialog-independent-size": {
+    "status": "independent-scale",
+    "reason": "AlertDialog is a controlled composition over Dialog and has no Bloom size prop. It delegates modal geometry and action layout to Dialog; the shared ActionButton explicitly selects its mobile or desktop size recipe, so an ancestor BloomScope does not control this alert composition.",
+    "evidence": [
+      "src/alert-dialog/AlertDialog.tsx",
+      "src/alert-dialog/types.ts",
+      "src/dialog/DialogContent.tsx",
+      "src/__tests__/AlertDialog.test.tsx"
+    ],
+    "verification": "Native renderer compares the actual AlertDialog confirm action under xs and lg scopes and confirms identical rendered geometry. Source review confirms the shared Dialog action chooses its own responsive sm/lg recipe and AlertDialog exposes no size prop. Web/native device layout and assistive-technology behavior remain outside this size classification.",
+    "parts": ["src/alert-dialog/index.ts#AlertDialog"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
     "evidence": [],
     "verification": "pending; not a passing adoption verdict",
     "parts": [
-      "src/activity-feed/ActivityFeed.tsx#ActivityFeed",
-      "src/agent-avatar/AgentAvatar.tsx#AgentAvatar",
-      "src/agent-avatar/AgentAvatarProvider.tsx#AgentAvatarProvider",
-      "src/agent-chat/AgentChat.tsx#AgentChat",
-      "src/agent-chat/AgentChat.tsx#AgentChatActions",
-      "src/agent-chat/AgentChat.tsx#AgentChatComposer",
-      "src/agent-chat/AgentChat.tsx#AgentChatHistory",
-      "src/agent-chat/AgentChatMessage.tsx#AgentChatMessage",
-      "src/agent-creator/AgentCreator.tsx#AgentCreator",
-      "src/agent-limits-card/AgentLimitsCard.tsx#AgentLimitsCard",
-      "src/agent-log/AgentLog.tsx#AgentLogGuideBridge",
-      "src/agent-log/AgentLog.tsx#AgentLogReveal",
-      "src/agent-log/AgentLog.tsx#AgentLogRow",
-      "src/agent-log/AgentLog.tsx#AgentLogRowConnector",
-      "src/agent-log/AgentLog.tsx#AgentLogShimmerText",
-      "src/agent-log/AgentLog.tsx#AgentLogWorkingRow",
-      "src/agent-log/AgentLogToolCall.tsx#AgentLogToolCall",
-      "src/agent-log/AgentLogToolCall.tsx#AgentLogToolCalls",
-      "src/agent-progress/AgentProgress.tsx#AgentProgress",
-      "src/agent-progress/AgentProgressLoadingText.tsx#AgentProgressLoadingText",
-      "src/agent-progress/AgentProgressPlan.tsx#AgentProgressPlan",
-      "src/agent-reply/AgentProfile.tsx#AgentProfile",
-      "src/agent-reply/AgentReply.tsx#AgentReply",
-      "src/agent-reply/AgentReplyActions.tsx#AgentReplyAction",
-      "src/agent-reply/AgentReplyActions.tsx#AgentReplyActions",
-      "src/agent-reply/AgentReplyBubble.tsx#AgentReplyBubble",
-      "src/agent-reply/AgentReplyIdentity.tsx#AgentReplyIdentity",
-      "src/agent-reply/AgentStack.tsx#AgentStack",
-      "src/agent-thinking/AgentThinking.tsx#AgentThinking",
-      "src/agent-thinking/ThinkingReasoning.tsx#ThinkingReasoning",
-      "src/ai-chat/AiChat.tsx#AiChatAssistantMessage",
-      "src/ai-chat/AiChat.tsx#AiChatCodePanel",
-      "src/ai-chat/AiChat.tsx#AiChatContainer",
-      "src/ai-chat/AiChat.tsx#AiChatFeedbackRow",
-      "src/ai-chat/AiChat.tsx#AiChatGalleryPanel",
-      "src/ai-chat/AiChat.tsx#AiChatImageGeneration",
-      "src/ai-chat/AiChat.tsx#AiChatShell",
-      "src/ai-chat/AiChat.tsx#AiChatThread",
-      "src/ai-chat/AiChat.tsx#AiChatUserMessage",
-      "src/ai-chat/AiChatMessages.tsx#AiChatBullet",
-      "src/ai-chat/AiChatMessages.tsx#AiChatBulletList",
-      "src/ai-chat/AiChatMessages.tsx#AiChatLinkChip",
-      "src/ai-chat/AiChatMessages.tsx#AiChatMessageLine",
-      "src/ai-chat/AiChatMessages.tsx#AiChatStrong",
-      "src/ai-chat/AiChatShell.tsx#AiChatHeader",
-      "src/ai-chat/AiChatShell.tsx#AiChatMobileHeader",
-      "src/ai-profile-card/AiProfileCard.tsx#AiProfileCard",
-      "src/alert-dialog/index.ts#AlertDialog",
-      "src/ambient-photo/AmbientPhoto.tsx#AmbientPhoto",
-      "src/animated-check/AnimatedCheck.tsx#AnimatedCheck",
       "src/app-shell/AppShellHeader.tsx#AppShellHeader",
       "src/app-shell/AppShellMenuButton.tsx#AppShellMenuButton",
       "src/app-shell/AppShellPanelVisibility.tsx#AppShellPanelVisibility",
@@ -903,17 +1487,12 @@
       "src/booking/TripCard.tsx#TripCard",
       "src/bottom-promo/BottomPromo.tsx#BottomPromo",
       "src/bottom-sheet/BottomSheet.tsx#BottomSheet",
-      "src/breadcrumb/Breadcrumb.tsx#Breadcrumb",
-      "src/breadcrumb/Breadcrumb.tsx#BreadcrumbItem",
-      "src/button/CloseButton.tsx#CloseButton",
       "src/calendar/CalendarView.tsx#CalendarView",
       "src/calendar/CalendarViewEventDetails.tsx#CalendarViewEventDetails",
       "src/calendar/CalendarViewHeader.tsx#CalendarViewHeader",
       "src/calendar/CalendarViewInboxMenu.tsx#CalendarViewInboxMenu",
       "src/calendar/CalendarViewMonthGrid.tsx#CalendarViewMonthGrid",
       "src/calendar/CalendarViewMonthSwitcher.tsx#CalendarViewMonthSwitcher",
-      "src/call-ui/CallControls.tsx#CallControlButton",
-      "src/call-ui/CallControls.tsx#CallControls",
       "src/call-ui/CallHistoryList.tsx#CallHistoryList",
       "src/call-ui/CallHistoryRow.tsx#CallHistoryRow",
       "src/call-ui/CallMinimisedPill.tsx#CallMinimisedPill",
@@ -989,7 +1568,6 @@
       "src/chat-composer/ChatComposer.tsx#ChatComposer",
       "src/chat-composer/ComposerAttachmentStrip.tsx#ComposerAttachmentStrip",
       "src/chat-composer/ComposerBanner.tsx#ComposerBanner",
-      "src/chat-composer/ComposerIconButton.tsx#ComposerIconButton",
       "src/chat-composer/EmojiPicker.tsx#EmojiPicker",
       "src/chat-composer/MessageContextMenu.tsx#MessageContextMenu",
       "src/chat-composer/ReactionPicker.tsx#ReactionPicker",
@@ -1039,7 +1617,6 @@
       "src/code/Code.tsx#Code",
       "src/code/CodeBlock.tsx#CodeBlock",
       "src/code/Pre.tsx#Pre",
-      "src/color-swatch-picker/ColorSwatchPicker.tsx#ColorSwatchPicker",
       "src/collapsible/Collapsible.tsx#Collapsible",
       "src/command/index.ts#Command",
       "src/composer-loader/ComposerLoader.tsx#ComposerLoader",
@@ -1092,7 +1669,6 @@
       "src/date-picker/DatePicker.tsx#DatePicker",
       "src/date-picker/DateRangePicker.tsx#DateRangePicker",
       "src/date-picker/MeetingScheduler.tsx#MeetingScheduler",
-      "src/date-picker/TimeField.tsx#TimeField",
       "src/delivery-slot/DeliverySlotDays.tsx#DeliverySlotDays",
       "src/delivery-slot/DeliverySlotOption.tsx#DeliverySlotOption",
       "src/delivery-slot/DeliverySlotPicker.tsx#DeliverySlotPicker",
@@ -1128,7 +1704,6 @@
       "src/eviction/EvictionReportCard.tsx#EvictionReportCard",
       "src/eviction/EvictionTimeline.tsx#EvictionTimeline",
       "src/expandable-text/ExpandableText.tsx#ExpandableText",
-      "src/fab/Fab.tsx#Fab",
       "src/fact-strip/FactStrip.tsx#FactStrip",
       "src/field/Field.tsx#Field",
       "src/file-upload/FileUpload.tsx#FileUpload",
@@ -1158,13 +1733,10 @@
       "src/hover-card/HoverCard.tsx#HoverCardTrigger",
       "src/image-resolver/context.ts#ImageResolverProvider",
       "src/important-alerts-card/ImportantAlertsCard.tsx#ImportantAlertsCard",
-      "src/input-group/InputGroup.tsx#InputGroup",
-      "src/input-group/InputGroup.tsx#InputGroupAddon",
       "src/input-otp/InputOtp.tsx#InputOtp",
       "src/job-board/JobBoard.tsx#JobBoard",
       "src/job-board/JobCard.tsx#JobCard",
       "src/kbd/Kbd.tsx#Kbd",
-      "src/label/Label.tsx#Label",
       "src/layout/AutoHideBar.tsx#AutoHideBar",
       "src/layout/AutoHideBar.tsx#AutoHideBarBand",
       "src/layout/AutoHideBar.tsx#AutoHideBarBody",
@@ -1212,9 +1784,6 @@
       "src/listing-editor/ListingQualityMeter.tsx#ListingQualityMeter",
       "src/listing-editor/OfferingEditor.tsx#OfferingEditor",
       "src/listing-editor/PropertyTypeSelector.tsx#PropertyTypeSelector",
-      "src/loading/Loading.tsx#Loading",
-      "src/loading/SpinnerIcon.tsx#SpinnerIcon",
-      "src/loading/StatusRing.tsx#StatusRing",
       "src/locale/context.ts#LocaleProvider",
       "src/location-puck/LocationPuck.tsx#LocationPuck",
       "src/lockup/Lockup.tsx#Lockup",
@@ -1441,9 +2010,7 @@
       "src/radio-indicator/RadioIndicator.tsx#RadioIndicator",
       "src/radio/RadioCard.tsx#RadioCard",
       "src/rail/Rail.tsx#Rail",
-      "src/rating/Rating.tsx#Rating",
       "src/rating/RatingBar.tsx#RatingBar",
-      "src/rating/RatingInput.tsx#RatingInput",
       "src/rating/RatingSummary.tsx#RatingSummary",
       "src/recent-hires-card/RecentHiresCard.tsx#RecentHiresCard",
       "src/route-stops/RouteStops.tsx#RouteStops",
@@ -1456,24 +2023,8 @@
       "src/screen/reselect.tsx#ScreenReselectScope",
       "src/scroll/context.tsx#ScrollRestorationProvider",
       "src/search/Search.tsx#Search",
-      "src/segmented-control/SegmentedControl.tsx#SegmentedControl",
       "src/segmented-control/SegmentedControl.tsx#SegmentedControlItem",
       "src/segmented-control/SegmentedControl.tsx#SegmentedControlItemText",
-      "src/select/Select.tsx#Select",
-      "src/select/Select.tsx#SelectContent",
-      "src/select/Select.tsx#SelectField",
-      "src/select/Select.tsx#SelectIcon",
-      "src/select/Select.tsx#SelectItem",
-      "src/select/Select.tsx#SelectTrigger",
-      "src/select/Select.tsx#SelectValue",
-      "src/select/shared.tsx#SelectGroup",
-      "src/select/shared.tsx#SelectItemIndicator",
-      "src/select/shared.tsx#SelectItemText",
-      "src/select/shared.tsx#SelectLabel",
-      "src/select/shared.tsx#SelectScrollDownButton",
-      "src/select/shared.tsx#SelectScrollProvider",
-      "src/select/shared.tsx#SelectScrollUpButton",
-      "src/select/shared.tsx#SelectSeparator",
       "src/settings-list/SettingsList.tsx#SettingsListDivider",
       "src/settings-list/SettingsList.tsx#SettingsListGroup",
       "src/settings-list/SettingsList.tsx#SettingsListItem",
@@ -1552,8 +2103,6 @@
       "src/stay-search/StaySearchCompact.tsx#StaySearchCompact",
       "src/stay-search/StaySearchPanel.tsx#StaySearchPanel",
       "src/stay-search/StaySearchStep.tsx#StaySearchStep",
-      "src/stepper/Stepper.tsx#Stepper",
-      "src/stepper/StepperRow.tsx#StepperRow",
       "src/sticker/Sticker.tsx#Sticker",
       "src/styles/surface-levels.ts#SurfaceLevelProvider",
       "src/subscription-plans/SubscriptionPlans.tsx#SubscriptionPlans",
@@ -1615,7 +2164,6 @@
       "src/track-list/TrackListHeader.tsx#TrackListHeader",
       "src/track-list/TrackRow.tsx#TrackRow",
       "src/track-list/TrackRowSkeleton.tsx#TrackRowSkeleton",
-      "src/usage-card/UsageCard.tsx#UsageCard",
       "src/user-hover-card/UserHoverCard.tsx#UserHoverCard",
       "src/vehicle-picker/VehiclePicker.tsx#VehiclePicker",
       "src/vendor-card/VendorCard.tsx#VendorCard",
@@ -1660,7 +2208,7 @@
       "src/__tests__/CreatorStudio.test.tsx",
       "src/__tests__/OfferingBadge.test.tsx"
     ],
-    "verification": "existing web scope regressions rerun; native family regressions rerun but complete per-part native scope/portal and device matrix remains pending",
+    "verification": "On Bloom 6cae1312 (2026-11-12), reran InheritedControlSize.web, Voice, ChatPeople, CreatorStudio and OfferingBadge: 5 suites / 150 tests pass. This confirms the existing web regressions; complete per-part native scope/portal coverage, physical-device geometry and accessibility remain pending.",
     "parts": [
       "src/chat-people/ContactRow.tsx#ContactRow",
       "src/creator-studio/ReleaseCard.tsx#ReleaseStatusBadge",
@@ -1674,13 +2222,18 @@
     ]
   },
   "external-router-parts": {
-    "status": "pending",
-    "reason": "Expo Router Link static parts are forwarded by Object.assign in the router adapter. Their declarations and implementations belong to the external package; inclusion records the public contract, not BloomScope adoption or a Bloom-owned implementation. Each part still needs semantic and platform review.",
+    "status": "delegated",
+    "reason": "Bloom's Link adapter forwards Menu, Trigger, Preview, MenuAction, AppleZoom and AppleZoomTarget by reference from Expo Router; it does not wrap them or remap their props. Expo Router owns their platform semantics and visual sizing. Menu exposes the system elementSize preference on iOS, Preview exposes preferred width/height, and the remaining parts coordinate link triggers, actions or Apple zoom geometry; none is a Bloom control-size API. Custom preview children remain caller-owned, and a system preview/menu boundary is not proof that arbitrary child scope propagates.",
     "evidence": [
       "src/panel-routing/expo-router/PanelRouterAdapter.tsx",
-      "src/__tests__/public-parts.test.ts"
+      "src/__tests__/public-parts.test.ts",
+      "src/__tests__/panel-router-expo.test.tsx",
+      "node_modules/expo-router/build/link/Link.d.ts",
+      "node_modules/expo-router/build/link/elements.d.ts",
+      "node_modules/expo-router/build/link/zoom/link-apple-zoom.d.ts",
+      "node_modules/expo-router/build/link/zoom/link-apple-zoom-target.d.ts"
     ],
-    "verification": "Type-resolved native/web routes and declaration provenance only; external runtime behavior and size semantics remain unaudited",
+    "verification": "For the lock-resolved expo-router@58.0.30, declaration review records the iOS-only system menu/preview/zoom behavior and the external elementSize/preferred preview dimensions. The Bloom adapter test proves all six static references are forwarded unchanged; the package's native/web runtime implementations remain owned by Expo Router and are outside Bloom's size-scale guarantee.",
     "parts": [
       "node_modules/expo-router/build/link/elements.d.ts#LinkMenuAction",
       "node_modules/expo-router/build/link/elements.d.ts#LinkPreview",
@@ -1819,6 +2372,119 @@
     ],
     "verification": "Native renderer and DOM web verify default md (36px), inherited sm (32px), explicit md over inherited sm, nested lg (44px), and inherited/explicit geometry through Canvas, CanvasBackground, CanvasPanel, and actual Portal. Direct size tables verify xs/sm/md/lg geometry and touch accommodation; device-rendered fit and accessibility remain separate",
     "parts": ["src/button/Button.tsx#Button"]
+  },
+  "agent-avatar-size": {
+    "status": "independent-scale",
+    "reason": "AgentAvatar's numeric size describes character artwork geometry, not a control-size rung. Its authored 64px default and caller-selected numeric diameter must remain intact under BloomScope; no touch or control recipe is inferred from the illustration size.",
+    "evidence": [
+      "src/agent-avatar/types.ts",
+      "src/agent-avatar/VectorCharacterAvatar.tsx",
+      "src/agent-avatar/VectorStaticPortrait.tsx",
+      "docs/agent-avatar.mdx",
+      "src/__tests__/AgentAvatarPublicPartScope.test.tsx",
+      "src/__tests__/AgentAvatarPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web measure default 64px and explicit 48px character artwork unchanged under xs and lg BloomScope. Device-rendered proportions and surrounding layout remain unverified.",
+    "parts": ["src/agent-avatar/AgentAvatar.tsx#AgentAvatar"]
+  },
+  "agent-avatar-provider": {
+    "status": "does-not-apply",
+    "reason": "AgentAvatarProvider publishes vector catalog and runtime capability contexts and renders no visual node or control geometry. BloomScope has no size contract to apply to this provider-only export.",
+    "evidence": [
+      "src/agent-avatar/AgentAvatarProvider.tsx",
+      "src/agent-avatar/__tests__/AgentAvatarProvider.test.tsx"
+    ],
+    "verification": "Source and the provider context suite confirm the export only wraps children in capability/catalog contexts; it paints no UI, exposes no size prop and owns no portal.",
+    "parts": ["src/agent-avatar/AgentAvatarProvider.tsx#AgentAvatarProvider"]
+  },
+  "agent-log-guide-bridge": {
+    "status": "independent-scale",
+    "reason": "AgentLogGuideBridge draws a structural connector between nested log rows. Its numeric height and offset express tree geometry, not a control-size rung; the one-pixel stroke and caller-supplied coordinates remain fixed under BloomScope.",
+    "evidence": [
+      "src/agent-log/AgentLog.tsx",
+      "src/agent-log/types.ts",
+      "docs/agent-log.mdx",
+      "src/__tests__/AgentLogGuideBridgePublicPartScope.test.tsx",
+      "src/__tests__/AgentLogGuideBridgePublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web measure width 1px, height 6px, top -6px and left 7px unchanged under default, xs and lg BloomScope. Device-rendered proportions remain unverified.",
+    "parts": ["src/agent-log/AgentLog.tsx#AgentLogGuideBridge"]
+  },
+  "agent-log-reveal": {
+    "status": "delegated",
+    "reason": "AgentLogReveal owns only animated clipping and reveal timing. Its ordinary Animated.View content wrapper adds no size recipe, so supplied controls inherit the surrounding BloomScope unchanged.",
+    "evidence": [
+      "src/agent-log/AgentLog.tsx",
+      "src/agent-log/types.ts",
+      "src/__tests__/AgentLogRevealPublicPartScope.test.tsx",
+      "src/__tests__/AgentLogRevealPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify a caller Button changes from inherited md to xs and lg through AgentLogReveal, with nested xs/lg resolving to the nearer lg scope. Portal behavior does not apply to this wrapper.",
+    "parts": ["src/agent-log/AgentLog.tsx#AgentLogReveal"]
+  },
+  "agent-log-row-connector": {
+    "status": "independent-scale",
+    "reason": "AgentLogRowConnector draws a structural guide beside a row, not a control. Its 12px guide lane, 1px trunk and fixed branch path describe tree geometry and remain independent of BloomScope.",
+    "evidence": [
+      "src/agent-log/AgentLog.tsx",
+      "src/agent-log/constants.ts",
+      "src/__tests__/AgentLogRowConnectorPublicPartScope.test.tsx",
+      "src/__tests__/AgentLogRowConnectorPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web measure the guide lane at 12px and the trunk at 1px with its fixed 8px top offset under default, xs and lg BloomScope. Device-rendered proportions remain unverified.",
+    "parts": ["src/agent-log/AgentLog.tsx#AgentLogRowConnector"]
+  },
+  "agent-log-row": {
+    "status": "delegated",
+    "reason": "AgentLogRow owns the reveal wrapper and a fixed 16px guide inset while its row content remains caller-owned. The row adds no control-size recipe and passes BloomScope through to supplied controls.",
+    "evidence": [
+      "src/agent-log/AgentLog.tsx",
+      "src/agent-log/types.ts",
+      "src/__tests__/AgentLogRowPublicPartScope.test.tsx",
+      "src/__tests__/AgentLogRowPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify a caller Button follows default, xs and lg scopes through the row, nested xs/lg resolves to lg, and the guide inset stays 16px. Device layout and touch fit remain unverified.",
+    "parts": ["src/agent-log/AgentLog.tsx#AgentLogRow"]
+  },
+  "agent-log-shimmer-text": {
+    "status": "independent-scale",
+    "reason": "AgentLogShimmerText is an inline text primitive with no size prop. It inherits font size, weight and family from its parent Text and adds only the semantic shimmer color/highlight; control-size BloomScope does not rewrite typography.",
+    "evidence": [
+      "src/agent-log/AgentLog.tsx",
+      "src/agent-log/types.ts",
+      "src/__tests__/AgentLog.test.tsx",
+      "src/__tests__/AgentLogShimmerTextPublicPartScope.test.tsx",
+      "src/__tests__/AgentLogShimmerTextPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer verifies the body-regular parent owns nested shimmer text typography under default, xs and lg scopes. DOM web verifies the shimmer stays nested with no font-size override while the parent's computed type remains unchanged; browser paint is not inferred from jsdom.",
+    "parts": ["src/agent-log/AgentLog.tsx#AgentLogShimmerText"]
+  },
+  "agent-log-working-row": {
+    "status": "independent-scale",
+    "reason": "AgentLogWorkingRow is a pending-work indicator, not a control. It composes the explicit AgentThinking stars variant with 4px vertical padding; both the artwork box and label recipe have fixed roles outside Bloom's control-size scale.",
+    "evidence": [
+      "src/agent-log/AgentLog.tsx",
+      "src/agent-thinking/AgentThinking.tsx",
+      "docs/agent-log.mdx",
+      "src/__tests__/AgentLog.test.tsx",
+      "src/__tests__/AgentLogWorkingRowPublicPartScope.test.tsx",
+      "src/__tests__/AgentLogWorkingRowPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web verify the 21px stars artwork and 14px body-medium label remain fixed under default, xs and lg BloomScope. Physical-device visual fit remains unverified.",
+    "parts": ["src/agent-log/AgentLog.tsx#AgentLogWorkingRow"]
+  },
+  "activity-feed-parts": {
+    "status": "delegated",
+    "reason": "ActivityFeed has no Bloom control-size prop: its actor artwork follows the separate comfortable/compact density axis, and its built-in reveal action selects an explicit xs Button. Caller-supplied entry content and actions remain in the inherited BloomScope and resolve their own control sizes through the feed's ordinary View wrappers.",
+    "evidence": [
+      "src/activity-feed/ActivityFeed.tsx",
+      "src/activity-feed/types.ts",
+      "docs/activity-feed.mdx",
+      "src/__tests__/ActivityFeedPublicPartScope.test.tsx",
+      "src/__tests__/ActivityFeedPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and DOM web measure the 32px comfortable and 24px compact actor artwork unchanged under default, xs, lg and nested scopes, while a caller-supplied Button follows xs/lg through the feed wrapper. Physical-device layout and touch fit remain unverified.",
+    "parts": ["src/activity-feed/ActivityFeed.tsx#ActivityFeed"]
   },
   "activity-feed-filter-parts": {
     "status": "independent-scale",
@@ -2027,5 +2693,86 @@
     ],
     "verification": "Native-renderer behavior tests and Chromium input/scroll/focus validation; physical IME and device geometry not established by these checks.",
     "parts": ["src/chat-composer/CompactComposer.tsx#CompactComposer"]
+  },
+  "composer-icon-button-geometry": {
+    "status": "independent-scale",
+    "reason": "ComposerIconButton exposes a numeric box size (default 36) rather than BloomSize. Its visual bounds and glyph size are recipe-owned and stay fixed under BloomScope; Button owns paint and interaction, while the hit target expands from the numeric box to the platform minimum.",
+    "evidence": [
+      "src/chat-composer/create-composer-icon-button.tsx",
+      "src/button/shared.ts",
+      "docs/chat-composer.mdx",
+      "src/__tests__/ComposerIconButtonPublicPartScope.test.tsx",
+      "src/__tests__/ComposerIconButtonPublicPartScope.web.test.tsx",
+      "docs/audits/issue-663/composer-icon-touch-pixel8a-2026-11-12/README.md"
+    ],
+    "verification": "Native renderer verifies numeric 28/32/36px boxes and 44pt iOS / 48dp Android hit regions across xs/sm/md/lg scopes. DOM web verifies those visual dimensions stay fixed, coarse pointers get a real 44px minimum target, and fine-pointer styles are restored without remounting. An ARM64 release build on a physical Pixel 8a (Android 16/API 36) measured 28/32/36dp boxes and passed inside/outside top- and left-edge taps for all three sizes; screenshot, hierarchy, APK and package attestation are recorded under docs/audits/issue-663/composer-icon-touch-pixel8a-2026-11-12. iOS device touch and performance benchmarking remain pending.",
+    "parts": ["src/chat-composer/ComposerIconButton.tsx#ComposerIconButton"]
+  },
+  "loading-indicators": {
+    "status": "applicable",
+    "reason": "Loading consumes the nearest BloomScope size for spinner diameter and label typography across spinner, inline and top variants; explicit size and iconSize retain their own precedence. SpinnerIcon and StatusRing expose numeric artwork geometry and remain independent from Bloom control scope.",
+    "evidence": [
+      "src/loading/LoadingBase.tsx",
+      "src/loading/SpinnerIcon.tsx",
+      "src/loading/StatusRing.tsx",
+      "docs/loading.mdx",
+      "src/__tests__/LoadingPublicPartScope.test.tsx",
+      "src/__tests__/LoadingPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native renderer and web DOM verify Loading default md, xs/sm/md/lg scope rungs, and explicit lg over xs. Both renderers verify numeric SpinnerIcon dimensions stay fixed under lg scope; native renderer verifies StatusRing dimensions stay fixed under lg scope. Physical device geometry pending.",
+    "parts": [
+      "src/loading/Loading.tsx#Loading",
+      "src/loading/SpinnerIcon.tsx#SpinnerIcon",
+      "src/loading/StatusRing.tsx#StatusRing"
+    ]
+  },
+  "rating-display-size": {
+    "status": "applicable",
+    "reason": "Rating owns a public visual scale for star and text proportions. Omitted size resolves BloomScope with xs/sm mapping to sm and md/lg mapping to md; explicit sm/md wins. The optional starSize remains a glyph-only override.",
+    "evidence": [
+      "src/rating/Rating.tsx",
+      "docs/rating.mdx",
+      "src/__tests__/RatingStepperPublicPartScope.test.tsx",
+      "src/__tests__/RatingStepperPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native-renderer and DOM web verify default md, xs/sm compact mapping, md/lg regular mapping, nested override, explicit md over xs, ordinary wrappers and an actual portal; physical geometry remains pending",
+    "parts": ["src/rating/Rating.tsx#Rating"]
+  },
+  "rating-input-size": {
+    "status": "applicable",
+    "reason": "RatingInput is an interactive radio group whose star and touch-target recipe consumes BloomScope size. xs maps to sm; sm/md/lg retain their corresponding picker rungs, and explicit size wins.",
+    "evidence": [
+      "src/rating/RatingInput.tsx",
+      "docs/rating.mdx",
+      "src/__tests__/RatingStepperPublicPartScope.test.tsx",
+      "src/__tests__/RatingStepperPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native-renderer and DOM web verify default md, xs-to-sm mapping, nested lg over xs, explicit lg over xs, ordinary wrappers and an actual portal; device touch-target fit and assistive-technology behavior remain pending",
+    "parts": ["src/rating/RatingInput.tsx#RatingInput"]
+  },
+  "stepper-size": {
+    "status": "applicable",
+    "reason": "Stepper maps xs/sm to its compact rung and md/lg to its regular rung for value typography, spacing and action sizes. Explicit sm/md wins over the inherited scope.",
+    "evidence": [
+      "src/stepper/Stepper.tsx",
+      "docs/stepper.mdx",
+      "src/__tests__/RatingStepperPublicPartScope.test.tsx",
+      "src/__tests__/RatingStepperPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native-renderer and DOM web verify default md, xs/sm compact mapping, md/lg regular mapping, explicit md over xs, ordinary wrappers and an actual portal; physical-device hit targets and accessibility remain pending",
+    "parts": ["src/stepper/Stepper.tsx#Stepper"]
+  },
+  "stepper-row-delegation": {
+    "status": "delegated",
+    "reason": "StepperRow forwards Stepper's size and behavioral props to the shared Stepper renderer. The row title and description are its own content recipe; its nested control scale is owned by Stepper.",
+    "evidence": [
+      "src/stepper/StepperRow.tsx",
+      "src/stepper/Stepper.tsx",
+      "docs/stepper.mdx",
+      "src/__tests__/RatingStepperPublicPartScope.test.tsx",
+      "src/__tests__/RatingStepperPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native-renderer and DOM web measure the nested decrement control under default md, xs/sm, nested lg, explicit md over xs, wrappers and an actual portal; title/description layout and device hit targets remain separately pending",
+    "parts": ["src/stepper/StepperRow.tsx#StepperRow"]
   }
 }

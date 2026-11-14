@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native';
 import type { BloomImageSource } from '../image';
 
 export interface CoverPosition {
@@ -39,6 +39,8 @@ export interface CoverHeaderLabels {
 }
 
 export interface CoverHeaderProps {
+  /** Reports the cover header's measured local width and height. */
+  onLayout?: (event: LayoutChangeEvent) => void;
   /** Photo across the cover band. Without one the band shows `background-tertiary`. */
   coverSource?: BloomImageSource | null;
   /** Stable asset identity, preserving an edit when only its signed URL changes. */

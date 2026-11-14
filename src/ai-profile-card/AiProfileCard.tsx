@@ -1,6 +1,6 @@
 import { ScrollArea } from '../layout/ScrollArea';
-import { memo, useEffect, useMemo, useState } from 'react';
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { StyleSheet, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 
 import { Avatar } from '../avatar';
 import { Badge } from '../badge';
@@ -130,7 +130,12 @@ function AiProfileCardComponent({
   const periods = periodsProp ?? defaultPeriods;
   const theme = useTheme();
   const { width: viewport } = useWindowDimensions();
-  const wide = viewport >= BREAKPOINTS.sm;
+  const [localWidth, setLocalWidth] = useState<number>();
+  const onLayout = useCallback((event: LayoutChangeEvent) => {
+    const nextWidth = event.nativeEvent.layout.width;
+    setLocalWidth((current) => (current === nextWidth ? current : nextWidth));
+  }, []);
+  const wide = (localWidth ?? viewport) >= BREAKPOINTS.sm;
 
   const colors = useMemo(() => {
     const c = theme.colors;
@@ -177,6 +182,7 @@ function AiProfileCardComponent({
       coverPosition={coverPosition}
       coverHeight={COVER_HEIGHT}
       overlap={COVER_HEIGHT - CONTENT_TOP}
+      onLayout={onLayout}
       style={[
         {
           minWidth: 0,
@@ -304,8 +310,9 @@ function AiProfileCardComponent({
             >
               {(wide ? [stats.map((_, i) => i)] : pairs(stats.length)).map((row) => (
                 <View key={row[0]} style={{ flexDirection: 'row', alignItems: 'stretch', gap: 8 }}>
-                  {row.map((i) => {
-                    const stat = stats[i]!;
+                  {row.flatMap((i) => {
+                    const stat = stats[i];
+                    if (!stat) return [];
                     return (
                       <View
                         key={`${i}-${stat.label}`}

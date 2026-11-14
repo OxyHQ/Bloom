@@ -11,6 +11,7 @@ import Animated, {
 import { Surface } from '../../src/surface';
 import { Card } from '../../src/card';
 import { Button } from '../../src/button';
+import { BloomScope } from '../../src/appearance';
 import { Chip } from '../../src/chip';
 import { BlurIsland } from '../../src/blur';
 import { Text } from '../../src/typography';
@@ -26,12 +27,14 @@ import {
 import { Dialog, useDialogControl } from '../../src/dialog';
 import { BottomSheet, type BottomSheetRef } from '../../src/bottom-sheet';
 import { AgentChatComposer } from '../../src/agent-chat';
+import { ComposerIconButton } from '../../src/chat-composer';
 import { ComposerLoader } from '../../src/composer-loader';
 import { BloomImage } from '../../src/image/BloomImage';
 import { OverlayInertBoundary } from '../../src/overlay';
 import { useTheme } from '../../src/theme/use-theme';
 import { usePrefersReducedMotion } from '../../src/hooks/use-prefers-reduced-motion';
 import { RiHomeLine } from '../../src/icons/remix/RiHomeLine';
+import { RiAddLine } from '../../src/icons/remix/RiAddLine';
 import { RiSearchLine } from '../../src/icons/remix/RiSearchLine';
 import photo from '../ai-chat/assets/gallery/beach-kid.webp';
 
@@ -110,6 +113,7 @@ export function MaterialScene({
   const [busy, setBusy] = useState(true);
   const [draft, setDraft] = useState('Synthetic draft — no request is sent');
   const [chipTargetPresses, setChipTargetPresses] = useState(0);
+  const [composerTargetPresses, setComposerTargetPresses] = useState(0);
   const dialog = useDialogControl();
   const sheet = useRef<BottomSheetRef>(null);
   const theme = useTheme();
@@ -199,6 +203,24 @@ export function MaterialScene({
                   Filter target
                 </Chip>
                 <Text testID="material-chip-target-count">Taps: {chipTargetPresses}</Text>
+              </View>
+              <View style={{ gap: 8 }}>
+                <Text variant="caption-1-regular">Composer icon boxes under an lg BloomScope</Text>
+                <BloomScope size="lg">
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 40 }}>
+                    {([28, 32, 36] as const).map((size) => (
+                      <ComposerIconButton
+                        key={size}
+                        size={size}
+                        icon={RiAddLine}
+                        accessibilityLabel={`Composer icon ${size} pixels`}
+                        onPress={() => setComposerTargetPresses((count) => count + 1)}
+                        testID={`material-composer-target-${size}`}
+                      />
+                    ))}
+                  </View>
+                </BloomScope>
+                <Text testID="material-composer-target-count">Taps: {composerTargetPresses}</Text>
               </View>
             </Card>
             <BlurIsland testID="material-island" style={{ padding: 12, alignSelf: 'flex-start' }}>

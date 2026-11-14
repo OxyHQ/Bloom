@@ -25,6 +25,7 @@ function CoverHeaderComponent({
   overlap = 45,
   coverStyle,
   contentStyle,
+  onLayout,
   children,
   style,
   testID,
@@ -197,7 +198,11 @@ function CoverHeaderComponent({
       : {};
 
   return (
-    <View testID={testID} style={[{ position: 'relative', width: '100%' }, style]}>
+    <View
+      testID={testID}
+      onLayout={onLayout}
+      style={[{ position: 'relative', width: '100%' }, style]}
+    >
       <View
         testID={testID ? `${testID}-cover` : undefined}
         style={[
