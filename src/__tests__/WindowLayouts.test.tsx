@@ -195,3 +195,34 @@ it('throws for the capability without a layOut', () => {
   jest.spyOn(console, 'error').mockImplementation(() => undefined);
   expect(() => draw(adapter)).toThrow(/window-layout/);
 });
+
+it('opens as the pointer rests on the zoom control for half a second', () => {
+  const { adapter } = platform();
+  const screen = draw(adapter);
+  const zoom = screen.getByTestId('controls-zoom');
+  let box = zoom.parent;
+  while (box && !box.props.onPointerEnter) box = box.parent;
+  if (!box) throw new Error('no hover target');
+  fireEvent(box, 'pointerEnter', { nativeEvent: { pointerType: 'mouse' } });
+  act(() => {
+    jest.advanceTimersByTime(499);
+  });
+  expect(screen.queryByText('Fill')).toBeNull();
+  act(() => {
+    jest.advanceTimersByTime(1);
+  });
+  expect(screen.getByText('Fill')).toBeTruthy();
+});
+
+it('opens from the screen reader by the zoom control’s “Show menu” action', () => {
+  const { adapter } = platform();
+  const screen = draw(adapter);
+  const zoom = screen.getByTestId('controls-zoom');
+  expect(zoom.props.accessibilityActions).toEqual(
+    expect.arrayContaining([{ name: 'longpress', label: 'Show menu' }]),
+  );
+  act(() => {
+    zoom.props.onAccessibilityAction({ nativeEvent: { actionName: 'longpress' } });
+  });
+  expect(screen.getByText('Fill')).toBeTruthy();
+});
