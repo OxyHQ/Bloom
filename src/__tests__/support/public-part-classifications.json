@@ -825,6 +825,55 @@
     "verification": "Native-renderer and DOM web suites verify default md, nearest xs, nested lg over xs, explicit lg over xs, ordinary wrappers and an actual portal for both controls; physical geometry, assistive-technology behavior and device accessibility remain pending. These parts own no submenu",
     "parts": ["src/checkbox/Checkbox.tsx#Checkbox", "src/switch/Switch.tsx#Switch"]
   },
+  "rating-display-size": {
+    "status": "applicable",
+    "reason": "Rating owns a public visual scale for star and text proportions. Omitted size resolves BloomScope with xs/sm mapping to sm and md/lg mapping to md; explicit sm/md wins. The optional starSize remains a glyph-only override.",
+    "evidence": [
+      "src/rating/Rating.tsx",
+      "docs/rating.mdx",
+      "src/__tests__/RatingStepperPublicPartScope.test.tsx",
+      "src/__tests__/RatingStepperPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native-renderer and DOM web verify default md, xs/sm compact mapping, md/lg regular mapping, nested override, explicit md over xs, ordinary wrappers and an actual portal; physical geometry remains pending",
+    "parts": ["src/rating/Rating.tsx#Rating"]
+  },
+  "rating-input-size": {
+    "status": "applicable",
+    "reason": "RatingInput is an interactive radio group whose star and touch-target recipe consumes BloomScope size. xs maps to sm; sm/md/lg retain their corresponding picker rungs, and explicit size wins.",
+    "evidence": [
+      "src/rating/RatingInput.tsx",
+      "docs/rating.mdx",
+      "src/__tests__/RatingStepperPublicPartScope.test.tsx",
+      "src/__tests__/RatingStepperPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native-renderer and DOM web verify default md, xs-to-sm mapping, nested lg over xs, explicit lg over xs, ordinary wrappers and an actual portal; device touch-target fit and assistive-technology behavior remain pending",
+    "parts": ["src/rating/RatingInput.tsx#RatingInput"]
+  },
+  "stepper-size": {
+    "status": "applicable",
+    "reason": "Stepper maps xs/sm to its compact rung and md/lg to its regular rung for value typography, spacing and action sizes. Explicit sm/md wins over the inherited scope.",
+    "evidence": [
+      "src/stepper/Stepper.tsx",
+      "docs/stepper.mdx",
+      "src/__tests__/RatingStepperPublicPartScope.test.tsx",
+      "src/__tests__/RatingStepperPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native-renderer and DOM web verify default md, xs/sm compact mapping, md/lg regular mapping, explicit md over xs, ordinary wrappers and an actual portal; physical-device hit targets and accessibility remain pending",
+    "parts": ["src/stepper/Stepper.tsx#Stepper"]
+  },
+  "stepper-row-delegation": {
+    "status": "delegated",
+    "reason": "StepperRow forwards Stepper's size and behavioral props to the shared Stepper renderer. The row title and description are its own content recipe; its nested control scale is owned by Stepper.",
+    "evidence": [
+      "src/stepper/StepperRow.tsx",
+      "src/stepper/Stepper.tsx",
+      "docs/stepper.mdx",
+      "src/__tests__/RatingStepperPublicPartScope.test.tsx",
+      "src/__tests__/RatingStepperPublicPartScope.web.test.tsx"
+    ],
+    "verification": "Native-renderer and DOM web measure the nested decrement control under default md, xs/sm, nested lg, explicit md over xs, wrappers and an actual portal; title/description layout and device hit targets remain separately pending",
+    "parts": ["src/stepper/StepperRow.tsx#StepperRow"]
+  },
   "pending": {
     "status": "pending",
     "reason": "Public React identity and prop vocabulary are enumerated, but per-part applicability/delegation and complete runtime matrix have not yet been audited. Family hook imports and transitive reachability grant no conformance.",
@@ -1441,9 +1490,7 @@
       "src/radio-indicator/RadioIndicator.tsx#RadioIndicator",
       "src/radio/RadioCard.tsx#RadioCard",
       "src/rail/Rail.tsx#Rail",
-      "src/rating/Rating.tsx#Rating",
       "src/rating/RatingBar.tsx#RatingBar",
-      "src/rating/RatingInput.tsx#RatingInput",
       "src/rating/RatingSummary.tsx#RatingSummary",
       "src/recent-hires-card/RecentHiresCard.tsx#RecentHiresCard",
       "src/route-stops/RouteStops.tsx#RouteStops",
@@ -1552,8 +1599,6 @@
       "src/stay-search/StaySearchCompact.tsx#StaySearchCompact",
       "src/stay-search/StaySearchPanel.tsx#StaySearchPanel",
       "src/stay-search/StaySearchStep.tsx#StaySearchStep",
-      "src/stepper/Stepper.tsx#Stepper",
-      "src/stepper/StepperRow.tsx#StepperRow",
       "src/sticker/Sticker.tsx#Sticker",
       "src/styles/surface-levels.ts#SurfaceLevelProvider",
       "src/subscription-plans/SubscriptionPlans.tsx#SubscriptionPlans",
