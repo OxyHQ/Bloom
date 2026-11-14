@@ -75,6 +75,7 @@ const agent: AgentCreatorAgent = {
   name: 'Designer',
   label: 'Design',
   description: 'Helpful designer',
+  color: '#3b82f6',
   avatar: { preset: 'blue_beret' },
   preferences: { voice: 'local', speed: 1, language: 'en', notifications: false },
 };
