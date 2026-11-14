@@ -168,3 +168,15 @@ it('never opens by a touch resting, nor by hover where it is a phone’s sheet',
   advance(1000);
   expect(sheet.onOpenChange).not.toHaveBeenCalled();
 });
+
+it('opens from the screen reader by its trigger’s “Show menu” (longpress) action', () => {
+  const { screen } = draw(adapter());
+  const zoom = screen.getByTestId('zoom');
+  expect(zoom.props.accessibilityActions).toEqual(
+    expect.arrayContaining([{ name: 'longpress', label: 'Show menu' }]),
+  );
+  act(() => {
+    zoom.props.onAccessibilityAction({ nativeEvent: { actionName: 'longpress' } });
+  });
+  expect(screen.getByText('Fill')).toBeTruthy();
+});

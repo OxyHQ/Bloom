@@ -342,6 +342,8 @@ over the trigger while it holds its grab (`PopupSurfaceProps.trackingRef`), so l
 is heard. A key used in the panel (its arrows, typeahead) keeps it open, as focus does on the web,
 and a menu opened by a long press or the keyboard closes only by a choice, Escape or a press
 outside. A touch never opens it by hover, nor does a mouse where the menu is a phone's sheet.
+The trigger declares React Native's `longpress` accessibility action, named "Show menu" as
+`ContextMenu`'s is: the screen reader opens a hover menu as a long press does.
 
 Keyboard opening retains its requested first/last row while lazy content loads;
 arrival of an enabled row completes focus, and dismissal cancels the wait. Entering

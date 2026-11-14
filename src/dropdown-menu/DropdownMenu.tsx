@@ -49,6 +49,11 @@ import type {
   DropdownMenuTriggerProps,
 } from './types';
 import { useCommonMessages } from '../locale/common-messages';
+import { CONTEXT_MENU_MESSAGES } from '../context-menu/messages';
+import { useMessages } from '../locale/messages';
+
+/** React Native's standard accessibility action for a long press (TalkBack's, a reader's). */
+const LONG_PRESS_ACTION = 'longpress';
 
 export function DropdownMenu({
   children,
@@ -145,6 +150,18 @@ export function DropdownMenuTrigger({
   const menu = useDropdownMenu();
   // Hover opens it only where it is a desktop's popup: never a phone's sheet.
   const hover = usePopupSurface() ? menu.hover : undefined;
+  // A menu that opens on hover opens from the screen reader as a long press opens it, by the
+  // trigger's `longpress` action ("Show menu"), as `ContextMenu`'s does.
+  const { messages } = useMessages(CONTEXT_MENU_MESSAGES);
+  const showMenu =
+    menu.activation === 'hover' && !disabled
+      ? {
+          accessibilityActions: [{ name: LONG_PRESS_ACTION, label: messages.showMenu }],
+          onAccessibilityAction: (event: { nativeEvent: { actionName: string } }) => {
+            if (event.nativeEvent.actionName === LONG_PRESS_ACTION) menu.setOpen(true);
+          },
+        }
+      : null;
   const primaryAction =
     pressTrigger != null ||
     (React.isValidElement<{ onPress?: unknown; href?: string }>(children) &&
@@ -177,6 +194,7 @@ export function DropdownMenuTrigger({
       handle={{
         onPress: () => menu.setOpen(menu.activation !== 'hover' || !primaryAction),
         onLongPress: menu.activation === 'hover' ? () => menu.setOpen(true) : undefined,
+        ...showMenu,
         disabled,
         accessibilityLabel: label,
         accessibilityRole: menu.activation === 'hover' && asChild ? undefined : 'button',
