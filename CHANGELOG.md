@@ -1,5 +1,12 @@
 # Changelog
 
+## 21.5.0
+
+### Added
+
+- **A menu item's alternate (`MenubarItem`'s `alternate`), as a Mac's `isAlternate` item.** `<MenubarItem alternate="Alt">Restart</MenubarItem>` placed right after `Restart…` is shown in its place while exactly those modifiers are held (`Alt`, `Alt+Shift`, `Mod+Alt`). The open menu draws the two as one row, which swaps the instant the modifiers go down or up and keeps its place and its keyboard highlight. Each keeps its own label, handler and `shortcut`, and each chord runs its own item, open or closed, whichever is shown. A closed menu's description reads the alternate with its modifiers (`MenuEntry.alternate`), so an OS shell's Option alternates no longer need a wrapper of its own around the rows, which Bloom had to mount headless in the closed menu. Where the platform draws the bar (`menu-bar`) its menus show the item; the alternate's chord still runs. An alternate after a separator, a label or nothing is an ordinary item.
+- **`PlatformKeyboard.subscribeModifiers`** (optional) and **`PlatformModifiers`**: the modifiers held as they change, as a Mac's `flagsChanged:`, which an open menu's alternates follow. Without it a key press's flags are followed; on the web, the document's keys and the pointer's flags.
+
 ## 21.4.0
 
 ### Changed

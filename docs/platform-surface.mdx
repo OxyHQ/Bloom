@@ -238,10 +238,13 @@ a platform whose keys do not reach Bloom through a DOM `document`.
 ```ts
 interface PlatformKeyboard {
   subscribe(listener: (event: PlatformKeyEvent) => boolean): () => void;
+  subscribeModifiers?(listener: (held: PlatformModifiers) => void): () => void;
 }
-interface PlatformKeyEvent {   // W3C KeyboardEvent's fields, as React Native's key events carry them
-  key: string; code?: string;
+interface PlatformModifiers {  // the modifier keys held: W3C KeyboardEvent's and PointerEvent's flags
   altKey: boolean; ctrlKey: boolean; metaKey: boolean; shiftKey: boolean;
+}
+interface PlatformKeyEvent extends PlatformModifiers {   // W3C KeyboardEvent's fields
+  key: string; code?: string;
   repeat?: boolean; isComposing?: boolean;
 }
 ```
@@ -251,6 +254,12 @@ the focused view receives it, as a Mac's menu bar sees key equivalents first.
 It returns true when Bloom took the key (a menu's shortcut ran), and the
 platform then does not deliver it to the view. Bloom asks React Native which
 view has focus (`TextInput.State`) to leave a text field its editing keys.
+
+`subscribeModifiers`, optional, tells the modifiers held each time they change,
+as a Mac's `flagsChanged:`, and those held as the window takes the keyboard. An
+open menu shows an item's alternate ([Menubar](/docs/bloom/main/menubar), `alternate`)
+the instant Option goes down and hides it as Option goes up; without it, only as
+a key is pressed with Option held.
 
 Without it Bloom listens on the `document` where there is one (the web). React
 Native has no window-wide key event (`onKeyDown` reaches only the focused view

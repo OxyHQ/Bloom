@@ -24,7 +24,12 @@ import type {
 } from '../platform-surface/types';
 import { PortalOutlet, PortalProvider } from '../portal';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { type FakeKeyboard, fakeKeyboard, fakeMenuBar, menuBarAdapter } from './support/fake-menu-bar';
+import {
+  type FakeKeyboard,
+  fakeKeyboard,
+  fakeMenuBar,
+  menuBarAdapter,
+} from './support/fake-menu-bar';
 
 const settle = () => act(async () => undefined);
 
@@ -87,7 +92,12 @@ function rows(chosen: (row: string) => void) {
   ];
 }
 
-function setup(adapter: (keyboard: FakeKeyboard) => PlatformSurfaceAdapter = menuBarAdapter.bind(null, undefined)) {
+function setup(
+  adapter: (keyboard: FakeKeyboard) => PlatformSurfaceAdapter = menuBarAdapter.bind(
+    null,
+    undefined,
+  ),
+) {
   const keyboard = flagsKeyboard();
   const chosen = jest.fn<void, [string]>();
   const screen = render(

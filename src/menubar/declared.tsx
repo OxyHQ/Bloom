@@ -305,7 +305,9 @@ function AlternateRow({
           ))}
         </MenubarScopeProvider>
       ) : null}
-      <MenubarScopeProvider value={null}>{cloneElement(shown, { key: 'shown' })}</MenubarScopeProvider>
+      <MenubarScopeProvider value={null}>
+        {cloneElement(shown, { key: 'shown' })}
+      </MenubarScopeProvider>
     </>
   );
 }
@@ -604,7 +606,8 @@ export function createMenubarRows(rows: MenuRowParts): MenubarRowParts {
 
   function MenubarGroup(props: MenubarGroupProps) {
     const scope = useMenubarScope();
-    if (!scope?.headless) return <rows.Group {...props}>{withAlternates(props.children)}</rows.Group>;
+    if (!scope?.headless)
+      return <rows.Group {...props}>{withAlternates(props.children)}</rows.Group>;
     return <DeclaredChildren>{props.children}</DeclaredChildren>;
   }
   MenubarGroup.displayName = 'MenubarGroup';

@@ -118,6 +118,27 @@ On the web the bar's panel has no backdrop: it closes on a press outside it, hea
 
 Matching reads the character typed (`event.key`), and the physical key (`code`) where that character is not the key's name: under Alt (a Mac's Option+N types `˜`), Shift with a digit, and a non-Latin layout. A symbol that needs Shift to be typed (`Mod+?`) matches without `Shift` in the chord; a letter, digit or named key wants exactly the modifiers declared.
 
+## Alternates (Option held)
+
+An item's `alternate` makes it the **alternate** of the item declared just before it: shown in that item's place while exactly its modifiers are held, as a Mac's `isAlternate` item with its modifier mask. Option turns Restart… into Restart, a command that asks no question:
+
+```tsx
+<MenubarItem onPress={() => restart({ ask: true })}>Restart…</MenubarItem>
+<MenubarItem alternate="Alt" onPress={() => restart({ ask: false })}>Restart</MenubarItem>
+<MenubarSeparator />
+<MenubarItem shortcut="Mod+Shift+Q" onPress={() => logOut({ ask: true })}>Log Out…</MenubarItem>
+<MenubarItem alternate="Alt" shortcut="Mod+Alt+Shift+Q" onPress={() => logOut({ ask: false })}>
+  Log Out
+</MenubarItem>
+```
+
+- **The modifiers** are a chord's modifier names without a key (`Alt`, `Alt+Shift`, `Mod+Alt`), matched exactly: `Alt` is Option alone, not Option with Shift. Text that names no modifiers warns in development and the item is an ordinary one.
+- **One row.** The open menu draws the item and its alternates as one row: the first alternate whose modifiers are held, else the item. It swaps the instant the modifiers go down or up and keeps its place in the menu, and its highlight under the keyboard. Choosing it runs what it shows.
+- **Each keeps its own** label, state, handler and `shortcut`, and each chord runs its own item, whether the menu is open or closed and whichever is shown. A closed menu's description (`describeMenu`) reads each alternate with its modifiers, so nothing is mounted for it.
+- **Placed right after an item** (or after another of its alternates, which each replace the first item before them that is not one). An alternate first in its menu or group, or after a separator, a label or an empty place, is an ordinary item.
+- **Where the modifiers come from:** the platform's `keyboard`, its `subscribeModifiers` (each change, as a Mac's `flagsChanged:`, and those held as the window takes the keyboard) and each key press's flags; on the web, the document's keys going down and up and the pointer's flags as it moves or presses (a menu opened with Option held shows its alternates as the pointer moves); otherwise none is ever held.
+- **With `menu-bar`** the platform's menus show the item, not its alternate; the alternate's chord still runs it.
+
 ## The Edit menu: standard editing actions
 
 An item's `action` makes it a standard editing command, sent to the focused text field first, as a Mac's Edit menu sends `copy:` to the first responder and Android's `EditText` takes `onTextContextMenuItem(android.R.id.copy)`:
