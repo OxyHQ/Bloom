@@ -332,7 +332,35 @@ export interface PlatformWindowState {
   readonly maximized: boolean;
   /** Full screen: no controls and no room. */
   readonly fullscreen: boolean;
+  /**
+   * The platform's desktops (a Mac's Spaces) and the one the window is on, numbered from 0, where
+   * it lets a window move between them (`moveToDesktop`); absent where it does not.
+   */
+  readonly desktops?: { readonly count: number; readonly current: number };
 }
+
+/**
+ * Where a window can be laid out on its display's work area, as a Mac's tiling since macOS 15:
+ * Fill and Center; the halves and quarters; the arrangements of the window with those behind it
+ * (`leftRight`: this one left, the next right); and back to the frame it had before.
+ */
+export type PlatformWindowLayout =
+  | 'fill'
+  | 'center'
+  | 'left'
+  | 'right'
+  | 'top'
+  | 'bottom'
+  | 'topLeft'
+  | 'topRight'
+  | 'bottomLeft'
+  | 'bottomRight'
+  | 'leftRight'
+  | 'rightLeft'
+  | 'topBottom'
+  | 'bottomTop'
+  | 'quarters'
+  | 'returnToPrevious';
 
 /**
  * The application's window, with the `window` capability. Its state is an
@@ -365,6 +393,13 @@ export interface PlatformWindow {
    * any size leaves it out, and Bloom then asks nothing.
    */
   setSizeLimits?(limits: PlatformWindowSizeLimits): void;
+  /**
+   * Lays the window out (`PlatformWindowLayout`), as the platform's own tiling does. Optional: with
+   * it the zoom control shows the layouts on hover and long press, as a Mac's green button does.
+   */
+  layOut?(layout: PlatformWindowLayout): void;
+  /** Moves the window to another of the platform's desktops (`PlatformWindowState.desktops`). */
+  moveToDesktop?(desktop: number): void;
 }
 
 /**

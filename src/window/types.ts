@@ -1,7 +1,11 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewProps, ViewStyle } from 'react-native';
 
-import type { PlatformWindowMetrics, PlatformWindowState } from '../platform-surface/types';
+import type {
+  PlatformWindowLayout,
+  PlatformWindowMetrics,
+  PlatformWindowState,
+} from '../platform-surface/types';
 
 /** The window's state and the actions on it (`useWindow()`). */
 export interface WindowHandle extends PlatformWindowState {
@@ -15,6 +19,10 @@ export interface WindowHandle extends PlatformWindowState {
   zoom(): void;
   /** Start an interactive move from the press being handled. */
   startMove(): void;
+  /** Lays the window out, where the platform tiles windows; absent where it does not. */
+  readonly layOut?: (layout: PlatformWindowLayout) => void;
+  /** Moves the window to another desktop, where the platform has them; absent where it does not. */
+  readonly moveToDesktop?: (desktop: number) => void;
 }
 
 /**

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'r
 
 import { usePlatformWindow } from '../platform-surface/context';
 import { useWindowChrome } from './context';
-import type { PlatformWindowState } from '../platform-surface/types';
+import type { PlatformWindowLayout, PlatformWindowState } from '../platform-surface/types';
 import type { WindowControlsRoom, WindowHandle, WindowSizeLimits } from './types';
 
 const NO_ROOM: WindowControlsRoom = { top: 0, leading: 0 };
@@ -31,13 +31,16 @@ export function useWindow(): WindowHandle | null {
       previous &&
       previous.active === next.active &&
       previous.maximized === next.maximized &&
-      previous.fullscreen === next.fullscreen
+      previous.fullscreen === next.fullscreen &&
+      previous.desktops?.count === next.desktops?.count &&
+      previous.desktops?.current === next.desktops?.current
     )
       return previous;
     last.current = {
       active: next.active,
       maximized: next.maximized,
       fullscreen: next.fullscreen,
+      ...(next.desktops ? { desktops: { ...next.desktops } } : null),
     };
     return last.current;
   }, [platform]);
@@ -53,6 +56,12 @@ export function useWindow(): WindowHandle | null {
             minimize: () => platform.minimize(),
             zoom: () => platform.zoom(),
             startMove: () => platform.startMove(),
+            ...(platform.layOut
+              ? { layOut: (layout: PlatformWindowLayout) => platform.layOut?.(layout) }
+              : null),
+            ...(platform.moveToDesktop
+              ? { moveToDesktop: (desktop: number) => platform.moveToDesktop?.(desktop) }
+              : null),
           }
         : null,
     [platform, state],
