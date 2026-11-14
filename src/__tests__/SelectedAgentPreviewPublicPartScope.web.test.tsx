@@ -25,6 +25,7 @@ const AGENTS: Agent[] = Array.from({ length: 4 }, (_, index) => ({
   label: 'Research',
   description: '',
   avatar: { preset: 'blue_beret' },
+  color: 'teal',
 }));
 
 function Subject({ count, size, nested }: { count: number; size?: 'xs' | 'lg'; nested: boolean }) {

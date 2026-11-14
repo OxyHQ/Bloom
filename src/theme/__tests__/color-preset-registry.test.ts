@@ -87,6 +87,11 @@ const NEW_COMBINATION_NAMES = [
   'pewter-current',
 ] as const;
 
+/** Brand recipes appended after the stable catalog, each reserved for its own identity. */
+const APPENDED_BRAND_RECIPES = {
+  gemies: { hex: '#1dfc00', variant: 'vivid', gate: 'handle' },
+} as const;
+
 /** Patch-release oracle: existing recipe seeds and access rules cannot drift. */
 const ORIGINAL_RECIPES = {
   teal: { hex: '#005c67', variant: 'vivid' },
@@ -155,11 +160,11 @@ function hueDistance(a: number, b: number): number {
 }
 
 describe('single declarative colour preset registry', () => {
-  it('derives all public indexes from exactly 64 unique ordered recipes', () => {
-    expect(COLOR_PRESET_REGISTRY).toHaveLength(64);
+  it('derives all public indexes from exactly 65 unique ordered recipes', () => {
+    expect(COLOR_PRESET_REGISTRY).toHaveLength(65);
     expect(APP_COLOR_NAMES).toEqual(COLOR_PRESET_REGISTRY.map(({ name }) => name));
-    expect(new Set(APP_COLOR_NAMES).size).toBe(64);
-    expect(new Set(COLOR_PRESET_REGISTRY.map(({ hex }) => hex)).size).toBe(64);
+    expect(new Set(APP_COLOR_NAMES).size).toBe(65);
+    expect(new Set(COLOR_PRESET_REGISTRY.map(({ hex }) => hex)).size).toBe(65);
     expect(Object.keys(APP_COLOR_PRESETS)).toEqual(APP_COLOR_NAMES);
     expect(Object.keys(HEX_TO_APP_COLOR)).toEqual(COLOR_PRESET_REGISTRY.map(({ hex }) => hex));
   });
@@ -191,6 +196,21 @@ describe('single declarative colour preset registry', () => {
           .filter((key) => key !== 'tokens')
           .sort(),
       ).toEqual(['name', ...Object.keys(ORIGINAL_RECIPES[name])].sort());
+    }
+  });
+
+  it('appends each brand recipe after the stable catalog, derived and reserved by handle', () => {
+    expect(APP_COLOR_NAMES.slice(64)).toEqual(Object.keys(APPENDED_BRAND_RECIPES));
+    for (const [name, recipe] of Object.entries(APPENDED_BRAND_RECIPES)) {
+      expect(COLOR_PRESET_REGISTRY.find((candidate) => candidate.name === name)).toMatchObject({
+        family: 'brand',
+        pairing: 'derived',
+        ...recipe,
+      });
+      expect(APP_COLOR_PRESETS[name as keyof typeof APP_COLOR_PRESETS]).toEqual({
+        name,
+        ...recipe,
+      });
     }
   });
 
@@ -256,11 +276,11 @@ describe('single declarative colour preset registry', () => {
       expect(recipe.pairing).toBe('curated');
       expect(recipe.tertiaryHex).toBeDefined();
     }
-    expect(COLOR_PRESET_REGISTRY.filter(({ pairing }) => pairing === 'derived')).toHaveLength(17);
+    expect(COLOR_PRESET_REGISTRY.filter(({ pairing }) => pairing === 'derived')).toHaveLength(18);
   });
 
   it('adds exactly 30 ungated three-seed combinations after the stable catalog', () => {
-    expect(APP_COLOR_NAMES.slice(34)).toEqual(NEW_COMBINATION_NAMES);
+    expect(APP_COLOR_NAMES.slice(34, 64)).toEqual(NEW_COMBINATION_NAMES);
     for (const name of NEW_COMBINATION_NAMES) {
       const recipe = COLOR_PRESET_REGISTRY.find((candidate) => candidate.name === name);
       if (recipe === undefined) throw new Error(`${name} is absent from the registry`);

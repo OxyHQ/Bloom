@@ -8,6 +8,8 @@ import {
   resolveAvatarCharacter,
   updateAvatarCharacter,
 } from '../agent-avatar';
+import { normalizeAvatarSkinColor } from '../agent-avatar/skin-color';
+import { accountBodyHex, drawnCharacter } from './paint';
 import { editorShapeId } from './shape-choices';
 import { ButtonGroup, ButtonGroupItem } from '../button-group';
 import { RiArrowGoBackLine } from '../icons/remix/RiArrowGoBackLine';
@@ -103,13 +105,25 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
     node?.addEventListener('keydown', keydown);
     return () => node?.removeEventListener('keydown', keydown);
   }, []);
-  // Every control reads the resolved character and writes one edit to the saved one.
-  const character = useMemo(() => resolveAvatarCharacter(avatar), [avatar]);
+  // Every control draws the character in the agent's colour and writes one edit to the saved
+  // one; the history keeps the parts and drops the paint.
+  const painted = useMemo(() => drawnCharacter(avatar, agent.color), [avatar, agent.color]);
+  const character = useMemo(() => resolveAvatarCharacter(painted), [painted]);
   const edit = (patch: Parameters<typeof updateAvatarCharacter>[1]) =>
-    history.change(updateAvatarCharacter(avatar, patch));
-  const paintColor = 'color' in character.paint ? character.paint.color : undefined;
-  const customHex = 'bodyColor' in character.paint ? character.paint.bodyColor : undefined;
+    history.change(updateAvatarCharacter(painted, patch));
   const bodyHex = avatarBodyHex(character);
+  // The colour control writes the ACCOUNT's colour, as the hex the avatar is drawn in.
+  const colorHex = accountBodyHex(agent.color);
+  const namedColor = CHARACTER_OPTIONS.color.find(
+    ([id]) => normalizeAvatarSkinColor(CHARACTER_COLORS[id]) === colorHex,
+  )?.[0];
+  const customHex = namedColor === undefined ? colorHex : undefined;
+  const changeColor = (hex: string) => {
+    if (!/^#[0-9a-f]{6}$/i.test(hex)) return;
+    const color = normalizeAvatarSkinColor(hex);
+    if (color === accountBodyHex(latest.current.agent.color)) return;
+    latest.current.onChange({ ...latest.current.agent, color });
+  };
   const shapeChoices = useMemo(
     () =>
       CHARACTER_OPTIONS.shape.map(([id, title]) => ({
@@ -118,9 +132,9 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
           id in messages.shapes
             ? messages.shapes[id as keyof typeof messages.shapes]
             : messages.characterOption('shape', id, title),
-        character: updateAvatarCharacter(avatar, { shape: id }),
+        character: updateAvatarCharacter(painted, { shape: id }),
       })),
-    [avatar, messages],
+    [painted, messages],
   );
   const nearby = useMemo(() => {
     const index = CHARACTER_OPTIONS.shape.findIndex(
@@ -128,19 +142,19 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
     );
     return [index - 1, index + 1].flatMap((i) => {
       const next = CHARACTER_OPTIONS.shape[i];
-      return next ? [updateAvatarCharacter(avatar, { shape: next[0] })] : [];
+      return next ? [updateAvatarCharacter(painted, { shape: next[0] })] : [];
     });
-  }, [avatar, character.shape]);
+  }, [painted, character.shape]);
   useVectorGeometryPreparation(nearby);
   const eyeChoices = useMemo(
     () =>
       CHARACTER_OPTIONS.eyes.map(([id, title]) => ({
         id,
         label: messages.characterOption('eyes', id, title),
-        character: updateAvatarCharacter(avatar, { eyes: id }),
+        character: updateAvatarCharacter(painted, { eyes: id }),
         disabled: false,
       })),
-    [avatar, messages],
+    [painted, messages],
   );
   return (
     <AgentCreatorCopyContext.Provider value={copy}>
@@ -238,7 +252,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                   }}
                 >
                   <AgentAvatar
-                    character={avatar}
+                    character={painted}
                     size={162}
                     interactive
                     renderer="svg"
@@ -287,7 +301,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                   }}
                 >
                   {CHARACTER_OPTIONS.color.map(([id, title]) => {
-                    const active = paintColor === id;
+                    const active = namedColor === id;
                     const hex = CHARACTER_COLORS[id];
                     const disabled = false;
                     return (
@@ -301,7 +315,7 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                         aria-disabled={disabled}
                         accessibilityState={{ selected: active, disabled }}
                         disabled={disabled}
-                        onPress={() => edit({ color: id as typeof paintColor })}
+                        onPress={() => changeColor(hex)}
                         className="relative shrink-0 cursor-pointer overflow-hidden rounded-full transition-transform duration-150 ease-out hover:scale-110 outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2 size-[26px]"
                       >
                         <GlossArt center={hex} edge={hex} active={active} />
@@ -330,20 +344,12 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                       maxWidth={248}
                       className="w-[248px] rounded-3xl p-2.5"
                     >
-                      <CustomColorPicker
-                        key={agent.id}
-                        value={bodyHex}
-                        onInteractionStart={history.begin}
-                        onInteractionEnd={history.end}
-                        onChange={(hex) => {
-                          if (/^#[0-9a-f]{6}$/i.test(hex)) edit({ bodyColor: hex.toLowerCase() });
-                        }}
-                      />
+                      <CustomColorPicker key={agent.id} value={bodyHex} onChange={changeColor} />
                     </PopoverContent>
                   </Popover>
                 </StyledView>
               </StyledView>
-              <CharacterControls character={avatar} onChange={history.change} />
+              <CharacterControls character={painted} onChange={history.change} />
               <StyledView
                 className="mt-[15px] overflow-hidden rounded-2xl bg-background-secondary-default ps-3"
                 style={{ backgroundColor: colors.backgroundSecondary }}

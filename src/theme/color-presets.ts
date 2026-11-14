@@ -819,6 +819,16 @@ const COLOR_PRESET_SOURCES = [
     pairing: 'curated',
     featured: true,
   },
+  {
+    name: 'gemies',
+    displayName: 'Gemies',
+    family: 'brand',
+    description: 'Gemies green, reserved for the Gemies identity.',
+    hex: '#1dfc00',
+    variant: 'vivid',
+    pairing: 'derived',
+    gate: 'handle',
+  },
 ] as const satisfies readonly ColorPresetSource[];
 
 /** Preset identifiers are inferred from the authored registry, never repeated. */
@@ -935,7 +945,7 @@ const namesGatedBy = (gate: ColorPresetGate | undefined): readonly AppColorName[
 /** Available to every user, signed in or not. */
 export const FREE_COLOR_NAMES: readonly AppColorName[] = namesGatedBy(undefined);
 
-/** Reserved for the account whose brand it is (`oxy`, `faircoin`) — not for sale. */
+/** Reserved for the account whose brand it is (`oxy`, `faircoin`, `gemies`) — not for sale. */
 export const HANDLE_COLOR_NAMES: readonly AppColorName[] = namesGatedBy('handle');
 
 /** Sold with a subscription. */

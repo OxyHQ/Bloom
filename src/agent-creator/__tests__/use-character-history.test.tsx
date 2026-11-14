@@ -8,10 +8,11 @@ const agent: AgentCreatorAgent = {
   label: 'Label',
   description: 'Description',
   avatar: original,
+  color: 'teal',
   preferences: { voice: 'default', speed: 1, language: 'en', notifications: true },
 };
-const red = { ...original, bodyColor: '#ff0000' } as const;
-const blue = { ...original, bodyColor: '#0000ff' } as const;
+const red = { ...original, accessory: 'crown' } as const;
+const blue = { ...original, accessory: 'bow' } as const;
 it('retains current selection through delayed own echoes and preserves latest business fields', () => {
   const emit = jest.fn();
   const h = renderHook(
@@ -86,10 +87,7 @@ it('bounds undo history without mutating saved recipes', () => {
   const h = renderHook(() => useCharacterHistory(agent, jest.fn()));
   act(() => {
     for (let i = 1; i <= 60; i++)
-      h.result.current.change({
-        ...original,
-        bodyColor: '#ff' + i.toString(16).padStart(2, '0') + 'aa',
-      });
+      h.result.current.change({ ...original, eyeSpacing: 0.5 + i / 100 });
   });
   let count = 0;
   while (h.result.current.canUndo) {
@@ -97,5 +95,16 @@ it('bounds undo history without mutating saved recipes', () => {
     count++;
   }
   expect(count).toBe(50);
-  expect(h.result.current.character).toEqual({ ...original, bodyColor: '#ff0aaa' });
+  expect(h.result.current.character).toEqual({ ...original, eyeSpacing: 0.6 });
+});
+it('emits characters without paint and treats a paint-only change as no edit', () => {
+  const emit = jest.fn();
+  const h = renderHook(() => useCharacterHistory(agent, emit));
+  act(() => h.result.current.change({ ...original, bodyColor: '#ff0000' }));
+  expect(emit).not.toHaveBeenCalled();
+  expect(h.result.current.canUndo).toBe(false);
+  act(() => h.result.current.change({ ...red, color: 'pink' }));
+  expect(emit).toHaveBeenLastCalledWith({ ...agent, avatar: red });
+  act(() => h.result.current.undo());
+  expect(emit).toHaveBeenLastCalledWith({ ...agent, avatar: original });
 });

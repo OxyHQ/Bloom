@@ -57,7 +57,7 @@ const CONVERSATIONS: ConversationSidebarItem[] = [
   { id: '4', title: 'Weekly metrics', description: 'Start a conversation', agents: [AGENTS[2]!] },
 ];
 
-/** The conversations of an account, with the three tools on top and a context menu on each row. */
+/** The conversations of an account, with all three tools on top and a context menu on each row. */
 export const Default: Story = {
   render: () => {
     const [activeId, setActiveId] = useState('1');
@@ -98,6 +98,60 @@ export const Default: Story = {
             { key: 'delete', label: 'Delete', icon: RiDeleteBinLine, destructive: true },
           ]}
           onAction={() => {}}
+        />
+      </View>
+    );
+  },
+};
+
+/**
+ * As Alia and Gemies draw it: search and "+" only (no store button), and the conversations as
+ * titled tree sections, one of contacts (an avatar, a name and their last line) and one of
+ * title-only chats, one longer than the sidebar. Each section's title starts where its rows' content does.
+ */
+export const Sections: Story = {
+  render: () => {
+    const [selected, setSelected] = useState('c1');
+    const [query, setQuery] = useState('');
+    return (
+      <View style={{ height: 560, width: 280 }}>
+        <ConversationSidebar
+          testID="conversation-sidebar"
+          conversations={[]}
+          query={query}
+          onQueryChange={setQuery}
+          onSelect={() => {}}
+          onCreate={() => {}}
+          labels={{ empty: '' }}
+          tree={[
+            {
+              key: 'agents',
+              label: 'Your gemies',
+              items: AGENTS.map((agent) => ({
+                key: agent.id,
+                label: agent.name,
+                description: 'Last message from them.',
+                leading: <AgentAvatar character={agent.avatar} size={32} />,
+              })),
+            },
+            {
+              key: 'chats',
+              label: 'Chats',
+              items: [
+                { key: 'c1', label: 'Launch plan', icon: RiPushpinLine, meta: '2h' },
+                { key: 'c2', label: 'Landing page', meta: '1d' },
+                { key: 'c3', label: 'Security review', meta: '3d' },
+                // Longer than the sidebar: one line, cut, and its time still at the row's end.
+                {
+                  key: 'c4',
+                  label: 'Notes from the quarterly planning session with the whole design team',
+                  meta: '5d',
+                },
+              ],
+            },
+          ]}
+          selectedTreeItem={selected}
+          onTreeItemPress={(item) => setSelected(item.key)}
         />
       </View>
     );

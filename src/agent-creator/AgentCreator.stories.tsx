@@ -22,6 +22,7 @@ function ControlledCreator() {
     label: 'Design',
     description: 'Clear layouts, thoughtful hierarchy, and a little personality.',
     avatar: CHARACTER_TEMPLATES.lime_frog!,
+    color: 'green',
   });
   return (
     <View style={{ width: 360, height: 800 }}>

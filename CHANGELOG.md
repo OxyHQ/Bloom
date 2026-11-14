@@ -1,5 +1,117 @@
 # Changelog
 
+## 21.4.0
+
+### Changed
+
+- **`react-native-css` is a peer (`>=3.1.0-rc.0`), no longer a hard dependency.** Its own required peers (`react-native`, `@expo/metro-config`) made every install of Bloom bring React Native and Expo, even a server's installed with peers omitted, and an app on another release candidate (Mention's 3.1.0-rc.1) got two copies. Apps already install it with NativeWind, and package managers install a required peer by themselves, so nothing changes for them. A server that uses only a server-safe entry (`@oxy.so/bloom/agent-avatar/svg`, whose import graph reaches no React, React Native or Expo) installs Bloom with peers omitted (`bun install --omit=peer`) and gets none of them; a test keeps every hard dependency, and its required peers, free of app-only packages.
+
+## 21.3.1
+
+### Fixed
+
+- **A picture's background is a much, much lighter tint of the colour, for light colours too.** `avatarPictureBackground` stood a light body (a lime, a pure green) on a dark olive, because it asked the light tint for 2.4:1 contrast. It is now tone 97 of the body's softened hue whenever that still shows the character (1.25:1), and a darker tint only for a body nearly as light as that (a pale yellow, a white).
+
+## 21.3.0
+
+### Added
+
+- **`@oxy.so/bloom/agent-avatar/svg`: a character as an SVG document, for a server.** No React, no native module: `renderAgentAvatarSvg(character, { size, background, margin })` draws the frame `VectorStaticPortrait` draws (`loadVectorPortrait`, through the same crop), from the full catalog unless a `catalog` is passed, and `vectorFrameToSvg` serializes any frame. `renderAgentAvatarPicture(character, color)` is a profile picture: the character painted in an account colour (a preset key or a hex), centred with room for a circular crop, on a much lighter tint of that colour from Bloom's tonal palettes (`avatarPictureBackground`); a body too light for a light tint to show it stands on the darkest tint that keeps a 2.4:1 contrast instead. One drawing for every place a character leaves an app as an image (Gemies renders a gemie's Telegram bot photo with it). The subpath loads in Bun and through `require`; it also re-exports the pure `avatarCharacterInColor` and `parseAvatarCharacter`.
+
+## 21.2.0
+
+### Changed
+
+- **An avatar fetches only the clips it draws.** The vector catalogue moves to pack format 2: each part's animation tracks are stored per clip (`idle`, `reaction`, `work`), each its own shared payload, losslessly (all 70 assets unpack to the same data as format 1; the catalogue goes from 30.56 to 29.06 MB as identical clip tracks now share a payload). An avatar loads its character at rest first (`VECTOR_REST_CLIPS`): the idle tracks and the geometry they draw. A mood is drawn on the idle clip, so the empty state's gemie shaking its head "no" needs nothing more, and a portrait reads only what its still frame draws. `reaction` and `work`, with the computer, hands and screens only `work` shows, are fetched the first time a gesture plays; the idle animation carries on until the gesture's tracks arrive, and an interactive avatar asks ahead when the pointer reaches it. In Gemies' web export the empty state of `/shows` and `/notifications` loads 135 KB brotli of avatar data instead of 281 KB, and `/shows` makes 31 requests instead of 52. Format 2 is internal to Bloom's generated catalogue; nothing to change in an app.
+
+### Added
+
+- **`VectorAssetLoader` methods and `VectorAssetImport` take the clips to read** (optional, `readonly VectorAction[]`). A custom loader or importer that ignores them hands back the whole asset, as before.
+
+## 21.1.1
+
+### Fixed
+
+- **The custom-colour swatch no longer adds ~262 KB to every app that loads the agent editor.** Its rainbow (light and dark) was embedded as two 390 × 390 px PNGs, 346 KB of base64 that does not compress again (~262 KB gzipped), for a swatch drawn at 26 px; Allo and Homiio raised their bundle budgets for it. They are now 96 × 96 px (3.7× the swatch, past a 3× screen): 8.5 KB gzipped for both, matching the originals to within 42–47 dB PSNR at 26, 52 and 78 px, so the picker looks the same. `rainbow-artwork-size.test.ts` holds the module to 16 KB gzipped and the bitmaps to at most 4× the swatch.
+
+## 21.1.0
+
+### Added
+
+- **`@oxy.so/bloom/multi-agent-chat/selected-agent-preview`**, an entry for `SelectedAgentPreview` and `previewAvatarGeometry` alone. The `multi-agent-chat` barrel is the whole multi-agent template, and Gemies imported the preview from it (its group picker and `@gemies/sdk`'s group welcome): in its web export the barrel put 149,484 B of `multi-agent-chat` in the chunk every route loads first, and 9,309 B with this entry.
+
+### Changed
+
+- **The offline portraits load on first use.** `vector-static` (312 KB of shape and eye paths) is drawn only by the agent creator's shape arc and eye picker, but `VectorCharacterAvatar` imported it for its eye-preview branch, so every app that shows an avatar carried it in its first paint. Both callers now read it through `use-static-portraits` (one `import()`, cached): it is its own chunk, fetched when the creator first draws a portrait. The portrait keeps its size while it loads, as it did for no eyes. In Gemies' web export the two changes take the first-paint chunk from 7,814,752 to 7,332,136 B. `static-portraits-lazy.test.ts` keeps any other module from importing it.
+
+## 21.0.0
+
+### Breaking
+
+- **`AgentCreatorProps.colors` is removed.** Nothing restricts the agent's colour to presets: an account colour can be any colour, so a host no longer passes the list of colours its account service accepts.
+
+### Changed
+
+- **The free colour picker is back, and it writes the agent's account colour.** The creator's colour control is the one before 20.0.0 again: the nine glossy named swatches and the custom `#rrggbb` picker behind the rainbow swatch (saturation/brightness field, hue rail, hex entry), with their messages in every locale. Choosing either calls `onChange({ ...agent, color })` with the hex lifted to the avatar skin floor (`normalizeAvatarSkinColor`), so the account stores exactly the colour the avatar is drawn in. `agent.color` is any account colour, a preset key or a `#rrggbb`: a named swatch is active when its lifted hex equals the colour's body hex, the custom swatch when it equals none of them, and the custom picker opens on that hex. The character stays paintless: it is drawn with `avatarCharacterInColor(avatar, agent.color)` and handed back without `color`/`bodyColor`. A colour change is not a character edit and stays out of undo.
+- **A hex is an ordinary account colour.** `avatarCharacterInColor` and `AvatarAccount.color` take a `#rrggbb` (or `#rgb`) as readily as a preset key, and a hex round-trips: `avatarCharacterInColor(c, '#ff8b67')` paints `normalizeAvatarSkinColor('#ff8b67')`. `MultiAgentChat` restores any colour Bloom can draw.
+
+## 20.0.0
+
+### Breaking
+
+- **An agent's colour is its account's colour, not its character's paint.** `AgentCreatorAgent` gains a required `color`: a Bloom colour preset key, what Oxy stores as the account's `User.color`. The editor draws every character in it and hands back characters with their parts only: `agent.avatar` never carries `color` or `bodyColor` again, undo and redo included, and a change of paint alone is no edit. A host stores the character's parts and the colour where its account keeps it. `MultiAgentChat`'s agents are `AgentCreatorAgent`s and carry a `color` too; a workspace saved without one restores in `blue`.
+- **The paint picker is gone; one colour control picks the account colour.** The nine named character paints and the custom `#rrggbb` picker (saturation/brightness field, hue rail, hex entry) are replaced by a `ColorSwatchPicker` of colour presets, each named by its `displayName`. `AgentCreatorProps.colors` (default `FREE_COLOR_NAMES`) is what it offers: a host passes exactly what its account service accepts. Choosing one calls `onChange` with the new `color`. The creator's bindings no longer take `Popover`, `PopoverTrigger` and `PopoverContent`.
+- **The paint picker's message keys are removed** from `AgentCreatorMessages` and every locale: `customColor`, `hexColor`, `hue`, `saturationBrightness`, `increaseBrightness`, `decreaseBrightness`, `increaseHue`, `decreaseHue`, `saturationBrightnessValue`, `avatarColorLabel` and `colors`. `color` now reads "Color" (it labels the agent's colour, not the avatar's).
+
+### Added
+
+- **`avatarCharacterInColor(character, color)`** (`@oxy.so/bloom/agent-avatar`): a character painted in its account's colour. `color` is `User.color`, a colour preset key or a legacy `#rgb`/`#rrggbb`; the body takes the preset's identity seed lifted to the skin floor (`bodyColor`), every part is kept and `color` is dropped. A colour that does not resolve returns the character unchanged. It is the one place a colour preset becomes an avatar paint, so a bot is drawn in the colour its profile is themed with.
+- **`AvatarAccount.color`**: `<Avatar account={user} />` draws a `kind: 'bot'` account's `character` painted in the account's `color`, so a bot looks the colour of its account wherever its account is drawn. Without a colour the character's own paint applies, as before.
+
+## 19.11.0
+
+### Added
+
+- **`AgentAvatar` says "no": `mood="sad"`.** A held state for an empty or not-found state, a refusal, something that could not be done. As the mood starts (or the avatar mounts sad) the character shakes its head three times in 1.4 s, the widest turn first, and then stays downcast on top of its idle: looking down and aside, sunk, slightly deflated, head tilted, lids heavy, still breathing and blinking. Back to `neutral` (the default) it eases out, and a neutral avatar draws exactly as before. It is procedural, so every preset, edited character and flat form has it; reduced motion and `paused` show the settled pose with no shake (`vector-mood.test.ts` on every template, `AgentAvatar-mood.test.tsx`). Exports the `AgentAvatarMood` type; Storybook **Agent Avatar / Sad**.
+- **`EMPTY_STATE_GEOMETRY[variant].illustration`**: the box for a figure passed as `EmptyState`'s `illustration` (112, or 72 at the panel rung), so an app showing an agent's avatar there does not pick its own size. Storybook **Empty State / Agent Not Found** pairs it with the sad avatar.
+
+## 19.10.3
+
+### Fixed
+
+- **A closed tooltip costs nothing but its state.** On the web, `TooltipContent` resolved its menu palette (colour parsing and contrast math), its surface material and its anchor on every render and only then returned nothing while closed, and `TooltipTextBubble` resolved the palette for its text too. Every icon button in a list carries one (a chat's message actions), so switching to a conversation of a thousand messages spent 143 ms of 8 switches in `parseRgba` alone. The bubble is now its own component, mounted only while it is shown, and the text bubble reads its colour inside it: 33 ms in the same profile, and the switch's median from 214 to 193 ms (Gemies' fixtures, 1× CPU). Opening, closing and the exit animation are unchanged (`tooltip-closed-cost.web.test.tsx`).
+
+## 19.10.2
+
+### Fixed
+
+- **A vector avatar asks for all its assets at once.** `loadVectorGeometry` awaited the shape, then the eyes, eyewear and accessory, then the circle the eyes are fitted against, and each is its own chunk on the web: a first avatar waited one round trip per step. Measured on Alia's home (alia.onl, Bloom's default catalog), Alia's avatar resolved after five rounds of chunk requests. Everything the character names is now requested before the shape arrives (`vector-compose-parallel.test.ts`); only bot eyes wait for the shape, which decides whether they are drawn.
+
+## 19.10.1
+
+### Fixed
+
+- **A `Collapsible` on the web is as wide as its container, never as its widest line.** Since 19.7.1 its panel is a CSS grid (rows `0fr`/`1fr`), whose implicit column is `auto` and whose clip kept `min-width: auto`, so a line that does not wrap widened the panel past its container. In the sidebar's tree sections (Alia's and Gemies' "Chats") a long title pushed the rows past the sidebar's edge, their time and menu with them. The grid's column is `minmax(0, 1fr)` and the clip's `min-width` is 0: the title is cut to one line and the row ends at the sidebar's edge.
+
+## 19.10.0
+
+### Changed
+
+- **A closed menu's rows are never mounted; its shortcuts are read from its declaration.** A `Menubar` drawn in the window mounted every closed menu's content headless so its rows' chords worked while it was closed, so every render of the bar rendered every closed menu's rows (OxyOS's shell: a Window menu of some 27). A closed menu's (and a closed submenu's) entries are now read from its content's elements (`menubar/description.ts`): each of Bloom's parts gives its label, chord, state and handler at the place its row would take, registered as data, as a Mac's bar keeps a menu's items and builds its rows as it opens. Shortcuts, their order, a disabled item's chord, check and radio items, submenus and editing actions (the focused field first) work as before; the rows mount as the menu opens and unmount once it has faded out. An application's own component placed in a menu cannot be read without rendering it and is still mounted headless at its place. This is the default for every bar; `declareClosedMenus={false}` (19.8.0) still declares nothing of a closed menu.
+
+## 19.9.1
+
+### Fixed
+
+- **`SidebarToolbar` shares its row in equal slots for any number of actions.** On the web the slots row was a fixed three-column grid while the closed search was sized for `actions.length + 1` slots, so with one action (`ConversationSidebar` with `onCreate` and no `onMarketplace`, as Alia passes it) the search covered half the row and the "+" sat in the middle column, under it. The row is one flex row of equal slots on every platform, and on the web the closed search's width is the first slot's in CSS (`calc((100% - gaps) / slots)`), so it holds before layout and through resizes; native measures it as before, falling back to a share of the row instead of a fixed 76.
+- **A tree section's title lines up with its rows.** `SidebarTreeSection`'s label had no inset while its rows' content (disclosure, glyph, avatar or title-only label) starts 8 in, so "Chats" or "Your gemies" stood 8 to the start of their rows. The label now starts at that edge (`TREE_INSET`, shared with the rows and the status line), and its `actions` end 4 in, where the rows' do. `ConversationSidebar`'s flat-list `heading` starts at its rows' 6.
+
+## 19.9.0
+
+### Added
+
+- **`gemies` brand preset** (`#1dfc00`, `vivid`, derived accents), reserved by handle like `oxy` and `faircoin`: it joins `HANDLE_COLOR_NAMES`, so a picker built from the gate groups only offers it to the Gemies identity. A gate never stops an app passing it as its own `defaultColorPreset`, which is how Gemies starts. The engine keeps it legible without a hand-drawn scheme: dark mode paints the seed itself (`--primary` `rgb(29 252 1)` with a black label), light mode a deeper tone of the same green (`rgb(10 123 0)` with a white label) so text and buttons hold AA on the light surfaces, as it already does for FairCoin's lime. The catalog is 65 recipes; the new one is appended, so every existing name keeps its position.
+
 ## 19.8.3
 
 ### Fixed

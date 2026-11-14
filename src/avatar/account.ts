@@ -1,3 +1,4 @@
+import { avatarCharacterInColor, type AvatarCharacter } from '../agent-avatar/character';
 import type { AvatarAccount, AvatarProps } from './types';
 
 /** The text that names an account: its display name, else its handle. */
@@ -14,13 +15,18 @@ export function accountName(account: AvatarAccount | undefined): string | undefi
 
 /**
  * The one answer to "which character does this avatar carry": an explicit `character` wins
- * (`null` opts out), else the character of a bot account. Returns the stored object itself, so a
- * caller can memoize on it; resolve it with `tryResolveAvatarCharacter`.
+ * (`null` opts out), else the character of a bot account painted in the account's own `color`
+ * (`avatarCharacterInColor`). Resolve it with `tryResolveAvatarCharacter`. A painted character is
+ * a new object each call, so a caller memoizes on `character`, `account.character` and
+ * `account.color` rather than on the result.
  */
 export function pickAccountCharacter({
   character,
   account,
 }: Pick<AvatarProps, 'character' | 'account'>): unknown {
   if (character !== undefined) return character;
-  return account?.kind === 'bot' ? account.character : undefined;
+  if (account?.kind !== 'bot') return undefined;
+  const stored = account.character;
+  if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return stored;
+  return avatarCharacterInColor(stored as AvatarCharacter, account.color);
 }

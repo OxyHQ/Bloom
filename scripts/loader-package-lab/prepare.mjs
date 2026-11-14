@@ -8,9 +8,9 @@ const installedPackage = JSON.parse(readFileSync(resolve(installed, 'package.jso
 const npmTarball = process.env.BLOOM_NPM_TARBALL;
 const npmIntegrity = process.env.BLOOM_NPM_INTEGRITY;
 const npmVersion = process.env.BLOOM_NPM_VERSION;
-const aliaTarball = process.env.ALIA_NPM_TARBALL;
-const aliaIntegrity = process.env.ALIA_NPM_INTEGRITY;
-const aliaVersion = process.env.ALIA_NPM_VERSION;
+const gemiesTarball = process.env.GEMIES_NPM_TARBALL;
+const gemiesIntegrity = process.env.GEMIES_NPM_INTEGRITY;
+const gemiesVersion = process.env.GEMIES_NPM_VERSION;
 if (npmTarball || npmIntegrity || npmVersion) {
   if (!npmTarball || !npmIntegrity || !npmVersion)
     throw new Error(
@@ -26,22 +26,22 @@ if (npmTarball || npmIntegrity || npmVersion) {
       `Installed @oxy.so/bloom@${installedPackage.version}; expected published ${npmVersion}`,
     );
 }
-const installedAlia = realpathSync('node_modules/@alia.onl/sdk');
-const installedAliaPackage = JSON.parse(readFileSync(resolve(installedAlia, 'package.json')));
-const aliaComposer = readFileSync(resolve(installedAlia, 'src/components/AliaComposer.tsx'));
-if (aliaTarball || aliaIntegrity || aliaVersion) {
-  if (!aliaTarball || !aliaIntegrity || !aliaVersion)
+const installedGemies = realpathSync('node_modules/@gemies/sdk');
+const installedGemiesPackage = JSON.parse(readFileSync(resolve(installedGemies, 'package.json')));
+const gemieComposer = readFileSync(resolve(installedGemies, 'src/components/GemieComposer.tsx'));
+if (gemiesTarball || gemiesIntegrity || gemiesVersion) {
+  if (!gemiesTarball || !gemiesIntegrity || !gemiesVersion)
     throw new Error(
-      'Published Alia evidence needs ALIA_NPM_TARBALL, ALIA_NPM_INTEGRITY and ALIA_NPM_VERSION',
+      'Published Gemies SDK evidence needs GEMIES_NPM_TARBALL, GEMIES_NPM_INTEGRITY and GEMIES_NPM_VERSION',
     );
   const integrity = `sha512-${createHash('sha512')
-    .update(readFileSync(resolve(aliaTarball)))
+    .update(readFileSync(resolve(gemiesTarball)))
     .digest('base64')}`;
-  if (integrity !== aliaIntegrity)
-    throw new Error('Alia SDK tarball integrity does not match the registry');
-  if (installedAliaPackage.version !== aliaVersion)
+  if (integrity !== gemiesIntegrity)
+    throw new Error('Gemies SDK tarball integrity does not match the registry');
+  if (installedGemiesPackage.version !== gemiesVersion)
     throw new Error(
-      `Installed @alia.onl/sdk@${installedAliaPackage.version}; expected published ${aliaVersion}`,
+      `Installed @gemies/sdk@${installedGemiesPackage.version}; expected published ${gemiesVersion}`,
     );
 }
 const native = readFileSync(
@@ -90,9 +90,9 @@ writeFileSync(
         ? 'published npm tarball'
         : 'local packed snapshot; not published acceptance',
       ...(npmIntegrity ? { npmIntegrity } : {}),
-      aliaSdkVersion: installedAliaPackage.version,
-      ...(aliaIntegrity ? { aliaNpmIntegrity: aliaIntegrity } : {}),
-      aliaComposerSha256: hash(aliaComposer),
+      gemiesSdkVersion: installedGemiesPackage.version,
+      ...(gemiesIntegrity ? { gemiesNpmIntegrity: gemiesIntegrity } : {}),
+      gemieComposerSha256: hash(gemieComposer),
       installed,
       packageVersion: JSON.parse(readFileSync(resolve(installed, 'package.json'))).version,
       nativeSha256: hash(native),

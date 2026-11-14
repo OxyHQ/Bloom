@@ -23,11 +23,12 @@ function loadDefaultCatalog(): Promise<VectorAssetLoader> {
 
 /** Resolves each asset through the lazily loaded full catalog. */
 export const defaultVectorAssetLoader: VectorAssetLoader = {
-  shape: (id) => loadDefaultCatalog().then((catalog) => catalog.shape(id)),
-  eyes: (id) => loadDefaultCatalog().then((catalog) => catalog.eyes(id)),
-  eyewear: (id) => loadDefaultCatalog().then((catalog) => catalog.eyewear(id)),
-  accessory: (id) => loadDefaultCatalog().then((catalog) => catalog.accessory(id)),
-  template: (character) => loadDefaultCatalog().then((catalog) => catalog.template(character)),
+  shape: (id, clips) => loadDefaultCatalog().then((catalog) => catalog.shape(id, clips)),
+  eyes: (id, clips) => loadDefaultCatalog().then((catalog) => catalog.eyes(id, clips)),
+  eyewear: (id, clips) => loadDefaultCatalog().then((catalog) => catalog.eyewear(id, clips)),
+  accessory: (id, clips) => loadDefaultCatalog().then((catalog) => catalog.accessory(id, clips)),
+  template: (character, clips) =>
+    loadDefaultCatalog().then((catalog) => catalog.template(character, clips)),
 };
 
 /** The catalog a character renders from: the prop, else the provider's, else Bloom's own. */

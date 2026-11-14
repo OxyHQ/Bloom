@@ -27,21 +27,6 @@
           }
         },
         {
-          "manifest": "packages/alia-canvas/package.json",
-          "name": "alia-canvas",
-          "declarations": {
-            "dependencies": "19.5.1"
-          },
-          "catalog": null,
-          "installed": {
-            "version": "17.39.0",
-            "packagePath": "Alia/node_modules/@oxy.so/bloom"
-          },
-          "localDeclaration": {
-            "dependencies": "18.4.2"
-          }
-        },
-        {
           "manifest": "packages/alia-chat/package.json",
           "name": "@alia.onl/sdk",
           "declarations": {

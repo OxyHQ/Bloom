@@ -14,6 +14,7 @@ import {
 } from './catalog-ids';
 import { CHARACTER_COLORS } from './character-colors';
 import { normalizeAvatarSkinColor } from './skin-color';
+import { APP_COLOR_PRESETS, resolveProfileColor } from '../theme/color-presets';
 import { CHARACTER_PRESET_DEFAULTS } from './character-preset-defaults';
 
 /**
@@ -201,6 +202,35 @@ export function updateAvatarCharacter(
     else next.color = color;
   }
   return next;
+}
+
+/**
+ * A character painted in its account's colour.
+ *
+ * `color` is the colour of the account the character stands for, as Oxy stores `User.color`: a
+ * Bloom colour preset key (`'lagoon'`) or a hex (`'#ff8b67'`, `'#f80'`), both ordinary account
+ * colours. A preset paints the body its identity seed, a hex paints it that hex, each lifted to the
+ * avatar skin floor (`normalizeAvatarSkinColor`), so a hex an editor wrote back comes out exactly as
+ * written. This is the one place an account colour becomes an avatar paint.
+ *
+ * The result carries `bodyColor` and no `color`; every part is kept. A colour that does not resolve
+ * (`null`, `undefined`, an unknown key) returns the character unchanged, so its own paint (or its
+ * preset's) applies.
+ */
+export function avatarCharacterInColor(
+  character: AvatarCharacter,
+  color: string | null | undefined,
+): AvatarCharacter {
+  const resolved = resolveProfileColor(color);
+  if (resolved === undefined) return character;
+  const seed =
+    resolved.colorPreset === undefined
+      ? resolved.seed
+      : APP_COLOR_PRESETS[resolved.colorPreset].hex;
+  const painted: AvatarCharacter = { ...character };
+  delete painted.color;
+  painted.bodyColor = normalizeAvatarSkinColor(seed);
+  return painted;
 }
 
 /** The body paint as `#rrggbb`, whichever way it was named. */

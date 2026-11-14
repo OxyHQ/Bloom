@@ -45,12 +45,13 @@ export interface MenubarProps {
   /** The keyboard moved across the bar, or left it (`undefined`). */
   onFocusValueChange?: (value: string | undefined) => void;
   /**
-   * Whether a closed menu's content is mounted headless, so its rows' `shortcut`s work while the
-   * menu is closed (the default, `true`). A bar whose rows run no chords of their own (an OS
-   * shell's, whose rows only show the chord another part runs) passes `false`: a closed menu then
-   * mounts nothing but its title, as a Mac's menu bar draws titles and builds a menu as it opens,
-   * and its rows render again only while it is open or the popup is changing from it. Ignored
-   * where the platform draws the bar (`menu-bar`), which needs every menu declared.
+   * Whether a closed menu's rows are known to the bar, so their `shortcut`s work while the menu is
+   * closed (the default, `true`). Known, not mounted: Bloom reads them from the content's elements
+   * (a closed menu's rows never render) and mounts headless only an application's own component
+   * placed in it, which it cannot read without rendering. A bar whose rows run no chords of their
+   * own (an OS shell's, whose rows only show the chord another part runs) passes `false`: a closed
+   * menu then declares nothing, and its shortcuts are the open menu's only. Ignored where the
+   * platform draws the bar (`menu-bar`), which needs every menu declared.
    */
   declareClosedMenus?: boolean;
   /** Accessible name for the bar. */

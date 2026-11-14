@@ -14,8 +14,8 @@ for (const key of [
   'nativeSha256',
   'adapterSha256',
   'lockSha256',
-  'aliaSdkVersion',
-  'aliaComposerSha256',
+  'gemiesSdkVersion',
+  'gemieComposerSha256',
 ])
   assert(bundle.includes(build[key]), `Stale metadata: ${key}`);
 if (build.nativeSourcesSha256) {
@@ -48,17 +48,17 @@ function collect(map) {
   }
   for (let i = 0; i < map.sources.length; i++) {
     const prefix = '/bloom-local/node_modules/@oxy.so/bloom/';
-    const aliaPrefix = '/node_modules/@alia.onl/sdk/';
+    const gemiesPrefix = '/node_modules/@gemies/sdk/';
     if (map.sources[i].startsWith(prefix) && /\.(?:[cm]?[jt]sx?|json)$/.test(map.sources[i]))
       sources.set(map.sources[i].slice(prefix.length), map.sourcesContent[i]);
-    if (map.sources[i].startsWith(aliaPrefix) && /\.(?:[cm]?[jt]sx?|json)$/.test(map.sources[i]))
+    if (map.sources[i].startsWith(gemiesPrefix) && /\.(?:[cm]?[jt]sx?|json)$/.test(map.sources[i]))
       assert.equal(
         map.sourcesContent[i],
         readFileSync(
-          resolve('node_modules/@alia.onl/sdk', map.sources[i].slice(aliaPrefix.length)),
+          resolve('node_modules/@gemies/sdk', map.sources[i].slice(gemiesPrefix.length)),
           'utf8',
         ),
-        `Stale published Alia source: ${map.sources[i]}`,
+        `Stale published Gemies SDK source: ${map.sources[i]}`,
       );
     assert(!map.sources[i].startsWith('/../../src/'), 'Checkout source bypasses installed package');
   }

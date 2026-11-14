@@ -97,6 +97,26 @@ in current choices or templates.
   `bodyColor` and the other way round; the two are never held together.
 - `characterFromLegacy(saved)` migrates an avatar saved before 10 (see
   [Migrating to 10.0](/docs/migrating-to-10.0)).
+- `avatarCharacterInColor(character, color)` paints a character in its ACCOUNT's colour:
+  `color` is what Oxy stores as `User.color`: a Bloom colour preset key or a hex (`#rrggbb`,
+  `#rgb`), both ordinary account colours. The body takes the preset's identity seed, or the hex,
+  lifted to the skin floor, as `bodyColor` (so a hex an editor wrote back paints exactly itself); every part is kept and `color` is dropped. A colour that does not resolve
+  (`null`, `undefined`, an unknown key) returns the character unchanged. This is the one place a
+  account colour becomes an avatar paint: a bot is drawn in the colour its profile is themed with.
+
+### A bot is drawn in its account's colour
+
+An agent's colour belongs to its account, not to its character. Store the character's parts
+(no `color`, no `bodyColor`) and paint it at the edge:
+
+```tsx
+<AgentAvatar character={avatarCharacterInColor(agent.character, agent.account.color)} />
+```
+
+`Avatar` does it for you: a `kind: 'bot'` account (`<Avatar account={user} />`) is drawn as its
+`character` painted in the account's `color` (`AvatarAccount.color`). Without a colour the
+character's own paint (or its preset's) applies, and a character with no paint at all falls back to
+the account's image and initials as any undrawable character does.
 
 ### Which animation plays
 
@@ -115,7 +135,10 @@ composition and projection; native drawing uses `react-native-svg`.
 The old geometry engine under `runtime/` is an **offline extraction tool**, not an app
 renderer. `bun run build:avatar-vectors` (`scripts/build-avatar-vector-assets.mjs`) samples its shapes, parts and authored
 motion into vector data. Keep generated assets, import mappings and static portraits in
-sync when rebuilding that source data. Normal library builds and package verification
+sync when rebuilding that source data. The static portraits (`vector-static`, ~310 KB of paths)
+are drawn only by the agent creator's shape arc and eye picker, never by an avatar; they load on
+first use through `use-static-portraits` (`import()`), and `static-portraits-lazy.test.ts` keeps
+every other module from importing them. Normal library builds and package verification
 must ship all vector assets; no consumer can depend on the extractor's filesystem. The generator
 ends by packing the assets (shared payloads in `vector-assets/blobs/`, one `catalog/<kind>-<id>.ts`
 module per asset); do not edit those files by hand.
@@ -141,6 +164,18 @@ Three things keep that bounded:
   only its small metadata and the hashes (`scripts/avatar-vector/pack-assets.mjs`, lossless:
   `scripts/test-avatar-vector-pack.mjs` and the manifest gate check it). 58 MB became 30 MB with no
   app change.
+- **Only the clips that are drawn are fetched.** An asset (pack format 2) keeps each part's tracks
+  per clip, `tracks[i] = { idle, reaction, work }`, each its own payload. An avatar first loads its
+  character at rest (`VECTOR_REST_CLIPS`, `['idle']`): the idle tracks and the geometry they draw.
+  A mood (`mood="sad"`, the empty state's gemie shaking its head "no") is drawn on the idle clip
+  and needs nothing more, and a portrait is the idle clip's first frame. `reaction` and `work`
+  (with the computer, hands and screens only `work` draws, the `workOnly` parts) are fetched the
+  first time one plays: the idle animation carries on meanwhile, the gesture starts when its
+  tracks arrive, and an interactive avatar asks ahead when the pointer reaches it. Every
+  `VectorAssetLoader` method and `VectorAssetImport` takes the clips it should read; a loader or
+  importer that ignores them hands back the whole asset, as before. For the empty state's
+  character in Gemies this is 135 KB brotli instead of 281 KB, and 21 fewer requests
+  (`vector-clips-on-demand.test.tsx`).
 - **The renderer is not in the first chunk.** `Avatar` loads the character renderer on first use
   (`React.lazy`), so a screen that draws no bot character carries none of the geometry code.
 - **An app can ship only what it draws.** List the assets you use, hand the loader to the
@@ -253,6 +288,28 @@ Manual action changes blend from the currently displayed pose, including an
 interrupted transition. The final Computer episode includes its screen and hands
 exit in its last 280 ms, so work props do not linger after completion. Earlier
 repeats remain working; pausing freezes the transition clock.
+
+`mood` is a state rather than a key: it holds for as long as it is set. `mood="sad"` is for
+an empty or not-found state, a refusal, something that could not be done. As the mood starts
+(or the avatar mounts sad) the character shakes its head "no": three turns in 1.4 s, the first
+the widest, starting and ending at rest. Then it stays downcast on top of its idle: looking
+down and a little aside, sunk, slightly deflated, head tilted, lids heavy, still breathing and
+blinking. Back to `neutral` the droop eases out over about a second, and a neutral avatar draws
+exactly as it did before moods existed.
+
+```tsx
+<AgentAvatar character={{ preset: 'blue_beret' }} size={112} mood="sad" />
+```
+
+The mood is procedural (`vector-mood.ts`), like gaze and blinking, so every body has it: the
+presets, edited characters and the 13 flat forms. A reference face shakes and lowers its head
+through its look direction (its hats follow); any other body turns and tilts whole. Reactions,
+work and pointer gaze still play underneath; a transition between them never captures the mood,
+which runs on its own clock. Reduced motion and `paused` show the settled sad pose with no shake;
+a `portrait` still is always neutral. In an `EmptyState`, pass it as the `illustration` at
+`EMPTY_STATE_GEOMETRY[variant].illustration` (see [Empty State](/docs/empty-state)).
+`vector-mood.test.ts` checks the shake and the sad pose on every template through the real
+compositor, and `AgentAvatar-mood.test.tsx` the reduced-motion still.
 
 The panel, screen glyphs and hands share the panel's visibility envelope, including
 fractional camera visibility. Independent glyph coverage previously left text floating
@@ -511,3 +568,14 @@ The SVG cutover does not convert those historical checks into native-device vali
 `useAvatarRendererCapabilities({ enabled })` remains exported: shared live scheduling is
 available on every SVG platform when enabled, without an adapter or manifest request.
 Installing the former native companion no longer selects another rendering backend.
+
+## On a server: `@oxy.so/bloom/agent-avatar/svg`
+
+Code that cannot render React (an API making a bot's profile photo, an image card) draws a
+character with `@oxy.so/bloom/agent-avatar/svg`: `renderAgentAvatarSvg(character, options)` answers
+the same still frame `VectorStaticPortrait` draws, as an SVG string, and `renderAgentAvatarPicture
+(character, color)` a profile picture (painted in the account colour, centred with room for a
+circular crop, on a much, much lighter tint of that colour; only a body nearly as light gets a darker tint, so the character is always visible).
+Rasterize it with whatever the server has. The entry imports no React or React Native; it draws from
+the full catalog unless `catalog` is passed.
+

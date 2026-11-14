@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
-import { resolveAvatarCharacter, type AvatarCharacter } from '../agent-avatar/character';
+import type { AvatarCharacter } from '../agent-avatar/character';
+import { characterPartsKey as key, withoutPaint } from './paint';
 import type { AgentCreatorAgent } from './types';
-const key = (value: AvatarCharacter) => JSON.stringify(resolveAvatarCharacter(value));
 const snapshot = (value: AvatarCharacter): AvatarCharacter => Object.freeze({ ...value });
 const LIMIT = 50;
 const createHistory = (agent: AgentCreatorAgent) => ({
@@ -14,7 +14,11 @@ const createHistory = (agent: AgentCreatorAgent) => ({
   transaction: undefined as AvatarCharacter | undefined,
 });
 
-/** Character-only history. Parent echoes acknowledge edits; unrelated profile data never enters history. */
+/**
+ * Character-only history. Parent echoes acknowledge edits; unrelated profile data never enters
+ * history. Characters compare by their parts and are emitted without paint: the colour is the
+ * agent's (`agent.color`), not the character's, so a colour change is not a character edit.
+ */
 export function useCharacterHistory(
   agent: AgentCreatorAgent,
   onChange: (agent: AgentCreatorAgent) => void,
@@ -39,7 +43,7 @@ export function useCharacterHistory(
   }
   const emit = useCallback((value: AvatarCharacter) => {
     const s = state.current!;
-    s.current = snapshot(value);
+    s.current = snapshot(withoutPaint(value));
     s.pending.add(key(value));
     // Only unacknowledged own writes are retained, with a fixed bound during deferred parent updates.
     if (s.pending.size > 128) s.pending.delete(s.pending.values().next().value!);

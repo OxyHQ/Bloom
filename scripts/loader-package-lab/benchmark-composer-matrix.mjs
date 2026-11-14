@@ -173,7 +173,7 @@ async function ensureScene({ narrow, multiline, taper }) {
   assert(hasState(state, 'taper', taper), state);
   assert(hasState(state, 'busy', 'true') && hasState(state, 'pending', 'none'), state);
 
-  // The third-party Alia composer sits below the two Bloom-only owners in this
+  // The third-party Gemies SDK composer sits below the two Bloom-only owners in this
   // fixture. React Native clips its accessibility bounds to the ScrollView
   // viewport until the real scroller reaches the end, which looked like a
   // short editor even though the full multiline control was rendered below it.
@@ -200,7 +200,7 @@ async function ensureScene({ narrow, multiline, taper }) {
   assert.equal(
     inputs.length,
     3,
-    `Expected ComposerPill, AgentChatComposer and AliaComposer editors; got ${inputs.length}`,
+    `Expected ComposerPill, AgentChatComposer and GemieComposer editors; got ${inputs.length}`,
   );
   const inputBounds = inputs.map((node) => ({
     label: node['content-desc'] || node.text,
@@ -307,7 +307,7 @@ writeFileSync(
       bloomVersion: environment.build.packageVersion,
       configurations: results,
       limits:
-        'Descriptive Pixel 8a release samples, not a performance pass or approved threshold. AgentChatComposer retains its shipped taper; the taper switch applies to the isolated ComposerLoader and outer ComposerPill loader. AliaComposer does not expose a ComposerLoader. Each window runs all three visible loader views in one app tree; no screen recording is active during measurement.',
+        'Descriptive Pixel 8a release samples, not a performance pass or approved threshold. AgentChatComposer retains its shipped taper; the taper switch applies to the isolated ComposerLoader and outer ComposerPill loader. GemieComposer draws its own ComposerLoader from its busy state, which the taper switch does not reach. Each window runs all three visible loader views in one app tree; no screen recording is active during measurement.',
     },
     null,
     2,

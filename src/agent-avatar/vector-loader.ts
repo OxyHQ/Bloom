@@ -1,7 +1,7 @@
 import { resolveAvatarCharacter, type ResolvedAvatarCharacter } from './character';
 import { vectorTemplateCharacters } from './vector-template-characters';
-import type { VectorAssetImport } from './vector-pack';
-import type { VectorAssetLoader, VectorData } from './vector-types';
+import { VECTOR_ACTIONS, type VectorAssetImport } from './vector-pack';
+import type { VectorAction, VectorAssetLoader, VectorData } from './vector-types';
 
 export type { VectorAssetImport } from './vector-pack';
 export type { VectorAssetLoader } from './vector-types';
@@ -26,31 +26,42 @@ const templates = Object.entries(vectorTemplateCharacters).map(([id, character])
   character: resolveAvatarCharacter(character),
 }));
 
+/** Loads kept per loader: an asset at rest and the same asset whole are two. */
+export const VECTOR_ASSET_CACHE_SIZE = 24;
+
 /** Builds the loader `AgentAvatarProvider`'s `catalog` prop takes. Sources are read at call time. */
 export function createVectorAssetLoader(sources: VectorAssetSources): VectorAssetLoader {
-  const cache = new Map<VectorAssetImport, Promise<VectorData>>();
-  const load = (importer: VectorAssetImport | undefined): Promise<VectorData> => {
+  // By asset and by the clips asked for: a character at rest and the same one gesturing are two
+  // loads of the same module, and the second fetches only what the first left out.
+  const cache = new Map<string, Promise<VectorData>>();
+  const keys = new Map<VectorAssetImport, number>();
+  const load = (
+    importer: VectorAssetImport | undefined,
+    clips: readonly VectorAction[] = VECTOR_ACTIONS,
+  ): Promise<VectorData> => {
     if (!importer) return Promise.reject(new Error('Unknown vector avatar asset'));
-    const existing = cache.get(importer);
+    if (!keys.has(importer)) keys.set(importer, keys.size);
+    const key = `${keys.get(importer)}:${[...new Set(clips)].sort().join(',')}`;
+    const existing = cache.get(key);
     if (existing) {
-      cache.delete(importer);
-      cache.set(importer, existing);
+      cache.delete(key);
+      cache.set(key, existing);
       return existing;
     }
-    const pending = importer().then((module) => module.default);
-    cache.set(importer, pending);
-    if (cache.size > 12) cache.delete(cache.keys().next().value!);
+    const pending = importer(clips).then((module) => module.default);
+    cache.set(key, pending);
+    if (cache.size > VECTOR_ASSET_CACHE_SIZE) cache.delete(cache.keys().next().value!);
     void pending.catch(() => {
-      if (cache.get(importer) === pending) cache.delete(importer);
+      if (cache.get(key) === pending) cache.delete(key);
     });
     return pending;
   };
   return {
-    shape: (id) => load(sources.shape?.[id]),
-    eyes: (id) => load(id === 'none' ? undefined : sources.eyes?.[id]),
-    eyewear: (id) => load(id === 'none' ? undefined : sources.eyewear?.[id]),
-    accessory: (id) => load(id === 'none' ? undefined : sources.accessory?.[id]),
-    template: (character) => {
+    shape: (id, clips) => load(sources.shape?.[id], clips),
+    eyes: (id, clips) => load(id === 'none' ? undefined : sources.eyes?.[id], clips),
+    eyewear: (id, clips) => load(id === 'none' ? undefined : sources.eyewear?.[id], clips),
+    accessory: (id, clips) => load(id === 'none' ? undefined : sources.accessory?.[id], clips),
+    template: (character, clips) => {
       if (character.eyeSpacing !== undefined) return Promise.resolve(undefined);
       const match = templates.find(
         (item) =>
@@ -61,7 +72,7 @@ export function createVectorAssetLoader(sources: VectorAssetSources): VectorAsse
           item.character.accessory === character.accessory,
       );
       const source = match && sources.template?.[match.id as keyof typeof vectorTemplateCharacters];
-      return source ? load(source) : Promise.resolve(undefined);
+      return source ? load(source, clips) : Promise.resolve(undefined);
     },
   };
 }

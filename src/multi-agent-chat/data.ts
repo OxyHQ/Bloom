@@ -1,15 +1,25 @@
 import {
-  AVATAR_COLORS,
   type AvatarCharacter,
+  avatarCharacterInColor,
   characterFromLegacy,
   parseAvatarCharacter,
 } from '../agent-avatar';
+import { withoutPaint } from '../agent-creator/paint';
+import { FREE_COLOR_NAMES, resolveProfileColor } from '../theme/color-presets';
 import { pickMessages, formatMessage } from '../locale/messages';
 import { MULTI_AGENT_CHAT_MESSAGES } from './messages';
 
 import { normalizeAgentPreferences } from '../agent-creator/shared';
 import type { AgentCreatorAgent } from '../agent-creator/types';
 export type Agent = AgentCreatorAgent;
+
+/** An agent's character as drawn: its parts, painted in the agent's own colour. */
+export function agentCharacter(agent: Pick<Agent, 'avatar' | 'color'>): AvatarCharacter {
+  return avatarCharacterInColor(agent.avatar, agent.color);
+}
+
+/** The colour a restored agent saved without one wears. */
+const DEFAULT_AGENT_COLOR = 'blue';
 export type Message = {
   id: string;
   role: 'user' | 'agent';
@@ -32,11 +42,23 @@ export type Workspace = {
   installedPlugins?: string[];
 };
 
-/** A saved avatar: a character, or the old `AvatarConfig` of a workspace saved before 10. */
-function readAvatar(saved: unknown): AvatarCharacter {
-  return saved && typeof saved === 'object' && 'family' in saved
-    ? characterFromLegacy(saved)
-    : parseAvatarCharacter(saved);
+/** A saved colour: any account colour Bloom can draw (a preset key or a `#rrggbb`), else the default. */
+function readColor(saved: unknown): string {
+  return typeof saved === 'string' && resolveProfileColor(saved) !== undefined
+    ? saved
+    : DEFAULT_AGENT_COLOR;
+}
+
+/**
+ * A saved avatar's parts: a character (checked painted in the agent's colour, kept without paint),
+ * or the old `AvatarConfig` of a workspace saved before 10.
+ */
+function readAvatar(saved: unknown, color: string): AvatarCharacter {
+  return withoutPaint(
+    saved && typeof saved === 'object' && 'family' in saved
+      ? characterFromLegacy(saved)
+      : parseAvatarCharacter(avatarCharacterInColor(saved as AvatarCharacter, color)),
+  );
 }
 
 const NEW_AGENT_IDENTITIES = [
@@ -47,21 +69,25 @@ const NEW_AGENT_IDENTITIES = [
       eyes: 'oval',
       eyewear: 'none',
       accessory: 'none',
-      color: 'blue',
     },
+    color: 'blue',
   },
   {
     name: 'Cloud engineer',
-    avatar: { shape: 'cloud', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'coral' },
+    avatar: { shape: 'cloud', eyes: 'oval', eyewear: 'none', accessory: 'none' },
+    color: 'orange',
   },
   {
     name: 'Support guide',
-    avatar: { shape: 'heart', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'teal' },
+    avatar: { shape: 'heart', eyes: 'oval', eyewear: 'none', accessory: 'none' },
+    color: 'mint',
   },
-] satisfies Pick<Agent, 'name' | 'avatar'>[];
+] satisfies Pick<Agent, 'name' | 'avatar' | 'color'>[];
 
 /** Choose an unused identity, including when restoring old unnamed demo bots. */
-export function nextAgentIdentity(agents: Pick<Agent, 'name'>[]): Pick<Agent, 'name' | 'avatar'> {
+export function nextAgentIdentity(
+  agents: Pick<Agent, 'name'>[],
+): Pick<Agent, 'name' | 'avatar' | 'color'> {
   const names = new Set(agents.map((agent) => agent.name.toLowerCase()));
   let index = 0;
   while (true) {
@@ -71,14 +97,13 @@ export function nextAgentIdentity(agents: Pick<Agent, 'name'>[]): Pick<Agent, 'n
     if (!names.has(name.toLowerCase()))
       return {
         name,
-        // The same body in the next paint each time round, so a long list stays tellable apart.
-        avatar: {
-          ...identity.avatar,
-          color:
-            AVATAR_COLORS[
-              (AVATAR_COLORS.indexOf(identity.avatar.color) + cycle) % AVATAR_COLORS.length
-            ],
-        },
+        // The same body in the next colour each time round, so a long list stays tellable apart.
+        avatar: { ...identity.avatar },
+        color:
+          FREE_COLOR_NAMES[
+            ((FREE_COLOR_NAMES as readonly string[]).indexOf(identity.color) + cycle) %
+              FREE_COLOR_NAMES.length
+          ]!,
       };
     index++;
   }
@@ -111,7 +136,8 @@ const ADDITIONAL_AGENTS: Agent[] = [
     name: 'Data analyst',
     label: 'Analytics',
     description: 'Turns data into clear insights, useful charts, and practical decisions.',
-    avatar: { shape: 'pocket', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'cyan' },
+    avatar: { shape: 'pocket', eyes: 'oval', eyewear: 'none', accessory: 'none' },
+    color: 'sky',
   },
 ];
 
@@ -122,21 +148,24 @@ export const INITIAL_AGENTS: Agent[] = [
     label: 'Design',
     description:
       'Thoughtful layouts, clear hierarchy, and a little personality for your next landing page.',
-    avatar: { shape: 'slender', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'teal' },
+    avatar: { shape: 'slender', eyes: 'oval', eyewear: 'none', accessory: 'none' },
+    color: 'mint',
   },
   {
     id: 'content',
     name: 'content reviewer',
     label: 'Writing',
     description: 'Makes your writing clear, concise, and unmistakably yours.',
-    avatar: { shape: 'pocket', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'coral' },
+    avatar: { shape: 'pocket', eyes: 'oval', eyewear: 'none', accessory: 'none' },
+    color: 'orange',
   },
   {
     id: 'marketing',
     name: 'marketing bot',
     label: 'Marketing',
     description: 'Turns a good idea into a campaign people remember.',
-    avatar: { shape: 'star', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'teal' },
+    avatar: { shape: 'star', eyes: 'oval', eyewear: 'none', accessory: 'none' },
+    color: 'mint',
   },
   {
     id: 'seo',
@@ -148,15 +177,16 @@ export const INITIAL_AGENTS: Agent[] = [
       eyes: 'oval',
       eyewear: 'none',
       accessory: 'none',
-      color: 'violet',
     },
+    color: 'violet',
   },
   {
     id: 'research',
     name: 'research assistant',
     label: 'Research',
     description: 'Connects the dots, asks better questions, and brings the evidence.',
-    avatar: { shape: 'petal', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'yellow' },
+    avatar: { shape: 'petal', eyes: 'oval', eyewear: 'none', accessory: 'none' },
+    color: 'yellow',
   },
   {
     id: 'security',
@@ -164,7 +194,8 @@ export const INITIAL_AGENTS: Agent[] = [
     label: 'Security',
     description:
       'A careful second pair of eyes for permissions, privacy, and application security.',
-    avatar: { shape: 'shield', eyes: 'oval', eyewear: 'none', accessory: 'none', color: 'teal' },
+    avatar: { shape: 'shield', eyes: 'oval', eyewear: 'none', accessory: 'none' },
+    color: 'mint',
   },
   ...ADDITIONAL_AGENTS,
 ];
@@ -287,7 +318,8 @@ export function restoreWorkspace(raw: string): Workspace | null {
         label: a.label.slice(0, 60),
         description: a.description.slice(0, 500),
         ...(a.preferences ? { preferences: normalizeAgentPreferences(a.preferences) } : {}),
-        avatar: readAvatar(a.avatar),
+        color: readColor(a.color),
+        avatar: readAvatar(a.avatar, readColor(a.color)),
       };
     });
     const renamed = new Set<string>();
@@ -402,6 +434,7 @@ export function restoreWorkspace(raw: string): Workspace | null {
         agent.label !== original.label ||
         agent.description !== original.description ||
         agent.preferences ||
+        agent.color !== original.color ||
         Object.entries(original.avatar).some(
           ([key, value]) => agent.avatar[key as keyof AvatarCharacter] !== value,
         );

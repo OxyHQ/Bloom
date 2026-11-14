@@ -6,8 +6,13 @@
  * 58 MB; stored once per distinct payload they weigh about half. Each asset file keeps
  * its small metadata and refers to its bulk payloads by hash:
  *
- *   part.geo        -> blobs/<hash>.json  { points, faces, delta0, delta1 }
- *   tracks[i]       -> blobs/<hash>.json  { idle, reaction, work } tracks of part i
+ *   part.geo          -> blobs/<hash>.json  { points, faces, delta0, delta1 }
+ *   tracks[i][clip]   -> blobs/<hash>.json  the track of part i in that clip, or null (no payload)
+ *
+ * Format 2 (`format: 2`) stores each clip's track on its own, so a character drawn at rest loads
+ * its `idle` tracks and not its `reaction` and `work` ones, nor the geometry of its `workOnly`
+ * parts (the computer, hands and screens), until a gesture first plays. Format 1 kept the three
+ * clips of a part in one payload; `readVectorAsset` still reads it, to repack.
  *
  * `unpackVectorAsset` is the exact inverse; `src/agent-avatar/vector-pack.ts` mirrors it.
  * Run by `build-avatar-vector-assets.mjs`; also runnable alone (`node pack-assets.mjs`),
@@ -25,6 +30,7 @@ const GEOMETRY = ['points', 'faces', 'delta0', 'delta1'];
 const hashOf = (text) => createHash('sha256').update(text).digest('hex').slice(0, 16);
 const wrap = (value) => JSON.stringify({ encoding: 'json', data: JSON.stringify(value) });
 
+export const PACK_FORMAT = 2;
 export const isPacked = (data) => Array.isArray(data.tracks);
 
 /** @returns {{ packed: object, blobs: Map<string, object> }} */
@@ -44,8 +50,11 @@ export function packVectorAsset(data) {
       else rest[key] = value;
     }
     const tracks = {};
-    for (const name of clipNames) tracks[name] = data.clips[name].parts[index] ?? null;
-    return { part: { ...rest, geo: put(geometry) }, track: put(tracks) };
+    for (const name of clipNames) {
+      const track = data.clips[name].parts[index] ?? null;
+      tracks[name] = track === null ? null : put(track);
+    }
+    return { part: { ...rest, geo: put(geometry) }, tracks };
   });
   const clips = {};
   for (const name of clipNames) {
@@ -54,30 +63,51 @@ export function packVectorAsset(data) {
   }
   const { parts: _parts, clips: _clips, ...top } = data;
   return {
-    packed: { ...top, parts: parts.map((p) => p.part), clips, tracks: parts.map((p) => p.track) },
+    packed: {
+      ...top,
+      format: PACK_FORMAT,
+      parts: parts.map((p) => p.part),
+      clips,
+      tracks: parts.map((p) => p.tracks),
+    },
     blobs,
   };
 }
 
 /** @param {(hash: string) => object} readBlob */
 export function unpackVectorAsset(packed, readBlob) {
-  const { parts, clips, tracks, ...top } = packed;
-  const trackSets = tracks.map(readBlob);
-  const full = {
+  const { parts, clips, tracks, format: _format, ...top } = packed;
+  // Format 1: one payload per part holding every clip's track.
+  const legacy = typeof tracks[0] === 'string';
+  const trackSets = tracks.map((entry) =>
+    legacy
+      ? readBlob(entry)
+      : Object.fromEntries(
+          Object.entries(entry).map(([name, hash]) => [
+            name,
+            hash === null ? null : readBlob(hash),
+          ]),
+        ),
+  );
+  return {
     ...top,
     parts: parts.map(({ geo, ...part }) => ({ ...part, ...readBlob(geo) })),
     clips: Object.fromEntries(
       Object.entries(clips).map(([name, head]) => [
         name,
-        { ...head, parts: trackSets.map((set) => set[name]) },
+        { ...head, parts: trackSets.map((set) => set[name] ?? null) },
       ]),
     ),
   };
-  return full;
 }
 
 export const blobHashes = (packed) => [
-  ...new Set([...packed.parts.map((p) => p.geo), ...packed.tracks]),
+  ...new Set([
+    ...packed.parts.map((p) => p.geo),
+    ...packed.tracks.flatMap((entry) =>
+      typeof entry === 'string' ? [entry] : Object.values(entry).filter((hash) => hash !== null),
+    ),
+  ]),
 ];
 
 /** Reads an asset file from `directory` in its full form, packed or not. */

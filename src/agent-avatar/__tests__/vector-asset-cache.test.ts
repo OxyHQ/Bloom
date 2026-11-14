@@ -1,9 +1,15 @@
 import { vectorAssetLoader } from '../vector-assets';
+import { VECTOR_ASSET_CACHE_SIZE } from '../vector-loader';
 import { vectorShapeImports } from '../vector-asset-imports';
 import type { VectorData } from '../vector-types';
 
 it('an evicted failed load cannot remove a newer in-flight request for the same importer', async () => {
-  const ids = Object.keys(vectorShapeImports).slice(0, 13) as (keyof typeof vectorShapeImports)[];
+  const ids = Object.keys(vectorShapeImports).slice(
+    0,
+    VECTOR_ASSET_CACHE_SIZE + 1,
+  ) as (keyof typeof vectorShapeImports)[];
+  // One more asset than the cache holds, so the first is evicted.
+  expect(ids).toHaveLength(VECTOR_ASSET_CACHE_SIZE + 1);
   const original = ids.map((id) => vectorShapeImports[id]);
   const data = { parts: [], clips: {} } as unknown as VectorData;
   let rejectOld!: (reason: Error) => void, resolveNew!: (value: { default: VectorData }) => void;

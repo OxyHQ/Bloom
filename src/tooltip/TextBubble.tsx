@@ -29,19 +29,32 @@ export function createTextBubble(Content: ContentComponent) {
     size?: TooltipSize;
   }) {
     const size = useTooltipSize(sizeProp);
-    const palette = useMenuPalette();
-    const type = TOOLTIP_SIZES[size];
-    const c = Children.toArray(children);
+    const lines = Children.toArray(children);
     return (
-      <Content label={c.join(' ')} size={size}>
-        <View style={{ gap: 2 }}>
-          {c.map((child, i) => (
-            <Text key={i} style={[TYPE_SCALE[type.type], { color: palette.text }]}>
-              {child}
-            </Text>
-          ))}
-        </View>
+      <Content label={lines.join(' ')} size={size}>
+        <TextBubbleLines lines={lines} size={size} />
       </Content>
     );
   };
+}
+
+/** The bubble's text, rendered only when `Content` shows it: a closed tooltip reads no palette. */
+function TextBubbleLines({
+  lines,
+  size,
+}: {
+  lines: ReturnType<typeof Children.toArray>;
+  size: TooltipSize;
+}) {
+  const palette = useMenuPalette();
+  const type = TOOLTIP_SIZES[size];
+  return (
+    <View style={{ gap: 2 }}>
+      {lines.map((line, i) => (
+        <Text key={i} style={[TYPE_SCALE[type.type], { color: palette.text }]}>
+          {line}
+        </Text>
+      ))}
+    </View>
+  );
 }
