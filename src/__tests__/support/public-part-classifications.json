@@ -1628,6 +1628,7 @@
       "src/web-search/WebSearch.tsx#WebSearch",
       "src/window/WindowControls.tsx#WindowControls",
       "src/window/WindowDragRegion.tsx#WindowDragRegion",
+      "src/window/WindowLayouts.tsx#WindowLayouts",
       "src/wizard/WizardFooter.tsx#WizardFooter",
       "src/wizard/WizardProgress.tsx#WizardProgress",
       "src/zoomable-media-gallery/ZoomableMediaGallery.tsx#ZoomableMediaGallery"

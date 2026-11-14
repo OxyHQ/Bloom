@@ -110,6 +110,9 @@ const SUBPATHS = /** @type {const} */ ([
   ['./agent-avatar/catalog/*', 'agent-avatar/catalog/*.ts'],
   // A character as an SVG document, for a server (no React): draws from the full catalog.
   ['./agent-avatar/svg', 'agent-avatar/svg/index.ts'],
+  // The zoom control's layouts, registered for WindowControls by the adapter that reports
+  // window-layout (OxyOS's); nothing else links Bloom's DropdownMenu through a window's controls.
+  ['./window/layouts', 'window/layouts.ts'],
   // Avatars flying between places (web-forked: the layer is portaled).
   ['./avatar-flight', 'avatar-flight/index.ts'],
   // A sidebar of conversations (web-forked: the dropdown and context menu are).

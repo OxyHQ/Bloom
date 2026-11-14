@@ -27,7 +27,7 @@ import {
 import { WINDOW_MESSAGES } from './messages';
 import type { WindowControlsProps } from './types';
 import { useWindow } from './use-window';
-import { WindowLayouts } from './WindowLayouts';
+import { registeredWindowLayouts } from './layouts-registry';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { useInteractionState } from '../hooks/use-interaction-state';
 
@@ -134,6 +134,26 @@ function WindowControl({
   );
 }
 
+let warnedUnregistered = false;
+
+/**
+ * The zoom control's layouts where the platform lays windows out (`window-layout`), as its adapter
+ * registered them (`@oxy.so/bloom/window/layouts`); null elsewhere. Reported without them, the
+ * control only zooms and development says why, once.
+ */
+function windowLayoutsFor(enabled: boolean) {
+  if (!enabled) return null;
+  const registered = registeredWindowLayouts();
+  if (!registered && process.env.NODE_ENV !== 'production' && !warnedUnregistered) {
+    warnedUnregistered = true;
+    console.warn(
+      "[Bloom] WindowControls: the platform reports 'window-layout', but nothing imported " +
+        "'@oxy.so/bloom/window/layouts', so the zoom control shows no layouts.",
+    );
+  }
+  return registered;
+}
+
 /** A control's place in its group: `offset` from the group's leading edge, `top` from its top. */
 function controlPlace(offset: number, top: number) {
   return { position: 'absolute' as const, top, insetInlineStart: offset };
@@ -168,6 +188,7 @@ export function WindowControls({
   const { colors } = useTheme();
   const dirProps = useDirectionProps();
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
+  const WindowLayouts = windowLayoutsFor(appWindow?.layOut !== undefined);
   if (appWindow?.controls !== 'bloom' || appWindow.fullscreen) return null;
 
   const { start, top, width, height } = appWindow.metrics.controls;
@@ -242,7 +263,7 @@ export function WindowControls({
             />
           );
           // The zoom control shows the window's layouts, where the platform lays windows out.
-          if (control.key === 'zoom' && appWindow.layOut) {
+          if (control.key === 'zoom' && WindowLayouts) {
             return (
               <WindowLayouts
                 key={control.key}

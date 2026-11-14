@@ -8,11 +8,10 @@
  * Bloom's `DropdownMenu` (`activation="hover"`): its rows take the arrows, typeahead and Return
  * as any menu's, each named by its label, the menu by its own ("Window layouts").
  *
- * Shown only where the platform lays windows out (the `window-layout` capability); the platform
- * does it (`PlatformWindow.layOut`, `moveToDesktop`).
+ * Shown only where the platform lays windows out (the `window-layout` capability) and its adapter
+ * imported `@oxy.so/bloom/window/layouts`, which registers it (`layouts-registry.ts`); the
+ * platform does it (`PlatformWindow.layOut`, `moveToDesktop`).
  */
-import type React from 'react';
-import type { StyleProp, ViewStyle } from 'react-native';
 
 import {
   DropdownMenu,
@@ -26,6 +25,7 @@ import {
 import { useMessages } from '../locale/messages';
 import type { PlatformWindowLayout } from '../platform-surface/types';
 import { WINDOW_MESSAGES } from './messages';
+import type { WindowLayoutsProps } from './types';
 import { useWindow } from './use-window';
 
 /** How long the pointer rests on the zoom control before its layouts show. */
@@ -52,15 +52,6 @@ const FILL_AND_ARRANGE: readonly PlatformWindowLayout[] = [
   'bottomTop',
   'quarters',
 ];
-
-export interface WindowLayoutsProps {
-  /** The zoom control. */
-  children: React.ReactElement;
-  /** The control's place: the trigger's box, where the menu is anchored. */
-  style?: StyleProp<ViewStyle>;
-  /** The menu's rows are `${testID}-${layout}` and `${testID}-desktop-${n}`. */
-  testID?: string;
-}
 
 /** `children` (the zoom control) with the window's layouts on hover, long press and "Show menu". */
 export function WindowLayouts({ children, style, testID }: WindowLayoutsProps) {

@@ -157,7 +157,8 @@ With `window`, the platform lays the window out on its display as a Mac tiles
 windows since macOS 15: `layOut(layout)` (required with the capability; an
 adapter that reports it without one throws), and `moveToDesktop(desktop)` with
 the state's `desktops` where it has desktops. The zoom control then shows the
-layouts on hover, long press and "Show menu" ([Window](/docs/window)). Without
+layouts on hover, long press and "Show menu" ([Window](/docs/window)), once the
+adapter has imported `@oxy.so/bloom/window/layouts`, which registers its menu. Without
 it the zoom control only zooms. `usePlatformWindowLayout()` returns them, or null.
 
 ## `menu-bar`

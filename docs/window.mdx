@@ -106,6 +106,12 @@ while the window is full screen.
 Where the platform lays windows out (the `window-layout` capability, OxyOS), the zoom control shows
 the window's layouts as a Mac's green button does since macOS 15. Its press still zooms.
 
+The platform's adapter that reports `window-layout` imports `@oxy.so/bloom/window/layouts`, which
+registers the menu (`WindowLayouts`) for `WindowControls`. `WindowControls` never imports it
+itself, so a window's controls everywhere else (a web page, a settings modal, a phone's screen)
+link no `DropdownMenu` through them. Reported without the import, the zoom control only zooms, and
+development warns once.
+
 - **It opens** as the pointer rests on the control for half a second, on a long press, or by the
   screen reader's "Show menu" action on it (React Native's `longpress`), in the platform's popup
   anchored to the control. It closes as the pointer leaves the control and the menu, unless a key

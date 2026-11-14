@@ -1,3 +1,4 @@
+import type React from 'react';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewProps, ViewStyle } from 'react-native';
 
@@ -81,5 +82,15 @@ export interface WindowDragRegionProps
    */
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
+  testID?: string;
+}
+
+/** `WindowLayouts`' props (`@oxy.so/bloom/window/layouts`). */
+export interface WindowLayoutsProps {
+  /** The zoom control. */
+  children: React.ReactElement;
+  /** The control's place: the trigger's box, where the menu is anchored. */
+  style?: StyleProp<ViewStyle>;
+  /** The menu's rows are `${testID}-${layout}` and `${testID}-desktop-${n}`. */
   testID?: string;
 }

@@ -15,6 +15,8 @@ import type {
   PlatformWindowState,
 } from '../platform-surface/types';
 import { WindowControls } from '../window';
+// The adapter that reports `window-layout` registers the layouts so (OxyOS's does).
+import '../window/layouts';
 import { fakeWindow } from './support/fake-window';
 
 function platform(
@@ -40,12 +42,15 @@ function platform(
   return { adapter, window, layOut, moveToDesktop };
 }
 
-function draw(adapter: PlatformSurfaceAdapter) {
-  return render(
+async function draw(adapter: PlatformSurfaceAdapter) {
+  const screen = render(
     <BloomProvider mode="light" platform={adapter}>
       <WindowControls testID="controls" />
     </BloomProvider>,
   );
+  // The layouts' module, loaded as the controls mount (`window-layout` only).
+  await act(async () => undefined);
+  return screen;
 }
 
 /** The rows' labels, in the order the menu shows them. */
@@ -86,7 +91,7 @@ const LAYOUTS: PlatformWindowLayout[] = [
   'returnToPrevious',
 ];
 
-const open = (screen: ReturnType<typeof draw>) =>
+const open = (screen: Awaited<ReturnType<typeof draw>>) =>
   act(() => {
     fireEvent(screen.getByTestId('controls-zoom'), 'longPress');
   });
@@ -94,9 +99,9 @@ const open = (screen: ReturnType<typeof draw>) =>
 beforeEach(() => jest.useFakeTimers());
 afterEach(() => jest.useRealTimers());
 
-it('opens on a long press: the halves, quarters, Fill, Center, the arrangements and Return', () => {
+it('opens on a long press: the halves, quarters, Fill, Center, the arrangements and Return', async () => {
   const { adapter } = platform();
-  const screen = draw(adapter);
+  const screen = await draw(adapter);
   expect(screen.queryByText('Fill')).toBeNull();
   open(screen);
   expect(screen.getByTestId('popup')).toBeTruthy();
@@ -115,9 +120,9 @@ it('opens on a long press: the halves, quarters, Fill, Center, the arrangements 
 
 it.each(LAYOUTS.map((layout, index) => [layout, ORDER[index]] as const))(
   'lays the window out: %s',
-  (layout, label) => {
+  async (layout, label) => {
     const { adapter, layOut, window } = platform();
-    const screen = draw(adapter);
+    const screen = await draw(adapter);
     open(screen);
     fireEvent.press(screen.getByText(label as string));
     act(() => {
@@ -129,9 +134,9 @@ it.each(LAYOUTS.map((layout, index) => [layout, ORDER[index]] as const))(
   },
 );
 
-it('moves the window to each other desktop, numbered as the person counts them', () => {
+it('moves the window to each other desktop, numbered as the person counts them', async () => {
   const { adapter, moveToDesktop } = platform({ state: { desktops: { count: 3, current: 1 } } });
-  const screen = draw(adapter);
+  const screen = await draw(adapter);
   open(screen);
   expect(screen.getByText('Move to Desktop 1')).toBeTruthy();
   expect(screen.queryByText('Move to Desktop 2')).toBeNull();
@@ -139,28 +144,28 @@ it('moves the window to each other desktop, numbered as the person counts them',
   expect(moveToDesktop.mock.calls).toEqual([[2]]);
 });
 
-it('offers no desktop where the window is on the only one, or the platform has none', () => {
+it('offers no desktop where the window is on the only one, or the platform has none', async () => {
   for (const state of [{ desktops: { count: 1, current: 0 } }, {}]) {
     const { adapter } = platform({ state });
-    const screen = draw(adapter);
+    const screen = await draw(adapter);
     open(screen);
     expect(screen.queryByText(/Move to Desktop/)).toBeNull();
     screen.unmount();
   }
 });
 
-it("keeps the control's press: it zooms", () => {
+it("keeps the control's press: it zooms", async () => {
   const { adapter, window, layOut } = platform();
-  const screen = draw(adapter);
+  const screen = await draw(adapter);
   fireEvent.press(screen.getByTestId('controls-zoom'));
   expect(window.zoom).toHaveBeenCalledTimes(1);
   expect(layOut).not.toHaveBeenCalled();
   expect(screen.queryByText('Fill')).toBeNull();
 });
 
-it('names its menu and its rows, and anchors at the zoom control’s place', () => {
+it('names its menu and its rows, and anchors at the zoom control’s place', async () => {
   const { adapter } = platform();
-  const screen = draw(adapter);
+  const screen = await draw(adapter);
   const zoom = screen.getByTestId('controls-zoom');
   expect(zoom.props.accessibilityLabel).toBe('Zoom');
   open(screen);
@@ -179,9 +184,9 @@ it('names its menu and its rows, and anchors at the zoom control’s place', () 
   expect(flat(zoom).position).toBeUndefined();
 });
 
-it('is the control as before without the capability', () => {
+it('is the control as before without the capability', async () => {
   const { adapter, window } = platform({ layouts: false });
-  const screen = draw(adapter);
+  const screen = await draw(adapter);
   act(() => {
     fireEvent(screen.getByTestId('controls-zoom'), 'longPress');
   });
@@ -190,15 +195,15 @@ it('is the control as before without the capability', () => {
   expect(window.zoom).toHaveBeenCalledTimes(1);
 });
 
-it('throws for the capability without a layOut', () => {
+it('throws for the capability without a layOut', async () => {
   const { adapter } = platform({ layOut: false });
   jest.spyOn(console, 'error').mockImplementation(() => undefined);
-  expect(() => draw(adapter)).toThrow(/window-layout/);
+  await expect(draw(adapter)).rejects.toThrow(/window-layout/);
 });
 
-it('opens as the pointer rests on the zoom control for half a second', () => {
+it('opens as the pointer rests on the zoom control for half a second', async () => {
   const { adapter } = platform();
-  const screen = draw(adapter);
+  const screen = await draw(adapter);
   const zoom = screen.getByTestId('controls-zoom');
   let box = zoom.parent;
   while (box && !box.props.onPointerEnter) box = box.parent;
@@ -214,9 +219,9 @@ it('opens as the pointer rests on the zoom control for half a second', () => {
   expect(screen.getByText('Fill')).toBeTruthy();
 });
 
-it('opens from the screen reader by the zoom control’s “Show menu” action', () => {
+it('opens from the screen reader by the zoom control’s “Show menu” action', async () => {
   const { adapter } = platform();
-  const screen = draw(adapter);
+  const screen = await draw(adapter);
   const zoom = screen.getByTestId('controls-zoom');
   expect(zoom.props.accessibilityActions).toEqual(
     expect.arrayContaining([{ name: 'longpress', label: 'Show menu' }]),
