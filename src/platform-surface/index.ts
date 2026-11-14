@@ -50,6 +50,7 @@ export type {
   PlatformKeyboard,
   PlatformMaterialProps,
   PlatformKeyEvent,
+  PlatformModifiers,
   PlatformMenu,
   PlatformMenuBar,
   PlatformMenuAction,

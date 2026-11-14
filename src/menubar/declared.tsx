@@ -28,7 +28,9 @@
 import {
   type ComponentType,
   Fragment,
+  cloneElement,
   isValidElement,
+  type ReactElement,
   type ReactNode,
   createContext,
   useContext,
@@ -43,7 +45,14 @@ import { openHref } from '../hooks/link-activation';
 import { MenuRadioGroupProvider, useMenuRadioGroup } from '../floating/context';
 import { useControllableState } from '../hooks/use-controllable-state';
 import type { MenuRowParts } from '../floating/types';
-import { type Chord, formatChord, parseChord } from '../kbd/chord';
+import {
+  type Chord,
+  formatChord,
+  isApplePlatform,
+  modifiersHeld,
+  parseChord,
+  parseModifiers,
+} from '../kbd/chord';
 import { usePlatformEditing } from '../platform-surface/context';
 import { useIsomorphicLayoutEffect } from '../theme/use-isomorphic-layout-effect';
 import {
@@ -53,14 +62,18 @@ import {
   useMenubarScope,
 } from './context';
 import {
+  alternateOf,
+  alternatePlaces,
   type DescribedEntry,
   describeMenu,
   markMenubarHint,
   markMenubarPart,
+  places,
   textOf,
 } from './description';
 import { type MenuEntry, nextMenuEntryId } from './registry';
 import { actionShortcut, isMenuAction, responderOf, useEditAction } from './use-edit-action';
+import { useHeldModifiers } from './use-held-modifiers';
 import { useMenubarLeaving } from './viewport';
 import type {
   MenubarCheckboxItemProps,
@@ -136,6 +149,25 @@ export function useChord(shortcut: string | undefined): Chord | null {
   }, [shortcut]);
 }
 
+const warnedAlternates = new Set<string>();
+
+/** Warns once in development when an item's `alternate` names no modifiers. */
+function useAlternateWarning(alternate: string | undefined): void {
+  if (
+    alternate === undefined ||
+    process.env.NODE_ENV === 'production' ||
+    parseModifiers(alternate) !== null ||
+    warnedAlternates.has(alternate)
+  ) {
+    return;
+  }
+  warnedAlternates.add(alternate);
+  console.warn(
+    `[Bloom] Menubar: "${alternate}" is not a set of modifiers, so the item is not an alternate. ` +
+      'Write them out of Mod, Ctrl, Alt, Shift and Meta: "Alt", "Alt+Shift".',
+  );
+}
+
 function Slot({
   scope,
   position,
@@ -160,7 +192,7 @@ function Slot({
 export function DeclaredChildren({ children }: { children?: ReactNode }) {
   const scope = useMenubarScope();
   if (!scope) return <>{children}</>;
-  const slots: ReactNode[] = [];
+  const placed: { node: ReactNode; key: string }[] = [];
   const visit = (node: ReactNode, keyPrefix: string) => {
     if (Array.isArray(node)) {
       node.forEach((child, index) => {
@@ -172,19 +204,110 @@ export function DeclaredChildren({ children }: { children?: ReactNode }) {
       visit(node.props.children, `${keyPrefix}${node.key ?? ''}:`);
       return;
     }
-    const position = slots.length;
+    const position = placed.length;
     const key =
       isValidElement(node) && node.key != null
         ? `${keyPrefix}$${node.key}`
         : `${keyPrefix}${position}`;
-    slots.push(
-      <Slot key={key} scope={scope} position={position}>
-        {node}
-      </Slot>,
-    );
+    placed.push({ node, key });
   };
   visit(children, '');
-  return <>{slots}</>;
+  const alternates = alternatePlaces(placed.map(({ node }) => node));
+  return (
+    <>
+      {placed.map(({ node, key }, position) => (
+        <Slot key={key} scope={scope} position={position}>
+          {alternates[position] ? <Alternate of={node}>{node}</Alternate> : node}
+        </Slot>
+      ))}
+    </>
+  );
+}
+
+/**
+ * The modifiers an item shows with in place of the item before it, when it is an alternate placed
+ * after one (`alternatePlaces`); undefined for every other item.
+ */
+const AlternateContext = createContext<string | undefined>(undefined);
+
+/** An alternate's item, known as one: it registers its modifiers. */
+function Alternate({ of, children }: { of: ReactNode; children: ReactNode }) {
+  const props = isValidElement<{ alternate?: string }>(of) ? of.props : {};
+  return (
+    <AlternateContext.Provider value={alternateOf(props.alternate).alternate}>
+      {children}
+    </AlternateContext.Provider>
+  );
+}
+
+/**
+ * A drawn container's children with each item and its alternates as one row (`AlternateRow`); the
+ * children themselves when none of them is an alternate.
+ */
+function withAlternates(children: ReactNode): ReactNode {
+  const placed = places(children);
+  const alternates = alternatePlaces(placed);
+  if (!alternates.includes(true)) return children;
+  const out: ReactNode[] = [];
+  placed.forEach((node, position) => {
+    if (alternates[position]) return;
+    const key = isValidElement(node) && node.key != null ? `$${node.key}` : `@${position}`;
+    let next = position + 1;
+    while (alternates[next]) next += 1;
+    if (next === position + 1 || !isValidElement(node)) {
+      out.push(<Fragment key={key}>{node}</Fragment>);
+      return;
+    }
+    out.push(
+      <AlternateRow
+        key={key}
+        item={node}
+        alternates={placed.slice(position + 1, next) as ReactElement<{ alternate?: string }>[]}
+      />,
+    );
+  });
+  return out;
+}
+
+/**
+ * An item and its alternates, drawn as ONE row of the open menu, as a Mac's menu draws an item
+ * and its `isAlternate` siblings: the first alternate whose modifiers are held now, else the item.
+ * The row keeps its place in the menu's keyboard navigation as it swaps (it is one element of one
+ * type, so React keeps it), and registers nothing itself: the item and each alternate are known to
+ * the bar headless beside it, each with its own entry and shortcut, whichever is drawn.
+ */
+function AlternateRow({
+  item,
+  alternates,
+}: {
+  item: ReactElement;
+  alternates: readonly ReactElement<{ alternate?: string }>[];
+}) {
+  const scope = useMenubarScope();
+  const held = useHeldModifiers();
+  const apple = isApplePlatform();
+  const shown =
+    alternates.find((alternate) => {
+      const modifiers = parseModifiers(alternate.props.alternate ?? '');
+      return modifiers !== null && modifiersHeld(modifiers, held, apple);
+    }) ?? item;
+  const known = useMemo(() => scope && { ...scope, headless: true, owner: undefined }, [scope]);
+  return (
+    <>
+      {known ? (
+        <MenubarScopeProvider value={known}>
+          {item}
+          {alternates.map((alternate, index) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: an alternate's place after its item is its identity.
+            <Alternate key={index} of={alternate}>
+              {alternate}
+            </Alternate>
+          ))}
+        </MenubarScopeProvider>
+      ) : null}
+      <MenubarScopeProvider value={null}>{cloneElement(shown, { key: 'shown' })}</MenubarScopeProvider>
+    </>
+  );
 }
 
 const subscribeNowhere = () => () => undefined;
@@ -264,6 +387,7 @@ export function StaticDeclaration({ children }: { children?: ReactNode }) {
         ...(entry.checked === undefined ? null : { checked: entry.checked }),
         ...(entry.keepOpen === undefined ? null : { keepOpen: entry.keepOpen }),
         ...(entry.action ? { action: entry.action } : null),
+        ...(entry.alternate ? { alternate: entry.alternate } : null),
         run: entry.runs ? runFor(entry.key) : undefined,
       });
     }
@@ -333,7 +457,7 @@ export function createMenubarContent(
         {menu.open || scope?.declareClosed === false ? null : (
           <StaticDeclaration>{props.children}</StaticDeclaration>
         )}
-        <Panel {...props} />
+        <Panel {...props}>{withAlternates(props.children)}</Panel>
       </>
     );
   }
@@ -367,9 +491,11 @@ export function createMenubarRows(rows: MenuRowParts): MenubarRowParts {
   const isHint = (type: unknown) => type === Shortcut;
   const hint = (chord: Chord | null) => (chord ? <Shortcut>{formatChord(chord)}</Shortcut> : null);
 
-  function MenubarItem({ shortcut, action, ...props }: MenubarItemProps) {
+  function MenubarItem({ shortcut, action, alternate: declared, ...props }: MenubarItemProps) {
     const scope = useMenubarScope();
     const chord = useChord(shortcut ?? actionShortcut(action));
+    useAlternateWarning(declared);
+    const alternate = useContext(AlternateContext);
     const { onPress, href } = props;
     const handler = onPress ?? (href != null ? () => openHref(href) : undefined);
     // An editing action goes to the focused text field first (use-edit-action.ts); the
@@ -387,6 +513,7 @@ export function createMenubarRows(rows: MenuRowParts): MenubarRowParts {
         shortcut: chord,
         keepOpen: props.keepOpen ?? false,
         ...(menuAction ? { action: menuAction } : null),
+        ...(alternate ? { alternate } : null),
       },
       item.run,
     );
@@ -477,7 +604,7 @@ export function createMenubarRows(rows: MenuRowParts): MenubarRowParts {
 
   function MenubarGroup(props: MenubarGroupProps) {
     const scope = useMenubarScope();
-    if (!scope?.headless) return <rows.Group {...props} />;
+    if (!scope?.headless) return <rows.Group {...props}>{withAlternates(props.children)}</rows.Group>;
     return <DeclaredChildren>{props.children}</DeclaredChildren>;
   }
   MenubarGroup.displayName = 'MenubarGroup';
@@ -552,7 +679,7 @@ export function createMenubarRows(rows: MenuRowParts): MenubarRowParts {
     return (
       <>
         {open ? null : <StaticDeclaration>{props.children}</StaticDeclaration>}
-        <rows.SubContent {...props} />
+        <rows.SubContent {...props}>{withAlternates(props.children)}</rows.SubContent>
       </>
     );
   }

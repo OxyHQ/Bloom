@@ -461,19 +461,23 @@ export interface PlatformMenuBar {
   onActivate(listener: (id: string) => void): () => void;
 }
 
-/**
- * A key press as the platform reports it: W3C `KeyboardEvent`'s fields, the
- * shape React Native's own key events carry.
- */
-export interface PlatformKeyEvent {
-  /** `KeyboardEvent.key`: `n`, `N`, `Enter`, `ArrowDown`, … */
-  readonly key: string;
-  /** `KeyboardEvent.code`, the physical key (`KeyN`), when the platform knows it. */
-  readonly code?: string;
+/** The modifier keys held: W3C `KeyboardEvent`'s and `PointerEvent`'s flags. */
+export interface PlatformModifiers {
   readonly altKey: boolean;
   readonly ctrlKey: boolean;
   readonly metaKey: boolean;
   readonly shiftKey: boolean;
+}
+
+/**
+ * A key press as the platform reports it: W3C `KeyboardEvent`'s fields, the
+ * shape React Native's own key events carry.
+ */
+export interface PlatformKeyEvent extends PlatformModifiers {
+  /** `KeyboardEvent.key`: `n`, `N`, `Enter`, `ArrowDown`, … */
+  readonly key: string;
+  /** `KeyboardEvent.code`, the physical key (`KeyN`), when the platform knows it. */
+  readonly code?: string;
   /** Held down and repeating. */
   readonly repeat?: boolean;
   /** Part of an input method's composition. */
@@ -494,6 +498,14 @@ export interface PlatformKeyboard {
    * then does not deliver it to the focused view. Returns the unsubscribe.
    */
   subscribe(listener: (event: PlatformKeyEvent) => boolean): () => void;
+  /**
+   * Calls `listener` with the modifiers held each time they change, as a Mac's
+   * `flagsChanged:`, and with those held as the window takes the keyboard.
+   * Optional: an open menu shows an item's alternate (`MenubarItemProps`'
+   * `alternate`) the instant Option goes down or up with it, and without it
+   * only as a key is pressed with Option held. Returns the unsubscribe.
+   */
+  subscribeModifiers?(listener: (held: PlatformModifiers) => void): () => void;
 }
 
 /**
