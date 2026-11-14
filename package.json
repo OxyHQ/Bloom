@@ -11,7 +11,8 @@
   "sideEffects": [
     "**/hooks/use-prefers-reduced-motion.*",
     "**/theme/init-css-interop.*",
-    "**/toast/use-stack-hover.*"
+    "**/toast/use-stack-hover.*",
+    "**/window/layouts.*"
   ],
   "publishConfig": {
     "access": "public"
