@@ -4,6 +4,7 @@
  * two one row of the open menu, each known to the bar with its own entry and
  * shortcut, read from the declaration while the menu is closed.
  */
+import { Fragment } from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import * as ReactNative from 'react-native';
 
@@ -72,7 +73,9 @@ function rows(chosen: (row: string) => void) {
     <MenubarItem key="restart-now" alternate="Alt" onPress={() => chosen('Restart, at once')}>
       Restart
     </MenubarItem>,
-    <MenubarSeparator key="s" />,
+    <Fragment key="s">
+      <MenubarSeparator />
+    </Fragment>,
     <MenubarItem key="log-out" shortcut="Mod+Shift+Q" onPress={() => chosen('Log Out, asked')}>
       Log Out…
     </MenubarItem>,
@@ -84,7 +87,9 @@ function rows(chosen: (row: string) => void) {
     >
       Log Out
     </MenubarItem>,
-    <MenubarSeparator key="s2" />,
+    <Fragment key="s2">
+      <MenubarSeparator />
+    </Fragment>,
     // After a separator: no item to replace, so an ordinary item.
     <MenubarItem key="lock" alternate="Alt" onPress={() => chosen('Lock')}>
       Lock Screen
