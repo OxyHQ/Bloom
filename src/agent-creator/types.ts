@@ -15,7 +15,18 @@ export type AgentCreatorAgent = {
   name: string;
   label: string;
   description: string;
+  /**
+   * The character's parts (shape, eyes, eyewear, accessory, preset, eye spacing). The creator
+   * hands it back without paint: the agent's colour is `color`, never the character's.
+   */
   avatar: AvatarCharacter;
+  /**
+   * The agent's colour: its ACCOUNT's (`User.color` in Oxy), a Bloom colour preset key or a
+   * `#rrggbb`. It paints the avatar, and the colour control changes it: `onChange` with a new
+   * `color`, always a `#rrggbb` lifted to the avatar skin floor, so the stored colour is exactly
+   * the drawn one.
+   */
+  color: string;
   preferences?: AgentPreferences;
 };
 export type AgentVoice = { id: string; name: string; language: string };

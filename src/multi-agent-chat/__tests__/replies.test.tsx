@@ -12,6 +12,7 @@ function fixture() {
         label: id,
         description: '',
         avatar: { preset: 'blue_beret' },
+        color: 'teal',
       })),
       chats: [
         { id: 'group', title: 'Group', agentIds: ['a', 'b'], messages: [] },

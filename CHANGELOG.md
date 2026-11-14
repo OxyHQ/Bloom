@@ -1,5 +1,80 @@
 # Changelog
 
+## 21.4.0
+
+### Changed
+
+- **`react-native-css` is a peer (`>=3.1.0-rc.0`), no longer a hard dependency.** Its own required peers (`react-native`, `@expo/metro-config`) made every install of Bloom bring React Native and Expo, even a server's installed with peers omitted, and an app on another release candidate (Mention's 3.1.0-rc.1) got two copies. Apps already install it with NativeWind, and package managers install a required peer by themselves, so nothing changes for them. A server that uses only a server-safe entry (`@oxy.so/bloom/agent-avatar/svg`, whose import graph reaches no React, React Native or Expo) installs Bloom with peers omitted (`bun install --omit=peer`) and gets none of them; a test keeps every hard dependency, and its required peers, free of app-only packages.
+
+## 21.3.1
+
+### Fixed
+
+- **A picture's background is a much, much lighter tint of the colour, for light colours too.** `avatarPictureBackground` stood a light body (a lime, a pure green) on a dark olive, because it asked the light tint for 2.4:1 contrast. It is now tone 97 of the body's softened hue whenever that still shows the character (1.25:1), and a darker tint only for a body nearly as light as that (a pale yellow, a white).
+
+## 21.3.0
+
+### Added
+
+- **`@oxy.so/bloom/agent-avatar/svg`: a character as an SVG document, for a server.** No React, no native module: `renderAgentAvatarSvg(character, { size, background, margin })` draws the frame `VectorStaticPortrait` draws (`loadVectorPortrait`, through the same crop), from the full catalog unless a `catalog` is passed, and `vectorFrameToSvg` serializes any frame. `renderAgentAvatarPicture(character, color)` is a profile picture: the character painted in an account colour (a preset key or a hex), centred with room for a circular crop, on a much lighter tint of that colour from Bloom's tonal palettes (`avatarPictureBackground`); a body too light for a light tint to show it stands on the darkest tint that keeps a 2.4:1 contrast instead. One drawing for every place a character leaves an app as an image (Gemies renders a gemie's Telegram bot photo with it). The subpath loads in Bun and through `require`; it also re-exports the pure `avatarCharacterInColor` and `parseAvatarCharacter`.
+
+## 21.2.0
+
+### Changed
+
+- **An avatar fetches only the clips it draws.** The vector catalogue moves to pack format 2: each part's animation tracks are stored per clip (`idle`, `reaction`, `work`), each its own shared payload, losslessly (all 70 assets unpack to the same data as format 1; the catalogue goes from 30.56 to 29.06 MB as identical clip tracks now share a payload). An avatar loads its character at rest first (`VECTOR_REST_CLIPS`): the idle tracks and the geometry they draw. A mood is drawn on the idle clip, so the empty state's gemie shaking its head "no" needs nothing more, and a portrait reads only what its still frame draws. `reaction` and `work`, with the computer, hands and screens only `work` shows, are fetched the first time a gesture plays; the idle animation carries on until the gesture's tracks arrive, and an interactive avatar asks ahead when the pointer reaches it. In Gemies' web export the empty state of `/shows` and `/notifications` loads 135 KB brotli of avatar data instead of 281 KB, and `/shows` makes 31 requests instead of 52. Format 2 is internal to Bloom's generated catalogue; nothing to change in an app.
+
+### Added
+
+- **`VectorAssetLoader` methods and `VectorAssetImport` take the clips to read** (optional, `readonly VectorAction[]`). A custom loader or importer that ignores them hands back the whole asset, as before.
+
+## 21.1.1
+
+### Fixed
+
+- **The custom-colour swatch no longer adds ~262 KB to every app that loads the agent editor.** Its rainbow (light and dark) was embedded as two 390 × 390 px PNGs, 346 KB of base64 that does not compress again (~262 KB gzipped), for a swatch drawn at 26 px; Allo and Homiio raised their bundle budgets for it. They are now 96 × 96 px (3.7× the swatch, past a 3× screen): 8.5 KB gzipped for both, matching the originals to within 42–47 dB PSNR at 26, 52 and 78 px, so the picker looks the same. `rainbow-artwork-size.test.ts` holds the module to 16 KB gzipped and the bitmaps to at most 4× the swatch.
+
+## 21.1.0
+
+### Added
+
+- **`@oxy.so/bloom/multi-agent-chat/selected-agent-preview`**, an entry for `SelectedAgentPreview` and `previewAvatarGeometry` alone. The `multi-agent-chat` barrel is the whole multi-agent template, and Gemies imported the preview from it (its group picker and `@gemies/sdk`'s group welcome): in its web export the barrel put 149,484 B of `multi-agent-chat` in the chunk every route loads first, and 9,309 B with this entry.
+
+### Changed
+
+- **The offline portraits load on first use.** `vector-static` (312 KB of shape and eye paths) is drawn only by the agent creator's shape arc and eye picker, but `VectorCharacterAvatar` imported it for its eye-preview branch, so every app that shows an avatar carried it in its first paint. Both callers now read it through `use-static-portraits` (one `import()`, cached): it is its own chunk, fetched when the creator first draws a portrait. The portrait keeps its size while it loads, as it did for no eyes. In Gemies' web export the two changes take the first-paint chunk from 7,814,752 to 7,332,136 B. `static-portraits-lazy.test.ts` keeps any other module from importing it.
+
+## 21.0.0
+
+### Breaking
+
+- **`AgentCreatorProps.colors` is removed.** Nothing restricts the agent's colour to presets: an account colour can be any colour, so a host no longer passes the list of colours its account service accepts.
+
+### Changed
+
+- **The free colour picker is back, and it writes the agent's account colour.** The creator's colour control is the one before 20.0.0 again: the nine glossy named swatches and the custom `#rrggbb` picker behind the rainbow swatch (saturation/brightness field, hue rail, hex entry), with their messages in every locale. Choosing either calls `onChange({ ...agent, color })` with the hex lifted to the avatar skin floor (`normalizeAvatarSkinColor`), so the account stores exactly the colour the avatar is drawn in. `agent.color` is any account colour, a preset key or a `#rrggbb`: a named swatch is active when its lifted hex equals the colour's body hex, the custom swatch when it equals none of them, and the custom picker opens on that hex. The character stays paintless: it is drawn with `avatarCharacterInColor(avatar, agent.color)` and handed back without `color`/`bodyColor`. A colour change is not a character edit and stays out of undo.
+- **A hex is an ordinary account colour.** `avatarCharacterInColor` and `AvatarAccount.color` take a `#rrggbb` (or `#rgb`) as readily as a preset key, and a hex round-trips: `avatarCharacterInColor(c, '#ff8b67')` paints `normalizeAvatarSkinColor('#ff8b67')`. `MultiAgentChat` restores any colour Bloom can draw.
+
+## 20.0.0
+
+### Breaking
+
+- **An agent's colour is its account's colour, not its character's paint.** `AgentCreatorAgent` gains a required `color`: a Bloom colour preset key, what Oxy stores as the account's `User.color`. The editor draws every character in it and hands back characters with their parts only: `agent.avatar` never carries `color` or `bodyColor` again, undo and redo included, and a change of paint alone is no edit. A host stores the character's parts and the colour where its account keeps it. `MultiAgentChat`'s agents are `AgentCreatorAgent`s and carry a `color` too; a workspace saved without one restores in `blue`.
+- **The paint picker is gone; one colour control picks the account colour.** The nine named character paints and the custom `#rrggbb` picker (saturation/brightness field, hue rail, hex entry) are replaced by a `ColorSwatchPicker` of colour presets, each named by its `displayName`. `AgentCreatorProps.colors` (default `FREE_COLOR_NAMES`) is what it offers: a host passes exactly what its account service accepts. Choosing one calls `onChange` with the new `color`. The creator's bindings no longer take `Popover`, `PopoverTrigger` and `PopoverContent`.
+- **The paint picker's message keys are removed** from `AgentCreatorMessages` and every locale: `customColor`, `hexColor`, `hue`, `saturationBrightness`, `increaseBrightness`, `decreaseBrightness`, `increaseHue`, `decreaseHue`, `saturationBrightnessValue`, `avatarColorLabel` and `colors`. `color` now reads "Color" (it labels the agent's colour, not the avatar's).
+
+### Added
+
+- **`avatarCharacterInColor(character, color)`** (`@oxy.so/bloom/agent-avatar`): a character painted in its account's colour. `color` is `User.color`, a colour preset key or a legacy `#rgb`/`#rrggbb`; the body takes the preset's identity seed lifted to the skin floor (`bodyColor`), every part is kept and `color` is dropped. A colour that does not resolve returns the character unchanged. It is the one place a colour preset becomes an avatar paint, so a bot is drawn in the colour its profile is themed with.
+- **`AvatarAccount.color`**: `<Avatar account={user} />` draws a `kind: 'bot'` account's `character` painted in the account's `color`, so a bot looks the colour of its account wherever its account is drawn. Without a colour the character's own paint applies, as before.
+
+## 19.11.0
+
+### Added
+
+- **`AgentAvatar` says "no": `mood="sad"`.** A held state for an empty or not-found state, a refusal, something that could not be done. As the mood starts (or the avatar mounts sad) the character shakes its head three times in 1.4 s, the widest turn first, and then stays downcast on top of its idle: looking down and aside, sunk, slightly deflated, head tilted, lids heavy, still breathing and blinking. Back to `neutral` (the default) it eases out, and a neutral avatar draws exactly as before. It is procedural, so every preset, edited character and flat form has it; reduced motion and `paused` show the settled pose with no shake (`vector-mood.test.ts` on every template, `AgentAvatar-mood.test.tsx`). Exports the `AgentAvatarMood` type; Storybook **Agent Avatar / Sad**.
+- **`EMPTY_STATE_GEOMETRY[variant].illustration`**: the box for a figure passed as `EmptyState`'s `illustration` (112, or 72 at the panel rung), so an app showing an agent's avatar there does not pick its own size. Storybook **Empty State / Agent Not Found** pairs it with the sad avatar.
+
 ## 19.10.3
 
 ### Fixed

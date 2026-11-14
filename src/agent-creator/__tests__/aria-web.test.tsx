@@ -5,6 +5,7 @@ import { CharacterRuntimeFixture } from './support/character-runtime-fixture';
 import { Field } from '../../field';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
 import { AgentCreator } from '../AgentCreator.web';
+import { normalizeAvatarSkinColor } from '../../agent-avatar/skin-color';
 import { CustomColorPicker } from '../CustomColorPicker';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 // This suite measures real DOM controls; the SVG renderer is covered separately by browser checks.
@@ -42,7 +43,8 @@ it('announces selected avatar colors and profile fields through real react-nativ
           name: 'Designer',
           label: 'Design',
           description: '',
-          avatar: { preset: 'blue_beret', shape: 'rounded_diamond', color: 'blue' },
+          avatar: { preset: 'blue_beret', shape: 'rounded_diamond' },
+          color: '#4778ff',
           preferences: { voice: 'local', speed: 1, language: 'en', notifications: true },
         }}
         onChange={() => {}}
@@ -72,6 +74,7 @@ it('offers eye styles without an eye-placement control, including saved spacing'
     label: '',
     description: '',
     avatar: { preset: 'lime_frog' as const, eyes: 'todd' as const, eyeSpacing: 1.23 },
+    color: 'green',
   };
   const onChange = jest.fn();
   render(
@@ -130,6 +133,7 @@ it('uses the requested locale for drawn and announced editor copy', () => {
         label: '',
         description: '',
         avatar: { preset: 'blue_beret' },
+        color: 'teal',
       }}
       onChange={() => {}}
     />,
@@ -139,13 +143,14 @@ it('uses the requested locale for drawn and announced editor copy', () => {
   expect(container.textContent).toContain('Notificaciones');
 });
 
-it('announces a custom body color and returns to a named color through the shared palette', () => {
+it('announces a custom account colour and returns to a named one through the shared palette', () => {
   const agent = {
     id: 'beta',
     name: 'Felipe',
     label: '',
     description: '',
-    avatar: { preset: 'blue_beret' as const, bodyColor: '#123456' },
+    avatar: { preset: 'blue_beret' as const },
+    color: '#123456',
   };
   const onChange = jest.fn();
   render(
@@ -158,17 +163,8 @@ it('announces a custom body color and returns to a named color through the share
   expect(custom.getAttribute('aria-pressed')).toBe('true');
   expect(blue.getAttribute('aria-pressed')).toBe('false');
   act(() => blue.dispatchEvent(new MouseEvent('click', { bubbles: true })));
-  expect(onChange).toHaveBeenLastCalledWith({
-    ...agent,
-    avatar: {
-      preset: 'blue_beret',
-      shape: 'six_lobed_flower',
-      eyes: 'oval',
-      eyewear: 'none',
-      accessory: 'felipe_beret',
-      color: 'blue',
-    },
-  });
+  // The account colour changes; the character is handed back as it was, without paint.
+  expect(onChange).toHaveBeenLastCalledWith({ ...agent, color: '#4778ff' });
 });
 
 it.each([
@@ -178,14 +174,15 @@ it.each([
   ['#0000ff', '#4852ff', 'rgb(72, 82, 255)'],
   ['#4778ff', '#4778ff', 'rgb(71, 120, 255)'],
 ])(
-  'uses permitted SVG eye-wheel paint without mutating saved %s',
-  (bodyColor, normalized, background) => {
+  'paints the SVG eye wheel in a %s account colour, lifted to the skin floor',
+  (color, normalized, background) => {
     const agent = {
       id: 'color-preview',
       name: 'Preview',
       label: '',
       description: '',
-      avatar: { preset: 'lime_frog' as const, bodyColor, eyes: 'todd' as const },
+      avatar: { preset: 'lime_frog' as const, eyes: 'todd' as const },
+      color,
     };
     const onChange = jest.fn();
     render(
@@ -195,13 +192,12 @@ it.each([
     );
     const eye = container.querySelector<HTMLElement>('[role="button"][aria-label="Clippo"]')!;
     expect(getComputedStyle(eye).backgroundColor).toBe(background);
-    expect(agent.avatar.bodyColor).toBe(bodyColor);
+    expect(normalizeAvatarSkinColor(color)).toBe(normalized);
     act(() => eye.dispatchEvent(new MouseEvent('click', { bubbles: true })));
-    expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        avatar: expect.objectContaining({ bodyColor: normalized, eyes: 'clippo' }),
-      }),
-    );
+    const emitted = onChange.mock.lastCall![0];
+    expect(emitted.color).toBe(color);
+    expect(emitted.avatar).toMatchObject({ eyes: 'clippo' });
+    expect(emitted.avatar).not.toHaveProperty('bodyColor');
   },
 );
 

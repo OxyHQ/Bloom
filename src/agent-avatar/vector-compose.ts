@@ -7,6 +7,10 @@ import {
 import type { ResolvedAvatarCharacter } from './character';
 import { CHARACTER_COLORS } from './character-colors';
 import type { VectorData, VectorPart, VectorAction, VectorAssetLoader } from './vector-types';
+import { VECTOR_ACTIONS } from './vector-pack';
+
+/** What a character at rest draws: its idle clip. A gesture loads the rest when it first plays. */
+export const VECTOR_REST_CLIPS: readonly VectorAction[] = ['idle'];
 type Matrix = number[];
 type Track = NonNullable<VectorData['clips']['idle']['parts'][number]>;
 const identity = () => [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
@@ -593,8 +597,9 @@ function seatLegacyAssemblies(data: VectorData, accessory: string): VectorData {
 async function composeVectorGeometry(
   character: ResolvedAvatarCharacter,
   loader: VectorAssetLoader,
+  clips: readonly VectorAction[],
 ): Promise<VectorData> {
-  const template = await loader.template(character);
+  const template = await loader.template(character, clips);
   if (template)
     return seatLegacyAssemblies(sizedShapeFace(template, character.shape), character.accessory);
   // Every asset the character names starts loading now, side by side. On the web each one is its
@@ -602,12 +607,13 @@ async function composeVectorGeometry(
   // shape, then its eyes, eyewear and accessory, then the circle the eyes are fitted against.
   // Bot eyes wait for the shape, which decides whether they are drawn at all (`preserveEyes`).
   const eyesKnown = character.eyes !== 'none' && character.eyes !== 'bot';
-  const shapeAsset = loader.shape(character.shape);
-  const eyesAsset = eyesKnown ? loader.eyes(character.eyes) : undefined;
-  const circleAsset = eyesKnown ? loader.shape('circle') : undefined;
-  const eyewearAsset = character.eyewear !== 'none' ? loader.eyewear(character.eyewear) : undefined;
+  const shapeAsset = loader.shape(character.shape, clips);
+  const eyesAsset = eyesKnown ? loader.eyes(character.eyes, clips) : undefined;
+  const circleAsset = eyesKnown ? loader.shape('circle', clips) : undefined;
+  const eyewearAsset =
+    character.eyewear !== 'none' ? loader.eyewear(character.eyewear, clips) : undefined;
   const accessoryAsset =
-    character.accessory !== 'none' ? loader.accessory(character.accessory) : undefined;
+    character.accessory !== 'none' ? loader.accessory(character.accessory, clips) : undefined;
   // Each is awaited below, or dropped when the shape fails first; never an unhandled rejection.
   for (const pending of [eyesAsset, circleAsset, eyewearAsset, accessoryAsset])
     void pending?.catch(() => {});
@@ -688,7 +694,7 @@ async function composeVectorGeometry(
     selections.push({
       role: 'eye',
       id: character.eyes,
-      data: eyesAsset ?? loader.eyes(character.eyes),
+      data: eyesAsset ?? loader.eyes(character.eyes, clips),
     });
   if (eyewearAsset)
     selections.push({
@@ -731,7 +737,7 @@ async function composeVectorGeometry(
       group = bounds(donor, selected),
       donorFace = bounds(donor, indices(donor, 'eye'));
     const facial = role === 'eye' || role === 'eyewear';
-    const circle = await (circleAsset ?? loader.shape('circle'));
+    const circle = await (circleAsset ?? loader.shape('circle', clips));
     const finalEyes = indices(result, 'eye');
     const fittedFace = role === 'eyewear' && finalEyes.length ? bounds(result, finalEyes) : face;
     const targetPair = eyePair(
@@ -1117,24 +1123,33 @@ export function vectorGeometryKey(character: ResolvedAvatarCharacter): string {
   ]);
 }
 const geometryCaches = new WeakMap<VectorAssetLoader, Map<string, Promise<VectorData>>>();
-/** Bounded per-loader cache also coalesces concurrent palette edits while donors load. */
+/**
+ * Bounded per-loader cache also coalesces concurrent palette edits while donors load.
+ *
+ * `clips` is what will be drawn: a character at rest asks for `['idle']` (`VECTOR_REST_CLIPS`) and
+ * gets its idle tracks and the geometry they draw, without its gestures' tracks or the computer
+ * and hands only `work` shows; the same character asks for every clip when a gesture first plays.
+ * Each set is cached apart. Without `clips`, every clip, as before.
+ */
 export function loadVectorGeometry(
   character: ResolvedAvatarCharacter,
   loader: VectorAssetLoader,
+  clips: readonly VectorAction[] = VECTOR_ACTIONS,
 ): Promise<VectorData> {
   let cache = geometryCaches.get(loader);
   if (!cache) {
     cache = new Map();
     geometryCaches.set(loader, cache);
   }
-  const key = vectorGeometryKey(character);
+  const wanted = [...new Set(clips)].sort();
+  const key = `${vectorGeometryKey(character)}|${wanted.join(',')}`;
   const known = cache.get(key);
   if (known) {
     cache.delete(key);
     cache.set(key, known);
     return known;
   }
-  const pending = composeVectorGeometry(character, loader);
+  const pending = composeVectorGeometry(character, loader, wanted);
   cache.set(key, pending);
   if (cache.size > 24) cache.delete(cache.keys().next().value!);
   void pending.catch(() => {
@@ -1146,6 +1161,7 @@ export function loadVectorGeometry(
 export async function composeVectorCharacter(
   character: ResolvedAvatarCharacter,
   loader: VectorAssetLoader,
+  clips: readonly VectorAction[] = VECTOR_ACTIONS,
 ): Promise<VectorData> {
-  return paintVectorCharacter(await loadVectorGeometry(character, loader), character);
+  return paintVectorCharacter(await loadVectorGeometry(character, loader, clips), character);
 }

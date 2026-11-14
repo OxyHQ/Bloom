@@ -13,7 +13,7 @@ import { useMessages, formatMessage } from '../locale/messages';
 import { StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import type { Agent } from './data';
+import { agentCharacter, type Agent } from './data';
 import { MULTI_AGENT_CHAT_MESSAGES } from './messages';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
@@ -87,7 +87,7 @@ function PreviewAvatar({
       style={[{ position: 'absolute', left: 0, top: 0, width: size, height: size }, animated]}
     >
       <AvatarSnapshotObserver.Provider value={flights.snapshot(key)}>
-        <AgentAvatar character={agent.avatar} size={size} />
+        <AgentAvatar character={agentCharacter(agent)} size={size} />
       </AvatarSnapshotObserver.Provider>
     </AnimatedView>
   );

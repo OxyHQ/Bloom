@@ -1,12 +1,14 @@
 import { normalizeAvatarSkinColor } from '../skin-color';
 import {
   type AvatarCharacter,
+  avatarCharacterInColor,
   avatarCharacterOf,
   parseAvatarCharacter,
   resolveAvatarCharacter,
   updateAvatarCharacter,
 } from '../character';
 import { characterFromLegacy } from '../legacy-character';
+import { APP_COLOR_PRESETS } from '../../theme/color-presets';
 
 describe('resolveAvatarCharacter', () => {
   it('fills every part and the paint from a preset', () => {
@@ -230,4 +232,64 @@ it('accepts retired bulb saves but resolves them without the accessory', () => {
   expect(
     avatarCharacterOf(resolveAvatarCharacter({ preset: 'gus', accessory: 'orb' })).accessory,
   ).toBe('none');
+});
+
+describe('avatarCharacterInColor', () => {
+  const parts: AvatarCharacter = {
+    shape: 'heart',
+    eyes: 'oval',
+    eyewear: 'none',
+    accessory: 'bow',
+  };
+
+  it('paints the body in a colour preset, lifted to the skin floor', () => {
+    expect(avatarCharacterInColor(parts, 'lagoon')).toEqual({
+      ...parts,
+      bodyColor: normalizeAvatarSkinColor(APP_COLOR_PRESETS.lagoon.hex),
+    });
+    // A dark seed is lifted, so the body never drops under the skin floor.
+    expect(avatarCharacterInColor(parts, 'teal').bodyColor).toBe(
+      normalizeAvatarSkinColor(APP_COLOR_PRESETS.teal.hex),
+    );
+  });
+
+  it('paints a hex account colour, short or long, case-insensitively', () => {
+    expect(avatarCharacterInColor(parts, '#4778FF').bodyColor).toBe('#4778ff');
+    expect(avatarCharacterInColor(parts, '#fff').bodyColor).toBe('#ffffff');
+  });
+
+  it('round-trips a hex: the colour an editor writes is the paint it draws', () => {
+    expect(avatarCharacterInColor(parts, '#ff8b67')).toEqual({
+      ...parts,
+      bodyColor: normalizeAvatarSkinColor('#ff8b67'),
+    });
+    // A dark hex is lifted once; writing the lifted one back paints the same body.
+    const lifted = normalizeAvatarSkinColor('#123456');
+    expect(avatarCharacterInColor(parts, '#123456').bodyColor).toBe(lifted);
+    expect(avatarCharacterInColor(parts, lifted).bodyColor).toBe(lifted);
+  });
+
+  it('replaces the character’s own paint and keeps every part of a preset character', () => {
+    const felipe: AvatarCharacter = { preset: 'blue_beret', accessory: 'none', color: 'orchid' };
+    const painted = avatarCharacterInColor(felipe, 'mint');
+    expect(painted).toEqual({
+      preset: 'blue_beret',
+      accessory: 'none',
+      bodyColor: normalizeAvatarSkinColor(APP_COLOR_PRESETS.mint.hex),
+    });
+    expect(resolveAvatarCharacter(painted)).toMatchObject({
+      shape: 'six_lobed_flower',
+      accessory: 'none',
+      paint: { bodyColor: normalizeAvatarSkinColor(APP_COLOR_PRESETS.mint.hex) },
+    });
+    expect(felipe).toEqual({ preset: 'blue_beret', accessory: 'none', color: 'orchid' });
+  });
+
+  it.each([null, undefined, '', 'not-a-preset', '#12345'])(
+    'returns the character unchanged for a colour that does not resolve (%s)',
+    (color) => {
+      const felipe: AvatarCharacter = { preset: 'blue_beret', color: 'orchid' };
+      expect(avatarCharacterInColor(felipe, color)).toBe(felipe);
+    },
+  );
 });

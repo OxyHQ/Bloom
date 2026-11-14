@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -11,7 +11,9 @@ import { RiSparklingFill } from '../icons/remix/RiSparklingFill';
 import { RiTranslate2 } from '../icons/remix/RiTranslate2';
 import { RiLightbulbLine } from '../icons/remix/RiLightbulbLine';
 import { RiShoppingBag3Line } from '../icons/remix/RiShoppingBag3Line';
+import { AgentAvatar } from '../agent-avatar';
 import { Text } from '../typography';
+import { EMPTY_STATE_GEOMETRY } from './constants';
 import { EmptyState } from './EmptyState';
 
 const meta: Meta<typeof EmptyState> = {
@@ -141,6 +143,31 @@ export const BrandedGreeting: Story = {
           { id: 'summarise', label: 'Summarise this document', onPress: () => {} },
           { id: 'ideas', label: 'Give me ten ideas', onPress: () => {} },
         ]}
+      />
+    </Page>
+  ),
+};
+
+/**
+ * An agent that is not there says so itself: its avatar in the rung's `illustration` box, shaking
+ * its head "no" and staying downcast (`mood="sad"`).
+ */
+export const AgentNotFound: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <Page>
+      <EmptyState
+        illustration={
+          <AgentAvatar
+            character={{ preset: 'blue_beret' }}
+            size={EMPTY_STATE_GEOMETRY.comfortable.illustration}
+            mood="sad"
+            accessibilityLabel=""
+          />
+        }
+        title="Agent not found"
+        description="It may have been deleted, or the link is wrong."
+        action={{ label: 'Browse agents', onPress: () => {} }}
       />
     </Page>
   ),

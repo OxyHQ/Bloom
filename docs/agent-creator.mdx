@@ -1,12 +1,12 @@
 ---
 title: AgentCreator
-description: Controlled agent profile editor with a live SVG avatar, eye orbit, shape arc, custom color, and speech preferences.
+description: Controlled agent profile editor with a live SVG avatar, eye orbit, shape arc, the agent's account colour, and speech preferences.
 order: 105
 ---
 
 # AgentCreator
 
-A controlled editor for an agent's name, label, description, appearance and response preferences. The host owns the agent, saving, and the surrounding panel. The implementation is shared across web, iOS and Android; the platform entry points bind Bloom's existing select and popover surfaces.
+A controlled editor for an agent's name, label, description, colour, appearance and response preferences. The host owns the agent, saving, and the surrounding panel. The implementation is shared across web, iOS and Android; the platform entry points bind Bloom's existing select and popover surfaces.
 
 ```tsx
 import { useState } from 'react';
@@ -15,6 +15,7 @@ import { AgentCreator, type AgentCreatorAgent } from '@oxy.so/bloom/agent-creato
 const [agent, setAgent] = useState<AgentCreatorAgent>({
   id: 'designer', name: 'Designer', label: 'Design', description: '',
   avatar: { preset: 'blue_beret' },
+  color: 'lagoon',
 });
 
 <AgentCreator agent={agent} onChange={setAgent} onClose={closePanel} />;
@@ -24,10 +25,15 @@ Mount under `BloomProvider` and give the editor a bounded height. Layout classes
 
 ## Appearance
 
-`agent.avatar` is an `AvatarCharacter` ([Agent Avatar](/docs/agent-avatar)): `{ preset }` or complete
-parts and a paint. Every control writes one edit through `updateAvatarCharacter`, so the
-saved character is always written out in full: choosing a body keeps the face, the hat and
-the paint, and a `color` and a `bodyColor` are never held together.
+`agent.avatar` is an `AvatarCharacter` ([Agent Avatar](/docs/agent-avatar)) without a colour of its
+own: `{ preset }` or complete parts. `agent.color` is the agent's colour, its ACCOUNT's (`User.color`
+in Oxy: a Bloom colour preset key or a `#rrggbb`, any colour), and it is the only colour the editor
+knows: every character it draws is painted in it (`avatarCharacterInColor`), and every character
+it hands back carries its parts and no paint (`color` and `bodyColor` are dropped, undo and redo
+included). A colour Bloom cannot resolve leaves a character's own paint (or its preset's); a
+character with neither is drawn in the first named swatch. Every part control writes one edit through
+`updateAvatarCharacter`, so the saved character is always written out in full: choosing a body
+keeps the face and the hat.
 
 The preview is 162px. The editor, eye chips and shape silhouettes use the shared production SVG
 renderer. No hosted character engine is required. The controlled `AvatarCharacter`
@@ -35,16 +41,16 @@ contract and the profile/preferences layout are unchanged.
 
 - **Shape arc:** 28 distinct silhouettes, including the 13 flat forms, in one 210px circular track (an unbounded index, spring, drag and wheel). Press a silhouette; arrows, Home and End select on web. Crossing between bodies retains the mounted avatar. RTL reverses horizontal movement.
 - **Eye orbit:** the 12 current eye styles, including Todd and Clippo. Each body defines its own eye positions and size, so every style follows the layout of the shape it sits on.
-- **Colors:** the named palette (`AVATAR_COLORS`) and a custom `#rrggbb` picker. The saved color remains the character paint; editing it retains the selected shape and parts.
+- **Colour:** nine glossy named swatches (`CHARACTER_COLORS`) and a custom `#rrggbb` picker behind the rainbow swatch. Either writes the ACCOUNT's colour: `onChange({ ...agent, color })` with the hex lifted to the avatar skin floor (`normalizeAvatarSkinColor`), so the stored colour is exactly the drawn one. Any colour can be chosen; nothing restricts it to presets. A named swatch is active when its lifted hex equals the body hex of `agent.color`; the custom swatch is active, showing that colour, when it equals none of the nine (a preset key, say). The custom picker opens on the body hex. A colour change is not a character edit and does not enter the undo history.
 - **Template, eyewear and accessory:** Bloom Select rows. Templates (`CHARACTER_TEMPLATES`) are creation choices, complete characters that start Felipe orange with sleepy eyes where the saved `blue_beret` preset is blue with oval ones; a character that is exactly one shows its name, and any edit shows Custom.
 
 Upright eye chips orbit at a 116px radius; dragging or a mouse wheel rotates the orbit. Hover, focus, backgrounding and reduced motion pause automatic movement. The shape selector uses a 210px circular track, an unbounded index, spring, drag and wheel geometry. Choose a silhouette by pressing it; keyboard arrows, Home and End select shapes on web. BloomProvider’s direction reverses horizontal movement in RTL.
 
 Appearance selection updates immediately. While the selected geometry is being prepared, a localized live status announces the work; an older asynchronous response cannot replace the latest selection. Only the two neighboring silhouette recipes are prepared during idle time, rather than loading the entire catalog.
 
-Undo and redo retain up to 50 immutable character snapshots without changing the name, description, or speech preferences. A continuous color drag is one edit. Restore original returns to the character at the start of this editing session and can itself be undone. Switching agent IDs or receiving a genuinely external character replacement starts a new baseline; controlled echoes and profile-only changes retain history. On web, Ctrl/Cmd+Z and redo shortcuts work inside the editor without intercepting text input undo.
+Undo and redo retain up to 50 immutable character snapshots without changing the name, description, colour, or speech preferences. Characters compare by their parts, so a change of paint alone is no edit. Restore original returns to the character at the start of this editing session and can itself be undone. Switching agent IDs or receiving a genuinely external character replacement starts a new baseline; controlled echoes and profile-only changes retain history. On web, Ctrl/Cmd+Z and redo shortcuts work inside the editor without intercepting text input undo.
 
-Nine glossy color presets and the shared custom picker edit both original and migrated bodies. The picker contains a saturation/brightness field, hue rail and hex entry. The visible field and every committed hex use the shared minimum skin lightness (L* 45); typing a darker hex shows its permitted normalized value. HSV state preserves the selected hue while dragging through gray; invalid hex input resets to the last emitted color. The sampled SVG field is memoized separately, so saturation/brightness dragging moves the thumb without rebuilding the color field. Choosing a named engine swatch clears its custom RGB override. Speech and appearance edits preserve the agent’s identity and unrelated fields.
+The custom picker contains a saturation/brightness field, hue rail and hex entry. The visible field and every committed hex use the shared minimum skin lightness (L* 45); typing a darker hex shows its permitted normalized value. HSV state preserves the selected hue while dragging through gray; invalid hex input writes nothing. The sampled SVG field is memoized separately, so saturation/brightness dragging moves the thumb without rebuilding the color field. A preset key paints the body its identity seed, lifted the same way, so the avatar is drawn in the colour the agent's profile is themed with. Speech, colour and appearance edits preserve the agent’s identity and unrelated fields.
 
 Equivalent legacy shape IDs share one editor choice. Opening a saved avatar only aliases its selected chip; it never rewrites its shape or template. Selecting a different silhouette writes the chosen canonical ID. Catalog comparison stories retain all saved IDs for compatibility inspection.
 
@@ -90,10 +96,12 @@ Fixed labels, hints and accessible control names use the `AGENT_CREATOR_MESSAGES
 
 Profile inputs, textarea, select, switch, segmented control, close control and popover reuse Bloom’s current primitives. Original layout and interaction class chains are retained. Bloom’s active palette and materials supply their colors. The custom HSV picker reads `Field` membership: disabling the enclosing field disables its gestures, keyboard updates and hex input; field errors and descriptions associate with its inputs.
 
-The original rainbow artwork and glossy color artwork are retained. Web applies the original shape mask and scroll blur; native uses SVG clipping and edge gradients for CSS effects its renderer cannot express. Native gesture hit areas remain rectangular, and native scroll fades do not apply a backdrop blur. These adaptations need device verification.
+The original rainbow artwork and glossy color artwork are retained.
+
+Web applies the original shape mask and scroll blur; native uses SVG clipping and edge gradients for CSS effects its renderer cannot express. Native gesture hit areas remain rectangular, and native scroll fades do not apply a backdrop blur. These adaptations need device verification.
 
 ## Validation boundary
 
-Tests verify profile and avatar edits preserve unrelated data, preference updates, host speech preview, color round trips, canonical shape choices, SVG rendering selection for every preview, and availability without a hosted engine. Jest does not execute gesture arbitration or the Reanimated frame loop; motion, wheel hit testing, custom picker dragging, and native speech providers require browser/device verification.
+Tests verify profile and avatar edits preserve unrelated data, preference updates, host speech preview, colour changes written as the account's hex, paintless characters, canonical shape choices, SVG rendering selection for every preview, and availability without a hosted engine. Jest does not execute gesture arbitration or the Reanimated frame loop; motion, wheel hit testing, custom picker dragging, and native speech providers require browser/device verification.
 
-Track listeners retain their DOM attachment and read current callbacks; changing profile text does not rebuild shape/eye choices. A controlled eight-move browser drag recorded 144 listener additions/removals before cleanup and 54 afterward on the field and hue rail combined. Those totals include gesture/RNW listeners; the editor track hook itself reattached zero listeners. The color-field DOM remained unchanged during the drag. These small timing samples do not establish a frame-rate improvement. Tests also cover callback replacement, wheel removal, disabled pending gestures, unmount cancellation and translated choice updates.
+Track listeners retain their DOM attachment and read current callbacks; changing profile text does not rebuild shape/eye choices. Tests also cover callback replacement, wheel removal, disabled pending gestures, unmount cancellation and translated choice updates.

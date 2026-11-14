@@ -108,6 +108,8 @@ const SUBPATHS = /** @type {const} */ ([
   // ships those and none of the other 60-odd; `docs/agent-avatar.mdx`.
   ['./agent-avatar/catalog', 'agent-avatar/catalog/index.ts'],
   ['./agent-avatar/catalog/*', 'agent-avatar/catalog/*.ts'],
+  // A character as an SVG document, for a server (no React): draws from the full catalog.
+  ['./agent-avatar/svg', 'agent-avatar/svg/index.ts'],
   // Avatars flying between places (web-forked: the layer is portaled).
   ['./avatar-flight', 'avatar-flight/index.ts'],
   // A sidebar of conversations (web-forked: the dropdown and context menu are).
@@ -115,6 +117,8 @@ const SUBPATHS = /** @type {const} */ ([
   ['./agent-creator', 'agent-creator/index.ts'],
   ['./project-board', 'project-board/index.ts'],
   ['./multi-agent-chat', 'multi-agent-chat/index.ts'],
+  // The selected-agents preview alone, without the multi-agent template it ships in.
+  ['./multi-agent-chat/selected-agent-preview', 'multi-agent-chat/selected-agent-preview.ts'],
   ['./agent-limits-card', 'agent-limits-card/index.ts'],
   ['./usage-card', 'usage-card/index.ts'],
   ['./subscription-plans', 'subscription-plans/index.ts'],

@@ -6,6 +6,11 @@ export interface EmptyStateGeometry {
   glyph: number;
   /** `IconCircle`'s rung. `lg` is 52, `xl` is 64. */
   circle: 'lg' | 'xl';
+  /**
+   * The box for a figure passed as `illustration`: an agent's avatar, a picture. Larger than the
+   * disc because a character has to be read (its face, its gesture), not just recognised.
+   */
+  illustration: number;
   /** Above and below the block. */
   paddingVertical: number;
   /** Between the mark, the text block, the children, the actions and the footer. */
@@ -32,6 +37,7 @@ export const EMPTY_STATE_GEOMETRY: Record<EmptyStateVariant, EmptyStateGeometry>
   comfortable: {
     glyph: 32,
     circle: 'xl',
+    illustration: 112,
     paddingVertical: 48,
     gap: 16,
     textGap: 6,
@@ -42,6 +48,7 @@ export const EMPTY_STATE_GEOMETRY: Record<EmptyStateVariant, EmptyStateGeometry>
   compact: {
     glyph: 24,
     circle: 'lg',
+    illustration: 72,
     paddingVertical: 24,
     gap: 12,
     textGap: 4,

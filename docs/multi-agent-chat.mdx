@@ -35,10 +35,14 @@ the chosen agents as one large avatar, a trio, or a ring from four up. Each avat
 fly into the empty chat and from there into the header's profile.
 
 ```tsx
-import { SelectedAgentPreview } from '@oxy.so/bloom/multi-agent-chat';
+import { SelectedAgentPreview } from '@oxy.so/bloom/multi-agent-chat/selected-agent-preview';
 
 <SelectedAgentPreview agents={agents} flights={flights} anchor="empty" />
 ```
+
+Import it from its own entry, `multi-agent-chat/selected-agent-preview`. The `multi-agent-chat`
+barrel is the whole template (its chat, sidebar, marketplace, agent creator and settings pages);
+a host that imported the preview from it linked ~140 KB of template it never drew.
 
 Without `onRespond`, the workspace returns sample responses. Each participant
 responds in conversation order. Stop cancels the request and reveal timers;
@@ -52,6 +56,11 @@ edits for host persistence. The workspace persists in `storage` — the same
 (`bloom:multi-agent-chat`; `null` disables it). `storage` defaults to
 `localStorage` on the web; native keeps session state unless one is passed.
 Invalid stored data falls back to the initial demo.
+
+An agent is an [`AgentCreatorAgent`](./agent-creator.mdx): its `avatar` holds the character's
+parts and its `color` (an account colour: a Bloom colour preset key or a `#rrggbb`) is its colour. Every avatar the workspace draws
+for an agent, the marketplace's bots included, is `avatarCharacterInColor(agent.avatar,
+agent.color)`. A workspace saved before agents had a colour restores them in `blue`.
 
 `defaultEditorId` initially opens an agent's editor on desktop. On compact
 layouts the editor becomes the selected panel; its back action returns to the
