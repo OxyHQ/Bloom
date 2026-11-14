@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "21.6.0",
+  "version": "21.7.0",
   "packageManager": "bun@1.4.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -11,7 +11,8 @@
   "sideEffects": [
     "**/hooks/use-prefers-reduced-motion.*",
     "**/theme/init-css-interop.*",
-    "**/toast/use-stack-hover.*"
+    "**/toast/use-stack-hover.*",
+    "**/window/layouts.*"
   ],
   "publishConfig": {
     "access": "public"
@@ -679,6 +680,20 @@
       "require": {
         "types": "./lib/typescript/commonjs/agent-avatar/svg/index.d.ts",
         "default": "./lib/commonjs/agent-avatar/svg/index.js"
+      }
+    },
+    "./window/layouts": {
+      "react-native": {
+        "types": "./lib/typescript/module/window/layouts.d.ts",
+        "default": "./src/window/layouts.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/window/layouts.d.ts",
+        "default": "./lib/module/window/layouts.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/window/layouts.d.ts",
+        "default": "./lib/commonjs/window/layouts.js"
       }
     },
     "./avatar-flight": {
@@ -4853,6 +4868,9 @@
       ],
       "agent-avatar/svg": [
         "./lib/typescript/module/agent-avatar/svg/index.d.ts"
+      ],
+      "window/layouts": [
+        "./lib/typescript/module/window/layouts.d.ts"
       ],
       "avatar-flight": [
         "./lib/typescript/module/avatar-flight/index.d.ts"

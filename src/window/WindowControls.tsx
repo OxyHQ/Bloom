@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, type PressableProps, View } from 'react-native';
 import Animated, {
   cancelAnimation,
   useAnimatedStyle,
@@ -27,6 +27,7 @@ import {
 import { WINDOW_MESSAGES } from './messages';
 import type { WindowControlsProps } from './types';
 import { useWindow } from './use-window';
+import { registeredWindowLayouts } from './layouts-registry';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { useInteractionState } from '../hooks/use-interaction-state';
 
@@ -51,6 +52,8 @@ function WindowControl({
   symbols,
   onPress,
   testID,
+  placed = true,
+  ...trigger
 }: {
   label: string;
   icon: React.ComponentType<IconProps>;
@@ -61,7 +64,12 @@ function WindowControl({
   symbols: boolean;
   onPress: () => void;
   testID?: string;
-}) {
+  /**
+   * False when what holds it is placed instead (the zoom control as the trigger of its layouts:
+   * the trigger's box is where the menu is anchored, so it takes the control's place).
+   */
+  placed?: boolean;
+} & Omit<PressableProps, 'style' | 'children' | 'onPress'>) {
   const reducedMotion = usePrefersReducedMotion();
   const scale = useSharedValue(1);
   // `scale` in the deps: web without the worklets plugin does not track reads.
@@ -71,6 +79,8 @@ function WindowControl({
       // The first click on an inactive window's bubble acts, as a Mac's do.
       {...ACCEPTS_FIRST_MOUSE}
       role="button"
+      // The layouts' trigger, on the zoom control: its long press, its state and its action.
+      {...trigger}
       accessibilityLabel={label}
       onPress={onPress}
       onPressIn={() => {
@@ -83,10 +93,8 @@ function WindowControl({
       }}
       testID={testID}
       style={[
+        placed ? controlPlace(offset, top) : null,
         {
-          position: 'absolute',
-          top,
-          insetInlineStart: offset,
           width: WINDOW_CONTROL_TARGET,
           height: WINDOW_CONTROL_TARGET,
           alignItems: 'center',
@@ -126,6 +134,31 @@ function WindowControl({
   );
 }
 
+let warnedUnregistered = false;
+
+/**
+ * The zoom control's layouts where the platform lays windows out (`window-layout`), as its adapter
+ * registered them (`@oxy.so/bloom/window/layouts`); null elsewhere. Reported without them, the
+ * control only zooms and development says why, once.
+ */
+function windowLayoutsFor(enabled: boolean) {
+  if (!enabled) return null;
+  const registered = registeredWindowLayouts();
+  if (!registered && process.env.NODE_ENV !== 'production' && !warnedUnregistered) {
+    warnedUnregistered = true;
+    console.warn(
+      "[Bloom] WindowControls: the platform reports 'window-layout', but nothing imported " +
+        "'@oxy.so/bloom/window/layouts', so the zoom control shows no layouts.",
+    );
+  }
+  return registered;
+}
+
+/** A control's place in its group: `offset` from the group's leading edge, `top` from its top. */
+function controlPlace(offset: number, top: number) {
+  return { position: 'absolute' as const, top, insetInlineStart: offset };
+}
+
 /**
  * The window's controls (close, minimize, zoom): three bubbles of the surface
  * material where the platform says they are, `metrics.controls`, from the top
@@ -135,6 +168,10 @@ function WindowControl({
  * The pointer over the group shows their symbols; a press shrinks a bubble to
  * 88 % and springs it back as it acts. They act on the first click on an
  * inactive window (`ACCEPTS_FIRST_MOUSE`), as a Mac's do.
+ *
+ * With the `window-layout` capability, the zoom control shows the window's layouts as the
+ * pointer rests on it, on a long press, or by its "Show menu" action, as a Mac's green button
+ * does (`WindowLayouts`); its press still zooms.
  *
  * Draws nothing without the `window` capability, where the platform draws its
  * own controls (`controls: 'platform'`), and while the window is full screen.
@@ -151,6 +188,7 @@ export function WindowControls({
   const { colors } = useTheme();
   const dirProps = useDirectionProps();
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
+  const WindowLayouts = windowLayoutsFor(appWindow?.layOut !== undefined);
   if (appWindow?.controls !== 'bloom' || appWindow.fullscreen) return null;
 
   const { start, top, width, height } = appWindow.metrics.controls;
@@ -209,19 +247,35 @@ export function WindowControls({
         testID={testID ? `${testID}-group` : undefined}
         style={{ position: 'absolute', top: pad, insetInlineStart: pad, width, height }}
       >
-        {controls.map((control, index) => (
-          <WindowControl
-            key={control.key}
-            label={control.label}
-            icon={control.icon}
-            paint={control.paint}
-            offset={pitch * index}
-            top={targetTop}
-            symbols={hovered}
-            onPress={control.onPress}
-            testID={testID ? `${testID}-${control.key}` : undefined}
-          />
-        ))}
+        {controls.map((control, index) => {
+          const drawn = (placed: boolean) => (
+            <WindowControl
+              key={control.key}
+              label={control.label}
+              icon={control.icon}
+              paint={control.paint}
+              offset={pitch * index}
+              top={targetTop}
+              symbols={hovered}
+              onPress={control.onPress}
+              placed={placed}
+              testID={testID ? `${testID}-${control.key}` : undefined}
+            />
+          );
+          // The zoom control shows the window's layouts, where the platform lays windows out.
+          if (control.key === 'zoom' && WindowLayouts) {
+            return (
+              <WindowLayouts
+                key={control.key}
+                style={controlPlace(pitch * index, targetTop)}
+                testID={testID ? `${testID}-layouts` : undefined}
+              >
+                {drawn(false)}
+              </WindowLayouts>
+            );
+          }
+          return drawn(true);
+        })}
       </View>
     </View>
   );

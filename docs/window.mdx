@@ -38,7 +38,9 @@ The window's state and the actions on it, or `null` without the capability:
   platform draws its own, as a Mac does, and Bloom only keeps their room);
 - `metrics`: the controls' box and their room, from the window's top and its
   leading edge, and the window's corner radius;
-- `close()`, `minimize()`, `zoom()` (maximize or restore) and `startMove()`.
+- `close()`, `minimize()`, `zoom()` (maximize or restore) and `startMove()`;
+- with the `window-layout` capability, `layOut(layout)`, and where the platform has desktops
+  `desktops` (`{ count, current }`, from 0) and `moveToDesktop(desktop)`.
 
 ## `useWindowSizeLimits({ minWidth, minHeight, maxWidth, maxHeight })`
 
@@ -98,6 +100,33 @@ from the top and the first 24 from the leading edge.
 
 It draws nothing without the capability, where `controls` is `platform`, and
 while the window is full screen.
+
+### The zoom control's layouts (`window-layout`)
+
+Where the platform lays windows out (the `window-layout` capability, OxyOS), the zoom control shows
+the window's layouts as a Mac's green button does since macOS 15. Its press still zooms.
+
+The platform's adapter that reports `window-layout` imports `@oxy.so/bloom/window/layouts`, which
+registers the menu (`WindowLayouts`) for `WindowControls`. `WindowControls` never imports it
+itself, so a window's controls everywhere else (a web page, a settings modal, a phone's screen)
+link no `DropdownMenu` through them. Reported without the import, the zoom control only zooms, and
+development warns once.
+
+- **It opens** as the pointer rests on the control for half a second, on a long press, or by the
+  screen reader's "Show menu" action on it (React Native's `longpress`), in the platform's popup
+  anchored to the control. It closes as the pointer leaves the control and the menu, unless a key
+  was used in it; a choice, Escape or a press outside close it too.
+- **Its rows**, Bloom's menu rows driven by the arrows, typeahead and Return, each named by its
+  label in the app's locale, the menu "Window layouts":
+  - *Move & Resize*: Left, Right, Top, Bottom, then Top Left, Top Right, Bottom Left, Bottom Right;
+  - *Fill & Arrange*: Fill, Center, then Left & Right, Right & Left, Top & Bottom, Bottom & Top
+    and Quarters (the window with those behind it);
+  - Return to Previous Size;
+  - where the platform has desktops, Move to Desktop *n* for each other one, numbered from 1.
+- **A row asks the platform** (`layOut('left')`, `moveToDesktop(2)`); the platform does it as its
+  own tiling does (`PlatformWindowLayout`).
+- **Test ids**: with `testID`, the menu is `${testID}-layouts`, its rows `${testID}-layouts-${layout}`
+  and `${testID}-layouts-desktop-${n}`.
 
 ## `WindowDragRegion`
 

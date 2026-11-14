@@ -129,8 +129,18 @@ interface PlatformWindow {
   zoom(): void;       // maximize or restore
   startMove(): void;  // from the press being handled
   setSizeLimits?(limits: { minWidth: number; minHeight: number; maxWidth: number; maxHeight: number }): void; // 0 = no bound
+  layOut?(layout: PlatformWindowLayout): void;   // with `window-layout`
+  moveToDesktop?(desktop: number): void;          // with `window-layout`, where it has desktops
 }
+type PlatformWindowLayout =
+  | 'fill' | 'center' | 'left' | 'right' | 'top' | 'bottom'
+  | 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight'
+  | 'leftRight' | 'rightLeft' | 'topBottom' | 'bottomTop' | 'quarters'
+  | 'returnToPrevious';
 ```
+
+The state may say the platform's desktops and the one the window is on, from 0
+(`desktops?: { count: number; current: number }`).
 
 `getState()` and `subscribe()` are an external store, read with
 `useSyncExternalStore`; a fresh but equal state object is not a change. Bloom
@@ -140,6 +150,16 @@ and `SettingsLayout` keep the controls' room and draw them where `controls` is
 reported, and an adapter that reports it without a window throws.
 `setSizeLimits` is optional: a platform whose windows take any size leaves it
 out, and `useWindowSizeLimits` then asks nothing.
+
+### `window-layout`
+
+With `window`, the platform lays the window out on its display as a Mac tiles
+windows since macOS 15: `layOut(layout)` (required with the capability; an
+adapter that reports it without one throws), and `moveToDesktop(desktop)` with
+the state's `desktops` where it has desktops. The zoom control then shows the
+layouts on hover, long press and "Show menu" ([Window](/docs/window)), once the
+adapter has imported `@oxy.so/bloom/window/layouts`, which registers its menu. Without
+it the zoom control only zooms. `usePlatformWindowLayout()` returns them, or null.
 
 ## `menu-bar`
 
