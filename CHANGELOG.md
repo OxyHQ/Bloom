@@ -6,6 +6,11 @@
 
 - **The zoom control's layouts, as a Mac's green button since macOS 15** (the `window-layout` capability). Where the platform lays windows out, `WindowControls`' zoom control opens a menu of the window's layouts on hover, a long press or the screen reader's "Show menu": Move & Resize (the halves, then the quarters), Fill & Arrange (Fill, Center and the arrangements with the windows behind), Return to Previous Size, and Move to Desktop *n* for each other desktop. A row asks the platform (`PlatformWindow.layOut`, `moveToDesktop`); the control's press still zooms. Bloom's menu, so its rows take the arrows, typeahead and Return and are named in each of Bloom's languages.
 - **`PlatformWindow.layOut`, `moveToDesktop`, `PlatformWindowState.desktops` and `PlatformWindowLayout`**, the `window-layout` capability and `usePlatformWindowLayout()`; `useWindow()` carries them.
+## 21.6.0
+
+### Added
+
+- **`DropdownMenu activation="hover"` opens on hover natively too, in a platform's popup** (a desktop with a pointer: OxyOS). The pointer resting on the trigger for `openDelay` opens it, and leaving the trigger and the panel closes it after `closeDelay` unless the pointer comes back to either, as on the web. The popup tracks the pointer over the trigger while it holds its grab (`trackingRef`). A key used in the panel keeps it open, and a menu opened by a long press or the keyboard closes only by a choice, Escape or a press outside. A touch, or a phone's sheet, never opens by hover; the trigger's own press and the long press are unchanged. The trigger declares React Native's `longpress` accessibility action ("Show menu", as `ContextMenu`'s), so the screen reader opens a hover menu as a long press does. `TriggerSlot` hears the pointer coming onto and leaving the trigger (`onPointerEnter`, `onPointerLeave`); `PopupPanel` hears the pointer on its panel and its keys (`onPointerEnter`, `onPointerLeave`, `onKey`).
 
 ## 21.5.0
 

@@ -72,6 +72,12 @@ export interface TriggerSlotProps {
    */
   onPointerMove?: (event: PointerEvent) => void;
   /**
+   * The pointer coming onto the trigger and leaving it, heard on the wrapper: a menu that opens on
+   * hover (`DropdownMenu`'s `activation="hover"`) opens as the pointer rests on its trigger.
+   */
+  onPointerEnter?: (event: PointerEvent) => void;
+  onPointerLeave?: (event: PointerEvent) => void;
+  /**
    * Whether the trigger's surface is open, when the trigger does not say so
    * itself through `aria-expanded`: a context menu's area is no disclosure, and
    * claims no expanded state, but its surface opens and closes all the same.
@@ -220,6 +226,8 @@ export function TriggerSlot({
   anchorRef,
   onPointerDown,
   onPointerMove,
+  onPointerEnter,
+  onPointerLeave,
   open,
   restoreFocus = true,
   className,
@@ -251,6 +259,8 @@ export function TriggerSlot({
       collapsable={false}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={onPointerLeave}
       className={className}
       style={[styles.wrap, style]}
       testID={testID}
