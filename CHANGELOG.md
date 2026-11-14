@@ -1,5 +1,11 @@
 # Changelog
 
+## 21.7.1
+
+### Fixed
+
+- **A menu in a platform's popup takes every key it is given, however many arrive in one turn.** The panel's keys (`PopupPanel`'s `onKey`, a native `DropdownMenu`, `ContextMenu` or `Menubar` in a platform's popup) moved from the active row of the render they arrived in, so two ↓ delivered in one turn, as OxyOS delivers the keys of one compositor turn on a loaded machine or as a person types ahead, landed on the same row and Return chose the wrong one. Each key now moves on from where the key before it left the highlight (the row the keys see is current at once, the highlight's render follows), as on a Mac: ↓ ↓ Return chooses the second row.
+
 ## 21.7.0
 
 ### Added
