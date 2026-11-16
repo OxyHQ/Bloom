@@ -33,7 +33,7 @@ const CLASSIFIED: Readonly<Record<string, string>> = {
   'blur/blur-target.tsx':
     'Imports `BlurTargetView` only, the container a blur points at. It blurs nothing.',
   'styles/web-view-style.ts': 'The `WebCssStyle` type declaring the property.',
-  'project-board/TicketCornerGenieSurface.web.tsx':
+  'dialog/DetailDialogMotion.web.tsx':
     'Sets `backdropFilter: none` on a frozen copy for a transition. It removes a blur.',
 };
 

@@ -7,7 +7,7 @@ import { TicketGenieEnteredContext } from './context';
 export function TicketTokenChart(props: ComponentProps<typeof TokensChartCard>) {
   const entered = useContext(TicketGenieEnteredContext);
   return (
-    <StyledView className="bloom-ticket-detail-chart">
+    <StyledView className="bloom-detail-deferred">
       <TokensChartCard {...props} animate={entered} />
     </StyledView>
   );

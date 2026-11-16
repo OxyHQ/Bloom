@@ -1,3 +1,4 @@
+import { DetailDialog } from '../dialog/DetailDialog.web';
 import * as Accordion from '../accordion/index.web';
 import { Screen, ScreenScrollView } from '../screen/index.web';
 import { Button, CloseButton } from '../button/index.web';
@@ -14,6 +15,7 @@ import { ProjectBoardPlatformContext } from './context';
 import type { ProjectBoardProps } from './types';
 
 const platform = {
+  DetailDialog,
   ...Accordion,
   Screen,
   AppShellPanels,

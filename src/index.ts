@@ -185,12 +185,18 @@ export {
 } from './overlay';
 export type { OverlayRootProps, BackdropProps, OverlayLayer } from './overlay';
 export {
+  DetailDialog,
+  DetailDialogSection,
+  DetailDialogSectionGroup,
   Dialog,
   useDialogContext,
   useDialogControl,
   useDialogHeader,
 } from './dialog';
 export type {
+  DetailDialogProps,
+  DetailDialogSectionProps,
+  DetailDialogSectionGroupProps,
   DialogAction,
   DialogActionColor,
   DialogContextProps,

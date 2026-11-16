@@ -1715,7 +1715,7 @@
   },
   "multi-agent-preview-parts": {
     "status": "independent-scale",
-    "reason": "SelectedAgentPreview owns a fixed 160×112px artwork viewport; avatar diameter and position are selected by participant count (80px for one, 62px for two or three, 48px for four or more), not by control size. It has no size prop, and its caption uses the standard Text family. Evidence: src/multi-agent-chat/SelectedAgentPreview.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.test.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.web.test.tsx. Both platform routes measure the viewport and each rendered avatar at counts 1, 2, 3 and 4 with no scope, xs, and nested xs/lg scopes; physical-device fit and responsive footprint remain pending.",
+    "reason": "SelectedAgentPreview owns a fixed 160\u00d7112px artwork viewport; avatar diameter and position are selected by participant count (80px for one, 62px for two or three, 48px for four or more), not by control size. It has no size prop, and its caption uses the standard Text family. Evidence: src/multi-agent-chat/SelectedAgentPreview.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.test.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.web.test.tsx. Both platform routes measure the viewport and each rendered avatar at counts 1, 2, 3 and 4 with no scope, xs, and nested xs/lg scopes; physical-device fit and responsive footprint remain pending.",
     "evidence": [
       "src/multi-agent-chat/SelectedAgentPreview.tsx",
       "src/__tests__/SelectedAgentPreviewPublicPartScope.test.tsx",
@@ -1724,7 +1724,7 @@
       "src/__tests__/SelectedAgentPreviewExport.test.ts",
       "src/__tests__/public-parts.test.ts"
     ],
-    "verification": "native renderer and RNW DOM measure the 160×112px viewport and count-specific 80/62/48px avatar geometry for 1/2/3/4 agents under no scope, xs and nested xs/lg scopes; device fit and responsive footprint pending",
+    "verification": "native renderer and RNW DOM measure the 160\u00d7112px viewport and count-specific 80/62/48px avatar geometry for 1/2/3/4 agents under no scope, xs and nested xs/lg scopes; device fit and responsive footprint pending",
     "parts": ["src/multi-agent-chat/SelectedAgentPreview.tsx#SelectedAgentPreview"]
   },
   "agent-creator-field-parts": {
@@ -1941,7 +1941,7 @@
       "src/__tests__/TypographyPublicPartScope.test.tsx",
       "src/__tests__/TypographyPublicPartScope.web.test.tsx"
     ],
-    "verification": "Native renderer and DOM web verify font size, line height, weight and tracking for Text (including its Span alias), H1–H6, Title, Subtitle, P, Lead, Large, Small and Muted, plus Blockquote spacing, remain stable under default, xs, lg and nested control scopes. An explicit desktop TypographyScope scale remains effective independently of BloomScope.",
+    "verification": "Native renderer and DOM web verify font size, line height, weight and tracking for Text (including its Span alias), H1\u2013H6, Title, Subtitle, P, Lead, Large, Small and Muted, plus Blockquote spacing, remain stable under default, xs, lg and nested control scopes. An explicit desktop TypographyScope scale remains effective independently of BloomScope.",
     "parts": [
       "src/typography/Typography.tsx#Blockquote",
       "src/typography/Typography.tsx#H1",
@@ -2029,5 +2029,22 @@
     ],
     "verification": "Native-renderer behavior tests and Chromium input/scroll/focus validation; physical IME and device geometry not established by these checks.",
     "parts": ["src/chat-composer/CompactComposer.tsx#CompactComposer"]
+  },
+  "record-detail-composition": {
+    "status": "delegated",
+    "reason": "DetailDialog delegates overlay/focus/dismissal to Dialog, header controls to PageHeader and Button, and scrolling/footer edges to Screen. DetailDialogSection and ProjectBoardCardContent own template record layout and typography, not control sizing; opaque product controls inherit BloomScope.",
+    "evidence": [
+      "src/dialog/DetailDialogBase.tsx",
+      "src/dialog/DetailDialogSection.tsx",
+      "src/project-board/ProjectBoardCardContent.tsx",
+      "src/dialog/DetailDialog.stories.tsx"
+    ],
+    "verification": "Existing template domain tests and shared owner source types pass; actual browser and native verification pending.",
+    "parts": [
+      "src/dialog/DetailDialog.tsx#DetailDialog",
+      "src/dialog/DetailDialogSection.tsx#DetailDialogSection",
+      "src/dialog/DetailDialogSection.tsx#DetailDialogSectionGroup",
+      "src/project-board/ProjectBoardCardContent.tsx#ProjectBoardCardContent"
+    ]
   }
 }

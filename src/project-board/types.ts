@@ -169,3 +169,16 @@ export type ProjectBoardProps<Item = ProjectTicket> =
   | ProjectBoardTemplateProps
   | ControlledProjectBoardProps<Item>
   | GroupedProjectBoardProps<Item>;
+
+/** Slots use the exact template card spacing without imposing a record schema. */
+export interface ProjectBoardCardContentProps {
+  preview?: ReactNode;
+  header?: ReactNode;
+  actions?: ReactNode;
+  badges?: ReactNode;
+  title?: ReactNode;
+  description?: ReactNode;
+  children?: ReactNode;
+  footer?: ReactNode;
+  testID?: string;
+}

@@ -14,6 +14,7 @@ import type { AppShellPanels } from '../app-shell';
 import type { Screen, ScreenScrollView } from '../screen';
 
 export interface ProjectBoardPlatform {
+  DetailDialog: typeof import('../dialog/DetailDialog').DetailDialog;
   Screen: typeof Screen;
   Accordion: ComponentType<AccordionProps>;
   AccordionItem: ComponentType<AccordionItemProps>;
@@ -46,7 +47,7 @@ export interface ProjectBoardPlatform {
 }
 export const ProjectBoardPlatformContext = createContext<ProjectBoardPlatform | null>(null);
 /** The plot starts its own reveal after the panel has reached its live pixels. */
-export const TicketGenieEnteredContext = createContext(true);
+export { DetailDialogEnteredContext as TicketGenieEnteredContext } from '../dialog/context';
 export function useProjectBoardPlatform() {
   const platform = useContext(ProjectBoardPlatformContext);
   if (!platform) throw new Error('Project Board parts must be rendered inside ProjectBoard.');

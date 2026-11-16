@@ -1,3 +1,4 @@
+import { ProjectBoardCardContent } from './ProjectBoardCardContent';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform } from 'react-native';
 import { Avatar } from '../avatar';
@@ -78,8 +79,8 @@ function TicketCard({
 }) {
   const { messages: m } = useMessages(PROJECT_BOARD_MESSAGES);
   return (
-    <SourceView className="flex w-full flex-col gap-2 p-3">
-      <SourceView className="flex min-h-[22px] items-start justify-between gap-3">
+    <ProjectBoardCardContent
+      header={
         <SourceView className="flex min-w-0 items-center text-body-2-medium text-text-secondary">
           <SourceText className="shrink-0 text-body-2-medium text-text-secondary">
             {ticket.code}
@@ -89,10 +90,11 @@ function TicketCard({
             {ticket.area}
           </SourceText>
         </SourceView>
-        <TicketAssignees ids={ticket.assignees} members={members} />
-      </SourceView>
-      <SourceView className="flex flex-col items-start gap-2">
-        <SourceView className="flex items-center gap-1.5">
+      }
+      actions={<TicketAssignees ids={ticket.assignees} members={members} />}
+      badges={
+        <>
+          {' '}
           <SourceChip className={cx('text-body-2-medium', PRIORITY_STYLES[ticket.priority])}>
             {m.priorityLabels[ticket.priority]}
           </SourceChip>
@@ -102,13 +104,11 @@ function TicketCard({
               {ticket.project}
             </SourceText>
           </SourceChip>
-        </SourceView>
-        <SourceView className="flex w-full flex-col gap-[5px]">
-          <SourceText className="text-body-medium text-text-primary">{ticket.title}</SourceText>
-          <SourceText className="text-body-2-medium text-text-secondary">{ticket.since}</SourceText>
-        </SourceView>
-      </SourceView>
-    </SourceView>
+        </>
+      }
+      title={ticket.title}
+      description={ticket.since}
+    />
   );
 }
 
