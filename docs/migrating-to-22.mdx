@@ -1,0 +1,134 @@
+---
+title: Migrating to Bloom 22
+description: Replace retired row and button renderers with the shared owners.
+order: 2
+---
+
+# Migrating to Bloom 22
+
+Bloom 22 removes duplicate public renderers and their prop types. This is a
+breaking release: there are no compatibility re-exports. Upgrade packages that
+import these APIs before upgrading an app. The companion `@oxy.so/bloom-editor`
+0.9.0 requires Bloom 22 or newer.
+
+## Imports that no longer exist
+
+| Removed entry | Current owner |
+| --- | --- |
+| `@oxy.so/bloom/button-group` | `Button` and `Button.Group` from `@oxy.so/bloom/button` |
+| `@oxy.so/bloom/frosted-icon-button` | `Button` from `@oxy.so/bloom/button` |
+| `@oxy.so/bloom/settings-list` | `GroupedSection`, `GroupedSectionItem`, `GroupedSectionDivider` from `@oxy.so/bloom/grouped-section` |
+| `@oxy.so/bloom/chat-people/contact-row` | `ListItem` from `@oxy.so/bloom/list` |
+
+The `chat-list`, `mail-list`, `chat-people`, `call-ui`, `settings-modal`,
+`settings-modal/rows` and `settings-modal/modal` entry points remain, but the
+renderers listed below are no longer exported from them or from the root.
+Domain data types and helpers remain where they still describe that data.
+
+## One button
+
+| Removed export | Replacement |
+| --- | --- |
+| `PrimaryButton` | `Button appearance="solid" tone="accent"` |
+| `SecondaryButton`, `OutlineButton` | `Button appearance="outline" tone="neutral"` |
+| `GhostButton` | `Button appearance="subtle" tone="neutral"` |
+| `TextButton` | `Button appearance="plain"` |
+| `LinkButton` | `Button appearance="plain" linkTone="primary" href={href}` |
+| `DestructiveButton` | `Button appearance="solid" tone="danger"` |
+| `InverseButton` | `Button inverted` |
+| `IconButton` | `Button icon={Icon}` with an `accessibilityLabel` |
+| `CloseButton` | `Button icon={CloseIcon}` with an `accessibilityLabel` |
+| `GlyphButton` | `Button appearance="plain" tone="neutral"` |
+| `FrostedIconButton` | `Button appearance="outline" tone="neutral"` |
+| `ButtonGroup`, `ButtonGroupItem` | `Button.Group` containing ordinary `Button` children |
+
+`GlyphButton.glyphSize` becomes `iconSize`; `busy` becomes `loading`.
+Use `loadingIndicator={null}` when keeping a caller-rendered busy glyph.
+Group item `checked`/`selected` becomes `pressed`, and `onCheckedChange` becomes
+`onPressedChange`. `ButtonGroupProps` now comes from the button entry;
+`ButtonGroupItemProps`, `ButtonGroupSize`, `FrostedIconButtonProps`,
+`FrostedIconButtonSize`, `GlyphButtonProps`, `CloseButtonProps` and
+`LinkButtonProps` are removed. Use `ButtonProps`/`ButtonSize` and the shared
+component's actual contract rather than retaining aliases in an app.
+
+Normal app scale stays `md`. On coarse-pointer web, md reserves a real 44px
+interaction box while painting the ordinary 36px control. Grouped buttons and
+Search share that visual height; native Button keeps its existing hitSlop.
+`material="flat"` remains supported. [Button](./button.mdx) and
+[Button.Group](./button-group.mdx) document custom content, colors and toggles.
+
+## One list row
+
+| Removed export | Replacement |
+| --- | --- |
+| `ChatList`, `ChatListItem` | `List` / `ListItem` with `conversation` data |
+| `MailList`, `MailRow` | `List` / `ListItem` with `mail` data |
+| `ChatListItemSkeleton`, `MailListSkeleton` | `List loading` and `loadingCount` |
+| `MailSelectionBar` | `ListSelectionBar` |
+| `ContactList`, `ContactRow`, `MemberList`, `MemberRow`, `ChatMemberRow` | `List` / `ListItem` with `person` data |
+| `CallHistoryList`, `CallHistoryRow` | `List` / `ListItem` with `call` data |
+| `ArchivedRow` | An ordinary entry in the same `List` as the conversations |
+| `GroupAvatar` | `AvatarGroup layout="conversation"` |
+| `AgentStack` | `AvatarGroup` with the appropriate layout |
+| `ChannelPostCard` | Removed; compose the content required by the app |
+
+The corresponding retired component prop types are removed, including
+`ChatListLabels`, `ContactListLayout`, `ContactRowTrailing` and `MemberListItem`.
+Use `ListProps`, `ListItemProps`, `ListEntry`, `ListSection` and
+`ListSelectionBarProps`, plus `ListConversationData`, `ListMailData`,
+`ListPersonData` and `ListCallData` for domain display data.
+`GROUP_AVATAR_MAX_FACES` is removed: conversation grouping defaults to four
+faces; configure `AvatarGroup.max`/`overflow` explicitly when needed.
+
+```tsx
+import { List } from '@oxy.so/bloom/list';
+
+<List items={chats.map(chat => ({
+  id: chat.id,
+  conversation: chat,
+  active: chat.id === openId,
+  onPress: () => openChat(chat.id),
+  onPrefetch: () => prefetchChat(chat.id),
+  checked: selectedIds.has(chat.id),
+  onCheckedChange: checked => selectChat(chat.id, checked),
+  actions: commandsFor(chat),
+}))} />
+```
+
+The app maps business data and callbacks; List owns row anatomy, avatars,
+selection, context menus and swipe bubbles. `active` is the open destination;
+`checked` is bulk selection. Long press selects on touch; desktop commands use
+right click or the hover menu. Avatars remain visible until hover/focus or
+selection. Use the `attachments` slot for attachment chips, `trailing` for
+metadata or controls, and `supportingLines` for one to three lines.
+
+`List` normally participates in its screen's scroll. `VirtualList` remains
+available for windowed collections. Sidebar tree rows now use ListItem while
+retaining their disclosure, ordered hierarchy, drag/drop, keyboard moves and
+prefetch callbacks. The tree's custom trigger owns those events; it does not
+introduce a second row renderer. See [List](./list.mdx).
+
+## Settings and screen chrome
+
+`SettingsListItem`, `SettingsListGroup` and `SettingsListDivider` become
+`GroupedSectionItem`, `GroupedSection` and `GroupedSectionDivider`.
+`SettingsCard` and `SettingsRow` are removed from all three settings-modal
+entries above: use the same GroupedSection components. Their old prop types and
+`SettingsListGroupVariant` are removed; map to `GroupedSection*Props` and
+`GroupedSectionVariant`. SettingsModal's page/navigation contracts remain.
+
+PageHeader owns header geometry and scroll effects; use Screen's `header` slot
+with its actual scroller. `AppShellHeader` maps shell navigation and breadcrumbs
+into PageHeader. `overline` holds context above the title row; `accessory` holds
+full-width chrome below it. `titleVisual`, `titleLayout`, `titleAppearance`,
+`onPressTitle`, `backCount`, `search` and `searchActions` cover identity and search
+compositions without separate header renderers. Search adapts its button/field
+presentation through the same mounted input.
+
+`MAP_CONTROL_BOX` is removed. MapControls uses the canonical Button owner;
+`MAP_CONTROLS_GEOMETRY` remains available for the map control group's contract.
+
+Do not recreate removed components inside a consumer to get a clean typecheck.
+Map the data to the shared owner and verify real navigation, selection,
+attachments, menus, keyboard focus and responsive layout. Browser captures do
+not establish physical native gesture or performance acceptance.
