@@ -14,7 +14,6 @@ const root = realpathSync(process.env.BLOOM_SOURCE_ROOT ?? path.join(here, '../.
 const files = [
   'src/app-shell/AppShellPanelLayout.tsx',
   'src/app-shell/panel-session.tsx',
-  'scripts/panel-groups-native/PanelSessionLab.tsx',
   'src/app-shell/panel-layout.ts',
   'src/app-shell/panel-layout-types.ts',
   'src/app-shell/panel-motion.ts',
@@ -23,15 +22,28 @@ const files = [
   'src/dialog/Dialog.web.tsx',
   'src/bottom-sheet/BottomSheetBase.tsx',
 ];
-const hashes = Object.fromEntries(
-  files
+// The fixture can select another Bloom worktree. Its entry/components still
+// compile from HERE, so they must never be hashed from BLOOM_SOURCE_ROOT.
+const fixtureFiles = [
+  'PanelSessionLab.tsx',
+  'PanelGroupsLab.tsx',
+  'index.js',
+  'app.config.js',
+  'babel.config.js',
+  'metro.config.js',
+  'global.css',
+];
+const inputs = [
+  ...files
     .filter((file) => existsSync(path.join(root, file)))
-    .map((file) => [
-      file,
-      createHash('sha256')
-        .update(readFileSync(path.join(root, file)))
-        .digest('hex'),
-    ]),
+    .map((file) => [file, path.join(root, file)]),
+  ...fixtureFiles.map((file) => [`fixture/${file}`, path.join(here, file)]),
+];
+const hashes = Object.fromEntries(
+  inputs.map(([name, filename]) => [
+    name,
+    createHash('sha256').update(readFileSync(filename)).digest('hex'),
+  ]),
 );
 if (!hashes['src/app-shell/AppShellPanelLayout.tsx'])
   throw new Error('Bloom source checkout required');
@@ -41,6 +53,6 @@ rmSync(link, { force: true });
 symlinkSync(path.join(root, 'src'), link, 'dir');
 writeFileSync(
   path.join(here, 'build.json'),
-  JSON.stringify({ sourceRoot: root, identity, files: hashes }, null, 2) + '\n',
+  `${JSON.stringify({ sourceRoot: root, fixtureRoot: here, identity, files: hashes }, null, 2)}\n`,
 );
 console.log(`Native fixture source: ${identity.slice(0, 8)}`);
