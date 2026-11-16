@@ -27,6 +27,8 @@ it('hashes the local native fixture when Bloom source comes from another checkou
       'babel.config.js',
       'metro.config.js',
       'global.css',
+      'package.json',
+      'bun.lock',
     ]) {
       writeFileSync(join(fixture, name), `actual local ${name}`);
     }
