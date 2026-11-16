@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -18,7 +19,7 @@ export default meta;
 
 type Story = StoryObj;
 
-const noop = () => undefined;
+const onDemoAction = fn().mockName('place-list.action');
 
 /** An inline illustration so the story needs no network. */
 function photo(sky: string, wall: string, awning: string): string {
@@ -103,7 +104,7 @@ export const Cards: Story = {
         icon={RiFlagLine}
         visibility="shared"
         collaborators={PEOPLE}
-        onPress={noop}
+        onPress={onDemoAction}
         testID="want"
       />
       <PlaceListCard
@@ -113,7 +114,7 @@ export const Cards: Story = {
         icon={RiHeartLine}
         color="#C2456B"
         visibility="private"
-        onPress={noop}
+        onPress={onDemoAction}
         testID="favourites"
       />
       <PlaceListCard
@@ -122,7 +123,7 @@ export const Cards: Story = {
         photos={[CAFE]}
         icon={RiStarLine}
         visibility="public"
-        onPress={noop}
+        onPress={onDemoAction}
         testID="coffee"
       />
       <PlaceListCard
@@ -131,7 +132,7 @@ export const Cards: Story = {
         icon={RiBookmarkLine}
         color="#4E7A4A"
         visibility="private"
-        onPress={noop}
+        onPress={onDemoAction}
         empty={
           <Text variant="body-2-regular" style={{ color: '#FFFFFF' }}>
             Nothing saved yet
@@ -155,7 +156,7 @@ function Editable() {
         icon={RiFlagLine}
         visibility="shared"
         collaborators={PEOPLE}
-        onPress={noop}
+        onPress={onDemoAction}
       />
       <PlaceList
         places={places}
@@ -206,7 +207,7 @@ export const Grid: Story = {
         { name: 'Museums', count: 3, photos: [MUSEUM], icon: RiBookmarkLine },
       ].map((list) => (
         <View key={list.name} style={{ width: 320 }}>
-          <PlaceListCard {...list} visibility="private" onPress={noop} />
+          <PlaceListCard {...list} visibility="private" onPress={onDemoAction} />
         </View>
       ))}
     </View>

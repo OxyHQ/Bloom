@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import { applyIconColor } from '../frosted-icon-button/shared';
+import { applyIconColor } from '../icons/apply-icon-color';
 import { withGlyphBadge } from '../tab-bar/glyph-badge';
 import type { TabBarGlyphProps } from '../tab-bar/shared';
 /** Deliberately neutral: the universal shell never links Apple-only peers. */

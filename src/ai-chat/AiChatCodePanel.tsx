@@ -18,7 +18,7 @@ import { AI_CHAT_MESSAGES, type AiChatMessages } from './messages';
 import type { AiChatCodePanelProps, AiChatPanelAction, AiChatPanelTab } from './types';
 import { useAiChatPlatform } from './context';
 import { PageHeader } from '../page-header/PageHeader';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { Button } from '../button';
 
 /** Shared PageHeader slots for the code and gallery screens. */
 export function PanelHeader({
@@ -55,7 +55,7 @@ export function PanelHeader({
           </Tabs>
         </View>
       }
-      actions={<ButtonGroup>{children}</ButtonGroup>}
+      actions={<Button.Group>{children}</Button.Group>}
     />
   );
 }
@@ -181,7 +181,7 @@ export function AiChatCodePanel({
             label={l.tabs}
           >
             {actions.map((action) => (
-              <ButtonGroupItem
+              <Button
                 key={action.key}
                 iconOnly
                 leadingIcon={(iconProps) => <action.icon {...iconProps} />}

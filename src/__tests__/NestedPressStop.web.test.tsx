@@ -1,4 +1,6 @@
 /** @jest-environment jsdom */
+import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
+
 /**
  * An embedded control on WEB, against the DOM react-native-web produces: a
  * `Chip` or `CloseButton` hands its press handler the real click event, and
@@ -15,7 +17,7 @@ import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
-import { CloseButton } from '../button/CloseButton';
+import { Button } from '../button';
 import { Chip } from '../chip';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
@@ -67,7 +69,16 @@ describe.each([false, true])('stopPropagation=%s', (stop) => {
     const parent = jest.fn();
     const onPress = jest.fn();
     mount(
-      <CloseButton accessibilityLabel="Dismiss" onPress={onPress} stopPropagation={stop} />,
+      <Button
+        appearance="outline"
+        tone="neutral"
+        iconOnly
+        icon={DismissActionIcon}
+        size={20}
+        accessibilityLabel="Dismiss"
+        onPress={onPress}
+        stopPropagation={stop}
+      />,
       parent,
     );
     const close = container.querySelector('[aria-label="Dismiss"]') as HTMLElement;

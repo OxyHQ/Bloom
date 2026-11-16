@@ -17,7 +17,6 @@
  * different paint from its neighbours and that a closed hour draws none.
  */
 import { materialFill } from './support/material-fill';
-import React from 'react';
 import { act } from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
@@ -195,7 +194,7 @@ describe('PlaceInfoList: a row is one press target that says what it is', () => 
   });
 
   it('lets the value take two lines, because an address does not fit on one', () => {
-    // The VALUE node specifically: `SettingsListItem` clamps its description
+    // The VALUE node specifically: `GroupedSectionItem` clamps its description
     // to two lines whatever the title does, so a scan of the whole row reads
     // the wrong node and passes either way.
     const valueClamp = (): string => {

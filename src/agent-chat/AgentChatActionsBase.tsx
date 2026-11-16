@@ -4,7 +4,7 @@ import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RiMoreFill } from '../icons/remix/RiMoreFill';
 import { RiUploadLine } from '../icons/remix/RiUploadLine';
 import { useMessages } from '../locale/messages';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { Button } from '../button';
 import { useAgentChatPlatform } from './context';
 import { CONFIRM_MS, DENSE_ROW_CLASS, SMALL_MENU_STYLE, useAgentChatWebCss } from './shared';
 import { AGENT_CHAT_MESSAGES } from './messages';
@@ -16,7 +16,7 @@ import { IS_WEB } from '../styles/platform';
  * `AgentChatActions`: the controls in the top right of the
  * chat surface — share the open chat, and a menu of what applies to it.
  *
- * Share and menu use ButtonGroup's shared surface and trigger contract.
+ * Share and menu use Button.Group's shared surface and trigger contract.
  * Menu rows retain the conversation actions provided by the host.
  */
 
@@ -68,8 +68,8 @@ export function AgentChatActionsBase({
   }, [onShare, transcript]);
 
   return (
-    <ButtonGroup testID={testID} accessibilityLabel={l.more} style={style}>
-      <ButtonGroupItem
+    <Button.Group testID={testID} accessibilityLabel={l.more} style={style}>
+      <Button
         testID={testID ? `${testID}-share` : undefined}
         iconOnly
         leadingIcon={shared ? RiCheckLine : RiUploadLine}
@@ -79,7 +79,7 @@ export function AgentChatActionsBase({
       />
       <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
         <DropdownMenuTrigger asChild disabled={disabled} label={l.more}>
-          <ButtonGroupItem
+          <Button
             testID={testID ? `${testID}-more` : undefined}
             iconOnly
             leadingIcon={RiMoreFill}
@@ -105,6 +105,6 @@ export function AgentChatActionsBase({
           ) : null}
         </DropdownMenuContent>
       </DropdownMenu>
-    </ButtonGroup>
+    </Button.Group>
   );
 }

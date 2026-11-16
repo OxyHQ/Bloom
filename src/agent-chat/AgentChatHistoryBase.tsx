@@ -1,5 +1,11 @@
+import { UnreadBadge } from '../chat-indicators';
+import { RiPencilLine } from '../icons/remix/RiPencilLine';
+import { RiMailLine } from '../icons/remix/RiMailLine';
+import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
+import { Button } from '../button';
 import { ScrollArea } from '../layout/ScrollArea';
-import React, { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentRef } from 'react';
 import {
   Pressable,
@@ -7,7 +13,6 @@ import {
   View,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
-  type TextStyle,
 } from 'react-native';
 import Animated, {
   Easing,
@@ -25,11 +30,9 @@ import { RiAddLine } from '../icons/remix/RiAddLine';
 import { RiDownloadLine } from '../icons/remix/RiDownloadLine';
 import { RiGlobalLine } from '../icons/remix/RiGlobalLine';
 import { RiLogoutBoxRLine } from '../icons/remix/RiLogoutBoxRLine';
-import { RiMore2Fill } from '../icons/remix/RiMore2Fill';
 import { RiSpeedUpLine } from '../icons/remix/RiSpeedUpLine';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { TYPE_SCALE, Text } from '../typography';
-import { IconAction, PrimaryDisc } from './AgentChatControls';
 import { useAgentChatPlatform } from './context';
 import {
   ACCOUNT_MENU_STYLE,
@@ -38,7 +41,6 @@ import {
   RAIL_WIDTH,
   relativeTime,
   ROW_RADIUS,
-  SMALL_MENU_STYLE,
   useAgentChatPalette,
   useAgentChatWebCss,
   type AgentChatPalette,
@@ -183,317 +185,66 @@ function HoverRow({
 //  Thread row
 // ---------------------------------------------------------------------------
 
-function RowMenu({
-  title,
-  open,
-  onOpenChange,
-  onRename,
-  onToggleUnread,
-  onDelete,
-  labels,
-  palette,
-  testID,
-}: {
-  title: string;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onRename?: () => void;
-  onToggleUnread?: () => void;
-  onDelete?: () => void;
-  labels: Labels;
-  palette: AgentChatPalette;
-  testID?: string;
-}) {
-  const { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } =
-    useAgentChatPlatform();
-  const name = labels.moreFor(title);
-  return (
-    <DropdownMenu open={open} onOpenChange={onOpenChange}>
-      <DropdownMenuTrigger asChild label={name}>
-        <IconAction
-          testID={testID}
-          label={name}
-          size={24}
-          color={palette.iconSecondary}
-          hoverColor={palette.iconPrimary}
-          hoverBackground={palette.tertiary}
-          active={open}
-          palette={palette}
-          icon={(color) => <RiMore2Fill width={16} height={16} fill={color} />}
-        />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent label={name} side="bottom" align="end" style={SMALL_MENU_STYLE}>
-        {onRename ? (
-          <DropdownMenuItem className={DENSE_ROW_CLASS} onPress={onRename}>
-            {labels.rename}
-          </DropdownMenuItem>
-        ) : null}
-        {onToggleUnread ? (
-          <DropdownMenuItem className={DENSE_ROW_CLASS} onPress={onToggleUnread}>
-            {labels.markUnread}
-          </DropdownMenuItem>
-        ) : null}
-        {onDelete ? (
-          <DropdownMenuItem className={DENSE_ROW_CLASS} tone="danger" onPress={onDelete}>
-            {labels.delete}
-          </DropdownMenuItem>
-        ) : null}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
-function GroupCaption({
-  children,
-  palette,
-  first = true,
-}: {
-  children: string;
-  palette: AgentChatPalette;
-  first?: boolean;
-}) {
-  return (
-    <Text
-      variant="body-2-medium"
-      style={{
-        paddingLeft: 8,
-        paddingRight: 8,
-        paddingBottom: 4,
-        paddingTop: first ? 0 : 12,
-        color: palette.textTertiary,
-      }}
-    >
-      {children}
-    </Text>
-  );
-}
-
-function ThreadRow({
+/** The inline editor only owns rename state; List owns the surrounding row. */
+function ThreadTitleEditor({
   thread,
-  active,
-  disabled,
-  onSelect,
   onRename,
-  onToggleUnread,
-  onDelete,
-  formatAge,
+  onDone,
   labels,
   palette,
   testID,
 }: {
   thread: AgentChatThread;
-  active: boolean;
-  disabled: boolean;
-  onSelect?: (id: string) => void;
-  onRename?: (id: string, title: string) => void;
-  onToggleUnread?: (id: string) => void;
-  onDelete?: (id: string) => void;
-  formatAge: (at: number) => string;
+  onRename: (id: string, title: string) => void;
+  onDone: () => void;
   labels: Labels;
   palette: AgentChatPalette;
   testID?: string;
 }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [renaming, setRenaming] = useState(false);
   const [draft, setDraft] = useState(thread.title);
   const inputRef = useRef<ComponentRef<typeof TextInput>>(null);
   const settled = useRef(false);
-
   useEffect(() => {
-    if (!renaming) return;
-    settled.current = false;
     const node = inputRef.current;
     node?.focus();
-    // Select the whole title, via `input.select()`.
     const dom = node as unknown as { select?: () => void } | null;
     if (IS_WEB) dom?.select?.();
     else node?.setSelection?.(0, thread.title.length);
-  }, [renaming, thread.title.length]);
-
-  const commit = useCallback(() => {
+  }, [thread.title.length]);
+  const commit = () => {
     if (settled.current) return;
     settled.current = true;
     const next = draft.trim();
-    if (next && next !== thread.title) onRename?.(thread.id, next);
-    setRenaming(false);
-  }, [draft, onRename, thread.id, thread.title]);
-
-  const cancel = useCallback(() => {
-    settled.current = true;
-    setDraft(thread.title);
-    setRenaming(false);
-  }, [thread.title]);
-
-  if (renaming) {
-    const field: TextStyle & WebCssStyle = {
-      ...TYPE_SCALE['body-2-regular'],
-      fontFamily: IS_WEB ? 'var(--bloom-font-sans)' : 'Inter',
-      color: palette.text,
-      width: '100%',
-      padding: 0,
-      borderWidth: 0,
-      backgroundColor: 'transparent',
-    };
-    return (
-      <View
-        style={{
-          borderRadius: ROW_RADIUS,
-          backgroundColor: palette.rowHover,
-          paddingLeft: 8,
-          paddingRight: 8,
-          paddingTop: 6,
-          paddingBottom: 6,
-        }}
-      >
-        <TextInput
-          {...dataHook('bloomAgentChatField')}
-          ref={inputRef}
-          testID={testID ? `${testID}-rename` : undefined}
-          accessibilityLabel={labels.renameField}
-          value={draft}
-          onChangeText={setDraft}
-          onSubmitEditing={commit}
-          submitBehavior="blurAndSubmit"
-          onBlur={commit}
-          onKeyPress={(event) => {
-            if (event.nativeEvent.key === 'Escape') {
-              (event as unknown as { preventDefault?: () => void }).preventDefault?.();
-              cancel();
-            }
-          }}
-          selectionColor={palette.text}
-          style={field}
-        />
-      </View>
-    );
-  }
-
-  const rowStyle: WebCssStyle = {
-    position: 'relative',
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: ROW_RADIUS,
-    ...(active || menuOpen ? { backgroundColor: palette.rowHover } : null),
-    '--bloom-agent-chat-row-hover': palette.rowHover,
+    if (next && next !== thread.title) onRename(thread.id, next);
+    onDone();
   };
-
-  // Web: the family sheet swaps age and trigger on hover / focus-visible, and
-  // inline opacity is only written while the menu is open (it must win). Native
-  // has no hover: the age shows and the (transparent) trigger over it still
-  // takes the press on touch.
-  const ageOpacity = menuOpen ? 0 : IS_WEB ? undefined : 1;
-  const menuOpacity = menuOpen ? 1 : IS_WEB ? undefined : 0;
-
-  const selectStyle: WebCssStyle = {
-    flex: 1,
-    minWidth: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingTop: 6,
-    paddingBottom: 6,
-    paddingLeft: 8,
-    borderRadius: ROW_RADIUS,
-    opacity: disabled ? DISABLED_OPACITY : 1,
-    '--bloom-agent-chat-ring': palette.ring,
-  };
-
   return (
-    <View {...dataHook('bloomAgentChatThread')} testID={testID} style={rowStyle}>
-      <Pressable
-        {...dataHook('bloomAgentChatControl')}
-        testID={testID ? `${testID}-select` : undefined}
-        accessibilityRole="button"
-        accessibilityLabel={thread.unread ? `${labels.unread}, ${thread.title}` : thread.title}
-        aria-current={active ? 'true' : undefined}
-        aria-disabled={disabled || undefined}
-        accessibilityState={{ disabled, selected: active }}
-        disabled={disabled}
-        onPress={() => onSelect?.(thread.id)}
-        style={selectStyle}
-      >
-        {thread.unread ? (
-          <View
-            accessibilityLabel={labels.unread}
-            style={{
-              width: 6,
-              height: 6,
-              flexShrink: 0,
-              borderRadius: 3,
-              backgroundColor: palette.primary.rest.gradient?.[0] ?? palette.accent500,
-            }}
-          />
-        ) : null}
-        <Text
-          variant="body-2-regular"
-          numberOfLines={1}
-          style={{
-            flex: 1,
-            minWidth: 0,
-            color: thread.unread ? palette.text : palette.textSecondary,
-          }}
-        >
-          {thread.title}
-        </Text>
-      </Pressable>
-
-      <View
-        {...dataHook('bloomAgentChatSlot')}
-        style={{
-          position: 'relative',
-          width: 28,
-          height: 28,
-          flexShrink: 0,
-          alignItems: 'center',
-          justifyContent: 'center',
-          paddingRight: 4,
-        }}
-      >
-        <View
-          {...dataHook('bloomAgentChatAge')}
-          aria-hidden={menuOpen}
-          style={ageOpacity === undefined ? undefined : { opacity: ageOpacity }}
-        >
-          <Text variant="caption-1-regular" style={{ color: palette.textTertiary }}>
-            {formatAge(thread.updatedAt)}
-          </Text>
-        </View>
-        <View
-          {...dataHook('bloomAgentChatRowMenu')}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            alignItems: 'center',
-            justifyContent: 'center',
-            // Nudged 1px left: the glyph reads as sitting right in its own box.
-            transform: [{ translateX: -1 }],
-            ...(menuOpacity === undefined ? null : { opacity: menuOpacity }),
-          }}
-        >
-          <RowMenu
-            testID={testID ? `${testID}-menu` : undefined}
-            title={thread.title}
-            open={menuOpen}
-            onOpenChange={setMenuOpen}
-            onRename={
-              onRename
-                ? () => {
-                    setDraft(thread.title);
-                    setRenaming(true);
-                  }
-                : undefined
-            }
-            onToggleUnread={onToggleUnread ? () => onToggleUnread(thread.id) : undefined}
-            onDelete={onDelete ? () => onDelete(thread.id) : undefined}
-            labels={labels}
-            palette={palette}
-          />
-        </View>
-      </View>
-    </View>
+    <TextInput
+      {...dataHook('bloomAgentChatField')}
+      ref={inputRef}
+      testID={testID}
+      accessibilityLabel={labels.renameField}
+      value={draft}
+      onChangeText={setDraft}
+      onSubmitEditing={commit}
+      submitBehavior="blurAndSubmit"
+      onBlur={commit}
+      onKeyPress={(event) => {
+        if (event.nativeEvent.key === 'Escape') {
+          settled.current = true;
+          onDone();
+        }
+      }}
+      selectionColor={palette.text}
+      style={{
+        ...TYPE_SCALE['body-regular'],
+        color: palette.text,
+        width: '100%',
+        padding: 0,
+        borderWidth: 0,
+        backgroundColor: 'transparent',
+      }}
+    />
   );
 }
 
@@ -608,7 +359,7 @@ function AccountMenu({
 
           {hasUsage && usageOpen ? (
             <View style={{ flexDirection: 'column', gap: 4, paddingBottom: 4 }}>
-              {usage!.map((row) => (
+              {usage?.map((row) => (
                 <View
                   key={row.label}
                   style={{
@@ -678,7 +429,7 @@ function AccountMenu({
           ) : null}
 
           {hasItems
-            ? accountItems!.map((item) => {
+            ? accountItems?.map((item) => {
                 const Icon = item.icon;
                 return (
                   <DropdownMenuItem
@@ -744,6 +495,8 @@ export function AgentChatHistoryBase({
   framed = true,
 }: AgentChatHistoryProps) {
   useAgentChatWebCss();
+  const { List } = useAgentChatPlatform();
+  const [renamingId, setRenamingId] = useState<string>();
   const palette = useAgentChatPalette();
   const { messages } = useMessages(AGENT_CHAT_MESSAGES);
   const common = useCommonMessages();
@@ -798,20 +551,16 @@ export function AgentChatHistoryBase({
       accessibilityLabel={l.region}
       style={[rail, style]}
     >
-      <HoverRow
-        testID={testID ? `${testID}-new` : undefined}
-        accessibilityLabel={l.newChat}
+      <Button
+        leadingIcon={RiAddLine}
+        tone="neutral"
+        appearance="plain"
         onPress={onNewChat}
         disabled={disabled}
-        hoverBackground={palette.rowHover}
-        palette={palette}
-        style={{ gap: 8, padding: 8 }}
+        testID={testID ? `${testID}-new` : undefined}
       >
-        <RiAddLine width={20} height={20} fill={palette.iconSecondary} />
-        <Text variant="body-medium" style={{ color: palette.text }}>
-          {l.newChat}
-        </Text>
-      </HoverRow>
+        {l.newChat}
+      </Button>
 
       {onQueryChange ? (
         <ChatSearchField
@@ -830,41 +579,102 @@ export function AgentChatHistoryBase({
         onScroll={onEndReached ? onScroll : undefined}
         scrollEventThrottle={onEndReached ? 64 : undefined}
       >
-        {grouped ? null : <GroupCaption palette={palette}>{l.recent}</GroupCaption>}
-        {count === 0 ? (
-          after ? null : (
-            <Text
-              variant="body-2-regular"
-              style={{ paddingLeft: 8, paddingRight: 8, color: palette.textTertiary }}
-            >
-              {l.empty}
-            </Text>
-          )
-        ) : (
-          threads.map((thread, index) => (
-            <Fragment key={thread.id}>
-              {grouped && thread.group != null && thread.group !== threads[index - 1]?.group ? (
-                <GroupCaption palette={palette} first={index === 0}>
-                  {thread.group}
-                </GroupCaption>
-              ) : null}
-              <ThreadRow
-                testID={testID ? `${testID}-thread-${thread.id}` : undefined}
-                thread={thread}
-                active={thread.id === activeId}
-                disabled={disabled}
-                onSelect={onSelect}
-                onRename={onRename}
-                onToggleUnread={onToggleUnread}
-                onDelete={onDelete}
-                formatAge={formatAge}
-                labels={l}
-                palette={palette}
-              />
-            </Fragment>
-          ))
-        )}
-        {after}
+        <List
+          sections={threads.reduce<import('../list/types').ListSection[]>(
+            (sections, thread, index) => {
+              const groupTitle = grouped ? thread.group : l.recent;
+              let section = sections[sections.length - 1];
+              if (!section || groupTitle !== (grouped ? threads[index - 1]?.group : l.recent)) {
+                section = { id: `group-${index}`, title: groupTitle, items: [] };
+                sections.push(section);
+              }
+              const editing = renamingId === thread.id;
+              const rowID = testID ? `${testID}-thread-${thread.id}` : undefined;
+              const actions: import('../list/types').ListAction[] = [];
+              if (onRename)
+                actions.push({
+                  key: 'rename',
+                  icon: RiPencilLine,
+                  label: l.rename,
+                  onPress: () => setRenamingId(thread.id),
+                });
+              if (onToggleUnread)
+                actions.push({
+                  key: 'unread',
+                  icon: RiMailLine,
+                  label: l.markUnread,
+                  onPress: () => onToggleUnread(thread.id),
+                });
+              if (onDelete)
+                actions.push({
+                  key: 'delete',
+                  icon: RiDeleteBinLine,
+                  label: l.delete,
+                  tone: 'negative',
+                  onPress: () => onDelete(thread.id),
+                });
+              section.items = [
+                ...section.items,
+                {
+                  id: thread.id,
+                  testID: rowID,
+                  disabled,
+                  active: thread.id === activeId,
+                  label: thread.unread ? `${l.unread}, ${thread.title}` : thread.title,
+                  title: (
+                    <Text
+                      variant={thread.unread ? 'body-semibold' : 'body-medium'}
+                      numberOfLines={1}
+                      style={{ color: thread.unread ? palette.text : palette.textSecondary }}
+                    >
+                      {thread.title}
+                    </Text>
+                  ),
+                  trailing: (
+                    <View
+                      pointerEvents="none"
+                      aria-hidden
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+                    >
+                      {thread.unread ? <UnreadBadge dot /> : null}
+                      <Text variant="caption-1-regular" style={{ color: palette.textTertiary }}>
+                        {formatAge(thread.updatedAt)}
+                      </Text>
+                    </View>
+                  ),
+                  onPress: editing ? undefined : () => onSelect?.(thread.id),
+                  actions: editing ? undefined : actions,
+                  swipeActions: editing ? undefined : { right: actions },
+                  content:
+                    editing && onRename ? (
+                      <ThreadTitleEditor
+                        key={thread.id}
+                        thread={thread}
+                        onRename={onRename}
+                        onDone={() => setRenamingId(undefined)}
+                        labels={l}
+                        palette={palette}
+                        testID={rowID ? `${rowID}-rename` : undefined}
+                      />
+                    ) : undefined,
+                },
+              ];
+              return sections;
+            },
+            [],
+          )}
+          empty={
+            !after ? (
+              <Text
+                variant="body-2-regular"
+                style={{ paddingHorizontal: 8, color: palette.textTertiary }}
+              >
+                {l.empty}
+              </Text>
+            ) : undefined
+          }
+          footer={after}
+        />
       </ScrollArea>
 
       {account || onExport ? (
@@ -895,17 +705,15 @@ export function AgentChatHistoryBase({
             <View style={{ flex: 1 }} />
           )}
           {onExport ? (
-            <PrimaryDisc
-              testID={testID ? `${testID}-export` : undefined}
-              label={exportLabel}
-              size={24}
-              hoverOpacity={0.9}
+            <Button
+              iconOnly
+              icon={RiDownloadLine}
+              accessibilityLabel={exportLabel}
+              tone="accent"
               disabled={count === 0}
               onPress={onExport}
-              palette={palette}
-            >
-              <RiDownloadLine width={14} height={14} fill="#ffffff" />
-            </PrimaryDisc>
+              testID={testID ? `${testID}-export` : undefined}
+            />
           ) : null}
         </View>
       ) : null}

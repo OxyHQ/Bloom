@@ -10,32 +10,19 @@ import type { MemberRoleLabels, NewGroupFormLabels, StoryViewerLabels } from './
 export interface ChatPeopleMessages {
   /** `NewGroupForm`. */
   newGroup: NewGroupFormLabels;
-  /** `MemberRow` / `MemberList`: role badges and the member menu. */
+  /** Role badge labels and member commands. */
   member: MemberRoleLabels;
   /** `StoryViewer` and `StoryProgressBars`. `progress` takes a ZERO-based index. */
   story: StoryViewerLabels;
-  /** `MemberList`'s search placeholder. */
+  /** Member search placeholder. */
   searchMembers: string;
-  /** `ChannelPostCard`'s share button, more button and pin mark. */
-  share: string;
-  postOptions: string;
-  pinned: string;
-  /** A post's pre-formatted counts ("12.4K", "318") as a spoken name. */
-  views: (count: string) => string;
-  forwards: (count: string) => string;
-  /** `ContactList`'s alphabet rail: "Jump to K". */
+  /** The list alphabet index: "Jump to K". */
   jumpTo: (letter: string) => string;
-  /** `ContactRow`'s action button, its done mark, and the button's name about one person. */
+  /** The person action button, its done mark, and the button's name about one person. */
   add: string;
   added: string;
   actionOn: (action: string, name: string) => string;
 }
-
-/**
- * The number a pre-formatted count stands for, to choose a plural form. An
- * abbreviated one ("12.4K") is some large number: 11 picks the "many" form in
- * the languages that have one, and "other" everywhere else.
- */
 
 export const CHAT_PEOPLE_MESSAGES: MessageCatalog<ChatPeopleMessages> =
   defineMessages<ChatPeopleMessages>('CHAT_PEOPLE_MESSAGES', {
@@ -70,11 +57,6 @@ export const CHAT_PEOPLE_MESSAGES: MessageCatalog<ChatPeopleMessages> =
       react: (emoji) => `React with ${emoji}`,
     },
     searchMembers: 'Search members',
-    share: 'Share',
-    postOptions: 'Post options',
-    pinned: 'Pinned',
-    views: (c) => plural('en', c, { one: `${c} view`, other: `${c} views` }),
-    forwards: (c) => plural('en', c, { one: `${c} forward`, other: `${c} forwards` }),
     jumpTo: (letter) => `Jump to ${letter}`,
     add: 'Add',
     added: 'Added',

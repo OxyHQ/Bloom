@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 
 import { EpisodeHeader, PodcastShowHeader } from '../../src/media-header';
@@ -113,7 +113,6 @@ function LiveEpisodeList({
               ),
             ),
         },
-        { key: 'share', label: 'Share episode', onPress: () => {} },
       ]}
     />
   );
@@ -137,7 +136,6 @@ export function PodcastPage({ id }: { id: string }) {
         cover={show.artwork}
         artworkColor={show.artworkColor}
         publisher={show.publisher}
-        onPublisherPress={() => {}}
         rating={show.rating}
         ratingCount={show.ratingCount}
         categories={show.categories}
@@ -199,10 +197,8 @@ function LiveEpisodeHeader({ episode }: { episode: DemoEpisode }) {
       }
       saved={saved}
       onSavedChange={setSaved}
-      onSharePress={() => {}}
       download={download}
       onDownloadPress={() => setDownload((d) => (d === 'idle' ? 'downloaded' : 'idle'))}
-      onMorePress={() => {}}
     />
   );
 }

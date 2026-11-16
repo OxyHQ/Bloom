@@ -104,9 +104,3 @@ export interface AgentProfileProps {
   /** Hide the artwork while something else draws it (an avatar flying in). */
   avatarHidden?: boolean;
 }
-
-export interface AgentStackProps {
-  agents: AgentReplyAgent[];
-  /** The box's width and height. Default 40. */
-  size?: number;
-}

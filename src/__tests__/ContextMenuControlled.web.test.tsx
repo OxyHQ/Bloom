@@ -100,6 +100,59 @@ const calls = {
   rename: jest.fn(),
   archive: jest.fn(),
 };
+
+function pointer(target: EventTarget, type: string, x = 40, y = 60) {
+  const event = new Event(type, { bubbles: true, cancelable: true });
+  Object.assign(event, {
+    pointerId: 1,
+    pointerType: 'touch',
+    button: 0,
+    isPrimary: true,
+    clientX: x,
+    clientY: y,
+  });
+  target.dispatchEvent(event);
+}
+
+describe('context menu input separation', () => {
+  function fixture(onPress = jest.fn()) {
+    render(
+      <ContextMenu anchor={null} onAnchorChange={calls.anchor}>
+        <ContextMenuTrigger asChild testID="hold-trigger">
+          <Pressable testID="hold-row" onPress={onPress}>
+            <Text>Conversation</Text>
+          </Pressable>
+        </ContextMenuTrigger>
+      </ContextMenu>,
+    );
+    return document.querySelector<HTMLElement>('[data-testid="hold-row"]')!;
+  }
+
+  it('does not open a desktop context menu from a touch hold', () => {
+    const row = fixture();
+    act(() => {
+      pointer(row, 'pointerdown');
+      jest.advanceTimersByTime(800);
+      pointer(row, 'pointerup');
+    });
+    expect(calls.anchor).not.toHaveBeenCalled();
+  });
+
+  it('offers Shift+F10 without a visible menu button', () => {
+    const row = fixture();
+    act(() =>
+      row.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'F10',
+          shiftKey: true,
+          bubbles: true,
+          cancelable: true,
+        }),
+      ),
+    );
+    expect(calls.anchor).toHaveBeenCalledTimes(1);
+  });
+});
 beforeEach(() => {
   for (const fn of Object.values(calls)) fn.mockClear();
 });

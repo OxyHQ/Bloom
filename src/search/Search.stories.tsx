@@ -1,5 +1,5 @@
 import { useArgs } from 'storybook/preview-api';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -9,6 +9,7 @@ import { RiPriceTag3Line } from '../icons/remix/RiPriceTag3Line';
 import { RiCalendarLine } from '../icons/remix/RiCalendarLine';
 import { Button } from '../button';
 import { Text } from '../typography';
+import { List } from '../list';
 
 const meta: Meta<typeof Search> = {
   id: 'base-search',
@@ -58,9 +59,7 @@ export const Filtering: Story = {
           label="Search apps"
         />
         <View style={{ gap: 4 }}>
-          {shown.map((x) => (
-            <Text key={x}>{x}</Text>
-          ))}
+          <List items={shown.map((name) => ({ id: name, title: name }))} />
           {shown.length === 0 ? <Text>No matches</Text> : null}
         </View>
       </View>
@@ -146,7 +145,7 @@ export const CustomAffordances: Story = {
           onValueChange={setValue}
           onClearText={() => setValue('')}
           iconSize={24}
-          clearButtonProps={{ size: 24, glyphSize: 24 }}
+          clearButtonProps={{ size: 24, iconSize: 24 }}
           disabled={disabled}
           fieldClassName="bloom-demo-search-layout"
           fieldChromeClassName="bloom-demo-search-chrome"

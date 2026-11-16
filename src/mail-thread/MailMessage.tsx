@@ -1,16 +1,14 @@
-import React, { useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Avatar } from '../avatar';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { Button } from '../button';
 import { Card } from '../card';
 import { useContainerWidth } from '../hooks/use-container-width';
 import { ComposerAttachmentStrip } from '../chat-composer';
-import { Chip } from '../chip';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiAttachment2 } from '../icons/remix/RiAttachment2';
 import { RiCornerUpLeftLine } from '../icons/remix/RiCornerUpLeftLine';
-import { RiFileTextLine } from '../icons/remix/RiFileTextLine';
 import { RiGroupLine } from '../icons/remix/RiGroupLine';
 import { RiShareForwardLine } from '../icons/remix/RiShareForwardLine';
 import { MailStar } from '../mail-list/parts';
@@ -135,7 +133,7 @@ export function MailMessage({
   // mounted also preserves keyboard focus on the disclosure while it expands.
   // Three labelled actions need about 320 of the message's own width; under
   // that the group keeps the glyphs and drops the words, which is what
-  // `ButtonGroupItem` is built for — the accessible name is the label either
+  // `Button` is built for — the accessible name is the label either
   // way, so nothing is lost by the labels going.
   const compactReplies = !replyLabelsFit(width);
   return (
@@ -294,9 +292,9 @@ export function MailMessage({
             />
           ) : null}
           {replies.length > 0 ? (
-            <ButtonGroup accessibilityLabel={text.attachments} style={{ alignSelf: 'flex-start' }}>
+            <Button.Group accessibilityLabel={text.attachments} style={{ alignSelf: 'flex-start' }}>
               {replies.map((reply) => (
-                <ButtonGroupItem
+                <Button
                   key={reply.key}
                   leadingIcon={reply.icon}
                   iconOnly={compactReplies}
@@ -305,9 +303,9 @@ export function MailMessage({
                   testID={testID ? `${testID}-${reply.key}` : undefined}
                 >
                   {reply.label}
-                </ButtonGroupItem>
+                </Button>
               ))}
-            </ButtonGroup>
+            </Button.Group>
           ) : null}
         </View>
       ) : null}

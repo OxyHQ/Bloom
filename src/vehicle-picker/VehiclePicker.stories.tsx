@@ -1,9 +1,8 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { BudgetPicker } from '../home-search';
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { VEHICLE_OPTIONS } from './constants';
@@ -50,9 +49,8 @@ const FOR_A_SOFA: readonly VehicleOption<VehicleKind>[] = PRICED.map((option) =>
 );
 
 function Page({ children, maxWidth = 560 }: { children: React.ReactNode; maxWidth?: number }) {
-  const theme = useTheme();
   return (
-    <View style={{ backgroundColor: theme.colors.background, padding: 20, gap: 16 }}>
+    <View style={{ padding: 16, gap: 16 }}>
       <View style={{ width: '100%', maxWidth, gap: 16 }}>{children}</View>
     </View>
   );
@@ -68,23 +66,6 @@ function Caption({ children }: { children: string }) {
 }
 
 /** The same block in both modes — every colour here flips. */
-function BothModes({ children }: { children: React.ReactNode }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
-  return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-      <BloomThemeProvider mode="light" colorPreset={preset}>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 560 }}>
-          <Page>{children}</Page>
-        </View>
-      </BloomThemeProvider>
-      <BloomThemeProvider mode="dark" colorPreset={preset}>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 560 }}>
-          <Page>{children}</Page>
-        </View>
-      </BloomThemeProvider>
-    </View>
-  );
-}
 
 function Picker({
   options = PRICED,
@@ -163,18 +144,11 @@ export const Disabled: Story = {
 };
 
 /** Phone width: every card drops to its compact inset, nothing overflows. */
-export const Narrow: Story = {
-  render: () => (
-    <Page maxWidth={358}>
-      <Picker options={FOR_A_SOFA} initial="refrigerated" title="Which vehicle?" />
-    </Page>
-  ),
-};
 
 /** Long copy in every slot, at phone width. */
 export const LongText: Story = {
   render: () => (
-    <Page maxWidth={358}>
+    <Page>
       <Picker
         options={[
           {
@@ -196,16 +170,6 @@ export const LongText: Story = {
         description="Every vehicle below is one a carrier near the pick-up has available this week."
       />
     </Page>
-  ),
-};
-
-/** Both modes in one shot. */
-export const Modes: Story = {
-  parameters: { controls: { disable: true } },
-  render: () => (
-    <BothModes>
-      <Picker options={FOR_A_SOFA} initial="van" title="Which vehicle?" />
-    </BothModes>
   ),
 };
 

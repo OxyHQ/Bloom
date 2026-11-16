@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import { fn } from 'storybook/test';
+import type React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -181,7 +183,7 @@ export const ToolCalls: Story = {
           status="done"
           detail="12 pages"
           durationMs={420}
-          onPress={() => {}}
+          onPress={fn().mockName('onPress')}
         />
         <AgentLogToolCall name="calculator" label="Comparing margins" status="running" />
         <AgentLogToolCall

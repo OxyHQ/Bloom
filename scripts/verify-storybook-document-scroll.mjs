@@ -8,11 +8,11 @@ const puppeteer = require(process.env.PUPPETEER_MODULE ?? 'puppeteer-core');
 const stories = process.argv.slice(2);
 if (!stories.length)
   stories.push(
-    'templates-social--light-olive',
-    'templates-social--dark-olive',
+    'templates-social--default',
+    'templates-social--signed-out',
     'templates-social--open-columns',
     'templates-social--tall-context',
-    'templates-workspace--tonal-olive',
+    'templates-workspace--default',
     'templates-home-dashboard--default',
   );
 const browser = await puppeteer.launch({

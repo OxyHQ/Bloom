@@ -22,14 +22,3 @@ type Story = StoryObj<typeof HomeDashboardTemplate>;
 export const Default: Story = {
   render: () => <HomeDashboardTemplate />,
 };
-
-/** Reference views of the shared tonal surfaces, using the real app composition. */
-export const TonalOlive: Story = {
-  ...Default,
-  globals: { theme: 'dark', colorPreset: 'olive' },
-};
-
-export const TonalCopper: Story = {
-  ...Default,
-  globals: { theme: 'dark', colorPreset: 'copper-field' },
-};

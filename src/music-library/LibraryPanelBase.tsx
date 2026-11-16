@@ -1,8 +1,9 @@
+import { Search } from '../search';
 import { PageHeader } from '../page-header/PageHeader';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useCardFill } from '../card/use-card-fill';
-import { type ComponentRef, memo, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, TextInput, View, type TextStyle } from 'react-native';
+import { memo, useEffect, useMemo, useState } from 'react';
+import { Pressable, View } from 'react-native';
 
 import { Chip, ChipRow } from '../chip';
 import { webDataSet } from '../styles/web-data';
@@ -15,14 +16,10 @@ import { RiExpandLeftRightLine } from '../icons/remix/RiExpandLeftRightLine';
 import { RiLayoutGridLine } from '../icons/remix/RiLayoutGridLine';
 import { RiListUnordered } from '../icons/remix/RiListUnordered';
 import { RiMenuLine } from '../icons/remix/RiMenuLine';
-import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { SANS_FONT_FAMILY } from '../text-field/shared';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { TYPE_SCALE } from '../typography/scale';
-import { LibraryItem } from './LibraryItem';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { MUSIC_LIBRARY_MESSAGES } from './messages';
@@ -43,7 +40,6 @@ import type {
   LibrarySort,
   LibraryView,
 } from './types';
-import { IS_WEB } from '../styles/platform';
 
 /**
  * The left-hand library.
@@ -70,23 +66,6 @@ const VIEWS: readonly LibraryView[] = ['compact', 'list', 'grid'];
 const VIEW_GLYPH = { compact: RiMenuLine, list: RiListUnordered, grid: RiLayoutGridLine } as const;
 const RAIL_WIDTH = 72;
 const GRID_MIN_TILE = 132;
-const SEARCH_TYPE = TYPE_SCALE['body-2-regular'];
-
-const searchInputStyle: TextStyle = {
-  flex: 1,
-  minWidth: 0,
-  fontFamily: SANS_FONT_FAMILY,
-  fontSize: SEARCH_TYPE.fontSize,
-  lineHeight: SEARCH_TYPE.lineHeight,
-  fontWeight: SEARCH_TYPE.fontWeight,
-  height: 32,
-  paddingTop: 0,
-  paddingBottom: 0,
-  paddingLeft: 0,
-  paddingRight: 0,
-  borderWidth: 0,
-  backgroundColor: 'transparent',
-};
 
 function mergeLabels(
   d: LibraryPanelLabels,
@@ -104,10 +83,11 @@ function mergeLabels(
 }
 
 export function createLibraryPanel({
+  LibraryItem,
   Screen,
   ScreenScrollView,
   Surface,
-  GlyphButton,
+  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
@@ -116,10 +96,11 @@ export function createLibraryPanel({
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 }: {
+  LibraryItem: typeof import('./LibraryItem')['LibraryItem'];
   Screen: typeof import('../screen')['Screen'];
   ScreenScrollView: typeof import('../screen')['ScreenScrollView'];
   Surface: typeof import('../surface')['Surface'];
-  GlyphButton: typeof import('../button')['GlyphButton'];
+  Button: typeof import('../button')['Button'];
   DropdownMenu: typeof import('../dropdown-menu')['DropdownMenu'];
   DropdownMenuContent: typeof import('../dropdown-menu')['DropdownMenuContent'];
   DropdownMenuLabel: typeof import('../dropdown-menu')['DropdownMenuLabel'];
@@ -195,10 +176,7 @@ export function createLibraryPanel({
       defaultValue: '',
       onChange: onQueryChange,
     });
-    const [searchOpen, setSearchOpen] = useState(false);
     const [listWidth, setListWidth] = useState(0);
-    const searchRef = useRef<ComponentRef<typeof TextInput>>(null);
-    const showSearch = searchOpen || query.length > 0;
 
     const shown = useMemo(
       () => sortLibraryItems(filterLibraryItems(items, { filter, downloadedOnly, query }), sort),
@@ -272,11 +250,14 @@ export function createLibraryPanel({
             contentClearance={0}
             header={
               <View style={{ alignItems: 'center', gap: 4, paddingTop: 12, paddingBottom: 8 }}>
-                <GlyphButton
+                <Button
+                  appearance="plain"
+                  tone="neutral"
+                  iconOnly
                   accessibilityLabel={labels.expandRail}
                   size={40}
                   icon={RiBookShelfLine}
-                  glyphSize={24}
+                  iconSize={24}
                   color={paint.textMuted}
                   hoverColor={paint.textMuted}
                   fill="transparent"
@@ -286,11 +267,14 @@ export function createLibraryPanel({
                   testID={pid('rail-toggle')}
                 />
                 {onCreatePress ? (
-                  <GlyphButton
+                  <Button
+                    appearance="plain"
+                    tone="neutral"
+                    iconOnly
                     accessibilityLabel={labels.create}
                     size={40}
                     icon={RiAddLine}
-                    glyphSize={22}
+                    iconSize={22}
                     color={paint.text}
                     hoverColor={paint.text}
                     fill={paint.hover}
@@ -388,11 +372,14 @@ export function createLibraryPanel({
               actions={
                 <>
                   {onCreatePress ? (
-                    <GlyphButton
+                    <Button
+                      appearance="plain"
+                      tone="neutral"
+                      iconOnly
                       accessibilityLabel={labels.create}
                       size={32}
                       icon={RiAddLine}
-                      glyphSize={20}
+                      iconSize={20}
                       color={paint.text}
                       hoverColor={paint.text}
                       fill={paint.hover}
@@ -403,11 +390,14 @@ export function createLibraryPanel({
                     />
                   ) : null}
                   {onExpandedChange ? (
-                    <GlyphButton
+                    <Button
+                      appearance="plain"
+                      tone="neutral"
+                      iconOnly
                       accessibilityLabel={expanded ? labels.collapse : labels.expand}
                       size={32}
                       icon={expanded ? RiContractLeftRightLine : RiExpandLeftRightLine}
-                      glyphSize={20}
+                      iconSize={20}
                       color={paint.textMuted}
                       hoverColor={paint.textMuted}
                       fill="transparent"
@@ -482,88 +472,18 @@ export function createLibraryPanel({
                       minHeight: 40,
                     }}
                   >
-                    {showSearch ? (
-                      <View
-                        style={{
-                          flex: 1,
-                          minWidth: 0,
-                          height: 32,
-                          borderRadius: 4,
-                          backgroundColor: paint.placeholder,
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          gap: 8,
-                          paddingLeft: 8,
-                          paddingRight: 2,
-                        }}
-                      >
-                        <RiSearchLine width={16} height={16} fill={paint.textMuted} />
-                        <TextInput
-                          ref={searchRef}
-                          {...webDataSet({ bloomMusicInput: '' })}
-                          autoFocus={searchOpen && query.length === 0}
-                          value={query}
-                          onChangeText={setQuery}
-                          onBlur={() => {
-                            if (query.length === 0) setSearchOpen(false);
-                          }}
-                          {...(IS_WEB
-                            ? {
-                                onKeyPress: (event: { nativeEvent: { key: string } }) => {
-                                  if (event.nativeEvent.key === 'Escape') {
-                                    setQuery('');
-                                    setSearchOpen(false);
-                                  }
-                                },
-                              }
-                            : null)}
-                          placeholder={labels.searchPlaceholder}
-                          placeholderTextColor={paint.textMuted}
-                          accessibilityLabel={labels.search}
-                          role="searchbox"
-                          autoCapitalize="none"
-                          autoCorrect={false}
-                          keyboardAppearance={theme.isDark ? 'dark' : 'light'}
-                          style={[searchInputStyle, { color: paint.text }]}
-                          testID={pid('search-input')}
-                        />
-                        {query.length > 0 ? (
-                          <GlyphButton
-                            accessibilityLabel={labels.clearSearch}
-                            size={28}
-                            icon={RiCloseLine}
-                            glyphSize={16}
-                            color={paint.textMuted}
-                            hoverColor={paint.textMuted}
-                            fill="transparent"
-                            hoverFill={paint.selected}
-                            ring={paint.ring}
-                            onPress={() => {
-                              setQuery('');
-                              searchRef.current?.focus();
-                            }}
-                            testID={pid('search-clear')}
-                          />
-                        ) : null}
-                      </View>
-                    ) : (
-                      <>
-                        <GlyphButton
-                          accessibilityLabel={labels.search}
-                          size={32}
-                          icon={RiSearchLine}
-                          glyphSize={18}
-                          color={paint.textMuted}
-                          hoverColor={paint.textMuted}
-                          fill="transparent"
-                          hoverFill={paint.hover}
-                          ring={paint.ring}
-                          onPress={() => setSearchOpen(true)}
-                          testID={pid('search')}
-                        />
-                        <View style={{ flexGrow: 1 }} />
-                      </>
-                    )}
+                    <Search
+                      presentation="auto"
+                      value={query}
+                      onValueChange={setQuery}
+                      onClearText={() => setQuery('')}
+                      clearOnClose
+                      label={labels.search}
+                      placeholder={labels.searchPlaceholder}
+                      testID={pid('search-input')}
+                      containerStyle={{ flex: 1 }}
+                      triggerProps={{ appearance: 'plain', testID: pid('search') }}
+                    />
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild label={labels.sortAndView}>
                         <Pressable

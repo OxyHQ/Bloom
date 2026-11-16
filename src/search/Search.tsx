@@ -1,5 +1,24 @@
-import { forwardRef, useCallback, useContext, useMemo, useRef, type ComponentRef } from 'react';
-import { Platform, type TextInput } from 'react-native';
+import { SearchTransition } from './SearchTransition';
+import { useBloomAppearance } from '../appearance/context';
+import {
+  resolveButtonGeometry,
+  BUTTON_TOUCH_TARGET,
+  buttonTouchVisualInset,
+} from '../button/shared';
+import { RiArrowLeftLine } from '../icons/remix/RiArrowLeftLine';
+import { useTouchInput } from '../styles/pointer';
+import { useSearchPresentation } from './use-search-presentation';
+import { StyledView } from '../styles/styled-primitives';
+import {
+  forwardRef,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentRef,
+} from 'react';
+import { Platform, StyleSheet, type TextInput } from 'react-native';
 
 import { useFieldMembership } from '../field/membership';
 import { TextFieldGroupContext } from '../text-field/TextField';
@@ -16,7 +35,7 @@ import { IS_WEB } from '../styles/platform';
 import { useTheme } from '../theme/use-theme';
 import { atoms as a } from '../styles';
 import { borderRadius } from '../styles/tokens';
-import { GlyphButton } from '../button';
+import { Button } from '../button';
 import { TextField, TextFieldIcon, TextFieldInput } from '../text-field';
 import { RiSearchLine as MagnifyingGlassIcon } from '../icons/remix/RiSearchLine';
 import { RiCloseLine as X } from '../icons/remix/RiCloseLine';
@@ -27,13 +46,27 @@ export const Search: RefComponent<SearchProps, ComponentRef<typeof TextInput>> =
   SearchProps
 >(function Search(
   {
-    value,
+    value: valueProp,
+    defaultValue,
+    onValueChange,
+    onChangeText,
+    presentation = 'field',
+    expandedMinWidth,
+    open,
+    defaultOpen,
+    onOpenChange,
+    clearOnClose,
+    closeLabel,
+    triggerProps,
+    trailing,
+    fieldStyle,
     label: labelProp,
     placeholder: placeholderProp,
     onClearText,
     tokens,
     onRemoveToken,
     onFocus,
+    onBlur,
     onPressIn,
     onKeyPress,
     onSelectionChange,
@@ -50,6 +83,31 @@ export const Search: RefComponent<SearchProps, ComponentRef<typeof TextInput>> =
   ref,
 ) {
   const theme = useTheme();
+  const touch = useTouchInput();
+  const scope = useBloomAppearance(
+    { size: typeof triggerProps?.size === 'number' ? undefined : triggerProps?.size },
+    { size: 'md', tone: 'neutral' },
+  );
+  const triggerStyle = StyleSheet.flatten(triggerProps?.style);
+  const triggerHeight = resolveButtonGeometry(
+    typeof triggerProps?.size === 'number' ? triggerProps.size : scope.size,
+  ).height;
+  const visualHeight = Math.max(36, triggerHeight);
+  const visualInset = buttonTouchVisualInset(visualHeight, touch);
+  const height = Math.max(visualHeight + 2 * visualInset, touch ? BUTTON_TOUCH_TARGET : 0);
+  const collapsedWidth =
+    triggerStyle?.width === '100%'
+      ? '100%'
+      : Math.max(
+          typeof triggerStyle?.width === 'number' ? triggerStyle.width : triggerHeight,
+          touch ? BUTTON_TOUCH_TARGET : 0,
+        );
+  const [draft, setDraft] = useState(defaultValue);
+  const value = valueProp ?? draft;
+  const setValue = (next: string) => {
+    setDraft(next);
+    (onValueChange ?? onChangeText)?.(next);
+  };
   const direction = useDirectionProps();
   const field = useFieldMembership({ disabled });
   const group = useContext(TextFieldGroupContext);
@@ -75,6 +133,20 @@ export const Search: RefComponent<SearchProps, ComponentRef<typeof TextInput>> =
   // selected on focus and still does not.
   const inputRef = useRef<ComponentRef<typeof TextInput>>(null);
   const refs = useMemo(() => mergeRefs([inputRef, ref]), [ref]);
+  const display = useSearchPresentation(
+    {
+      presentation,
+      expandedMinWidth,
+      open,
+      defaultOpen,
+      onOpenChange,
+      value,
+      tokens,
+      clearOnClose,
+      onClearText,
+    },
+    inputRef,
+  );
   const pressedRef = useRef(false);
   const valueRef = useRef(value);
   valueRef.current = value;
@@ -87,6 +159,7 @@ export const Search: RefComponent<SearchProps, ComponentRef<typeof TextInput>> =
   );
   const handleFocus = useCallback<NonNullable<SearchProps['onFocus']>>(
     (event) => {
+      display.focus();
       onFocus?.(event);
       const pressed = pressedRef.current;
       pressedRef.current = false;
@@ -95,7 +168,7 @@ export const Search: RefComponent<SearchProps, ComponentRef<typeof TextInput>> =
         inputRef.current?.setSelection(0, length);
       }
     },
-    [onFocus],
+    [onFocus, display.focus],
   );
 
   // Backspace with the caret at the start of the text and nothing selected
@@ -116,6 +189,17 @@ export const Search: RefComponent<SearchProps, ComponentRef<typeof TextInput>> =
   const handleKeyPress = useCallback<NonNullable<SearchProps['onKeyPress']>>(
     (event) => {
       onKeyPress?.(event);
+      if (event.defaultPrevented) return;
+      if (
+        event.nativeEvent.key === 'Escape' &&
+        display.collapsible &&
+        !(event.nativeEvent as { isComposing?: boolean }).isComposing
+      ) {
+        event.preventDefault?.();
+        event.stopPropagation?.();
+        display.close();
+        return;
+      }
       const current = tokensRef.current;
       const last = current?.[current.length - 1];
       if (!last || !onRemoveToken) return;
@@ -124,30 +208,63 @@ export const Search: RefComponent<SearchProps, ComponentRef<typeof TextInput>> =
         onRemoveToken(last.key);
       }
     },
-    [onKeyPress, onRemoveToken],
+    [onKeyPress, onRemoveToken, display.collapsible, display.close],
   );
 
-  return (
+  const fieldContent = (
     <FieldBox
       {...direction}
-      className={containerClassName}
-      style={containerStyle}
+      className={presentation === 'field' ? containerClassName : undefined}
+      style={[presentation === 'field' ? containerStyle : undefined]}
       baseStyle={[a.w_full, a.relative]}
+      onFocusCapture={presentation === 'field' ? undefined : display.focus}
+      onBlurCapture={
+        presentation === 'field'
+          ? undefined
+          : (event) => {
+              if (!event.currentTarget.contains(event.relatedTarget as Node | null)) display.blur();
+            }
+      }
     >
       <TextField
         disabled={isDisabled}
+        chromeInset={visualInset}
+        style={
+          StyleSheet.flatten([
+            presentation !== 'field' && { height },
+            touch && { minHeight: 44 },
+            fieldStyle,
+          ]) ?? undefined
+        }
         radius={borderRadius.full}
         className={fieldClassName}
         chromeClassName={fieldChromeClassName}
+        leadingAddon={
+          display.collapsible ? (
+            <Button
+              appearance="plain"
+              tone="neutral"
+              icon={RiArrowLeftLine}
+              size={28}
+              accessibilityLabel={closeLabel ?? common.close}
+              disabled={isDisabled}
+              onPress={display.close}
+              onFocus={display.focus}
+              onBlur={IS_WEB ? undefined : display.blur}
+            />
+          ) : undefined
+        }
       >
-        <TextFieldIcon icon={MagnifyingGlassIcon} size={iconSize} />
+        {!display.collapsible && <TextFieldIcon icon={MagnifyingGlassIcon} size={iconSize} />}
         {hasTokens ? (
           <SearchTokens tokens={tokens} onRemoveToken={onRemoveToken} disabled={isDisabled} />
         ) : null}
         <TextFieldInput
           inputRef={refs}
           label={label}
-          value={value}
+          value={valueProp}
+          defaultValue={defaultValue}
+          onValueChange={setValue}
           placeholder={placeholder}
           returnKeyType="search"
           keyboardAppearance={theme.mode === 'light' ? 'light' : 'dark'}
@@ -161,25 +278,79 @@ export const Search: RefComponent<SearchProps, ComponentRef<typeof TextInput>> =
           style={style}
           onPressIn={handlePressIn}
           onFocus={handleFocus}
-          {...(tokens === undefined
-            ? { onKeyPress, onSelectionChange }
-            : { onKeyPress: handleKeyPress, onSelectionChange: handleSelectionChange })}
+          onBlur={(event) => {
+            if (!IS_WEB) display.blur();
+            onBlur?.(event);
+          }}
+          onKeyPress={
+            tokens === undefined && presentation === 'field' ? onKeyPress : handleKeyPress
+          }
+          onSelectionChange={tokens === undefined ? onSelectionChange : handleSelectionChange}
         />
         {showClear && (
-          <GlyphButton
+          <Button
+            appearance="plain"
+            tone="neutral"
+            iconOnly
             size={28}
             icon={X}
-            glyphSize={16}
+            iconSize={16}
             {...clearButtonProps}
             testID="searchTextInputClearBtn"
-            onPress={onClearText}
+            onPress={() => {
+              onClearText?.();
+              inputRef.current?.focus();
+            }}
+            onFocus={display.focus}
+            onBlur={IS_WEB ? undefined : display.blur}
             accessibilityLabel={messages.clearQuery}
             disabled={isDisabled}
             style={{ marginInlineStart: 8 }}
           />
         )}
+        {trailing}
       </TextField>
     </FieldBox>
+  );
+  if (presentation === 'field') return fieldContent;
+  return (
+    <StyledView
+      className={containerClassName}
+      style={[{ width: '100%', minWidth: 0 }, containerStyle]}
+    >
+      <SearchTransition
+        expanded={display.expanded}
+        collapsedWidth={collapsedWidth}
+        height={height}
+        align={triggerStyle?.alignSelf}
+        onLayout={display.onLayout}
+        trigger={
+          <Button
+            appearance="outline"
+            tone="neutral"
+            {...triggerProps}
+            ref={display.trigger}
+            icon={MagnifyingGlassIcon}
+            accessibilityLabel={label}
+            aria-expanded={display.expanded}
+            disabled={isDisabled}
+            onPress={display.show}
+            style={[
+              triggerProps?.style,
+              {
+                width: IS_WEB ? (triggerStyle?.width ?? triggerHeight) : '100%',
+                height: IS_WEB ? visualHeight : height,
+                justifyContent: 'flex-start',
+                paddingLeft: Math.max(0, (height - (iconSize ?? 20)) / 2),
+                paddingRight: Math.max(0, (height - (iconSize ?? 20)) / 2),
+              },
+            ]}
+          />
+        }
+      >
+        {fieldContent}
+      </SearchTransition>
+    </StyledView>
   );
 });
 Search.displayName = 'Search';

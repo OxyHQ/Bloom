@@ -95,7 +95,7 @@ function normalise(color: string): string {
 function rowIds(prefix = 'lib'): string[] {
   return Array.from(container.querySelectorAll('[data-testid]'))
     .map((el) => el.getAttribute('data-testid') ?? '')
-    .filter((id) => id.startsWith(`${prefix}-item-`) && !id.endsWith('-cover'))
+    .filter((id) => id.startsWith(`${prefix}-item-`) && !/(?:-cover|-swipe|-link|-menu)$/.test(id))
     .map((id) => id.slice(`${prefix}-item-`.length));
 }
 
@@ -310,7 +310,7 @@ function libraryKind() {
 // ---------------------------------------------------------------------------
 
 describe('LibraryItem', () => {
-  it('is a button named by the whole row, flags included', () => {
+  it('names a static row with all its flags without inventing a press target', () => {
     mount(
       <LibraryItem
         item={{ ...ITEMS[0]!, pinned: true, downloaded: true }}
@@ -318,8 +318,8 @@ describe('LibraryItem', () => {
         testID="row"
       />,
     );
-    const row = byTestId('row');
-    expect(row.getAttribute('role')).toBe('button');
+    const row = byTestId('row-link');
+    expect(row.getAttribute('role')).toBeNull();
     expect(row.getAttribute('aria-label')).toBe(
       'Night Drive, Playlist · Maya, Pinned, Downloaded, Now playing',
     );
@@ -328,20 +328,20 @@ describe('LibraryItem', () => {
 
   it('marks the open page aria-current and fills it', () => {
     mount(<LibraryItem item={ITEMS[1]!} selected testID="row" />);
-    const row = byTestId('row');
-    expect(row.getAttribute('aria-current')).toBe('page');
-    expect(row.style.backgroundColor).toBe(normalise(resolveMusicLibraryPaint(theme).selected));
+    const row = byTestId('row-link');
+    expect(byTestId('row').getAttribute('data-active')).toBe('true');
+    expect(byTestId('row').getAttribute('data-bloom-list-row')).not.toBeNull();
     mount(<LibraryItem item={ITEMS[1]!} testID="row" />);
-    expect(byTestId('row').hasAttribute('aria-current')).toBe(false);
+    expect(byTestId('row').getAttribute('data-active')).toBe('false');
   });
 
-  it('draws a 48 cover, round for artists, and reports the entry on press', () => {
+  it('draws the shared 36 avatar, round for artists, and reports the entry on press', () => {
     const onPress = jest.fn();
     mount(<LibraryItem item={ITEMS[1]!} onPress={onPress} testID="row" />);
     const cover = byTestId('row-cover');
-    expect(cover.style.width).toBe('48px');
-    expect(cover.style.borderTopLeftRadius || cover.style.borderRadius).toBe('24px');
-    press('row');
+    expect(cover.style.width).toBe('36px');
+    expect(cover.style.borderTopLeftRadius || cover.style.borderRadius).toBe('18px');
+    press('row-link');
     expect(onPress).toHaveBeenCalledWith(ITEMS[1]);
     mount(<LibraryItem item={ITEMS[0]!} testID="row" />);
     expect(
@@ -421,7 +421,9 @@ describe('LibraryPanel', () => {
     expect(input.getAttribute('aria-label')).toBe('Search in Your Library');
     mount(<LibraryPanel items={ITEMS} query="lumen" testID="lib" />);
     expect(rowIds()).toEqual(['b']);
-    expect(byTestId('lib-search-clear').getAttribute('aria-label')).toBe('Clear search');
+    expect(byTestId('searchTextInputClearBtn').getAttribute('aria-label')).toBe(
+      'Clear search query',
+    );
   });
 
   it('names the sort and view trigger with the current choices', () => {
@@ -634,14 +636,14 @@ describe('RecentSearches', () => {
       />,
     );
     expect(container.querySelectorAll('[role="listitem"]')).toHaveLength(2);
-    expect(byTestId('rs-r2-open').getAttribute('aria-label')).toBe(
+    expect(byTestId('rs-r2-link').getAttribute('aria-label')).toBe(
       'Paper Moons, Album · Lumen Vale',
     );
     expect(byTestId('rs-r2-remove').getAttribute('aria-label')).toBe('Remove Paper Moons');
     press('rs-r2-remove');
     expect(onRemove).toHaveBeenCalledWith(RECENTS[1]);
     expect(onItemPress).not.toHaveBeenCalled();
-    press('rs-r1-open');
+    press('rs-r1-link');
     expect(onItemPress).toHaveBeenCalledWith(RECENTS[0]);
     expect(byTestId('rs-clear-all').textContent).toBe('Clear recent searches');
     press('rs-clear-all');

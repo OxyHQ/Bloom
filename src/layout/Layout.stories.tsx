@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import { Text } from '../typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';

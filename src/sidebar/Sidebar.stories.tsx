@@ -7,6 +7,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Badge } from '../badge';
 import { Button } from '../button';
+import { alert, prompt } from '../surfaces';
 import { useTheme } from '../theme/use-theme';
 import {
   RiSearchLine,
@@ -88,7 +89,6 @@ function OnboardingDemo() {
     <View style={{ flexDirection: 'row', height: 600, gap: 24 }}>
       <Sidebar
         surface="docked"
-        size="sm"
         showSearch={false}
         showThemeToggle={false}
         items={[{ key: 'home', label: 'Home', icon: RiHomeLine }]}
@@ -152,7 +152,12 @@ export const DEMO_NAV: SidebarNavItem[] = [
 
 export const DEMO_SECONDARY: SidebarNavItem[] = [
   { key: 'support', label: 'Support', icon: RiCustomerServiceLine },
-  { key: 'settings', label: 'Settings', icon: RiSettings4Line, onPress: () => {} },
+  {
+    key: 'settings',
+    label: 'Settings',
+    icon: RiSettings4Line,
+    onPress: () => alert('Sidebar action', 'Selected in this demo.'),
+  },
 ];
 
 /** Demo team menu groups. */
@@ -188,21 +193,30 @@ export const DEMO_TEAM: SidebarTeam = {
         { key: 'sign-out', icon: RiLogoutBoxRLine, label: 'Sign out' },
       ],
     },
-  ],
+  ].map((group) => ({
+    ...group,
+    items: group.items.map((item) => ({
+      ...item,
+      onPress: () => alert(item.label, `Opened ${item.label.toLowerCase()} for Design team.`),
+    })),
+  })),
   footer: { label: 'Bloom', version: 'v1.0.1' },
 };
 
 /** Demo account menu users. */
 export const DEMO_ACCOUNT: SidebarAccount = {
   name: 'Maya Collins',
-  avatar: { initials: 'M', color: 'neutral' },
+  avatar: { initials: 'M', color: 'neutral' as const },
   users: [
-    { id: 'm', name: 'Maya Collins', avatar: { initials: 'M', color: 'neutral' } },
-    { id: 's', name: 'Sam Rivera', avatar: { initials: 'S', color: 'lime' } },
-    { id: 'l', name: 'Lena Park', avatar: { initials: 'L', color: 'pink' } },
-  ],
-  onAddUser: () => {},
-  onManage: () => {},
+    { id: 'm', name: 'Maya Collins', avatar: { initials: 'M', color: 'neutral' as const } },
+    { id: 's', name: 'Sam Rivera', avatar: { initials: 'S', color: 'lime' as const } },
+    { id: 'l', name: 'Lena Park', avatar: { initials: 'L', color: 'pink' as const } },
+  ].map((user) => ({
+    ...user,
+    onPress: () => alert(user.name, `Selected ${user.name} in this demo workspace.`),
+  })),
+  onAddUser: () => alert('Add account', 'Choose an account to add to this demo workspace.'),
+  onManage: () => alert('Manage accounts', 'Maya Collins, Sam Rivera and Lena Park'),
 };
 
 function Frame({ children, height = 820 }: { children: React.ReactNode; height?: number }) {
@@ -318,28 +332,14 @@ export const ModeSwitcher: Story = {
 
 /** A demo mark: a 28px accent tile with a glyph. Pass your own SVG or image. */
 function DemoMark() {
-  const theme = useTheme();
-  return (
-    <View
-      style={{
-        width: 28,
-        height: 28,
-        borderRadius: 8,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: theme.colors.primary,
-      }}
-    >
-      <RiAsterisk width={18} height={18} fill="#ffffff" />
-    </View>
-  );
+  return <RiAsterisk width={28} height={28} fill={useTheme().colors.primary} />;
 }
 
 const DEMO_LOGO: SidebarLogo = {
   icon: <DemoMark />,
   wordmark: 'Oxy',
   href: '#home',
-  onPress: () => {},
+  onPress: () => alert('Sidebar action', 'Selected in this demo.'),
 };
 
 /**
@@ -362,30 +362,6 @@ export const WithLogo: Story = {
           onNavigate={(item) => setSelected(item.key)}
           account={DEMO_ACCOUNT}
           team={DEMO_TEAM}
-        />
-        <Sidebar
-          defaultCollapsed
-          logo={DEMO_LOGO}
-          items={DEMO_NAV}
-          secondaryItems={DEMO_SECONDARY}
-          selected="home"
-          team={DEMO_TEAM}
-        />
-        <Sidebar
-          mobile
-          onClose={() => {}}
-          logo={DEMO_LOGO}
-          items={DEMO_NAV}
-          secondaryItems={DEMO_SECONDARY}
-          selected="home"
-          team={DEMO_TEAM}
-        />
-        <Sidebar
-          variant="rail"
-          logo={DEMO_LOGO}
-          items={DEMO_RAIL_NAV}
-          secondaryItems={DEMO_RAIL_SECONDARY}
-          selected="home"
         />
       </Frame>
     );
@@ -432,7 +408,7 @@ export const Mobile: Story = {
     <Frame>
       <Sidebar
         mobile
-        onClose={() => {}}
+        onClose={() => alert('Sidebar closed', 'The drawer reported its close action.')}
         items={DEMO_NAV}
         secondaryItems={DEMO_SECONDARY}
         selected="calendar"
@@ -525,16 +501,6 @@ export const Tree: Story = {
           tree={REPOSITORIES}
           selectedTreeItem={selected}
           onTreeItemPress={(item) => setSelected(item.key)}
-          plan={PLAN}
-        />
-        <Sidebar
-          mobile
-          surface="plain"
-          items={CHAT_NAV}
-          secondaryItems={DEMO_SECONDARY}
-          account={DEMO_ACCOUNT}
-          tree={REPOSITORIES}
-          selectedTreeItem={selected}
           plan={PLAN}
         />
       </Frame>
@@ -714,9 +680,16 @@ export const Workspace: Story = {
   parameters: { controls: { disable: true } },
   render: function Render() {
     const [workspace, setWorkspace] = useState('acme');
+    const [workspaces, setWorkspaces] = useState([
+      { key: 'acme', label: 'Acme', description: 'Admin', initials: 'A' },
+      { key: 'home', label: 'Home', description: 'Personal', initials: 'H' },
+    ]);
     const [pages, setPages] = useState(DEMO_PAGES);
     const [open, setOpen] = useState<Record<string, boolean>>({ roadmap: true });
     const [selected, setSelected] = useState('q1');
+    const [selectedNav, setSelectedNav] = useState<string | null>(null);
+    const flatten = (items: DemoPage[]): DemoPage[] =>
+      items.flatMap((page) => [page, ...flatten(page.children)]);
     const row = (page: DemoPage): SidebarTreeItem => ({
       key: page.key,
       label: page.label,
@@ -728,18 +701,29 @@ export const Workspace: Story = {
       onOpenChange: (next) => setOpen((all) => ({ ...all, [page.key]: next })),
       draggable: true,
       actionsVisibility: 'hover',
-      actions: <Badge content="+" />,
+      actions: (
+        <Button
+          icon={RiAddLine}
+          accessibilityLabel={`Add a page inside ${page.label}`}
+          onPress={() => {
+            const next = {
+              key: `page-${Date.now()}`,
+              label: 'Untitled page',
+              emoji: '📄',
+              children: [],
+            };
+            setPages((all) => placePage(all, next, page.key, 'inside'));
+            setOpen((all) => ({ ...all, [page.key]: true }));
+          }}
+        />
+      ),
     });
-    const workspaces = [
-      { key: 'acme', label: 'Acme', description: 'Admin', initials: 'A' },
-      { key: 'home', label: 'Home', description: 'Personal', initials: 'H' },
-    ];
+
     const current = workspaces.find((w) => w.key === workspace)!;
     return (
       <Frame>
         <Sidebar
           testID="sidebar"
-          size="sm"
           surface="docked"
           showThemeToggle={false}
           showSearch={false}
@@ -761,7 +745,34 @@ export const Workspace: Story = {
                   onPress: () => setWorkspace(w.key),
                 })),
               },
-              { id: 'create', items: [{ key: 'new', label: 'Create workspace', icon: RiAddLine }] },
+              {
+                id: 'create',
+                items: [
+                  {
+                    key: 'new',
+                    label: 'Create workspace',
+                    icon: RiAddLine,
+                    onPress: async () => {
+                      const label = await prompt({
+                        title: 'Create workspace',
+                        confirmLabel: 'Create',
+                      });
+                      if (!label?.trim()) return;
+                      const key = `workspace-${Date.now()}`;
+                      setWorkspaces((all) => [
+                        ...all,
+                        {
+                          key,
+                          label: label.trim(),
+                          description: 'Admin',
+                          initials: label.trim()[0]!.toUpperCase(),
+                        },
+                      ]);
+                      setWorkspace(key);
+                    },
+                  },
+                ],
+              },
             ],
           }}
           account={{
@@ -769,17 +780,49 @@ export const Workspace: Story = {
             email: 'maya@oxy.so',
             avatar: { initials: 'M' },
             groups: [
-              { id: 'me', items: [{ key: 'settings', label: 'Settings', icon: RiSettings3Line }] },
+              {
+                id: 'me',
+                items: [
+                  {
+                    key: 'settings',
+                    label: 'Settings',
+                    icon: RiSettings3Line,
+                    onPress: () => alert('Account settings', 'Maya Collins · maya@oxy.so'),
+                  },
+                ],
+              },
               {
                 id: 'out',
                 items: [
-                  { key: 'out', label: 'Sign out', icon: RiLogoutBoxRLine, tone: 'destructive' },
+                  {
+                    key: 'out',
+                    label: 'Sign out',
+                    icon: RiLogoutBoxRLine,
+                    tone: 'destructive',
+                    onPress: () =>
+                      alert('Sign out preview', 'No account session is changed in this demo.'),
+                  },
                 ],
               },
             ],
           }}
           items={[
-            { key: 'search', label: 'Search', icon: RiSearchLine, shortcut: 'Mod+K' },
+            {
+              key: 'search',
+              label: 'Search pages',
+              icon: RiSearchLine,
+              onPress: async () => {
+                const query = await prompt({ title: 'Search pages' });
+                if (query !== null)
+                  void alert(
+                    'Matching pages',
+                    flatten(pages)
+                      .filter((page) => page.label.toLowerCase().includes(query.toLowerCase()))
+                      .map((page) => page.label)
+                      .join('\n') || 'No pages found',
+                  );
+              },
+            },
             { key: 'home', label: 'Home', icon: RiHomeLine },
             { key: 'inbox', label: 'Inbox', icon: RiNotification3Line, badge: 3 },
           ]}
@@ -795,12 +838,36 @@ export const Workspace: Story = {
               label: 'Private',
               collapsible: true,
               actionsVisibility: 'hover',
-              actions: <Badge content="+" />,
+              actions: (
+                <Button
+                  icon={RiAddLine}
+                  accessibilityLabel="Add a page"
+                  onPress={() =>
+                    setPages((all) => [
+                      ...all,
+                      {
+                        key: `page-${Date.now()}`,
+                        label: 'Untitled page',
+                        emoji: '📄',
+                        children: [],
+                      },
+                    ])
+                  }
+                />
+              ),
               items: pages.map(row),
             },
           ]}
+          selected={selectedNav ?? undefined}
+          onNavigate={(item) => {
+            setSelectedNav(item.key);
+            setSelected('');
+          }}
           selectedTreeItem={selected}
-          onTreeItemPress={(item) => setSelected(item.key)}
+          onTreeItemPress={(item) => {
+            setSelected(item.key);
+            setSelectedNav(null);
+          }}
           onTreeItemDrop={({ item, target, position }) =>
             setPages((all) => {
               const [page, rest] = takePage(all, item.key);
@@ -1089,7 +1156,11 @@ export const PrimaryAction: Story = {
     logo: DEMO_LOGO,
     items: DEMO_NAV.slice(0, 3),
     secondaryItems: DEMO_SECONDARY,
-    primaryAction: { label: 'New post', icon: RiAddLine, onPress: () => {} },
+    primaryAction: {
+      label: 'New post',
+      icon: RiAddLine,
+      onPress: () => alert('Sidebar action', 'Selected in this demo.'),
+    },
   },
   parameters: Playground.parameters,
   argTypes: Playground.argTypes,

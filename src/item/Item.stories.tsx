@@ -1,4 +1,4 @@
-import React from 'react';
+import { fn } from 'storybook/test';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -52,7 +52,7 @@ export const Pressable: Story = {
         {...args}
         leading={<PersonIcon size="md" />}
         trailing={<Badge content={3} tone="accent" />}
-        onPress={() => {}}
+        onPress={fn().mockName('Item.onPress')}
       />
     </View>
   ),

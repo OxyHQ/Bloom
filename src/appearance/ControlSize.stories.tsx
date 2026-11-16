@@ -1,11 +1,11 @@
 import { PresenceDot } from '../chat-indicators/PresenceDot';
 import { UnreadBadge } from '../chat-indicators/UnreadBadge';
 import { EnergyBadge } from '../property-insights/EnergyBadge';
-import React from 'react';
+import type React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { Button } from '../button';
 import { RiMore2Line, RiSearchLine, RiShare2Line } from '../icons/remix';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -35,16 +35,16 @@ function Caption({ children }: { children: React.ReactNode }) {
 
 function Actions() {
   return (
-    <ButtonGroup accessibilityLabel="Page actions">
-      <ButtonGroupItem iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search" />
-      <ButtonGroupItem iconOnly leadingIcon={RiShare2Line} accessibilityLabel="Share" />
-      <ButtonGroupItem iconOnly leadingIcon={RiMore2Line} accessibilityLabel="More" />
-    </ButtonGroup>
+    <Button.Group accessibilityLabel="Page actions">
+      <Button iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search" />
+      <Button iconOnly leadingIcon={RiShare2Line} accessibilityLabel="Share" />
+      <Button iconOnly leadingIcon={RiMore2Line} accessibilityLabel="More" />
+    </Button.Group>
   );
 }
 
 /**
- * The same `ButtonGroup`, written identically three times. What changes is the
+ * The same `Button.Group`, written identically three times. What changes is the
  * container around it — which is the whole point: the app declares grouping and
  * intent, the container declares the density.
  */
@@ -67,10 +67,10 @@ export const Inheritance: Story = {
       <View style={{ gap: 8 }}>
         <Caption>Small container, explicit medium group — the caller still wins.</Caption>
         <BloomScope size="sm">
-          <ButtonGroup size="md" accessibilityLabel="Page actions">
-            <ButtonGroupItem iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search" />
-            <ButtonGroupItem iconOnly leadingIcon={RiShare2Line} accessibilityLabel="Share" />
-          </ButtonGroup>
+          <Button.Group size="md" accessibilityLabel="Page actions">
+            <Button iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search" />
+            <Button iconOnly leadingIcon={RiShare2Line} accessibilityLabel="Share" />
+          </Button.Group>
         </BloomScope>
       </View>
     </View>

@@ -1,8 +1,9 @@
+import { fn } from 'storybook/test';
 import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Button, GlyphButton } from '../button';
+import { Button } from '../button';
 import { Card, CardBody } from '../card';
 import { RiCarLine, RiCloseCircleLine, RiPhoneLine, RiShoppingBag3Line } from '../icons';
 import { Text } from '../typography';
@@ -20,7 +21,7 @@ export default meta;
 
 type Story = StoryObj;
 
-const noop = () => undefined;
+const onDemoAction = fn().mockName('order-status.action');
 
 // ---------------------------------------------------------------------------
 //  Demo data — three invented pipelines. Nothing here is about parcels or food
@@ -192,7 +193,15 @@ export const Bar: Story = {
             valueText: '3 of 4 stops',
           }}
           action={
-            <GlyphButton icon={RiPhoneLine} accessibilityLabel="Call the courier" onPress={noop} />
+            <Button
+              appearance="plain"
+              tone="neutral"
+              iconOnly
+              size={36}
+              icon={RiPhoneLine}
+              accessibilityLabel="Call the courier"
+              onPress={onDemoAction}
+            />
           }
           testID="bar"
         />
@@ -211,7 +220,7 @@ export const Bar: Story = {
           icon={RiCloseCircleLine}
           tone="error"
           action={
-            <Button size="sm" onPress={noop} tone="neutral" appearance="outline">
+            <Button size="sm" onPress={onDemoAction} tone="neutral" appearance="outline">
               Reschedule
             </Button>
           }

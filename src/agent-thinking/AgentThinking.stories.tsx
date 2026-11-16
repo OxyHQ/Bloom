@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -117,7 +118,7 @@ export const StreamingReasoning: Story = {
       if (!thinking) return;
       const timer = setTimeout(() => setCount((n) => n + 1), 250);
       return () => clearTimeout(timer);
-    }, [count, thinking]);
+    }, [thinking]);
     return (
       <View style={{ padding: 40, maxWidth: 520 }}>
         <AgentThinking thinking={thinking} durationMs={words.length * 250}>

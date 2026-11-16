@@ -11,11 +11,11 @@ Surface has one shared material: a frosted body (72% of an opaque fill over a bl
 
 | Need | Base | Current consumers |
 | --- | --- | --- |
-| Filled action | Button | ButtonGroup items, SocialButton, FrostedIconButton, gallery controls, chat jump controls, composer actions, attachment actions, reactions and emoji actions |
-| Quiet icon action with ref/hover contracts | GlyphButton | PlayerIconButton, QueueIconButton and other existing glyph adapters |
+| Filled action | Button | Button.Group items, SocialButton, Button, gallery controls, chat jump controls, composer actions, attachment actions, reactions and emoji actions |
+| Quiet icon action with ref/hover contracts | Button | PlayerIconButton, QueueIconButton and other existing glyph adapters |
 | Card content | Card | LinkPreviewCard and existing card-shaped families; the Social template now uses LinkPreviewCard directly |
 | Passive container | Surface | Standalone content with caller-owned spacing |
-| Existing universal interactive/layout host | SurfacePaint | Button native, Card, Sidebar, Dialog/BottomSheet, QueuePanel, standalone UserHoverCard, native Tooltip, ComposerPanel/Pill, Toast, docked MailCompose native ContentPanel and SettingsModal; the field family (TextField, Search, PhoneInput, Textarea, InputGroup, TagField, InputOtp cells) and SelectTrigger; Chip, Badge pills, UnreadBadge counts; SegmentedControl track and thumb; the tab and bottom bar highlight; Notification, Announcement, Admonition and CloseButton; the Menubar bar, the current Pagination cell, the FileUpload frame, ShareTargetButton discs and the PlayButton disc; the Switch track, the Slider thumb, an empty Checkbox box and the RadioIndicator surface |
+| Existing universal interactive/layout host | SurfacePaint | Button native, Card, Sidebar, Dialog/BottomSheet, QueuePanel, standalone UserHoverCard, native Tooltip, ComposerPanel/Pill, Toast, docked MailCompose native ContentPanel and SettingsModal; the field family (TextField, Search, PhoneInput, Textarea, InputGroup, TagField, InputOtp cells) and SelectTrigger; Chip, Badge pills, UnreadBadge counts; SegmentedControl track and thumb; the tab and bottom bar highlight; Notification, Announcement, Admonition and Button; the Menubar bar, the current Pagination cell, the FileUpload frame, ShareTargetButton discs and the PlayButton disc; the Switch track, the Slider thumb, an empty Checkbox box and the RadioIndicator surface |
 | Existing web host with its own fill/classes | useSurfaceMaterial | FloatingPanel, Tooltip and ContentPanel; inherits the host's actual radius without measurement |
 | Anchored overlay behavior | FloatingPanel | Web Popover, DropdownMenu, ContextMenu, Menubar, Select and HoverCard |
 | Modal/sheet behavior | Dialog / BottomSheet / SheetShell | AlertDialog, Command and existing native overlay adapters |
@@ -55,7 +55,7 @@ keep their existing rendering paths.
 
 Check both modes, nested overlays, custom styles and responsive framing in Storybook. Test opening and dismissal with real pointer/keyboard events: paint-only tests cannot see covered targets. `surface-composition.test.ts` pins the migrated composition paths; existing interaction and layout suites remain authoritative. Native paint structure is tested separately; browser checks do not establish device coverage.
 
-The hierarchy audit also covers the actual fills published by floating panels, Tooltip, QueuePanel, UserHoverCard, ComposerPanel/Pill/Popover, Sidebar, Toast and SettingsModal. Plain/bare paths inherit instead of claiming a new pane. SettingsListGroup already derives its nested fill from the parent and now benefits from Card publishing it. Action colors and selection states remain semantic palettes; a Button is not automatically another container level. Custom CSS-only backgrounds require an explicit resolved fill when descendants need to compute from them; ContentPanel already exposes `surfaceColor` for this purpose.
+The hierarchy audit also covers the actual fills published by floating panels, Tooltip, QueuePanel, UserHoverCard, ComposerPanel/Pill/Popover, Sidebar, Toast and SettingsModal. Plain/bare paths inherit instead of claiming a new pane. GroupedSection already derives its nested fill from the parent and now benefits from Card publishing it. Action colors and selection states remain semantic palettes; a Button is not automatically another container level. Custom CSS-only backgrounds require an explicit resolved fill when descendants need to compute from them; ContentPanel already exposes `surfaceColor` for this purpose.
 
 
 ## Shared shells and docked chrome

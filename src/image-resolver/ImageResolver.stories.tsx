@@ -1,3 +1,4 @@
+import { Button } from '../button';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -205,9 +206,9 @@ export const NoProvider: Story = {
     );
     return (
       <View style={{ gap: 12 }}>
-        <Text onPress={() => setWithProvider((v) => !v)} style={{ fontWeight: '600' }}>
-          {withProvider ? 'provider mounted — tap to remove' : 'no provider — tap to mount'}
-        </Text>
+        <Button onPress={() => setWithProvider((v) => !v)}>
+          {withProvider ? 'Remove provider' : 'Mount provider'}
+        </Button>
         {withProvider ? (
           <ImageResolverProvider value={resolver}>{avatars}</ImageResolverProvider>
         ) : (

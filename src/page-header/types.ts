@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle, TextInputProps } from 'react-native';
 import type { SharedValue } from 'react-native-reanimated';
+import type { TypeScaleVariant } from '../typography/scale';
 
 /** Where the title sits: after the back button, or centred on the bar. */
 export type PageHeaderTitleAlign = 'start' | 'center';
@@ -88,8 +89,20 @@ export interface PageHeaderActionsState {
 export interface PageHeaderProps {
   /** A string renders as the heading; a node renders as-is and determines the header's height, including when centered. Nodes own their accessible semantics. */
   title?: ReactNode;
+  /** Typography for a string title, retaining heading semantics and the header's tone. */
+  titleVariant?: TypeScaleVariant;
   /** A string renders as a secondary line under the title; a node renders as-is. */
   subtitle?: ReactNode;
+  /** Identity visual beside the label or above it, such as an Avatar or AvatarGroup. */
+  titleVisual?: ReactNode;
+  /** Placement of titleVisual relative to the label. Stacked also aligns side controls at the top. Default inline. */
+  titleLayout?: 'inline' | 'stacked';
+  /** Shared material capsule around the title and subtitle. Default plain. */
+  titleAppearance?: 'plain' | 'capsule';
+  /** Makes the complete identity one standard Button, including its visual. */
+  onPressTitle?: () => void;
+  /** Accessible identity button name. Defaults to a string title. Required for a custom title node. */
+  titleAccessibilityLabel?: string;
   /** Default `start`. */
   titleAlign?: PageHeaderTitleAlign;
   /** The title's heading level. Default 1. */
@@ -117,14 +130,16 @@ export interface PageHeaderProps {
    * no back button at all (a top-level destination).
    */
   onBack?: (() => void) | null;
-  /** The back button's accessible name. Default "Back". */
+  /** Complete accessible name for Back. Default localized "Back", followed by backCount when present. */
   backLabel?: string;
+  /** A preformatted count beside the back arrow, in the same Button. */
+  backCount?: number | string;
 
   /** Rendered after the back button, before the title (an avatar, a logo). */
   leading?: ReactNode;
   /**
    * Rendered at the end of the bar. In the floating presentation this slot is
-   * wrapped in a `BloomScope` with shared control defaults, so a `ButtonGroup`
+   * wrapped in a `BloomScope` with shared control defaults, so a `Button.Group`
    * inside it becomes one island with no prop written on it. Declare the
    * grouping yourself — the header never infers it by reading children.
    * A render function can adapt action labels/visibility to the header's own
@@ -135,6 +150,10 @@ export interface PageHeaderProps {
    * Its measured height joins Screen's header clearance and scroll effects.
    */
   accessory?: ReactNode;
+  /** Search slot after the actions. Use `<Search presentation="auto" />` to adapt to its space. */
+  search?: ReactNode;
+  /** Persistent controls after search, such as Cancel. Remain visible when compact search takes the row. */
+  searchActions?: ReactNode;
 
   /** `presentation="bar"` only. Default `auto`. */
   border?: PageHeaderBorder;
@@ -227,6 +246,8 @@ export interface HeaderAction {
 export interface HeaderActionsProps {
   /** Stateful custom controls stay mounted and never enter overflow. The row measures and reserves them. */
   persistentActions?: ReactNode;
+  /** Keep persistent controls before or after the command group, in visual and focus order. Default start. */
+  persistentActionsPlacement?: 'start' | 'end';
   actions: readonly HeaderAction[];
   /** Override the local header budget for an intentionally embedded command row. */
   availableWidth?: number;

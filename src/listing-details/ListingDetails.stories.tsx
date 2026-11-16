@@ -1,6 +1,8 @@
+import { fn } from 'storybook/test';
 import React, { useMemo, useRef, useState } from 'react';
-import { View, useWindowDimensions } from 'react-native';
+import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 import { Badge } from '../badge';
 import {
@@ -176,14 +178,11 @@ const GALLERY: GalleryImage[] = PHOTOS.map((p) => ({
   aspectRatio: 1.5,
 }));
 
-const noop = () => {};
+const onDemoAction = fn().mockName('listing-details.action');
 
 // ---------------------------------------------------------------------------
 //  Frames
 // ---------------------------------------------------------------------------
-
-/** The preview decorator pads every story by 24; a page is edge to edge. */
-const BLEED = {};
 
 function Frame({
   width,
@@ -194,31 +193,8 @@ function Frame({
   children: React.ReactNode;
   padded?: boolean;
 }) {
-  width = Math.min(width, useWindowDimensions().width - 32);
-  const theme = useTheme();
   return (
-    // `padded={false}` cancels the preview decorator's 24px padding, for full-bleed parts.
-    <View
-      style={{
-        width: '100%',
-        alignItems: 'flex-start',
-        backgroundColor: theme.colors.background,
-        ...(padded ? null : BLEED),
-      }}
-    >
-      <View
-        style={{
-          width,
-          backgroundColor: theme.colors.background,
-          paddingTop: padded ? 24 : 0,
-          paddingBottom: padded ? 24 : 0,
-          paddingLeft: padded ? 24 : 0,
-          paddingRight: padded ? 24 : 0,
-        }}
-      >
-        {children}
-      </View>
-    </View>
+    <View style={{ width: '100%', maxWidth: width, padding: padded ? 24 : 0 }}>{children}</View>
   );
 }
 
@@ -235,7 +211,12 @@ function HeaderActions({ compact = false }: { compact?: boolean }) {
   const [saved, setSaved] = useState(false);
   return (
     <>
-      <ListingHeaderAction icon={RiShareLine} label="Share" iconOnly={compact} onPress={noop} />
+      <ListingHeaderAction
+        icon={RiShareLine}
+        label="Share"
+        iconOnly={compact}
+        onPress={onDemoAction}
+      />
       <ListingHeaderAction
         icon={saved ? RiHeart3Fill : RiHeart3Line}
         label={saved ? 'Saved' : 'Save'}
@@ -252,15 +233,16 @@ function HeaderActions({ compact = false }: { compact?: boolean }) {
 //  Full page
 // ---------------------------------------------------------------------------
 
-function ListingPage({ width }: { width: number }) {
-  width = Math.min(width, useWindowDimensions().width - 32);
-  const theme = useTheme();
+function ListingPageDemo() {
+  const { width: measuredWidth, onLayout } = useContainerWidth();
+  const width = measuredWidth ?? 0;
   const gallery = useRef<ZoomableMediaGalleryHandle>(null);
   const narrow = width < 744;
   const gutter = narrow ? 24 : 80;
   const open = (index: number) => gallery.current?.open(GALLERY, index);
 
   const reviews = useMemo(() => REVIEWS, []);
+  const [allAmenities, setAllAmenities] = useState(false);
 
   const header = (
     <ListingHeader
@@ -269,9 +251,9 @@ function ListingPage({ width }: { width: number }) {
       subtitle={SUBTITLE}
       rating={4.92}
       reviewsLabel="128 reviews"
-      onPressReviews={noop}
+      onPressReviews={onDemoAction}
       location="Porto, Portugal"
-      onPressLocation={noop}
+      onPressLocation={onDemoAction}
       badge={narrow ? undefined : <Badge content="Loved by guests" size="lg" color="primary" />}
       actions={<HeaderActions compact={narrow} />}
     />
@@ -280,7 +262,7 @@ function ListingPage({ width }: { width: number }) {
   const gutterStyle = { paddingLeft: gutter, paddingRight: gutter };
 
   return (
-    <View style={[BLEED, { width, backgroundColor: theme.colors.background }]}>
+    <View onLayout={onLayout} style={{ width: '100%', maxWidth: 1280 }}>
       {narrow ? (
         <ListingPhotoGrid photos={PHOTOS} onPressPhoto={open} testID="page-photos" />
       ) : (
@@ -301,7 +283,12 @@ function ListingPage({ width }: { width: number }) {
             <ListingHighlights items={HIGHLIGHTS} />
           </ListingSection>
           <ListingSection title="What this place offers">
-            <AmenityList items={AMENITIES} limit={narrow ? 6 : 10} total={42} onShowAll={noop} />
+            <AmenityList
+              items={AMENITIES}
+              limit={allAmenities ? AMENITIES.length : narrow ? 6 : 10}
+              total={AMENITIES.length}
+              onShowAll={() => setAllAmenities(true)}
+            />
           </ListingSection>
         </View>
         <ListingSection title="Reviews" subtitle="From guests who stayed in the last year">
@@ -348,8 +335,8 @@ function ListingPage({ width }: { width: number }) {
               { icon: RiMapPin2Line, text: 'Lives in Porto, Portugal' },
             ]}
             responseLines={['Response rate: 100%', 'Responds within an hour']}
-            onMessage={noop}
-            onPressProfile={noop}
+            onMessage={onDemoAction}
+            onPressProfile={onDemoAction}
           />
         </ListingSection>
       </View>
@@ -358,28 +345,9 @@ function ListingPage({ width }: { width: number }) {
   );
 }
 
-/** The whole page at 1280: header, photo grid (press a photo or "Show all photos" to open the gallery), sections. */
-export const PageWide: Story = {
-  name: 'Page — 1280',
-  render: () => <ListingPage width={1280} />,
-};
-
-/** The page at 375: the grid becomes a full-bleed carousel with a counter, the header moves under it. */
-export const PageNarrow: Story = {
-  name: 'Page — 375',
-  render: () => <ListingPage width={375} />,
-};
-
-export const PageWideDark: Story = {
-  name: 'Page — 1280, dark',
-  globals: { theme: 'dark' },
-  render: () => <ListingPage width={1280} />,
-};
-
-export const PageNarrowDark: Story = {
-  name: 'Page — 375, dark',
-  globals: { theme: 'dark' },
-  render: () => <ListingPage width={375} />,
+/** The responsive page: header, photo grid (press a photo or "Show all photos" to open the gallery), sections. */
+export const Page: Story = {
+  render: () => <ListingPageDemo />,
 };
 
 // ---------------------------------------------------------------------------
@@ -398,8 +366,8 @@ export const PhotoGrid: Story = {
               photos={PHOTOS.slice(0, count)}
               layout="grid"
               aspectRatio={count >= 5 ? 2 : 2.4}
-              onPressPhoto={noop}
-              onShowAll={count > 1 ? noop : undefined}
+              onPressPhoto={onDemoAction}
+              onShowAll={count > 1 ? onDemoAction : undefined}
               testID={`grid-${count}`}
             />
           </View>
@@ -413,7 +381,7 @@ export const PhotoGrid: Story = {
 export const PhotoCarousel: Story = {
   render: () => (
     <Frame width={375} padded={false}>
-      <ListingPhotoGrid photos={PHOTOS} onPressPhoto={noop} testID="carousel" />
+      <ListingPhotoGrid photos={PHOTOS} onPressPhoto={onDemoAction} testID="carousel" />
     </Frame>
   ),
 };
@@ -427,9 +395,9 @@ export const Header: Story = {
           subtitle={SUBTITLE}
           rating={4.92}
           reviewsLabel="128 reviews"
-          onPressReviews={noop}
+          onPressReviews={onDemoAction}
           location="Porto, Portugal"
-          onPressLocation={noop}
+          onPressLocation={onDemoAction}
           badge={<Badge content="Loved by guests" size="lg" color="primary" />}
           actions={<HeaderActions />}
           testID="header"
@@ -442,7 +410,7 @@ export const Header: Story = {
           subtitle="Entire cottage in Lamego"
           rating={null}
           location="Lamego, Portugal"
-          onPressLocation={noop}
+          onPressLocation={onDemoAction}
           actions={<HeaderActions compact />}
         />
       </Frame>
@@ -467,11 +435,17 @@ export const Amenities: Story = {
     <View>
       <Frame width={720}>
         <Caption>auto, 720 wide — 2 columns</Caption>
-        <AmenityList items={AMENITIES} limit={8} total={42} onShowAll={noop} testID="amenities" />
+        <AmenityList
+          items={AMENITIES}
+          limit={8}
+          total={42}
+          onShowAll={onDemoAction}
+          testID="amenities"
+        />
       </Frame>
       <Frame width={375}>
         <Caption>auto, 375 wide — 1 column</Caption>
-        <AmenityList items={AMENITIES} limit={5} total={42} onShowAll={noop} />
+        <AmenityList items={AMENITIES} limit={5} total={42} onShowAll={onDemoAction} />
       </Frame>
     </View>
   ),
@@ -497,8 +471,8 @@ export const Host: Story = {
             { icon: RiMapPin2Line, text: 'Lives in Porto, Portugal' },
           ]}
           responseLines={['Response rate: 100%', 'Responds within an hour']}
-          onMessage={noop}
-          onPressProfile={noop}
+          onMessage={onDemoAction}
+          onPressProfile={onDemoAction}
           testID="host"
         />
       </Frame>
@@ -509,7 +483,7 @@ export const Host: Story = {
             { value: '12', label: 'Reviews' },
             { value: '1', label: 'Year hosting' },
           ]}
-          onMessage={noop}
+          onMessage={onDemoAction}
         />
       </Frame>
     </View>
@@ -585,54 +559,4 @@ export const Sections: Story = {
       </Frame>
     );
   },
-};
-
-export const PartsDark: Story = {
-  name: 'Parts, dark',
-  globals: { theme: 'dark' },
-  render: () => (
-    <View>
-      <Frame width={1040}>
-        <View style={{ gap: 32 }}>
-          <ListingHeader
-            title="Sunlit flat above the river steps"
-            subtitle={SUBTITLE}
-            rating={4.92}
-            reviewsLabel="128 reviews"
-            onPressReviews={noop}
-            location="Porto, Portugal"
-            onPressLocation={noop}
-            actions={<HeaderActions />}
-          />
-          <ListingPhotoGrid photos={PHOTOS} layout="grid" onPressPhoto={noop} onShowAll={noop} />
-          <ListingHighlights items={HIGHLIGHTS} />
-          <AmenityList items={AMENITIES} limit={10} total={42} onShowAll={noop} />
-          <ReviewSummary
-            rating={4.92}
-            title="Loved by guests"
-            description="128 reviews"
-            categories={CATEGORIES}
-            distribution={DISTRIBUTION}
-          />
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 48 }}>
-            <ReviewCard {...REVIEWS[0]!} numberOfLines={3} style={{ flex: 1 }} />
-            <HostCard
-              name="Marta"
-              avatar="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400"
-              verified
-              label="Top host"
-              labelIcon={RiMedalLine}
-              stats={[
-                { value: '214', label: 'Reviews' },
-                { value: '4.92', label: 'Rating', star: true },
-                { value: '7', label: 'Years hosting' },
-              ]}
-              onMessage={noop}
-              style={{ flex: 1 }}
-            />
-          </View>
-        </View>
-      </Frame>
-    </View>
-  ),
 };

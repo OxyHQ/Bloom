@@ -18,9 +18,9 @@ function AvatarPlayer({ characterId }: { characterId: CharacterId }) {
   const [idle, setIdle] = useState(0);
   const [paused, setPaused] = useState(false);
   const [mood, setMood] = useState<AgentAvatarMood>('neutral');
-  const name = CHARACTER_PRESETS.find(({ id }) => id === characterId)!.title;
+  const name = CHARACTER_PRESETS.find(({ id }) => id === characterId)?.title;
   return (
-    <View style={{ width: 320, alignItems: 'center', gap: 16 }}>
+    <View style={{ width: 320, maxWidth: '100%', alignItems: 'center', gap: 16 }}>
       <Text variant="title-2-medium">{name}</Text>
       <AgentAvatar
         character={CHARACTER_TEMPLATES[characterId]!}
@@ -63,7 +63,9 @@ function AvatarGallery() {
       <AvatarPlayer key={selected} characterId={selected} />
       <View
         style={{
+          width: '100%',
           maxWidth: 720,
+          flexShrink: 1,
           flexDirection: 'row',
           flexWrap: 'wrap',
           gap: 12,

@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useMemo, useState } from 'react';
 import { View } from 'react-native';
@@ -78,11 +79,11 @@ export const FirstMessage: Story = {
     };
 
     return (
-      <View style={{ width: 420, minHeight: 360, gap: 16, padding: 16 }}>
+      <View style={{ width: '100%', maxWidth: 420, minHeight: 360, gap: 16, padding: 16 }}>
         <View style={{ alignItems: 'center' }}>
           <AgentProfile
             agents={sent ? TEAM : [RESPONDER]}
-            onPress={() => {}}
+            onPress={fn().mockName('onPress')}
             avatarRef={flights.anchor('profile')}
           />
         </View>
@@ -155,11 +156,11 @@ export const AgentsJoin: Story = {
     };
 
     return (
-      <View style={{ width: 420, minHeight: 360, gap: 16, padding: 16 }}>
+      <View style={{ width: '100%', maxWidth: 420, minHeight: 360, gap: 16, padding: 16 }}>
         <View style={{ alignItems: 'center' }}>
           <AgentProfile
             agents={[RESPONDER, ...joined]}
-            onPress={() => {}}
+            onPress={fn().mockName('onPress')}
             avatarRef={flights.anchor('profile')}
             avatarHidden={flights.isLanding('profile')}
           />

@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Badge } from '../badge';
+import { prompt } from '../surfaces';
 import { Card, CardBody } from '../card';
 import { Text } from '../typography';
 import { RouteStops } from './RouteStops';
@@ -17,8 +18,6 @@ const meta: Meta = {
 export default meta;
 
 type Story = StoryObj;
-
-const noop = () => undefined;
 
 // ---------------------------------------------------------------------------
 //  Demo data — invented places.
@@ -71,14 +70,14 @@ function Page({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Planner() {
-  const [stops, setStops] = useState<RouteStop[]>(PAIR);
+function Planner({ initial = PAIR }: { initial?: RouteStop[] }) {
+  const [stops, setStops] = useState<RouteStop[]>(initial);
   const swap = useCallback(() => setStops((s) => [s[1]!, s[0]!]), []);
   const add = useCallback(
     () =>
       setStops((s) => [
         ...s,
-        { id: `s${s.length}`, title: 'Add a stop', subtitle: 'Tap to choose a place' },
+        { id: `s${Date.now()}`, title: 'Add a stop', subtitle: 'Tap to choose a place' },
       ]),
     [],
   );
@@ -89,7 +88,14 @@ function Planner() {
   return (
     <RouteStops
       stops={stops}
-      onPressStop={noop}
+      onPressStop={async (id) => {
+        const stop = stops.find((item) => item.id === id);
+        const title = await prompt({ title: 'Edit stop', defaultValue: stop?.title });
+        if (title?.trim())
+          setStops((all) =>
+            all.map((item) => (item.id === id ? { ...item, title: title.trim() } : item)),
+          );
+      }}
       onSwap={swap}
       onAddStop={add}
       onRemoveStop={stops.length > 2 ? remove : undefined}
@@ -133,11 +139,11 @@ export const Edges: Story = {
   render: () => (
     <Page>
       <Section title="One stop">
-        <RouteStops stops={[PAIR[0]!]} onAddStop={noop} />
+        <Planner initial={[PAIR[0]!]} />
       </Section>
       <Section title="Five stops with removal, and a badge">
-        <RouteStops
-          stops={[
+        <Planner
+          initial={[
             ...MULTI,
             {
               id: 'e',
@@ -146,10 +152,6 @@ export const Edges: Story = {
               badge: <Badge content="New" variant="subtle" color="primary" size="label-small" />,
             },
           ]}
-          onPressStop={noop}
-          onRemoveStop={noop}
-          onAddStop={noop}
-          canAddStop={false}
         />
       </Section>
       <Section title="Long text in a narrow column">
@@ -169,7 +171,6 @@ export const Edges: Story = {
                 state: 'current',
               },
             ]}
-            onSwap={noop}
           />
         </View>
       </Section>

@@ -1,10 +1,12 @@
+import { alert } from '../surfaces';
 import {
   SegmentedControl,
   SegmentedControlItem,
   SegmentedControlItemText,
 } from '../segmented-control';
-import React, { useEffect, useState } from 'react';
-import { ScrollView, View, useWindowDimensions } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View } from 'react-native';
+import { ScrollArea } from '../layout';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Dialog, useDialogControl } from '../dialog';
@@ -257,12 +259,12 @@ function FiltersDialogDemo({ openOnMount = false }: { openOnMount?: boolean }) {
         contentPadding={0}
         testID="filters-dialog"
       >
-        <ScrollView
+        <ScrollArea
           style={{ flexShrink: 1 }}
           contentContainerStyle={{ paddingLeft: 24, paddingRight: 24 }}
         >
           <FilterSections state={state} set={set} />
-        </ScrollView>
+        </ScrollArea>
         <FilterFooter
           resultsLabel={resultsLabel(state)}
           loading={loading}
@@ -295,9 +297,7 @@ export const FiltersDialogOpen: Story = {
 };
 
 /** The body inline in a fixed-width frame, so wide and narrow sit side by side without a dialog. */
-function Panel({ width }: { width: number }) {
-  width = Math.min(width, useWindowDimensions().width - 32);
-  const theme = useTheme();
+function Panel() {
   const { state, set, reset } = useFilterState({
     ...INITIAL,
     price: [95, 380],
@@ -307,31 +307,29 @@ function Panel({ width }: { width: number }) {
   return (
     <View
       style={{
-        width,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: theme.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-        backgroundColor: theme.colors.background,
-        overflow: 'hidden',
+        width: '100%',
       }}
     >
       <View style={{ paddingLeft: 24, paddingRight: 24 }}>
         <FilterSections state={state} set={set} />
       </View>
-      <FilterFooter resultsLabel={resultsLabel(state)} onApply={() => {}} onClear={reset} />
+      <FilterFooter
+        resultsLabel={resultsLabel(state)}
+        onApply={() =>
+          alert('Filters applied', 'The selected filters are ready for the results view.')
+        }
+        onClear={reset}
+      />
     </View>
   );
 }
 
 /** Every part in a 780-wide frame (the desktop dialog's width), with some filters set. */
-export const Wide: Story = {
-  render: () => <Panel width={780} />,
+export const Inline: Story = {
+  render: () => <Panel />,
 };
 
 /** The same parts at a 375 phone width: the count pills scroll sideways, amenity chips wrap. */
-export const Narrow: Story = {
-  render: () => <Panel width={375 - 48} />,
-};
 
 // ---------------------------------------------------------------------------
 //  Each part alone
@@ -340,22 +338,17 @@ export const Narrow: Story = {
 /** `FilterSection` stacked three times: heading, description, content, hairline. */
 export const Section: Story = {
   render: function SectionStory() {
-    const theme = useTheme();
     const [on, setOn] = useState(true);
     return (
       <View style={{ width: 560, maxWidth: '100%' }}>
         <FilterSection title="Heading only">
-          <View
-            style={{ height: 40, borderRadius: 12, backgroundColor: theme.colors.contrast50 }}
-          />
+          <Text>Filter content</Text>
         </FilterSection>
         <FilterSection
           title="With a description"
           description="A secondary line that explains the section."
         >
-          <View
-            style={{ height: 40, borderRadius: 12, backgroundColor: theme.colors.contrast50 }}
-          />
+          <Text>Filter content</Text>
         </FilterSection>
         <FilterSection title="Last section" divider={false}>
           <SwitchFilterRow title="Self check-in" value={on} onValueChange={setOn} />
@@ -487,13 +480,28 @@ export const Switches: Story = {
 export const Footer: Story = {
   render: () => (
     <View style={{ width: 560, maxWidth: '100%', gap: 16 }}>
-      <FilterFooter resultsLabel="Show 1,000+ places" onApply={() => {}} onClear={() => {}} />
-      <FilterFooter resultsLabel="Show 214 places" loading onApply={() => {}} onClear={() => {}} />
+      <FilterFooter
+        resultsLabel="Show 1,000+ places"
+        onApply={() =>
+          alert('Filters applied', 'The selected filters are ready for the results view.')
+        }
+        onClear={() => alert('Filters cleared', 'The footer reported its clear action.')}
+      />
+      <FilterFooter
+        resultsLabel="Show 214 places"
+        loading
+        onApply={() =>
+          alert('Filters applied', 'The selected filters are ready for the results view.')
+        }
+        onClear={() => alert('Filters cleared', 'The footer reported its clear action.')}
+      />
       <FilterFooter
         resultsLabel="Show 1,000+ places"
         clearDisabled
-        onApply={() => {}}
-        onClear={() => {}}
+        onApply={() =>
+          alert('Filters applied', 'The selected filters are ready for the results view.')
+        }
+        onClear={() => alert('Filters cleared', 'The footer reported its clear action.')}
       />
     </View>
   ),
@@ -510,9 +518,26 @@ export const Trigger: Story = {
             key={size}
             style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'center' }}
           >
-            <FilterTriggerButton size={size} />
-            <FilterTriggerButton size={size} count={3} />
-            <FilterTriggerButton size={size} count={12} />
+            <FilterTriggerButton
+              onPress={() =>
+                alert('Filters', 'Choose the Filters dialog story to edit the complete filter set.')
+              }
+              size={size}
+            />
+            <FilterTriggerButton
+              onPress={() =>
+                alert('Filters', 'Choose the Filters dialog story to edit the complete filter set.')
+              }
+              size={size}
+              count={3}
+            />
+            <FilterTriggerButton
+              onPress={() =>
+                alert('Filters', 'Choose the Filters dialog story to edit the complete filter set.')
+              }
+              size={size}
+              count={12}
+            />
           </View>
         ))}
       </View>
@@ -759,12 +784,12 @@ function HousingFiltersDialogDemo({
         contentPadding={0}
         testID="filters-dialog"
       >
-        <ScrollView
+        <ScrollArea
           style={{ flexShrink: 1 }}
           contentContainerStyle={{ paddingLeft: 24, paddingRight: 24 }}
         >
           <HousingSections kind={kind} state={state} set={set} />
-        </ScrollView>
+        </ScrollArea>
         <FilterFooter
           resultsLabel={n >= 1000 ? `Show ${n.toLocaleString('en-US')} homes` : `Show ${n} homes`}
           clearDisabled={housingCount(kind, state) === 0}
@@ -790,9 +815,7 @@ export const HousingFiltersRent: Story = {
   render: () => <HousingFiltersDialogDemo kind="rent" openOnMount />,
 };
 
-function HousingPanel({ kind, width }: { kind: 'buy' | 'rent'; width: number }) {
-  width = Math.min(width, useWindowDimensions().width - 32);
-  const theme = useTheme();
+function HousingPanel({ kind }: { kind: 'buy' | 'rent' }) {
   const [state, setState] = useState<HousingFilterState>(() => ({
     ...housingInitial(kind),
     types: ['apartment', 'duplex'],
@@ -806,12 +829,7 @@ function HousingPanel({ kind, width }: { kind: 'buy' | 'rent'; width: number }) 
   return (
     <View
       style={{
-        width,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-        backgroundColor: theme.colors.background,
-        overflow: 'hidden',
+        width: '100%',
       }}
     >
       <View style={{ paddingLeft: 24, paddingRight: 24 }}>
@@ -819,7 +837,9 @@ function HousingPanel({ kind, width }: { kind: 'buy' | 'rent'; width: number }) 
       </View>
       <FilterFooter
         resultsLabel="Show 214 homes"
-        onApply={() => {}}
+        onApply={() =>
+          alert('Filters applied', 'The selected filters are ready for the results view.')
+        }
         onClear={() => setState(housingInitial(kind))}
       />
     </View>
@@ -827,13 +847,13 @@ function HousingPanel({ kind, width }: { kind: 'buy' | 'rent'; width: number }) 
 }
 
 /** The Buy sections inline, with filters set, at 780 (desktop dialog width). */
-export const HousingBuyWide: Story = {
-  render: () => <HousingPanel kind="buy" width={780} />,
+export const HousingBuy: Story = {
+  render: () => <HousingPanel kind="buy" />,
 };
 
 /** The Rent sections inline at a 375 phone width. */
-export const HousingRentNarrow: Story = {
-  render: () => <HousingPanel kind="rent" width={375 - 16} />,
+export const HousingRent: Story = {
+  render: () => <HousingPanel kind="rent" />,
 };
 
 /** `PriceRangeFilter` on a sale scale: linear and log over €50K – €2M, side by side. */
@@ -883,9 +903,6 @@ export const PropertyTypes: Story = {
       <View style={{ gap: 32 }}>
         <View style={{ width: 560, maxWidth: '100%' }}>
           <PropertyTypeFilter value={value} onValueChange={setValue} testID="types" />
-        </View>
-        <View style={{ width: 327, maxWidth: '100%' }}>
-          <PropertyTypeFilter value={value} onValueChange={setValue} />
         </View>
       </View>
     );

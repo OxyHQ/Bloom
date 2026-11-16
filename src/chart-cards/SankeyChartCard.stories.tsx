@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -85,8 +85,8 @@ const RANGES: SankeyRange[] = [
   },
 ];
 
-const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
+const Frame = ({ children }: { children: React.ReactNode }) => (
+  <View style={{ width: '100%', maxWidth: 760, gap: 24 }}>{children}</View>
 );
 
 /** The card: coloured sources, neutral sinks, a period dropdown, column captions. */
@@ -190,11 +190,8 @@ export const ThreeColumns: Story = {
 };
 
 /** Phone width with full names; widen the frame to compare both label layouts. */
-export const NarrowMobile: StoryObj<
-  React.ComponentProps<typeof SankeyChartCard> & { frameWidth: number }
-> = {
+export const LongLabels: Story = {
   args: {
-    frameWidth: 300,
     title: 'Weekly allocation',
     nodes: [
       { name: 'Product engineering and research', hue: 7 },
@@ -221,11 +218,10 @@ export const NarrowMobile: StoryObj<
       { source: 'Customer support and operations', target: 'Planning and collaboration', value: 8 },
     ],
   },
-  argTypes: { frameWidth: { control: { type: 'range', min: 240, max: 800, step: 20 } } },
-  parameters: { controls: { include: ['frameWidth', 'title', 'height'] } },
-  render: ({ frameWidth, ...args }) => (
-    <View style={{ width: frameWidth, maxWidth: '100%' }}>
+  parameters: { controls: { include: ['title', 'height'] } },
+  render: (args) => (
+    <Frame>
       <SankeyChartCard {...args} />
-    </View>
+    </Frame>
   ),
 };

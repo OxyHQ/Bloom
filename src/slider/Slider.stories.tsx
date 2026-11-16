@@ -1,11 +1,10 @@
 import { useArgs } from 'storybook/preview-api';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RangeSlider, Slider } from './Slider';
 import { Text } from '../typography';
-import { useTheme } from '../theme/use-theme';
 
 const meta: Meta = {
   component: Slider,
@@ -25,7 +24,6 @@ type Story = StoryObj;
 export const Matrix: Story = {
   parameters: { controls: { disable: true } },
   render: function SliderMatrix() {
-    const theme = useTheme();
     const [a, setA] = useState(40);
     const [b, setB] = useState(60);
     const [r, setR] = useState<[number, number]>([20, 70]);
@@ -36,7 +34,6 @@ export const Matrix: Story = {
           maxWidth: '100%',
           gap: 16,
           padding: 16,
-          backgroundColor: theme.colors.background,
         }}
       >
         <Slider label="Volume" value={a} onValueChange={setA} />

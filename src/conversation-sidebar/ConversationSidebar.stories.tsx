@@ -1,8 +1,9 @@
+import { AvatarGroup } from '../avatar-group';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { AgentAvatar } from '../agent-avatar';
-import { AgentStack, type AgentReplyAgent } from '../agent-reply';
+import type { AgentReplyAgent } from '../agent-reply';
 import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
 import { RiEditLine } from '../icons/remix/RiEditLine';
 import { RiPushpinLine } from '../icons/remix/RiPushpinLine';
@@ -62,18 +63,24 @@ export const Default: Story = {
   render: () => {
     const [activeId, setActiveId] = useState('1');
     const [query, setQuery] = useState('');
-    const visible = CONVERSATIONS.filter((c) =>
+    const [conversations, setConversations] = useState(CONVERSATIONS);
+    const create = (agents: AgentReplyAgent[]) => {
+      const id = `chat-${Date.now()}`;
+      setConversations((items) => [...items, { id, title: 'New conversation', agents }]);
+      setActiveId(id);
+      setQuery('');
+    };
+    const visible = conversations.filter((c) =>
       `${c.title} ${c.description}`.toLowerCase().includes(query.toLowerCase()),
     );
     return (
-      <View style={{ height: 560, width: 280 }}>
+      <View style={{ height: 560, width: '100%', maxWidth: 360 }}>
         <ConversationSidebar
           conversations={visible}
           activeId={activeId}
           onSelect={setActiveId}
           query={query}
           onQueryChange={setQuery}
-          onMarketplace={() => {}}
           createOptions={[
             {
               key: 'agent',
@@ -82,14 +89,27 @@ export const Default: Story = {
               leading: (
                 <AgentAvatar character={{ preset: 'blue_beret', color: 'violet' }} size={32} />
               ),
-              onPress: () => {},
+              onPress: () => create([AGENTS[0]!]),
             },
             {
               key: 'team',
               label: 'Chat with your agents',
               description: 'Bring your agents into one chat.',
-              leading: <AgentStack agents={AGENTS} size={32} />,
-              onPress: () => {},
+              leading: (
+                <AvatarGroup
+                  layout="conversation"
+                  showInitials
+                  items={AGENTS.map((agent) => ({
+                    id: agent.id,
+                    name: agent.name,
+                    kind: 'bot',
+                    character: agent.avatar,
+                  }))}
+                  accessibilityLabel={AGENTS.map((agent) => agent.name).join(', ')}
+                  size={32}
+                />
+              ),
+              onPress: () => create(AGENTS),
             },
           ]}
           actions={() => [
@@ -97,7 +117,19 @@ export const Default: Story = {
             { key: 'rename', label: 'Rename', icon: RiEditLine },
             { key: 'delete', label: 'Delete', icon: RiDeleteBinLine, destructive: true },
           ]}
-          onAction={() => {}}
+          onAction={(conversation, key) =>
+            setConversations((items) =>
+              key === 'delete'
+                ? items.filter((item) => item.id !== conversation.id)
+                : items.map((item) =>
+                    item.id !== conversation.id
+                      ? item
+                      : key === 'pin'
+                        ? { ...item, pinned: !item.pinned }
+                        : { ...item, title: `${item.title} (renamed)` },
+                  ),
+            )
+          }
         />
       </View>
     );
@@ -114,14 +146,13 @@ export const Sections: Story = {
     const [selected, setSelected] = useState('c1');
     const [query, setQuery] = useState('');
     return (
-      <View style={{ height: 560, width: 280 }}>
+      <View style={{ height: 560, width: '100%', maxWidth: 360 }}>
         <ConversationSidebar
           testID="conversation-sidebar"
           conversations={[]}
           query={query}
           onQueryChange={setQuery}
-          onSelect={() => {}}
-          onCreate={() => {}}
+          onSelect={setSelected}
           labels={{ empty: '' }}
           tree={[
             {

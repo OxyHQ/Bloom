@@ -5,6 +5,7 @@ import { SlideInLeft } from 'react-native-reanimated';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
+import { Card } from '../card';
 import { toast, ToastOutlet } from './index';
 import type { ToasterProps } from './types';
 
@@ -223,16 +224,9 @@ export const Custom: Story = {
       <Button
         onPress={() =>
           toast.custom(
-            <View
-              style={{
-                marginHorizontal: 16,
-                padding: 16,
-                borderRadius: 12,
-                backgroundColor: '#111',
-              }}
-            >
-              <Text style={{ color: '#fff', fontWeight: '600' }}>A completely custom row</Text>
-            </View>,
+            <Card style={{ marginHorizontal: 16, padding: 16 }}>
+              <Text variant="body-medium">Custom notification content</Text>
+            </Card>,
           )
         }
       >
@@ -388,11 +382,9 @@ export const MixedHeightStack: Story = {
       <Button
         onPress={() =>
           toast.custom(
-            <View
-              style={{ height: 220, backgroundColor: '#dcecff', borderRadius: 16, padding: 20 }}
-            >
+            <Card style={{ height: 220, padding: 20 }}>
               <Text>Custom tall notification</Text>
-            </View>,
+            </Card>,
             { duration: Infinity },
           )
         }

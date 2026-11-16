@@ -1,4 +1,4 @@
-import React from 'react';
+import { fn } from 'storybook/test';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -30,7 +30,7 @@ export const Basic: Story = {
       <BreadcrumbItem icon={HomeIcon} href="#home">
         Home
       </BreadcrumbItem>
-      <BreadcrumbItem onPress={() => {}}>Projects</BreadcrumbItem>
+      <BreadcrumbItem onPress={fn().mockName('onPress')}>Projects</BreadcrumbItem>
       <BreadcrumbItem current>Board</BreadcrumbItem>
     </Breadcrumb>
   ),
@@ -47,7 +47,7 @@ export const Matrix: Story = {
         <BreadcrumbItem current>Roadmap</BreadcrumbItem>
       </Breadcrumb>
       <Breadcrumb>
-        <BreadcrumbItem icon={HomeIcon} onPress={() => {}}>
+        <BreadcrumbItem icon={HomeIcon} onPress={fn().mockName('onPress')}>
           Home
         </BreadcrumbItem>
         <BreadcrumbItem icon={RiSettings3Line} href="#settings">

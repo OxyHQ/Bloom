@@ -1,10 +1,9 @@
 /** @jest-environment jsdom */
-import React from 'react';
 import { act } from 'react';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 import { Field } from '../field';
 import { PaymentMethodList } from '../payment-method';
-import { GlyphButton } from '../button/GlyphButton';
+import { Button } from '../button/Button.web';
 import { Select, SelectTrigger } from '../select/Select.web';
 import { LocaleProvider } from '../locale';
 import { byLabel, mount, setupHarness } from './support/commerce-harness';
@@ -12,11 +11,22 @@ setupHarness();
 
 it('keeps busy glyph controls focusable without accepting presses', () => {
   const onPress = jest.fn();
-  mount(<GlyphButton busy accessibilityLabel="Locate" onPress={onPress} />);
+  mount(
+    <Button
+      appearance="plain"
+      tone="neutral"
+      iconOnly
+      size={36}
+      loadingIndicator={null}
+      loading
+      accessibilityLabel="Locate"
+      onPress={onPress}
+    />,
+  );
   const control = byLabel('Locate');
   expect(control.getAttribute('aria-busy')).toBe('true');
-  expect(control.getAttribute('aria-disabled')).not.toBe('true');
-  expect(control.getAttribute('tabindex')).toBe('0');
+  expect(control.getAttribute('aria-disabled')).toBe('true');
+  expect(control.tabIndex).toBe(0);
   act(() => {
     control.focus();
     control.click();

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { TextInput, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Collapsible } from './index';
@@ -103,7 +103,7 @@ function LifecycleDemo() {
   const [appear, setAppear] = useState(false);
   const [tall, setTall] = useState(false);
   return (
-    <View style={{ width: 360, gap: 12 }}>
+    <View style={{ width: '100%', maxWidth: 360, gap: 12 }}>
       <Button testID="lifecycle-toggle" onPress={() => setOpen((value) => !value)}>
         Toggle
       </Button>

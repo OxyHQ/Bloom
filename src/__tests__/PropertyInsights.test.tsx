@@ -535,8 +535,8 @@ describe('NearbyPlaces', () => {
     );
     expect(byTestId('np').getAttribute('role')).toBe('list');
     const row = byTestId('np-item-0');
-    expect(row.getAttribute('role')).toBe('listitem');
-    expect(row.getAttribute('aria-label')).toBe('Lapa, Metro, 4 min walk');
+    expect(row.closest('[role="listitem"]')).not.toBeNull();
+    expect(byTestId('np-item-0-link').getAttribute('aria-label')).toBe('Lapa, Metro, 4 min walk');
     expect(row.querySelectorAll('svg')).toHaveLength(2);
   });
 });
@@ -558,9 +558,11 @@ describe('RentHistoryList', () => {
       />,
     );
     expect(byTestId('rh').getAttribute('aria-label')).toBe('Rent history');
-    expect(getComputedStyle(byTestId('rh-item-0')).borderTopWidth).toBe('0px');
-    expect(getComputedStyle(byTestId('rh-item-1')).borderTopWidth).toBe('1px');
-    expect(byTestId('rh-item-0').getAttribute('aria-label')).toBe(
+    expect(byTestId('rh').querySelectorAll('[role="separator"]')).toHaveLength(1);
+    expect(getComputedStyle(byTestId('rh').querySelector('[role="separator"]')!).height).toBe(
+      '1px',
+    );
+    expect(byTestId('rh-item-0-link').getAttribute('aria-label')).toBe(
       '€1,150 / month, Since Oct 2026, +4%, Current listing',
     );
     expect(materialFill(byTestId('rh-item-0-delta'))).toBe(

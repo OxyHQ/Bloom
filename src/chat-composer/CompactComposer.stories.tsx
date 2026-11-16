@@ -1,8 +1,10 @@
+import { fn } from 'storybook/test';
 import type { Meta, StoryObj } from '@storybook/react';
 import { useRef, useState } from 'react';
 import type { TextInputInstance } from 'react-native';
 import { CompactComposer } from './CompactComposer';
 import { Button } from '../button';
+import { Avatar } from '../avatar';
 import { StyledView as View } from '../styles/styled-primitives';
 import { Text } from '../typography';
 import { MediaAttachmentIcon } from '../icons/social/MediaAttachmentIcon';
@@ -34,7 +36,7 @@ function Example() {
         onChangeText={setValue}
         maxLength={250}
         inputRef={input}
-        avatar={<View className="h-8 w-8 rounded-full bg-accent" />}
+        avatar={<Avatar name="Alex" size={32} />}
         attachments={
           attachment ? (
             <Button onPress={() => setAttachment(false)}>Remove attachment</Button>
@@ -68,6 +70,11 @@ function Example() {
   );
 }
 export const Editable: Story = {
-  args: { value: '', onChangeText: () => {}, maxLength: 250, onSubmit: () => {} },
+  args: {
+    value: '',
+    onChangeText: fn().mockName('onChangeText'),
+    maxLength: 250,
+    onSubmit: fn().mockName('onSubmit'),
+  },
   render: () => <Example />,
 };

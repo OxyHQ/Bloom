@@ -218,7 +218,11 @@ function main() {
 
     const sources = walk(srcRoot).filter(
       (file) =>
-        /\.tsx?$/.test(file) && !NOT_COMPILED.test(file) && !file.includes(`${'__tests__'}`),
+        /\.tsx?$/.test(file) &&
+        !NOT_COMPILED.test(file) &&
+        // Bob and package.json#files exclude these development-only directories.
+        // In --worktree mode they still exist beside shipped source.
+        !/[\\/]__(?:tests|fixtures|mocks)__[\\/]/.test(file),
     );
 
     const problems = [];

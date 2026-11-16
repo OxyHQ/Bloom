@@ -51,20 +51,7 @@ const meta = {
 } satisfies Meta<typeof SocialTemplate>;
 export default meta;
 type Story = StoryObj<typeof meta>;
-export const LightOlive: Story = { globals: { theme: 'light', colorPreset: 'olive' } };
-export const DarkOlive: Story = {
-  args: {
-    authenticated: false,
-  },
-
-  globals: { theme: 'dark', colorPreset: 'olive' },
-};
-export const Copper: Story = { globals: { theme: 'dark', colorPreset: 'copper-field' } };
-export const OpenColumns: Story = {
-  globals: { theme: 'light', colorPreset: 'olive' },
-  args: { framedContent: false },
-};
-export const TallContext: Story = {
-  globals: { theme: 'light', colorPreset: 'olive' },
-  args: { tallContext: true },
-};
+export const Default: Story = {};
+export const SignedOut: Story = { args: { authenticated: false } };
+export const OpenColumns: Story = { args: { framedContent: false } };
+export const TallContext: Story = { args: { tallContext: true } };

@@ -187,7 +187,7 @@ describe('StepsCard', () => {
       />,
     );
     const prev = getByTestId('steps-range-prev');
-    expect(prev.props.role).toBe('button');
+    expect(prev.props.accessibilityRole).toBe('button');
     expect(prev.props.accessibilityLabel).toBe('Previous');
     fireEvent.press(prev);
     fireEvent.press(getByTestId('steps-range-next'));

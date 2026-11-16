@@ -17,6 +17,7 @@ import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { fontSize } from '../styles/tokens';
 import { computeClusterLayout } from './cluster-layout';
+import { computeConversationLayout } from './conversation-layout';
 import { AVATAR_GROUP_MESSAGES } from './messages';
 import type { AvatarGroupItem, AvatarGroupProps } from './types';
 
@@ -105,6 +106,8 @@ function AvatarGroupCell({
   item,
   index,
   innerSize,
+  shape,
+  testID,
   variant,
   motion,
   showInitials,
@@ -116,6 +119,8 @@ function AvatarGroupCell({
   item: AvatarGroupItem;
   index: number;
   innerSize: number;
+  shape?: AvatarGroupProps['shape'];
+  testID?: string;
   variant?: string;
   motion?: AvatarMotion;
   showInitials: boolean;
@@ -134,6 +139,13 @@ function AvatarGroupCell({
     typeof hoverHandlers?.onHoverIn === 'function' ||
     typeof hoverHandlers?.onHoverOut === 'function';
 
+  const expressive = shape !== undefined && shape !== 'circle';
+  const frame = StyleSheet.flatten(cellStyle);
+  const shapeRing =
+    expressive && typeof frame?.borderWidth === 'number' && frame.borderWidth > 0
+      ? { width: frame.borderWidth, colors: String(frame.borderColor) }
+      : undefined;
+
   const cell = (
     <View
       ref={
@@ -142,7 +154,11 @@ function AvatarGroupCell({
           : undefined
       }
       collapsable={false}
-      style={cellStyle}
+      style={
+        expressive
+          ? [cellStyle, { borderWidth: 0, borderRadius: 0, overflow: 'visible' }]
+          : cellStyle
+      }
     >
       {/*
         Route the item's avatar value through Avatar's `source` prop (not `uri`):
@@ -160,7 +176,10 @@ function AvatarGroupCell({
         initials={item.initials}
         variant={variant}
         motion={motion}
-        size={innerSize}
+        size={innerSize + (shapeRing?.width ?? 0) * 2}
+        ring={shapeRing}
+        shape={shape}
+        testID={testID}
       />
     </View>
   );
@@ -190,6 +209,9 @@ function AvatarGroupCell({
 const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
   items,
   layout = 'stack',
+  shape,
+  accessibilityLabel,
+  overflow: overflowMode,
   size = 32,
   variant = 'thumb',
   motion,
@@ -198,7 +220,7 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
   overlap,
   spacing,
   ringColor,
-  ringWidth = DEFAULT_RING_WIDTH,
+  ringWidth: ringWidthProp,
   showInitials = false,
   onPressItem,
   style,
@@ -206,7 +228,8 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
   hoverHandlers,
 }) => {
   const theme = useTheme();
-  const isCluster = layout === 'cluster';
+  const isCluster = layout === 'cluster' || layout === 'conversation';
+  const ringWidth = ringWidthProp ?? DEFAULT_RING_WIDTH;
   const isRow = layout === 'row';
 
   // The ring is the thin separator drawn between overlapping avatars. It
@@ -230,7 +253,7 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
   const shown = useMemo(() => items.slice(0, Math.max(0, effectiveMax)), [items, effectiveMax]);
 
   const realTotal = total ?? items.length;
-  const overflow = Math.max(0, realTotal - shown.length);
+  const overflow = overflowMode === 'truncate' ? 0 : Math.max(0, realTotal - shown.length);
 
   // Stack: each cell is a circular, clipped container with a `ringWidth` border,
   // and the inner Avatar is inset by the border on both sides. Row: no ring, so
@@ -280,6 +303,13 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
   if (isCluster) {
     return (
       <ClusterAvatarGroup
+        conversation={layout === 'conversation'}
+        shape={shape}
+        accessibilityLabel={accessibilityLabel}
+        overflowMode={overflowMode ?? (layout === 'conversation' ? 'truncate' : 'count')}
+        ringWidthOverride={
+          layout === 'conversation' ? (ringWidthProp ?? (size >= 40 ? 2 : 1.5)) : undefined
+        }
         items={items}
         size={size}
         variant={variant}
@@ -297,7 +327,12 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
   }
 
   return (
-    <View style={[styles.row, style]} testID={testID}>
+    <View
+      style={[styles.row, style]}
+      testID={testID}
+      role={accessibilityLabel && !interactive ? 'img' : undefined}
+      accessibilityLabel={accessibilityLabel}
+    >
       {shown.map((item, index) => {
         // The horizontal margin and stacking order live on the outermost row
         // element so layout and hit-testing stay aligned with the visual
@@ -315,6 +350,7 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
             item={item}
             index={index}
             innerSize={innerSize}
+            shape={shape}
             variant={variant}
             motion={motion}
             showInitials={showInitials}
@@ -343,6 +379,11 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
 };
 
 interface ClusterAvatarGroupProps {
+  conversation?: boolean;
+  shape?: AvatarGroupProps['shape'];
+  accessibilityLabel?: string;
+  overflowMode?: AvatarGroupProps['overflow'];
+  ringWidthOverride?: number;
   items: AvatarGroupItem[];
   size: number;
   variant?: string;
@@ -366,6 +407,11 @@ interface ClusterAvatarGroupProps {
  * uniform gap. Overflow beyond `max` collapses into a trailing "+N" bubble.
  */
 const ClusterAvatarGroup: React.FC<ClusterAvatarGroupProps> = ({
+  conversation = false,
+  shape,
+  accessibilityLabel,
+  overflowMode,
+  ringWidthOverride,
   items,
   size,
   variant,
@@ -379,18 +425,26 @@ const ClusterAvatarGroup: React.FC<ClusterAvatarGroupProps> = ({
   testID,
   hoverHandlers,
 }) => {
-  const cap = Math.max(1, max ?? CLUSTER_DEFAULT_MAX);
+  const cap = Math.max(1, conversation ? Math.min(4, max ?? 4) : (max ?? CLUSTER_DEFAULT_MAX));
   const realTotal = total ?? items.length;
-  const hasOverflow = realTotal > cap;
+  const hasOverflow = overflowMode !== 'truncate' && realTotal > cap;
   // Reserve the last bubble for the "+N" chip when there are more members than
   // the cap; otherwise every capped member gets its own bubble.
   const avatarCap = hasOverflow ? Math.max(0, cap - 1) : cap;
   const shown = useMemo(() => items.slice(0, avatarCap), [items, avatarCap]);
   const overflow = hasOverflow ? Math.max(0, realTotal - shown.length) : 0;
   const bubbleCount = shown.length + (overflow > 0 ? 1 : 0);
-  const bubbles = useMemo(() => computeClusterLayout(bubbleCount), [bubbleCount]);
-
-  const ringWidth = Math.max(1, Math.round(size * CLUSTER_RING_RATIO));
+  const ringWidth =
+    conversation && bubbleCount === 1
+      ? 0
+      : (ringWidthOverride ?? Math.max(1, Math.round(size * CLUSTER_RING_RATIO)));
+  const bubbles = useMemo(
+    () =>
+      conversation
+        ? computeConversationLayout(bubbleCount, size, ringWidth)
+        : computeClusterLayout(bubbleCount),
+    [conversation, bubbleCount, size, ringWidth],
+  );
   const interactive = typeof onPressItem === 'function';
 
   // Pressing "+N" surfaces the first hidden member (parity with the stack).
@@ -433,7 +487,19 @@ const ClusterAvatarGroup: React.FC<ClusterAvatarGroupProps> = ({
   }
 
   return (
-    <View style={[{ width: size, height: size }, style]} testID={testID}>
+    <View
+      style={[{ width: size, height: size }, style]}
+      testID={testID}
+      role={accessibilityLabel && !interactive ? 'img' : undefined}
+      accessibilityLabel={accessibilityLabel}
+      aria-hidden={
+        conversation && !accessibilityLabel && !interactive && !hoverHandlers ? true : undefined
+      }
+      accessibilityElementsHidden={conversation && !accessibilityLabel && !interactive}
+      importantForAccessibility={
+        conversation && !accessibilityLabel && !interactive ? 'no-hide-descendants' : undefined
+      }
+    >
       {shown.map((item, index) => {
         const bubble = bubbles[index];
         if (!bubble) return null;
@@ -465,6 +531,8 @@ const ClusterAvatarGroup: React.FC<ClusterAvatarGroupProps> = ({
             item={item}
             index={index}
             innerSize={inner}
+            shape={shape}
+            testID={testID ? `${testID}-face-${index}` : undefined}
             variant={variant}
             motion={motion}
             showInitials={showInitials}

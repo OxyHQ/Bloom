@@ -4,7 +4,7 @@ import type { ComponentProps } from 'react';
 import { createRoot } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
-import { ButtonGroup, ButtonGroupItem } from '../button-group/ButtonGroup.web';
+import { Button } from '../button/Button.web';
 import { BloomScope } from '../appearance';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Text } from '../typography';
@@ -24,11 +24,11 @@ function Subject({
   nested?: boolean;
 }) {
   const makeGroup = (id: string, size?: 'xs' | 'md', item?: 'xs') => (
-    <ButtonGroup size={size} accessibilityLabel="Actions">
-      <ButtonGroupItem size={item} testID={id}>
+    <Button.Group size={size} accessibilityLabel="Actions">
+      <Button size={item} testID={id}>
         <Text>Select</Text>
-      </ButtonGroupItem>
-    </ButtonGroup>
+      </Button>
+    </Button.Group>
   );
   const group = makeGroup('item', groupSize, itemSize);
   const portalGroup = makeGroup('portalled-item');
@@ -56,7 +56,7 @@ function Subject({
   );
 }
 
-it('resolves the public ButtonGroup and ButtonGroupItem size in the web DOM', () => {
+it('resolves the public Button.Group and Button size in the web DOM', () => {
   const host = document.createElement('div');
   document.body.appendChild(host);
   const root = createRoot(host);
@@ -65,31 +65,31 @@ it('resolves the public ButtonGroup and ButtonGroupItem size in the web DOM', ()
       act(() => root.render(<Subject {...props} />));
     const height = (id: string) => {
       const item = document.body.querySelector<HTMLButtonElement>(`[data-testid="${id}"]`);
-      if (!item) throw new Error(`ButtonGroupItem ${id} did not render`);
+      if (!item) throw new Error(`Button ${id} did not render`);
       return item.style.height;
     };
 
     renderSubject();
-    expect(height('item')).toBe('34px');
-    expect(height('portalled-item')).toBe('34px');
+    expect(height('item')).toBe('36px');
+    expect(height('portalled-item')).toBe('36px');
     renderSubject({ outerSize: 'xs' });
     expect(height('item')).toBe('24px');
     expect(height('portalled-item')).toBe('24px');
     renderSubject({ outerSize: 'lg' });
-    expect(height('item')).toBe('34px');
-    expect(height('portalled-item')).toBe('34px');
+    expect(height('item')).toBe('44px');
+    expect(height('portalled-item')).toBe('44px');
     renderSubject({ outerSize: 'xs', groupSize: 'md' });
-    expect(height('item')).toBe('34px');
+    expect(height('item')).toBe('36px');
     expect(height('portalled-item')).toBe('24px');
     renderSubject({ outerSize: 'lg', groupSize: 'xs' });
     expect(height('item')).toBe('24px');
-    expect(height('portalled-item')).toBe('34px');
+    expect(height('portalled-item')).toBe('44px');
     renderSubject({ outerSize: 'xs', groupSize: 'md', itemSize: 'xs' });
     expect(height('item')).toBe('24px');
     expect(height('portalled-item')).toBe('24px');
     renderSubject({ nested: true });
-    expect(height('item')).toBe('34px');
-    expect(height('portalled-item')).toBe('34px');
+    expect(height('item')).toBe('44px');
+    expect(height('portalled-item')).toBe('44px');
   } finally {
     act(() => root.unmount());
     host.remove();

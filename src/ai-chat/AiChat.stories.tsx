@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { fn } from 'storybook/test';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -143,8 +144,18 @@ export const TurnActions: Story = {
       <View style={{ maxWidth: '100%', width: 718, gap: 12 }}>
         <AiChatUserMessage
           actions={[
-            { key: 'copy', label: 'Copy message', icon: RiFileCopyLine, onPress: () => {} },
-            { key: 'edit', label: 'Edit message', icon: RiPencilLine, onPress: () => {} },
+            {
+              key: 'copy',
+              label: 'Copy message',
+              icon: RiFileCopyLine,
+              onPress: fn().mockName('onPress'),
+            },
+            {
+              key: 'edit',
+              label: 'Edit message',
+              icon: RiPencilLine,
+              onPress: fn().mockName('onPress'),
+            },
           ]}
         >
           what changed in the theme tokens?
@@ -215,7 +226,7 @@ export const CodePanel: Story = {
         additions={156}
         deletions={23}
         changedFiles={[{ path: 'app/components/button.tsx', additions: 74, status: 'New' }]}
-        onUndo={() => {}}
+        onUndo={fn().mockName('onUndo')}
       />
     </View>
   ),
@@ -267,8 +278,8 @@ export const GalleryPanel: Story = {
             width="100%"
             generations={WALL}
             generated={generated}
-            onDownload={() => {}}
-            onMore={() => {}}
+            onDownload={fn().mockName('onDownload')}
+            onMore={fn().mockName('onMore')}
           />
         </View>
       </View>
@@ -374,7 +385,7 @@ export const ResizeHandle: Story = {
             backgroundColor: colors.backgroundSecondary,
           }}
         >
-          <LayoutResizeHandle onResize={setDx} onResizeEnd={() => {}} />
+          <LayoutResizeHandle onResize={setDx} onResizeEnd={fn().mockName('onResizeEnd')} />
         </View>
       </View>
     );
@@ -394,7 +405,7 @@ export const BackgroundLayer: Story = {
   render: function Render() {
     const { colors } = useTheme();
     return (
-      <View style={{ width: 720, height: 460 }}>
+      <View style={{ width: '100%', maxWidth: 720, height: 460 }}>
         <AiChatContainer
           title="no project, own wallpaper"
           surface={false}
@@ -471,8 +482,8 @@ export const FloatingChrome: Story = {
             testID="floating-chat"
             project="vibl coding project"
             title="coding scenario"
-            onShare={() => {}}
-            onMore={() => {}}
+            onShare={fn().mockName('onShare')}
+            onMore={fn().mockName('onMore')}
             working={working}
             composer={
               <ComposerPill

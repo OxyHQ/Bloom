@@ -1,7 +1,7 @@
 import { Fragment, memo, useMemo } from 'react';
 import { View, type GestureResponderEvent } from 'react-native';
 
-import { GlyphButton } from '../button';
+import { Button } from '../button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,7 +42,7 @@ interface TrackIconButtonProps {
  * `activeColor` while pressed. Colour change only. Its press never reaches the
  * row behind it.
  *
- * `button/GlyphButton` with this family's 32 box, 20 glyph and 0.4 disabled dim
+ * `button/Button` with this family's 32 box, 20 glyph and 0.4 disabled dim
  * — the only thing left here is the row-press guard.
  */
 export function TrackIconButton({
@@ -60,11 +60,14 @@ export function TrackIconButton({
   const theme = useTheme();
   const paint = useMemo(() => resolveTrackListPaint(theme), [theme]);
   return (
-    <GlyphButton
+    <Button
+      appearance="plain"
+      tone="neutral"
+      iconOnly
       {...aria}
       icon={Icon}
       size={32}
-      glyphSize={glyph}
+      iconSize={glyph}
       accessibilityLabel={accessibilityLabel}
       disabled={disabled}
       pressed={pressed}

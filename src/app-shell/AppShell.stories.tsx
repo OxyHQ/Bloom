@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { ScrollView, View, useWindowDimensions } from 'react-native';
@@ -7,7 +8,7 @@ import { Breadcrumb, BreadcrumbItem } from '../breadcrumb';
 import { Button } from '../button';
 import { BottomBar } from '../bottom-bar';
 import { RiAddFill, RiFilter3Fill, RiHomeLine } from '../icons/remix';
-import { DEMO_NOTIFICATIONS } from '../notification-center/NotificationCenter.stories';
+import { DEMO_NOTIFICATIONS } from '../notification-center/__fixtures__/story-data';
 import {
   DEMO_ACCOUNT,
   DEMO_NAV,
@@ -83,6 +84,8 @@ function Trail() {
 
 function Actions() {
   const compact = useWindowDimensions().width < 600;
+  const [filtered, setFiltered] = useState(false);
+  const [created, setCreated] = useState(0);
   return (
     <>
       <NotificationBell notifications={DEMO_NOTIFICATIONS} testID="bell" />
@@ -91,6 +94,8 @@ function Actions() {
         icon={compact ? RiFilter3Fill : undefined}
         leadingIcon={compact ? undefined : RiFilter3Fill}
         accessibilityLabel="Filters"
+        pressed={filtered}
+        onPressedChange={setFiltered}
         appearance="outline"
         tone="neutral"
       >
@@ -100,11 +105,12 @@ function Actions() {
         size="md"
         icon={compact ? RiAddFill : undefined}
         leadingIcon={compact ? undefined : RiAddFill}
-        accessibilityLabel="Create ticket"
+        accessibilityLabel={`Create ticket; ${created} created`}
+        onPress={() => setCreated((count) => count + 1)}
         appearance="solid"
         tone="accent"
       >
-        {compact ? undefined : 'Create ticket'}
+        {compact ? undefined : created ? `${created} created` : 'Create ticket'}
       </Button>
     </>
   );
@@ -148,6 +154,7 @@ function Shell({
               description="8 full-page templates and 23 Pro components, 17 of them chart cards. One payment, updates for life, installed into this project as source."
               ctaLabel="Get Pro"
               onDismiss={() => setOffer(false)}
+              onCtaPress={() => setOffer(false)}
               testID="offer"
             />
           ) : null
@@ -220,7 +227,7 @@ export const ProOffer: Story = {
       title="Get lifetime access to Pro"
       description="8 full-page templates and 23 Pro components, 17 of them chart cards. One payment, updates for life, installed into this project as source."
       ctaLabel="Get Pro"
-      onDismiss={() => {}}
+      onDismiss={fn().mockName('onDismiss')}
       testID="offer"
     />
   ),
@@ -916,7 +923,7 @@ export const BoundedRevealPanels: Story = {
         <BottomBar
           items={[{ name: 'inbox', label: 'Inbox', icon: <RiHomeLine /> }]}
           value="inbox"
-          onValueChange={() => undefined}
+          onValueChange={fn().mockName('onValueChange')}
         />
       }
       testID="bounded-reveal"

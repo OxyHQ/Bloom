@@ -1,9 +1,9 @@
-import React, { useContext, useState } from 'react';
+import { fn } from 'storybook/test';
+import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { JobBoard } from './JobBoard';
@@ -20,7 +20,7 @@ export default meta;
 
 type Story = StoryObj;
 
-const noop = () => undefined;
+const onDemoAction = fn().mockName('job-board.action');
 
 // ---------------------------------------------------------------------------
 //  Demo data — invented loads, invented amounts, invented streets.
@@ -157,30 +157,18 @@ function Caption({ children }: { children: string }) {
   );
 }
 
-function BothModes({ children }: { children: React.ReactNode }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
-  return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-      <BloomThemeProvider mode="light" colorPreset={preset}>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 640 }}>
-          <Page>{children}</Page>
-        </View>
-      </BloomThemeProvider>
-      <BloomThemeProvider mode="dark" colorPreset={preset}>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 640 }}>
-          <Page>{children}</Page>
-        </View>
-      </BloomThemeProvider>
-    </View>
-  );
-}
-
 /** One job, everything filled in, with what it pays collapsed under it. */
 export const Card_: Story = {
   name: 'Card',
   render: () => (
     <Page>
-      <JobCard job={SOFA} onTake={noop} onPass={noop} onPressJob={noop} testID="job" />
+      <JobCard
+        job={SOFA}
+        onTake={onDemoAction}
+        onPass={onDemoAction}
+        onPressJob={onDemoAction}
+        testID="job"
+      />
     </Page>
   ),
 };
@@ -189,7 +177,7 @@ export const Card_: Story = {
 export const Looking: Story = {
   render: () => (
     <Page>
-      <JobCard job={FRIDGE} onTake={noop} onPass={noop} selected testID="job" />
+      <JobCard job={FRIDGE} onTake={onDemoAction} onPass={onDemoAction} selected testID="job" />
     </Page>
   ),
 };
@@ -203,9 +191,9 @@ export const Closed: Story = {
   render: () => (
     <Page>
       <Caption>Taken by someone else</Caption>
-      <JobCard job={PIANO} onTake={noop} onPass={noop} testID="taken" />
+      <JobCard job={PIANO} onTake={onDemoAction} onPass={onDemoAction} testID="taken" />
       <Caption>The offer ran out</Caption>
-      <JobCard job={PARCEL} onTake={noop} onPass={noop} testID="expired" />
+      <JobCard job={PARCEL} onTake={onDemoAction} onPass={onDemoAction} testID="expired" />
     </Page>
   ),
 };
@@ -216,7 +204,7 @@ export const CompactRow: Story = {
     <Page maxWidth={420}>
       <View style={{ gap: 4 }}>
         {JOBS.map((job) => (
-          <JobCard key={job.id} job={job} density="compact" onPressJob={noop} />
+          <JobCard key={job.id} job={job} density="compact" onPressJob={onDemoAction} />
         ))}
       </View>
     </Page>
@@ -234,9 +222,9 @@ export const Board: Story = {
           payBands={PAY_BANDS}
           selectedId={chosen}
           onTake={setChosen}
-          onPass={noop}
-          onPressJob={noop}
-          onRefresh={noop}
+          onPass={onDemoAction}
+          onPressJob={onDemoAction}
+          onRefresh={onDemoAction}
           testID="board"
         />
       </Page>
@@ -256,8 +244,8 @@ export const Filters: Story = {
           defaultFiltersOpen
           filter={filter}
           onFilterChange={setFilter}
-          onTake={noop}
-          onRefresh={noop}
+          onTake={onDemoAction}
+          onRefresh={onDemoAction}
           testID="board"
         />
       </Page>
@@ -274,8 +262,8 @@ export const FilteredEmpty: Story = {
         payBands={PAY_BANDS}
         defaultFilter={{ maxDistanceKm: 3, vehicles: ['boxTruck'] }}
         defaultFiltersOpen
-        onTake={noop}
-        onRefresh={noop}
+        onTake={onDemoAction}
+        onRefresh={onDemoAction}
         testID="board"
       />
     </Page>
@@ -291,7 +279,7 @@ export const Empty: Story = {
         emptyTitle="No jobs on this board"
         emptyDescription="You are outside the area this board covers. Move the pin, or turn on alerts for when something lands."
         emptyAction={
-          <Button size="md" onPress={noop} tone="neutral" appearance="outline">
+          <Button size="md" onPress={onDemoAction} tone="neutral" appearance="outline">
             Change my area
           </Button>
         }
@@ -305,7 +293,7 @@ export const Empty: Story = {
 export const Loading: Story = {
   render: () => (
     <Page>
-      <JobBoard jobs={JOBS} loading onRefresh={noop} testID="board" />
+      <JobBoard jobs={JOBS} loading onRefresh={onDemoAction} testID="board" />
     </Page>
   ),
 };
@@ -314,7 +302,13 @@ export const Loading: Story = {
 export const Refreshing: Story = {
   render: () => (
     <Page>
-      <JobBoard jobs={JOBS} payBands={PAY_BANDS} onRefresh={noop} refreshing testID="board" />
+      <JobBoard
+        jobs={JOBS}
+        payBands={PAY_BANDS}
+        onRefresh={onDemoAction}
+        refreshing
+        testID="board"
+      />
     </Page>
   ),
 };
@@ -331,20 +325,11 @@ export const LongText: Story = {
           window: 'Today between 14:00 and 16:00, or tomorrow morning',
           tags: ['Two people', 'Stairs', 'Bulky'],
         }}
-        onTake={noop}
-        onPass={noop}
-        onPressJob={noop}
+        onTake={onDemoAction}
+        onPass={onDemoAction}
+        onPressJob={onDemoAction}
         testID="job"
       />
     </Page>
-  ),
-};
-
-/** Both modes side by side. */
-export const Modes: Story = {
-  render: () => (
-    <BothModes>
-      <JobCard job={TRAYS} onTake={noop} onPass={noop} onPressJob={noop} />
-    </BothModes>
   ),
 };

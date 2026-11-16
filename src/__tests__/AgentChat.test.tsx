@@ -1,3 +1,4 @@
+import { mixColors } from '../styles/color-contrast';
 import React from 'react';
 import * as Native from 'react-native';
 import { act, fireEvent, render, within } from '@testing-library/react-native';
@@ -294,8 +295,8 @@ describe('AgentChatActions', () => {
     expect(onShare).toHaveBeenCalledWith('You: hi');
     expect(getByLabelText('Transcript copied')).toBeTruthy();
     expect(resolvedStyle(getByTestId('a-share').props.style)).toMatchObject({
-      width: 34,
-      height: 34,
+      width: 36,
+      height: 36,
     });
 
     rerender(
@@ -356,7 +357,7 @@ describe('AgentChatHistory', () => {
     expect(onQueryChange).toHaveBeenLastCalledWith('prod');
     pressHost(getByTestId('h-search-clear'));
     expect(onQueryChange).toHaveBeenLastCalledWith('');
-    expect(getByText('Names')).toBeTruthy();
+    expect(getByText('Names', { includeHiddenElements: true })).toBeTruthy();
   });
 
   it('asks for the next page once per approach to the end, and draws `after` instead of the empty line', () => {
@@ -407,18 +408,22 @@ describe('AgentChatHistory', () => {
     const { getByTestId, getByText, getByLabelText } = renderIn(
       <AgentChatHistory testID="h" threads={THREADS} activeId="t1" onSelect={onSelect} />,
     );
-    expect(getByText('2m')).toBeTruthy();
-    expect(getByText('34m')).toBeTruthy();
+    expect(getByText('2m', { includeHiddenElements: true })).toBeTruthy();
+    expect(getByText('34m', { includeHiddenElements: true })).toBeTruthy();
     expect(getByLabelText('Unread, Names')).toBeTruthy();
     expect(resolvedStyle(getByTestId('h-thread-t1').props.style).backgroundColor).toBe(
-      palette.rowHover,
+      mixColors(theme.colors.background, theme.colors.text, 0.06),
     );
-    expect(resolvedStyle(getByTestId('h-thread-t2').props.style).backgroundColor).toBeUndefined();
-    expect(resolvedStyle(getByText('Names').props.style).color).toBe(palette.text);
-    expect(resolvedStyle(getByText('Product update').props.style).color).toBe(
-      palette.textSecondary,
+    expect(resolvedStyle(getByTestId('h-thread-t2').props.style).backgroundColor).toBe(
+      'transparent',
     );
-    pressHost(getByTestId('h-thread-t2-select'));
+    expect(
+      resolvedStyle(getByText('Names', { includeHiddenElements: true }).props.style).color,
+    ).toBe(palette.text);
+    expect(
+      resolvedStyle(getByText('Product update', { includeHiddenElements: true }).props.style).color,
+    ).toBe(palette.textSecondary);
+    pressHost(getByTestId('h-thread-t2-link'));
     expect(onSelect).toHaveBeenCalledWith('t2');
   });
 
@@ -448,13 +453,14 @@ describe('AgentChatHistory', () => {
     });
   });
 
-  it('renames a thread from its menu: Enter commits the trimmed title', () => {
+  it('renames through the shared row action: Enter commits the trimmed title', () => {
     const onRename = jest.fn();
     const { getByTestId, getByText } = renderIn(
       <AgentChatHistory testID="h" threads={THREADS} onRename={onRename} />,
     );
-    fireEvent.press(getByTestId('h-thread-t1-menu'));
-    fireEvent.press(getByText('Rename'));
+    fireEvent(getByTestId('h-thread-t1-link'), 'accessibilityAction', {
+      nativeEvent: { actionName: 'rename' },
+    });
     const field = getByTestId('h-thread-t1-rename');
     fireEvent.changeText(field, '  Launch notes  ');
     fireEvent(field, 'submitEditing');
@@ -515,7 +521,9 @@ describe('AgentChat', () => {
         onSubmit={onSubmit}
       />,
     );
-    expect(within(getByTestId('chat-header')).getByText('Names')).toBeTruthy();
+    expect(
+      within(getByTestId('chat-header')).getByText('Names', { includeHiddenElements: true }),
+    ).toBeTruthy();
     fireEvent.changeText(getByTestId('chat-composer-pill-input'), '  more please ');
     pressHost(getByLabelText('Send message'));
     expect(onSubmit).toHaveBeenCalledWith('more please');

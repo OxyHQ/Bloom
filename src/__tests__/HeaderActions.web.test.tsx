@@ -64,43 +64,50 @@ function hidden(id: string) {
   return node(id).closest('[data-header-action-id]')?.getAttribute('aria-hidden') === 'true';
 }
 
-it('uses header-local room and preserves mounted buttons and a custom draft across resize', () => {
-  const actions = [
-    action('share'),
-    action('stop', { essential: true }),
-    action('close', { essential: true }),
-  ];
-  const render = () => (
-    <PageHeader
-      testID="header"
-      title="Document"
-      actions={
-        <HeaderActions
-          testID="actions"
-          actions={actions}
-          persistentActions={<input data-testid="draft" defaultValue="saved" />}
-        />
-      }
-    />
-  );
-  mount(render());
-  layout('header', 900);
-  measure(actions);
-  const stop = node('actions-stop');
-  const draft = node('draft') as HTMLInputElement;
-  draft.value = 'still editing';
-  layout('header', 240);
-  flush();
-  expect(hidden('actions-share')).toBe(true);
-  expect(hidden('actions-stop')).toBe(false);
-  expect(hidden('actions-close')).toBe(false);
-  expect(node('actions-stop')).toBe(stop);
-  expect(node('draft')).toBe(draft);
-  layout('header', 900);
-  flush();
-  expect(hidden('actions-share')).toBe(false);
-  expect(draft.value).toBe('still editing');
-});
+it.each(['start', 'end'] as const)(
+  'reserves persistent controls at %s and preserves their order and state across resize',
+  (placement) => {
+    const actions = [
+      action('share'),
+      action('stop', { essential: true }),
+      action('close', { essential: true }),
+    ];
+    const render = () => (
+      <PageHeader
+        testID="header"
+        title="Document"
+        actions={
+          <HeaderActions
+            testID="actions"
+            actions={actions}
+            persistentActions={<input data-testid="draft" defaultValue="saved" />}
+            persistentActionsPlacement={placement}
+          />
+        }
+      />
+    );
+    mount(render());
+    layout('header', 900);
+    measure(actions);
+    const stop = node('actions-stop');
+    const draft = node('draft') as HTMLInputElement;
+    expect(Boolean(draft.compareDocumentPosition(stop) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(
+      placement === 'start',
+    );
+    draft.value = 'still editing';
+    layout('header', 240);
+    flush();
+    expect(hidden('actions-share')).toBe(true);
+    expect(hidden('actions-stop')).toBe(false);
+    expect(hidden('actions-close')).toBe(false);
+    expect(node('actions-stop')).toBe(stop);
+    expect(node('draft')).toBe(draft);
+    layout('header', 900);
+    flush();
+    expect(hidden('actions-share')).toBe(false);
+    expect(draft.value).toBe('still editing');
+  },
+);
 
 it('moves keyboard focus to overflow when its inline action no longer fits', () => {
   const actions = [action('share'), action('stop', { essential: true })];
@@ -154,8 +161,8 @@ it('honors an explicit zero-width budget and recovers when its host grows', () =
 });
 
 it.each([
-  [320, false, 280],
-  [640, false, 584],
+  [320, false, 288],
+  [640, false, 608],
   [320, true, 288],
 ] as const)(
   'reserves the actual header insets at width %s, compact %s',

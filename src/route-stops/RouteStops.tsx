@@ -1,8 +1,8 @@
-import React, { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { AddressRow, resolveAddressPaint } from '../address';
-import { Button, GlyphButton } from '../button';
+import { Button } from '../button';
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import { RiArrowUpDownLine } from '../icons/remix/RiArrowUpDownLine';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
@@ -207,9 +207,12 @@ function RouteStopsComponent({
                   <>
                     {stop.action}
                     {onRemoveStop ? (
-                      <GlyphButton
+                      <Button
+                        appearance="plain"
+                        tone="neutral"
+                        iconOnly
                         size={32}
-                        glyphSize={16}
+                        iconSize={16}
                         icon={RiCloseLine}
                         color={paint.textTertiary}
                         hoverColor={paint.text}
@@ -243,7 +246,10 @@ function RouteStopsComponent({
               justifyContent: 'center',
             }}
           >
-            <GlyphButton
+            <Button
+              appearance="plain"
+              tone="neutral"
+              iconOnly
               size={ROUTE_STOPS_SWAP_SIZE}
               icon={RiArrowUpDownLine}
               color={paint.textSecondary}

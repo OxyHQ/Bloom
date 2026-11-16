@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -82,8 +82,8 @@ const WEEK: AreaPoint[] = [
   { label: 'Fri', organic: 260, referral: 110, paid: 52 },
 ];
 
-const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
+const Frame = ({ children }: { children: React.ReactNode }) => (
+  <View style={{ width: '100%', maxWidth: 760, gap: 24 }}>{children}</View>
 );
 
 /** Default look: areas stacked into one silhouette, a period dropdown, the legend. */
@@ -253,17 +253,6 @@ export const CustomSeries: Story = {
         ]}
         format={(v) => `${Math.round(v).toLocaleString('en-US')}`}
       />
-    </Frame>
-  ),
-};
-
-/** A phone-width card: month labels thin out, tiles go two per row below `sm`. */
-export const Narrow: Story = {
-  parameters: { controls: { disable: true } },
-  render: () => (
-    <Frame width={320}>
-      <AreaChartCard series={SERIES} ranges={RANGES} />
-      <AreaChartCard series={SERIES} ranges={RANGES} tiles />
     </Frame>
   ),
 };

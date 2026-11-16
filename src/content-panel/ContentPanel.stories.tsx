@@ -1,7 +1,7 @@
-import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import { PageHeader } from '../page-header';
 import { ContentPanel } from './index';
 import { Text } from '../typography';
 import { Divider } from '../divider';
@@ -116,9 +116,7 @@ export const ExternalHeaderBoundedShell: Story = {
   },
   render: (args) => (
     <View style={{ maxWidth: '100%', width: 720, height: 480, flexDirection: 'column' }}>
-      <View style={{ height: 56, justifyContent: 'center' }}>
-        <Text style={{ fontSize: 16, fontWeight: '700' }}>External header (outside the panel)</Text>
-      </View>
+      <PageHeader title="External header (outside the panel)" onBack={null} safeArea={false} />
       <View style={{ flex: 1 }}>
         <ContentPanel {...args}>
           <Body />
@@ -155,7 +153,7 @@ export const SideBySide: Story = {
  */
 export const Chrome: Story = {
   render: () => (
-    <View style={{ gap: 32, padding: 24, width: 760 }}>
+    <View style={{ gap: 32, padding: 24, width: '100%', maxWidth: 760 }}>
       {(['elevated', 'border', 'none'] as const).map((chrome) => (
         <View key={chrome} style={{ gap: 8 }}>
           <Text variant="body-2-medium">{`chrome="${chrome}"`}</Text>

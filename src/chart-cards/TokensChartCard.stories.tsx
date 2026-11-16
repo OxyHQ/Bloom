@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -37,8 +37,8 @@ const SERIES: TokensPoint[] = VALUES.map((value, day) => {
   return { label: `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`, value };
 });
 
-const Frame = ({ children, width = 680 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
+const Frame = ({ children }: { children: React.ReactNode }) => (
+  <View style={{ width: '100%', maxWidth: 760, gap: 24 }}>{children}</View>
 );
 
 /** The design: 667.7M tokens and a +9.4% chip; the plot wipes in. Hover a day. */
@@ -117,7 +117,7 @@ export const IdleDayHovered: Story = {
 };
 
 /** A phone-width column: no chip, the headline summed from the data, custom colours. */
-export const Narrow: Story = {
+export const CustomUnits: Story = {
   args: {
     title: 'Requests',
     color: '#2dd4bf',
@@ -141,7 +141,7 @@ export const Narrow: Story = {
     },
   },
   render: (args) => (
-    <Frame width={358}>
+    <Frame>
       <TokensChartCard
         {...args}
         data={SERIES.slice(12)}

@@ -228,7 +228,6 @@ export function AlbumPage({ id }: { id: string }) {
             download={download.state}
             downloadProgress={download.progress}
             onDownloadPress={download.press}
-            onMorePress={() => {}}
             view={view}
             onViewChange={setView}
           />
@@ -413,7 +412,6 @@ export function PlaylistPage({ id, kind = 'playlist' }: { id: string; kind?: 'pl
               download={download.state}
               downloadProgress={download.progress}
               onDownloadPress={download.press}
-              onMorePress={() => {}}
               onSearchPress={() => router.navigate({ name: 'search' })}
               view={view}
               onViewChange={setView}

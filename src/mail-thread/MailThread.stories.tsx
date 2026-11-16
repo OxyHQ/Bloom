@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -129,9 +130,9 @@ const MESSAGES: MailThreadMessage[] = [
       </Body>
     ),
     trimmed: <Quoted>On 12 March, Nuria Palau wrote: The railing spacing on the drawing…</Quoted>,
-    onReply: () => undefined,
-    onReplyAll: () => undefined,
-    onForward: () => undefined,
+    onReply: fn().mockName('onReply'),
+    onReplyAll: fn().mockName('onReplyAll'),
+    onForward: fn().mockName('onForward'),
   },
 ];
 
@@ -163,7 +164,12 @@ export const Thread: Story = {
           onStarredChange={setStarred}
           messages={MESSAGES}
           quickReply={
-            <Button size="sm" onPress={() => undefined} tone="neutral" appearance="outline">
+            <Button
+              size="sm"
+              onPress={fn().mockName('onPress')}
+              tone="neutral"
+              appearance="outline"
+            >
               Reply to Mireia
             </Button>
           }
@@ -172,19 +178,6 @@ export const Thread: Story = {
       </Frame>
     );
   },
-};
-
-export const ThreadOnPhone: Story = {
-  render: () => (
-    <Frame width={390}>
-      <MailThread
-        subject="Roof survey — the tiles on the north pitch"
-        labels={[{ id: 'work', name: 'Work', tone: 'info' }]}
-        messages={MESSAGES}
-        testID="thread-phone"
-      />
-    </Frame>
-  ),
 };
 
 export const NoCollapse: Story = {
@@ -211,7 +204,7 @@ export const Message: Story = {
         <MailMessage
           {...MESSAGES[4]!}
           defaultExpanded
-          onStarredChange={() => undefined}
+          onStarredChange={fn().mockName('onStarredChange')}
           testID="msg-expanded"
         />
       </View>

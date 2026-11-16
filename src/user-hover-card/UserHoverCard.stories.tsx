@@ -1,11 +1,11 @@
 import React from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { ActivityHeatmap } from '../activity-heatmap';
 import { Button } from '../button';
-import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { useTheme } from '../theme/use-theme';
+import { Chip } from '../chip';
+import { alert } from '../surfaces';
 import { Text } from '../typography';
 import { UserHoverCard } from './UserHoverCard';
 import type { UserHoverCardProps } from './types';
@@ -170,29 +170,6 @@ export const Matrix: Story = {
   render: () => <MatrixGrid />,
 };
 
-function DarkSurface({ children }: { children: React.ReactNode }) {
-  const theme = useTheme();
-  return <View style={{ padding: 24, backgroundColor: theme.colors.background }}>{children}</View>;
-}
-
-export const Dark: Story = {
-  parameters: { controls: { disable: true } },
-  render: (_args, context) => (
-    <BloomThemeProvider
-      mode="dark"
-      colorPreset={
-        context.globals.colorPreset as React.ComponentProps<
-          typeof BloomThemeProvider
-        >['colorPreset']
-      }
-    >
-      <DarkSurface>
-        <MatrixGrid />
-      </DarkSurface>
-    </BloomThemeProvider>
-  ),
-};
-
 /**
  * The `footer` slot carrying a real chart — the case the slot was added for
  * (Mention renders a contribution graph under the bio). The heatmap's own cells
@@ -267,23 +244,16 @@ function BothSlotsStory() {
         action={<DemoFollowButton />}
         onPressProfile={() => setPressed('profile')}
         badge={
-          <Pressable
+          <Chip
             testID="badge-slot"
-            accessibilityRole="button"
             accessibilityLabel="What is a channel?"
             onPress={(event) => {
               event.stopPropagation();
               setPressed('badge');
             }}
-            style={{
-              paddingHorizontal: 6,
-              paddingVertical: 1,
-              borderRadius: 999,
-              backgroundColor: '#E8EAED',
-            }}
           >
-            <Text style={{ fontSize: 11, color: '#3C4043' }}>channel</Text>
-          </Pressable>
+            channel
+          </Chip>
         }
         footer={
           <View style={{ gap: 4 }} testID="footer-slot">
@@ -317,18 +287,7 @@ export const BadgeWithLongHandle: Story = {
     displayName: 'A Very Long Display Name Indeed',
     username: 'an-extremely-long-handle-that-will-not-fit',
     bio: 'The handle yields; the marker does not.',
-    badge: (
-      <View
-        style={{
-          paddingHorizontal: 6,
-          paddingVertical: 1,
-          borderRadius: 999,
-          backgroundColor: '#E8EAED',
-        }}
-      >
-        <Text style={{ fontSize: 11, color: '#3C4043' }}>fediverse</Text>
-      </View>
-    ),
+    badge: <Chip>fediverse</Chip>,
   },
   name: 'Badge with a long handle',
 };
@@ -345,7 +304,7 @@ export const Pressable_: Story = {
         cover={SAMPLE_COVER}
         action={<DemoFollowButton />}
         onPressProfile={() => {
-          if (typeof window !== 'undefined') window.alert('open profile');
+          alert('Profile', 'Linus Torvalds — Creator of Linux and Git.');
         }}
       />
       <Text>Click the identity area to open the profile.</Text>

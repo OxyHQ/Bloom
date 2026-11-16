@@ -1,3 +1,4 @@
+import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 /**
  * Derived from sonner-native v0.26.4 — src/toast.tsx:440-689
@@ -43,7 +44,7 @@ import {
 
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { parseRgba } from '../theme/color-utils';
-import { Button, CloseButton } from '../button';
+import { Button } from '../button';
 import { NOTIFICATION_GEOMETRY as G } from '../notification/shared';
 import { space } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -390,8 +391,12 @@ function ToastCloseButton({
   }
 
   return (
-    <CloseButton
-      size="xs"
+    <Button
+      appearance="outline"
+      tone="neutral"
+      iconOnly
+      icon={DismissActionIcon}
+      size={20}
       onPress={handlePress}
       // The NAME. Every other button in a toast is named by the text it
       // renders; this one renders a glyph, so it announced itself as an

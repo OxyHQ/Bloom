@@ -1,5 +1,5 @@
 /**
- * Real Chrome pointer gate for MailRow. Synthetic element.click() bypasses the
+ * Real Chrome pointer gate for ListItem. Synthetic element.click() bypasses the
  * defect: an inert foreground layout View can intercept the absolute row link.
  * Run Storybook, then CHROME_PATH=<chrome> node scripts/verify-mail-row-pointer.mjs [--url URL].
  */
@@ -17,15 +17,15 @@ try {
   const page = await browser.newPage();
   await page.setViewport({ width: 1000, height: 900 });
   await page.goto(`${base}/iframe.html?id=blocks-mail-mail-list--pointer-targets&viewMode=story`, {
-    waitUntil: 'networkidle0',
+    waitUntil: 'domcontentloaded',
   });
-  await page.waitForSelector('[data-testid="hit-comfortable"]');
+  await page.waitForSelector('[data-testid="hit-compact"]');
   // Negative control: restoring the original intercepting layout must block
   // the same coordinates the positive cases will click.
   const detectsOldBug = await page.evaluate(() => {
-    const row = document.querySelector('[data-testid="hit-comfortable"]');
+    const row = document.querySelector('[data-testid="hit-compact"]');
     const foreground = row.children[1];
-    const sender = document.querySelector('[data-testid="hit-comfortable-sender"]');
+    const sender = document.querySelector('[data-testid="hit-compact-sender"]');
     const r = sender.getBoundingClientRect();
     foreground.style.setProperty('pointer-events', 'auto', 'important');
     const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
@@ -35,11 +35,11 @@ try {
   if (!detectsOldBug) throw new Error('Negative control did not reproduce foreground interception');
   let opens = 0;
   const count = (id) => page.$eval(`[data-testid="${id}"]`, (e) => Number(e.textContent));
-  for (const density of ['compact', 'comfortable']) {
+  for (const density of ['compact']) {
     for (const part of [
       'sender',
       'subject',
-      'avatar',
+      'avatar-image',
       'time',
       'attachment',
       'thread-count',
@@ -75,15 +75,16 @@ try {
     if (beforeStar === afterStar) throw new Error(`${density}: star did not toggle`);
     if ((await count('hit-opened')) !== opens) throw new Error(`${density}: star opened the row`);
   }
-  await page.click('[data-testid="hit-selection-checkbox"]');
+  await page.click('[data-testid="hit-selection-check"]');
   if ((await count('hit-opened')) !== opens) throw new Error('Selection opened the row');
-  await page.hover('[data-testid="hit-actions"]');
-  await page.waitForSelector('[data-testid="hit-actions-action-archive"]', { visible: true });
-  await page.click('[data-testid="hit-actions-action-archive"]');
+  const actionRow = await page.$('[data-testid="hit-actions"]');
+  await actionRow.click({ button: 'right' });
+  await page.waitForSelector('[role="menuitem"]');
+  await page.click('[role="menuitem"]');
   if ((await count('hit-archived')) !== 1 || (await count('hit-opened')) !== opens)
     throw new Error('Archive action routing failed');
   console.log(
-    `PASS: ${opens} real row clicks across both densities; stars, checkbox and archive stay independent`,
+    `PASS: ${opens} real row clicks at compact density; stars, checkbox and archive stay independent`,
   );
 } finally {
   await browser.close();

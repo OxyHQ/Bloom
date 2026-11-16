@@ -30,7 +30,7 @@ it.each([
   'src/notification/Notification.tsx',
   'src/announcement/Announcement.tsx',
   'src/admonition/Admonition.tsx',
-  'src/button/CloseButton.tsx',
+  'src/button/Button.tsx',
   'src/menubar/MenubarBase.tsx',
   'src/pagination/Pagination.tsx',
   'src/input-otp/InputOtp.tsx',

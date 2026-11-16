@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const puppeteer = require('/home/nate/Oxy/Homiio/node_modules/puppeteer-core');
+const puppeteer = require(process.env.PUPPETEER_CORE_PATH ?? 'puppeteer-core');
 const browser = await puppeteer.launch({
   executablePath: process.env.CHROME_PATH ?? '/opt/google/chrome/chrome',
   headless: true,
@@ -17,14 +17,20 @@ try {
     await page.setViewport({ width: 1100, height: 900 });
     await page.goto(
       `${base}/iframe.html?id=composition-headers-adaptive-actions--local-width&viewMode=story&globals=theme:${mode}`,
-      { waitUntil: 'networkidle0' },
+      { waitUntil: 'domcontentloaded' },
     );
     await page.waitForSelector('[data-testid="adaptive-actions-stop"]', { visible: true });
     await page.evaluate(() => {
       window.__headerStop = document.querySelector('[data-testid="adaptive-actions-stop"]');
     });
     for (const width of [900, 640, 390, 320, 240]) {
-      await page.click(`[data-testid="actions-width-${width}"]`);
+      await page.$eval(
+        '[data-testid="action-host"]',
+        (host, value) => {
+          host.style.width = `${value}px`;
+        },
+        width,
+      );
       await page.waitForFunction(
         (width) =>
           Math.abs(
@@ -49,7 +55,9 @@ try {
         document.querySelector('[data-testid="adaptive-actions"]').getBoundingClientRect().width ===
         0,
     );
-    await page.click('[data-testid="actions-width-320"]');
+    await page.$eval('[data-testid="action-host"]', (host) => {
+      host.style.width = '640px';
+    });
     await page.waitForSelector('[data-testid="adaptive-actions-find"]', { visible: true });
     await page.focus('[data-testid="adaptive-actions-find"]');
     await page.$eval('[data-testid="action-host"]', (host) => {
@@ -80,6 +88,21 @@ try {
     await page.waitForFunction(
       () => document.querySelector('[data-testid="action-result"]').textContent === 'Find',
     );
+    await page.waitForFunction(
+      () =>
+        document.activeElement?.getAttribute('aria-label') === 'Find in document' &&
+        document.activeElement.tagName === 'INPUT',
+    );
+    await page.keyboard.type('Design');
+    await page.waitForFunction(
+      () =>
+        document.body.innerText.includes('Design decisions') &&
+        !document.body.innerText.includes('Project overview'),
+    );
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(
+      () => !document.querySelector('input[aria-label="Find in document"]'),
+    );
     assert.deepEqual(errors, []);
     console.log(
       JSON.stringify({
@@ -94,14 +117,20 @@ try {
     );
     await page.goto(
       `${base}/iframe.html?id=composition-headers-adaptive-actions--responsive-navigation&viewMode=story&globals=theme:${mode}`,
-      { waitUntil: 'networkidle0' },
+      { waitUntil: 'domcontentloaded' },
     );
     await page.waitForSelector('[data-testid="navigation-menu"]');
     await page.evaluate(() => {
       window.__navigationMenu = document.querySelector('[data-testid="navigation-menu"]');
     });
     for (const width of [900, 390, 900, 390]) {
-      await page.click(`[data-testid="navigation-width-${width}"]`);
+      await page.$eval(
+        '[data-testid="navigation-host"]',
+        (host, value) => {
+          host.style.width = `${value}px`;
+        },
+        width,
+      );
       await page.waitForFunction(
         (width) => {
           const menu = document.querySelector('[data-testid="navigation-menu"]');

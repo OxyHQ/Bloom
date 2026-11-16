@@ -160,11 +160,12 @@ function MiniPlayerContent({
         importantForAccessibility="no-hide-descendants"
         style={{
           position: 'absolute',
-          left: 8,
-          right: 8,
-          bottom: 0,
+          left: MINI_PLAYER_HEIGHT / 2,
+          right: MINI_PLAYER_HEIGHT / 2,
+          bottom: 4,
           height: 2,
           borderRadius: 1,
+          overflow: 'hidden',
           // The rail is the text colour composited at 24% over the bar's own fill.
           backgroundColor: mixColors(background, paint.text, 0.24),
         }}
@@ -182,9 +183,9 @@ function MiniPlayerContent({
 /**
  * The phone's floating now-playing bar, above the tab bar.
  *
- *   56 tall, 12 corner (a panel, not a pill), 8 side margin
+ *   56 tall, fully rounded capsule, 8 side margin
  *   40 cover (8 corner) · title (body-2-semibold) / artist or device line · like · play
- *   a 2px progress line along the bottom, 8 in from each side
+ *   a 2px progress line inset beneath the content, clear of the capsule's ends
  *
  * The fill is the artwork colour darkened for contrast (`resolveArtworkTint`);
  * the content then paints with the dark theme, so it reads light-on-colour in
@@ -217,7 +218,7 @@ function MiniPlayerComponent(props: MiniPlayerProps) {
           height: MINI_PLAYER_HEIGHT,
           marginLeft: 8,
           marginRight: 8,
-          borderRadius: 12,
+          borderRadius: MINI_PLAYER_HEIGHT / 2,
           flexDirection: 'row',
           alignItems: 'center',
           gap: 4,

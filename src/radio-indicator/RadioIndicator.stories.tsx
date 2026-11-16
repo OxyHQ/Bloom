@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { useState } from 'react';
+import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RadioIndicator } from './index';
-import { Text } from '../typography';
-import { Card } from '../card';
+import { RadioGroup } from '../radio';
 
 const meta: Meta<typeof RadioIndicator> = {
   id: 'base-radio-indicator',
@@ -51,34 +50,18 @@ export const SelectableCards: Story = {
       { value: 'express', title: 'Express', detail: 'Next working day' },
     ];
     return (
-      <View style={{ gap: 12, width: 360, maxWidth: '100%' }}>
-        {options.map((o) => (
-          <Pressable
-            key={o.value}
-            onPress={() => setValue(o.value)}
-            accessibilityRole="radio"
-            aria-checked={value === o.value}
-            accessibilityLabel={o.title}
-          >
-            <Card
-              appearance="outline"
-              radius="radius-16"
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 12,
-                padding: 16,
-              }}
-            >
-              <RadioIndicator selected={value === o.value} />
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontWeight: '600' }}>{o.title}</Text>
-                <Text>{o.detail}</Text>
-              </View>
-            </Card>
-          </Pressable>
-        ))}
-      </View>
+      <RadioGroup
+        label="Delivery"
+        variant="card"
+        value={value}
+        onValueChange={setValue}
+        options={options.map((option) => ({
+          value: option.value,
+          label: option.title,
+          description: option.detail,
+        }))}
+        style={{ width: 360, maxWidth: '100%' }}
+      />
     );
   },
 };

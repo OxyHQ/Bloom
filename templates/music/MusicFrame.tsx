@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Platform, Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { PageHeader } from '../../src/page-header';
+import { Search } from '../../src/search';
 import { Avatar } from '../../src/avatar';
 import { Button } from '../../src/button';
 import { Dialog, useDialogControl } from '../../src/dialog';
@@ -11,7 +13,6 @@ import {
   RiCloseLine,
   RiHome5Fill,
   RiHome5Line,
-  RiNotification3Line,
   RiSearchFill,
   RiSearchLine,
   RiStackLine,
@@ -24,10 +25,10 @@ import {
   SleepTimerMenu,
   type PlaybackDevice,
 } from '../../src/media-player';
-import { LibraryPanel, SearchField, type LibraryEntry } from '../../src/music-library';
+import { LibraryPanel, type LibraryEntry } from '../../src/music-library';
 import { QueuePanel } from '../../src/queue-panel';
 import { BREAKPOINTS } from '../../src/styles/breakpoints';
-import { WEB_VIEWPORT_HEIGHT, type WebCssStyle } from '../../src/styles/web-view-style';
+import { type WebCssStyle } from '../../src/styles/web-view-style';
 import { TabBar, TabBarButton, useTabBarFootprint } from '../../src/tab-bar';
 import { useTheme } from '../../src/theme/use-theme';
 import { DEVICES, LIBRARY, ME, PLAYLIST_BY_ID } from './data';
@@ -50,22 +51,7 @@ import { useMusicRouter, type MusicRoute } from './router';
  * floating above the tab bar, and the full player over everything.
  */
 
-/**
- * One screen, edge to edge. On web it bleeds over the Storybook preview's 24px
- * padding and is exactly the viewport tall; nothing scrolls the document.
- */
-const FRAME: WebCssStyle =
-  Platform.OS === 'web'
-    ? {
-        alignSelf: 'stretch',
-        height: WEB_VIEWPORT_HEIGHT,
-        overflow: 'hidden',
-        marginTop: -24,
-        marginBottom: -24,
-        marginLeft: -24,
-        marginRight: -24,
-      }
-    : { flex: 1, width: '100%' };
+const FRAME: WebCssStyle = { flex: 1, minHeight: 0, minWidth: 0, width: '100%' };
 
 export type SidePane = 'now-playing' | 'queue' | 'lyrics' | null;
 
@@ -155,97 +141,55 @@ function DesktopFrame({
 
   return (
     <View testID="music-desktop" style={[FRAME, { backgroundColor: theme.colors.background }]}>
-      {/* Top bar */}
-      <View
-        style={{
-          height: 64,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 8,
-          paddingLeft: 16,
-          paddingRight: 16,
-        }}
-      >
-        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <Button
-            size="sm"
-            iconOnly
-            icon={RiArrowLeftSLine}
-            accessibilityLabel="Go back"
-            disabled={!router.canGoBack}
-            onPress={router.back}
-            tone="accent"
-            appearance="subtle"
-          />
-          <Button
-            size="sm"
-            iconOnly
-            icon={RiArrowRightSLine}
-            accessibilityLabel="Go forward"
-            disabled={!router.canGoForward}
-            onPress={router.forward}
-            tone="accent"
-            appearance="subtle"
-          />
-        </View>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-            width: Math.min(560, width - 360),
-          }}
-        >
-          <Button
-            size="lg"
-            iconOnly
-            icon={router.route.name === 'home' ? RiHome5Fill : RiHome5Line}
-            accessibilityLabel="Home"
-            onPress={() => router.navigate({ name: 'home' })}
-            tone="neutral"
-            appearance="outline"
-          />
-          <SearchField
+      <PageHeader
+        leading={
+          <Button.Group accessibilityLabel="Music navigation">
+            <Button
+              iconOnly
+              icon={RiArrowLeftSLine}
+              accessibilityLabel="Go back"
+              disabled={!router.canGoBack}
+              onPress={router.back}
+            />
+            <Button
+              iconOnly
+              icon={RiArrowRightSLine}
+              accessibilityLabel="Go forward"
+              disabled={!router.canGoForward}
+              onPress={router.forward}
+            />
+            <Button
+              iconOnly
+              icon={router.route.name === 'home' ? RiHome5Fill : RiHome5Line}
+              accessibilityLabel="Home"
+              onPress={() => router.navigate({ name: 'home' })}
+            />
+          </Button.Group>
+        }
+        search={
+          <Search
             testID="music-search-field"
+            label="Search music"
+            presentation="auto"
             value={query}
-            onChangeText={(text) =>
+            onValueChange={(text) =>
               router.route.name === 'search'
                 ? router.replace({ name: 'search', query: text })
                 : router.navigate({ name: 'search', query: text })
             }
-            onClear={() => router.replace({ name: 'search', query: '' })}
-            onBrowsePress={() => router.navigate({ name: 'search' })}
-            browseActive={router.route.name === 'search' && !query}
-            style={{ flex: 1 }}
+            onClearText={() => router.replace({ name: 'search', query: '' })}
           />
-        </View>
-        <View
-          style={{
-            flex: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            gap: 8,
-          }}
-        >
-          <Button
-            size="sm"
-            iconOnly
-            icon={RiNotification3Line}
-            accessibilityLabel="What’s new"
-            tone="accent"
-            appearance="subtle"
-          />
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`${ME.name}, profile`}
+        }
+        actions={
+          <Avatar
+            source={ME.avatar}
+            name={ME.name}
+            size="md"
+            alt={`${ME.name}, profile`}
             onPress={() => router.navigate({ name: 'profile' })}
-            style={{ borderRadius: 999 }}
-          >
-            <Avatar source={ME.avatar} name={ME.name} size={36} />
-          </Pressable>
-        </View>
-      </View>
+          />
+        }
+      />
 
       {/* Panes */}
       <View
@@ -263,7 +207,6 @@ function DesktopFrame({
           items={LIBRARY}
           collapsed={libraryCollapsed}
           onCollapsedChange={setLibraryCollapsed}
-          onCreatePress={() => {}}
           selectedId={routeEntryId(router.route)}
           nowPlayingId={player.context?.id}
           paused={!player.playing}
@@ -435,7 +378,6 @@ function PlayerBar({
               player.setDevice(device);
               onPickerOpenChange(false);
             }}
-            onHelpPress={() => {}}
           />
         }
         devicePickerOpen={pickerOpen}

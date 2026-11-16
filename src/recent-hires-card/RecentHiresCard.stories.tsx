@@ -57,8 +57,8 @@ const MORE: RecentHire[] = [
   { name: 'Talan Calzoni', joined: 'A month ago', role: 'Growth Marketer', avatarColor: 'pink' },
 ];
 
-const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ padding: 40, gap: 24, width: width + 80 }}>{children}</View>
+const Frame = ({ children }: { children: React.ReactNode }) => (
+  <View style={{ width: '100%', maxWidth: 560, gap: 24 }}>{children}</View>
 );
 
 /** The dashboard card: count, team switcher, four people, Previous / Next. */
@@ -92,18 +92,12 @@ export const Paging: Story = {
   },
 };
 
-/** The HR grid's narrower column, and a phone-width card. */
-export const Widths: Story = {
-  parameters: { controls: { disable: true } },
+/** Content height follows the number of people. */
+export const AutoHeight: Story = {
   render: () => (
-    <View style={{ padding: 40, gap: 24 }}>
-      <View style={{ width: 362, maxWidth: '100%' }}>
-        <RecentHiresCard count={56} teamLabel="Design team" hires={HIRES} />
-      </View>
-      <View style={{ width: 342, maxWidth: '100%' }}>
-        <RecentHiresCard count="1,204" hires={MORE.slice(0, 3)} height="auto" />
-      </View>
-    </View>
+    <Frame>
+      <RecentHiresCard count="1,204" hires={MORE.slice(0, 3)} height="auto" />
+    </Frame>
   ),
 };
 

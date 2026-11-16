@@ -1,6 +1,6 @@
 import { memo } from 'react';
 
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { Button } from '../button';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { RiArrowLeftSLine } from '../icons/remix/RiArrowLeftSLine';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
@@ -53,8 +53,8 @@ export const PageHeaderHistory = memo(function PageHeaderHistory({
     { enabled: active },
   );
   return (
-    <ButtonGroup accessibilityLabel={common.backAndForward} testID={testID}>
-      <ButtonGroupItem
+    <Button.Group accessibilityLabel={common.backAndForward} testID={testID}>
+      <Button
         iconOnly
         leadingIcon={rtl ? RiArrowRightSLine : RiArrowLeftSLine}
         accessibilityLabel={backLabel}
@@ -62,7 +62,7 @@ export const PageHeaderHistory = memo(function PageHeaderHistory({
         onPress={navigation.back}
         testID={testID ? `${testID}-back` : undefined}
       />
-      <ButtonGroupItem
+      <Button
         iconOnly
         leadingIcon={rtl ? RiArrowLeftSLine : RiArrowRightSLine}
         accessibilityLabel={common.forward}
@@ -70,6 +70,6 @@ export const PageHeaderHistory = memo(function PageHeaderHistory({
         onPress={navigation.forward}
         testID={testID ? `${testID}-forward` : undefined}
       />
-    </ButtonGroup>
+    </Button.Group>
   );
 });

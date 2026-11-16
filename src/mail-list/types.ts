@@ -1,5 +1,4 @@
-import type { ReactNode } from 'react';
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { ListCommonProps, ListMailData } from '../list/types';
 
 import type { BloomIconComponent } from '../icons/icon-component';
 import type { AccentTone } from '../theme/accent-colors';
@@ -35,7 +34,7 @@ export interface MailLabel {
 }
 
 /** How loudly a row action is painted. */
-export type MailActionTone = 'default' | 'accent' | 'negative';
+export type MailActionTone = import('../list/types').ListAction['tone'];
 
 /** One of the actions a row or the selection bar offers. */
 export interface MailAction {
@@ -110,103 +109,14 @@ export interface MailStrings {
   yesterday: string;
 }
 
-export interface MailRowProps {
-  /** Who it is from. */
-  sender: MailSender;
-  /** The subject line. Drawn on its own line in `comfortable`, inline in `compact`. */
-  subject: string;
-  /** The first words of the body. One line, always. */
-  snippet?: string;
-  /** Already formatted by the app — this family never formats a clock. */
-  time?: string;
-  /**
-   * Nothing on this row is read yet. The WHOLE row changes weight: sender and
-   * subject go semibold and every rung of text moves up to the primary colour.
-   * There is no dot.
-   */
-  unread?: boolean;
-  /** Starred/flagged. Pressable when {@link onStarredChange} is given. */
-  starred?: boolean;
-  onStarredChange?: (starred: boolean) => void;
-  /** Draws the paperclip. The app decides what counts. */
-  hasAttachment?: boolean;
-  /** How many messages the thread holds. Drawn as a badge from 2 up. */
-  threadCount?: number;
-  /** An unsent draft is the newest message. Leads the snippet in the negative colour. */
-  draft?: boolean;
-  /** The mailbox labels. */
-  labels?: readonly MailLabel[];
-  /**
-   * How many label MARKS the row draws before the rest go unsaid. Default 2.
-   *
-   * On a one-line row a mark is a chip and the overflow count is one of them
-   * (`visibleLabels`); on a two-line row the first is a chip and the rest are
-   * dots (`labelMarks`). Either way the composed name says every label.
-   */
-  maxLabels?: number;
-  /** The row the reading pane is showing. */
-  selected?: boolean;
-  /**
-   * The row's multi-selection state. Passing `onCheckedChange` is what makes
-   * the checkbox appear at all — a list with no bulk actions draws avatars.
-   */
-  checked?: boolean;
-  onCheckedChange?: (checked: boolean) => void;
-  /** Show sender avatars. Selection checkboxes remain visible when enabled. */
-  showAvatar?: boolean;
-  density?: MailDensity;
-  /**
-   * Secondary content below the header, aligned with the sender text column.
-   * May contain interactive attachments or other controls: it stays outside
-   * the row link and retains its own accessibility. The whole row grows with
-   * it (including compact density), selection paint and swipe actions.
-   */
-  footer?: ReactNode;
-  /**
-   * Attachment chips in a horizontal rail spanning the entire row. Bloom owns
-   * the scroller: pass chips directly, not a ChipRow. Initial content aligns
-   * with the sender; scrolling can use the space beneath the avatar.
-   */
-  attachments?: ReactNode;
-  onPress?: () => void;
-  onLongPress?: () => void;
-  /** A real href on web, so the row is a link and opens in a new tab. */
-  href?: string;
-  actions?: readonly MailAction[];
-  actionsPlacement?: MailActionPlacement;
-  /** What a drag uncovers on a touch pointer. */
-  swipeActions?: MailSwipeActions;
-  /**
-   * Turns the drag on or off explicitly. Defaults to `useSwipeAvailable()` —
-   * on for every touch pointer, off for a mouse, which has the rail instead.
-   */
-  swipeEnabled?: boolean;
-  /** Called with the action's `key`, from the rail, the drag or the rotor alike. */
-  onAction?: (key: string) => void;
-  /** Overrides the composed name. Pass it only to translate the whole sentence. */
-  accessibilityLabel?: string;
-  strings?: Partial<MailStrings>;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-}
-
 /** One row's data, as a list holds it. */
 export interface MailSummary
-  extends Omit<
-    MailRowProps,
-    | 'onPress'
-    | 'onLongPress'
-    | 'onAction'
-    | 'onCheckedChange'
-    | 'onStarredChange'
-    | 'density'
-    | 'testID'
-  > {
+  extends ListMailData,
+    Pick<
+      ListCommonProps,
+      'actions' | 'swipeActions' | 'swipeEnabled' | 'href' | 'attachments' | 'footer'
+    > {
   id: string;
-  /**
-   * When the message arrived, in epoch milliseconds. Only
-   * {@link groupMailByDay} reads it — a row draws {@link MailRowProps.time}.
-   */
   date?: number;
 }
 
@@ -215,71 +125,6 @@ export interface MailListSection {
   /** "Today", "Yesterday", "14 Mar". Absent renders one unlabelled run. */
   title?: string;
   mails: readonly MailSummary[];
-}
-
-export interface MailListProps {
-  /** Day sections. {@link groupMailByDay} builds them from a flat list. */
-  sections?: readonly MailListSection[];
-  /** One unlabelled run, for a list that is not bucketed. */
-  mails?: readonly MailSummary[];
-  /** Show sender avatars. Selection checkboxes remain visible when enabled. */
-  showAvatar?: boolean;
-  density?: MailDensity;
-  /** The row the reading pane is showing. */
-  selectedId?: string;
-  /**
-   * The multi-selection. Passing `onCheckedIdsChange` turns the checkboxes on
-   * AND makes the selection bar appear — it is not a component the app places.
-   */
-  checkedIds?: readonly string[];
-  onCheckedIdsChange?: (ids: string[]) => void;
-  /** What the selection bar offers. */
-  bulkActions?: readonly MailAction[];
-  onBulkAction?: (key: string, ids: readonly string[]) => void;
-  /** Row actions shared by every row. A row's own `actions` wins. */
-  rowActions?: readonly MailAction[];
-  /** Swipe actions shared by every row. A row's own `swipeActions` wins. */
-  rowSwipeActions?: MailSwipeActions;
-  actionsPlacement?: MailActionPlacement;
-  /** Turns the drag on or off for every row. */
-  swipeEnabled?: boolean;
-  onMailPress?: (id: string) => void;
-  onMailLongPress?: (id: string) => void;
-  onMailAction?: (key: string, id: string) => void;
-  onMailStarredChange?: (id: string, starred: boolean) => void;
-  loading?: boolean;
-  /** Placeholder rows while `loading`. Default 8. */
-  loadingCount?: number;
-  /** Replaces the built-in empty state. */
-  empty?: ReactNode;
-  header?: ReactNode;
-  footer?: ReactNode;
-  strings?: Partial<MailStrings>;
-  accessibilityLabel?: string;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-}
-
-export interface MailListSkeletonProps {
-  count?: number;
-  density?: MailDensity;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-}
-
-export interface MailSelectionBarProps {
-  /** How many rows are selected. The bar draws nothing at 0. */
-  count: number;
-  /** How many rows there are, for the select-all checkbox's indeterminate state. */
-  total: number;
-  onSelectAll?: (checked: boolean) => void;
-  onClear?: () => void;
-  actions?: readonly MailAction[];
-  onAction?: (key: string) => void;
-  density?: MailDensity;
-  strings?: Partial<MailStrings>;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
 }
 
 /** What {@link groupMailByDay} needs that it cannot decide itself. */

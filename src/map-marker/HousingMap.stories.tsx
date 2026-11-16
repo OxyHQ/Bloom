@@ -1,6 +1,8 @@
+import { fn } from 'storybook/test';
 import React, { useState } from 'react';
-import { useWindowDimensions, View } from 'react-native';
+import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 import { resolveButtonRamps } from '../button/shared';
 import { RiBuilding2Line, RiHotelBedLine, RiRulerLine, RiDropLine } from '../icons/remix';
@@ -192,10 +194,11 @@ function previewPosition(home: Home, scale: number, width: number, previewWidth:
   return { position: 'absolute', left: (width - previewWidth) / 2, bottom: 12 } as const;
 }
 
-function HousingMapDemo({ compact = false }: { compact?: boolean }) {
+function HousingMapDemo() {
   const theme = useTheme();
-  // The frame's padding (24) and the page's (16) on both sides.
-  const width = Math.min(980, useWindowDimensions().width - 80);
+  const { width: availableWidth, onLayout } = useContainerWidth();
+  const width = Math.max(0, (availableWidth ?? 0) - 32);
+  const compact = width < 600;
   const [active, setActive] = useState<string | null>('b');
   const [visited, setVisited] = useState<Set<string>>(() => new Set(['e']));
   const [saved, setSaved] = useState<Set<string>>(() => new Set(['d']));
@@ -209,9 +212,7 @@ function HousingMapDemo({ compact = false }: { compact?: boolean }) {
   };
 
   return (
-    <View
-      style={{ gap: 12, padding: 16, backgroundColor: theme.colors.background, minHeight: '100%' }}
-    >
+    <View onLayout={onLayout} style={{ width: '100%', maxWidth: 1012, gap: 12, padding: 16 }}>
       <MockMap width={width}>
         {HOMES.filter((home) => home.areaRadius).map((home) => (
           <View key={`area-${home.id}`} style={centred(home.x * scale, home.y)}>
@@ -265,7 +266,7 @@ function HousingMapDemo({ compact = false }: { compact?: boolean }) {
                 setVisited((v) => new Set(v).add(current.id));
                 setActive(null);
               }}
-              onPress={() => {}}
+              onPress={fn().mockName('MapListingPreview.onPress')}
               testID="preview"
             />
           </View>
@@ -282,17 +283,6 @@ function HousingMapDemo({ compact = false }: { compact?: boolean }) {
 /** Rent, sale, vacation rental and swap markers with short prices, an approximate area and the open preview. */
 export const HousingMap: Story = {
   render: () => <HousingMapDemo />,
-};
-
-/** The same map, dark. */
-export const HousingMapDark: Story = {
-  globals: { theme: 'dark' },
-  render: () => <HousingMapDemo />,
-};
-
-/** Compact markers; the map fits the window (view it at 375). */
-export const HousingMapNarrow: Story = {
-  render: () => <HousingMapDemo compact />,
 };
 
 function PiecesBody() {
@@ -335,8 +325,8 @@ function PiecesBody() {
           offerings={['sale', 'long_term_rent']}
           priceLines={HOMES[3]?.priceLines}
           facts={HOMES[3]?.facts}
-          onClose={() => {}}
-          onPress={() => {}}
+          onClose={fn().mockName('Villa above the bay.onClose')}
+          onPress={fn().mockName('Villa above the bay.onPress')}
         />
         <MapListingPreview
           layout="compact"
@@ -345,8 +335,8 @@ function PiecesBody() {
           offerings={['long_term_rent']}
           priceLines={HOMES[0]?.priceLines}
           facts={HOMES[0]?.facts}
-          onClose={() => {}}
-          onPress={() => {}}
+          onClose={fn().mockName('Bright flat near Plaza Orel.onClose')}
+          onPress={fn().mockName('Bright flat near Plaza Orel.onPress')}
         />
       </View>
     </View>
@@ -355,11 +345,5 @@ function PiecesBody() {
 
 /** Each housing piece on its own. */
 export const Pieces: Story = {
-  render: () => <PiecesBody />,
-};
-
-/** The pieces, dark. */
-export const PiecesDark: Story = {
-  globals: { theme: 'dark' },
   render: () => <PiecesBody />,
 };

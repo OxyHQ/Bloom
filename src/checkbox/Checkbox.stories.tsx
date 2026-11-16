@@ -1,5 +1,6 @@
+import { fn } from 'storybook/test';
 import { useArgs } from 'storybook/preview-api';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -31,7 +32,7 @@ export default meta;
 
 type Story = StoryObj<typeof Checkbox>;
 
-const noop = () => {};
+const onExampleAction = fn().mockName('Example action');
 
 /**
  * Every size against every state.
@@ -58,37 +59,42 @@ export const Matrix: Story = {
             <Checkbox
               size={size}
               checked={false}
-              onCheckedChange={noop}
+              onCheckedChange={onExampleAction}
               accessibilityLabel="Unchecked"
             />
-            <Checkbox size={size} checked onCheckedChange={noop} accessibilityLabel="Checked" />
+            <Checkbox
+              size={size}
+              checked
+              onCheckedChange={onExampleAction}
+              accessibilityLabel="Checked"
+            />
             <Checkbox
               size={size}
               checked={false}
               indeterminate
-              onCheckedChange={noop}
+              onCheckedChange={onExampleAction}
               accessibilityLabel="Mixed"
             />
             <Checkbox
               size={size}
               checked={false}
               disabled
-              onCheckedChange={noop}
+              onCheckedChange={onExampleAction}
               accessibilityLabel="Disabled"
             />
             <Checkbox
               size={size}
               checked
               disabled
-              onCheckedChange={noop}
+              onCheckedChange={onExampleAction}
               accessibilityLabel="Disabled checked"
             />
-            <Checkbox size={size} checked onCheckedChange={noop} label="Label text" />
+            <Checkbox size={size} checked onCheckedChange={onExampleAction} label="Label text" />
             <Checkbox
               size={size}
               checked={false}
               disabled
-              onCheckedChange={noop}
+              onCheckedChange={onExampleAction}
               label="Disabled"
             />
           </View>
@@ -195,8 +201,18 @@ export const Disabled: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 12 }}>
-      <Checkbox checked={false} onCheckedChange={() => {}} disabled label="Disabled, unchecked" />
-      <Checkbox checked onCheckedChange={() => {}} disabled label="Disabled, checked" />
+      <Checkbox
+        checked={false}
+        onCheckedChange={fn().mockName('onCheckedChange')}
+        disabled
+        label="Disabled, unchecked"
+      />
+      <Checkbox
+        checked
+        onCheckedChange={fn().mockName('onCheckedChange')}
+        disabled
+        label="Disabled, checked"
+      />
     </View>
   ),
 };
@@ -270,7 +286,7 @@ export const Cards: Story = {
           description="Managed by your workspace admin."
           checked
           disabled
-          onCheckedChange={noop}
+          onCheckedChange={onExampleAction}
         />
       </View>
     );
@@ -307,7 +323,7 @@ export const LabelContent: Story = {
       </View>
     );
     return (
-      <View style={{ width: 320, gap: 20 }}>
+      <View style={{ width: 320, maxWidth: '100%', gap: 20 }}>
         <Checkbox
           label="Four stars and up"
           labelContent={stars}

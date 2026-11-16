@@ -2,7 +2,7 @@ import React, { memo, useCallback, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { Badge } from '../badge';
-import { Button, GlyphButton } from '../button';
+import { Button } from '../button';
 import { Card } from '../card';
 import { Chip, ChipRow } from '../chip';
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -335,7 +335,10 @@ function JobBoardComponent({
               </View>
             ) : null}
             {onRefresh ? (
-              <GlyphButton
+              <Button
+                appearance="plain"
+                tone="neutral"
+                iconOnly
                 icon={RiRefreshLine}
                 size={JOB_BOARD_GEOMETRY.refresh}
                 onPress={onRefresh}

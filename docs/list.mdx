@@ -1,10 +1,75 @@
 ---
-title: VirtualList
-description: The one list primitive — windowed on web, virtualized on native, one prop shape.
+title: List
+description: Shared compact rows, selection, actions, content recipes and virtualization.
 order: 52
 ---
 
-# VirtualList
+# List
+
+`List` and `ListItem` own row anatomy and interaction across conversations, mail,
+call history, members and ordinary destinations. The compact baseline is 56px,
+with a 36px leading column; icons reserve the same width as avatars. Media can
+be wider. Supporting text uses one to three lines, optionally adapting to row width.
+
+```tsx
+import { List, ListItem, ListSelectionBar } from '@oxy.so/bloom/list';
+
+<List items={[
+  {
+    id: 'archive', title: 'Archived chats', supporting: archivedNames.join(', '),
+    leading: <ArchiveIcon />, trailing: <UnreadBadge count={archiveCount} muted />,
+    label: archiveAccessibleName, onPress: openArchive,
+  },
+  ...chats.map(chat => ({
+    id: chat.id, conversation: chat, active: chat.id === openId,
+    onPress: () => openChat(chat.id),
+  })),
+]} />
+```
+
+Archive destinations are ordinary items. They have no separate row component,
+section or geometry. Use `sections` for actual titled groups, such as day buckets;
+empty groups are omitted. `header`, `footer`, `empty` and `loading` are shared slots.
+
+`ListItem` accepts `title`, `supporting`, `leading`, `trailing`, `content`, `footer`
+and `attachments`. Optional `conversation`, `mail`, `person` and `call` display data retain
+their domain-specific markers and wording while using exactly the same shell.
+Times, names, permissions, navigation and data filtering belong to the consumer.
+
+Selection is controlled by `checked` / `onCheckedChange`. The avatar remains
+visible until selected, hovered or focused. On touch a long press selects; when
+`selecting` is true a row press toggles selection. Desktop commands use right
+click, the keyboard context-menu key, or the hover menu. Touch hides that menu.
+`actions` and `swipeActions` expose the same commands to native accessibility.
+Swipes use elastic bubbles; `fullSwipeAction` explicitly identifies the release
+command. `ListSelectionBar` can occupy the header while bulk selection is active.
+Pass `selecting` to keep its select-all and exit controls available before the
+first row is selected. Without it, the toolbar appears only for a positive count.
+
+Attachment chips go directly in `attachments`: Bloom owns their horizontal
+rail. Footer controls and file chips remain siblings of the navigation target,
+so pressing them does not open the row. `active` identifies the open destination;
+it is distinct from multi-selection. Rows without actions or navigation are static.
+
+On native, pressed fill is read from Pressable's own `pressed` value. Allo's
+Android release previously kept a mirrored press active after returning from a
+screen because Pressability's delayed press-out was cancelled. No copied press
+state is used; `ListRowPressedNative.test.tsx` preserves that regression check.
+Bubble faces are transparent and clip their reveal; selection paint derives from
+the actual parent surface (`ChatListSurfaceNative.test.tsx`), preserving the
+Android panel/page-fill regression protection.
+
+## Scrolling, index and separators
+
+Lists normally compose into the screen's scroller. `height`, `scrollable` or
+`sectionIndex` opt into an owned ScrollArea. The index addresses section IDs;
+its localized labels can be overridden with `labelFor`. Sticky headings default
+off on Android to preserve the measured Fabric painting workaround, and can be
+explicitly enabled. `separator="line"` or `"inset"` adds rules between rows; the
+inset aligns with the common text column.
+
+## VirtualList
+
 
 Bloom's list. On web it windows against the scroller of the Screen in front;
 on native it is FlashList when the app installs it, `FlatList` otherwise. Same

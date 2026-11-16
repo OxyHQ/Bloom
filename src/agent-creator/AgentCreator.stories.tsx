@@ -16,6 +16,7 @@ const meta: Meta<typeof AgentCreator> = {
 export default meta;
 type Story = StoryObj<typeof AgentCreator>;
 function ControlledCreator() {
+  const [heartbeat, setHeartbeat] = useState(true);
   const [agent, setAgent] = useState<AgentCreatorAgent>({
     id: 'designer',
     name: 'Landing page designer',
@@ -25,7 +26,7 @@ function ControlledCreator() {
     color: 'green',
   });
   return (
-    <View style={{ width: 360, height: 800 }}>
+    <View style={{ width: '100%', maxWidth: 560, height: 800 }}>
       <AgentCreator
         agent={agent}
         onChange={setAgent}
@@ -34,8 +35,8 @@ function ControlledCreator() {
             <AgentCreatorField label="Check" divider={false}>
               <Switch
                 accessibilityLabel="Check on its own"
-                checked
-                onCheckedChange={() => undefined}
+                checked={heartbeat}
+                onCheckedChange={setHeartbeat}
               />
             </AgentCreatorField>
           </AgentCreatorSection>

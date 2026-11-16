@@ -24,11 +24,10 @@ function mediaViolations(source: string): string[] {
 describe('Color System Playground media ownership', () => {
   it('uses local avatar fallback and deterministic illustrations without remote media', () => {
     expect(storySource).toContain("title: 'Foundations/Color System Playground'");
-    expect((contentSource.match(/<(?:Avatar|ContactRow)\b/g) ?? []).length).toBeGreaterThanOrEqual(
-      3,
-    );
+    expect((contentSource.match(/<(?:Avatar|ListItem)\b/g) ?? []).length).toBeGreaterThanOrEqual(3);
     expect(
-      (contentSource.match(/(?:source|avatar)=\{defaultAvatarSource\}/g) ?? []).length,
+      (contentSource.match(/(?:source=\{defaultAvatarSource\}|avatar: defaultAvatarSource)/g) ?? [])
+        .length,
     ).toBeGreaterThanOrEqual(3);
     expect((contentSource.match(/<PostIllustration\b/g) ?? []).length).toBe(2);
     expect(contentSource).toContain('<LinkPreviewCard');

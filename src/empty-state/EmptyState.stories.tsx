@@ -1,9 +1,9 @@
+import { fn } from 'storybook/test';
 import type React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Card, CardBody } from '../card';
-import { Chip, ChipRow } from '../chip';
 import { RiInbox2Line } from '../icons/remix/RiInbox2Line';
 import { RiMapPin2Line } from '../icons/remix/RiMapPin2Line';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
@@ -40,7 +40,7 @@ export const Default: Story = {
         icon={RiInbox2Line}
         title="Nothing in this folder"
         description="Mail you file here will show up in this list."
-        action={{ label: 'Write a message', onPress: () => {} }}
+        action={{ label: 'Write a message', onPress: fn().mockName('onPress') }}
       />
     </Page>
   ),
@@ -56,8 +56,8 @@ export const Inviting: Story = {
         media="circle"
         title="No saved places yet"
         description="Save the places you order to most and they will be one tap away."
-        action={{ label: 'Add an address', onPress: () => {} }}
-        secondaryAction={{ label: 'Use my location', onPress: () => {} }}
+        action={{ label: 'Add an address', onPress: fn().mockName('onPress') }}
+        secondaryAction={{ label: 'Use my location', onPress: fn().mockName('onPress') }}
       />
     </Page>
   ),
@@ -75,7 +75,7 @@ export const Compact: Story = {
             icon={RiShoppingBag3Line}
             title="Your basket is empty"
             description="Add something from the menu."
-            action={{ label: 'Browse the menu', onPress: () => {} }}
+            action={{ label: 'Browse the menu', onPress: fn().mockName('onPress') }}
           />
         </CardBody>
       </Card>
@@ -108,21 +108,14 @@ export const WithSuggestions: Story = {
         icon={RiSearchLine}
         title="No results for “sourdough”"
         description="Try one of these instead."
-        action={{ label: 'Clear the search', onPress: () => {} }}
+        action={{ label: 'Clear the search', onPress: fn().mockName('onPress') }}
         footer={<Text variant="caption-1-regular">Searches cover names and ingredients.</Text>}
-      >
-        <ChipRow accessibilityLabel="Suggestions" contentInset={0}>
-          <Chip size="lg" onPress={() => {}}>
-            Rye
-          </Chip>
-          <Chip size="lg" onPress={() => {}}>
-            Focaccia
-          </Chip>
-          <Chip size="lg" onPress={() => {}}>
-            Flatbread
-          </Chip>
-        </ChipRow>
-      </EmptyState>
+        suggestions={['Rye', 'Focaccia', 'Flatbread'].map((label) => ({
+          id: label,
+          label,
+          onPress: fn().mockName(`Search ${label}`),
+        }))}
+      />
     </Page>
   ),
 };
@@ -138,10 +131,20 @@ export const BrandedGreeting: Story = {
         title="Good evening, Nate"
         description="Ask me anything, or start from one of these."
         suggestions={[
-          { id: 'plan', label: 'Plan my week', icon: RiLightbulbLine, onPress: () => {} },
-          { id: 'translate', label: 'Translate a message', icon: RiTranslate2, onPress: () => {} },
-          { id: 'summarise', label: 'Summarise this document', onPress: () => {} },
-          { id: 'ideas', label: 'Give me ten ideas', onPress: () => {} },
+          {
+            id: 'plan',
+            label: 'Plan my week',
+            icon: RiLightbulbLine,
+            onPress: fn().mockName('onPress'),
+          },
+          {
+            id: 'translate',
+            label: 'Translate a message',
+            icon: RiTranslate2,
+            onPress: fn().mockName('onPress'),
+          },
+          { id: 'summarise', label: 'Summarise this document', onPress: fn().mockName('onPress') },
+          { id: 'ideas', label: 'Give me ten ideas', onPress: fn().mockName('onPress') },
         ]}
       />
     </Page>
@@ -167,7 +170,7 @@ export const AgentNotFound: Story = {
         }
         title="Agent not found"
         description="It may have been deleted, or the link is wrong."
-        action={{ label: 'Browse agents', onPress: () => {} }}
+        action={{ label: 'Browse agents', onPress: fn().mockName('onPress') }}
       />
     </Page>
   ),
@@ -182,8 +185,8 @@ export const LongText: Story = {
         icon={RiInbox2Line}
         title="There is nothing left in this archived folder to show you"
         description="Everything that was filed here has been moved to another folder, deleted, or is still being synchronised from the server."
-        action={{ label: 'Go to the inbox', onPress: () => {} }}
-        secondaryAction={{ label: 'Refresh', onPress: () => {} }}
+        action={{ label: 'Go to the inbox', onPress: fn().mockName('onPress') }}
+        secondaryAction={{ label: 'Refresh', onPress: fn().mockName('onPress') }}
       />
     </View>
   ),

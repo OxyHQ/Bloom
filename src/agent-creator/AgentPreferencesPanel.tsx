@@ -1,4 +1,4 @@
-import { IconButton } from '../button';
+import { Button } from '../button';
 import { RiGlobalLine } from '../icons/remix/RiGlobalLine';
 import { RiNotification3Line } from '../icons/remix/RiNotification3Line';
 import { RiVolumeUpLine } from '../icons/remix/RiVolumeUpLine';
@@ -8,11 +8,10 @@ import {
   SegmentedControlItem,
   SegmentedControlItemText,
 } from '../segmented-control';
-import { SettingsCard } from '../settings-modal/SettingsRows';
+import { GroupedSection, GroupedSectionItem } from '../grouped-section';
 import { StyledView } from '../styles/styled-primitives';
 import { Switch } from '../switch';
 import { useTheme } from '../theme/use-theme';
-import { Text } from '../typography';
 import { AGENT_LANGUAGES, AGENT_SPEECH_RATES } from './constants';
 import { useAgentCreatorBindings, useAgentCreatorMessages } from './context';
 import { normalizeAgentPreferences } from './shared';
@@ -61,135 +60,102 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
   ];
   return (
     <StyledView className="mt-4 flex flex-col gap-3 pb-3">
-      <SettingsCard className="px-3" style={{ paddingLeft: 12, paddingRight: 12 }}>
-        <StyledView
-          className="flex min-h-14 items-center justify-between gap-3 border-b border-separator-border py-3 flex-row"
-          style={{ borderColor: colors.border }}
-        >
-          <StyledView className="flex items-center gap-2 text-body-medium text-text-primary flex-row">
-            <RiGlobalLine
-              className="size-5 text-foreground-icon-secondary"
-              size="md"
-              fill={colors.icon}
-              aria-hidden
-            />
-            <Text variant="body-medium" className="text-body-medium text-text-primary">
-              {messages.language}
-            </Text>
-          </StyledView>
-          <SettingsSelect
-            label={messages.languageInput}
-            size="sm"
-            compact={false}
-            width={192}
-            value={preferences.language}
-            onChange={(language) => update({ language })}
-            items={AGENT_LANGUAGES.map((language) => ({
-              value: language.id,
-              label: messages.languages[language.id],
-            }))}
-          />
-        </StyledView>
-        <StyledView className="flex items-center gap-3 py-3 flex-row">
-          <RiNotification3Line
-            className="size-5 shrink-0 text-foreground-icon-secondary"
-            size="md"
-            fill={colors.icon}
-            aria-hidden
-          />
-          <StyledView className="flex min-w-0 flex-1 flex-col gap-1">
-            <Text variant="body-medium" className="text-body-medium text-text-primary">
-              {messages.notifications}
-            </Text>
-            <Text
-              variant="caption-1-regular"
-              className="text-caption-1-regular text-text-secondary"
-            >
-              {messages.notificationsDescription}
-            </Text>
-          </StyledView>
-          <Switch
-            accessibilityLabel={messages.notifyFinished}
-            size="sm"
-            checked={preferences.notifications}
-            onCheckedChange={(notifications) => update({ notifications })}
-          />
-        </StyledView>
-      </SettingsCard>
-      <SettingsCard
-        className="gap-3 p-3 pt-2"
-        style={{
-          paddingLeft: 12,
-          paddingRight: 12,
-          paddingTop: 8,
-          paddingBottom: 12,
-          gap: 12,
-        }}
-      >
-        <StyledView className="flex items-center justify-between gap-3 flex-row">
-          <StyledView className="flex items-center gap-2 text-body-medium text-text-primary flex-row">
-            <RiVolumeUpLine
-              className="size-5 text-foreground-icon-secondary"
-              size="md"
-              fill={colors.icon}
-              aria-hidden
-            />
-            <Text variant="body-medium" className="text-body-medium text-text-primary">
-              {messages.voice}
-            </Text>
-          </StyledView>
-          <StyledView className="flex min-w-0 items-center gap-1 flex-row">
-            {!!preferences.voice && (
-              <IconButton
-                size="sm"
-                appearance="plain"
-                tone="neutral"
-                icon={PreviewPlayIcon}
-                accessibilityLabel={messages.previewVoice}
-                disabled={!canPreview}
-                className="bg-transparent text-text-secondary hover:bg-background-tertiary-default hover:text-text-primary active:bg-background-tertiary-hover active:text-text-primary"
-                onPress={() => preview(preferences)}
-              />
-            )}
+      <GroupedSection separator="line">
+        <GroupedSectionItem
+          title={messages.language}
+          icon={<RiGlobalLine size="md" fill={colors.icon} aria-hidden />}
+          wrapControl
+          rightElement={
             <SettingsSelect
-              label={messages.voiceInput}
+              label={messages.languageInput}
               size="sm"
               compact={false}
-              width={240}
-              style={{ maxWidth: 144 }}
-              disabled={!canSelect}
-              value={selectedVoiceKey}
-              onChange={(voice) => update({ voice: voice === 'off' ? '' : voice })}
-              items={voiceItems}
+              width={192}
+              value={preferences.language}
+              onChange={(language) => update({ language })}
+              items={AGENT_LANGUAGES.map((language) => ({
+                value: language.id,
+                label: messages.languages[language.id],
+              }))}
             />
-          </StyledView>
-        </StyledView>
-        <StyledView className="flex flex-col gap-2">
-          <Text variant="caption-1-regular" className="text-caption-1-regular text-text-secondary">
-            {messages.playbackSpeed}
-          </Text>
-          <SegmentedControl
-            label={messages.playbackSpeed}
-            className="w-full bg-background-tertiary-default dark:bg-segmented-control-background"
-            style={{ width: '100%' }}
-            type="radio"
-            value={String(preferences.speed)}
-            onValueChange={(speed) => update({ speed: Number(speed) })}
-          >
-            {AGENT_SPEECH_RATES.map((speed) => (
-              <SegmentedControlItem
-                key={speed}
-                value={String(speed)}
-                accessibilityLabel={messages.playbackSpeedLabel(speed)}
-                className="min-w-0 flex-1 px-1"
-                style={{ flex: 1, minWidth: 0, paddingHorizontal: 4 }}
-              >
-                <SegmentedControlItemText>{speed}×</SegmentedControlItemText>
-              </SegmentedControlItem>
-            ))}
-          </SegmentedControl>
-        </StyledView>
-      </SettingsCard>
+          }
+        />
+        <GroupedSectionItem
+          title={messages.notifications}
+          description={messages.notificationsDescription}
+          icon={<RiNotification3Line size="md" fill={colors.icon} aria-hidden />}
+          wrapControl
+          rightElement={
+            <Switch
+              accessibilityLabel={messages.notifyFinished}
+              size="sm"
+              checked={preferences.notifications}
+              onCheckedChange={(notifications) => update({ notifications })}
+            />
+          }
+        />
+      </GroupedSection>
+      <GroupedSection separator="line">
+        <GroupedSectionItem
+          title={messages.voice}
+          icon={<RiVolumeUpLine size="md" fill={colors.icon} aria-hidden />}
+          wrapControl
+          rightElement={
+            <StyledView className="flex min-w-0 items-center gap-1 flex-row">
+              {!!preferences.voice && (
+                <Button
+                  iconOnly
+                  size="sm"
+                  appearance="plain"
+                  tone="neutral"
+                  icon={PreviewPlayIcon}
+                  accessibilityLabel={messages.previewVoice}
+                  disabled={!canPreview}
+                  className="bg-transparent text-text-secondary hover:bg-background-tertiary-default hover:text-text-primary active:bg-background-tertiary-hover active:text-text-primary"
+                  onPress={() => preview(preferences)}
+                />
+              )}
+              <SettingsSelect
+                label={messages.voiceInput}
+                size="sm"
+                compact={false}
+                width={240}
+                style={{ maxWidth: 144 }}
+                disabled={!canSelect}
+                value={selectedVoiceKey}
+                onChange={(voice) => update({ voice: voice === 'off' ? '' : voice })}
+                items={voiceItems}
+              />
+            </StyledView>
+          }
+        />
+        <GroupedSectionItem
+          title={messages.playbackSpeed}
+          wrapControl
+          rightElement={
+            <SegmentedControl
+              label={messages.playbackSpeed}
+              className="w-full bg-background-tertiary-default dark:bg-segmented-control-background"
+              style={{ width: '100%' }}
+              type="radio"
+              value={String(preferences.speed)}
+              onValueChange={(speed) => update({ speed: Number(speed) })}
+            >
+              {AGENT_SPEECH_RATES.map((speed) => (
+                <SegmentedControlItem
+                  key={speed}
+                  value={String(speed)}
+                  accessibilityLabel={messages.playbackSpeedLabel(speed)}
+                  className="min-w-0 flex-1 px-1"
+                  style={{ flex: 1, minWidth: 0, paddingHorizontal: 4 }}
+                >
+                  <SegmentedControlItemText>{speed}×</SegmentedControlItemText>
+                </SegmentedControlItem>
+              ))}
+            </SegmentedControl>
+          }
+        />
+      </GroupedSection>
     </StyledView>
   );
 }

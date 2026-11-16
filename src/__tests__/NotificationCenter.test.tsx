@@ -57,11 +57,14 @@ describe('NotificationCenter', () => {
       overflow: 'hidden',
     });
     expect(resolvedStyle(screen.getByTestId('notification-a').props.style)).toMatchObject({
-      borderRadius: 10,
-      padding: 12,
-      gap: 12,
+      borderRadius: 28,
+      minHeight: 56,
     });
-    expect(resolvedStyle(screen.getByTestId('notification-b-disc').props.style)).toMatchObject({
+    expect(
+      resolvedStyle(
+        screen.getByTestId('notification-b-disc', { includeHiddenElements: true }).props.style,
+      ),
+    ).toMatchObject({
       width: 40,
       height: 40,
     });
@@ -74,7 +77,7 @@ describe('NotificationCenter', () => {
     expect(section.backgroundColor).toBe(colors.backgroundSecondary);
     expect(section.borderColor).toBe(colors.border);
     expect(resolvedStyle(screen.getByTestId('notification-a').props.style).backgroundColor).toBe(
-      colors.card,
+      'transparent',
     );
   });
 

@@ -1,19 +1,22 @@
+import { fn } from 'storybook/test';
+import { Search } from '../search';
 import type React from 'react';
-import { useState } from 'react';
-import { ContentPanel } from '../content-panel/index.web';
-import { HeaderDockProvider, StickySection } from '../layout';
+import { createContext, useContext, useState } from 'react';
 import { Tabs, TabsTrigger } from '../tabs';
 import { Screen } from '../screen';
-import { Image, ScrollView, View } from 'react-native';
+import { View } from 'react-native';
+import { ScrollArea as ScrollView } from '../layout';
+import { BloomImage } from '../image';
+import { List } from '../list';
 import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Avatar } from '../avatar';
-import { AgentProfile } from '../agent-reply';
+import { AgentAvatar } from '../agent-avatar';
 import { Badge } from '../badge';
 import { Button } from '../button';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
-import { RiAddFill, RiBookmarkLine, RiMore2Line, RiSearchLine, RiShare2Line } from '../icons/remix';
+
+import { RiAddFill, RiBookmarkLine, RiMore2Line, RiShare2Line } from '../icons/remix';
 import { ScrollOffsetProvider, TopEdgeProvider, useTopEdgeInset } from '../layout';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -28,29 +31,61 @@ const meta: Meta<typeof PageHeader> = {
   title: 'Composition/Layout/Page Header',
   component: PageHeader,
   parameters: { layout: 'fullscreen' },
+  decorators: [
+    (Story) => (
+      <SearchDemo>
+        <Story />
+      </SearchDemo>
+    ),
+  ],
 };
 
 export default meta;
 
 type Story = StoryObj<typeof PageHeader>;
 
-const back = () => {};
+const SearchDemoContext = createContext({ query: '', setQuery: (_query: string) => {} });
+
+/** Demo data stays here; the interaction is the same shared Search used by apps. */
+function SearchDemo({ children }: { children: React.ReactNode }) {
+  const [query, setQuery] = useState('');
+  return (
+    <SearchDemoContext.Provider value={{ query, setQuery }}>{children}</SearchDemoContext.Provider>
+  );
+}
+
+function PageSearch() {
+  const { query, setQuery } = useContext(SearchDemoContext);
+  return (
+    <Search
+      presentation="auto"
+      label="Search"
+      value={query}
+      onValueChange={setQuery}
+      onClearText={() => setQuery('')}
+    />
+  );
+}
+
+const back = fn().mockName('onBack');
+const share = fn().mockName('onShare');
+const more = fn().mockName('onMore');
 
 /** A composed identity sets the header height without a fixed-height wrapper. */
 export const CenteredAgentIdentity: Story = {
   render: () => (
-    <Page inset>
+    <Page>
       <PageHeader
         testID="header"
         titleAlign="center"
         onBack={back}
-        title={
-          <AgentProfile
-            agents={[{ id: 'planner', name: 'Product planner', avatar: { preset: 'blue_beret' } }]}
-            onPress={back}
-          />
-        }
+        title="Product planner"
+        titleLayout="stacked"
+        titleAppearance="capsule"
+        titleVisual={<AgentAvatar character={{ preset: 'blue_beret' }} size={48} />}
+        onPressTitle={back}
         actions={<PageActions />}
+        search={<PageSearch />}
       />
       <Rows count={5} />
     </Page>
@@ -59,25 +94,12 @@ export const CenteredAgentIdentity: Story = {
 
 const HERO = 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200';
 
-function Page({
-  children,
-  fill,
-  inset = false,
-}: {
-  children: React.ReactNode;
-  fill?: string;
-  inset?: boolean;
-}) {
+function Page({ children, fill }: { children: React.ReactNode; fill?: string }) {
   const theme = useTheme();
   return (
-    // The preview decorator pads every story by 24; a page header is edge to edge.
     <View
       style={{
         alignSelf: 'stretch',
-        marginTop: inset ? 0 : -24,
-        marginLeft: inset ? 0 : -24,
-        marginRight: inset ? 0 : -24,
-        marginBottom: inset ? 0 : -24,
         minHeight: 700,
         backgroundColor: fill ?? theme.colors.background,
       }}
@@ -88,28 +110,15 @@ function Page({
 }
 
 function Rows({ count = 30 }: { count?: number }) {
-  const theme = useTheme();
+  const { query } = useContext(SearchDemoContext);
   return (
-    <View style={{ padding: 16, gap: 12 }}>
-      {Array.from({ length: count }, (_, i) => (
-        <View
-          key={i}
-          style={{
-            height: 64,
-            borderRadius: 16,
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-            backgroundColor: theme.colors.card,
-            justifyContent: 'center',
-            paddingLeft: 16,
-          }}
-        >
-          <Text variant="body-medium" style={{ color: theme.colors.text }}>
-            Row {i + 1}
-          </Text>
-        </View>
-      ))}
-    </View>
+    <List
+      items={Array.from({ length: count }, (_, i) => ({
+        id: String(i),
+        title: `Row ${i + 1}`,
+      })).filter((row) => row.title.toLowerCase().includes(query.trim().toLowerCase()))}
+      empty={<Text>No results</Text>}
+    />
   );
 }
 
@@ -127,26 +136,28 @@ function LiveStatus() {
 
 function IconAction({ icon, label }: { icon: typeof RiMore2Line; label: string }) {
   return (
-    <Button appearance="outline" tone="neutral" size="md" icon={icon} accessibilityLabel={label} />
+    <Button
+      appearance="outline"
+      tone="neutral"
+      size="md"
+      icon={icon}
+      accessibilityLabel={label}
+      onPress={fn().mockName(label)}
+    />
   );
 }
 
 /**
- * The canonical floating header: back in its own capsule, two related actions
- * sharing one island, a primary action in its own. Nothing here names a
+ * The canonical floating header: back, grouped page actions and a shared
+ * adaptive search. Nothing here names a
  * material — the island's `BloomScope` does.
  */
 function PageActions() {
   return (
-    <>
-      <ButtonGroup accessibilityLabel="Page actions">
-        <ButtonGroupItem iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search" />
-        <ButtonGroupItem iconOnly leadingIcon={RiShare2Line} accessibilityLabel="Share" />
-      </ButtonGroup>
-      <ButtonGroup accessibilityLabel="More">
-        <ButtonGroupItem iconOnly leadingIcon={RiMore2Line} accessibilityLabel="More" />
-      </ButtonGroup>
-    </>
+    <Button.Group accessibilityLabel="Page actions">
+      <Button iconOnly leadingIcon={RiShare2Line} accessibilityLabel="Share" onPress={share} />
+      <Button iconOnly leadingIcon={RiMore2Line} accessibilityLabel="More" onPress={more} />
+    </Button.Group>
   );
 }
 
@@ -154,22 +165,21 @@ function PageActions() {
 //  Floating — the default
 // ---------------------------------------------------------------------------
 
-/** Back capsule, title, one shared island of two actions and a second island. */
+/** Back capsule, title, grouped actions and working adaptive search. */
 export const Floating: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <Page>
-      <PageHeader testID="header" onBack={back} title="Lisbon loft" actions={<PageActions />} />
+      <PageHeader
+        testID="header"
+        onBack={back}
+        title="Lisbon loft"
+        actions={<PageActions />}
+        search={<PageSearch />}
+      />
       <Rows />
     </Page>
   ),
-};
-
-/** The same header, forced dark. */
-export const FloatingDark: Story = {
-  parameters: { controls: { disable: true } },
-  globals: { theme: 'dark' },
-  render: Floating.render,
 };
 
 const DEEP_WATER = '#1d3b53';
@@ -184,38 +194,19 @@ const DEEP_WATER = '#1d3b53';
  * wrong hue rather than a fade.
  */
 export const FloatingOverColour: Story = {
+  args: { scrimColor: DEEP_WATER },
   parameters: { controls: { disable: true } },
-  // Dark, because the page colour is dark: a screen that paints a near-black
-  // surface in a LIGHT theme has a text-contrast problem of its own, and it is
-  // not the one this story is about.
-  globals: { theme: 'dark' },
-  render: () => (
+  render: (args) => (
     <Page fill={DEEP_WATER}>
       <PageHeader
         testID="header"
         onBack={back}
         title="Deep water"
         scrim="always"
-        scrimColor={DEEP_WATER}
+        tone="onImage"
+        scrimColor={args.scrimColor}
         actions={<PageActions />}
-      />
-      <Rows count={12} />
-    </Page>
-  ),
-};
-
-/** The same screen WITHOUT `scrimColor` — the wrong-hue wash, for comparison. */
-export const FloatingScrimColourMismatch: Story = {
-  parameters: { controls: { disable: true } },
-  globals: { theme: 'dark' },
-  render: () => (
-    <Page fill={DEEP_WATER}>
-      <PageHeader
-        testID="header"
-        onBack={back}
-        title="Deep water"
-        scrim="always"
-        actions={<PageActions />}
+        search={<PageSearch />}
       />
       <Rows count={12} />
     </Page>
@@ -234,7 +225,7 @@ export const FloatingOverImage: Story = {
   render: () => (
     <Page>
       <View>
-        <Image source={{ uri: HERO }} style={{ width: '100%', height: 320 }} />
+        <BloomImage source={{ uri: HERO }} style={{ width: '100%', height: 320 }} />
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
           <PageHeader
             testID="header"
@@ -243,6 +234,7 @@ export const FloatingOverImage: Story = {
             titleReveal="onScroll"
             scrollThreshold={264}
             actions={<PageActions />}
+            search={<PageSearch />}
           />
         </View>
       </View>
@@ -265,8 +257,10 @@ export const FloatingCentred: Story = {
           titleAlign="center"
           scrim="always"
           actions={<PageActions />}
+          search={<PageSearch />}
         />
       </View>
+      <Rows count={8} />
     </Page>
   ),
 };
@@ -283,31 +277,10 @@ export const FloatingLeadingAvatar: Story = {
         subtitle={<LiveStatus />}
         scrim="always"
         actions={<PageActions />}
+        search={<PageSearch />}
       />
       <Rows count={8} />
     </Page>
-  ),
-};
-
-/**
- * 320 wide with both sides loaded and a long centred title — the case where an
- * unclamped centring inset asks for more room than the container has.
- */
-export const FloatingNarrow: Story = {
-  parameters: { controls: { disable: true } },
-  render: () => (
-    <View style={{ width: 320, maxWidth: '100%', alignSelf: 'flex-start' }}>
-      <Page>
-        <PageHeader
-          onBack={back}
-          title="A long screen title that will not fit"
-          titleAlign="center"
-          scrim="always"
-          actions={<PageActions />}
-        />
-        <Rows count={6} />
-      </Page>
-    </View>
   ),
 };
 
@@ -345,6 +318,7 @@ export const OverlayPlacement: Story = {
             subtitle="128 conversations"
             placement="overlay"
             actions={<PageActions />}
+            search={<PageSearch />}
           />
         </View>
       </Page>
@@ -405,7 +379,13 @@ export const Bar: Story = {
         actions={
           <>
             <IconAction icon={RiShare2Line} label="Share" />
-            <Button appearance="solid" tone="accent" size="md" leadingIcon={RiAddFill}>
+            <Button
+              appearance="solid"
+              tone="accent"
+              size="md"
+              leadingIcon={RiAddFill}
+              onPress={fn().mockName('New order')}
+            >
               New order
             </Button>
           </>
@@ -413,83 +393,6 @@ export const Bar: Story = {
       />
       <Rows count={8} />
     </Page>
-  ),
-};
-
-/** Bar, centred title, subtitle node, and a header with no back button. */
-export const BarVariants: Story = {
-  parameters: { controls: { disable: true } },
-  render: () => (
-    <Page>
-      <View style={{ gap: 24 }}>
-        <PageHeader
-          presentation="bar"
-          onBack={back}
-          title="Messages"
-          titleAlign="center"
-          border="always"
-          actions={<IconAction icon={RiSearchLine} label="Search" />}
-        />
-        <PageHeader
-          presentation="bar"
-          onBack={back}
-          title="Design team"
-          subtitle="12 members · 3 online"
-          border="always"
-          actions={<IconAction icon={RiMore2Line} label="More" />}
-        />
-        <PageHeader presentation="bar" title="Settings" titleAlign="center" border="always" />
-      </View>
-    </Page>
-  ),
-};
-
-/**
- * Bar over a photo, the pre-islands recipe: `transparent` fades the strip in
- * with scroll, and `titleReveal` — which used to be part of the same flag —
- * holds the title back.
- */
-export const BarOverImage: Story = {
-  parameters: { controls: { disable: true } },
-  render: () => (
-    <Page>
-      <PageHeader
-        testID="header"
-        presentation="bar"
-        transparent
-        titleReveal="onScroll"
-        scrollThreshold={264}
-        onBack={back}
-        title="Lisbon loft"
-        actions={
-          <>
-            <IconAction icon={RiShare2Line} label="Share" />
-            <IconAction icon={RiBookmarkLine} label="Save" />
-          </>
-        }
-      />
-      <Image source={{ uri: HERO }} style={{ width: '100%', height: 320, marginTop: -56 }} />
-      <Rows />
-    </Page>
-  ),
-};
-
-/** Open at a phone viewport (390): 16px side insets below `sm`. */
-export const Phone: Story = {
-  parameters: { controls: { disable: true } },
-  render: () => (
-    <View style={{ width: 390, maxWidth: '100%', alignSelf: 'flex-start' }}>
-      <Page inset>
-        <PageHeader
-          onBack={back}
-          title="Order #4821"
-          subtitle="Placed today"
-          scrim="always"
-          actions={<PageActions />}
-        />
-        <Rows count={6} />
-      </Page>
-    </View>
   ),
 };
 
@@ -503,7 +406,7 @@ export const Playground: StoryObj<typeof PageHeader> = {
     scrim: 'always',
     border: 'auto',
     sticky: false,
-    onBack: () => {},
+    onBack: back,
   },
   parameters: {
     controls: {
@@ -520,7 +423,7 @@ export const Playground: StoryObj<typeof PageHeader> = {
     },
   },
   argTypes: {
-    presentation: { control: 'select', options: ['floating', 'bar'] },
+    presentation: { control: 'select', options: ['floating', 'bar', 'navigation'] },
     titleAlign: { control: 'select', options: ['start', 'center'] },
     titleReveal: { control: 'select', options: ['always', 'onScroll'] },
     scrim: { control: 'select', options: ['auto', 'always', 'none'] },
@@ -538,7 +441,13 @@ export const Playground: StoryObj<typeof PageHeader> = {
     );
     return (
       <View style={{ width: 900, maxWidth: '100%', height: 420 }}>
-        <PageHeader {...args} scrollY={offset} placement="overlay" actions={<PageActions />} />
+        <PageHeader
+          {...args}
+          scrollY={offset}
+          placement="overlay"
+          actions={<PageActions />}
+          search={<PageSearch />}
+        />
         <Animated.ScrollView
           onScroll={onScroll}
           scrollEventThrottle={16}
@@ -580,6 +489,7 @@ export const RevealAfterContentHeading: Story = {
               sticky={false}
               titleRevealOffset={headingHeight}
               actions={<PageActions />}
+              search={<PageSearch />}
             />
           }
         >
@@ -602,40 +512,6 @@ export const RevealAfterContentHeading: Story = {
   },
 };
 
-export const ProfileDocking: Story = {
-  parameters: { bloomScroll: 'document', controls: { disable: true } },
-  render: function ProfileDocking() {
-    const [selected, setSelected] = useState('posts');
-    return (
-      <Screen documentScroll>
-        <ContentPanel>
-          <HeaderDockProvider>
-            <PageHeader
-              testID="profile-header"
-              placement="overlap"
-              title="Alex Morgan"
-              onBack={back}
-              actions={<PageActions />}
-            />
-            <View testID="profile-banner" style={{ height: 240, backgroundColor: '#46705b' }} />
-            <View style={{ padding: 24, gap: 12 }}>
-              <Text variant="title-1-bold">Alex Morgan</Text>
-              <Text>Design, reading and everyday discoveries.</Text>
-            </View>
-            <StickySection testID="profile-tabs">
-              <Tabs value={selected} onValueChange={setSelected}>
-                <TabsTrigger value="posts" label="Posts" />
-                <TabsTrigger value="media" label="Media" />
-              </Tabs>
-            </StickySection>
-            <Rows count={35} />
-          </HeaderDockProvider>
-        </ContentPanel>
-      </Screen>
-    );
-  },
-};
-
 function EditableWorkspaceHeader() {
   const [title, setTitle] = useState('Projects');
   const [view, setView] = useState('board');
@@ -648,16 +524,26 @@ function EditableWorkspaceHeader() {
         }
         accessory={
           <Toolbar
-            actions={<Button leadingIcon={RiAddFill}>New</Button>}
+            actions={
+              <Button leadingIcon={RiAddFill} onPress={fn().mockName('New record')}>
+                New
+              </Button>
+            }
             accessory={<Text className="text-text-secondary">12 records</Text>}
           >
             <Tabs value={view} onValueChange={setView}>
               <TabsTrigger value="board" label="Board" />
               <TabsTrigger value="table" label="Table" />
             </Tabs>
-            <Button appearance="plain">Filter</Button>
-            <Button appearance="plain">Sort</Button>
-            <Button appearance="plain">Properties</Button>
+            <Button appearance="plain" onPress={fn().mockName('Filter')}>
+              Filter
+            </Button>
+            <Button appearance="plain" onPress={fn().mockName('Sort')}>
+              Sort
+            </Button>
+            <Button appearance="plain" onPress={fn().mockName('Properties')}>
+              Properties
+            </Button>
           </Toolbar>
         }
       />
@@ -714,6 +600,46 @@ export const Navigation: Story = {
           </PopoverContent>
         </Popover>
         <Rows count={5} />
+      </Page>
+    );
+  },
+};
+
+/** The header allocates its search slot; Search owns the capsule and input transition. */
+export const AdaptiveSearch: Story = {
+  parameters: { controls: { disable: true } },
+  render: function AdaptiveSearchStory() {
+    const [query, setQuery] = useState('');
+    const notes = [
+      {
+        id: 'nature',
+        title: 'Nature Walks',
+        supporting: 'Notes, trails and things worth remembering.',
+      },
+      { id: 'coast', title: 'A day on the coast', supporting: 'The little places along the way.' },
+      { id: 'garden', title: 'In the garden', supporting: 'What is growing this spring.' },
+    ];
+    return (
+      <Page>
+        <PageHeader
+          testID="search-header"
+          title="Notes"
+          search={
+            <Search
+              presentation="auto"
+              value={query}
+              onValueChange={setQuery}
+              onClearText={() => setQuery('')}
+              label="Search notes"
+            />
+          }
+        />
+        <List
+          items={notes.filter((note) =>
+            `${note.title} ${note.supporting}`.toLowerCase().includes(query.toLowerCase()),
+          )}
+          empty={<Text>No matching notes</Text>}
+        />
       </Page>
     );
   },

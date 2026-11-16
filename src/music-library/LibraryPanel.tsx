@@ -1,6 +1,7 @@
+import { LibraryItem } from './LibraryItem';
 import { Screen, ScreenScrollView } from '../screen/index';
 import { Surface } from '../surface/index';
-import { GlyphButton } from '../button/index';
+import { Button } from '../button/index';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,10 +14,11 @@ import {
 import { createLibraryPanel } from './LibraryPanelBase';
 
 export const LibraryPanel = createLibraryPanel({
+  LibraryItem,
   Screen,
   ScreenScrollView,
   Surface,
-  GlyphButton,
+  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,

@@ -8,16 +8,17 @@ order: 105
 
 ```tsx
 import { PageHeader } from '@oxy.so/bloom/page-header';
-import { ButtonGroup, ButtonGroupItem } from '@oxy.so/bloom/button-group';
+import { Button } from '@oxy.so/bloom/button';
+import { Search } from '@oxy.so/bloom/search';
 
 <PageHeader
   onBack={router.back}
   title="Lisbon loft"
+  search={<Search presentation="auto" label="Search" value={query} onValueChange={setQuery} />}
   actions={
-    <ButtonGroup accessibilityLabel="Page actions">
-      <ButtonGroupItem iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search" />
-      <ButtonGroupItem iconOnly leadingIcon={RiShare2Line} accessibilityLabel="Share" />
-    </ButtonGroup>
+    <Button.Group accessibilityLabel="Page actions">
+      <Button iconOnly leadingIcon={RiShare2Line} accessibilityLabel="Share" />
+    </Button.Group>
   }
 />
 ```
@@ -27,7 +28,16 @@ Router-agnostic: the header never imports a router. With an `onBack`, the back b
 For compact panel chrome, `density="compact"` uses a 32pt minimum row and 12pt
 side insets without vertical padding. Larger controls, text and accessories grow
 the header naturally; its measured height continues to own content clearance.
-The default retains its 56pt minimum, 8pt vertical padding and responsive side insets.
+The default retains its 56pt minimum and a 12pt visual inset around normal
+controls. A web touch target reserves 44pt while painting the same 36pt `md`
+control; the header accounts for its invisible hit area in the outer padding,
+so the ordinary row stays 60pt with either a mouse or touch. Native retains
+36pt controls with platform hit slop. Richer titles can grow naturally.
+Controls and accessory rows share an 8pt gap.
+
+For `tone="onImage"`, the default scrim is a dark translucent gradient so the
+white title and subtitle remain readable in both themes. An explicit
+`scrimColor` still overrides that recipe; `scrim="none"` remains available.
 
 ## Navigation presentation
 
@@ -115,21 +125,21 @@ Three things that used to be one flag are three props now:
 
 ### The islands are yours to declare
 
-The header never infers grouping from its children's types. The `actions` slot is wrapped in a `BloomScope` with shared control defaults, so a `ButtonGroup` placed there becomes one island with no prop written on it, two `ButtonGroup`s become two islands, and a `Button` keeps its own chrome — which is what a primary action in its own accent capsule should do.
+The header never infers grouping from its children's types. The `actions` slot is wrapped in a `BloomScope` with shared control defaults, so a `Button.Group` placed there becomes one island with no prop written on it, two `Button.Group`s become two islands, and a `Button` keeps its own chrome — which is what a primary action in its own accent capsule should do.
 
 ```tsx
 actions={
   <>
-    <ButtonGroup accessibilityLabel="Page actions">
-      <ButtonGroupItem iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search" />
-      <ButtonGroupItem iconOnly leadingIcon={RiShare2Line} accessibilityLabel="Share" />
-    </ButtonGroup>
+    <Button.Group accessibilityLabel="Page actions">
+      <Button iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search" />
+      <Button iconOnly leadingIcon={RiShare2Line} accessibilityLabel="Share" />
+    </Button.Group>
     <Button appearance="solid" tone="accent" size="md">Save</Button>
   </>
 }
 ```
 
-For an icon action that should sit flush on an island, use `ButtonGroupItem` — a `Button` paints its own fill and would read as a card inside the capsule. The full rule is in [Composition](/docs/composition).
+Use ordinary `Button` controls for both standalone and grouped actions. `Button.Group` owns the shared surface; the header adds no button geometry.
 
 ### The edge effect
 
@@ -204,7 +214,7 @@ The measured navigation and action widths reserve symmetric space on either
 side; callers do not need an absolute wrapper or a fixed header height. Node
 titles own their accessible semantics.
 
-Web widths stay in CSS: a container query chooses 16px/24px side insets and
+Web widths stay in CSS: a shared 12px outer inset keeps normal chrome spacing while
 `clamp()` preserves the centered title's 96px floor. Resizing a panel does not
 copy every new width into React state. Only changed side-content measurements
 and actual header-height changes update React; native retains its measured
@@ -212,8 +222,8 @@ container-width geometry.
 
 ## Look
 
-- Default minimum height 56; compact minimum 32. Default side inset 16 below `sm`, 24 from `sm`; compact inset 12 — measured against the header's **container**, not the window, so a narrow desktop panel gets the narrow inset.
-- Islands are 36 tall (a 34 control plus the hairline), 8 apart. The back capsule carries 4px of hit slop on every side, which makes it a 44pt target with nothing beside it to steal from. **A grouped item is 34 × 34 with no slop** — items in a group are adjacent, and slop on one overlaps its neighbour. Where the 44pt floor matters for every action, give each one its own island instead of grouping them.
+- Default minimum height 56; compact minimum 32. Default outer inset 12 at every width; compact inset 12 with no vertical padding. Button size remains the shared `md` default.
+- Header actions use the same `Button` and `Button.Group` geometry as the rest of Bloom: `md` is 36px with a mouse, and the shared touch target is 44px. The header does not add a separate button size or hit-slop recipe.
 - Island material: the shared Surface material. Default fills paint at 72% on the web, where the blur shows through, and opaque on native. See [Surface](./surface.mdx).
 - Title `headline-medium` text-primary, subtitle `body-2-regular` secondary. Both truncate to one line.
 - `bar`: background `background/full` (card; dark neutral-925), separator 1px (neutral-200; dark neutral-800), shadow `shadow-xs` once scrolled.
@@ -316,7 +326,7 @@ inline padding. Anywhere else the header is unchanged.
 
 **Its history is one group.** A window toolbar whose screen has a panel
 `navigation` ([Compose application layouts](/docs/bloom/main/compose-layouts))
-shows back and forward as one `ButtonGroup` at its leading edge (a Mac's
+shows back and forward as one `Button.Group` at its leading edge (a Mac's
 Finder and System Settings), never the lone back capsule: each is disabled
 while its direction has nowhere to go, both at the history's root, and
 `Mod+[` / `Mod+]` move through the same history while the screen is in front
@@ -339,7 +349,7 @@ while its direction has nowhere to go, both at the history's root, and
 
 **`border` and `transparent` apply to `bar` and `navigation` only.** They are ignored by the floating presentation, which has no strip and no separator; `scrim` is its counterpart.
 
-**Icon actions want `ButtonGroupItem`.** A `Button appearance="outline" tone="neutral"` in a floating header's actions paints its own shared translucent Surface. It still works; it is just not the shape the islands are for.
+**Icon actions use the same Button.** Group related actions with `Button.Group`; standalone controls paint their own surface.
 
 ## Migrating from app headers
 
@@ -353,7 +363,7 @@ Mention, Allo and Homiio each hand-roll a `Header` with an `options` object. The
 | `options.showBackButton` (+ `useSafeBack` / `router.back` inside) | nothing, with `BloomProvider back={useBackWithFallback('/')}` — `onBack={null}` to hide |
 | Homiio `showBackButton && router.canGoBack()` | `onBack={router.canGoBack() ? router.back : undefined}` |
 | `options.leftComponents: ReactNode[]` | `leading={<>…</>}` |
-| `options.rightComponents: ReactNode[]` | `actions={<>…</>}`, grouped into `ButtonGroup`s |
+| `options.rightComponents: ReactNode[]` | `actions={<>…</>}`, grouped into `Button.Group`s |
 | `hideBottomBorder` | `presentation="bar"` + `border="none"` |
 | `disableSticky` | `sticky={false}` |
 | web `window.scrollY > 20` sticky state | built in (`scrollThreshold`, default 20) |
@@ -410,7 +420,7 @@ list bindings and resizing behavior.
 `titleRevealOffset` and `titleRevealDistance` also accept Reanimated shared values.
 Use these when the title block is measured on the UI thread: the header responds
 to the measurement without copying each scroll frame into React state. Dialog's
-navigation header uses this same API, `PageHeader` and `ButtonGroup`; dialog
+navigation header uses this same API, `PageHeader` and `Button.Group`; dialog
 screens do not maintain a separate chrome renderer. `tone="onImage"` selects
 light title and supporting text while the action islands keep their own material.
 
@@ -507,7 +517,10 @@ its recovery. Explicit Android/iOS platform contract tests cover hidden→shown�
 and title identity; these are not physical-device evidence. Animated maxWidth writes UNSET when a row leaves its bounded
 host, rather than an empty style that retains the prior native bound.
 
-Stateful custom controls belong in `persistentActions`. This is an explicit
+Stateful custom controls belong in `persistentActions`.
+`persistentActionsPlacement="end"` puts them after the grouped commands in both
+visual and keyboard order, for example a separate Done button in a photo viewer.
+The default is `start`; both positions reserve the controls' measured width. This is an explicit
 **never-overflow** slot: its measured width is reserved, the tree stays mounted,
 and the caller owns its accessible semantics. Do not recreate a custom input
 inside a menu to make it fit. Dialog uses this slot for its existing primary
@@ -535,3 +548,90 @@ Stretching it as a child of the absolute probe column measured 197.734/207.734px
 instead of the actual 34/44px fine/coarse control and reserved too much overflow
 space. `verify-header-action-measurement.mjs` compares the probe with its button
 and checks packing against measured geometry in both pointer modes.
+
+
+## Adaptive search
+
+`PageHeader.search` accepts the shared Search component. The header allocates the
+remaining action space; Search chooses a field or a button from that local
+width. In wide headers the field is capped at 360px, keeping actions together.
+In a compact header, opening Search gives it the full row; closing restores the
+title and actions. The input stays mounted when the layout changes.
+
+```tsx
+<PageHeader onBack={goBack} actions={<Button icon={RiShare2Line} accessibilityLabel="Share" />}
+  search={<Search presentation="auto" value={query} onValueChange={setQuery}
+    onClearText={() => setQuery('')} label="Search notes" />} />
+```
+
+Opening and closing animate the same capsule with a critically damped spring.
+The input and trigger retain identity during reversal and container resizing;
+Reduce Motion removes the transition. Use the **Adaptive Search** story here
+for this composition. Theme variants use Storybook's theme toolbar rather than
+separate light/dark stories; the Playground covers presentations and viewport sizes.
+
+## Identity, counts and secondary rows
+
+The same header can show a person, a group or a document. `titleVisual` accepts
+an existing `Avatar`, `AvatarGroup` or other non-interactive visual. `titleLayout`
+places it `inline` beside the text or `stacked` above it; `titleAppearance="capsule"`
+puts the label and subtitle in a shared Surface. `onPressTitle` makes the whole
+identity one canonical Button, with `titleAccessibilityLabel` naming its action.
+Stacked layouts align side controls with the top of the identity. The compact
+label capsule sits 4pt below its visual; the complete identity supplies the
+touch target, so its label does not inherit a standalone button's minimum height.
+Do not put nested controls in the visual or title of an interactive identity.
+
+`titleVariant` selects a step in Bloom's type ramp for a string heading, while
+retaining its heading level, truncation and `tone`. For example, a photo library
+uses `titleVariant="title-1-bold"` with its item count as `subtitle`; it does not
+need a separate title row below the toolbar. The normal title remains compact,
+and identity capsules use the shared semibold body style.
+
+```tsx
+<PageHeader
+  title="Weekend plans"
+  titleAlign="center"
+  titleLayout="stacked"
+  titleAppearance="capsule"
+  titleVisual={<AvatarGroup items={members} layout="conversation" size={48} />}
+  onPressTitle={openProfile}
+  titleAccessibilityLabel="View group profile"
+  onBack={goBack}
+/>
+```
+
+`backCount` adds text inside the existing back Button, preserving its size scale,
+material, focus and touch target. Include the count's meaning in `backLabel`
+when the visible number alone would be ambiguous. `ChatHeader` delegates its
+avatar, title, status and identity action to these same slots; it retains its
+conversation status/selection rules, without a second header renderer.
+
+`accessory` is the secondary row for pinned content, filter chips or other
+controls. Its measured height contributes to Screen clearance. For a persistent
+search with Cancel, put Cancel in `searchActions`: it remains beside the input
+when compact search takes over the row. Ordinary `actions` remain hidden during
+that expansion. Search, query state and filtering still use the shared Search
+and consumer data; the header does not implement a second input.
+
+## Complete patterns in Storybook
+
+`Composition/Layout/Page Header/Patterns` includes individual/group conversation, a separate inline pinned conversation,
+cover profile, full-photo profile and search with suggestions. The search demo
+filters results, opens details and restores results on Back. Conversation identity
+opens the profile, and the pinned row opens or hides its message.
+
+Profiles compose `CoverHeader` for the media/content overlap and `PageHeader` for
+navigation. `HeaderDockProvider` and `StickySection` supply the existing shared
+scroll geometry: tabs dock below the header as its compact identity appears.
+There is no story-owned scroll listener or copied header renderer. On native,
+sticky list sections still require the native list's `stickyHeaderIndices` and
+measured section offset, as documented above; the web stories do not establish
+physical-device validation.
+
+`Composition/Layout/Page Header/Media` covers a selectable photo library,
+collection playback controls and an image toolbar. Screen owns top/bottom chrome;
+BottomBar owns navigation and its floating Search, with the same input retained
+while it expands. Playback and call controls in these stories demonstrate local
+UI state; they do not connect external services. All patterns use Storybook's
+global theme, material and viewport controls, without duplicate dark stories.

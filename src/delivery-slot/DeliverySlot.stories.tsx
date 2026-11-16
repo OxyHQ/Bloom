@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import React, { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -145,7 +146,12 @@ export const NothingLeft: Story = {
   render: () => {
     return (
       <Page>
-        <DeliverySlotPicker days={DAYS} day="mon" windows={[]} onDayChange={() => {}} />
+        <DeliverySlotPicker
+          days={DAYS}
+          day="mon"
+          windows={[]}
+          onDayChange={fn().mockName('DeliverySlotPicker.onDayChange')}
+        />
       </Page>
     );
   },

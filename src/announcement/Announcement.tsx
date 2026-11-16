@@ -1,10 +1,11 @@
-import React, { memo, useMemo } from 'react';
+import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
+import { memo, useMemo } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { IS_WEB } from '../styles/platform';
 
 import { useTheme } from '../theme/use-theme';
-import { Button, CloseButton } from '../button';
+import { Button } from '../button';
 import { Text } from '../typography';
 import { RiShieldStarFill } from '../icons/remix/RiShieldStarFill';
 import { EASE_IN_OUT, useCardMotion, type CardMotionPose } from '../notification/use-card-motion';
@@ -115,8 +116,12 @@ function AnnouncementComponent({
           <Icon width={GEOMETRY.icon} height={GEOMETRY.icon} fill={paint.icon} />
         </Animated.View>
         {dismissible ? (
-          <CloseButton
-            size="xs"
+          <Button
+            appearance="outline"
+            tone="neutral"
+            iconOnly
+            icon={DismissActionIcon}
+            size={20}
             accessibilityLabel={closeLabel}
             onPress={motion.dismiss}
             // Inside the content column, whose box starts at the card's 12px

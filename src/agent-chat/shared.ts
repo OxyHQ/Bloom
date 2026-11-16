@@ -204,26 +204,6 @@ export const AGENT_CHAT_WEB_CSS = `
   opacity: 1;
 }
 [data-bloom-agent-chat-actions="hidden"] { pointer-events: none; }
-[data-bloom-agent-chat-thread] {
-  transition: background-color ${TRANSITION_MS}ms ${EASE};
-}
-[data-bloom-agent-chat-thread]:hover {
-  background-color: var(--bloom-agent-chat-row-hover);
-}
-[data-bloom-agent-chat-age],
-[data-bloom-agent-chat-row-menu] {
-  transition: opacity ${TRANSITION_MS}ms ${EASE};
-}
-[data-bloom-agent-chat-age] { opacity: 1; }
-[data-bloom-agent-chat-row-menu] { opacity: 0; }
-[data-bloom-agent-chat-thread]:hover [data-bloom-agent-chat-age],
-[data-bloom-agent-chat-slot]:has(:focus-visible) [data-bloom-agent-chat-age] {
-  opacity: 0;
-}
-[data-bloom-agent-chat-thread]:hover [data-bloom-agent-chat-row-menu],
-[data-bloom-agent-chat-slot]:has(:focus-visible) [data-bloom-agent-chat-row-menu] {
-  opacity: 1;
-}
 [data-bloom-agent-chat-scroll-hidden] { scrollbar-width: none; }
 [data-bloom-agent-chat-scroll-hidden]::-webkit-scrollbar { display: none; }
 @media (prefers-reduced-motion: reduce) {

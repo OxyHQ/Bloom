@@ -1,12 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 
 import { AiProfileCard } from '../../src/ai-profile-card';
 import { AppShell } from '../../src/app-shell';
-import { Button } from '../../src/button';
+
 import { AgentsChartCard } from '../../src/chart-cards/AgentsChartCard';
 import { TokensChartCard } from '../../src/chart-cards/TokensChartCard';
-import { RiEditBoxLine, RiShare2Line } from '../../src/icons/remix';
+
 import { BREAKPOINTS } from '../../src/styles/breakpoints';
 import { ACCOUNT, NAV_ITEMS, SECONDARY_ITEMS, TEAM, TEMPLATE_FRAME } from '../shared/dashboard';
 import {
@@ -68,16 +68,6 @@ export function AiProfileTemplate({ initialMonth = 11 }: { initialMonth?: number
               delta={PROFILE.delta}
               stats={STATS}
               cells={CELLS}
-              actions={
-                <>
-                  <Button size="sm" leadingIcon={RiShare2Line} appearance="subtle" tone="neutral">
-                    Share
-                  </Button>
-                  <Button size="sm" leadingIcon={RiEditBoxLine} appearance="solid" tone="action">
-                    Edit
-                  </Button>
-                </>
-              }
             />
           </View>
           <AgentsChartCard

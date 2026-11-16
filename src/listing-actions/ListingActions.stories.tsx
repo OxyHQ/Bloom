@@ -1,9 +1,10 @@
+import { fn } from 'storybook/test';
 import React, { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { BookingBar } from '../booking';
-import { LinkButton } from '../button';
+import { Button } from '../button';
 import { RiFlagLine } from '../icons/remix/RiFlagLine';
 import { RiHeart3Line } from '../icons/remix/RiHeart3Line';
 import { RiShareLine } from '../icons/remix/RiShareLine';
@@ -95,13 +96,19 @@ const SALE_FACTS: KeyFact[] = [
 
 function ReportLink() {
   return (
-    <LinkButton linkTone="secondary" size="sm" leadingIcon={RiFlagLine} onPress={() => undefined}>
+    <Button
+      appearance="plain"
+      linkTone="secondary"
+      size="sm"
+      leadingIcon={RiFlagLine}
+      onPress={fn().mockName('onPress')}
+    >
       Report this listing
-    </LinkButton>
+    </Button>
   );
 }
 
-const noop = () => undefined;
+const onDemoAction = fn().mockName('listing-actions.action');
 
 export const RentalCard: Story = {
   render: () => (
@@ -111,8 +118,8 @@ export const RentalCard: Story = {
           price="€1,250"
           billsNote="Bills included: water, heating and fibre"
           facts={RENTAL_FACTS}
-          onRequestViewing={noop}
-          onApply={noop}
+          onRequestViewing={onDemoAction}
+          onApply={onDemoAction}
           note="Usually responds within a day"
           footer={<ReportLink />}
           testID="rental-available"
@@ -124,8 +131,8 @@ export const RentalCard: Story = {
           billsNote="Bills not included"
           facts={RENTAL_FACTS}
           status="reserved"
-          onRequestViewing={noop}
-          onApply={noop}
+          onRequestViewing={onDemoAction}
+          onApply={onDemoAction}
           note="Usually responds within a day"
           testID="rental-reserved"
         />
@@ -136,8 +143,8 @@ export const RentalCard: Story = {
           originalPrice="€1,050"
           facts={RENTAL_FACTS.slice(0, 2)}
           status="rented"
-          onRequestViewing={noop}
-          onApply={noop}
+          onRequestViewing={onDemoAction}
+          onApply={onDemoAction}
           testID="rental-rented"
         />
       </Column>
@@ -153,11 +160,11 @@ export const SaleCard: Story = {
           price="€385,000"
           pricePerArea="€3,438 / m²"
           mortgageEstimate="Est. €1,540/month"
-          onPressMortgage={noop}
+          onPressMortgage={onDemoAction}
           facts={SALE_FACTS}
-          onContact={noop}
-          onRequestVisit={noop}
-          onMakeOffer={noop}
+          onContact={onDemoAction}
+          onRequestVisit={onDemoAction}
+          onMakeOffer={onDemoAction}
           note="Listed by Harbourline Homes"
           testID="sale-available"
         />
@@ -167,11 +174,11 @@ export const SaleCard: Story = {
           price="€385,000"
           pricePerArea="€3,438 / m²"
           mortgageEstimate="Est. €1,540/month"
-          onPressMortgage={noop}
+          onPressMortgage={onDemoAction}
           status="reserved"
-          onContact={noop}
-          onRequestVisit={noop}
-          onMakeOffer={noop}
+          onContact={onDemoAction}
+          onRequestVisit={onDemoAction}
+          onMakeOffer={onDemoAction}
           testID="sale-reserved"
         />
       </Column>
@@ -181,8 +188,8 @@ export const SaleCard: Story = {
           originalPrice="€385,000"
           pricePerArea="€3,237 / m²"
           status="sold"
-          onContact={noop}
-          onRequestVisit={noop}
+          onContact={onDemoAction}
+          onRequestVisit={onDemoAction}
           testID="sale-sold"
         />
       </Column>
@@ -213,12 +220,12 @@ function ExchangeDemo({
         details: '2 beds · 4 guests',
       }}
       dates="Jul 4 – 18"
-      onPressDates={noop}
+      onPressDates={onDemoAction}
       guests="4 guests"
-      onPressGuests={noop}
+      onPressGuests={onDemoAction}
       mode={mode}
       onModeChange={setMode}
-      onPropose={noop}
+      onPropose={onDemoAction}
       note={
         mode === 'swap'
           ? 'You stay at theirs while they stay at yours.'
@@ -252,8 +259,8 @@ export const ExchangeCard: Story = {
             location: 'Castel Aurio',
             details: '2 beds · 3 guests',
           }}
-          onPressDates={noop}
-          onPressGuests={noop}
+          onPressDates={onDemoAction}
+          onPressGuests={onDemoAction}
           proposeDisabled
         />
       </Column>
@@ -269,8 +276,8 @@ export const OfferingCards: Story = {
           price="€1,250"
           billsNote="Bills included"
           facts={RENTAL_FACTS}
-          onRequestViewing={noop}
-          onApply={noop}
+          onRequestViewing={onDemoAction}
+          onApply={onDemoAction}
           note="Usually responds within a day"
         />
       </Column>
@@ -279,11 +286,11 @@ export const OfferingCards: Story = {
           price="€385,000"
           pricePerArea="€3,438 / m²"
           mortgageEstimate="Est. €1,540/month"
-          onPressMortgage={noop}
+          onPressMortgage={onDemoAction}
           facts={SALE_FACTS}
-          onContact={noop}
-          onRequestVisit={noop}
-          onMakeOffer={noop}
+          onContact={onDemoAction}
+          onRequestVisit={onDemoAction}
+          onMakeOffer={onDemoAction}
         />
       </Column>
       <Column label="Swap">
@@ -302,8 +309,8 @@ export const ActionBars: Story = {
           price="$180"
           priceUnit="night"
           dates="Oct 12 – 17"
-          onPressDates={noop}
-          onReserve={noop}
+          onPressDates={onDemoAction}
+          onReserve={onDemoAction}
         />
         <Caption>Rent</Caption>
         <ActionBar
@@ -312,19 +319,19 @@ export const ActionBars: Story = {
           priceUnitPrefix="/"
           subtitle="Available from Sep 1"
           primaryLabel="Request a viewing"
-          onPrimary={noop}
+          onPrimary={onDemoAction}
           testID="bar-rent"
         />
         <Caption>Buy</Caption>
         <ActionBar
           price="€385,000"
           subtitle="Est. €1,540/month"
-          onPressSubtitle={noop}
+          onPressSubtitle={onDemoAction}
           primaryLabel="Contact agent"
-          onPrimary={noop}
+          onPrimary={onDemoAction}
           secondaryIcon={RiHeart3Line}
           secondaryLabel="Save"
-          onSecondary={noop}
+          onSecondary={onDemoAction}
           testID="bar-buy"
         />
         <Caption>Swap</Caption>
@@ -333,12 +340,12 @@ export const ActionBars: Story = {
           priceUnit="night"
           priceUnitPrefix="/"
           subtitle="Jul 4 – 18"
-          onPressSubtitle={noop}
+          onPressSubtitle={onDemoAction}
           primaryLabel="Propose"
-          onPrimary={noop}
+          onPrimary={onDemoAction}
           secondaryIcon={RiShareLine}
           secondaryLabel="Share"
-          onSecondary={noop}
+          onSecondary={onDemoAction}
         />
         <Caption>Unavailable</Caption>
         <ActionBar
@@ -409,9 +416,9 @@ export const SaleWithEstimate: Story = {
             price="€385,000"
             pricePerArea="€3,438 / m²"
             mortgageEstimate={`Est. ${euro(estimate.monthlyPayment)}/month`}
-            onPressMortgage={noop}
-            onContact={noop}
-            onRequestVisit={noop}
+            onPressMortgage={onDemoAction}
+            onContact={onDemoAction}
+            onRequestVisit={onDemoAction}
           />
         </Column>
       </Page>
@@ -470,7 +477,7 @@ function SchedulerDemo({
       note={note}
       onNoteChange={setNote}
       notePlaceholder="Anything the landlord should know"
-      onSubmit={noop}
+      onSubmit={onDemoAction}
       testID={testID}
     />
   );

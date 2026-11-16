@@ -1,5 +1,8 @@
+import { ScrollArea as ScrollView } from '../layout';
+import { fn } from 'storybook/test';
+import { useContainerWidth } from '../hooks/use-container-width';
 import React, { useMemo, useRef, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { View, type ScrollView as NativeScrollView } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Admonition } from '../admonition';
@@ -216,15 +219,6 @@ function previewData(draft: Draft): ListingPreviewData {
 //  The composed flow
 // ---------------------------------------------------------------------------
 
-function useWidth() {
-  const [width, setWidth] = useState(0);
-  return {
-    width,
-    onLayout: (e: { nativeEvent: { layout: { width: number } } }) =>
-      setWidth(e.nativeEvent.layout.width),
-  };
-}
-
 function PublishFlow({
   initial = EMPTY_DRAFT,
   initialStep = 0,
@@ -233,7 +227,8 @@ function PublishFlow({
   initialStep?: number;
 }) {
   const theme = useTheme();
-  const { width, onLayout } = useWidth();
+  const { width: measuredWidth, onLayout } = useContainerWidth();
+  const width = measuredWidth ?? 0;
   const wide = width >= 1024;
   const gutter = width > 0 && width < 480 ? 16 : 24;
   const [step, setStep] = useState(initialStep);
@@ -241,7 +236,7 @@ function PublishFlow({
   const [showErrors, setShowErrors] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [published, setPublished] = useState(false);
-  const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  const scrollRef = useRef<React.ComponentRef<typeof NativeScrollView>>(null);
   const uploadCounter = useRef(0);
   const set = (patch: Partial<Draft>) => setDraft((d) => ({ ...d, ...patch }));
 
@@ -540,7 +535,7 @@ export const PropertyTypesError: Story = {
     <Page>
       <PropertyTypeSelector
         value={null}
-        onValueChange={() => undefined}
+        onValueChange={fn().mockName('onValueChange')}
         error="Choose a property type to continue."
         testID="types-error"
       />
@@ -598,7 +593,7 @@ export const OfferingsNone: Story = {
     <Page>
       <OfferingEditor
         value={{ kinds: [] }}
-        onValueChange={() => undefined}
+        onValueChange={fn().mockName('onValueChange')}
         errors={{ kinds: 'Pick at least one way to offer the home.' }}
         testID="offering-none"
       />
@@ -624,7 +619,7 @@ export const Photos: Story = {
               list.map((p) => (p.id === id ? { ...p, status: 'uploading', progress: 10 } : p)),
             )
           }
-          onAdd={() => undefined}
+          onAdd={fn().mockName('onAdd')}
           testID="photos"
         />
       </Page>
@@ -712,12 +707,12 @@ export const Loading: Story = {
           { id: 'a', uri: photo('orvel-living'), status: 'uploading' },
           { id: 'b', uri: photo('orvel-kitchen'), status: 'uploading', progress: 12 },
         ]}
-        onReorder={() => undefined}
+        onReorder={fn().mockName('onReorder')}
         testID="photos-loading"
       />
       <WizardFooter
-        onBack={() => undefined}
-        onNext={() => undefined}
+        onBack={fn().mockName('onBack')}
+        onNext={fn().mockName('onNext')}
         nextLabel="Publish"
         loading
         sticky={false}

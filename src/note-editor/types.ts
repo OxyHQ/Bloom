@@ -52,7 +52,7 @@ export interface NoteEditorHeaderProps {
    * nothing is broken — it is a published note, a shared one, a revision.
    */
   readOnly?: boolean;
-  /** The trailing slot on the title line — a share button, a menu, a `ButtonGroup`. */
+  /** The trailing slot on the title line — a share button, a menu, a `Button.Group`. */
   actions?: ReactNode;
   /** Names the header region (`"Note"` in English). */
   accessibilityLabel?: string;
@@ -100,7 +100,7 @@ export interface NoteEditorToolbarLabels {
 export interface NoteEditorToolbarProps {
   /** The actions, in the order they are drawn. */
   actions: ReadonlyArray<NoteEditorAction>;
-  /** The `ButtonGroup` rung. Default `md` (34px items); `sm` is 30. */
+  /** The `Button.Group` rung. Default `md` (34px items); `sm` is 30. */
   size?: 'md' | 'sm';
   /** Disables every action and the overflow, without each caller writing it per action. */
   disabled?: boolean;

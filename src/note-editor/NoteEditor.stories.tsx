@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -63,7 +64,7 @@ function useActions(): NoteEditorAction[] {
       onPress: () => setItalic((v) => !v),
       alwaysVisible: true,
     },
-    { key: 'heading', label: 'Heading', icon: RiFontSize, onPress: () => {} },
+    { key: 'heading', label: 'Heading', icon: RiFontSize, onPress: fn().mockName('onPress') },
     {
       key: 'list',
       label: 'Bulleted list',
@@ -78,11 +79,16 @@ function useActions(): NoteEditorAction[] {
       active: check,
       onPress: () => setCheck((v) => !v),
     },
-    { key: 'quote', label: 'Quote', icon: RiDoubleQuotesL, onPress: () => {} },
-    { key: 'code', label: 'Code', icon: RiCodeSLine, onPress: () => {} },
-    { key: 'link', label: 'Link', icon: RiLinkM, onPress: () => {} },
-    { key: 'image', label: 'Image', icon: RiImageLine, onPress: () => {} },
-    { key: 'attach', label: 'Attach a file', icon: RiAttachment2, onPress: () => {} },
+    { key: 'quote', label: 'Quote', icon: RiDoubleQuotesL, onPress: fn().mockName('onPress') },
+    { key: 'code', label: 'Code', icon: RiCodeSLine, onPress: fn().mockName('onPress') },
+    { key: 'link', label: 'Link', icon: RiLinkM, onPress: fn().mockName('onPress') },
+    { key: 'image', label: 'Image', icon: RiImageLine, onPress: fn().mockName('onPress') },
+    {
+      key: 'attach',
+      label: 'Attach a file',
+      icon: RiAttachment2,
+      onPress: fn().mockName('onPress'),
+    },
   ];
 }
 
@@ -140,57 +146,15 @@ export const SaveStates: Story = {
   ),
 };
 
-/** The same ten actions at four widths — the row collapses from the right. */
-export const ToolbarWidths: Story = {
-  render: function ToolbarWidthsStory() {
-    const actions = useActions();
-    return (
-      <Page width={860}>
-        <View style={{ gap: 6 }}>
-          <Text variant="caption-1-regular">the whole column</Text>
-          <NoteEditorToolbar
-            actions={actions}
-            accessibilityLabel="Formatting, full width"
-            testID="toolbar-full"
-          />
-        </View>
-        {[340, 280, 200, 120].map((width) => (
-          <View key={width} style={{ gap: 6 }}>
-            <Text variant="caption-1-regular">{`${width}px`}</Text>
-            <View style={{ width }}>
-              <NoteEditorToolbar
-                actions={actions}
-                accessibilityLabel={`Formatting at ${width}`}
-                testID={`toolbar-${width}`}
-              />
-            </View>
-          </View>
-        ))}
-        <View style={{ gap: 6 }}>
-          <Text variant="caption-1-regular">small, disabled</Text>
-          <View style={{ width: 360 }}>
-            <NoteEditorToolbar
-              actions={actions}
-              size="sm"
-              disabled
-              accessibilityLabel="Formatting, disabled"
-            />
-          </View>
-        </View>
-      </Page>
-    );
-  },
-};
-
-/** 360px: the header wraps its readings, the toolbar collapses. */
-export const Phone: Story = {
-  render: function PhoneStory() {
+/** Long title and offline status wrap with the available viewport. */
+export const LongTitle: Story = {
+  render: function LongTitleStory() {
     const [title, setTitle] = useState(
       'A note title long enough to need the second line of the input',
     );
     const actions = useActions();
     return (
-      <Page width={360}>
+      <Page>
         <NoteEditorHeader
           title={title}
           onTitleChange={setTitle}

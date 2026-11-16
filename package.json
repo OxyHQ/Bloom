@@ -464,25 +464,6 @@
         "default": "./lib/commonjs/button/index.js"
       }
     },
-    "./button-group": {
-      "react-native": {
-        "types": "./lib/typescript/module/button-group/index.d.ts",
-        "default": "./src/button-group/index.ts"
-      },
-      "browser": {
-        "types": "./lib/typescript/module/button-group/index.web.d.ts",
-        "import": "./lib/module/button-group/index.web.js",
-        "require": "./lib/commonjs/button-group/index.web.js"
-      },
-      "import": {
-        "types": "./lib/typescript/module/button-group/index.d.ts",
-        "default": "./lib/module/button-group/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/button-group/index.d.ts",
-        "default": "./lib/commonjs/button-group/index.js"
-      }
-    },
     "./layout": {
       "react-native": {
         "types": "./lib/typescript/module/layout/index.d.ts",
@@ -557,25 +538,6 @@
       "require": {
         "types": "./lib/typescript/commonjs/fab/index.d.ts",
         "default": "./lib/commonjs/fab/index.js"
-      }
-    },
-    "./frosted-icon-button": {
-      "react-native": {
-        "types": "./lib/typescript/module/frosted-icon-button/index.d.ts",
-        "default": "./src/frosted-icon-button/index.ts"
-      },
-      "browser": {
-        "types": "./lib/typescript/module/frosted-icon-button/index.web.d.ts",
-        "import": "./lib/module/frosted-icon-button/index.web.js",
-        "require": "./lib/commonjs/frosted-icon-button/index.web.js"
-      },
-      "import": {
-        "types": "./lib/typescript/module/frosted-icon-button/index.d.ts",
-        "default": "./lib/module/frosted-icon-button/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/frosted-icon-button/index.d.ts",
-        "default": "./lib/commonjs/frosted-icon-button/index.js"
       }
     },
     "./divider": {
@@ -1229,6 +1191,11 @@
       "react-native": {
         "types": "./lib/typescript/module/notification-center/index.d.ts",
         "default": "./src/notification-center/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/notification-center/index.web.d.ts",
+        "import": "./lib/module/notification-center/index.web.js",
+        "require": "./lib/commonjs/notification-center/index.web.js"
       },
       "import": {
         "types": "./lib/typescript/module/notification-center/index.d.ts",
@@ -2887,6 +2854,11 @@
         "types": "./lib/typescript/module/chat-people/index.d.ts",
         "default": "./src/chat-people/index.ts"
       },
+      "browser": {
+        "types": "./lib/typescript/module/chat-people/index.web.d.ts",
+        "import": "./lib/module/chat-people/index.web.js",
+        "require": "./lib/commonjs/chat-people/index.web.js"
+      },
       "import": {
         "types": "./lib/typescript/module/chat-people/index.d.ts",
         "default": "./lib/module/chat-people/index.js"
@@ -2894,20 +2866,6 @@
       "require": {
         "types": "./lib/typescript/commonjs/chat-people/index.d.ts",
         "default": "./lib/commonjs/chat-people/index.js"
-      }
-    },
-    "./chat-people/contact-row": {
-      "react-native": {
-        "types": "./lib/typescript/module/chat-people/contact-row.d.ts",
-        "default": "./src/chat-people/contact-row.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/chat-people/contact-row.d.ts",
-        "default": "./lib/module/chat-people/contact-row.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/chat-people/contact-row.d.ts",
-        "default": "./lib/commonjs/chat-people/contact-row.js"
       }
     },
     "./chat-screen": {
@@ -2980,6 +2938,11 @@
       "react-native": {
         "types": "./lib/typescript/module/chat-list/index.d.ts",
         "default": "./src/chat-list/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/chat-list/index.web.d.ts",
+        "import": "./lib/module/chat-list/index.web.js",
+        "require": "./lib/commonjs/chat-list/index.web.js"
       },
       "import": {
         "types": "./lib/typescript/module/chat-list/index.d.ts",
@@ -3186,6 +3149,11 @@
       "react-native": {
         "types": "./lib/typescript/module/property-insights/index.d.ts",
         "default": "./src/property-insights/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/property-insights/index.web.d.ts",
+        "import": "./lib/module/property-insights/index.web.js",
+        "require": "./lib/commonjs/property-insights/index.web.js"
       },
       "import": {
         "types": "./lib/typescript/module/property-insights/index.d.ts",
@@ -3761,6 +3729,11 @@
         "types": "./lib/typescript/module/tenancy/index.d.ts",
         "default": "./src/tenancy/index.ts"
       },
+      "browser": {
+        "types": "./lib/typescript/module/tenancy/index.web.d.ts",
+        "import": "./lib/module/tenancy/index.web.js",
+        "require": "./lib/commonjs/tenancy/index.web.js"
+      },
       "import": {
         "types": "./lib/typescript/module/tenancy/index.d.ts",
         "default": "./lib/module/tenancy/index.js"
@@ -4114,20 +4087,6 @@
       "require": {
         "types": "./lib/typescript/commonjs/grouped-section/index.d.ts",
         "default": "./lib/commonjs/grouped-section/index.js"
-      }
-    },
-    "./settings-list": {
-      "react-native": {
-        "types": "./lib/typescript/module/settings-list/index.d.ts",
-        "default": "./src/settings-list/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/settings-list/index.d.ts",
-        "default": "./lib/module/settings-list/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/settings-list/index.d.ts",
-        "default": "./lib/commonjs/settings-list/index.js"
       }
     },
     "./link-preview": {
@@ -4815,9 +4774,6 @@
       "button": [
         "./lib/typescript/module/button/index.d.ts"
       ],
-      "button-group": [
-        "./lib/typescript/module/button-group/index.d.ts"
-      ],
       "layout": [
         "./lib/typescript/module/layout/index.d.ts"
       ],
@@ -4829,9 +4785,6 @@
       ],
       "fab": [
         "./lib/typescript/module/fab/index.d.ts"
-      ],
-      "frosted-icon-button": [
-        "./lib/typescript/module/frosted-icon-button/index.d.ts"
       ],
       "divider": [
         "./lib/typescript/module/divider/index.d.ts"
@@ -5289,9 +5242,6 @@
       "chat-people": [
         "./lib/typescript/module/chat-people/index.d.ts"
       ],
-      "chat-people/contact-row": [
-        "./lib/typescript/module/chat-people/contact-row.d.ts"
-      ],
       "chat-screen": [
         "./lib/typescript/module/chat-screen/index.d.ts"
       ],
@@ -5543,9 +5493,6 @@
       ],
       "grouped-section": [
         "./lib/typescript/module/grouped-section/index.d.ts"
-      ],
-      "settings-list": [
-        "./lib/typescript/module/settings-list/index.d.ts"
       ],
       "link-preview": [
         "./lib/typescript/module/link-preview/index.d.ts"

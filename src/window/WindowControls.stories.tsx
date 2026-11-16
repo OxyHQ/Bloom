@@ -98,6 +98,7 @@ export function StoryWindow({
       <View
         style={{
           width,
+          maxWidth: '100%',
           height,
           borderRadius: fullscreen ? 0 : STORY_METRICS.radius,
           overflow: 'hidden',

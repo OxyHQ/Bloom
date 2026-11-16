@@ -1,12 +1,13 @@
 /** @jest-environment jsdom */
 import type React from 'react';
-import { act, useEffect } from 'react';
+import { act, useContext, useEffect } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => ({
   ...jest.requireActual('react-native-web'),
   useWindowDimensions: () => ({ width: 1600, height: 900, scale: 1, fontScale: 1 }),
 }));
 import { PageHeader } from '../page-header';
+import { SearchPresentationContext } from '../search/context';
 import { BloomScope } from '../appearance';
 import { ScreenScope } from '../layout/screen-scope';
 import { OverlayRoot } from '../overlay';
@@ -212,4 +213,47 @@ it('publishes spacious only across its own 1279/1280 threshold', () => {
   expect(actions).not.toHaveBeenCalled();
   headerLayout(1279);
   expect(actions).toHaveBeenLastCalledWith({ compact: false, spacious: false });
+});
+
+it('keeps search actions reachable while compact search replaces ordinary actions', () => {
+  const cancel = jest.fn();
+  function ActiveSearch() {
+    const host = useContext(SearchPresentationContext);
+    useEffect(() => {
+      host?.onActiveChange(true);
+      return () => host?.onActiveChange(false);
+    }, [host]);
+    return <input aria-label="Search files" />;
+  }
+  mount(
+    <PageHeader
+      testID="header"
+      title="Files"
+      search={<ActiveSearch />}
+      actions={<Button testID="ordinary-action">Share</Button>}
+      searchActions={
+        <Button testID="search-cancel" onPress={cancel}>
+          Cancel
+        </Button>
+      }
+    />,
+  );
+  headerLayout(360);
+  const hiddenByLayout = (element: HTMLElement) => {
+    let node: HTMLElement | null = element;
+    while (node) {
+      if (getComputedStyle(node).display === 'none') return true;
+      node = node.parentElement;
+    }
+    return false;
+  };
+  const cancelButton = container.querySelector(
+    '[data-testid="search-cancel"]',
+  ) as HTMLButtonElement;
+  expect(
+    hiddenByLayout(container.querySelector('[data-testid="ordinary-action"]') as HTMLElement),
+  ).toBe(true);
+  expect(hiddenByLayout(cancelButton)).toBe(false);
+  act(() => cancelButton.click());
+  expect(cancel).toHaveBeenCalledTimes(1);
 });

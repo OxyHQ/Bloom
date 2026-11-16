@@ -1,9 +1,9 @@
-import React from 'react';
+import type React from 'react';
 import { View } from 'react-native';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { Button } from '../button';
 import { BUTTON_RADIUS } from '../button/shared';
 import { pressHost } from './support/press-host';
 import { renderedChildren, resolvedStyle } from './support/rendered-style';
@@ -16,17 +16,17 @@ function renderWithTheme(ui: React.ReactElement) {
   );
 }
 
-describe('ButtonGroup', () => {
+describe('Button.Group', () => {
   it.each([false, true])(
     'keeps its items its children in the mounted tree (separated: %s)',
     (separated) => {
       // Fabric flattens a view with no stacking context and mounts its children
       // in the nearest ancestor that has one: a role and a label are not one.
       const { getByTestId } = renderWithTheme(
-        <ButtonGroup testID="group" accessibilityLabel="Back and forward" separated={separated}>
-          <ButtonGroupItem iconOnly accessibilityLabel="Back" />
-          <ButtonGroupItem iconOnly accessibilityLabel="Forward" />
-        </ButtonGroup>,
+        <Button.Group testID="group" accessibilityLabel="Back and forward" separated={separated}>
+          <Button iconOnly accessibilityLabel="Back" />
+          <Button iconOnly accessibilityLabel="Forward" />
+        </Button.Group>,
       );
       const group = getByTestId('group');
       expect(group.props.role).toBe('group');
@@ -37,11 +37,11 @@ describe('ButtonGroup', () => {
   it('is one rimmed surface with inset separators between items', () => {
     const { getByTestId, toJSON } = renderWithTheme(
       <View testID="host">
-        <ButtonGroup testID="group">
-          <ButtonGroupItem>Left</ButtonGroupItem>
-          <ButtonGroupItem>Center</ButtonGroupItem>
-          <ButtonGroupItem>Right</ButtonGroupItem>
-        </ButtonGroup>
+        <Button.Group testID="group">
+          <Button>Left</Button>
+          <Button>Center</Button>
+          <Button>Right</Button>
+        </Button.Group>
       </View>,
     );
     const group = resolvedStyle(getByTestId('group').props.style);
@@ -51,25 +51,25 @@ describe('ButtonGroup', () => {
     expect(renderedChildren(toJSON(), 'group-items')).toHaveLength(5);
   });
 
-  it('sizes items from the group: 34 medium, 30 small', () => {
+  it('sizes items from the group: 36 medium, 32 small', () => {
     const { getByTestId } = renderWithTheme(
-      <ButtonGroup size="sm">
-        <ButtonGroupItem testID="item">One</ButtonGroupItem>
-        <ButtonGroupItem testID="icon" iconOnly accessibilityLabel="Add" />
-      </ButtonGroup>,
+      <Button.Group size="sm">
+        <Button testID="item">One</Button>
+        <Button testID="icon" iconOnly accessibilityLabel="Add" />
+      </Button.Group>,
     );
-    expect(resolvedStyle(getByTestId('item').props.style).height).toBe(30);
-    expect(resolvedStyle(getByTestId('icon').props.style).width).toBe(30);
+    expect(resolvedStyle(getByTestId('item').props.style).height).toBe(32);
+    expect(resolvedStyle(getByTestId('icon').props.style).width).toBe(32);
   });
 
   it('presses, and announces selection with both spellings', () => {
     const onPress = jest.fn();
     const { getByTestId } = renderWithTheme(
-      <ButtonGroup>
-        <ButtonGroupItem testID="item" checked onPress={onPress}>
+      <Button.Group>
+        <Button testID="item" pressed onPress={onPress}>
           Week
-        </ButtonGroupItem>
-      </ButtonGroup>,
+        </Button>
+      </Button.Group>,
     );
     const item = getByTestId('item');
     pressHost(item);
@@ -82,14 +82,14 @@ describe('ButtonGroup', () => {
     // `aria-pressed="false"` on a plain action announces a state it does not
     // have — "not pressed" on an attach button that fires and is done.
     const screen = renderWithTheme(
-      <ButtonGroup accessibilityLabel="Format">
-        <ButtonGroupItem testID="action" onPress={() => {}}>
+      <Button.Group accessibilityLabel="Format">
+        <Button testID="action" onPress={() => {}}>
           Attach
-        </ButtonGroupItem>
-        <ButtonGroupItem testID="off" selected={false} onPress={() => {}}>
+        </Button>
+        <Button testID="off" pressed={false} onPress={() => {}}>
           Bold
-        </ButtonGroupItem>
-      </ButtonGroup>,
+        </Button>
+      </Button.Group>,
     );
     const action = screen.getByTestId('action');
     expect(action.props['aria-pressed']).toBeUndefined();
@@ -101,14 +101,14 @@ describe('ButtonGroup', () => {
   it('keeps controlled changes and disabled state on the real Button', () => {
     const change = jest.fn();
     const screen = renderWithTheme(
-      <ButtonGroup>
-        <ButtonGroupItem testID="selected" checked onCheckedChange={change}>
+      <Button.Group>
+        <Button testID="selected" pressed onPressedChange={change}>
           B
-        </ButtonGroupItem>
-        <ButtonGroupItem testID="disabled" disabled onCheckedChange={change}>
+        </Button>
+        <Button testID="disabled" disabled onPressedChange={change}>
           C
-        </ButtonGroupItem>
-      </ButtonGroup>,
+        </Button>
+      </Button.Group>,
     );
     pressHost(screen.getByTestId('selected'));
     expect(change).toHaveBeenCalledWith(false);
@@ -118,11 +118,11 @@ describe('ButtonGroup', () => {
   describe('separated', () => {
     it('is one pill cut into segments: one surface, no hairlines, a 2px gap, ends clipped', () => {
       const { getByTestId, toJSON } = renderWithTheme(
-        <ButtonGroup separated size="xs" testID="group" accessibilityLabel="Actions">
-          <ButtonGroupItem iconOnly accessibilityLabel="One" />
-          <ButtonGroupItem iconOnly accessibilityLabel="Two" />
-          <ButtonGroupItem iconOnly accessibilityLabel="Three" />
-        </ButtonGroup>,
+        <Button.Group separated size="xs" testID="group" accessibilityLabel="Actions">
+          <Button iconOnly accessibilityLabel="One" />
+          <Button iconOnly accessibilityLabel="Two" />
+          <Button iconOnly accessibilityLabel="Three" />
+        </Button.Group>,
       );
       const group = getByTestId('group');
       expect(group.props.role).toBe('group');
@@ -140,33 +140,75 @@ describe('ButtonGroup', () => {
 
     it('makes the items straight segments: only the group’s ends are rounded', () => {
       const { getByTestId } = renderWithTheme(
-        <ButtonGroup separated size="xs">
-          <ButtonGroupItem testID="item">One</ButtonGroupItem>
-        </ButtonGroup>,
+        <Button.Group separated size="xs">
+          <Button testID="item">One</Button>
+        </Button.Group>,
       );
       expect(resolvedStyle(getByTestId('item').props.style).borderRadius).toBe(0);
     });
 
     it('makes an icon-only item 1.5 times as wide as tall, never a circle', () => {
       const { getByTestId } = renderWithTheme(
-        <ButtonGroup separated size="xs">
-          <ButtonGroupItem iconOnly testID="item" accessibilityLabel="One" />
-        </ButtonGroup>,
+        <Button.Group separated size="xs">
+          <Button iconOnly testID="item" accessibilityLabel="One" />
+        </Button.Group>,
       );
       const style = resolvedStyle(getByTestId('item').props.style);
       expect([style.width, style.height]).toEqual([36, 24]);
     });
 
-    it('sizes items 24 at xs, 30 at sm and 34 at md', () => {
+    it('sizes items 24 at xs, 32 at sm and 36 at md', () => {
       const heights = (['xs', 'sm', 'md'] as const).map((size) => {
         const { getByTestId } = renderWithTheme(
-          <ButtonGroup separated size={size}>
-            <ButtonGroupItem testID="item">Pill</ButtonGroupItem>
-          </ButtonGroup>,
+          <Button.Group separated size={size}>
+            <Button testID="item">Pill</Button>
+          </Button.Group>,
         );
         return resolvedStyle(getByTestId('item').props.style).height;
       });
-      expect(heights).toEqual([24, 30, 34]);
+      expect(heights).toEqual([24, 32, 36]);
     });
   });
+});
+
+it.each(['xs', 'sm', 'md', 'lg'] as const)(
+  'keeps standalone and grouped Button geometry identical at %s',
+  (size) => {
+    const screen = renderWithTheme(
+      <View>
+        <Button size={size} iconOnly accessibilityLabel="Standalone" testID="standalone" />
+        <Button.Group size={size}>
+          <Button iconOnly accessibilityLabel="Grouped" testID="grouped" />
+        </Button.Group>
+      </View>,
+    );
+    const standalone = resolvedStyle(screen.getByTestId('standalone').props.style);
+    const grouped = resolvedStyle(screen.getByTestId('grouped').props.style);
+    expect(grouped.height).toBe(standalone.height);
+    expect(grouped.width).toBe(standalone.width);
+  },
+);
+
+it('composes layout callbacks while measuring selection and blocks loading toggles', () => {
+  const onLayout = jest.fn();
+  const onPressedChange = jest.fn();
+  const screen = renderWithTheme(
+    <Button.Group testID="group">
+      <Button testID="toggle" pressed onLayout={onLayout} onPressedChange={onPressedChange}>
+        Toggle
+      </Button>
+      <Button testID="busy" loading onPressedChange={onPressedChange}>
+        Busy
+      </Button>
+    </Button.Group>,
+  );
+  const event = { nativeEvent: { layout: { x: 0, y: 0, width: 90, height: 36 } } };
+  fireEvent(screen.getByTestId('toggle'), 'layout', event);
+  expect(onLayout).toHaveBeenCalledWith(event);
+  expect(screen.getByTestId('group-selection')).toBeTruthy();
+  expect(screen.getByTestId('busy').props.onPress).toBeUndefined();
+  fireEvent.press(screen.getByTestId('busy'));
+  expect(onPressedChange).not.toHaveBeenCalled();
+  pressHost(screen.getByTestId('toggle'));
+  expect(onPressedChange).toHaveBeenCalledWith(false);
 });

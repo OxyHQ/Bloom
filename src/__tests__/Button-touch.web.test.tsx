@@ -75,6 +75,9 @@ it.each([
     expect(document.activeElement).toBe(original);
     expect(original.style.minWidth).toBe('44px');
     expect(original.style.minHeight).toBe('44px');
+    expect(original.dataset.bloomButtonVisualHeight).toBe(String(height));
+    expect(original.style.getPropertyValue('--bloom-btn-visual-height')).toBe(`${height}px`);
+    expect(original.hasAttribute('data-bloom-button-touch-paint')).toBe(height < 44);
     pointer(false);
     expect(original.style.minWidth).toBe('');
     expect(original.style.minHeight).toBe('');
@@ -110,6 +113,8 @@ it('constrains the actual asChild anchor after merging its own styles', () => {
   const anchor = host.querySelector('a')!;
   expect(anchor.style.minWidth).toBe('44px');
   expect(anchor.style.minHeight).toBe('44px');
+  expect(anchor.dataset.bloomButtonVisualHeight).toBe('32');
+  expect(anchor.hasAttribute('data-bloom-button-touch-paint')).toBe(true);
   expect(host.querySelector('button')).toBeNull();
 });
 

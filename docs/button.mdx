@@ -33,7 +33,11 @@ An `icon` without children makes a square action. Labelled actions use `leadingI
 
 The pressable is the parent's layout child: `className` and `style` are applied there, without an extra wrapper. Web styles flatten RN style arrays and register their interaction CSS using constructed stylesheets. `asChild` composes an existing web link; disabled state guards the composed handler.
 
-`CloseButton` remains a semantic dismiss control with a required accessible name and sizes `2xs | xs | sm | md | lg` (18/20/24/32/44px discs). On coarse-pointer web it reserves a real minimum 44×44px pressable while preserving the selected disc and glyph sizes; the target reacts to input-device changes and explicit styles may grow it but cannot shrink it below 44px. Desktop geometry and native `hitSlop` remain unchanged. Its optional `className` lands on the dismiss pressable, so positioning utilities work on both platforms. `onPress` receives the press event, and `stopPropagation` (default false) keeps the press from also activating a pressable parent, as on `Button`: the dismiss X on a pressable card.
+All action shapes use `Button`, including dismiss, plain glyph and grouped actions.
+Use `icon={RiCloseLine}` with an accessible name for dismissal. Numeric `size` preserves
+specialized diameters; named sizes inherit BloomScope. Coarse web input reserves a minimum
+44×44 target, and native hit slop grows smaller controls to 44 (48 on Android).
+`stopPropagation` prevents an embedded action from also activating its parent.
 
 See [Component contract](./appearance.mdx) for inheritance and [Migration](./coherent-system-migration.mdx) for the clean API cut.
 
@@ -49,7 +53,7 @@ paints from `color` renders at its default colour with nothing thrown.
 and the foreground for the current state. They win over the icon component, and
 supply the glyph for `iconOnly`.
 
-`iconOnly` is a square. `wide` makes it a pill 1.5× as wide as it is tall (36×24 at `xs`), for a row of icon buttons that stand apart, where a circle is not a pill; a separated [`ButtonGroup`](./button-group.mdx) sets it.
+`iconOnly` is a square. `wide` makes it a pill 1.5× as wide as it is tall (36×24 at `xs`), for a row of icon buttons that stand apart, where a circle is not a pill; a separated [`Button.Group`](./button-group.mdx) sets it.
 
 ```tsx
 <Button
@@ -63,9 +67,28 @@ On web `color` is `currentColor`, so the glyph follows the stylesheet's state
 colours without a re-render; native gets the resolved value. Full rationale, and
 why this is a separate prop rather than a wider `leadingIcon`: [Icons](/docs/icons).
 
+## Grouping
+
+`Button.Group` groups the same `Button` controls; no special item component is
+needed. The group adds layout, dividers and one shared surface, keeping the
+Button's normal geometry and interaction behavior. See [Button.Group](./button-group.mdx).
+
+```tsx
+<Button.Group accessibilityLabel="Formatting">
+  <Button pressed={bold} onPressedChange={setBold}>Bold</Button>
+  <Button pressed={italic} onPressedChange={setItalic}>Italic</Button>
+</Button.Group>
+```
+
 ## API migration
 
-Controls use canonical sizes and the shared visual scope. Removed aliases and migration mappings are documented in [Unified component API](/docs/unified-api).
+There is one public button renderer. Replace named presets (`PrimaryButton`, `IconButton`,
+`GhostButton`, etc.) with `Button` and explicit appearance/tone. `GlyphButton` becomes
+`Button appearance="plain" tone="neutral"`; `glyphSize` becomes `iconSize`, `busy`
+becomes `loading`, and `loadingIndicator={null}` keeps the existing content visible.
+`FrostedIconButton` becomes `Button appearance="outline" tone="neutral"`; controlled
+toggles use `pressed` / `onPressedChange`. `Button.Group` owns only the shared surface
+and grouping. It contains ordinary Buttons, with no separate item component.
 
 
 ## Flat controls
@@ -78,7 +101,7 @@ Controls use canonical sizes and the shared visual scope. Removed aliases and mi
 
 ## Shared surface material
 
-With the default `material="surface"`, surface appearances (`solid`, `subtle`, `outline`, all using the shared material) share Surface's material ([Surface](./surface.mdx)): on the web an opaque fill at 72% over a frosted backdrop with an edge of light, on native the fill opaque with the same edge. `appearance="plain"` and `LinkButton` retain their unfilled contract. Semantic tone, scope, icon slots, sizes, pressed state, loading and accessibility remain unchanged.
+With the default `material="surface"`, surface appearances (`solid`, `subtle`, `outline`, all using the shared material) share Surface's material ([Surface](./surface.mdx)): on the web an opaque fill at 72% over a frosted backdrop with an edge of light, on native the fill opaque with the same edge. `appearance="plain"` and `linkTone` actions retain their unfilled contract. Semantic tone, scope, icon slots, sizes, pressed state, loading and accessibility remain unchanged.
 
 Accent/status/brand colours keep their semantic foreground pairs. Neutral, semantic and disabled defaults use the same material fills. Explicit caller transparency is preserved. Loading retains its rest paint. The optional `colors={{ background, foreground }}` pair supports branded controls without changing geometry. Native paints one view; web uses decorative pseudo-elements. Geometry has no optical offsets.
 
@@ -201,7 +224,7 @@ to verify the same trees against a consumer's engine.
 `material="shared"` keeps the button's appearance, foreground and interaction
 palette while an enclosing surface supplies its resting material. It removes
 the button's own rim, shadow and resting fill, rather than changing the action
-to the lower-emphasis `plain` recipe. ButtonGroup uses this same Button base for
+to the lower-emphasis `plain` recipe. Button.Group uses this same Button base for
 ordinary joined actions; selected items retain their selection surface.
 PageHeader's Back button uses it inside its existing island as well, so grouped
 and standalone neutral outline icons have the same foreground in light and
@@ -247,10 +270,20 @@ takes `role` over it); on web the element's `role`. Pair it with
 
 Every web Button reserves a **44×44 CSS-pixel minimum on its interactive
 host** when the primary pointer is coarse, including ordinary/default density,
-icon-only, `href`, `asChild`, and ButtonGroupItem consumers. This is layout
+icon-only, `href`, `asChild`, and Button consumers. This is layout
 space, not a pseudo-element or negative-margin hit region over its neighbours.
-The painted button grows with its host; the size's typography and glyph scale
-stay unchanged. Fine-pointer geometry remains xs/sm/md/lg = 24/32/36/44px.
+The interactive host grows; the existing material layers retain the requested
+visual geometry: xs/sm/md/lg = 24/32/36/44px. A normal md control therefore
+paints 36px inside its 44px target, with unchanged typography and glyphs.
+CSS height/width inheritance keeps authored dimensions authoritative before
+the target minimum is applied. Explicit flat material with consumer-authored
+paint classes retains that consumer's own background, border and shadow.
+
+Button.Group keeps its shared material and moving selection at the same visual
+height as its items, while each item's target still reserves its own space.
+Control density is inherited together with size; compact navigation density
+retains its existing touch geometry. Native Button keeps its existing hitSlop
+contract; this web paint separation adds no native wrappers.
 
 The minimum applies after Button and `asChild` styles merge. Width/height,
 smaller minima and maximum dimensions cannot shrink the target below 44px;
@@ -285,14 +318,14 @@ controls. Omitting `colors` leaves every semantic default unchanged.
 
 ## Attention feedback
 
-`GlyphButton` accepts an optional numeric `attention` token. Initialize it to
+`Button` accepts an optional numeric `attention` token. Initialize it to
 `0` and change it when an action needs attention, such as offering a larger
 editor after a compact field reaches its limit. Each changed token restarts a
 320 ms scale pulse on the glyph; mounting or rendering the same value stays
 quiet. The target keeps its geometry and identity, and focus stays where it was.
 
 ```tsx
-<GlyphButton icon={RiExpandDiagonalSLine} attention={rejectedAttempts}
+<Button appearance="plain" tone="neutral" icon={RiExpandDiagonalSLine} attention={rejectedAttempts}
   accessibilityLabel="Open full editor" onPress={openFullEditor} />
 ```
 

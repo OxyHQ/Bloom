@@ -3,30 +3,15 @@
 // Re-run `bun run generate:exports` (or any `bun run build`) after
 // changing that barrel or the set of web-forked subpaths.
 
-export {
-  Button,
-  PrimaryButton,
-  SecondaryButton,
-  IconButton,
-  GhostButton,
-  TextButton,
-  InverseButton,
-  OutlineButton,
-  LinkButton,
-  DestructiveButton,
-} from './Button.web';
-export { CloseButton } from './CloseButton';
-export { GlyphButton } from './GlyphButton';
+export { Button } from './Button.web';
 
 export type {
   ButtonProps,
+  ButtonGroupProps,
   ButtonSize,
   ButtonFocusEvent,
   ButtonHoverEvent,
   ButtonIconComponent,
   ButtonLinkTone,
   ButtonUnderline,
-  LinkButtonProps,
-  CloseButtonProps,
-  GlyphButtonProps,
 } from './types';

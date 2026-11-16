@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { fn } from 'storybook/test';
+import { useEffect, useState } from 'react';
 import { Button } from '../button/index.web';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -13,7 +14,7 @@ const meta: Meta<typeof Fab> = {
   args: {
     accessibilityLabel: 'Compose',
     icon: Icons.RiAddLine,
-    onPress: () => {},
+    onPress: fn().mockName('onPress'),
   },
   argTypes: {
     label: { control: 'text' },

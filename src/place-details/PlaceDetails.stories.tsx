@@ -1,5 +1,7 @@
+import { ScrollArea as ScrollView } from '../layout';
+import { fn } from 'storybook/test';
 import React, { useRef, useState } from 'react';
-import { ScrollView, View, useWindowDimensions } from 'react-native';
+import { View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { BottomSheet } from '../bottom-sheet';
@@ -52,7 +54,7 @@ export default meta;
 
 type Story = StoryObj;
 
-const noop = () => undefined;
+const onDemoAction = fn().mockName('place-details.action');
 
 /** An inline illustration so the story needs no network. */
 function photo(sky: string, wall: string, awning: string): string {
@@ -77,7 +79,7 @@ const INFO: PlaceInfoItem[] = [
     label: 'Address',
     value: 'Plaça de les Bruixes 4, 08921 Vilafranca del Mar',
     action: 'copy',
-    onPress: noop,
+    onPress: onDemoAction,
   },
   {
     id: 'phone',
@@ -85,7 +87,7 @@ const INFO: PlaceInfoItem[] = [
     label: 'Phone',
     value: '+34 938 55 41 20',
     action: 'call',
-    onPress: noop,
+    onPress: onDemoAction,
   },
   {
     id: 'website',
@@ -93,7 +95,7 @@ const INFO: PlaceInfoItem[] = [
     label: 'Website',
     value: 'fornerdelaplaca.example',
     action: 'open',
-    onPress: noop,
+    onPress: onDemoAction,
   },
   {
     id: 'pluscode',
@@ -101,10 +103,16 @@ const INFO: PlaceInfoItem[] = [
     label: 'Plus code',
     value: '8FH4+2X Vilafranca del Mar',
     action: 'copy',
-    onPress: noop,
+    onPress: onDemoAction,
     accessibilityLabel: 'Plus code: 8 F H 4 plus 2 X, Vilafranca del Mar',
   },
-  { id: 'edit', icon: RiPencilLine, value: 'Suggest an edit', action: 'edit', onPress: noop },
+  {
+    id: 'edit',
+    icon: RiPencilLine,
+    value: 'Suggest an edit',
+    action: 'edit',
+    onPress: onDemoAction,
+  },
 ];
 
 const WEEK: PlaceHoursDay[] = [
@@ -346,7 +354,7 @@ export const PopularTimes: Story = {
 export const Transit: Story = {
   render: () => (
     <Frame>
-      <PlaceTransit stops={STOPS} onPressStop={noop} testID="transit" />
+      <PlaceTransit stops={STOPS} onPressStop={onDemoAction} testID="transit" />
     </Frame>
   ),
 };
@@ -397,15 +405,15 @@ function PlaceScreenBody() {
           { value: '4.6', label: 'Rating' },
         ]}
         actions={[
-          { id: 'directions', label: 'Directions', icon: RiRouteLine, onPress: noop },
-          { id: 'call', label: 'Call', icon: RiPhoneLine, onPress: noop },
+          { id: 'directions', label: 'Directions', icon: RiRouteLine, onPress: onDemoAction },
+          { id: 'call', label: 'Call', icon: RiPhoneLine, onPress: onDemoAction },
           {
             id: 'save',
             label: saved ? 'Saved' : 'Save',
             icon: RiBookmarkLine,
             onPress: () => setSaved((value) => !value),
           },
-          { id: 'share', label: 'Share', icon: RiShare2Line, onPress: noop },
+          { id: 'share', label: 'Share', icon: RiShare2Line, onPress: onDemoAction },
         ]}
       />
 
@@ -436,10 +444,10 @@ function PlaceScreenBody() {
         <PlaceTransit
           stops={STOPS}
           departureLimit={2}
-          onPressStop={noop}
+          onPressStop={onDemoAction}
           footer={
             <View style={{ flexDirection: 'row' }}>
-              <Button size="sm" onPress={noop} tone="neutral" appearance="outline">
+              <Button size="sm" onPress={onDemoAction} tone="neutral" appearance="outline">
                 All nearby stops
               </Button>
             </View>

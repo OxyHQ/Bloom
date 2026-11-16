@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import { fn } from 'storybook/test';
+import type React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -22,7 +24,7 @@ export default meta;
 
 type Story = StoryObj<typeof Announcement>;
 
-const noop = () => {};
+const onExampleAction = fn().mockName('Example action');
 
 function Frame({ children }: { children: React.ReactNode }) {
   const theme = useTheme();
@@ -47,7 +49,7 @@ export const Matrix: Story = {
         title="Upgrade to Pro"
         description="Unlock unlimited projects and priority support."
         actionLabel="Upgrade now"
-        onAction={noop}
+        onAction={onExampleAction}
         dismissible
       />
       <Announcement
@@ -60,7 +62,7 @@ export const Matrix: Story = {
         icon={RiSparklingFill}
         title="Custom icon"
         actionLabel="Try it"
-        onAction={noop}
+        onAction={onExampleAction}
       />
     </Frame>
   ),
@@ -87,7 +89,7 @@ export const Dismissible: Story = {
         <Announcement
           {...args}
           key={key}
-          onAction={noop}
+          onAction={onExampleAction}
           introDelay={key === 0 ? undefined : 0.4}
         />
       </Frame>

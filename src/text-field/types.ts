@@ -13,6 +13,8 @@ export type TextFieldProps = React.PropsWithChildren<
     className?: string;
     /** Classes on the inset surface: background, border/ring and radius. State paint remains authoritative. */
     chromeClassName?: string;
+    /** Insets all decorative chrome while retaining the field and action hit boxes. */
+    chromeInset?: number;
     invalid?: boolean;
     isInvalid?: boolean;
     /**

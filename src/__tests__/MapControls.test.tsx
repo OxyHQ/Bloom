@@ -225,7 +225,7 @@ it('keeps focused controls and callbacks while arranging groups into a row', () 
   expect(byTestId('m-zoom-in')).toBe(button);
   expect(document.activeElement).toBe(button);
   expect(byTestId('m').style.flexDirection).toBe('row');
-  expect(byTestId('m-zoom').style.flexDirection).toBe('row');
+  expect(byTestId('m-zoom-items').style.flexDirection).toBe('row');
   click(button);
   expect(zoom).toHaveBeenCalledTimes(1);
 });

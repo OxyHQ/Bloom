@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import { fn } from 'storybook/test';
+import type React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import { Text } from '../typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -157,7 +159,7 @@ export const Default: Story = {
           onSubmit={() => setValue('')}
           providers={PROVIDERS}
           status={STATUS}
-          onLearnMore={() => {}}
+          onLearnMore={fn().mockName('onLearnMore')}
         />
       </Frame>
     );
@@ -343,7 +345,7 @@ const FOLDERS = [
 export const Pill: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ maxWidth: '100%', paddingTop: 380, width: 700, gap: 10 }}>
+    <View style={{ paddingTop: 380, width: '100%', maxWidth: 700, gap: 10 }}>
       <ComposerPill testID="pill" models={PILL_MODELS} defaultModel="Fable 5" />
       <View style={{ paddingLeft: 6, paddingRight: 6 }}>
         <ComposerStatusBar
@@ -379,7 +381,7 @@ export const PillFrosted: Story = {
   render: function Render() {
     const [working, setWorking] = useState(true);
     return (
-      <View style={{ maxWidth: '100%', width: 700, gap: 16 }}>
+      <View style={{ width: '100%', maxWidth: 700, gap: 16 }}>
         <View style={{ alignSelf: 'flex-start' }}>
           <Button
             size="sm"
@@ -501,7 +503,7 @@ export const BusyAndStop: Story = {
   render: function Render() {
     const [busy, setBusy] = useState(true);
     return (
-      <View style={{ width: 700, gap: 16 }}>
+      <View style={{ width: '100%', maxWidth: 700, gap: 16 }}>
         <ComposerPanel
           busy={busy}
           disabled={busy}
@@ -540,7 +542,7 @@ export const PillModelIdentity: Story = {
   render: function Render() {
     const [model, setModel] = useState('oxy/fable-5');
     return (
-      <View style={{ paddingTop: 380, width: 700, gap: 16 }}>
+      <View style={{ paddingTop: 380, width: '100%', maxWidth: 700, gap: 16 }}>
         <ComposerPill
           models={PILL_MODELS_BY_ID}
           model={model}

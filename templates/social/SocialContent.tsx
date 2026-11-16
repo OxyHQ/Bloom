@@ -1,8 +1,19 @@
-import React, { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { EngagementBar, EngagementAction } from '../../src/engagement-bar';
+import {
+  RiHeartLine,
+  RiHeartFill,
+  RiRepeatLine,
+  RiChat1Line,
+  RiBookmarkLine,
+  RiBookmarkFill,
+  RiImageLine,
+} from '../../src/icons/remix';
+import { ScrollArea as ScrollView } from '../../src/layout';
+import { ListItem } from '../../src/list';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { Text } from '../../src/typography';
 import { FollowButton } from '../../src/media-header';
-import { ContactRow } from '../../src/chat-people';
 import { Avatar } from '../../src/avatar';
 import { Button } from '../../src/button/index.web';
 import { Card } from '../../src/card';
@@ -13,7 +24,7 @@ import { Tabs, TabsTrigger } from '../../src/tabs';
 import { defaultAvatarSource } from '../../src/avatar/default-avatar';
 import { useSurfaceFill } from '../../src/styles/surface-levels';
 import { useTheme } from '../../src/theme/use-theme';
-import Svg, { Circle, Line, Path } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 
 const booksCover = new URL('./assets/books.svg', import.meta.url).href;
 
@@ -35,29 +46,6 @@ function useSocialPalette() {
   };
 }
 type LabPalette = ReturnType<typeof useSocialPalette>;
-type MentionIconName =
-  | 'home'
-  | 'search'
-  | 'bell'
-  | 'live'
-  | 'channel'
-  | 'bookmark'
-  | 'hashtag'
-  | 'list'
-  | 'video'
-  | 'gear'
-  | 'compose'
-  | 'heart'
-  | 'comment'
-  | 'boost'
-  | 'share'
-  | 'more'
-  | 'image'
-  | 'sign-in';
-
-const CHANNEL_PATH =
-  'm744-227-38 53q-9 12-24 14.5t-27-6.5q-12-9-14.5-23.5T647-216l39-53-63-20q-14-5-21-18.5t-2-27.5q5-14 18.5-21t27.5-2l62 21v-66q0-15.3 10.29-25.65Q728.58-439 743.79-439t25.71 10.35Q780-418.3 780-403v66l63-21q14.22-5 27.11 2Q883-349 888-335t-2.5 27.5Q878-294 864-289l-62 20 39 53q9 12 6.5 26.5T833-166q-12 9-27 6.5T782-174l-38-53Zm-528 83q-29 0-50.5-21.5T144-216v-528q0-29.7 21.5-50.85Q187-816 216-816h528q29.7 0 50.85 21.15Q816-773.7 816-744v167q0 15.26-10.29 25.13t-25.5 9.87q-15.21 0-25.71-10.35T744-578v-166H216v312h139q11 0 22.5 5t13.5 16q7 29 24 46.5t40 24.5q11 4 18 13t7 21q0 17.8-14.5 28.4Q451-267 434-272q-38-11-64-34t-41.88-54H216v144h248q15.3 0 25.65 10.29Q500-195.42 500-180.21t-10.35 25.71Q479.3-144 464-144H216Zm108-468h312q15.3 0 25.65-10.29Q672-632.58 672-647.79t-10.35-25.71Q651.3-684 636-684H324q-15.3 0-25.65 10.29Q288-663.42 288-648.21t10.35 25.71Q308.7-612 324-612Zm0 120h264q15.3 0 25.65-10.29Q624-512.58 624-527.79t-10.35-25.71Q603.3-564 588-564H324q-15.3 0-25.65 10.29Q288-543.42 288-528.21t10.35 25.71Q308.7-492 324-492Z';
-
 export function SocialLogo({ color, size = 28 }: { color?: string; size?: number }) {
   const { colors } = useTheme();
   return (
@@ -67,200 +55,6 @@ export function SocialLogo({ color, size = 28 }: { color?: string; size?: number
         fill={color ?? colors.text}
       />
     </Svg>
-  );
-}
-
-function MentionIcon({
-  name,
-  color,
-  size = 24,
-  active = false,
-}: {
-  name: MentionIconName;
-  color: string;
-  size?: number;
-  active?: boolean;
-}) {
-  if (name === 'channel') {
-    return (
-      <Svg viewBox="0 -960 960 960" width={size} height={size}>
-        <Path d={CHANNEL_PATH} fill={color} />
-      </Svg>
-    );
-  }
-
-  return (
-    <Svg viewBox="0 0 24 24" width={size} height={size} fill="none">
-      {name === 'home' && (
-        <Path
-          d={
-            active
-              ? 'M2.25 12.886V20.75c0 1.105.895 2 2 2h4c.276 0 .5-.224.5-.5V17.5A4.25 4.25 0 0 1 13 13.25a4.25 4.25 0 0 1 4.25 4.25v4.75c0 .276.224.5.5.5h4c1.105 0 2-.895 2-2v-7.864a5 5 0 0 0-1.855-3.887l-5.75-4.654a5 5 0 0 0-6.29 0l-5.75 4.654a5 5 0 0 0-1.855 3.887Z'
-              : 'M2.25 12.886V20.75c0 1.105.895 2 2 2h5c.276 0 .5-.224.5-.5V16.5A3.25 3.25 0 0 1 13 13.25a3.25 3.25 0 0 1 3.25 3.25v5.75c0 .276.224.5.5.5h5c1.105 0 2-.895 2-2v-7.864a5 5 0 0 0-1.855-3.887l-5.75-4.654a5 5 0 0 0-6.29 0l-5.75 4.654a5 5 0 0 0-1.855 3.887Z'
-          }
-          fill={active ? color : 'none'}
-          stroke={color}
-          strokeLinecap="round"
-          strokeWidth="2.3"
-        />
-      )}
-      {name === 'search' && (
-        <>
-          <Circle cx="10.5" cy="10.5" r="8.5" stroke={color} strokeWidth="2" />
-          <Line
-            x1="16.5"
-            y1="16.5"
-            x2="22"
-            y2="22"
-            stroke={color}
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-        </>
-      )}
-      {name === 'bell' && (
-        <Path
-          fill={color}
-          d="M19.993 9.042C19.48 5.017 16.054 2 11.996 2s-7.49 3.021-7.999 7.051L2.866 18H7.1c.463 2.282 2.481 4 4.9 4s4.437-1.718 4.9-4h4.236l-1.143-8.958zM12 20c-1.306 0-2.417-.835-2.829-2h5.658c-.412 1.165-1.523 2-2.829 2zm-6.866-4 .847-6.698C6.364 6.272 8.941 4 11.996 4s5.627 2.268 6.013 5.295L18.864 16H5.134z"
-        />
-      )}
-      {name === 'live' && (
-        <>
-          <Circle cx="12" cy="12" r="2.25" fill={color} />
-          <Path
-            d="M8.6 8.4a5 5 0 0 0 0 7.2M15.4 8.4a5 5 0 0 1 0 7.2M5.6 5.4a9 9 0 0 0 0 13.2M18.4 5.4a9 9 0 0 1 0 13.2"
-            stroke={color}
-            strokeWidth="1.8"
-            strokeLinecap="round"
-          />
-        </>
-      )}
-      {name === 'bookmark' && (
-        <Path
-          fill={color}
-          d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5zM6.5 4c-.276 0-.5.22-.5.5v14.56l6-4.29 6 4.29V4.5c0-.28-.224-.5-.5-.5h-11z"
-        />
-      )}
-      {name === 'hashtag' && (
-        <Path
-          fill={color}
-          d="M10.09 3.098 9.72 7h5.99l.39-4.089 1.99.187L17.72 7h3.78v2h-3.97l-.56 6h3.53v2h-3.72l-.38 4.089-1.99-.187.36-3.902H8.78l-.38 4.089-1.99-.187L6.77 17H2.5v-2h4.46l.56-6H3.5V7h4.21l.39-4.089 1.99.187zM14.96 15l.56-6H9.53l-.56 6h5.99z"
-        />
-      )}
-      {name === 'list' && (
-        <Path
-          fill={color}
-          fillRule="evenodd"
-          d="M6 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2ZM3 7a3 3 0 1 1 6 0 3 3 0 0 1-6 0Zm9 0a1 1 0 0 1 1-1h7a1 1 0 1 1 0 2h-7a1 1 0 0 1-1-1Zm-6 9a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm-3 1a3 3 0 1 1 6 0 3 3 0 0 1-6 0Zm9 0a1 1 0 0 1 1-1h7a1 1 0 1 1 0 2h-7a1 1 0 0 1-1-1Z"
-        />
-      )}
-      {name === 'video' && (
-        <>
-          <Path
-            d="M2 12V8.55C2 5.7 2.7 4.55 3.61 3.61 4.55 2.7 5.7 2 8.55 2h6.9c2.85 0 4 .7 4.94 1.61C21.3 4.55 22 5.7 22 8.55v6.9c0 2.85-.7 4-1.61 4.94C19.45 21.3 18.3 22 15.45 22h-6.9c-2.85 0-4-.7-4.94-1.61C2.7 19.45 2 18.3 2 15.45V12Z"
-            stroke={color}
-            strokeWidth="2"
-          />
-          <Line x1="2.05" y1="7" x2="21.95" y2="7" stroke={color} strokeWidth="2" />
-          <Path
-            fill={color}
-            d="M9.76 17.66a.91.91 0 0 1-.45-.79v-5.24a.91.91 0 0 1 1.36-.79l4.55 2.63a.91.91 0 0 1 0 1.57l-4.55 2.63a.91.91 0 0 1-.91 0Z"
-          />
-        </>
-      )}
-      {name === 'gear' && (
-        <Path
-          fill={color}
-          d="M10.54 1.75h2.92l1.57 2.36c.11.17.32.25.53.21l2.53-.59 2.17 2.17-.58 2.54c-.05.2.04.41.21.53l2.36 1.57v2.92l-2.36 1.57c-.17.12-.26.33-.21.53l.58 2.54-2.17 2.17-2.53-.59c-.21-.04-.42.04-.53.21l-1.57 2.36h-2.92l-1.58-2.36c-.11-.17-.32-.25-.52-.21l-2.54.59-2.17-2.17.58-2.54c.05-.2-.03-.41-.21-.53l-2.35-1.57v-2.92L4.1 8.97c.18-.12.26-.33.21-.53L3.73 5.9 5.9 3.73l2.54.59c.2.04.41-.04.52-.21l1.58-2.36zM12 8.5A3.5 3.5 0 1 0 12 15.5 3.5 3.5 0 0 0 12 8.5Zm0 2A1.5 1.5 0 1 1 12 13.5 1.5 1.5 0 0 1 12 10.5Z"
-        />
-      )}
-      {name === 'compose' && (
-        <Path
-          fill={color}
-          d="M23 3c-6.62-.1-10.38 2.421-13.05 6.03C7.29 12.61 6 17.331 6 22h2c0-1.007.07-2.012.19-3H12c4.1 0 7.48-3.082 7.94-7.054C22.79 10.147 23.17 6.359 23 3zm-7 8h-1.5v2H16c.63-.016 1.2-.08 1.72-.188C16.95 15.24 14.68 17 12 17H8.55c.57-2.512 1.57-4.851 3-6.78 2.16-2.912 5.29-4.911 9.45-5.187C20.95 8.079 19.9 11 16 11zM4 9V6H1V4h3V1h2v3h3v2H6v3H4z"
-        />
-      )}
-      {name === 'heart' && (
-        <Path
-          stroke={color}
-          fill="transparent"
-          d="M2.34 9.53c0 2.2.7 3.9 2.94 6.22 1.82 1.82 3.8 3.27 4.55 3.8a1.4 1.4 0 0 0 1.67 0c.75-.53 2.74-1.98 4.55-3.8C18.3 13.5 19 11.8 19 9.53c0-2.3-1.57-4.28-4-4.28-2.02 0-3.4 1.68-4.33 3.57-.93-1.89-2.31-3.57-4.33-3.57-2.43 0-4 1.98-4 4.28Z"
-          strokeWidth="1.8"
-        />
-      )}
-      {name === 'comment' && (
-        <Path
-          stroke={color}
-          fill="transparent"
-          d="M18.5 16.2 20 21l-4.8-1.5a8.3 8.3 0 1 1 3.3-3.3Z"
-          strokeWidth="1.7"
-          strokeLinejoin="round"
-        />
-      )}
-      {name === 'boost' && (
-        <Path
-          fill={color}
-          d="m4.5 3.88 4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V8c0-1.1-.896-2-2-2z"
-        />
-      )}
-      {name === 'share' && (
-        <Path
-          fill={color}
-          d="m12 2.59 5.7 5.7-1.41 1.42L13 6.41V16h-2V6.41l-3.3 3.3-1.41-1.42L12 2.59zM21 15l-.02 3.51c0 1.38-1.12 2.49-2.5 2.49H5.5C4.11 21 3 19.88 3 18.5V15h2v3.5c0 .28.22.5.5.5h12.98c.28 0 .5-.22.5-.5L19 15h2z"
-        />
-      )}
-      {name === 'more' && (
-        <>
-          <Circle cx="6" cy="12" r="1.7" fill={color} />
-          <Circle cx="12" cy="12" r="1.7" fill={color} />
-          <Circle cx="18" cy="12" r="1.7" fill={color} />
-        </>
-      )}
-      {name === 'image' && (
-        <Path
-          d="M4 3h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm0 16h16v-3l-4.5-4.5-3.2 3.2-2.2-2.2L4 18.6V19Zm4-9a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"
-          fill={color}
-        />
-      )}
-      {name === 'sign-in' && (
-        <>
-          <Path
-            d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"
-            stroke={color}
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-          <Path
-            d="m14 8 4 4-4 4M18 12H8"
-            stroke={color}
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </>
-      )}
-    </Svg>
-  );
-}
-
-function PostAction({ name, palette }: { name: MentionIconName; palette: LabPalette }) {
-  return (
-    <Button
-      size="xs"
-      appearance="plain"
-      tone="neutral"
-      accessibilityLabel={name}
-      icon={<MentionIcon name={name} color={palette.textMuted} size={20} />}
-      iconSize={20}
-      style={{
-        width: 24,
-        height: 24,
-        minWidth: 24,
-        minHeight: 24,
-        paddingLeft: 0,
-        paddingRight: 0,
-      }}
-    />
   );
 }
 
@@ -298,7 +92,18 @@ function PostIllustration({
   );
 }
 
-function MentionPost({ palette, second = false }: { palette: LabPalette; second?: boolean }) {
+function MentionPost({
+  palette,
+  second = false,
+  onReply,
+}: {
+  palette: LabPalette;
+  second?: boolean;
+  onReply?: () => void;
+}) {
+  const [liked, setLiked] = useState(false);
+  const [reposted, setReposted] = useState(false);
+  const [saved, setSaved] = useState(false);
   return (
     <View
       style={[styles.post, { backgroundColor: palette.canvas, borderBottomColor: palette.shell }]}
@@ -312,7 +117,6 @@ function MentionPost({ palette, second = false }: { palette: LabPalette; second?
           <Text numberOfLines={1} style={[styles.postHandle, { color: palette.textMuted }]}>
             {second ? '@depthsofwiktionary@wikis.world · 5d' : '@404mediaco@mastodon.social · 3d'}
           </Text>
-          <MentionIcon name="more" color={palette.textMuted} size={20} />
         </View>
         {second ? null : (
           <Text style={[styles.postText, { color: palette.text }]}>
@@ -342,14 +146,33 @@ function MentionPost({ palette, second = false }: { palette: LabPalette; second?
           />
         )}
 
-        <View style={styles.postActions}>
-          <PostAction name="heart" palette={palette} />
-          <PostAction name="comment" palette={palette} />
-          <PostAction name="boost" palette={palette} />
-          <PostAction name="share" palette={palette} />
-          <View style={styles.postActionSpacer} />
-          <PostAction name="bookmark" palette={palette} />
-        </View>
+        <EngagementBar
+          trailing={
+            <EngagementAction
+              icon={RiBookmarkLine}
+              activeIcon={RiBookmarkFill}
+              accessibilityLabel="Bookmark"
+              active={saved}
+              onPress={() => setSaved(!saved)}
+            />
+          }
+        >
+          <EngagementAction
+            icon={RiHeartLine}
+            activeIcon={RiHeartFill}
+            accessibilityLabel="Like"
+            active={liked}
+            count={liked ? 1 : 0}
+            onPress={() => setLiked(!liked)}
+          />
+          <EngagementAction icon={RiChat1Line} accessibilityLabel="Reply" onPress={onReply} />
+          <EngagementAction
+            icon={RiRepeatLine}
+            accessibilityLabel="Repost"
+            active={reposted}
+            onPress={() => setReposted(!reposted)}
+          />
+        </EngagementBar>
       </View>
     </View>
   );
@@ -380,7 +203,6 @@ function TrendRow({
         color={palette.identity}
         accessibilityLabel={`${title} activity trend`}
       />
-      <MentionIcon name="more" color={palette.textMuted} size={18} />
     </View>
   );
 }
@@ -419,18 +241,13 @@ export function SocialWidgets(_props: { authenticated?: boolean }) {
         <TrendRow rank={3} title="York" meta="Trending · 3 people" palette={palette} />
         <TrendRow rank={4} title="Grok" meta="Trending · 6 people" palette={palette} />
         <TrendRow rank={5} title="Trump" meta="Trending · 4 people" palette={palette} />
-        <Text style={[styles.showMore, { color: palette.identity }]}>Show more</Text>
       </Card>
       <Text style={[styles.widgetTitle, { color: palette.text }]}>Who to follow</Text>
       {FOLLOW_ITEMS.map(([name, handle]) => (
-        <ContactRow
+        <ListItem
+          person={{ name: name, subtitle: handle, avatar: defaultAvatarSource }}
           key={handle}
-          id={handle}
-          name={name}
-          subtitle={handle}
-          size="sm"
-          horizontalInset={0}
-          trailingSlot={
+          trailing={
             <FollowButton
               following={following.has(handle)}
               onFollowChange={(next) =>
@@ -445,15 +262,11 @@ export function SocialWidgets(_props: { authenticated?: boolean }) {
               testID={`social-follow-${name.toLowerCase().replace(/ /g, '-')}-button`}
             />
           }
-          avatar={defaultAvatarSource}
           testID={`social-follow-${name.toLowerCase().replace(/ /g, '-')}`}
           style={{ borderBottomWidth: 1, borderBottomColor: palette.shell }}
         />
       ))}
-      <Text style={[styles.showMore, { color: palette.identity }]}>Show more</Text>
-      <Text style={[styles.footerLinks, { color: palette.textMuted }]}>
-        About Privacy Terms Cookies Oxy
-      </Text>
+
       <Text style={[styles.footerCopy, { color: palette.textMuted }]}>
         Made with ❤️ in the 🌎 by Oxy.
       </Text>
@@ -505,11 +318,11 @@ export function SocialFeed({
         >
           <Avatar source={defaultAvatarSource} size={32} name="Nate" />
           <Text style={[styles.composerPlaceholder, { color: palette.textMuted }]}>What's up?</Text>
-          <MentionIcon name="image" color={palette.textMuted} size={22} />
+          <RiImageLine fill={palette.textMuted} width={20} height={20} />
         </Button>
       )}
-      <MentionPost palette={palette} />
-      <MentionPost second palette={palette} />
+      <MentionPost palette={palette} onReply={onCompose} />
+      <MentionPost second palette={palette} onReply={onCompose} />
       {!authenticated && (
         <View style={[styles.signInBanner, { backgroundColor: palette.identity }]}>
           <View>
@@ -643,15 +456,6 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
   },
-  postActions: {
-    minHeight: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  postActionSpacer: {
-    flex: 1,
-  },
   signInBanner: {
     position: 'absolute',
     left: 0,
@@ -720,18 +524,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 17,
     fontWeight: '600',
-  },
-  showMore: {
-    marginTop: 9,
-    marginBottom: 11,
-    fontSize: 14,
-    lineHeight: 18,
-    fontWeight: '600',
-  },
-  footerLinks: {
-    marginTop: 8,
-    fontSize: 12,
-    lineHeight: 17,
   },
   footerCopy: {
     fontSize: 12,

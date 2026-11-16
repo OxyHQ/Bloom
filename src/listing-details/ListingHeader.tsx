@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
-import { Button, LinkButton } from '../button';
+import { Button } from '../button';
 import { Rating } from '../rating';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { useTheme } from '../theme/use-theme';
@@ -68,7 +68,8 @@ function InlineLink({
     );
   }
   return (
-    <LinkButton
+    <Button
+      appearance="plain"
       linkTone="text"
       underline="rest"
       size="sm"
@@ -79,7 +80,7 @@ function InlineLink({
       testID={testID}
     >
       {label}
-    </LinkButton>
+    </Button>
   );
 }
 

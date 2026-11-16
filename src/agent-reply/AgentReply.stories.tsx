@@ -1,8 +1,11 @@
+import { fn } from 'storybook/test';
+import { AvatarGroup } from '../avatar-group';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { RiVolumeUpLine } from '../icons/remix/RiVolumeUpLine';
 import { Text } from '../typography';
+import { Button } from '../button';
 import {
   AgentProfile,
   AgentReply,
@@ -10,7 +13,6 @@ import {
   AgentReplyActions,
   AgentReplyBubble,
   AgentReplyIdentity,
-  AgentStack,
   type AgentReplyAgent,
 } from './index';
 
@@ -72,11 +74,11 @@ function Reply({
           character={agent.avatar}
           name={agent.name}
           thinking={thinking}
-          onPress={() => undefined}
+          onPress={fn().mockName('onPress')}
           pressLabel={`Edit ${agent.name}`}
         />
       }
-      actions={thinking ? undefined : <AgentReplyActions onCopy={() => undefined} />}
+      actions={thinking ? undefined : <AgentReplyActions onCopy={fn().mockName('onCopy')} />}
     >
       {thinking ? null : (
         <AgentReplyBubble>
@@ -92,7 +94,7 @@ export const Team: StoryObj = {
   render: () => (
     <View style={{ maxWidth: 560, alignSelf: 'center', paddingVertical: 24 }}>
       <View style={{ alignItems: 'center' }}>
-        <AgentProfile agents={TEAM.slice(0, 3)} onPress={() => undefined} />
+        <AgentProfile agents={TEAM.slice(0, 3)} onPress={fn().mockName('onPress')} />
       </View>
       {TEAM.slice(0, 3).map((agent, i) => (
         <Reply key={agent.id} agent={agent} text={ANSWERS[i]!} />
@@ -109,13 +111,9 @@ export const Thinking: StoryObj = {
       <View style={{ maxWidth: 560, alignSelf: 'center', paddingVertical: 24 }}>
         <Reply agent={TEAM[1]!} text={ANSWERS[1]!} thinking={thinking} />
         <View style={{ marginTop: 16, alignItems: 'flex-start', marginStart: 12 }}>
-          <Text
-            variant="body-2-medium"
-            onPress={() => setThinking((value) => !value)}
-            accessibilityRole="button"
-          >
+          <Button onPress={() => setThinking((value) => !value)}>
             {thinking ? 'Finish the reply' : 'Start thinking again'}
-          </Text>
+          </Button>
         </View>
       </View>
     );
@@ -126,10 +124,14 @@ export const Thinking: StoryObj = {
 export const Actions: StoryObj = {
   render: () => (
     <View style={{ padding: 24, gap: 16 }}>
-      <AgentReplyActions onCopy={() => undefined} />
-      <AgentReplyActions vote="up" onCopy={() => undefined} />
-      <AgentReplyActions onCopy={() => undefined}>
-        <AgentReplyAction icon={RiVolumeUpLine} label="Read aloud" onPress={() => undefined} />
+      <AgentReplyActions onCopy={fn().mockName('onCopy')} />
+      <AgentReplyActions vote="up" onCopy={fn().mockName('onCopy')} />
+      <AgentReplyActions onCopy={fn().mockName('onCopy')}>
+        <AgentReplyAction
+          icon={RiVolumeUpLine}
+          label="Read aloud"
+          onPress={fn().mockName('onPress')}
+        />
       </AgentReplyActions>
     </View>
   ),
@@ -140,7 +142,11 @@ export const Profiles: StoryObj = {
   render: () => (
     <View style={{ padding: 24, gap: 24, alignItems: 'center' }}>
       {[1, 2, 3, 4].map((count) => (
-        <AgentProfile key={count} agents={TEAM.slice(0, count)} onPress={() => undefined} />
+        <AgentProfile
+          key={count}
+          agents={TEAM.slice(0, count)}
+          onPress={fn().mockName('onPress')}
+        />
       ))}
     </View>
   ),
@@ -151,7 +157,21 @@ export const Stack: StoryObj = {
   render: () => (
     <View style={{ padding: 24, flexDirection: 'row', gap: 24 }}>
       {[1, 2, 3].map((count) => (
-        <AgentStack key={count} agents={TEAM.slice(0, count)} size={48} />
+        <AvatarGroup
+          layout="conversation"
+          showInitials
+          key={count}
+          items={TEAM.slice(0, count).map((agent) => ({
+            id: agent.id,
+            name: agent.name,
+            kind: 'bot',
+            character: agent.avatar,
+          }))}
+          accessibilityLabel={TEAM.slice(0, count)
+            .map((agent) => agent.name)
+            .join(', ')}
+          size={48}
+        />
       ))}
     </View>
   ),

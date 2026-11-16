@@ -14,7 +14,7 @@
  * under the finger) belongs to a browser and is verified by
  * `scripts/verify-swipe-row.mjs`.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Gesture } from 'react-native-gesture-handler';
@@ -33,6 +33,7 @@ import { ScrollArea } from '../layout/ScrollArea';
 import { SWIPE_ACTION_WIDTH, SWIPE_COMMIT_FRACTION, SWIPE_TAP_SLOP } from '../swipe-row/constants';
 import { resolveSwipeRowPaint, swipeActionPaint } from '../swipe-row/shared';
 import type { SwipeRowAction } from '../swipe-row/types';
+import { bubbleGeometry, canFullSwipe, fullSwipeThreshold } from '../swipe-row/bubble-geometry';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -129,6 +130,64 @@ const DELETE: SwipeRowAction = {
   icon: RiDeleteBinLine,
   tone: 'negative',
 };
+
+describe('elastic capsules', () => {
+  it('requires measured space and an explicit action beyond the normal reveal distance', () => {
+    expect(canFullSwipe(0, 112, true)).toBe(false);
+    expect(canFullSwipe(140, 112, true)).toBe(false);
+    expect(canFullSwipe(360, 112, false)).toBe(false);
+    expect(canFullSwipe(360, 112, true)).toBe(true);
+    expect(fullSwipeThreshold(360, 112)).toBeGreaterThan(112);
+  });
+
+  it('keeps capsules inside the revealed space while one grows and the other compresses', () => {
+    for (const travel of [0, 12, 56, 112, 180, 260, 360]) {
+      const a = bubbleGeometry(travel, 112, 360, 2, 0, 1);
+      const b = bubbleGeometry(travel, 112, 360, 2, 1, 1);
+      expect(a.width).toBeGreaterThanOrEqual(0);
+      expect(b.width).toBeGreaterThanOrEqual(0);
+      expect(a.width + b.width + 3 * a.gap).toBeCloseTo(travel);
+    }
+    const resting = bubbleGeometry(112, 112, 360, 2, 0, 1);
+    expect(bubbleGeometry(260, 112, 360, 2, 0, 1).width).toBeLessThan(resting.width);
+    expect(bubbleGeometry(260, 112, 360, 2, 1, 1).width).toBeGreaterThan(resting.width);
+    expect(bubbleGeometry(360, 112, 360, 2, 0, 1).width).toBe(0);
+    expect(bubbleGeometry(360, 112, 360, 2, 1, 1).width).toBe(360);
+  });
+
+  it('reveals without executing when no full-swipe action was selected', () => {
+    const pan = recordPan();
+    const onAction = jest.fn();
+    mount(<Row actionPresentation="bubbles" onAction={onAction} />);
+    expect(byTestId('sr-action-delete').getAttribute('tabindex')).toBe('-1');
+    drag(pan, -400);
+    expect(maybe('sr-dismiss')).not.toBeNull();
+    expect(byTestId('sr-action-delete').getAttribute('tabindex')).toBe('0');
+    expect(onAction).not.toHaveBeenCalled();
+    act(() => byTestId('sr-action-delete').click());
+    expect(onAction).toHaveBeenCalledTimes(1);
+    expect(onAction).toHaveBeenCalledWith('delete');
+  });
+
+  it('does not dispatch a configured action when the gesture is cancelled', () => {
+    const pan = recordPan();
+    const onAction = jest.fn();
+    mount(
+      <Row
+        actionPresentation="bubbles"
+        fullSwipeAction={{ right: 'delete' }}
+        onAction={onAction}
+      />,
+    );
+    act(() => {
+      handlers(pan).onChange?.({ changeX: -400 });
+      handlers(pan).onEnd?.({}, false);
+      handlers(pan).onFinalize?.({}, false);
+    });
+    expect(onAction).not.toHaveBeenCalled();
+    expect(maybe('sr-dismiss')).toBeNull();
+  });
+});
 
 function Row(props: Partial<React.ComponentProps<typeof SwipeRow>> = {}) {
   return (

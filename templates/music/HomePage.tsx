@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { useState } from 'react';
+import { View } from 'react-native';
 
 import { Avatar } from '../../src/avatar';
 import { AudiobookCard, QuickAccessTile } from '../../src/media-card';
@@ -240,13 +240,13 @@ export function HomePage() {
         <PageBody gap={20}>
           {mobile ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={`${ME.name}, profile`}
+              <Avatar
+                source={ME.avatar}
+                name={ME.name}
+                size={32}
+                alt={`${ME.name}, profile`}
                 onPress={() => router.navigate({ name: 'profile' })}
-              >
-                <Avatar source={ME.avatar} name={ME.name} size={32} />
-              </Pressable>
+              />
               <FilterChips
                 options={FILTERS}
                 value={filter}
@@ -290,7 +290,6 @@ export function HomePage() {
               title={ME.name}
               eyebrow="Made for"
               eyebrowAvatar={ME.avatar}
-              onShowAll={() => {}}
               contentInset={gutter}
             >
               {MIXES.map((mix) => (
@@ -300,19 +299,14 @@ export function HomePage() {
           ) : null}
           {podcasts ? <ContinueListening size={tileSize} /> : null}
           {music ? (
-            <Shelf
-              title="New releases"
-              subtitle="From artists you follow"
-              onShowAll={() => {}}
-              contentInset={gutter}
-            >
+            <Shelf title="New releases" subtitle="From artists you follow" contentInset={gutter}>
               {ALBUMS.filter((a) => a.year === '2026').map((album) => (
                 <AlbumTile key={album.id} id={album.id} size={tileSize} />
               ))}
             </Shelf>
           ) : null}
           {music ? (
-            <Shelf title="Your favourite artists" onShowAll={() => {}} contentInset={gutter}>
+            <Shelf title="Your favourite artists" contentInset={gutter}>
               {ARTISTS.map((artist) => (
                 <ArtistTile key={artist.id} id={artist.id} size={tileSize} />
               ))}
@@ -333,7 +327,7 @@ export function HomePage() {
             </Shelf>
           ) : null}
           {podcasts ? (
-            <Shelf title="Shows you might like" onShowAll={() => {}} contentInset={gutter}>
+            <Shelf title="Shows you might like" contentInset={gutter}>
               {SHOWS.map((show) => (
                 <PodcastTile key={show.id} id={show.id} size={tileSize} />
               ))}
@@ -357,12 +351,7 @@ export function HomePage() {
             </Shelf>
           ) : null}
           {music ? (
-            <Shelf
-              title="Live near you"
-              subtitle="Port Aldern and nearby"
-              onShowAll={() => {}}
-              contentInset={gutter}
-            >
+            <Shelf title="Live near you" subtitle="Port Aldern and nearby" contentInset={gutter}>
               {EVENTS.map((event) => (
                 <EventTile key={event.id} event={event} size={mobile ? 'medium' : 'large'} />
               ))}

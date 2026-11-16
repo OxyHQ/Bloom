@@ -13,7 +13,7 @@ import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PageHeader } from '../page-header';
 import { Button } from '../button';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { HeaderDockProvider, useHeaderDockContext } from '../layout/header-dock';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
@@ -84,6 +84,26 @@ describe('PageHeader', () => {
     expect(subtitle.props.role).toBeUndefined();
   });
 
+  it('uses the shared title type ramp while retaining heading semantics and image contrast', () => {
+    const screen = renderHeader({
+      title: 'Library',
+      titleVariant: 'title-1-bold',
+      tone: 'onImage',
+      subtitle: '24 items',
+      headingLevel: 2,
+    });
+    const title = screen.getByTestId('h-title');
+    expect(title.props.role).toBe('heading');
+    expect(title.props['aria-level']).toBe(2);
+    expect(resolvedStyle(title.props.style)).toMatchObject({
+      fontSize: 24,
+      lineHeight: 34,
+      fontWeight: '700',
+      color: '#FFFFFF',
+    });
+    expect(screen.getByTestId('h-subtitle').props.role).toBeUndefined();
+  });
+
   it('a node title / subtitle renders as-is', () => {
     setWidth(390);
     const screen = renderBar({
@@ -95,20 +115,24 @@ describe('PageHeader', () => {
     expect(screen.queryByTestId('h-title')).toBeNull();
   });
 
-  it('bar is 56 tall with 16 insets below sm and 24 from sm', () => {
+  it('uses equal outer insets on all four sides, 12px at every width', () => {
     setWidth(390);
     const phone = renderBar({ title: 'A' });
-    expect(classNamesOn(phone.getByTestId('h-bar').props.style)).toContain('min-h-14 py-2');
+    expect(classNamesOn(phone.getByTestId('h-bar').props.style)).toContain('min-h-14');
     expect(resolvedStyle(phone.getByTestId('h-bar').props.style)).toMatchObject({
-      paddingLeft: 16,
-      paddingRight: 16,
+      paddingLeft: 12,
+      paddingRight: 12,
+      paddingTop: 12,
+      paddingBottom: 12,
     });
     phone.unmount();
     setWidth(1024);
     const wide = renderBar({ title: 'A' });
     expect(resolvedStyle(wide.getByTestId('h-bar').props.style)).toMatchObject({
-      paddingLeft: 24,
-      paddingRight: 24,
+      paddingLeft: 12,
+      paddingRight: 12,
+      paddingTop: 12,
+      paddingBottom: 12,
     });
   });
 
@@ -123,22 +147,20 @@ describe('PageHeader', () => {
     expect(resolvedStyle(screen.getByTestId('h-bar').props.style).height).toBeUndefined();
   });
 
-  it('sizes itself from its CONTAINER once measured, not from the window', () => {
-    // A desktop split view puts a 380px panel beside a 1200px one. Before the
-    // header measured itself, both got the window's inset — so the narrow panel
-    // was padded as if it were the whole screen.
+  it('keeps normal spacing when a desktop panel narrows', () => {
+    // A narrower panel must not change the standard control spacing.
     setWidth(1440);
     const screen = renderBar({ title: 'A' });
-    expect(resolvedStyle(screen.getByTestId('h-bar').props.style).paddingLeft).toBe(24);
+    expect(resolvedStyle(screen.getByTestId('h-bar').props.style).paddingLeft).toBe(12);
     act(() => {
       fireEvent(screen.getByTestId('h'), 'layout', {
         nativeEvent: { layout: { x: 0, y: 0, width: 380, height: 56 } },
       });
     });
-    expect(resolvedStyle(screen.getByTestId('h-bar').props.style).paddingLeft).toBe(16);
+    expect(resolvedStyle(screen.getByTestId('h-bar').props.style).paddingLeft).toBe(12);
   });
 
-  it('leading renders between the back button and the title; actions at the end with gap 10', () => {
+  it('leading renders between the back button and the title; both sides share an 8pt gap', () => {
     setWidth(390);
     const screen = renderBar({
       onBack: () => {},
@@ -147,13 +169,13 @@ describe('PageHeader', () => {
       actions: <ReactNative.View testID="action" />,
     });
     expect(screen.getByTestId('avatar')).toBeTruthy();
-    expect(resolvedStyle(screen.getByTestId('h-actions').props.style)).toMatchObject({ gap: 10 });
+    expect(resolvedStyle(screen.getByTestId('h-actions').props.style)).toMatchObject({ gap: 8 });
     const leadingMeasure = screen.getByTestId('h-leading-measure');
     expect(resolvedStyle(screen.getByTestId('h-start').props.style)).toMatchObject({ gap: 0 });
     fireEvent(leadingMeasure, 'layout', {
       nativeEvent: { layout: { x: 0, y: 0, width: 80, height: 36 } },
     });
-    expect(resolvedStyle(screen.getByTestId('h-start').props.style)).toMatchObject({ gap: 6 });
+    expect(resolvedStyle(screen.getByTestId('h-start').props.style)).toMatchObject({ gap: 8 });
     fireEvent(leadingMeasure, 'layout', {
       nativeEvent: { layout: { x: 0, y: 0, width: 0, height: 0 } },
     });
@@ -436,20 +458,20 @@ it('keeps Android floating back and action controls mounted and operable while i
     titleReveal: 'onDock',
     onBack,
     actions: (
-      <ButtonGroup>
-        <ButtonGroupItem
+      <Button.Group>
+        <Button
           iconOnly
           leadingIcon={RiSearchLine}
           accessibilityLabel="Search profile"
           onPress={onAction}
         />
-      </ButtonGroup>
+      </Button.Group>
     ),
   });
   expect(
     screen.getByTestId('h-title-block', { includeHiddenElements: true }).props['aria-hidden'],
   ).toBe(true);
-  expect(screen.getByTestId('h-back-island')).toBeTruthy();
+  expect(screen.getByTestId('h-back')).toBeTruthy();
   fireEvent.press(screen.getByLabelText('Back'));
   fireEvent.press(screen.getByLabelText('Search profile'));
   expect(onBack).toHaveBeenCalledTimes(1);

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from './Button.web';
-import { ButtonGroup, ButtonGroupItem } from '../button-group/index.web';
 import { BloomScope } from '../appearance';
 import { RiAddLine } from '../icons/remix/RiAddLine';
 
@@ -82,20 +81,20 @@ export const Targets: Story = {
               Save this document with a long translated action label
             </Button>
             <BloomScope size="xs">
-              <ButtonGroup>
-                <ButtonGroupItem
+              <Button.Group>
+                <Button
                   testID={`${direction}-group-one`}
                   onPress={() => setLast(`${direction}-group-one`)}
                 >
                   One
-                </ButtonGroupItem>
-                <ButtonGroupItem
+                </Button>
+                <Button
                   testID={`${direction}-group-two`}
                   onPress={() => setLast(`${direction}-group-two`)}
                 >
                   Two
-                </ButtonGroupItem>
-              </ButtonGroup>
+                </Button>
+              </Button.Group>
             </BloomScope>
           </div>
         ))}

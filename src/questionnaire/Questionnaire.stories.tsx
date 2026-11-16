@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { ComposerPanel, ComposerPill } from '../composer-panel';
 import { ComposerLoader } from '../composer-loader';
+import { Button } from '../button';
+import { alert } from '../surfaces';
 import { Text } from '../typography';
 import { Questionnaire } from './index';
 import type { QuestionnaireAnswers, QuestionnaireQuestion } from './types';
@@ -12,6 +14,18 @@ const meta: Meta<typeof Questionnaire> = {
   id: 'agents-questionnaire',
   title: 'Patterns/Forms/Questionnaire',
   component: Questionnaire,
+  render: function InteractiveQuestionnaire(args) {
+    const [dismissed, setDismissed] = useState(false);
+    return dismissed ? (
+      <Button onPress={() => setDismissed(false)}>Ask again</Button>
+    ) : (
+      <Questionnaire
+        {...args}
+        onDismiss={args.onDismiss ? () => setDismissed(true) : undefined}
+        onComplete={(answers) => alert('Answers saved', JSON.stringify(answers, null, 2))}
+      />
+    );
+  },
   decorators: [
     (Story) => (
       <View style={{ padding: 40, width: 560, maxWidth: '100%' }}>
@@ -80,7 +94,6 @@ export const Answered: Story = {
       <Questionnaire
         testID="answered-multiple"
         questions={QUESTIONS}
-        onDismiss={() => {}}
         defaultAnswers={{ scope: { values: ['db'], other: 'Auth too' } }}
       />
       <Questionnaire
@@ -132,15 +145,14 @@ export const Demo: Story = {
           Before I draft the migration plan, a few quick questions.
         </Text>
         {dismissed ? (
-          <Text
-            variant="body-regular"
+          <Button
             onPress={() => {
               setDismissed(false);
               setKey((k) => k + 1);
             }}
           >
-            Questions dismissed — tap to ask again.
-          </Text>
+            Ask again
+          </Button>
         ) : (
           <Questionnaire
             key={key}

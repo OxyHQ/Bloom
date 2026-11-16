@@ -1,3 +1,4 @@
+import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
 import { ScrollArea } from '../layout/ScrollArea';
 import { useEffect, useRef, useState } from 'react';
 import { Platform, useWindowDimensions } from 'react-native';
@@ -77,7 +78,6 @@ export function TicketDetailDialog({
   const { messages: m } = useMessages(PROJECT_BOARD_MESSAGES);
   const {
     Button,
-    CloseButton,
     Dialog,
     TicketCornerGenieSurface,
     DropdownMenu,
@@ -295,8 +295,12 @@ export function TicketDetailDialog({
                   </DropdownMenu>
                 </View>
               </View>
-              <CloseButton
-                size="sm"
+              <Button
+                appearance="outline"
+                tone="neutral"
+                iconOnly
+                icon={DismissActionIcon}
+                size={24}
                 className="self-start"
                 accessibilityLabel={m.closeDetails}
                 onPress={() => control.close()}

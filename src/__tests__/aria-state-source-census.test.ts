@@ -265,7 +265,6 @@ const NAME_DELEGATING_TAGS = [
   'Card',
   'Chip',
   'Item',
-  'LinkButton',
   'MediaPressable',
   'MenuRowShell',
   'Meter',

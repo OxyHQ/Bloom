@@ -27,19 +27,10 @@ const FACTS = [
   { key: 'website', label: 'Website', value: 'tidewater.app', caption: 'Developer' },
 ];
 
-/** Wide: the facts share the width. */
-export const Wide: Story = {
+/** Facts share available space and scroll when the viewport becomes narrow. */
+export const Default: Story = {
   render: () => (
-    <View style={{ maxWidth: 900 }}>
-      <FactStrip items={FACTS} accessibilityLabel="About this app" />
-    </View>
-  ),
-};
-
-/** Narrow: the facts keep their width and the strip scrolls sideways. */
-export const Narrow: Story = {
-  render: () => (
-    <View style={{ width: 360 }}>
+    <View style={{ width: '100%', maxWidth: 900 }}>
       <FactStrip items={FACTS} contentInset={16} accessibilityLabel="About this app" />
     </View>
   ),

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { alert } from '../surfaces';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -87,10 +88,15 @@ export const Controls: Story = {
           onMutedChange={setMuted}
           paused={paused}
           onPausedChange={setPaused}
-          onTypeInstead={() => {}}
-          onEnd={() => {}}
+          onTypeInstead={() => alert('Text mode', 'Continue the conversation by typing.')}
+          onEnd={() => alert('Voice ended', 'The voice session has ended in this demo.')}
         />
-        <VoiceControls state="idle" onMutedChange={() => {}} onEnd={() => {}} size="sm" />
+        <VoiceControls
+          state="idle"
+          onMutedChange={() => {}}
+          onEnd={() => alert('Voice ended', 'The voice session has ended in this demo.')}
+          size="sm"
+        />
       </View>
     );
   },

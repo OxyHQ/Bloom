@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -10,6 +10,7 @@ import type { SortablePhoto } from './types';
 const meta: Meta = {
   id: 'base-sortable-photo-grid',
   title: 'Components/Media/Sortable Photo Grid',
+  parameters: { layout: 'fullscreen' },
 };
 
 export default meta;
@@ -66,21 +67,13 @@ function useFakeUploads(initial: SortablePhoto[]) {
   };
 }
 
-function Demo({
-  width,
-  testID,
-  initial = INITIAL,
-}: {
-  width: number;
-  testID: string;
-  initial?: SortablePhoto[];
-}) {
+function Demo({ testID, initial = INITIAL }: { testID: string; initial?: SortablePhoto[] }) {
   const theme = useTheme();
   const { photos, setPhotos, add, remove, retry } = useFakeUploads(initial);
   return (
-    <View style={{ width, gap: 12 }}>
+    <View style={{ width: '100%', gap: 12 }}>
       <Text variant="caption-1-medium" style={{ color: theme.colors.textSecondary }}>
-        {`${width} wide · order: ${photos.map((p) => p.id).join(', ')}`}
+        {`Order: ${photos.map((p) => p.id).join(', ')}`}
       </Text>
       <SortablePhotoGrid
         photos={photos}
@@ -98,23 +91,20 @@ function Demo({
 
 /** Drag a tile with a mouse, or use the arrow buttons. Upload progress runs; the failed photo retries. */
 export const Playground: Story = {
-  render: () => <Demo width={720} testID="grid" />,
+  render: () => <Demo testID="grid" />,
 };
 
 /** Three columns at phone width; the controls are always shown on touch. */
-export const Narrow: Story = {
-  render: () => <Demo width={343} testID="grid-narrow" />,
-};
 
 /** No photos yet: the add tile alone. */
 export const Empty: Story = {
-  render: () => <Demo width={720} testID="grid-empty" initial={[]} />,
+  render: () => <Demo testID="grid-empty" initial={[]} />,
 };
 
 /** Read-only while the listing publishes. */
 export const Disabled: Story = {
   render: () => (
-    <View style={{ width: 720 }}>
+    <View style={{ width: '100%' }}>
       <SortablePhotoGrid
         photos={INITIAL.slice(0, 3)}
         onReorder={() => undefined}

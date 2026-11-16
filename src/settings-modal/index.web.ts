@@ -6,8 +6,6 @@
 export { SettingsModal } from './SettingsModal.web';
 export { SettingsLayout } from './SettingsLayout.web';
 export {
-  SettingsCard,
-  SettingsRow,
   SettingsSection,
   SettingsSectionLabel,
   SettingsValueField,
@@ -23,7 +21,6 @@ export { SettingsPageActions } from './page-actions';
 
 export type { SettingsPageAction, SettingsHeaderPresentation } from './page-actions';
 export type {
-  SettingsCardProps,
   SettingsDateFieldProps,
   SettingsFileKind,
   SettingsGeneralPageProps,
@@ -46,7 +43,6 @@ export type {
   SettingsProfilePageProps,
   SettingsRowData,
   SettingsSelectProps,
-  SettingsRowProps,
   SettingsSearchProps,
   SettingsSectionLabelProps,
   SettingsSectionProps,

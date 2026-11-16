@@ -48,7 +48,7 @@ import { BloomScope } from '@oxy.so/bloom/appearance';
 </BloomScope>
 ```
 
-Button, Switch, Select, Checkbox, ButtonGroup and text controls consume the same scope. Domain components may expose a separate content density; it must not become a competing control-size context. Each family documents any supported subset of sizes.
+Button, Switch, Select, Checkbox, Button.Group and text controls consume the same scope. Domain components may expose a separate content density; it must not become a competing control-size context. Each family documents any supported subset of sizes.
 
 Selection, actions and disabled state do not travel through visual scopes. A disabled `Field` constrains its controls; a component cannot re-enable itself by overriding a visual default. Surface nesting remains independent of control size.
 
@@ -117,17 +117,17 @@ Every anchored family (`Popover`, `DropdownMenu`, `ContextMenu`, `Menubar`, `Sel
 - **A fragment child is refused.** `<Trigger asChild><>{control}</></Trigger>` passes every check a clone can make and then drops every prop, because a fragment has no host node. It throws now, naming the fix.
 - **`disabled` is read from BOTH sides** — the trigger's own prop and the child's — in `cloneTrigger`, not left to whatever element the caller passed.
 
-**A control used as a trigger must DECLARE the props it will be handed.** A component whose props are a closed list drops the ones it does not name, silently, because all of them are optional. `ButtonGroupItem` declares them, so this works:
+**A control used as a trigger must DECLARE the props it will be handed.** A component whose props are a closed list drops the ones it does not name, silently, because all of them are optional. `Button` declares them, so this works:
 
 ```tsx
-<ButtonGroup accessibilityLabel="Page actions">
+<Button.Group accessibilityLabel="Page actions">
   <Popover>
     <PopoverTrigger asChild label="More">
-      <ButtonGroupItem iconOnly leadingIcon={RiMore2Line} accessibilityLabel="More" />
+      <Button iconOnly leadingIcon={RiMore2Line} accessibilityLabel="More" />
     </PopoverTrigger>
     <PopoverContent label="More">…</PopoverContent>
   </Popover>
-</ButtonGroup>
+</Button.Group>
 ```
 
 **A trigger that IS a form control carries the field's wiring too** — `nativeID`, `aria-describedby` and `aria-invalid` are part of the handle, and `SelectTrigger` passes them. The other four families deliberately do not: a `Popover` inside a `Field` is not that field's control and must not take its id, so `TriggerSlot` reads no field context itself and each family decides whether it is the control.

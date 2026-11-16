@@ -22,6 +22,7 @@ import type {
  * files and hands them down through this context.
  */
 export interface AgentChatPlatform extends ScreenComponents {
+  List: typeof import('../list/List')['List'];
   AppShell: ComponentType<AppShellProps>;
   ComposerLoader: ComponentType<ComposerLoaderProps>;
   ComposerPill: ComponentType<ComposerPillProps>;

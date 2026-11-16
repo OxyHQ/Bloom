@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import { fn } from 'storybook/test';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -264,18 +265,20 @@ function CustomerAvatar({ customer, size }: { customer: Customer; size: DataTabl
 }
 
 const ROW_ACTIONS: RowActionItem[] = [
-  { icon: RiDeleteBin6Line, label: 'Delete' },
-  { icon: RiEditLine, label: 'Edit' },
+  { icon: RiDeleteBin6Line, label: 'Delete', onPress: fn().mockName('Delete customer') },
+  { icon: RiEditLine, label: 'Edit', onPress: fn().mockName('Edit customer') },
 ];
 
 const MORE_MENU_ACTIONS: RowActionItem[] = [
-  { icon: RiUserLine, label: 'View profile' },
-  { icon: RiFileCopyLine, label: 'Duplicate row' },
-  { icon: RiDownload2Line, label: 'Download invoice' },
-  { icon: RiArchiveLine, label: 'Archive customer' },
+  { icon: RiUserLine, label: 'View profile', onPress: fn().mockName('View profile') },
+  { icon: RiFileCopyLine, label: 'Duplicate row', onPress: fn().mockName('Duplicate row') },
+  { icon: RiDownload2Line, label: 'Download invoice', onPress: fn().mockName('Download invoice') },
+  { icon: RiArchiveLine, label: 'Archive customer', onPress: fn().mockName('Archive customer') },
 ];
 
-function buildColumns(): DataTableColumn<Customer>[] {
+function buildColumns(
+  onAction: (action: string, row: Customer) => void,
+): DataTableColumn<Customer>[] {
   return [
     {
       id: 'name',
@@ -348,7 +351,17 @@ function buildColumns(): DataTableColumn<Customer>[] {
       // width for the row's three actions.
       minWidth: 140,
       cell: ({ row }) => (
-        <RowActions name={row.name} actions={ROW_ACTIONS} menu={MORE_MENU_ACTIONS} />
+        <RowActions
+          name={row.name}
+          actions={ROW_ACTIONS.map((action) => ({
+            ...action,
+            onPress: () => onAction(action.label, row),
+          }))}
+          menu={MORE_MENU_ACTIONS.map((action) => ({
+            ...action,
+            onPress: () => onAction(action.label, row),
+          }))}
+        />
       ),
     },
   ];
@@ -376,19 +389,27 @@ function CustomersDataTable({
   const [regionFilter, setRegionFilter] = useState('all');
   const [query, setQuery] = useState(initialQuery);
   const [page, setPage] = useState(1);
-  const columns = useMemo(buildColumns, []);
+  const [customers, setCustomers] = useState(CUSTOMERS);
+  const onAction = useCallback((action: string, row: Customer) => {
+    if (action === 'Delete' || action === 'Archive customer')
+      setCustomers((current) => current.filter((customer) => customer.id !== row.id));
+    else if (action === 'Duplicate row')
+      setCustomers((current) => [...current, { ...row, id: `${row.id}-copy-${current.length}` }]);
+    else fn().mockName(action)(row);
+  }, []);
+  const columns = useMemo(() => buildColumns(onAction), [onAction]);
 
   const rows = useMemo(() => {
     const bucket = PRICE_BUCKETS.find((b) => b.id === priceFilter) ?? PRICE_BUCKETS[0]!;
     const q = query.trim().toLowerCase();
-    return CUSTOMERS.filter(
+    return customers.filter(
       (c) =>
         bucket.test(c.price) &&
         (productFilter === 'all' || c.product === productFilter) &&
         (regionFilter === 'all' || c.region === regionFilter) &&
         (q === '' || c.name.toLowerCase().includes(q)),
     );
-  }, [priceFilter, productFilter, regionFilter, query]);
+  }, [customers, priceFilter, productFilter, regionFilter, query]);
 
   const filter = (set: (value: string) => void) => (value: string) => {
     set(value);
@@ -515,16 +536,6 @@ export const Unbordered: Story = {
   render: () => (
     <Page padding={40}>
       <CustomersDataTable testID="dt-unbordered" bordered={false} showSizeToggle={false} />
-    </Page>
-  ),
-};
-
-/** Below 640px the toolbar stacks and its filters wrap; the table scrolls horizontally past its 1000px minimum, with an edge fade as the cue. */
-export const Narrow: Story = {
-  parameters: { controls: { disable: true } },
-  render: () => (
-    <Page padding={16}>
-      <CustomersDataTable testID="dt-narrow" width={375} showSizeToggle={false} />
     </Page>
   ),
 };

@@ -12,11 +12,12 @@
  * this cannot see is whether the rows actually paint on a device: that is the
  * Android check `docs/chat-people.mdx` owes.
  */
+import { List } from '../list';
+
 import type React from 'react';
 import { render } from '@testing-library/react-native';
 import { Platform } from 'react-native';
 
-import { ContactList } from '../chat-people';
 import type { ContactSection } from '../chat-people/types';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
@@ -41,21 +42,99 @@ function stickyIndicesOf(ui: React.ReactElement): unknown {
 describe('ContactList sticky headings on native', () => {
   it('pins nothing on Android by default', () => {
     Platform.OS = 'android';
-    expect(stickyIndicesOf(<ContactList sections={SECTIONS} testID="l" />)).toBeUndefined();
+    expect(
+      stickyIndicesOf(
+        <List
+          sections={SECTIONS.map((section) => ({
+            id: section.letter,
+            title: section.letter,
+            items: section.contacts.map((contact) => ({
+              id: contact.id,
+              person: { ...contact },
+            })),
+          }))}
+          testID={'l'}
+          scrollable
+          sectionIndex={
+            SECTIONS.filter((section) => section.contacts.length > 0).length > 1
+              ? { ids: undefined, activeId: undefined, onJump: undefined, labelFor: undefined }
+              : undefined
+          }
+        />,
+      ),
+    ).toBeUndefined();
   });
 
   it('pins the headings on Android when the app opts in', () => {
     Platform.OS = 'android';
-    expect(stickyIndicesOf(<ContactList sections={SECTIONS} stickyHeaders testID="l" />)).toEqual([
-      0, 2,
-    ]);
+    expect(
+      stickyIndicesOf(
+        <List
+          sections={SECTIONS.map((section) => ({
+            id: section.letter,
+            title: section.letter,
+            items: section.contacts.map((contact) => ({
+              id: contact.id,
+              person: { ...contact },
+            })),
+          }))}
+          testID={'l'}
+          scrollable
+          stickyHeaders={true}
+          sectionIndex={
+            SECTIONS.filter((section) => section.contacts.length > 0).length > 1
+              ? { ids: undefined, activeId: undefined, onJump: undefined, labelFor: undefined }
+              : undefined
+          }
+        />,
+      ),
+    ).toEqual([0, 2]);
   });
 
   it('keeps pinning on iOS by default, and lets an app turn it off', () => {
     Platform.OS = 'ios';
-    expect(stickyIndicesOf(<ContactList sections={SECTIONS} testID="l" />)).toEqual([0, 2]);
     expect(
-      stickyIndicesOf(<ContactList sections={SECTIONS} stickyHeaders={false} testID="l" />),
+      stickyIndicesOf(
+        <List
+          sections={SECTIONS.map((section) => ({
+            id: section.letter,
+            title: section.letter,
+            items: section.contacts.map((contact) => ({
+              id: contact.id,
+              person: { ...contact },
+            })),
+          }))}
+          testID={'l'}
+          scrollable
+          sectionIndex={
+            SECTIONS.filter((section) => section.contacts.length > 0).length > 1
+              ? { ids: undefined, activeId: undefined, onJump: undefined, labelFor: undefined }
+              : undefined
+          }
+        />,
+      ),
+    ).toEqual([0, 2]);
+    expect(
+      stickyIndicesOf(
+        <List
+          sections={SECTIONS.map((section) => ({
+            id: section.letter,
+            title: section.letter,
+            items: section.contacts.map((contact) => ({
+              id: contact.id,
+              person: { ...contact },
+            })),
+          }))}
+          testID={'l'}
+          scrollable
+          stickyHeaders={false}
+          sectionIndex={
+            SECTIONS.filter((section) => section.contacts.length > 0).length > 1
+              ? { ids: undefined, activeId: undefined, onJump: undefined, labelFor: undefined }
+              : undefined
+          }
+        />,
+      ),
     ).toBeUndefined();
   });
 
@@ -63,12 +142,20 @@ describe('ContactList sticky headings on native', () => {
     Platform.OS = 'ios';
     expect(
       stickyIndicesOf(
-        <ContactList
-          sections={SECTIONS}
-          layout="flat"
-          flatLabel="Results"
-          stickyHeaders
-          testID="l"
+        <List
+          sections={[
+            {
+              id: 'results',
+              title: 'Results',
+              items: SECTIONS.flatMap((section) => section.contacts).map((contact) => ({
+                id: contact.id,
+                person: { ...contact },
+              })),
+            },
+          ]}
+          testID={'l'}
+          scrollable
+          stickyHeaders={false}
         />,
       ),
     ).toBeUndefined();

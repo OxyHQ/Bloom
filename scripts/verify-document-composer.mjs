@@ -3,13 +3,16 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright');
-const browser = await chromium.launch({ args: ['--no-sandbox'] });
+const browser = await chromium.launch({
+  executablePath: process.env.CHROME_PATH,
+  args: ['--no-sandbox'],
+});
 try {
   const page = await browser.newPage({ viewport: { width: 1200, height: 800 } });
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto(
-    `${process.argv[2] || 'http://localhost:6006'}/iframe.html?id=blocks-page-footer--document-composer&viewMode=story`,
+    `${process.argv[2] || 'http://localhost:6006'}/iframe.html?id=page-footer-contracts--document-composer&viewMode=story`,
   );
   const footer = page.getByTestId('document-footer');
   await footer.waitFor({ timeout: 120000 });

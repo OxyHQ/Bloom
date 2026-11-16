@@ -1,4 +1,3 @@
-import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -322,7 +321,7 @@ export const Playground: Story = {
 /** Caller-provided SVGs must paint above the positioned shape background. */
 export const CustomPlaceholder: Story = {
   render: () => (
-    <View style={{ flexDirection: 'row', gap: 24 }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24 }}>
       {(['circle', 'squircle'] as const).map((shape) => (
         <Avatar
           key={shape}
@@ -347,7 +346,7 @@ const BOT = { kind: 'bot', name: 'Peri', character: { preset: 'blue_beret' } } a
 export const BotCharacter: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ flexDirection: 'row', gap: 24, alignItems: 'center' }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'center' }}>
       <Avatar account={BOT} size="lg" />
       <Avatar account={BOT} size={64} />
       <Avatar account={BOT} size={36} activity="working" />
@@ -365,7 +364,7 @@ export const BotCharacter: Story = {
 export const BotInAccountColor: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ flexDirection: 'row', gap: 24, alignItems: 'center' }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'center' }}>
       <Avatar account={{ ...BOT, color: 'lagoon' }} size={64} />
       <Avatar account={{ ...BOT, color: 'pink' }} size={64} />
       <Avatar account={{ ...BOT, color: 'mint' }} size={64} />
@@ -377,7 +376,7 @@ export const BotInAccountColor: Story = {
 export const CharacterOrImageOrInitials: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ flexDirection: 'row', gap: 24, alignItems: 'center' }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'center' }}>
       <Avatar account={BOT} size={48} />
       <Avatar account={{ kind: 'bot', name: 'Remote', avatar: SAMPLE_URI }} size={48} />
       <Avatar account={{ kind: 'user', name: 'Ada Lovelace' }} size={48} />

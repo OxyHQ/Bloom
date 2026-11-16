@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -30,11 +30,21 @@ const DETAILS: PatientInfoCardDetail[] = [
 /** Initials disc, the `+` photo button, and four detail rows. */
 export const Default: Story = {
   parameters: { controls: { disable: true } },
-  render: () => (
-    <View style={{ padding: 40, width: 360, maxWidth: '100%' }}>
-      <PatientInfoCard testID="patient" name="Maya Collins" initials="M" details={DETAILS} />
-    </View>
-  ),
+  render: function PatientDemo() {
+    const [photo, setPhoto] = useState<string | null>(null);
+    return (
+      <View style={{ width: '100%', maxWidth: 440 }}>
+        <PatientInfoCard
+          testID="patient"
+          name="Maya Collins"
+          initials="M"
+          details={DETAILS}
+          avatarSource={photo}
+          onAddPhoto={() => setPhoto('https://i.pravatar.cc/132?img=47')}
+        />
+      </View>
+    );
+  },
 };
 
 /** A photo, no `+` button, and fewer rows (the rows keep their height; the card does not shrink). */

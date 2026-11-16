@@ -1,17 +1,16 @@
+import { GroupedSection, GroupedSectionItem } from '../grouped-section';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { Text as RNText } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import type { ReactTestInstance } from 'react-test-renderer';
-import { SETTINGS_ROW_LABEL_MIN_WIDTH } from '../settings-modal/SettingsRows';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import { RiSchoolLine, RiSettings6Line, RiToolsFill } from '../icons/remix';
 import {
-  SettingsCard,
   SettingsModal,
-  SettingsRow,
   SettingsServerList,
   SettingsTextField,
   SettingsValueField,
@@ -427,11 +426,14 @@ describe('SettingsModal responsive layout', () => {
       general: {
         title: 'General',
         content: (
-          <SettingsCard>
-            <SettingsRow label="Device ID" testID="row">
-              <SettingsValueField>593e2611</SettingsValueField>
-            </SettingsRow>
-          </SettingsCard>
+          <GroupedSection separator="line">
+            <GroupedSectionItem
+              title="Device ID"
+              testID="row"
+              wrapControl
+              rightElement={<SettingsValueField>593e2611</SettingsValueField>}
+            />
+          </GroupedSection>
         ),
       },
     };
@@ -440,7 +442,9 @@ describe('SettingsModal responsive layout', () => {
     );
     flush();
     pressHost(getByTestId('settings-nav-general'));
-    expect(resolvedStyle(getByTestId('row').props.style)).toMatchObject({ flexWrap: 'wrap' });
+    expect(resolvedStyle(getByTestId('settings-list-item-content').props.style)).toMatchObject({
+      flexWrap: 'wrap',
+    });
   });
 
   // Allo's Appearance "Colour" row on a Pixel 8a: a 300px chooser stayed beside
@@ -459,11 +463,15 @@ describe('SettingsModal responsive layout', () => {
       general: {
         title: 'General',
         content: (
-          <SettingsCard>
-            <SettingsRow label="Colour" description="A long description" testID="row">
-              <RNText testID="control">Raspberry + Antique Gold + Cobalt</RNText>
-            </SettingsRow>
-          </SettingsCard>
+          <GroupedSection separator="line">
+            <GroupedSectionItem
+              title="Colour"
+              description="A long description"
+              testID="row"
+              wrapControl
+              rightElement={<RNText testID="control">Raspberry + Antique Gold + Cobalt</RNText>}
+            />
+          </GroupedSection>
         ),
       },
     };
@@ -478,7 +486,7 @@ describe('SettingsModal responsive layout', () => {
       />,
     );
     flush();
-    const row = getByTestId('row');
+    const row = getByTestId('settings-list-item-content');
     expect(resolvedStyle(row.props.style)).toMatchObject({ flexWrap: 'wrap' });
     const column = row.children[0] as ReactTestInstance;
     const columnStyle = resolvedStyle(column.props.style);
@@ -486,41 +494,32 @@ describe('SettingsModal responsive layout', () => {
       flexGrow: 1,
       flexShrink: 1,
       flexBasis: 0,
-      minWidth: SETTINGS_ROW_LABEL_MIN_WIDTH,
+      minWidth: 140,
     });
-    expect(SETTINGS_ROW_LABEL_MIN_WIDTH).toBe(140);
   });
 });
 
-describe('SettingsCard rows', () => {
-  it('draws a hairline under every row except the last, with the 12px card inset', () => {
+describe('Grouped settings rows', () => {
+  it('lets the group draw exactly one separator between adjacent rows, including fragments', () => {
     const { getByTestId } = renderWithTheme(
-      <SettingsCard testID="card">
-        <SettingsRow testID="a" label="A" />
+      <GroupedSection separator="line" testID="card">
+        <GroupedSectionItem testID="a" title="A" />
         <>
-          <SettingsRow testID="b" label="B" description="desc" />
+          <GroupedSectionItem testID="b" title="B" description="desc" />
         </>
-        <SettingsRow testID="c" label="C">
-          <SettingsValueField testID="value">x</SettingsValueField>
-        </SettingsRow>
-      </SettingsCard>,
+        <GroupedSectionItem
+          testID="c"
+          title="C"
+          wrapControl
+          rightElement={<SettingsValueField testID="value">x</SettingsValueField>}
+        />
+      </GroupedSection>,
     );
-    expect(resolvedStyle(getByTestId('card').props.style)).toMatchObject({
-      borderRadius: 16,
-      paddingLeft: 12,
-    });
-    const a = resolvedStyle(getByTestId('a').props.style);
-    expect(a).toMatchObject({
-      borderBottomWidth: 1,
-      minHeight: 52,
-      paddingTop: 10,
-      paddingBottom: 10,
-      paddingRight: 10,
-      columnGap: 16,
-      rowGap: 8,
-    });
-    expect(resolvedStyle(getByTestId('b').props.style).borderBottomWidth).toBe(1);
-    expect(resolvedStyle(getByTestId('c').props.style).borderBottomWidth).toBe(0);
+    expect(
+      getByTestId('card')
+        .findAllByProps({ testID: 'grouped-section-divider' })
+        .filter((node) => typeof node.type === 'string'),
+    ).toHaveLength(2);
     expect(resolvedStyle(getByTestId('value').props.style)).toMatchObject({
       height: 32,
       width: 202,
@@ -568,9 +567,14 @@ describe('SettingsServerList', () => {
       expanded: true,
     });
     expect(getByLabelText('Show astro output')).toBeTruthy();
-    // The error row is last: no hairline.
-    expect(resolvedStyle(getByTestId('list-astro').props.style).borderBottomWidth).toBe(0);
-    expect(resolvedStyle(getByTestId('list-figma').props.style).borderBottomWidth).toBe(1);
+    // The group owns the single separator; custom rows have no border.
+    expect(resolvedStyle(getByTestId('list-astro').props.style).borderBottomWidth).toBeUndefined();
+    expect(resolvedStyle(getByTestId('list-figma').props.style).borderBottomWidth).toBeUndefined();
+    expect(
+      getByTestId('list')
+        .findAllByProps({ testID: 'grouped-section-divider' })
+        .filter((node) => typeof node.type === 'string'),
+    ).toHaveLength(1);
   });
 });
 

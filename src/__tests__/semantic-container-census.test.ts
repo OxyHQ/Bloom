@@ -174,7 +174,7 @@ describe('semantic containers keep their children', () => {
     const where = found.map((entry) => entry.where);
     expect(where).toEqual(
       expect.arrayContaining([
-        expect.stringMatching(/^button-group\/ButtonGroupBase\.tsx:/),
+        expect.stringMatching(/^button\/GroupBase\.tsx:/),
         expect.stringMatching(/^settings-modal\/SettingsModalBase\.tsx:/),
         expect.stringMatching(/^sidebar\/Sidebar\.tsx:/),
         expect.stringMatching(/^segmented-control\/SegmentedControl\.tsx:/),

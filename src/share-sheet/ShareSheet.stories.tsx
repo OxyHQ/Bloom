@@ -1,3 +1,4 @@
+import { alert } from '../surfaces';
 import { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -31,12 +32,42 @@ const PEOPLE = [
 ];
 
 const TARGETS: ShareSheetTarget[] = [
-  { key: 'copy', label: 'Copy link', icon: RiLinksLine, onPress: () => {} },
-  { key: 'whatsapp', label: 'WhatsApp', icon: RiWhatsappFill, onPress: () => {} },
-  { key: 'telegram', label: 'Telegram', icon: RiTelegramFill, onPress: () => {} },
-  { key: 'x', label: 'X', icon: RiTwitterXFill, onPress: () => {} },
-  { key: 'email', label: 'Email', icon: RiMailLine, onPress: () => {} },
-  { key: 'more', label: 'More', icon: RiShareLine, onPress: () => {} },
+  {
+    key: 'copy',
+    label: 'Copy link',
+    icon: RiLinksLine,
+    onPress: () => alert('Copy link', 'Share target selected in this demo.'),
+  },
+  {
+    key: 'whatsapp',
+    label: 'WhatsApp',
+    icon: RiWhatsappFill,
+    onPress: () => alert('WhatsApp', 'Share target selected in this demo.'),
+  },
+  {
+    key: 'telegram',
+    label: 'Telegram',
+    icon: RiTelegramFill,
+    onPress: () => alert('Telegram', 'Share target selected in this demo.'),
+  },
+  {
+    key: 'x',
+    label: 'X',
+    icon: RiTwitterXFill,
+    onPress: () => alert('X', 'Share target selected in this demo.'),
+  },
+  {
+    key: 'email',
+    label: 'Email',
+    icon: RiMailLine,
+    onPress: () => alert('Email', 'Share target selected in this demo.'),
+  },
+  {
+    key: 'more',
+    label: 'More',
+    icon: RiShareLine,
+    onPress: () => alert('More', 'Share target selected in this demo.'),
+  },
 ];
 
 function Frame({ children }: { children: React.ReactNode }) {
@@ -54,7 +85,7 @@ function Searchable() {
       <ShareSheet
         search={{ value: term, onValueChange: setTerm }}
         people={people}
-        onPersonPress={() => {}}
+        onPersonPress={(id) => alert('Share with', PEOPLE.find((person) => person.id === id)?.name)}
         targets={TARGETS}
       />
     </Frame>
@@ -66,12 +97,7 @@ export const Default: Story = { render: () => <Searchable /> };
 export const Loading: Story = {
   render: () => (
     <Frame>
-      <ShareSheet
-        search={{ value: '', onValueChange: () => {} }}
-        people={[]}
-        peopleLoading
-        targets={TARGETS}
-      />
+      <ShareSheet people={[]} peopleLoading targets={TARGETS} />
     </Frame>
   ),
 };

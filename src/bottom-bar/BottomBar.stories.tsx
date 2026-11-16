@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import { useArgs } from 'storybook/preview-api';
 import { View, TextInput, Text } from 'react-native';
 import { useState, Profiler } from 'react';
@@ -7,6 +8,10 @@ import { CompactComposer } from '../chat-composer/CompactComposer.web';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { BottomBar } from './BottomBar.web';
 import { Fab } from '../fab/index.web';
+import { AppShell } from '../app-shell';
+import { Screen, ScreenScrollView } from '../screen';
+import { PageHeader } from '../page-header';
+import { List } from '../list';
 import * as Icons from '../icons';
 const meta: Meta<typeof BottomBar> = {
   id: 'base-bottom-bar',
@@ -23,24 +28,68 @@ const meta: Meta<typeof BottomBar> = {
 };
 export default meta;
 type Story = StoryObj<typeof BottomBar>;
+/** A route delegates header, scrolling and bottom placement to the real shell. */
 function Demo(props: Partial<React.ComponentProps<typeof BottomBar>>) {
+  const [destination, setDestination] = useState('home');
+  const [created, setCreated] = useState(0);
+  const value = props.onValueChange ? (props.value ?? destination) : destination;
+  const title = value === 'search' ? 'Explore' : 'Home';
   return (
-    <View style={{ height: 220, width: 390, maxWidth: '100%', justifyContent: 'flex-end' }}>
-      <BottomBar
-        items={[
-          { name: 'home', label: 'Home', icon: <Icons.RiHomeLine /> },
-          { name: 'search', label: 'Explore', icon: <Icons.RiSearchLine /> },
-        ]}
-        value="home"
-        onValueChange={() => {}}
-        action={<Fab icon={Icons.RiAddLine} accessibilityLabel="Create" />}
-        {...props}
-      />
-    </View>
+    <AppShell scroll="fixed" header={null}>
+      <Screen
+        testID="bottom-bar-screen"
+        header={<PageHeader title={title} onBack={null} />}
+        bottomBar={
+          <BottomBar
+            {...props}
+            testID="demo-bottom-bar"
+            items={
+              props.items ?? [
+                { name: 'home', label: 'Home', icon: <Icons.RiHomeLine /> },
+                { name: 'search', label: 'Explore', icon: <Icons.RiSearchLine /> },
+              ]
+            }
+            value={value}
+            onValueChange={(next) => {
+              setDestination(next);
+              props.onValueChange?.(next);
+            }}
+            action={
+              <Fab
+                icon={Icons.RiAddLine}
+                accessibilityLabel="Create"
+                onPress={() => setCreated((count) => count + 1)}
+              />
+            }
+          />
+        }
+      >
+        <ScreenScrollView testID="bottom-bar-content">
+          <List
+            items={[
+              ...Array.from({ length: created }, (_, index) => ({
+                id: `draft-${index}`,
+                title: `Draft ${index + 1}`,
+                supporting: 'New item',
+              })),
+              ...Array.from({ length: 24 }, (_, index) => ({
+                id: `${value}-${index}`,
+                title:
+                  value === 'search'
+                    ? `Discover collection ${index + 1}`
+                    : `Saved note ${index + 1}`,
+                supporting: value === 'search' ? 'Ideas to explore' : 'Your latest notes',
+              })),
+            ]}
+          />
+        </ScreenScrollView>
+      </Screen>
+    </AppShell>
   );
 }
 export const Default: Story = {
   parameters: {
+    layout: 'fullscreen',
     controls: { include: ['value', 'blur', 'maxWidth', 'actionBehavior', 'actionPlacement'] },
   },
   render: function Render(args) {
@@ -49,10 +98,11 @@ export const Default: Story = {
   },
 };
 export const ActionOnly: Story = {
-  parameters: { controls: { include: ['blur'] } },
+  parameters: { layout: 'fullscreen', controls: { include: ['blur'] } },
   render: (args) => <Demo {...args} items={[]} />,
 };
 
+/** Intrinsic 300px stress specimen used independently of a screen host. */
 export const NarrowWithAction: Story = {
   render: function NarrowWithAction(args) {
     const [, updateArgs] = useArgs();
@@ -68,7 +118,13 @@ export const NarrowWithAction: Story = {
             { name: 'profile', label: 'Profile', icon: <Icons.RiUserLine /> },
           ]}
           onValueChange={(value) => updateArgs({ value })}
-          action={<Fab icon={Icons.RiAddLine} accessibilityLabel="Create" />}
+          action={
+            <Fab
+              icon={Icons.RiAddLine}
+              accessibilityLabel="Create"
+              onPress={fn().mockName('Create action')}
+            />
+          }
         />
       </View>
     );
@@ -76,8 +132,13 @@ export const NarrowWithAction: Story = {
 };
 
 /** The optional screen-edge band is separate from the translucent capsule. */
-export const WithBlurBand: Story = { args: { blur: true }, render: (args) => <Demo {...args} /> };
+export const WithBlurBand: Story = {
+  parameters: { layout: 'fullscreen' },
+  args: { blur: true },
+  render: (args) => <Demo {...args} />,
+};
 
+/** Measurement/commit-count fixture for verify-bottom-bar-dock.mjs, not an app screen. */
 function DockedEditorDemo({ deferred = false }: { deferred?: boolean }) {
   const [ready, setReady] = useState(!deferred);
   const progress = useSharedValue(0);
@@ -171,7 +232,7 @@ function DockedEditorDemo({ deferred = false }: { deferred?: boolean }) {
 export const DockedEditor: Story = { render: () => <DockedEditorDemo /> };
 export const DeferredDockedEditor: Story = { render: () => <DockedEditorDemo deferred /> };
 
-/** A natural-height action changes while its navigation footprint is released. */
+/** Focus/motion fixture for verify-dock-focus-motion.mjs; the bounded host is intentional. */
 function FocusedComposerDemo() {
   const [focused, setFocused] = useState(false);
   const [text, setText] = useState('');
@@ -200,7 +261,7 @@ function FocusedComposerDemo() {
       <BottomBar
         testID="focus-dock"
         value="home"
-        onValueChange={() => {}}
+        onValueChange={fn().mockName('onValueChange')}
         actionBehavior="dock"
         navigationVisibility={focused ? 'never' : 'always'}
         minimizeProgress={progress}
@@ -214,8 +275,8 @@ function FocusedComposerDemo() {
             value={text}
             onChangeText={setText}
             maxLength={250}
-            onSubmit={() => {}}
-            onExpand={() => {}}
+            onSubmit={fn().mockName('onSubmit')}
+            onExpand={fn().mockName('onExpand')}
             onFocusChange={setFocused}
             avatar={<View style={{ width: 32, height: 32 }} />}
             testID="focus-composer"

@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { ArtistPage } from './ArtistPage';
 import { AlbumPage, PlaylistPage } from './CollectionPages';
 import { ALBUM_BY_ID, EPISODE_BY_ID, LIBRARY, PLAYLIST_BY_ID, SHOW_BY_ID, TRACKS } from './data';
@@ -130,7 +128,6 @@ function LibraryPage() {
     <PageScroll testID="music-library-page" back={false}>
       <LibraryPanel
         items={LIBRARY}
-        onCreatePress={() => {}}
         onItemPress={(entry) => {
           if (entry.kind === 'album') router.navigate({ name: 'album', id: entry.id });
           else if (entry.kind === 'artist') router.navigate({ name: 'artist', id: entry.id });

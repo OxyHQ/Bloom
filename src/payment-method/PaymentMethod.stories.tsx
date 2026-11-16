@@ -1,8 +1,9 @@
+import { fn } from 'storybook/test';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { GlyphButton } from '../button';
+import { Button } from '../button';
 import { Card, CardBody } from '../card';
 import { Field } from '../field';
 import { RiMore2Line } from '../icons';
@@ -22,7 +23,7 @@ export default meta;
 
 type Story = StoryObj;
 
-const noop = () => undefined;
+const onDemoAction = fn().mockName('payment-method.action');
 
 // ---------------------------------------------------------------------------
 //  Demo data — INVENTED schemes. Bloom ships no scheme table and no artwork;
@@ -92,7 +93,7 @@ export const Rows: Story = {
             scheme="Aurora"
             masked="•••• 4417"
             expiry="Expires 09/29"
-            onPress={noop}
+            onPress={onDemoAction}
             testID="row"
           />
           <PaymentMethodRow
@@ -100,19 +101,19 @@ export const Rows: Story = {
             scheme="Direct debit"
             masked="•••• •••• 8842"
             expiry="Set up 12 March"
-            onPress={noop}
+            onPress={onDemoAction}
           />
           <PaymentMethodRow
             kind="wallet"
             scheme="Store balance"
             masked="€18.40 left"
-            onPress={noop}
+            onPress={onDemoAction}
           />
           <PaymentMethodRow
             kind="cash"
             scheme="Cash on delivery"
             masked="Pay the driver"
-            onPress={noop}
+            onPress={onDemoAction}
           />
         </View>
       </Section>
@@ -123,28 +124,28 @@ export const Rows: Story = {
             masked="•••• 4417"
             expiry="Expires 09/29"
             isDefault
-            onPress={noop}
+            onPress={onDemoAction}
           />
           <PaymentMethodRow
             scheme="Northwind"
             masked="•••• 1190"
             expiry="Expired 06/24"
             state="expired"
-            onPress={noop}
+            onPress={onDemoAction}
           />
           <PaymentMethodRow
             scheme="Solstice"
             masked="•••• 7734"
             state="declined"
             stateMessage="Your bank turned this one down."
-            onPress={noop}
+            onPress={onDemoAction}
           />
           <PaymentMethodRow
             scheme="Meridian"
             masked="•••• 0082"
             expiry="Expires 03/27"
             disabled
-            onPress={noop}
+            onPress={onDemoAction}
           />
         </View>
       </Section>
@@ -154,14 +155,17 @@ export const Rows: Story = {
             scheme="Aurora"
             masked="•••• 4417"
             expiry="Expires 09/29"
-            onPress={noop}
+            onPress={onDemoAction}
             action={
-              <GlyphButton
+              <Button
+                appearance="plain"
+                tone="neutral"
+                iconOnly
                 size={32}
-                glyphSize={16}
+                iconSize={16}
                 icon={RiMore2Line}
                 accessibilityLabel="More for Aurora"
-                onPress={noop}
+                onPress={onDemoAction}
               />
             }
           />
@@ -171,13 +175,13 @@ export const Rows: Story = {
             role="radio"
             selectable
             selected
-            onPress={noop}
+            onPress={onDemoAction}
           />
           <PaymentMethodRow
             scheme="Northwind"
             masked="•••• 1190"
             density="compact"
-            onPress={noop}
+            onPress={onDemoAction}
           />
         </View>
       </Section>
@@ -190,7 +194,7 @@ export const Rows: Story = {
               masked="•••• •••• •••• 8842"
               expiry="Mandate signed 12 March 2026"
               isDefault
-              onPress={noop}
+              onPress={onDemoAction}
             />
           </View>
           <View
@@ -214,7 +218,7 @@ function PickerDemo() {
       variant="picker"
       selectedId={selected}
       onSelect={setSelected}
-      onAdd={noop}
+      onAdd={onDemoAction}
       accessibilityLabel="Pay with"
       testID="picker"
     />
@@ -244,7 +248,7 @@ export const List: Story = {
       <Section title="A saved-methods list, with trouble on it">
         <PaymentMethodList
           methods={[...METHODS.slice(0, 1), ...TROUBLE]}
-          onAdd={noop}
+          onAdd={onDemoAction}
           accessibilityLabel="Saved payment methods"
         />
       </Section>
@@ -276,7 +280,7 @@ export const LoadingAndEmpty: Story = {
       <Section title="Empty, with the add row">
         <PaymentMethodList
           methods={[]}
-          onAdd={noop}
+          onAdd={onDemoAction}
           emptyTitle="No saved payment methods"
           emptyDescription="Whatever you pay with is kept here so you do not have to type it twice."
           accessibilityLabel="Saved payment methods"
@@ -289,7 +293,7 @@ export const LoadingAndEmpty: Story = {
           variant="picker"
           selectedId="aurora"
           disabled
-          onAdd={noop}
+          onAdd={onDemoAction}
           accessibilityLabel="Pay with"
         />
       </Section>

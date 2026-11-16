@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '../../src/button';
@@ -77,19 +77,12 @@ export function ProfilePage() {
         artworkColor={ME.artworkColor}
         stats={[
           { label: `${publicPlaylists.length} public playlists` },
-          { label: `${FOLLOWERS.length} followers`, onPress: () => {} },
-          { label: '88 following', onPress: () => {} },
+          { label: `${FOLLOWERS.length} followers` },
+          { label: '88 following' },
         ]}
-        onEditPress={() => {}}
-        onMorePress={() => {}}
       />
       <PageBody gap={40}>
-        <Shelf
-          title="Top artists this month"
-          subtitle="Only visible to you"
-          onShowAll={() => {}}
-          contentInset={gutter}
-        >
+        <Shelf title="Top artists this month" subtitle="Only visible to you" contentInset={gutter}>
           {[
             'lumen-vale',
             'odessa-rowe',
@@ -102,7 +95,7 @@ export function ProfilePage() {
           ))}
         </Shelf>
 
-        <Shelf title="Public playlists" onShowAll={() => {}} contentInset={gutter}>
+        <Shelf title="Public playlists" contentInset={gutter}>
           {publicPlaylists.map((p) => (
             <PlaylistTile key={p.id} id={p.id} size={tileSize} />
           ))}

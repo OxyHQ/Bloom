@@ -1,5 +1,5 @@
 import { useBloomAppearance } from '../appearance';
-import React, { memo, useCallback, useEffect } from 'react';
+import { memo, useCallback, useEffect } from 'react';
 import { Pressable, View, type GestureResponderEvent } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -20,13 +20,12 @@ import { resolveButtonPalette } from '../button/shared';
 import { useTheme } from '../theme/use-theme';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { RiShuffleLine } from '../icons/remix/RiShuffleLine';
-import { Button, GlyphButton } from '../button';
+import { Button } from '../button';
 import { LikeButton } from '../media-controls/LikeButton';
 import { PlayButton } from '../media-controls/PlayButton';
 import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { MeterRing } from '../stat-bar';
-import { Text } from '../typography';
 import { FollowLabel } from './FollowLabel';
 import { useMediaHeaderPaint } from './parts';
 
@@ -68,7 +67,7 @@ function stop(event: GestureResponderEvent) {
 /**
  * A glyph-only control; a toggle when `pressed` is given.
  *
- * `button/GlyphButton` at this bar's 40 box (`max(40, size + 12)` — the glyph is
+ * `button/Button` at this bar's 40 box (`max(40, size + 12)` — the glyph is
  * the caller's, the TARGET is never under 40) with no fill in any state, plus
  * the 4px accent dot an active toggle carries.
  */
@@ -88,10 +87,13 @@ function MediaIconButtonComponent({
   const paint = useMediaHeaderPaint();
   const box = Math.max(40, size + 12);
   return (
-    <GlyphButton
+    <Button
+      appearance="plain"
+      tone="neutral"
+      iconOnly
       icon={Icon}
       size={box}
-      glyphSize={size}
+      iconSize={size}
       accessibilityLabel={accessibilityLabel}
       disabled={disabled}
       pressed={pressed}

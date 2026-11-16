@@ -1,4 +1,5 @@
 import { View } from 'react-native';
+import { ScrollArea } from '../layout';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { useTheme } from './index.web';
@@ -61,7 +62,7 @@ export const Palette: Story = {
           {columns.length} presets, {mode} mode
         </Text>
         {blocks.map((block) => (
-          <View key={block[0]!.preset.name} style={{ flexDirection: 'row' }}>
+          <ScrollArea horizontal key={block[0]!.preset.name}>
             <View style={{ width: LABEL_WIDTH }}>
               <View style={{ height: SWATCH.width + 4 }} />
               {ROLES.map(([token, label]) => (
@@ -106,7 +107,7 @@ export const Palette: Story = {
                 ))}
               </View>
             ))}
-          </View>
+          </ScrollArea>
         ))}
       </View>
     );

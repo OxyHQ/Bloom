@@ -1,5 +1,8 @@
+import { Button } from '../button';
+import { Item } from '../item';
+import { Divider } from '../divider';
 import { useMemo, useRef, useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { TextInput, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { PlatformSurfaceProvider } from '../platform-surface';
@@ -223,9 +226,9 @@ export const DesktopMenus: Story = {
     const [last, setLast] = useState('idle');
     return (
       <View style={{ padding: 40, gap: 16 }}>
-        <Pressable testID="focus-bar" onPress={() => setFocus('app')}>
-          <Text>Focus the bar from the keyboard</Text>
-        </Pressable>
+        <Button testID="focus-bar" onPress={() => setFocus('app')}>
+          Focus the bar from the keyboard
+        </Button>
         <Text testID="result">{`last: ${last} · keyboard: ${focus ?? 'elsewhere'}`}</Text>
         <Menubar
           value={open}
@@ -402,21 +405,21 @@ function FakePlatformBar({
           gap: 12,
           padding: 8,
           borderRadius: 8,
-          backgroundColor: '#eee',
         }}
       >
         <Text style={{ fontWeight: '700' }}>Platform bar</Text>
         {menus.map((candidate) => (
-          <Pressable
+          <Button
+            appearance="plain"
             key={candidate.id}
             onPress={() => setOpen(open === candidate.id ? null : candidate.id)}
           >
-            <Text>{candidate.label}</Text>
-          </Pressable>
+            {candidate.label}
+          </Button>
         ))}
       </View>
       {menu ? (
-        <View style={{ padding: 8, borderRadius: 8, backgroundColor: '#f6f6f6', gap: 4 }}>
+        <View style={{ padding: 8, gap: 4 }}>
           <FakePlatformItems
             items={menu.items}
             depth={0}
@@ -445,10 +448,10 @@ function FakePlatformItems({
       {items.map((item, index) => {
         if (item.kind === 'separator') {
           return (
-            <View
+            <Divider
               // biome-ignore lint/suspicious/noArrayIndexKey: separators carry no id.
               key={`separator-${index}`}
-              style={{ height: 1, backgroundColor: '#ccc', marginLeft: depth * 16 }}
+              style={{ marginLeft: depth * 16 }}
             />
           );
         }
@@ -456,20 +459,17 @@ function FakePlatformItems({
           item.kind === 'item' && item.checked !== undefined ? (item.checked ? '✓ ' : '   ') : '';
         return (
           <View key={item.id}>
-            <Pressable
+            <Item
+              title={`${mark}${item.label}${item.kind === 'submenu' ? ' ▸' : ''}`}
               disabled={!item.enabled || item.kind === 'submenu'}
               onPress={() => choose(item.id)}
-              style={{ flexDirection: 'row', gap: 16, marginLeft: depth * 16 }}
-            >
-              <Text style={{ opacity: item.enabled ? 1 : 0.4 }}>
-                {mark}
-                {item.label}
-                {item.kind === 'submenu' ? ' ▸' : ''}
-              </Text>
-              {item.kind === 'item' && item.shortcut ? (
-                <Text style={{ opacity: 0.6 }}>{item.shortcut}</Text>
-              ) : null}
-            </Pressable>
+              style={{ marginLeft: depth * 16 }}
+              trailing={
+                item.kind === 'item' && item.shortcut ? (
+                  <MenubarShortcut>{item.shortcut}</MenubarShortcut>
+                ) : undefined
+              }
+            />
             {item.kind === 'submenu' ? (
               <FakePlatformItems items={item.items} depth={depth + 1} choose={choose} />
             ) : null}

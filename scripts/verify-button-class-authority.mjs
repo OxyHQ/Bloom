@@ -2,8 +2,11 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { chromium, expect } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright');
-const browser = await chromium.launch({ args: ['--no-sandbox'] });
+const { chromium, expect } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || '@playwright/test');
+const browser = await chromium.launch({
+  args: ['--no-sandbox'],
+  ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}),
+});
 const base = process.argv[2] || 'http://localhost:6006';
 try {
   for (const mode of ['light', 'dark'])
@@ -87,12 +90,10 @@ try {
         await expect(button).toHaveAttribute('aria-busy', 'true');
         await button.hover();
         await expect(button).toHaveCSS('background-color', 'rgb(84, 51, 235)');
-        const blades = button
-          .locator('span[aria-hidden="true"]')
-          .last()
-          .locator('div[style*="background-color"]');
-        await expect(blades).toHaveCount(8);
-        await expect(blades.last()).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+        const spinner = button.locator('span[aria-hidden="true"]').last().locator('svg path');
+        await expect(spinner).toHaveCount(1);
+        await expect(spinner).toHaveCSS('fill', 'rgb(255, 255, 255)');
+        assert.ok((await spinner.getAttribute('d'))?.length, 'Loading spinner has a visible shape');
         assert.ok(await child.evaluate((el) => el.isConnected));
         await page.getByTestId('class-toggle-loading').click();
         await expect(page.getByTestId(id)).toBeVisible();

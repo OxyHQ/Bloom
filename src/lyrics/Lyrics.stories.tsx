@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -125,16 +126,6 @@ export const Neutral: Story = {
   ),
 };
 
-/** Narrow (390): the small type step. */
-export const Mobile: Story = {
-  parameters: { viewport: { defaultViewport: 'mobile1' } },
-  render: () => (
-    <Page width={390}>
-      <SyncedDemo artworkColor="#d0473c" height={700} />
-    </Page>
-  ),
-};
-
 /** Artwork colours from deep to pale: the shade deepens until white text keeps 7:1. */
 export const ArtworkColours: Story = {
   render: function ArtworkColours() {
@@ -149,7 +140,7 @@ export const ArtworkColours: Story = {
                 lines={LINES}
                 currentTime={20}
                 artworkColor={colour}
-                onShowLyrics={() => {}}
+                onShowLyrics={fn().mockName('LyricsPreviewCard.onShowLyrics')}
               />
             </View>
           ))}
@@ -187,7 +178,7 @@ function PreviewDemo({ artworkColor }: { artworkColor?: string }) {
       currentTime={time}
       artworkColor={artworkColor}
       onSeekLine={(line) => setTime(line.time ?? 0)}
-      onShowLyrics={() => {}}
+      onShowLyrics={fn().mockName('LyricsPreviewCard.onShowLyrics')}
       providerText={PROVIDER}
       testID="preview"
     />
@@ -206,28 +197,12 @@ export const PreviewCard: Story = {
           <PreviewDemo />
         </View>
         <View style={{ flexGrow: 1, flexBasis: 300, maxWidth: 400 }}>
-          <LyricsPreviewCard text={PLAIN} visibleLines={4} onShowLyrics={() => {}} />
+          <LyricsPreviewCard
+            text={PLAIN}
+            visibleLines={4}
+            onShowLyrics={fn().mockName('LyricsPreviewCard.onShowLyrics')}
+          />
         </View>
-      </View>
-    </Page>
-  ),
-};
-
-/** Dark mode: the neutral and artwork variants side by side. */
-export const Dark: Story = {
-  globals: { theme: 'dark' },
-  render: () => (
-    <Page>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
-        <View style={{ flexGrow: 1, flexBasis: 300 }}>
-          <SyncedDemo height={520} />
-        </View>
-        <View style={{ flexGrow: 1, flexBasis: 300 }}>
-          <SyncedDemo artworkColor="#6d4bd8" height={520} startAt={30} />
-        </View>
-      </View>
-      <View style={{ flexGrow: 1, flexBasis: 300, maxWidth: 400 }}>
-        <PreviewDemo />
       </View>
     </Page>
   ),

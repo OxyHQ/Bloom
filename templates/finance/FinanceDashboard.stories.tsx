@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { FinanceDashboardTemplate } from './FinanceDashboardTemplate';
@@ -21,15 +20,4 @@ type Story = StoryObj<typeof FinanceDashboardTemplate>;
 
 export const Default: Story = {
   render: () => <FinanceDashboardTemplate />,
-};
-
-/** Reference views of the shared tonal surfaces, using the real app composition. */
-export const TonalOlive: Story = {
-  ...Default,
-  globals: { theme: 'dark', colorPreset: 'olive' },
-};
-
-export const TonalCopper: Story = {
-  ...Default,
-  globals: { theme: 'dark', colorPreset: 'copper-field' },
 };

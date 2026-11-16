@@ -1,7 +1,6 @@
 import { RiBusLine } from '../icons/remix/RiBusLine';
 import { RiExternalLinkLine } from '../icons/remix/RiExternalLinkLine';
 import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
-import { RiPencilLine } from '../icons/remix/RiPencilLine';
 import { RiPhoneLine } from '../icons/remix/RiPhoneLine';
 import { RiRouteLine } from '../icons/remix/RiRouteLine';
 import { RiShip2Line } from '../icons/remix/RiShip2Line';
@@ -15,7 +14,7 @@ import type { PlaceBusyTrend, PlaceInfoAction, PlaceTransitMode } from './types'
 /**
  * The glyph each row action draws on its right — the one place a reader finds
  * out what the press will do before making it. `none` draws nothing; a row
- * that navigates keeps `SettingsListItem`'s own chevron.
+ * that navigates keeps `GroupedSectionItem`'s own chevron.
  */
 export const PLACE_INFO_ACTION_ICON: Readonly<
   Record<Exclude<PlaceInfoAction, 'none' | 'edit'>, BloomIconComponent>

@@ -32,7 +32,7 @@ export interface ConversationSidebarCreateOption {
   key: string;
   label: string;
   description?: string;
-  /** Left of the text: an avatar, an `AgentStack`, an icon. */
+  /** Left of the text: an avatar, an `AvatarGroup`, an icon. */
   leading?: ReactNode;
   onPress: () => void;
 }

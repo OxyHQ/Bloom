@@ -230,7 +230,7 @@ On web without the react-native-worklets babel plugin — the production reality
 
 ## Icons
 
-`item.icon` is the primary API and takes any node — a Bloom icon, an SVG, your own component — exactly like `TabsTrigger` and `FrostedIconButton`. The bar renders it twice per tab (an inactive layer with the active layer crossfading on top) and injects the layer's tint as the icon's `fill`. An icon that sets its own `fill` (a brand mark, say) keeps it, so both layers render it identically and it never flickers.
+`item.icon` is the primary API and takes any node — a Bloom icon, an SVG, your own component — exactly like `TabsTrigger` and `Button`. The bar renders it twice per tab (an inactive layer with the active layer crossfading on top) and injects the layer's tint as the icon's `fill`. An icon that sets its own `fill` (a brand mark, say) keeps it, so both layers render it identically and it never flickers.
 
 The same node renders on iOS, Android and web: there is no platform-specific glyph path (Bloom 15 removed the iOS-only system-symbol option — see [Migrating to 15.0](/docs/bloom/main/migrating-to-15.0)).
 

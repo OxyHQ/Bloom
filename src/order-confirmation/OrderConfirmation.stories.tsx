@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -81,8 +82,8 @@ export const Default: Story = {
         }}
         facts={FACTS}
         items={<Lines />}
-        action={{ label: 'Track order', onPress: () => {} }}
-        secondaryAction={{ label: 'Get help', onPress: () => {} }}
+        action={{ label: 'Track order', onPress: fn().mockName('onPress') }}
+        secondaryAction={{ label: 'Get help', onPress: fn().mockName('onPress') }}
         testID="confirmation"
       />
     </Page>
@@ -97,7 +98,7 @@ export const Minimal: Story = {
       <OrderConfirmation
         reference="A-4821"
         description="You will get a message when the courier is on the way."
-        action={{ label: 'Track order', onPress: () => {} }}
+        action={{ label: 'Track order', onPress: fn().mockName('onPress') }}
       />
     </Page>
   ),
@@ -117,7 +118,7 @@ export const CompactOnACard: Story = {
             description="Reference below; track it any time."
             reference="A-4821"
             facts={FACTS.slice(0, 2)}
-            action={{ label: 'Track order', onPress: () => {} }}
+            action={{ label: 'Track order', onPress: fn().mockName('onPress') }}
           />
         </CardBody>
       </Card>
@@ -148,8 +149,8 @@ export const LongText: Story = {
           { label: 'Arrives', value: 'Friday 24 October, between 17:00 and 19:00' },
           { label: 'Paid with', value: 'Card ending 4417' },
         ]}
-        action={{ label: 'Track order', onPress: () => {} }}
-        secondaryAction={{ label: 'Get help', onPress: () => {} }}
+        action={{ label: 'Track order', onPress: fn().mockName('onPress') }}
+        secondaryAction={{ label: 'Get help', onPress: fn().mockName('onPress') }}
       />
     </View>
   ),

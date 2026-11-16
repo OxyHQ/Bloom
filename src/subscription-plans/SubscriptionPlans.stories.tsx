@@ -1,3 +1,4 @@
+import { alert } from '../surfaces';
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { SubscriptionPlans } from './index';
@@ -36,7 +37,14 @@ function Plans() {
           ],
         },
       ]}
-      primaryAction={{ label: 'Continue', onPress: () => {} }}
+      primaryAction={{
+        label: 'Continue',
+        onPress: () =>
+          alert(
+            'Plan selected',
+            value === 'basic' ? 'Basic · $9.99 / month' : 'Plus · $29.99 / month',
+          ),
+      }}
     />
   );
 }

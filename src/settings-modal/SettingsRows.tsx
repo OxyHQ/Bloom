@@ -1,140 +1,21 @@
-import React, { Children, Fragment, isValidElement, useContext, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { StyledView } from '../styles/styled-primitives';
 import { Text } from '../typography';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { SettingsRowPositionContext, useSettingsLayout, useSettingsPalette } from './context';
+import { useSettingsLayout, useSettingsPalette } from './context';
 import type { SettingsPalette } from './palette';
 import type {
-  SettingsCardProps,
-  SettingsRowProps,
   SettingsSectionLabelProps,
   SettingsSectionProps,
   SettingsValueFieldProps,
 } from './types';
-import { useSettingsWebCss } from './web-css';
 import { IS_WEB } from '../styles/platform';
-
-/**
- * Settings row chrome:
- *
- *   card   background/secondary, radius 16, pl 12 — the left padding lives on
- *          the card so each row's bottom hairline stops 12px short of the left
- *          edge, exactly like Figma.
- *   row    py 10 pr 10, min-height 52, gap 16, 1px separator under every row
- *          except the last; label body-regular text/primary, optional
- *          body-2-regular text/secondary description.
- *   label  body-2-medium text/secondary, px 12.
- *   value  32 tall, 202 wide, radius 10, background/tertiary, px 6, gap 2,
- *          20px icon + body-regular (pl 4) truncated.
- */
 
 /** Web: the ring colour the family's focus rules read. */
 export function settingsRingVars(palette: SettingsPalette): WebCssStyle | null {
   return IS_WEB
     ? { '--bloom-settings-ring': palette.ring, '--bloom-settings-ring-offset': palette.secondary }
     : null;
-}
-
-/** Flatten fragments so "last" means the last rendered row, not the last fragment. */
-function flatChildren(children: ReactNode): ReactNode[] {
-  const out: ReactNode[] = [];
-  Children.forEach(children, (child) => {
-    if (isValidElement<{ children?: ReactNode }>(child) && child.type === Fragment) {
-      out.push(...flatChildren(child.props.children));
-    } else if (child !== null && child !== undefined && typeof child !== 'boolean') {
-      out.push(child);
-    }
-  });
-  return out;
-}
-
-/** Grouped card. Its rows separate themselves; the last carries no hairline. */
-export function SettingsCard({ children, className, style, testID }: SettingsCardProps) {
-  useSettingsWebCss();
-  const palette = useSettingsPalette();
-  const items = flatChildren(children);
-  return (
-    <StyledView
-      className={className}
-      testID={testID}
-      style={[
-        styles.card,
-        { backgroundColor: palette.secondary },
-        settingsRingVars(palette),
-        style,
-      ]}
-    >
-      {items.map((child, index) => (
-        <SettingsRowPositionContext.Provider
-          // Keyed by the child's own key when it has one.
-          key={isValidElement(child) && child.key != null ? child.key : index}
-          value={index === items.length - 1 ? LAST : NOT_LAST}
-        >
-          {child}
-        </SettingsRowPositionContext.Provider>
-      ))}
-    </StyledView>
-  );
-}
-
-const LAST = { last: true };
-const NOT_LAST = { last: false };
-
-/** Whether the calling row is the last in its card. */
-export function useSettingsRowIsLast(): boolean {
-  return useContext(SettingsRowPositionContext).last;
-}
-
-/**
- * The narrowest the label column may get beside its control. A control that
- * would leave it less wraps onto its own line under the label instead.
- */
-export const SETTINGS_ROW_LABEL_MIN_WIDTH = 140;
-
-/**
- * One label + control row.
- *
- * The row always wraps, and the label column is `flexBasis: 0` + grow + a
- * `minWidth`, never a positive `flexBasis`. Yoga gives the ONLY child that both
- * grows and shrinks a computed basis of 0 (`CalculateLayout.cpp`,
- * `singleFlexChild`), and its line breaking reads that basis — clamped by the
- * min/max constraints and nothing else — so the compact row's old
- * `flexBasis: 140` never reached the decision: a 300px chooser stayed on the
- * label's line, the label was squeezed to ~48dp (Allo's "Colour" row, one word
- * per line) and the chooser's text ran off the edge. A `minWidth` is the
- * constraint that line breaking does honour, on native and in CSS alike.
- */
-export function SettingsRow({ label, description, children, style, testID }: SettingsRowProps) {
-  const palette = useSettingsPalette();
-  const last = useSettingsRowIsLast();
-  // Compact keeps its tighter column gap; every layout wraps a control that
-  // does not fit beside the label (a switch stays beside it).
-  const compact = useSettingsLayout() === 'compact';
-  return (
-    <View
-      testID={testID}
-      style={[
-        styles.row,
-        compact ? styles.rowCompact : null,
-        { borderBottomWidth: last ? 0 : 1, borderBottomColor: palette.separator },
-        style,
-      ]}
-    >
-      <View style={styles.rowText}>
-        <Text variant="body-regular" style={{ color: palette.text }}>
-          {label}
-        </Text>
-        {description ? (
-          <Text variant="body-2-regular" style={{ color: palette.textSecondary }}>
-            {description}
-          </Text>
-        ) : null}
-      </View>
-      {children}
-    </View>
-  );
 }
 
 /** Muted 13px heading above a card ("Pull Requests", "Notifications"). */
@@ -225,33 +106,6 @@ export function SettingsValueField({
 }
 
 const styles = StyleSheet.create({
-  card: {
-    width: '100%',
-    borderRadius: 16,
-    paddingLeft: 12,
-  },
-  row: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    columnGap: 16,
-    rowGap: 8,
-    minHeight: 52,
-    width: '100%',
-    paddingTop: 10,
-    paddingBottom: 10,
-    paddingRight: 10,
-  },
-  rowText: {
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: 0,
-    minWidth: SETTINGS_ROW_LABEL_MIN_WIDTH,
-  },
-  rowCompact: {
-    columnGap: 12,
-  },
   section: {
     width: '100%',
     gap: 8,

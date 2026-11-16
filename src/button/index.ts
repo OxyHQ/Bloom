@@ -1,27 +1,12 @@
-export {
-  Button,
-  PrimaryButton,
-  SecondaryButton,
-  IconButton,
-  GhostButton,
-  TextButton,
-  InverseButton,
-  OutlineButton,
-  LinkButton,
-  DestructiveButton,
-} from './Button';
-export { CloseButton } from './CloseButton';
-export { GlyphButton } from './GlyphButton';
+export { Button } from './Button';
 
 export type {
   ButtonProps,
+  ButtonGroupProps,
   ButtonSize,
   ButtonFocusEvent,
   ButtonHoverEvent,
   ButtonIconComponent,
   ButtonLinkTone,
   ButtonUnderline,
-  LinkButtonProps,
-  CloseButtonProps,
-  GlyphButtonProps,
 } from './types';

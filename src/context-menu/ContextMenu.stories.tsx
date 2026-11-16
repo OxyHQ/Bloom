@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -77,6 +77,7 @@ export const WithSelectionAndSubmenu: Story = {
   parameters: { controls: { disable: true } },
   render: function RichContextMenu() {
     const [pinned, setPinned] = useState(false);
+    const [folder, setFolder] = useState('Inbox');
     return (
       <View style={{ width: 320, maxWidth: '100%' }}>
         <ContextMenu>
@@ -93,12 +94,17 @@ export const WithSelectionAndSubmenu: Story = {
             <ContextMenuSub>
               <ContextMenuSubTrigger>Move to…</ContextMenuSubTrigger>
               <ContextMenuSubContent>
-                <ContextMenuItem inset>Archive</ContextMenuItem>
-                <ContextMenuItem inset>Spam</ContextMenuItem>
+                <ContextMenuItem inset onPress={() => setFolder('Archive')}>
+                  Archive
+                </ContextMenuItem>
+                <ContextMenuItem inset onPress={() => setFolder('Spam')}>
+                  Spam
+                </ContextMenuItem>
               </ContextMenuSubContent>
             </ContextMenuSub>
           </ContextMenuContent>
         </ContextMenu>
+        <Text>Folder: {folder}</Text>
       </View>
     );
   },
@@ -158,11 +164,8 @@ export const ColourTags: Story = {
             </Card>
           </ContextMenuTrigger>
           <ContextMenuContent>
-            <ContextMenuItem>Open</ContextMenuItem>
-            <ContextMenuItem>Get Info</ContextMenuItem>
             <ContextMenuSeparator />
             <ContextMenuSwatchRow accessibilityLabel="Tags" swatches={swatches} onSelect={toggle} />
-            <ContextMenuItem>Tags…</ContextMenuItem>
           </ContextMenuContent>
         </ContextMenu>
         {names.map((name) => (

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { fn } from 'storybook/test';
+import { useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 import { Text } from '../typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -250,14 +251,14 @@ export const TimeFields: Story = {
           />
           <TimeField
             value={null}
-            onChange={() => {}}
+            onChange={fn().mockName('End.onChange')}
             size="sm"
             accessibilityLabel="End"
             testID="tf-empty"
           />
           <TimeField
             value="12:00"
-            onChange={() => {}}
+            onChange={fn().mockName('Locked.onChange')}
             disabled
             accessibilityLabel="Locked"
             testID="tf-disabled"

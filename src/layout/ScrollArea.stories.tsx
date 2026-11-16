@@ -28,7 +28,11 @@ const LINES = Array.from(
 /** The content keeps its full width whether the bar is shown or not. */
 export const Default: Story = {
   render: (args) => (
-    <ScrollArea {...args} style={{ height: 260, width: 360 }} contentContainerClassName="gap-2 p-4">
+    <ScrollArea
+      {...args}
+      style={{ height: 260, width: 360, maxWidth: '100%' }}
+      contentContainerClassName="gap-2 p-4"
+    >
       {LINES.map((line) => (
         <Text key={line} variant="body-regular">
           {line}
@@ -41,7 +45,7 @@ export const Default: Story = {
 /** `scroll` shows it while scrolling, `hover` over the area, `always` whenever it can scroll. */
 export const Modes: Story = {
   render: () => (
-    <View style={{ flexDirection: 'row', gap: 16, padding: 16 }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: '100%', gap: 16, padding: 16 }}>
       {(['scroll', 'hover', 'always', 'never'] as ScrollAreaScrollbar[]).map((mode) => (
         <View key={mode} style={{ gap: 8 }}>
           <Text variant="body-2-medium">{mode}</Text>
@@ -64,7 +68,7 @@ export const Modes: Story = {
 
 export const Horizontal: Story = {
   render: (args) => (
-    <ScrollArea {...args} horizontal style={{ height: 120, width: 360 }}>
+    <ScrollArea {...args} horizontal style={{ height: 120, width: 360, maxWidth: '100%' }}>
       <View style={{ flexDirection: 'row', gap: 12, padding: 16 }}>
         {Array.from({ length: 14 }, (_, i) => (
           <View
@@ -79,7 +83,7 @@ export const Horizontal: Story = {
 
 export const Sizes: Story = {
   render: () => (
-    <View style={{ flexDirection: 'row', gap: 16, padding: 16 }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: '100%', gap: 16, padding: 16 }}>
       {(['sm', 'md'] as const).map((size) => (
         <ScrollArea
           key={size}

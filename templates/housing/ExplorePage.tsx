@@ -3,7 +3,7 @@ import { View, type LayoutChangeEvent } from 'react-native';
 
 import { AppShellPanel, AppShellPanels, useAppShellPanel } from '../../src/app-shell';
 import { ScrollArea, useBottomEdgeInset } from '../../src/layout';
-import { Button, InverseButton } from '../../src/button';
+import { Button } from '../../src/button';
 import { resolveButtonRamps } from '../../src/button/shared';
 import { CategoryBar } from '../../src/category-bar';
 import { useDialogControl } from '../../src/dialog';
@@ -465,14 +465,17 @@ function PanelViewToggle({ map, onPress }: { map: boolean; onPress: () => void }
         zIndex: Z_INDEX.floating,
       }}
     >
-      <InverseButton
+      <Button
+        appearance="solid"
+        tone="neutral"
+        inverted
         size="lg"
         leadingIcon={map ? RiListUnordered : RiMap2Line}
         onPress={onPress}
         testID="housing-map-toggle"
       >
         {map ? 'Show list' : 'Show map'}
-      </InverseButton>
+      </Button>
     </View>
   );
 }

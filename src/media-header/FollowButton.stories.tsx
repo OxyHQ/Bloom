@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import { ListItem } from '../list';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { fn } from 'storybook/test';
 import { FollowButton } from './MediaActionBar';
-import { ContactRow } from '../chat-people';
 import { Button } from '../button';
 import { Text } from '../typography';
 import { defaultAvatarSource } from '../avatar/default-avatar';
@@ -65,14 +65,9 @@ export const ColorComparison: Story = {
           <Text variant="headline-semibold">
             {tone === 'support' ? 'Secondary' : 'Tertiary · FAB color'}
           </Text>
-          <ContactRow
-            id={`${tone}-text`}
-            name="David Revoy"
-            subtitle="@davidrevoy"
-            avatar={defaultAvatarSource}
-            size="sm"
-            horizontalInset={0}
-            trailingSlot={
+          <ListItem
+            person={{ name: 'David Revoy', subtitle: '@davidrevoy', avatar: defaultAvatarSource }}
+            trailing={
               <InteractiveButton
                 {...args}
                 tone={tone}
@@ -82,14 +77,13 @@ export const ColorComparison: Story = {
               />
             }
           />
-          <ContactRow
-            id={`${tone}-icon`}
-            name="J L Westover"
-            subtitle="@mrlovenstein"
-            avatar={defaultAvatarSource}
-            size="sm"
-            horizontalInset={0}
-            trailingSlot={
+          <ListItem
+            person={{
+              name: 'J L Westover',
+              subtitle: '@mrlovenstein',
+              avatar: defaultAvatarSource,
+            }}
+            trailing={
               <InteractiveButton
                 {...args}
                 tone={tone}
@@ -103,11 +97,6 @@ export const ColorComparison: Story = {
       ))}
     </View>
   ),
-};
-
-export const ColorComparisonDark: Story = {
-  ...ColorComparison,
-  globals: { theme: 'dark', colorPreset: 'olive' },
 };
 
 /** Public surface and label slots preserve measurement and toggle motion. */
@@ -133,7 +122,7 @@ export const Styled: Story = {
         <FollowButton
           {...args}
           following={false}
-          onFollowChange={() => {}}
+          onFollowChange={fn().mockName('FollowButton.onFollowChange')}
           testID="default-follow"
         />
         <Button onPress={() => setLoading((value) => !value)}>Toggle loading</Button>

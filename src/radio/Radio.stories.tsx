@@ -1,11 +1,11 @@
 import { useArgs } from 'storybook/preview-api';
-import React, { useState } from 'react';
+import { fn } from 'storybook/test';
+import { useState } from 'react';
 import { View } from 'react-native';
 import { Text } from '../typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Radio, RadioCard, RadioGroup, RadioChip } from './index';
-import { useTheme } from '../theme/use-theme';
 
 const meta: Meta<typeof RadioGroup> = {
   id: 'base-radio',
@@ -97,7 +97,7 @@ export const StandaloneItems: Story = {
   },
 };
 
-const noop = () => {};
+const reportSelection = fn().mockName('Static radio specimen selected');
 
 /**
  * Every size against every state, for side-by-side comparison.
@@ -106,11 +106,8 @@ const noop = () => {};
 export const Matrix: Story = {
   parameters: { controls: { disable: true } },
   render: function RadioMatrix() {
-    const theme = useTheme();
     return (
-      <View
-        style={{ gap: 16, padding: 16, maxWidth: '100%', backgroundColor: theme.colors.background }}
-      >
+      <View style={{ gap: 16, padding: 16, maxWidth: '100%' }}>
         {(['sm', 'md', 'lg'] as const).map((size) => (
           <View
             key={size}
@@ -120,24 +117,30 @@ export const Matrix: Story = {
               size={size}
               value="a"
               checked={false}
-              onValueChange={noop}
+              onValueChange={reportSelection}
               accessibilityLabel="Unselected"
             />
             <Radio
               size={size}
               value="b"
               checked
-              onValueChange={noop}
+              onValueChange={reportSelection}
               accessibilityLabel="Selected"
             />
-            <Radio size={size} value="c" checked onValueChange={noop} label="Option A" />
-            <Radio size={size} value="d" checked={false} onValueChange={noop} label="Option B" />
+            <Radio size={size} value="c" checked onValueChange={reportSelection} label="Option A" />
+            <Radio
+              size={size}
+              value="d"
+              checked={false}
+              onValueChange={reportSelection}
+              label="Option B"
+            />
             <Radio
               size={size}
               value="e"
               checked={false}
               disabled
-              onValueChange={noop}
+              onValueChange={reportSelection}
               label="Disabled"
             />
             <Radio
@@ -145,7 +148,7 @@ export const Matrix: Story = {
               value="f"
               checked
               disabled
-              onValueChange={noop}
+              onValueChange={reportSelection}
               label="Disabled checked"
             />
           </View>
@@ -185,7 +188,6 @@ export const Sizes: Story = {
 export const Cards: Story = {
   parameters: { controls: { disable: true } },
   render: function CardsStory() {
-    const theme = useTheme();
     const [value, setValue] = useState('pro');
     return (
       <View
@@ -193,7 +195,6 @@ export const Cards: Story = {
           width: 400,
           maxWidth: '100%',
           padding: 16,
-          backgroundColor: theme.colors.background,
         }}
       >
         <RadioGroup

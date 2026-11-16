@@ -3,7 +3,7 @@ import { type ReactNode, useCallback, useContext, useEffect, useMemo, useState }
 import { Platform, View } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { useAppShell, useAppShellPanel } from '../app-shell/hooks';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { Button } from '../button';
 import { PageHeader } from '../page-header/PageHeader';
 import { RiCodeSLine } from '../icons/remix/RiCodeSLine';
 import { RiMenuLine } from '../icons/remix/RiMenuLine';
@@ -25,28 +25,28 @@ import type { AiChatHeaderProps, AiChatMobileHeaderProps, AiChatShellProps } fro
 function ShellNavButton({ shell }: { shell: AiChatShellState }) {
   if (!shell.navCollapsed || !shell.hasNav) return null;
   return (
-    <ButtonGroup>
-      <ButtonGroupItem
+    <Button.Group>
+      <Button
         iconOnly
         leadingIcon={RiMenuLine}
         accessibilityLabel={shell.labels.openNavigation}
         onPress={shell.openNav}
       />
-    </ButtonGroup>
+    </Button.Group>
   );
 }
 
 function ShellPanelButton({ shell }: { shell: AiChatShellState }) {
   if (!shell.hasPanel) return null;
   return (
-    <ButtonGroup>
-      <ButtonGroupItem
+    <Button.Group>
+      <Button
         iconOnly
         leadingIcon={shell.panelIcon}
         accessibilityLabel={shell.labels.openPanel(shell.panelLabel)}
         onPress={shell.openPanel}
       />
-    </ButtonGroup>
+    </Button.Group>
   );
 }
 

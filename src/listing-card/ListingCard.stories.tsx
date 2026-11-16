@@ -1,5 +1,7 @@
+import { BloomImage as Image } from '../image';
+import { fn } from 'storybook/test';
 import React, { useState } from 'react';
-import { Image, View } from 'react-native';
+import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RiHeart3Line, RiMapPinLine, RiSuitcaseLine } from '../icons/remix';
@@ -136,12 +138,9 @@ function useSaved() {
 }
 
 function Page({ children, width }: { children: React.ReactNode; width?: number }) {
-  const theme = useTheme();
   return (
-    <View style={{ minHeight: '100%', backgroundColor: theme.colors.background, padding: 24 }}>
-      <View style={{ width: width ?? '100%', maxWidth: '100%', alignSelf: 'center' }}>
-        {children}
-      </View>
+    <View style={{ width: '100%', maxWidth: width, alignSelf: 'center', padding: 24 }}>
+      {children}
     </View>
   );
 }
@@ -169,22 +168,6 @@ function StayGrid({ width, loading = false }: { width?: number; loading?: boolea
 
 /** Eight stays in the responsive grid: a badge, an unrated stay, discounts, a total, saved hearts. */
 export const Grid: Story = {
-  render: () => <StayGrid />,
-};
-
-/** The grid in a 375 frame — one column. */
-export const Narrow: Story = {
-  render: () => <StayGrid width={375} />,
-};
-
-/** The grid at 1440 — four columns. */
-export const Wide: Story = {
-  render: () => <StayGrid width={1440} />,
-};
-
-/** The grid, forced dark. */
-export const Dark: Story = {
-  globals: { theme: 'dark' },
   render: () => <StayGrid />,
 };
 
@@ -224,7 +207,7 @@ export const Horizontal: Story = {
                   {...stay}
                   layout="horizontal"
                   testID={`h${width}-${id}`}
-                  onPress={() => undefined}
+                  onPress={fn().mockName('onPress')}
                   favorite={saved[id]}
                   onFavoriteChange={toggle(id)}
                 />
@@ -289,14 +272,14 @@ export const Wishlists: Story = {
           name="Coast weekends"
           description="12 saved"
           photos={photos('coast', 4)}
-          onPress={() => undefined}
+          onPress={fn().mockName('onPress')}
           testID="wish-4"
         />
         <WishlistCard
           name="Cabins"
           description="3 saved"
           photos={photos('cabin', 3)}
-          onPress={() => undefined}
+          onPress={fn().mockName('onPress')}
           testID="wish-3"
         />
         <WishlistCard
@@ -310,7 +293,7 @@ export const Wishlists: Story = {
           name="Someday"
           description="1 saved"
           photos={photos('someday', 1)}
-          onPress={() => undefined}
+          onPress={fn().mockName('onPress')}
           testID="wish-1"
         />
       </ListingCardGrid>
@@ -364,7 +347,7 @@ export const WishlistIdentity: Story = {
           photos={photos('coast', 4)}
           icon={RiHeart3Line}
           color="#E0516B"
-          onPress={() => undefined}
+          onPress={fn().mockName('onPress')}
           testID="ident-coast"
         />
         <WishlistCard
@@ -373,7 +356,7 @@ export const WishlistIdentity: Story = {
           photos={photos('work', 2)}
           icon={RiSuitcaseLine}
           color="#3E7BFA"
-          onPress={() => undefined}
+          onPress={fn().mockName('onPress')}
           testID="ident-work"
         />
         <WishlistCard
@@ -383,14 +366,14 @@ export const WishlistIdentity: Story = {
           icon={RiMapPinLine}
           empty={<RiMapPinLine width={28} height={28} fill="#FFFFFF" />}
           color="#7A5AF8"
-          onPress={() => undefined}
+          onPress={fn().mockName('onPress')}
           testID="ident-empty"
         />
         <WishlistCard
           name="No glyph, no colour"
           description="3 saved"
           photos={photos('plain', 3)}
-          onPress={() => undefined}
+          onPress={fn().mockName('onPress')}
           testID="ident-plain"
         />
       </ListingCardGrid>

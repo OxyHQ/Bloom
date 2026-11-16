@@ -1417,12 +1417,15 @@ describe('AppShell panels: the frame', () => {
           </AppShellPanel>
         </AppShell>,
       );
-      // The reveal shell keeps its page host mounted across widths, so the
-      // gutter frames the region's row rather than the page: measure the box
-      // around the region, which is the frame either way.
+      // A tablet rail sits flush; its page owns the gutter. Expanded sidebars
+      // keep the gutter on the row, while compact pages remain full bleed.
+      const pageInset = Number(
+        resolvedStyle(screen.getByTestId('shell-page').props.style).paddingTop ?? 0,
+      );
       expect([
         width,
-        framePadding(screen.getByTestId('shell-content', { includeHiddenElements: true })),
+        framePadding(screen.getByTestId('shell-content', { includeHiddenElements: true })) +
+          pageInset,
       ]).toEqual([width, outer]);
       screen.unmount();
     }

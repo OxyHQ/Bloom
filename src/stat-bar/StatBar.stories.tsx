@@ -1,4 +1,3 @@
-import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -40,19 +39,9 @@ export default meta;
 
 type Story = StoryObj<typeof StatBar>;
 
-export const Light: Story = {
+export const Default: Story = {
   parameters: { controls: { disable: true } },
-  globals: { theme: 'light' },
-  render: () => (
-    <View style={{ padding: 24, width: 320, maxWidth: '100%' }}>
-      <Demo />
-    </View>
-  ),
-};
 
-export const Dark: Story = {
-  parameters: { controls: { disable: true } },
-  globals: { theme: 'dark' },
   render: () => (
     <View style={{ padding: 24, width: 320, maxWidth: '100%' }}>
       <Demo />

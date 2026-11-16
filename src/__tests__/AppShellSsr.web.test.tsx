@@ -176,7 +176,7 @@ describe('AppShell server layout', () => {
     expect(probe?.textContent).toBe('ready');
   });
 
-  it('delivers header container insets in server HTML and adopts them without replacing the bar', async () => {
+  it('delivers standard header insets in server HTML and adopts them without replacing the bar', async () => {
     const app = (
       <BloomProvider fonts={false} ssrStyles="inline">
         <PageHeader title="Inbox" scrim="none" testID="server-header" />
@@ -186,10 +186,13 @@ describe('AppShell server layout', () => {
     const bar = host.querySelector('[data-bloom-page-header-bar]');
     const style = host.querySelector('[data-bloom-server-style="bloom-page-header-layout"]');
     expect(bar).not.toBeNull();
-    expect(style?.textContent).toContain('--bloom-page-header-inset: 16px');
+    expect(style?.textContent).toContain(
+      '--bloom-page-header-inset: calc(12px - var(--bloom-page-header-touch-inset, 0px))',
+    );
     expect(style?.textContent).toContain('padding-left: var(--bloom-page-header-inset) !important');
-    expect(style?.textContent).toContain('@container bloom-page-header (min-width: 640px)');
-    expect(style?.textContent).toContain('--bloom-page-header-inset: 24px');
+    expect(style?.textContent).toContain(
+      'padding-right: var(--bloom-page-header-inset) !important',
+    );
     const errors: unknown[] = [];
     await act(async () => {
       root = hydrateRoot(host, app, { onRecoverableError: (error) => errors.push(error) });

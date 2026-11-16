@@ -1,12 +1,12 @@
+import { fn } from 'storybook/test';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { ComposerPill } from '../composer-panel';
 import { Markdown } from '../markdown';
 import { Questionnaire, type QuestionnaireQuestion } from '../questionnaire';
-import { StyledView } from '../styles/styled-primitives';
+import { AiChatUserMessage } from '../ai-chat';
 import { useTheme } from '../theme/use-theme';
-import { Text } from '../typography';
 import {
   AgentProfile,
   AgentReply,
@@ -81,6 +81,7 @@ export const Conversation: StoryObj = {
     const { colors } = useTheme();
     const [asking, setAsking] = useState(true);
     const [draft, setDraft] = useState('');
+    const [sent, setSent] = useState<string[]>([]);
     return (
       <View
         style={{
@@ -92,26 +93,16 @@ export const Conversation: StoryObj = {
       >
         <View style={{ width: '100%', maxWidth: 640, flex: 1, paddingVertical: 16 }}>
           <View style={{ alignItems: 'center' }}>
-            <AgentProfile agents={TEAM} onPress={() => undefined} />
+            <AgentProfile agents={TEAM} onPress={fn().mockName('onPress')} />
           </View>
-          <StyledView
-            className="bg-background-primary-default"
-            style={{
-              alignSelf: 'flex-end',
-              marginTop: 16,
-              marginEnd: 12,
-              maxWidth: '80%',
-              borderRadius: 20,
-              padding: 12,
-            }}
-          >
-            <Text variant="body-regular">How do we make the launch land?</Text>
-          </StyledView>
+          <AiChatUserMessage style={{ paddingHorizontal: 12 }}>
+            How do we make the launch land?
+          </AiChatUserMessage>
           {TEAM.slice(0, 2).map((agent) => (
             <AgentReply
               key={agent.id}
               identity={<AgentReplyIdentity character={agent.avatar} name={agent.name} />}
-              actions={<AgentReplyActions onCopy={() => undefined} />}
+              actions={<AgentReplyActions onCopy={fn().mockName('onCopy')} />}
             >
               <AgentReplyBubble>
                 <Markdown>{ANSWERS[agent.id]!}</Markdown>
@@ -125,6 +116,11 @@ export const Conversation: StoryObj = {
           >
             {null}
           </AgentReply>
+          {sent.map((message, index) => (
+            <AiChatUserMessage key={index} style={{ paddingHorizontal: 12 }}>
+              {message}
+            </AiChatUserMessage>
+          ))}
           <View style={{ flex: 1 }} />
           <View style={{ paddingHorizontal: 12, gap: 8 }}>
             {asking ? (
@@ -134,7 +130,14 @@ export const Conversation: StoryObj = {
                 onDismiss={() => setAsking(false)}
               />
             ) : null}
-            <ComposerPill value={draft} onValueChange={setDraft} onSubmit={() => setDraft('')} />
+            <ComposerPill
+              value={draft}
+              onValueChange={setDraft}
+              onSubmit={() => {
+                if (draft.trim()) setSent((items) => [...items, draft]);
+                setDraft('');
+              }}
+            />
           </View>
         </View>
       </View>

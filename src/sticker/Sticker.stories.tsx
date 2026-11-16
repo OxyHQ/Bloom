@@ -1,4 +1,3 @@
-import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -91,7 +90,7 @@ export const Still: Story = {
 
 export const Sizes: Story = {
   render: () => (
-    <View style={{ flexDirection: 'row', gap: 16, alignItems: 'flex-end' }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16, alignItems: 'flex-end' }}>
       {[64, 96, 128, 192].map((size) => (
         <Sticker key={size} animation={ANIMATION} fallback={STILL} size={size} />
       ))}

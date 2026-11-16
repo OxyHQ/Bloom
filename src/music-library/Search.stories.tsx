@@ -1,5 +1,9 @@
+import { fn } from 'storybook/test';
 import React, { useState } from 'react';
-import { Image, View } from 'react-native';
+import { View } from 'react-native';
+import { BloomImage } from '../image';
+import { List } from '../list';
+import { EmptyState } from '../empty-state';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { useTheme } from '../theme/use-theme';
@@ -30,10 +34,6 @@ const TABS: SearchResultTab[] = [
   { value: 'all', label: 'All' },
   { value: 'songs', label: 'Songs' },
   { value: 'artists', label: 'Artists' },
-  { value: 'albums', label: 'Albums' },
-  { value: 'playlists', label: 'Playlists' },
-  { value: 'podcasts', label: 'Podcasts' },
-  { value: 'profiles', label: 'Profiles' },
 ];
 
 const RECENTS: RecentSearchEntry[] = [
@@ -90,51 +90,18 @@ function Heading({ children }: { children: string }) {
   );
 }
 
-/** A placeholder track row — the track list itself belongs to another family. */
-function SongRow({ song }: { song: (typeof SONGS)[number] }) {
-  const theme = useTheme();
-  return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-        paddingTop: 6,
-        paddingBottom: 6,
-        paddingLeft: 8,
-        paddingRight: 8,
-      }}
-    >
-      <Image
-        source={{ uri: img(song.id, 80) }}
-        style={{ width: 40, height: 40, borderRadius: 4 }}
-      />
-      <View style={{ flex: 1, minWidth: 0 }}>
-        <Text variant="body-medium" numberOfLines={1} style={{ color: theme.colors.text }}>
-          {song.title}
-        </Text>
-        <Text
-          variant="caption-1-regular"
-          numberOfLines={1}
-          style={{ color: theme.colors.textSecondary }}
-        >
-          {song.artist}
-        </Text>
-      </View>
-      <Text variant="body-2-regular" style={{ color: theme.colors.textSecondary }}>
-        {song.length}
-      </Text>
-    </View>
-  );
-}
-
 function SearchPage({ initialQuery }: { initialQuery: string }) {
   const [query, setQuery] = useState(initialQuery);
   const [browse, setBrowse] = useState(false);
   const [tab, setTab] = useState('all');
   const [recents, setRecents] = useState(RECENTS);
   const [playing, setPlaying] = useState(false);
-  const hasQuery = query.trim().length > 0;
+  const [activeSong, setActiveSong] = useState<string | null>(null);
+  const hasQuery = query.trim().length > 0 && !browse;
+  const matchingSongs = SONGS.filter((song) =>
+    `${song.title} ${song.artist}`.toLowerCase().includes(query.trim().toLowerCase()),
+  );
+  const artistMatches = 'lumen vale'.includes(query.trim().toLowerCase());
 
   return (
     <Canvas>
@@ -151,39 +118,77 @@ function SearchPage({ initialQuery }: { initialQuery: string }) {
         <>
           <SearchResultTabs tabs={TABS} value={tab} onValueChange={setTab} testID="tabs" />
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24 }}>
-            <View style={{ flexGrow: 1, flexBasis: 320, gap: 12 }}>
-              <Heading>Top result</Heading>
-              <TopResultCard
-                title="Lumen Vale"
-                kind="artist"
-                subtitle="4.2M monthly listeners"
-                cover={img('lumen-vale', 200)}
-                onPress={() => {}}
-                onPlayPress={() => setPlaying((p) => !p)}
-                playing={playing}
-                testID="top"
-              />
-            </View>
-            <View style={{ flexGrow: 1.4, flexBasis: 320, gap: 12 }}>
-              <Heading>Songs</Heading>
-              <View>
-                {SONGS.map((song) => (
-                  <SongRow key={song.id} song={song} />
-                ))}
+            {tab !== 'songs' && artistMatches && (
+              <View style={{ flexGrow: 1, flexBasis: 280, minWidth: 0, gap: 12 }}>
+                <Heading>Top result</Heading>
+                <TopResultCard
+                  title="Lumen Vale"
+                  kind="artist"
+                  subtitle="4.2M monthly listeners"
+                  cover={img('lumen-vale', 200)}
+                  onPress={() => setPlaying((value) => !value)}
+                  onPlayPress={() => setPlaying((p) => !p)}
+                  playing={playing}
+                  testID="top"
+                />
               </View>
-            </View>
+            )}
+            {tab !== 'artists' && matchingSongs.length > 0 && (
+              <View style={{ flexGrow: 1.4, flexBasis: 280, minWidth: 0, gap: 12 }}>
+                <Heading>Songs</Heading>
+                <List
+                  accessibilityLabel="Search songs"
+                  items={matchingSongs.map((song) => ({
+                    id: song.id,
+                    title: song.title,
+                    supporting: song.artist,
+                    leading: (
+                      <BloomImage
+                        source={{ uri: img(song.id, 80) }}
+                        style={{ width: 40, height: 40, borderRadius: 4 }}
+                      />
+                    ),
+                    trailing: <Text variant="caption-1-regular">{song.length}</Text>,
+                    active: activeSong === song.id,
+                    onPress: () => {
+                      setActiveSong(song.id);
+                      setPlaying(true);
+                    },
+                  }))}
+                />
+              </View>
+            )}
+            {((tab === 'artists' && !artistMatches) ||
+              (tab === 'songs' && matchingSongs.length === 0) ||
+              (tab === 'all' && !artistMatches && matchingSongs.length === 0)) && (
+              <EmptyState
+                title="No matching music"
+                description="Try Lumen Vale or Harbor Lights."
+              />
+            )}
           </View>
         </>
       ) : (
         <>
           <RecentSearches
             items={recents}
-            onItemPress={(item) => setQuery(item.title)}
+            onItemPress={(item) => {
+              setQuery(item.title);
+              setBrowse(false);
+            }}
             onRemove={(item) => setRecents((list) => list.filter((r) => r.id !== item.id))}
             onClearAll={() => setRecents([])}
             testID="recents"
           />
-          <BrowseGrid title="Browse all" items={GENRES} onItemPress={() => {}} testID="browse" />
+          <BrowseGrid
+            title="Browse all"
+            items={GENRES}
+            onItemPress={(item) => {
+              setQuery(item.title);
+              setBrowse(false);
+            }}
+            testID="browse"
+          />
         </>
       )}
     </Canvas>
@@ -214,7 +219,7 @@ export const Parts: Story = {
             value={b}
             onChangeText={setB}
             onClear={() => setB('')}
-            onBrowsePress={() => {}}
+            onBrowsePress={fn().mockName('SearchField.onBrowsePress')}
             browseActive
           />
         </View>
@@ -225,23 +230,23 @@ export const Parts: Story = {
             kind="album"
             subtitle="Lumen Vale"
             cover={img('paper-moons', 200)}
-            onPress={() => {}}
-            onPlayPress={() => {}}
+            onPress={fn().mockName('Paper Moons.onPress')}
+            onPlayPress={fn().mockName('Paper Moons.onPlayPress')}
             style={{ width: '100%', maxWidth: 420 }}
           />
           <TopResultCard
             title="Field Notes on Sound"
             kind="podcast"
             subtitle="Ines Marlow"
-            onPress={() => {}}
-            onPlayPress={() => {}}
+            onPress={fn().mockName('Field Notes on Sound.onPress')}
+            onPlayPress={fn().mockName('Field Notes on Sound.onPlayPress')}
             playing
             style={{ width: '100%', maxWidth: 420 }}
           />
           <TopResultCard
             title="maya.k"
             kind="profile"
-            onPress={() => {}}
+            onPress={fn().mockName('maya.k.onPress')}
             style={{ width: '100%', maxWidth: 420 }}
           />
         </View>
@@ -267,30 +272,4 @@ export const Parts: Story = {
       </Canvas>
     );
   },
-};
-
-export const Mobile: Story = {
-  render: () => (
-    <View style={{ width: '100%', maxWidth: 390 }}>
-      <SearchPage initialQuery="" />
-    </View>
-  ),
-};
-
-export const MobileResults: Story = {
-  render: () => (
-    <View style={{ width: '100%', maxWidth: 390 }}>
-      <SearchPage initialQuery="lumen" />
-    </View>
-  ),
-};
-
-export const Dark: Story = {
-  globals: { theme: 'dark' },
-  render: () => (
-    <>
-      <SearchPage initialQuery="lumen" />
-      <SearchPage initialQuery="" />
-    </>
-  ),
 };

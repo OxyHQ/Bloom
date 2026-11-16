@@ -1,3 +1,4 @@
+import { List } from '../list/index.web';
 import { Screen, ScreenScrollView } from '../screen/index.web';
 import { AppShell } from '../app-shell/index.web';
 import { ComposerLoader } from '../composer-loader/index.web';
@@ -18,6 +19,7 @@ import { bindAgentChat } from './bindAgentChat';
  * relative specifiers.
  */
 const parts = bindAgentChat({
+  List,
   Screen,
   ScreenScrollView,
   AppShell,

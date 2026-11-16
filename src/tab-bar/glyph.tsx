@@ -12,7 +12,7 @@
  */
 import { View } from 'react-native';
 
-import { applyIconColor } from '../frosted-icon-button/shared';
+import { applyIconColor } from '../icons/apply-icon-color';
 import { withGlyphBadge } from './glyph-badge';
 import type { TabBarGlyphProps } from './shared';
 

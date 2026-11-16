@@ -1,8 +1,3 @@
-export { ChannelPostCard } from './ChannelPostCard';
-export { ContactList } from './ContactList';
-export { ContactRow } from './ContactRow';
-export { MemberList } from './MemberList';
-export { MemberRow } from './MemberRow';
 export { NewGroupForm } from './NewGroupForm';
 export { SelectedChipsRow } from './SelectedChipsRow';
 export { StoryProgressBars } from './StoryProgressBars';
@@ -21,17 +16,9 @@ export {
   storyTapZone,
 } from './shared';
 export type {
-  ChannelPostCardProps,
-  ContactListLayout,
-  ContactListProps,
-  ContactRowProps,
-  ContactRowTrailing,
   ContactSection,
-  MemberListItem,
-  MemberListProps,
   MemberRole,
   MemberRoleLabels,
-  MemberRowProps,
   NewGroupFormLabels,
   NewGroupFormProps,
   PersonAvatarSource,

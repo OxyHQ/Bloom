@@ -1,10 +1,11 @@
+import { fn } from 'storybook/test';
+import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
 import React, { type ComponentRef, useState } from 'react';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { View, Text as TextForCounter } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from './Button';
-import { CloseButton } from './CloseButton';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+
 import { Card, CardBody, CardTitle, CardDescription } from '../card';
 import { LinkPreviewCard } from '../link-preview';
 import { BloomScope } from '../appearance';
@@ -35,7 +36,7 @@ const meta = {
     size: 'md',
     disabled: false,
     loading: false,
-    onPress: () => {},
+    onPress: fn().mockName('onPress'),
   },
   argTypes: {
     children: { control: 'text' },
@@ -131,7 +132,15 @@ export const CloseButtons: Story = {
   render: () => (
     <View style={{ flexDirection: 'row', gap: 16 }}>
       {(['xs', 'sm', 'md', 'lg'] as const).map((size) => (
-        <CloseButton key={size} size={size} accessibilityLabel="Close" />
+        <Button
+          appearance="outline"
+          tone="neutral"
+          iconOnly
+          icon={DismissActionIcon}
+          key={size}
+          size={({ '2xs': 18, xs: 20, sm: 24, md: 32, lg: 44 } as const)[size]}
+          accessibilityLabel="Close"
+        />
       ))}
     </View>
   ),
@@ -141,21 +150,17 @@ function PlaygroundGroup({ size }: { size: 'md' | 'sm' }) {
   const [checked, setChecked] = useState('Week');
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-      <ButtonGroup size={size} accessibilityLabel={`Range ${size}`}>
+      <Button.Group size={size} accessibilityLabel={`Range ${size}`}>
         {['Day', 'Week', 'Month'].map((label) => (
-          <ButtonGroupItem
-            key={label}
-            checked={checked === label}
-            onPress={() => setChecked(label)}
-          >
+          <Button key={label} pressed={checked === label} onPress={() => setChecked(label)}>
             {label}
-          </ButtonGroupItem>
+          </Button>
         ))}
-      </ButtonGroup>
-      <ButtonGroup size={size} accessibilityLabel={`Actions ${size}`}>
-        <ButtonGroupItem leadingIcon={RiAddLine}>Add</ButtonGroupItem>
-        <ButtonGroupItem disabled>Disabled</ButtonGroupItem>
-      </ButtonGroup>
+      </Button.Group>
+      <Button.Group size={size} accessibilityLabel={`Actions ${size}`}>
+        <Button leadingIcon={RiAddLine}>Add</Button>
+        <Button disabled>Disabled</Button>
+      </Button.Group>
     </div>
   );
 }
@@ -203,7 +208,7 @@ export const MaterialPlayground: Story = {
           url="https://oxy.so"
           title="Oxy"
           description="Link preview inherits the Card material."
-          onPress={() => {}}
+          onPress={fn().mockName('onPress')}
           style={{ width: 280, maxWidth: '100%' }}
         />
       </div>
@@ -467,3 +472,15 @@ function IntrinsicWrappingExample() {
   );
 }
 export const IntrinsicWrapping: Story = { render: () => <IntrinsicWrappingExample /> };
+
+/** Five ordinary controls also provide the material-only WebKit frame-delivery fixture. */
+export const MaterialRow: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+      {['Today', 'Week', 'Month', 'Year', 'All'].map((label) => (
+        <Button key={label}>{label}</Button>
+      ))}
+    </View>
+  ),
+};

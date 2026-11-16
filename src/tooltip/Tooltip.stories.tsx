@@ -1,6 +1,7 @@
 import { useArgs } from 'storybook/preview-api';
-import React, { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { useState } from 'react';
+import { View } from 'react-native';
+import { Button } from '../button';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Tooltip, TooltipTrigger, TooltipTextBubble } from './index';
@@ -35,13 +36,13 @@ export const Basic: Story = {
       <View style={{ width: 320, maxWidth: '100%', paddingTop: 60, alignItems: 'flex-start' }}>
         <Tooltip visible={visible} onVisibleChange={setVisible}>
           <TooltipTrigger>
-            <Pressable
+            <Button
               onHoverIn={() => setVisible(true)}
               onHoverOut={() => setVisible(false)}
               onPress={() => setVisible((value) => !value)}
             >
-              <Text>Hover or tap me</Text>
-            </Pressable>
+              Hover or tap me
+            </Button>
           </TooltipTrigger>
           <TooltipTextBubble>Copies the link to your clipboard</TooltipTextBubble>
         </Tooltip>
@@ -69,9 +70,9 @@ export const Position: Story = {
             onVisibleChange={(next) => setOpen(next ? position : null)}
           >
             <TooltipTrigger>
-              <Pressable onPress={() => setOpen(open === position ? null : position)}>
-                <Text>position=&quot;{position}&quot;</Text>
-              </Pressable>
+              <Button onPress={() => setOpen(open === position ? null : position)}>
+                position=&quot;{position}&quot;
+              </Button>
             </TooltipTrigger>
             <TooltipTextBubble>Anchored {position}</TooltipTextBubble>
           </Tooltip>
@@ -90,9 +91,7 @@ export const MultiLine: Story = {
       <View style={{ width: 320, maxWidth: '100%', paddingTop: 60, alignItems: 'flex-start' }}>
         <Tooltip visible={visible} onVisibleChange={setVisible}>
           <TooltipTrigger>
-            <Pressable onPress={() => setVisible((value) => !value)}>
-              <Text>Toggle</Text>
-            </Pressable>
+            <Button onPress={() => setVisible((value) => !value)}>Toggle</Button>
           </TooltipTrigger>
           <TooltipTextBubble>
             {'Shift + Enter'}
@@ -190,7 +189,7 @@ export const Playground: StoryObj<typeof Tooltip> = {
         <View style={{ paddingVertical: 72, alignItems: 'center' }}>
           <Tooltip {...args} onVisibleChange={(visible) => updateArgs({ visible })}>
             <TooltipTrigger>
-              <Pressable
+              <Button
                 accessibilityRole="button"
                 accessibilityLabel="Preview tooltip"
                 onHoverIn={() => updateArgs({ visible: true })}
@@ -199,8 +198,8 @@ export const Playground: StoryObj<typeof Tooltip> = {
                 onBlur={() => updateArgs({ visible: false })}
                 onPress={() => updateArgs({ visible: !args.visible })}
               >
-                <Text>Hover, focus or tap</Text>
-              </Pressable>
+                Hover, focus or tap
+              </Button>
             </TooltipTrigger>
             <TooltipTextBubble>Copies the link to your clipboard</TooltipTextBubble>
           </Tooltip>

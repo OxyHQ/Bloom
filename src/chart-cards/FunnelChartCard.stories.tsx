@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -41,8 +41,8 @@ const RANGES: FunnelRange[] = [
   { id: '90d', label: 'Last 90 days', stages: stagesOf([2510, 1380, 902, 455]), delta: -0.018 },
 ];
 
-const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
+const Frame = ({ children }: { children: React.ReactNode }) => (
+  <View style={{ width: '100%', maxWidth: 760, gap: 24 }}>{children}</View>
 );
 
 /** Default look: S-curve bands with layered edges, a period dropdown, one tile per stage. */
@@ -119,7 +119,7 @@ export const ManyStages: Story = {
     },
   },
   render: (args) => (
-    <Frame width={360}>
+    <Frame>
       <FunnelChartCard
         {...args}
         format={(v) => (v >= 1000 ? `${Math.round(v / 100) / 10}K` : String(v))}

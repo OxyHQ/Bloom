@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { fn } from 'storybook/test';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -147,7 +148,9 @@ export const Removable: Story = {
   render: function RemovableChips() {
     const [tags, setTags] = useState(['design', 'react-native', 'accessibility']);
     return (
-      <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', width: 380 }}>
+      <View
+        style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', width: '100%', maxWidth: 380 }}
+      >
         {tags.map((tag) => (
           <Chip
             key={tag}
@@ -182,10 +185,10 @@ export const DoesNotShrink: Story = {
 export const Disabled: Story = {
   render: () => (
     <View style={{ flexDirection: 'row', gap: 8 }}>
-      <Chip disabled onPress={() => {}}>
+      <Chip disabled onPress={fn().mockName('onPress')}>
         Disabled
       </Chip>
-      <Chip disabled variant="solid" color="primary" onPress={() => {}}>
+      <Chip disabled variant="solid" color="primary" onPress={fn().mockName('onPress')}>
         Disabled
       </Chip>
     </View>
@@ -255,13 +258,13 @@ export const Inverted: Story = {
           ))}
         </View>
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Chip size="xl" variant="inverted" onPress={() => {}}>
+          <Chip size="xl" variant="inverted" onPress={fn().mockName('onPress')}>
             Rest
           </Chip>
-          <Chip size="xl" variant="inverted" selected onPress={() => {}}>
+          <Chip size="xl" variant="inverted" selected onPress={fn().mockName('onPress')}>
             Selected
           </Chip>
-          <Chip size="xl" variant="inverted" disabled onPress={() => {}}>
+          <Chip size="xl" variant="inverted" disabled onPress={fn().mockName('onPress')}>
             Disabled
           </Chip>
         </View>
@@ -291,7 +294,7 @@ export const Row: Story = {
       'Shared',
     ];
     return (
-      <View style={{ width: 320 }}>
+      <View style={{ width: '100%', maxWidth: 480 }}>
         <ChipRow accessibilityLabel="Library filters" testID="chip-row">
           {OPTIONS.map((label) => (
             <Chip
@@ -319,13 +322,13 @@ export const Row: Story = {
 export const Roles: Story = {
   render: () => (
     <View style={{ flexDirection: 'row', gap: 8 }}>
-      <Chip size="xl" role="button" selected onPress={() => {}}>
+      <Chip size="xl" role="button" selected onPress={fn().mockName('onPress')}>
         button
       </Chip>
-      <Chip size="xl" role="radio" selected onPress={() => {}}>
+      <Chip size="xl" role="radio" selected onPress={fn().mockName('onPress')}>
         radio
       </Chip>
-      <Chip size="xl" role="tab" selected onPress={() => {}}>
+      <Chip size="xl" role="tab" selected onPress={fn().mockName('onPress')}>
         tab
       </Chip>
     </View>

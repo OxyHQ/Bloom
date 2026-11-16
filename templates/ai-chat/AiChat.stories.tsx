@@ -35,14 +35,3 @@ export const Default: Story = {};
 export const LandingPageDesign: Story = {
   args: { defaultScenario: 'landing-page-design' },
 };
-
-/** Reference views of the shared tonal surfaces, using the real app composition. */
-export const TonalOlive: Story = {
-  ...Default,
-  globals: { theme: 'dark', colorPreset: 'olive' },
-};
-
-export const TonalCopper: Story = {
-  ...Default,
-  globals: { theme: 'dark', colorPreset: 'copper-field' },
-};

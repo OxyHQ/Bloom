@@ -1,7 +1,7 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
-import { GlyphButton } from '../button';
+import { Button } from '../button';
 import { RiInformationLine } from '../icons/remix/RiInformationLine';
 import { useMessages } from '../locale/messages';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
@@ -99,9 +99,12 @@ function PriceSummaryLineComponent({
         {info != null ? (
           <Popover>
             <PopoverTrigger asChild>
-              <GlyphButton
+              <Button
+                appearance="plain"
+                tone="neutral"
+                iconOnly
                 size={PRICE_INFO_SIZE}
-                glyphSize={PRICE_INFO_GLYPH}
+                iconSize={PRICE_INFO_GLYPH}
                 icon={RiInformationLine}
                 color={paint.textTertiary}
                 hoverColor={paint.text}

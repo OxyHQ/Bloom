@@ -190,7 +190,8 @@ export function createAppShell(
     const windowChrome = appWindow != null && !appWindow.fullscreen;
     const room = windowChrome && windowControls === 'auto' ? appWindow.metrics.room : null;
     const navigationShown = placement !== 'bottom' && (sidebar != null || navigation != null);
-    const navigationInset = docked ? 0 : 12;
+    const navigationFlush = docked || placement === 'rail';
+    const navigationInset = navigationFlush ? 0 : 12;
     const navRoom = room != null && navigationShown ? Math.max(0, room.top - navigationInset) : 0;
     const headerRoom = room != null && !navigationShown ? room.leading : 0;
     const screenHeader =
@@ -216,8 +217,8 @@ export function createAppShell(
               minHeight: 0,
               paddingTop: navigationInset,
               paddingBottom: navigationInset,
-              paddingLeft: docked ? 0 : navigationPadding,
-              paddingRight: docked ? 0 : navigationPadding,
+              paddingLeft: navigationFlush ? 0 : navigationPadding,
+              paddingRight: navigationFlush ? 0 : navigationPadding,
               gap: 12,
             }}
           >
@@ -282,7 +283,10 @@ export function createAppShell(
                     width: '100%',
                     maxWidth: contentMaxWidth === 'none' ? undefined : contentMaxWidth,
                     alignSelf: 'center',
-                    padding: contentPadding,
+                    paddingVertical: contentPadding,
+                    paddingInlineStart:
+                      navigationShown && placement === 'rail' ? 0 : contentPadding,
+                    paddingInlineEnd: contentPadding,
                     gap: 16,
                   }}
                 >

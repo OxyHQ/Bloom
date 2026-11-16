@@ -1,10 +1,9 @@
 import React from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Avatar } from '../avatar';
 import { Button } from '../button';
-import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { UserHoverCard } from '../user-hover-card';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './index';
@@ -34,17 +33,6 @@ const PROFILE = {
   verified: true,
 };
 
-function Mention({ children }: { children: string }) {
-  const theme = useTheme();
-  return (
-    <Pressable onPress={() => {}} accessibilityRole="link">
-      <Text variant="body-medium" style={{ color: theme.colors.primary }}>
-        {children}
-      </Text>
-    </Pressable>
-  );
-}
-
 function FollowButton() {
   const [following, setFollowing] = React.useState(false);
   return (
@@ -72,10 +60,12 @@ export const UserProfile: Story = {
       <Text variant="body-regular">Posted by</Text>
       <HoverCard>
         <HoverCardTrigger asChild>
-          <Mention>@nate</Mention>
+          <Button appearance="plain" accessibilityRole="link">
+            @nate
+          </Button>
         </HoverCardTrigger>
         <HoverCardContent label="Nate Isern">
-          <UserHoverCard {...PROFILE} action={<FollowButton />} onPressProfile={() => {}} />
+          <UserHoverCard {...PROFILE} action={<FollowButton />} />
         </HoverCardContent>
       </HoverCard>
     </View>
@@ -124,7 +114,9 @@ export const LoadOnOpen: Story = {
         <Text variant="body-regular">Reply from</Text>
         <HoverCard onOpenChange={onOpenChange}>
           <HoverCardTrigger asChild>
-            <Mention>@nate</Mention>
+            <Button appearance="plain" accessibilityRole="link">
+              @nate
+            </Button>
           </HoverCardTrigger>
           <HoverCardContent label="Nate Isern">
             <UserHoverCard {...PROFILE} loading={!loaded} action={<FollowButton />} />
@@ -162,7 +154,9 @@ export const LoadsWhileClosing: Story = {
         <Text variant="body-regular">Reply from</Text>
         <HoverCard onOpenChange={onOpenChange}>
           <HoverCardTrigger asChild>
-            <Mention>@nate</Mention>
+            <Button appearance="plain" accessibilityRole="link">
+              @nate
+            </Button>
           </HoverCardTrigger>
           <HoverCardContent label="Nate Isern">
             <UserHoverCard {...PROFILE} loading={!loaded} action={<FollowButton />} />
@@ -179,7 +173,9 @@ export const Prose: Story = {
     <View style={{ padding: 80 }}>
       <HoverCard openDelay={200}>
         <HoverCardTrigger asChild>
-          <Mention>What is Bloom?</Mention>
+          <Button appearance="plain" accessibilityRole="link">
+            What is Bloom?
+          </Button>
         </HoverCardTrigger>
         <HoverCardContent label="About Bloom" align="start">
           <View style={{ width: 256, gap: 6 }}>
@@ -197,11 +193,13 @@ export const Prose: Story = {
 /** `side` is a preference: near the bottom of the viewport the card flips up. */
 export const Placement: Story = {
   render: () => (
-    <View style={{ padding: 80, flexDirection: 'row', gap: 32 }}>
+    <View style={{ width: '100%', padding: 80, flexDirection: 'row', flexWrap: 'wrap', gap: 32 }}>
       {(['top', 'right', 'bottom', 'left'] as const).map((side) => (
         <HoverCard key={side} openDelay={100}>
           <HoverCardTrigger asChild>
-            <Mention>{side}</Mention>
+            <Button appearance="plain" accessibilityRole="link">
+              {side}
+            </Button>
           </HoverCardTrigger>
           <HoverCardContent label={side} side={side}>
             <Text variant="body-regular">Opens on the {side}</Text>

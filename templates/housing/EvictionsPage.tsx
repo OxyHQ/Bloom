@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 
 import { Admonition, AdmonitionText } from '../../src/admonition';
-import { Button, LinkButton } from '../../src/button';
+import { prompt } from '../../src/surfaces';
+import { Button } from '../../src/button';
 import { EvictionReportCard, EvictionTimeline } from '../../src/eviction';
 import { RiAddLine, RiArrowDownSLine, RiArrowUpSLine } from '../../src/icons/remix';
 import {
@@ -21,8 +22,6 @@ import {
   webSticky,
 } from './HousingHeader';
 
-const noop = () => undefined;
-
 /**
  * Community eviction reports: upcoming and past, one card expanded with its
  * case history (beside the list from `lg`), and the privacy note that explains
@@ -35,7 +34,32 @@ export function EvictionsPage() {
   const [expanded, setExpanded] = useState<string | null>('almond');
   const [attending, setAttending] = useState<Record<string, boolean>>({ almond: true });
 
-  const shown = REPORTS.filter((report) => report.past === (tab === 'past'));
+  const [reports, setReports] = useState(REPORTS);
+  const addReport = async () => {
+    const area = await prompt({
+      title: 'Draft an eviction report',
+      description: 'Use a neighbourhood only. This draft stays in the demo.',
+      confirmLabel: 'Add draft',
+    });
+    if (!area?.trim()) return;
+    const id = `draft-${Date.now()}`;
+    setReports((all) => [
+      {
+        id,
+        area: area.trim(),
+        date: 'Date to be confirmed',
+        status: 'scheduled',
+        past: false,
+        verified: false,
+        description: 'Draft awaiting details and community review.',
+      },
+      ...all,
+    ]);
+    setTab('upcoming');
+    setExpanded(null);
+  };
+
+  const shown = reports.filter((report) => report.past === (tab === 'past'));
   const open = shown.find((report) => report.id === expanded);
 
   const history = (
@@ -77,7 +101,7 @@ export function EvictionsPage() {
               Reported by neighbours and housing groups. Show up, share, or offer support.
             </Text>
           </View>
-          <Button leadingIcon={RiAddLine} onPress={noop} tone="accent" appearance="solid">
+          <Button leadingIcon={RiAddLine} onPress={addReport} tone="accent" appearance="solid">
             Report an eviction
           </Button>
         </View>
@@ -130,11 +154,10 @@ export function EvictionsPage() {
                     onAttendingChange={
                       active ? (next) => setAttending((a) => ({ ...a, [id]: next })) : undefined
                     }
-                    onShare={noop}
-                    onContactSupport={report.organisationsLabel ? noop : undefined}
                     testID={`housing-eviction-${id}`}
                   />
-                  <LinkButton
+                  <Button
+                    appearance="plain"
                     linkTone="secondary"
                     size="sm"
                     trailingIcon={isOpen ? RiArrowUpSLine : RiArrowDownSLine}
@@ -144,7 +167,7 @@ export function EvictionsPage() {
                     testID={`housing-eviction-${id}-toggle`}
                   >
                     {isOpen ? 'Hide case history' : 'Show case history'}
-                  </LinkButton>
+                  </Button>
                   {isOpen && !lg ? history : null}
                 </View>
               );

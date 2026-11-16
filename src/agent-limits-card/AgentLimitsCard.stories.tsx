@@ -1,4 +1,4 @@
-import React from 'react';
+import { fn } from 'storybook/test';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -97,7 +97,7 @@ export const States: Story = {
           limits={LIMITS}
           defaultExpanded
           testID="expanded"
-          onPlanPress={() => {}}
+          onPlanPress={fn().mockName('onPlanPress')}
         />
       </View>
     </View>
@@ -110,7 +110,11 @@ export const Sections: Story = {
   render: () => (
     <View style={{ maxWidth: '100%', gap: 24, width: 360 }}>
       <AgentLimitsCard context={CONTEXT} />
-      <AgentLimitsCard plan="Pro" limits={LIMITS.slice(0, 2)} onPlanPress={() => {}} />
+      <AgentLimitsCard
+        plan="Pro"
+        limits={LIMITS.slice(0, 2)}
+        onPlanPress={fn().mockName('onPlanPress')}
+      />
     </View>
   ),
 };

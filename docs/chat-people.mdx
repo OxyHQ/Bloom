@@ -8,13 +8,8 @@ order: 65
 
 ```tsx
 import {
-  ContactRow,
-  ContactList,
   SelectedChipsRow,
   NewGroupForm,
-  MemberRow,
-  MemberList,
-  ChannelPostCard,
   StoryViewer,
   StoryProgressBars,
 } from '@oxy.so/bloom/chat-people';
@@ -32,61 +27,42 @@ Bloom's own strings — "Add members", "Remove Ana Restrepo", "Story 2 of 5",
 role badges, the story controls — are localised via `BloomProvider locale`;
 each `labels` / `*Label` prop still wins.
 
-## `ContactRow`
+## People and indexed directories
+
+People use the shared list component:
 
 ```tsx
-<ContactRow id="ana" name="Ana Restrepo" subtitle="online" status="online" onPress={open} />
-<ContactRow id="ana" name="Ana Restrepo" selected={picked} onSelectedChange={pick} />
-<ContactRow id="ana" name="Ana Restrepo" actionLabel="Invite" onAction={invite} />
-```
-
-The trailing affordance is DERIVED from the handlers by default — a checkbox
-with `onSelectedChange`, an action button with `onAction`, nothing otherwise.
-`trailing` (`'none' | 'chevron' | 'checkbox' | 'action'`) overrides it, and
-`trailingSlot` replaces it with your own node.
-
-| prop                    | decides                                                 |
-| ----------------------- | -------------------------------------------------------- |
-| `status`                | the presence dot on the avatar (`chat-indicators`)        |
-| `subtitle`              | the quiet second line — a handle, a last-seen string      |
-| `actionDone`            | swaps the button for a quiet "Added" mark                 |
-| `size`                  | `'medium'` 44px avatar (default), `'small'` 36 for a picker |
-| `horizontalInset`       | Avatar/text inset, default `10`. Use `0` when the surrounding widget already provides its inset. |
-
-A single row outside a list — a suggestion card, a search result — imports
-the lightweight entry, which links `ContactRow` without the lists, the group
-form or the story viewer (Metro does not tree-shake barrel exports):
-
-```tsx
-import { ContactRow } from '@oxy.so/bloom/chat-people/contact-row';
-```
-
-### Selection is ONE target
-
-When the row is a checkbox row, the **row itself** carries `role="checkbox"` and
-`aria-checked`, and the mark inside it is drawn, not a Bloom `Checkbox`. Nesting
-one would put a second `role="checkbox"` inside the first — two hit areas that
-disagree about which the user meant, and a screen reader announcing the same
-control twice. The mark is a circle, not a square, so it is not mistaken for the
-settings checkbox it is not.
-
-## `ContactList`
-
-```tsx
-<ContactList
-  sections={[{ letter: 'A', contacts: [...] }, { letter: 'K', contacts: [...] }]}
-  activeLetter="A"
-  height={480}
-  onContactPress={open}
-  onJumpToLetter={(letter) => track(letter)}
+<ListItem
+  person={{name: user.name, avatar: user.avatar, subtitle: user.handle, status: user.status}}
+  checked={picked}
+  onCheckedChange={pick}
+  onPress={openProfile}
+  leading={<VerifiedAvatar user={user} />}
+  content={<UserName user={user} />}
 />
 ```
 
-Section headings PIN while their own rows scroll under them, through
-`stickyHeaderIndices` — react-native-web implements the same prop the native
-`ScrollView` does, so one spelling works on both platforms. `position: sticky`
-would pin on web and do nothing at all on native, which is the shape of bug
-nothing in jest can see.
+`leading`, `content` and `trailing` accept custom content or `null` to deliberately
+omit it. `person.name` and `subtitle` still provide the accessible name. The
+compact row stays 56px minimum with a 36px avatar, independently of control size.
+An optional `person.onAction` shows the localized Add button; `actionLabel`,
+`actionDone` and `actionDoneLabel` customize it. Selection uses the shared avatar
+checkbox and long-press behavior, with no nested checkbox inside another checkbox.
+
+```tsx
+<List
+  sections={sections.map(section => ({
+    id: section.letter, title: section.letter,
+    items: section.people.map(person => ({id:person.id,person,onPress:()=>open(person.id)})),
+  }))}
+  height={320}
+  sectionIndex={{activeId:'A',onJump:trackJump}}
+/>
+```
+
+`sectionIndex` scrolls to measured section offsets and reports the chosen id.
+Missing sections never trigger a jump. Use `items` for flat search results and
+omit the index; use `stickyHeaders={false}` for an unpinned results heading.
 
 **Sticky headings are OFF by default on Android; `stickyHeaders` opts in.** On
 Allo's Android release (RN 0.88, Fabric) the rows rendered unpainted until the
@@ -95,37 +71,11 @@ an `Animated.View` at `zIndex: 10` with a native-driven `translateY` (re-committ
 on Fabric through a debounced JS timer). An A–Z list puts one of those layered,
 animated wrappers between every few rows, and they are the suspected cause. The
 trade-off: on Android the letter heading scrolls away with its rows instead of
-pinning, so the A–Z rail (and `activeLetter`) is the only "where am I" cue. iOS
+pinning, so the A–Z rail (and `sectionIndex.activeId`) is the only "where am I" cue. iOS
 and web keep pinning; `stickyHeaders={false}` turns it off there too. **Still
 owed: a device run** confirming the rows paint with the wrappers gone (and
 whether opting back in reproduces it) — jest sees only the prop the ScrollView
 receives (`ContactListNative.test.tsx`).
-
-### Search results: `layout="flat"`
-
-```tsx
-<ContactList sections={[{ letter: '', contacts: matches }]} layout="flat" />
-<ContactList sections={sections} layout="flat" flatLabel="Results" />
-```
-
-Every contact of every non-empty section in ONE section, in the order given,
-under `flatLabel` or no heading at all. There is no A–Z rail (`showIndex`,
-`indexLetters`, `activeLetter` are ignored) and nothing is pinned: letters
-index a sorted directory, and a ranked list of matches is not one. Nothing
-matched draws `emptyState`.
-
-The rail down the right edge scrolls the list itself when it can (it measures
-each section with `onLayout`) and always reports the letter through
-`onJumpToLetter`, so an app driving a virtualised list gets what it needs. **A
-letter with no section does nothing** — a rail showing the whole alphabet over
-six sections must not jump to whatever happens to be nearest. It appears
-automatically for 2+ sections; `showIndex` forces it either way.
-
-`indexLetters` replaces the rail's contents; `CONTACT_ALPHABET` is A–Z plus `#`,
-with `#` LAST — it is the least-used target and the bottom of the rail is where
-the thumb naturally lands.
-
-Empty sections are dropped from the list and from the rail.
 
 ## `SelectedChipsRow`
 
@@ -168,68 +118,13 @@ accepting characters by then, so a warning that arrives at the limit is telling
 the user about something that has already happened. `nameCounterTone(length,
 max)` is exported.
 
-## `MemberRow` and `MemberList`
+## Members
 
-```tsx
-<MemberList
-  members={members}                 // { id, name, role?: 'owner' | 'admin' | 'member', subtitle? }
-  title="412 members"
-  search={query}
-  onSearchChange={setQuery}
-  onAddMembers={openPicker}
-  onPromote={promote}
-  onRestrict={restrict}
-  onRemove={remove}
-/>
-```
+Render members with `List` / `ListItem`. Use `leading` for an avatar, `title` and
+`supporting` for identity, and `trailing` for a role badge or control. Include role
+words in the accessible `label`. Supply only permitted `actions`; omitted
+commands are not offered. Data filtering and pagination stay with the consumer.
 
-**The badge is a word, not a colour.** `owner` is amber and `admin` is the
-accent, but each also carries a glyph and its own text — a role told apart by
-hue alone is a role one reader in twelve cannot read at all, and "who can remove
-me from this group" is not a detail to encode in a tint. `roleLabel` overrides
-the text ("Creator").
-
-The per-member menu appears only when at least one of `onPromote` / `onRestrict`
-/ `onRemove` is given, and lists only the actions that exist. `trailingSlot`
-replaces it with your own.
-
-**The search field filters nothing.** Which members match "an" depends on how
-you normalise accents, whether you search handles and phone numbers, and whether
-the list is paged from a server — none of which a component can guess, and all
-of which it would get wrong silently. Pass the filtered `members`; `emptyState`
-covers the search that found nobody.
-
-## `ChannelPostCard`
-
-```tsx
-<ChannelPostCard
-  channelName="Coast Weather Watch"
-  channelAvatar={avatarUrl}
-  verified
-  pinned
-  time="12:41"
-  media={<Image source={{ uri }} style={{ width: '100%', height: 180 }} />}
-  views="12.4K"
-  forwards="318"
-  comments="128 comments"
-  onComments={openComments}
-  onShare={share}
-  reactions={<ReactionChips />}
->
-  Swell picks up after midnight along the whole north shore.
-</ChannelPostCard>
-```
-
-**Counts are strings.** "12.4K" is a locale decision and an abbreviation policy
-your feed already made; a card that formats numbers itself would disagree with
-the list it sits in, in the one place a reader compares them side by side.
-
-The eye and forward glyphs are decorative — the counts beside them are text, so
-the glyph would announce a second time. The names for both pairs live in
-`labels`, on the row that holds each pair.
-
-The footer buttons sit OUTSIDE the card's own press target, so opening a post
-and opening its comments are two targets rather than a race.
 
 ## `StoryViewer`
 
@@ -309,31 +204,10 @@ nothing to say anything was meant to happen.
 ## What jest cannot see here
 
 `src/__tests__/ChatPeople.test.tsx` reads the emitted DOM through the real
-react-native-web, so it pins the checkbox row's role and state, the rail's names
+react-native-web, so it pins the shared selection control's role and state, the rail's names
 and its refusal to jump to an absent letter, the flat layout, the role badges,
 and both pure functions; `ContactListNative.test.tsx` pins which platforms ask
 for sticky headings. It cannot see whether the sticky headings actually stick,
 whether Android paints the rows, whether the
 rail is reachable with a thumb, or whether the story chrome stays legible over a
 bright photo. Those are browser and device checks.
-
-### Application identity in ContactRow
-
-`avatarSlot` replaces `AvatarPresence`; `identitySlot` replaces the visible name/subtitle block. Both accept React nodes, including `null` to intentionally omit that content. The row retains its flexible identity column, trailing action and selection behavior. Provide an appropriately sized avatar; the defaults are36px for `small` and44px for `medium`.
-
-```tsx
-<ContactRow
-  id={user.id}
-  name={user.displayName}
-  subtitle={user.handle}
-  avatarSlot={<VerifiedAvatar user={user} />}
-  identitySlot={<UserName user={user} showFederation />}
-  onPress={openProfile}
-/>
-```
-
-`VerifiedAvatar` and `UserName` are application components. Keep `name` as plain text: it still supplies the accessible name for selection and action buttons; pressable rows also include `subtitle`. Slots preserve application verification, federation and placeholder logic without duplicating those policies inside Bloom. Keep slot content non-interactive when the row itself is an interactive target.
-
-## Inherited size
-
-`ContactRow` resolves an explicit `size`, then the nearest `BloomScope`, then its standalone `md` default. The existing two row/avatar recipes remain: inherited `xs` uses `sm`, and inherited `lg` uses `md`. Selection, action controls and domain content remain unchanged.

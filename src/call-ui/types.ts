@@ -1,6 +1,7 @@
+import type { ListCallData } from '../list/types';
 import type { ImageSource } from '../shapes';
 import type { ReactNode } from 'react';
-import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { PresenceStatus } from '../chat-indicators/types';
 import type { BloomIconComponent } from '../icons/icon-component';
@@ -428,28 +429,7 @@ export interface CallHistoryLabels {
   callBack: (name: string) => string;
 }
 
-export interface CallHistoryRowProps {
-  name: string;
-  avatar?: CallAvatarSource;
-  avatarVariant?: string;
-  direction: CallDirection;
-  mode?: CallMode;
-  /** The whole second line, PRE-FORMATTED — `"Yesterday, 18:40 · 4:32"`. */
-  meta: string;
-  /** Repeated calls in one entry — drawn as `"(3)"` after the name. */
-  count?: number;
-  onPress?: () => void;
-  /** Draws the trailing call-back button. */
-  onCallBack?: () => void;
-  /** Tints the row, for a selected entry in a two-pane layout. */
-  selected?: boolean;
-  labels?: Partial<CallHistoryLabels>;
-  style?: StyleProp<ViewStyle>;
-  textStyle?: StyleProp<TextStyle>;
-  testID?: string;
-}
-
-export interface CallHistoryItem extends Omit<CallHistoryRowProps, 'onPress' | 'onCallBack'> {
+export interface CallHistoryItem extends ListCallData {
   id: string;
 }
 
@@ -459,19 +439,4 @@ export interface CallHistorySection {
   /** The day heading — `"Today"`, `"Last week"`. Pre-formatted. */
   title: string;
   items: readonly CallHistoryItem[];
-}
-
-export interface CallHistoryListProps {
-  sections: readonly CallHistorySection[];
-  onItemPress?: (id: string) => void;
-  onCallBack?: (id: string) => void;
-  /** Hairline between rows inside a section. Default true. */
-  divider?: boolean;
-  /** Drawn instead of the sections when every one of them is empty. */
-  emptyState?: ReactNode;
-  header?: ReactNode;
-  footer?: ReactNode;
-  labels?: Partial<CallHistoryLabels>;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
 }

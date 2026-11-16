@@ -1,3 +1,7 @@
+import { fn } from 'storybook/test';
+import { List, ListSelectionBar } from '../list';
+import { EmptyState } from '../empty-state';
+import { ListItem } from '../list';
 import type React from 'react';
 import { useMemo, useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
@@ -8,16 +12,12 @@ import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
 import { RiMailOpenLine } from '../icons/remix/RiMailOpenLine';
 import { RiSpamLine } from '../icons/remix/RiSpamLine';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
-import { ChatListItem } from '../chat-list';
 import { Chip } from '../chip';
 import { RiFileTextLine } from '../icons/remix/RiFileTextLine';
 import { Sidebar } from '../sidebar';
 import type { SidebarTree } from '../sidebar/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { MailList } from './MailList';
-import { MailRow } from './MailRow';
-import { MailSelectionBar } from './MailSelectionBar';
 import { groupMailByDay } from './shared';
 import type { MailAction, MailSummary, MailSwipeActions } from './types';
 
@@ -180,15 +180,22 @@ export const Inbox: Story = {
     const [selected, setSelected] = useState<string | undefined>('invoice');
     return (
       <Frame width={390}>
-        <MailList
-          sections={sections}
-          selectedId={selected}
-          onMailPress={setSelected}
-          rowSwipeActions={ROW_SWIPE_ACTIONS}
-          onMailAction={() => undefined}
-          onMailStarredChange={() => undefined}
-          accessibilityLabel="Inbox"
-          testID="inbox"
+        <List
+          sections={sections.map((section) => ({
+            id: section.key,
+            title: section.title,
+            items: section.mails.map((mail) => ({
+              id: mail.id,
+              mail: { ...mail, onStarredChange: fn().mockName('onStarredChange') },
+              active: mail.id === selected,
+              onPress: () => setSelected(mail.id),
+              onAction: fn().mockName('onAction'),
+              swipeActions: mail.swipeActions ?? ROW_SWIPE_ACTIONS,
+            })),
+          }))}
+          accessibilityLabel={'Inbox'}
+          testID={'inbox'}
+          empty={<EmptyState title="No messages" description="New messages will appear here." />}
         />
       </Frame>
     );
@@ -197,8 +204,8 @@ export const Inbox: Story = {
 
 /**
  * The same row beside a conversation row, at the same width. One rhythm: the
- * 48 avatar, the name line with the time on the right, one line under it, and a
- * small right column — 72 tall in both families.
+ * 36 avatar, the name line with the time on the right, one line under it, and a
+ * small right column — 56px minimum in both content recipes.
  */
 export const BesideAConversation: Story = {
   parameters: { bleed: true },
@@ -206,29 +213,36 @@ export const BesideAConversation: Story = {
     <Frame width={390}>
       <View style={{ gap: 8 }}>
         <Text variant="caption-1-semibold">Mail</Text>
-        <MailRow
-          {...MAIL[0]!}
-          onPress={() => undefined}
-          onStarredChange={() => undefined}
+        <ListItem
+          mail={{ ...MAIL[0]!, onStarredChange: fn().mockName('onStarredChange') }}
+          onPress={fn().mockName('onPress')}
           testID="beside-mail"
         />
-        <MailRow {...MAIL[2]!} onPress={() => undefined} testID="beside-mail-read" />
+        <ListItem
+          mail={{ ...MAIL[2]! }}
+          onPress={fn().mockName('onPress')}
+          testID="beside-mail-read"
+        />
         <Text variant="caption-1-semibold">Conversations</Text>
-        <ChatListItem
-          name="Mireia Solans"
-          avatar={face('mireia')}
-          preview={{ text: 'The surveyor came back this morning' }}
-          time="14:02"
-          unreadCount={4}
-          onPress={() => undefined}
+        <ListItem
+          conversation={{
+            name: 'Mireia Solans',
+            avatar: face('mireia'),
+            preview: { text: 'The surveyor came back this morning' },
+            time: '14:02',
+            unreadCount: 4,
+          }}
+          onPress={fn().mockName('onPress')}
           testID="beside-chat"
         />
-        <ChatListItem
-          name="Tordera Studio"
-          avatar={face('tordera')}
-          preview={{ text: 'Are we still on for one o’clock?' }}
-          time="09:47"
-          onPress={() => undefined}
+        <ListItem
+          conversation={{
+            name: 'Tordera Studio',
+            avatar: face('tordera'),
+            preview: { text: 'Are we still on for one o’clock?' },
+            time: '09:47',
+          }}
+          onPress={fn().mockName('onPress')}
           testID="beside-chat-read"
         />
       </View>
@@ -245,15 +259,21 @@ export const CompactDesktop: Story = {
     const [selected, setSelected] = useState<string | undefined>('roof');
     return (
       <Frame width={1040}>
-        <MailList
-          density="compact"
-          sections={sections}
-          selectedId={selected}
-          onMailPress={setSelected}
-          rowActions={ROW_ACTIONS}
-          onMailStarredChange={() => undefined}
-          accessibilityLabel="Inbox"
-          testID="inbox-compact"
+        <List
+          sections={sections.map((section) => ({
+            id: section.key,
+            title: section.title,
+            items: section.mails.map((mail) => ({
+              id: mail.id,
+              mail: { ...mail, onStarredChange: fn().mockName('onStarredChange') },
+              active: mail.id === selected,
+              onPress: () => setSelected(mail.id),
+              actions: mail.actions ?? ROW_ACTIONS,
+            })),
+          }))}
+          accessibilityLabel={'Inbox'}
+          testID={'inbox-compact'}
+          empty={<EmptyState title="No messages" description="New messages will appear here." />}
         />
       </Frame>
     );
@@ -265,15 +285,35 @@ export const BulkSelection: Story = {
     const [checked, setChecked] = useState<string[]>(['roof', 'invoice']);
     return (
       <Frame width={720}>
-        <MailList
-          mails={MAIL.slice(0, 5)}
-          density="compact"
-          checkedIds={checked}
-          onCheckedIdsChange={setChecked}
-          bulkActions={BULK_ACTIONS}
-          onBulkAction={() => undefined}
-          accessibilityLabel="Inbox"
-          testID="inbox-bulk"
+        <List
+          items={MAIL.slice(0, 5).map((mail) => ({
+            id: mail.id,
+            mail: { ...mail },
+            checked: checked.includes(mail.id),
+            selecting: checked.length > 0,
+            onCheckedChange: (next: boolean) =>
+              setChecked(
+                next
+                  ? [...checked.filter((id) => id !== mail.id), mail.id]
+                  : checked.filter((id) => id !== mail.id),
+              ),
+          }))}
+          accessibilityLabel={'Inbox'}
+          testID={'inbox-bulk'}
+          empty={<EmptyState title="No messages" description="New messages will appear here." />}
+          header={
+            <ListSelectionBar
+              count={checked.length}
+              total={MAIL.slice(0, 5).map((mail) => mail.id).length}
+              onSelectAll={(next) =>
+                setChecked(next ? MAIL.slice(0, 5).map((mail) => mail.id) : [])
+              }
+              onClear={() => setChecked([])}
+              actions={BULK_ACTIONS}
+              onAction={fn().mockName('onAction')}
+              testID={'inbox-bulk' + '-selection'}
+            />
+          }
         />
       </Frame>
     );
@@ -317,14 +357,19 @@ export const WithMailboxTree: Story = {
         <Sidebar tree={tree} selectedTreeItem="inbox" collapsed={width < 700} />
         <View style={{ flex: 1, minWidth: 0 }}>
           <Frame width={680}>
-            <MailList
-              density="compact"
-              mails={MAIL}
-              selectedId={selected}
-              onMailPress={setSelected}
-              rowActions={ROW_ACTIONS}
-              accessibilityLabel="Inbox"
-              testID="inbox-tree"
+            <List
+              items={MAIL.map((mail) => ({
+                id: mail.id,
+                mail: { ...mail },
+                active: mail.id === selected,
+                onPress: () => setSelected(mail.id),
+                actions: mail.actions ?? ROW_ACTIONS,
+              }))}
+              accessibilityLabel={'Inbox'}
+              testID={'inbox-tree'}
+              empty={
+                <EmptyState title="No messages" description="New messages will appear here." />
+              }
             />
           </Frame>
         </View>
@@ -338,23 +383,32 @@ export const Row: Story = {
     <Frame width={420}>
       <View style={{ gap: 4 }}>
         <Text variant="caption-1-semibold">Unread</Text>
-        <MailRow {...MAIL[0]!} onPress={() => undefined} testID="row-unread" />
+        <ListItem mail={{ ...MAIL[0]! }} onPress={fn().mockName('onPress')} testID="row-unread" />
         <Text variant="caption-1-semibold">Read, starred, three labels</Text>
-        <MailRow {...MAIL[1]!} unread={false} onPress={() => undefined} testID="row-read" />
+        <ListItem
+          mail={{ ...MAIL[1]!, unread: false }}
+          onPress={fn().mockName('onPress')}
+          testID="row-read"
+        />
         <Text variant="caption-1-semibold">Draft</Text>
-        <MailRow {...MAIL[3]!} onPress={() => undefined} testID="row-draft" />
+        <ListItem mail={{ ...MAIL[3]! }} onPress={fn().mockName('onPress')} testID="row-draft" />
         <Text variant="caption-1-semibold">Selected</Text>
-        <MailRow {...MAIL[2]!} selected onPress={() => undefined} testID="row-selected" />
+        <ListItem
+          mail={{ ...MAIL[2]! }}
+          active={true}
+          onPress={fn().mockName('onPress')}
+          testID="row-selected"
+        />
         <Text variant="caption-1-semibold">Multi-selected</Text>
-        <MailRow
-          {...MAIL[5]!}
+        <ListItem
+          mail={{ ...MAIL[5]! }}
           checked
-          onCheckedChange={() => undefined}
-          onPress={() => undefined}
+          onCheckedChange={fn().mockName('onCheckedChange')}
+          onPress={fn().mockName('onPress')}
           testID="row-checked"
         />
         <Text variant="caption-1-semibold">Long subject and long snippet, compact</Text>
-        <MailRow {...MAIL[4]!} density="compact" onPress={() => undefined} testID="row-long" />
+        <ListItem mail={{ ...MAIL[4]! }} onPress={fn().mockName('onPress')} testID="row-long" />
       </View>
     </Frame>
   ),
@@ -363,13 +417,13 @@ export const Row: Story = {
 export const SelectionBar: Story = {
   render: () => (
     <Frame width={560}>
-      <MailSelectionBar
+      <ListSelectionBar
         count={3}
         total={7}
         actions={BULK_ACTIONS}
-        onSelectAll={() => undefined}
-        onClear={() => undefined}
-        onAction={() => undefined}
+        onSelectAll={fn().mockName('onSelectAll')}
+        onClear={fn().mockName('onClear')}
+        onAction={fn().mockName('onAction')}
         testID="bar"
       />
     </Frame>
@@ -380,10 +434,22 @@ export const LoadingAndEmpty: Story = {
   render: () => (
     <View style={{ gap: 24, width: '100%' }}>
       <Frame width={390}>
-        <MailList loading loadingCount={5} accessibilityLabel="Inbox" testID="loading" />
+        <List
+          items={[]}
+          loading={true}
+          loadingCount={5}
+          accessibilityLabel={'Inbox'}
+          testID={'loading'}
+          empty={<EmptyState title="No messages" description="New messages will appear here." />}
+        />
       </Frame>
       <Frame width={390}>
-        <MailList mails={[]} accessibilityLabel="Inbox" testID="empty" />
+        <List
+          items={[]}
+          accessibilityLabel={'Inbox'}
+          testID={'empty'}
+          empty={<EmptyState title="No messages" description="New messages will appear here." />}
+        />
       </Frame>
     </View>
   ),
@@ -400,27 +466,26 @@ export const PointerTargets: Story = {
       <View style={{ width: 700, maxWidth: '100%', gap: 12 }}>
         <Text testID="hit-opened">{String(opened)}</Text>
         <Text testID="hit-archived">{String(archived)}</Text>
-        {(['compact', 'comfortable'] as const).map((density) => (
-          <MailRow
+        {(['compact'] as const).map((density) => (
+          <ListItem
             key={density}
-            density={density}
+            mail={{
+              sender: { name: 'Pointer Sender' },
+              subject: 'Click subject',
+              snippet: 'Click preview',
+              time: '09:41',
+              hasAttachment: true,
+              threadCount: 2,
+              starred: starred,
+              onStarredChange: setStarred,
+            }}
             testID={`hit-${density}`}
-            sender={{ name: 'Pointer Sender' }}
-            subject="Click subject"
-            snippet="Click preview"
-            time="09:41"
-            hasAttachment
-            threadCount={2}
-            starred={starred}
-            onStarredChange={setStarred}
             onPress={() => setOpened((n) => n + 1)}
           />
         ))}
-        <MailRow
-          actionsPlacement="inline"
+        <ListItem
+          mail={{ sender: { name: 'Action Sender' }, subject: 'Archive separately' }}
           testID="hit-actions"
-          sender={{ name: 'Action Sender' }}
-          subject="Archive separately"
           onPress={() => setOpened((n) => n + 1)}
           actions={[
             {
@@ -431,10 +496,9 @@ export const PointerTargets: Story = {
             },
           ]}
         />
-        <MailRow
+        <ListItem
+          mail={{ sender: { name: 'Selected Sender' }, subject: 'Select separately' }}
           testID="hit-selection"
-          sender={{ name: 'Selected Sender' }}
-          subject="Select separately"
           checked={checked}
           onCheckedChange={setChecked}
           onPress={() => setOpened((n) => n + 1)}
@@ -452,21 +516,22 @@ export const Attachments: Story = {
     return (
       <Frame width={520}>
         <Text testID="attachment-result">{opened}</Text>
-        {(['comfortable', 'compact', 'cozy'] as const).flatMap((density) =>
+        {(['compact'] as const).flatMap((density) =>
           (['avatar', 'hidden', 'selection'] as const).map((mode) => {
             const id = `attachments-${density}-${mode}`;
             return (
-              <MailRow
+              <ListItem
                 key={id}
-                sender={{ name: 'Mireia Solans' }}
-                subject="Roof survey"
-                snippet="The revised measurements are attached."
-                time="14:02"
-                density={density}
-                showAvatar={mode !== 'hidden'}
+                mail={{
+                  sender: { name: 'Mireia Solans' },
+                  subject: 'Roof survey',
+                  snippet: 'The revised measurements are attached.',
+                  time: '14:02',
+                  showAvatar: mode !== 'hidden',
+                  hasAttachment: true,
+                }}
                 onCheckedChange={mode === 'selection' ? () => undefined : undefined}
-                selected={mode === 'selection'}
-                hasAttachment
+                active={mode === 'selection'}
                 actions={ROW_ACTIONS}
                 onPress={() => setOpened('message')}
                 attachments={

@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import { List } from '../../src/list';
+import { EmptyState } from '../../src/empty-state';
+import { useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -8,11 +10,9 @@ import { PageHeader } from '../../src/page-header';
 import { Card, CardBody } from '../../src/card';
 import { ContactProfileCard } from '../../src/contact-card';
 import { LeadScoreCard } from '../../src/lead-score';
-import { MailList } from '../../src/mail-list';
 import type { MailSummary } from '../../src/mail-list';
 import { NoteCard } from '../../src/note-card';
 import { DealCard } from '../../src/pipeline';
-import { SurfaceLevelProvider } from '../../src/styles/surface-levels';
 import { useTheme } from '../../src/theme/use-theme';
 import { Text } from '../../src/typography';
 
@@ -43,11 +43,9 @@ const messages: MailSummary[] = [
 ];
 
 function Workspace({
-  compactMail = false,
   showLeadScore = true,
   revealTitle = true,
 }: {
-  compactMail?: boolean;
   showLeadScore?: boolean;
   revealTitle?: boolean;
 }) {
@@ -140,23 +138,29 @@ function Workspace({
               }}
             >
               <Card>
-                <SurfaceLevelProvider level={1} fill={colors.card}>
-                  <CardBody style={{ padding: 20, gap: 16 }}>
-                    <Text variant="title-3-semibold">Conversations</Text>
-                    <MailList
-                      mails={messages}
-                      selectedId={selectedId}
-                      onMailPress={setSelectedId}
-                      density={compactMail ? 'compact' : 'comfortable'}
-                      accessibilityLabel="Recent conversations"
-                    />
-                    {selectedId && (
-                      <Text style={{ color: colors.textSecondary }}>
-                        {messages.find((mail) => mail.id === selectedId)?.snippet}
-                      </Text>
-                    )}
-                  </CardBody>
-                </SurfaceLevelProvider>
+                <CardBody style={{ padding: 20, gap: 16 }}>
+                  <Text variant="title-3-semibold">Conversations</Text>
+                  <List
+                    items={messages.map((mail) => ({
+                      id: mail.id,
+                      mail: { ...mail },
+                      active: mail.id === selectedId,
+                      onPress: () => setSelectedId(mail.id),
+                    }))}
+                    accessibilityLabel={'Recent conversations'}
+                    empty={
+                      <EmptyState
+                        title="No messages"
+                        description="New messages will appear here."
+                      />
+                    }
+                  />
+                  {selectedId && (
+                    <Text style={{ color: colors.textSecondary }}>
+                      {messages.find((mail) => mail.id === selectedId)?.snippet}
+                    </Text>
+                  )}
+                </CardBody>
               </Card>
               <View style={{ gap: 12 }}>
                 <Text variant="title-3-semibold">On your mind</Text>
@@ -198,15 +202,12 @@ const meta = {
   title: 'Templates/Workspace',
   component: Workspace,
   parameters: { layout: 'fullscreen', bloomScroll: 'document' },
-  args: { compactMail: false, showLeadScore: true, revealTitle: true },
+  args: { showLeadScore: true, revealTitle: true },
   argTypes: {
     revealTitle: { control: 'boolean' },
-    compactMail: { control: 'boolean' },
     showLeadScore: { control: 'boolean' },
   },
 } satisfies Meta<typeof Workspace>;
 export default meta;
 type Story = StoryObj<typeof meta>;
-export const TonalOlive: Story = { globals: { theme: 'dark', colorPreset: 'olive' } };
-export const TonalCopper: Story = { globals: { theme: 'dark', colorPreset: 'copper-field' } };
-export const Light: Story = { globals: { theme: 'light', colorPreset: 'olive' } };
+export const Default: Story = {};

@@ -1,11 +1,15 @@
+import { fn } from 'storybook/test';
 import type React from 'react';
-import { useContext, useState } from 'react';
+import { useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Avatar } from '../avatar';
-import { Button } from '../button';
-import { resolveButtonRamps } from '../button/shared';
+import { ChatComposer } from '../chat-composer';
+import { MessageBubble } from '../message-bubble';
+import { List } from '../list';
+import { PageHeader } from '../page-header';
+import { Search } from '../search';
 import { RiChat3Line } from '../icons/remix/RiChat3Line';
 
 import { RiFolderLine } from '../icons/remix/RiFolderLine';
@@ -24,9 +28,8 @@ import { RiTimerLine } from '../icons/remix/RiTimerLine';
 import { RiUserAddLine } from '../icons/remix/RiUserAddLine';
 import { RiVideoOnLine } from '../icons/remix/RiVideoOnLine';
 import { RiVolumeMuteLine } from '../icons/remix/RiVolumeMuteLine';
-import { SettingsListGroup, SettingsListItem } from '../settings-list';
+import { GroupedSection, GroupedSectionItem } from '../grouped-section';
 import { Switch } from '../switch';
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { ChatBackground } from './ChatBackground';
@@ -126,25 +129,6 @@ function Surface({ children, padded = true }: { children: React.ReactNode; padde
   );
 }
 
-/** The same block in both modes, side by side — every colour here flips. */
-function BothModes({ children }: { children: React.ReactNode }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
-  return (
-    <View style={{ width: '100%', flexDirection: 'row', flexWrap: 'wrap' }}>
-      <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: 380 }}>
-        <BloomThemeProvider mode="light" colorPreset={preset}>
-          <Surface>{children}</Surface>
-        </BloomThemeProvider>
-      </View>
-      <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: 380 }}>
-        <BloomThemeProvider mode="dark" colorPreset={preset}>
-          <Surface>{children}</Surface>
-        </BloomThemeProvider>
-      </View>
-    </View>
-  );
-}
-
 function Caption({ children }: { children: string }) {
   const theme = useTheme();
   return (
@@ -154,11 +138,19 @@ function Caption({ children }: { children: string }) {
   );
 }
 
-/**
- * Stand-in bubbles. The real ones live in `message-bubble`; these exist so the
- * wallpaper, the pinned bar and the jump buttons can be looked at over something
- * the right shape and the right colour.
- */
+/** Shared transcript components; the story owns only message data and actions. */
+const MESSAGES = [
+  { text: 'Morning! The loft viewing is still on for Thursday?', time: '09:12' },
+  { text: "It is — eight o'clock, the place by the canal.", time: '09:14', outgoing: true },
+  { text: "Perfect. I'll bring the floorplan Teodor sent over.", time: '09:15' },
+  {
+    text: 'Bring the measuring tape too, the balcony looked smaller than the photos.',
+    time: '09:16',
+    outgoing: true,
+  },
+  { text: 'Already in the bag.', time: '09:17' },
+  { text: 'See you Thursday then.', time: '09:21', outgoing: true },
+];
 function Bubble({
   text,
   time,
@@ -168,92 +160,49 @@ function Bubble({
   time: string;
   outgoing?: boolean;
 }) {
-  const theme = useTheme();
-  const paint = useChatScreenPaint();
-  const { accent } = resolveButtonRamps(theme);
-  const background = outgoing ? accent[500] : paint.surface;
-  const color = outgoing ? theme.colors.primaryForeground : paint.text;
-  return (
-    <View
-      style={{
-        maxWidth: 420,
-        alignSelf: outgoing ? 'flex-end' : 'flex-start',
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-        gap: 8,
-        paddingLeft: 12,
-        paddingRight: 12,
-        paddingTop: 8,
-        paddingBottom: 8,
-        borderRadius: 18,
-        borderWidth: 1,
-        borderColor: outgoing ? accent[500] : paint.border,
-        backgroundColor: background,
-      }}
-    >
-      <Text variant="body-regular" style={{ flexShrink: 1, color }}>
-        {text}
-      </Text>
-      <Text variant="caption-2-regular" style={{ color, opacity: 0.7 }}>
-        {time}
-      </Text>
-    </View>
-  );
+  return <MessageBubble text={text} time={time} direction={outgoing ? 'outgoing' : 'incoming'} />;
 }
-
-function Transcript({ compact = false }: { compact?: boolean }) {
+function Transcript({
+  compact = false,
+  messages = MESSAGES,
+  scrollRef,
+}: {
+  compact?: boolean;
+  messages?: typeof MESSAGES;
+  scrollRef?: React.RefObject<React.ComponentRef<typeof ScrollView> | null>;
+}) {
   return (
-    <ScrollView contentContainerStyle={{ padding: 16, gap: 8 }}>
-      <View style={{ height: compact ? 8 : 24 }} />
-      <Bubble text="Morning! The loft viewing is still on for Thursday?" time="09:12" />
-      <Bubble text="It is — eight o'clock, the place by the canal." time="09:14" outgoing />
-      <Bubble text="Perfect. I'll bring the floorplan Teodor sent over." time="09:15" />
-      <Bubble
-        text="Bring the measuring tape too, the balcony looked smaller than the photos."
-        time="09:16"
-        outgoing
-      />
-      <Bubble text="Already in the bag." time="09:17" />
-      <Bubble text="See you Thursday then." time="09:21" outgoing />
+    <ScrollView ref={scrollRef} contentContainerStyle={{ padding: 16, gap: 8 }}>
+      <ChatDateHeader label="Today" />
+      {messages.map((message, index) => (
+        <Bubble key={`${index}-${message.text}`} {...message} />
+      ))}
+      {messages.length === 0 ? <ChatEmptyState title="No matching messages" /> : null}
     </ScrollView>
   );
 }
-
-function ConversationListStub() {
-  const paint = useChatScreenPaint();
+function ConversationList({
+  activeId = 'm1',
+  onSelect,
+}: {
+  activeId?: string;
+  onSelect?: (member: ChatMember) => void;
+}) {
   return (
-    <View style={{ flex: 1, backgroundColor: paint.surface }}>
-      <View style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: paint.border }}>
-        <Text variant="title-3-semibold" style={{ color: paint.text }}>
-          Chats
-        </Text>
-      </View>
-      {MEMBERS.slice(0, 5).map((member, index) => (
-        <View
-          key={member.id}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 12,
-            padding: 12,
-            backgroundColor: index === 0 ? paint.accentSubtle : 'transparent',
-          }}
-        >
-          <Avatar name={member.name} source={member.source ?? undefined} size={40} />
-          <View style={{ minWidth: 0, flexShrink: 1 }}>
-            <Text variant="body-medium" numberOfLines={1} style={{ color: paint.text }}>
-              {member.name}
-            </Text>
-            <Text
-              variant="caption-1-regular"
-              numberOfLines={1}
-              style={{ color: paint.textSecondary }}
-            >
-              {member.subtitle}
-            </Text>
-          </View>
-        </View>
-      ))}
+    <View style={{ flex: 1 }}>
+      <PageHeader title="Chats" onBack={null} />
+      <List
+        items={MEMBERS.slice(0, 5).map((member) => ({
+          id: member.id,
+          active: member.id === activeId,
+          conversation: {
+            name: member.name,
+            avatar: member.source as string | undefined,
+            preview: { text: member.subtitle ?? '' },
+          },
+          onPress: onSelect ? () => onSelect(member) : undefined,
+        }))}
+      />
     </View>
   );
 }
@@ -281,8 +230,8 @@ function SettingsBlock() {
   const paint = useChatScreenPaint();
   const [notifications, setNotifications] = useState(true);
   return (
-    <SettingsListGroup variant="filled">
-      <SettingsListItem
+    <GroupedSection variant="filled">
+      <GroupedSectionItem
         title="Notifications"
         icon={<RiNotification3Line width={20} height={20} fill={paint.textSecondary} />}
         rightElement={
@@ -294,24 +243,24 @@ function SettingsBlock() {
         }
         showChevron={false}
       />
-      <SettingsListItem
+      <GroupedSectionItem
         title="Disappearing messages"
         value="Off"
         icon={<RiTimerLine width={20} height={20} fill={paint.textSecondary} />}
-        onPress={() => {}}
+        onPress={fn().mockName('onPress')}
       />
-      <SettingsListItem
+      <GroupedSectionItem
         title="Encryption key"
         icon={<RiKey2Line width={20} height={20} fill={paint.textSecondary} />}
-        onPress={() => {}}
+        onPress={fn().mockName('onPress')}
       />
-      <SettingsListItem
+      <GroupedSectionItem
         title="Conversation theme"
         value="Default"
         icon={<RiPaletteLine width={20} height={20} fill={paint.textSecondary} />}
-        onPress={() => {}}
+        onPress={fn().mockName('onPress')}
       />
-    </SettingsListGroup>
+    </GroupedSection>
   );
 }
 
@@ -341,13 +290,13 @@ const SHARED_TABS = [
   },
 ];
 
-function PersonPanel({ variant }: { variant: 'pane' | 'screen' }) {
+function PersonPanel({ variant, onClose }: { variant: 'pane' | 'screen'; onClose?: () => void }) {
   return (
     <ChatInfoPanel
       variant={variant}
       style={{ maxWidth: '100%' }}
       title="Contact info"
-      onClose={() => {}}
+      onClose={onClose}
       avatarSource={AVATAR_ANA}
       presence="online"
       name="Ana Restrepo"
@@ -369,7 +318,7 @@ function GroupPanel({ variant }: { variant: 'pane' | 'screen' }) {
       variant={variant}
       style={{ maxWidth: '100%' }}
       title="Group info"
-      onClose={() => {}}
+      onClose={fn().mockName('onClose')}
       coverSource={AVATAR_GROUP}
       name="Canal Loft Crew"
       handle="6 members, 3 online"
@@ -380,8 +329,8 @@ function GroupPanel({ variant }: { variant: 'pane' | 'screen' }) {
       tabs={SHARED_TABS}
       members={MEMBERS}
       memberSearch
-      onPressMember={() => {}}
-      onAddMember={() => {}}
+      onPressMember={fn().mockName('onPressMember')}
+      onAddMember={fn().mockName('onAddMember')}
       destructiveActions={GROUP_DESTRUCTIVE}
     />
   );
@@ -389,91 +338,113 @@ function GroupPanel({ variant }: { variant: 'pane' | 'screen' }) {
 
 function Conversation({
   variant = 'pattern',
-  compact = false,
+  compact,
   onOpenInfo,
+  onBack,
+  member = MEMBERS[0]!,
 }: {
   variant?: ChatBackgroundVariant;
   compact?: boolean;
   onOpenInfo?: () => void;
+  onBack?: () => void;
+  member?: ChatMember;
 }) {
+  const [messages, setMessages] = useState(MESSAGES);
+  const [draft, setDraft] = useState('');
+  const [query, setQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [pinned, setPinned] = useState(true);
+  const [pinIndex, setPinIndex] = useState(1);
+  const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   return (
     <View style={{ flex: 1, minHeight: 0 }}>
       <ChatHeader
-        title="Ana Restrepo"
-        marker="verified"
-        status="online"
-        statusTone="accent"
-        avatarSource={AVATAR_ANA}
-        presence="online"
+        title={member.name}
+        status={member.subtitle}
+        avatarSource={member.source}
+        presence={member.status}
         compact={compact}
-        onPressBack={() => {}}
+        onPressBack={onBack}
         onPressHeader={onOpenInfo}
-        onPressCall={() => {}}
-        onPressVideoCall={() => {}}
-        onPressSearch={() => {}}
-        onPressMore={() => {}}
+        onPressSearch={() => setSearchOpen(!searchOpen)}
+        accessory={
+          searchOpen ? (
+            <Search label="Search this conversation" value={query} onValueChange={setQuery} />
+          ) : undefined
+        }
       />
-      <PinnedMessageBar
-        pins={PINS}
-        index={1}
-        onPressPin={() => {}}
-        onPressList={() => {}}
-        onDismiss={() => {}}
-      />
+      {pinned ? (
+        <PinnedMessageBar
+          pins={PINS}
+          index={pinIndex}
+          onPressPin={() => {
+            setPinIndex((pinIndex + 1) % PINS.length);
+            scrollRef.current?.scrollTo({ y: 0 });
+          }}
+          onDismiss={() => setPinned(false)}
+        />
+      ) : null}
       <ChatBackground
         variant={variant}
         source="https://picsum.photos/seed/bloom-chat-wall/1200/900"
       >
-        <Transcript compact={compact} />
-        <ChatDateHeader label="Today" />
-        <View style={{ position: 'absolute', right: 16, bottom: 16, gap: 10 }}>
-          <JumpToMentionButton count={2} onPress={() => {}} />
-          <ScrollToBottomButton unreadCount={7} onPress={() => {}} />
+        <Transcript
+          scrollRef={scrollRef}
+          compact={compact}
+          messages={messages.filter((message) =>
+            message.text.toLowerCase().includes(query.toLowerCase()),
+          )}
+        />
+        <View style={{ position: 'absolute', right: 16, bottom: 16 }}>
+          <ScrollToBottomButton
+            onPress={() => scrollRef.current?.scrollToEnd({ animated: true })}
+          />
         </View>
       </ChatBackground>
-      <ComposerStub />
+      <ChatComposer
+        value={draft}
+        onValueChange={setDraft}
+        onSend={(text) => {
+          setMessages((current) => [...current, { text, time: 'Now', outgoing: true }]);
+          setDraft('');
+        }}
+      />
     </View>
   );
 }
-
-/** A stand-in for `chat-composer`, so the screen has a floor. */
-function ComposerStub() {
-  const paint = useChatScreenPaint();
+function ConversationWorkspace() {
+  const [pane, setPane] = useState<'list' | 'conversation' | 'info'>('conversation');
+  const [member, setMember] = useState(MEMBERS[0]!);
+  const [listWidth, setListWidth] = useState(340);
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        padding: 12,
-        backgroundColor: paint.surface,
-        borderTopWidth: 1,
-        borderTopColor: paint.border,
-      }}
-    >
-      <View
-        style={{
-          flexGrow: 1,
-          height: 40,
-          justifyContent: 'center',
-          paddingLeft: 14,
-          paddingRight: 14,
-          borderRadius: 20,
-          backgroundColor: paint.surfaceSubtle,
-        }}
+    <View style={{ width: '100%', height: 820 }}>
+      <ChatSplitLayout
+        testID="split"
+        pane={pane}
+        listWidth={listWidth}
+        onListWidthChange={setListWidth}
+        list={
+          <ConversationList
+            activeId={member.id}
+            onSelect={(next) => {
+              setMember(next);
+              setPane('conversation');
+            }}
+          />
+        }
+        info={
+          pane === 'info' ? (
+            <PersonPanel variant="pane" onClose={() => setPane('conversation')} />
+          ) : undefined
+        }
       >
-        <Text variant="body-regular" style={{ color: paint.textTertiary }}>
-          Message
-        </Text>
-      </View>
-      <Button
-        size="md"
-        iconOnly
-        icon={RiChat3Line}
-        accessibilityLabel="Send"
-        tone="accent"
-        appearance="solid"
-      />
+        <Conversation
+          key={member.id}
+          member={member}
+          onBack={() => setPane('list')}
+          onOpenInfo={() => setPane('info')}
+        />
+      </ChatSplitLayout>
     </View>
   );
 }
@@ -482,52 +453,16 @@ function ComposerStub() {
 //  Stories
 // ---------------------------------------------------------------------------
 
-/** The whole screen at 1280: list pane, conversation, info pane. */
-export const FullScreenWide: Story = {
-  name: 'Full screen — 1280 with info pane',
-  render: () => (
-    <View style={{ width: '100%', maxWidth: 1280, height: 820 }}>
-      <ChatSplitLayout list={<ConversationListStub />} info={<GroupPanel variant="pane" />}>
-        <Conversation />
-      </ChatSplitLayout>
-    </View>
-  ),
-};
-
-/** The same screen at 390 — one pane, the conversation. */
-export const FullScreenNarrow: Story = {
-  name: 'Full screen — 390, one pane',
-  render: () => (
-    <View style={{ flexDirection: 'row', gap: 20, padding: 20, flexWrap: 'wrap' }}>
-      {(['conversation', 'list', 'info'] as const).map((pane) => (
-        <View
-          key={pane}
-          style={{
-            width: '100%',
-            maxWidth: 390,
-            height: 780,
-            overflow: 'hidden',
-            borderRadius: 16,
-          }}
-        >
-          <ChatSplitLayout
-            pane={pane}
-            compact
-            list={<ConversationListStub />}
-            info={<PersonPanel variant="screen" />}
-          >
-            <Conversation compact />
-          </ChatSplitLayout>
-        </View>
-      ))}
-    </View>
-  ),
+/** One responsive workspace: select a chat, search, send and open its info panel. */
+export const FullScreen: Story = {
+  parameters: { layout: 'fullscreen' },
+  render: () => <ConversationWorkspace />,
 };
 
 /** Every header state, in both modes. */
 export const HeaderStates: Story = {
   render: () => (
-    <BothModes>
+    <Surface>
       <Caption>online · verified</Caption>
       <ChatHeader
         title="Ana Restrepo"
@@ -536,10 +471,10 @@ export const HeaderStates: Story = {
         statusTone="accent"
         avatarSource={AVATAR_ANA}
         presence="online"
-        onPressCall={() => {}}
-        onPressVideoCall={() => {}}
-        onPressSearch={() => {}}
-        onPressMore={() => {}}
+        onPressCall={fn().mockName('onPressCall')}
+        onPressVideoCall={fn().mockName('onPressVideoCall')}
+        onPressSearch={fn().mockName('onPressSearch')}
+        onPressMore={fn().mockName('onPressMore')}
       />
       <Caption>last seen · bot marker · back button</Caption>
       <ChatHeader
@@ -549,8 +484,8 @@ export const HeaderStates: Story = {
         avatarName="Wayfinder"
         presence="offline"
         compact
-        onPressBack={() => {}}
-        onPressMore={() => {}}
+        onPressBack={fn().mockName('onPressBack')}
+        onPressMore={fn().mockName('onPressMore')}
       />
       <Caption>group roster · channel marker</Caption>
       <ChatHeader
@@ -558,9 +493,9 @@ export const HeaderStates: Story = {
         marker="channel"
         status="5 members, 2 online"
         avatarName="Canal Loft Crew"
-        onPressCall={() => {}}
-        onPressSearch={() => {}}
-        onPressMore={() => {}}
+        onPressCall={fn().mockName('onPressCall')}
+        onPressSearch={fn().mockName('onPressSearch')}
+        onPressMore={fn().mockName('onPressMore')}
       />
       <Caption>typing — wins over the status line</Caption>
       <ChatHeader
@@ -568,8 +503,8 @@ export const HeaderStates: Story = {
         status="5 members, 2 online"
         typingLabel="Ana is typing…"
         avatarName="Canal Loft Crew"
-        onPressCall={() => {}}
-        onPressMore={() => {}}
+        onPressCall={fn().mockName('onPressCall')}
+        onPressMore={fn().mockName('onPressMore')}
       />
       <Caption>connecting — wins over everything</Caption>
       <ChatHeader
@@ -578,65 +513,69 @@ export const HeaderStates: Story = {
         typingLabel="Ana is typing…"
         connecting
         avatarSource={AVATAR_ANA}
-        onPressCall={() => {}}
-        onPressMore={() => {}}
+        onPressCall={fn().mockName('onPressCall')}
+        onPressMore={fn().mockName('onPressMore')}
       />
-    </BothModes>
+    </Surface>
   ),
 };
 
 /** Selection mode replaces the header outright. */
 export const SelectionMode: Story = {
   render: () => (
-    <BothModes>
+    <Surface>
       <Caption>3 selected</Caption>
       <ChatHeader
         title="Ana Restrepo"
         status="online"
         avatarSource={AVATAR_ANA}
-        onPressCall={() => {}}
-        onPressVideoCall={() => {}}
-        onPressSearch={() => {}}
+        onPressCall={fn().mockName('onPressCall')}
+        onPressVideoCall={fn().mockName('onPressVideoCall')}
+        onPressSearch={fn().mockName('onPressSearch')}
         selectionCount={3}
-        onClearSelection={() => {}}
-        onForward={() => {}}
-        onCopy={() => {}}
-        onPin={() => {}}
-        onDelete={() => {}}
+        onClearSelection={fn().mockName('onClearSelection')}
+        onForward={fn().mockName('onForward')}
+        onCopy={fn().mockName('onCopy')}
+        onPin={fn().mockName('onPin')}
+        onDelete={fn().mockName('onDelete')}
       />
       <Caption>1 selected — a count is a count, not a plural rule</Caption>
       <ChatHeader
         title="Ana Restrepo"
         selectionCount={1}
-        onClearSelection={() => {}}
-        onForward={() => {}}
-        onDelete={() => {}}
+        onClearSelection={fn().mockName('onClearSelection')}
+        onForward={fn().mockName('onForward')}
+        onDelete={fn().mockName('onDelete')}
       />
-    </BothModes>
+    </Surface>
   ),
 };
 
 /** The pinned bar, with one pin and with several. */
 export const PinnedBar: Story = {
   render: () => (
-    <BothModes>
+    <Surface>
       <Caption>three pins, the second one showing</Caption>
       <PinnedMessageBar
         pins={PINS}
         index={1}
-        onPressPin={() => {}}
-        onPressList={() => {}}
-        onDismiss={() => {}}
+        onPressPin={fn().mockName('onPressPin')}
+        onPressList={fn().mockName('onPressList')}
+        onDismiss={fn().mockName('onDismiss')}
       />
       <Caption>one pin, unpin instead of close</Caption>
       <PinnedMessageBar
         pins={PINS.slice(0, 1)}
-        onPressPin={() => {}}
-        onDismiss={() => {}}
+        onPressPin={fn().mockName('onPressPin')}
+        onDismiss={fn().mockName('onDismiss')}
         dismissIcon="unpin"
       />
       <Caption>a media pin, with a thumbnail</Caption>
-      <PinnedMessageBar pins={PINS.slice(1)} onPressPin={() => {}} onPressList={() => {}} />
+      <PinnedMessageBar
+        pins={PINS.slice(1)}
+        onPressPin={fn().mockName('onPressPin')}
+        onPressList={fn().mockName('onPressList')}
+      />
       <Caption>eleven pins — past eight the rule stops being segmented</Caption>
       <PinnedMessageBar
         pins={Array.from({ length: 11 }, (_unused, i) => ({
@@ -644,10 +583,10 @@ export const PinnedBar: Story = {
           preview: `Pinned note number ${i + 1}`,
         }))}
         index={6}
-        onPressPin={() => {}}
-        onPressList={() => {}}
+        onPressPin={fn().mockName('onPressPin')}
+        onPressList={fn().mockName('onPressList')}
       />
-    </BothModes>
+    </Surface>
   ),
 };
 
@@ -656,7 +595,7 @@ export const Wallpapers: Story = {
   render: () => {
     const variants: ChatBackgroundVariant[] = ['plain', 'pattern', 'gradient', 'image'];
     return (
-      <BothModes>
+      <Surface>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
           {variants.map((variant) => (
             <View key={variant} style={{ width: '100%', maxWidth: 320, gap: 6 }}>
@@ -677,7 +616,7 @@ export const Wallpapers: Story = {
             </View>
           ))}
         </View>
-      </BothModes>
+      </Surface>
     );
   },
 };
@@ -694,7 +633,7 @@ const STAR_TILE = `data:image/svg+xml;utf8,${encodeURIComponent(
 
 export const WallpaperTile: Story = {
   render: () => (
-    <BothModes>
+    <Surface>
       <View style={{ height: 260, maxWidth: 320, borderRadius: 16, overflow: 'hidden' }}>
         <ChatBackground
           variant="pattern"
@@ -706,21 +645,21 @@ export const WallpaperTile: Story = {
           </View>
         </ChatBackground>
       </View>
-    </BothModes>
+    </Surface>
   ),
 };
 
 /** The two jump buttons and the floating date pill. */
 export const FloatingControls: Story = {
   render: () => (
-    <BothModes>
+    <Surface>
       <Caption>unread · mentions · no badge · hidden</Caption>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 20 }}>
-        <ScrollToBottomButton unreadCount={7} onPress={() => {}} />
-        <ScrollToBottomButton unreadCount={128} onPress={() => {}} />
-        <JumpToMentionButton count={2} onPress={() => {}} />
-        <ScrollToBottomButton onPress={() => {}} />
-        <ScrollToBottomButton visible={false} onPress={() => {}} />
+        <ScrollToBottomButton unreadCount={7} onPress={fn().mockName('onPress')} />
+        <ScrollToBottomButton unreadCount={128} onPress={fn().mockName('onPress')} />
+        <JumpToMentionButton count={2} onPress={fn().mockName('onPress')} />
+        <ScrollToBottomButton onPress={fn().mockName('onPress')} />
+        <ScrollToBottomButton visible={false} onPress={fn().mockName('onPress')} />
         <Caption>← nothing is rendered there</Caption>
       </View>
       <Caption>the date pill, visible and hidden</Caption>
@@ -728,14 +667,14 @@ export const FloatingControls: Story = {
         <ChatDateHeader label="Yesterday" placement="inline" />
         <ChatDateHeader label="14 March" placement="inline" visible={false} />
       </View>
-    </BothModes>
+    </Surface>
   ),
 };
 
 /** Nothing has been said yet. */
 export const EmptyState: Story = {
   render: () => (
-    <BothModes>
+    <Surface>
       <View style={{ height: 320 }}>
         <ChatBackground variant="pattern">
           <ChatEmptyState
@@ -752,50 +691,26 @@ export const EmptyState: Story = {
           <ChatEmptyState description="Pick a conversation on the left to get started." />
         </ChatBackground>
       </View>
-    </BothModes>
+    </Surface>
   ),
 };
 
-/** The info panel for a person, as a desktop pane. */
+/** The info panel for a person; the Storybook toolbar owns its theme. */
 export const InfoPanelPerson: Story = {
+  parameters: { layout: 'fullscreen' },
   render: () => (
-    <BothModes>
-      <View style={{ height: 820, flexDirection: 'row' }}>
-        <PersonPanel variant="pane" />
-      </View>
-    </BothModes>
+    <View style={{ flex: 1, minHeight: 0, width: 380, maxWidth: '100%' }}>
+      <PersonPanel variant="screen" />
+    </View>
   ),
 };
 
 /** The info panel for a group: cover, roster, shared media. */
 export const InfoPanelGroup: Story = {
+  parameters: { layout: 'fullscreen' },
   render: () => (
-    <BothModes>
-      <View style={{ height: 900, flexDirection: 'row' }}>
-        <GroupPanel variant="pane" />
-      </View>
-    </BothModes>
+    <View style={{ flex: 1, minHeight: 0, width: 380, maxWidth: '100%' }}>
+      <GroupPanel variant="screen" />
+    </View>
   ),
-};
-
-/** The split frame's three narrow panes and its wide form, side by side. */
-export const SplitLayoutPanes: Story = {
-  render: () => {
-    const [width, setWidth] = useState(340);
-    return (
-      <Surface padded={false}>
-        <View style={{ height: 620 }}>
-          <ChatSplitLayout
-            testID="split"
-            listWidth={width}
-            onListWidthChange={setWidth}
-            list={<ConversationListStub />}
-            info={<PersonPanel variant="pane" />}
-          >
-            <Conversation variant="gradient" />
-          </ChatSplitLayout>
-        </View>
-      </Surface>
-    );
-  },
 };

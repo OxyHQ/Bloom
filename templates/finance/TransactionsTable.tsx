@@ -1,22 +1,16 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { ButtonIconComponent } from '../../src/button/types';
 import { Chip, type ChipHue } from '../../src/chip';
 import {
   DataTable,
   DataTableFilter,
-  DataTableRowActions,
   DataTableSearch,
   DataTableSelect,
   type DataTableColumn,
-  type DataTableRowActionItem,
   type DataTableSelectOption,
 } from '../../src/data-table';
 import {
-  RiArchiveLine,
-  RiAttachmentLine,
   RiCarLine,
-  RiDownload2Line,
-  RiFileCopyLine,
   RiFlightTakeoffLine,
   RiHandCoinLine,
   RiHeartPulseLine,
@@ -27,15 +21,7 @@ import {
   RiShoppingBag3Line,
   RiStockLine,
 } from '../../src/icons/remix';
-import {
-  CellText,
-  DELETE_EDIT_ACTIONS,
-  IconTile,
-  MONTHS,
-  NameCell,
-  dateValue,
-  makeRng,
-} from '../shared/dashboard';
+import { CellText, IconTile, MONTHS, NameCell, dateValue, makeRng } from '../shared/dashboard';
 
 /**
  * The finance template's transactions table: the
@@ -103,13 +89,6 @@ const AMOUNT_BUCKETS: { id: string; label: string; test: (n: number) => boolean 
   { id: 'under-50', label: 'Under $50', test: (n) => n < 0 && n > -50 },
   { id: '50-500', label: '$50 – $500', test: (n) => n <= -50 && n > -500 },
   { id: 'over-500', label: 'Over $500', test: (n) => n <= -500 },
-];
-
-const MORE_MENU: DataTableRowActionItem[] = [
-  { icon: RiAttachmentLine, label: 'Attach receipt' },
-  { icon: RiFileCopyLine, label: 'Duplicate transaction' },
-  { icon: RiDownload2Line, label: 'Export statement' },
-  { icon: RiArchiveLine, label: 'Archive transaction' },
 ];
 
 export interface Transaction {
@@ -209,14 +188,6 @@ const COLUMNS: DataTableColumn<Transaction>[] = [
       <Chip size="lg" hue={row.amount > 0 ? 'lime' : 'gray'}>
         {formatAmount(row.amount)}
       </Chip>
-    ),
-  },
-  {
-    id: 'actions',
-    header: 'Actions',
-    width: 140,
-    cell: ({ row }) => (
-      <DataTableRowActions name={row.payee} actions={DELETE_EDIT_ACTIONS} menu={MORE_MENU} />
     ),
   },
 ];

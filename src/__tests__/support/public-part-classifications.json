@@ -91,28 +91,6 @@
     "verification": "native renderer returns no overlay for xs/lg scopes and sm/md thickness props; web measures track/thumb at 10/4px for sm and 12/6px for md under both xs and lg scopes; actual native platform indicator appearance remains OS-owned",
     "parts": ["src/layout/ScrollBar.tsx#ScrollBar"]
   },
-  "button-delegation": {
-    "status": "delegated",
-    "reason": "Each named Button composition renders the shared Button with the complete props spread and no size default. Both native/web implementations delegate size precedence directly; appearance/tone/iconOnly defaults do not consume or replace size.",
-    "evidence": [
-      "src/button/Button.tsx",
-      "src/button/Button.web.tsx",
-      "src/__tests__/Button.test.tsx",
-      "src/__tests__/Button.web.test.tsx"
-    ],
-    "verification": "all nine public Button compositions render on native and DOM web; xs from nearest BloomScope and explicit lg override are measured for boxed wrappers and LinkButton typography; default/nested/portal matrix remains pending",
-    "parts": [
-      "src/button/Button.tsx#DestructiveButton",
-      "src/button/Button.tsx#GhostButton",
-      "src/button/Button.tsx#IconButton",
-      "src/button/Button.tsx#InverseButton",
-      "src/button/Button.tsx#LinkButton",
-      "src/button/Button.tsx#OutlineButton",
-      "src/button/Button.tsx#PrimaryButton",
-      "src/button/Button.tsx#SecondaryButton",
-      "src/button/Button.tsx#TextButton"
-    ]
-  },
   "glyph-art": {
     "status": "independent-scale",
     "reason": "Published SVG glyph components paint an explicitly supplied numeric width/height/fill or icon-token size. The consuming control owns control geometry; a glyph is not a second control-size owner.",
@@ -858,7 +836,6 @@
       "src/agent-reply/AgentReplyActions.tsx#AgentReplyActions",
       "src/agent-reply/AgentReplyBubble.tsx#AgentReplyBubble",
       "src/agent-reply/AgentReplyIdentity.tsx#AgentReplyIdentity",
-      "src/agent-reply/AgentStack.tsx#AgentStack",
       "src/agent-thinking/AgentThinking.tsx#AgentThinking",
       "src/agent-thinking/ThinkingReasoning.tsx#ThinkingReasoning",
       "src/ai-chat/AiChat.tsx#AiChatAssistantMessage",
@@ -905,7 +882,6 @@
       "src/bottom-sheet/BottomSheet.tsx#BottomSheet",
       "src/breadcrumb/Breadcrumb.tsx#Breadcrumb",
       "src/breadcrumb/Breadcrumb.tsx#BreadcrumbItem",
-      "src/button/CloseButton.tsx#CloseButton",
       "src/calendar/CalendarView.tsx#CalendarView",
       "src/calendar/CalendarViewEventDetails.tsx#CalendarViewEventDetails",
       "src/calendar/CalendarViewHeader.tsx#CalendarViewHeader",
@@ -914,8 +890,6 @@
       "src/calendar/CalendarViewMonthSwitcher.tsx#CalendarViewMonthSwitcher",
       "src/call-ui/CallControls.tsx#CallControlButton",
       "src/call-ui/CallControls.tsx#CallControls",
-      "src/call-ui/CallHistoryList.tsx#CallHistoryList",
-      "src/call-ui/CallHistoryRow.tsx#CallHistoryRow",
       "src/call-ui/CallMinimisedPill.tsx#CallMinimisedPill",
       "src/call-ui/CallScreen.tsx#CallScreen",
       "src/call-ui/GroupCallBar.tsx#GroupCallBar",
@@ -999,21 +973,12 @@
       "src/chat-indicators/MessageStatus.tsx#MessageStatus",
       "src/chat-indicators/StoryRing.tsx#StoryRing",
       "src/chat-indicators/TypingDots.tsx#TypingDots",
-      "src/chat-list/ArchivedRow.tsx#ArchivedRow",
       "src/chat-list/ChatFolderTabs.tsx#ChatFolderTabs",
-      "src/chat-list/ChatList.tsx#ChatList",
-      "src/chat-list/ChatListItem.tsx#ChatListItem",
-      "src/chat-list/ChatListItemSkeleton.tsx#ChatListItemSkeleton",
       "src/chat-list/ChatSearchField.tsx#ChatSearchField",
       "src/chat-list/ChatSearchResults.tsx#ChatSearchResults",
-      "src/chat-list/GroupAvatar.tsx#GroupAvatar",
       "src/chat-list/HighlightedText.tsx#HighlightedText",
       "src/chat-list/NewChatButton.tsx#NewChatButton",
       "src/chat-list/StoriesRow.tsx#StoriesRow",
-      "src/chat-people/ChannelPostCard.tsx#ChannelPostCard",
-      "src/chat-people/ContactList.tsx#ContactList",
-      "src/chat-people/MemberList.tsx#MemberList",
-      "src/chat-people/MemberRow.tsx#MemberRow",
       "src/chat-people/NewGroupForm.tsx#NewGroupForm",
       "src/chat-people/SelectedChipsRow.tsx#SelectedChipsRow",
       "src/chat-people/StoryProgressBars.tsx#StoryProgressBars",
@@ -1023,7 +988,6 @@
       "src/chat-screen/ChatEmptyState.tsx#ChatEmptyState",
       "src/chat-screen/ChatHeader.tsx#ChatHeader",
       "src/chat-screen/ChatInfoPanel.tsx#ChatInfoPanel",
-      "src/chat-screen/ChatMemberRow.tsx#ChatMemberRow",
       "src/chat-screen/ChatSplitLayout.tsx#ChatSplitLayout",
       "src/chat-screen/PinnedMessageBar.tsx#PinnedMessageBar",
       "src/chat-screen/ScrollToBottomButton.tsx#JumpToMentionButton",
@@ -1039,8 +1003,8 @@
       "src/code/Code.tsx#Code",
       "src/code/CodeBlock.tsx#CodeBlock",
       "src/code/Pre.tsx#Pre",
-      "src/color-swatch-picker/ColorSwatchPicker.tsx#ColorSwatchPicker",
       "src/collapsible/Collapsible.tsx#Collapsible",
+      "src/color-swatch-picker/ColorSwatchPicker.tsx#ColorSwatchPicker",
       "src/command/index.ts#Command",
       "src/composer-loader/ComposerLoader.tsx#ComposerLoader",
       "src/composer-panel/ComposerAttachments.tsx#ComposerAttachments",
@@ -1136,7 +1100,6 @@
       "src/fill/SurfaceFade.tsx#SurfaceFade",
       "src/fonts/BloomFontHead.tsx#BloomFontHead",
       "src/fonts/FontLoader.tsx#FontLoader",
-      "src/frosted-icon-button/FrostedIconButton.tsx#FrostedIconButton",
       "src/grid/Grid.tsx#Col",
       "src/grid/Grid.tsx#Row",
       "src/grid/ResponsiveGrid.tsx#ResponsiveGrid",
@@ -1182,6 +1145,9 @@
       "src/layout/top-edge.tsx#TopEdgeProvider",
       "src/lead-score/LeadScoreCard.tsx#LeadScoreCard",
       "src/link-preview/LinkPreviewCard.tsx#LinkPreviewCard",
+      "src/list/List.tsx#List",
+      "src/list/ListItem.tsx#ListItem",
+      "src/list/ListSelectionBar.tsx#ListSelectionBar",
       "src/list/VirtualList.tsx#VirtualList",
       "src/listing-actions/ActionBar.tsx#ActionBar",
       "src/listing-actions/ApplicationChecklist.tsx#ApplicationChecklist",
@@ -1224,10 +1190,6 @@
       "src/mail-compose/MailComposeHeader.tsx#MailComposeHeader",
       "src/mail-compose/MailComposeSurface.tsx#MailComposeSurface",
       "src/mail-compose/MailRecipientField.tsx#MailRecipientField",
-      "src/mail-list/MailList.tsx#MailList",
-      "src/mail-list/MailListSkeleton.tsx#MailListSkeleton",
-      "src/mail-list/MailRow.tsx#MailRow",
-      "src/mail-list/MailSelectionBar.tsx#MailSelectionBar",
       "src/mail-thread/MailAddressLine.tsx#MailAddressLine",
       "src/mail-thread/MailMessage.tsx#MailMessage",
       "src/mail-thread/MailQuoteToggle.tsx#MailQuoteToggle",
@@ -1474,9 +1436,6 @@
       "src/select/shared.tsx#SelectScrollProvider",
       "src/select/shared.tsx#SelectScrollUpButton",
       "src/select/shared.tsx#SelectSeparator",
-      "src/settings-list/SettingsList.tsx#SettingsListDivider",
-      "src/settings-list/SettingsList.tsx#SettingsListGroup",
-      "src/settings-list/SettingsList.tsx#SettingsListItem",
       "src/settings-modal/SettingsArt.tsx#SettingsPlanArt",
       "src/settings-modal/SettingsFields.tsx#SettingsDateField",
       "src/settings-modal/SettingsFields.tsx#SettingsTextField",
@@ -1485,8 +1444,6 @@
       "src/settings-modal/SettingsPlanCard.tsx#SettingsGeneralPage",
       "src/settings-modal/SettingsPlanCard.tsx#SettingsPlanCard",
       "src/settings-modal/SettingsPlanCard.tsx#SettingsProfilePage",
-      "src/settings-modal/SettingsRows.tsx#SettingsCard",
-      "src/settings-modal/SettingsRows.tsx#SettingsRow",
       "src/settings-modal/SettingsRows.tsx#SettingsSection",
       "src/settings-modal/SettingsRows.tsx#SettingsSectionLabel",
       "src/settings-modal/SettingsRows.tsx#SettingsValueField",
@@ -1662,7 +1619,6 @@
     ],
     "verification": "existing web scope regressions rerun; native family regressions rerun but complete per-part native scope/portal and device matrix remains pending",
     "parts": [
-      "src/chat-people/ContactRow.tsx#ContactRow",
       "src/creator-studio/ReleaseCard.tsx#ReleaseStatusBadge",
       "src/notifications/NotificationPermissionGate.tsx#NotificationPermissionGate",
       "src/notifications/NotificationPermissionSheet.tsx#NotificationPermissionSheet",
@@ -1713,7 +1669,7 @@
   },
   "multi-agent-preview-parts": {
     "status": "independent-scale",
-    "reason": "SelectedAgentPreview owns a fixed 160×112px artwork viewport; avatar diameter and position are selected by participant count (80px for one, 62px for two or three, 48px for four or more), not by control size. It has no size prop, and its caption uses the standard Text family. Evidence: src/multi-agent-chat/SelectedAgentPreview.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.test.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.web.test.tsx. Both platform routes measure the viewport and each rendered avatar at counts 1, 2, 3 and 4 with no scope, xs, and nested xs/lg scopes; physical-device fit and responsive footprint remain pending.",
+    "reason": "SelectedAgentPreview owns a fixed 160\u00d7112px artwork viewport; avatar diameter and position are selected by participant count (80px for one, 62px for two or three, 48px for four or more), not by control size. It has no size prop, and its caption uses the standard Text family. Evidence: src/multi-agent-chat/SelectedAgentPreview.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.test.tsx, src/__tests__/SelectedAgentPreviewPublicPartScope.web.test.tsx. Both platform routes measure the viewport and each rendered avatar at counts 1, 2, 3 and 4 with no scope, xs, and nested xs/lg scopes; physical-device fit and responsive footprint remain pending.",
     "evidence": [
       "src/multi-agent-chat/SelectedAgentPreview.tsx",
       "src/__tests__/SelectedAgentPreviewPublicPartScope.test.tsx",
@@ -1722,7 +1678,7 @@
       "src/__tests__/SelectedAgentPreviewExport.test.ts",
       "src/__tests__/public-parts.test.ts"
     ],
-    "verification": "native renderer and RNW DOM measure the 160×112px viewport and count-specific 80/62/48px avatar geometry for 1/2/3/4 agents under no scope, xs and nested xs/lg scopes; device fit and responsive footprint pending",
+    "verification": "native renderer and RNW DOM measure the 160\u00d7112px viewport and count-specific 80/62/48px avatar geometry for 1/2/3/4 agents under no scope, xs and nested xs/lg scopes; device fit and responsive footprint pending",
     "parts": ["src/multi-agent-chat/SelectedAgentPreview.tsx#SelectedAgentPreview"]
   },
   "agent-creator-field-parts": {
@@ -1788,23 +1744,6 @@
       "src/item/Item.tsx#Item"
     ]
   },
-  "button-group-parts": {
-    "status": "applicable",
-    "reason": "ButtonGroup resolves a size recipe for the joined control and provides that resolved size to its items; ButtonGroupItem can override the group size and owns the segment geometry. Scope therefore applies to both public parts, with explicit group and item sizes retaining precedence.",
-    "evidence": [
-      "src/button-group/ButtonGroupBase.tsx",
-      "src/button-group/types.ts",
-      "src/__tests__/ButtonGroupPublicPartScope.test.tsx",
-      "src/__tests__/ButtonGroupPublicPartScope.web.test.tsx",
-      "src/__tests__/ButtonGroupTrigger.web.test.tsx",
-      "src/__tests__/button-group-trigger.test.tsx"
-    ],
-    "verification": "Native renderer and DOM web verify default md, inherited xs, lg scope clamped to md, explicit group md over xs, explicit item xs over group md, nested xs/lg scopes, and actual Portal inheritance. Popover asChild works with a single ButtonGroupItem control on native and web without nested buttons; physical-device layout and touch fit remain unverified",
-    "parts": [
-      "src/button-group/ButtonGroup.tsx#ButtonGroup",
-      "src/button-group/ButtonGroup.tsx#ButtonGroupItem"
-    ]
-  },
   "button-core": {
     "status": "applicable",
     "reason": "Button owns the semantic control size recipe, including target geometry, typography and touch accommodation. Size scope applies to this control; the shared native/web implementations resolve the same public precedence.",
@@ -1832,20 +1771,6 @@
     ],
     "verification": "Native renderer and DOM web verify the published ActivityFeedFilters export remains 32px high under default md, nearest xs/lg, and nested scopes; its Chip target geometry is explicit xl and independent of the surrounding control scope. Physical-device hit testing and accessibility remain unverified.",
     "parts": ["src/activity-feed/ActivityFeedFilters.tsx#ActivityFeedFilters"]
-  },
-  "glyph-button-size": {
-    "status": "independent-scale",
-    "reason": "GlyphButton exposes an arbitrary numeric diameter so consumers can preserve role-specific geometry such as 28, 40 or 44px. This is not the Bloom xs/sm/md/lg control-size vocabulary; BloomScope must not rewrite a caller-selected diameter.",
-    "evidence": [
-      "src/button/GlyphButton.tsx",
-      "src/button/types.ts",
-      "src/button/GlyphButton.stories.tsx",
-      "src/__tests__/GlyphButton.test.tsx",
-      "src/__tests__/GlyphButtonPublicPartScope.test.tsx",
-      "src/__tests__/GlyphButtonPublicPartScope.web.test.tsx"
-    ],
-    "verification": "Native renderer and DOM web measure the default 36px diameter unchanged under xs, explicit 40px under xs, and explicit 28px under lg. Glyph ratio and explicit glyph size are covered by GlyphButton.test.tsx; device-rendered hit fit and visual balance remain unverified",
-    "parts": ["src/button/GlyphButton.tsx#GlyphButton"]
   },
   "activity-heatmap-hit-target": {
     "status": "adaptation",
@@ -1900,11 +1825,11 @@
   },
   "announcement-controls": {
     "status": "independent-scale",
-    "reason": "Announcement has no Bloom control-size prop. The CTA uses an explicit sm Button, while the dismiss control uses an explicit xs CloseButton; its own control recipe stays independent of surrounding scope.",
+    "reason": "Announcement has no Bloom control-size prop. The CTA uses an explicit sm Button, while the dismiss control uses an explicit numeric Button; its own control recipe stays independent of surrounding scope.",
     "evidence": [
       "src/announcement/Announcement.tsx",
       "src/announcement/types.ts",
-      "src/button/CloseButton.tsx",
+      "src/button/Button.tsx",
       "src/button/shared.ts",
       "docs/announcement.mdx",
       "src/__tests__/AnnouncementPublicPartScope.test.tsx",
@@ -1939,7 +1864,7 @@
       "src/__tests__/TypographyPublicPartScope.test.tsx",
       "src/__tests__/TypographyPublicPartScope.web.test.tsx"
     ],
-    "verification": "Native renderer and DOM web verify font size, line height, weight and tracking for Text (including its Span alias), H1–H6, Title, Subtitle, P, Lead, Large, Small and Muted, plus Blockquote spacing, remain stable under default, xs, lg and nested control scopes. An explicit desktop TypographyScope scale remains effective independently of BloomScope.",
+    "verification": "Native renderer and DOM web verify font size, line height, weight and tracking for Text (including its Span alias), H1\u2013H6, Title, Subtitle, P, Lead, Large, Small and Muted, plus Blockquote spacing, remain stable under default, xs, lg and nested control scopes. An explicit desktop TypographyScope scale remains effective independently of BloomScope.",
     "parts": [
       "src/typography/Typography.tsx#Blockquote",
       "src/typography/Typography.tsx#H1",
@@ -2027,5 +1952,20 @@
     ],
     "verification": "Native-renderer behavior tests and Chromium input/scroll/focus validation; physical IME and device geometry not established by these checks.",
     "parts": ["src/chat-composer/CompactComposer.tsx#CompactComposer"]
+  },
+  "button-group-composition": {
+    "status": "applicable",
+    "reason": "Button.Group owns the shared surface, layout and inherited size. Its children are ordinary Button controls using the same size and density recipe as standalone buttons; explicit Button size wins over the group size.",
+    "evidence": [
+      "src/button/GroupBase.tsx",
+      "src/button/use-grouped-button.ts",
+      "src/button/types.ts",
+      "src/__tests__/ButtonGroupPublicPartScope.test.tsx",
+      "src/__tests__/ButtonGroupPublicPartScope.web.test.tsx",
+      "src/__tests__/ButtonGroup.test.tsx",
+      "src/__tests__/ButtonGroupTrigger.web.test.tsx"
+    ],
+    "verification": "Native mock and DOM web verify default md, xs/lg inheritance, explicit group and button overrides, nested scopes and portals. Material, selection, trigger composition and callbacks use the existing regression suites. Browser verifies matching header geometry and toggle/keyboard behavior in light/dark with desktop and touch emulation. Physical-device layout and touch fit remain unverified.",
+    "parts": ["src/button/Group.tsx#Group"]
   }
 }

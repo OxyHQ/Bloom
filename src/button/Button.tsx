@@ -1,5 +1,8 @@
+import { GlyphAttention } from './GlyphAttention';
+import { resolveButtonOverrides } from './shared';
+import { Group } from './Group';
+import { useGroupedButton } from './use-grouped-button';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
-import type { LinkButtonProps } from './types';
 import React, {
   type ComponentRef,
   forwardRef,
@@ -102,7 +105,6 @@ function renderTextContent(
 
 export type {
   ButtonProps,
-  LinkButtonProps,
   ButtonSize,
   ButtonFocusEvent,
   ButtonHoverEvent,
@@ -337,7 +339,15 @@ function ButtonContent({
   );
 }
 
-function ButtonLoading({ color, fallback }: { color?: string; fallback: string }) {
+function ButtonLoading({
+  color,
+  fallback,
+  children,
+}: {
+  color?: string;
+  fallback: string;
+  children?: React.ReactNode;
+}) {
   const { text } = useContext(ContentStyleContext);
   return (
     <View
@@ -346,7 +356,11 @@ function ButtonLoading({ color, fallback }: { color?: string; fallback: string }
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
-      <ActivityIndicator size="small" color={color ?? text?.color ?? fallback} />
+      {children === undefined ? (
+        <ActivityIndicator size="small" color={color ?? text?.color ?? fallback} />
+      ) : (
+        children
+      )}
     </View>
   );
 }
@@ -358,356 +372,461 @@ const StyledPressable: ComponentType<
   className: 'style',
 });
 
-const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(function ButtonComponent(
-  {
-    onPress,
-    onFocus,
-    onBlur,
-    onHoverIn,
-    onHoverOut,
-    onLayout,
-    'aria-hidden': ariaHidden,
-    accessibilityElementsHidden,
-    importantForAccessibility,
-    colors,
-    material = 'surface',
-    onLongPress,
-    onPressIn,
-    onPressOut,
-    children,
-    disabled = false,
-    pressed: togglePressed,
-    stopPropagation = false,
-    appearance: appearanceProp,
-    tone: toneProp,
-    size: sizeProp,
-    density: densityProp,
-    style,
-    textStyle,
-    icon,
-    iconSize: iconSizeProp,
-    leading,
-    trailing,
-    leadingIcon: LeadingIcon,
-    trailingIcon: TrailingIcon,
-    renderLeadingIcon,
-    renderTrailingIcon,
-    iconOnly = false,
-    wide = false,
-    linkTone,
-    underline,
-    textVariant,
-    numberOfLines,
-    href,
-    target,
-    loading = false,
-    loadingColor,
-    accessibilityLabel,
-    accessibilityHint,
-    accessibilityRole,
-    accessibilityValue,
-    accessibilityActions,
-    onAccessibilityAction,
-    hitSlop,
-    testID,
-    className,
-    'aria-current': ariaCurrent,
-    'aria-expanded': ariaExpanded,
-    'aria-haspopup': ariaHasPopup,
-    tabIndex,
-  },
-  ref,
-) {
-  const theme = useTheme();
-  // A tooltip around the button is its help on native, said after it as a Mac's
-  // help tag is, unless it says the button's own name (a dock icon's tooltip).
-  const hint = useDescribedByHint({
-    hint: accessibilityHint,
-    name: accessibilityLabel ?? textOf(children),
-  });
-  const layer = useSurfaceLayer();
-  const appearance = appearanceProp ?? 'solid';
-  const { size, tone } = useBloomAppearance(
-    { size: sizeProp, tone: toneProp },
-    { size: 'md', tone: 'accent' },
-  );
-  const density = useBloomControlDensity(densityProp);
-  const touch = useTouchInput();
-  const geometry = resolveButtonGeometry(size, textVariant, density, touch);
-  const isSquare = iconOnly || (icon != null && children == null);
-  const isIconVariant = isSquare;
-  const isLink = appearance === 'plain' && (href != null || linkTone != null);
-  const isInteractionBlocked = disabled || loading;
-  const iconSize =
-    typeof iconSizeProp === 'number' && Number.isFinite(iconSizeProp) && iconSizeProp > 0
-      ? iconSizeProp
-      : isIconVariant
-        ? density === 'compact'
-          ? geometry.iconSize
-          : ICON_BUTTON_ICON_SIZE[size]
-        : geometry.iconSize;
-  const palette = useMemo(
-    () =>
-      isLink && linkTone != null && toneProp == null
-        ? resolveLinkButtonPalette(theme, linkTone)
-        : resolveButtonPalette(appearance, theme, tone, colors, layer.fill, material),
-    [appearance, theme, tone, toneProp, isLink, linkTone, colors, layer.fill, material],
-  );
-  const underlineMode = resolveButtonUnderline(isLink, underline);
+const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
+  function ButtonComponent(props, ref) {
+    const {
+      onPress,
+      onFocus,
+      onBlur,
+      onHoverIn,
+      onHoverOut,
+      onLayout,
+      'aria-hidden': ariaHidden,
+      accessibilityElementsHidden,
+      importantForAccessibility,
+      colors: colorsProp,
+      inverted = false,
+      color,
+      hoverColor,
+      activeColor,
+      activeHoverColor,
+      fill,
+      hoverFill,
+      ring,
+      disabledOpacity,
+      grow = false,
+      paddingHorizontal,
+      attention,
+      decoration,
+      loadingIndicator,
+      material = 'surface',
+      onLongPress,
+      onPressIn,
+      onPressOut,
+      children: childrenProp,
+      disabled = false,
+      pressed: togglePressed,
+      stopPropagation = false,
+      appearance: appearanceProp,
+      tone: toneProp,
+      size: sizeProp,
+      density: densityProp,
+      style,
+      textStyle,
+      icon,
+      iconSize: iconSizeProp,
+      leading,
+      trailing,
+      leadingIcon: LeadingIcon,
+      trailingIcon: TrailingIcon,
+      renderLeadingIcon,
+      renderTrailingIcon,
+      iconOnly = false,
+      wide = false,
+      linkTone,
+      underline,
+      textVariant,
+      numberOfLines,
+      href,
+      target,
+      loading = false,
+      loadingColor,
+      accessibilityLabel,
+      accessibilityHint,
+      accessibilityRole,
+      accessibilityValue,
+      accessibilityActions,
+      onAccessibilityAction,
+      hitSlop,
+      testID,
+      className,
+      'aria-current': ariaCurrent,
+      'aria-expanded': ariaExpanded,
+      'aria-haspopup': ariaHasPopup,
+      tabIndex,
+    } = useGroupedButton(props);
+    const theme = useTheme();
+    const colors =
+      colorsProp ??
+      (inverted
+        ? { background: theme.colors.text, foreground: theme.colors.background }
+        : undefined);
+    // A tooltip around the button is its help on native, said after it as a Mac's
+    // help tag is, unless it says the button's own name (a dock icon's tooltip).
+    const hint = useDescribedByHint({
+      hint: accessibilityHint,
+      name: accessibilityLabel ?? textOf(typeof childrenProp === 'function' ? null : childrenProp),
+    });
+    const layer = useSurfaceLayer();
+    const appearance = appearanceProp ?? 'solid';
+    const { size, tone } = useBloomAppearance(
+      { size: typeof sizeProp === 'number' ? undefined : sizeProp, tone: toneProp },
+      { size: 'md', tone: 'accent' },
+    );
+    const density = useBloomControlDensity(densityProp);
+    const touch = useTouchInput();
+    const geometry = resolveButtonGeometry(
+      typeof sizeProp === 'number' ? sizeProp : size,
+      textVariant,
+      density,
+      touch,
+    );
+    const isSquare = !grow && (iconOnly || (icon != null && childrenProp == null));
+    const isIconVariant = isSquare;
+    const isLink = appearance === 'plain' && (href != null || linkTone != null);
+    const isInteractionBlocked = disabled || loading;
+    const iconSize =
+      typeof iconSizeProp === 'number' && Number.isFinite(iconSizeProp) && iconSizeProp > 0
+        ? iconSizeProp
+        : isIconVariant
+          ? density === 'compact' || typeof sizeProp === 'number'
+            ? geometry.iconSize
+            : ICON_BUTTON_ICON_SIZE[size]
+          : geometry.iconSize;
+    const palette = useMemo(
+      () =>
+        resolveButtonOverrides(
+          isLink && linkTone != null && toneProp == null
+            ? resolveLinkButtonPalette(theme, linkTone)
+            : resolveButtonPalette(appearance, theme, tone, colors, layer.fill, material),
+          {
+            color,
+            hoverColor,
+            activeColor,
+            activeHoverColor,
+            fill,
+            hoverFill,
+            ring,
+            disabledOpacity,
+          },
+        ),
+      [
+        appearance,
+        theme,
+        tone,
+        toneProp,
+        isLink,
+        linkTone,
+        colors,
+        layer.fill,
+        material,
+        color,
+        hoverColor,
+        activeColor,
+        activeHoverColor,
+        fill,
+        hoverFill,
+        ring,
+        disabledOpacity,
+      ],
+    );
+    const underlineMode = resolveButtonUnderline(isLink, underline);
 
-  // Pressed state drives the ACTIVE palette. Tracked through state rather than
-  // Pressable's function-form `style`, which NativeWind's css-interop swallows
-  // (dropping every base style with it).
-  const { state: pressed, onIn: onPressedIn, onOut: onPressedOut } = useInteractionState();
-  // Hover exists on this fork too: a react-native-web (Metro-web) consumer
-  // renders THIS file, and `linkTone="text"` is the first tone whose hover
-  // changes the foreground rather than only a background the web fork's
-  // stylesheet owned. On a real device no hover event is ever dispatched, so
-  // `hovered` stays false and nothing about native changes.
-  const { state: hovered, onIn: onHoveredIn, onOut: onHoveredOut } = useInteractionState();
+    // Pressed state drives the ACTIVE palette. Tracked through state rather than
+    // Pressable's function-form `style`, which NativeWind's css-interop swallows
+    // (dropping every base style with it).
+    const { state: pressed, onIn: onPressedIn, onOut: onPressedOut } = useInteractionState();
+    // Hover exists on this fork too: a react-native-web (Metro-web) consumer
+    // renders THIS file, and `linkTone="text"` is the first tone whose hover
+    // changes the foreground rather than only a background the web fork's
+    // stylesheet owned. On a real device no hover event is ever dispatched, so
+    // `hovered` stays false and nothing about native changes.
+    const { state: hovered, onIn: onHoveredIn, onOut: onHoveredOut } = useInteractionState();
 
-  // No press scale: a 0.98 scale-down was deliberately left out, so a press is
-  // the active paint alone.
-  const previewActive = useRef(false);
-  const pressOutCallback = useRef(onPressOut);
-  pressOutCallback.current = onPressOut;
-  const handlePressIn = isInteractionBlocked
-    ? undefined
-    : () => {
-        onPressedIn();
-        if (!previewActive.current) {
-          previewActive.current = true;
-          onPressIn?.();
-        }
-      };
-  const handlePressOut = () => {
-    onPressedOut();
-    if (previewActive.current) {
-      previewActive.current = false;
-      pressOutCallback.current?.();
-    }
-  };
-  useEffect(() => {
-    if (isInteractionBlocked && previewActive.current) {
-      previewActive.current = false;
+    // No press scale: a 0.98 scale-down was deliberately left out, so a press is
+    // the active paint alone.
+    const previewActive = useRef(false);
+    const pressOutCallback = useRef(onPressOut);
+    pressOutCallback.current = onPressOut;
+    const handlePressIn = isInteractionBlocked
+      ? undefined
+      : () => {
+          onPressedIn();
+          if (!previewActive.current) {
+            previewActive.current = true;
+            onPressIn?.();
+          }
+        };
+    const handlePressOut = () => {
       onPressedOut();
-      pressOutCallback.current?.();
-    }
-  }, [isInteractionBlocked, onPressedOut]);
-  useEffect(
-    () => () => {
       if (previewActive.current) {
         previewActive.current = false;
         pressOutCallback.current?.();
       }
-    },
-    [],
-  );
-
-  // A loading button keeps its rest paint under the spinner, like the web fork.
-  const paint = disabled
-    ? palette.disabled
-    : (pressed || togglePressed) && !loading
-      ? palette.active
-      : hovered && !loading
-        ? palette.hover
-        : palette.rest;
-
-  const baseStyles = useMemo((): ViewStyle => {
-    // Composed by spreading, never by assigning: React Native's style types are
-    // readonly, and each override below must still land after the base it
-    // replaces.
-    return {
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexDirection: 'row',
-      gap: geometry.gap,
-      height: geometry.height,
-      paddingHorizontal: geometry.paddingHorizontal,
-      borderRadius: BUTTON_RADIUS,
-      borderWidth: palette.borderWidth,
-      borderColor: paint.border,
-      // The gradient is a child layer, so the box itself stays clear of it.
-      backgroundColor: paint.surface ? 'transparent' : paint.background,
-      ...(palette.shadow ? { boxShadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'] } : null),
-      ...(disabled && palette.disabledOpacity != null
-        ? { opacity: palette.disabledOpacity }
-        : null),
-      ...(isSquare
-        ? {
-            width: wide ? Math.round(geometry.height * 1.5) : geometry.height,
-            paddingHorizontal: 0,
-          }
-        : null),
-      // LinkButton: no container — the label's own line box and a 4px
-      // gap. The touch target comes back through `hitSlop`.
-      ...(isLink && !isSquare
-        ? { height: undefined, paddingHorizontal: 0, gap: LINK_BUTTON_GAP, borderRadius: 4 }
-        : null),
     };
-  }, [geometry, palette, paint, theme.isDark, disabled, isSquare, isIconVariant, isLink]);
-
-  // The type ramp step (size, line height, tracking, weight) comes from the
-  // typography `Text` through `variant`; only the padding and colour are ours.
-  const computedTextStyle = useMemo(
-    (): TextStyle => ({
-      paddingHorizontal: isLink ? 0 : geometry.labelPaddingHorizontal,
-      color: paint.foreground,
-      ...(underlineMode === 'rest' || (underlineMode === 'hover' && hovered && !disabled)
-        ? { textDecorationLine: 'underline' as const }
-        : null),
-    }),
-    [geometry, paint.foreground, isLink, underlineMode, hovered, disabled],
-  );
-
-  const android = Platform.OS === 'android';
-  const defaultHitSlop = isSquare
-    ? (android ? ANDROID_SQUARE_HIT_SLOP : SQUARE_HIT_SLOP)[size]
-    : isLink
-      ? android
-        ? ANDROID_LINK_HIT_SLOP
-        : LINK_HIT_SLOP
-      : (android ? ANDROID_SIZE_HIT_SLOP : SIZE_HIT_SLOP)[size];
-
-  const IconFromProp = icon != null && isIconComponent(icon) ? icon : null;
-  const content = (classText: TextStyle) => {
-    const foreground = typeof classText.color === 'string' ? classText.color : paint.foreground;
-    const iconNode = IconFromProp ? (
-      <IconFromProp width={iconSize} height={iconSize} fill={foreground} />
-    ) : (
-      ((icon as React.ReactNode) ?? null)
+    useEffect(() => {
+      if (isInteractionBlocked && previewActive.current) {
+        previewActive.current = false;
+        onPressedOut();
+        pressOutCallback.current?.();
+      }
+    }, [isInteractionBlocked, onPressedOut]);
+    useEffect(
+      () => () => {
+        if (previewActive.current) {
+          previewActive.current = false;
+          pressOutCallback.current?.();
+        }
+      },
+      [],
     );
+
+    // A loading button keeps its rest paint under the spinner, like the web fork.
+    const paint = loading
+      ? palette.rest
+      : disabled
+        ? palette.disabled
+        : togglePressed
+          ? pressed || hovered
+            ? palette.selectedHover
+            : palette.selected
+          : pressed
+            ? palette.active
+            : hovered
+              ? palette.hover
+              : palette.rest;
+    const children =
+      typeof childrenProp === 'function' ? childrenProp(paint.foreground) : childrenProp;
+
+    const baseStyles = useMemo((): ViewStyle => {
+      // Composed by spreading, never by assigning: React Native's style types are
+      // readonly, and each override below must still land after the base it
+      // replaces.
+      return {
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row',
+        gap: geometry.gap,
+        height: geometry.height,
+        paddingHorizontal: paddingHorizontal ?? geometry.paddingHorizontal,
+        ...(grow ? { minWidth: geometry.height } : {}),
+        borderRadius: BUTTON_RADIUS,
+        borderWidth: palette.borderWidth,
+        borderColor: paint.border,
+        // The gradient is a child layer, so the box itself stays clear of it.
+        backgroundColor: paint.surface ? 'transparent' : paint.background,
+        ...(palette.shadow ? { boxShadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'] } : null),
+        ...(disabled && palette.disabledOpacity != null
+          ? { opacity: palette.disabledOpacity }
+          : null),
+        ...(isSquare
+          ? {
+              width: wide ? Math.round(geometry.height * 1.5) : geometry.height,
+              paddingHorizontal: 0,
+            }
+          : null),
+        // LinkButton: no container — the label's own line box and a 4px
+        // gap. The touch target comes back through `hitSlop`.
+        ...(isLink && !isSquare
+          ? { height: undefined, paddingHorizontal: 0, gap: LINK_BUTTON_GAP, borderRadius: 4 }
+          : null),
+      };
+    }, [
+      geometry,
+      palette,
+      paint,
+      theme.isDark,
+      disabled,
+      isSquare,
+      isLink,
+      wide,
+      grow,
+      paddingHorizontal,
+    ]);
+
+    // The type ramp step (size, line height, tracking, weight) comes from the
+    // typography `Text` through `variant`; only the padding and colour are ours.
+    const computedTextStyle = useMemo(
+      (): TextStyle => ({
+        paddingHorizontal: isLink ? 0 : geometry.labelPaddingHorizontal,
+        color: paint.foreground,
+        ...(underlineMode === 'rest' || (underlineMode === 'hover' && hovered && !disabled)
+          ? { textDecorationLine: 'underline' as const }
+          : null),
+      }),
+      [geometry, paint.foreground, isLink, underlineMode, hovered, disabled],
+    );
+
+    const android = Platform.OS === 'android';
+    const numericSlack = Math.max(0, ((android ? 48 : 44) - geometry.height) / 2);
+    const defaultHitSlop =
+      typeof sizeProp === 'number' && !isLink
+        ? {
+            top: numericSlack,
+            bottom: numericSlack,
+            left: isSquare ? numericSlack : 0,
+            right: isSquare ? numericSlack : 0,
+          }
+        : isSquare
+          ? (android ? ANDROID_SQUARE_HIT_SLOP : SQUARE_HIT_SLOP)[size]
+          : isLink
+            ? android
+              ? ANDROID_LINK_HIT_SLOP
+              : LINK_HIT_SLOP
+            : (android ? ANDROID_SIZE_HIT_SLOP : SIZE_HIT_SLOP)[size];
+
+    const IconFromProp = icon != null && isIconComponent(icon) ? icon : null;
+    const content = (classText: TextStyle) => {
+      const foreground = typeof classText.color === 'string' ? classText.color : paint.foreground;
+      const iconNode = IconFromProp ? (
+        <IconFromProp width={iconSize} height={iconSize} fill={foreground} />
+      ) : (
+        ((icon as React.ReactNode) ?? null)
+      );
+
+      return (
+        <>
+          {resolveIconSlot(renderLeadingIcon, iconSize, foreground, () =>
+            LeadingIcon ? (
+              <LeadingIcon width={iconSize} height={iconSize} fill={foreground} />
+            ) : null,
+          )}
+          {leading}
+          {iconNode}
+          {children != null && (!isSquare || (!renderLeadingIcon && !LeadingIcon && !iconNode))
+            ? renderTextContent(children, (text) => (
+                <Text
+                  variant={textVariant ?? geometry.type}
+                  numberOfLines={numberOfLines}
+                  style={[computedTextStyle, classText, textStyle]}
+                >
+                  {text}
+                </Text>
+              ))
+            : null}
+          {trailing}
+          {!isSquare
+            ? resolveIconSlot(renderTrailingIcon, iconSize, foreground, () =>
+                TrailingIcon ? (
+                  <TrailingIcon width={iconSize} height={iconSize} fill={foreground} />
+                ) : null,
+              )
+            : null}
+        </>
+      );
+    };
+
+    // Native has no current-destination trait; selected is its equivalent.
+    const selected =
+      togglePressed ??
+      (ariaCurrent === undefined ? undefined : ariaCurrent !== false && ariaCurrent !== 'false');
+    const handlePress = isInteractionBlocked
+      ? undefined
+      : (onPress ??
+        (href != null
+          ? () => (target === '_blank' ? openExternal(href) : openHref(href))
+          : undefined));
 
     return (
-      <>
-        {resolveIconSlot(renderLeadingIcon, iconSize, foreground, () =>
-          LeadingIcon ? <LeadingIcon width={iconSize} height={iconSize} fill={foreground} /> : null,
-        )}
-        {leading}
-        {iconNode}
-        {children != null && (!isSquare || (!renderLeadingIcon && !LeadingIcon && !iconNode))
-          ? renderTextContent(children, (text) => (
-              <Text
-                variant={textVariant ?? geometry.type}
-                numberOfLines={numberOfLines}
-                style={[computedTextStyle, classText, textStyle]}
-              >
-                {text}
-              </Text>
-            ))
-          : null}
-        {trailing}
-        {!isSquare
-          ? resolveIconSlot(renderTrailingIcon, iconSize, foreground, () =>
-              TrailingIcon ? (
-                <TrailingIcon width={iconSize} height={iconSize} fill={foreground} />
-              ) : null,
+      <StyledPressable
+        ref={ref}
+        onLayout={onLayout}
+        aria-hidden={ariaHidden}
+        accessibilityElementsHidden={accessibilityElementsHidden}
+        importantForAccessibility={importantForAccessibility}
+        // React Native's own `tabIndex`: -1 leaves the button out of the
+        // keyboard's Tab order (its `focusable`, which a native host's keyboard
+        // focus reads), as the DOM's does on web; a pointer and an assistive
+        // technology still press it.
+        {...(tabIndex === undefined
+          ? {}
+          : { tabIndex: tabIndex < 0 ? (-1 as const) : (0 as const) })}
+        className={className}
+        baseStyle={baseStyles}
+        style={style}
+        onLongPress={isInteractionBlocked ? undefined : onLongPress}
+        onPress={
+          handlePress
+            ? (event) => {
+                if (stopPropagation) event.stopPropagation();
+                handlePress(event);
+              }
+            : undefined
+        }
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        onHoverIn={
+          isInteractionBlocked
+            ? undefined
+            : (event) => {
+                onHoveredIn();
+                onHoverIn?.(event);
+              }
+        }
+        onHoverOut={(event) => {
+          onHoveredOut();
+          onHoverOut?.(event);
+        }}
+        disabled={isInteractionBlocked}
+        hitSlop={hitSlop ?? defaultHitSlop}
+        accessibilityLabel={accessibilityLabel}
+        accessibilityHint={hint}
+        // A column header has no `accessibilityRole` of React Native's: it is the ARIA
+        // `role`, which React Native takes over `accessibilityRole`.
+        accessibilityRole={
+          accessibilityRole === 'columnheader'
+            ? undefined
+            : (accessibilityRole ?? (href != null ? 'link' : 'button'))
+        }
+        role={accessibilityRole === 'columnheader' ? 'columnheader' : undefined}
+        // Spelled flat, as React Native folds them back into the value and as
+        // the rest of Bloom spells a value (aria-state-source-census).
+        aria-valuetext={accessibilityValue?.text}
+        aria-valuenow={accessibilityValue?.now}
+        aria-valuemin={accessibilityValue?.min}
+        aria-valuemax={accessibilityValue?.max}
+        accessibilityActions={accessibilityActions}
+        onAccessibilityAction={onAccessibilityAction}
+        // `aria-busy` matches what `Button.web.tsx` emits; react-native-web never
+        // reads `accessibilityState`, React Native folds `aria-busy` back into it.
+        aria-busy={loading || undefined}
+        aria-disabled={isInteractionBlocked || undefined}
+        aria-pressed={togglePressed}
+        aria-current={Platform.OS === 'web' ? ariaCurrent : undefined}
+        accessibilityState={{
+          disabled: isInteractionBlocked,
+          busy: loading,
+          ...(selected === undefined ? {} : { selected }),
+        }}
+        // Forwarded from an anchored family's `asChild` trigger — see
+        // `ButtonProps['aria-expanded']`.
+        aria-expanded={ariaExpanded}
+        {...(ariaHasPopup == null ? {} : { 'aria-haspopup': ariaHasPopup })}
+        testID={testID}
+      >
+        {paint.surface ? (
+          <SurfacePaint
+            fill={paint.background}
+            radius={StyleSheet.flatten(style)?.borderRadius ?? BUTTON_RADIUS}
+          />
+        ) : null}
+        <ButtonContent
+          loading={loading && loadingIndicator !== null}
+          gap={geometry.gap}
+          ownHeight={!(isLink && !isSquare)}
+        >
+          {(classText) =>
+            attention === undefined ? (
+              content(classText)
+            ) : (
+              <GlyphAttention token={attention} blocked={isInteractionBlocked}>
+                {content(classText)}
+              </GlyphAttention>
             )
-          : null}
-      </>
+          }
+        </ButtonContent>
+        {loading && loadingIndicator !== null ? (
+          <ButtonLoading color={loadingColor} fallback={paint.foreground}>
+            {loadingIndicator}
+          </ButtonLoading>
+        ) : null}
+        {decoration}
+      </StyledPressable>
     );
-  };
-
-  // Native has no current-destination trait; selected is its equivalent.
-  const selected =
-    togglePressed ??
-    (ariaCurrent === undefined ? undefined : ariaCurrent !== false && ariaCurrent !== 'false');
-  const handlePress = isInteractionBlocked
-    ? undefined
-    : (onPress ??
-      (href != null
-        ? () => (target === '_blank' ? openExternal(href) : openHref(href))
-        : undefined));
-
-  return (
-    <StyledPressable
-      ref={ref}
-      onLayout={onLayout}
-      aria-hidden={ariaHidden}
-      accessibilityElementsHidden={accessibilityElementsHidden}
-      importantForAccessibility={importantForAccessibility}
-      // React Native's own `tabIndex`: -1 leaves the button out of the
-      // keyboard's Tab order (its `focusable`, which a native host's keyboard
-      // focus reads), as the DOM's does on web; a pointer and an assistive
-      // technology still press it.
-      {...(tabIndex === undefined ? {} : { tabIndex: tabIndex < 0 ? (-1 as const) : (0 as const) })}
-      className={className}
-      baseStyle={baseStyles}
-      style={style}
-      onLongPress={isInteractionBlocked ? undefined : onLongPress}
-      onPress={
-        handlePress
-          ? (event) => {
-              if (stopPropagation) event.stopPropagation();
-              handlePress(event);
-            }
-          : undefined
-      }
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      onFocus={onFocus}
-      onBlur={onBlur}
-      onHoverIn={
-        isInteractionBlocked
-          ? undefined
-          : (event) => {
-              onHoveredIn();
-              onHoverIn?.(event);
-            }
-      }
-      onHoverOut={(event) => {
-        onHoveredOut();
-        onHoverOut?.(event);
-      }}
-      disabled={isInteractionBlocked}
-      hitSlop={hitSlop ?? defaultHitSlop}
-      accessibilityLabel={accessibilityLabel}
-      accessibilityHint={hint}
-      // A column header has no `accessibilityRole` of React Native's: it is the ARIA
-      // `role`, which React Native takes over `accessibilityRole`.
-      accessibilityRole={
-        accessibilityRole === 'columnheader'
-          ? undefined
-          : (accessibilityRole ?? (href != null ? 'link' : 'button'))
-      }
-      role={accessibilityRole === 'columnheader' ? 'columnheader' : undefined}
-      // Spelled flat, as React Native folds them back into the value and as
-      // the rest of Bloom spells a value (aria-state-source-census).
-      aria-valuetext={accessibilityValue?.text}
-      aria-valuenow={accessibilityValue?.now}
-      aria-valuemin={accessibilityValue?.min}
-      aria-valuemax={accessibilityValue?.max}
-      accessibilityActions={accessibilityActions}
-      onAccessibilityAction={onAccessibilityAction}
-      // `aria-busy` matches what `Button.web.tsx` emits; react-native-web never
-      // reads `accessibilityState`, React Native folds `aria-busy` back into it.
-      aria-busy={loading || undefined}
-      aria-pressed={togglePressed}
-      aria-current={Platform.OS === 'web' ? ariaCurrent : undefined}
-      accessibilityState={{
-        disabled: isInteractionBlocked,
-        busy: loading,
-        ...(selected === undefined ? {} : { selected }),
-      }}
-      // Forwarded from an anchored family's `asChild` trigger — see
-      // `ButtonProps['aria-expanded']`.
-      aria-expanded={ariaExpanded}
-      {...(ariaHasPopup == null ? {} : { 'aria-haspopup': ariaHasPopup })}
-      testID={testID}
-    >
-      {paint.surface ? (
-        <SurfacePaint
-          fill={paint.background}
-          radius={StyleSheet.flatten(style)?.borderRadius ?? BUTTON_RADIUS}
-        />
-      ) : null}
-      <ButtonContent loading={loading} gap={geometry.gap} ownHeight={!(isLink && !isSquare)}>
-        {content}
-      </ButtonContent>
-      {loading ? <ButtonLoading color={loadingColor} fallback={paint.foreground} /> : null}
-    </StyledPressable>
-  );
-});
+  },
+);
 
 const styles = StyleSheet.create({
   content: {
@@ -730,68 +849,8 @@ const styles = StyleSheet.create({
   },
 });
 
-export const Button: MemoRefComponent<ButtonProps> = memo(ButtonComponent);
+export const Button: MemoRefComponent<ButtonProps> & { Group: typeof Group } = Object.assign(
+  memo(ButtonComponent),
+  { Group },
+);
 Button.displayName = 'Button';
-
-export const PrimaryButton = memo((props: ButtonProps) => (
-  <Button appearance="solid" tone="accent" {...props} />
-));
-PrimaryButton.displayName = 'PrimaryButton';
-
-export const SecondaryButton = memo((props: ButtonProps) => (
-  <Button appearance="outline" tone="neutral" {...props} />
-));
-SecondaryButton.displayName = 'SecondaryButton';
-
-export const IconButton = memo((props: ButtonProps) => (
-  <Button appearance="outline" tone="neutral" {...props} iconOnly />
-));
-IconButton.displayName = 'IconButton';
-
-export const GhostButton = memo((props: ButtonProps) => (
-  <Button appearance="subtle" tone="accent" {...props} />
-));
-GhostButton.displayName = 'GhostButton';
-
-export const InverseButton = memo((props: ButtonProps) => {
-  const theme = useTheme();
-  return (
-    <Button
-      appearance="solid"
-      tone="neutral"
-      colors={
-        props.appearance == null && props.tone == null
-          ? { background: theme.colors.text, foreground: theme.colors.background }
-          : undefined
-      }
-      {...props}
-    />
-  );
-});
-InverseButton.displayName = 'InverseButton';
-
-export const TextButton = memo((props: ButtonProps) => (
-  <Button appearance="plain" tone="accent" {...props} />
-));
-TextButton.displayName = 'TextButton';
-
-// Named compositions share the canonical appearance and tone axes.
-export const OutlineButton = memo((props: ButtonProps) => (
-  <Button appearance="outline" tone="neutral" {...props} />
-));
-OutlineButton.displayName = 'OutlineButton';
-
-/**
- * `LinkButton`: an inline text action — no fill, no border, the label
- * (plus icons) in the accent or secondary colour. `linkTone` is its colour; pass
- * `href` to open a URL.
- */
-export const LinkButton = memo(({ linkTone = 'primary', ...props }: LinkButtonProps) => (
-  <Button appearance="plain" {...props} linkTone={linkTone} />
-));
-LinkButton.displayName = 'LinkButton';
-
-export const DestructiveButton = memo((props: ButtonProps) => (
-  <Button appearance="solid" tone="danger" {...props} />
-));
-DestructiveButton.displayName = 'DestructiveButton';

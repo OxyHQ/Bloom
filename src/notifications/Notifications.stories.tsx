@@ -1,5 +1,6 @@
+import { fn } from 'storybook/test';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { NotificationsScreen } from './index';
 import type { NotificationsScreenItem } from './types';
@@ -62,12 +63,12 @@ export const Empty: Story = { args: { notifications: [] } };
 export const Loading: Story = { args: { notifications: undefined, loading: true } };
 
 export const LoadError: Story = {
-  args: { notifications: undefined, error: true, onRetry: () => undefined },
+  args: { notifications: undefined, error: true, onRetry: fn().mockName('onRetry') },
 };
 
 export const PushBlocked: Story = {
   args: {
     notifications: ITEMS,
-    push: { enabled: false, onChange: () => undefined, blocked: true },
+    push: { enabled: false, onChange: fn().mockName('onChange'), blocked: true },
   },
 };

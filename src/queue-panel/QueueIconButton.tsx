@@ -1,8 +1,8 @@
-import React, { forwardRef, useMemo } from 'react';
+import { forwardRef, useMemo } from 'react';
 import type { ComponentRef } from 'react';
 import type { GestureResponderEvent, View } from 'react-native';
 
-import { GlyphButton } from '../button';
+import { Button } from '../button';
 import type { ButtonIconComponent } from '../button';
 import type { WebAriaProps } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -29,7 +29,7 @@ export interface QueueIconButtonProps {
  * the row highlight under the pointer or finger, glyph in the secondary text
  * colour turning primary. Colour change only.
  *
- * `button/GlyphButton` with this family's palette and its 0.5 glyph ratio (the
+ * `button/Button` with this family's palette and its 0.5 glyph ratio (the
  * lowest of the five that shared its shape, hence the explicit `glyphSize`).
  * The trigger props a menu composes onto it with `asChild` — `onPress`,
  * `aria-expanded`, `aria-haspopup`, the name — are NAMED here, because a
@@ -43,13 +43,16 @@ export const QueueIconButton: RefComponent<QueueIconButtonProps> = forwardRef<
   const paint = useMemo(() => resolveQueuePanelPaint(theme), [theme]);
 
   return (
-    <GlyphButton
+    <Button
+      appearance="plain"
+      tone="neutral"
+      iconOnly
       ref={ref}
       {...rest}
       icon={icon}
       accessibilityLabel={accessibilityLabel}
       size={size}
-      glyphSize={Math.round(size / 2)}
+      iconSize={Math.round(size / 2)}
       color={paint.textSecondary}
       hoverColor={paint.text}
       fill="transparent"

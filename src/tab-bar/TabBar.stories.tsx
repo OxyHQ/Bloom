@@ -1,6 +1,8 @@
 import { useArgs } from 'storybook/preview-api';
-import React, { useState, type PropsWithChildren } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { useState, type PropsWithChildren } from 'react';
+import { ScrollView } from 'react-native';
+import { Button } from '../button';
+import { List } from '../list';
 import { Text } from '../typography';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
@@ -99,24 +101,13 @@ function Feed({ heading, caption }: { heading: string; caption: string }) {
     <>
       <Text style={{ color: colors.text, fontSize: 24, fontWeight: '700' }}>{heading}</Text>
       <Text style={{ color: colors.textSecondary, fontSize: 14 }}>{caption}</Text>
-      {ROWS.map((row) => (
-        <View
-          key={row}
-          style={{
-            padding: 16,
-            borderRadius: 16,
-            borderWidth: 1,
-            borderColor: colors.border,
-            backgroundColor: colors.backgroundSecondary,
-            gap: 4,
-          }}
-        >
-          <Text style={{ color: colors.text, fontSize: 15, fontWeight: '600' }}>Item {row}</Text>
-          <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
-            Scrolls under the bar so the surface has something to blur.
-          </Text>
-        </View>
-      ))}
+      <List
+        items={ROWS.map((row) => ({
+          id: String(row),
+          title: `Item ${row}`,
+          supporting: 'Scrolls under the bar so the surface has something to blur.',
+        }))}
+      />
     </>
   );
 }
@@ -187,26 +178,14 @@ function MinimizeScreen() {
  * off-tab state arms it under the finger.
  */
 function NoSelectionScreen() {
-  const { colors } = useTheme();
   const [activeIndex, setActiveIndex] = useState(0);
   const offTab = activeIndex < 0;
   return (
     <Screen>
       <ScrollView contentContainerStyle={CONTENT_STYLE}>
-        <Pressable
-          onPress={() => setActiveIndex(offTab ? 0 : -1)}
-          style={{
-            padding: 16,
-            borderRadius: 16,
-            borderWidth: 1,
-            borderColor: colors.border,
-            backgroundColor: colors.backgroundSecondary,
-          }}
-        >
-          <Text style={{ color: colors.text, fontSize: 15, fontWeight: '600' }}>
-            {offTab ? 'Back to the Home tab' : 'Open a screen that is not a tab (index -1)'}
-          </Text>
-        </Pressable>
+        <Button appearance="outline" tone="neutral" onPress={() => setActiveIndex(offTab ? 0 : -1)}>
+          {offTab ? 'Back to the Home tab' : 'Open a screen outside the tabs'}
+        </Button>
         <Feed
           heading={offTab ? 'Not a tab' : (ITEMS[activeIndex]?.label ?? 'Feed')}
           caption={

@@ -1,23 +1,12 @@
 /**
- * Browser gate for the press feedback of the six non-surface-material families.
- *
- * Both halves are asserted, because each is trivially satisfiable without the
- * other: "the background moved" passes with the scale silently removed, and
- * "the scale ran" passes with the colour feedback gone — which is the state four
- * of these six were in on desktop before this landed.
- *
- * Usage: start Storybook, then
- *   node scripts/verify-press-feedback.mjs [--url http://localhost:6006]
- *
- * `Button` is deliberately absent: its filled variants paint the surface material, so a state
- * layer there would composite onto a translucent tint over expo-blur's material
- * over an unknown backdrop — a different computation from the one measured here,
- * and one nobody has measured yet. It keeps the scale alone.
- *
- * The scale only runs under a coarse pointer (`SUPPORTS_PRESS_SCALE`, resolved
- * at module load), so the media feature is emulated before the bundle evaluates
- * — otherwise a missing transform reads as "the scale is gone" when it is merely
- * suppressed, which is correct behaviour.
+ * Real-pointer press-feedback coverage for six integrations of Bloom controls.
+ * FAB and icon actions share Button; all current controls keep stable geometry.
+ * Selection controls assert their committed state and painted selection; unchecked
+ * Checkbox, underline Tabs and Radio deliberately have no held-state color delta.
+ * Read each painted layer (including SurfacePaint and pseudo elements), because
+ * a transparent host alone says nothing about the material visible behind it.
+ * Usage: CHROME_PATH=/path/to/chrome node scripts/verify-press-feedback.mjs
+ * Optional: --url http://localhost:6006, HEADED=1.
  */
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
@@ -27,15 +16,15 @@ const CASES = [
   {
     name: 'Fab',
     story: 'base-fab--default',
-    click: 'button.bloom-fab',
-    measure: 'button.bloom-fab',
+    click: 'button.bloom-btn[aria-label="Compose"]',
+    measure: 'button.bloom-btn[aria-label="Compose"]',
     raw: true,
   },
   {
-    name: 'FrostedIconButton',
-    story: 'base-frosted-icon-button--over-image',
-    click: 'button.bloom-frosted-icon-btn',
-    measure: 'button.bloom-frosted-icon-btn',
+    name: 'Button icon action',
+    story: 'base-glyphbutton--fills',
+    click: 'button.bloom-btn[aria-label="Filled at rest"]',
+    measure: 'button.bloom-btn[aria-label="Filled at rest"]',
     raw: true,
   },
   {
@@ -50,20 +39,23 @@ const CASES = [
     click: '[role="tab"]',
     measure: '[role="tab"]',
     index: 1,
+    selection: 'aria-selected',
   },
   {
     name: 'Checkbox',
     story: 'base-checkbox--basic',
+    selection: 'aria-checked',
     click: '[data-bloom-checkbox]',
-    measure: '[data-bloom-checkbox] > *',
+    measure: '[data-bloom-checkbox]',
   },
   // The indicator sits one node deeper: the Pressable's first child is the
   // Animated.View that carries the scale, and the circle is inside THAT.
   {
     name: 'Radio',
     story: 'base-radio--group',
-    click: '[role="radio"][aria-checked="false"]',
-    measure: '[role="radio"][aria-checked="false"] > * > *',
+    click: '[role="radio"][aria-label="People you follow"]',
+    measure: '[role="radio"][aria-label="People you follow"]',
+    selection: 'aria-checked',
   },
 ];
 
@@ -71,8 +63,8 @@ const argUrl = process.argv.indexOf('--url');
 const BASE = argUrl !== -1 ? process.argv[argUrl + 1] : 'http://localhost:6006';
 
 const b = await puppeteer.launch({
-  executablePath: '/opt/google/chrome/chrome',
-  headless: false,
+  executablePath: process.env.CHROME_PATH ?? '/opt/google/chrome/chrome',
+  headless: process.env.HEADED !== '1',
   args: ['--no-sandbox'],
   defaultViewport: { width: 1000, height: 800, hasTouch: true, isMobile: true },
 });
@@ -88,26 +80,45 @@ await cdp.send('Emulation.setEmulatedMedia', {
 let fails = 0;
 let measured = 0;
 for (const c of CASES) {
-  await p.goto(`${BASE}/iframe.html?id=${c.story}&viewMode=story`, { waitUntil: 'networkidle0' });
-  await p.waitForSelector(c.click);
+  await p.mouse.move(990, 790);
+  await p.goto(`${BASE}/iframe.html?id=${c.story}&viewMode=story`, {
+    waitUntil: 'domcontentloaded',
+  });
+  const selector = `#storybook-root ${c.click}`;
+  await p.waitForSelector(selector);
+  await p.evaluate(() => document.fonts.ready);
+  await new Promise((resolve) => setTimeout(resolve, 250));
   const read = () =>
     p.evaluate(
-      ([sel, i]) => {
-        const el = document.querySelectorAll(sel)[i ?? 0];
+      ([sel, index]) => {
+        const el = document.querySelectorAll(sel)[index ?? 0];
         if (!el) return null;
-        const cs = getComputedStyle(el);
-        // The scale may live on this node or on an animated wrapper just above it.
-        let t = cs.transform,
-          hop = 0,
-          n = el;
-        while (t === 'none' && n.parentElement && hop < 2) {
-          n = n.parentElement;
-          t = getComputedStyle(n).transform;
-          hop++;
-        }
-        return { bg: cs.backgroundColor, transform: t };
+        const rect = el.getBoundingClientRect();
+        const paint = [el, ...el.querySelectorAll('*')].flatMap((node) =>
+          [null, '::before', '::after'].map((pseudo) => {
+            const style = getComputedStyle(node, pseudo);
+            return [
+              style.backgroundColor,
+              style.backgroundImage,
+              style.color,
+              style.borderColor,
+              style.opacity,
+              style.fontWeight,
+              style.fill,
+              style.stroke,
+              style.stopColor,
+            ].join('|');
+          }),
+        );
+        return {
+          paint,
+          width: rect.width,
+          height: rect.height,
+          selected: el.getAttribute('aria-selected'),
+          checked: el.getAttribute('aria-checked'),
+        };
       },
-      [c.measure, c.index],
+      [selector, c.index],
     );
 
   const rest = await read();
@@ -123,29 +134,40 @@ for (const c of CASES) {
       const r = el.getBoundingClientRect();
       return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
     },
-    [c.click, c.index],
+    [selector, c.index],
   );
-  // The two RAW-DOM forks have no JS press state at all — their held state is a
-  // CSS `:active` rule, which a synthetic touch does not trigger. They take a
-  // real mouse press; the react-native-web controls take a real touch, because
-  // their scale is gated on a coarse pointer.
-  if (c.raw) await p.mouse.move(pt.x, pt.y);
-  if (c.raw) await p.mouse.down();
-  else await p.touchscreen.touchStart(pt.x, pt.y);
+  // Actual pointer events exercise CSS :active and React Native Web responders.
+  await p.mouse.move(pt.x, pt.y);
+  await p.mouse.down();
   await new Promise((r) => setTimeout(r, 420));
   const held = await read();
-  if (c.raw) await p.mouse.up();
-  else await p.touchscreen.touchEnd();
+  await p.mouse.up();
   await new Promise((r) => setTimeout(r, 300));
 
-  const bgMoved = rest.bg !== held.bg;
-  const scaled = held.transform !== 'none' && held.transform !== 'matrix(1, 0, 0, 1, 0, 0)';
-  if (!bgMoved || !scaled) fails++;
+  if (!held) {
+    console.log(`FAIL ${c.name}: target disappeared during press`);
+    fails++;
+    continue;
+  }
+  const released = await read();
+  const selectionChanged =
+    c.selection === 'aria-selected'
+      ? rest.selected !== released?.selected
+      : rest.checked !== released?.checked;
+  const paintMoved = c.selection
+    ? selectionChanged && JSON.stringify(rest.paint) !== JSON.stringify(released?.paint)
+    : JSON.stringify(rest.paint) !== JSON.stringify(held.paint);
+  const stable =
+    Math.abs(rest.width - held.width) < 0.5 && Math.abs(rest.height - held.height) < 0.5;
+  if (!paintMoved || !stable) {
+    fails++;
+    console.log({
+      rest: { width: rest.width, height: rest.height },
+      held: { width: held.width, height: held.height },
+    });
+  }
   console.log(
-    `${bgMoved && scaled ? 'PASS' : 'FAIL'}  ${c.name.padEnd(19)} bg ${rest.bg} → ${held.bg}`,
-  );
-  console.log(
-    `      ${' '.repeat(19)} transform held = ${held.transform}  ${scaled ? '' : '(NO SCALE)'}`,
+    `${paintMoved && stable ? 'PASS' : 'FAIL'} ${c.name}: painted state ${paintMoved ? 'changes' : 'unchanged'}, geometry ${stable ? 'stable' : 'changed'}`,
   );
 }
 await b.close();
@@ -154,6 +176,8 @@ if (measured !== CASES.length) {
   process.exit(1);
 }
 console.log(
-  fails === 0 ? '\nAll six: background moves AND the 0.99 scale runs.' : `\n${fails} failing.`,
+  fails === 0
+    ? '\nAll six: painted state changes and geometry remains stable.'
+    : `\n${fails} failing.`,
 );
 process.exit(fails === 0 ? 0 : 1);

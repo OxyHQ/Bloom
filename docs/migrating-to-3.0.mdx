@@ -59,7 +59,7 @@ shadow, same back button, same geometry.
   `BloomProvider` already mounts the registry. Do not add `insets.top` on top of
   the claim — the header's own safe-area padding is already in it.
 
-**Icon actions want `ButtonGroupItem`.** A `Button variant="secondary"` in a
+**Icon actions want `Button`.** A `Button variant="secondary"` in a
 floating header's `actions` paints its own opaque fill, which reads as a card
 floating over the content. It still works and it is still legible; it is just
 not the shape:
@@ -70,10 +70,10 @@ not the shape:
 -    <Button variant="secondary" iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search" />
 -    <Button variant="secondary" iconOnly leadingIcon={RiShare2Line} accessibilityLabel="Share" />
 -  </>
-+  <ButtonGroup accessibilityLabel="Page actions">
-+    <ButtonGroupItem iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search" />
-+    <ButtonGroupItem iconOnly leadingIcon={RiShare2Line} accessibilityLabel="Share" />
-+  </ButtonGroup>
++  <Button.Group accessibilityLabel="Page actions">
++    <Button iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search" />
++    <Button iconOnly leadingIcon={RiShare2Line} accessibilityLabel="Share" />
++  </Button.Group>
  }
 ```
 
@@ -118,9 +118,9 @@ Nothing below removes or renames anything.
 - **`@oxy.so/bloom/control-surface`** — the inherited presentation contract. A
   container declares a material and a density once; the controls inside default
   to it. See [Composition](/docs/composition).
-- **`ButtonGroup` gains `variant`, `dividers`, and a `glass` material.** The
+- **`Button.Group` gains `variant`, `dividers`, and a `glass` material.** The
   default is `solid`, which is what every existing group renders, unchanged.
-- **`ButtonGroupItem` gains `hitSlop`, `variant` and the trigger contract**
+- **`Button` gains `hitSlop`, `variant` and the trigger contract**
   (`onLongPress`, `aria-expanded`, `aria-haspopup`, `accessibilityRole`), so an
   item can be an anchored family's `asChild` trigger. `onPress` now receives the
   press event; a `() => void` handler still type-checks.

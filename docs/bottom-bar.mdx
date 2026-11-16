@@ -113,3 +113,43 @@ commit while its toolbar is still expanding. Reversal starts from the current
 presence; reduced motion removes or restores the exact footprint immediately.
 Native collapsible content retains its existing animation owner; frame-level
 synchronization with a physical keyboard is not implied by shared timing.
+
+## Expanding a search action
+
+Use `actionSizing="adaptive"` with `Search` to borrow a full row above the
+navigation when the search opens. BottomBar participates in Search's existing
+lifecycle: the same input stays mounted, the lane remains available throughout
+the closing animation, and then the capsule returns beside navigation. The
+vertical/horizontal handoff uses Search's shared motion spec and respects
+reduced motion. No open-state plumbing, width calculation or timer is needed
+in the application.
+
+```tsx
+<BottomBar
+  items={items}
+  value={destination}
+  onValueChange={setDestination}
+  actionBehavior="visible"
+  actionSizing="adaptive"
+  action={
+    <Search
+      presentation="collapsible"
+      value={query}
+      onValueChange={setQuery}
+      onClearText={() => setQuery('')}
+      label="Search library"
+    />
+  }
+/>
+```
+
+Other actions keep their intrinsic width by default. A generic editor can use
+`actionSizing="fill"`: the full inset width with `actionPlacement="above"`, or
+the remaining width beside navigation. This releases the initial button-width
+measurement without replacing the editor.
+
+`fill` and `adaptive` editors stay mounted when the keyboard opens, including
+an adaptive search with the default action behavior. Existing intrinsic actions
+keep their keyboard dismissal behavior. Put an editable bar in a
+`Screen` with `bottomBarKeyboardBehavior="follow"` for the existing native
+keyboard host; the default Screen behavior still hides bottom chrome.

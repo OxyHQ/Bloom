@@ -15,7 +15,7 @@ try {
   await page.setViewport({ width: 1440, height: 900 });
   const url = new URL('iframe.html', process.env.STORYBOOK_URL ?? 'http://localhost:6014');
   url.searchParams.set('viewMode', 'story');
-  url.searchParams.set('id', 'templates-social--light-olive');
+  url.searchParams.set('id', 'templates-social--default');
   await page.goto(url.href, { waitUntil: 'networkidle0' });
   await page.waitForSelector('[aria-label="New post"]');
   const expanded = await page.evaluate(() => {

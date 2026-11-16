@@ -4,11 +4,11 @@
 // changing that barrel or the set of web-forked subpaths.
 
 export { LibraryPanel } from './LibraryPanel.web';
-export { LibraryItem } from './LibraryItem';
+export { LibraryItem } from './LibraryItem.web';
 export { SearchField } from './SearchField';
 export { TopResultCard } from './TopResultCard';
 export { SearchResultTabs } from './SearchResultTabs';
-export { RecentSearches } from './RecentSearches';
+export { RecentSearches } from './RecentSearches.web';
 export { BrowseGrid } from './BrowseGrid';
 export { filterLibraryItems, sortLibraryItems } from './shared';
 export type { LibraryFilterState } from './shared';

@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { View } from 'react-native';
 
-import { LinkButton } from '../button';
+import { Button } from '../button';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { resolveMailPaint } from '../mail-list/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -83,7 +83,8 @@ export function MailAddressLine({
         {shown.map(addressName).join(', ')}
       </Text>
       {overflow > 0 ? (
-        <LinkButton
+        <Button
+          appearance="plain"
           size="xs"
           linkTone="secondary"
           onPress={() => setOpen(true)}
@@ -91,7 +92,7 @@ export function MailAddressLine({
           testID={testID ? `${testID}-more` : undefined}
         >
           {`+${overflow}`}
-        </LinkButton>
+        </Button>
       ) : null}
     </View>
   );

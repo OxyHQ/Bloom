@@ -1,3 +1,4 @@
+import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentRef } from 'react';
 import { ScrollArea } from '../layout/ScrollArea';
@@ -20,7 +21,7 @@ import { useMenuPalette, type MenuPalette } from '../floating/menu-palette';
 import { MENU_FONT_FAMILY } from '../floating/menu-type';
 import { ROW_ICON_SIZE } from '../floating/constants';
 import { TYPE_SCALE } from '../typography/scale';
-import { CloseButton } from '../button/CloseButton';
+import { Button } from '../button';
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { DialogProps } from '../dialog';
 import { useDialogControl } from '../dialog/context';
@@ -284,8 +285,12 @@ export function createCommand(Dialog: DialogComponent) {
               style={[styles.searchInput, SEARCH_WEB_RESET, { color: palette.text }]}
             />
             {query ? (
-              <CloseButton
-                size="xs"
+              <Button
+                appearance="outline"
+                tone="neutral"
+                iconOnly
+                icon={DismissActionIcon}
+                size={20}
                 accessibilityLabel={messages.clearSearch}
                 onPress={() => setQuery('')}
               />

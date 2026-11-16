@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -52,7 +53,7 @@ function MediaRailExample() {
               testID="media-share"
               icon={RiUpload2Line}
               accessibilityLabel="Share"
-              onPress={() => {}}
+              onPress={fn().mockName('Share.onPress')}
             />
           }
         >
@@ -73,7 +74,7 @@ function MediaRailExample() {
             icon={RiChat3Line}
             accessibilityLabel="Replies"
             count={12}
-            onPress={() => {}}
+            onPress={fn().mockName('Replies.onPress')}
           />
         </EngagementBar>
       </View>
@@ -112,7 +113,7 @@ function Post() {
             <EngagementAction
               icon={RiBarChartBoxLine}
               accessibilityLabel="Insights"
-              onPress={() => {}}
+              onPress={fn().mockName('Insights.onPress')}
             />
           </>
         }
@@ -132,7 +133,7 @@ function Post() {
           icon={RiChat3Line}
           accessibilityLabel="Reply"
           count={42}
-          onPress={() => {}}
+          onPress={fn().mockName('Reply.onPress')}
         />
         <EngagementAction
           icon={RiRepeat2Line}
@@ -142,7 +143,11 @@ function Post() {
           tone="success"
           onPress={() => setReposted((value) => !value)}
         />
-        <EngagementAction icon={RiUpload2Line} accessibilityLabel="Share" onPress={() => {}} />
+        <EngagementAction
+          icon={RiUpload2Line}
+          accessibilityLabel="Share"
+          onPress={fn().mockName('Share.onPress')}
+        />
       </EngagementBar>
     </View>
   );

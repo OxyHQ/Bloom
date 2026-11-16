@@ -1,11 +1,16 @@
-import React, { useMemo, useState } from 'react';
-import { TextInput, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { View } from 'react-native';
+import { fn } from 'storybook/test';
+import { Button } from '../button';
+import { EmptyState } from '../empty-state';
+import { Textarea } from '../textarea';
+import { NoteEditorToolbar } from '../note-editor';
+import { RiBold } from '../icons/remix/RiBold';
+import { RiItalic } from '../icons/remix/RiItalic';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Field } from '../field';
-import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { TYPE_SCALE } from '../typography/scale';
 import { MailComposeHeader } from './MailComposeHeader';
 import { MailComposeSurface } from './MailComposeSurface';
 import { MailRecipientField } from './MailRecipientField';
@@ -52,43 +57,6 @@ const ATTACHMENTS = [
   { id: 'f2', name: 'north-pitch.jpg', source: face('pitch') },
 ];
 
-/** A plain multi-line body. The real one is the app's editor; this is a slot filler. */
-function BodyArea() {
-  const theme = useTheme();
-  const [value, setValue] = useState(
-    'Thanks both — Thursday works. I will leave the side gate open and put the ladder out.',
-  );
-  return (
-    <TextInput
-      accessibilityLabel="Message body"
-      multiline
-      value={value}
-      onChangeText={setValue}
-      style={{
-        ...TYPE_SCALE['body-regular'],
-        color: theme.colors.text,
-        flex: 1,
-        minHeight: 120,
-        padding: 16,
-        borderWidth: 0,
-        backgroundColor: 'transparent',
-      }}
-    />
-  );
-}
-
-/** Stands in for `note-editor`'s `NoteEditorToolbar`, which owns this slot. */
-function ToolbarSlot() {
-  const theme = useTheme();
-  return (
-    <View style={{ paddingTop: 8, paddingBottom: 8, paddingLeft: 16, paddingRight: 16 }}>
-      <Text variant="caption-1-regular" style={{ color: theme.colors.textSecondary }}>
-        Formatting toolbar slot — NoteEditorToolbar goes here
-      </Text>
-    </View>
-  );
-}
-
 function useComposeState() {
   const [to, setTo] = useState<MailRecipient[]>(TO);
   const [cc, setCc] = useState<MailRecipient[]>([]);
@@ -113,118 +81,157 @@ function useComposeState() {
 //  Stories
 // ---------------------------------------------------------------------------
 
-export const DockedPanel: Story = {
-  render: () => {
-    const state = useComposeState();
-    const [minimized, setMinimized] = useState(false);
+function ComposeDemo({
+  variant = 'docked',
+  initiallyMinimized = false,
+}: {
+  variant?: 'docked' | 'sheet';
+  initiallyMinimized?: boolean;
+}) {
+  const state = useComposeState();
+  const [minimized, setMinimized] = useState(initiallyMinimized);
+  const [expanded, setExpanded] = useState(false);
+  const [closed, setClosed] = useState<string | null>(null);
+  const [body, setBody] = useState(
+    'Thanks both — Thursday works. I will leave the side gate open and put the ladder out.',
+  );
+  const [attachments, setAttachments] = useState(ATTACHMENTS);
+  const [bold, setBold] = useState(false);
+  const [italic, setItalic] = useState(false);
+  const addRecipient = (field: 'to' | 'cc' | 'bcc', recipient: MailRecipient) => {
+    const current = state[field];
+    const update = field === 'to' ? state.setTo : field === 'cc' ? state.setCc : state.setBcc;
+    if (!current.some((item) => item.address === recipient.address))
+      update([...current, recipient]);
+    state.setQuery('');
+  };
+  if (closed)
     return (
-      <View style={{ width: 520, maxWidth: '100%', height: 560 }}>
-        <MailComposeSurface
-          variant="docked"
-          minimized={minimized}
-          onMinimizedChange={setMinimized}
-          onExpand={() => undefined}
-          onClose={() => undefined}
-          onSend={() => undefined}
-          onAttach={() => undefined}
-          onDiscard={() => undefined}
-          attachments={ATTACHMENTS}
-          onAttachmentRemove={() => undefined}
-          toolbar={<ToolbarSlot />}
-          header={
-            <MailComposeHeader
-              to={state.to}
-              onToChange={state.setTo}
-              cc={state.cc}
-              onCcChange={state.setCc}
-              bcc={state.bcc}
-              onBccChange={state.setBcc}
-              subject={state.subject}
-              onSubjectChange={state.setSubject}
-              query={state.query}
-              onQueryChange={state.setQuery}
-              suggestions={state.suggestions}
-              onSuggestionPress={(field, suggestion) => {
-                if (field === 'to') state.setTo([...state.to, { ...suggestion }]);
-                state.setQuery('');
-              }}
-              onQuerySubmit={(field, value) => {
-                if (field === 'to') {
-                  state.setTo([...state.to, { id: value, address: value }]);
-                }
-                state.setQuery('');
-              }}
-              testID="docked-header"
-            />
-          }
-          testID="docked"
-        >
-          <BodyArea />
-        </MailComposeSurface>
-      </View>
-    );
-  },
-};
-
-export const MinimizedPanel: Story = {
-  render: () => (
-    <View style={{ width: 420, maxWidth: '100%' }}>
-      <MailComposeSurface
-        variant="docked"
-        title="Re: Roof survey"
-        minimized
-        onMinimizedChange={() => undefined}
-        onExpand={() => undefined}
-        onClose={() => undefined}
-        testID="minimized"
+      <EmptyState
+        title={closed}
+        action={{ label: 'Open composer', onPress: () => setClosed(null) }}
       />
-    </View>
-  ),
-};
-
-export const PhoneSheet: Story = {
-  render: () => {
-    const state = useComposeState();
-    const theme = useTheme();
-    return (
-      // In an app this is a `Dialog` in its sheet placement, or a `BottomSheet`
-      // child. The surface draws no overlay of its own, which is why it can be.
-      <View
-        style={{
-          width: 390,
-          maxWidth: '100%',
-          height: 640,
-          backgroundColor: theme.colors.background,
-        }}
-      >
-        <MailComposeSurface
-          variant="sheet"
-          onClose={() => undefined}
-          onSend={() => undefined}
-          onAttach={() => undefined}
-          onDiscard={() => undefined}
-          toolbar={<ToolbarSlot />}
-          header={
-            <MailComposeHeader
-              to={state.to}
-              onToChange={state.setTo}
-              cc={state.cc}
-              onCcChange={state.setCc}
-              bcc={state.bcc}
-              onBccChange={state.setBcc}
-              subject={state.subject}
-              onSubjectChange={state.setSubject}
-              testID="sheet-header"
-            />
-          }
-          testID="sheet"
-        >
-          <BodyArea />
-        </MailComposeSurface>
-      </View>
     );
-  },
-};
+  return (
+    <View
+      style={{
+        width: '100%',
+        maxWidth: expanded || variant === 'sheet' ? undefined : 620,
+        height: minimized ? undefined : 640,
+      }}
+    >
+      <MailComposeSurface
+        variant={expanded ? 'sheet' : variant}
+        minimized={minimized}
+        onMinimizedChange={setMinimized}
+        onExpand={() => {
+          setMinimized(false);
+          setExpanded(true);
+        }}
+        onClose={() => setClosed('Draft closed')}
+        onSend={() => {
+          fn().mockName('Compose.onSend')({
+            to: state.to,
+            cc: state.cc,
+            bcc: state.bcc,
+            subject: state.subject,
+            body,
+            attachments,
+          });
+          setClosed('Message submitted in demo');
+        }}
+        sendDisabled={state.to.length === 0 || state.to.some((recipient) => recipient.invalid)}
+        onAttach={() =>
+          setAttachments((current) => [
+            ...current,
+            {
+              id: `file-${current.length + 1}`,
+              name: `attachment-${current.length + 1}.pdf`,
+              caption: 'Sample attachment',
+            },
+          ])
+        }
+        onDiscard={() => {
+          setBody('');
+          setAttachments([]);
+          state.setSubject('');
+          setClosed('Draft discarded');
+        }}
+        attachments={attachments}
+        onAttachmentRemove={(id) =>
+          setAttachments((current) => current.filter((file) => file.id !== id))
+        }
+        toolbar={
+          <NoteEditorToolbar
+            accessibilityLabel="Message formatting"
+            actions={[
+              {
+                key: 'bold',
+                label: 'Bold',
+                icon: RiBold,
+                active: bold,
+                onPress: () => setBold((value) => !value),
+              },
+              {
+                key: 'italic',
+                label: 'Italic',
+                icon: RiItalic,
+                active: italic,
+                onPress: () => setItalic((value) => !value),
+              },
+            ]}
+          />
+        }
+        footer={
+          expanded ? (
+            <Button appearance="plain" onPress={() => setExpanded(false)}>
+              Dock composer
+            </Button>
+          ) : undefined
+        }
+        header={
+          <MailComposeHeader
+            to={state.to}
+            onToChange={state.setTo}
+            cc={state.cc}
+            onCcChange={state.setCc}
+            bcc={state.bcc}
+            onBccChange={state.setBcc}
+            subject={state.subject}
+            onSubjectChange={state.setSubject}
+            query={state.query}
+            onQueryChange={state.setQuery}
+            suggestions={state.suggestions}
+            onSuggestionPress={addRecipient}
+            onQuerySubmit={(field, value) =>
+              addRecipient(field, {
+                id: value,
+                address: value,
+                invalid: !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value),
+              })
+            }
+            testID={`${variant}-header`}
+          />
+        }
+        testID={initiallyMinimized ? 'minimized' : variant}
+      >
+        <Textarea
+          accessibilityLabel="Message body"
+          value={body}
+          onChangeText={setBody}
+          rows={6}
+          resize="none"
+          style={{ flex: 1, padding: 16 }}
+          inputStyle={{ fontWeight: bold ? '700' : '400', fontStyle: italic ? 'italic' : 'normal' }}
+        />
+      </MailComposeSurface>
+    </View>
+  );
+}
+
+export const DockedPanel: Story = { render: () => <ComposeDemo /> };
+export const MinimizedPanel: Story = { render: () => <ComposeDemo initiallyMinimized /> };
+export const Sheet: Story = { render: () => <ComposeDemo variant="sheet" /> };
 
 export const RecipientStates: Story = {
   render: () => {
@@ -269,7 +276,7 @@ export const RecipientStates: Story = {
             <MailRecipientField
               label="To"
               recipients={[]}
-              onRecipientsChange={() => undefined}
+              onRecipientsChange={fn().mockName('onRecipientsChange')}
               testID="rf-field"
             />
           </Field>

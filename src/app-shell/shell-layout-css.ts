@@ -108,13 +108,14 @@ ${root} [data-bloom-dock-moving] :is([data-bloom-shell-nav="${scope}"],[data-blo
     const topBarShown =
       options.topBar != null && (options.topBarVisibility === 'always' || !inFlow);
     const aligned =
+      mode !== 'rail' &&
       options.navigationAlign === 'content' &&
       (options.variant === 'feed' || options.variant === 'focus');
     const panelRegion = !!options.panels && options.variant !== 'canvas';
     const plain =
       plainNavFlushes(aligned, panelRegion) && sidebar?.surface === 'plain' && !topBarShown;
-    const flush = inFlow && (sidebar?.surface === 'docked' || plain);
-    const outer = framed || (inFlow && !flush) ? gutter : 0;
+    const flush = inFlow && (mode === 'rail' || sidebar?.surface === 'docked' || plain);
+    const outer = framed || (inFlow && (!flush || mode === 'rail')) ? gutter : 0;
     const edge = (name: 'top' | 'bottom' | 'start' | 'end') => {
       const declared = options.frameInset?.[name];
       return options.panels && outer > 0 && declared !== undefined && Number.isFinite(declared)
@@ -125,11 +126,13 @@ ${root} [data-bloom-dock-moving] :is([data-bloom-shell-nav="${scope}"],[data-blo
     // unless the shell declares a `navigationGap` the region beside it starts at its edge.
     const rowGap = !inFlow
       ? 0
-      : sidebar?.surface === 'docked'
-        ? outer
-        : plain && !navigationGapDeclared
-          ? 0
-          : navigationGap;
+      : mode === 'rail' && !navigationGapDeclared
+        ? 0
+        : sidebar?.surface === 'docked'
+          ? outer
+          : plain && !navigationGapDeclared
+            ? 0
+            : navigationGap;
     // A docked navigation's slot carries the row gap and closes from its own
     // width (plus that gap) down to what a flush one leaves of the frame.
     const docked = inFlow && sidebar?.dock != null;

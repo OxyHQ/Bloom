@@ -1,5 +1,4 @@
 import { Text } from '../typography';
-import React from 'react';
 import { Pressable, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 

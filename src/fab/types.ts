@@ -8,8 +8,9 @@ export type FabSize = BloomSize;
 export interface FabProps
   extends Omit<
     ButtonProps,
-    'children' | 'icon' | 'leadingIcon' | 'trailingIcon' | 'leading' | 'trailing'
+    'size' | 'children' | 'icon' | 'leadingIcon' | 'trailingIcon' | 'leading' | 'trailing'
   > {
+  size?: FabSize;
   icon?: ButtonIconComponent;
   label?: string;
   /** Glyph dimensions in points; defaults to the selected size's icon scale. */

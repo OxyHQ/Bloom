@@ -14,7 +14,6 @@ import {
   RiAlarmWarningLine,
   RiBookmarkLine,
   RiCompass3Line,
-  RiGlobalLine,
   RiHome4Line,
   RiMegaphoneLine,
   RiMenuLine,
@@ -24,7 +23,7 @@ import { BREAKPOINTS } from '../../src/styles/breakpoints';
 import { WEB_POSITION_STICKY, type WebCssStyle } from '../../src/styles/web-view-style';
 import { Z_INDEX } from '../../src/styles/z-index';
 import { useTheme } from '../../src/theme/use-theme';
-import { Text } from '../../src/typography';
+
 import { TEMPLATE_FRAME } from '../shared/dashboard';
 import { PEOPLE } from './data';
 
@@ -330,14 +329,6 @@ function HeaderActions({ listHome = true }: { listHome?: boolean }) {
           List your home
         </Button>
       ) : null}
-      <Button
-        size="md"
-        iconOnly
-        leadingIcon={RiGlobalLine}
-        accessibilityLabel="Language and currency"
-        tone="accent"
-        appearance="subtle"
-      />
     </View>
   );
 }

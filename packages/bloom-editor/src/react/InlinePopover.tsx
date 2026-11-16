@@ -1,5 +1,5 @@
 import { Platform, StyleSheet, Text } from 'react-native';
-import { LinkButton } from '@oxy.so/bloom/button';
+import { Button } from '@oxy.so/bloom/button';
 import { type EditorContextValue, useEditorContext } from './context';
 import { BarButton } from './FormatBar';
 import type { InlineTarget } from './inline-target';
@@ -41,7 +41,9 @@ export function InlineActions({
         </Text>
       ) : null}
       {target.kind === 'link' ? (
-        <LinkButton
+        <Button
+          appearance="plain"
+          linkTone="primary"
           href={target.href}
           textStyle={{ color: theme.accent }}
           accessibilityLabel={labels.open}
@@ -62,7 +64,7 @@ export function InlineActions({
           }}
         >
           {labels.open}
-        </LinkButton>
+        </Button>
       ) : canOpen ? (
         <BarButton label={labels.open} theme={theme} onPress={open}>
           <Text style={[styles.word, { color: theme.accent }]}>{labels.open}</Text>

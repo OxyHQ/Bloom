@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useMemo, useSyncExternalStore } from 'react';
 import { useTheme } from '@oxy.so/bloom/theme';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Button } from '@oxy.so/bloom/button';
+import { Card } from '@oxy.so/bloom/card';
+import { ScrollArea as ScrollView } from '@oxy.so/bloom/layout';
 import {
   appendChild,
   DEFAULT_SCHEMA,
@@ -242,15 +245,14 @@ function EditorDemo({ toolbar = false }: { toolbar?: boolean }) {
   const controller = useEditorController(store);
   const theme = useEditorTheme();
   return (
-    <View style={{ flex: 1, height: '100vh' as unknown as number }}>
+    <View style={{ flex: 1, minHeight: 0 }}>
       <ScrollView style={{ flex: 1 }}>
         <View
           style={{
             maxWidth: 720,
             width: '100%',
             alignSelf: 'center',
-            paddingHorizontal: 64,
-            paddingVertical: 48,
+            padding: 24,
           }}
         >
           <BlockEditor
@@ -337,7 +339,7 @@ function SurfaceDemo() {
   const notes = useSyncExternalStore(store.subscribe, () => store.getSnapshot().doc.root);
   return (
     <EditorSurface store={store} slashItems={SLASH_ITEMS} mentions={MENTIONS} theme={theme}>
-      <View style={{ flexDirection: 'row', gap: 32, padding: 48 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, padding: 24 }}>
         {notes.map((id, i) => (
           <NoteDemo key={id} store={store} id={id} label={`Add to note ${i + 1}`} />
         ))}
@@ -347,23 +349,15 @@ function SurfaceDemo() {
 }
 
 function NoteDemo({ store, id, label }: { store: EditorStore; id: string; label: string }) {
-  const { colors } = useTheme();
   const children = useSyncExternalStore(
     store.subscribe,
     () => store.getSnapshot().doc.blocks[id]?.children ?? [],
   );
   return (
-    <View
-      style={{
-        width: 320,
-        padding: 16,
-        borderWidth: 1,
-        borderColor: colors.border,
-        borderRadius: 8,
-      }}
-    >
+    <Card style={{ width: 320, maxWidth: '100%', padding: 16, gap: 8 }}>
       <BlockList ids={children} depth={0} />
-      <Pressable
+      <Button
+        appearance="plain"
         accessibilityRole="button"
         accessibilityLabel={label}
         onPress={() => {
@@ -371,14 +365,15 @@ function NoteDemo({ store, id, label }: { store: EditorStore; id: string; label:
           store.run((c) => appendChild(c, id, 'paragraph'));
         }}
       >
-        <Text style={{ color: '#888', paddingTop: 8 }}>+ {label}</Text>
-      </Pressable>
-    </View>
+        {label}
+      </Button>
+    </Card>
   );
 }
 
 const meta: Meta<typeof EditorDemo> = {
   id: 'editor-blockeditor',
+  excludeStories: /^(MENTIONS|SLASH_ITEMS)$/,
   title: 'Patterns/Productivity/Block Editor',
   component: EditorDemo,
   parameters: { layout: 'fullscreen' },

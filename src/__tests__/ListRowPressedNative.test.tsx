@@ -22,10 +22,11 @@ import type React from 'react';
 import { render } from '@testing-library/react-native';
 import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
-import { ArchivedRow, ChatListItem, ChatSearchResults } from '../chat-list';
+import { ChatSearchResults } from '../chat-list';
+import { ListItem } from '../list';
+import { mixColors } from '../styles/color-contrast';
 import { resolveChatListPaint } from '../chat-list/shared';
-import { MailRow } from '../mail-list';
-import type { MailRowProps } from '../mail-list/types';
+import type { ListMailData } from '../list/types';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
@@ -87,21 +88,43 @@ function expectPressPaintedByPressable(
 
 describe('pressed fill on native list rows', () => {
   it('ChatListItem: the link paints the press, the row never does', () => {
-    const screen = mount(<ChatListItem name="Ana" onPress={() => undefined} testID="r" />);
+    const screen = mount(
+      <ListItem conversation={{ name: 'Ana' }} onPress={() => undefined} testID="r" />,
+    );
     const paint = resolveChatListPaint(theme);
     expectPressPaintedByPressable(screen, 'r', { pressed: paint.hover, row: 'transparent' });
   });
 
   it('ChatListItem: a selected row keeps its fill and gains no pressed one', () => {
-    const screen = mount(<ChatListItem name="Ana" selected onPress={() => undefined} testID="r" />);
+    const screen = mount(
+      <ListItem
+        conversation={{ name: 'Ana' }}
+        active={true}
+        onPress={() => undefined}
+        testID="r"
+      />,
+    );
     const paint = resolveChatListPaint(theme);
-    expectPressPaintedByPressable(screen, 'r', { pressed: undefined, row: paint.selected });
+    expectPressPaintedByPressable(screen, 'r', {
+      pressed: undefined,
+      row: mixColors(theme.colors.background, theme.colors.text, 0.06),
+    });
   });
 
-  it('ArchivedRow', () => {
-    const screen = mount(<ArchivedRow count={3} onPress={() => undefined} testID="r" />);
-    const paint = resolveChatListPaint(theme);
-    expectPressPaintedByPressable(screen, 'r', { pressed: paint.hover, row: 'transparent' });
+  it('ListItem: archive destination', () => {
+    const screen = mount(
+      <ListItem
+        title="Archived"
+        label="Archived, 3 chats"
+        trailing="3"
+        onPress={() => undefined}
+        testID="r"
+      />,
+    );
+    expectPressPaintedByPressable(screen, 'r', {
+      pressed: mixColors(theme.colors.background, theme.colors.text, 0.06),
+      row: 'transparent',
+    });
   });
 
   it('ChatSearchResults rows', () => {
@@ -126,8 +149,8 @@ describe('pressed fill on native list rows', () => {
       subject: 'Roof survey',
       snippet: 'The surveyor came back this morning',
       time: '14:02',
-    } satisfies Partial<MailRowProps> as MailRowProps;
-    const plain = mount(<MailRow {...ROW} onPress={() => undefined} testID="m" />);
+    } satisfies Partial<ListMailData> as ListMailData;
+    const plain = mount(<ListItem mail={{ ...ROW }} onPress={() => undefined} testID="m" />);
     const { link } = linkOf(plain, 'm-link');
     const pressedFill = fillOf((link.props.style as StyleFn)({ pressed: true }));
     expect(typeof pressedFill).toBe('string');
@@ -138,7 +161,9 @@ describe('pressed fill on native list rows', () => {
     });
     plain.unmount();
 
-    const selected = mount(<MailRow {...ROW} selected onPress={() => undefined} testID="m" />);
+    const selected = mount(
+      <ListItem mail={{ ...ROW }} active={true} onPress={() => undefined} testID="m" />,
+    );
     const rowFill = fillOf(selected.getByTestId('m', HIDDEN).props.style);
     expect(rowFill).not.toBe('transparent');
     expectPressPaintedByPressable(selected, 'm', {

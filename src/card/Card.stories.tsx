@@ -1,4 +1,4 @@
-import React from 'react';
+import { fn } from 'storybook/test';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -68,7 +68,7 @@ export const Variants: Story = {
             </CardDescription>
           </CardBody>
           <CardFooter>
-            <Button size="sm" onPress={() => {}} appearance="subtle" tone="accent">
+            <Button size="sm" onPress={fn().mockName('onPress')} appearance="subtle" tone="accent">
               Dismiss
             </Button>
           </CardFooter>
@@ -128,7 +128,7 @@ export const Axes: Story = {
       <Card appearance="plain" radius="radius-16">
         <CardBody>
           <CardTitle>no border, no shadow</CardTitle>
-          <CardDescription>What a `SettingsListGroup` is.</CardDescription>
+          <CardDescription>What a `GroupedSection` is.</CardDescription>
         </CardBody>
       </Card>
     </View>
@@ -143,13 +143,13 @@ export const Pressable: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ maxWidth: '100%', gap: 16, width: 320 }}>
-      <Card onPress={() => {}} testID="card-pressable">
+      <Card onPress={fn().mockName('onPress')} testID="card-pressable">
         <CardBody>
           <CardTitle>Pressable card</CardTitle>
           <CardDescription>role=button, dims to 0.85 while held</CardDescription>
         </CardBody>
       </Card>
-      <Card onPress={() => {}} disabled testID="card-disabled">
+      <Card onPress={fn().mockName('onPress')} disabled testID="card-disabled">
         <CardBody>
           <CardTitle>Disabled</CardTitle>
           <CardDescription>0.5 opacity, no press feedback</CardDescription>

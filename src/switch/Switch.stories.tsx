@@ -1,10 +1,10 @@
 import { useArgs } from 'storybook/preview-api';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Switch } from './index';
-import { Text } from '../typography';
+import { List } from '../list';
 
 const meta: Meta<typeof Switch> = {
   id: 'base-switch',
@@ -76,17 +76,22 @@ export const InARow: Story = {
   render: function RowStory() {
     const [on, setOn] = useState(true);
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          width: 320,
-        }}
-      >
-        <Text>Sync over cellular</Text>
-        <Switch checked={on} onCheckedChange={setOn} accessibilityLabel="Sync over cellular" />
-      </View>
+      <List
+        style={{ width: '100%' }}
+        items={[
+          {
+            id: 'cellular',
+            title: 'Sync over cellular',
+            trailing: (
+              <Switch
+                checked={on}
+                onCheckedChange={setOn}
+                accessibilityLabel="Sync over cellular"
+              />
+            ),
+          },
+        ]}
+      />
     );
   },
 };

@@ -1,3 +1,4 @@
+import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
 import { ScrollArea } from '../layout/ScrollArea';
 import { type ComponentRef, useRef, useState, type ReactNode } from 'react';
 import { Platform, useWindowDimensions, type TextInput } from 'react-native';
@@ -71,7 +72,7 @@ export function CreateTicketDialog({
   onCreate: (ticket: NewProjectTicket) => void;
 }) {
   const { messages: m } = useMessages(PROJECT_BOARD_MESSAGES);
-  const { Button, CloseButton, Dialog, TicketGenieSurface } = useProjectBoardPlatform();
+  const { Button, Dialog, TicketGenieSurface } = useProjectBoardPlatform();
   const control = useDialogControl();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -157,8 +158,12 @@ export function CreateTicketDialog({
                       {m.newTicket}
                     </Text>
                   </View>
-                  <CloseButton
-                    size="sm"
+                  <Button
+                    appearance="outline"
+                    tone="neutral"
+                    iconOnly
+                    icon={DismissActionIcon}
+                    size={24}
                     accessibilityLabel={m.closeCreate}
                     onPress={() => control.close()}
                   />

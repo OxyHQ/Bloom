@@ -1,0 +1,3175 @@
+{
+  "date": "2026-11-15",
+  "scope": "Every CSF file under src, templates and workspace packages; composition, controls, theme/viewport ownership, interaction wiring and regression purpose. Referenced template helpers inspected as part of their owning story.",
+  "reviewedFiles": 305,
+  "storiesBefore": 1667,
+  "storiesAfter": 1589,
+  "removedStoryIds": [
+    "agents-ai-profile-card--phone",
+    "base-fact-strip--narrow",
+    "base-fact-strip--wide",
+    "base-sortable-photo-grid--narrow",
+    "base-stepper--narrow-and-wide",
+    "blocks-chat-calls--video-call-wide",
+    "blocks-chat-calls--voice-call-wide",
+    "blocks-chat-chat-screen--full-screen-narrow",
+    "blocks-chat-chat-screen--full-screen-wide",
+    "blocks-chat-chat-screen--split-layout-panes",
+    "blocks-chat-composer--wide",
+    "blocks-chat-message-bubble--wide",
+    "blocks-chat-message-media--narrow",
+    "blocks-crm-activityfeed--both-themes",
+    "blocks-crm-activityfeed--narrow-and-long",
+    "blocks-crm-contactprofilecard--both-themes",
+    "blocks-crm-leadscore--beside-the-reference",
+    "blocks-crm-leadscore--both-themes",
+    "blocks-crm-leadscore--narrow-and-long",
+    "blocks-crm-pipeline--both-themes",
+    "blocks-data-table--narrow",
+    "blocks-freight-carrierquote--narrow",
+    "blocks-freight-shipmentrequest--modes",
+    "blocks-freight-shipmentrequest--narrow",
+    "blocks-freight-vehiclepicker--modes",
+    "blocks-freight-vehiclepicker--narrow",
+    "blocks-fulfilment-earnings--modes",
+    "blocks-fulfilment-jobboard--modes",
+    "blocks-fulfilment-proofofdelivery--modes",
+    "blocks-housing-eviction--detail-narrow",
+    "blocks-housing-eviction--detail-wide",
+    "blocks-housing-eviction--list-narrow",
+    "blocks-housing-eviction--list-wide",
+    "blocks-housing-home-search--mobile-buy",
+    "blocks-housing-home-search--mobile-rent",
+    "blocks-housing-home-search--mobile-stays",
+    "blocks-housing-home-search--mobile-swap",
+    "blocks-housing-listing-card--results-narrow",
+    "blocks-housing-map--housing-map-narrow",
+    "blocks-housing-place-reviews--section-narrow",
+    "blocks-housing-place-reviews--section-wide",
+    "blocks-housing-property-insights--rental-page-narrow",
+    "blocks-housing-property-insights--rental-page-wide",
+    "blocks-housing-property-insights--sale-page-narrow",
+    "blocks-housing-property-insights--sale-page-wide",
+    "blocks-housing-tenancy--landlord-view-narrow",
+    "blocks-housing-tenancy--landlord-view-wide",
+    "blocks-housing-tenancy--tenant-dashboard-narrow",
+    "blocks-housing-tenancy--tenant-dashboard-wide",
+    "blocks-mail-mail-compose--phone-sheet",
+    "blocks-mail-mail-thread--thread-on-phone",
+    "blocks-music-library--desktop",
+    "blocks-music-library--mobile",
+    "blocks-music-lyrics--mobile",
+    "blocks-music-media-cards--home-narrow",
+    "blocks-music-media-cards--home-wide",
+    "blocks-music-media-headers--narrow",
+    "blocks-music-player--full-screen-desktop",
+    "blocks-music-player--full-screen-mobile",
+    "blocks-music-player--mobile-mini-player",
+    "blocks-music-queue-panel--narrow",
+    "blocks-music-queue-panel--wide",
+    "blocks-music-search--mobile",
+    "blocks-music-search--mobile-results",
+    "blocks-music-track-list--narrow-390",
+    "blocks-notes-note-card--phone",
+    "blocks-notes-note-editor--phone",
+    "blocks-notes-note-editor--toolbar-widths",
+    "blocks-notes-outline-nav--phone",
+    "blocks-notes-tag-field--phone",
+    "blocks-recent-hires-card--widths",
+    "blocks-settings-modal--as-a-narrow-window",
+    "blocks-stays-booking--narrow",
+    "blocks-stays-category-bar--widths",
+    "blocks-stays-listing-card--narrow",
+    "blocks-stays-listing-card--wide",
+    "blocks-stays-listing-details--page-narrow",
+    "blocks-stays-listing-details--page-wide",
+    "blocks-stays-stay-filters--housing-buy-wide",
+    "blocks-stays-stay-filters--housing-rent-narrow",
+    "blocks-stays-stay-filters--narrow",
+    "blocks-stays-stay-filters--wide",
+    "blocks-stays-stay-search--compact",
+    "charts-activity-rings--narrow",
+    "charts-agents-chart--narrow",
+    "charts-area-chart--narrow",
+    "charts-bar-list--narrow",
+    "charts-combo-chart--narrow",
+    "charts-earnings-chart--widths",
+    "charts-heatmap-chart--narrow",
+    "charts-line-chart--narrow",
+    "charts-most-active-days--wide",
+    "charts-radial-chart--narrow",
+    "charts-revenue-orders--narrow",
+    "charts-sankey-chart--narrow-mobile",
+    "charts-scatter-chart--narrow",
+    "charts-stage-bars--narrow",
+    "charts-steps--wide",
+    "charts-tokens-chart--narrow",
+    "editor-blockeditor--mentions",
+    "editor-blockeditor--slash-items",
+    "templates-ai-chat--tonal-copper",
+    "templates-ai-chat--tonal-olive",
+    "templates-coherent-system--desktop",
+    "templates-coherent-system--desktop-detached",
+    "templates-coherent-system--desktop-docked",
+    "templates-finance-dashboard--tonal-copper",
+    "templates-finance-dashboard--tonal-olive",
+    "templates-home-dashboard--tonal-copper",
+    "templates-home-dashboard--tonal-olive",
+    "templates-social--copper",
+    "templates-social--dark-olive",
+    "templates-social--light-olive",
+    "templates-workspace--light",
+    "templates-workspace--tonal-copper",
+    "templates-workspace--tonal-olive"
+  ],
+  "addedStoryIds": [
+    "base-fact-strip--default",
+    "base-stepper--filter-rows",
+    "blocks-chat-calls--reconnecting",
+    "blocks-chat-chat-screen--full-screen",
+    "blocks-crm-activityfeed--long-content",
+    "blocks-crm-leadscore--long-factors",
+    "blocks-housing-eviction--detail",
+    "blocks-housing-eviction--list",
+    "blocks-housing-home-search--compact-flow",
+    "blocks-housing-place-reviews--section",
+    "blocks-housing-property-insights--rental-page",
+    "blocks-housing-property-insights--sale-page",
+    "blocks-housing-tenancy--landlord-view",
+    "blocks-housing-tenancy--tenant-dashboard",
+    "blocks-mail-mail-compose--sheet",
+    "blocks-music-library--default",
+    "blocks-music-media-cards--home-screen",
+    "blocks-music-player--full-screen",
+    "blocks-music-player--mini-players",
+    "blocks-music-queue-panel--sheet",
+    "blocks-notes-note-editor--long-title",
+    "blocks-notes-outline-nav--long-heading",
+    "blocks-notes-tag-field--wrapping",
+    "blocks-recent-hires-card--auto-height",
+    "blocks-stays-booking--long-labels",
+    "blocks-stays-category-bar--responsive",
+    "blocks-stays-listing-details--page",
+    "blocks-stays-stay-filters--housing-buy",
+    "blocks-stays-stay-filters--housing-rent",
+    "blocks-stays-stay-filters--inline",
+    "charts-agents-chart--custom-units",
+    "charts-sankey-chart--long-labels",
+    "charts-steps--custom-units",
+    "charts-tokens-chart--custom-units",
+    "templates-coherent-system--docked",
+    "templates-social--default",
+    "templates-social--signed-out",
+    "templates-workspace--default"
+  ],
+  "limits": [
+    "Web rendering and selected real interactions do not establish every possible interaction or physical native behavior.",
+    "Named action spies are intentional for isolated callback contracts; templates keep demo business data local.",
+    "Low-level primitive, material, token, local-container, animation and scroll regression fixtures intentionally remain."
+  ],
+  "verification": {
+    "status": "passed",
+    "catalogue": [
+      {
+        "profile": "mobile-dark",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "stories": 1589,
+        "rendered": 1589,
+        "pageErrors": 0,
+        "documentOverflows": 0,
+        "retriedStories": 26,
+        "method": "Latest matching storyRendered result for each current indexed ID. Initial HMR errors and actual defects were retried after repair; no initial failure is counted as a pass."
+      },
+      {
+        "profile": "desktop-light",
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "stories": 1589,
+        "rendered": 1589,
+        "pageErrors": 0,
+        "documentOverflows": 0,
+        "retriedStories": 12,
+        "method": "Latest matching storyRendered result for each current indexed ID. Initial HMR errors and actual defects were retried after repair; no initial failure is counted as a pass."
+      }
+    ],
+    "bloomJest": {
+      "suites": 1029,
+      "tests": 15709,
+      "snapshots": 9,
+      "failed": 0
+    },
+    "editorJest": {
+      "suites": 22,
+      "tests": 272,
+      "failed": 0
+    },
+    "typescript": "Bloom plus consumer-shaped program passed, positive control fired; editor/text workspace checks passed.",
+    "lint": "No errors; repository still reports warnings.",
+    "build": "bob, packed-export verification, build-freshness controls and all six task examples passed for browser/react-native type resolution.",
+    "packedConsumer": "Fresh bun-packed package extracted into isolated consumer; ListSelectionBar selecting, List and MultiAgentChat imports compile.",
+    "browserInteractions": [
+      "Swipe capsule geometry, squeeze, reversal and one full-swipe action on release.",
+      "Header action measurement/packing and no document overflow across five widths with mouse/touch.",
+      "Button press feedback across six families.",
+      "Chat send/search/history/calls/calendar/cart flows and actual split-pane resize/profile/back navigation.",
+      "Editor typing, slash/mention selection, clipboard, block selection and remaining existing end-to-end assertions.",
+      "Music search/profile, Social engagement/reply and unified selection/attachments at390dark and1280light.",
+      "Mail composer, library/create/pin and search filtering.",
+      "Housing saved-search edit/delete, repairs/payments, report creation and media gallery.",
+      "Route editing, shared controls, photos/gallery, wizard and Workspace/Settings menus."
+    ],
+    "additionalResponsiveEvidence": {
+      "qToZ": 80,
+      "housing": 24,
+      "dToP": 38,
+      "aToC": 24
+    },
+    "limits": [
+      "Catalogue renders and selected interactions do not prove every possible user path.",
+      "Real web Chromium only; no physical native runtime validation was performed.",
+      "Initial HMR/runtime/layout failures remain in local raw reports; only successful verified retries contribute to the final per-ID summary."
+    ],
+    "localEvidence": ".local/storybook-audit/"
+  },
+  "files": [
+    {
+      "file": "packages/bloom-editor/src/react/BlockEditor.stories.tsx",
+      "review": "Card/Button/ScrollArea replace custom note shell, controls and scrolling. Responsive note width. Exported mention/slash fixture data excluded from CSF stories; EditorSurface remains an intentional low-level editor test. Repaired stale LinkButton dependency in InlinePopover; full editor browser verifier passes."
+    },
+    {
+      "file": "packages/bloom-text/src/RichTextInput.stories.tsx",
+      "review": "Bloom typography for captions; retained RawInput because the actual adapter is the subject."
+    },
+    {
+      "file": "src/accordion/Accordion.stories.tsx",
+      "review": "Single/multiple/disabled/long-content state, authored CSS and style override specimens inspected.",
+      "changes": [
+        "AuthoredSurface maxWidth100% keeps authored360px desktop width while fitting mobile; verified no descendants beyond390px."
+      ],
+      "exceptions": [
+        "AuthoredSurface's 900px body and external collapse/focus buttons are the height-retention regression fixture; preserved.",
+        "StyleOverrides holds its value intentionally; callback now observable in Actions."
+      ]
+    },
+    {
+      "file": "src/activity-feed/ActivityFeed.stories.tsx",
+      "review": "Feed filters/counts, empty feed, long-body clamp and update composition inspected.",
+      "changes": [
+        "Removed duplicate BothThemes story; global theme already applies.",
+        "LongContent replaces width-only NarrowAndLong wrapper with responsive width; clamp case retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/activity-heatmap/ActivityHeatmap.stories.tsx",
+      "review": "Deterministic calendar data, explicit threshold colors, bucketByDay conversion and control forwarding inspected.",
+      "changes": [],
+      "exceptions": [
+        "Horizontal scrolling is intentional for a fixed-day grid; custom scale and raw-events helper demonstrate distinct API behavior."
+      ]
+    },
+    {
+      "file": "src/address/Address.stories.tsx",
+      "review": "AddressRow variants, picker radio state, results list, checkout composition, loading/empty states inspected.",
+      "changes": [],
+      "exceptions": [
+        "AddressList/AddressRow are domain owners, not recreated in the story; their behavior is exercised directly.",
+        "Rows matrix intentionally holds selected/disabled states; named callback spy records actions."
+      ]
+    },
+    {
+      "file": "src/admonition/Admonition.stories.tsx",
+      "review": "Types matrix, composed root/row/icon/content/action and Playground inspected.",
+      "changes": [
+        "Composed action now toggles the setting and message/tone visibly instead of no-op."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/agent-avatar/AgentAvatar.stories.tsx",
+      "review": "Gallery, player and sad-pose matrix inspected; reaction/working/idle/pause/mood controls update actual avatar.",
+      "changes": [
+        "Gallery player and portrait grid now fit available width; verified no horizontal overflow at390px."
+      ],
+      "exceptions": [
+        "320px player and static portraits retained for existing renderer pixel/motion fixtures; dimensions are asset specimens, not alternate viewport stories."
+      ]
+    },
+    {
+      "file": "src/agent-chat/AgentChat.stories.tsx",
+      "review": "Reviewed scripted stream timers, history CRUD, accounts, setup notice, fixed-state composer/messages. History now restores threads, fresh chat IDs stay distinct, Conversation shares live handlers, Setup uses Card and opens demo. Removed unavailable account/export options; component state snapshots retain named action spies.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/agent-creator/AgentCreator.stories.tsx",
+      "review": "Controlled agent editor and extension section inspected.",
+      "changes": [
+        "Frozen heartbeat switch now owns checked state.",
+        "Editor fills available width with content max-width instead of fixed 360px frame."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/agent-limits-card/AgentLimitsCard.stories.tsx",
+      "review": "Context breakdown, usage limits, expandable states and isolated sections inspected.",
+      "changes": [],
+      "exceptions": [
+        "Collapsed and expanded cards intentionally compare disclosure states; plan navigation callbacks now logged in Actions."
+      ]
+    },
+    {
+      "file": "src/agent-log/AgentLog.stories.tsx",
+      "review": "Ticker replay, nested guides, reduced-motion settled transcript, reveal pieces and tool statuses inspected.",
+      "changes": [],
+      "exceptions": [
+        "Nested guide layers belong to the log primitive being demonstrated; they are not decorative wrapper chrome.",
+        "Tool-open callback is an integration event logged in Actions; expanded tool content remains functional."
+      ]
+    },
+    {
+      "file": "src/agent-progress/AgentProgress.stories.tsx",
+      "review": "Autoplay, timing controls, minimized and externally controlled progress, frozen states, plan approval/rejection inspected.",
+      "changes": [],
+      "exceptions": [
+        "Frozen completion/minimized states and faster clock are distinct animation/controlled-state specimens; plan actions already update state."
+      ]
+    },
+    {
+      "file": "src/agent-reply/AgentConversation.stories.tsx",
+      "review": "Agent team, questionnaire dismissal/completion, reply content and composer submission inspected.",
+      "changes": [
+        "Profile/copy integration callbacks made observable; additional integrated behavior under review.",
+        "Canonical AiChatUserMessage replaces custom user bubble; submitted draft appends a visible turn.",
+        "Added normal12px user-message gutters to accommodate shared bubble end overhang without clipping."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/agent-reply/AgentReply.stories.tsx",
+      "review": "Reply identity/action matrix, thinking toggle, team profiles and AvatarGroup stack inspected.",
+      "changes": [
+        "Named action spies replace inert integration callbacks.",
+        "Thinking control uses canonical Button."
+      ],
+      "exceptions": [
+        "Profile counts and stack counts compare avatar grouping semantics, not viewport modes."
+      ]
+    },
+    {
+      "file": "src/agent-thinking/AgentThinking.stories.tsx",
+      "review": "Variant/tone matrix, static/reduced content, automatic disclosure, timed reasoning and duration formatting inspected.",
+      "changes": [],
+      "exceptions": [
+        "Curated variants and completed disclosure states are semantically different; timers have cleanup and no dead controls."
+      ]
+    },
+    {
+      "file": "src/ai-chat/AiChat.stories.tsx",
+      "review": "Reviewed message/code/gallery/container/turn-actions and resize/focus fixtures. Responsive background frame fixed; controls already canonical Button/Code/Composer. Generation and feedback state specimens retain explicit demo callbacks; PanelsWithoutBackend preserves optional feature omission coverage.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/ai-profile-card/AiProfileCard.stories.tsx",
+      "review": "Removed pure Phone duplicate and unavailable Share/Edit buttons. Default and Minimal use one responsive padded frame; period controls remain stateful.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/alert-dialog/AlertDialog.stories.tsx",
+      "review": "Declarative controlled dialog and imperative confirm flow inspected.",
+      "changes": [
+        "Declarative confirm deletes local demo record and exposes restore action; imperative flow already reports confirmed/cancelled."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/ambient-photo/AmbientPhoto.stories.tsx",
+      "review": "Network-free cycling photo data, timer cleanup and onShown caption inspected.",
+      "changes": [],
+      "exceptions": [
+        "Clipped rounded media stage is the intentional photo viewport, not redundant card chrome."
+      ]
+    },
+    {
+      "file": "src/animated-check/AnimatedCheck.stories.tsx",
+      "review": "Ref-driven replay button and size/color Controls inspected; replay invokes component API.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/announcement/Announcement.stories.tsx",
+      "review": "Optional-content matrix, dismiss animation and keyed replay inspected.",
+      "changes": [],
+      "exceptions": [
+        "236px content width models documented sidebar slot; callbacks now observable in Actions while the core dismissal remains real."
+      ]
+    },
+    {
+      "file": "src/app-shell/AppShell.stories.tsx",
+      "review": "Reviewed every shell/panel/flow/workspace/docking story. Filter toggles, Create tracks count, offer dismiss/CTA local. Notification fixture import extracted by collaborator. Placeholder panes, intrinsic bounded chrome, raw reading paragraphs and simulated drag are deliberate layout regression specimens; preserve explicit geometry.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/app-shell/AppShellPanelGroups.stories.tsx",
+      "review": "Reviewed nested splits, deck transitions, document flow, capped content, flow additions and reorder. All mutation controls are wired. Explicit percent-height CSS host and capped dimensions are measured layout regressions; retain.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/app-shell/AppShellWindow.stories.tsx",
+      "review": "Reviewed all window docking, peek, title-region, retained iframe and split/deck specimens. Fixed StoryWindow desktop host, static sidebar/tab-strip labels, raw iframe and custom drag-region geometry are intentional adapter regression probes; underlying controls already Button and content header PageHeader. Shared fixture audited by owning agent.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/appearance/BloomScope.stories.tsx",
+      "review": "Inherited size/tone, nested scope and explicit tone override inspected.",
+      "changes": [],
+      "exceptions": [
+        "Buttons/chip/badge are styling specimens with no product actions; nested xs intentionally proves inheritance override, not an app scale workaround."
+      ]
+    },
+    {
+      "file": "src/appearance/Composition.stories.tsx",
+      "review": "Reviewed scope inheritance, nested material and 100-post fixture. Default scale md; Publish now records submitted text; removed unavailable Reply. DenseFeed fixed scale sm is intentional density/performance specimen.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/appearance/ControlSize.stories.tsx",
+      "review": "Reviewed inherited size, nested overrides, surface contrast and indicators. Matrices intentionally compare explicit sizes and non-Bloom backdrop; keep visual specimen controls without business side effects.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/aspect-ratio/AspectRatio.stories.tsx",
+      "review": "Ratio matrix, parent-width inheritance and Controls-based ratio inspected.",
+      "changes": [],
+      "exceptions": [
+        "Three parent widths intentionally demonstrate AspectRatio's defining geometry contract; not alternate app viewport stories."
+      ]
+    },
+    {
+      "file": "src/auth-card/AuthCard.stories.tsx",
+      "review": "Every form variant now uses one local AuthDemo controller: submit feedback (without logging credentials), provider feedback, sign-in/signup switching, forgot/verify/resend. Layout/mode differences retained as semantic variants; global theming used.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/avatar-flight/AvatarFlight.stories.tsx",
+      "review": "Reviewed launch/join/cancel/reset and anchor continuity. Made frames responsive. Profile callbacks named spies because no profile editor belongs in motion fixture.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/avatar-group/AvatarGroup.stories.tsx",
+      "review": "Reviewed stack/row/cluster totals, overflow and hover actions. Replaced RNPressable custom Follow with canonical Button. Cluster size/count matrices retained for semantic packing coverage.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/avatar/Avatar.stories.tsx",
+      "review": "Reviewed image/initial/bot precedence, live badges, ring axes, explicit custom placeholder. Added wrapping for bot avatar size matrices; custom colors/sizes deliberately exercise Avatar contracts.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/badge/Badge.stories.tsx",
+      "review": "Reviewed tones/counts/status placements/media and size matrices. Added flex wrapping; background gradient intentionally tests media contrast.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/booking/BookingCard.stories.tsx",
+      "review": "Reviewed date/guest/price states, GuestPicker, discount detail popovers, loading, bar and trip matrices. Renamed Narrow to LongLabels on canonical responsive frame. Fixture actions report through named spies; no booking service invoked.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/bottom-bar/BottomBar.stories.tsx",
+      "review": "Reviewed controlled useArgs nav, action-only, blur, dock measurement/Profiler and focused editor. Dock raw TextInput and explicit geometry are deliberate regression hosts; animated styles have dependencies. NarrowWithAction specifically exercises four targets plus FAB, retained.",
+      "changes": [
+        "Narrow action specimen reports its Create event through named Actions spy."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/bottom-promo/BottomPromo.stories.tsx",
+      "review": "Default and optional-description variant inspected.",
+      "changes": [
+        "Sign In transitions to signed-in feedback with Sign Out reset instead of no-op."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/bottom-sheet/BottomSheet.stories.tsx",
+      "review": "Reviewed imperative open/close, detached, scroll ownership, fill Screen, max-width cap. All triggers work. Fixed cap is a regression requirement, not duplicate viewport demo.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/breadcrumb/Breadcrumb.stories.tsx",
+      "review": "Reviewed static trails, header collapse and pathological long labels. Explicit80/111px hostile widths retained as fit regressions. Canonical PageHeader/Button used; fixture actions are observable spies.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/button/Button.stories.tsx",
+      "review": "Reviewed all material/size/loading/toggle/link/asChild/className/intrinsic/focus fixtures. Raw DOM gradient backdrop, counters and anchor probes intentionally verify canonical Button; no alternate button owner.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/button/ButtonTouchTargets.stories.tsx",
+      "review": "Reviewed entire LTR/RTL geometry, small style override/asChild/link, long label and grouped control fixture. Explicit12px hostile style probes and raw DOM host essential to target-size gate; every action has result state.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/button/Group.stories.tsx",
+      "review": "Reviewed Basic/Matrix/Material/StandaloneAndGrouped; one Button owner, selectable group local state. Wrapping added to comparison row; no duplicate implementation.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/button/IconActions.stories.tsx",
+      "review": "Reviewed sizes/ratio/toggle/fills/disabled grow. Added wrapping. Numeric geometry and color overrides remain intentional API specimens; toggle state functional.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/calendar/CalendarView.stories.tsx",
+      "review": "Reviewed calendar month navigation, details, grids and feed menu. Demo now adds events into selected month; InboxMenu excessive left padding removed. Fixed grid/detail states retained as owner specimens.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/call-ui/CallUi.stories.tsx",
+      "review": "Voice/video stages, PiP, minimization, incoming modes, participant grids, group strip and List call history inspected.",
+      "changes": [
+        "Removed width-only VoiceCallWide/VideoCallWide; one responsive stateful call demo handles mute, speaker, video, screen share, PiP, minimize, participant count, end/restart.",
+        "Kept reconnecting as semantic state rather than width name.",
+        "Raw RN Image replaced with BloomImage; participant grids measure available width instead of forcing 330px.",
+        "Standalone integration callbacks now observable in Actions."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/canvas/Canvas.stories.tsx",
+      "review": "Scene identity, retained draft, snap acceptance/rejection/delay and active-state controls inspected.",
+      "changes": [],
+      "exceptions": [
+        "Change room control is required by shared offline Android identity/resize regression fixture; preserved with its test IDs.",
+        "Synthetic rows and scene counters intentionally expose retention rather than recreate a product list."
+      ]
+    },
+    {
+      "file": "src/card-form/CardForm.stories.tsx",
+      "review": "Reviewed empty/full controlled formatting, invalid/disabled snapshots, standalone fields and paired fields. Mock payment action is explicit presentation fixture; named spy replaces no-op. Card/Field/Button owners reused.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/card/Card.stories.tsx",
+      "review": "Reviewed all card paint/radius/elevation/press state/default/playground/corner curve specimens. All use canonical Card; action spies appropriate for primitive interactions. Fixed size cards exercise explicit geometry.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/card/SelectionCard.stories.tsx",
+      "review": "Reviewed controlled selection/disabled Field inheritance and Questionnaire/VehiclePicker composition. State is functional; no custom selection controls or duplicate themes.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/carousel/Carousel.stories.tsx",
+      "review": "Reviewed all uncontrolled/controlled/grouped/loop/hover/recipe/dots fixtures. Replaced custom Pressable category target with canonical Card. Dynamic widths and fractional spacing intentionally measure carousel continuity/rounding, retained.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/carrier-quote/CarrierQuote.stories.tsx",
+      "review": "Reviewed every quote state, list selection, empty, comparison and composed route/status fixture. Removed pure Narrow duplicate; LongText responsive. Observable callbacks retained in component specimens; integrated List should mutate decline/select.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/cart-panel/CartPanel.stories.tsx",
+      "review": "Reviewed useBasket and all compositions. Quantities/removals, tips and promos now recompute displayed totals; inline checkout shows local state and reset; sheet close/open/checkout controlled. Minimum-order story is intentionally frozen eligibility state.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/category-bar/CategoryBar.stories.tsx",
+      "review": "Removed three fake window Widths demo and custom viewport Frame. One Responsive story tracks real viewport and selected/filter state; Fits/TrailingSwitch are semantic content compositions.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/chart-cards/ActivityRingsCard.stories.tsx",
+      "review": "Default rings, forced hover and selected-day data transitions inspected.",
+      "changes": [
+        "Removed width-only Narrow; canonical story frame responds to viewport."
+      ],
+      "exceptions": [
+        "Hovered remains a controlled highlight specimen; day buttons update ring values."
+      ]
+    },
+    {
+      "file": "src/chart-cards/AgentsChartCard.stories.tsx",
+      "review": "Month stepping, active/idle hover and custom run formatting inspected.",
+      "changes": [
+        "Narrow renamed CustomUnits, preserving formatter/color/data semantics without hardcoded narrow frame."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/chart-cards/AreaChartCard.stories.tsx",
+      "review": "Stack/overlap/percent, sharp interpolation, tile stats, static range, forced hover and added series inspected.",
+      "changes": [
+        "Removed duplicate Narrow; all chart frames respond to available width."
+      ],
+      "exceptions": [
+        "Semantic rendering variants retained; not theme or viewport duplicates."
+      ]
+    },
+    {
+      "file": "src/chart-cards/BarListCard.stories.tsx",
+      "review": "Tabs/overflow, single list, mono, per-item colors and summary statistics inspected.",
+      "changes": [
+        "Removed width-only Narrow; canonical frame is responsive."
+      ],
+      "exceptions": [
+        "BarListCard is quantitative chart rendering, not a navigation List replacement."
+      ]
+    },
+    {
+      "file": "src/chart-cards/ChartCards.stories.tsx",
+      "review": "Revenue/orders, dashboard composition, forced hover, positive/negative/flat comparison, translated labels and live data toggle inspected.",
+      "changes": [
+        "Removed duplicate Narrow; frame follows viewport."
+      ],
+      "exceptions": [
+        "Dashboard row intentionally demonstrates multiple cards, not extra chrome around a single card."
+      ]
+    },
+    {
+      "file": "src/chart-cards/ComboChartCard.stories.tsx",
+      "review": "Combined series, tile stats, forced hover, line-derived headline and custom caption inspected.",
+      "changes": [
+        "Removed duplicate Narrow; frame responds to available space."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/chart-cards/ContributionsCard.stories.tsx",
+      "review": "Deterministic cells, forced hover, entrance animation, period switching, raw-day converter and low-level grid inspected.",
+      "changes": [
+        "Chart/grid wrapper now responsive without per-story widths."
+      ],
+      "exceptions": [
+        "Grid story intentionally targets lower-level public primitive; hover clearance spacer retained for tooltip visibility."
+      ]
+    },
+    {
+      "file": "src/chart-cards/EarningsChartCard.stories.tsx",
+      "review": "Range switching, active point and explicit versus automatic axis inspected.",
+      "changes": [
+        "Removed duplicate Widths comparison; same canonical story responds to viewport."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/chart-cards/FunnelChartCard.stories.tsx",
+      "review": "Curved/sharp funnel, mono, hovered stage and many-stage formatted dataset inspected.",
+      "changes": [
+        "Removed special 360px frame from ManyStages; data scenario remains responsive."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/chart-cards/HeatmapChartCard.stories.tsx",
+      "review": "Range data, forced cell selection, custom accent, dense columns and summary statistics inspected.",
+      "changes": [
+        "Removed duplicate Narrow and made primary frame responsive."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/chart-cards/LineChartCard.stories.tsx",
+      "review": "Curve/shape, hovered point, automatic year range, alternate formatter and summaries inspected.",
+      "changes": [
+        "Removed duplicate Narrow; canonical chart uses available space."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/chart-cards/MostActiveDaysCard.stories.tsx",
+      "review": "Selectable day, seeded ring values, January/calendar data inspected.",
+      "changes": [
+        "Removed width-only Wide; selection remains controlled in responsive default."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/chart-cards/RadarChartCard.stories.tsx",
+      "review": "Filled/dots/lines/score, alert threshold, legends, tiles, forced hover and radius/offset options inspected.",
+      "changes": [
+        "Primary frame made responsive."
+      ],
+      "exceptions": [
+        "Desktop/mobile are data-series labels, not viewport variants; score/legend/shape specimens remain."
+      ]
+    },
+    {
+      "file": "src/chart-cards/RadialChartCard.stories.tsx",
+      "review": "Rings/labels/grid/gauge/solid/stacked, summary tiles and forced active segment inspected.",
+      "changes": [
+        "Removed Narrow duplicate; canonical semantic variants use responsive frame."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/chart-cards/SankeyChartCard.stories.tsx",
+      "review": "Source/target color, forced node/link hover, three-column flow and long names inspected.",
+      "changes": [
+        "NarrowMobile converted to LongLabels; removed frameWidth slider and retained long-label dataset in actual responsive viewport."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/chart-cards/ScatterChartCard.stories.tsx",
+      "review": "Bubble/plain scatter, tiles, active point and custom axis formatting inspected.",
+      "changes": [
+        "Removed duplicate Narrow; responsive primary frame."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/chart-cards/SleepScoreCard.stories.tsx",
+      "review": "Score metrics, active row, low score and alternative summary data inspected.",
+      "changes": [
+        "Responsive primary frame retains semantic score examples."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/chart-cards/StageBarsCard.stories.tsx",
+      "review": "Stage icons/percentages, mono, active stage, few stages and category counts inspected.",
+      "changes": [
+        "Removed width-only Narrow; canonical frame follows available space."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/chart-cards/StepsCard.stories.tsx",
+      "review": "Week navigation, forced hover and alternate units inspected.",
+      "changes": [
+        "Wide renamed CustomUnits to retain floors formatter without duplicate viewport framing."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/chart-cards/TokensChartCard.stories.tsx",
+      "review": "Token series, active/idle hover and request units inspected.",
+      "changes": [
+        "Narrow renamed CustomUnits and fixed width removed; request formatter retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/chat-composer/ChatComposer.stories.tsx",
+      "review": "Reviewed all composer, voice, attachment menu, emoji/dialog, suggestions, reactions and keyboard anchors. Removed pure Wide duplicate; responsive States retains all UI states. Replaced handmade bubble with MessageBubble; fixed-state voice/attachment snapshots retain named action spies, keyboard anchor tests preserved.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/chat-composer/CompactComposer.stories.tsx",
+      "review": "Draft retention/focus, long input, busy state, attachment toggles and submit count inspected.",
+      "changes": [
+        "Placeholder avatar circle replaced with Avatar."
+      ],
+      "exceptions": [
+        "External focus and outside-editor button are intentional focus/retention test fixtures; required callback args instrumented even though render uses local state."
+      ]
+    },
+    {
+      "file": "src/chat-indicators/ChatIndicators.stories.tsx",
+      "review": "Reviewed indicators/story rings and full conversation rows. Replaced duplicate hand-drawn avatar/text/meta rows with canonical List conversation configuration. Primitive indicator matrices retained.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/chat-list/ChatList.stories.tsx",
+      "review": "Reviewed canonical List conversion, archived row, folders/search/stories/actions/grouped avatars/empty. Main conversations now filter query/folder, archive opens matching rows, New adds a chat. Desktop pane search now works and stacks under640. Row variants are visual specs; compatibility story IDs retained.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/chat-people/ChatPeople.stories.tsx",
+      "review": "Reviewed Contacts/NewGroup canonical List, selected chips and StoryViewer specimens. Media now BloomImage; main viewer mute updates mute state, close offers reopen, reply/reactions show results. Second viewer is controlled progress specimen with named spies.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/chat-screen/ChatScreen.stories.tsx",
+      "review": "Complete screen, panels, headers/selection, pins, backgrounds and controls inspected.",
+      "changes": [
+        "Custom list/header/bubbles/composer replaced by List/PageHeader/MessageBubble/ChatComposer.",
+        "Responsive FullScreen replaces Wide/Narrow and redundant split story; preserves controlled pane resizing.",
+        "Local chat selection, message search/send, pinned dismissal/cycling, scroll-to-bottom and profile navigation work.",
+        "Standalone fixed-state callbacks instrumented in Actions."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/checkbox/Checkbox.stories.tsx",
+      "review": "Reviewed all size/mixed/disabled matrices, stateful variants, card composition, useArgs playground and labelContent. Responsive cap added to custom label; matrices retain spy callbacks.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/checkout-sheet/CheckoutSheet.stories.tsx",
+      "review": "Reviewed entire controlled review/payment/success flow and fixture labels/draft. All actions update local state; secure card field placeholder is intentional external-provider slot, no payment service.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/checkout-summary/CheckoutSummary.stories.tsx",
+      "review": "Reviewed all summary modes; responsive long-text frame. Default confirmation tracks count/busy and offers explicit reset; read-only and fixed optional slot snapshots retain named action spies.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/chip/Chip.stories.tsx",
+      "review": "Reviewed tones/hues/icons/select/removal/disabled/role/row specs. Responsive cap for removal and row. DoesNotShrink explicit240 clipping is intentional; fixed roles named spies test semantics.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/choice-list/ChoiceList.stories.tsx",
+      "review": "Radio keyboard selection and custom account content inspected.",
+      "changes": [
+        "Hand-drawn account circles replaced by Avatar; actual account names drive fallback identity."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/code/Code.stories.tsx",
+      "review": "Reviewed all inline/block/pre/long-line wrap/code lines fixtures. Shared Code owners provide copy behavior; capped frames intentionally distinguish overflow vs wrap, no duplicate UI owner.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/collapsible/Collapsible.stories.tsx",
+      "review": "Reviewed renderOption controlRef, focus return, lifecycle mounting/appear, dynamic height. Raw TextInput is deliberate lifecycle/focus probe, not product form; responsive cap added.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/color-swatch-picker/ColorSwatchPicker.stories.tsx",
+      "review": "Controlled brand-color selection inspected; uses actual ColorSwatchPicker with selected color state.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/command/Command.stories.tsx",
+      "review": "Command groups, keyword matching, shortcuts and palette trigger inspected.",
+      "changes": [
+        "Selection callbacks now publish chosen destination/action.",
+        "Removed unimplemented keyboard shortcut claim from trigger label."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/composer-loader/ComposerLoader.stories.tsx",
+      "review": "Reviewed shader/material variants, minimal composer and lifecycle phase transitions across Screen and both composers. Raw input in isolated loader fixture intentionally verifies arbitrary child geometry; lifecycle actions preserve draft.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/composer-panel/ComposerPanel.stories.tsx",
+      "review": "Reviewed attachment states/retries/upload queue, permissions/models/voice/stop/identity. Fixed uncapped frames. Explicit top padding accommodates upward menu geometry; busy/voice fixtures intentionally model state. Shared composer defaults own menus.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/composition-bar/CompositionBar.stories.tsx",
+      "review": "Segment toggling and empty chart inspected.",
+      "changes": [],
+      "exceptions": [
+        "Empty chart callback is a required API fixture with no selectable segments; named spy keeps integration observable."
+      ]
+    },
+    {
+      "file": "src/concentric/ConcentricView.stories.tsx",
+      "review": "Nested geometry, class-based radius, logical sides, Surface/Card ownership, asymmetric corners and reset inspected.",
+      "changes": [],
+      "exceptions": [
+        "Nested layers are intentional regression coverage for concentric geometry propagation and must remain."
+      ]
+    },
+    {
+      "file": "src/connection-dots/ConnectionDots.stories.tsx",
+      "review": "Basic connector, custom dot count/size and reduced-motion presentation inspected; no dead controls.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/connection-status/ConnectionStatusToasts.stories.tsx",
+      "review": "Reviewed nullable signal transition timing and actual device signal fixture. Canonical Card/Button/Toast; native browser status intentionally external event driven, retained.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/contact-card/ContactProfileCard.stories.tsx",
+      "review": "Reviewed person/company/cover/compact/minimal/long/comparison. Removed BothThemes duplicate, responsive long examples. Callbacks named spies in identity card specimens; no new theme providers.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/content-panel/ContentPanel.stories.tsx",
+      "review": "Reviewed plain/framed/bounded/side-by-side/chrome. Replaced custom external title bar with canonical PageHeader, responsive Chrome cap. Bounded panel and unequal column hosts deliberate layout tests.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/context-menu/ContextMenu.stories.tsx",
+      "review": "Reviewed all context menus. Basic and controlled choices update results, submenu updates Folder, color swatches update tags; unavailable decorative Open/Get Info/Tags menu entries removed. Primitive long-press/rightclick coverage retained.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/conversation-sidebar/ConversationSidebar.stories.tsx",
+      "review": "Reviewed conversation fixtures plus tree sections. Default local create/pin/rename/delete state, query filters; unavailable marketplace removed. Shared AvatarGroup/List via Sidebar; Sections optional create removed, search handled by Sidebar tree filtering.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/cover-header/CoverHeader.stories.tsx",
+      "review": "Photo/no-photo hero and editable/repositionable cover inspected.",
+      "changes": [
+        "Follow now toggles shared Button pressed state.",
+        "Change cover switches sample image; reposition commits remain controlled."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/creator-studio/CreatorStudio.stories.tsx",
+      "review": "Reviewed all local fixtures and compositions. Catalog view/edit feedback, duplicate/delete mutate data; one-column mobile catalog; artwork replacement handles local file; upload retry removes failed specimen row; unavailable statements action removed. Pitch/metadata states functional. Upload/status matrices are intentional presentation fixtures.",
+      "changes": [],
+      "exceptions": []
+    },
+    {
+      "file": "src/data-table/DataTable.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Removed duplicate Narrow; Customers responds to actual canvas width.",
+        "Row command descriptors now observable; delete/archive/duplicate update the local dataset."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/date-picker/DatePicker.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/delivery-slot/DeliverySlot.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/design-tokens/DesignTokens.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Raw Views/Text intentionally display literal token specimens, not app surfaces."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/dialog/Dialog.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Retained explicit native-scroll ownership, focus restoration, pending/cancellation, composed-name and backdrop regression fixtures. Raw links/spans/native ScrollView are intentional test subjects, not app chrome."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/directions/Directions.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/divider/Divider.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/drop-zone/DropZone.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/dropdown-menu/DropdownMenu.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Retained submenu placement/shift/available-space fixtures: these prove pointer and popup geometry, not alternative app viewport controls."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/earnings/Earnings.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Removed obsolete Modes theme duplicate; period/zero/payout-state scenarios remain distinct.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/empty-state/EmptyState.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Suggestions use the EmptyState suggestions API instead of a parallel hand-built ChipRow.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/engagement-bar/EngagementBar.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/error-boundary/ErrorBoundary.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/eviction/Eviction.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "One List and one Detail adapt columns to measured container width; simplified Page to one unpainted layout node.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/expandable-text/ExpandableText.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/fab/Fab.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/fact-strip/FactStrip.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "One Default story shares/scrolls facts as the actual viewport changes."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/field/Field.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/file-upload/FileUpload.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/fill/Fill.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Raw backdrop content intentionally tests Fill/SurfaceFade compositing. Ordinary image uses BloomImage."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/fill/SurfaceFade.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Raw backdrop content intentionally tests Fill/SurfaceFade compositing. Ordinary image uses BloomImage.",
+        "Canonical primitives: import { BloomImage as Image } from '../image';"
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/fonts/Fonts.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/grid/Grid.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Raw coloured cells intentionally visualise Grid column proportions; no replacement app controls."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/grouped-section/GroupedSection.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Add account updates local rows; Follow account switch now toggles. Preserved WideTrailingControl as long-control wrapping regression.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/home-search/HomeSearch.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Four fake-phone mode stories consolidated into CompactFlow with semantic mode controls. Removed PhoneFrame bezel. ScrollArea owns scroll. Product-specific panels/mode examples remain distinct.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service.",
+        "Canonical primitives: import { ScrollArea as ScrollView } from '../layout';"
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/hooks/Hooks.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Raw Pressable retained only in InteractionState: direct press/hover wiring is the subject under test."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/hover-card/HoverCard.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/icon-circle/IconCircle.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/icons/Icons.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/image-aspect-ratio-cache/AspectRatioCache.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Native image comparison intentionally demonstrates reserved vs initially unknown geometry/cache timing. Not a replacement image component."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/image-resolver/ImageResolver.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Provider mount/remove now uses Button. Resolver passthrough and no-provider comparisons are intentional scoped-provider tests."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/important-alerts-card/ImportantAlertsCard.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/input-group/InputGroup.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/input-otp/InputOtp.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/item/Item.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/job-board/JobBoard.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Removed obsolete Modes theme duplicate; job/board/filter/empty/loading distinctions remain meaningful.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/kbd/Kbd.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/label/Label.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/layout/AutoHideBar.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Retained ResizeHandle/Split actual drag controls, ScrollArea keyboard-reveal nesting and AutoHideBar scroll drivers; they exercise container and scroll behavior independently of Storybook viewport."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/layout/Layout.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Retained ResizeHandle/Split actual drag controls, ScrollArea keyboard-reveal nesting and AutoHideBar scroll drivers; they exercise container and scroll behavior independently of Storybook viewport."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/layout/ResizeHandle.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Retained ResizeHandle/Split actual drag controls, ScrollArea keyboard-reveal nesting and AutoHideBar scroll drivers; they exercise container and scroll behavior independently of Storybook viewport."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/layout/ScrollArea.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Retained ResizeHandle/Split actual drag controls, ScrollArea keyboard-reveal nesting and AutoHideBar scroll drivers; they exercise container and scroll behavior independently of Storybook viewport."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/lead-score/LeadScore.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Removed theme-only BothThemes and duplicated cross-family reference presentation. LongFactors preserves long-content edge case and adapts to viewport."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/link-preview/LinkPreviewCard.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/list/VirtualList.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "VirtualList renders canonical ListItem rather than handmade text rows/dividers. Bounds remain required to demonstrate virtualization and onEndReached."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/listing-actions/ListingActions.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/listing-card/HousingListingCard.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Removed duplicate Wide/Narrow grids; ListingCardGrid owns column response. Flattened redundant painted Page layers. Favorites remain controlled."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/listing-card/ListingCard.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Removed duplicate Wide/Narrow grids; ListingCardGrid owns column response. Flattened redundant painted Page layers. Favorites remain controlled.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service.",
+        "Canonical primitives: import { BloomImage as Image } from '../image';"
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/listing-details/ListingDetails.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Page uses actual measured width; duplicate PageNarrow removed. Photo gallery and expanded amenities work. Frame now one unpainted spacing node.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/listing-editor/ListingEditor.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Replaced handwritten useWidth with shared useContainerWidth and raw scroll with ScrollArea; preserved publish wizard state and validation.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service.",
+        "Canonical primitives: import { ScrollArea as ScrollView } from '../layout';"
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/loading/Loading.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/location-puck/LocationPuck.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/lockup/Lockup.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/lyrics/Lyrics.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Removed Mobile duplicate; existing semantic synced/artwork/empty stories respond to viewport.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/mail-compose/MailCompose.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Removed raw TextInput/placeholder toolbar in favor of Textarea and NoteEditorToolbar. Composer supports formatting, attachments/removal, Cc/Bcc entry, minimize/expand, close/discard/reopen and observable demo submission. Sheet is a placement scenario, not a fake phone.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/mail-list/MailList.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Canonical List/ListItem/selection-bar ownership already present. Retained PointerTargets and attachment rail propagation fixtures. Callbacks now observable.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/mail-thread/MailThread.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Removed ThreadOnPhone duplicate; canonical Thread adapts. Uncollapsed/messages/address/trimmed-content are semantic distinct cases.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/map-attribution/MapAttribution.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/map-controls/MapControls.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/map-marker/HousingMap.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "HousingMap now measures actual host; compact markers follow host width. Removed HousingMapNarrow. Raw background streets are intentional inert map fixtures, not map UI controls.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/map-marker/MapMarker.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "HousingMap now measures actual host; compact markers follow host width. Removed HousingMapNarrow. Raw background streets are intentional inert map fixtures, not map UI controls.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/markdown/Markdown.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/media-card/MediaCard.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Replaced hand-built scrolling Shelf with canonical Shelf; one responsive HomeScreen measures host. Flattened duplicate Page layers.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service.",
+        "Canonical primitives: import { ScrollArea as ScrollView } from '../layout';"
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/media-controls/MediaControls.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/media-flight/MediaFlight.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Raw image/pressable origins, warmed/cold image paths, video element stubs and click-through controls retained as independent measurement/paint/regression subjects. Replacing measured origins would invalidate their controls."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/media-header/FollowButton.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Removed redundant Narrow gallery; all distinct media header recipes already adapt. Existing action state retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/media-header/MediaHeader.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Removed redundant Narrow gallery; all distinct media header recipes already adapt. Existing action state retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service.",
+        "Canonical primitives: import { ScrollArea as ScrollView } from '../layout';"
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/media-inset-border/MediaInsetBorder.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Canonical primitives: import { BloomImage as Image } from '../image';"
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/media-player/MediaPlayer.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "FullScreen now follows actual viewport; MiniPlayers uses canonical BottomBar instead of a fake tab strip. Removed fixed phone width and duplicate desktop/fullscreen story.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service.",
+        "Canonical primitives: import { BloomImage as Image } from '../image'; import { ScrollArea as ScrollView } from '../layout';"
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/media-shelf/MediaShelf.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed parent\u2019s preceding canonical AlbumCard/ArtistCard/QuickAccessTile consolidation; filters and playback already update state."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/menu-item/MenuItem.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/menubar/Menubar.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Fake platform adapter retained to test platform command transport; its visible controls now use Button, Item and Divider. Native TextInput retained for platform focus/shortcut target testing."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/message-bubble/MessageBubble.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Removed duplicate Wide group conversation; canonical group transcript uses available width. Selection/reactions/media-fit states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/message-media/MessageMedia.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Temporary copied Bubble renderer replaced with canonical MessageBubble using mediaFit. Removed duplicate Narrow media collage; matrix preserves incoming/outgoing and media-state distinctions.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/motion/Motion.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Canonical Button controls from earlier cleanup retained; animated Views are intentional motion subjects."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/multi-agent-chat/MultiAgentChat.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/music-library/MusicLibrary.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Search handmade SongRow replaced by List; query/tabs actually filter and show empty state. Library create/pin/download/remove mutate local data. Removed fake mobile copies; shared library demo adapts to measured host.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/music-library/Search.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Search handmade SongRow replaced by List; query/tabs actually filter and show empty state. Library create/pin/download/remove mutate local data. Removed fake mobile copies; shared library demo adapts to measured host.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/navigation-banner/NavigationBanner.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/note-card/NoteCard.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Removed Phone duplicate; rows/cards/multiselect/notebook composition remain distinct.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/note-editor/NoteEditor.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Removed ToolbarWidths repetition; Editor exercises canonical toolbar at actual viewport. Phone became semantic LongTitle/offline story without fixed phone width.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/notification-center/NotificationCenter.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Shared notifications moved to story-fixtures.ts (no public export, no CSF-to-CSF import). Mark-all-read updates local notification state."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/notification/Notification.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/notifications/Notifications.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/offering-badge/OfferingBadge.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Canonical primitives: import { BloomImage as Image } from '../image';"
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/order-confirmation/OrderConfirmation.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/order-status/OrderStatus.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/outline-nav/OutlineNav.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Phone renamed LongHeading with actual available width; semantic compact navigation retained.",
+        "Canonical primitives: import { ScrollArea as ScrollView } from '../layout';"
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/overlay/OverlayStacking.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/page-footer/PageFooter.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Preserved DocumentComposer local Resize rail and RTL controls: focus/caret-preserving host resize regression requires change without replacing Storybook viewport. Raw ScrollView replaced with ScrollArea.",
+        "Canonical primitives: import { ScrollArea as ScrollView } from '../layout';"
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/page-header/HeaderActions.stories.tsx",
+      "review": "Real local action/search/selection state. Full viewport drives available space. Invisible measurement overflow fixed in shared HeaderActions owner."
+    },
+    {
+      "file": "src/page-header/PageHeader.stories.tsx",
+      "review": "Shared search filters List data; shared ScrollArea replaces ordinary raw scroll. Preserved named Actions callbacks for isolated header slots and fixed local nested/reveal scroll regression hosts."
+    },
+    {
+      "file": "src/page-header/PageHeaderMedia.stories.tsx",
+      "review": "Photo/music/image-toolbar examples use shared navigation, search, selection and media; local state implements actions. Image-toolbar hidden measurement overflow fixed in HeaderActions owner."
+    },
+    {
+      "file": "src/page-header/PageHeaderPatterns.stories.tsx",
+      "review": "Conversation/profile/search use PageHeader, List, MessageBubble, AvatarGroup, Search and actual local navigation/filtering; horizontal chip strip uses ScrollArea. Hero media is intentional content."
+    },
+    {
+      "file": "src/pagination/Pagination.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/panel-routing/PanelRouting.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/patient-info-card/PatientInfoCard.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Default Add profile photo now installs a sample avatar. Fixed specimen gutter reduced to normal content spacing."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/payment-method/PaymentMethod.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/payment-status/PaymentStatus.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/phone-input/PhoneInput.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/pipeline/Pipeline.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Removed obsolete theme-only BothThemes. Board/single-column/card states are semantic layouts, not pretend device widths.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/place-card/PlaceCard.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/place-details/PlaceDetails.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service.",
+        "Canonical primitives: import { ScrollArea as ScrollView } from '../layout';"
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/place-list/PlaceList.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/place-picker/PlacePicker.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/place-reviews/PlaceReviews.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/platform-surface/PlatformAppearance.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Fake platform appearance provider/controls are intentional teaching of platform adapter and accessibility settings; not accidental Storybook theme duplication.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/popover/Popover.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Retained ForwardingTrigger and raw disabled Pressable blind-spot control. They specifically prove asChild disabled guarding and cannot be replaced with Button.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/portal/Portal.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Clipping/context boundaries retained: they are the portal test subjects; controls are canonical Button."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/preferences/Preferences.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Local BloomPreferencesProvider is the feature under test and does not override Storybook theme."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/pressable-scale/PressableScale.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "PressableScale is the subject; raw child visuals demonstrate its content contract, not competing app buttons."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/price-breakdown/PriceSummary.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/progressive-blur/ProgressiveBlur.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/project-board/ProjectBoard.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/project-board/ProjectBoardControlled.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Reviewed imports, JSX owners, exported scenarios, interaction callbacks, theme and container sizing. Existing canonical component composes the demo; distinct data/disabled/loading/controlled states retained."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/proof-of-delivery/ProofOfDelivery.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Removed obsolete Modes theme duplicate; controlled signature/photo/code/submit states retained.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/property-insights/PropertyInsights.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "One SalePage and RentalPage adapt via useContainerWidth. Facts expand and sale photos use gallery. Frame flattened; standalone parts retain meaningful data states.",
+        "Former empty consumer callbacks are named Storybook spies. Stateful workflows use local state; external/network effects remain observable callback contracts rather than pretending to execute a service."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/provider/BloomProvider.stories.tsx",
+      "review": [
+        "source ownership",
+        "JSX composition",
+        "callbacks and state",
+        "exported scenario distinctions",
+        "theme and width ownership"
+      ],
+      "changes": [
+        "Local BloomProvider/no-provider positive-negative pair intentionally tests provider context and missing-context failure."
+      ],
+      "exceptions": []
+    },
+    {
+      "file": "src/questionnaire/Questionnaire.stories.tsx",
+      "review": "Shared Button for reopen; default examples now dismiss visibly and report completion. Composer integration uses real ComposerPanel/Pill.",
+      "exceptions": "Question sets and settled answers are business fixture data."
+    },
+    {
+      "file": "src/queue-panel/QueuePanel.stories.tsx",
+      "review": "Removed custom painted fake app frame and duplicate forced wide/narrow canvases. Sheet retained as genuine QueuePanel variant; reopen is Button.",
+      "exceptions": "QueuePanel owns panel height/width and its own scroll; empty/static state samples intentionally omit actions."
+    },
+    {
+      "file": "src/radio-indicator/RadioIndicator.stories.tsx",
+      "review": "Selectable cards already use canonical RadioGroup.",
+      "exceptions": "Raw dots are the low-level component under test; exact color/size variants are intentional."
+    },
+    {
+      "file": "src/radio/Radio.stories.tsx",
+      "review": "Removed redundant canvas paint and unused theme hooks. Static matrix callbacks are observable named Actions spies.",
+      "exceptions": "State matrix freezes selected/disabled geometry; custom decorative label and authored CSS are explicit slot/class contract fixtures. Interactive Group/Cards/Chips/Swatches remain stateful."
+    },
+    {
+      "file": "src/rail/Rail.stories.tsx",
+      "review": "Replaced handmade painted feed cards with List; ScrollArea owns bounded feed. Removed fake frame chrome; initially unselected navigation can now select.",
+      "exceptions": "480px bounded height is required to demonstrate rail pinning independently of document scroll. CustomWidth tests Rail width prop, not viewport duplication."
+    },
+    {
+      "file": "src/rating/Rating.stories.tsx",
+      "review": "One responsive breakdown instead of duplicated narrow/wide data, no redundant canvas paint.",
+      "exceptions": "AuthoredSummary CSS slots are a measured consumer override fixture; scales/distributions are distinct semantic variants."
+    },
+    {
+      "file": "src/recent-hires-card/RecentHiresCard.stories.tsx",
+      "review": "Responsive frame replaces fixed width+80 overflow. Removed duplicated width story, retained AutoHeight semantic variant. Paging state functional.",
+      "exceptions": "Card content maxWidth is a reading constraint, not artificial viewport."
+    },
+    {
+      "file": "src/route-stops/RouteStops.stories.tsx",
+      "review": "Planner edits addresses through Bloom prompt and adds/removes stops. Edge examples share controlled Planner.",
+      "exceptions": "Read-only Card composition and long copy exercise genuine states."
+    },
+    {
+      "file": "src/row-actions/RowActions.stories.tsx",
+      "review": "All icon and menu actions provide visible Bloom feedback.",
+      "exceptions": "Demonstrates RowActions owner; no duplicated row renderer."
+    },
+    {
+      "file": "src/screen/Screen.stories.tsx",
+      "review": "Reviewed each host/header/footer/list fixture; uses Screen, AppShell, PageHeader and PageFooter.",
+      "exceptions": "Raw repeated rows with deterministic heights and host toggles are scroll/retention regression inputs. Changing them into virtualized domain lists would change the scroll subject. Host flow toggle is not a viewport toolbar."
+    },
+    {
+      "file": "src/scroll/ScrollRestoration.stories.tsx",
+      "review": "Reviewed router adapter, hidden retained screens and snapshot/remount behavior.",
+      "exceptions": "Raw ScrollView ref/event binding and deterministic 44px rows directly exercise restoration adapter; painted alternating rows make offsets inspectable. Must preserve actual measured host."
+    },
+    {
+      "file": "src/search/Search.stories.tsx",
+      "review": "Filter results use shared List, still controlled; affix/token examples remain functional.",
+      "exceptions": "StyledSlots and CustomAffordances deliberately test class names, icon sizing and input overrides."
+    },
+    {
+      "file": "src/segmented-control/SegmentedControl.stories.tsx",
+      "review": "Removed extra canvas paint/theme lookup.",
+      "exceptions": "Radio/tabs/size/disabled matrices are distinct shared-control API states."
+    },
+    {
+      "file": "src/select/Select.stories.tsx",
+      "review": "Reviewed trigger/content/menu/field composition, real state and keyboard scenarios.",
+      "exceptions": "Explicit sizes, disabled options, inherited sizes and popup padding preserve component measurement/focus fixtures."
+    },
+    {
+      "file": "src/settings-modal/SettingsModal.stories.tsx",
+      "review": "Removed custom compact Select geometry; standard Select. Removed dead navigation destinations. Actions show Bloom feedback; Add server prompts and updates list. Consolidated desktop/narrow window copies. Tools server refresh/remove/logout update scope/plugin state; output and team actions provide feedback.",
+      "exceptions": "StoryWindow is shared platform adapter fixture; Pages explicitly supplies SettingsModal layout context when isolated from its shell."
+    },
+    {
+      "file": "src/shapes/Shapes.stories.tsx",
+      "review": "Reviewed border, avatar, clipping and RTL geometry subjects.",
+      "exceptions": "Exact colors, dimensions, raw shape views and 100-avatar arrangement are pixel/resize fixtures, not application chrome."
+    },
+    {
+      "file": "src/share-sheet/ShareSheet.stories.tsx",
+      "review": "People and share targets now report selection; loading no longer renders locked search input.",
+      "exceptions": "Local recipient data/filtering belongs to demo consumer."
+    },
+    {
+      "file": "src/shipment-request/ShipmentRequest.stories.tsx",
+      "review": "Removed forced narrow/theme duplicate and canvas paint. Add photo works; quote action reports current form state.",
+      "exceptions": "OfferingEditor comparison retains an actual canonical owner, not a custom presentation clone."
+    },
+    {
+      "file": "src/sidebar/Sidebar.stories.tsx",
+      "review": "Removed extra logo plate, redundant logo/tree replicas and unnecessary sm scale. Hover/section plus buttons use Button and insert real pages; external actions give feedback. Workspace creation, nested-page search and built-in nav now keep local state; account/team menu actions observable.",
+      "exceptions": "Dedicated mobile/plain/card/docked/rail/collapsed cases exercise actual Sidebar props. BlurPanel background is a material backdrop fixture; Storybook globals control mode."
+    },
+    {
+      "file": "src/skeleton/Skeleton.stories.tsx",
+      "review": "All visual placeholder anatomy uses Skeleton primitives.",
+      "exceptions": "Size and blend combinations are the component being demonstrated, not recreated UI."
+    },
+    {
+      "file": "src/slider/Slider.stories.tsx",
+      "review": "Removed redundant canvas paint and unused lookup; drag/range/step examples retain controlled values.",
+      "exceptions": "Disabled sliders intentionally do not change."
+    },
+    {
+      "file": "src/social-button/SocialButton.stories.tsx",
+      "review": "Removed redundant painted helper surface.",
+      "exceptions": "Provider/appearance matrix is an explicit component visual catalogue. Custom SVG is consumer-provided identity artwork, not a replacement button."
+    },
+    {
+      "file": "src/sortable-chip-row/SortableChipRow.stories.tsx",
+      "review": "Custom outlined text pills replaced by canonical Chip; SortableChipRow still owns drag/focus/reorder.",
+      "exceptions": "Disabled fixture keeps onReorder inert by definition."
+    },
+    {
+      "file": "src/sortable-media/SortablePhotoGrid.stories.tsx",
+      "review": "One actual-canvas grid replaces fixed 720/343 copies. Empty/disabled preserved. Add/remove/retry/reorder still operate local photos.",
+      "exceptions": "Simulated upload timer models state transitions; network photos remain demo assets."
+    },
+    {
+      "file": "src/stat-bar/Meter.stories.tsx",
+      "review": "All bars/rings use Meter/MeterRing, controls/captions are component data.",
+      "exceptions": "Exact height/width/fill/cap and animation comparisons document Meter API; no synthetic viewport controls."
+    },
+    {
+      "file": "src/stat-bar/StatBar.stories.tsx",
+      "review": "Uses canonical StatBar variants and live Storybook props.",
+      "exceptions": "Custom colors are meaningful chart-series fills, not application surface paint."
+    },
+    {
+      "file": "src/stat-cards/StatCards.stories.tsx",
+      "review": "Uses StatCards/StatCard for all rendering; counts/column variants are genuine component props.",
+      "exceptions": "Explicit content widths cap dashboard examples; two/three/four columns intentionally demonstrate layout API."
+    },
+    {
+      "file": "src/stay-filters/StayFilters.stories.tsx",
+      "review": "Removed fake panel border/paint and narrow/wide copies; one inline content example. Canonical ScrollArea, functional apply/clear/trigger feedback; replaced gray filler controls with text.",
+      "exceptions": "Buy/rent, linear/log scale, chips/checkboxes and disabled filtering are separate meaningful scenarios."
+    },
+    {
+      "file": "src/stay-search/StaySearch.stories.tsx",
+      "review": "Removed duplicate compact widths and fake phone shell. Mobile footer uses PageFooter; scrolling uses ScrollArea; calendar count uses shared breakpoint hook. Search/selection callbacks give feedback.",
+      "exceptions": "Desktop segmented bar and mobile step flow are distinct provided component APIs; no painted viewport copies remain."
+    },
+    {
+      "file": "src/stepper/Stepper.stories.tsx",
+      "review": "Guest content uses Card; one responsive FilterRows replaces two fixed widths; minimum fixture can increment.",
+      "exceptions": "Outline exact geometry and removal counter remain stable regression fixtures; disabled rows intentionally fixed."
+    },
+    {
+      "file": "src/sticker/Sticker.stories.tsx",
+      "review": "Size catalogue wraps to available space.",
+      "exceptions": "Data URI SVG/Lottie are deterministic artwork fixtures, not duplicated UI."
+    },
+    {
+      "file": "src/styles/SurfaceLevels.stories.tsx",
+      "review": "Tabs/checkboxes in ladder and popup now react to input.",
+      "exceptions": "Exact level paint and SurfaceLevelProvider are the contrast regression subject; replacing them with Surface would change measured fills."
+    },
+    {
+      "file": "src/subscription-plans/SubscriptionPlans.stories.tsx",
+      "review": "Continue reports the selected local plan.",
+      "exceptions": "No external checkout is performed; SubscriptionPlans owns all presentation."
+    },
+    {
+      "file": "src/subtle-hover/SubtleHover.stories.tsx",
+      "review": "Reviewed CSS group-hover and JS coordinated-hover paths.",
+      "exceptions": "StyledPressable/raw Pressable are the exact hover owner being tested; wrapping in Button/List would inject another hover implementation and mask the subject."
+    },
+    {
+      "file": "src/surface/Surface.stories.tsx",
+      "review": "Reviewed border lighting, material, nesting, backdrop reflection and baked/live stories.",
+      "exceptions": "Raw gradients, exact colored bands/glyphs and nested surfaces deliberately test shared material composition. Reduced/contrast are accessibility fixtures, not duplicate dark-theme stories."
+    },
+    {
+      "file": "src/surfaces/Surfaces.stories.tsx",
+      "review": "Uses canonical Button and imperative Surface API throughout; inspected cancellation and stacking flows.",
+      "exceptions": "Event hooks, retained promises and exact stacked layering are regression harnesses; do not replace with generic dialogs or remove as fake controls."
+    },
+    {
+      "file": "src/swipe-row/SwipeRow.stories.tsx",
+      "review": "Handmade row text/layout replaced by ListItem. Swipe actions now report outcomes, full delete still removes row.",
+      "exceptions": "HorizontalContent retains long scroll runway and open count to test gesture arbitration; OwnPaint explicitly exercises resolved custom pairs."
+    },
+    {
+      "file": "src/switch/Switch.stories.tsx",
+      "review": "Custom label/control row replaced by shared List with trailing Switch.",
+      "exceptions": "Standalone and disabled matrices directly exercise Switch states."
+    },
+    {
+      "file": "src/tab-bar/TabBar.stories.tsx",
+      "review": "Uses List content and canonical Button; removed dead theme read.",
+      "exceptions": "Window-wide bounded GestureHandlerRootView, Animated.ScrollView and minimize provider are the animation test subjects. Host height/safe area are intentional; no fake viewport selector."
+    },
+    {
+      "file": "src/tab-pager/TabPagerBottomBar.stories.tsx",
+      "review": "Inspected provider/model, shared motion progress and destination switching.",
+      "exceptions": "Structural router-free provider harness is necessary because Storybook has no Expo navigator. Camera state tests chrome exit, not fake viewport."
+    },
+    {
+      "file": "src/table/Table.stories.tsx",
+      "review": "Removed hand-painted clipping/border around Table scrolling story.",
+      "exceptions": "Table minWidth intentionally exceeds available width to verify shared horizontal overflow; sort state and data rows remain canonical."
+    },
+    {
+      "file": "src/tabs/Tabs.stories.tsx",
+      "review": "All variants use Tabs/TabsTrigger; values and panels are local consumer state.",
+      "exceptions": "Variants, counts, icons, selection absence and disabled states are distinct API examples."
+    },
+    {
+      "file": "src/tag-field/TagField.stories.tsx",
+      "review": "Fixed locked non-disabled fields with controlled story helper and removable picked people. Wrapping story follows canvas instead of forcing phone width. Removed duplicate paint.",
+      "exceptions": "Neighbour examples use real TextField/SelectedChipsRow to check shared shell/pill; disabled states remain fixed."
+    },
+    {
+      "file": "src/task-list/TaskList.stories.tsx",
+      "review": "Removed unnecessary page paint.",
+      "exceptions": "Replay/step/pause controls drive stream lifecycle and are meaningful; fixed reading width contains prose, not viewport emulation."
+    },
+    {
+      "file": "src/teleport/Teleport.stories.tsx",
+      "review": "Reviewed host transfer and stable portal tree.",
+      "exceptions": "Dashed host bounds and colored square are instrumentation for moving the SAME node; they are not replacement cards."
+    },
+    {
+      "file": "src/tenancy/Tenancy.stories.tsx",
+      "review": "Responsive flex layout replaces duplicated 1280/375 variants and width branching; PageHeader for tenant heading; removed nested paint and repeated document list; action feedback.",
+      "exceptions": "Standalone stages/payments/documents remain domain state scenarios; generated SVG photos are offline business fixtures."
+    },
+    {
+      "file": "src/text-field/TextField.stories.tsx",
+      "review": "Removed redundant ordinary matrix canvas paint and dead theme import.",
+      "exceptions": "MaterialBodyContrast/SingleMaterialBodyContrast retain black/white backing, size and large-type overrides: direct pixel contrast fixtures."
+    },
+    {
+      "file": "src/textarea/Textarea.stories.tsx",
+      "review": "Removed redundant ordinary matrix canvas paint.",
+      "exceptions": "Rows, count, invalid, disabled, resize and Playground values directly exercise Textarea."
+    },
+    {
+      "file": "src/theme-toggle/ThemeToggle.stories.tsx",
+      "review": "Private Surface renderer replaced by canonical Surface, using actual material and radius.",
+      "exceptions": "These controls are the ThemeToggle component under test; not a duplicate story toolbar."
+    },
+    {
+      "file": "src/theme/ColorPalette.stories.tsx",
+      "review": "Wide exact-token table now contained by shared horizontal ScrollArea.",
+      "exceptions": "Paint swatches deliberately use raw token fills so material blending cannot change the palette being measured."
+    },
+    {
+      "file": "src/theme/ColorRoles.stories.tsx",
+      "review": "Custom task completion row replaced by List; shared AppShell/Screen/PageHeader/Card/Meter retain context composition.",
+      "exceptions": "Preset scope and role-vs-single-accent comparison are explicit diagnostic controls, not theme-copy stories."
+    },
+    {
+      "file": "src/theme/ColorSystemLab.stories.tsx",
+      "review": "Replaced ~650 lines of bespoke controls/paint with Bloom Button/Text and exact token swatches. Family/pairing/auth in Storybook Controls; appearance uses toolbar; no hardcoded beige panels.",
+      "exceptions": "Light/dark token swatches intentionally compare token relationships; live SocialTemplate follows selected global mode."
+    },
+    {
+      "file": "src/theme/Theme.stories.tsx",
+      "review": "Reviewed scopes and canonical Card/Button samples.",
+      "exceptions": "Modes/Presets/Scoped specifically demonstrate simultaneous color scope boundaries; not duplicate dark application demos."
+    },
+    {
+      "file": "src/theme/color-scope/ColorScope.stories.tsx",
+      "review": "Reviewed exact-token, mode-switch, portal and nested-sheet retention controls. Exact-token probes and portal now wrap within canvas; diagnostic paint and mount identity preserved.",
+      "exceptions": "Raw CSS variables/data attributes/mount IDs verify exact inheritance and identity; scoped-mode toggle is the subject itself, distinct from Storybook theme."
+    },
+    {
+      "file": "src/toast/Toast.stories.tsx",
+      "review": "Custom notification content now uses Card instead of private hardcoded surfaces.",
+      "exceptions": "Sequential/burst/mixed-height/position/cancel/animation stories are documented independent lifetime/geometry regressions. 220px custom card remains height measurement input."
+    },
+    {
+      "file": "src/tooltip/Tooltip.stories.tsx",
+      "review": "Canonical Button/Tooltip triggers with real hover/focus/press, no custom surface.",
+      "exceptions": "Always-open size/anchor fixtures intentionally freeze visibility to measure placement, with stable test IDs."
+    },
+    {
+      "file": "src/track-list/TrackList.stories.tsx",
+      "review": "PageHeader replaces custom headings; removed nested paint, forced phone copy and duplicate episode widths. Playlist removal updates tracks, menu actions give feedback.",
+      "exceptions": "TrackList/EpisodeList own specialized shared rows; selection bar retains real selection/remove behavior."
+    },
+    {
+      "file": "src/typography/Typography.stories.tsx",
+      "review": "All examples exercise canonical typography primitives.",
+      "exceptions": "Border override on quotation and type scale are intentional authored component contracts."
+    },
+    {
+      "file": "src/usage-card/UsageCard.stories.tsx",
+      "review": "Direct UsageCard props for available/unavailable data, no custom UI.",
+      "exceptions": "Chart values/formatting belong to consumer data."
+    },
+    {
+      "file": "src/user-hover-card/UserHoverCard.stories.tsx",
+      "review": "Custom badge pills replaced by Chip and profile action uses Bloom alert.",
+      "exceptions": "Nested clickable badge retains propagation assertions and same stable test ID; ActivityHeatmap footer is canonical content."
+    },
+    {
+      "file": "src/vehicle-picker/VehiclePicker.stories.tsx",
+      "review": "Removed narrow/theme duplicate and unnecessary background paint; long copy follows available canvas.",
+      "exceptions": "BudgetPicker comparison uses actual canonical components; availability/price states meaningful."
+    },
+    {
+      "file": "src/vendor-card/VendorCard.stories.tsx",
+      "review": "Custom shelf/header layout replaced by shared Shelf; VendorCard remains sole renderer, saved toggles state and open gives feedback.",
+      "exceptions": "Row-vs-grid shelf layouts show distinct card density; content width conforms to card anatomy."
+    },
+    {
+      "file": "src/video-playback/VideoPlayback.stories.tsx",
+      "review": "Reviewed playback ownership, silent tile and explicit claim callbacks.",
+      "exceptions": "Colored Pressable stand-in players are direct visibility arbitration subjects with measured refs; using real VideoView would add unrelated media scheduling/network behavior."
+    },
+    {
+      "file": "src/video-view/VideoView.stories.tsx",
+      "review": "Reviewed optional expo-video injection and playsInline wiring.",
+      "exceptions": "Structural video adapter/raw video is required to test optional-peer contract in Vite without expo-video; fixed aspect ratio fixture meaningful."
+    },
+    {
+      "file": "src/viewport/Viewport.stories.tsx",
+      "review": "Reviewed document and bounded-root reveal paths.",
+      "exceptions": "Deterministic empty runway, target size, raw ScrollView ref and thresholds are direct IntersectionObserver/viewport regression inputs."
+    },
+    {
+      "file": "src/voice/Voice.stories.tsx",
+      "review": "Type-instead/end actions now give visible feedback; wave and overlay state simulation retained.",
+      "exceptions": "Synthetic meter frames model audio data without microphone/network; disabled idle controls intentionally static."
+    },
+    {
+      "file": "src/web-search/WebSearch.stories.tsx",
+      "review": "Removed unnecessary canvas paint and dead hook.",
+      "exceptions": "Streaming/replay/step/reduce controls exercise incremental WebSearch; source URLs and glyph data are consumer fixtures."
+    },
+    {
+      "file": "src/window/WindowControls.stories.tsx",
+      "review": "Shared StoryWindow fits actual available width.",
+      "exceptions": "Platform adapter, explicit window metrics/drag region/shadow and plate backing test native window capabilities; they are not app-header clones."
+    },
+    {
+      "file": "src/wizard/Wizard.stories.tsx",
+      "review": "One responsive wizard replaces width-duplicated fake bordered frames; Save/Next/Back give local feedback, shared progress/footer retained.",
+      "exceptions": "Progress/footer state samples are API states, not fake viewport controls."
+    },
+    {
+      "file": "src/zoomable-media-gallery/ZoomableMediaGallery.stories.tsx",
+      "review": "Ratio actions use Button; thumbnail rendering uses BloomImage; retry overlay uses Card.",
+      "exceptions": "Raw measured thumbnail Pressable is transition anchor. Lifecycle/share/deferred ratio/video adapter fixtures and stable IDs retained."
+    },
+    {
+      "file": "templates/ai-chat/AiChat.stories.tsx",
+      "review": "Removed duplicate preset-only stories and unavailable account/secondary sidebar actions. Shared chat shell retains script/scenario switching and generation feedback."
+    },
+    {
+      "file": "templates/ai-chat/AiImageGeneration.stories.tsx",
+      "review": "Distinct generation lifecycle scenario retained; shared AiChatTemplate with actual scenario arg and key reset."
+    },
+    {
+      "file": "templates/ai-profile/AiProfile.stories.tsx",
+      "review": "Removed inert optional Share/Edit buttons; retained controlled date-range data with canonical shared shell/cards."
+    },
+    {
+      "file": "templates/finance/FinanceDashboard.stories.tsx",
+      "review": "Removed preset-only duplicates and inert table action column/header actions; shared filters, data table, charts and shell remain."
+    },
+    {
+      "file": "templates/home-dashboard/HomeDashboard.stories.tsx",
+      "review": "Removed preset-only duplicates and inert table action column/header actions; shared filters, data table, cards and shell remain."
+    },
+    {
+      "file": "templates/housing/Housing.stories.tsx",
+      "review": "Ten distinct functional page entry points; fullscreen canvas with toolbar theming, no width/theme duplicates."
+    },
+    {
+      "file": "templates/hr/HrManagement.stories.tsx",
+      "review": "Removed inert table action column/header actions; shared filter/sort/selection and shell remain."
+    },
+    {
+      "file": "templates/lists/UnifiedLists.stories.tsx",
+      "review": "Conversation/mail recipes replace hand-painted identity/meta/status copy. ListSelectionBar owns bulk selection including zero selected. Anatomy uses title/supporting/supportingLines. Existing swipe, context menu, avatar selection and attachment rail retained. Attachment preview text is rendered once alongside its shared glyph."
+    },
+    {
+      "file": "templates/marketing/MarketingDashboard.stories.tsx",
+      "review": "Removed inert table action column/header actions; shared filters, data table, charts and shell remain."
+    },
+    {
+      "file": "templates/material/Material.stories.tsx",
+      "review": "Preserved diagnostic background/theme/material controls: MaterialScene is also used by physical-device material lab. These controls and translucent layers are the regression subject."
+    },
+    {
+      "file": "templates/medical-profile/MedicalProfile.stories.tsx",
+      "review": "Removed inert table action column/header actions; retained shared cards, day/week data interactions and patient table."
+    },
+    {
+      "file": "templates/multi-agent-chat/MultiAgentChat.stories.tsx",
+      "review": "Thin composition of actual MultiAgentChat; stored agent avatar normalization repaired in the owner. No parallel template implementation."
+    },
+    {
+      "file": "templates/music/Music.stories.tsx",
+      "review": "Shared PageHeader/Search/Avatar replace custom topbar; removed negative canvas margins. Shared ScrollArea/BloomImage replace ordinary raw adapters. Removed unimplemented optional actions. Studio uses same fill contract, shared release components and real local form state."
+    },
+    {
+      "file": "templates/project-board/ProjectBoard.stories.tsx",
+      "review": "Shared AppShell/ProjectBoard with actual board/ticket state. Kept empty and initially-open ticket cases plus explicit RTL semantic fixture. Board-only padding is content inset."
+    },
+    {
+      "file": "templates/social/Social.stories.tsx",
+      "review": "Default/SignedOut replace preset/theme-only copies. EngagementBar/EngagementAction replace custom SVG/action buttons; local like/repost/bookmark and reply dialog work. Brand illustration intentionally custom content; navigation is shell selection fixture."
+    },
+    {
+      "file": "templates/system/System.stories.tsx",
+      "review": "Removed width knobs and width-only variants; canonical List/ListItem replace painted rows. Retained document scrolling and virtualized external-list ownership fixtures."
+    },
+    {
+      "file": "templates/workspace/Workspace.stories.tsx",
+      "review": "Default replaces preset/theme-only copies. Removed redundant surface painter around CardBody; actual note addition and canonical shell/controls remain."
+    }
+  ],
+  "housingHelpers": [
+    {
+      "file": "templates/housing/EvictionsPage.tsx",
+      "reviewed": true,
+      "findingsAndResolution": "Adds neighbourhood-only local report draft; existing tab/attendance/history state retained. Removed unimplemented optional share/support actions."
+    },
+    {
+      "file": "templates/housing/ExplorePage.tsx",
+      "reviewed": true,
+      "findingsAndResolution": "Cards and map markers open active listing, favorites and map/list toggle controlled; map lines/blocks intentionally synthetic geographic fixture, not competing UI controls. Results use fixed sample dataset per mode."
+    },
+    {
+      "file": "templates/housing/Housing.stories.tsx",
+      "reviewed": true,
+      "findingsAndResolution": "Ten distinct functional page entry points; fullscreen canvas with toolbar theming, no width/theme duplicates."
+    },
+    {
+      "file": "templates/housing/HousingFilters.tsx",
+      "reviewed": true,
+      "findingsAndResolution": "Filter sections compose Bloom controls; draft apply/clear/cancel retain local state and count. Fixed sample result count is a fixture."
+    },
+    {
+      "file": "templates/housing/HousingHeader.tsx",
+      "reviewed": true,
+      "findingsAndResolution": "Root migrated PageHeader and ScrollArea. Existing sidebar/account navigation works; default context callback is provider fallback, not an advertised action."
+    },
+    {
+      "file": "templates/housing/HousingSearch.tsx",
+      "reviewed": true,
+      "findingsAndResolution": "Search fields, destination suggestions, dates, guests, budget and mode hold local state; submit closes the active search. Root migrated ScrollArea. No backend availability promises."
+    },
+    {
+      "file": "templates/housing/HousingTemplate.tsx",
+      "reviewed": true,
+      "findingsAndResolution": "Persistent template navigation provider and page switch; supplied business navigation intentionally owns state."
+    },
+    {
+      "file": "templates/housing/HousingWidgets.tsx",
+      "reviewed": true,
+      "findingsAndResolution": "Saved-search edit now navigates to actual Saved page editor; existing listing/calendar actions retained."
+    },
+    {
+      "file": "templates/housing/ListingPages.tsx",
+      "reviewed": true,
+      "findingsAndResolution": "Shared photo grid opens ZoomableMediaGallery, floor plans also open gallery, amenities expand. Rent Apply routes to existing checklist; viewing/mortgage/date/guest/swap flows preserved. Contact/report/visit/offer drafts use Bloom prompt; reservation presents actual date/guest/total review. Removed dead optional share/location/reviews/listings/call controls."
+    },
+    {
+      "file": "templates/housing/MyHomePage.tsx",
+      "reviewed": true,
+      "findingsAndResolution": "Local repair creation, comment insertion/count, payment confirmation/state update and message draft. Document detail uses Bloom alert. Removed unavailable receipt download/signing and photo actions lacking a viewer."
+    },
+    {
+      "file": "templates/housing/PublishPage.tsx",
+      "reviewed": true,
+      "findingsAndResolution": "Wizard validation, offering data, photo retry/add/remove/reorder, publishing state and preview already functional; preserved."
+    },
+    {
+      "file": "templates/housing/SavedPage.tsx",
+      "reviewed": true,
+      "findingsAndResolution": "Rename saved searches via Bloom prompt and update local state; delete retained; trip message draft functional; unavailable directions removed."
+    },
+    {
+      "file": "templates/housing/data.ts",
+      "reviewed": true,
+      "findingsAndResolution": "Business sample records, currency/date formatting, filter counts, image URIs and sample floor-plan SVGs; no inert UI callbacks."
+    }
+  ],
+  "sourceFixes": [
+    "ListSelectionBar: optional selecting mode keeps the toolbar available with zero rows selected.",
+    "HeaderActions: intrinsic probes remain measurable without expanding document scroll bounds.",
+    "MultiAgentChat: normalize stored avatar parts with agentCharacter at sidebar and profile boundaries.",
+    "bloom-editor InlinePopover: canonical Button href replaces removed LinkButton; package typecheck resolves current built Button declarations."
+  ],
+  "verificationInfrastructure": [
+    "Catalogue renderer uses actual storyRendered/error events and isolated browser contexts, with recovery after HMR invalidates a page.",
+    "Build freshness excludes development directories already excluded by bob and package files; exported-symbol and negative-control checks remain.",
+    "English-language gate checks shared lab/template copy and an injected-language negative control instead of a duplicate Text-node count.",
+    "Editor verifier targets current listbox semantics, focused clipboard owner and theme-based selection paint. Chat split verifier uses FullScreen and actual pane navigation/resizing."
+  ],
+  "followUp20261116": {
+    "finding": "The earlier import and render review missed ordinary examples that still framed a partial screen instead of composing the complete app. The earlier catalogue checks do not establish that every screen uses the correct app layout.",
+    "scope": "Four PageFooter examples, three ordinary BottomBar examples, and three PageHeader media examples now use the real AppShell and Screen layout. Dedicated geometry and dock regression fixtures retain their measured hosts; the standalone document footer fixture lives in Labs/Layout/Page Footer Contracts.",
+    "sharedFixes": [
+      "PageHeader uses uniform 12px outer padding with the existing md buttons: 36px with a mouse and 44px with touch. A normal one-row header measures 60px and 68px respectively.",
+      "Screen-owned BottomBar does not publish its own capsule as an outer navigation edge. Standalone bars still claim the edge."
+    ],
+    "browserEvidence": "Real Chromium checks cover full canvas widths, mobile and desktop layouts, footer scroll clearance, reply/send/back, bottom navigation and creation, media interactions, header patterns and action measurement, and the preserved standalone document-footer geometry regression.",
+    "limits": "This follow-up verifies the affected examples and shared owners; it is not a new interaction audit of every catalogue story or a native device verification."
+  },
+  "headerReferenceFollowUp20261116": {
+    "reference": "Reviewed all 12 images in the user-provided HEADER folder; compared the live stories using touch and pointer input.",
+    "layout": "AppShell rails are flush with the top, bottom and logical leading edge. Content-panel gutters and expanded-sidebar frames remain owned by their normal layouts. All Header Patterns examples now use AppShell panels; profile examples no longer nest an extra ContentPanel.",
+    "controls": "Normal md Button paint remains 36px inside a non-overlapping 44px web touch host. Button.Group and Search use shared paint geometry. The header accounts for the invisible hit area and its ordinary row measures 60px with either input mode. This supersedes the 68px touch row recorded in the earlier follow-up.",
+    "headers": "Closed search preserves centered identities on narrow headers. Stacked identity spacing is 4px. titleVariant retains the heading semantics and tone for larger library headings. onImage defaults to a dark translucent scrim. HeaderActions supports persistent controls after the command group in actual focus order.",
+    "examples": "Conversation search now opens from the header and the shared composer sends messages. Search results use a close icon. Photos use an adaptive image mosaic and switch to an inset header for empty results. Music uses albums and a shared capsule MiniPlayer. Viewer completion stays separate from grouped tools.",
+    "verification": "Chromium covered rail/panel bounds including RTL, centered identities, a 60px ordinary row, normal visible button size with a larger touch target, search and message/profile navigation, media selection/viewer/playback, and empty results in both themes. Shared-owner regression tests cover rail geometry, title semantics, image contrast, persistent-action order and MiniPlayer behavior.",
+    "limits": "These checks cover the affected stories and shared components. No new native-device validation or complete catalogue interaction audit is claimed.",
+    "gates": {
+      "fullSuite": "1032 suites, 15724 tests and 9 snapshots passed. The final CSS-only centering correction was then covered by 70 focused tests and the browser checks below.",
+      "buttonBrowser": "336 real edge taps across light/dark and narrow/wide layouts; non-overlap, RTL, CSS-authored dimensions/borders and live input-device changes passed. Search passed four theme/input combinations; class authority passed eight.",
+      "package": "Final build, package exports, build freshness and six task examples for browser/react-native passed, with negative controls.",
+      "typescript": "TypeScript and the 4122-source-file consumer check passed.",
+      "lint": "Passed with existing catalogue diagnostics (8892 warnings and one info), no errors."
+    }
+  }
+}

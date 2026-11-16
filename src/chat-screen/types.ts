@@ -1,5 +1,5 @@
 import type { ImageSource } from '../shapes';
-import type { ComponentType, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { ImageSourcePropType, StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 import type { PresenceStatus } from '../chat-indicators/types';
@@ -82,6 +82,14 @@ export interface ChatHeaderProps {
   showBack?: boolean;
   /** Names the back button. `"Back"` in English (localised). */
   backLabel?: string;
+  /** Preformatted unread count inside the shared back Button. */
+  backCount?: number | string;
+  /** Shared identity placement, useful for centered conversation avatars. */
+  titleAlign?: import('../page-header/types').PageHeaderTitleAlign;
+  titleLayout?: 'inline' | 'stacked';
+  titleAppearance?: 'plain' | 'capsule';
+  /** Secondary chrome, such as a PinnedMessageBar or conversation search. */
+  accessory?: ReactNode;
 
   /** Opens the info panel. Wraps the avatar + title block in a button. */
   onPressHeader?: () => void;
@@ -133,7 +141,9 @@ export interface ChatHeaderProps {
    * header's measured width against `CHAT_COMPACT_BREAKPOINT`.
    */
   compact?: boolean;
-  /** Draws the bottom hairline. Default `true`. */
+  /** Shared PageHeader presentation. Default floating. */
+  presentation?: import('../page-header/types').PageHeaderPresentation;
+  /** Draws the bottom hairline in the bar presentation. Default `true`. */
   divider?: boolean;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -362,17 +372,6 @@ export interface ChatMember {
   subtitle?: string;
 }
 
-export interface ChatMemberRowProps {
-  member: ChatMember;
-  onPress?: (member: ChatMember) => void;
-  /** The badge text per role. `{ owner: 'Owner', admin: 'Admin' }` in English (localised). */
-  roleLabels?: Partial<Record<ChatMemberRole, string>>;
-  /** Avatar diameter. Default `40`. */
-  avatarSize?: number;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-}
-
 export interface ChatInfoPanelProps {
   /** Default `pane`. */
   variant?: ChatInfoPanelVariant;
@@ -417,8 +416,8 @@ export interface ChatInfoPanelProps {
   /**
    * The settings block. A SLOT, not a schema: a notifications switch, a
    * disappearing-messages picker and a theme row each need state and semantics
-   * the panel cannot own. Compose it from `SettingsListGroup` /
-   * `SettingsListItem` — `docs/chat-screen.mdx` has the worked example.
+   * the panel cannot own. Compose it from `GroupedSection` /
+   * `GroupedSectionItem` — `docs/chat-screen.mdx` has the worked example.
    */
   settings?: ReactNode;
   /** Heading above the settings block. */

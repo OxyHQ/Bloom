@@ -11,6 +11,9 @@
  * `composeChatRowName`) are asserted directly: they are where the ORDER and the
  * offsets live, and a rendered string cannot tell a stable sort from a lucky one.
  */
+import { List, ListItem } from '../list/index.web';
+import { UnreadBadge } from '../chat-indicators';
+import { AvatarGroup } from '../avatar-group';
 import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -23,12 +26,8 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
 import {
-  ArchivedRow,
   ChatFolderTabs,
-  ChatList,
-  ChatListItem,
   ChatSearchResults,
-  GroupAvatar,
   HighlightedText,
   StoriesRow,
   groupSearchResults,
@@ -36,13 +35,12 @@ import {
   sortStories,
 } from '../chat-list';
 import {
-  CHAT_ROW_GEOMETRY,
   DEFAULT_ITEM_LABELS,
   composeChatRowName,
   previewSummary,
   resolveChatListPaint,
 } from '../chat-list/shared';
-import type { ChatSearchResult, ChatSummary, ChatSwipeActions } from '../chat-list/types';
+import type { ChatSearchResult, ChatSwipeActions } from '../chat-list/types';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -239,29 +237,29 @@ describe('previewSummary and composeChatRowName', () => {
 // ---------------------------------------------------------------------------
 
 describe('ChatListItem geometry', () => {
-  it('is 72 tall comfortable and 56 compact, with a 48 / 36 avatar', () => {
-    for (const density of ['comfortable', 'compact'] as const) {
-      mount(<ChatListItem name="Ana" density={density} testID="row" />);
-      const geo = CHAT_ROW_GEOMETRY[density];
-      expect(parseFloat(getComputedStyle(byTestId('row')).height)).toBe(geo.height);
-      const avatar = byTestId('row-avatar');
-      expect(parseFloat(getComputedStyle(avatar).width)).toBeGreaterThanOrEqual(geo.avatar);
-    }
+  it('uses the shared compact geometry and avatar size', () => {
+    mount(<ListItem conversation={{ name: 'Ana' }} testID="row" />);
+    expect(getComputedStyle(byTestId('row')).minHeight).toBe('56px');
+    expect(getComputedStyle(byTestId('row-avatar-image')).width).toBe('36px');
   });
 
   it('paints no inline background on web, so the hover rule can win', () => {
     // An inline `background-color` outranks an adopted stylesheet rule, which
     // would leave every row inert under the pointer while the CSS looked right.
-    mount(<ChatListItem name="Ana" selected testID="row" />);
+    mount(<ListItem conversation={{ name: 'Ana' }} active={true} testID="row" />);
     expect(byTestId('row').style.backgroundColor).toBe('');
-    expect(byTestId('row').style.getPropertyValue('--bloom-chat-selected')).not.toBe('');
-    expect(byTestId('row').style.getPropertyValue('--bloom-chat-hover')).not.toBe('');
+    expect(byTestId('row').style.getPropertyValue('--bloom-list-selected')).not.toBe('');
   });
 });
 
 describe('ChatListItem preview variants', () => {
   it('draws a draft prefix in the negative colour and in italic', () => {
-    mount(<ChatListItem name="Ana" preview={{ draft: true, text: 'see you' }} testID="row" />);
+    mount(
+      <ListItem
+        conversation={{ name: 'Ana', preview: { draft: true, text: 'see you' } }}
+        testID="row"
+      />,
+    );
     const line = byTestId('row-preview');
     const prefix = line.firstElementChild as HTMLElement;
     expect(prefix.textContent).toBe('Draft: ');
@@ -271,13 +269,17 @@ describe('ChatListItem preview variants', () => {
   });
 
   it('draws a sender prefix, and only when there is no draft', () => {
-    mount(<ChatListItem name="Ana" preview={{ sender: 'You', text: 'on my way' }} testID="row" />);
+    mount(
+      <ListItem
+        conversation={{ name: 'Ana', preview: { sender: 'You', text: 'on my way' } }}
+        testID="row"
+      />,
+    );
     expect(byTestId('row-preview').textContent).toBe('You: on my way');
 
     mount(
-      <ChatListItem
-        name="Ana"
-        preview={{ sender: 'You', draft: true, text: 'on my way' }}
+      <ListItem
+        conversation={{ name: 'Ana', preview: { sender: 'You', draft: true, text: 'on my way' } }}
         testID="row"
       />,
     );
@@ -286,9 +288,11 @@ describe('ChatListItem preview variants', () => {
 
   it('draws an attachment glyph beside the label, and hides the glyph on a draft', () => {
     mount(
-      <ChatListItem
-        name="Ana"
-        preview={{ attachment: { kind: 'voice', label: 'Voice message 0:12' } }}
+      <ListItem
+        conversation={{
+          name: 'Ana',
+          preview: { attachment: { kind: 'voice', label: 'Voice message 0:12' } },
+        }}
         testID="row"
       />,
     );
@@ -296,9 +300,11 @@ describe('ChatListItem preview variants', () => {
     expect(byTestId('row-preview').textContent).toBe('Voice message 0:12');
 
     mount(
-      <ChatListItem
-        name="Ana"
-        preview={{ draft: true, attachment: { kind: 'voice', label: 'Voice' }, text: 'hi' }}
+      <ListItem
+        conversation={{
+          name: 'Ana',
+          preview: { draft: true, attachment: { kind: 'voice', label: 'Voice' }, text: 'hi' },
+        }}
         testID="row"
       />,
     );
@@ -307,10 +313,8 @@ describe('ChatListItem preview variants', () => {
 
   it('replaces the preview entirely with the typing line', () => {
     mount(
-      <ChatListItem
-        name="Ana"
-        typingLabel="typing…"
-        preview={{ text: 'never drawn' }}
+      <ListItem
+        conversation={{ name: 'Ana', typingLabel: 'typing…', preview: { text: 'never drawn' } }}
         testID="row"
       />,
     );
@@ -319,9 +323,9 @@ describe('ChatListItem preview variants', () => {
   });
 
   it('turns the name semibold only while something is unread', () => {
-    mount(<ChatListItem name="Ana" testID="row" />);
+    mount(<ListItem conversation={{ name: 'Ana' }} testID="row" />);
     const read = getComputedStyle(byTestId('row-name')).fontWeight;
-    mount(<ChatListItem name="Ana" unreadCount={1} testID="row" />);
+    mount(<ListItem conversation={{ name: 'Ana', unreadCount: 1 }} testID="row" />);
     const unread = getComputedStyle(byTestId('row-name')).fontWeight;
     expect(Number(unread)).toBeGreaterThan(Number(read));
   });
@@ -329,27 +333,47 @@ describe('ChatListItem preview variants', () => {
 
 describe('ChatListItem unread vs delivery status', () => {
   it('draws the badge and NOT the ticks when there is anything unread', () => {
-    mount(<ChatListItem name="Ana" unreadCount={3} outgoingStatus="read" testID="row" />);
+    mount(
+      <ListItem
+        conversation={{ name: 'Ana', unreadCount: 3, outgoingStatus: 'read' }}
+        testID="row"
+      />,
+    );
     expect(byTestId('row-unread')).toBeTruthy();
     expect(maybe('row-status')).toBeNull();
   });
 
   it('counts a dot with no number as unread', () => {
-    mount(<ChatListItem name="Ana" unreadDot outgoingStatus="read" testID="row" />);
+    mount(
+      <ListItem
+        conversation={{ name: 'Ana', unreadDot: true, outgoingStatus: 'read' }}
+        testID="row"
+      />,
+    );
     expect(byTestId('row-unread')).toBeTruthy();
     expect(maybe('row-status')).toBeNull();
   });
 
   it('draws the ticks once nothing is unread', () => {
-    mount(<ChatListItem name="Ana" unreadCount={0} outgoingStatus="delivered" testID="row" />);
+    mount(
+      <ListItem
+        conversation={{ name: 'Ana', unreadCount: 0, outgoingStatus: 'delivered' }}
+        testID="row"
+      />,
+    );
     expect(maybe('row-unread')).toBeNull();
     expect(byTestId('row-status')).toBeTruthy();
   });
 
   it('tints the time accent while unread, and never on a muted chat', () => {
-    mount(<ChatListItem name="Ana" time="12:41" unreadCount={2} testID="row" />);
+    mount(<ListItem conversation={{ name: 'Ana', time: '12:41', unreadCount: 2 }} testID="row" />);
     expect(normalise(getComputedStyle(byTestId('row-time')).color)).toBe(normalise(paint().accent));
-    mount(<ChatListItem name="Ana" time="12:41" unreadCount={2} muted testID="row" />);
+    mount(
+      <ListItem
+        conversation={{ name: 'Ana', time: '12:41', unreadCount: 2, muted: true }}
+        testID="row"
+      />,
+    );
     expect(normalise(getComputedStyle(byTestId('row-time')).color)).toBe(
       normalise(paint().textMuted),
     );
@@ -359,14 +383,16 @@ describe('ChatListItem unread vs delivery status', () => {
 describe('ChatListItem accessibility', () => {
   it('is ONE target carrying the whole row, with the content hidden', () => {
     mount(
-      <ChatListItem
-        name="Ana Ferrer"
-        verified
-        preview={{ draft: true, text: 'see you' }}
-        time="12:41"
-        unreadCount={3}
-        muted
-        pinned
+      <ListItem
+        conversation={{
+          name: 'Ana Ferrer',
+          verified: true,
+          preview: { draft: true, text: 'see you' },
+          time: '12:41',
+          unreadCount: 3,
+          muted: true,
+          pinned: true,
+        }}
         onPress={() => undefined}
         testID="row"
       />,
@@ -383,7 +409,7 @@ describe('ChatListItem accessibility', () => {
   });
 
   it('is a link when given an href, and marks the open one with aria-current', () => {
-    mount(<ChatListItem name="Ana" href="/chats/ana" selected testID="row" />);
+    mount(<ListItem conversation={{ name: 'Ana' }} href="/chats/ana" active={true} testID="row" />);
     const link = byTestId('row-link');
     expect(link.getAttribute('role')).toBe('link');
     expect(link.getAttribute('href')).toBe('/chats/ana');
@@ -392,9 +418,9 @@ describe('ChatListItem accessibility', () => {
 
   it('takes a caller name whole, for a row that says it differently', () => {
     mount(
-      <ChatListItem
-        name="Ana"
-        accessibilityLabel="Ana, 3 nuevos"
+      <ListItem
+        conversation={{ name: 'Ana' }}
+        label={'Ana, 3 nuevos'}
         onPress={() => undefined}
         testID="row"
       />,
@@ -403,27 +429,30 @@ describe('ChatListItem accessibility', () => {
   });
 
   it('is not a control at all without a press handler or an href', () => {
-    mount(<ChatListItem name="Ana" testID="row" />);
+    mount(<ListItem conversation={{ name: 'Ana' }} testID="row" />);
     expect(byTestId('row-link').getAttribute('role')).toBeNull();
   });
 });
 
 describe('ChatListItem actions', () => {
-  it('renders the hover buttons on web, named, and reports the key it was given', () => {
+  it('offers the shared menu on desktop and reports each command key', () => {
     const calls: string[] = [];
     mount(
-      <ChatListItem
-        name="Ana"
+      <ListItem
+        conversation={{ name: 'Ana' }}
         swipeActions={SWIPE}
         onAction={(key) => calls.push(key)}
         testID="row"
       />,
     );
-    const archive = byTestId('row-action-archive');
-    expect(archive.getAttribute('role')).toBe('button');
-    expect(archive.getAttribute('aria-label')).toBe('Archive');
-    act(() => archive.click());
-    act(() => byTestId('row-action-delete').click());
+    for (const name of ['Archive', 'Delete']) {
+      act(() => byTestId('row-menu').click());
+      const item = [...document.querySelectorAll<HTMLElement>('[role="menuitem"]')].find(
+        (el) => el.textContent === name,
+      );
+      expect(item).toBeTruthy();
+      act(() => item!.click());
+    }
     expect(calls).toEqual(['archive', 'delete']);
   });
 
@@ -431,8 +460,8 @@ describe('ChatListItem actions', () => {
     const own = jest.fn();
     const row = jest.fn();
     mount(
-      <ChatListItem
-        name="Ana"
+      <ListItem
+        conversation={{ name: 'Ana' }}
         swipeActions={{
           right: [{ key: 'mute', label: 'Mute', icon: RiArchiveLine, onPress: own }],
         }}
@@ -440,13 +469,17 @@ describe('ChatListItem actions', () => {
         testID="row"
       />,
     );
-    act(() => byTestId('row-action-mute').click());
+    act(() => byTestId('row-menu').click());
+    const item = [...document.querySelectorAll<HTMLElement>('[role="menuitem"]')].find(
+      (el) => el.textContent === 'Mute',
+    );
+    act(() => item!.click());
     expect(own).toHaveBeenCalledTimes(1);
     expect(row).toHaveBeenCalledWith('mute');
   });
 
   it('draws no action affordance when the row has none', () => {
-    mount(<ChatListItem name="Ana" testID="row" />);
+    mount(<ListItem conversation={{ name: 'Ana' }} testID="row" />);
     expect(maybe('row-actions')).toBeNull();
   });
 
@@ -461,8 +494,8 @@ describe('ChatListItem actions', () => {
   it('renders the swipe panes instead once the gesture is enabled', () => {
     const calls: string[] = [];
     mount(
-      <ChatListItem
-        name="Ana"
+      <ListItem
+        conversation={{ name: 'Ana' }}
         swipeActions={SWIPE}
         swipeEnabled
         onAction={(key) => calls.push(key)}
@@ -480,7 +513,7 @@ describe('ChatListItem actions', () => {
 //  GroupAvatar
 // ---------------------------------------------------------------------------
 
-describe('GroupAvatar', () => {
+describe('AvatarGroup conversation layout', () => {
   it('draws one face per entry, up to four', () => {
     for (const [count, drawn] of [
       [1, 1],
@@ -490,9 +523,11 @@ describe('GroupAvatar', () => {
       [7, 4],
     ] as const) {
       mount(
-        <GroupAvatar
+        <AvatarGroup
+          layout="conversation"
+          showInitials
           size={48}
-          faces={Array.from({ length: count }, (_, i) => ({ name: `P${i}` }))}
+          items={Array.from({ length: count }, (_, i) => ({ name: `P${i}` }))}
           testID="cluster"
         />,
       );
@@ -502,9 +537,11 @@ describe('GroupAvatar', () => {
 
   it('keeps the cluster inside its declared size', () => {
     mount(
-      <GroupAvatar
+      <AvatarGroup
+        layout="conversation"
+        showInitials
         size={48}
-        faces={[{ name: 'A' }, { name: 'B' }, { name: 'C' }]}
+        items={[{ name: 'A' }, { name: 'B' }, { name: 'C' }]}
         testID="cluster"
       />,
     );
@@ -514,12 +551,22 @@ describe('GroupAvatar', () => {
   });
 
   it('is decorative unless it is named', () => {
-    mount(<GroupAvatar size={48} faces={[{ name: 'A' }, { name: 'B' }]} testID="cluster" />);
+    mount(
+      <AvatarGroup
+        layout="conversation"
+        showInitials
+        size={48}
+        items={[{ name: 'A' }, { name: 'B' }]}
+        testID="cluster"
+      />,
+    );
     expect(byTestId('cluster').getAttribute('aria-hidden')).toBe('true');
     mount(
-      <GroupAvatar
+      <AvatarGroup
+        layout="conversation"
+        showInitials
         size={48}
-        faces={[{ name: 'A' }, { name: 'B' }]}
+        items={[{ name: 'A' }, { name: 'B' }]}
         accessibilityLabel="Flat 4B"
         testID="cluster"
       />,
@@ -726,6 +773,23 @@ describe('ChatSearchResults', () => {
     expect(byTestId('results-heading-contact').textContent).toBe('Contacts');
   });
 
+  it('keeps the visual marker and its accessible name in highlighted results', () => {
+    mount(
+      <ChatSearchResults
+        query="Fla"
+        results={[{ id: 'verified', kind: 'chat', name: 'Flavia', verified: true }]}
+        testID="results"
+      />,
+    );
+    expect(
+      byTestId('results-result-verified-name').parentElement?.querySelector('svg path'),
+    ).not.toBeNull();
+    expect(byTestId('results-result-verified-link').getAttribute('aria-label')).toContain(
+      'Verified',
+    );
+    expect(byTestId('results-result-verified-name').querySelector('*')?.textContent).toBe('Fla');
+  });
+
   it('highlights the query in both the name and the detail', () => {
     mount(<ChatSearchResults query="fla" results={RESULTS} testID="results" />);
     expect(byTestId('results-result-h1-name').querySelector('*')?.textContent).toBe('Fla');
@@ -763,98 +827,106 @@ describe('ChatSearchResults', () => {
 });
 
 // ---------------------------------------------------------------------------
-//  ChatList and ArchivedRow
+//  Shared list and archive destinations
 // ---------------------------------------------------------------------------
 
-describe('ChatList', () => {
-  const CHATS: ChatSummary[] = [
-    { id: 'a', name: 'Ana', time: '12:41', unreadCount: 2 },
-    { id: 'b', name: 'Bru', time: 'Mon' },
+describe('List: conversations and archive destinations', () => {
+  const items = [
+    {
+      id: 'a',
+      conversation: { name: 'Ana', time: '12:41', unreadCount: 2 },
+      onPress: () => undefined,
+    },
+    { id: 'b', conversation: { name: 'Bru', time: 'Mon' }, onPress: () => undefined },
   ];
 
-  it('renders a section heading and a nested named list per section', () => {
+  it('renders named sections through the common list', () => {
     mount(
-      <ChatList
+      <List
+        accessibilityLabel="Chats"
         sections={[
-          { key: 'pinned', title: 'Pinned', chats: CHATS.slice(0, 1) },
-          { key: 'all', title: 'All', chats: CHATS.slice(1) },
+          { id: 'pinned', title: 'Pinned', items: items.slice(0, 1) },
+          { id: 'all', title: 'All', items: items.slice(1) },
         ]}
         testID="list"
       />,
     );
     expect(byTestId('list-heading-pinned').textContent).toBe('Pinned');
-    const lists = [...container.querySelectorAll('[role="list"]')].map((el) =>
-      el.getAttribute('aria-label'),
-    );
-    expect(lists).toEqual(['Chats', 'Pinned', 'All']);
+    expect(
+      [...container.querySelectorAll('[role="list"]')].map((el) => el.getAttribute('aria-label')),
+    ).toEqual(['Chats', 'Pinned', 'All']);
   });
 
-  it('routes press, long press and actions with the chat id', () => {
-    const pressed: string[] = [];
-    const actions: string[] = [];
+  it('routes a conversation press through its supplied callback', () => {
+    const pressed = jest.fn();
+    mount(<List items={[{ ...items[0]!, onPress: pressed }]} testID="list" />);
+    act(() => byTestId('list-a-link').click());
+    expect(pressed).toHaveBeenCalledTimes(1);
+  });
+
+  it('marks only the open conversation', () => {
     mount(
-      <ChatList
-        chats={[{ ...CHATS[0]!, swipeActions: SWIPE }]}
-        onChatPress={(id) => pressed.push(id)}
-        onChatAction={(key, id) => actions.push(`${key}:${id}`)}
-        testID="list"
-      />,
+      <List items={items.map((item) => ({ ...item, active: item.id === 'b' }))} testID="list" />,
     );
-    act(() => byTestId('list-chat-a-link').click());
-    act(() => byTestId('list-chat-a-action-archive').click());
-    expect(pressed).toEqual(['a']);
-    expect(actions).toEqual(['archive:a']);
+    expect(byTestId('list-b-link').getAttribute('aria-current')).toBe('true');
+    expect(byTestId('list-a-link').getAttribute('aria-current')).toBeNull();
   });
 
-  it('marks exactly the selected chat', () => {
-    mount(<ChatList chats={CHATS} selectedId="b" testID="list" />);
-    expect(byTestId('list-chat-b-link').getAttribute('aria-current')).toBe('true');
-    expect(byTestId('list-chat-a-link').getAttribute('aria-current')).toBeNull();
+  it('renders the supplied empty state', () => {
+    mount(<List items={[]} empty={<span>No conversations yet</span>} />);
+    expect(container.textContent).toBe('No conversations yet');
+    mount(<List items={[]} empty={<span>Nada aún</span>} />);
+    expect(container.textContent).toBe('Nada aún');
   });
 
-  it('shows the built-in empty state, and a caller one instead when given', () => {
-    mount(<ChatList chats={[]} testID="list" />);
-    expect(byTestId('list-empty').textContent).toContain('No conversations yet');
-    mount(<ChatList chats={[]} labels={{ emptyTitle: 'Nada aún' }} testID="list" />);
-    expect(byTestId('list-empty').textContent).toContain('Nada aún');
-  });
-
-  it('announces loading once and hides the placeholder rows', () => {
-    mount(<ChatList loading loadingCount={4} testID="list" />);
+  it('announces loading once and hides placeholders', () => {
+    mount(<List loading loadingCount={4} testID="list" />);
     expect(byTestId('list').getAttribute('aria-busy')).toBe('true');
     expect(byTestId('list-skeleton').getAttribute('aria-hidden')).toBe('true');
     expect(container.querySelectorAll('[data-testid^="list-skeleton-row-"]').length).toBe(4);
-    expect(maybe('list-empty')).toBeNull();
   });
 
-  it('pins the archive row above the sections', () => {
-    mount(<ChatList chats={CHATS} archived={{ count: 6 }} testID="list" />);
-    const archived = byTestId('list-archived');
-    const first = byTestId('list-chat-a');
-    expect(archived.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  it('renders archive as an ordinary item in order, with the same geometry and press handling', () => {
+    const openArchive = jest.fn();
+    mount(
+      <List
+        sections={[
+          {
+            id: 'navigation',
+            items: [
+              {
+                id: 'archived',
+                title: 'Archived',
+                label: 'Archived, 6 chats',
+                leading: <RiArchiveLine />,
+                trailing: <UnreadBadge count={6} muted />,
+                onPress: openArchive,
+              },
+            ],
+          },
+          { id: 'chats', title: 'Chats', items },
+        ]}
+        testID="list"
+      />,
+    );
+    const archive = byTestId('list-archived');
+    expect(
+      archive.compareDocumentPosition(byTestId('list-a')) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(archive.hasAttribute('data-bloom-list-row')).toBe(true);
+    expect(archive.textContent).toContain('6');
+    expect(byTestId('list-archived-link').getAttribute('aria-label')).toBe('Archived, 6 chats');
+    expect(getComputedStyle(archive).minHeight).toBe(
+      getComputedStyle(byTestId('list-a')).minHeight,
+    );
+    act(() => byTestId('list-archived-link').click());
+    expect(openArchive).toHaveBeenCalledTimes(1);
   });
-});
 
-describe('ArchivedRow', () => {
-  it('names itself with the count and draws it muted by default', () => {
-    mount(<ArchivedRow count={6} onPress={() => undefined} testID="archived" />);
-    expect(byTestId('archived-link').getAttribute('aria-label')).toBe('Archived, 6 chats');
-    expect(byTestId('archived-count').textContent).toBe('6');
-  });
-
-  it('drops the badge at zero and says only the label', () => {
-    mount(<ArchivedRow onPress={() => undefined} testID="archived" />);
-    expect(maybe('archived-count')).toBeNull();
+  it('supports an archive destination without a count and with a real link', () => {
+    mount(<ListItem title="Archived" href="/archived" testID="archived" />);
     expect(byTestId('archived-link').getAttribute('aria-label')).toBe('Archived');
-  });
-
-  it('matches the chat row height at each density', () => {
-    for (const density of ['comfortable', 'compact'] as const) {
-      mount(<ArchivedRow count={2} density={density} testID="archived" />);
-      expect(parseFloat(getComputedStyle(byTestId('archived')).height)).toBe(
-        CHAT_ROW_GEOMETRY[density].height,
-      );
-    }
+    expect(byTestId('archived-link').getAttribute('href')).toBe('/archived');
   });
 });
 
@@ -865,7 +937,7 @@ describe('ArchivedRow', () => {
 describe('paint', () => {
   it('reads every colour off the theme, in both modes', () => {
     for (const mode of ['light', 'dark'] as const) {
-      mount(<ChatListItem name="Ana" testID="row" />, mode);
+      mount(<ListItem conversation={{ name: 'Ana' }} testID="row" />, mode);
       const p = paint();
       expect(normalise(p.background)).toBe(normalise(theme.colors.background));
       expect(normalise(p.text)).toBe(normalise(theme.colors.text));

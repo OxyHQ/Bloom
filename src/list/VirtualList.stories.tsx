@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { VirtualList } from './index';
+import { VirtualList, ListItem } from './index';
 import { Text } from '../typography';
-import { Divider } from '../divider';
 
 const meta: Meta = {
   parameters: { controls: { disable: true } },
@@ -28,16 +27,6 @@ const ROWS: Row[] = Array.from({ length: 200 }, (_, index) => ({
   subtitle: index % 3 === 0 ? 'Occasionally taller so heights vary' : 'One line',
 }));
 
-function RowView({ item }: { item: Row }) {
-  return (
-    <View style={{ paddingVertical: 12 }}>
-      <Text>{item.title}</Text>
-      <Text style={{ opacity: 0.6 }}>{item.subtitle}</Text>
-      <Divider spacing={8} />
-    </View>
-  );
-}
-
 /**
  * `VirtualList` is the one list primitive: a windowed list on web and a native
  * virtualized list underneath, behind one prop shape. Use it wherever the row
@@ -56,7 +45,7 @@ export const Basic: Story = {
         data={ROWS}
         keyExtractor={(item) => item.id}
         estimatedItemSize={64}
-        renderItem={({ item }) => <RowView item={item} />}
+        renderItem={({ item }) => <ListItem title={item.title} supporting={item.subtitle} />}
       />
     </View>
   ),
@@ -76,7 +65,7 @@ export const Slots: Story = {
         estimatedItemSize={64}
         ListHeaderComponent={<Text style={{ fontWeight: '600' }}>Recent</Text>}
         ListFooterComponent={<Text style={{ opacity: 0.6 }}>End of list</Text>}
-        renderItem={({ item }) => <RowView item={item} />}
+        renderItem={({ item }) => <ListItem title={item.title} supporting={item.subtitle} />}
       />
     </View>
   ),
@@ -91,7 +80,7 @@ export const Empty: Story = {
         data={[]}
         keyExtractor={(item) => item.id}
         ListEmptyComponent={<Text>No results for “bloom”.</Text>}
-        renderItem={({ item }) => <RowView item={item} />}
+        renderItem={({ item }) => <ListItem title={item.title} supporting={item.subtitle} />}
       />
     </View>
   ),
@@ -115,7 +104,7 @@ export const InfiniteScroll: Story = {
           estimatedItemSize={64}
           onEndReachedThreshold={0.5}
           onEndReached={() => setCount((value) => Math.min(value + 20, ROWS.length))}
-          renderItem={({ item }) => <RowView item={item} />}
+          renderItem={({ item }) => <ListItem title={item.title} supporting={item.subtitle} />}
         />
       </View>
     );

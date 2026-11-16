@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -133,11 +133,6 @@ export const Scrolling: Story = {
       style={{
         width: 360,
         maxWidth: '100%',
-        borderWidth: 1,
-        borderColor: 'rgba(0,0,0,0.08)',
-        borderRadius: 16,
-        paddingTop: 8,
-        overflow: 'hidden',
       }}
     >
       <Table accessibilityLabel="Customers" minWidth={640}>

@@ -7,8 +7,7 @@ import {
   useState,
 } from 'react';
 import type { View as NativeView } from 'react-native';
-import type { Button as ButtonComponent } from '../button/Button';
-import { GlyphButton } from '../button/GlyphButton';
+import type { Button as ButtonComponent } from '../button';
 import type { Collapsible as CollapsibleComponent } from '../collapsible/Collapsible';
 import { RiExpandDiagonalSLine } from '../icons/remix/RiExpandDiagonalSLine';
 import type { ScrollArea as ScrollAreaComponent } from '../layout/ScrollArea';
@@ -150,10 +149,13 @@ export function createCompactComposer({
             <View className="flex-row items-center">
               {!expanded ? actions('inline') : null}
               {onExpand ? (
-                <GlyphButton
+                <Button
+                  appearance="plain"
+                  tone="neutral"
+                  iconOnly
                   onBlur={handleBlur}
                   size={32}
-                  glyphSize={32}
+                  iconSize={32}
                   hitSlop={6}
                   attention={attempt}
                   accessibilityHint={labels?.limitHint ?? messages.limitHint(maxLength)}

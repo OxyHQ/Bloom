@@ -1,8 +1,7 @@
-import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { useTheme } from '../theme/use-theme';
+import { Surface } from '../surface';
 import { ThemeToggle } from './index';
 
 const meta: Meta<typeof ThemeToggle> = {
@@ -15,54 +14,27 @@ export default meta;
 
 type Story = StoryObj<typeof ThemeToggle>;
 
-/** Storybook's own theme global drives the provider, so the toggle's `setMode`
- *  reports the choice; flip the toolbar theme to see both modes. */
-function Surface({ children, width = 260 }: { children: React.ReactNode; width?: number }) {
-  const theme = useTheme();
-  return (
-    <View
-      style={{
-        width,
-        padding: 12,
-        gap: 12,
-        borderRadius: 24,
-        backgroundColor: theme.colors.backgroundSecondary,
-      }}
-    >
-      {children}
-    </View>
-  );
-}
-
 /** Every variant, on the sidebar surface. */
 export const Appearances: Story = {
   parameters: { controls: { disable: true } },
   render: function AppearancesStory() {
-    const { colors } = useTheme();
     return (
-      <View style={{ padding: 40, gap: 24 }}>
-        <Surface>
+      <View style={{ padding: 16, gap: 24 }}>
+        <Surface style={{ padding: 12, gap: 12, width: 260, maxWidth: '100%' }}>
           <ThemeToggle testID="sidebar" />
         </Surface>
-        <Surface width={60}>
+        <Surface style={{ padding: 12, alignSelf: 'flex-start' }}>
           <ThemeToggle collapsed testID="collapsed" />
         </Surface>
-        <Surface>
+        <Surface style={{ padding: 12, gap: 12, width: 260, maxWidth: '100%' }}>
           <ThemeToggle variant="sidebar-segmented" testID="sidebar-segmented" />
         </Surface>
         <View style={{ padding: 12 }}>
           <ThemeToggle variant="segmented" testID="segmented" />
         </View>
-        <View
-          style={{
-            padding: 12,
-            backgroundColor: colors.backgroundSecondary,
-            borderRadius: 999,
-            alignSelf: 'flex-start',
-          }}
-        >
+        <Surface radius={999} style={{ padding: 12, alignSelf: 'flex-start' }}>
           <ThemeToggle variant="bare-segmented" testID="bare" />
-        </View>
+        </Surface>
       </View>
     );
   },
@@ -71,8 +43,8 @@ export const Appearances: Story = {
 export const Sidebar: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ padding: 40 }}>
-      <Surface>
+    <View style={{ padding: 16 }}>
+      <Surface style={{ padding: 12, gap: 12, width: 260, maxWidth: '100%' }}>
         <ThemeToggle />
       </Surface>
     </View>
@@ -82,7 +54,7 @@ export const Sidebar: Story = {
 export const Segmented: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ padding: 40 }}>
+    <View style={{ padding: 16 }}>
       <ThemeToggle variant="segmented" />
     </View>
   ),
@@ -102,7 +74,7 @@ export const Playground: Story = {
     transitionDuration: { control: { type: 'range', min: 0, max: 1600, step: 20 } },
   },
   render: (args) => (
-    <Surface>
+    <Surface style={{ padding: 12, gap: 12, width: 260, maxWidth: '100%' }}>
       <ThemeToggle {...args} />
     </Surface>
   ),

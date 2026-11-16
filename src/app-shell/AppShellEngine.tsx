@@ -742,19 +742,21 @@ export function createAppShellEngine() {
     );
 
     // ---- the panel region ---------------------------------------------------
-    // Where the shell's gutter goes. A plain, content-aligned or a docked nav
+    // Where the shell's gutter goes. A rail, plain content-aligned or docked nav
     // runs the full height flush to the start edge, so the row keeps no top,
     // bottom or start padding and the region states its own; every other frame
     // pads the row. With `panels` the END side gets the same gutter in every
     // case — the edge that a content-aligned row once forgot — and a compact
     // region gets none on any side, whatever the mode.
+    const railNav = navInFlow && navVariant === 'rail';
     const contentAligned =
-      navigationAlign === 'content' && centred && (!!cssScope || !compactRegion);
+      !railNav && navigationAlign === 'content' && centred && (!!cssScope || !compactRegion);
     const plainFrame =
       plainNavFlushes(contentAligned, panelHost) && flowSidebar?.surface === 'plain' && !showTopBar;
     const dockedNav = navInFlow && flowSidebar?.surface === 'docked';
-    const navFlush = navInFlow && (dockedNav || plainFrame);
-    const regionOuter = framed || (navInFlow && !navFlush) ? gutter : 0;
+    const navFlush = navInFlow && (railNav || dockedNav || plainFrame);
+    // A rail belongs to the window edge; the adjacent content keeps its frame.
+    const regionOuter = framed || (navInFlow && (!navFlush || railNav)) ? gutter : 0;
     // `frameInset` moves the framed region's window edges, one at a time; the
     // gutter between the regions and around the panels stays `gutter`.
     const frameEdge = (edge: AppShellEdge) => {
@@ -768,34 +770,14 @@ export function createAppShellEngine() {
     const outerStart = frameEdge('start');
     const outerEnd = frameEdge('end');
     const externalTopHeight = showTopBar ? topBarHeight : 0;
-    // A DOCKED nav is flush to the window: it takes the shell's whole height and
-    // its own hairline is the separator, so the shell gives up its start and
-    // vertical padding around that column rather than framing it like a card
-    // (`dockedNav`, above).
+    // Flush navigation takes the shell's whole height. Its rail or docked
+    // surface owns its insets, so the shell does not frame it like a card.
     // Where the row places its first child, from the window's edges: a docked
     // navigation's peek floats `inset` from the window, not from its slot.
-    const rowPadStart = panelHost
-      ? navFlush
-        ? 0
-        : outerStart
-      : dockedNav || canvas || plainFrame
-        ? 0
-        : gutter;
-    const rowPadTop = panelHost
-      ? navFlush
-        ? 0
-        : outerTop
-      : dockedNav || canvas || plainFrame
-        ? 0
-        : gutter;
-    const rowPadBottom = panelHost
-      ? navFlush
-        ? 0
-        : outerBottom
-      : dockedNav || canvas || plainFrame
-        ? 0
-        : gutter;
-    const canvasNavPad = !doc && canvas && !dockedNav;
+    const rowPadStart = panelHost ? (navFlush ? 0 : outerStart) : navFlush || canvas ? 0 : gutter;
+    const rowPadTop = panelHost ? (navFlush ? 0 : outerTop) : navFlush || canvas ? 0 : gutter;
+    const rowPadBottom = panelHost ? (navFlush ? 0 : outerBottom) : navFlush || canvas ? 0 : gutter;
+    const canvasNavPad = !doc && canvas && !navFlush;
     // Hidden, a flush navigation leaves the frame's own start inset behind,
     // so the content's edge lands where it would with no navigation at all.
     const navHiddenExtent = navFlush && panelHost && framed ? outerStart : 0;
@@ -912,15 +894,17 @@ export function createAppShellEngine() {
         reserveBottomBarSpace,
       ],
     );
-    // The row's gap after the navigation. Panels keep their gutter off a docked
-    // nav's hairline; a canvas runs to the edge.
+    // Transparent rails already inset their items; adding a column gap doubles
+    // that space. Framed sidebars retain their separate panel gutter.
     const rowGap = canvas
       ? 0
-      : dockedNav
-        ? panelHost
-          ? regionOuter
-          : 0
-        : Math.max(0, navigationGap ?? (plainFrame ? 0 : columnGap));
+      : railNav
+        ? Math.max(0, navigationGap ?? 0)
+        : dockedNav
+          ? panelHost
+            ? regionOuter
+            : 0
+          : Math.max(0, navigationGap ?? (plainFrame ? 0 : columnGap));
     // The reading envelope is flex, natively as on the web: a filling envelope
     // grows into whatever room the row leaves it (beside the navigation, as a
     // dock slides it closed, inside the gutters), and a capped one is its
@@ -1525,7 +1509,7 @@ export function createAppShellEngine() {
               '--bloom-nav-overlay-border': navigationChrome.border,
               '--bloom-nav-overlay-shadow': navigationChrome.shadow,
             } as WebCssStyle,
-            doc ? stickyRail(dockedNav || plainFrame ? 0 : gutter) : null,
+            doc ? stickyRail(navFlush ? 0 : gutter) : null,
             navPeekLayer,
           ]}
         >
@@ -1539,7 +1523,7 @@ export function createAppShellEngine() {
           testID={testID ? `${testID}-navigation` : undefined}
           style={[
             { flexShrink: 0 },
-            doc ? stickyRail(dockedNav || plainFrame ? 0 : gutter) : null,
+            doc ? stickyRail(navFlush ? 0 : gutter) : null,
             navSlotStyle,
             navPeekLayer,
           ]}
@@ -1570,7 +1554,7 @@ export function createAppShellEngine() {
           testID={testID ? `${testID}-navigation` : undefined}
           style={[
             { flexShrink: 0 },
-            doc ? stickyRail(dockedNav || plainFrame ? 0 : gutter) : null,
+            doc ? stickyRail(navFlush ? 0 : gutter) : null,
             canvasNavPad
               ? {
                   paddingTop: gutter,
@@ -1595,7 +1579,7 @@ export function createAppShellEngine() {
       ? navFlush
         ? { paddingTop: outerTop, paddingBottom: outerBottom }
         : {}
-      : plainFrame
+      : plainFrame || railNav
         ? { paddingTop: gutter, paddingBottom: gutter }
         : {};
     const centredBody = (
@@ -1692,12 +1676,17 @@ export function createAppShellEngine() {
           testID={testID ? `${testID}-page` : undefined}
           style={{ ...flexFill, minWidth: 0, backgroundColor: background }}
           contentStyle={
-            panelHost ? bodyInset : { paddingTop: small ? 12 : 0, paddingBottom: pageReserve }
+            panelHost
+              ? bodyInset
+              : {
+                  paddingTop: (small ? 12 : 0) + (railNav ? gutter : 0),
+                  paddingBottom: pageReserve + (railNav ? gutter : 0),
+                }
           }
         >
           {column}
         </Scroller>
-        {asideColumn(panelHost ? bodyInset : {})}
+        {asideColumn(panelHost || railNav ? bodyInset : {})}
       </>
     );
 
@@ -1854,7 +1843,7 @@ export function createAppShellEngine() {
                 paddingInlineStart: outerStart,
                 paddingInlineEnd: outerEnd,
               }
-        : dockedNav
+        : navFlush
           ? {
               paddingTop: 0,
               paddingBottom: 0,

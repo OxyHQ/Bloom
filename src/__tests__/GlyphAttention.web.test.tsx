@@ -7,7 +7,7 @@ jest.mock('../hooks/use-prefers-reduced-motion', () => ({
   usePrefersReducedMotion: () => mockReduced,
 }));
 
-import { GlyphButton } from '../button/GlyphButton';
+import { Button } from '../button';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -21,11 +21,20 @@ it('restarts each attention event without replacing the button, glyph or focused
       root.render(
         <BloomThemeProvider fonts={false}>
           <input aria-label="Reply" defaultValue="Retained draft" />
-          <GlyphButton attention={attention} busy={busy} accessibilityLabel="Expand" size={32}>
+          <Button
+            appearance="plain"
+            tone="neutral"
+            iconOnly
+            loadingIndicator={null}
+            attention={attention}
+            loading={busy}
+            accessibilityLabel="Expand"
+            size={32}
+          >
             <svg aria-hidden="true" data-testid="glyph" width="20" height="20">
               <path d="M2 18L18 2M2 2H18V18" />
             </svg>
-          </GlyphButton>
+          </Button>
         </BloomThemeProvider>,
       ),
     );

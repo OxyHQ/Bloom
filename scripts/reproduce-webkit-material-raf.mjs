@@ -9,12 +9,8 @@ const output = process.env.BLOOM_RAF_OUTPUT || '/tmp/bloom-webkit-material-raf';
 mkdirSync(output, { recursive: true });
 const report = [];
 for (const [name, story, disableBackdrop] of [
-  ['five-material-buttons', 'composition-headers-adaptive-actions--width-controls-only', false],
-  [
-    'same-buttons-backdrop-disabled-before-paint',
-    'composition-headers-adaptive-actions--width-controls-only',
-    true,
-  ],
+  ['five-material-buttons', 'base-button--material-row', false],
+  ['same-buttons-backdrop-disabled-before-paint', 'base-button--material-row', true],
   ['existing-single-button', 'base-button--basic', false],
   ['existing-button-group', 'base-button-group--basic', false],
 ]) {

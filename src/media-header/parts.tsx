@@ -3,7 +3,7 @@ import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import { BloomImage } from '../image';
 
 import { AvatarGroup } from '../avatar-group';
-import { LinkButton } from '../button';
+import { Button } from '../button';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiHeart3Fill } from '../icons/remix/RiHeart3Fill';
 import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
@@ -298,7 +298,9 @@ export function InlineLink({
   }
   const style: WebCssStyle = { '--bloom-btn-ring': ring };
   return (
-    <LinkButton
+    <Button
+      appearance="plain"
+      linkTone="primary"
       underline="hover"
       size="sm"
       textVariant={variant}
@@ -310,7 +312,7 @@ export function InlineLink({
       testID={testID}
     >
       {label}
-    </LinkButton>
+    </Button>
   );
 }
 

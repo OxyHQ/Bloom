@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   useCallback,
+  useMemo,
   useInsertionEffect,
   useLayoutEffect,
   type ComponentType,
@@ -23,7 +24,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useDirectionProps } from '../hooks/use-is-rtl';
+import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { BottomBarSlotContext } from '../layout/bottom-bar-slot';
 import { ScreenFooterContext } from '../screen/context';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -53,8 +54,11 @@ import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { cssLength, type WebCssStyle } from '../styles/web-view-style';
 import { DEFAULT_COLLAPSIBLE_TRANSITION } from '../collapsible/use-collapsible-motion';
 import { resolveSurfaceTransition } from '../motion/surface-transition';
+import { animateWithSpec, motionCss } from '../motion/spec';
+import { SearchPresentationContext, SEARCH_EXPAND } from '../search/context';
 
 const DOCK_PRESENCE = '--bloom-dock-navigation-presence';
+const SEARCH_LIFT = '--bloom-bottom-search-lift';
 const DOCK_TRANSITION = resolveSurfaceTransition(DEFAULT_COLLAPSIBLE_TRANSITION);
 
 interface Props extends BottomBarProps {
@@ -73,6 +77,7 @@ export function BottomBarBase({
   onValueLongPress,
   action,
   actionPlacement = 'auto',
+  actionSizing = 'intrinsic',
   actionBehavior = 'hide',
   navigationVisibility = 'always',
   minimizeProgress,
@@ -87,10 +92,35 @@ export function BottomBarBase({
   const insets = useCssSafeAreaInsets(useSafeAreaInsets());
   // Logical insets below; react-native-web needs the direction handed to it.
   const dirProps = useDirectionProps();
+  const rtl = useIsRtl();
   const minimize = useMinimizeState();
   const progress = minimizeProgress ?? minimize.progress;
   const reducedMotion = usePrefersReducedMotion();
   const dock = actionBehavior === 'dock' && action != null;
+  const adaptiveAction = actionSizing === 'adaptive' && !dock;
+  const [searchActive, setSearchActive] = useState(false);
+  const fillAction = actionSizing === 'fill' || (adaptiveAction && searchActive);
+  const searchHost = useMemo(() => ({ compact: true, onActiveChange: setSearchActive }), []);
+  const searchLift = useSharedValue(0);
+  useLayoutEffect(() => {
+    if (!IS_WEB)
+      animateWithSpec(
+        searchLift,
+        adaptiveAction && searchActive ? 1 : 0,
+        SEARCH_EXPAND,
+        reducedMotion,
+      );
+  }, [adaptiveAction, searchActive, searchLift, reducedMotion]);
+  const searchMotion = motionCss(SEARCH_EXPAND, reducedMotion);
+  const searchMotionStyle: WebCssStyle | undefined =
+    adaptiveAction && IS_WEB
+      ? {
+          [SEARCH_LIFT]: searchActive ? '1' : '0',
+          transitionProperty: SEARCH_LIFT,
+          transitionDuration: searchMotion.duration,
+          transitionTimingFunction: searchMotion.easing,
+        }
+      : undefined;
   const sizeClass = useWindowWidthClass(COMPACT_THRESHOLDS);
   const keyboardVisible = useKeyboardVisible();
   const showNavigation =
@@ -133,7 +163,8 @@ export function BottomBarBase({
         : 0
       : amount;
   }, [dock, reducedMotion, progress, selected]);
-  const hideAction = actionBehavior === 'hide' && items.length > 0;
+  const hideAction =
+    actionBehavior === 'hide' && items.length > 0 && !(adaptiveAction && searchActive);
   const [actionHidden, setActionHidden] = useState(() => hideAction && progress.value > 0.01);
   const actionRef = useRef<ComponentRef<typeof View>>(null);
   const [actionWidth, setActionWidth] = useState<number | null>(null);
@@ -144,10 +175,12 @@ export function BottomBarBase({
     !dock &&
       action &&
       items.length &&
-      (actionPlacement === 'above' ||
-        (actionPlacement === 'auto' &&
-          rowWidth > 0 &&
-          rowWidth - inset * 2 - actionSpace < items.length * 56 + ROW_PAD_H * 2)),
+      (adaptiveAction
+        ? searchActive
+        : actionPlacement === 'above' ||
+          (actionPlacement === 'auto' &&
+            rowWidth > 0 &&
+            rowWidth - inset * 2 - actionSpace < items.length * 56 + ROW_PAD_H * 2)),
   );
   const footprint =
     EXPANDED_HEIGHT +
@@ -210,15 +243,17 @@ export function BottomBarBase({
     node.inert = barHidden;
   }, [barHidden]);
   const suppliedBottomInset = useContext(BottomBarSlotContext);
+  const footerOwner = useContext(ScreenFooterContext);
   const bottom = keyboardVisible
     ? 0
     : Math.max(0, windowEdgeGap(insets.bottom) - (suppliedBottomInset ?? 0));
+  // Screen measures its footer itself. Publishing that same footprint would
+  // make the owner mistake its own bar for outer navigation and lift it twice.
   useClaimBottomEdge(
-    dock || !present || keyboardVisible || suppliedBottomInset !== undefined
+    dock || !present || keyboardVisible || suppliedBottomInset !== undefined || footerOwner != null
       ? 0
       : bottom + footprint,
   );
-  const footerOwner = useContext(ScreenFooterContext);
   const claimMeasured = useMeasuredBottomEdgeClaim(
     dock && footerOwner == null && suppliedBottomInset === undefined,
   );
@@ -287,13 +322,16 @@ export function BottomBarBase({
   );
   const actionMeasurement = useBorderBoxSize(({ width, height }) => {
     if (!dock) {
-      setActionWidth(width);
+      if (!fillAction) setActionWidth(width);
       setActionHeight(height);
     }
   });
   const rowMeasurement = useBorderBoxSize(({ width }) => {
     if (!dock || Platform.OS !== 'web') setRowWidth(width);
   });
+  const searchShiftX =
+    (rtl ? -1 : 1) * Math.max(0, (rowWidth - inset * 2 - navigationWidth - actionSpace) / 2);
+  const searchShiftY = (EXPANDED_HEIGHT + actionHeight) / 2 + 10;
   const actionStyle = useAnimatedStyle(() => {
     if (dock) {
       const amount = selected
@@ -325,19 +363,45 @@ export function BottomBarBase({
       ? Math.min(1, Math.max(0, reducedMotion ? Number(progress.value > 0.01) : progress.value))
       : 0;
     return {
-      width: actionWidth == null ? UNSET : actionWidth * (1 - amount),
+      width: fillAction
+        ? ('auto' as const)
+        : actionWidth == null
+          ? UNSET
+          : actionWidth * (1 - amount),
       // Logical, and the CSS name rather than RN's `marginStart`: reanimated's
       // web writer hands a mapper's result to RNW's `createReactDOMStyle`,
       // which never rewrites `marginStart`, so the browser would drop it.
       marginInlineStart: hasItems && !above ? 10 * (1 - amount) : 0,
       opacity: 1 - amount,
-      transform: [{ scale: 1 - amount * 0.15 }],
+      transform: [
+        { scale: 1 - amount * 0.15 },
+        {
+          translateX: adaptiveAction
+            ? IS_WEB
+              ? (`calc((var(--bloom-bottom-search-lift) - ${searchActive ? 1 : 0}) * ${searchShiftX}px)` as `${number}%`)
+              : (searchLift.value - (searchActive ? 1 : 0)) * searchShiftX
+            : 0,
+        },
+        {
+          translateY: adaptiveAction
+            ? IS_WEB
+              ? (`calc((${searchActive ? 1 : 0} - var(--bloom-bottom-search-lift)) * ${searchShiftY}px)` as `${number}%`)
+              : ((searchActive ? 1 : 0) - searchLift.value) * searchShiftY
+            : 0,
+        },
+      ],
     };
   }, [
     progress,
     hideAction,
     reducedMotion,
     actionWidth,
+    fillAction,
+    adaptiveAction,
+    searchActive,
+    searchLift,
+    searchShiftX,
+    searchShiftY,
     hasItems,
     above,
     dock,
@@ -353,7 +417,10 @@ export function BottomBarBase({
       transform: [{ translateY: amount * (dock ? naturalFootprint.value : bottom + footprint) }],
     };
   }, [hide, reducedMotion, bottom, footprint, dock, naturalFootprint]);
-  if ((keyboardVisible && !dock) || !present) return null;
+  // Only explicitly editable actions survive the native keyboard. Existing
+  // intrinsic actions retain their previous keyboard dismissal behavior.
+  const retainsEditor = dock || (action != null && actionSizing !== 'intrinsic');
+  if ((keyboardVisible && !retainsEditor) || !present) return null;
   return (
     <Animated.View
       {...dirProps}
@@ -479,15 +546,24 @@ export function BottomBarBase({
             {...dataHook('bloomBottomBarAction')}
             style={[
               {
-                flexShrink: 0,
-                alignItems: dock ? 'stretch' : 'flex-start',
+                flexShrink: fillAction ? 1 : 0,
+                flexGrow: fillAction && !above && !dock ? 1 : 0,
+                minWidth: 0,
+                alignItems: dock || fillAction ? 'stretch' : 'flex-start',
                 justifyContent: 'center',
               },
 
               above
-                ? { position: 'absolute', insetInlineEnd: inset, bottom: '100%', marginBottom: 10 }
+                ? {
+                    position: 'absolute',
+                    insetInlineStart: fillAction ? inset : undefined,
+                    insetInlineEnd: inset,
+                    bottom: '100%',
+                    marginBottom: 10,
+                  }
                 : undefined,
               actionStyle,
+              searchMotionStyle,
             ]}
           >
             <View
@@ -495,10 +571,12 @@ export function BottomBarBase({
               {...(dock ? {} : actionMeasurement)}
               style={{
                 flexShrink: 0,
-                ...(dock || actionWidth == null ? {} : { width: actionWidth }),
+                ...(dock || fillAction || actionWidth == null ? {} : { width: actionWidth }),
               }}
             >
-              {action}
+              <SearchPresentationContext.Provider value={adaptiveAction ? searchHost : null}>
+                {action}
+              </SearchPresentationContext.Provider>
             </View>
           </Animated.View>
         )}
@@ -510,6 +588,11 @@ export function BottomBarBase({
 const COMPACT_THRESHOLDS = [BREAKPOINTS.md] as const;
 
 const DOCK_CSS = `
+@property --bloom-bottom-search-lift {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
 @property --bloom-dock-navigation-presence {
   syntax: '<number>';
   inherits: true;

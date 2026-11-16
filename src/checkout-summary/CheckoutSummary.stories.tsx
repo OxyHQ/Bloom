@@ -1,7 +1,10 @@
-import React, { useCallback, useState } from 'react';
+import { fn } from 'storybook/test';
+import type React from 'react';
+import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import { Button } from '../button';
 import { Badge } from '../badge';
 import { Card, CardBody } from '../card';
 import { RiBankCardLine } from '../icons/remix/RiBankCardLine';
@@ -57,19 +60,19 @@ const BASE: CheckoutSummaryProps = {
     subtitle: 'Carrer de l’Om 14, 2nd floor · Ring twice',
     kind: 'saved',
     badge: <Badge content="Default" color="default" variant="subtle" size="sm" />,
-    onPress: () => {},
+    onPress: fn().mockName('onPress'),
   },
   delivery: {
     label: 'Delivery window',
     value: 'Friday 24, 17:00 – 19:00',
     detail: '2 left at this price',
     badge: <Badge content="Express" color="primary" variant="subtle" size="sm" />,
-    onPress: () => {},
+    onPress: fn().mockName('onPress'),
   },
   note: {
     label: 'Note for the shop',
     value: '“Leave it with the concierge, please.”',
-    onPress: () => {},
+    onPress: fn().mockName('onPress'),
   },
   price: {
     lines: LINES,
@@ -95,16 +98,17 @@ export const Default: Story = {
       <Page>
         <CheckoutSummary
           {...BASE}
-          payment={<PaymentPlaceholder onPress={() => {}} />}
+          payment={<PaymentPlaceholder onPress={fn().mockName('onPress')} />}
           confirm={{
             amount: '€49.62',
             terms: 'By placing this order you agree to the shop’s terms.',
             busy,
             onConfirm: confirm,
             footer: (
-              <Text variant="caption-1-regular">
-                Orders placed in this story: {placed}. Press again to see the busy state refuse it.
-              </Text>
+              <View style={{ gap: 8 }}>
+                <Text variant="caption-1-regular">Demo orders placed: {placed}</Text>
+                {busy ? <Button onPress={() => setBusy(false)}>Reset confirmation</Button> : null}
+              </View>
             ),
           }}
           testID="checkout"
@@ -121,9 +125,23 @@ export const NothingChosen: Story = {
     <Page>
       <CheckoutSummary
         address={undefined}
-        delivery={{ label: 'Delivery window', placeholder: 'Choose a window', onPress: () => {} }}
-        note={{ label: 'Note for the shop', placeholder: 'Add a note', onPress: () => {} }}
-        extras={[{ label: 'Deliver to', placeholder: 'Choose an address', onPress: () => {} }]}
+        delivery={{
+          label: 'Delivery window',
+          placeholder: 'Choose a window',
+          onPress: fn().mockName('onPress'),
+        }}
+        note={{
+          label: 'Note for the shop',
+          placeholder: 'Add a note',
+          onPress: fn().mockName('onPress'),
+        }}
+        extras={[
+          {
+            label: 'Deliver to',
+            placeholder: 'Choose an address',
+            onPress: fn().mockName('onPress'),
+          },
+        ]}
         price={{ lines: LINES, total: { label: 'Total', amount: '€49.62', state: 'estimated' } }}
         confirm={{
           amount: '€49.62',
@@ -168,7 +186,7 @@ export const ReadOnly: Story = {
 export const LongTextOnACard: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 358, padding: 16 }}>
+    <View style={{ width: '100%', maxWidth: 560, padding: 16 }}>
       <Card radius="radius-16">
         <CardBody>
           <CheckoutSummary
@@ -178,19 +196,19 @@ export const LongTextOnACard: Story = {
               subtitle:
                 'Carrer de l’Om 14, entrance on the side street, second floor, the door with the blue tiles',
               kind: 'recent',
-              onPress: () => {},
+              onPress: fn().mockName('onPress'),
             }}
             delivery={{
               label: 'Delivery window',
               value: 'Friday 24 October, between 17:00 and 19:00',
               detail: 'Express · 2 left · Leaves the depot at 16:00',
-              onPress: () => {},
+              onPress: fn().mockName('onPress'),
             }}
             note={{
               label: 'Note for the shop',
               value:
                 '“Please leave it with the concierge if nobody answers, and do not ring the bell after nine.”',
-              onPress: () => {},
+              onPress: fn().mockName('onPress'),
             }}
             price={{ lines: LINES, total: { label: 'Total', amount: '€49.62' }, collapsible: true }}
             confirm={{ amount: '€49.62', terms: 'You will not be charged until it is accepted.' }}

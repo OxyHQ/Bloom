@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import { fn } from 'storybook/test';
+import type React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -9,7 +11,7 @@ import type { GuestCounts } from '../stay-search';
 import { PriceBreakdown } from './PriceBreakdown';
 import { TripCard } from './TripCard';
 import type { PriceBreakdownProps } from './types';
-import { Button, LinkButton } from '../button';
+import { Button } from '../button';
 import { RiFlagLine } from '../icons/remix/RiFlagLine';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -57,9 +59,15 @@ const BREAKDOWN: PriceBreakdownProps = {
 
 function ReportLink() {
   return (
-    <LinkButton linkTone="secondary" size="sm" leadingIcon={RiFlagLine} onPress={() => undefined}>
+    <Button
+      appearance="plain"
+      linkTone="secondary"
+      size="sm"
+      leadingIcon={RiFlagLine}
+      onPress={fn().mockName('onPress')}
+    >
       Report this listing
-    </LinkButton>
+    </Button>
   );
 }
 
@@ -139,9 +147,9 @@ export const DatesSelected: Story = {
 };
 
 /** At phone width (320): the card fills its column and the cells share it. */
-export const Narrow: Story = {
+export const LongLabels: Story = {
   render: () => (
-    <Page width={320}>
+    <Page width={372}>
       <BookingCard
         price="$1,240"
         originalPrice="$1,380"
@@ -243,7 +251,7 @@ export const PriceBreakdownAlone: Story = {
         rows={[
           { label: '$240 x 3 nights', amount: '$720' },
           { label: 'Early booking discount', amount: '$72', tone: 'discount' },
-          { label: 'Cleaning fee', amount: '$60', onPressLabel: () => undefined },
+          { label: 'Cleaning fee', amount: '$60', onPressLabel: fn().mockName('onPressLabel') },
           { label: 'Taxes', amount: '$64' },
         ]}
         totalLabel="Total (USD)"
@@ -271,7 +279,7 @@ export const BookingBarPhone: Story = {
             price="$180"
             priceUnit="night"
             dates="Oct 12 – 17"
-            onPressDates={() => undefined}
+            onPressDates={fn().mockName('onPressDates')}
             testID="bar"
           />
           <BookingBar
@@ -297,10 +305,10 @@ export const BookingBarPhone: Story = {
 function TripActions() {
   return (
     <>
-      <Button size="sm" onPress={() => undefined} tone="neutral" appearance="outline">
+      <Button size="sm" onPress={fn().mockName('onPress')} tone="neutral" appearance="outline">
         Message host
       </Button>
-      <Button size="sm" onPress={() => undefined} tone="neutral" appearance="outline">
+      <Button size="sm" onPress={fn().mockName('onPress')} tone="neutral" appearance="outline">
         Get directions
       </Button>
     </>
@@ -321,7 +329,7 @@ export const TripCards: Story = {
             dates="Oct 12 – 17, 2026"
             status="confirmed"
             actions={<TripActions />}
-            onPress={() => undefined}
+            onPress={fn().mockName('onPress')}
             testID="trip-wide"
           />
           <TripCard
@@ -330,7 +338,7 @@ export const TripCards: Story = {
             subtitle="Hosted by Anselm"
             dates="Nov 3 – 6, 2026"
             status="pending"
-            onPress={() => undefined}
+            onPress={fn().mockName('onPress')}
           />
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
@@ -342,11 +350,16 @@ export const TripCards: Story = {
               dates="Aug 2 – 9, 2026"
               status="completed"
               actions={
-                <Button size="sm" onPress={() => undefined} tone="neutral" appearance="outline">
+                <Button
+                  size="sm"
+                  onPress={fn().mockName('onPress')}
+                  tone="neutral"
+                  appearance="outline"
+                >
                   Write a review
                 </Button>
               }
-              onPress={() => undefined}
+              onPress={fn().mockName('onPress')}
             />
           </View>
           <View style={{ width: 320, maxWidth: '100%' }}>
@@ -357,82 +370,6 @@ export const TripCards: Story = {
               status="cancelled"
             />
           </View>
-        </View>
-      </View>
-    );
-  },
-};
-
-/** Card, bar and a trip, forced dark. */
-export const Dark: Story = {
-  globals: { theme: 'dark' },
-  render: function DarkDemo() {
-    const theme = useTheme();
-    return (
-      <View
-        style={{
-          backgroundColor: theme.colors.background,
-          padding: 24,
-          gap: 24,
-          alignItems: 'flex-start',
-        }}
-      >
-        <View
-          style={{
-            width: '100%',
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            gap: 24,
-            alignItems: 'flex-start',
-          }}
-        >
-          <View style={{ width: 372, maxWidth: '100%' }}>
-            <BookingCard
-              price="$162"
-              originalPrice="$180"
-              priceUnit="night"
-              rating={4.92}
-              reviewCount={128}
-              checkIn="10/12/2026"
-              checkOut="10/19/2026"
-              guests="2 guests"
-              activeField="checkIn"
-              breakdown={{
-                rows: [
-                  { label: '$180 x 7 nights', amount: '$1,260' },
-                  {
-                    label: 'Weekly stay discount',
-                    amount: '$126',
-                    tone: 'discount',
-                    onPressLabel: () => undefined,
-                  },
-                  { label: 'Service fee', amount: '$152' },
-                ],
-                total: '$1,286',
-              }}
-              footer={<ReportLink />}
-            />
-          </View>
-          <View style={{ width: 360, maxWidth: '100%', gap: 16 }}>
-            <TripCard
-              image={PHOTOS.coast}
-              title="Harbour loft in Porto Lume"
-              subtitle="Hosted by Anselm"
-              dates="Nov 3 – 6, 2026"
-              status="pending"
-              actions={<TripActions />}
-              onPress={() => undefined}
-            />
-            <PriceBreakdown rows={BREAKDOWN.rows} total={BREAKDOWN.total} />
-          </View>
-        </View>
-        <View style={{ width: 375, maxWidth: '100%' }}>
-          <BookingBar
-            price="$180"
-            priceUnit="night"
-            dates="Oct 12 – 17"
-            onPressDates={() => undefined}
-          />
         </View>
       </View>
     );

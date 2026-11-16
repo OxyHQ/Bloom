@@ -11,7 +11,7 @@ import { openHref } from '../hooks/link-activation';
 import { BloomImage } from '../image';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
-import { Button, GlyphButton } from '../button';
+import { Button } from '../button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -368,10 +368,13 @@ export function CardMenu({
         <DropdownMenuTrigger asChild label={name}>
           {/* Neutral and transparent — `Button variant="ghost"` painted an
               accent wash on a card that owns its own surface. */}
-          <GlyphButton
+          <Button
+            appearance="plain"
+            tone="neutral"
+            iconOnly
             size={32}
             icon={RiMoreFill}
-            glyphSize={20}
+            iconSize={20}
             accessibilityLabel={name}
             testID={testID ? `${testID}-menu` : undefined}
           />

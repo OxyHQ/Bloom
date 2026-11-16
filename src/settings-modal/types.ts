@@ -208,22 +208,6 @@ export interface SettingsLayoutProps {
 //  Rows
 // ---------------------------------------------------------------------------
 
-export interface SettingsCardProps {
-  className?: string;
-  children?: ReactNode;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-}
-
-export interface SettingsRowProps {
-  label: string;
-  description?: string;
-  /** The control on the right. */
-  children?: ReactNode;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-}
-
 export interface SettingsSectionLabelProps {
   children?: ReactNode;
   /** Horizontal inset: 12 (General), 8 (Tools). Default 12. */

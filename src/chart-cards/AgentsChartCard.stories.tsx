@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import type React from 'react';
+import { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -65,15 +66,15 @@ function month(m: number): { data: AgentsPoint[]; headline: number } {
           return seed % 4 === 0 ? 0 : 18 + (seed % 140);
         });
   return {
-    data: bars.map((h, day) => ({ label: `${MONTHS[m]!.slice(0, 3)} ${day + 1}`, value: h / 5 })),
+    data: bars.map((h, day) => ({ label: `${MONTHS[m]?.slice(0, 3)} ${day + 1}`, value: h / 5 })),
     headline: m === 11 ? 32 : 22 + (hash(m + 3, 17) % 27),
   };
 }
 
 const MAX = 158 / 5;
 
-const Frame = ({ children, width = 680 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
+const Frame = ({ children }: { children: React.ReactNode }) => (
+  <View style={{ width: '100%', maxWidth: 760, gap: 24 }}>{children}</View>
 );
 
 function Switchable({ testID, width }: { testID?: string; width?: number }) {
@@ -160,7 +161,7 @@ export const IdleDayHovered: Story = {
 };
 
 /** A phone-width column, no pill, custom colours and axis labels. */
-export const Narrow: Story = {
+export const CustomUnits: Story = {
   args: {
     title: 'Runs',
     color: '#fdba74',
@@ -188,7 +189,7 @@ export const Narrow: Story = {
     },
   },
   render: (args) => (
-    <Frame width={358}>
+    <Frame>
       <AgentsChartCard {...args} {...month(4)} format={(v) => `${v} runs`} />
     </Frame>
   ),

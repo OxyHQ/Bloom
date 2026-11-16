@@ -3,7 +3,6 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RiBuilding2Line, RiHotelBedLine, RiRulerLine, RiDropLine } from '../icons/remix';
-import { useTheme } from '../theme/use-theme';
 import { ListingCard } from './ListingCard';
 import { ListingCardGrid } from './ListingCardGrid';
 import type { ListingCardProps, ListingFact } from './types';
@@ -147,14 +146,7 @@ const HOMES: Home[] = [
 ];
 
 function Page({ children, width }: { children: React.ReactNode; width?: number }) {
-  const theme = useTheme();
-  return (
-    <View
-      style={{ alignSelf: 'stretch', minHeight: '100%', backgroundColor: theme.colors.background }}
-    >
-      <View style={{ width: '100%', maxWidth: width, alignSelf: 'center' }}>{children}</View>
-    </View>
-  );
+  return <View style={{ width: '100%', maxWidth: width, alignSelf: 'center' }}>{children}</View>;
 }
 
 function useSaved() {
@@ -219,24 +211,7 @@ export const Results: Story = {
   render: () => <ResultsGrid width={1280} />,
 };
 
-/** The results in a phone-width frame (view it at 375) — one column. */
-export const ResultsNarrow: Story = {
-  render: () => <ResultsGrid />,
-};
-
-/** The results, dark. */
-export const ResultsDark: Story = {
-  globals: { theme: 'dark' },
-  render: () => <ResultsGrid width={1280} />,
-};
-
 /** The compact density: dense list rows, filling the frame (view it at 375), with a skeleton row. */
 export const Compact: Story = {
   render: () => <CompactRows />,
-};
-
-/** Compact rows in a 640 column, dark. */
-export const CompactDark: Story = {
-  globals: { theme: 'dark' },
-  render: () => <CompactRows width={640} />,
 };

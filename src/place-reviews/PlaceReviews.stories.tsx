@@ -1,6 +1,8 @@
+import { fn } from 'storybook/test';
 import React, { useState } from 'react';
-import { View, useWindowDimensions } from 'react-native';
+import { View, type ViewProps } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 import {
   RiBuilding2Line,
@@ -28,7 +30,7 @@ export default meta;
 
 type Story = StoryObj;
 
-const noop = () => undefined;
+const onDemoAction = fn().mockName('place-reviews.action');
 
 // ---------------------------------------------------------------------------
 //  Demo data — an invented building
@@ -94,44 +96,32 @@ const REVIEWS: Review[] = [
 //  Frames
 // ---------------------------------------------------------------------------
 
-function Page({ width, children }: { width: number; children: React.ReactNode }) {
-  width = Math.min(width, useWindowDimensions().width - 32);
-  const theme = useTheme();
+function Page({
+  width = 1280,
+  children,
+  onLayout,
+}: {
+  width?: number;
+  children: React.ReactNode;
+  onLayout?: ViewProps['onLayout'];
+}) {
   return (
-    <View
-      style={{
-        width: '100%',
-        minHeight: '100%',
-        alignItems: 'flex-start',
-        backgroundColor: theme.colors.background,
-      }}
-    >
-      <View
-        style={{
-          width,
-          paddingTop: 32,
-          paddingBottom: 48,
-          paddingLeft: width < 600 ? 16 : 80,
-          paddingRight: width < 600 ? 16 : 80,
-          gap: 32,
-          backgroundColor: theme.colors.background,
-        }}
-      >
-        {children}
-      </View>
+    <View onLayout={onLayout} style={{ width: '100%', maxWidth: width, padding: 24, gap: 24 }}>
+      {children}
     </View>
   );
 }
 
-function ReviewsSection({ width }: { width: number }) {
-  width = Math.min(width, useWindowDimensions().width - 32);
+function ReviewsSection() {
+  const { width: measuredWidth, onLayout } = useContainerWidth();
+  const width = measuredWidth ?? 0;
   const theme = useTheme();
   const wide = width >= 900;
   const [helpful, setHelpful] = useState<Record<string, boolean>>({});
   const [dismissed, setDismissed] = useState(false);
 
   return (
-    <Page width={width}>
+    <Page onLayout={onLayout}>
       <View style={{ gap: 4 }}>
         <Text
           role="heading"
@@ -156,7 +146,7 @@ function ReviewsSection({ width }: { width: number }) {
       {!dismissed ? (
         <WriteReviewPrompt
           buildingTitle="Calle del Olmo 14"
-          onStart={noop}
+          onStart={onDemoAction}
           onDismiss={() => setDismissed(true)}
         />
       ) : null}
@@ -170,14 +160,14 @@ function ReviewsSection({ width }: { width: number }) {
         {REVIEWS.map(({ id, ...review }) => (
           <View
             key={id}
-            style={wide ? { width: (width - 160 - 24) / 2, maxWidth: '100%' } : undefined}
+            style={wide ? { width: Math.max(0, width - 48 - 24) / 2, maxWidth: '100%' } : undefined}
           >
             <PlaceReviewCard
               {...review}
               helpful={helpful[id] ?? false}
               helpfulCount={(review.helpfulCount ?? 0) + (helpful[id] ? 1 : 0)}
               onHelpfulChange={(next) => setHelpful((h) => ({ ...h, [id]: next }))}
-              onReport={noop}
+              onReport={onDemoAction}
             />
           </View>
         ))}
@@ -186,36 +176,22 @@ function ReviewsSection({ width }: { width: number }) {
   );
 }
 
-/** A building page's reviews section at 1280: summary, the invitation, two columns of reviews. */
-export const SectionWide: Story = {
-  name: 'Reviews section — 1280',
-  render: () => <ReviewsSection width={1280} />,
-};
-
-export const SectionNarrow: Story = {
-  name: 'Reviews section — 375',
-  render: () => <ReviewsSection width={375} />,
-};
-
-export const SectionWideDark: Story = {
-  name: 'Reviews section — 1280, dark',
-  globals: { theme: 'dark' },
-  render: () => <ReviewsSection width={1280} />,
-};
-
-export const SectionNarrowDark: Story = {
-  name: 'Reviews section — 375, dark',
-  globals: { theme: 'dark' },
-  render: () => <ReviewsSection width={375} />,
+/** A building page's reviews responsive section: summary, the invitation, two columns of reviews. */
+export const Section: Story = {
+  render: () => <ReviewsSection />,
 };
 
 /** The invitation alone, with and without the dismiss button. */
 export const Prompt: Story = {
   render: () => (
     <Page width={900}>
-      <WriteReviewPrompt buildingTitle="Calle del Olmo 14" onStart={noop} />
+      <WriteReviewPrompt buildingTitle="Calle del Olmo 14" onStart={onDemoAction} />
       <View style={{ width: 343, maxWidth: '100%' }}>
-        <WriteReviewPrompt buildingTitle="Calle del Olmo 14" onStart={noop} onDismiss={noop} />
+        <WriteReviewPrompt
+          buildingTitle="Calle del Olmo 14"
+          onStart={onDemoAction}
+          onDismiss={onDemoAction}
+        />
       </View>
     </Page>
   ),

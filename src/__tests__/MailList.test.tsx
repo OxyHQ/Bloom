@@ -14,6 +14,10 @@
  * are asserted directly: they are where the arithmetic and the ORDER live, and
  * a rendered list cannot tell a stable bucketing from a lucky one.
  */
+import { List, ListSelectionBar } from '../list/index.web';
+
+import { ListItem } from '../list/index.web';
+
 import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -25,13 +29,10 @@ import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
-import { MailList, MailRow, MailSelectionBar, MailListSkeleton } from '../mail-list';
 import {
   DEFAULT_MAIL_STRINGS,
-  MAIL_ROW_GEOMETRY,
   composeMailRowName,
   groupMailByDay,
-  resolveMailPaint,
   visibleLabels,
 } from '../mail-list/shared';
 import type { MailAction, MailLabel, MailSummary } from '../mail-list/types';
@@ -212,424 +213,251 @@ describe('groupMailByDay', () => {
 //  MailRow, rendered
 // ---------------------------------------------------------------------------
 
-describe('MailRow', () => {
-  it('changes the WHOLE row weight when unread, not a dot', () => {
-    mount(<MailRow {...ROW} unread testID="r" />);
-    const unreadSender = weightOf('r-sender');
-    const unreadSubject = weightOf('r-subject');
-
-    act(() => root.render(<div />));
-    mount(<MailRow {...ROW} testID="r" />);
-    expect(weightOf('r-sender')).not.toBe(unreadSender);
-    expect(weightOf('r-subject')).not.toBe(unreadSubject);
-    expect(unreadSender).toBe('600');
+describe('ListItem mail content', () => {
+  it('preserves unread weight and snippet contrast across the whole row', () => {
+    mount(<ListItem mail={{ ...ROW, unread: true }} testID="r" />);
+    const weight = weightOf('r-subject');
+    const color = getComputedStyle(byTestId('r-snippet')).color;
+    expect(weightOf('r-sender')).toBe('600');
+    mount(<ListItem mail={ROW} testID="r" />);
     expect(weightOf('r-sender')).toBe('400');
+    expect(weightOf('r-subject')).not.toBe(weight);
+    expect(getComputedStyle(byTestId('r-snippet')).color).not.toBe(color);
   });
-
-  it('paints the read snippet a quieter rung than the unread one', () => {
-    mount(<MailRow {...ROW} unread testID="r" />);
-    const loud = getComputedStyle(byTestId('r-snippet')).color;
-    act(() => root.render(<div />));
-    mount(<MailRow {...ROW} testID="r" />);
-    expect(getComputedStyle(byTestId('r-snippet')).color).not.toBe(loud);
-  });
-
-  it('gives the row one link carrying the whole composed name', () => {
+  it('announces sender, preview and all states once', () => {
     mount(
-      <MailRow
-        {...ROW}
-        unread
-        starred
-        hasAttachment
-        threadCount={3}
+      <ListItem
+        mail={{ ...ROW, unread: true, starred: true, hasAttachment: true, threadCount: 3 }}
         onPress={() => undefined}
         testID="r"
       />,
     );
-    const link = byTestId('r-link');
-    expect(link.getAttribute('aria-label')).toBe(
+    expect(byTestId('r-link').getAttribute('aria-label')).toBe(
       'Mireia Solans, Roof survey, The surveyor came back this morning, 14:02, Unread, Starred, Has attachment, 3 messages',
     );
-    expect(link.getAttribute('role')).toBe('button');
+    expect(byTestId('r-sender').closest('[aria-hidden="true"]')).not.toBeNull();
   });
-
-  it('marks the open row aria-current, never aria-selected', () => {
-    mount(<MailRow {...ROW} selected onPress={() => undefined} testID="r" />);
+  it('uses one compact geometry for mail and conversation content', () => {
+    mount(
+      <>
+        <ListItem mail={ROW} testID="r" />
+        <ListItem conversation={{ name: 'Ana' }} testID="chat" />
+      </>,
+    );
+    expect(getComputedStyle(byTestId('r')).minHeight).toBe('56px');
+    expect(getComputedStyle(byTestId('chat')).minHeight).toBe('56px');
+    expect(getComputedStyle(byTestId('r-avatar-image')).width).toBe('36px');
+    expect(byTestId('r-subject').contains(byTestId('r-snippet'))).toBe(true);
+    expect(byTestId('r-sender').parentElement).not.toBe(byTestId('r-time').parentElement);
+  });
+  it('keeps the open destination separate from selection', () => {
+    mount(<ListItem mail={ROW} active href="/messages/roof" testID="r" />);
     expect(byTestId('r-link').getAttribute('aria-current')).toBe('true');
     expect(byTestId('r-link').getAttribute('aria-selected')).toBeNull();
   });
-
-  it('spells the star toggle with aria-pressed, and draws NO star where it is not a control', () => {
-    mount(<MailRow {...ROW} starred onStarredChange={() => undefined} testID="r" />);
-    expect(byTestId('r-star').getAttribute('aria-pressed')).toBe('true');
-    expect(byTestId('r-star').getAttribute('aria-label')).toBe('Starred');
-
-    // No handler, no glyph — and the state survives in the row's name, which is
-    // the whole reason the marker can be dropped.
-    act(() => root.render(<div />));
-    mount(<MailRow {...ROW} starred onPress={() => undefined} testID="r" />);
-    expect(maybe('r-star')).toBeNull();
-    expect(byTestId('r-link').getAttribute('aria-label')).toContain('Starred');
-
-    // Both densities: the dense row keeps the star in its trailing run, and
-    // drops it there on the same rule.
-    act(() => root.render(<div />));
-    mount(<MailRow {...ROW} starred density="compact" testID="r" />);
-    expect(maybe('r-star')).toBeNull();
-  });
-
-  it('draws a checkbox in place of the avatar only when the list can multi-select', () => {
-    mount(<MailRow {...ROW} testID="r" />);
-    expect(maybe('r-checkbox')).toBeNull();
-    expect(maybe('r-avatar')).not.toBeNull();
-
-    act(() => root.render(<div />));
-    mount(<MailRow {...ROW} checked onCheckedChange={() => undefined} testID="r" />);
-    expect(byTestId('r-checkbox').getAttribute('aria-checked')).toBe('true');
-    expect(maybe('r-avatar')).toBeNull();
-  });
-
-  it.each(['compact', 'comfortable', 'cozy'] as const)(
-    'keeps %s footer controls accessible and outside message navigation',
-    (density) => {
-      const openMessage = jest.fn();
-      const openAttachment = jest.fn();
-      for (const mode of ['avatar', 'hidden', 'selection'] as const) {
-        mount(
-          <MailRow
-            {...ROW}
-            density={density}
-            showAvatar={mode !== 'hidden'}
-            onCheckedChange={mode === 'selection' ? () => undefined : undefined}
-            href="/messages/roof"
-            onPress={openMessage}
-            selected
-            actions={ACTIONS}
-            footer={
-              <button type="button" onClick={openAttachment}>
-                survey.pdf
-              </button>
-            }
-            testID="r"
-          />,
-        );
-        const footer = byTestId('r-footer');
-        const control = footer.querySelector('button');
-        if (!control) throw new Error('Missing attachment control');
-        expect(footer.closest('[aria-hidden="true"]')).toBeNull();
-        expect(control.closest('a')).toBeNull();
-        expect(footer.parentElement).toBe(byTestId('r-header').parentElement);
-        expect(footer.parentElement).toBe(byTestId('r-content'));
-        expect(byTestId('r-content').contains(byTestId('r-sender'))).toBe(true);
-        expect(byTestId('r-header').contains(byTestId('r-rail'))).toBe(true);
-        expect(byTestId('r').getAttribute('data-selected')).toBe('true');
-        expect(getComputedStyle(byTestId('r')).height).toBe('');
-        act(() => control.click());
-      }
-      expect(openAttachment).toHaveBeenCalledTimes(3);
-      expect(openMessage).not.toHaveBeenCalled();
-    },
-  );
-
-  it.each(['compact', 'comfortable', 'cozy'] as const)(
-    'keeps the %s attachment rail outside the text column and message link',
-    (density) => {
-      const openMessage = jest.fn();
-      const openAttachment = jest.fn();
-      mount(
-        <MailRow
-          {...ROW}
-          density={density}
-          href="/messages/roof"
-          onPress={openMessage}
-          attachments={
-            <button type="button" onClick={openAttachment}>
-              survey.pdf
-            </button>
-          }
-          actions={ACTIONS}
-          testID="r"
-        />,
-      );
-      const attachments = byTestId('r-attachments');
-      expect(attachments.parentElement).toBe(byTestId('r'));
-      expect(byTestId('r-content').contains(attachments)).toBe(false);
-      expect(attachments.closest('[aria-hidden="true"]')).toBeNull();
-      expect(attachments.closest('a')).toBeNull();
-      const button = attachments.querySelector('button');
-      if (!button) throw new Error('Missing attachment');
-      act(() => button.click());
-      expect(openAttachment).toHaveBeenCalledTimes(1);
-      expect(openMessage).not.toHaveBeenCalled();
-      expect(getComputedStyle(byTestId('r')).height).toBe('');
-      expect(byTestId('r-rail').style.position).not.toBe('absolute');
-      expect(byTestId('r-rail').style.backgroundColor).toBe('');
-      expect(getComputedStyle(byTestId('r-action-archive')).width).toBe(
-        density === 'compact' ? '28px' : '32px',
-      );
-    },
-  );
-
-  it('draws the compact row at its exact height and the comfortable one at its floor', () => {
-    mount(<MailRow {...ROW} density="compact" testID="r" />);
-    expect(getComputedStyle(byTestId('r')).height).toBe(`${MAIL_ROW_GEOMETRY.compact.height}px`);
-    act(() => root.render(<div />));
-    mount(<MailRow {...ROW} testID="r" />);
-    expect(getComputedStyle(byTestId('r')).minHeight).toBe(
-      `${MAIL_ROW_GEOMETRY.comfortable.minHeight}px`,
-    );
-    expect(getComputedStyle(byTestId('r')).height).toBe('');
-  });
-
-  it.each(['compact', 'comfortable', 'cozy'] as const)(
-    'keeps the subject and the snippet inside ONE text node at %s, so neither pushes the row',
-    (density) => {
-      mount(
-        <MailRow
-          {...ROW}
-          density={density}
-          subject={'A subject long enough to need the whole row'.repeat(3)}
-          snippet={'and a snippet just as long'.repeat(4)}
-          testID="r"
-        />,
-      );
-      const subject = byTestId('r-subject');
-      // The snippet is a nested SPAN of the subject, never a sibling: a sibling
-      // is a second flex child claiming its content's width.
-      expect(subject.contains(byTestId('r-snippet'))).toBe(true);
-      expect(subject.textContent).toContain('and a snippet just as long');
-    },
-  );
-
-  it.each(['compact', 'comfortable', 'cozy'] as const)(
-    'hides avatars without hiding selection controls at %s',
-    (density) => {
-      mount(<MailRow {...ROW} density={density} showAvatar={false} testID="r" />);
-      expect(maybe('r-avatar')).toBeNull();
-      mount(
-        <MailRow
-          {...ROW}
-          density={density}
-          showAvatar={false}
-          onCheckedChange={() => undefined}
-          testID="r"
-        />,
-      );
-      expect(maybe('r-avatar')).toBeNull();
-      expect(byTestId('r-checkbox')).toBeTruthy();
-    },
-  );
-
-  it('keeps cozy spacious and uses the same density for loading and selection', () => {
+  it('keeps avatar selection and the star outside the navigation link', () => {
+    const open = jest.fn(),
+      select = jest.fn(),
+      star = jest.fn();
     mount(
-      <>
-        <MailRow {...ROW} density="cozy" labels={LABELS} testID="r" />
-        <MailListSkeleton density="cozy" testID="loading" />
-        <MailSelectionBar density="cozy" count={1} total={2} actions={ACTIONS} testID="bar" />
-      </>,
-    );
-    expect(getComputedStyle(byTestId('r')).minHeight).toBe('80px');
-    expect(getComputedStyle(byTestId('r')).height).toBe('');
-    expect(getComputedStyle(byTestId('r-header')).paddingTop).toBe('16px');
-    expect(getComputedStyle(byTestId('r-avatar')).height).toBe('48px');
-    expect(getComputedStyle(byTestId('loading-row-0')).minHeight).toBe('80px');
-    expect(getComputedStyle(byTestId('bar')).height).toBe('56px');
-    expect(byTestId('r-link').getAttribute('aria-label')).toContain('Work');
-    expect(byTestId('r-subject').parentElement).not.toBe(byTestId('r-sender').parentElement);
-  });
-
-  it('draws the phone row two lines tall at 64/40, with the time and the states in their own column', () => {
-    mount(<MailRow {...ROW} labels={LABELS} testID="r" />);
-    // 64, not the conversation row's 72: a mail row carries no presence dot,
-    // no typing line and no delivery ticks, and the same height left a band of
-    // empty pixels under the second line.
-    expect(getComputedStyle(byTestId('r')).minHeight).toBe('64px');
-    expect(getComputedStyle(byTestId('r-avatar')).height).toBe('40px');
-    // Line one is the sender ALONE and line two is the subject with the snippet
-    // inside it: the time is not strung along a text line but sits in the right
-    // column, which is the shape `chat-list` draws.
-    const sender = byTestId('r-sender');
-    const time = byTestId('r-time');
-    const subject = byTestId('r-subject');
-    expect(sender.parentElement).not.toBe(time.parentElement);
-    expect(subject.parentElement).not.toBe(sender.parentElement);
-  });
-
-  it('collapses the labels to a dot each on the two-line row, and keeps the names on the dense one', () => {
-    mount(<MailRow {...ROW} labels={LABELS} maxLabels={2} testID="r" />);
-    // No named chip on this row: it would sit on the subject's own line and
-    // take width from the thing the row is read for. Every label is a dot, and
-    // every one of them is still in the row's composed name.
-    expect(maybe('r-labels-work')).toBeNull();
-    const dot = byTestId('r-labels-dot-work');
-    expect(getComputedStyle(dot).width).toBe('8px');
-    expect(getComputedStyle(dot).backgroundColor).not.toBe('');
-    // And the third is silent on the row while still being announced.
-    expect(maybe('r-labels-dot-q1')).toBeNull();
-    expect(byTestId('r-link').getAttribute('aria-label')).toContain('Q1');
-  });
-
-  it('keeps chips at the dense density, where there is one line and room for them', () => {
-    mount(<MailRow {...ROW} density="compact" labels={LABELS} maxLabels={2} testID="r" />);
-    expect(byTestId('r-labels-work').textContent).toBe('Work');
-    expect(byTestId('r-labels-overflow').textContent).toBe('+2');
-    expect(maybe('r-labels-dot-money')).toBeNull();
-  });
-
-  it('draws the hover rail only when a placement asks for it', () => {
-    mount(<MailRow {...ROW} actions={ACTIONS} actionsPlacement="none" testID="r" />);
-    expect(maybe('r-rail')).toBeNull();
-
-    act(() => root.render(<div />));
-    mount(<MailRow {...ROW} actions={ACTIONS} actionsPlacement="inline" testID="r" />);
-    expect(byTestId('r-action-archive').getAttribute('aria-label')).toBe('Archive');
-    expect(byTestId('r-action-delete').getAttribute('aria-label')).toBe('Delete');
-  });
-
-  it('puts the row actions behind a DRAG, with nothing drawn in the row at rest', () => {
-    const calls: string[] = [];
-    mount(
-      <MailRow
-        {...ROW}
-        swipeActions={{ left: [ACTIONS[0]!], right: [ACTIONS[1]!] }}
-        swipeEnabled
-        onAction={(key) => calls.push(key)}
+      <ListItem
+        mail={{ ...ROW, onStarredChange: star }}
+        href="/mail/roof"
+        onPress={open}
+        onCheckedChange={select}
         testID="r"
       />,
     );
-    // No rail: the only `actions` here are the panes'.
-    expect(maybe('r-rail')).toBeNull();
-    const archive = byTestId('r-swipe-action-archive');
-    expect(archive.getAttribute('role')).toBe('button');
-    expect(archive.getAttribute('aria-label')).toBe('Archive');
-    act(() => archive.click());
-    act(() => byTestId('r-swipe-action-delete').click());
-    expect(calls).toEqual(['archive', 'delete']);
+    expect(byTestId('r-avatar-image')).toBeTruthy();
+    expect(byTestId('r-check').closest('a')).toBeNull();
+    act(() => byTestId('r-check').click());
+    act(() => byTestId('r-star').click());
+    expect(select).toHaveBeenCalledWith(true);
+    expect(star).toHaveBeenCalledWith(true);
+    expect(open).not.toHaveBeenCalled();
   });
-
-  it('hides a closed pane from assistive technology, rather than leaving it invisible in the tab order', () => {
-    mount(<MailRow {...ROW} swipeActions={{ right: [ACTIONS[1]!] }} swipeEnabled testID="r" />);
-    const pane = byTestId('r-swipe-action-delete').parentElement?.parentElement;
-    expect(pane?.getAttribute('aria-hidden')).toBe('true');
-  });
-
-  it('does not wrap the row at all when the drag is off, or when no side has actions', () => {
+  it('disables navigation, selection and the independent star together', () => {
+    const open = jest.fn(),
+      select = jest.fn(),
+      star = jest.fn();
     mount(
-      <MailRow {...ROW} swipeActions={{ right: [ACTIONS[1]!] }} swipeEnabled={false} testID="r" />,
+      <ListItem
+        disabled
+        mail={{ ...ROW, onStarredChange: star }}
+        onPress={open}
+        onCheckedChange={select}
+        testID="r"
+      />,
     );
-    expect(maybe('r-swipe')).toBeNull();
-
-    act(() => root.render(<div />));
-    mount(<MailRow {...ROW} swipeActions={{}} swipeEnabled testID="r" />);
-    expect(maybe('r-swipe')).toBeNull();
+    for (const part of ['link', 'check', 'star']) {
+      expect(byTestId(`r-${part}`).getAttribute('aria-disabled')).toBe('true');
+      act(() => byTestId(`r-${part}`).click());
+    }
+    expect(open).not.toHaveBeenCalled();
+    expect(select).not.toHaveBeenCalled();
+    expect(star).not.toHaveBeenCalled();
   });
-
-  it('paints the selected fill as a further step off the hovered one', () => {
-    mount(<MailRow {...ROW} testID="r" />);
-    const paint = resolveMailPaint(theme, theme.colors.background);
-    expect(paint.hover).not.toBe(paint.surface);
-    expect(paint.selected).not.toBe(paint.hover);
+  it('can hide a sender avatar while keeping selection available', () => {
+    mount(
+      <ListItem
+        mail={{ ...ROW, showAvatar: false }}
+        onCheckedChange={() => undefined}
+        testID="r"
+      />,
+    );
+    expect(maybe('r-avatar-image')).toBeNull();
+    expect(byTestId('r-check')).toBeTruthy();
+  });
+  it('retains draft, labels and overflow without losing their accessible names', () => {
+    mount(<ListItem mail={{ ...ROW, draft: true, labels: LABELS, maxLabels: 2 }} testID="r" />);
+    expect(byTestId('r-snippet').textContent).toContain('Draft:');
+    expect(byTestId('r-labels-work').textContent).toBe('Work');
+    expect(byTestId('r-labels-overflow').textContent).toBe('+2');
+    expect(byTestId('r-link').getAttribute('aria-label')).toContain('Q1');
+  });
+  it('keeps footer and attachment controls accessible without opening the message', () => {
+    const open = jest.fn(),
+      attachment = jest.fn(),
+      extra = jest.fn();
+    mount(
+      <ListItem
+        mail={ROW}
+        href="/mail/roof"
+        onPress={open}
+        footer={<button onClick={extra}>Details</button>}
+        attachments={<button onClick={attachment}>survey.pdf</button>}
+        testID="r"
+      />,
+    );
+    for (const part of ['footer', 'attachments']) {
+      const el = byTestId(`r-${part}`);
+      expect(el.closest('a')).toBeNull();
+      expect(el.closest('[aria-hidden="true"]')).toBeNull();
+      act(() => el.querySelector('button')!.click());
+    }
+    expect(attachment).toHaveBeenCalledTimes(1);
+    expect(extra).toHaveBeenCalledTimes(1);
+    expect(open).not.toHaveBeenCalled();
+    expect(getComputedStyle(byTestId('r')).height).toBe('');
+  });
+  it('uses the shared menu for commands and preserves their callbacks', () => {
+    const own = jest.fn(),
+      action = jest.fn();
+    mount(
+      <ListItem
+        mail={ROW}
+        actions={[{ ...ACTIONS[0]!, onPress: own }]}
+        onAction={action}
+        testID="r"
+      />,
+    );
+    act(() => byTestId('r-menu').click());
+    const item = [...document.querySelectorAll<HTMLElement>('[role="menuitem"]')].find(
+      (el) => el.textContent === 'Archive',
+    );
+    expect(item).toBeTruthy();
+    act(() => item!.click());
+    expect(action).toHaveBeenCalledWith('archive');
+    expect(own).toHaveBeenCalledTimes(1);
+  });
+  it('shares swipe actions and hides closed actions from screen readers', () => {
+    const action = jest.fn();
+    mount(
+      <ListItem
+        mail={ROW}
+        swipeEnabled
+        swipeActions={{ right: [ACTIONS[1]!] }}
+        onAction={action}
+        testID="r"
+      />,
+    );
+    const button = byTestId('r-swipe-action-delete');
+    expect(button.closest('[aria-hidden="true"]')).not.toBeNull();
+    act(() => button.click());
+    expect(action).toHaveBeenCalledWith('delete');
+  });
+  it('disables gestures without remounting the row or exposing actions', () => {
+    mount(
+      <ListItem
+        mail={ROW}
+        swipeActions={{ right: [ACTIONS[1]!] }}
+        swipeEnabled={false}
+        testID="r"
+      />,
+    );
+    const row = byTestId('r');
+    expect(maybe('r-swipe-action-delete')).toBeNull();
+    mount(<ListItem mail={ROW} swipeActions={{ right: [ACTIONS[1]!] }} swipeEnabled testID="r" />);
+    expect(byTestId('r')).toBe(row);
   });
 });
 
-// ---------------------------------------------------------------------------
-//  MailList, rendered
-// ---------------------------------------------------------------------------
-
-describe('MailList', () => {
-  const mails: MailSummary[] = [
-    ROW,
-    { id: 'invoice', sender: { name: 'Bastia' }, subject: 'Invoice 2214' },
-  ];
-
-  it('names each titled section as a nested list', () => {
+describe('List mail sections and selection toolbar', () => {
+  it('renders grouped mail through the shared list', () => {
     mount(
-      <MailList
-        sections={[
-          { key: 'today', title: 'Today', mails: [ROW] },
-          { key: 'older', title: '11 Mar', mails: [mails[1] as MailSummary] },
-        ]}
+      <List
         accessibilityLabel="Inbox"
-        testID="l"
-      />,
-    );
-    const lists = [...container.querySelectorAll('[role="list"]')].map((el) =>
-      el.getAttribute('aria-label'),
-    );
-    expect(lists).toEqual(['Inbox', 'Today', '11 Mar']);
-  });
-
-  it('announces loading ONCE on the region and hides the placeholders', () => {
-    mount(<MailList loading loadingCount={3} testID="l" />);
-    expect(byTestId('l').getAttribute('aria-busy')).toBe('true');
-    expect(byTestId('l-skeleton').getAttribute('aria-hidden')).toBe('true');
-    expect(byTestId('l-skeleton-row-2')).toBeTruthy();
-  });
-
-  it('draws the empty state only when nothing is loading', () => {
-    mount(<MailList mails={[]} testID="l" />);
-    expect(byTestId('l-empty').textContent).toContain(DEFAULT_MAIL_STRINGS.emptyTitle);
-  });
-
-  it('mounts the selection bar itself, and only once something is checked', () => {
-    mount(<MailList mails={mails} onCheckedIdsChange={() => undefined} testID="l" />);
-    expect(maybe('l-selection')).toBeNull();
-
-    act(() => root.render(<div />));
-    mount(
-      <MailList
-        mails={mails}
-        checkedIds={['roof']}
-        onCheckedIdsChange={() => undefined}
-        bulkActions={ACTIONS}
-        testID="l"
-      />,
-    );
-    expect(byTestId('l-selection-count').textContent).toBe('1 selected');
-    expect(byTestId('l-selection-action-archive').getAttribute('aria-label')).toBe('Archive');
-  });
-
-  it('draws no checkbox at all without onCheckedIdsChange', () => {
-    mount(<MailList mails={mails} testID="l" />);
-    expect(maybe('l-mail-roof-checkbox')).toBeNull();
-    expect(maybe('l-selection')).toBeNull();
-  });
-
-  it('resolves select-all and clear against every id in every section', () => {
-    const seen: string[][] = [];
-    mount(
-      <MailList
         sections={[
-          { key: 'a', title: 'Today', mails: [ROW] },
-          { key: 'b', title: '11 Mar', mails: [mails[1] as MailSummary] },
+          { id: 'today', title: 'Today', items: [{ id: ROW.id, mail: ROW }] },
+          {
+            id: 'older',
+            title: '11 Mar',
+            items: [
+              { id: 'invoice', mail: { sender: { name: 'Bastia' }, subject: 'Invoice 2214' } },
+            ],
+          },
         ]}
-        checkedIds={['roof']}
-        onCheckedIdsChange={(ids) => seen.push(ids)}
-        testID="l"
       />,
     );
-    act(() => {
-      byTestId('l-selection-select-all').dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    });
-    expect(seen[seen.length - 1]).toEqual(['roof', 'invoice']);
-    act(() => {
-      byTestId('l-selection-clear').dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    });
-    expect(seen[seen.length - 1]).toEqual([]);
+    expect(
+      [...container.querySelectorAll('[role="list"]')].map((el) => el.getAttribute('aria-label')),
+    ).toEqual(['Inbox', 'Today', '11 Mar']);
+  });
+  it('preserves select-all and clear in the shared toolbar', () => {
+    const all = jest.fn(),
+      clear = jest.fn();
+    mount(
+      <List
+        items={[{ id: ROW.id, mail: ROW }]}
+        header={
+          <ListSelectionBar
+            count={1}
+            total={2}
+            onSelectAll={all}
+            onClear={clear}
+            actions={ACTIONS}
+            testID="bar"
+          />
+        }
+      />,
+    );
+    act(() => byTestId('bar-select-all').click());
+    act(() => byTestId('bar-clear').click());
+    expect(all).toHaveBeenCalledWith(true);
+    expect(clear).toHaveBeenCalledTimes(1);
   });
 });
 
-describe('MailSelectionBar', () => {
+describe('ListSelectionBar', () => {
+  it('keeps select-all reachable when selection mode starts with no selected rows', () => {
+    const select = jest.fn();
+    mount(<ListSelectionBar selecting count={0} total={4} onSelectAll={select} testID="b" />);
+    const checkbox = byTestId('b-select-all');
+    expect(checkbox.getAttribute('aria-checked')).toBe('false');
+    act(() => checkbox.click());
+    expect(select).toHaveBeenCalledWith(true);
+  });
+
   it('draws nothing at zero, and is indeterminate below the total', () => {
-    mount(<MailSelectionBar count={0} total={4} onSelectAll={() => undefined} testID="b" />);
+    mount(<ListSelectionBar count={0} total={4} onSelectAll={() => undefined} testID="b" />);
     expect(maybe('b')).toBeNull();
 
     act(() => root.render(<div />));
-    mount(<MailSelectionBar count={2} total={4} onSelectAll={() => undefined} testID="b" />);
+    mount(<ListSelectionBar count={2} total={4} onSelectAll={() => undefined} testID="b" />);
     expect(byTestId('b-select-all').getAttribute('aria-checked')).toBe('mixed');
 
     act(() => root.render(<div />));
-    mount(<MailSelectionBar count={4} total={4} onSelectAll={() => undefined} testID="b" />);
+    mount(<ListSelectionBar count={4} total={4} onSelectAll={() => undefined} testID="b" />);
     expect(byTestId('b-select-all').getAttribute('aria-checked')).toBe('true');
   });
 });

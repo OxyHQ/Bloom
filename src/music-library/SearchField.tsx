@@ -1,8 +1,8 @@
 import { useSurfaceFill } from '../styles/surface-levels';
-import React, { type ComponentRef, memo, useEffect, useMemo, useRef, useState } from 'react';
+import { type ComponentRef, memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, TextInput, View, type TextStyle } from 'react-native';
 
-import { GlyphButton } from '../button';
+import { Button } from '../button';
 import { webDataSet } from '../styles/web-data';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiCompass3Line } from '../icons/remix/RiCompass3Line';
@@ -146,11 +146,14 @@ function SearchFieldComponent({
         testID={testID ? `${testID}-input` : undefined}
       />
       {hasText ? (
-        <GlyphButton
+        <Button
+          appearance="plain"
+          tone="neutral"
+          iconOnly
           accessibilityLabel={clearLabel}
           size={32}
           icon={RiCloseLine}
-          glyphSize={20}
+          iconSize={20}
           color={paint.textMuted}
           hoverColor={paint.textMuted}
           fill="transparent"
@@ -166,11 +169,14 @@ function SearchFieldComponent({
       {onBrowsePress ? (
         <>
           <View style={{ width: 1, height: 24, backgroundColor: paint.divider }} />
-          <GlyphButton
+          <Button
+            appearance="plain"
+            tone="neutral"
+            iconOnly
             accessibilityLabel={browseLabel}
             size={40}
             icon={RiCompass3Line}
-            glyphSize={22}
+            iconSize={22}
             color={paint.textMuted}
             hoverColor={paint.textMuted}
             activeColor={paint.text}

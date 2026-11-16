@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Text, TextInput } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { CompactComposer } from '../chat-composer/CompactComposer';
 import { acceptsComposerText } from '../chat-composer/compact-text';
-import { GlyphButton } from '../button/GlyphButton';
+import { Button } from '../button';
 import { CollapsibleFrame } from '../collapsible/CollapsibleFrame';
 import { MediaAttachmentIcon } from '../icons/social/MediaAttachmentIcon';
 import type { CompactComposerProps } from '../chat-composer/compact-types';
@@ -43,11 +43,20 @@ it('preserves the input and rejected text while pulsing each new limit attempt',
   fireEvent.changeText(input, 'abcdef');
   expect(input.props.value).toBe('abcde');
   expect(view.change).toHaveBeenCalledTimes(1);
-  expect(view.UNSAFE_getByType(GlyphButton).props.attention).toBe(1);
+  expect(
+    view.UNSAFE_getAllByType(Button).find((button) => button.props.testID === 'editor-maximize')!
+      .props.attention,
+  ).toBe(1);
   fireEvent.changeText(input, 'abcdefg');
-  expect(view.UNSAFE_getByType(GlyphButton).props.attention).toBe(2);
+  expect(
+    view.UNSAFE_getAllByType(Button).find((button) => button.props.testID === 'editor-maximize')!
+      .props.attention,
+  ).toBe(2);
   expect(view.UNSAFE_getByType(TextInput)).toBe(input);
-  expect(view.UNSAFE_getByType(GlyphButton).props.size).toBe(32);
+  expect(
+    view.UNSAFE_getAllByType(Button).find((button) => button.props.testID === 'editor-maximize')!
+      .props.size,
+  ).toBe(32);
 });
 
 it('keeps legacy over-limit drafts editable without permitting submission', () => {
@@ -103,7 +112,9 @@ it('submits attachment-only content and lets application permissions fence every
   expect(view.submit).toHaveBeenCalledTimes(1);
   const disabled = mount({ value: 'hello', busy: true });
   fireEvent.press(disabled.getByTestId('editor-submit'));
-  fireEvent.press(disabled.getByTestId('editor-maximize'));
+  // A disabled host has no handler; fireEvent must not climb into the consumer callback.
+  expect(disabled.getByTestId('editor-maximize').props.onPress).toBeUndefined();
+  expect(disabled.getByTestId('editor-maximize').props.accessibilityState.disabled).toBe(true);
   fireEvent.changeText(disabled.UNSAFE_getByType(TextInput), 'bye');
   expect(disabled.submit).not.toHaveBeenCalled();
   expect(disabled.expand).not.toHaveBeenCalled();

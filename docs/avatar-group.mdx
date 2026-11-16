@@ -51,6 +51,14 @@ Members with `kind: 'bot'` and a valid stored `character` use the same Avatar
 renderer as standalone accounts. Pass `motion="always"` when those small
 characters should animate; the default still follows Avatar's size/activity policy.
 
+## Conversation layout
+
+`layout="conversation"` uses one full face, two diagonal faces, three in a triangle
+or four in a grid, all inside `size`. It replaces the former agent/chat avatar
+stacks. `overflow="truncate"` is its default; use `"count"` when an overflow badge
+is needed. `shape` applies to every face, and `accessibilityLabel` names the whole
+identity when it is not decorative.
+
 ## The avatar prop that goes wrong silently
 
 Pass an Oxy avatar to `source`, **not** `uri`.

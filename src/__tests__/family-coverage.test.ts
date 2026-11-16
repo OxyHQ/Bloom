@@ -456,8 +456,8 @@ describe('the coverage census reads real artifacts', () => {
     // Declared in a `.tsx`, exported through `memo(X) as typeof X`.
     expect(publishedComponents('radio')).toContain('Radio');
     // A factory destructured directly in its .tsx implementation.
-    expect(publishedComponents('button-group')).toEqual(
-      expect.arrayContaining(['ButtonGroup', 'ButtonGroupItem']),
+    expect(publishedComponents('breadcrumb')).toEqual(
+      expect.arrayContaining(['Breadcrumb', 'BreadcrumbItem']),
     );
     // Declared in a `.ts` BARREL by a factory call — the branch whose absence
     // would exempt four families that plainly render.

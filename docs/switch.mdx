@@ -40,13 +40,13 @@ either platform to compute a name from. **`accessibilityLabel` is the only
 route to one.** Without it the control announces "switch, on" and never says
 which of the settings on the page it belongs to.
 
-The caption next to it does not do this job. A `SettingsListItem` title, a
+The caption next to it does not do this job. A `GroupedSectionItem` title, a
 `Label`, a `Text` in the same row — all of them are SIBLING elements, and
 neither React Native nor react-native-web associates a sibling with a control.
 So the row below needs the label even though the words are already on screen:
 
 ```tsx
-<SettingsListItem
+<GroupedSectionItem
   title="Push notifications"
   rightElement={
     <Switch

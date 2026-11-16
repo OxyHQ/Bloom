@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { ListItem } from '../list/index.web';
 
 // Every stateful Bloom control, checked against the DOM it actually produces.
 //
@@ -60,12 +61,11 @@ import { AgentThinking } from '../agent-thinking';
 import { AgentLogToolCall, AgentLogToolCalls } from '../agent-log';
 import { Item } from '../item';
 import { SegmentedControl, SegmentedControlItem } from '../segmented-control';
-import { Button } from '../button/Button';
-import { GlyphButton } from '../button/GlyphButton';
+import { Button } from '../button';
 import { Slider } from '../slider';
 import { InputGroup } from '../input-group';
-import { SettingsListItem } from '../settings-list/SettingsList';
-import { FrostedIconButton } from '../frosted-icon-button';
+import { GroupedSectionItem } from '../grouped-section/GroupedSection';
+
 import { CompositionBar } from '../composition-bar';
 import { Radio, RadioChip, RadioGroup } from '../radio';
 import { Meter, MeterRing, StatBar } from '../stat-bar';
@@ -117,7 +117,7 @@ import { ContextMenu, ContextMenuTrigger } from '../context-menu';
 import { Menubar, MenubarMenu, MenubarTrigger } from '../menubar';
 import { Popover, PopoverTrigger } from '../popover';
 import { TabBar, TabBarButton } from '../tab-bar';
-import { ChatFolderTabs, ChatListItem } from '../chat-list';
+import { ChatFolderTabs } from '../chat-list';
 // The web binding by explicit filename, as the web bundle resolves it.
 import { AiChatFeedbackRow } from '../ai-chat/AiChat.web';
 
@@ -349,10 +349,13 @@ describe('role="button" toggles use aria-pressed', () => {
 
   it('FrostedIconButton emits aria-pressed, matching its .web fork', () => {
     const c = mount(
-      <FrostedIconButton
+      <Button
+        appearance="outline"
+        tone="neutral"
+        iconOnly
         accessibilityLabel="Back"
         icon={(iconProps) => <Text {...iconProps}>x</Text>}
-        checked
+        pressed
         testID="fib"
       />,
     );
@@ -390,20 +393,48 @@ describe('role="button" toggles use aria-pressed', () => {
     expect(byTestId(c, 'fav').getAttribute('aria-label')).toBe('Save to wishlist');
   });
 
-  it('GlyphButton emits aria-pressed only when it IS a toggle', () => {
+  it('Button emits aria-pressed only when it IS a toggle', () => {
     let c = mount(
-      <GlyphButton accessibilityLabel="Shuffle" icon={RiFireLine} pressed testID="glyph" />,
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        size={36}
+        accessibilityLabel="Shuffle"
+        icon={RiFireLine}
+        pressed
+        testID="glyph"
+      />,
     );
     expect(byTestId(c, 'glyph').getAttribute('role')).toBe('button');
     expect(byTestId(c, 'glyph').getAttribute('aria-label')).toBe('Shuffle');
     expect(byTestId(c, 'glyph').getAttribute('aria-pressed')).toBe('true');
     c = mount(
-      <GlyphButton accessibilityLabel="Shuffle" icon={RiFireLine} pressed={false} testID="glyph" />,
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        size={36}
+        accessibilityLabel="Shuffle"
+        icon={RiFireLine}
+        pressed={false}
+        testID="glyph"
+      />,
     );
     expect(byTestId(c, 'glyph').getAttribute('aria-pressed')).toBe('false');
     // A plain button is NOT a toggle: `aria-pressed="false"` on one announces a
     // state nobody set.
-    c = mount(<GlyphButton accessibilityLabel="More options" icon={RiFireLine} testID="glyph" />);
+    c = mount(
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        size={36}
+        accessibilityLabel="More options"
+        icon={RiFireLine}
+        testID="glyph"
+      />,
+    );
     expect(byTestId(c, 'glyph').getAttribute('aria-pressed')).toBeNull();
   });
 
@@ -930,8 +961,8 @@ describe('View-based containers emit aria-disabled', () => {
     expect(byTestId(c, 'ig').getAttribute('aria-disabled')).toBe('true');
   });
 
-  it('SettingsListItem without onPress', () => {
-    const c = mount(<SettingsListItem title="Wi-Fi" disabled />);
+  it('GroupedSectionItem without onPress', () => {
+    const c = mount(<GroupedSectionItem title="Wi-Fi" disabled />);
     // The row renders a View wrapping the content; the disabled state belongs
     // on whichever node carries the a11y role.
     expect(c.querySelector('[aria-disabled="true"]')).not.toBeNull();
@@ -1492,7 +1523,12 @@ describe('Chat list', () => {
     // A row is a link or a button, and neither takes `aria-selected` — the
     // native side reads `accessibilityState.selected`, which web drops.
     const c = mount(
-      <ChatListItem name="Ana Ferrer" href="/chats/ana" selected time="12:41" testID="row" />,
+      <ListItem
+        conversation={{ name: 'Ana Ferrer', time: '12:41' }}
+        href="/chats/ana"
+        active={true}
+        testID="row"
+      />,
     );
     const link = byTestId(c, 'row-link');
     expect(link.getAttribute('role')).toBe('link');

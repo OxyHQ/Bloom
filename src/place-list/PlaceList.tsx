@@ -1,7 +1,7 @@
-import React, { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
-import { GlyphButton } from '../button';
+import { Button } from '../button';
 import { moveItem } from '../hooks/list-reorder';
 import { RiArrowDownLine } from '../icons/remix/RiArrowDownLine';
 import { RiArrowUpLine } from '../icons/remix/RiArrowUpLine';
@@ -135,19 +135,25 @@ function PlaceListComponent({
               >
                 {onReorder ? (
                   <>
-                    <GlyphButton
+                    <Button
+                      appearance="plain"
+                      tone="neutral"
+                      iconOnly
                       icon={RiArrowUpLine}
                       size={control}
-                      glyphSize={controlGlyph}
+                      iconSize={controlGlyph}
                       disabled={disabled || index === 0}
                       onPress={() => move(index, index - 1)}
                       accessibilityLabel={words.moveEarlier(index + 1)}
                       testID={itemTestID ? `${itemTestID}-up` : undefined}
                     />
-                    <GlyphButton
+                    <Button
+                      appearance="plain"
+                      tone="neutral"
+                      iconOnly
                       icon={RiArrowDownLine}
                       size={control}
-                      glyphSize={controlGlyph}
+                      iconSize={controlGlyph}
                       disabled={disabled || index === total - 1}
                       onPress={() => move(index, index + 1)}
                       accessibilityLabel={words.moveLater(index + 1)}
@@ -156,10 +162,13 @@ function PlaceListComponent({
                   </>
                 ) : null}
                 {onRemove ? (
-                  <GlyphButton
+                  <Button
+                    appearance="plain"
+                    tone="neutral"
+                    iconOnly
                     icon={RiDeleteBinLine}
                     size={control}
-                    glyphSize={controlGlyph}
+                    iconSize={controlGlyph}
                     disabled={disabled}
                     onPress={() => onRemove(entry.id)}
                     accessibilityLabel={words.remove(name)}

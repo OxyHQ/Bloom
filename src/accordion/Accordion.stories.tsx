@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import { fn } from 'storybook/test';
+import { TextFieldInput } from '../text-field';
+import { Button } from '../button';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -152,13 +155,14 @@ export const AuthoredSurface: Story = {
     const [value, setValue] = useState<string | string[] | undefined>();
     return (
       <View style={{ padding: 24, gap: 16 }}>
-        <button data-testid="collapse-external" onClick={() => setValue(undefined)}>
+        <Button testID="collapse-external" onPress={() => setValue(undefined)}>
           Collapse externally
-        </button>
+        </Button>
         <Accordion
           value={value}
           onValueChange={setValue}
           className="bloom-demo-accordion"
+          style={{ maxWidth: '100%' }}
           testID="authored-accordion"
           transition={{ duration: 250, easing: [0.23, 1, 0.32, 1] }}
         >
@@ -168,8 +172,10 @@ export const AuthoredSurface: Story = {
               className="bloom-demo-accordion-panel"
               contentClassName="bloom-demo-accordion-body"
             >
-              <input aria-label="Expanded input" defaultValue="Retained content" />
-              <div style={{ height: 900 }}>Tall content remains measurable while collapsed.</div>
+              <TextFieldInput label="Expanded input" defaultValue="Retained content" />
+              <View style={{ height: 900 }}>
+                <Text>Tall content remains measurable while collapsed.</Text>
+              </View>
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="more">
@@ -177,7 +183,7 @@ export const AuthoredSurface: Story = {
             <AccordionContent>Another panel</AccordionContent>
           </AccordionItem>
         </Accordion>
-        <button data-testid="after-accordion">After accordion</button>
+        <Button testID="after-accordion">After accordion</Button>
       </View>
     );
   },
@@ -187,7 +193,7 @@ export const StyleOverrides: Story = {
   render: () => (
     <Accordion
       value="a"
-      onValueChange={() => {}}
+      onValueChange={fn().mockName('onValueChange')}
       style={[{ paddingHorizontal: 12 }, { width: 360 }]}
     >
       <AccordionItem value="a">

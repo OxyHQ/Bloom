@@ -232,7 +232,6 @@ export * from './tab-pager';
 export * from './button/index.web';
 export { Surface } from './surface/index.web';
 export type { SurfaceProps } from './surface/index.web';
-export * from './button-group/index.web';
 export {
   EDGE_GAP,
   windowEdgeGap,
@@ -271,8 +270,6 @@ export type {
 } from './layout/index.web';
 export { Fab } from './fab/index.web';
 export type { FabProps, FabSize } from './fab/index.web';
-export { FrostedIconButton } from './frosted-icon-button/index.web';
-export type { FrostedIconButtonProps, FrostedIconButtonSize } from './frosted-icon-button/index.web';
 export * from './divider';
 export * from './breadcrumb/index.web';
 export * from './pagination';
@@ -316,7 +313,7 @@ export * from './app-shell/index.web';
 export * from './page-header/index.web';
 export * from './page-footer';
 export * from './bottom-promo';
-export * from './notification-center';
+export * from './notification-center/index.web';
 export * from './theme-toggle';
 export * from './settings-modal/index.web';
 export * from './auth-card';
@@ -555,8 +552,6 @@ export type {
 export {
   CallControlButton,
   CallControls,
-  CallHistoryList,
-  CallHistoryRow,
   CallMinimisedPill,
   CallScreen,
   GroupCallBar,
@@ -575,8 +570,6 @@ export type {
   CallControlsProps,
   CallDirection,
   CallHistoryItem,
-  CallHistoryListProps,
-  CallHistoryRowProps,
   CallHistorySection,
   CallMinimisedPillProps,
   CallMode,
@@ -593,11 +586,6 @@ export type {
   IncomingCallScreenProps,
 } from './call-ui';
 export {
-  ChannelPostCard,
-  ContactList,
-  ContactRow,
-  MemberList,
-  MemberRow,
   NewGroupForm,
   SelectedChipsRow,
   StoryProgressBars,
@@ -607,23 +595,17 @@ export {
   nameCounterTone,
   storyProgressFill,
   storyTapZone,
-} from './chat-people';
+} from './chat-people/index.web';
 export type {
-  ChannelPostCardProps,
-  ContactListProps,
-  ContactRowProps,
   ContactSection,
-  MemberListItem,
-  MemberListProps,
   MemberRole,
-  MemberRowProps,
   NewGroupFormProps,
   PersonSummary,
   SelectedChipsRowProps,
   StoryItem,
   StoryProgressBarsProps,
   StoryViewerProps,
-} from './chat-people';
+} from './chat-people/index.web';
 export {
   ChatBackground,
   chatBackgroundExtremes,
@@ -632,7 +614,6 @@ export {
   ChatEmptyState,
   ChatHeader,
   ChatInfoPanel,
-  ChatMemberRow,
   ChatSplitLayout,
   JumpToMentionButton,
   PinnedMessageBar,
@@ -655,7 +636,6 @@ export type {
   ChatInfoTab,
   ChatMember,
   ChatMemberRole,
-  ChatMemberRowProps,
   ChatPane,
   ChatPinnedMessage,
   ChatScreenPaint,
@@ -818,19 +798,13 @@ export type {
   UnreadSeparatorProps,
 } from './message-bubble';
 export {
-  ArchivedRow,
   CHAT_ATTACHMENT_ICONS,
   CHAT_ROW_GEOMETRY,
   CHAT_SEARCH_FIELD_HEIGHT,
   CHAT_SEARCH_KINDS,
   ChatFolderTabs,
-  ChatList,
-  ChatListItem,
-  ChatListItemSkeleton,
   ChatSearchField,
   ChatSearchResults,
-  GROUP_AVATAR_MAX_FACES,
-  GroupAvatar,
   HighlightedText,
   NewChatButton,
   StoriesRow,
@@ -838,9 +812,8 @@ export {
   hasUnread,
   highlightRuns,
   sortStories,
-} from './chat-list';
+} from './chat-list/index.web';
 export type {
-  ArchivedRowProps,
   ChatAction,
   ChatActionTone,
   ChatAttachment,
@@ -851,10 +824,6 @@ export type {
   ChatKind,
   ChatListDensity,
   ChatListItemLabels,
-  ChatListItemProps,
-  ChatListItemSkeletonProps,
-  ChatListLabels,
-  ChatListProps,
   ChatListSection,
   ChatPreview,
   ChatRowGeometry,
@@ -865,14 +834,13 @@ export type {
   ChatSearchResultsProps,
   ChatSummary,
   ChatSwipeActions,
-  GroupAvatarProps,
   HighlightedRun,
   HighlightedTextProps,
   NewChatButtonProps,
   StoriesRowLabels,
   StoriesRowProps,
   StoryEntry,
-} from './chat-list';
+} from './chat-list/index.web';
 // The one drag affordance every list row in this library uses
 export { SwipeRow, resolveSwipeRowPaint, swipeActionPaint, useSwipeAvailable } from './swipe-row';
 export {
@@ -897,10 +865,6 @@ export {
   MAIL_ROW_GEOMETRY,
   MAIL_ROW_RADIUS,
   MAIL_SELECTION_BAR_HEIGHT,
-  MailList,
-  MailListSkeleton,
-  MailRow,
-  MailSelectionBar,
   composeMailRowName,
   groupMailByDay,
   labelMarks,
@@ -916,14 +880,10 @@ export type {
   MailDayGroupingOptions,
   MailDensity,
   MailLabel,
-  MailListProps,
   MailListSection,
-  MailListSkeletonProps,
   MailPaint,
   MailRowGeometry,
   MailRowNameInput,
-  MailRowProps,
-  MailSelectionBarProps,
   MailSender,
   MailStrings,
   MailSummary,
@@ -1344,8 +1304,8 @@ export type {
   SearchModeTabsProps,
 } from './home-search';
 export * from './listing-details';
-export * from './property-insights';
-export * from './tenancy';
+export * from './property-insights/index.web';
+export * from './tenancy/index.web';
 export * from './eviction';
 export * from './place-reviews';
 export { BookingBar, BookingCard, PriceBreakdown, TRIP_STATUS, TripCard } from './booking';
@@ -1513,7 +1473,7 @@ export type {
   PlaceListVisibility,
 } from './place-list';
 export { MapCompass, MapControls, MapLayerPicker } from './map-controls';
-export { MAP_CONTROL_BOX, MAP_CONTROLS_GEOMETRY } from './map-controls';
+export { MAP_CONTROLS_GEOMETRY } from './map-controls';
 export type {
   MapCompassProps,
   MapControlsAlign,
@@ -2179,7 +2139,6 @@ export type { ActivityHeatmapProps, ActivityHeatmapDay } from './activity-heatma
 
 // Settings / Grouped list
 export * from './grouped-section';
-export * from './settings-list';
 export { Item } from './item';
 export type { ItemProps } from './item';
 export { Kbd } from './kbd';
@@ -2349,3 +2308,17 @@ export { TextFieldHostedContent } from './text-field';
 export * from './notifications';
 export { createStorage } from './storage';
 export type { BloomStorageAdapter, CreateStorageOptions, JsonStorage } from './storage';
+
+export { List, ListItem } from './list/index.web';
+export type { ListProps, ListItemProps, ListEntry, ListSection, ListAction } from './list/index.web';
+
+export { ListSelectionBar } from './list/ListSelectionBar';
+
+export type {
+  ListCommonProps,
+  ListConversationData,
+  ListMailData,
+  ListSelectionBarProps,
+} from './list/types';
+
+export type { ListPersonData, ListCallData } from './list/types';

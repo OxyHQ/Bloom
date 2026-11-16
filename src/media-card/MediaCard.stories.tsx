@@ -1,6 +1,9 @@
+import { fn } from 'storybook/test';
+import { Shelf } from '../media-shelf';
 import React, { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 import { Button } from '../button';
 import { RiDownloadLine } from '../icons/remix/RiDownloadLine';
@@ -55,13 +58,13 @@ function face(h: number): string {
   return `data:image/svg+xml;base64,${btoa(svg)}`;
 }
 
-const noop = () => undefined;
+const onDemoAction = fn().mockName('media-card.action');
 
 const MENU: MediaCardMenuItem[] = [
-  { label: 'Add to queue', onPress: noop },
-  { label: 'Go to artist', onPress: noop },
-  { label: 'Share', onPress: noop },
-  { label: 'Remove from library', onPress: noop, destructive: true },
+  { label: 'Add to queue', onPress: onDemoAction },
+  { label: 'Go to artist', onPress: onDemoAction },
+  { label: 'Share', onPress: onDemoAction },
+  { label: 'Remove from library', onPress: onDemoAction, destructive: true },
 ];
 
 function Page({
@@ -73,15 +76,12 @@ function Page({
   width?: number;
   testID?: string;
 }) {
-  const theme = useTheme();
   return (
     <View
-      style={{ minHeight: '100%', backgroundColor: theme.colors.background, padding: 16 }}
       testID={testID}
+      style={{ width: '100%', maxWidth: width, alignSelf: 'center', padding: 16, gap: 28 }}
     >
-      <View style={{ width: width ?? '100%', maxWidth: '100%', alignSelf: 'center', gap: 28 }}>
-        {children}
-      </View>
+      {children}
     </View>
   );
 }
@@ -102,23 +102,6 @@ function Wrap({ children }: { children: React.ReactNode }) {
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start', gap: 8 }}>
       {children}
-    </View>
-  );
-}
-
-function Shelf({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <View style={{ gap: 4 }}>
-      <Text variant="title-3-bold" style={{ paddingLeft: 12 }}>
-        {title}
-      </Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 0 }}
-      >
-        {children}
-      </ScrollView>
     </View>
   );
 }
@@ -146,8 +129,8 @@ export const Songs: Story = {
                 artists={['Mara Vell']}
                 artwork={cover(260, 320)}
                 explicit
-                onPress={noop}
-                onPlay={noop}
+                onPress={onDemoAction}
+                onPlay={onDemoAction}
                 menuItems={MENU}
                 testID={`song-${size}`}
               />
@@ -162,8 +145,8 @@ export const Songs: Story = {
               artwork={cover(190, 230, 'wave')}
               current
               playing
-              onPlay={noop}
-              onPress={noop}
+              onPlay={onDemoAction}
+              onPress={onDemoAction}
               testID="song-playing"
             />
             <SongCard
@@ -171,23 +154,23 @@ export const Songs: Story = {
               artists={['Oren Kade']}
               artwork={cover(30, 350, 'bars')}
               loading
-              onPlay={noop}
-              onPress={noop}
+              onPlay={onDemoAction}
+              onPress={onDemoAction}
               testID="song-loading"
             />
             <SongCard
               title="Untitled Demo"
               artists={['Lio Brandt']}
-              onPlay={noop}
-              onPress={noop}
+              onPlay={onDemoAction}
+              onPress={onDemoAction}
               testID="song-no-artwork"
             />
             <SongCard
               title="A Very Long Song Title That Keeps Going Past the Edge of the Cover"
               artists={['Mara Vell', 'Juno Park', 'The Low Orchard']}
               artwork={cover(120, 200)}
-              onPlay={noop}
-              onPress={noop}
+              onPlay={onDemoAction}
+              onPress={onDemoAction}
               testID="song-long"
             />
             <SongCard
@@ -196,10 +179,10 @@ export const Songs: Story = {
                 { name: 'Mara Vell', id: 'mara' },
                 { name: 'Oren Kade', id: 'oren' },
               ]}
-              onPressArtist={noop}
+              onPressArtist={onDemoAction}
               artwork={cover(90, 160, 'wave')}
-              onPlay={noop}
-              onPress={noop}
+              onPlay={onDemoAction}
+              onPress={onDemoAction}
               testID="song-artist-links"
             />
             <SongCard
@@ -207,7 +190,7 @@ export const Songs: Story = {
               artists={['Juno Park']}
               artwork={cover(300, 20)}
               selected
-              onPress={noop}
+              onPress={onDemoAction}
               testID="song-selected"
             />
           </Wrap>
@@ -255,7 +238,7 @@ export const Songs: Story = {
                 current={playing === id}
                 playing={playing === id}
                 onPlay={() => setPlaying((p) => (p === id ? null : id))}
-                onPress={noop}
+                onPress={onDemoAction}
                 liked={liked[id] ?? false}
                 onLikedChange={(next) => setLiked((l) => ({ ...l, [id]: next }))}
                 menuItems={MENU}
@@ -281,8 +264,8 @@ export const AlbumsAndArtists: Story = {
             artist="Mara Vell"
             year="2026"
             artwork={cover(260, 320)}
-            onPress={noop}
-            onPlay={noop}
+            onPress={onDemoAction}
+            onPlay={onDemoAction}
             menuItems={MENU}
             testID="album"
           />
@@ -292,8 +275,8 @@ export const AlbumsAndArtists: Story = {
             year="2025"
             albumType="single"
             artwork={cover(190, 230, 'wave')}
-            onPress={noop}
-            onPlay={noop}
+            onPress={onDemoAction}
+            onPlay={onDemoAction}
           />
           <AlbumCard
             title="Festival of Small Things"
@@ -302,10 +285,10 @@ export const AlbumsAndArtists: Story = {
             albumType="ep"
             explicit
             artwork={cover(30, 350, 'bars')}
-            onPress={noop}
-            onPlay={noop}
+            onPress={onDemoAction}
+            onPlay={onDemoAction}
           />
-          <AlbumCard title="No Cover Yet" artist="Lio Brandt" year="2026" onPress={noop} />
+          <AlbumCard title="No Cover Yet" artist="Lio Brandt" year="2026" onPress={onDemoAction} />
           <AlbumCard title="" skeleton />
         </Wrap>
       </Section>
@@ -316,14 +299,24 @@ export const AlbumsAndArtists: Story = {
             verified
             followers="1.2M followers"
             artwork={face(20)}
-            onPress={noop}
-            onPlay={noop}
+            onPress={onDemoAction}
+            onPlay={onDemoAction}
             menuItems={MENU}
             testID="artist"
           />
-          <ArtistCard name="Juno Park" artwork={face(200)} onPress={noop} onPlay={noop} />
-          <ArtistCard name="The Low Orchard" size="small" artwork={face(120)} onPress={noop} />
-          <ArtistCard name="Unknown" onPress={noop} />
+          <ArtistCard
+            name="Juno Park"
+            artwork={face(200)}
+            onPress={onDemoAction}
+            onPlay={onDemoAction}
+          />
+          <ArtistCard
+            name="The Low Orchard"
+            size="small"
+            artwork={face(120)}
+            onPress={onDemoAction}
+          />
+          <ArtistCard name="Unknown" onPress={onDemoAction} />
           <ArtistCard name="" skeleton />
         </Wrap>
       </Section>
@@ -335,8 +328,8 @@ export const AlbumsAndArtists: Story = {
             artist="Mara Vell"
             year="2026"
             artwork={cover(260, 320)}
-            onPress={noop}
-            onPlay={noop}
+            onPress={onDemoAction}
+            onPlay={onDemoAction}
             menuItems={MENU}
             testID="album-row"
           />
@@ -346,8 +339,8 @@ export const AlbumsAndArtists: Story = {
             verified
             followers="1.2M followers"
             artwork={face(20)}
-            onPress={noop}
-            onPlay={noop}
+            onPress={onDemoAction}
+            onPlay={onDemoAction}
             menuItems={MENU}
             testID="artist-row"
           />
@@ -356,7 +349,7 @@ export const AlbumsAndArtists: Story = {
             size="small"
             name="Juno Park"
             artwork={face(200)}
-            onPress={noop}
+            onPress={onDemoAction}
           />
         </View>
       </Section>
@@ -374,8 +367,8 @@ export const Playlists: Story = {
           owner="Maya"
           trackCount="42 songs"
           artwork={cover(280, 330, 'wave')}
-          onPress={noop}
-          onPlay={noop}
+          onPress={onDemoAction}
+          onPlay={onDemoAction}
           menuItems={MENU}
           testID="playlist-artwork"
         />
@@ -389,8 +382,8 @@ export const Playlists: Story = {
             cover(120, 160, 'bars'),
             cover(300, 330),
           ]}
-          onPress={noop}
-          onPlay={noop}
+          onPress={onDemoAction}
+          onPlay={onDemoAction}
           testID="playlist-mosaic"
         />
         <PlaylistCard
@@ -398,7 +391,7 @@ export const Playlists: Story = {
           owner="Ines"
           trackCount="2 songs"
           mosaic={[cover(60, 90), cover(220, 260, 'bars')]}
-          onPress={noop}
+          onPress={onDemoAction}
           testID="playlist-mosaic-2"
         />
         <PlaylistCard
@@ -407,22 +400,22 @@ export const Playlists: Story = {
           trackCount="12 songs"
           artworkColor="#2f7d6d"
           collaborative
-          onPress={noop}
-          onPlay={noop}
+          onPress={onDemoAction}
+          onPlay={onDemoAction}
           testID="playlist-generated"
         />
         <PlaylistCard
           title="New Playlist"
           owner="Maya"
           trackCount="0 songs"
-          onPress={noop}
+          onPress={onDemoAction}
           testID="playlist-neutral"
         />
         <PlaylistCard
           title="Pale Colour"
           owner="Maya"
           artworkColor="#f5e9a8"
-          onPress={noop}
+          onPress={onDemoAction}
           testID="playlist-pale"
         />
       </Wrap>
@@ -433,8 +426,8 @@ export const Playlists: Story = {
           owner="Maya"
           trackCount="42 songs"
           artwork={cover(280, 330, 'wave')}
-          onPress={noop}
-          onPlay={noop}
+          onPress={onDemoAction}
+          onPlay={onDemoAction}
           menuItems={MENU}
         />
         <PlaylistCard
@@ -444,7 +437,7 @@ export const Playlists: Story = {
           trackCount="12 songs"
           artworkColor="#2f7d6d"
           collaborative
-          onPress={noop}
+          onPress={onDemoAction}
         />
         <PlaylistCard
           layout="row"
@@ -456,7 +449,7 @@ export const Playlists: Story = {
             cover(120, 160, 'bars'),
             cover(300, 330),
           ]}
-          onPress={noop}
+          onPress={onDemoAction}
         />
       </View>
     </Page>
@@ -473,8 +466,8 @@ export const Mixes: Story = {
           description="Mara Vell, Juno Park, Oren Kade and more"
           artworkColor="#7c3aed"
           faces={[face(20), face(200), face(120)]}
-          onPress={noop}
-          onPlay={noop}
+          onPress={onDemoAction}
+          onPlay={onDemoAction}
           menuItems={MENU}
           testID="mix"
         />
@@ -483,8 +476,8 @@ export const Mixes: Story = {
           description="The Low Orchard, Lio Brandt and more"
           artworkColor="#e0a800"
           faces={[face(40), face(300)]}
-          onPress={noop}
-          onPlay={noop}
+          onPress={onDemoAction}
+          onPlay={onDemoAction}
           testID="mix-yellow"
         />
         <MixCard
@@ -494,14 +487,14 @@ export const Mixes: Story = {
           artworkColor="#0e7490"
           faces={[face(180)]}
           size="large"
-          onPress={noop}
-          onPlay={noop}
+          onPress={onDemoAction}
+          onPlay={onDemoAction}
         />
         <MixCard
           title="Discover"
           description="New music picked for you"
           size="small"
-          onPress={noop}
+          onPress={onDemoAction}
           testID="mix-neutral"
         />
       </Wrap>
@@ -512,8 +505,8 @@ export const Mixes: Story = {
           description="Mara Vell, Juno Park and more"
           artworkColor="#7c3aed"
           faces={[face(20), face(200)]}
-          onPress={noop}
-          onPlay={noop}
+          onPress={onDemoAction}
+          onPlay={onDemoAction}
           menuItems={MENU}
         />
       </View>
@@ -532,7 +525,7 @@ export const PodcastsAndBooks: Story = {
           iconOnly
           leadingIcon={RiAddCircleLine}
           accessibilityLabel="Save episode"
-          onPress={noop}
+          onPress={onDemoAction}
           tone="accent"
           appearance="subtle"
         />
@@ -541,7 +534,7 @@ export const PodcastsAndBooks: Story = {
           iconOnly
           leadingIcon={RiDownloadLine}
           accessibilityLabel="Download episode"
-          onPress={noop}
+          onPress={onDemoAction}
           tone="accent"
           appearance="subtle"
         />
@@ -555,8 +548,8 @@ export const PodcastsAndBooks: Story = {
               title="Slow Signals"
               publisher="Harbor Audio"
               artwork={cover(160, 200, 'bars')}
-              onPress={noop}
-              onPlay={noop}
+              onPress={onDemoAction}
+              onPlay={onDemoAction}
               menuItems={MENU}
               testID="podcast"
             />
@@ -564,9 +557,14 @@ export const PodcastsAndBooks: Story = {
               title="The Long Walk Home"
               publisher="Wayfarer Studio"
               artwork={cover(20, 60)}
-              onPress={noop}
+              onPress={onDemoAction}
             />
-            <PodcastCard title="No Art" publisher="Independent" onPress={noop} size="small" />
+            <PodcastCard
+              title="No Art"
+              publisher="Independent"
+              onPress={onDemoAction}
+              size="small"
+            />
           </Wrap>
         </Section>
         <Section title="Episodes — tile">
@@ -580,8 +578,8 @@ export const PodcastsAndBooks: Story = {
               progress={0.62}
               remaining="18 min left"
               artwork={cover(160, 200, 'bars')}
-              onPress={noop}
-              onPlay={noop}
+              onPress={onDemoAction}
+              onPlay={onDemoAction}
               testID="episode-progress"
             />
             <EpisodeCard
@@ -593,8 +591,8 @@ export const PodcastsAndBooks: Story = {
               played
               explicit
               artwork={cover(160, 200, 'bars')}
-              onPress={noop}
-              onPlay={noop}
+              onPress={onDemoAction}
+              onPlay={onDemoAction}
               testID="episode-played"
             />
           </Wrap>
@@ -611,7 +609,7 @@ export const PodcastsAndBooks: Story = {
               progress={0.62}
               remaining="18 min left"
               artwork={cover(160, 200, 'bars')}
-              onPress={noop}
+              onPress={onDemoAction}
               onPlay={() => setPlaying((p) => !p)}
               playing={playing}
               actions={actions}
@@ -628,8 +626,8 @@ export const PodcastsAndBooks: Story = {
               played
               explicit
               artwork={cover(160, 200, 'bars')}
-              onPress={noop}
-              onPlay={noop}
+              onPress={onDemoAction}
+              onPlay={onDemoAction}
               actions={actions}
               testID="episode-row-played"
             />
@@ -640,8 +638,8 @@ export const PodcastsAndBooks: Story = {
               date="Today"
               duration="52 min"
               artwork={cover(160, 200, 'bars')}
-              onPress={noop}
-              onPlay={noop}
+              onPress={onDemoAction}
+              onPlay={onDemoAction}
               actions={actions}
             />
           </View>
@@ -655,8 +653,8 @@ export const PodcastsAndBooks: Story = {
               duration="11 h 20 min"
               progress={0.35}
               artwork={cover(350, 20, 'wave')}
-              onPress={noop}
-              onPlay={noop}
+              onPress={onDemoAction}
+              onPlay={onDemoAction}
               testID="audiobook"
             />
             <AudiobookCard
@@ -664,7 +662,7 @@ export const PodcastsAndBooks: Story = {
               author="R. Okafor"
               duration="8 h 5 min"
               artwork={cover(210, 250)}
-              onPress={noop}
+              onPress={onDemoAction}
               size="small"
             />
           </Wrap>
@@ -677,8 +675,8 @@ export const PodcastsAndBooks: Story = {
               duration="11 h 20 min"
               progress={0.35}
               artwork={cover(350, 20, 'wave')}
-              onPress={noop}
-              onPlay={noop}
+              onPress={onDemoAction}
+              onPlay={onDemoAction}
               menuItems={MENU}
             />
           </View>
@@ -698,14 +696,14 @@ export const BrowseAndSocial: Story = {
             title="Ambient"
             color="#0e7490"
             artwork={cover(180, 220, 'wave')}
-            onPress={noop}
+            onPress={onDemoAction}
             testID="genre"
           />
           <GenreCard
             title="Folk & Acoustic"
             color="#e0a800"
             artwork={cover(40, 20)}
-            onPress={noop}
+            onPress={onDemoAction}
             testID="genre-yellow"
           />
           <GenreCard
@@ -713,9 +711,9 @@ export const BrowseAndSocial: Story = {
             color="#db2777"
             artwork={cover(300, 340, 'bars')}
             size="large"
-            onPress={noop}
+            onPress={onDemoAction}
           />
-          <GenreCard title="Neutral" size="small" onPress={noop} />
+          <GenreCard title="Neutral" size="small" onPress={onDemoAction} />
         </Wrap>
       </Section>
       <Section title="Events">
@@ -729,11 +727,11 @@ export const BrowseAndSocial: Story = {
             time="Fri 20:00"
             image={cover(260, 320)}
             action={
-              <Button size="sm" onPress={noop}>
+              <Button size="sm" onPress={onDemoAction}>
                 Tickets
               </Button>
             }
-            onPress={noop}
+            onPress={onDemoAction}
             testID="event"
           />
           <EventCard
@@ -745,7 +743,7 @@ export const BrowseAndSocial: Story = {
             time="Sun 19:30"
             image={cover(190, 230, 'wave')}
             soldOut
-            onPress={noop}
+            onPress={onDemoAction}
             testID="event-sold-out"
           />
         </Wrap>
@@ -759,11 +757,11 @@ export const BrowseAndSocial: Story = {
             city="Porto"
             time="Fri 20:00"
             action={
-              <Button size="sm" onPress={noop} tone="neutral" appearance="outline">
+              <Button size="sm" onPress={onDemoAction} tone="neutral" appearance="outline">
                 Tickets
               </Button>
             }
-            onPress={noop}
+            onPress={onDemoAction}
             testID="event-row"
           />
           <EventCard
@@ -774,7 +772,7 @@ export const BrowseAndSocial: Story = {
             venue="Pier Seven"
             city="Valmere"
             soldOut
-            onPress={noop}
+            onPress={onDemoAction}
           />
         </View>
       </Section>
@@ -785,18 +783,18 @@ export const BrowseAndSocial: Story = {
             followsYou
             artwork={face(330)}
             action={
-              <Button size="sm" onPress={noop} tone="neutral" appearance="outline">
+              <Button size="sm" onPress={onDemoAction} tone="neutral" appearance="outline">
                 Follow
               </Button>
             }
-            onPress={noop}
+            onPress={onDemoAction}
             testID="profile"
           />
           <ProfileCard
             name="Teo Marsh"
             followers="214 followers"
             artwork={face(90)}
-            onPress={noop}
+            onPress={onDemoAction}
           />
         </Wrap>
         <View style={{ maxWidth: 560 }}>
@@ -806,11 +804,11 @@ export const BrowseAndSocial: Story = {
             followsYou
             artwork={face(330)}
             action={
-              <Button size="sm" onPress={noop} tone="neutral" appearance="outline">
+              <Button size="sm" onPress={onDemoAction} tone="neutral" appearance="outline">
                 Follow
               </Button>
             }
-            onPress={noop}
+            onPress={onDemoAction}
           />
         </View>
       </Section>
@@ -823,7 +821,7 @@ export const BrowseAndSocial: Story = {
             artist="Mara Vell"
             context="Late Hours"
             live
-            onPress={noop}
+            onPress={onDemoAction}
             testID="friend-live"
           />
           <FriendActivityCard
@@ -834,7 +832,7 @@ export const BrowseAndSocial: Story = {
             context="Harbour Lights"
             contextType="album"
             time="12 min"
-            onPress={noop}
+            onPress={onDemoAction}
             testID="friend"
           />
           <FriendActivityCard
@@ -842,7 +840,7 @@ export const BrowseAndSocial: Story = {
             track="A Very Long Track Name That Truncates"
             artist="The Low Orchard"
             time="2 h"
-            onPress={noop}
+            onPress={onDemoAction}
           />
           <FriendActivityCard name="" track="" artist="" skeleton />
         </View>
@@ -865,7 +863,7 @@ export const RecapAndShare: Story = {
             { label: 'Top artist', title: 'Mara Vell', artwork: face(20), round: true },
             { label: 'Top song', title: 'Night Drive', artwork: cover(260, 320) },
           ]}
-          onShare={noop}
+          onShare={onDemoAction}
           style={{ width: 340 }}
           testID="recap"
         />
@@ -874,7 +872,7 @@ export const RecapAndShare: Story = {
           value="3,904"
           unit="minutes"
           highlights={[{ label: 'Top genre', title: 'Ambient', artwork: cover(180, 220, 'wave') }]}
-          onShare={noop}
+          onShare={onDemoAction}
           style={{ width: 300 }}
           testID="recap-neutral"
         />
@@ -952,7 +950,7 @@ function Home({ columns, testID }: { columns: number; testID?: string }) {
               current={current === id}
               playing={current === id && playing}
               onPlay={toggle(id)}
-              onPress={noop}
+              onPress={onDemoAction}
               testID={`quick-${id}`}
             />
           </View>
@@ -964,7 +962,7 @@ function Home({ columns, testID }: { columns: number; testID?: string }) {
           description="Mara Vell, Juno Park and more"
           artworkColor="#7c3aed"
           faces={[face(20), face(200), face(120)]}
-          onPress={noop}
+          onPress={onDemoAction}
           onPlay={toggle('mix')}
           playing={current === 'mix' && playing}
           menuItems={MENU}
@@ -975,8 +973,8 @@ function Home({ columns, testID }: { columns: number; testID?: string }) {
           description="The Low Orchard, Lio Brandt and more"
           artworkColor="#e0a800"
           faces={[face(40), face(300)]}
-          onPress={noop}
-          onPlay={noop}
+          onPress={onDemoAction}
+          onPlay={onDemoAction}
         />
         <PlaylistCard
           title="Road Trip"
@@ -988,23 +986,23 @@ function Home({ columns, testID }: { columns: number; testID?: string }) {
             cover(120, 160, 'bars'),
             cover(300, 330),
           ]}
-          onPress={noop}
-          onPlay={noop}
+          onPress={onDemoAction}
+          onPlay={onDemoAction}
         />
         <PlaylistCard
           title="Morning Pages"
           owner="Maya"
           trackCount="12 songs"
           artworkColor="#2f7d6d"
-          onPress={noop}
-          onPlay={noop}
+          onPress={onDemoAction}
+          onPlay={onDemoAction}
         />
         <PlaylistCard
           title="Late Hours"
           owner="Maya"
           trackCount="42 songs"
           artwork={cover(280, 330, 'wave')}
-          onPress={noop}
+          onPress={onDemoAction}
           onPlay={toggle('late')}
           playing={current === 'late' && playing}
           current={current === 'late'}
@@ -1014,31 +1012,57 @@ function Home({ columns, testID }: { columns: number; testID?: string }) {
           artist="Mara Vell"
           year="2026"
           artwork={cover(260, 320)}
-          onPress={noop}
-          onPlay={noop}
+          onPress={onDemoAction}
+          onPlay={onDemoAction}
         />
       </Shelf>
       <Shelf title="Popular artists">
-        <ArtistCard name="Mara Vell" verified artwork={face(20)} onPress={noop} onPlay={noop} />
-        <ArtistCard name="Juno Park" artwork={face(200)} onPress={noop} onPlay={noop} />
-        <ArtistCard name="Oren Kade" artwork={face(120)} onPress={noop} onPlay={noop} />
-        <ArtistCard name="The Low Orchard" artwork={face(40)} onPress={noop} onPlay={noop} />
-        <ArtistCard name="Lio Brandt" artwork={face(300)} onPress={noop} onPlay={noop} />
+        <ArtistCard
+          name="Mara Vell"
+          verified
+          artwork={face(20)}
+          onPress={onDemoAction}
+          onPlay={onDemoAction}
+        />
+        <ArtistCard
+          name="Juno Park"
+          artwork={face(200)}
+          onPress={onDemoAction}
+          onPlay={onDemoAction}
+        />
+        <ArtistCard
+          name="Oren Kade"
+          artwork={face(120)}
+          onPress={onDemoAction}
+          onPlay={onDemoAction}
+        />
+        <ArtistCard
+          name="The Low Orchard"
+          artwork={face(40)}
+          onPress={onDemoAction}
+          onPlay={onDemoAction}
+        />
+        <ArtistCard
+          name="Lio Brandt"
+          artwork={face(300)}
+          onPress={onDemoAction}
+          onPlay={onDemoAction}
+        />
       </Shelf>
       <Shelf title="Shows to try">
         <PodcastCard
           title="Slow Signals"
           publisher="Harbor Audio"
           artwork={cover(160, 200, 'bars')}
-          onPress={noop}
-          onPlay={noop}
+          onPress={onDemoAction}
+          onPlay={onDemoAction}
         />
         <PodcastCard
           title="The Long Walk Home"
           publisher="Wayfarer Studio"
           artwork={cover(20, 60)}
-          onPress={noop}
-          onPlay={noop}
+          onPress={onDemoAction}
+          onPlay={onDemoAction}
         />
         <AudiobookCard
           title="The Quiet Coast"
@@ -1046,8 +1070,8 @@ function Home({ columns, testID }: { columns: number; testID?: string }) {
           duration="11 h 20 min"
           progress={0.35}
           artwork={cover(350, 20, 'wave')}
-          onPress={noop}
-          onPlay={noop}
+          onPress={onDemoAction}
+          onPlay={onDemoAction}
         />
         <EpisodeCard
           title="Tide Tables"
@@ -1057,49 +1081,28 @@ function Home({ columns, testID }: { columns: number; testID?: string }) {
           progress={0.62}
           remaining="18 min left"
           artwork={cover(160, 200, 'bars')}
-          onPress={noop}
-          onPlay={noop}
+          onPress={onDemoAction}
+          onPlay={onDemoAction}
         />
       </Shelf>
     </View>
   );
 }
 
-function HomePage({ width }: { width: number }) {
-  const theme = useTheme();
+function HomePage() {
+  const { width, onLayout } = useContainerWidth();
   return (
     <View
-      style={{
-        backgroundColor: theme.colors.background,
-        paddingTop: 16,
-        paddingBottom: 16,
-        minHeight: '100%',
-      }}
+      onLayout={onLayout}
+      style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingVertical: 16 }}
     >
-      <View style={{ width, maxWidth: '100%', alignSelf: 'center' }}>
-        <Home columns={width < 600 ? 2 : 4} testID="home" />
-      </View>
+      <Home columns={(width ?? 0) < 600 ? 2 : 4} testID="home" />
     </View>
   );
 }
 
-/** The home screen at 1280: quick-access tiles over shelves of cards. */
-export const HomeWide: Story = { render: () => <HomePage width={1280} /> };
-
-/** The home screen at 1280 in dark mode. */
-export const HomeWideDark: Story = {
-  globals: { theme: 'dark' },
-  render: () => <HomePage width={1280} />,
-};
-
-/** The home screen at 390. */
-export const HomeNarrow: Story = { render: () => <HomePage width={390} /> };
-
-/** The home screen at 390 in dark mode. */
-export const HomeNarrowDark: Story = {
-  globals: { theme: 'dark' },
-  render: () => <HomePage width={390} />,
-};
+/** The responsive home screen: quick-access tiles over shelves of cards. */
+export const HomeScreen: Story = { render: () => <HomePage /> };
 
 /** Every skeleton. */
 export const Loading: Story = {
@@ -1122,19 +1125,4 @@ export const Loading: Story = {
       </View>
     </Page>
   ),
-};
-
-/** Tracks in dark mode. */
-export const SongsDark: Story = { globals: { theme: 'dark' }, render: Songs.render };
-
-/** Browse, events, profiles and friend activity in dark mode. */
-export const BrowseAndSocialDark: Story = {
-  globals: { theme: 'dark' },
-  render: BrowseAndSocial.render,
-};
-
-/** Recap and share cards in dark mode. */
-export const RecapAndShareDark: Story = {
-  globals: { theme: 'dark' },
-  render: RecapAndShare.render,
 };

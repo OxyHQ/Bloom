@@ -1,7 +1,7 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { View } from 'react-native';
 
-import { Button, LinkButton } from '../button';
+import { Button } from '../button';
 
 import { useTheme } from '../theme/use-theme';
 import { useMessages } from '../locale/messages';
@@ -56,7 +56,8 @@ function FilterFooterComponent({
         style,
       ]}
     >
-      <LinkButton
+      <Button
+        appearance="plain"
         linkTone="text"
         underline="rest"
         size="sm"
@@ -67,7 +68,7 @@ function FilterFooterComponent({
         testID={testID ? `${testID}-clear` : undefined}
       >
         {clearLabel}
-      </LinkButton>
+      </Button>
       <Button
         size="lg"
         onPress={onApply}

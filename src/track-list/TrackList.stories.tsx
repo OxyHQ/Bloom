@@ -8,8 +8,8 @@ import { RiDownload2Line } from '../icons/remix/RiDownload2Line';
 import { RiPlayList2Line } from '../icons/remix/RiPlayList2Line';
 import { RiPlayListAddLine } from '../icons/remix/RiPlayListAddLine';
 import { RiShareLine } from '../icons/remix/RiShareLine';
-import { useTheme } from '../theme/use-theme';
-import { Text } from '../typography';
+import { PageHeader } from '../page-header';
+import { alert } from '../surfaces';
 import { EpisodeList } from './EpisodeList';
 import { SelectionBar } from './SelectionBar';
 import { TrackList } from './TrackList';
@@ -186,32 +186,11 @@ const PLAYLIST: Track[] = [
 ];
 
 function Page({ children, maxWidth }: { children: React.ReactNode; maxWidth?: number }) {
-  const theme = useTheme();
-  return (
-    <View
-      style={{
-        backgroundColor: theme.colors.background,
-        alignSelf: 'stretch',
-        width: '100%',
-        paddingTop: 24,
-        paddingBottom: 24,
-        paddingLeft: 16,
-        paddingRight: 16,
-        minHeight: '100%',
-      }}
-    >
-      <View style={{ width: '100%', maxWidth, alignSelf: 'center' }}>{children}</View>
-    </View>
-  );
+  return <View style={{ width: '100%', maxWidth, padding: 16, gap: 16 }}>{children}</View>;
 }
 
 function Heading({ children }: { children: string }) {
-  const theme = useTheme();
-  return (
-    <Text variant="title-2-semibold" style={{ color: theme.colors.text, marginBottom: 16 }}>
-      {children}
-    </Text>
-  );
+  return <PageHeader title={children} />;
 }
 
 function menuFor(extra: TrackMenuItem[] = []) {
@@ -220,19 +199,19 @@ function menuFor(extra: TrackMenuItem[] = []) {
       key: 'queue',
       label: 'Add to queue',
       icon: RiPlayListAddLine,
-      onPress: () => console.log('queue', track.id),
+      onPress: () => alert('Queue', `${track.title} added to the demo queue.`),
     },
     {
       key: 'playlist',
       label: 'Add to playlist',
       icon: RiAddLine,
-      onPress: () => console.log('playlist', track.id),
+      onPress: () => alert('Playlist', `${track.title} added to the demo playlist.`),
     },
     {
       key: 'share',
       label: 'Share',
       icon: RiShareLine,
-      onPress: () => console.log('share', track.id),
+      onPress: () => alert('Share', track.title),
     },
     ...extra,
   ];
@@ -279,7 +258,7 @@ export const Album: Story = {
           ]}
           {...player}
           onLikedChange={onLikedChange}
-          onArtistPress={(artist) => console.log('artist', artist.name)}
+          onArtistPress={(artist) => alert('Artist', artist.name)}
           menuItems={menuFor()}
           accessibilityLabel="Low Tide Hymns"
           testID="album"
@@ -311,17 +290,19 @@ export const PlaylistOwner: Story = {
             })
           }
           onLikedChange={onLikedChange}
-          onArtistPress={(artist) => console.log('artist', artist.name)}
-          onAlbumPress={(track) => console.log('album', track.album)}
-          menuItems={menuFor([
-            {
-              key: 'remove',
-              label: 'Remove from this playlist',
-              icon: RiDeleteBinLine,
-              destructive: true,
-              onPress: () => {},
-            },
-          ])}
+          onArtistPress={(artist) => alert('Artist', artist.name)}
+          onAlbumPress={(track) => alert('Album', track.album)}
+          menuItems={(track) =>
+            menuFor([
+              {
+                key: 'remove',
+                label: 'Remove from this playlist',
+                icon: RiDeleteBinLine,
+                destructive: true,
+                onPress: () => setTracks((all) => all.filter((item) => item.id !== track.id)),
+              },
+            ])(track)
+          }
           showDownloaded
           accessibilityLabel="Late Night Drive"
           testID="playlist"
@@ -360,9 +341,24 @@ export const LikedSongsWithSelection: Story = {
           count={selected.length}
           onClear={() => setSelected([])}
           actions={[
-            { key: 'playlist', label: 'Add to playlist', icon: RiAddLine, onPress: () => {} },
-            { key: 'queue', label: 'Add to queue', icon: RiPlayListAddLine, onPress: () => {} },
-            { key: 'download', label: 'Download', icon: RiDownload2Line, onPress: () => {} },
+            {
+              key: 'playlist',
+              label: 'Add to playlist',
+              icon: RiAddLine,
+              onPress: () => alert('Track action', 'Selected in this demo.'),
+            },
+            {
+              key: 'queue',
+              label: 'Add to queue',
+              icon: RiPlayListAddLine,
+              onPress: () => alert('Track action', 'Selected in this demo.'),
+            },
+            {
+              key: 'download',
+              label: 'Download',
+              icon: RiDownload2Line,
+              onPress: () => alert('Track action', 'Selected in this demo.'),
+            },
             {
               key: 'remove',
               label: 'Remove',
@@ -406,26 +402,6 @@ export const SearchResultsCompact: Story = {
 };
 
 /** A phone-width list: cover, title/artists and the more button. */
-export const Narrow390: Story = {
-  render: function NarrowStory() {
-    const [tracks] = useLikes(PLAYLIST);
-    const player = usePlayer('p2');
-    return (
-      <View style={{ width: '100%', maxWidth: 390 }}>
-        <Page>
-          <Heading>Late Night Drive</Heading>
-          <TrackList
-            tracks={tracks}
-            {...player}
-            menuItems={menuFor()}
-            showDownloaded
-            testID="narrow"
-          />
-        </Page>
-      </View>
-    );
-  },
-};
 
 const EPISODES: Episode[] = [
   {
@@ -480,23 +456,29 @@ export const Episodes: Story = {
         setPlaying(true);
       },
       onPause: () => setPlaying(false),
-      onPress: (episode: Episode) => console.log('open', episode.id),
+      onPress: (episode: Episode) => alert(episode.title, episode.description),
       onSavedChange: (episode: Episode, saved: boolean) => update(episode.id, { saved }),
       onDownloadedChange: (episode: Episode, downloaded: boolean) =>
         update(episode.id, { downloaded }),
       menuItems: () => [
-        { key: 'queue', label: 'Add to queue', icon: RiPlayListAddLine, onPress: () => {} },
-        { key: 'share', label: 'Share episode', icon: RiShareLine, onPress: () => {} },
+        {
+          key: 'queue',
+          label: 'Add to queue',
+          icon: RiPlayListAddLine,
+          onPress: () => alert('Track action', 'Selected in this demo.'),
+        },
+        {
+          key: 'share',
+          label: 'Share episode',
+          icon: RiShareLine,
+          onPress: () => alert('Track action', 'Selected in this demo.'),
+        },
       ],
     };
     return (
       <Page maxWidth={900}>
         <Heading>Field Notes</Heading>
-        <EpisodeList {...props} width={900} testID="episodes" />
-        <View style={{ height: 32 }} />
-        <View style={{ width: '100%', maxWidth: 390 }}>
-          <EpisodeList {...props} width={390} testID="episodes-narrow" />
-        </View>
+        <EpisodeList {...props} testID="episodes" />
       </Page>
     );
   },
@@ -511,7 +493,7 @@ export const EmptyAndLoading: Story = {
         title="Songs you add will appear here"
         description="Search for something you love, then use the menu on any song to add it to this playlist."
         actionLabel="Find songs"
-        onAction={() => {}}
+        onAction={() => alert('Find songs', 'Search for songs to add to this playlist.')}
         testID="empty"
       />
       <TrackRowSkeleton count={4} testID="skeleton" />
@@ -519,16 +501,4 @@ export const EmptyAndLoading: Story = {
       <TrackRowSkeleton count={4} density="compact" />
     </Page>
   ),
-};
-
-/** The playlist, forced dark. */
-export const PlaylistDark: Story = {
-  ...PlaylistOwner,
-  globals: { theme: 'dark' },
-};
-
-/** Liked songs with selection, forced dark. */
-export const LikedSongsDark: Story = {
-  ...LikedSongsWithSelection,
-  globals: { theme: 'dark' },
 };

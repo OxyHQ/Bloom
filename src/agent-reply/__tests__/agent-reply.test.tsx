@@ -1,5 +1,6 @@
+import { AvatarGroup } from '../../avatar-group';
 import { fireEvent, render } from '@testing-library/react-native';
-import React from 'react';
+import type React from 'react';
 import { LocaleProvider } from '../../locale';
 import { formatMessage, pickMessages } from '../../locale/messages';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
@@ -10,7 +11,6 @@ import {
   AgentReplyActions,
   AgentReplyBubble,
   AgentReplyIdentity,
-  AgentStack,
   type AgentReplyAgent,
 } from '..';
 import { AGENT_REPLY_MESSAGES } from '../messages';
@@ -186,8 +186,21 @@ describe('agent reply', () => {
     });
   });
 
-  it('AgentStack names everyone it stacks', () => {
-    const view = render(scope(<AgentStack agents={[agent('a', 'Ada'), agent('b', 'Bo')]} />));
+  it('AvatarGroup names the agents in its conversation layout', () => {
+    const view = render(
+      scope(
+        <AvatarGroup
+          layout="conversation"
+          accessibilityLabel="Ada, Bo"
+          items={[agent('a', 'Ada'), agent('b', 'Bo')].map((agent) => ({
+            id: agent.id,
+            name: agent.name,
+            kind: 'bot',
+            character: agent.avatar,
+          }))}
+        />,
+      ),
+    );
     expect(view.getByLabelText('Ada, Bo')).toBeTruthy();
   });
 

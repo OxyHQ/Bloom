@@ -1,11 +1,12 @@
-import { ButtonGroup, ButtonGroupItem } from '../../src/button-group';
 import { Screen, useScreen } from '../../src/screen';
 import { PageHeader } from '../../src/page-header';
 import { VirtualList } from '../../src/list/index.web';
 import { BottomBar } from '../../src/bottom-bar/index.web';
 import { Fab } from '../../src/fab/index.web';
 import { useState } from 'react';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '../../src/typography';
+import { List, ListItem } from '../../src/list';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { AppShell } from '../../src/app-shell/index.web';
 import { BloomScope } from '../../src/appearance';
@@ -20,7 +21,6 @@ import type { BloomSize } from '../../src/appearance/types';
 interface Args {
   bottomActionBehavior: 'hide' | 'visible';
   sidebarSurface: 'card' | 'docked';
-  width: number;
   count: number;
   size: BloomSize;
   placement: AppShellNavigationPlacement;
@@ -30,7 +30,6 @@ interface Args {
 function SystemDemo({
   bottomActionBehavior,
   sidebarSurface,
-  width,
   count,
   size,
   placement,
@@ -47,7 +46,7 @@ function SystemDemo({
     <BloomScope size={size}>
       <View
         style={{
-          width: width > 0 ? width : '100%',
+          width: '100%',
           maxWidth: '100%',
           flex: 1,
           minHeight: 0,
@@ -64,20 +63,20 @@ function SystemDemo({
               title={scenario === 'form' ? 'Profile' : 'Community'}
               onBack={() => setValue('home')}
               actions={
-                <ButtonGroup accessibilityLabel="Page actions">
-                  <ButtonGroupItem
+                <Button.Group accessibilityLabel="Page actions">
+                  <Button
                     iconOnly
                     leadingIcon={Icons.RiSearchLine}
                     accessibilityLabel="Search"
                     onPress={() => setValue('search')}
                   />
-                  <ButtonGroupItem
+                  <Button
                     iconOnly
                     leadingIcon={Icons.RiMore2Line}
                     accessibilityLabel="More"
                     onPress={() => dialog.open()}
                   />
-                </ButtonGroup>
+                </Button.Group>
               }
             />
           }
@@ -142,32 +141,16 @@ function SystemDemo({
                   No posts yet. Create the first one.
                 </Text>
               )}
-              {Array.from({ length: count }, (_, i) => (
-                <View
-                  key={i}
-                  style={{
-                    padding: 20,
-                    minHeight: 130,
-                    gap: 12,
-                    borderRadius: 20,
-                    backgroundColor: colors.backgroundSecondary,
-                  }}
-                >
-                  <Text style={{ color: colors.text, fontSize: 18, fontWeight: '600' }}>
-                    {
-                      ['A place for new ideas', 'Made with care', 'A small everyday discovery'][
-                        i % 3
-                      ]
-                    }
-                  </Text>
-                  <Text style={{ color: colors.textSecondary }}>
-                    Post {i + 1} · Scroll to check coordinated header and navigation motion.
-                  </Text>
-                  <Button tone="accent" appearance="plain" onPress={() => dialog.open()}>
-                    Read more
-                  </Button>
-                </View>
-              ))}
+              <List
+                items={Array.from({ length: count }, (_, i) => ({
+                  id: String(i),
+                  title: ['A place for new ideas', 'Made with care', 'A small everyday discovery'][
+                    i % 3
+                  ],
+                  supporting: `Post ${i + 1} · Scroll to check coordinated header and navigation motion.`,
+                  onPress: () => dialog.open(),
+                }))}
+              />
             </>
           )}
         </AppShell>
@@ -196,7 +179,6 @@ const meta: Meta<typeof SystemDemo> = {
   args: {
     bottomActionBehavior: 'hide',
     sidebarSurface: 'card',
-    width: 0,
     count: 12,
     size: 'md',
     placement: 'auto',
@@ -206,22 +188,6 @@ const meta: Meta<typeof SystemDemo> = {
   argTypes: {
     bottomActionBehavior: { control: 'select', options: ['hide', 'visible'] },
     sidebarSurface: { control: 'select', options: ['card', 'docked'] },
-    width: {
-      description: '0 fills the canvas; positive values preview a narrower host.',
-      control: {
-        type: 'select',
-        labels: {
-          0: 'Canvas',
-          320: '320 px',
-          390: '390 px',
-          768: '768 px',
-          1024: '1024 px',
-          1200: '1200 px',
-          1440: '1440 px',
-        },
-      },
-      options: [0, 320, 390, 768, 1024, 1200, 1440],
-    },
     count: { control: { type: 'range', min: 0, max: 40, step: 1 } },
     size: { control: 'select', options: ['xs', 'sm', 'md', 'lg'] },
     placement: { control: 'select', options: ['auto', 'bottom', 'rail', 'sidebar'] },
@@ -236,9 +202,7 @@ export const Form: Story = {
   args: { scenario: 'form', count: 0 },
   argTypes: { count: { table: { disable: true } }, scenario: { table: { disable: true } } },
 };
-export const Desktop: Story = { args: { width: 0, sidebarSurface: 'card' } };
-export const DesktopDetached: Story = { args: { width: 0, sidebarSurface: 'card' } };
-export const DesktopDocked: Story = { args: { width: 0, sidebarSurface: 'docked' } };
+export const Docked: Story = { args: { sidebarSurface: 'docked' } };
 export const Surfaces: Story = { args: { scenario: 'surfaces' } };
 
 function DocumentNavigation({
@@ -273,11 +237,10 @@ function DocumentNavigation({
     />
   );
 }
-function DocumentListDemo({ width, count, size, action, bottomActionBehavior }: Args) {
-  const { colors } = useTheme();
+function DocumentListDemo({ count, size, action, bottomActionBehavior }: Args) {
   return (
     <BloomScope size={size}>
-      <View style={{ width: width > 0 ? width : '100%', maxWidth: '100%', alignSelf: 'center' }}>
+      <View style={{ width: '100%', maxWidth: '100%', alignSelf: 'center' }}>
         <Screen
           documentScroll
           header={
@@ -285,14 +248,14 @@ function DocumentListDemo({ width, count, size, action, bottomActionBehavior }: 
               title="Document list"
               onBack={() => window.scrollTo(0, 0)}
               actions={
-                <ButtonGroup accessibilityLabel="List actions">
-                  <ButtonGroupItem
+                <Button.Group accessibilityLabel="List actions">
+                  <Button
                     iconOnly
                     leadingIcon={Icons.RiSearchLine}
                     accessibilityLabel="Jump to middle"
                     onPress={() => window.scrollTo({ top: count * 50, behavior: 'smooth' })}
                   />
-                </ButtonGroup>
+                </Button.Group>
               }
             />
           }
@@ -306,9 +269,11 @@ function DocumentListDemo({ width, count, size, action, bottomActionBehavior }: 
             estimatedItemSize={100}
             keyExtractor={(item) => String(item)}
             renderItem={({ item }) => (
-              <View testID={`document-row-${item}`} style={{ minHeight: 100, padding: 20 }}>
-                <Text style={{ color: colors.text }}>Document row {item + 1}</Text>
-              </View>
+              <ListItem
+                testID={`document-row-${item}`}
+                title={`Document row ${item + 1}`}
+                style={{ minHeight: 100 }}
+              />
             )}
           />
         </Screen>

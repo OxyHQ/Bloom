@@ -15,7 +15,6 @@ import {
   ChatEmptyState,
   ChatHeader,
   ChatInfoPanel,
-  ChatMemberRow,
   ChatSplitLayout,
   JumpToMentionButton,
   PinnedMessageBar,
@@ -343,8 +342,8 @@ panel cannot hold, so it takes a node:
 <ChatInfoPanel
   settingsTitle="Settings"
   settings={
-    <SettingsListGroup variant="filled">
-      <SettingsListItem
+    <GroupedSection variant="filled">
+      <GroupedSectionItem
         title="Notifications"
         icon={<RiNotification3Line width={20} height={20} fill={colors.textSecondary} />}
         rightElement={
@@ -356,10 +355,10 @@ panel cannot hold, so it takes a node:
         }
         showChevron={false}
       />
-      <SettingsListItem title="Disappearing messages" value="Off" onPress={openTimer} />
-      <SettingsListItem title="Encryption key" onPress={openKey} />
-      <SettingsListItem title="Conversation theme" value="Default" onPress={openTheme} />
-    </SettingsListGroup>
+      <GroupedSectionItem title="Disappearing messages" value="Off" onPress={openTimer} />
+      <GroupedSectionItem title="Encryption key" onPress={openKey} />
+      <GroupedSectionItem title="Conversation theme" value="Default" onPress={openTheme} />
+    </GroupedSection>
   }
 />
 ```
@@ -379,17 +378,11 @@ strip and the selection, the grids inside each pane come from `message-media`.
 The field appears automatically from eight members up; `memberSearch` forces it
 either way.
 
-## `ChatMemberRow`
+## Members
 
-```tsx
-<ChatMemberRow member={{ id, name, source, status, role, subtitle }} onPress={open} />
-```
-
-`owner` and `admin` draw a badge; `member` draws none — a badge on every row is a
-badge on nobody. The accessible name is composed as
-`"Ana Restrepo, Owner, last seen recently"`, so a reader hears one stop rather
-than three. The two words are localised via `BloomProvider locale`; `roleLabels`
-rewords them.
+Info-panel members use the shared `ListItem`. Owner and admin badges contain
+localized words, and the row name includes role and subtitle. Member selection,
+commands and navigation use the common list API.
 
 ## `ChatSplitLayout`
 

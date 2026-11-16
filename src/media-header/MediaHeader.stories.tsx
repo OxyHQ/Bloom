@@ -1,5 +1,7 @@
+import { ScrollArea as ScrollView } from '../layout';
+import { fn } from 'storybook/test';
 import React, { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import {
@@ -201,7 +203,7 @@ function Actions({
           </DropdownMenuContent>
         </DropdownMenu>
       }
-      onSearchPress={view ? () => {} : undefined}
+      onSearchPress={view ? fn().mockName('onAction') : undefined}
       view={viewMode}
       onViewChange={view ? setViewMode : undefined}
       testID="actions"
@@ -221,7 +223,9 @@ export const Album: Story = {
         title="Lanterns Over Kessel Bay"
         cover={COVERS.harbour}
         artworkColor="#1f3b73"
-        owners={[{ name: 'Velvet Harbour', avatar: AVATARS.mara, onPress: () => {} }]}
+        owners={[
+          { name: 'Velvet Harbour', avatar: AVATARS.mara, onPress: fn().mockName('onPress') },
+        ]}
         year="2025"
         summary="12 songs, 48 min"
         actions={<Actions subject="Lanterns Over Kessel Bay" view={false} />}
@@ -239,7 +243,7 @@ export const Single: Story = {
         title="Moss"
         cover={COVERS.moss}
         artworkColor="#c8d96f"
-        owners={[{ name: 'Orrin Vale', avatar: AVATARS.jun, onPress: () => {} }]}
+        owners={[{ name: 'Orrin Vale', avatar: AVATARS.jun, onPress: fn().mockName('onPress') }]}
         year="2026"
         summary="1 song, 3 min 12 sec"
         actions={<Actions subject="Moss" view={false} />}
@@ -259,7 +263,7 @@ export const PlaylistOwnedEditable: Story = {
           description="Slow synths and warm bass for the empty coast road after midnight. Updated every Friday."
           cover={COVERS.neon}
           artworkColor="#6b1d8f"
-          owners={[{ name: 'Mara Lind', avatar: AVATARS.mara, onPress: () => {} }]}
+          owners={[{ name: 'Mara Lind', avatar: AVATARS.mara, onPress: fn().mockName('onPress') }]}
           summary="64 songs, about 4 hr"
           saves="1,204 saves"
           editable
@@ -282,9 +286,9 @@ export const PlaylistCollaborative: Story = {
         cover={COVERS.tide}
         artworkColor="#7fd6d0"
         owners={[
-          { name: 'Mara Lind', avatar: AVATARS.mara, onPress: () => {} },
-          { name: 'Jun Okafor', avatar: AVATARS.jun, onPress: () => {} },
-          { name: 'Lio Brandt', avatar: AVATARS.lio, onPress: () => {} },
+          { name: 'Mara Lind', avatar: AVATARS.mara, onPress: fn().mockName('onPress') },
+          { name: 'Jun Okafor', avatar: AVATARS.jun, onPress: fn().mockName('onPress') },
+          { name: 'Lio Brandt', avatar: AVATARS.lio, onPress: fn().mockName('onPress') },
         ]}
         summary="118 songs, 7 hr 40 min"
         actions={<Actions subject="Road trip to the northern lakes" />}
@@ -347,7 +351,7 @@ export const ArtistWithBanner: Story = {
               onShuffleChange={setShuffle}
               following={following}
               onFollowChange={setFollowing}
-              onMorePress={() => {}}
+              onMorePress={fn().mockName('MediaActionBar.onMorePress')}
             />
           }
           testID="artist"
@@ -368,14 +372,14 @@ export const ArtistWithBanner: Story = {
               subtitle="Playlist"
               note="The songs we listened to while writing the record."
               avatar={AVATARS.mara}
-              onPress={() => {}}
+              onPress={fn().mockName('Night drive, windows down.onPress')}
               style={{ flex: 1, minWidth: 280, alignSelf: 'flex-start' }}
             />
           </View>
           <DiscographyFilter
             value={discography}
             onValueChange={setDiscography}
-            onShowAll={() => {}}
+            onShowAll={fn().mockName('DiscographyFilter.onShowAll')}
           />
           <ArtistAbout
             image="https://picsum.photos/seed/velvet-harbour-about/1200/700"
@@ -416,7 +420,7 @@ export const ArtistWithoutBanner: Story = {
               playSubject="Orrin Vale"
               following={following}
               onFollowChange={setFollowing}
-              onMorePress={() => {}}
+              onMorePress={fn().mockName('MediaActionBar.onMorePress')}
             />
           }
         />
@@ -436,11 +440,11 @@ export const PodcastShow: Story = {
           cover={COVERS.tide}
           artworkColor="#0f5e73"
           publisher="Kessel Bay Audio"
-          onPublisherPress={() => {}}
+          onPublisherPress={fn().mockName('The Lighthouse Hours.onPublisherPress')}
           rating={4.8}
           ratingCount="2.1k"
           categories={['History', 'Society', 'Documentary']}
-          onCategoryPress={() => {}}
+          onCategoryPress={fn().mockName('The Lighthouse Hours.onCategoryPress')}
           following={following}
           onFollowChange={setFollowing}
           description="Every week, a keeper, a ferry pilot or a harbour cook tells the story of one night on the northern coast. Recorded on location, with the sea as the only soundtrack. New episodes on Tuesdays, with a bonus interview on the first Friday of every month for followers of the show."
@@ -450,7 +454,7 @@ export const PodcastShow: Story = {
             duration: '48 min',
             description:
               'A retired keeper remembers the winter the bell rang for eleven days straight.',
-            onPress: () => {},
+            onPress: fn().mockName('onPress'),
             playing,
             onPlayPress: () => setPlaying((p) => !p),
           }}
@@ -471,7 +475,7 @@ export const Episode: Story = {
         <EpisodeHeader
           title="Episode 112: The fog bell at Orrin Point"
           showTitle="The Lighthouse Hours"
-          onShowPress={() => {}}
+          onShowPress={fn().mockName('Episode 112: The fog bell at Orrin Point.onShowPress')}
           cover={COVERS.tide}
           artworkColor="#0f5e73"
           date="Sep 15, 2026"
@@ -482,11 +486,11 @@ export const Episode: Story = {
           remainingLabel="23 min left"
           saved={saved}
           onSavedChange={setSaved}
-          onSharePress={() => {}}
+          onSharePress={fn().mockName('Episode 112: The fog bell at Orrin Point.onSharePress')}
           download={dl}
           downloadProgress={0.64}
           onDownloadPress={() => setDl((d) => (d === 'downloaded' ? 'idle' : 'downloaded'))}
-          onMorePress={() => {}}
+          onMorePress={fn().mockName('Episode 112: The fog bell at Orrin Point.onMorePress')}
           testID="episode"
         />
       </Page>
@@ -504,13 +508,13 @@ export const Profile: Story = {
           avatar={AVATARS.jun}
           artworkColor="#2f5d3a"
           stats={[
-            { label: '12 public playlists', onPress: () => {} },
-            { label: '48 followers', onPress: () => {} },
-            { label: '30 following', onPress: () => {} },
+            { label: '12 public playlists', onPress: fn().mockName('onPress') },
+            { label: '48 followers', onPress: fn().mockName('onPress') },
+            { label: '30 following', onPress: fn().mockName('onPress') },
           ]}
           following={following}
           onFollowChange={setFollowing}
-          onMorePress={() => {}}
+          onMorePress={fn().mockName('ProfileHeader.onMorePress')}
           testID="profile"
         />
       </Page>
@@ -525,12 +529,12 @@ export const OwnProfile: Story = {
         name="Mara Lind"
         avatar={AVATARS.mara}
         stats={[
-          { label: '7 public playlists', onPress: () => {} },
+          { label: '7 public playlists', onPress: fn().mockName('onPress') },
           { label: '212 followers' },
-          { label: '96 following', onPress: () => {} },
+          { label: '96 following', onPress: fn().mockName('onPress') },
         ]}
-        onEditPress={() => {}}
-        onMorePress={() => {}}
+        onEditPress={fn().mockName('ProfileHeader.onEditPress')}
+        onMorePress={fn().mockName('ProfileHeader.onMorePress')}
       />
     </Page>
   ),
@@ -544,7 +548,7 @@ export const Audiobook: Story = {
         cover={COVERS.dune}
         artworkColor="#f3c77a"
         author="Wren Calloway"
-        onAuthorPress={() => {}}
+        onAuthorPress={fn().mockName('The Cartographer of Low Tides.onAuthorPress')}
         narrator="Narrated by Ada Moss"
         duration="11 h 42 min"
         chapters="32 chapters"
@@ -580,7 +584,9 @@ export const StickyTopBarOnScroll: Story = {
             title="Lanterns Over Kessel Bay"
             cover={COVERS.harbour}
             artworkColor="#1f3b73"
-            owners={[{ name: 'Velvet Harbour', avatar: AVATARS.mara, onPress: () => {} }]}
+            owners={[
+              { name: 'Velvet Harbour', avatar: AVATARS.mara, onPress: fn().mockName('onPress') },
+            ]}
             year="2025"
             summary="12 songs, 48 min"
             actions={<Actions subject="Lanterns Over Kessel Bay" view={false} />}
@@ -641,15 +647,31 @@ export const ActionControls: Story = {
       <Page>
         <View style={{ padding: 16, gap: 16 }}>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16, alignItems: 'center' }}>
-            <ShuffleButton shuffle={false} onShuffleChange={() => {}} />
+            <ShuffleButton
+              shuffle={false}
+              onShuffleChange={fn().mockName('ShuffleButton.onShuffleChange')}
+            />
             <ShuffleButton shuffle={shuffle} onShuffleChange={setShuffle} testID="shuffle-on" />
-            <DownloadButton state="idle" onPress={() => {}} />
-            <DownloadButton state="downloading" progress={0.3} onPress={() => {}} />
-            <DownloadButton state="downloading" progress={0.8} onPress={() => {}} />
-            <DownloadButton state="downloaded" onPress={() => {}} />
+            <DownloadButton state="idle" onPress={fn().mockName('DownloadButton.onPress')} />
+            <DownloadButton
+              state="downloading"
+              progress={0.3}
+              onPress={fn().mockName('DownloadButton.onPress')}
+            />
+            <DownloadButton
+              state="downloading"
+              progress={0.8}
+              onPress={fn().mockName('DownloadButton.onPress')}
+            />
+            <DownloadButton state="downloaded" onPress={fn().mockName('DownloadButton.onPress')} />
             <FollowButton following={following} onFollowChange={setFollowing} />
-            <FollowButton following onFollowChange={() => {}} label="Save" followingLabel="Saved" />
-            <MediaMoreButton onPress={() => {}} />
+            <FollowButton
+              following
+              onFollowChange={fn().mockName('Save.onFollowChange')}
+              label="Save"
+              followingLabel="Saved"
+            />
+            <MediaMoreButton onPress={fn().mockName('MediaMoreButton.onPress')} />
           </View>
           <Actions
             subject="Night drive"
@@ -657,83 +679,6 @@ export const ActionControls: Story = {
             like={false}
           />
         </View>
-      </Page>
-    );
-  },
-};
-
-export const Narrow: Story = {
-  render: function NarrowStory() {
-    const [discography, setDiscography] = useState('singles');
-    return (
-      <Page width={390}>
-        <CollectionHeader
-          typeLabel="Album"
-          title="Lanterns Over Kessel Bay"
-          cover={COVERS.harbour}
-          artworkColor="#1f3b73"
-          owners={[{ name: 'Velvet Harbour', avatar: AVATARS.mara, onPress: () => {} }]}
-          year="2025"
-          summary="12 songs, 48 min"
-          actions={<Actions subject="Lanterns Over Kessel Bay" view={false} />}
-        />
-        <ArtistHero
-          name="Velvet Harbour"
-          banner={BANNER}
-          verified
-          listeners="1,234,567 monthly listeners"
-          actions={
-            <Actions
-              subject="Velvet Harbour"
-              follow={{ label: 'Follow', followingLabel: 'Following' }}
-              view={false}
-              download={false}
-            />
-          }
-        />
-        <View style={{ paddingLeft: 8, paddingRight: 8, gap: 24 }}>
-          <PopularTracks tracks={TRACKS} activeTrackId="1" playing />
-          <View style={{ paddingLeft: 8, paddingRight: 8 }}>
-            <DiscographyFilter value={discography} onValueChange={setDiscography} />
-          </View>
-        </View>
-        <ProfileHeader
-          name="Jun Okafor"
-          avatar={AVATARS.jun}
-          artworkColor="#2f5d3a"
-          stats={[
-            { label: '12 public playlists', onPress: () => {} },
-            { label: '48 followers' },
-            { label: '30 following' },
-          ]}
-          following={false}
-          onFollowChange={() => {}}
-        />
-        <AudiobookHeader
-          title="The Cartographer of Low Tides"
-          cover={COVERS.dune}
-          artworkColor="#f3c77a"
-          author="Wren Calloway"
-          narrator="Narrated by Ada Moss"
-          duration="11 h 42 min"
-          chapters="32 chapters"
-          progress={0.35}
-          progressLabel="7 h 36 min left"
-        />
-        <EpisodeHeader
-          title="Episode 112: The fog bell at Orrin Point"
-          showTitle="The Lighthouse Hours"
-          onShowPress={() => {}}
-          cover={COVERS.tide}
-          artworkColor="#0f5e73"
-          date="Sep 15"
-          duration="48 min"
-          playing={false}
-          onPlayPress={() => {}}
-          onSavedChange={() => {}}
-          onSharePress={() => {}}
-          onDownloadPress={() => {}}
-        />
       </Page>
     );
   },

@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -17,7 +18,7 @@ export default meta;
 
 type Story = StoryObj<typeof Notification>;
 
-const noop = () => {};
+const onDemoAction = fn().mockName('notification.action');
 
 function Frame({ children, width = 400 }: { children: React.ReactNode; width?: number }) {
   const theme = useTheme();
@@ -67,8 +68,8 @@ export const Matrix: Story = {
         title="Deploy failed"
         description="Build step exited with code 1."
         actions={[
-          { label: 'View logs', onPress: noop },
-          { label: 'Retry', onPress: noop },
+          { label: 'View logs', onPress: onDemoAction },
+          { label: 'Retry', onPress: onDemoAction },
         ]}
       />
       <Notification

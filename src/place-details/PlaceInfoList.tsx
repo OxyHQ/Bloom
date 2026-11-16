@@ -1,7 +1,7 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
-import { SettingsListGroup, SettingsListItem } from '../settings-list';
+import { GroupedSection, GroupedSectionItem } from '../grouped-section';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
@@ -64,7 +64,7 @@ function PlaceInfoListComponent({
 
   return (
     <View style={style} testID={testID}>
-      <SettingsListGroup title={title} footer={footer}>
+      <GroupedSection title={title} footer={footer}>
         {items.map((item) => {
           const action = item.action ?? 'none';
           const Glyph = item.icon;
@@ -72,7 +72,7 @@ function PlaceInfoListComponent({
             action === 'none' || action === 'edit' ? null : PLACE_INFO_ACTION_ICON[action];
           const pressable = item.onPress !== undefined;
           return (
-            <SettingsListItem
+            <GroupedSectionItem
               key={item.id}
               title={item.value}
               titleNumberOfLines={item.numberOfLines ?? 2}
@@ -105,7 +105,7 @@ function PlaceInfoListComponent({
             />
           );
         })}
-      </SettingsListGroup>
+      </GroupedSection>
     </View>
   );
 }

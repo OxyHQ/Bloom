@@ -48,9 +48,6 @@ export function useSettingsLayout(): SettingsModalLayout {
   return useContext(SettingsModalContext).layout;
 }
 
-/** Whether a row is the last in its `SettingsCard` — `last:border-b-0`. */
-export const SettingsRowPositionContext = createContext<{ last: boolean }>({ last: true });
-
 export function useSettingsPalette(): SettingsPalette {
   const theme = useTheme();
   return useMemo(() => resolveSettingsPalette(theme), [theme]);

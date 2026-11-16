@@ -7,26 +7,17 @@ import { Chip } from '../../src/chip';
 import {
   DataTable,
   DataTableFilter,
-  DataTableRowActions,
   DataTableSearch,
   DataTableSelect,
   type DataTableColumn,
-  type DataTableRowActionItem,
 } from '../../src/data-table';
-import {
-  RiArchiveLine,
-  RiDownload2Line,
-  RiFileCopyLine,
-  RiTeamLine,
-  RiUserLine,
-} from '../../src/icons/remix';
+import { RiTeamLine } from '../../src/icons/remix';
 import { RecentHiresCard } from '../../src/recent-hires-card';
 import { StatCards } from '../../src/stat-cards';
 import { useTheme } from '../../src/theme/use-theme';
 import { RECENT_HIRES } from '../home-dashboard/demo-data';
 import {
   CellText,
-  DELETE_EDIT_ACTIONS,
   DashboardShell,
   NameCell,
   NameLines,
@@ -63,13 +54,6 @@ import {
  *   table    employees: filters, search, sortable columns, selection, work
  *            status selects, department chips, salary chips, 10 a page
  */
-
-const EMPLOYEE_MENU: readonly DataTableRowActionItem[] = [
-  { icon: RiUserLine, label: 'View profile' },
-  { icon: RiFileCopyLine, label: 'Copy email' },
-  { icon: RiDownload2Line, label: 'Download contract' },
-  { icon: RiArchiveLine, label: 'Archive employee' },
-];
 
 function employeeColumns(): DataTableColumn<Employee>[] {
   return [
@@ -124,14 +108,6 @@ function employeeColumns(): DataTableColumn<Employee>[] {
         <Chip size="lg" hue="gray">
           {formatSalary(row.salary)}
         </Chip>
-      ),
-    },
-    {
-      id: 'actions',
-      header: 'Actions',
-      width: 140,
-      cell: ({ row }) => (
-        <DataTableRowActions name={row.name} actions={DELETE_EDIT_ACTIONS} menu={EMPLOYEE_MENU} />
       ),
     },
   ];
@@ -266,12 +242,7 @@ export function HrTemplate() {
   );
 
   return (
-    <DashboardShell
-      selected="hr"
-      title="HR Team"
-      crumbIcon={RiTeamLine}
-      primaryAction="Add employee"
-    >
+    <DashboardShell selected="hr" title="HR Team" crumbIcon={RiTeamLine}>
       <StatCards stats={HR_STATS} />
       {bp.xl ? (
         <View style={{ width: '100%', flexDirection: 'row', alignItems: 'flex-start', gap: 16 }}>

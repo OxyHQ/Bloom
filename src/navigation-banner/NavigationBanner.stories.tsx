@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -247,7 +248,7 @@ export const Arrival: Story = {
         arrival="18:42"
         remainingTime="24 min"
         remainingDistance="8.2 km"
-        onEnd={() => {}}
+        onEnd={fn().mockName('ArrivalBar.onEnd')}
         testID="arrival"
       />
       <Caption>Without an ending action</Caption>
@@ -285,7 +286,7 @@ export const OnAMap: Story = {
           arrival="18:42"
           remainingTime="24 min"
           remainingDistance="8.2 km"
-          onEnd={() => {}}
+          onEnd={fn().mockName('ArrivalBar.onEnd')}
         />
       </MockMap>
       <Caption>Night</Caption>
@@ -295,7 +296,7 @@ export const OnAMap: Story = {
           arrival="23:18"
           remainingTime="52 min"
           remainingDistance="61 km"
-          onEnd={() => {}}
+          onEnd={fn().mockName('ArrivalBar.onEnd')}
         />
       </MockMap>
       <Caption>Satellite, off route</Caption>
@@ -305,7 +306,12 @@ export const OnAMap: Story = {
           maneuver="right"
           instruction="Head back to Carrer del Roure"
         />
-        <ArrivalBar arrival="—" remainingTime="—" remainingDistance="—" onEnd={() => {}} />
+        <ArrivalBar
+          arrival="—"
+          remainingTime="—"
+          remainingDistance="—"
+          onEnd={fn().mockName('ArrivalBar.onEnd')}
+        />
       </MockMap>
     </Page>
   ),

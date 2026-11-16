@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { ScreenScope } from '../../src/layout';
 import type { HomeSearchMode } from '../../src/home-search';

@@ -24,7 +24,7 @@ import { Card } from '../card';
 import { buildTheme } from '../theme/build-theme';
 import { RADIUS, BORDER_WIDTH } from '../design-tokens/scales';
 import { SHADOW_BOX } from '../design-tokens/shadows';
-import { SettingsListGroup, SettingsListItem } from '../settings-list';
+import { GroupedSection, GroupedSectionItem } from '../grouped-section';
 import { UserHoverCard } from '../user-hover-card';
 import { MENU_SHADOW } from '../floating/menu-palette';
 import { LinkPreviewCard } from '../link-preview';
@@ -191,9 +191,9 @@ describe('Card content clipping', () => {
 describe('the surfaces that compose Card keep their own chrome', () => {
   it('grouped section compatibility alias: radius-28, no border, no shadow, clipped', () => {
     const { toJSON } = renderWithTheme(
-      <SettingsListGroup title="Account">
-        <SettingsListItem title="Profile" onPress={() => {}} />
-      </SettingsListGroup>,
+      <GroupedSection title="Account">
+        <GroupedSectionItem title="Profile" onPress={() => {}} />
+      </GroupedSection>,
     );
     const style = resolvedStyle(roundedNode(toJSON()).props.style);
     expect(style.borderRadius).toBe(RADIUS['radius-28']);

@@ -317,7 +317,7 @@ export interface AppShellEngineProps {
   contentSpan?: 'content' | 'content-aside';
   /** edge keeps navigation at the shell edge; content centers it with the reading column and aside. */
   navigationAlign?: 'edge' | 'content';
-  /** Gap between the in-flow navigation and content. Defaults to the column gap. */
+  /** Gap between the in-flow navigation and content. Defaults to zero for rails, otherwise the column gap. */
   navigationGap?: number;
   /** feed/focus: gap between the reading column and aside. Defaults to the column gap. */
   asideGap?: number;

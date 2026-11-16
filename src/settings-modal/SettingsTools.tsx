@@ -1,3 +1,4 @@
+import { GroupedSection, GroupedSectionItem } from '../grouped-section';
 import { ScrollArea } from '../layout/ScrollArea';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -33,13 +34,7 @@ import { Text } from '../typography';
 import { useSettingsPalette } from './context';
 import { SETTINGS_MODAL_MESSAGES, type SettingsModalMessages } from './messages';
 import type { SettingsPalette } from './palette';
-import {
-  SettingsCard,
-  SettingsRow,
-  SettingsSection,
-  settingsRingVars,
-  useSettingsRowIsLast,
-} from './SettingsRows';
+import { SettingsSection, settingsRingVars } from './SettingsRows';
 import type {
   SettingsMcpServer,
   SettingsMenuAction,
@@ -264,7 +259,6 @@ function ServerRow({
   const { messages } = useMessages(SETTINGS_MODAL_MESSAGES);
   const copy = messages.tools;
   const palette = useSettingsPalette();
-  const last = useSettingsRowIsLast();
   const [expanded, setExpanded] = useState(false);
   const {
     state: chevronHovered,
@@ -273,13 +267,7 @@ function ServerRow({
   } = useInteractionState();
   const hasTools = server.tools !== undefined && server.tools.length > 0;
   return (
-    <View
-      testID={testID}
-      style={[
-        styles.serverRow,
-        { borderBottomWidth: last ? 0 : 1, borderBottomColor: palette.separator },
-      ]}
-    >
+    <View testID={testID} style={styles.serverRow}>
       <View style={styles.serverMain}>
         <ServerTile server={server} />
         <View style={styles.serverText}>
@@ -417,7 +405,7 @@ export function SettingsServerList({
   const { messages } = useMessages(SETTINGS_MODAL_MESSAGES);
   const actions = actionsProp ?? defaultServerActions(messages);
   return (
-    <SettingsCard testID={testID}>
+    <GroupedSection separator="line" testID={testID}>
       {servers.map((server) => (
         <ServerRow
           key={server.id}
@@ -436,7 +424,7 @@ export function SettingsServerList({
           onPress={onAddServer}
         />
       ) : null}
-    </SettingsCard>
+    </GroupedSection>
   );
 }
 
@@ -591,15 +579,20 @@ export function SettingsToolsPage({
       ) : null}
 
       <SettingsSection label={copy.authentication} inset={8}>
-        <SettingsCard>
-          <SettingsRow label={copy.waitForAuth} description={copy.waitForAuthDescription}>
-            <Switch
-              checked={waitForAuthentication}
-              onCheckedChange={onWaitForAuthenticationChange}
-              accessibilityLabel={copy.waitForAuthSwitch}
-            />
-          </SettingsRow>
-        </SettingsCard>
+        <GroupedSection separator="line">
+          <GroupedSectionItem
+            title={copy.waitForAuth}
+            description={copy.waitForAuthDescription}
+            wrapControl
+            rightElement={
+              <Switch
+                checked={waitForAuthentication}
+                onCheckedChange={onWaitForAuthenticationChange}
+                accessibilityLabel={copy.waitForAuthSwitch}
+              />
+            }
+          />
+        </GroupedSection>
       </SettingsSection>
 
       {scope ? (
@@ -725,6 +718,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   serverRow: {
+    paddingLeft: 16,
     paddingTop: 10,
     paddingBottom: 10,
     paddingRight: 10,
@@ -775,6 +769,7 @@ const styles = StyleSheet.create({
     paddingLeft: 42,
   },
   newRow: {
+    paddingLeft: 16,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,

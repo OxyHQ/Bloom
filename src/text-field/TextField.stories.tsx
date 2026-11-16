@@ -1,10 +1,8 @@
 import { InputGroup } from '../input-group';
 import { useArgs } from 'storybook/preview-api';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-
-import { useTheme } from '../theme/use-theme';
 
 import { RiMailLine, RiQuestionLine } from '../icons/remix';
 import {
@@ -265,7 +263,7 @@ export const Matrix: Story = {
   parameters: { controls: { disable: true } },
   render: function MatrixStory() {
     return (
-      <View style={{ backgroundColor: useTheme().colors.background, gap: 16, padding: 40 }}>
+      <View style={{ gap: 16, padding: 40 }}>
         <MatrixField
           label="Email"
           placeholder="you@oxy.so"
@@ -368,7 +366,7 @@ export const SingleMaterialBodyContrast: Story = {
       testID="single-backing"
       style={{ minHeight: 1000, padding: 80, backgroundColor: '#000000' }}
     >
-      <View style={{ width: 320 }}>
+      <View style={{ width: 320, maxWidth: '100%' }}>
         <TextField size="md">
           <TextFieldInput
             testID="single-field"

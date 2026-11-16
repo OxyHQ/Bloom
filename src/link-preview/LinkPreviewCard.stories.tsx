@@ -1,4 +1,4 @@
-import React from 'react';
+import { fn } from 'storybook/test';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -36,7 +36,7 @@ export const Full: Story = {
   },
   render: (args) => (
     <View style={{ maxWidth: '100%', width: 360 }}>
-      <LinkPreviewCard {...args} onPress={() => {}} />
+      <LinkPreviewCard {...args} onPress={fn().mockName('LinkPreviewCard.onPress')} />
     </View>
   ),
 };
@@ -53,7 +53,7 @@ export const UrlOnly: Story = {
   },
   render: (args) => (
     <View style={{ maxWidth: '100%', width: 360 }} testID="link-preview-url-only">
-      <LinkPreviewCard {...args} onPress={() => {}} />
+      <LinkPreviewCard {...args} onPress={fn().mockName('LinkPreviewCard.onPress')} />
     </View>
   ),
 };
@@ -71,7 +71,7 @@ export const TextOnly: Story = {
   },
   render: (args) => (
     <View style={{ maxWidth: '100%', width: 360 }}>
-      <LinkPreviewCard {...args} onPress={() => {}} />
+      <LinkPreviewCard {...args} onPress={fn().mockName('LinkPreviewCard.onPress')} />
     </View>
   ),
 };
@@ -91,7 +91,7 @@ export const CoverFill: Story = {
         image="https://picsum.photos/seed/a/600/600"
         coverFill
         style={{ width: 220, height: 180 }}
-        onPress={() => {}}
+        onPress={fn().mockName('Fixed 180px row.onPress')}
       />
       <LinkPreviewCard
         url="https://oxy.so/b"
@@ -99,7 +99,7 @@ export const CoverFill: Story = {
         image="https://picsum.photos/seed/b/400/900"
         coverFill
         style={{ width: 220, height: 180 }}
-        onPress={() => {}}
+        onPress={fn().mockName('Same row, same height.onPress')}
       />
     </View>
   ),
@@ -117,6 +117,10 @@ export const Measured: Story = {
     controls: { include: ['url', 'siteName', 'title', 'description', 'image', 'coverFill'] },
   },
   render: (args) => (
-    <LinkPreviewCard {...args} style={{ maxWidth: '100%', width: 320 }} onPress={() => {}} />
+    <LinkPreviewCard
+      {...args}
+      style={{ maxWidth: '100%', width: 320 }}
+      onPress={fn().mockName('LinkPreviewCard.onPress')}
+    />
   ),
 };

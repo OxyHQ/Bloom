@@ -113,7 +113,7 @@ export interface PaymentMethodRowProps {
   /** Whether this is the chosen one. Announced as `aria-checked` on a `radio`. */
   selected?: boolean;
   /**
-   * A trailing control — a `GlyphButton` with the row's menu, a `Button`.
+   * A trailing control — a `Button` with the row's menu, a `Button`.
    *
    * A PRESSABLE row cannot nest one: on web the row is a real `<button>`, so
    * the action is drawn beside the row instead of inside it. See `AddressRow`,

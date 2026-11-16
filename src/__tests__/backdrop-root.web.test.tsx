@@ -59,7 +59,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../tooltip/Tooltip.web'
 import { UserHoverCard } from '../user-hover-card';
 import { HoverCardSurfaceProvider } from '../hover-card/context';
 import { AgentProgress } from '../agent-progress';
-import { useSurfacePresenceContent } from '../surface/use-surface-presence';
+import {
+  useSurfacePresenceContent,
+  useSurfacePresenceProgress,
+} from '../surface/use-surface-presence';
+import { makeMutable } from 'react-native-reanimated';
 import { Admonition } from '../admonition';
 import { AgentProgressPlan } from '../agent-progress';
 import { Announcement } from '../announcement';
@@ -67,7 +71,7 @@ import { ProOfferCard } from '../app-shell/ProOfferCard';
 import { Badge } from '../badge';
 import { BlurIsland } from '../blur';
 import { BottomSheet } from '../bottom-sheet/index.web';
-import { CloseButton } from '../button/CloseButton';
+
 import { UnreadBadge } from '../chat-indicators';
 import { ChatInfoPanel } from '../chat-screen/index.web';
 import { Checkbox } from '../checkbox';
@@ -317,12 +321,7 @@ const SUBJECTS: Record<string, Subject> = {
       </BottomSheet>
     ),
   },
-  'button/CloseButton.tsx': {
-    states: ['rest', 'pressed', 'disabled'],
-    render: ({ state }) => (
-      <CloseButton accessibilityLabel="Dismiss" disabled={state === 'disabled'} />
-    ),
-  },
+
   'chat-indicators/UnreadBadge.tsx': {
     states: ['rest'],
     render: () => <UnreadBadge count={3} />,
@@ -651,6 +650,47 @@ describe('the check itself', () => {
     );
     expect(materialHostCount()).toBe(1);
     expect(backdropRootViolations()).toEqual([]);
+  });
+
+  it('follows shared scroll progress without rerendering or flattening the material', () => {
+    const progress = makeMutable(0);
+    let renders = 0;
+    function Progressive() {
+      renders += 1;
+      const ref = React.useRef<HTMLDivElement>(null);
+      useSurfacePresenceProgress(ref, progress);
+      return (
+        <div ref={ref} data-testid="progress-root">
+          <span data-testid="progress-label">Identity</span>
+          <Button>Profile</Button>
+        </div>
+      );
+    }
+    mount(<Progressive />);
+    const renderCount = renders;
+    const host = document.querySelector('[data-testid="progress-root"]') as HTMLElement;
+    const label = document.querySelector('[data-testid="progress-label"]') as HTMLElement;
+    expect(host.style.opacity).toBe('');
+    expect(label.style.opacity).toBe('0');
+    act(() => {
+      progress.value = 0.5;
+    });
+    expect(renders).toBe(renderCount);
+    expect(host.style.getPropertyValue('--bloom-surface-presence')).toBe('0.5');
+    expect(label.style.opacity).toBe('0.5');
+    expect(backdropRootViolations()).toEqual([]);
+    act(() => {
+      progress.value = 1;
+    });
+    expect(renders).toBe(renderCount);
+    expect(label.style.opacity).toBe('');
+    expect(backdropRootViolations()).toEqual([]);
+    mount(<div />);
+    act(() => {
+      progress.value = 0;
+    });
+    expect(host.style.getPropertyValue('--bloom-surface-presence')).toBe('');
+    expect(label.style.opacity).toBe('');
   });
 
   it('dims content piece by piece around a nested material host', () => {

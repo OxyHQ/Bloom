@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { fn } from 'storybook/test';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
-import { RiSendPlaneLine } from '../icons/remix/RiSendPlaneLine';
-import { RiSettings3Line } from '../icons/remix/RiSettings3Line';
+import { Card } from '../card';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
@@ -109,12 +110,6 @@ const ACCOUNT: Pick<
     { label: 'Chats', value: '5 of 30', percent: 17 },
     { label: 'Storage', value: '38 KB', percent: 1 },
   ],
-  onUpgrade: () => {},
-  accountItems: [
-    { key: 'invite', label: 'Invite a friend', icon: RiSendPlaneLine, onPress: () => {} },
-    { key: 'settings', label: 'Settings', icon: RiSettings3Line, onPress: () => {} },
-  ],
-  onLogOut: () => {},
 };
 
 // ---------------------------------------------------------------------------
@@ -188,57 +183,62 @@ function useDemoChat(
   const [status, setStatus] = useState<AgentChatStatus>('ready');
   const [threads, setThreads] = useState<AgentChatThread[]>(initialThreads);
   const [activeId, setActiveId] = useState<string>('live');
+  const saved = useRef<Record<string, AgentChatMessageData[]>>({ live: initial });
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const clear = () => {
     timers.current.forEach(clearTimeout);
     timers.current = [];
   };
-  useEffect(() => clear, []);
+  useEffect(() => clear, [clear]);
 
   const stop = useCallback(() => {
     clear();
     setStatus('ready');
-  }, []);
+  }, [clear]);
 
-  const send = useCallback((text: string) => {
-    const at = Date.now();
-    const replyId = `a-${at}`;
-    setMessages((prev) => [
-      ...prev,
-      { id: `u-${at}`, role: 'user', text, at },
-      { id: replyId, role: 'assistant', text: '', at },
-    ]);
-    setStatus('submitted');
-    setThreads((prev) =>
-      prev.some((thread) => thread.id === 'live')
-        ? prev.map((thread) => (thread.id === 'live' ? { ...thread, updatedAt: at } : thread))
-        : [
-            {
-              id: 'live',
-              title: text.length > 48 ? `${text.slice(0, 48)}...` : text,
-              updatedAt: at,
-            },
-            ...prev,
-          ],
-    );
-    const words = pickAnswer(text).split(/(?<=\s)/);
-    let elapsed = 700;
-    words.forEach((word, index) => {
-      timers.current.push(
-        setTimeout(() => {
-          setStatus('streaming');
-          setMessages((prev) =>
-            prev.map((message) =>
-              message.id === replyId ? { ...message, text: message.text + word } : message,
-            ),
-          );
-          if (index === words.length - 1) setStatus('ready');
-        }, elapsed),
+  const send = useCallback(
+    (text: string) => {
+      clear();
+      const at = Date.now();
+      const replyId = `a-${at}`;
+      setMessages((prev) => [
+        ...prev,
+        { id: `u-${at}`, role: 'user', text, at },
+        { id: replyId, role: 'assistant', text: '', at },
+      ]);
+      setStatus('submitted');
+      setThreads((prev) =>
+        prev.some((thread) => thread.id === activeId)
+          ? prev.map((thread) => (thread.id === activeId ? { ...thread, updatedAt: at } : thread))
+          : [
+              {
+                id: activeId,
+                title: text.length > 48 ? `${text.slice(0, 48)}...` : text,
+                updatedAt: at,
+              },
+              ...prev,
+            ],
       );
-      elapsed += 28;
-    });
-  }, []);
+      const words = pickAnswer(text).split(/(?<=\s)/);
+      let elapsed = 700;
+      words.forEach((word, index) => {
+        timers.current.push(
+          setTimeout(() => {
+            setStatus('streaming');
+            setMessages((prev) =>
+              prev.map((message) =>
+                message.id === replyId ? { ...message, text: message.text + word } : message,
+              ),
+            );
+            if (index === words.length - 1) setStatus('ready');
+          }, elapsed),
+        );
+        elapsed += 28;
+      });
+    },
+    [activeId, clear],
+  );
 
   return {
     messages,
@@ -249,10 +249,28 @@ function useDemoChat(
     stop,
     newChat: () => {
       stop();
+      saved.current[activeId] = messages;
       setMessages([]);
-      setActiveId('fresh');
+      setActiveId(`chat-${Date.now()}`);
     },
     select: (id: string) => {
+      stop();
+      saved.current[activeId] = messages;
+      const thread = threads.find((item) => item.id === id);
+      setMessages(
+        saved.current[id] ??
+          (thread
+            ? [
+                { id: `${id}-user`, role: 'user', text: thread.title, at: thread.updatedAt },
+                {
+                  id: `${id}-reply`,
+                  role: 'assistant',
+                  text: pickAnswer(thread.title),
+                  at: thread.updatedAt,
+                },
+              ]
+            : []),
+      );
       setActiveId(id);
       setThreads((prev) =>
         prev.map((thread) => (thread.id === id ? { ...thread, unread: false } : thread)),
@@ -266,7 +284,15 @@ function useDemoChat(
       setThreads((prev) =>
         prev.map((thread) => (thread.id === id ? { ...thread, unread: !thread.unread } : thread)),
       ),
-    remove: (id: string) => setThreads((prev) => prev.filter((thread) => thread.id !== id)),
+    remove: (id: string) => {
+      setThreads((prev) => prev.filter((thread) => thread.id !== id));
+      delete saved.current[id];
+      if (activeId === id) {
+        stop();
+        setMessages([]);
+        setActiveId(`chat-${Date.now()}`);
+      }
+    },
   };
 }
 
@@ -296,7 +322,6 @@ export const Demo: Story = {
           onRenameThread={chat.rename}
           onToggleUnread={chat.toggleUnread}
           onDeleteThread={chat.remove}
-          onExport={() => {}}
           showHistory
           historyProps={ACCOUNT}
           labels={{
@@ -311,27 +336,31 @@ export const Demo: Story = {
 
 /** A settled conversation with history: hover a reply for its actions, scroll to reveal the header scrim. */
 export const Conversation: Story = {
-  parameters: { controls: { disable: true } },
-  render: () => (
-    <Page testID="agent-chat-conversation">
-      <AgentChat
-        testID="chat"
-        messages={CONVERSATION}
-        model="openai/gpt-5-nano"
-        provider="OpenAI"
-        threads={THREADS}
-        activeThreadId="t1"
-        onSelectThread={() => {}}
-        onNewChat={() => {}}
-        onRenameThread={() => {}}
-        onToggleUnread={() => {}}
-        onDeleteThread={() => {}}
-        onExport={() => {}}
-        showHistory
-        historyProps={ACCOUNT}
-      />
-    </Page>
-  ),
+  render: function ConversationStory() {
+    const chat = useDemoChat(CONVERSATION);
+    return (
+      <Page testID="agent-chat-conversation">
+        <AgentChat
+          testID="chat"
+          messages={chat.messages}
+          status={chat.status}
+          onSubmit={chat.send}
+          onStop={chat.stop}
+          model="Demo model"
+          provider="Demo mode"
+          threads={chat.threads}
+          activeThreadId={chat.activeId}
+          onSelectThread={chat.select}
+          onNewChat={chat.newChat}
+          onRenameThread={chat.rename}
+          onToggleUnread={chat.toggleUnread}
+          onDeleteThread={chat.remove}
+          showHistory
+          historyProps={ACCOUNT}
+        />
+      </Page>
+    );
+  },
 };
 
 /** Nothing sent yet: the prompt centred in the empty card, three suggestions. */
@@ -397,36 +426,29 @@ export const ErrorState: Story = {
 
 /** `emptyState` replaces the whole card body — an "Add an API key" notice. */
 export const SetupNotice: Story = {
-  parameters: { controls: { disable: true } },
-  render: function Render() {
-    const { colors, isDark } = useTheme();
+  render: function SetupNoticeStory() {
+    const [demo, setDemo] = useState(false);
+    const chat = useDemoChat();
     return (
       <Page testID="agent-chat-setup">
         <AgentChat
           testID="chat"
-          messages={[]}
+          messages={chat.messages}
+          status={chat.status}
+          onSubmit={chat.send}
+          onStop={chat.stop}
           emptyState={
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+            demo ? undefined : (
               <View
-                style={{
-                  maxWidth: 448,
-                  gap: 12,
-                  borderRadius: 16,
-                  padding: 24,
-                  backgroundColor: isDark ? '#262626' : colors.card,
-                  boxShadow: '0 1px 1px 0 rgba(0, 0, 0, 0.05)',
-                }}
+                style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}
               >
-                <Text variant="headline-medium">Add an API key to start</Text>
-                <Text variant="body-regular" style={{ color: '#737373' }}>
-                  The chat is wired up and ready. It needs a model provider key before it can
-                  answer.
-                </Text>
-                <Button size="md" onPress={() => {}} appearance="solid" tone="accent">
-                  Skip, show me the demo
-                </Button>
+                <Card style={{ maxWidth: 448, gap: 12, padding: 24 }}>
+                  <Text variant="headline-medium">Try the demo conversation</Text>
+                  <Text>Explore a local conversation with scripted responses.</Text>
+                  <Button onPress={() => setDemo(true)}>Show me the demo</Button>
+                </Card>
               </View>
-            </View>
+            )
           }
         />
       </Page>
@@ -444,13 +466,12 @@ export const History: Story = {
         <AgentChatHistory
           testID="history"
           threads={chat.threads}
-          activeId="t1"
+          activeId={chat.activeId}
           onSelect={chat.select}
-          onNewChat={() => {}}
+          onNewChat={chat.newChat}
           onRename={chat.rename}
           onToggleUnread={chat.toggleUnread}
           onDelete={chat.remove}
-          onExport={() => {}}
           {...ACCOUNT}
         />
       </Page>
@@ -467,16 +488,15 @@ export const HistoryStates: Story = {
       <Page height={compact ? 840 : 420} width={580} testID="agent-chat-history-states">
         <View style={{ flexDirection: compact ? 'column' : 'row', gap: 16, height: '100%' }}>
           <View style={{ flex: 1, minHeight: 0 }}>
-            <AgentChatHistory threads={[]} onNewChat={() => {}} onExport={() => {}} {...ACCOUNT} />
-          </View>
-          <View style={{ flex: 1, minHeight: 0 }}>
             <AgentChatHistory
-              threads={THREADS.slice(0, 3)}
-              activeId="t1"
-              disabled
-              onExport={() => {}}
+              threads={[]}
+              onNewChat={fn().mockName('onNewChat')}
+              onExport={fn().mockName('onExport')}
               {...ACCOUNT}
             />
+          </View>
+          <View style={{ flex: 1, minHeight: 0 }}>
+            <AgentChatHistory threads={THREADS.slice(0, 3)} activeId="t1" disabled {...ACCOUNT} />
           </View>
         </View>
       </Page>
@@ -524,9 +544,8 @@ export const Actions: Story = {
         <AgentChatActions
           testID="actions"
           transcript="You: Hi\n\nAssistant: Hello."
-          onExport={() => {}}
-          onToggleUnread={() => {}}
-          onDelete={() => {}}
+          onToggleUnread={fn().mockName('onToggleUnread')}
+          onDelete={fn().mockName('onDelete')}
         />
         <AgentChatActions transcript="" disabled />
       </View>
@@ -541,8 +560,8 @@ export const Messages: Story = {
     <Pad width={640} testID="agent-chat-messages">
       <AgentChatMessage role="user" text={'Write a product update\nin three sentences'} />
       <AgentChatMessage
-        testID="reply"
         role="assistant"
+        testID="reply"
         text={ANSWERS[1]!.reply}
         at={NOW - 3 * MIN}
       />
@@ -558,8 +577,8 @@ export const Parts: Story = {
     <Pad width={640} testID="agent-chat-parts">
       <AgentChatMessage role="user" text="Compare the two quarterly reports" />
       <AgentChatMessage
-        testID="parts-reply"
         role="assistant"
+        testID="parts-reply"
         agent={{ name: 'Researcher' }}
         reasoning={{ text: 'Q3 grew faster, but Q2 had the better margin.', durationMs: 9000 }}
         toolCalls={[
@@ -569,7 +588,7 @@ export const Parts: Story = {
             label: 'Searching the web',
             status: 'done',
             detail: 'quarterly report Q2 Q3',
-            onPress: () => {},
+            onPress: fn().mockName('onPress'),
           },
           {
             id: 'read',

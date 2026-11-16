@@ -3054,23 +3054,6 @@ const CHAT_PEOPLE_MESSAGES: Translations['CHAT_PEOPLE_MESSAGES'] = {
     react: (emoji) => `Отреагировать: ${emoji}`,
   },
   searchMembers: 'Поиск участников',
-  share: 'Поделиться',
-  postOptions: 'Параметры публикации',
-  pinned: 'Закреплено',
-  views: (c) =>
-    plural('ru', c, {
-      one: `${c} просмотр`,
-      few: `${c} просмотра`,
-      many: `${c} просмотров`,
-      other: `${c} просмотра`,
-    }),
-  forwards: (c) =>
-    plural('ru', c, {
-      one: `${c} пересылка`,
-      few: `${c} пересылки`,
-      many: `${c} пересылок`,
-      other: `${c} пересылки`,
-    }),
   jumpTo: (letter) => `Перейти к ${letter}`,
   add: 'Добавить',
   added: 'Добавлено',

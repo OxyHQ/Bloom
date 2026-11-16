@@ -125,7 +125,7 @@ describe('AuthCard', () => {
     expect(cardFill(getByTestId('auth-provider-github'))).toBe(palette.rest.background);
     expect(resolvedStyle(getByTestId('auth-provider-github').props.style)).toMatchObject({
       borderColor: palette.rest.border,
-      borderWidth: 1,
+      borderWidth: palette.borderWidth,
     });
   });
 

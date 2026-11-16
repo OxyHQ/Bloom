@@ -1,25 +1,18 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 import { SettingsModalContext, settingsLayoutFor } from './context';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
+import { alert, prompt } from '../surfaces';
 import { useDialogControl } from '../dialog';
 import {
-  RiBankCardLine,
-  RiBookOpenLine,
-  RiCodeBlock,
   RiDatabase2Line,
   RiExternalLinkLine,
-  RiGitMergeLine,
   RiLogoutCircleLine,
   RiMailLine,
-  RiOrganizationChart,
-  RiPaletteLine,
-  RiPlugLine,
   RiSchoolLine,
   RiSettings6Line,
-  RiSettingsLine,
   RiToolsFill,
 } from '../icons/remix';
 import {
@@ -35,13 +28,11 @@ import {
 import { Switch } from '../switch';
 import { StoryWindow } from '../window/WindowControls.stories';
 import {
-  SettingsCard,
   SettingsDateField,
   SettingsGeneralPage,
   SettingsLayout,
   SettingsModal,
   SettingsProfilePage,
-  SettingsRow,
   SettingsStoragePage,
   SettingsTextField,
   SettingsToolsPage,
@@ -76,26 +67,8 @@ const GROUPS: SettingsNavGroup[] = [
     items: [
       { key: 'general', label: 'General', icon: RiSettings6Line, page: 'general' },
       { key: 'profile', label: 'Profile', icon: RiSchoolLine, page: 'profile' },
-      { key: 'appearance', label: 'Appearance', icon: RiPaletteLine },
-      { key: 'billing', label: 'Billing', icon: RiBankCardLine },
-      { key: 'rules', label: 'Rules and Workflows', icon: RiOrganizationChart },
       { key: 'tools', label: 'Tools', icon: RiToolsFill, page: 'tools' },
       { key: 'storage', label: 'Storage', icon: RiDatabase2Line, page: 'storage' },
-    ],
-  },
-  {
-    label: 'Desktop app',
-    items: [
-      { key: 'desktop-general', label: 'General', icon: RiSettingsLine },
-      { key: 'plugins', label: 'Plugins', icon: RiPlugLine },
-      { key: 'developer', label: 'Developer', icon: RiCodeBlock },
-    ],
-  },
-  {
-    label: 'Customize',
-    items: [
-      { key: 'skills', label: 'Skills', icon: RiBookOpenLine },
-      { key: 'git', label: 'Git', icon: RiGitMergeLine },
     ],
   },
 ];
@@ -210,15 +183,7 @@ const FILES: SettingsStoredFile[] = (() => {
 //  Pages, wired with local state
 // ---------------------------------------------------------------------------
 
-const COMPACT_SELECT_FIELD = {
-  gap: 4,
-  paddingLeft: 8,
-  paddingRight: 8,
-  paddingTop: 5,
-  paddingBottom: 5,
-};
-
-function CompactSelect({
+function SettingSelect({
   label,
   value,
   onChange,
@@ -230,11 +195,8 @@ function CompactSelect({
   items: { value: string; label: string }[];
 }) {
   return (
-    // A compact row trigger: 32px on the md select, from padding alone — 5 + 20
-    // + 5 inside the 1px border. Never a fixed `h-8`: the text then cannot grow
-    // with the font scale and Android cuts it in half (see `SelectTrigger`).
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger label={label} fieldStyle={COMPACT_SELECT_FIELD}>
+      <SelectTrigger label={label}>
         <SelectValue>
           {(v) => {
             const key =
@@ -283,7 +245,16 @@ function GeneralDemo() {
         title: 'Ultra $149/mo',
         description: 'You are on 7x more usage than Regular.',
         action: (
-          <Button size="sm" appearance="outline" tone="neutral">
+          <Button
+            onPress={() =>
+              alert(
+                'Plan preview',
+                'Max includes additional usage. No plan change is made in this demo.',
+              )
+            }
+            appearance="outline"
+            tone="neutral"
+          >
             Upgrade to Max
           </Button>
         ),
@@ -297,7 +268,11 @@ function GeneralDemo() {
               label: 'Limits',
               description: 'You are on 7x more usage than Premium',
               control: (
-                <Button size="sm" appearance="outline" tone="neutral">
+                <Button
+                  onPress={() => alert('Usage limits', 'Your current plan provides 7× usage.')}
+                  appearance="outline"
+                  tone="neutral"
+                >
                   Manage limits
                 </Button>
               ),
@@ -313,7 +288,7 @@ function GeneralDemo() {
               label: 'Review provider',
               description: 'Select Github or other providers for reviews',
               control: (
-                <CompactSelect
+                <SettingSelect
                   label="Review provider"
                   value={provider}
                   onChange={setProvider}
@@ -330,7 +305,7 @@ function GeneralDemo() {
               label: 'PR destination',
               description: 'Open pull request links inside your app',
               control: (
-                <CompactSelect
+                <SettingSelect
                   label="PR destination"
                   value={destination}
                   onChange={setDestination}
@@ -445,6 +420,7 @@ function ProfileDemo() {
               control: (
                 <Button
                   size="sm"
+                  onPress={() => alert('Connected account', 'Maya Collins — hi@example.com')}
                   leadingIcon={RiExternalLinkLine}
                   appearance="outline"
                   tone="neutral"
@@ -478,6 +454,7 @@ function ProfileDemo() {
               control: (
                 <Button
                   size="sm"
+                  onPress={() => alert('Session preview', 'No sessions are changed in this demo.')}
                   leadingIcon={RiLogoutCircleLine}
                   appearance="outline"
                   tone="neutral"
@@ -494,14 +471,62 @@ function ProfileDemo() {
 }
 
 function ToolsDemo() {
+  const [scopes, setScopes] = useState(SCOPES);
+  const [scope, setScope] = useState(SCOPES[0]!.id);
   const [wait, setWait] = useState(true);
+  const [servers, setServers] = useState([SERVERS.paper!, SERVERS.posthog!, SERVERS.vercel!]);
+  const updateServer = (id: string, remove: boolean) => {
+    const update = (all: SettingsMcpServer[]) =>
+      remove
+        ? all.filter((server) => server.id !== id)
+        : all.map((server) =>
+            server.id === id
+              ? { ...server, status: 'connected' as const, summary: 'Connection refreshed' }
+              : server,
+          );
+    setServers(update);
+    setScopes((all) => all.map((scope) => ({ ...scope, servers: update(scope.servers) })));
+  };
+  const showOutput = (id: string) => alert('Server output', `${id}: preview connection log.`);
   return (
     <SettingsToolsPage
-      scopes={SCOPES}
+      scopes={scopes}
+      scope={scope}
+      onScopeChange={setScope}
       waitForAuthentication={wait}
       onWaitForAuthenticationChange={setWait}
-      pluginServers={[SERVERS.paper!, SERVERS.posthog!, SERVERS.vercel!]}
-      onAddServer={() => {}}
+      pluginServers={servers}
+      onLogout={(id) => updateServer(id, true)}
+      onShowOutput={showOutput}
+      onServerAction={(id, action) =>
+        action === 'output' ? showOutput(id) : updateServer(id, action === 'remove')
+      }
+      onManageTeam={() => alert('Team servers', 'No team servers are configured in this preview.')}
+      onConfigureTeam={() =>
+        alert('Team server configuration', 'Choose a workspace scope above, then add a server.')
+      }
+      onAddServer={async () => {
+        const name = await prompt({ title: 'Add server', placeholder: 'Server name' });
+        if (name?.trim())
+          setScopes((all) =>
+            all.map((item) =>
+              item.id === scope
+                ? {
+                    ...item,
+                    servers: [
+                      ...item.servers,
+                      {
+                        id: `demo-${Date.now()}`,
+                        name: name.trim(),
+                        tone: 'neutral',
+                        status: 'connected',
+                      },
+                    ],
+                  }
+                : item,
+            ),
+          );
+      }}
     />
   );
 }
@@ -645,78 +670,17 @@ export const Pages: Story = {
 };
 
 /** Row chrome on its own: the hairline stops 12px from the left and skips the last row. */
-export const Rows: Story = {
-  parameters: { controls: { disable: true } },
-  render: () => (
-    <View style={{ padding: 24, width: 581, maxWidth: '100%' }}>
-      <SettingsCard testID="card">
-        <SettingsRow label="Email">
-          <SettingsValueField icon={RiMailLine}>hi@example.com</SettingsValueField>
-        </SettingsRow>
-        <SettingsRow label="Device ID" description="Truncated, muted">
-          <SettingsValueField muted>593e2611-b9e3-44e2-1289-ab3f9d21</SettingsValueField>
-        </SettingsRow>
-        <SettingsRow label="Last row" description="No hairline under it" />
-      </SettingsCard>
-    </View>
-  ),
-};
-
-/**
- * A control too wide to sit beside its label wraps under it; the label column
- * never gets narrower than 140px. Allo's Appearance "Colour" chooser used to
- * stay on the label's line on Android and squeeze the description to one word
- * per line, its own text running off the card. Narrow the canvas to watch the
- * chooser drop below and truncate inside its pill.
- */
-export const WideTrailingControl: Story = {
-  parameters: { controls: { disable: true } },
-  render: function WideTrailingControlStory() {
-    const [value, setValue] = useState('raspberry');
-    return (
-      <View style={{ padding: 16, width: 380, maxWidth: '100%' }}>
-        <SettingsCard>
-          <SettingsRow label="Colour" description="Warm reds over a gold and cobalt accent">
-            <Select value={value} onValueChange={setValue}>
-              <SelectTrigger label="Colour">
-                <SelectValue />
-                <SelectIcon />
-              </SelectTrigger>
-              <SelectContent
-                label="Colour"
-                items={[
-                  { value: 'raspberry', label: 'Raspberry + Antique Gold + Cobalt' },
-                  { value: 'teal', label: 'Teal' },
-                ]}
-                renderItem={(item) => (
-                  <SelectItem value={item.value} label={item.label}>
-                    <SelectItemIndicator />
-                    <SelectItemText>{item.label}</SelectItemText>
-                  </SelectItem>
-                )}
-              />
-            </Select>
-          </SettingsRow>
-          <SettingsRow label="Follow account" description="Use the account's theme on this device">
-            <Switch checked onCheckedChange={() => {}} accessibilityLabel="Follow account" />
-          </SettingsRow>
-        </SettingsCard>
-      </View>
-    );
-  },
-};
-
 /**
  * The same settings as an application window (`SettingsLayout`): no modal and
  * no close button, since the window closes itself. The window's controls sit
  * at the rail's top, which keeps their room and moves the window.
  */
 export const AsAWindow: Story = {
-  parameters: { layout: 'centered', controls: { disable: true } },
+  parameters: { layout: 'fullscreen', controls: { disable: true } },
   render: function AsAWindowStory() {
     const pages = usePages();
     return (
-      <StoryWindow width={900} height={600}>
+      <StoryWindow height={600}>
         <SettingsLayout groups={GROUPS} pages={pages} defaultPage="general" testID="settings" />
       </StoryWindow>
     );
@@ -728,14 +692,3 @@ export const AsAWindow: Story = {
  * goes to the section list with a page pushed over it. The header keeps the
  * controls' room at its leading edge.
  */
-export const AsANarrowWindow: Story = {
-  parameters: { layout: 'centered', controls: { disable: true } },
-  render: function AsANarrowWindowStory() {
-    const pages = usePages();
-    return (
-      <StoryWindow width={520} height={640}>
-        <SettingsLayout groups={GROUPS} pages={pages} testID="settings" />
-      </StoryWindow>
-    );
-  },
-};

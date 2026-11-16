@@ -1,4 +1,6 @@
-import React, { useContext, useState } from 'react';
+import { fn } from 'storybook/test';
+import type React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -7,7 +9,6 @@ import { ContactProfileCard } from '../contact-card';
 import { RiBikeLine, RiBusLine, RiCarLine } from '../icons/remix';
 import { OrderStatusBar, OrderStatusTimeline } from '../order-status';
 import { RouteStops } from '../route-stops';
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { CarrierQuoteCard } from './CarrierQuoteCard';
@@ -24,7 +25,7 @@ export default meta;
 
 type Story = StoryObj;
 
-const noop = () => undefined;
+const onExampleAction = fn().mockName('Example action');
 
 // ---------------------------------------------------------------------------
 //  Demo data — invented carriers, invented amounts, invented places.
@@ -120,24 +121,6 @@ function Caption({ children }: { children: string }) {
   );
 }
 
-function BothModes({ children }: { children: React.ReactNode }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
-  return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-      <BloomThemeProvider mode="light" colorPreset={preset}>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 640 }}>
-          <Page>{children}</Page>
-        </View>
-      </BloomThemeProvider>
-      <BloomThemeProvider mode="dark" colorPreset={preset}>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 640 }}>
-          <Page>{children}</Page>
-        </View>
-      </BloomThemeProvider>
-    </View>
-  );
-}
-
 /** One offer, everything filled in, with the breakdown collapsed under it. */
 export const Card_: Story = {
   name: 'Card',
@@ -145,10 +128,10 @@ export const Card_: Story = {
     <Page>
       <CarrierQuoteCard
         quote={{ ...IVO, marks: ['fastest'] }}
-        onAccept={noop}
-        onMessage={noop}
-        onDecline={noop}
-        onPressCarrier={noop}
+        onAccept={onExampleAction}
+        onMessage={onExampleAction}
+        onDecline={onExampleAction}
+        onPressCarrier={onExampleAction}
         testID="quote"
       />
     </Page>
@@ -159,7 +142,13 @@ export const Card_: Story = {
 export const Accepted: Story = {
   render: () => (
     <Page>
-      <CarrierQuoteCard quote={IVO} onAccept={noop} onMessage={noop} selected testID="quote" />
+      <CarrierQuoteCard
+        quote={IVO}
+        onAccept={onExampleAction}
+        onMessage={onExampleAction}
+        selected
+        testID="quote"
+      />
     </Page>
   ),
 };
@@ -170,7 +159,12 @@ export const CompactRow: Story = {
     <Page maxWidth={420}>
       <View style={{ gap: 4 }}>
         {QUOTES.map((quote) => (
-          <CarrierQuoteCard key={quote.id} quote={quote} density="compact" onPressCarrier={noop} />
+          <CarrierQuoteCard
+            key={quote.id}
+            quote={quote}
+            density="compact"
+            onPressCarrier={onExampleAction}
+          />
         ))}
       </View>
     </Page>
@@ -181,15 +175,21 @@ export const CompactRow: Story = {
 export const List: Story = {
   render: function ListStory() {
     const [chosen, setChosen] = useState<string | null>(null);
+    const [quotes, setQuotes] = useState(QUOTES);
+    const [message, setMessage] = useState('');
     return (
       <Page>
+        {message ? <Text>{message}</Text> : null}
         <CarrierQuoteList
-          quotes={QUOTES}
+          quotes={quotes}
           selectedId={chosen}
           onAccept={setChosen}
-          onMessage={noop}
-          onDecline={noop}
-          onPressCarrier={noop}
+          onMessage={(id) =>
+            setMessage(
+              `Message opened for ${quotes.find((quote) => quote.id === id)?.carrier.name}`,
+            )
+          }
+          onDecline={(id) => setQuotes((items) => items.filter((item) => item.id !== id))}
           testID="offers"
         />
       </Page>
@@ -204,7 +204,7 @@ export const Empty: Story = {
       <CarrierQuoteList
         quotes={[]}
         emptyAction={
-          <Button size="md" onPress={noop} tone="neutral" appearance="outline">
+          <Button size="md" onPress={onExampleAction} tone="neutral" appearance="outline">
             Edit the job
           </Button>
         }
@@ -224,24 +224,9 @@ export const Loading: Story = {
 };
 
 /** Phone width: the actions drop to glyphs and the tiles stack two by two. */
-export const Narrow: Story = {
-  render: () => (
-    <Page maxWidth={358}>
-      <CarrierQuoteList
-        quotes={QUOTES}
-        onAccept={noop}
-        onMessage={noop}
-        onDecline={noop}
-        testID="offers"
-      />
-    </Page>
-  ),
-};
-
-/** Long names, long messages, long windows — at phone width. */
 export const LongText: Story = {
   render: () => (
-    <Page maxWidth={358}>
+    <Page>
       <CarrierQuoteCard
         quote={{
           ...IVO,
@@ -255,26 +240,25 @@ export const LongText: Story = {
             'Happy to take the sofa. I work with a second pair of hands, so the stairs are no problem, and I can bring blankets and straps if you would rather it was wrapped for the journey.',
           marks: ['cheapest', 'fastest'],
         }}
-        onAccept={noop}
-        onMessage={noop}
-        onDecline={noop}
+        onAccept={onExampleAction}
+        onMessage={onExampleAction}
+        onDecline={onExampleAction}
       />
     </Page>
   ),
 };
 
-/** Both modes in one shot. */
 export const Modes: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <BothModes>
+    <Page>
       <CarrierQuoteCard
         quote={{ ...IVO, marks: ['cheapest'] }}
-        onAccept={noop}
-        onMessage={noop}
-        onDecline={noop}
+        onAccept={onExampleAction}
+        onMessage={onExampleAction}
+        onDecline={onExampleAction}
       />
-    </BothModes>
+    </Page>
   ),
 };
 
@@ -294,8 +278,8 @@ export const BesideTheReference: Story = {
           company="Sable Haulage"
           status={{ label: 'Partner', tone: 'success' }}
           channels={[
-            { kind: 'email', onPress: noop },
-            { kind: 'phone', onPress: noop },
+            { kind: 'email', onPress: onExampleAction },
+            { kind: 'phone', onPress: onExampleAction },
           ]}
           headline={{ label: 'Jobs this month', value: '148', delta: '+12' }}
           stats={[
@@ -304,15 +288,15 @@ export const BesideTheReference: Story = {
             { value: '2h', label: 'Replies in' },
           ]}
           tags={['Furniture', 'Same day']}
-          onPress={noop}
+          onPress={onExampleAction}
         />
         <Caption>This family — carrier-quote / CarrierQuoteCard</Caption>
         <CarrierQuoteCard
           quote={{ ...IVO, marks: ['cheapest'] }}
-          onAccept={noop}
-          onMessage={noop}
-          onDecline={noop}
-          onPressCarrier={noop}
+          onAccept={onExampleAction}
+          onMessage={onExampleAction}
+          onDecline={onExampleAction}
+          onPressCarrier={onExampleAction}
           testID="quote-beside"
         />
       </View>
@@ -347,7 +331,7 @@ export const EndToEnd: Story = {
         ]}
       />
       <Caption>2 — the offer that was accepted (carrier-quote)</Caption>
-      <CarrierQuoteCard quote={IVO} selected onMessage={noop} breakdown={false} />
+      <CarrierQuoteCard quote={IVO} selected onMessage={onExampleAction} breakdown={false} />
       <Caption>3 — where it is (order-status)</Caption>
       <OrderStatusBar
         status="In transit"

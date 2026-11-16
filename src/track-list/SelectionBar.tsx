@@ -1,9 +1,9 @@
 import { useCardFill } from '../card/use-card-fill';
 import { Surface } from '../surface';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 
-import { Button, GlyphButton } from '../button';
+import { Button } from '../button';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
@@ -25,7 +25,7 @@ const LABELS_MIN_WIDTH = BREAKPOINTS.sm;
  *   radius      16 (a panel, not a pill); height 56; padding 8 / 16
  *   shadow      a soft drop shadow, light and dark
  *   actions     `text` buttons, small, with their icon; icon-only under 640
- *   clear       a neutral `GlyphButton`, never a tinted one
+ *   clear       a neutral `Button`, never a tinted one
  *
  * The actions are DELIBERATELY not `ghost`: that variant paints an accent wash,
  * so a destructive action in it drew a RED label on a BLUE fill. `text` is the
@@ -136,10 +136,13 @@ export function SelectionBar({
           backgroundColor: paint.hairline,
         }}
       />
-      <GlyphButton
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
         size={32}
         icon={RiCloseLine}
-        glyphSize={20}
+        iconSize={20}
         color={paint.textMuted}
         hoverColor={paint.text}
         ring={paint.ring}

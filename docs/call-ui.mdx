@@ -17,8 +17,6 @@ import {
   GroupCallGrid,
   GroupCallTile,
   GroupCallBar,
-  CallHistoryRow,
-  CallHistoryList,
 } from '@oxy.so/bloom/call-ui';
 ```
 
@@ -36,7 +34,7 @@ the depth only — `neutral-900` in light, `neutral-950` in dark. The preset's h
 still tints both, and the accent still comes from your theme.
 
 The surfaces that sit IN the app — `IncomingCallBanner`, `GroupCallBar`,
-`CallHistoryRow`/`List` — take the ordinary theme surface and flip with the mode
+`ListItem` call content — take the ordinary theme surface and flip with the mode
 like every other card in Bloom.
 
 ## `CallScreen`
@@ -263,18 +261,23 @@ lines in a 56px strip is a strip that scrolls, and "who is talking" is the only
 thing on it that changes second to second. Avatars overlap by 10px and the tail
 becomes a `+N` mark.
 
-## `CallHistoryRow` and `CallHistoryList`
+## Call history
+
+Call history uses `List` and `ListItem`, alongside `PageHeader` for its screen title.
 
 ```tsx
-<CallHistoryList
-  sections={[
-    { title: 'Today', items: [{ id: '1', name: 'Ana Restrepo', direction: 'missed', meta: '09:14', count: 2 }] },
-    { title: 'Yesterday', items: [...] },
-  ]}
-  onItemPress={open}
-  onCallBack={ring}
-/>
+<List sections={days.map(day => ({
+  id: day.id, title: day.label,
+  items: day.calls.map(call => ({
+    id: call.id, call: {...call,onCallBack:()=>ring(call.id)},
+    onPress:()=>open(call.id),
+  })),
+}))} />
 ```
+
+The callback Button is a sibling of the row's navigation target, so calling back
+never opens the record as well. Repeat counts, voice/video mode, direction words
+and caller formatting remain available in the `call` display data.
 
 **Direction is two signals, not one.** The arrow says which way the call went
 (down-left arrived, up-right left) and the COLOUR says whether it connected —
@@ -286,7 +289,7 @@ and the row's accessible name carries it too.
 `meta` and every section `title` arrive PRE-FORMATTED. Deciding what
 "yesterday" means needs a locale and a timezone your app has and a component
 does not. An empty section is dropped rather than drawn with a heading and
-nothing under it; `emptyState` covers the case where every section is empty.
+nothing under it; `empty` covers the case where every section is empty.
 
 ## What jest cannot see here
 

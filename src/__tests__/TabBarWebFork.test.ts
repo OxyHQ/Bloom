@@ -118,7 +118,7 @@ describe('tab-bar platform split', () => {
     for (const fork of ['glyph.native.tsx', 'glyph.native.ts', 'glyph.web.tsx', 'glyph.web.ts']) {
       expect(existsSync(join(SRC, 'tab-bar', fork))).toBe(false);
     }
-    expect(moduleSpecifiers(read('tab-bar/glyph.tsx'))).toContain('../frosted-icon-button/shared');
+    expect(moduleSpecifiers(read('tab-bar/glyph.tsx'))).toContain('../icons/apply-icon-color');
   });
 
   it('the router packages live only under tab-bar/expo-router', () => {

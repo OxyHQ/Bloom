@@ -15,8 +15,6 @@
  */
 export { SettingsModal } from './SettingsModal.web';
 export {
-  SettingsCard,
-  SettingsRow,
   SettingsSection,
   SettingsSectionLabel,
   SettingsValueField,
@@ -24,7 +22,6 @@ export {
 export { settingsLayoutFor, useSettingsSavedToast } from './context';
 
 export type {
-  SettingsCardProps,
   SettingsIcon,
   SettingsLayoutProps,
   SettingsModalLabels,
@@ -34,7 +31,6 @@ export type {
   SettingsModalProps,
   SettingsNavGroup,
   SettingsNavItem,
-  SettingsRowProps,
   SettingsSectionLabelProps,
   SettingsSectionProps,
   SettingsValueFieldProps,

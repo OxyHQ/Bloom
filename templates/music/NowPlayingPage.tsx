@@ -1,6 +1,8 @@
+import { BloomImage } from '../../src/image';
+import { ScrollArea as ScrollView } from '../../src/layout';
 import { Surface } from '../../src/surface';
-import React, { useMemo } from 'react';
-import { Image, ScrollView, View } from 'react-native';
+import { useMemo } from 'react';
+import { View } from 'react-native';
 
 import { Button } from '../../src/button';
 import { resolveButtonRamps } from '../../src/button/shared';
@@ -141,7 +143,7 @@ export function NowPlayingSide({
       >
         {item ? (
           <>
-            <Image
+            <BloomImage
               source={{ uri: item.artwork }}
               accessibilityLabel={`${item.parentTitle} cover`}
               style={{ width: '100%', aspectRatio: 1, borderRadius: 12, marginTop: 8 }}
@@ -290,7 +292,6 @@ export function FullPlayer({
       onSeek={player.seek}
       deviceName={player.device.id === 'this' ? undefined : player.device.name}
       onDevicePress={onDevicePress}
-      onShare={() => {}}
       queueActive={queueActive}
       onQueuePress={onQueuePress}
       lyrics={

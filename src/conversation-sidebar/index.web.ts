@@ -3,7 +3,7 @@
 // Re-run `bun run generate:exports` (or any `bun run build`) after
 // changing that barrel or the set of web-forked subpaths.
 
-import * as ContextMenu from '../context-menu/index.web';
+import { List } from '../list/index.web';
 import * as Dropdown from '../dropdown-menu/index.web';
 import { createConversationSidebar } from './create-conversation-sidebar';
 
@@ -11,7 +11,7 @@ import { createConversationSidebar } from './create-conversation-sidebar';
  * A sidebar of conversations: its tools on top (search, and the store and "+" buttons when given), a list
  * of conversations with their agents' avatars and a context menu each, and the panel's own footer.
  */
-export const ConversationSidebar = createConversationSidebar({ Dropdown, ContextMenu });
+export const ConversationSidebar = createConversationSidebar({ Dropdown, List });
 
 export type {
   ConversationSidebarAction,
