@@ -21,7 +21,7 @@ identifies the containing artifact; it does not prove registry publication.
 | --- | --- | --- |
 | 1. Model and ownership | Family, presentation, roles and body intent are independent; all five applications mapped; no second layout engine | Implemented in shared resolver, route scope and Screen APIs; semantic guide records responsibilities. |
 | 2. Resolution and explainability | Defaults, explicit constraints, local isolation and continuous framing resolve consistently; inspectable reasons | Resolver and semantic tests; `explainAppShellComposition`. This is a pure diagnostic API, not a visual inspector. Browser geometry verification is a separate gate. |
-| 3. Presentation and interaction | Shared navigation, scroll/edge ownership, inspector dismissal, stable styling transitions and registered state/focus | Final browser checks pass: 36 real-click family/presentation transitions and ten registered draft/focus/selection transitions. Android remains separately recorded below. Arbitrary native view/media continuity is outside the delivered contract. |
+| 3. Presentation and interaction | Shared navigation, scroll/edge ownership, inspector dismissal, stable styling transitions and registered state/focus | Browser checks pass: 36 real-click family/presentation transitions and ten registered draft/focus/selection transitions. Android registered selection and the complete generic panel suite pass on the intermediate receipts below. Expanded detail/safe-area source requires one final combined native rerun. Arbitrary native view/media continuity is outside the delivered contract. |
 | 4. Consumer migration | All five apps declare their actual structures; redundant geometry removed; product behavior preserved | Source migrations prepared for Nilo, Mention, Inbox, Mercaria and Homiio. Per-app tests, installed version and deployment acceptance tracked below. |
 | 5. Documentation and compatibility | Architecture, examples, task routing, explicit limitations and deprecation exits updated | Semantic guide plus architecture/composition/layout guides updated. Legacy variants remain supported compatibility inputs. Removal requires the criteria in the semantic guide, not this source merge alone. |
 | 6. Release and rollout | Required gates pass on final commits; CI publishes; consumers install exact registry release; main/deploy evidence recorded | Candidate version `21.8.0`, PR #832. Final main commits, CI publication receipt, registry install and production deployments remain pending. Do not mark complete from a built source mirror. |
@@ -47,7 +47,7 @@ shared frames, safe areas or action clearances are defects to remove.
 | --- | --- |
 | Browser geometry | Verified on integrated `ee6608ae`: Windows Chrome, 36 root/route × family/presentation transitions retain the main instance/draft with real header/input clicks. Wide and narrow body container geometry checked independently. Earlier state-loss captures remain regression evidence. |
 | Inspector web focus | Verified independently in Linux Chrome: five fresh contexts × 1440→800→1440 preserve `[0,5]`, focused input and exact draft; typing X replaces the selected prefix. Seven focused tests include incoming initial selection, modal autofocus, CSS-before-React presentation, close, user-choice cancellation and the native TextInput selection command. Reproduce with `scripts/verify-panel-session-focus.mjs`. |
-| Android | Final emulator verification is in progress. The user’s intended physical device is Pixel 8a, currently off/charging and awaiting availability. Earlier exploratory Pixel 10 Pro evidence is not final physical acceptance: draft/focus/Back/reopen passed, caret restoration failed before the final fix. `PanelSessionLab.tsx` and its source-hash receipt exercise the exact inspector. Do not mark final native caret verification complete until replacement is demonstrated. |
+| Android | Owned Android 30 emulator `emulator-5580`: registered selection replacement passes both directions on `5c8e0b00`; generic panel verification passes completely on `b344e077`. Expanded shared detail and semantic safe-area source still require a final combined rerun. The intended physical Pixel 8a is not yet connected; Pixel 10 Pro exploratory results are not final physical acceptance. No interaction with the unauthorized second emulator is permitted. |
 | iOS | No device identified. Not verified; Android or web evidence must not be presented as iOS acceptance. No new native teleport/Fabric capability is claimed. |
 | Package | Before the final native selection-command correction, candidate local gates passed: 1,036 suites / 15,789 tests, TypeScript plus consumer typecheck, lint, build, packed exports/freshness and task catalog. The command correction passes seven focused tests; its final full rerun remains pending. Candidate `21.8.0` publication is still pending; local gates are not CI/registry evidence. |
 | Registry | CI publication receipt and exact registry tarball/install checks pending. Local publication prohibited. |
@@ -69,3 +69,39 @@ Candidate receipts are distinct from the required final registry-installed rerun
 - Mercaria production candidate: `/home/nate/Oxy/Nilo/.local/root/semantic-20261116/mercaria/results.json` and `interactions.json`.
 - Homiio production candidate: `/home/nate/Oxy/Nilo/.local/docs_keeper/semantic-20261116/homiio/results.json`, five widths plus compact map screenshots; runner `consumer-runtime.cjs` in that session directory.
 - Homiio pagination uses actual mouse wheel input. React Native Web’s host `scrollTo` uses `{y}`; calling it with DOM `{top}` left the offset at zero and was an invalid test, not an application pagination defect.
+
+
+## Native intermediate receipts and expanded detail gate
+
+These are exact, archived intermediate artifacts, not the final integrated or
+published package. Embedded Metro receipts distinguish the selected Bloom
+checkout from the local fixture actually compiled.
+
+| Check | Exact source and fixture | Receipt / APK SHA-256 | Result |
+| --- | --- | --- | --- |
+| Registered inspector selection | Continuity source `41f2b883`, production selection command `7e9141ed`, trace fixture `647e2fb1`, receipt correction `41f2b883` | Receipt `5c8e0b00bc18c5b18002db46aae15f564d77243710e32424170636a36907f425`; APK `4d1bdd58568a39dc741e3223642d15f68d2b4bd0f7f61925576145dbe01be5f3` | Real long-press negative control replaces text. Inline `[0,11]` becomes floating `[0,11]` and typing replaces the selected word; floating `[0,12]` becomes inline `[0,12]` with the same replacement proof. Back closes the inspector; reopening preserves the draft with the actual EditText unfocused. |
+| Generic native panel suite | Integrated runtime `2730d131`; local fixture `aa374aaa` declares its documented bounded safe-area contract | Receipt `b344e077844da212eb51165440fb3374d79d7f208a39c8c90bf96b16659cf8ff`; APK `bf60b3026691432098d6028401bd6ea7541e775842046685dd73bcbe957855cf` | All original assertions pass: equal visible split (1022/1021 px), resize minimums, independent scrolling, reading position, inline/sheet exit completion, nonduplicated header inset, Back dismissal, 90% sheet ceiling, flow additions and content resize cap. |
+| Shared task detail | Integrated runtime `2730d131`; keyboard-enabled fixture `68626521` | Receipt `797c6913f84ff23a3cb8b3450c83eb7b09a46bddaec0a08cb445654d0470347c`; APK `d3407535471215b9da5951ead00dd2874bd7cf60954496898142bd3c250a7b69` | First-field real tap/typing succeeds and the actual IME is shown. The native custom/side Dialog remains bounded by its triggering panel, so its keyboard-following footer moves over the header. Shared outlet/inset correction and final retest are pending; this is not a native detail pass. |
+
+The generic fixture initially omitted `safeArea`. Raw `Screen.onLayout` values
+proved equal Yoga allocations while UIAutomator clipped the lower panel by the
+48 dp Android navigation inset. Untouched baseline `bd26dc99` (receipt
+`08e60ccf`) and integrated `31599aa4` (`2be13dbf`) reproduced exactly the same
+visible bounds. Declaring the existing bounded shell contract corrected the
+fixture without weakening any geometry assertion. Capture tooling also now
+rejects stale XML after UIAutomator reports a null root during app startup.
+
+The user's expanded board/task-detail scope adds shared `DetailDialog`,
+`DetailDialogSection`, `DetailDialogSectionGroup` and board-card composition to
+the release acceptance. Consumer adoption, exact reference comparison, real
+first-field interaction, body scroll, keyboard/footer ownership and native
+dismiss/reopen behavior must be recorded on the final shared source. Existing
+compositor passes do not automatically satisfy these new checks.
+
+Session evidence is retained in
+`/home/nate/Oxy/Nilo/.local/docs_keeper/semantic-20261116/android-trace`;
+the complete generic report is in `android-safearea-generic/native-report.json`.
+Sibling `android-artifact`, `android-safearea-artifact` and
+`android-keyboard-artifact` directories retain embedded receipts, source hashes
+and APKs. `android-detail-final` records the intermediate detail failure despite
+its directory name; the receipt and explicit result above determine acceptance.
