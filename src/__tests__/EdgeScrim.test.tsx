@@ -19,7 +19,7 @@ describe('EdgeScrim', () => {
   it('linear falloff uses exactly the opaque and transparent endpoints', () => {
     const { toJSON } = render(<EdgeScrim color="#000000" falloff="linear" />);
     const stops = hostNodes(toJSON())
-      .filter((node) => node.type === 'Stop')
+      .filter((node) => String(node.type) === 'Stop')
       .map((node) => ({ offset: node.props.offset, opacity: node.props.stopOpacity }));
     expect(stops).toEqual([
       { offset: '0', opacity: 1 },
@@ -60,6 +60,47 @@ describe('EdgeScrim', () => {
   });
 });
 
+describe('protected chrome and external fade', () => {
+  const fraction = 1 / 1.55;
+  it.each(['top', 'bottom'] as const)(
+    '%s keeps every chrome pixel opaque and ends with a transparent tail',
+    (edge) => {
+      const screen = render(<EdgeScrim color="#123456" edge={edge} opaqueFraction={fraction} />);
+      const stops = hostNodes(screen.toJSON())
+        .filter((node) => String(node.type) === 'Stop')
+        .map((node) => ({
+          offset: Number(node.props.offset),
+          opacity: Number(node.props.stopOpacity),
+        }));
+      expect(stops[0]).toEqual({ offset: 0, opacity: 1 });
+      expect(stops[1]).toEqual({ offset: fraction, opacity: 1 });
+      expect(stops.filter((stop) => stop.opacity < 1).every((stop) => stop.offset > fraction)).toBe(
+        true,
+      );
+      expect(stops.slice(-1)[0]).toEqual({ offset: 1, opacity: 0 });
+      // Native percentages retain the fractional boundary; rounding to 65/64%
+      // would move the fade away from its measured chrome edge.
+      const native = edgeScrimGradient('#123456', edge, 'smooth', fraction);
+      expect(native).toContain(`rgba(18, 52, 86, 1) ${fraction * 100}%`);
+      for (const stop of stops) expect(native).toContain(`${stop.opacity}) ${stop.offset * 100}%`);
+    },
+  );
+
+  it.each([Number.NaN, Infinity, -1])(
+    'invalid opaque fraction %s preserves the default ramp',
+    (fraction) => {
+      expect(edgeScrimGradient('#123456', 'top', 'smooth', fraction)).toBe(
+        edgeScrimGradient('#123456', 'top'),
+      );
+    },
+  );
+  it('clamps a full opaque box without duplicate offsets or inverted stops', () => {
+    expect(edgeScrimGradient('#123456', 'bottom', 'smooth', 2)).toBe(
+      'linear-gradient(to top, rgba(18, 52, 86, 1) 0%, rgba(18, 52, 86, 1) 100%)',
+    );
+  });
+});
+
 describe('EdgeScrim on Android', () => {
   // react-native-svg laid the ramp out ~1.55x taller than its box there, so the
   // box cut it off half-opaque: a hard line across the content at the header's
@@ -80,6 +121,17 @@ describe('EdgeScrim on Android', () => {
     const style = StyleSheet.flatten(view?.props.style as ViewStyle) ?? {};
     expect(style).toMatchObject({ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 });
     expect(style.experimental_backgroundImage).toBe(edgeScrimGradient('#1d3b53', 'top'));
+  });
+
+  it('passes the protected chrome region to the Android View background', () => {
+    const fraction = 1 / 1.55;
+    const { toJSON } = render(
+      <EdgeScrim color="#123456" edge="bottom" opaqueFraction={fraction} testID="protected" />,
+    );
+    const view = hostNodes(toJSON()).find((node) => node.props.testID === 'protected')!;
+    expect(
+      (StyleSheet.flatten(view.props.style as ViewStyle) ?? {}).experimental_backgroundImage,
+    ).toBe(edgeScrimGradient('#123456', 'bottom', 'smooth', fraction));
   });
 
   it('renders the same linear falloff in the native background gradient', () => {

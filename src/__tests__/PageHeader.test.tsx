@@ -50,6 +50,42 @@ afterEach(() => {
 });
 
 describe('PageHeader', () => {
+  it('protects the entire measured title, subtitle and accessory chrome as its height changes', () => {
+    const screen = renderHeader({
+      title: 'Record',
+      subtitle: 'Shared header and Screen',
+      accessory: <ReactNative.Text>Filters</ReactNative.Text>,
+      scrim: 'always',
+    });
+    for (const height of [76, 144, 92]) {
+      fireEvent(screen.getByTestId('h'), 'layout', {
+        nativeEvent: { layout: { x: 0, y: 0, width: 390, height } },
+      });
+      const box = Number(resolvedStyle(screen.getByTestId('h-scrim').props.style).height);
+      const stops = screen
+        .getByTestId('h-scrim-gradient')
+        .findAll((node) => String(node.type) === 'Stop');
+      const lastOpaque = stops.filter((node) => node.props.stopOpacity === 1).slice(-1)[0]!;
+      expect(Number(lastOpaque.props.offset) * box).toBeCloseTo(height);
+      expect(box).toBeGreaterThan(height);
+      expect(stops.slice(-1)[0]!.props).toMatchObject({ offset: '1', stopOpacity: 0 });
+      expect(opacity(screen.getByTestId('h-scrim'))).toBe(1);
+    }
+  });
+
+  it.each([{ tone: 'onImage' as const }, { scrimFalloff: 'linear' as const }])(
+    'preserves explicit image and linear full-box fades: %o',
+    (props) => {
+      const screen = renderHeader({ title: 'Photo', scrim: 'always', ...props });
+      const stops = screen
+        .getByTestId('h-scrim-gradient')
+        .findAll((node) => String(node.type) === 'Stop');
+      expect(stops.filter((node) => node.props.stopOpacity === 1)).toHaveLength(1);
+      expect(stops[0]!.props.offset).toBe('0');
+      expect(stops.slice(-1)[0]!.props).toMatchObject({ offset: '1', stopOpacity: 0 });
+    },
+  );
+
   it('keeps breadcrumb context in the same measured header as its title and actions', () => {
     const press = jest.fn();
     const screen = renderHeader({

@@ -30,12 +30,13 @@ import { withAlpha } from '../theme/color-utils';
  *
  * ── THE STOPS ───────────────────────────────────────────────────────────────
  *
- * Four of them, shaped as an ease-out rather than a straight line. A LINEAR
+ * Four of them describe the fading portion, after any opaque chrome region.
+ * They are shaped as an ease-out rather than a straight line. A LINEAR
  * ramp of opacity is perceptually not linear: it holds too much colour through
  * the middle and then falls off visibly in the last fifth, which puts a soft
  * but findable band across the content. Weighting the fall earlier spends the
- * gradient's height where the eye is looking — the region behind the title —
- * and arrives at zero gently.
+ * fading portion's height and arrives at zero gently. Header/footer chrome
+ * stays opaque before that portion so scrolling text cannot cross its labels.
  *
  * `TAIL_RATIO` extends the ramp BELOW the header's own box. The header is as
  * tall as its islands plus its padding; the fade needs room after that, or it
@@ -75,12 +76,13 @@ import { withAlpha } from '../theme/color-utils';
 
 /** How far past the header's own height the fade continues, as a ratio of it. */
 export const SCRIM_TAIL_RATIO = 0.55;
+/** Measured chrome occupies this fraction of its chrome + external tail box. */
+export const SCRIM_CHROME_FRACTION = 1 / (1 + SCRIM_TAIL_RATIO);
 
 /**
  * Offset down the ramp -> how much of the page colour survives there.
  *
- * Read as: solid behind the title, nine tenths gone by three quarters of the
- * way down, nothing at the bottom.
+ * Applied to the fading portion only; any opaque chrome region precedes it.
  */
 export const SCRIM_STOPS = [
   { offset: 0, opacity: 1 },
@@ -105,7 +107,32 @@ export interface EdgeScrimProps {
   edge?: 'top' | 'bottom';
   /** Smooth legibility curve by default; linear has only the opaque and transparent endpoints. */
   falloff?: 'smooth' | 'linear';
+  /**
+   * Fraction of the gradient box kept opaque from its anchored edge, in [0, 1].
+   * Defaults to 0 for a full-box fade. Header/footer supply their measured
+   * chrome's share of the box; the curve then occupies only the external tail.
+   */
+  opaqueFraction?: number;
   testID?: string;
+}
+
+/** Both renderers use the same normalized positions, including the solid region. */
+function scrimStops(falloff: 'smooth' | 'linear', opaqueFraction: number) {
+  const fraction = Number.isFinite(opaqueFraction) ? Math.max(0, Math.min(1, opaqueFraction)) : 0;
+  const stops = falloff === 'linear' ? LINEAR_STOPS : SCRIM_STOPS;
+  if (fraction === 0) return stops;
+  if (fraction === 1)
+    return [
+      { offset: 0, opacity: 1 },
+      { offset: 1, opacity: 1 },
+    ];
+  return [
+    { offset: 0, opacity: 1 },
+    ...stops.map((stop) => ({
+      offset: fraction + (1 - fraction) * stop.offset,
+      opacity: stop.opacity,
+    })),
+  ];
 }
 
 /**
@@ -122,9 +149,11 @@ export function edgeScrimGradient(
   color: string,
   edge: 'top' | 'bottom',
   falloff: 'smooth' | 'linear' = 'smooth',
+  opaqueFraction = 0,
 ): string {
-  const stops = (falloff === 'linear' ? LINEAR_STOPS : SCRIM_STOPS)
-    .map((stop) => `${withAlpha(color, stop.opacity)} ${Math.round(stop.offset * 100)}%`)
+  const stops = scrimStops(falloff, opaqueFraction)
+    // Keep fractional positions: rounding down can expose the last chrome pixels.
+    .map((stop) => `${withAlpha(color, stop.opacity)} ${stop.offset * 100}%`)
     .join(', ');
   return `linear-gradient(to ${edge === 'bottom' ? 'top' : 'bottom'}, ${stops})`;
 }
@@ -133,6 +162,7 @@ const EdgeScrimComponent: React.FC<EdgeScrimProps> = ({
   color,
   edge = 'top',
   falloff = 'smooth',
+  opaqueFraction = 0,
   testID,
 }) => {
   if (Platform.OS === 'android') {
@@ -141,18 +171,27 @@ const EdgeScrimComponent: React.FC<EdgeScrimProps> = ({
         testID={testID}
         style={[
           StyleSheet.absoluteFill,
-          { experimental_backgroundImage: edgeScrimGradient(color, edge, falloff) },
+          { experimental_backgroundImage: edgeScrimGradient(color, edge, falloff, opaqueFraction) },
         ]}
       />
     );
   }
-  return <SvgEdgeScrim color={color} edge={edge} falloff={falloff} testID={testID} />;
+  return (
+    <SvgEdgeScrim
+      color={color}
+      edge={edge}
+      falloff={falloff}
+      opaqueFraction={opaqueFraction}
+      testID={testID}
+    />
+  );
 };
 
 const SvgEdgeScrim: React.FC<EdgeScrimProps> = ({
   color,
   edge = 'top',
   falloff = 'smooth',
+  opaqueFraction = 0,
   testID,
 }) => {
   const id = `${useSvgIdPrefix('bloom-page-header-scrim')}gradient`;
@@ -167,7 +206,7 @@ const SvgEdgeScrim: React.FC<EdgeScrimProps> = ({
           x2="0"
           y2={fromBottom ? '0' : '1'}
         >
-          {(falloff === 'linear' ? LINEAR_STOPS : SCRIM_STOPS).map((stop) => (
+          {scrimStops(falloff, opaqueFraction).map((stop) => (
             <Stop
               key={stop.offset}
               offset={String(stop.offset)}
