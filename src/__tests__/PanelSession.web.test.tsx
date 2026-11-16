@@ -208,3 +208,22 @@ it('restores the registered editor through the real Dialog focus boundary, befor
   expect(input().value).toBe('unsent inspector comment');
   expect(document.activeElement).toBe(input());
 });
+
+it('uses the native TextInput selection command when the host exposes it', () => {
+  render('inline', true, 'draft', 'native selection');
+  act(() => {
+    input().focus();
+    input().setSelectionRange(1, 4);
+    input().dispatchEvent(new Event('select', { bubbles: true }));
+    document.dispatchEvent(new Event('selectionchange'));
+  });
+  render('floating');
+  const command = jest.fn((start: number, end: number) => input().setSelectionRange(start, end));
+  const legacyProps = jest.fn();
+  Object.assign(input(), { setSelection: command, setNativeProps: legacyProps });
+  frame();
+  expect(command).toHaveBeenCalledWith(1, 4);
+  expect(legacyProps).not.toHaveBeenCalled();
+  expect(input().selectionStart).toBe(1);
+  expect(input().selectionEnd).toBe(4);
+});

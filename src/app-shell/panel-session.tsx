@@ -19,6 +19,8 @@ type Selection = { start: number; end: number };
 export interface PanelSessionFocusTarget {
   focus(): void;
   isFocused?(): boolean;
+  /** React Native TextInput command; applies the current native event count. */
+  setSelection?(start: number, end: number): void;
   setNativeProps?(props: { selection: Selection }): void;
   setSelectionRange?(start: number, end: number): void;
 }
@@ -167,6 +169,7 @@ export function usePanelSessionFocus<T extends PanelSessionFocusTarget>(key: str
       if (
         session.focus?.key === key &&
         session.focus.presentation === presentation &&
+        session.presentation === presentation &&
         session.focus.target === target.current
       ) {
         session.focus.selection = selection.current;
@@ -205,8 +208,10 @@ export function usePanelSessionFocus<T extends PanelSessionFocusTarget>(key: str
       target.current.focus();
       if (focused.selection) {
         selection.current = focused.selection;
-        target.current.setNativeProps?.({ selection: focused.selection });
-        target.current.setSelectionRange?.(focused.selection.start, focused.selection.end);
+        const { start, end } = focused.selection;
+        if (target.current.setSelection) target.current.setSelection(start, end);
+        else if (target.current.setSelectionRange) target.current.setSelectionRange(start, end);
+        else target.current.setNativeProps?.({ selection: focused.selection });
       }
       session.focus = { ...focused, presentation, target: target.current };
     });
