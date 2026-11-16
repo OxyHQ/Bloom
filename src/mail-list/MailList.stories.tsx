@@ -1,4 +1,5 @@
 import { fn } from 'storybook/test';
+import { Button } from '../button';
 import { List, ListSelectionBar } from '../list';
 import { EmptyState } from '../empty-state';
 import { ListItem } from '../list';
@@ -462,10 +463,12 @@ export const PointerTargets: Story = {
     const [starred, setStarred] = useState(false);
     const [checked, setChecked] = useState(false);
     const [archived, setArchived] = useState(0);
+    const [pinned, setPinned] = useState(false);
     return (
       <View style={{ width: 700, maxWidth: '100%', gap: 12 }}>
         <Text testID="hit-opened">{String(opened)}</Text>
         <Text testID="hit-archived">{String(archived)}</Text>
+        <Text testID="hit-pinned">{String(pinned)}</Text>
         {(['compact'] as const).map((density) => (
           <ListItem
             key={density}
@@ -479,12 +482,20 @@ export const PointerTargets: Story = {
               starred: starred,
               onStarredChange: setStarred,
             }}
+            actions={[
+              {
+                key: 'archive',
+                label: 'Archive',
+                icon: RiArchiveLine,
+                onPress: () => setArchived((n) => n + 1),
+              },
+            ]}
             testID={`hit-${density}`}
             onPress={() => setOpened((n) => n + 1)}
           />
         ))}
         <ListItem
-          mail={{ sender: { name: 'Action Sender' }, subject: 'Archive separately' }}
+          mail={{ sender: { name: 'Action Sender' }, subject: 'Archive separately', time: '10:42' }}
           testID="hit-actions"
           onPress={() => setOpened((n) => n + 1)}
           actions={[
@@ -495,6 +506,24 @@ export const PointerTargets: Story = {
               onPress: () => setArchived((n) => n + 1),
             },
           ]}
+        />
+        <ListItem
+          mail={{ sender: { name: 'Custom action' }, subject: 'Keep the supplied control' }}
+          trailing={
+            <Button onPress={() => setPinned((value) => !value)} testID="hit-pin">
+              {pinned ? 'Unpin' : 'Pin'}
+            </Button>
+          }
+          actions={[
+            {
+              key: 'archive',
+              label: 'Archive',
+              icon: RiArchiveLine,
+              onPress: () => setArchived((n) => n + 1),
+            },
+          ]}
+          onPress={() => setOpened((n) => n + 1)}
+          testID="hit-override"
         />
         <ListItem
           mail={{ sender: { name: 'Selected Sender' }, subject: 'Select separately' }}

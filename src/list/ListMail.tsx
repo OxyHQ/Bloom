@@ -16,7 +16,7 @@ import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { webDataSet } from '../styles/web-data';
 import { Text } from '../typography';
-import type { ListCommonProps, ListMailData } from './types';
+import type { ListCommonProps, ListItemShellProps, ListMailData } from './types';
 
 /** Mail content only; ListItem owns layout, selection, gestures and commands. */
 export function ListMail({
@@ -24,7 +24,7 @@ export function ListMail({
   mail,
   ...props
 }: ListCommonProps & {
-  Shell: ComponentType<ListCommonProps>;
+  Shell: ComponentType<ListItemShellProps>;
   mail: ListMailData;
 }) {
   const {
@@ -139,6 +139,7 @@ export function ListMail({
           </View>
         )
       }
+      trailingMetadata={props.trailing === undefined && !onStarredChange}
       trailing={
         props.trailing !== undefined ? (
           props.trailing

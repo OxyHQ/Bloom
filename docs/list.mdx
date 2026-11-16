@@ -36,6 +36,13 @@ and `attachments`. Optional `conversation`, `mail`, `person` and `call` display 
 their domain-specific markers and wording while using exactly the same shell.
 Times, names, permissions, navigation and data filtering belong to the consumer.
 
+Trailing content supplied by the caller stays visible and interactive when hover,
+keyboard focus or an open menu reveals row commands. Person actions, call-back
+buttons and interactive mail stars follow the same contract. Their menu space is
+reserved on pointer layouts, so entering the row does not move a control under
+the pointer. Only renderer-owned passive conversation/mail metadata yields to
+the menu; touch keeps trailing content and omits the hover menu.
+
 For a person, `person.name` and `person.subtitle` (for example, a handle) stay on
 separate lines. Add a bio through the common `supporting` and `supportingLines`
 props; it uses the same clamp as ordinary rows. String supporting text joins the

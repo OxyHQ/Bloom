@@ -7,7 +7,7 @@ import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import type { ListCommonProps, ListPersonData } from './types';
+import type { ListCommonProps, ListItemShellProps, ListPersonData } from './types';
 
 export function ListPerson({
   Shell,
@@ -15,7 +15,7 @@ export function ListPerson({
   person,
   ...props
 }: ListCommonProps & {
-  Shell: ComponentType<ListCommonProps>;
+  Shell: ComponentType<ListItemShellProps>;
   Button: typeof import('../button')['Button'];
   person: ListPersonData;
 }) {
