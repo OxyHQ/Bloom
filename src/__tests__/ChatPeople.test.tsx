@@ -11,6 +11,7 @@ import type { PersonSummary } from '../chat-people/types';
 
 import { List, ListItem } from '../list';
 import { Badge } from '../badge';
+import { Button } from '../button/index.web';
 import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -118,6 +119,65 @@ const SECTIONS: ContactSection[] = [
 // ---------------------------------------------------------------------------
 
 describe('ListItem person content', () => {
+  it('keeps the handle distinct from a clamped bio and names all three lines', () => {
+    const bio = 'Illustrator building welcoming creative communities.';
+    mount(
+      <ListItem
+        person={{ name: 'Ana', subtitle: '@ana' }}
+        supporting={bio}
+        supportingLines={2}
+        onPress={() => undefined}
+        testID="person-bio"
+      />,
+    );
+    expect(text(byTestId('person-bio-name'))).toBe('Ana');
+    expect(text(byTestId('person-bio-subtitle'))).toBe('@ana');
+    const supporting = container.querySelector<HTMLElement>('[data-bloom-list-supporting="2"]');
+    expect(supporting?.textContent).toBe(bio);
+    expect(supporting?.style.webkitLineClamp).toBe('2');
+    expect(byTestId('person-bio-link').getAttribute('aria-label')).toBe(`Ana, @ana, ${bio}`);
+  });
+
+  it('keeps trailing follow controls separate from opening the profile', () => {
+    const open = jest.fn();
+    const follow = jest.fn();
+    mount(
+      <ListItem
+        person={{ name: 'Ana', subtitle: '@ana' }}
+        supporting="Bio"
+        supportingLines={2}
+        onPress={open}
+        trailing={
+          <Button onPress={follow} testID="follow">
+            Follow
+          </Button>
+        }
+        testID="person-bio"
+      />,
+    );
+    press(byTestId('follow'));
+    expect(follow).toHaveBeenCalledTimes(1);
+    expect(open).not.toHaveBeenCalled();
+    press(byTestId('person-bio-link'));
+    expect(open).toHaveBeenCalledTimes(1);
+  });
+
+  it('lets explicit content and accessible naming replace the default bio', () => {
+    mount(
+      <ListItem
+        person={{ name: 'Ana', subtitle: '@ana' }}
+        supporting="Hidden bio"
+        content={null}
+        label="Custom person"
+        onPress={() => undefined}
+        testID="person-bio"
+      />,
+    );
+    expect(maybe('person-bio-name')).toBeNull();
+    expect(container.querySelector('[data-bloom-list-supporting]')).toBeNull();
+    expect(byTestId('person-bio-link').getAttribute('aria-label')).toBe('Custom person');
+  });
+
   it('renders application identity slots while retaining row naming and selection behavior', () => {
     const changes: boolean[] = [];
     mount(

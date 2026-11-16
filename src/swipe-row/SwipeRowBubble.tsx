@@ -1,6 +1,9 @@
-import { useCallback } from 'react';
 import { Pressable } from 'react-native';
-import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
+import Animated, {
+  useAnimatedStyle,
+  useDerivedValue,
+  type SharedValue,
+} from 'react-native-reanimated';
 import { Text } from '../typography';
 import { bubbleGeometry } from './bubble-geometry';
 import type { SwipeRowAction } from './types';
@@ -36,8 +39,9 @@ export function SwipeRowBubble({
   testID?: string;
 }) {
   const sign = side === 'left' ? 1 : -1;
-  const geometry = useCallback(() => {
-    'worklet';
+  // Native mapper subscriptions do not traverse a captured function's closure.
+  // Share the derived shape so both styles subscribe to every drag update.
+  const geometry = useDerivedValue(() => {
     return bubbleGeometry(
       Math.max(0, sign * translateX.value),
       count * actionWidth,
@@ -48,18 +52,18 @@ export function SwipeRowBubble({
     );
   }, [actionWidth, count, index, primary, rowWidth, sign, translateX]);
   const style = useAnimatedStyle(() => {
-    const shape = geometry();
+    const shape = geometry.value;
     return {
       width: shape.width,
       marginLeft: index === 0 ? shape.gap : 0,
       marginRight: shape.gap,
       transform: [{ scaleY: shape.scaleY }],
     };
-  }, [geometry, index, translateX, rowWidth]);
+  }, [geometry, index]);
   const labelStyle = useAnimatedStyle(() => {
-    const width = Math.max(0, Math.min(96, geometry().width - 64));
+    const width = Math.max(0, Math.min(96, geometry.value.width - 64));
     return { width, opacity: Math.min(1, width / 32) };
-  }, [geometry, translateX, rowWidth]);
+  }, [geometry]);
   const Icon = action.icon;
   return (
     <Animated.View

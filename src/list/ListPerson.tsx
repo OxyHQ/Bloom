@@ -38,7 +38,12 @@ export function ListPerson({
   return (
     <Shell
       {...props}
-      label={props.label ?? [name, subtitle].filter(Boolean).join(', ')}
+      label={
+        props.label ??
+        [name, subtitle, typeof props.supporting === 'string' ? props.supporting : undefined]
+          .filter(Boolean)
+          .join(', ')
+      }
       leading={
         props.leading !== undefined ? (
           props.leading
@@ -56,11 +61,11 @@ export function ListPerson({
           </View>
         )
       }
-      content={
-        props.content !== undefined ? (
-          props.content
-        ) : (
-          <View pointerEvents="none" aria-hidden style={{ gap: 2, minWidth: 0 }}>
+      // Explicit content, including null, replaces the entire default identity block.
+      supporting={props.content !== undefined ? undefined : props.supporting}
+      title={
+        props.content !== undefined ? undefined : (
+          <>
             <Text variant="body-medium" numberOfLines={1} style={textStyle} testID={id('name')}>
               {name}
             </Text>
@@ -74,7 +79,7 @@ export function ListPerson({
                 {subtitle}
               </Text>
             ) : null}
-          </View>
+          </>
         )
       }
       trailing={

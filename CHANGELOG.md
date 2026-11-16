@@ -1,5 +1,12 @@
 # Changelog
 
+## 22.1.1
+
+### Fixed
+
+- Person list items now render common `supporting` text beneath the name and subtitle, using ListItem's existing one-to-three-line or adaptive clamp. String supporting text joins the default accessible name. Custom content overrides, avatar alignment and independent trailing actions are preserved.
+- Native list attachments receive taps without the horizontal scroll gate cancelling their buttons. Swipe bubbles subscribe to drag and layout updates on native, restoring visible actions while preserving rail scrolling and row swipe behavior.
+
 ## 22.1.0
 
 ### Added

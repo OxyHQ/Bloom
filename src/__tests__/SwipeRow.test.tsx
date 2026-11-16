@@ -495,7 +495,9 @@ it('gives nested horizontal scrolling precedence over row actions and releases i
   const inner = native.mock.results[0]?.value as { __config: Record<string, unknown> };
   expect(inner.__config.blocksExternalGesture).toBe(outer);
   expect(inner.__config.disallowInterruption).toBe(true);
-  expect(inner.__config.shouldActivateOnStart).toBe(true);
+  // Forcing activation on DOWN cancels child Pressables on Android. Let the
+  // native ScrollView claim a drag; its blocking relation still reserves it.
+  expect(inner.__config.shouldActivateOnStart).not.toBe(true);
   expect(outer.__config.touchAction).toBe('auto');
   expect(container.querySelector('[data-bloom-swipe-scroll]')).not.toBeNull();
   mount(fixture(false));

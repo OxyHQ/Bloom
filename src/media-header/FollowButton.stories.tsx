@@ -61,12 +61,16 @@ export const ColorComparison: Story = {
   render: (args) => (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 32, padding: 16 }}>
       {(['support', 'action'] as const).map((tone) => (
-        <View key={tone} style={{ width: 320, gap: 16 }}>
+        <View key={tone} style={{ width: 320, maxWidth: '100%', gap: 16 }}>
           <Text variant="headline-semibold">
             {tone === 'support' ? 'Secondary' : 'Tertiary · FAB color'}
           </Text>
           <ListItem
             person={{ name: 'David Revoy', subtitle: '@davidrevoy', avatar: defaultAvatarSource }}
+            supporting="Illustrator and open-source artist creating comics, sharing drawing techniques and building welcoming creative communities around the world."
+            supportingLines={2}
+            onPress={fn().mockName('ListItem.openProfile')}
+            testID={`${tone}-person-bio`}
             trailing={
               <InteractiveButton
                 {...args}

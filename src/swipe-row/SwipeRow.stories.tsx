@@ -160,6 +160,7 @@ export const OwnPaint: Story = {
 export const HorizontalContent: Story = {
   render: () => {
     const [openCount, setOpenCount] = useState(0);
+    const [attachmentCount, setAttachmentCount] = useState(0);
     return (
       <Frame>
         <SwipeRow
@@ -179,11 +180,18 @@ export const HorizontalContent: Story = {
           />
           <ChipRow testID="scroll-rail">
             {Array.from({ length: 8 }, (_, index) => `Attachment ${index + 1}.pdf`).map((name) => (
-              <Chip key={name}>{name}</Chip>
+              <Chip
+                key={name}
+                testID={`scroll-attachment-${name}`}
+                onPress={() => setAttachmentCount((count) => count + 1)}
+              >
+                {name}
+              </Chip>
             ))}
           </ChipRow>
         </SwipeRow>
         <Text testID="scroll-open-count">{String(openCount)}</Text>
+        <Text testID="scroll-attachment-count">Attachments opened: {attachmentCount}</Text>
         <View style={{ height: 1500 }} />
       </Frame>
     );
