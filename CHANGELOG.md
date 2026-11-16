@@ -1,5 +1,19 @@
 # Changelog
 
+## 21.8.0
+
+### Added
+
+- Semantic `AppShell.layout` families and independent continuous, framed and floating presentations. Panel roles, route inheritance and local groups resolve through the existing compositor; contradictory continuous frames produce actionable errors. `explainAppShellComposition` reports declared policy and ownership.
+- `Screen.kind` and container-aware `ScreenContent` for document, collection, table, canvas and form bodies. Screen primary actions support start/center/end placement and alone-only visibility without reserving empty clearance.
+- Panel session state and focus registration for inline/sheet adaptation. Registered drafts and focus survive host replacement; arbitrary React state and native media/view identity are not retained across that replacement.
+
+### Fixed
+
+- Semantic family and surface-style changes preserve the main mounted content. Bounded workspaces in document flow allocate their viewport once, including a shared header.
+
+Legacy variants and explicit geometry remain supported. See `docs/semantic-composition.mdx` for precedence, migration and the deprecation exit criteria.
+
 ## 21.7.1
 
 ### Fixed
