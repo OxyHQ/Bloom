@@ -90,8 +90,15 @@ function Example({
             </Button>
             <Button
               testID="semantic-presentation"
+              accessibilityLabel={`Presentation: ${presentation}`}
               onPress={() =>
-                setPresentation(presentation === 'continuous' ? 'framed' : 'continuous')
+                setPresentation(
+                  presentation === 'continuous'
+                    ? 'framed'
+                    : presentation === 'framed'
+                      ? 'floating'
+                      : 'continuous',
+                )
               }
             >
               Frame

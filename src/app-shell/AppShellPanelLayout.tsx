@@ -1216,12 +1216,13 @@ export function createPanelLayoutView(
   function PanelLayoutTracks({
     layout: declared,
     surfaceOwned = false,
+    viewportOwned = false,
     shellWidth,
     eligibilityFromGroup = false,
     fillWidth = false,
     gap,
     testID,
-  }: PanelLayoutViewProps & { surfaceOwned?: boolean }) {
+  }: PanelLayoutViewProps & { surfaceOwned?: boolean; viewportOwned?: boolean }) {
     const layoutReady = useShellLayoutReady();
     const [ownSpans, setOwnSpans] = useState<Readonly<Record<string, number>>>({});
     const spans = declared.spans ?? ownSpans;
@@ -1688,6 +1689,15 @@ export function createPanelLayoutView(
                     : {}),
                 } as WebCssStyle,
                 document ? {} : FILL,
+                !document && !viewportOwned && region?.flow === 'document'
+                  ? {
+                      height: webViewportHeightMinus(
+                        region.viewportInset.top + region.viewportInset.bottom,
+                      ),
+                      flexGrow: 0,
+                      flexShrink: 0,
+                    }
+                  : null,
               ]}
             >
               {Platform.OS === 'web' && restoration && !ancestorHost.restoresDocument ? (
@@ -1775,7 +1785,7 @@ export function createPanelLayoutView(
         testID={props.testID ? `${props.testID}-workspace` : undefined}
       >
         <ContentPanelNestingContext.Provider value={false}>
-          <PanelLayoutTracks {...props} surfaceOwned={joined} />
+          <PanelLayoutTracks {...props} surfaceOwned={joined} viewportOwned />
         </ContentPanelNestingContext.Provider>
       </Screen>
     );
@@ -1793,11 +1803,21 @@ export function createPanelLayoutView(
         scrollable={false}
         overlaySizing={document ? 'viewport' : 'panel'}
         overlayInset={document ? region?.viewportInset : undefined}
-        surfaceStyle={
+        surfaceStyle={[
+          FILL,
           handedWindowChrome && platformWindow
-            ? [FILL, windowEdgeTopCorners(platformWindow.metrics)]
-            : FILL
-        }
+            ? windowEdgeTopCorners(platformWindow.metrics)
+            : null,
+          !document && region?.flow === 'document'
+            ? {
+                height: webViewportHeightMinus(
+                  region.viewportInset.top + region.viewportInset.bottom,
+                ),
+                flexGrow: 0,
+                flexShrink: 0,
+              }
+            : null,
+        ]}
         contentStyle={FILL}
       >
         {workspace}
