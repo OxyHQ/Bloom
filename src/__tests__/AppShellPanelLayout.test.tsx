@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import * as Native from 'react-native';
 import { SafeAreaInsetsContext, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { render, fireEvent } from '@testing-library/react-native';
@@ -29,6 +29,24 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 beforeEach(() => mockWindowSize({ width: 1440, height: 900, scale: 1, fontScale: 1 }));
 afterEach(() => jest.restoreAllMocks());
 describe('root modular panels', () => {
+  it.each([undefined, <Native.Text key="header">Workspace</Native.Text>])(
+    'keeps local drafts when joined surfaces become separately framed, header=%s',
+    (header) => {
+      function Draft() {
+        const [value, setValue] = useState('');
+        return <Native.TextInput testID="local-draft" value={value} onChangeText={setValue} />;
+      }
+      const panels = [{ id: 'main', content: <Draft /> }];
+      const screen = render(<AppShell panelLayout={{ panels, header, appearance: 'joined' }} />, {
+        wrapper,
+      });
+      fireEvent.changeText(screen.getByTestId('local-draft'), 'keep local React state');
+      screen.rerender(<AppShell panelLayout={{ panels, header, appearance: 'separated' }} />);
+      expect(screen.getByTestId('local-draft').props.value).toBe('keep local React state');
+      screen.rerender(<AppShell panelLayout={{ panels, header, appearance: 'plain' }} />);
+      expect(screen.getByTestId('local-draft').props.value).toBe('keep local React state');
+    },
+  );
   it('reports visibility as resolved on native layout hosts', () => {
     function Probe() {
       const panel = useAppShellPanel();

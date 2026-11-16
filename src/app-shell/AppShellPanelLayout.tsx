@@ -95,6 +95,7 @@ import {
 } from './panel-layout';
 import { PanelDropProvider, PanelDropZones, usePanelDropCoordinator } from './PanelDropZones';
 import { RetainedPanelLayout } from './RetainedPanelLayout';
+import { PanelSessionProvider } from './panel-session';
 
 const PanelWindowInsetsContext = React.createContext<EdgeInsets | null>(null);
 // The document is one scroll owner. Transparent groups delegate its restoration
@@ -823,24 +824,18 @@ export function createPanelLayoutView(
       const framed = region?.framed ?? true;
       const surface = panel.group ? (
         body
-      ) : joined ? (
-        <View style={FILL}>
-          {panel.errorBoundary ? (
-            <PanelErrorBoundary {...(panel.errorBoundary === true ? {} : panel.errorBoundary)}>
-              {body}
-            </PanelErrorBoundary>
-          ) : (
-            body
-          )}
-        </View>
       ) : (
         <ContentPanel
-          appearance={panel.appearance}
+          appearance={joined ? 'plain' : panel.appearance}
           chrome={panel.chrome}
           surfaceClassName={panel.surfaceClassName}
           surfaceColor={panel.surfaceColor}
           framed={
-            region?.presentation === 'continuous' ? false : cssScope && cssFraming ? true : framed
+            joined || region?.presentation === 'continuous'
+              ? false
+              : cssScope && cssFraming
+                ? true
+                : framed
           }
           maskColor={region?.maskColor}
           errorBoundary={panel.errorBoundary}
@@ -867,7 +862,7 @@ export function createPanelLayoutView(
       );
       const resizable = panel.resizable && hasNext && track.visible && !alone;
       return (
-        <>
+        <PanelSessionProvider presentation={track.floating ? 'floating' : 'inline'} active={active}>
           <AnimatedView
             ref={panelRef}
             {...(cssScope
@@ -1032,7 +1027,7 @@ export function createPanelLayoutView(
               </PanelFloatingSurface>
             </SafeAreaInsetsContext.Provider>
           ) : null}
-        </>
+        </PanelSessionProvider>
       );
     };
     if (panel.group)
@@ -1698,32 +1693,34 @@ export function createPanelLayoutView(
               {Platform.OS === 'web' && restoration && !ancestorHost.restoresDocument ? (
                 <DocumentRestoration enabled={document && ownsDocumentRestoration} />
               ) : null}
-              {joined && !surfaceOwned ? (
-                <ContentPanel
-                  appearance={layout.appearance === 'plain' ? 'plain' : undefined}
-                  framed={
-                    layout.presentation === 'continuous'
-                      ? false
-                      : cssScope && !eligibilityFromGroup
-                        ? true
-                        : (region?.framed ?? true)
-                  }
-                  fill={!document}
-                  scrollable={false}
-                  overlaySizing={document ? 'viewport' : 'panel'}
-                  overlayInset={document ? region?.viewportInset : undefined}
-                  surfaceStyle={
-                    groupWindowChrome && platformWindow
-                      ? [FILL, windowEdgeTopCorners(platformWindow.metrics)]
-                      : FILL
-                  }
-                  contentStyle={FILL}
-                >
+              <ContentPanel
+                appearance={
+                  !joined || surfaceOwned || layout.appearance === 'plain' ? 'plain' : undefined
+                }
+                framed={
+                  !joined || surfaceOwned || layout.presentation === 'continuous'
+                    ? false
+                    : cssScope && !eligibilityFromGroup
+                      ? true
+                      : (region?.framed ?? true)
+                }
+                fill={!document}
+                scrollable={false}
+                overlaySizing={document ? 'viewport' : 'panel'}
+                overlayInset={document ? region?.viewportInset : undefined}
+                surfaceStyle={
+                  groupWindowChrome && platformWindow
+                    ? [FILL, windowEdgeTopCorners(platformWindow.metrics)]
+                    : FILL
+                }
+                contentStyle={FILL}
+              >
+                {/* The compositor owns this transparent group boundary and
+                      its leaf surfaces; they never paint two frames together. */}
+                <ContentPanelNestingContext.Provider value={false}>
                   {content}
-                </ContentPanel>
-              ) : (
-                content
-              )}
+                </ContentPanelNestingContext.Provider>
+              </ContentPanel>
               {layout.onPanelOrderChange ? (
                 <Text
                   accessibilityLiveRegion="polite"
@@ -1777,14 +1774,16 @@ export function createPanelLayoutView(
         header={props.layout.header}
         testID={props.testID ? `${props.testID}-workspace` : undefined}
       >
-        <PanelLayoutTracks {...props} surfaceOwned={joined} />
+        <ContentPanelNestingContext.Provider value={false}>
+          <PanelLayoutTracks {...props} surfaceOwned={joined} />
+        </ContentPanelNestingContext.Provider>
       </Screen>
     );
-    return joined ? (
+    return (
       <ContentPanel
-        appearance={props.layout.appearance === 'plain' ? 'plain' : undefined}
+        appearance={!joined || props.layout.appearance === 'plain' ? 'plain' : undefined}
         framed={
-          props.layout.presentation === 'continuous'
+          !joined || props.layout.presentation === 'continuous'
             ? false
             : cssScope && !props.eligibilityFromGroup
               ? true
@@ -1803,8 +1802,6 @@ export function createPanelLayoutView(
       >
         {workspace}
       </ContentPanel>
-    ) : (
-      workspace
     );
   }
   return PanelLayoutView;
