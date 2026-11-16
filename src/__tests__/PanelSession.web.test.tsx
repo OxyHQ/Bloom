@@ -120,6 +120,9 @@ it('restores the focused text input and selection when presentation changes', ()
   });
   render('floating');
   expect(input()).not.toBe(previous);
+  // AppShell's imperative Dialog can autofocus this input before our RAF.
+  // No user pointer/key action occurred, so the pending selection must survive.
+  act(() => input().focus());
   frame();
   expect(document.activeElement).toBe(input());
   expect(input().selectionStart).toBe(2);
