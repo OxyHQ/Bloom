@@ -25,7 +25,9 @@ function Editor() {
   useLayoutEffect(() => {
     node = { focus: jest.fn(), setSelection: jest.fn() };
     handlers.ref(node);
-    return () => handlers.ref(null);
+    return () => {
+      handlers.ref(null);
+    };
   }, []);
   return null;
 }
@@ -51,7 +53,7 @@ beforeEach(() => {
     return id;
   };
   global.cancelAnimationFrame = (id) => {
-    frames.delete(id);
+    if (id != null) frames.delete(id);
   };
   Platform.OS = 'android';
   current = null;
