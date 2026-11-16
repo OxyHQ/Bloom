@@ -55,6 +55,33 @@ caller trailing content and built-in actions remain visible and stationary.
 `ListTrailingControls.web.test.tsx` separately protects that classification.
 A catalogue load/viewport sweep does not replace this pointer gate.
 
+## Touch compatibility clicks can target a different row
+
+A selected project in the Gemies sidebar kept its original Pressable mounted,
+but the selection header moved the list down 40px. Chromium delivered touch
+start/end to the original row and then hit-tested its compatibility click
+against the new layout. The preceding row opened: RNW's per-responder
+long-press flag could only cancel a click on the original row.
+
+List cancels the default of `touchend` only after a consumed long press.
+React's `touchend` listener is non-passive (unlike its `touchstart` and
+`touchmove` listeners). The gesture flag resets on start, cancel and release;
+there is no global click filter or suppression timer. Native handlers remain
+unchanged. Merely asserting the selected checkbox or target identity misses
+the subsequent navigation.
+
+Run `scripts/verify-list-long-press-release.mjs` against Storybook with
+`CHROME_PATH`, optionally `PUPPETEER_CORE_PATH`, `STORYBOOK_URL` and `REPORT_DIR`.
+It uses real CDP touch events in both themes on the existing Mail Pointer
+Targets/Bulk Selection stories. An external diagnostic layout change places a
+different navigable row under the held coordinate; the gate checks that the
+original target stays mounted, touchend is cancelable and prevented, and no
+compatibility click or navigation follows. Subsequent taps, cancel, scroll,
+no-action holds and already-active selection are exercised separately. The
+same script fails against the previous source with unintended navigation.
+The real Gemies fixture remains the consumer check for its actual header
+transition; the diagnostic mutation is not shipped UI.
+
 ## Canvas readbacks can change the backend being verified
 
 Use a **fresh destination canvas for each pose** in avatar pixel gates, and never

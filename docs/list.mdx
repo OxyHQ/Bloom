@@ -43,6 +43,8 @@ reserved on pointer layouts, so entering the row does not move a control under
 the pointer. Only renderer-owned passive conversation/mail metadata yields to
 the menu; touch keeps trailing content and omits the hover menu.
 
+On touch, a long press consumed by selection or `onLongPress` cancels the browser's release click. This keeps a changing selection header from redirecting that click to a different row; ordinary taps and scroll gestures retain their normal behavior.
+
 For a person, `person.name` and `person.subtitle` (for example, a handle) stay on
 separate lines. Add a bio through the common `supporting` and `supportingLines`
 props; it uses the same clamp as ordinary rows. String supporting text joins the
