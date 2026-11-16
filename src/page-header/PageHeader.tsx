@@ -684,7 +684,14 @@ function PageHeaderComponent({
       title
     );
   const titleText = (
-    <View style={{ minWidth: 0, flexShrink: 1, alignItems: centered ? 'center' : 'flex-start' }}>
+    <View
+      style={{
+        minWidth: 0,
+        maxWidth: '100%',
+        flexShrink: 1,
+        alignItems: centered ? 'center' : 'flex-start',
+      }}
+    >
       {onPressTitle && titleAppearance === 'capsule' ? (
         <View
           style={{
