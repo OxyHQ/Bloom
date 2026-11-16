@@ -7,3 +7,6 @@ export {
 } from '../context';
 export type { AppShellContextValue, AppShellPanelValue } from '../context';
 export { usePanelNavigation, useOptionalPanelNavigation } from '../PanelNavigation';
+
+export { usePanelSessionState, usePanelSessionFocus } from '../panel-session';
+export type { PanelSessionFocusTarget } from '../panel-session';

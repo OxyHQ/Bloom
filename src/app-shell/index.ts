@@ -103,3 +103,6 @@ export type {
   AppShellPanelRole,
   AppShellComposition,
 } from './composition';
+
+export { usePanelSessionState, usePanelSessionFocus } from './panel-session';
+export type { PanelSessionFocusTarget } from './panel-session';

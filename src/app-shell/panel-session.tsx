@@ -1,0 +1,184 @@
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useRef,
+  useSyncExternalStore,
+  type Dispatch,
+  type ReactNode,
+  type RefCallback,
+  type SetStateAction,
+} from 'react';
+import { Platform, TextInput } from 'react-native';
+
+type Presentation = 'inline' | 'floating';
+type Selection = { start: number; end: number };
+
+/** A text input handle on React Native or the web. */
+export interface PanelSessionFocusTarget {
+  focus(): void;
+  isFocused?(): boolean;
+  setNativeProps?(props: { selection: Selection }): void;
+  setSelectionRange?(start: number, end: number): void;
+}
+
+/** Internal, scoped to one descriptor ID for the lifetime of its panel owner. */
+class PanelSession {
+  values = new Map<string, unknown>();
+  listeners = new Set<() => void>();
+  presentation: Presentation = 'inline';
+  active = true;
+  focus: {
+    key: string;
+    presentation: Presentation;
+    target: PanelSessionFocusTarget | null;
+    selection?: Selection;
+  } | null = null;
+  subscribe = (listener: () => void) => {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  };
+  read<T>(key: string, initial: T | (() => T)): T {
+    if (!this.values.has(key)) {
+      this.values.set(key, typeof initial === 'function' ? (initial as () => T)() : initial);
+    }
+    return this.values.get(key) as T;
+  }
+  write<T>(key: string, action: SetStateAction<T>, initial: T | (() => T)) {
+    const previous = this.read(key, initial);
+    const next = typeof action === 'function' ? (action as (value: T) => T)(previous) : action;
+    if (Object.is(previous, next)) return;
+    this.values.set(key, next);
+    for (const listener of this.listeners) listener();
+  }
+}
+
+const PanelSessionContext = createContext<PanelSession | null>(null);
+
+/** Internal: sits above BOTH inline and modal presentation branches. */
+export function PanelSessionProvider({
+  presentation,
+  active,
+  children,
+}: {
+  presentation: Presentation;
+  active: boolean;
+  children: ReactNode;
+}) {
+  const session = useRef<PanelSession | null>(null);
+  if (!session.current) session.current = new PanelSession();
+  session.current.presentation = presentation;
+  session.current.active = active;
+  // Closing must never leave a pending focus request for a later reopen.
+  if (!active) session.current.focus = null;
+  return (
+    <PanelSessionContext.Provider value={session.current}>{children}</PanelSessionContext.Provider>
+  );
+}
+
+function useSession() {
+  const parent = useContext(PanelSessionContext);
+  const local = useRef<PanelSession | null>(null);
+  if (!local.current) local.current = new PanelSession();
+  return parent ?? local.current;
+}
+
+/**
+ * State registered with the enclosing panel, retained across inline/sheet
+ * remounts and hidden/closed presentations. Use a unique domain key (for example
+ * `comment:${id}:draft`). Removing the panel/route destroys its session. Outside
+ * a descriptor panel this behaves as component-local state. This does not retain
+ * arbitrary React state, native views, media instances or network persistence.
+ */
+export function usePanelSessionState<T>(
+  key: string,
+  initial: T | (() => T),
+): [T, Dispatch<SetStateAction<T>>] {
+  const session = useSession();
+  const initialRef = useRef(initial);
+  initialRef.current = initial;
+  const snapshot = useCallback(() => session.read(key, initialRef.current), [session, key]);
+  const value = useSyncExternalStore(session.subscribe, snapshot, snapshot);
+  const setValue = useCallback(
+    (action: SetStateAction<T>) => session.write(key, action, initialRef.current),
+    [session, key],
+  );
+  return [value, setValue];
+}
+
+/**
+ * Register a text input's focus and selection with its panel. Attach `ref`,
+ * `onFocus`, `onBlur`, `onSelectionChange`; compose existing handlers normally.
+ * A presentation change restores the focused input after the new dialog has
+ * mounted. User blur/close never requests focus. Input value belongs in
+ * usePanelSessionState; focus is restoration, not native view retention.
+ */
+export function usePanelSessionFocus<T extends PanelSessionFocusTarget>(key: string) {
+  const session = useSession();
+  const presentation = session.presentation;
+  const target = useRef<T | null>(null);
+  const selection = useRef<Selection | undefined>(undefined);
+  const ref: RefCallback<T> = useCallback((node: T | null) => {
+    target.current = node;
+  }, []);
+  const onFocus = useCallback(() => {
+    session.focus = { key, presentation, target: target.current, selection: selection.current };
+  }, [session, key, presentation]);
+  const onBlur = useCallback(() => {
+    // The old presentation can emit blur as its native view is removed.
+    if (session.presentation === presentation && session.focus?.key === key) session.focus = null;
+  }, [session, key, presentation]);
+  const onSelectionChange = useCallback(
+    (event: { nativeEvent: { selection: Selection } }) => {
+      selection.current = event.nativeEvent.selection;
+      if (session.focus?.key === key) session.focus.selection = selection.current;
+    },
+    [session, key],
+  );
+  useLayoutEffect(() => {
+    const focused = session.focus;
+    if (!session.active || focused?.key !== key || focused.presentation === presentation) return;
+    // Dialog's own focus boundary mounts first; restore on the next frame so it
+    // does not replace the previously focused editor with the first button.
+    const cancelForInteraction = () => {
+      if (session.focus === focused) session.focus = null;
+    };
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      document.addEventListener('pointerdown', cancelForInteraction, true);
+      document.addEventListener('keydown', cancelForInteraction, true);
+    }
+    const frame = requestAnimationFrame(() => {
+      if (!session.active || session.focus !== focused || !target.current) return;
+      const current: unknown =
+        Platform.OS === 'web'
+          ? typeof document === 'undefined'
+            ? null
+            : document.activeElement
+          : TextInput.State.currentlyFocusedInput();
+      const empty =
+        current == null || (typeof document !== 'undefined' && current === document.body);
+      // Never take focus back after the user or another surface chose a new
+      // destination during adaptation. The previous host may already detach.
+      if (!empty && current !== focused.target && current !== target.current) {
+        session.focus = null;
+        return;
+      }
+      target.current.focus();
+      if (focused.selection) {
+        selection.current = focused.selection;
+        target.current.setNativeProps?.({ selection: focused.selection });
+        target.current.setSelectionRange?.(focused.selection.start, focused.selection.end);
+      }
+      session.focus = { ...focused, presentation, target: target.current };
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      if (Platform.OS === 'web' && typeof document !== 'undefined') {
+        document.removeEventListener('pointerdown', cancelForInteraction, true);
+        document.removeEventListener('keydown', cancelForInteraction, true);
+      }
+    };
+  }, [session, key, presentation]);
+  return { ref, onFocus, onBlur, onSelectionChange };
+}

@@ -13,6 +13,8 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = realpathSync(process.env.BLOOM_SOURCE_ROOT ?? path.join(here, '../..'));
 const files = [
   'src/app-shell/AppShellPanelLayout.tsx',
+  'src/app-shell/panel-session.tsx',
+  'scripts/panel-groups-native/PanelSessionLab.tsx',
   'src/app-shell/panel-layout.ts',
   'src/app-shell/panel-layout-types.ts',
   'src/app-shell/panel-motion.ts',
