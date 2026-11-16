@@ -141,7 +141,7 @@ const HEADER_WIDTHS = [BREAKPOINTS.sm, BREAKPOINTS.xl];
 
 /** Container queries own continuous web width changes; React only measures content. */
 const PAGE_HEADER_LAYOUT_CSS = `
-[data-bloom-page-header-bar], [data-bloom-page-header-accessory] {
+[data-bloom-page-header-bar], [data-bloom-page-header-accessory], [data-bloom-page-header-overline] {
   --bloom-page-header-inset: calc(${OUTER_INSET}px - var(--bloom-page-header-touch-inset, 0px));
   padding-left: var(--bloom-page-header-inset) !important;
   padding-right: var(--bloom-page-header-inset) !important;
@@ -169,6 +169,7 @@ const NO_INSETS = { top: 0, right: 0, bottom: 0, left: 0 };
 function PageHeaderComponent({
   title,
   titleVariant,
+  overline,
   subtitle,
   titleVisual,
   titleLayout = 'inline',
@@ -1013,6 +1014,20 @@ function PageHeaderComponent({
               pointerEventsStyle('none'),
             ]}
           />
+        ) : null}
+        {overline ? (
+          <View
+            {...dataHook('bloomPageHeaderOverline')}
+            testID={testID ? `${testID}-overline` : undefined}
+            style={[
+              { minWidth: 0 },
+              isWeb
+                ? ({ paddingTop: 'var(--bloom-page-header-inset)' } as WebCssStyle)
+                : { paddingTop: sideInset, paddingLeft: sideInset, paddingRight: sideInset },
+            ]}
+          >
+            {overline}
+          </View>
         ) : null}
         {barEmpty ? null : (
           <BloomScope controlDensity={navigationPresentation ? 'compact' : undefined}>

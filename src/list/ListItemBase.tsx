@@ -166,7 +166,6 @@ export function createListItem({
               ? { backgroundColor: active || checked ? selectedFill : 'transparent' }
               : {}),
           } as WebCssStyle,
-          style,
         ]}
       >
         {trigger ??
@@ -378,6 +377,7 @@ export function createListItem({
     // Never remount the row when selection begins: it would lose gesture ownership.
     return (
       <SwipeRow
+        style={style}
         actionPresentation="bubbles"
         actions={
           disabled || selecting || !(swipeEnabled ?? swipeAvailable) ? {} : (swipeActions ?? {})

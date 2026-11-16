@@ -50,6 +50,19 @@ afterEach(() => {
 });
 
 describe('PageHeader', () => {
+  it('keeps breadcrumb context in the same measured header as its title and actions', () => {
+    const press = jest.fn();
+    const screen = renderHeader({
+      title: 'Project',
+      overline: <Button onPress={press}>Workspace</Button>,
+      actions: <Button>Share</Button>,
+    });
+    expect(screen.getByTestId('h-overline').findByType(Button)).toBeTruthy();
+    expect(screen.getByTestId('h-title').props['aria-level']).toBe(1);
+    fireEvent.press(screen.getByText('Workspace'));
+    expect(press).toHaveBeenCalledTimes(1);
+  });
+
   it('renders the back button only with onBack, named by backLabel, and calls it', () => {
     setWidth(390);
     const onBack = jest.fn();

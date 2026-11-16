@@ -91,6 +91,8 @@ export interface PageHeaderProps {
   title?: ReactNode;
   /** Typography for a string title, retaining heading semantics and the header's tone. */
   titleVariant?: TypeScaleVariant;
+  /** Full-width context above the main row, such as a breadcrumb trail. */
+  overline?: ReactNode;
   /** A string renders as a secondary line under the title; a node renders as-is. */
   subtitle?: ReactNode;
   /** Identity visual beside the label or above it, such as an Avatar or AvatarGroup. */

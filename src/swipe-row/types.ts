@@ -1,3 +1,4 @@
+import type { StyleProp, ViewStyle } from 'react-native';
 import type { ReactNode } from 'react';
 
 import type { BloomIconComponent } from '../icons/icon-component';
@@ -82,5 +83,7 @@ export interface SwipeRowProps {
   /** Fires whenever a pane settles open or closed. */
   onOpenChange?: (side: 'left' | 'right' | null) => void;
   children: ReactNode;
+  /** Layout of the parent-facing swipe host, including flex, width and margins. */
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 }

@@ -102,6 +102,7 @@ export function SwipeRow({
   closeLabel: closeLabelProp,
   onOpenChange,
   children,
+  style,
   testID,
 }: SwipeRowProps) {
   useInteractiveWebCss(
@@ -416,12 +417,15 @@ export function SwipeRow({
             }
           : undefined
       }
-      style={{
-        position: 'relative',
-        ...(height === undefined ? null : { height }),
-        borderRadius: radius,
-        overflow: 'hidden',
-      }}
+      style={[
+        {
+          position: 'relative',
+          ...(height === undefined ? null : { height }),
+          borderRadius: radius,
+          overflow: 'hidden',
+        },
+        style,
+      ]}
       testID={testID}
     >
       {leftWidth > 0 ? (

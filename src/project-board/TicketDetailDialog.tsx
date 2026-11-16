@@ -1,3 +1,6 @@
+import { RiLinkM as LinkActionIcon } from '../icons/remix/RiLinkM';
+import { RiCheckLine as CopiedActionIcon } from '../icons/remix/RiCheckLine';
+import { RiMore2Fill as TicketActionsIcon } from '../icons/remix/RiMore2Fill';
 import { PageHeader } from '../page-header';
 import { RiStarLine } from '../icons/remix/RiStarLine';
 import { RiStarFill } from '../icons/remix/RiStarFill';
@@ -25,13 +28,10 @@ import {
   SourceChip as Chip,
   SourcePressable as Pressable,
   RiArrowUpLine,
-  RiCheckLine,
   RiCheckboxCircleLine,
   RiEditLine,
   RiFileCopyLine,
   RiFolder6Line,
-  RiLinkM,
-  RiMore2Fill,
   RiRestartLine,
   SourceText as Text,
   SourceView as View,
@@ -186,7 +186,6 @@ export function TicketDetailDialog({
             testID="ticket-detail-screen"
             navigationScope="isolated"
             scroll="content"
-            headerPlacement="overlay"
             style={{
               flex: 1,
               minHeight: 0,
@@ -214,7 +213,7 @@ export function TicketDetailDialog({
                         label={copyMessage === m.linkCopied ? m.linkCopied : m.copyLink}
                       >
                         <Button
-                          icon={copyMessage === m.linkCopied ? RiCheckLine : RiLinkM}
+                          icon={copyMessage === m.linkCopied ? CopiedActionIcon : LinkActionIcon}
                           accessibilityLabel={m.copyLink}
                           onPress={() => {
                             void copy('link');
@@ -223,7 +222,7 @@ export function TicketDetailDialog({
                       </BoardTooltip>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button icon={RiMore2Fill} accessibilityLabel={m.actions} />
+                          <Button icon={TicketActionsIcon} accessibilityLabel={m.actions} />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
                           label={m.actions}

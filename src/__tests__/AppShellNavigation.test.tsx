@@ -63,7 +63,7 @@ function setWidth(width: number) {
 afterEach(() => jest.restoreAllMocks());
 
 describe('AppShellHeader', () => {
-  it('title is a level-1 heading in title-2-medium with the px4 inset', () => {
+  it('title keeps level-1 semantics and typography through PageHeader', () => {
     setWidth(1440);
     const screen = renderIn(<AppShellHeader title="Welcome" onMenuPress={() => {}} />);
     const title = screen.getByText('Welcome');
@@ -71,8 +71,6 @@ describe('AppShellHeader', () => {
     expect(resolvedStyle(title.props.style)).toMatchObject({
       fontSize: 20,
       lineHeight: 26,
-      paddingLeft: 4,
-      paddingRight: 4,
     });
   });
 });

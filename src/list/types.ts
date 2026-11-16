@@ -180,6 +180,7 @@ export interface ListCommonProps {
   fullSwipeAction?: import('../swipe-row/types').SwipeRowProps['fullSwipeAction'];
   onAction?: (key: string) => void;
   swipeEnabled?: boolean;
+  /** Parent-facing row layout, applied to the swipe host exactly once. */
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
