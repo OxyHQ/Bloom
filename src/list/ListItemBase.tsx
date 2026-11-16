@@ -59,6 +59,7 @@ export function createListItem({
     disabled = false,
     active = false,
     onPress,
+    onPrefetch,
     href,
     onLongPress,
     trigger,
@@ -198,6 +199,9 @@ export function createListItem({
                 const action = commands.find((item) => item.key === event.nativeEvent.actionName);
                 if (action) perform(action);
               }}
+              onHoverIn={disabled ? undefined : onPrefetch}
+              onFocus={disabled ? undefined : onPrefetch}
+              onPressIn={disabled ? undefined : onPrefetch}
               onPress={(event) => {
                 if (selecting && onCheckedChange) {
                   event.preventDefault();

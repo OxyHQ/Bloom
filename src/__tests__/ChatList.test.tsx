@@ -236,6 +236,19 @@ describe('previewSummary and composeChatRowName', () => {
 //  ChatListItem
 // ---------------------------------------------------------------------------
 
+it('prefetches a list destination on keyboard intent without opening it, and skips disabled rows', () => {
+  const prefetch = jest.fn();
+  const open = jest.fn();
+  mount(<ListItem title="Notes" onPress={open} onPrefetch={prefetch} testID="prefetch" />);
+  act(() => byTestId('prefetch-link').focus());
+  expect(prefetch).toHaveBeenCalledTimes(1);
+  expect(open).not.toHaveBeenCalled();
+  mount(<ListItem title="Notes" onPress={open} onPrefetch={prefetch} disabled testID="prefetch" />);
+  act(() => byTestId('prefetch-link').dispatchEvent(new FocusEvent('focusin', { bubbles: true })));
+  expect(prefetch).toHaveBeenCalledTimes(1);
+  expect(open).not.toHaveBeenCalled();
+});
+
 describe('ChatListItem geometry', () => {
   it('uses the shared compact geometry and avatar size', () => {
     mount(<ListItem conversation={{ name: 'Ana' }} testID="row" />);

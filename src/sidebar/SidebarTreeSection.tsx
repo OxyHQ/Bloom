@@ -1,3 +1,4 @@
+import { ListItem } from '../list';
 import React, { memo, useCallback, useEffect, useRef, type ComponentRef } from 'react';
 import {
   Pressable,
@@ -19,7 +20,6 @@ import Animated, {
 import { Collapsible } from '../collapsible';
 import { DropZone } from '../drop-zone';
 import { useControllableState } from '../hooks/use-controllable-state';
-import { useInteractionState } from '../hooks/use-interaction-state';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { useCommonMessages } from '../locale/common-messages';
@@ -72,15 +72,12 @@ type TreePress = (item: SidebarTreeItem, folder?: SidebarTreeFolder) => void;
  *             `tree.status`, inset 8, in place of rows.
  *   rows      2 apart: direct rows (any depth), then folders 4 apart.
  *
- * A row: radius full, py `tree.padding`, inset 8 plus 16 per level. In a section where any
- * row nests, every row keeps a `tree.icon` lane for the disclosure (a chevron that
- * turns 90° open) so labels align; then the icon or `leading` (`tree.icon` box, or `tree.avatar`
- * when the row has a `description`, gap 8), the label (`tree.label` text-secondary, truncating) and the `meta` chip.
- * Hover and selection fill the whole line with background-secondary-hover; the
- * actions sit inside it, at the end, never in the row's press target. Children
- * ease open and shut (300ms) and are only mounted while shown. A row with a
- * `drop` is a `DropZone`, filled with the accent (its label, glyph and
- * disclosure in the accent's foreground) while a drag it would take is over it.
+ * ListItem owns each row's body, spacing, selection and focus paint. The tree
+ * owns indentation, disclosure, drag/drop and its optional command controls.
+ * Its custom trigger preserves keyboard/accessibility moves and link semantics
+ * while display-only leading content and metadata remain transparent to hits.
+ * Children ease open and shut (300ms) and mount only while shown. A row with a
+ * drop is a DropZone; its accepted-drag paint belongs to the outer tree owner.
  */
 export const SidebarTreeSection = memo(function SidebarTreeSection({
   section,
@@ -410,7 +407,6 @@ const TreeRow = memo(function TreeRow({
   const anyDragging = useTreeDragging();
   const { dragging, indicator } = useTreeRowDrag(item.key);
   const { lit, zone } = useTreeRowDrop(item.drop);
-  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const [open, setOpen] = useControllableState<boolean>({
     value: item.open,
     defaultValue: item.defaultOpen ?? false,
@@ -542,9 +538,7 @@ const TreeRow = memo(function TreeRow({
       {...(IS_WEB ? { dataSet: { bloomSidebarRow: item.actionsVisibility ?? 'always' } } : {})}
       onPointerEnter={() => {
         item.onPrefetch?.();
-        if (IS_WEB) onHoverIn();
       }}
-      onPointerLeave={IS_WEB ? onHoverOut : undefined}
       onTouchStart={item.onPrefetch}
       style={{
         position: 'relative',
@@ -560,9 +554,7 @@ const TreeRow = memo(function TreeRow({
           ? palette.selected
           : indicator === 'inside'
             ? palette.tertiaryHover
-            : selected || hovered
-              ? palette.rowHover
-              : 'transparent',
+            : 'transparent',
         opacity: dragging && IS_WEB ? 0.5 : 1,
       }}
       testID={`sidebar-tree-row-${item.key}`}
@@ -603,77 +595,81 @@ const TreeRow = memo(function TreeRow({
           <View style={{ width: lane + 4, flexShrink: 0 }} />
         )
       ) : null}
-      <Pressable
-        {...(IS_WEB
-          ? {
-              dataSet: { bloomSidebar: 'ring' },
-              ...(item.href ? { href: item.href } : null),
-              ...(selected ? { 'aria-current': 'page' } : null),
+      <ListItem
+        testID={`sidebar-tree-item-${item.key}`}
+        active={selected}
+        label={[item.label, item.description, item.meta].filter(Boolean).join(', ')}
+        style={{ flex: 1, minWidth: 0 }}
+        trigger={
+          <Pressable
+            {...(IS_WEB
+              ? {
+                  dataSet: { bloomListLink: '' },
+                  ...(item.href ? { href: item.href } : null),
+                  ...(selected ? { 'aria-current': 'page' } : null),
+                }
+              : {})}
+            role={item.href ? 'link' : 'button'}
+            accessibilityLabel={[item.label, item.description, item.meta]
+              .filter(Boolean)
+              .join(', ')}
+            accessibilityState={{ selected }}
+            accessibilityActions={accessibilityActions}
+            onAccessibilityAction={
+              canDrag
+                ? (event: AccessibilityActionEvent) =>
+                    runMove(event.nativeEvent.actionName as TreeMove)
+                : undefined
             }
-          : {})}
-        role={item.href ? 'link' : 'button'}
-        accessibilityLabel={[item.label, item.description, item.meta].filter(Boolean).join(', ')}
-        accessibilityState={{ selected }}
-        accessibilityActions={accessibilityActions}
-        onAccessibilityAction={
-          canDrag
-            ? (event: AccessibilityActionEvent) => runMove(event.nativeEvent.actionName as TreeMove)
-            : undefined
+            onKeyDown={
+              IS_WEB && canDrag
+                ? (event: KeyDownEvent) => {
+                    const native = event.nativeEvent;
+                    const name = MOVE_KEYS[native.key];
+                    if (!name || !native.altKey || !native.shiftKey) return;
+                    event.preventDefault();
+                    // The arrows that nest and un-nest follow the reading direction.
+                    runMove(
+                      rtl && (name === 'in' || name === 'out')
+                        ? name === 'in'
+                          ? 'out'
+                          : 'in'
+                        : name,
+                    );
+                  }
+                : undefined
+            }
+            onLongPress={canDrag ? undefined : item.onLongPress}
+            onPress={onPress}
+            onFocus={item.onPrefetch}
+            style={[StyleSheet.absoluteFill, { borderRadius: borderRadius.full }]}
+          />
         }
-        onKeyDown={
-          IS_WEB && canDrag
-            ? (event: KeyDownEvent) => {
-                const native = event.nativeEvent;
-                const name = MOVE_KEYS[native.key];
-                if (!name || !native.altKey || !native.shiftKey) return;
-                event.preventDefault();
-                // The arrows that nest and un-nest follow the reading direction.
-                runMove(
-                  rtl && (name === 'in' || name === 'out') ? (name === 'in' ? 'out' : 'in') : name,
-                );
-              }
-            : undefined
+        leading={
+          Icon || item.leading != null ? (
+            <View
+              pointerEvents="none"
+              style={{
+                width: leadingBox,
+                height: leadingBox,
+                flexShrink: 0,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {Icon ? (
+                <Icon
+                  width={tree.icon}
+                  height={tree.icon}
+                  fill={lit ? palette.selectedForeground : palette.textSecondary}
+                />
+              ) : (
+                item.leading
+              )}
+            </View>
+          ) : null
         }
-        onLongPress={canDrag ? undefined : item.onLongPress}
-        onPress={onPress}
-        style={
-          {
-            flex: 1,
-            minWidth: 0,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-            paddingTop: tree.padding,
-            paddingBottom: tree.padding,
-            paddingInlineStart: nests ? 0 : inset,
-            paddingInlineEnd: 8,
-            borderRadius: borderRadius.full,
-            '--bloom-sidebar-ring': palette.ring,
-          } as WebCssStyle
-        }
-      >
-        {Icon || item.leading != null ? (
-          <View
-            style={{
-              width: leadingBox,
-              height: leadingBox,
-              flexShrink: 0,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {Icon ? (
-              <Icon
-                width={tree.icon}
-                height={tree.icon}
-                fill={lit ? palette.selectedForeground : palette.textSecondary}
-              />
-            ) : (
-              item.leading
-            )}
-          </View>
-        ) : null}
-        <View style={{ minWidth: 0, flex: 1, gap: item.description != null ? 2 : 0 }}>
+        title={
           <Text
             variant={tree.label}
             numberOfLines={1}
@@ -687,7 +683,9 @@ const TreeRow = memo(function TreeRow({
           >
             {item.label}
           </Text>
-          {item.description != null ? (
+        }
+        supporting={
+          item.description != null ? (
             <Text
               variant={tree.meta}
               numberOfLines={1}
@@ -695,36 +693,49 @@ const TreeRow = memo(function TreeRow({
             >
               {item.description}
             </Text>
-          ) : null}
-        </View>
-        {item.meta ? (
+          ) : null
+        }
+        trailing={
           <View
-            style={{
-              flexShrink: 0,
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: 4,
-              backgroundColor: palette.tertiary,
-              paddingLeft: 4,
-              paddingRight: 4,
-              paddingTop: 1,
-              paddingBottom: 1,
-            }}
+            pointerEvents="box-none"
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
           >
-            <Text variant={tree.meta} numberOfLines={1} style={{ color: palette.textSecondary }}>
-              {item.meta}
-            </Text>
+            {item.meta ? (
+              <View
+                pointerEvents="none"
+                style={{
+                  flexShrink: 0,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 4,
+                  backgroundColor: palette.tertiary,
+                  paddingLeft: 4,
+                  paddingRight: 4,
+                  paddingTop: 1,
+                  paddingBottom: 1,
+                }}
+              >
+                <Text
+                  variant={tree.meta}
+                  numberOfLines={1}
+                  style={{ color: palette.textSecondary }}
+                >
+                  {item.meta}
+                </Text>
+              </View>
+            ) : null}
+
+            {item.actions != null ? (
+              <View
+                {...(IS_WEB ? { dataSet: { bloomSidebarRowActions: 'true' } } : {})}
+                style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 0 }}
+              >
+                {item.actions}
+              </View>
+            ) : null}
           </View>
-        ) : null}
-      </Pressable>
-      {item.actions != null ? (
-        <View
-          {...(IS_WEB ? { dataSet: { bloomSidebarRowActions: 'true' } } : {})}
-          style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 0 }}
-        >
-          {item.actions}
-        </View>
-      ) : null}
+        }
+      />
       {indicator === 'before' || indicator === 'after' ? (
         <View
           pointerEvents="none"

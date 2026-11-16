@@ -163,6 +163,8 @@ export interface ListCommonProps {
   /** Destination currently open in the adjacent pane. */
   active?: boolean;
   onPress?: () => void;
+  /** Warm destination data on hover, keyboard focus or touch intent without activating it. */
+  onPrefetch?: () => void;
   href?: string;
   onLongPress?: () => void;
   /** Optional replacement for the row's open target, e.g. a disclosure trigger. */
