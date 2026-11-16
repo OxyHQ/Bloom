@@ -406,7 +406,7 @@ const TreeRow = memo(function TreeRow({
   const drag = useTreeDrag();
   const anyDragging = useTreeDragging();
   const { dragging, indicator } = useTreeRowDrag(item.key);
-  const { lit, zone } = useTreeRowDrop(item.drop);
+  const { lit, zone } = useTreeRowDrop(item.disabled ? undefined : item.drop);
   const [open, setOpen] = useControllableState<boolean>({
     value: item.open,
     defaultValue: item.defaultOpen ?? false,
@@ -419,6 +419,7 @@ const TreeRow = memo(function TreeRow({
   const canDrag = drag != null && item.draggable === true && !item.disabled;
   const accepts =
     drag != null &&
+    !item.disabled &&
     section.droppable !== false &&
     (item.droppable !== false || item.dropBeside !== false);
   const insideAllowed = item.droppable !== false;

@@ -179,3 +179,16 @@ describe('Sidebar tree rows that take drops (native)', () => {
     ).toBe('transparent');
   });
 });
+
+it('does not register disabled rows as platform drop targets in sections or folders', () => {
+  const disabled = sections(jest.fn()).map((section) => ({
+    ...section,
+    items: section.items?.map((item) => ({ ...item, disabled: true })),
+    folders: section.folders?.map((folder) => ({
+      ...folder,
+      items: folder.items.map((item) => ({ ...item, disabled: true })),
+    })),
+  }));
+  mount(disabled);
+  expect(targets.size).toBe(0);
+});

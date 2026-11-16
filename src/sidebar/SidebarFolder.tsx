@@ -89,7 +89,7 @@ export function SidebarTreeRow({
   onPress?(item: SidebarTreeItem, folder?: SidebarTreeFolder): void;
   palette: SidebarPalette;
 }) {
-  const { lit, zone } = useTreeRowDrop(item.drop);
+  const { lit, zone } = useTreeRowDrop(item.disabled ? undefined : item.drop);
   const { tree } = useSidebarMetrics();
   const Icon = item.icon;
   const row = (

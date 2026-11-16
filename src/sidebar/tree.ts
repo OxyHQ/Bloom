@@ -84,12 +84,12 @@ export function canDrop(
   position: SidebarTreeDrop['position'],
 ): boolean {
   const source = places.get(sourceKey);
-  if (!source || source.item.draggable !== true) return false;
+  if (!source || source.item.disabled || source.item.draggable !== true) return false;
   if (targetSection.droppable === false) return false;
   if (targetKey === undefined) return position === 'inside';
   if (targetKey === sourceKey) return false;
   const target = places.get(targetKey);
-  if (!target) return false;
+  if (!target || target.item.disabled) return false;
   if (target.ancestors.includes(sourceKey)) return false;
   if (position === 'inside' && target.item.droppable === false) return false;
   if (position !== 'inside' && target.item.dropBeside === false) return false;

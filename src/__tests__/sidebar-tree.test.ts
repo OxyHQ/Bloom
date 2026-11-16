@@ -107,3 +107,17 @@ describe('sidebar tree model', () => {
     expect(treeMoves(places, 'theirs')).toEqual({});
   });
 });
+
+it('rejects disabled drag sources and targets through the shared move rules', () => {
+  const section: SidebarTree = {
+    label: 'Tree',
+    items: [row('disabled', { disabled: true }), row('enabled')],
+  };
+  const index = indexTree([section]);
+  for (const position of ['before', 'inside', 'after'] as const) {
+    expect(canDrop(index, 'disabled', 'enabled', section, position)).toBe(false);
+    expect(canDrop(index, 'enabled', 'disabled', section, position)).toBe(false);
+  }
+  expect(treeMoves(index, 'disabled')).toEqual({});
+  expect(canDrop(index, 'disabled', undefined, section, 'inside')).toBe(false);
+});

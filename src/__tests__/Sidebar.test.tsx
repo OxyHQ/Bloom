@@ -573,7 +573,13 @@ describe('Sidebar tree sections', () => {
     expect(row.props.accessibilityState).toMatchObject({ selected: true });
     expect(row.props.role).toBe('link');
     // Shared ListItem owns row geometry; its navigation target covers that row.
-    expect(resolvedStyle(row.props.style)).toMatchObject({
+    expect(
+      resolvedStyle(
+        typeof row.props.style === 'function'
+          ? row.props.style({ pressed: false })
+          : row.props.style,
+      ),
+    ).toMatchObject({
       position: 'absolute',
       top: 0,
       bottom: 0,
@@ -593,7 +599,8 @@ describe('Sidebar tree sections', () => {
       'Older',
       'Barn',
     ]);
-    pressHost(row);
+    expect(typeof row.props.onPress).toBe('function');
+    fireEvent.press(row, { preventDefault: jest.fn() });
     expect(onPrefetch).toHaveBeenCalled();
     expect(onTreeItemPress).toHaveBeenCalledWith(
       expect.objectContaining({ key: 'loft' }),
