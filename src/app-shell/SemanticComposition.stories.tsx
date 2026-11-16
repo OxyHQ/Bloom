@@ -150,3 +150,20 @@ export const Workspace: Story = { render: () => <Example /> };
 export const RouteOwnedWorkspace: Story = { render: () => <Example routeOwned /> };
 
 export const RegisteredSessionWorkspace: Story = { render: () => <Example registered /> };
+
+export const NestedBodyRegions: Story = {
+  render: () => (
+    <View style={{ width: 1000 }}>
+      <Screen kind="document">
+        <ScreenContent testID="semantic-wide-body">
+          <Text>Wide document body</Text>
+          <View style={{ width: 320 }}>
+            <ScreenContent testID="semantic-narrow-body">
+              <Text>Embedded narrow document body</Text>
+            </ScreenContent>
+          </View>
+        </ScreenContent>
+      </Screen>
+    </View>
+  ),
+};
