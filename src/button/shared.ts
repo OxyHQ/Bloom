@@ -1,3 +1,4 @@
+import { IS_WEB } from '../styles/platform';
 import { surfaceFillOn } from '../styles/surface-levels';
 import { resolveSurfaceFill, resolveSurfaceTint } from '../surface/shared';
 import { isValidElement, type ReactNode } from 'react';
@@ -20,6 +21,11 @@ import type { ButtonIconComponent, ButtonLinkTone, ButtonUnderline } from './typ
 
 /** Coarse web controls reserve this real layout box; native uses platform hitSlop. */
 export const BUTTON_TOUCH_TARGET = 44;
+
+/** Reserved web touch space outside the visible control; native uses hitSlop. */
+export function buttonTouchVisualInset(visualHeight: number, touch: boolean): number {
+  return IS_WEB && touch ? Math.max(0, (BUTTON_TOUCH_TARGET - visualHeight) / 2) : 0;
+}
 
 /** Every size is a full pill. */
 export const BUTTON_RADIUS = borderRadius.full;
@@ -59,11 +65,16 @@ function typeFields(type: TypeScaleVariant) {
  * size stay the SIZE's — a ramp step is a label, not a geometry.
  */
 export function resolveButtonGeometry(
-  size: ButtonResolvedSize,
+  size: ButtonResolvedSize | number,
   textVariant?: TypeScaleVariant,
   density: BloomControlDensity = 'default',
   touch = false,
 ): ButtonGeometry {
+  if (typeof size === 'number') {
+    const height = Number.isFinite(size) && size > 0 ? size : BUTTON_GEOMETRY.md.height;
+    const base = { ...BUTTON_GEOMETRY.md, height, iconSize: Math.round(height * 0.6) };
+    return textVariant ? { ...base, ...typeFields(textVariant) } : base;
+  }
   const base = BUTTON_GEOMETRY[size];
   const contextual =
     density === 'compact'
@@ -141,20 +152,7 @@ export const LINK_BUTTON_UNDERLINE_OFFSET = 3;
  * A round background/tertiary disc with a hand-drawn two-stroke X in its own
  * viewBox, so the stroke is a true pixel value at every size.
  */
-export type CloseButtonSize = '2xs' | 'xs' | 'sm' | 'md' | 'lg';
 
-export const CLOSE_BUTTON_GEOMETRY: Record<
-  CloseButtonSize,
-  { box: number; glyph: number; stroke: number; inset: number }
-> = {
-  '2xs': { box: 18, glyph: 9, stroke: 2, inset: 2 },
-  xs: { box: 20, glyph: 10.8, stroke: 2, inset: 2 },
-  sm: { box: 24, glyph: 12.6, stroke: 2, inset: 2 },
-  md: { box: 32, glyph: 16.2, stroke: 2.5, inset: 2 },
-  lg: { box: 44, glyph: 20, stroke: 2.5, inset: 2 },
-};
-
-/** The button's transition duration. */
 export const BUTTON_TRANSITION_MS = animation.duration.fast;
 
 /**
@@ -226,7 +224,7 @@ export const ACCENT_TABLE: RampTable = {
   100: [0.932, 0.032],
   200: [0.882, 0.059],
   300: [0.809, 0.105],
-  400: [0.707, 0.165],
+  400: [Math.SQRT1_2, 0.165],
   500: [0.623, 0.214],
   600: [0.546, 0.245],
   700: [0.488, 0.243],
@@ -478,7 +476,7 @@ export function resolveCanonicalButtonPalette(
       surface,
     },
     disabledOpacity: 1,
-    borderWidth: appearance === 'outline' ? 1 : 0,
+    borderWidth: 0,
     shadow: surface,
     ring: tone === 'support' ? c.secondary : tone === 'action' ? c.tertiary : c.primary,
   };
@@ -490,31 +488,16 @@ export function paintToCssImage(paint: ButtonStatePaint): string {
   return `linear-gradient(180deg, ${top} 0%, ${bottom} 100%)`;
 }
 
-export interface CloseButtonPaint {
-  background: string;
-  foreground: string;
-  foregroundHover: string;
-  ring: string;
+/** Elements are content; function, memo and forwardRef icons are components. */
+export function isIconComponent(
+  icon: ReactNode | ButtonIconComponent,
+): icon is ButtonIconComponent {
+  return (
+    typeof icon === 'function' ||
+    (typeof icon === 'object' && icon !== null && !isValidElement(icon) && '$$typeof' in icon)
+  );
 }
 
-/** `background-tertiary` disc, `foreground-icon-secondary` X, `text-primary` on hover. */
-export function resolveCloseButtonPaint(theme: Theme): CloseButtonPaint {
-  return {
-    background: theme.colors.backgroundTertiary,
-    foreground: theme.colors.textSecondary,
-    foregroundHover: theme.colors.text,
-    ring: theme.colors.primary,
-  };
-}
-
-/**
- * When a variant underlines its label, given the caller's `underline`.
- *
- * ONE function, read by both forks, because "the underline is the affordance"
- * and "the underline is the hover cue" are different controls and a fork that
- * decided for itself is how they drift. `link` keeps its hover underline,
- * everything else keeps none, unless the caller says otherwise.
- */
 export function resolveButtonUnderline(
   isLink: boolean,
   underline: ButtonUnderline | undefined,
@@ -523,65 +506,68 @@ export function resolveButtonUnderline(
   return isLink ? 'hover' : 'none';
 }
 
-// ---------------------------------------------------------------------------
-//  GlyphButton
-// ---------------------------------------------------------------------------
-
-/**
- * The glyph's share of the box. Measured over the five family-local copies this
- * replaces, the ratio ran 0.50 (`queue-panel`, glyph = size / 2) to 0.75
- * (`music-library`'s 40-box compass at 30); 0.6 is the middle and is exactly
- * what `media-header`'s 40-box controls already drew. Every call site can still
- * pass `glyphSize` — this is the DEFAULT, not a rule.
- */
-export const GLYPH_BUTTON_GLYPH_RATIO = 0.6;
-
-/** Default diameter — the same 36 `Button size="medium"` stands at. */
-export const GLYPH_BUTTON_SIZE = 36;
-
-/** The glyph edge for a box, rounded to a whole pixel. */
-export function glyphButtonGlyphSize(size: number): number {
-  return Math.round(size * GLYPH_BUTTON_GLYPH_RATIO);
-}
-
-export interface GlyphButtonPaint {
-  /** Foreground at rest — the muted reading colour. */
-  color: string;
-  /** Foreground under a pointer or a press. */
-  hoverColor: string;
-  /** Foreground while the toggle is on. */
-  activeColor: string;
-  /** Fill at rest: none. A glyph button is transparent by construction. */
-  fill: string;
-  /** Fill under a pointer or a press — the neutral wash, never an accent one. */
-  hoverFill: string;
-  ring: string;
-}
-
-/**
- * `GlyphButton`'s defaults: a NEUTRAL control. The wash is the neutral ramp's
- * 100 (dark 800), the same step `text`'s hover uses — deliberately not `ghost`'s
- * accent wash, which is what makes a ⋯ or a × land tinted.
- */
-export function resolveGlyphButtonPaint(theme: Theme): GlyphButtonPaint {
-  return {
-    color: theme.colors.textSecondary,
-    hoverColor: theme.colors.text,
-    activeColor: theme.colors.primary,
-    fill: TRANSPARENT,
-    hoverFill: theme.colors.backgroundSecondary,
-    ring: theme.colors.primary,
+/** State overrides are applied to the same palette for every Button presentation. */
+export function resolveButtonOverrides(
+  base: ButtonPalette,
+  overrides: Pick<
+    import('./types').ButtonProps,
+    | 'color'
+    | 'hoverColor'
+    | 'activeColor'
+    | 'activeHoverColor'
+    | 'fill'
+    | 'hoverFill'
+    | 'ring'
+    | 'disabledOpacity'
+  >,
+) {
+  const {
+    color,
+    hoverColor,
+    activeColor,
+    activeHoverColor,
+    fill,
+    hoverFill,
+    ring,
+    disabledOpacity,
+  } = overrides;
+  const rest = {
+    ...base.rest,
+    foreground: color ?? base.rest.foreground,
+    background: fill ?? base.rest.background,
   };
-}
-
-/**
- * Whether an `icon` prop is a COMPONENT (`RiMore2Line`, a `memo`/`forwardRef`
- * object) rather than an element or text.
- */
-export function isIconComponent(
-  icon: ReactNode | ButtonIconComponent,
-): icon is ButtonIconComponent {
-  if (icon == null || isValidElement(icon)) return false;
-  if (typeof icon === 'function') return true;
-  return typeof icon === 'object' && '$$typeof' in (icon as object) && !Array.isArray(icon);
+  const hover = {
+    ...base.hover,
+    foreground: hoverColor ?? base.hover.foreground,
+    background: hoverFill ?? base.hover.background,
+  };
+  const active = {
+    ...base.active,
+    foreground: hoverColor ?? base.active.foreground,
+    background: hoverFill ?? base.active.background,
+  };
+  const selected = {
+    ...base.active,
+    foreground: activeColor ?? base.active.foreground,
+    background: fill ?? base.active.background,
+  };
+  return {
+    ...base,
+    rest,
+    hover,
+    active,
+    selected,
+    selectedHover: {
+      ...selected,
+      foreground: activeHoverColor ?? activeColor ?? selected.foreground,
+      background: hoverFill ?? selected.background,
+    },
+    disabled: {
+      ...base.disabled,
+      foreground: color ?? base.disabled.foreground,
+      background: fill ?? base.disabled.background,
+    },
+    ring: ring ?? base.ring,
+    disabledOpacity: disabledOpacity ?? base.disabledOpacity,
+  };
 }

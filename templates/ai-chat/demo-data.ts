@@ -1,12 +1,6 @@
 import type { AiChatGeneration } from '../../src/ai-chat';
 import type { ComposerStatusBarFolder, ModelPickerModel } from '../../src/composer-panel';
-import {
-  RiAddFill,
-  RiCustomerServiceLine,
-  RiGuideLine,
-  RiRobot2Line,
-  RiSettings4Line,
-} from '../../src/icons/remix';
+import { RiAddFill, RiGuideLine, RiRobot2Line } from '../../src/icons/remix';
 import type { SidebarAccount, SidebarNavItem, SidebarPlan, SidebarTree } from '../../src/sidebar';
 
 import beachKid from './assets/gallery/beach-kid.webp';
@@ -46,11 +40,6 @@ export const NAV_ITEMS: SidebarNavItem[] = [
   { key: 'customize', label: 'Customize', icon: RiGuideLine },
 ];
 
-export const SECONDARY_ITEMS = (openSettings: () => void): SidebarNavItem[] => [
-  { key: 'support', label: 'Support', icon: RiCustomerServiceLine },
-  { key: 'settings', label: 'Settings', icon: RiSettings4Line, onPress: openSettings },
-];
-
 export const ACCOUNT: SidebarAccount = {
   name: 'Maya Collins',
   avatar: { initials: 'M', color: 'neutral' },
@@ -59,8 +48,6 @@ export const ACCOUNT: SidebarAccount = {
     { id: 's', name: 'Sam Rivera', avatar: { initials: 'S', color: 'lime' } },
     { id: 'l', name: 'Lena Park', avatar: { initials: 'L', color: 'pink' } },
   ],
-  onAddUser: () => {},
-  onManage: () => {},
 };
 
 export const REPOSITORIES: SidebarTree = {

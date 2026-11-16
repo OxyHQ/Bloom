@@ -215,30 +215,30 @@ existing header, footer or overlay control slot and replaces the default arrows.
 
 ```tsx
 import { Carousel } from '@oxy.so/bloom/carousel';
-import { ButtonGroup, ButtonGroupItem } from '@oxy.so/bloom/button-group';
+import { Button } from '@oxy.so/bloom/button';
 
 <Carousel
   accessibilityLabel={title}
   header={<Text>{title}</Text>}
   showArrows={isDesktop}
   renderControls={({ previous, next }) => (
-    <ButtonGroup size="sm">
-      <ButtonGroupItem onPress={openAll}>{seeMoreLabel}</ButtonGroupItem>
-      <ButtonGroupItem
+    <Button.Group size="sm">
+      <Button onPress={openAll}>{seeMoreLabel}</Button>
+      <Button
         onPress={previous.onPress}
         disabled={previous.disabled}
         accessibilityLabel={previous.accessibilityLabel}
         leadingIcon={previous.icon}
         iconOnly
       />
-      <ButtonGroupItem
+      <Button
         onPress={next.onPress}
         disabled={next.disabled}
         accessibilityLabel={next.accessibilityLabel}
         leadingIcon={next.icon}
         iconOnly
       />
-    </ButtonGroup>
+    </Button.Group>
   )}
 >
   {slides}

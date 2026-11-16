@@ -26,7 +26,7 @@ import { ConversationSidebar } from '@oxy.so/bloom/conversation-sidebar';
   onMarketplace={() => router.push('/agents')}
   createOptions={[
     { key: 'agent', label: 'Create an agent', leading: <AgentAvatar … />, onPress: createAgent },
-    { key: 'team', label: 'Chat with your agents', leading: <AgentStack … />, onPress: pickTeam },
+    { key: 'team', label: 'Chat with your agents', leading: <AvatarGroup layout="conversation" … />, onPress: pickTeam },
   ]}
   actions={(chat) => [
     { key: 'pin', label: chat.pinned ? 'Unpin' : 'Pin', icon: RiPushpinLine },

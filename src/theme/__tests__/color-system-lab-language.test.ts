@@ -71,10 +71,18 @@ function spanishWords(source: string): string[] {
 }
 
 describe('Color System Playground visible language', () => {
-  it('keeps the substantial Mention playground source in English', () => {
-    expect((storySource.match(/<Text\b/g) ?? []).length).toBeGreaterThan(35);
-    expect(storySource).toContain('BLOOM COLOR LAB · MENTION INTERFACE');
-    expect(storySource).toContain('Public view');
+  it('keeps the shared color playground and Mention content in English', () => {
+    // The lab composes SocialTemplate and Storybook controls now: duplicated
+    // canvas toolbars are not part of the language census. Assert real UI
+    // anchors across the lab and template so an empty source cannot pass.
+    for (const copy of [
+      'Color recipes',
+      'Compare the token pairs',
+      'Search Mention',
+      'People on Mention are the first to know.',
+    ]) {
+      expect(storySource).toContain(copy);
+    }
     expect(spanishWords(storySource)).toEqual([]);
   });
 

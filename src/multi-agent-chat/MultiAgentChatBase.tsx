@@ -7,7 +7,7 @@ import { PageFooter } from '../page-footer';
 import { CHAT_CONTENT_STYLE } from '../styles/chat-layout';
 import { useAppShell } from '../app-shell/hooks';
 import type { SidebarProps } from '../sidebar/types';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+
 import { useControllableState } from '../hooks/use-controllable-state';
 import { AgentAvatar } from '../agent-avatar';
 import { AvatarFlightLayer, avatarJoinFlights, useAvatarFlights } from '../avatar-flight';
@@ -477,7 +477,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
           sticky={false}
           title={
             <AgentProfile
-              agents={participants}
+              agents={participants.map((agent) => ({ ...agent, avatar: agentCharacter(agent) }))}
               label={participants.length ? undefined : messages.chooseYourTeammates}
               accessibilityLabel={
                 participants.length === 1
@@ -497,8 +497,8 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
           }
           leading={<ConversationMenuButton label={messages.openConversations} />}
           actions={
-            <ButtonGroup accessibilityLabel={messages.conversationOptions}>
-              <ButtonGroupItem
+            <Button.Group accessibilityLabel={messages.conversationOptions}>
+              <Button
                 iconOnly
                 leadingIcon={RiShare2Line}
                 accessibilityLabel={messages.copyConversation}
@@ -506,7 +506,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
               />
               <D.DropdownMenu>
                 <D.DropdownMenuTrigger asChild>
-                  <ButtonGroupItem
+                  <Button
                     iconOnly
                     leadingIcon={RiMoreFill}
                     accessibilityLabel={messages.conversationOptions}
@@ -538,7 +538,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                   </D.DropdownMenuItem>
                 </D.DropdownMenuContent>
               </D.DropdownMenu>
-            </ButtonGroup>
+            </Button.Group>
           }
         />
       }
@@ -1014,14 +1014,14 @@ function ConversationMenuButton({ label }: { label: string }) {
   const shell = useAppShell();
   if (!shell.drawerAvailable) return null;
   return (
-    <ButtonGroup>
-      <ButtonGroupItem
+    <Button.Group>
+      <Button
         iconOnly
         leadingIcon={RiMenuLine}
         accessibilityLabel={label}
         aria-expanded={shell.drawerOpen}
         onPress={shell.toggleDrawer}
       />
-    </ButtonGroup>
+    </Button.Group>
   );
 }

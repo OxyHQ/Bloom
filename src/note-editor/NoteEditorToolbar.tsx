@@ -1,8 +1,8 @@
 import { useBloomAppearance } from '../appearance';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { View } from 'react-native';
 
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { Button } from '../button';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -20,7 +20,7 @@ import type { NoteEditorToolbarProps } from './types';
 /**
  * The formatting row around someone else's writing surface.
  *
- * One `ButtonGroup` of icon-only items, and — the moment they stop fitting —
+ * One `Button.Group` of icon-only items, and — the moment they stop fitting —
  * a `…` item fused onto its end that opens the rest as a `DropdownMenu`. The
  * overflow is not a second control beside the group: it is the group's last
  * item, so the row stays one object at every width.
@@ -72,7 +72,7 @@ export function NoteEditorToolbar({
     <View
       onLayout={onLayout}
       // The row is as wide as it is given and clips rather than pushing the
-      // page during the one un-measured frame. `ButtonGroup` clips its own
+      // page during the one un-measured frame. `Button.Group` clips its own
       // items already, so this adds no new clipping to a settled layout.
       style={[
         { width: '100%', flexDirection: 'row', alignItems: 'center', overflow: 'hidden' },
@@ -80,18 +80,18 @@ export function NoteEditorToolbar({
       ]}
       testID={testID}
     >
-      <ButtonGroup
+      <Button.Group
         size={size}
         accessibilityLabel={accessibilityLabel}
         testID={testID ? `${testID}-group` : undefined}
       >
         {inline.map((action) => (
-          <ButtonGroupItem
+          <Button
             key={action.key}
             iconOnly
             leadingIcon={action.icon}
             accessibilityLabel={action.label}
-            selected={action.active === true}
+            pressed={action.active === true}
             disabled={disabled || action.disabled === true}
             onPress={action.onPress}
             testID={testID ? `${testID}-${action.key}` : undefined}
@@ -100,7 +100,7 @@ export function NoteEditorToolbar({
         {overflow.length > 0 ? (
           <DropdownMenu key="__overflow">
             <DropdownMenuTrigger asChild label={labels.more}>
-              <ButtonGroupItem
+              <Button
                 iconOnly
                 leadingIcon={RiMore2Line}
                 accessibilityLabel={labels.more}
@@ -135,7 +135,7 @@ export function NoteEditorToolbar({
             </DropdownMenuContent>
           </DropdownMenu>
         ) : null}
-      </ButtonGroup>
+      </Button.Group>
     </View>
   );
 }

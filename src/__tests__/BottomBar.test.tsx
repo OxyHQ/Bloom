@@ -11,6 +11,9 @@ jest.mock('../layout/bottom-edge', () => ({
   useClaimBottomEdge: jest.fn(),
 }));
 import { resolvedStyle } from './support/rendered-style';
+import { useSearchPresentation } from '../search/use-search-presentation';
+import { SEARCH_EXPAND } from '../search/context';
+import { motionDurationMs } from '../motion/spec';
 const Navigation = jest.fn((props: TabBarProps) => (
   <View testID="navigation">{props.children}</View>
 ));
@@ -361,4 +364,142 @@ it('keeps dock navigation expanded when no destination is selected', () => {
   const navigation = Navigation.mock.calls.slice(-1)[0]?.[0];
   expect(navigation?.activeIndex).toBe(-1);
   expect(navigation?.minimizeProgress?.value).toBe(0);
+});
+
+it('gives an expanded editor the whole action lane without replacing its input', () => {
+  const props = {
+    Navigation,
+    Item,
+    Blur,
+    items,
+    value: 'home',
+    onValueChange: jest.fn(),
+    action: <Text testID="editor">Search</Text>,
+    actionBehavior: 'visible' as const,
+    testID: 'editor-bar',
+  };
+  const view = render(<BottomBarBase {...props} actionPlacement="beside" />);
+  const editor = view.getByTestId('editor');
+  act(() =>
+    view.getByTestId('editor-bar-action-content').props.onLayout({
+      nativeEvent: { layout: { x: 0, y: 0, width: 44, height: 44 } },
+    }),
+  );
+  expect(resolvedStyle(view.getByTestId('editor-bar-action-content').props.style).width).toBe(44);
+  view.rerender(<BottomBarBase {...props} actionPlacement="above" actionSizing="fill" />);
+  const actionStyle = resolvedStyle(view.getByTestId('editor-bar-action').props.style);
+  expect(actionStyle.width).toBe('auto');
+  expect(actionStyle.insetInlineStart).toBe(12);
+  expect(actionStyle.insetInlineEnd).toBe(12);
+  expect(
+    resolvedStyle(view.getByTestId('editor-bar-action-content').props.style).width,
+  ).toBeUndefined();
+  expect(view.getByTestId('editor')).toBe(editor);
+  act(() =>
+    view.getByTestId('editor-bar-action-content').props.onLayout({
+      nativeEvent: { layout: { x: 0, y: 0, width: 366, height: 44 } },
+    }),
+  );
+  view.rerender(<BottomBarBase {...props} actionPlacement="beside" />);
+  expect(resolvedStyle(view.getByTestId('editor-bar-action-content').props.style).width).toBe(44);
+  expect(view.getByTestId('editor')).toBe(editor);
+});
+
+it.each(['fill', 'adaptive'] as const)(
+  'retains a %s editor with the default behavior when its Screen follows the keyboard',
+  (actionSizing) => {
+    const view = render(
+      <BottomBarBase
+        Navigation={Navigation}
+        Item={Item}
+        Blur={Blur}
+        items={items}
+        value="home"
+        onValueChange={jest.fn()}
+        action={<Text>Search editor</Text>}
+        actionSizing={actionSizing}
+        testID="visible-editor-bar"
+      />,
+    );
+    const calls = (Keyboard.addListener as jest.Mock).mock.calls;
+    const show = [...calls].reverse().find((call: unknown[]) => call[0] === 'keyboardDidShow')?.[1];
+    act(() => show({ endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 } }));
+    expect(view.getByTestId('visible-editor-bar')).toBeTruthy();
+    expect(view.getByText('Search editor')).toBeTruthy();
+  },
+);
+
+function AdaptiveSearchProbe() {
+  const input = React.useRef(null);
+  const display = useSearchPresentation({ presentation: 'collapsible' }, input);
+  return (
+    <View testID="adaptive-search-probe">
+      <Text onPress={display.show}>Open search</Text>
+      <Text onPress={display.close}>Close search</Text>
+    </View>
+  );
+}
+
+it('adaptive actions retain the borrowed lane until Search finishes closing', () => {
+  const priorFrame = global.requestAnimationFrame;
+  const priorCancel = global.cancelAnimationFrame;
+  jest.useFakeTimers();
+  global.requestAnimationFrame = jest.fn((cb) => setTimeout(() => cb(0), 0) as unknown as number);
+  global.cancelAnimationFrame = jest.fn((id) => clearTimeout(id));
+  const view = render(
+    <BottomBarBase
+      Navigation={Navigation}
+      Item={Item}
+      Blur={Blur}
+      items={items}
+      value="home"
+      onValueChange={jest.fn()}
+      actionSizing="adaptive"
+      actionBehavior="visible"
+      action={<AdaptiveSearchProbe />}
+      testID="adaptive-bar"
+    />,
+  );
+  const input = view.getByTestId('adaptive-search-probe');
+  act(() => view.getByText('Open search').props.onPress());
+  expect(resolvedStyle(view.getByTestId('adaptive-bar-action').props.style).position).toBe(
+    'absolute',
+  );
+  act(() => view.getByText('Close search').props.onPress());
+  expect(resolvedStyle(view.getByTestId('adaptive-bar-action').props.style).position).toBe(
+    'absolute',
+  );
+  act(() => jest.advanceTimersByTime(motionDurationMs(SEARCH_EXPAND) - 1));
+  expect(resolvedStyle(view.getByTestId('adaptive-bar-action').props.style).position).toBe(
+    'absolute',
+  );
+  act(() => jest.advanceTimersByTime(1));
+  expect(resolvedStyle(view.getByTestId('adaptive-bar-action').props.style).position).not.toBe(
+    'absolute',
+  );
+  expect(view.getByTestId('adaptive-search-probe')).toBe(input);
+  view.unmount();
+  jest.useRealTimers();
+  global.requestAnimationFrame = priorFrame;
+  global.cancelAnimationFrame = priorCancel;
+});
+
+it('preserves keyboard dismissal for an intrinsic visible action', () => {
+  const view = render(
+    <BottomBarBase
+      Navigation={Navigation}
+      Item={Item}
+      Blur={Blur}
+      items={items}
+      value="home"
+      onValueChange={jest.fn()}
+      action={<Text>Create</Text>}
+      actionBehavior="visible"
+      testID="intrinsic-action-bar"
+    />,
+  );
+  const calls = (Keyboard.addListener as jest.Mock).mock.calls;
+  const show = [...calls].reverse().find((call: unknown[]) => call[0] === 'keyboardDidShow')?.[1];
+  act(() => show({ endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 } }));
+  expect(view.queryByTestId('intrinsic-action-bar')).toBeNull();
 });

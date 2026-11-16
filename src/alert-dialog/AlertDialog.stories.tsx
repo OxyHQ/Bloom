@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -37,15 +38,19 @@ export const Declarative: Story = {
   parameters: { controls: { include: ['title', 'description', 'confirmLabel', 'destructive'] } },
   render: (args) => {
     const [open, setOpen] = useState(false);
+    const [deleted, setDeleted] = useState(false);
     return (
       <View style={{ padding: 40 }}>
-        <Button onPress={() => setOpen(true)}>Delete app</Button>
+        <Button onPress={() => (deleted ? setDeleted(false) : setOpen(true))}>
+          {deleted ? 'Restore demo app' : 'Delete app'}
+        </Button>
+        {deleted ? <Text>Demo app deleted.</Text> : null}
         <AlertDialog
           {...args}
           title={String(args.title ?? 'Delete this app?')}
           open={open}
           onOpenChange={() => setOpen(false)}
-          onConfirm={() => {}}
+          onConfirm={() => setDeleted(true)}
         />
       </View>
     );

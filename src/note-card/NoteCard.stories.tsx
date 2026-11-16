@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -99,7 +100,11 @@ export const Grid: Story = {
     <Board>
       {NOTES.map((note, index) => (
         <View key={note.title} style={{ width: 260 }}>
-          <NoteCard {...note} onPress={() => {}} testID={`note-${index}`} />
+          <NoteCard
+            {...note}
+            onPress={fn().mockName('NoteCard.onPress')}
+            testID={`note-${index}`}
+          />
         </View>
       ))}
     </Board>
@@ -115,7 +120,7 @@ export const Rows: Story = {
           key={note.title}
           {...note}
           density="row"
-          onPress={() => {}}
+          onPress={fn().mockName('NoteCard.onPress')}
           testID={`row-${index}`}
         />
       ))}
@@ -153,9 +158,9 @@ export const MultiSelect: Story = {
 export const Selected: Story = {
   render: () => (
     <Column>
-      <NoteCard {...NOTES[0]!} density="row" selected onPress={() => {}} />
-      <NoteCard {...NOTES[1]!} density="row" onPress={() => {}} />
-      <NoteCard {...NOTES[2]!} density="row" onPress={() => {}} />
+      <NoteCard {...NOTES[0]!} density="row" selected onPress={fn().mockName('NoteCard.onPress')} />
+      <NoteCard {...NOTES[1]!} density="row" onPress={fn().mockName('NoteCard.onPress')} />
+      <NoteCard {...NOTES[2]!} density="row" onPress={fn().mockName('NoteCard.onPress')} />
     </Column>
   ),
 };
@@ -172,7 +177,7 @@ export const Tones: Story = {
             tags={[tone]}
             tone={tone}
             meta={{ edited: '1 hr ago', notebook: 'Palette' }}
-            onPress={() => {}}
+            onPress={fn().mockName('NoteCard.onPress')}
           />
         </View>
       ))}
@@ -191,25 +196,12 @@ export const LoadingAndEmpty: Story = {
         <NoteCard title="" loading />
       </View>
       <View style={{ width: 240 }}>
-        <NoteCard title="Untitled" onPress={() => {}} />
+        <NoteCard title="Untitled" onPress={fn().mockName('Untitled.onPress')} />
       </View>
       <View style={{ width: 320 }}>
         <NoteCardSkeleton density="row" />
       </View>
     </Board>
-  ),
-};
-
-/** 360px: the width every one of these has to survive. */
-export const Phone: Story = {
-  render: () => (
-    <Column width={360}>
-      {NOTES.map((note) => (
-        <NoteCard key={note.title} {...note} density="row" onPress={() => {}} />
-      ))}
-      <NoteCard {...NOTES[0]!} onPress={() => {}} />
-      <NoteCard {...NOTES[2]!} onPress={() => {}} />
-    </Column>
   ),
 };
 
@@ -263,9 +255,14 @@ export const WithNotebookTree: Story = {
             />
           ))}
         </View>
-        <View style={{ flex: 1, maxWidth: 560, gap: 8 }}>
+        <View style={{ flexGrow: 1, flexBasis: 320, minWidth: 0, maxWidth: 560, gap: 8 }}>
           {NOTES.slice(0, 4).map((note) => (
-            <NoteCard key={note.title} {...note} density="row" onPress={() => {}} />
+            <NoteCard
+              key={note.title}
+              {...note}
+              density="row"
+              onPress={fn().mockName('NoteCard.onPress')}
+            />
           ))}
         </View>
       </View>

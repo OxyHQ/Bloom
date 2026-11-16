@@ -6,7 +6,7 @@
  * colours and the seek callbacks.
  */
 import { materialFill } from './support/material-fill';
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -141,7 +141,7 @@ describe('PlayButton', () => {
     mount(<PlayButton playing={false} variant="inverse" testID="p" />, 'dark');
     expect(materialFill(byTestId('p'))).toBe(normalise(resolveMediaControlsPaint(theme).inverse));
     mount(<PlayButton playing={false} variant="plain" testID="p" />);
-    expect(byTestId('p').style.backgroundColor).toBe('');
+    expect(byTestId('p').style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
   });
 
   it('marks loading busy, and presses', () => {

@@ -100,8 +100,8 @@ const STORIES = {
   // configure a header and the only fixture in which the ramp's own shape is
   // visible: a scrim in the page's colour is invisible against the page by
   // construction, so measuring its profile needs a backdrop it contrasts with.
-  mismatch: 'blocks-page-header--floating-scrim-colour-mismatch',
-  dark: 'blocks-page-header--floating-dark',
+  mismatch: 'blocks-page-header--floating-over-colour&args=scrimColor:!undefined',
+  dark: 'blocks-page-header--floating&globals=theme:dark',
   bar: 'blocks-page-header--bar',
 };
 

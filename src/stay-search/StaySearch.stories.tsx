@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
-import { ScrollView, View, useWindowDimensions } from 'react-native';
+import { AppShell } from '../app-shell';
+import { Screen, ScreenScrollView } from '../screen';
+import type React from 'react';
+import { useState } from 'react';
+import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Button, LinkButton } from '../button';
+import { Button } from '../button';
+import { useWindowBreakpoint } from '../hooks/use-width-class';
 import { RangeCalendar, type DateRange } from '../date-picker';
 import { Dialog, useDialogControl } from '../dialog';
-import { Divider } from '../divider';
+import { PageFooter } from '../page-footer';
+import { alert } from '../surfaces';
 import { RiBuilding2Line } from '../icons/remix/RiBuilding2Line';
 import { RiMapPinLine } from '../icons/remix/RiMapPinLine';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
@@ -92,7 +97,8 @@ function DesktopDemo({
   width?: number;
   initialDestination?: string;
 }) {
-  const compact = useWindowDimensions().width < 700;
+  const breakpoint = useWindowBreakpoint();
+  const compact = breakpoint === 'base' || breakpoint === 'sm';
   const theme = useTheme();
   const [segment, setSegment] = useState<StaySearchSegment | null>(initialSegment);
   const [destination, setDestination] = useState<string | undefined>(initialDestination);
@@ -248,7 +254,7 @@ export const States: Story = {
       'guests',
     ];
     return (
-      <View style={{ padding: 16, gap: 24, backgroundColor: theme.colors.background }}>
+      <View style={{ padding: 16, gap: 24 }}>
         {segments.map((s) => (
           <View key={s ?? 'rest'} style={{ gap: 8 }}>
             <Text variant="caption-1-medium" style={{ color: theme.colors.textSecondary }}>
@@ -277,7 +283,8 @@ export const States: Story = {
 /** The three ready panel parts, side by side. */
 export const PanelParts: Story = {
   render: function PanelPartsStory() {
-    const compact = useWindowDimensions().width < 700;
+    const breakpoint = useWindowBreakpoint();
+    const compact = breakpoint === 'base' || breakpoint === 'sm';
     const [guests, setGuests] = useState<GuestCounts>({
       adults: 2,
       children: 1,
@@ -302,7 +309,7 @@ export const PanelParts: Story = {
         <StaySearchPanel width={400}>
           <DestinationSuggestions
             items={SUGGESTIONS}
-            onSelect={() => {}}
+            onSelect={(item) => alert('Destination', item.title)}
             heading="Suggested destinations"
           />
         </StaySearchPanel>
@@ -332,28 +339,10 @@ export const PanelParts: Story = {
 // ---------------------------------------------------------------------------
 
 /** The compact trigger at 375 and at 560, with and without the filter button. */
-export const Compact: Story = {
-  render: () => (
-    <View style={{ padding: 16, gap: 16 }}>
-      {[343, 560].map((width) => (
-        <View key={width} style={{ width, maxWidth: '100%', gap: 12 }}>
-          <StaySearchCompact
-            onPress={() => {}}
-            summary="Anywhere · Any week · Add guests"
-            onFilterPress={() => {}}
-            testID={`compact-${width}`}
-          />
-          <StaySearchCompact onPress={() => {}} summary="Marrowfield · Oct 12 – 16 · 3 guests" />
-        </View>
-      ))}
-    </View>
-  ),
-};
 
 type Step = 'where' | 'when' | 'who';
 
 function MobileSearchFlow({ onClose }: { onClose?: () => void }) {
-  const theme = useTheme();
   const [step, setStep] = useState<Step>('where');
   const [query, setQuery] = useState('');
   const [destination, setDestination] = useState<string | undefined>();
@@ -371,8 +360,34 @@ function MobileSearchFlow({ onClose }: { onClose?: () => void }) {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.backgroundSecondary }}>
-      <ScrollView
+    <Screen
+      bottomBar={
+        <PageFooter
+          position="inline"
+          scrim="none"
+          actions={
+            <>
+              <Button appearance="plain" onPress={clear}>
+                Clear all
+              </Button>
+              <Button
+                leadingIcon={RiSearchLine}
+                onPress={() => {
+                  alert(
+                    'Search stays',
+                    `${destination ?? 'Anywhere'} · ${guestSummary(guests) ?? 'Any guests'}`,
+                  );
+                  onClose?.();
+                }}
+              >
+                Search
+              </Button>
+            </>
+          }
+        />
+      }
+    >
+      <ScreenScrollView
         contentContainerStyle={{
           paddingTop: 16,
           paddingBottom: 16,
@@ -428,120 +443,54 @@ function MobileSearchFlow({ onClose }: { onClose?: () => void }) {
         >
           <GuestPicker value={guests} onChange={setGuests} max={16} testID="mobile-guests" />
         </StaySearchStep>
-      </ScrollView>
-      <Divider />
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingTop: 12,
-          paddingBottom: 12,
-          paddingLeft: 20,
-          paddingRight: 16,
-          backgroundColor: theme.colors.card,
-        }}
-      >
-        <LinkButton onPress={clear}>Clear all</LinkButton>
-        <Button size="lg" icon={RiSearchLine} onPress={onClose} tone="accent" appearance="solid">
-          Search
-        </Button>
-      </View>
-    </View>
+      </ScreenScrollView>
+    </Screen>
   );
 }
 
 /**
- * The narrow-screen flow at 375: the compact trigger opens a full-height sheet
+ * The search flow in the current viewport: the compact trigger opens a sheet
  * of `StaySearchStep` cards — one expanded at a time — over a footer with
  * "Clear all" and "Search". Rendered inline so the whole flow is visible;
  * `MobileFlowInDialog` opens the same content in a `Dialog`.
  */
 export const MobileFlow: Story = {
+  parameters: { layout: 'fullscreen' },
   render: function MobileFlowStory() {
-    const theme = useTheme();
     return (
-      <View
-        style={{
-          width: 375,
-          maxWidth: '100%',
-          height: 760,
-          borderRadius: 16,
-          overflow: 'hidden',
-          borderWidth: 1,
-          borderColor: theme.colors.border,
-        }}
-      >
+      <AppShell header={null} scroll="fixed" contentMaxWidth="none">
         <MobileSearchFlow />
-      </View>
+      </AppShell>
     );
   },
 };
 
 /** The compact trigger opening the flow in a bottom `Dialog`. */
 export const MobileFlowInDialog: Story = {
+  parameters: { layout: 'fullscreen' },
   render: function MobileFlowDialogStory() {
     const control = useDialogControl();
     return (
-      <View style={{ width: 375, maxWidth: '100%', padding: 16 }}>
+      <AppShell header={null} scroll="fixed" contentMaxWidth="none">
         <StaySearchCompact
           onPress={() => control.open()}
           summary="Anywhere · Any week · Add guests"
-          onFilterPress={() => {}}
           testID="compact"
         />
-        <Dialog control={control} placement="bottom" title="Search stays">
-          <View style={{ height: 640, marginLeft: -16, marginRight: -16 }}>
-            <MobileSearchFlow onClose={() => control.close()} />
-          </View>
+        <Dialog
+          control={control}
+          placement="bottom"
+          sizing="fill"
+          scrollable={false}
+          contentPadding={0}
+          title="Search stays"
+        >
+          <MobileSearchFlow onClose={() => control.close()} />
         </Dialog>
-      </View>
+      </AppShell>
     );
   },
 };
-
-/** Dark: the bar with the guests panel open, and the mobile flow. */
-export const Dark: Story = {
-  globals: { theme: 'dark' },
-  render: () => <DarkCanvas />,
-};
-
-function DarkCanvas() {
-  const theme = useTheme();
-  return (
-    <View style={{ padding: 16, gap: 24, backgroundColor: theme.colors.background }}>
-      <DesktopDemo initialSegment="guests" initialDestination="Solvia Bay" />
-      <View
-        style={{
-          width: '100%',
-          flexDirection: 'row',
-          flexWrap: 'wrap',
-          gap: 24,
-          alignItems: 'flex-start',
-        }}
-      >
-        <View style={{ width: 343, maxWidth: '100%' }}>
-          <StaySearchCompact
-            onPress={() => {}}
-            summary="Anywhere · Any week · Add guests"
-            onFilterPress={() => {}}
-          />
-        </View>
-        <View
-          style={{
-            width: 375,
-            maxWidth: '100%',
-            height: 760,
-            borderRadius: 16,
-            overflow: 'hidden',
-          }}
-        >
-          <MobileSearchFlow />
-        </View>
-      </View>
-    </View>
-  );
-}
 
 /**
  * A row that cannot be chosen, and the stepper buttons in another language.

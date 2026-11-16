@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Platform } from 'react-native';
+import type { SharedValue } from 'react-native-reanimated';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useIsomorphicLayoutEffect } from '../theme/use-isomorphic-layout-effect';
 import { materialHostSelector } from './web-material';
@@ -259,7 +260,7 @@ function useWebSurfacePresenceContent(
   );
 }
 
-type PresenceMode = 'animate' | 'instant' | 'mutation';
+type PresenceMode = 'animate' | 'instant' | 'mutation' | 'progress';
 
 /**
  * `animate` transitions every piece to `value`; `instant` lands it there;
@@ -335,7 +336,7 @@ function applyPresence(
       if (mode !== 'animate') landed = true;
     }
   }
-  if (landed || mode === 'instant') flushMaterialLayers(root);
+  if (mode !== 'progress' && (landed || mode === 'instant')) flushMaterialLayers(root);
 }
 
 /**
@@ -456,4 +457,50 @@ export function useSurfacePresence(
   const [node, setNode] = useState<unknown>(null);
   useSurfacePresenceContent(node, { ...options, presence });
   return { ref: setNode, style: surfacePresenceStyle(presence, options.duration ?? 0) };
+}
+
+let surfaceProgressListener = 1_000_000;
+
+/**
+ * Scroll-driven material presence, without a React render for each scroll frame.
+ * Web subscribes to the shared value and uses the same material/content ownership
+ * as timed presence. Native callers keep an animated host opacity on the UI thread.
+ */
+export const useSurfacePresenceProgress: (target: unknown, progress: SharedValue<number>) => void =
+  Platform.OS === 'web' ? useWebSurfacePresenceProgress : () => {};
+
+function useWebSurfacePresenceProgress(target: unknown, progress: SharedValue<number>): void {
+  useIsomorphicLayoutEffect(() => {
+    const root = resolveNode(target);
+    if (!root) return;
+    const map = new Map<HostNode, Touched>();
+    const oldPresence = root.style.getPropertyValue('--bloom-surface-presence');
+    const oldDuration = root.style.getPropertyValue('--bloom-surface-presence-ms');
+    const update = () => {
+      const value = clampPresence(progress.value);
+      root.style.setProperty('--bloom-surface-presence', String(value));
+      root.style.setProperty('--bloom-surface-presence-ms', '0ms');
+      if (value >= 1) restorePresence(map, 0);
+      else applyPresence(root, map, value, 'progress', { duration: 0, easing: 'linear', blur: 0 });
+    };
+    update();
+    const listener = ++surfaceProgressListener;
+    progress.addListener(listener, update);
+    const observer = typeof MutationObserver === 'undefined' ? null : new MutationObserver(update);
+    observer?.observe(root, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+    return () => {
+      progress.removeListener(listener);
+      observer?.disconnect();
+      restorePresence(map, 0);
+      if (oldPresence) root.style.setProperty('--bloom-surface-presence', oldPresence);
+      else root.style.removeProperty('--bloom-surface-presence');
+      if (oldDuration) root.style.setProperty('--bloom-surface-presence-ms', oldDuration);
+      else root.style.removeProperty('--bloom-surface-presence-ms');
+    };
+  }, [target, progress]);
 }

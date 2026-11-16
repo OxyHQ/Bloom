@@ -1,6 +1,6 @@
+import { ScrollArea as ScrollView } from '../../src/layout';
 import React, { createContext, useContext, useState } from 'react';
 import {
-  ScrollView,
   View,
   useWindowDimensions,
   type NativeScrollEvent,
@@ -8,7 +8,6 @@ import {
 } from 'react-native';
 
 import { Button } from '../../src/button';
-import { mixColors } from '../../src/styles/color-contrast';
 import { RiArrowLeftSLine } from '../../src/icons/remix';
 import {
   AlbumCard,
@@ -21,7 +20,7 @@ import {
   type MediaCardSize,
 } from '../../src/media-card';
 import { BREAKPOINTS } from '../../src/styles/breakpoints';
-import { useTheme } from '../../src/theme/use-theme';
+
 import { Text } from '../../src/typography';
 import {
   ALBUM_BY_ID,
@@ -75,15 +74,6 @@ export function useMusicLayout(): MusicLayout {
   const { width } = useWindowDimensions();
   const mobile = width < BREAKPOINTS.md;
   return { width, mobile, gutter: mobile ? 16 : 24, tileSize: mobile ? 'small' : 'medium' };
-}
-
-/**
- * The side panes' surface: the page background stepped toward the text colour,
- * the same step the library panel paints, so the three panes read as one set.
- */
-export function usePaneSurface(): string {
-  const theme = useTheme();
-  return mixColors(theme.colors.background, theme.colors.text, theme.isDark ? 0.05 : 0.03);
 }
 
 /** Room the phone layout keeps under a page for the mini player and the tab bar. */
@@ -442,13 +432,6 @@ export function EventTile({
       soldOut={event.soldOut}
       size={size}
       layout={layout}
-      action={
-        event.soldOut ? undefined : (
-          <Button size="xs" tone="neutral" appearance="outline">
-            Tickets
-          </Button>
-        )
-      }
     />
   );
 }

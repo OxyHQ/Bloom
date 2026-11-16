@@ -1,19 +1,22 @@
+import { AppShell } from '../app-shell';
+import { Screen } from '../screen';
+import { fn } from 'storybook/test';
+import { PageHeader } from '../page-header';
+import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
+import { List } from '../list';
 import type React from 'react';
-import { useContext, useState } from 'react';
-import { Image, View } from 'react-native';
+import { useState } from 'react';
+import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Chip } from '../chip';
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { ChannelPostCard } from './ChannelPostCard';
-import { ContactList } from './ContactList';
-import { MemberList } from './MemberList';
+import { BloomImage } from '../image';
+import { Button } from '../button';
 import { NewGroupForm } from './NewGroupForm';
 import { SelectedChipsRow } from './SelectedChipsRow';
 import { StoryViewer } from './StoryViewer';
-import type { ContactSection, MemberListItem, PersonSummary } from './types';
+import type { ContactSection, PersonSummary } from './types';
 
 /**
  * Invented people, invented groups, invented channels. Every "last seen" and
@@ -117,62 +120,11 @@ const PICKED: readonly PersonSummary[] = [
   { id: 'tova', name: 'Tova Lindqvist', avatar: PHOTO('tova') },
 ];
 
-const MEMBERS: readonly MemberListItem[] = [
-  {
-    id: 'ana',
-    name: 'Ana Restrepo',
-    avatar: PHOTO('ana'),
-    role: 'owner',
-    subtitle: 'online',
-    status: 'online',
-  },
-  {
-    id: 'marcel',
-    name: 'Marcel Dubé',
-    avatar: PHOTO('marcel'),
-    role: 'admin',
-    subtitle: 'last seen recently',
-  },
-  {
-    id: 'nour',
-    name: 'Nour Haddad',
-    avatar: PHOTO('nour'),
-    subtitle: 'last seen 2 h ago',
-    status: 'idle',
-  },
-  { id: 'kofi', name: 'Kofi Mensah', avatar: PHOTO('kofi'), subtitle: 'last seen yesterday' },
-  {
-    id: 'saoirse',
-    name: 'Saoirse Byrne',
-    avatar: PHOTO('saoirse'),
-    subtitle: '@sao',
-    status: 'busy',
-  },
-];
-
 function Surface({ children }: { children: React.ReactNode }) {
   const theme = useTheme();
   return (
     <View style={{ flex: 1, padding: 20, gap: 16, backgroundColor: theme.colors.background }}>
       {children}
-    </View>
-  );
-}
-
-function BothModes({ children, min = 380 }: { children: React.ReactNode; min?: number }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
-  return (
-    <View style={{ width: '100%', flexDirection: 'row', flexWrap: 'wrap' }}>
-      <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: min }}>
-        <BloomThemeProvider mode="light" colorPreset={preset}>
-          <Surface>{children}</Surface>
-        </BloomThemeProvider>
-      </View>
-      <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: min }}>
-        <BloomThemeProvider mode="dark" colorPreset={preset}>
-          <Surface>{children}</Surface>
-        </BloomThemeProvider>
-      </View>
     </View>
   );
 }
@@ -188,73 +140,80 @@ function Caption({ children }: { children: string }) {
 
 // ---------------------------------------------------------------------------
 
-/** Contacts with the A–Z rail: chevrons on the left, a picker on the right. */
+/** The same list handles browsing and selecting people. */
 export const Contacts: Story = {
   render: function ContactsStory() {
     const [picked, setPicked] = useState<readonly string[]>(['ana', 'kofi']);
-    const selectable = SECTIONS.map((section) => ({
-      ...section,
-      contacts: section.contacts.map((contact) => ({
-        ...contact,
-        selected: picked.includes(contact.id),
-      })),
-    }));
     return (
-      <BothModes min={400}>
-        <Caption>browse — chevrons, sticky headings (opt-in on Android), the rail</Caption>
-        <ContactList
-          sections={SECTIONS.map((section) => ({
-            ...section,
-            contacts: section.contacts.map((c) => ({ ...c, trailing: 'chevron' as const })),
+      <Surface>
+        <PageHeader title="Contacts" onBack={null} safeArea={false} sticky={false} />
+        <Caption>browse — sticky headings (opt-in on Android) and alphabet index</Caption>
+        <List
+          sections={SECTIONS.map(({ letter, contacts }) => ({
+            id: letter,
+            title: letter,
+            items: contacts.map((person) => ({
+              id: person.id,
+              person,
+              trailing: (
+                <View pointerEvents="none">
+                  <RiArrowRightSLine size="md" />
+                </View>
+              ),
+              onPress: fn().mockName('onPress'),
+            })),
           }))}
-          activeLetter="A"
           height={320}
-          onContactPress={() => undefined}
-          onJumpToLetter={() => undefined}
           testID="contacts"
+          sectionIndex={{ activeId: 'A' }}
         />
-        <Caption>pick — the row IS the checkbox</Caption>
-        <ContactList
-          sections={selectable}
+        <Caption>pick — select from the avatar or row</Caption>
+        <List
+          sections={SECTIONS.map(({ letter, contacts }) => ({
+            id: letter,
+            title: letter,
+            items: contacts.map((person) => ({
+              id: person.id,
+              person,
+              checked: picked.includes(person.id),
+              selecting: true,
+              onCheckedChange: (checked) =>
+                setPicked((current) =>
+                  checked ? [...current, person.id] : current.filter((id) => id !== person.id),
+                ),
+            })),
+          }))}
           height={260}
-          onContactSelectedChange={(id, next) =>
-            setPicked((current) =>
-              next ? [...current, id] : current.filter((entry) => entry !== id),
-            )
-          }
           testID="picker"
+          sectionIndex={{}}
         />
-      </BothModes>
+      </Surface>
     );
   },
 };
 
-/**
- * Search results: `layout="flat"` puts every match in ONE section in the order
- * given, with no A–Z rail and nothing pinned — unlabelled, or under one label.
- */
+/** Flat results can have a heading without an alphabet index or sticky header. */
 export const ContactSearchResults: Story = {
-  render: () => (
-    <BothModes min={400}>
-      <Caption>flat, unlabelled</Caption>
-      <ContactList
-        sections={SECTIONS}
-        layout="flat"
-        height={260}
-        onContactPress={() => undefined}
-        testID="results"
-      />
-      <Caption>flat, one label</Caption>
-      <ContactList
-        sections={SECTIONS}
-        layout="flat"
-        flatLabel="Results"
-        height={260}
-        onContactPress={() => undefined}
-        testID="results-labelled"
-      />
-    </BothModes>
-  ),
+  render: () => {
+    const items = SECTIONS.flatMap(({ contacts }) => contacts).map((person) => ({
+      id: person.id,
+      person,
+      onPress: fn().mockName('onPress'),
+    }));
+    return (
+      <Surface>
+        <Caption>flat, unlabelled</Caption>
+        <List items={items} height={260} testID="results" stickyHeaders={false} />
+        <Caption>flat, one label</Caption>
+        <List
+          sections={[{ id: 'results', title: 'Results', items }]}
+          height={260}
+          testID="results-labelled"
+          stickyHeaders={false}
+        />
+      </Surface>
+    );
+  },
 };
 
 /** The chips above a search field, scrolling and wrapping. */
@@ -262,7 +221,7 @@ export const SelectedChips: Story = {
   render: function SelectedChipsStory() {
     const [people, setPeople] = useState(PICKED);
     return (
-      <BothModes min={360}>
+      <Surface>
         <Caption>scroll (the default)</Caption>
         <SelectedChipsRow
           people={people}
@@ -270,8 +229,8 @@ export const SelectedChips: Story = {
           testID="chips"
         />
         <Caption>wrap</Caption>
-        <SelectedChipsRow people={PICKED} layout="wrap" onRemove={() => undefined} />
-      </BothModes>
+        <SelectedChipsRow people={PICKED} layout="wrap" onRemove={fn().mockName('onRemove')} />
+      </Surface>
     );
   },
 };
@@ -281,148 +240,93 @@ export const NewGroup: Story = {
   render: function NewGroupStory() {
     const [name, setName] = useState('Saturday planning');
     const [about, setAbout] = useState('');
+    const [members, setMembers] = useState(PICKED.slice(0, 3));
     return (
-      <BothModes min={420}>
+      <Surface>
+        <PageHeader title="New group" onBack={null} safeArea={false} sticky={false} />
         <NewGroupForm
           name={name}
           onNameChange={setName}
           description={about}
           onDescriptionChange={setAbout}
-          onPickPhoto={() => undefined}
-          members={PICKED}
-          onRemoveMember={() => undefined}
-          onAddMembers={() => undefined}
+          onPickPhoto={fn().mockName('onPickPhoto')}
+          members={members}
+          onRemoveMember={(id) =>
+            setMembers((current) => current.filter((member) => member.id !== id))
+          }
+          onAddMembers={
+            members.length < PICKED.length
+              ? () =>
+                  setMembers((current) => [
+                    ...current,
+                    PICKED.find((person) => !current.some((member) => member.id === person.id))!,
+                  ])
+              : undefined
+          }
           testID="new-group"
         />
-      </BothModes>
+      </Surface>
     );
   },
-};
-
-/** A group's members, with roles and the per-member menu. */
-export const Members: Story = {
-  render: function MembersStory() {
-    const [search, setSearch] = useState('');
-    return (
-      <BothModes min={400}>
-        <MemberList
-          members={MEMBERS}
-          title="5 members"
-          search={search}
-          onSearchChange={setSearch}
-          onAddMembers={() => undefined}
-          onMemberPress={() => undefined}
-          onPromote={() => undefined}
-          onRestrict={() => undefined}
-          onRemove={() => undefined}
-          testID="members"
-        />
-      </BothModes>
-    );
-  },
-};
-
-/** A channel broadcast, with counts, reactions and a comments button. */
-export const ChannelPost: Story = {
-  render: () => (
-    <BothModes min={400}>
-      <ChannelPostCard
-        channelName="Coast Weather Watch"
-        channelAvatar={PHOTO('channel')}
-        verified
-        pinned
-        time="12:41"
-        media={
-          <Image
-            source={{ uri: PHOTO('storm', 640, 360) }}
-            style={{ width: '100%', height: 180 }}
-            resizeMode="cover"
-          />
-        }
-        views="12.4K"
-        forwards="318"
-        comments="128 comments"
-        onComments={() => undefined}
-        onShare={() => undefined}
-        onMore={() => undefined}
-        onPress={() => undefined}
-        reactions={
-          <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
-            <Chip size="sm" variant="subtle">
-              🌊 42
-            </Chip>
-            <Chip size="sm" variant="subtle">
-              👀 18
-            </Chip>
-            <Chip size="sm" variant="subtle">
-              🙏 7
-            </Chip>
-          </View>
-        }
-        testID="post"
-      >
-        Swell picks up after midnight along the whole north shore. The harbour road stays open, but
-        the lower car park floods on the high tide at 03:10.
-      </ChannelPostCard>
-    </BothModes>
-  ),
 };
 
 /** The story viewer, with the progress strip running. */
-export const Stories: Story = {
-  render: function StoriesStory() {
+export const Stories: StoryObj<{ controlledProgress: boolean; progress: number }> = {
+  args: { controlledProgress: false, progress: 0.35 },
+  argTypes: {
+    controlledProgress: { control: 'boolean' },
+    progress: { control: { type: 'range', min: 0, max: 1, step: 0.01 } },
+  },
+  render: function StoriesStory({ controlledProgress, progress }) {
     const [index, setIndex] = useState(1);
-    const [paused, setPaused] = useState(false);
+    const [muted, setMuted] = useState(true);
+    const [closed, setClosed] = useState(false);
+    const [result, setResult] = useState('');
     const [reply, setReply] = useState('');
+
     const stories = ['a', 'b', 'c', 'd', 'e'].map((id) => ({
       id,
       media: (
-        <Image
+        <BloomImage
           source={{ uri: PHOTO(`story-${id}`, 800, 1400) }}
           style={{ width: '100%', height: '100%' }}
-          resizeMode="cover"
+          contentFit="cover"
         />
       ),
     }));
     return (
-      <View style={{ flexDirection: 'row', gap: 24, padding: 24, flexWrap: 'wrap' }}>
-        <View style={{ width: '100%', maxWidth: 390, height: 760 }}>
-          <StoryViewer
-            stories={stories}
-            index={index}
-            paused={paused}
-            name="Saoirse Byrne"
-            avatar={PHOTO('saoirse')}
-            time="2 h"
-            muted
-            onMutedChange={() => setPaused((p) => !p)}
-            onMore={() => undefined}
-            onClose={() => undefined}
-            onNext={() => setIndex((i) => Math.min(stories.length - 1, i + 1))}
-            onPrevious={() => setIndex((i) => Math.max(0, i - 1))}
-            replyValue={reply}
-            onReplyChange={setReply}
-            onReplySend={() => setReply('')}
-            reactions={['❤️', '🔥', '😂']}
-            onReact={() => undefined}
-            testID="story"
-          />
-        </View>
-        <View style={{ width: '100%', maxWidth: 390, height: 760 }}>
-          <StoryViewer
-            stories={stories.slice(0, 3)}
-            index={0}
-            progress={0.35}
-            name="Ito Nakamura"
-            avatar={PHOTO('ito')}
-            time="just now"
-            onClose={() => undefined}
-            onNext={() => undefined}
-            onPrevious={() => undefined}
-            testID="story-controlled"
-          />
-        </View>
-      </View>
+      <AppShell variant="canvas" header={null}>
+        <Screen
+          bottomBar={result ? <Text accessibilityLiveRegion="polite">{result}</Text> : undefined}
+        >
+          {closed ? (
+            <Button onPress={() => setClosed(false)}>Reopen stories</Button>
+          ) : (
+            <StoryViewer
+              stories={stories}
+              progress={controlledProgress ? progress : undefined}
+              index={index}
+              name="Saoirse Byrne"
+              avatar={PHOTO('saoirse')}
+              time="2 h"
+              muted={muted}
+              onMutedChange={setMuted}
+              onClose={() => setClosed(true)}
+              onNext={() => setIndex((i) => Math.min(stories.length - 1, i + 1))}
+              onPrevious={() => setIndex((i) => Math.max(0, i - 1))}
+              replyValue={reply}
+              onReplyChange={setReply}
+              onReplySend={() => {
+                setResult(`Reply sent: ${reply}`);
+                setReply('');
+              }}
+              reactions={['❤️', '🔥', '😂']}
+              onReact={(reaction) => setResult(`Reacted ${reaction}`)}
+              testID="story"
+            />
+          )}
+        </Screen>
+      </AppShell>
     );
   },
 };

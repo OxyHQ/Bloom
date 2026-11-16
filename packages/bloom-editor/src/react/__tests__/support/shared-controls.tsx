@@ -1,11 +1,24 @@
 /** Editor boundary doubles: real Bloom placement/material is browser-verified separately. */
 import { createContext, useContext, type ReactNode, type Ref } from 'react';
 import { createPortal } from 'react-dom';
-import type { ButtonProps, LinkButtonProps } from '@oxy.so/bloom/button';
+import type { ButtonProps } from '@oxy.so/bloom/button';
 import type { TextFieldInputProps } from '@oxy.so/bloom/text-field';
 import type { PopoverProps, PopoverContentProps } from '@oxy.so/bloom/popover';
 
-export function Button({ children, onPress, disabled, pressed, accessibilityLabel }: ButtonProps) {
+export function Button({
+  children,
+  onPress,
+  disabled,
+  pressed,
+  accessibilityLabel,
+  href,
+}: ButtonProps) {
+  if (href && !disabled)
+    return (
+      <a href={href} aria-label={accessibilityLabel} onClick={(event) => onPress?.(event as never)}>
+        {typeof children === 'function' ? children('#000') : children}
+      </a>
+    );
   return (
     <button
       type="button"
@@ -14,15 +27,8 @@ export function Button({ children, onPress, disabled, pressed, accessibilityLabe
       disabled={disabled}
       onClick={(event) => onPress?.(event as never)}
     >
-      {children}
+      {typeof children === 'function' ? children('#000') : children}
     </button>
-  );
-}
-export function LinkButton({ children, href, onPress, accessibilityLabel }: LinkButtonProps) {
-  return (
-    <a href={href} aria-label={accessibilityLabel} onClick={(event) => onPress?.(event as never)}>
-      {children}
-    </a>
   );
 }
 export function TextFieldInput({

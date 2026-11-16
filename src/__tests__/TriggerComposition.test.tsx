@@ -19,7 +19,7 @@
  * a fragment has no host node to put them on. Nothing throws and the trigger is
  * simply dead. It throws now, by name.
  *
- * ## 3. A `ButtonGroupItem` as the trigger
+ * ## 3. A `Button` as the trigger
  *
  * A menu button inside a header island should be an item of that island, not a
  * second control that looks like one. That needs the item to carry the props
@@ -33,7 +33,7 @@ import { Pressable, Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { Button } from '../button';
 import { PortalOutlet, PortalProvider } from '../portal';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 
@@ -118,19 +118,19 @@ describe('asChild composition', () => {
   });
 });
 
-describe('a ButtonGroupItem as a trigger', () => {
+describe('a Button as a trigger', () => {
   it('carries the trigger contract onto the rendered control', () => {
     const utils = wrap(
-      <ButtonGroup accessibilityLabel="Page actions">
+      <Button.Group accessibilityLabel="Page actions">
         <Popover>
           <PopoverTrigger asChild label="More">
-            <ButtonGroupItem testID="more" iconOnly accessibilityLabel="More" />
+            <Button testID="more" iconOnly accessibilityLabel="More" />
           </PopoverTrigger>
           <PopoverContent label="More">
             <Text>Duplicate</Text>
           </PopoverContent>
         </Popover>
-      </ButtonGroup>,
+      </Button.Group>,
     );
     const item = utils.getByTestId('more');
     // Closed: the state is announced, not merely held.

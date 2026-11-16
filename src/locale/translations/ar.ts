@@ -3097,23 +3097,6 @@ const CHAT_PEOPLE_MESSAGES: Translations['CHAT_PEOPLE_MESSAGES'] = {
     react: (emoji) => `التفاعل بـ ${emoji}`,
   },
   searchMembers: 'البحث عن أعضاء',
-  share: 'مشاركة',
-  postOptions: 'خيارات المنشور',
-  pinned: 'مثبّت',
-  views: (c) =>
-    plural('ar', c, {
-      one: 'مشاهدة واحدة',
-      two: 'مشاهدتان',
-      few: `${c} مشاهدات`,
-      other: `${c} مشاهدة`,
-    }),
-  forwards: (c) =>
-    plural('ar', c, {
-      one: 'إعادة توجيه واحدة',
-      two: 'إعادتا توجيه',
-      few: `${c} عمليات إعادة توجيه`,
-      other: `${c} إعادة توجيه`,
-    }),
   jumpTo: (letter) => `الانتقال إلى ${letter}`,
   add: 'إضافة',
   added: 'تمت الإضافة',

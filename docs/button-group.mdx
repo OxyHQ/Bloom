@@ -1,121 +1,93 @@
 ---
-title: ButtonGroup
-description: Buttons the consumer declared as one control — one shared surface — for toolbars, filters, pagers and a floating header's actions.
+title: Button.Group
+description: Group ordinary buttons with one shared surface and the same control geometry.
 order: 11
 ---
 
-# ButtonGroup
+# Button.Group
 
-A row of buttons declared as one control, with one shared Surface. Unselected items share the group material; a checked item gains a rounded inset capsule. Dividers separate items by default.
-
-```tsx
-import { ButtonGroup, ButtonGroupItem } from '@oxy.so/bloom/button-group';
-
-<ButtonGroup accessibilityLabel="Alignment">
-  <ButtonGroupItem onPress={alignLeft}>Left</ButtonGroupItem>
-  <ButtonGroupItem onPress={alignCenter}>Center</ButtonGroupItem>
-  <ButtonGroupItem onPress={alignRight}>Right</ButtonGroupItem>
-</ButtonGroup>
-```
-
-## Materials
+Use the same `Button` alone or inside `Button.Group`. The group owns layout,
+dividers, inherited size and the shared surface. Button owns its size recipe,
+icons, focus, pointer and keyboard interaction, loading, disabled and toggle states.
 
 ```tsx
-<ButtonGroup accessibilityLabel="Page actions">
-  <ButtonGroupItem iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search" />
-  <ButtonGroupItem iconOnly leadingIcon={RiShare2Line} accessibilityLabel="Share" />
-</ButtonGroup>
+import { Button } from '@oxy.so/bloom/button';
+
+<Button appearance="outline" tone="neutral" icon={BackIcon} accessibilityLabel="Back" />
+<Button.Group accessibilityLabel="Page actions">
+  <Button icon={SearchIcon} accessibilityLabel="Search" />
+  <Button icon={ShareIcon} accessibilityLabel="Share" />
+</Button.Group>
 ```
 
-Density inherits from `BloomScope`; the material is shared everywhere.
-
-- The GROUP owns the shared material. Unselected items paint `transparent` at rest, and their hover/press states are an alpha of the theme's own `text` — an ink wash, not a fill. That is the one recipe that survives a backdrop Bloom cannot predict: a fixed neutral tuned against the island's fill disappears the moment a photograph moves the pane 40 levels, while a wash of the label's colour keeps the same relation to the label at every composite.
-- An inner row clips highlights to the group shape. The outer native host stays unclipped so its shadow remains visible.
-- `dividers` defaults to **true**. Separators stop short of the outer rim. Pass `dividers={false}` to hide them.
-
-## Items as triggers
-
-`ButtonGroupItem` declares the props an anchored family's `asChild` trigger merges onto it, so a menu button inside a group is an item OF that group rather than a second control that looks like one:
-
-```tsx
-<ButtonGroup accessibilityLabel="Page actions">
-  <Popover>
-    <PopoverTrigger asChild label="More">
-      <ButtonGroupItem iconOnly leadingIcon={RiMore2Line} accessibilityLabel="More" />
-    </PopoverTrigger>
-    <PopoverContent label="More">…</PopoverContent>
-  </Popover>
-</ButtonGroup>
-```
-
-The item announces its own expanded state on both platforms. A control whose props are a closed list would have dropped `aria-expanded`, `aria-haspopup` and `onLongPress` silently, since all of them are optional — see [Composition](/docs/composition).
+Inside a group, buttons default to neutral outline with shared material. Explicit
+appearance, tone and material props still win. Grouping does not change button
+height, glyph size, label spacing or content density. `xs`, `sm`, `md` and `lg`
+use the normal Button scale (24, 32, 36 and 44px at default density).
+An explicit button size wins over the group size, then the group's inherited
+`BloomScope` size. There is no separate group geometry table.
 
 ## Selection
 
-Use `checked` with `onCheckedChange` for a controlled boolean toggle. `onPress` receives the original press event and can be composed with a toggle callback; disabled items call neither.
-
-`checked` paints an item with its hover fill and announces it as pressed (`aria-pressed` on web, `accessibilityState.selected` on native). Drive it from state for single- or multi-select toolbars; leave every item unselected for a pure action row. For an animated thumb, use `SegmentedControl`.
+`pressed` and `onPressedChange` control a toggle, both inside and outside groups.
+Leave `pressed` unset for an ordinary action. Disabled and loading buttons do
+not activate either callback. `onPress` still receives the original event.
 
 ```tsx
-<ButtonGroup accessibilityLabel="Range">
-  {ranges.map((range) => (
-    <ButtonGroupItem key={range} checked={value === range} onPress={() => setValue(range)}>
+<Button.Group accessibilityLabel="Range">
+  {ranges.map(range => (
+    <Button key={range} pressed={value === range} onPress={() => setValue(range)}>
       {range}
-    </ButtonGroupItem>
+    </Button>
   ))}
-</ButtonGroup>
+</Button.Group>
 ```
 
-## Sizes and icons
+One measured selection moves a shared capsule to the actual button bounds.
+Multiple selected buttons paint their own states. The measured transition,
+reduced motion and disappearance behavior are shared with Bloom's selection motion.
 
-| | md | sm |
-|---|---|---|
-| item height | 34 | 30 |
-| padding-x | 12 | 10 |
-| icon | 20 | 18 |
+## Menus and popovers
 
-Text is `body-medium` (Inter 14/20 500) through Bloom's typography `Text` — a bare React Native `Text` falls back to the system font. Pass icon components to `leadingIcon` / `trailingIcon`; `iconOnly` makes a square item that needs `accessibilityLabel`. An app whose own icons take `size`/`color` rather than `width`/`height`/`fill` uses `renderLeadingIcon={({ size, color }) => …}` instead — see [Icons](/docs/icons).
+Ordinary buttons support anchored `asChild` triggers, including refs, expanded
+state and press cancellation. A wrapper does not require a special group item.
 
-## Props
+```tsx
+<Button.Group accessibilityLabel="Page actions">
+  <Popover>
+    <PopoverTrigger asChild label="More">
+      <Button icon={MoreIcon} accessibilityLabel="More" />
+    </PopoverTrigger>
+    <PopoverContent label="More">…</PopoverContent>
+  </Popover>
+</Button.Group>
+```
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `ButtonGroup.size?` | `'md' \| 'sm' \| 'xs'` | inherited, then `'md'` | Size for every item: 34, 30 or 24px. |
-| `ButtonGroup.separated?` | `boolean` | `false` | One pill cut into segments: items sit 2px apart under a pill-shaped clip, so only the first item's start and the last item's end are rounded. No shared surface, hairlines or sliding selection. An item is `subtle`, and `outline` while `checked`; an `iconOnly` item is a `Button wide`: a pill 1.5× as wide as it is tall, never a circle. |
-| `ButtonGroup.dividers?` | `boolean` | `true` | Hairlines between items. |
-| `ButtonGroup.accessibilityLabel?` | `string` | — | Names the group. |
-| `ButtonGroupItem.onPress?` | `(event) => void` | — | Press handler. Receives the event, so a composed trigger handler can `preventDefault()` it. |
-| `ButtonGroupItem.checked?` | `boolean` | `false` | Hover fill + pressed state. |
-| `ButtonGroupItem.disabled?` | `boolean` | `false` | Disabled paint, blocks presses. |
-| `ButtonGroupItem.iconOnly?` | `boolean` | `false` | Square icon-only item. |
-| `ButtonGroupItem.leadingIcon?` / `trailingIcon?` | `BloomIconComponent` | — | Icon components. |
-| `ButtonGroupItem.renderLeadingIcon?` / `renderTrailingIcon?` | `BloomIconRenderer` | — | Draw the glyph yourself, handed `{ size, color }` for the current state — for an app's own icon set. Wins over the icon component. [Icons](/docs/icons). |
-| `ButtonGroupItem.size?` | `'md' \| 'sm' \| 'xs'` | group size | Per-item override. |
-| `ButtonGroupItem.hitSlop?` | `number \| {top,bottom,left,right}` | — | Extra touch area. NOT defaulted: items in a group are adjacent, so slop on one overlaps its neighbour. Use it for an item that stands alone in its own island. |
-| `ButtonGroupItem.onLongPress?` / `aria-expanded` / `aria-haspopup` / `accessibilityRole` | | — | The trigger contract, set by an anchored family. |
+## Group props
 
-## API migration
+| Prop | Default | Behavior |
+| --- | --- | --- |
+| `orientation` | `horizontal` | Horizontal or vertical layout, without changing button geometry. |
+| `size` | inherited, then `md` | Normal Button size, including `lg`. |
+| `dividers` | `true` | Inset hairlines between joined controls. |
+| `separated` | `false` | Flat segments with a 2px gap in one outer pill; no moving capsule or dividers. Icon segments default to `wide`. |
+| `accessibilityLabel` | — | Names the group. |
+| `style`, `testID` | — | Group layout and test handle. |
 
-Controls use canonical sizes and the shared visual scope. Removed aliases and migration mappings are documented in [Unified component API](/docs/unified-api).
+Adjacent buttons default to zero hit slop so targets cannot overlap. Standalone
+buttons retain Button's normal touch target. A caller can provide an explicit
+hit slop where its layout has room.
 
-Each `ButtonGroupItem` now composes the actual `Button`, including icon render slots, toggle state, disabled state and trigger events. The group owns joining, dividers and inherited density. The group uses one shared `Surface`. With one checked item, a measured rounded capsule moves behind the Buttons sharing its material and resizes to their actual bounds. It shares the same spring and visibility transition as BottomBar, respects reduced motion, and fades in place when selection disappears. Until layout is available, or when multiple items are checked, each checked Button paints its own material instead. Each platform binding injects its own Surface and Button, so browser packages resolve the web implementations directly.
+## Migration
 
-## Separated
-
-`separated` keeps the group semantics (one named `role="group"`, inherited size, `checked` items) and drops the joined surface: the whole group reads as one pill cut into straight segments 2px apart. It is what a reply's action row is — [`AgentReplyActions`](./agent-reply.mdx) is a separated `xs` group.
-
-Joined action items use the same neutral outline Button foreground as standalone
-IconButton. `material="shared"` delegates only the resting surface to the group;
-it does not lower icon emphasis. Hover, press, disabled and selected states
-remain Button behavior, not a separate group implementation.
+Replace `ButtonGroup` with `Button.Group` and `ButtonGroupItem` with `Button`,
+importing both through `@oxy.so/bloom/button`. Replace item `checked` or `selected`
+with `pressed`, and `onCheckedChange` with `onPressedChange`. The old
+`@oxy.so/bloom/button-group` entry and item component have been removed.
 
 ## The group holds its items
 
-The group's view is never flattened away from its items (`collapsable={false}`).
-React Native's renderer flattens a view that forms no stacking context — a role
-and a label do not form one — and mounts its children in the nearest ancestor
-that does, so an assistive technology reading the mounted tree (OxyOS's, Android's
-TalkBack) found an empty "Back and forward" group beside two loose buttons.
-`ButtonGroup.test.tsx` pins it; every grouping container follows the same rule
-([Composition](/docs/bloom/main/composition#semantic-containers-keep-their-children)).
-
+The group keeps `collapsable={false}`. Native renderers must not flatten the
+container away from its controls: that previously left an empty named group
+beside loose buttons in the mounted accessibility tree. The existing
+`ButtonGroup.test.tsx` regression and trigger/material tests cover the new API.

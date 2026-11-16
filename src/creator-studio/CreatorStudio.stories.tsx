@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { fn } from 'storybook/test';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -442,7 +444,6 @@ function Dashboard() {
           lastPayout={{ amount: '$1,120.00', date: '28 Aug' }}
           nextPayoutDate="28 Sep 2026"
           months={MONTHS}
-          onViewStatements={() => {}}
           testID="payouts"
         />
       </Columns>
@@ -476,15 +477,15 @@ function Dashboard() {
         <PitchCard
           releases={[{ value: 'low-tide', label: 'Low Tide · Single · 14 Mar' }]}
           release="low-tide"
-          onReleaseChange={() => {}}
+          onReleaseChange={fn().mockName('onReleaseChange')}
           moods={[]}
           selectedMoods={[]}
-          onSelectedMoodsChange={() => {}}
+          onSelectedMoodsChange={fn().mockName('onSelectedMoodsChange')}
           genres={[]}
           selectedGenres={[]}
-          onSelectedGenresChange={() => {}}
+          onSelectedGenresChange={fn().mockName('onSelectedGenresChange')}
           pitch="A slow-building song about coming home."
-          onPitchChange={() => {}}
+          onPitchChange={fn().mockName('onPitchChange')}
           status="accepted"
           submittedAt="Sent 20 Feb"
         />
@@ -498,19 +499,31 @@ export const DashboardPage: Story = {
   render: () => <Dashboard />,
 };
 
-export const DashboardPageDark: Story = {
-  globals: { theme: 'dark' },
-  render: () => <Dashboard />,
-};
-
 function Catalog() {
   const { width } = useWindowDimensions();
-  const columns = width >= 1024 ? 4 : width >= 640 ? 3 : 2;
+  const columns = width >= 1024 ? 4 : width >= 640 ? 3 : 1;
+  const [releases, setReleases] = useState(RELEASES);
+  const [selected, setSelected] = useState('');
+  const actionsFor = (release: CreatorRelease): ReleaseAction[] =>
+    ACTIONS.map((action) => ({
+      ...action,
+      onPress: () => {
+        if (action.label === 'Delete')
+          setReleases((items) => items.filter((item) => item.id !== release.id));
+        else if (action.label === 'Duplicate')
+          setReleases((items) => [
+            ...items,
+            { ...release, id: `release-${Date.now()}`, title: `${release.title} copy` },
+          ]);
+        else setSelected(`${action.label}: ${release.title}`);
+      },
+    }));
   const rows: CreatorRelease[][] = [];
-  for (let i = 0; i < RELEASES.length; i += columns) rows.push(RELEASES.slice(i, i + columns));
+  for (let i = 0; i < releases.length; i += columns) rows.push(releases.slice(i, i + columns));
   return (
     <Page>
       <Section title="Releases">
+        {selected ? <Text>{selected}</Text> : null}
         <View style={{ gap: 16 }}>
           {rows.map((row, r) => (
             <View key={r} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 16 }}>
@@ -521,8 +534,8 @@ function Catalog() {
                 >
                   <ReleaseCard
                     release={release}
-                    onPress={() => {}}
-                    actions={ACTIONS}
+                    onPress={() => setSelected(release.title)}
+                    actions={actionsFor(release)}
                     testID={`release-${release.id}`}
                   />
                 </View>
@@ -536,13 +549,13 @@ function Catalog() {
       </Section>
       <Section title="As a list">
         <View style={{ gap: 8, maxWidth: 760 }}>
-          {RELEASES.map((release) => (
+          {releases.map((release) => (
             <ReleaseCard
               key={release.id}
               release={release}
               layout="row"
-              onPress={() => {}}
-              actions={ACTIONS}
+              onPress={() => setSelected(release.title)}
+              actions={actionsFor(release)}
             />
           ))}
         </View>
@@ -553,11 +566,6 @@ function Catalog() {
 
 /** The catalog: every status (draft, in review, scheduled, live, rejected with a reason, taken down) as grid cards and list rows. */
 export const ReleasesCatalog: Story = {
-  render: () => <Catalog />,
-};
-
-export const ReleasesCatalogDark: Story = {
-  globals: { theme: 'dark' },
   render: () => <Catalog />,
 };
 
@@ -652,7 +660,7 @@ function NewRelease() {
                   remaining={`About ${Math.max(1, Math.round((100 - progress) / 4))} s left`}
                   duration="3:42"
                   error="The connection dropped at 64%. Check your network and try again."
-                  onRetry={() => {}}
+                  onRetry={() => setRows((items) => items.filter((item) => item !== 'failed'))}
                   onRemove={() => setRows((r) => r.filter((s) => s !== status))}
                 />
               ))}
@@ -673,7 +681,14 @@ function NewRelease() {
             <ArtworkUploader
               artwork={artwork}
               onRemove={() => setArtwork(null)}
-              onFileSelected={() => {}}
+              onFileSelected={(file) => {
+                if (file.uri) setArtwork(file.uri);
+                else if (file.raw instanceof Blob) {
+                  const reader = new FileReader();
+                  reader.onload = () => setArtwork(String(reader.result));
+                  reader.readAsDataURL(file.raw);
+                }
+              }}
               testID="artwork"
             />
           </Section>
@@ -691,11 +706,6 @@ export const NewReleaseFlow: Story = {
   render: () => <NewRelease />,
 };
 
-export const NewReleaseFlowDark: Story = {
-  globals: { theme: 'dark' },
-  render: () => <NewRelease />,
-};
-
 /** Artwork states: empty drop zone, a preview, and a too-small image rejected with a message. */
 export const Artwork: Story = {
   render: function ArtworkStates() {
@@ -703,15 +713,22 @@ export const Artwork: Story = {
       <Page maxWidth={1080}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24 }}>
           <View style={{ width: 280 }}>
-            <ArtworkUploader onFileSelected={() => {}} testID="artwork-empty" />
+            <ArtworkUploader
+              onFileSelected={fn().mockName('onFileSelected')}
+              testID="artwork-empty"
+            />
           </View>
           <View style={{ width: 280 }}>
-            <ArtworkUploader artwork={COVERS.velvet} onRemove={() => {}} testID="artwork-preview" />
+            <ArtworkUploader
+              artwork={COVERS.velvet}
+              onRemove={fn().mockName('onRemove')}
+              testID="artwork-preview"
+            />
           </View>
           <View style={{ width: 280 }}>
             <ArtworkUploader
               artwork={COVERS.satellites}
-              onRemove={() => {}}
+              onRemove={fn().mockName('onRemove')}
               error={artworkDimensionsError(1400, 1400)}
               testID="artwork-error"
             />

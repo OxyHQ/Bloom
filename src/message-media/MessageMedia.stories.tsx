@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import { fn } from 'storybook/test';
+import React, { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { ContactMessage } from './ContactMessage';
@@ -18,7 +18,7 @@ import { SharedMediaGrid } from './SharedMediaGrid';
 import { StickerMessage } from './StickerMessage';
 import { VideoMessage } from './VideoMessage';
 import { VoiceMessage } from './VoiceMessage';
-import { resolveBubbleColor, MESSAGE_MEDIA_RADIUS } from './shared';
+import { MessageBubble } from '../message-bubble';
 import type { MessageTone, VoicePlaybackRate } from './types';
 
 const meta: Meta = {
@@ -83,15 +83,7 @@ const DOCS = [
 //  Harness
 // ---------------------------------------------------------------------------
 
-/**
- * A MINIMAL local bubble.
- *
- * `message-bubble` (the shell, grouping, meta row and reactions) is another
- * agent's family and was not on `main` when these stories were written, so this
- * stands in for its `media` slot: the fill, the radius and the on-colour a block
- * is handed. Nothing in `message-media` renders it — that is the point of the
- * split — and these stories should switch to the real shell once it lands.
- */
+/** Shared message shell owns media inset, fill and shape for both directions. */
 function Bubble({
   tone,
   children,
@@ -103,23 +95,13 @@ function Bubble({
   bare?: boolean;
   inset?: boolean;
 }) {
-  const theme = useTheme();
-  const fill = resolveBubbleColor(theme, tone);
   return (
-    <View style={{ alignItems: tone === 'outgoing' ? 'flex-end' : 'flex-start' }}>
-      <View
-        style={{
-          backgroundColor: bare ? 'transparent' : fill,
-          borderRadius: MESSAGE_MEDIA_RADIUS + 4,
-          paddingTop: bare || !inset ? 0 : 10,
-          paddingBottom: bare || !inset ? 0 : 10,
-          paddingLeft: bare || !inset ? 0 : 10,
-          paddingRight: bare || !inset ? 0 : 10,
-        }}
-      >
-        {children}
-      </View>
-    </View>
+    <MessageBubble
+      direction={tone}
+      media={children}
+      mediaFit={bare ? 'bare' : inset ? 'inset' : 'bleed'}
+      maxWidth="100%"
+    />
   );
 }
 
@@ -152,23 +134,6 @@ function Surface({ children, width }: { children: React.ReactNode; width?: numbe
 }
 
 /** The same block in both modes. The ambient preset is forwarded. */
-function BothModes({ children, width }: { children: React.ReactNode; width?: number }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
-  return (
-    <View style={{ width: '100%', flexDirection: 'row', flexWrap: 'wrap' }}>
-      <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: 360 }}>
-        <BloomThemeProvider mode="light" colorPreset={preset}>
-          <Surface width={width}>{children}</Surface>
-        </BloomThemeProvider>
-      </View>
-      <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: 360 }}>
-        <BloomThemeProvider mode="dark" colorPreset={preset}>
-          <Surface width={width}>{children}</Surface>
-        </BloomThemeProvider>
-      </View>
-    </View>
-  );
-}
 
 /** One block drawn on BOTH bubbles, which is the contract every block here has. */
 function BothTones({
@@ -197,11 +162,16 @@ function BothTones({
 export const Matrix: Story = {
   render: function MessageMediaMatrix() {
     return (
-      <BothModes>
+      <Surface>
         <BothTones
           title="photo — 4:3, rounded 16"
           render={(tone) => (
-            <ImageMessage tone={tone} source={photo(0)} aspectRatio={4 / 3} onPress={() => {}} />
+            <ImageMessage
+              tone={tone}
+              source={photo(0)}
+              aspectRatio={4 / 3}
+              onPress={fn().mockName('ImageMessage.onPress')}
+            />
           )}
         />
         <BothTones
@@ -212,7 +182,7 @@ export const Matrix: Story = {
               source={photo(3)}
               duration={187}
               sizeBytes={24.6 * 1024 * 1024}
-              onPress={() => {}}
+              onPress={fn().mockName('VideoMessage.onPress')}
             />
           )}
         />
@@ -225,9 +195,9 @@ export const Matrix: Story = {
               duration={14}
               position={5}
               rate={1}
-              onRateChange={() => {}}
-              onSeek={() => {}}
-              onPlayPress={() => {}}
+              onRateChange={fn().mockName('VoiceMessage.onRateChange')}
+              onSeek={fn().mockName('VoiceMessage.onSeek')}
+              onPlayPress={fn().mockName('VoiceMessage.onPlayPress')}
               transcript="Left the keys with the neighbour on the second floor."
             />
           )}
@@ -239,8 +209,8 @@ export const Matrix: Story = {
               tone={tone}
               name="Tenancy agreement.pdf"
               sizeBytes={2.44 * 1024 * 1024}
-              onDownload={() => {}}
-              onPress={() => {}}
+              onDownload={fn().mockName('FileMessage.onDownload')}
+              onPress={fn().mockName('FileMessage.onPress')}
             />
           )}
         />
@@ -251,7 +221,7 @@ export const Matrix: Story = {
               tone={tone}
               title="Casa del Puerto"
               address="Carrer de la Marina 118, Vila Nova"
-              onPress={() => {}}
+              onPress={fn().mockName('Casa del Puerto.onPress')}
             />
           )}
         />
@@ -262,8 +232,8 @@ export const Matrix: Story = {
               tone={tone}
               name="Marta Ferreira"
               detail="+34 600 11 22 33"
-              onMessage={() => {}}
-              onAdd={() => {}}
+              onMessage={fn().mockName('ContactMessage.onMessage')}
+              onAdd={fn().mockName('ContactMessage.onAdd')}
             />
           )}
         />
@@ -283,10 +253,15 @@ export const Matrix: Story = {
         <BothTones
           title="gif — pill, capped at 220"
           render={(tone) => (
-            <GifMessage tone={tone} source={photo(6)} aspectRatio={1.6} onPress={() => {}} />
+            <GifMessage
+              tone={tone}
+              source={photo(6)}
+              aspectRatio={1.6}
+              onPress={fn().mockName('GifMessage.onPress')}
+            />
           )}
         />
-      </BothModes>
+      </Surface>
     );
   },
 };
@@ -296,7 +271,7 @@ export const AlbumMatrix: Story = {
   render: function AlbumMatrixStory() {
     const counts = [2, 3, 4, 5, 6, 7, 8, 9, 10, 14];
     return (
-      <BothModes>
+      <Surface>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20 }}>
           {counts.map((count) => (
             <View key={count} style={{ gap: 8 }}>
@@ -311,13 +286,13 @@ export const AlbumMatrix: Story = {
                     kind: i === 1 ? ('video' as const) : ('image' as const),
                     duration: i === 1 ? 48 : undefined,
                   }))}
-                  onPress={() => {}}
+                  onPress={fn().mockName('MediaAlbum.onPress')}
                 />
               </Bubble>
             </View>
           ))}
         </View>
-      </BothModes>
+      </Surface>
     );
   },
 };
@@ -326,11 +301,16 @@ export const AlbumMatrix: Story = {
 export const SendingAndFailed: Story = {
   render: function SendingStory() {
     return (
-      <BothModes>
+      <Surface>
         <View style={{ gap: 16 }}>
           <Caption>indeterminate → 38% → failed</Caption>
           <Bubble tone="outgoing">
-            <ImageMessage tone="outgoing" source={photo(1)} state="sending" onCancel={() => {}} />
+            <ImageMessage
+              tone="outgoing"
+              source={photo(1)}
+              state="sending"
+              onCancel={fn().mockName('ImageMessage.onCancel')}
+            />
           </Bubble>
           <Bubble tone="outgoing">
             <ImageMessage
@@ -338,11 +318,16 @@ export const SendingAndFailed: Story = {
               source={photo(2)}
               state="sending"
               progress={0.38}
-              onCancel={() => {}}
+              onCancel={fn().mockName('ImageMessage.onCancel')}
             />
           </Bubble>
           <Bubble tone="outgoing">
-            <ImageMessage tone="outgoing" source={photo(4)} state="failed" onRetry={() => {}} />
+            <ImageMessage
+              tone="outgoing"
+              source={photo(4)}
+              state="failed"
+              onRetry={fn().mockName('ImageMessage.onRetry')}
+            />
           </Bubble>
           <Bubble tone="outgoing">
             <MediaAlbum
@@ -350,7 +335,7 @@ export const SendingAndFailed: Story = {
               width={240}
               state="sending"
               progress={0.62}
-              onCancel={() => {}}
+              onCancel={fn().mockName('MediaAlbum.onCancel')}
               items={PHOTOS.slice(0, 4).map((source, i) => ({ id: `s${i}`, source }))}
             />
           </Bubble>
@@ -360,14 +345,14 @@ export const SendingAndFailed: Story = {
               sizeBytes={148.6 * 1024 * 1024}
               transfer="downloading"
               progress={0.44}
-              onCancel={() => {}}
+              onCancel={fn().mockName('FileMessage.onCancel')}
             />
           </Bubble>
           <Bubble tone="incoming">
             <FileMessage name="Move-in checklist.docx" sizeBytes={96 * 1024} transfer="done" />
           </Bubble>
         </View>
-      </BothModes>
+      </Surface>
     );
   },
 };
@@ -376,10 +361,10 @@ export const SendingAndFailed: Story = {
 export const VoicePlayback: Story = {
   render: function VoicePlaybackStory() {
     return (
-      <BothModes>
+      <Surface>
         <FakePlayback tone="incoming" />
         <FakePlayback tone="outgoing" />
-      </BothModes>
+      </Surface>
     );
   },
 };
@@ -435,7 +420,7 @@ export const Polls: Story = {
       { id: 'c', label: 'Sunday, any time', votes: 8 },
     ];
     return (
-      <BothModes>
+      <Surface>
         <View style={{ gap: 16 }}>
           <Caption>single, not yet voted</Caption>
           <Bubble tone="incoming">
@@ -449,7 +434,7 @@ export const Polls: Story = {
               question="When should we do the handover?"
               options={base.map((o) => ({ ...o, selected: o.id === 'b' }))}
               voted
-              onViewResults={() => {}}
+              onViewResults={fn().mockName('PollMessage.onViewResults')}
             />
           </Bubble>
 
@@ -459,7 +444,7 @@ export const Polls: Story = {
               question="Which rooms still need a coat of paint?"
               multiple
               anonymous
-              onVote={() => {}}
+              onVote={fn().mockName('PollMessage.onVote')}
               options={[
                 { id: 'k', label: 'Kitchen', votes: 6 },
                 { id: 'h', label: 'Hallway', votes: 11 },
@@ -482,7 +467,7 @@ export const Polls: Story = {
             />
           </Bubble>
         </View>
-      </BothModes>
+      </Surface>
     );
   },
 };
@@ -491,11 +476,16 @@ export const Polls: Story = {
 export const SpoilerStickerNoteAndLive: Story = {
   render: function SpecialsStory() {
     return (
-      <BothModes>
+      <Surface>
         <View style={{ gap: 16 }}>
           <Caption>spoiler — press to reveal</Caption>
           <Bubble tone="incoming">
-            <ImageMessage source={photo(7)} spoiler aspectRatio={1.2} onPress={() => {}} />
+            <ImageMessage
+              source={photo(7)}
+              spoiler
+              aspectRatio={1.2}
+              onPress={fn().mockName('ImageMessage.onPress')}
+            />
           </Bubble>
 
           <Caption>sticker — no bubble at all (bare)</Caption>
@@ -510,7 +500,7 @@ export const SpoilerStickerNoteAndLive: Story = {
               variant="videoNote"
               duration={31}
               position={19}
-              onPress={() => {}}
+              onPress={fn().mockName('VideoMessage.onPress')}
             />
           </Bubble>
 
@@ -522,12 +512,12 @@ export const SpoilerStickerNoteAndLive: Story = {
               title="Marta"
               address="Moving along Avinguda del Port"
               liveUntilLabel="Live until 18:30"
-              onStopSharing={() => {}}
-              onPress={() => {}}
+              onStopSharing={fn().mockName('Marta.onStopSharing')}
+              onPress={fn().mockName('Marta.onPress')}
             />
           </Bubble>
         </View>
-      </BothModes>
+      </Surface>
     );
   },
 };
@@ -536,14 +526,14 @@ export const SpoilerStickerNoteAndLive: Story = {
 export const InfoPanelGrids: Story = {
   render: function GridsStory() {
     return (
-      <BothModes width={420}>
+      <Surface width={420}>
         <View style={{ gap: 16 }}>
           <Caption>shared media — 3 columns, "+N more" on the last tile</Caption>
           <SharedMediaGrid
             width={340}
             maxItems={9}
-            onPressItem={() => {}}
-            onPressOverflow={() => {}}
+            onPressItem={fn().mockName('SharedMediaGrid.onPressItem')}
+            onPressOverflow={fn().mockName('SharedMediaGrid.onPressOverflow')}
             items={PHOTOS.map((source, i) => ({
               id: `m${i}`,
               source,
@@ -553,44 +543,13 @@ export const InfoPanelGrids: Story = {
           />
 
           <Caption>shared files</Caption>
-          <DocumentGrid items={DOCS} onPressItem={() => {}} onDownloadItem={() => {}} />
+          <DocumentGrid
+            items={DOCS}
+            onPressItem={fn().mockName('DocumentGrid.onPressItem')}
+            onDownloadItem={fn().mockName('DocumentGrid.onDownloadItem')}
+          />
         </View>
-      </BothModes>
-    );
-  },
-};
-
-/** Narrow: the width every block is designed against. */
-export const Narrow: Story = {
-  parameters: { viewport: { defaultViewport: 'mobile2' } },
-  render: function NarrowStory() {
-    return (
-      <BothModes width={390}>
-        <View style={{ gap: 12 }}>
-          <Bubble tone="incoming">
-            <MediaAlbum
-              width={240}
-              items={PHOTOS.slice(0, 5).map((source, i) => ({ id: `n${i}`, source }))}
-              onPress={() => {}}
-            />
-          </Bubble>
-          <Bubble tone="outgoing">
-            <VoiceMessage
-              tone="outgoing"
-              samples={SAMPLES}
-              duration={9}
-              position={3}
-              width={230}
-              rate={1.5}
-              onRateChange={() => {}}
-              onSeek={() => {}}
-            />
-          </Bubble>
-          <Bubble tone="incoming">
-            <FileMessage name="Quarterly rents.xlsx" sizeBytes={812 * 1024} onDownload={() => {}} />
-          </Bubble>
-        </View>
-      </BothModes>
+      </Surface>
     );
   },
 };

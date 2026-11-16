@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Surface } from './Surface';
-import { Button, InverseButton } from '../button/Button';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { Button } from '../button/Button';
 import { Card } from '../card';
 import { LinkPreviewCard } from '../link-preview';
 import { Text } from '../typography/Typography';
@@ -38,17 +37,19 @@ export const BorderLighting: Story = {
             <Button size={size} tone="danger" appearance="solid">
               Delete
             </Button>
-            <InverseButton size={size}>Inverse</InverseButton>
+            <Button appearance="solid" tone="neutral" inverted size={size}>
+              Inverse
+            </Button>
             <Button size={size} disabled>
               Disabled
             </Button>
           </View>
         ))}
-        <ButtonGroup accessibilityLabel="Date range">
-          <ButtonGroupItem checked>Day</ButtonGroupItem>
-          <ButtonGroupItem>Week</ButtonGroupItem>
-          <ButtonGroupItem disabled>Month</ButtonGroupItem>
-        </ButtonGroup>
+        <Button.Group accessibilityLabel="Date range">
+          <Button pressed>Day</Button>
+          <Button>Week</Button>
+          <Button disabled>Month</Button>
+        </Button.Group>
       </Surface>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24 }}>
         <Surface style={{ padding: 24, gap: 16, flexGrow: 1, flexBasis: 320 }}>
@@ -105,15 +106,15 @@ function MaterialExample() {
             Later
           </Button>
         </View>
-        <ButtonGroup accessibilityLabel="Date range" testID="material-range">
-          <ButtonGroupItem checked={range === 'day'} onPress={() => setRange('day')}>
+        <Button.Group accessibilityLabel="Date range" testID="material-range">
+          <Button pressed={range === 'day'} onPress={() => setRange('day')}>
             Day
-          </ButtonGroupItem>
-          <ButtonGroupItem checked={range === 'week'} onPress={() => setRange('week')}>
+          </Button>
+          <Button pressed={range === 'week'} onPress={() => setRange('week')}>
             Week
-          </ButtonGroupItem>
-          <ButtonGroupItem disabled>Month</ButtonGroupItem>
-        </ButtonGroup>
+          </Button>
+          <Button disabled>Month</Button>
+        </Button.Group>
         <Card style={{ padding: 20, gap: 16 }}>
           <Text variant="title-3-semibold">Nested card</Text>
           <LinkPreviewCard

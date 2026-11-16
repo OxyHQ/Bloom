@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -20,7 +21,7 @@ export default meta;
 
 type Story = StoryObj;
 
-const noop = () => undefined;
+const onDemoAction = fn().mockName('directions.action');
 
 // ---------------------------------------------------------------------------
 //  Demo data — invented streets and invented lines
@@ -251,12 +252,12 @@ function Planner({
       selectedRouteId={selected}
       onSelectRoute={setSelected}
       stops={stops}
-      onPressStop={noop}
+      onPressStop={onDemoAction}
       onSwapStops={() => setStops((s) => [s[1]!, s[0]!])}
       modes={MODES}
       mode={mode}
       onModeChange={setMode}
-      onStart={noop}
+      onStart={onDemoAction}
       testID="planner"
     />
   );
@@ -347,7 +348,7 @@ export const Edges: Story = {
               ],
             },
           ]}
-          onPressStep={noop}
+          onPressStep={onDemoAction}
           currentStepId="s2"
         />
       </Section>

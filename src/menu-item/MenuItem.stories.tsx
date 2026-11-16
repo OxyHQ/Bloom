@@ -1,3 +1,5 @@
+import { AppShell } from '../app-shell';
+import { fn } from 'storybook/test';
 import React, { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -141,7 +143,7 @@ function Menu({ density }: { density?: MenuItemRowProps['density'] }) {
                     : undefined
                 }
                 onAdd={dish.unavailable ? undefined : () => setBasket((b) => ({ ...b, [id]: 1 }))}
-                onPress={() => undefined}
+                onPress={fn().mockName('onPress')}
                 testID={`dish-${id}`}
               />
             </React.Fragment>
@@ -182,8 +184,8 @@ export const RowStates: Story = {
                 price="€12.50"
                 photo={photo('ember-flatbread')}
                 diets={['vegetarian']}
-                onAdd={() => undefined}
-                onPress={() => undefined}
+                onAdd={fn().mockName('onAdd')}
+                onPress={fn().mockName('onPress')}
                 testID="row-rest"
               />
               <Divider />
@@ -196,7 +198,7 @@ export const RowStates: Story = {
                 spice={3}
                 quantity={n}
                 onQuantityChange={setN}
-                onPress={() => undefined}
+                onPress={fn().mockName('onPress')}
                 testID="row-stepper"
               />
               <Divider />
@@ -217,8 +219,8 @@ export const RowStates: Story = {
                 photo={photo('harbour-pickles')}
                 diets={['vegan', 'gluten-free']}
                 unavailable
-                onAdd={() => undefined}
-                onPress={() => undefined}
+                onAdd={fn().mockName('onAdd')}
+                onPress={fn().mockName('onPress')}
                 testID="row-unavailable"
               />
               <Divider />
@@ -228,8 +230,8 @@ export const RowStates: Story = {
                 price="€21.00"
                 diets={['vegetarian', 'gluten-free', 'halal', 'kosher']}
                 spice={2}
-                onAdd={() => undefined}
-                onPress={() => undefined}
+                onAdd={fn().mockName('onAdd')}
+                onPress={fn().mockName('onPress')}
                 testID="row-long"
               />
             </CardBody>
@@ -280,7 +282,7 @@ export const Options: Story = {
                 quantity={quantity}
                 onQuantityChange={setQuantity}
                 total="€16.40"
-                onSubmit={() => undefined}
+                onSubmit={fn().mockName('onSubmit')}
                 testID="options"
               />
             </CardBody>
@@ -308,7 +310,7 @@ export const OptionsInvalid: Story = {
                 }
                 total="€12.50"
                 submitDisabled
-                onSubmit={() => undefined}
+                onSubmit={fn().mockName('onSubmit')}
                 testID="options-invalid"
               />
             </CardBody>
@@ -326,8 +328,8 @@ export const OptionsInASheet: Story = {
     const { value, onValueChange } = useOptionState();
     const [quantity, setQuantity] = useState(1);
     return (
-      <View style={{ height: 720 }}>
-        <BottomSheet open onDismiss={() => undefined}>
+      <AppShell header={null} scroll="fixed" contentMaxWidth="none">
+        <BottomSheet open onDismiss={fn().mockName('onDismiss')}>
           <View style={{ padding: 16, paddingBottom: 32 }}>
             <MenuItemOptions
               header={<DishHeader />}
@@ -337,12 +339,12 @@ export const OptionsInASheet: Story = {
               quantity={quantity}
               onQuantityChange={setQuantity}
               total="€16.40"
-              onSubmit={() => undefined}
+              onSubmit={fn().mockName('onSubmit')}
               testID="options-sheet"
             />
           </View>
         </BottomSheet>
-      </View>
+      </AppShell>
     );
   },
 };

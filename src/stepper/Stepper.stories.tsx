@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Stepper } from './Stepper';
+import { Card } from '../card';
 import { StepperRow } from './StepperRow';
 import { Text } from '../typography';
 import { useTheme } from '../theme/use-theme';
@@ -24,6 +25,7 @@ type Story = StoryObj;
 export const Matrix: Story = {
   render: function StepperMatrix() {
     const theme = useTheme();
+    const [minimum, setMinimum] = useState(0);
     const [a, setA] = useState(2);
     const [b, setB] = useState(9);
     const [c, setC] = useState(4);
@@ -34,7 +36,6 @@ export const Matrix: Story = {
           padding: 16,
           width: '100%',
           maxWidth: '100%',
-          backgroundColor: theme.colors.background,
         }}
       >
         {(['md', 'sm'] as const).map((size) => (
@@ -52,8 +53,8 @@ export const Matrix: Story = {
               />
               <Stepper
                 size={size}
-                value={0}
-                onValueChange={() => {}}
+                value={minimum}
+                onValueChange={setMinimum}
                 accessibilityLabel="At minimum"
               />
               <Stepper
@@ -89,7 +90,6 @@ export const Matrix: Story = {
 /** A guest picker: rows with a title, a description and a hairline between them. */
 export const GuestPicker: Story = {
   render: function StepperGuestPicker() {
-    const theme = useTheme();
     const [adults, setAdults] = useState(2);
     const [children, setChildren] = useState(0);
     const [infants, setInfants] = useState(0);
@@ -100,19 +100,9 @@ export const GuestPicker: Story = {
           padding: 16,
           width: '100%',
           maxWidth: '100%',
-          backgroundColor: theme.colors.background,
         }}
       >
-        <View
-          style={{
-            width: 360,
-            maxWidth: '100%',
-            paddingLeft: 24,
-            paddingRight: 24,
-            borderRadius: 16,
-            backgroundColor: theme.colors.card,
-          }}
-        >
+        <Card style={{ width: 360, maxWidth: '100%', paddingHorizontal: 16 }}>
           <StepperRow
             title="Adults"
             description="Ages 13 or above"
@@ -145,16 +135,15 @@ export const GuestPicker: Story = {
             onValueChange={setPets}
             max={5}
           />
-        </View>
+        </Card>
       </View>
     );
   },
 };
 
 /** Filter rows at `small`, narrow (280) and wide (560). */
-export const NarrowAndWide: Story = {
+export const FilterRows: Story = {
   render: function StepperWidths() {
-    const theme = useTheme();
     const [bedrooms, setBedrooms] = useState(0);
     const [beds, setBeds] = useState(1);
     return (
@@ -164,30 +153,27 @@ export const NarrowAndWide: Story = {
           padding: 16,
           width: '100%',
           maxWidth: '100%',
-          backgroundColor: theme.colors.background,
         }}
       >
-        {[280, 560].map((width) => (
-          <View key={width} style={{ width, maxWidth: '100%' }}>
-            <StepperRow
-              size="sm"
-              title="Bedrooms"
-              value={bedrooms}
-              onValueChange={setBedrooms}
-              max={8}
-              formatValue={(n) => (n === 0 ? 'Any' : String(n))}
-              divider
-            />
-            <StepperRow
-              size="sm"
-              title="Beds"
-              value={beds}
-              onValueChange={setBeds}
-              min={1}
-              max={16}
-            />
-          </View>
-        ))}
+        <View style={{ width: '100%' }}>
+          <StepperRow
+            size="sm"
+            title="Bedrooms"
+            value={bedrooms}
+            onValueChange={setBedrooms}
+            max={8}
+            formatValue={(n) => (n === 0 ? 'Any' : String(n))}
+            divider
+          />
+          <StepperRow
+            size="sm"
+            title="Beds"
+            value={beds}
+            onValueChange={setBeds}
+            min={1}
+            max={16}
+          />
+        </View>
       </View>
     );
   },

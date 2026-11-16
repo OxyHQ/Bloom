@@ -171,12 +171,12 @@ describe('Sidebar page tree', () => {
     expect(disclosure.props['aria-expanded']).toBe(false);
     pressHost(disclosure);
     expect(onOpenChange).toHaveBeenCalledWith(true);
-    expect(screen.getByText('Q1 goals')).toBeTruthy();
+    expect(screen.getByText('Q1 goals', { includeHiddenElements: true })).toBeTruthy();
     expect(screen.getByLabelText('Collapse Roadmap')).toBeTruthy();
     // A leaf keeps the lane instead of a disclosure.
     expect(screen.queryByLabelText('Expand Ideas')).toBeNull();
     // Leading content and icons sit before the label.
-    expect(screen.getByText('🗺️')).toBeTruthy();
+    expect(screen.getByText('🗺️', { includeHiddenElements: true })).toBeTruthy();
     // Nested one level deeper: further in by one indent.
     const inset = (key: string) =>
       resolvedStyle(screen.getByTestId(`sidebar-tree-row-${key}`).props.style).paddingInlineStart;
@@ -209,9 +209,9 @@ describe('Sidebar page tree', () => {
 
   it('holds every branch with matches open while searching, and keeps their ancestors', () => {
     const screen = renderIn(<Sidebar tree={PAGES} searchQuery="jan" showThemeToggle={false} />);
-    expect(screen.getByText('Roadmap')).toBeTruthy();
-    expect(screen.getByText('Q1 goals')).toBeTruthy();
-    expect(screen.getByText('January')).toBeTruthy();
+    expect(screen.getByText('Roadmap', { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.getByText('Q1 goals', { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.getByText('January', { includeHiddenElements: true })).toBeTruthy();
     expect(screen.queryByText('Ideas')).toBeNull();
   });
 
@@ -223,7 +223,7 @@ describe('Sidebar page tree', () => {
     const label = () =>
       screen.getAllByLabelText('Private').find((node) => node.props.role === 'button')!;
     expect(label().props['aria-expanded']).toBe(true);
-    expect(screen.getByText('Roadmap')).toBeTruthy();
+    expect(screen.getByText('Roadmap', { includeHiddenElements: true })).toBeTruthy();
     pressHost(label());
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expect(label().props['aria-expanded']).toBe(false);

@@ -85,7 +85,7 @@ it('uses the shared floating back island and a material group for close', () => 
       <Harness header={{ title: 'Account', onBack }} onDismiss={onDismiss} />
     </BloomThemeProvider>,
   );
-  expect(screen.getByTestId('dialog-nav-back-island')).toBeTruthy();
+  expect(screen.getByTestId('dialog-nav-back')).toBeTruthy();
   expect(screen.getByTestId('dialog-nav-close-group')).toBeTruthy();
   expect(screen.getByTestId('dialog-nav-scrim-gradient')).toBeTruthy();
   fireEvent.press(screen.getByLabelText('Go back'));
@@ -170,7 +170,7 @@ it('honors hidden close and custom right while retaining the back island', () =>
   );
   expect(screen.queryByLabelText('Close')).toBeNull();
   expect(screen.queryByTestId('dialog-nav-action-group')).toBeNull();
-  expect(screen.getByTestId('dialog-nav-back-island')).toBeTruthy();
+  expect(screen.getByTestId('dialog-nav-back')).toBeTruthy();
 });
 
 it('keeps close visible when icon actions overflow', () => {
@@ -286,14 +286,15 @@ it('dispatches the latest override callback without publishing callback-only upd
   const first = jest.fn();
   const latest = jest.fn();
   const listener = jest.fn();
-  const store = current!.store;
+  const store = current?.store;
+  if (!store) throw new Error('Header controller did not mount');
   store.subscribe(listener);
   act(() => store.setOverride({ actions: [{ id: 'save', label: 'Save', onPress: first }] }));
   const snapshot = store.getSnapshot();
   act(() => store.setOverride({ actions: [{ id: 'save', label: 'Save', onPress: latest }] }));
   expect(store.getSnapshot()).toBe(snapshot);
   expect(listener).toHaveBeenCalledTimes(1);
-  snapshot!.actions![0]!.onPress();
+  snapshot?.actions?.[0]?.onPress();
   expect(first).not.toHaveBeenCalled();
   expect(latest).toHaveBeenCalledTimes(1);
 });

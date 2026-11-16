@@ -1,6 +1,8 @@
+import { fn } from 'storybook/test';
 import React, { useRef, useState } from 'react';
-import { View, useWindowDimensions } from 'react-native';
+import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 import {
   RiArrowUpDownLine,
@@ -69,7 +71,7 @@ export default meta;
 
 type Story = StoryObj;
 
-const noop = () => {};
+const onDemoAction = fn().mockName('property-insights.action');
 
 // ---------------------------------------------------------------------------
 //  Demo data — an invented flat for sale in Porto and a rental in Braga
@@ -301,8 +303,6 @@ const REASONS = [
 //  Frames
 // ---------------------------------------------------------------------------
 
-const BLEED = {};
-
 function Frame({
   width,
   children,
@@ -312,26 +312,7 @@ function Frame({
   children: React.ReactNode;
   gap?: number;
 }) {
-  width = Math.min(width, useWindowDimensions().width - 32);
-  const theme = useTheme();
-  const gutter = width < 480 ? 16 : 24;
-  return (
-    <View style={{ alignItems: 'flex-start', backgroundColor: theme.colors.background }}>
-      <View
-        style={{
-          width,
-          gap,
-          backgroundColor: theme.colors.background,
-          paddingTop: 24,
-          paddingBottom: 24,
-          paddingLeft: gutter,
-          paddingRight: gutter,
-        }}
-      >
-        {children}
-      </View>
-    </View>
-  );
+  return <View style={{ width: '100%', maxWidth: width, padding: 24, gap }}>{children}</View>;
 }
 
 // ---------------------------------------------------------------------------
@@ -354,11 +335,11 @@ function AgentContact({ testID }: { testID?: string }) {
       logo={planSvgLogo}
       responseTime="Usually responds within an hour"
       activeListings={12}
-      onPressListings={noop}
+      onPressListings={onDemoAction}
       details={[{ icon: RiTranslate2, text: 'Speaks Portuguese, English and French' }]}
       phone="+351 912 480 316"
-      onMessage={noop}
-      onCall={noop}
+      onMessage={onDemoAction}
+      onCall={onDemoAction}
       testID={testID}
     />
   );
@@ -380,16 +361,18 @@ function LandlordContact({ testID }: { testID?: string }) {
       responseTime="Usually responds within a day"
       activeListings={1}
       phone="+351 934 118 502"
-      onMessage={noop}
+      onMessage={onDemoAction}
       testID={testID}
     />
   );
 }
 
-function SalePage({ width }: { width: number }) {
-  width = Math.min(width, useWindowDimensions().width - 32);
+function SalePageDemo() {
+  const { width: measuredWidth, onLayout } = useContainerWidth();
+  const width = measuredWidth ?? 0;
   const theme = useTheme();
   const gallery = useRef<ZoomableMediaGalleryHandle>(null);
+  const [showAllFacts, setShowAllFacts] = useState(false);
   const narrow = width < 744;
   const gutter = narrow ? 16 : 80;
   const content = (
@@ -397,8 +380,8 @@ function SalePage({ width }: { width: number }) {
       <ListingSection title="Features" divider={false}>
         <PropertyFacts
           items={SALE_FACTS}
-          limit={narrow ? 6 : 8}
-          onShowAll={noop}
+          limit={showAllFacts ? SALE_FACTS.length : narrow ? 6 : 8}
+          onShowAll={() => setShowAllFacts(true)}
           testID="sale-facts"
         />
       </ListingSection>
@@ -450,7 +433,7 @@ function SalePage({ width }: { width: number }) {
     </>
   );
   return (
-    <View style={[BLEED, { width, backgroundColor: theme.colors.background }]}>
+    <View onLayout={onLayout} style={{ width: '100%', maxWidth: 1280 }}>
       <View
         style={{
           paddingLeft: gutter,
@@ -467,7 +450,15 @@ function SalePage({ width }: { width: number }) {
           location="Porto, Portugal"
           badge={<EnergyBadge rating="C" />}
         />
-        <ListingPhotoGrid photos={PHOTOS} onPressPhoto={noop} />
+        <ListingPhotoGrid
+          photos={PHOTOS}
+          onPressPhoto={(index) =>
+            gallery.current?.open(
+              PHOTOS.map((photo) => ({ uri: photo.source, alt: photo.alt, aspectRatio: 1.5 })),
+              index,
+            )
+          }
+        />
         {narrow ? (
           <View>
             {content}
@@ -489,9 +480,10 @@ function SalePage({ width }: { width: number }) {
   );
 }
 
-function RentalPage({ width }: { width: number }) {
-  width = Math.min(width, useWindowDimensions().width - 32);
-  const theme = useTheme();
+function RentalPageDemo() {
+  const { width: measuredWidth, onLayout } = useContainerWidth();
+  const width = measuredWidth ?? 0;
+  const gallery = useRef<ZoomableMediaGalleryHandle>(null);
   const narrow = width < 744;
   const gutter = narrow ? 16 : 80;
   const content = (
@@ -511,7 +503,7 @@ function RentalPage({ width }: { width: number }) {
     </>
   );
   return (
-    <View style={[BLEED, { width, backgroundColor: theme.colors.background }]}>
+    <View onLayout={onLayout} style={{ width: '100%', maxWidth: 1280 }}>
       <View
         style={{
           paddingLeft: gutter,
@@ -528,7 +520,19 @@ function RentalPage({ width }: { width: number }) {
           location="Braga, Portugal"
           badge={<EnergyBadge pending />}
         />
-        <ListingPhotoGrid photos={PHOTOS.slice(1)} onPressPhoto={noop} />
+        <ListingPhotoGrid
+          photos={PHOTOS.slice(1)}
+          onPressPhoto={(index) =>
+            gallery.current?.open(
+              PHOTOS.slice(1).map((photo) => ({
+                uri: photo.source,
+                alt: photo.alt,
+                aspectRatio: 1.5,
+              })),
+              index,
+            )
+          }
+        />
         {narrow ? (
           <View>
             {content}
@@ -545,43 +549,19 @@ function RentalPage({ width }: { width: number }) {
           </View>
         )}
       </View>
+      <ZoomableMediaGallery ref={gallery} indicatorVariant="thumbnails" />
     </View>
   );
 }
 
-/** A home for sale at 1280: facts, floor plans, energy, the explainable estimate, price history, €/m², neighbourhood, and the agent beside it. */
-export const SalePageWide: Story = {
-  name: 'Sale page — 1280',
-  render: () => <SalePage width={1280} />,
-};
-export const SalePageNarrow: Story = {
-  name: 'Sale page — 390',
-  render: () => <SalePage width={390} />,
-};
-export const SalePageWideDark: Story = {
-  name: 'Sale page — 1280, dark',
-  globals: { theme: 'dark' },
-  render: () => <SalePage width={1280} />,
-};
-export const SalePageNarrowDark: Story = {
-  name: 'Sale page — 390, dark',
-  globals: { theme: 'dark' },
-  render: () => <SalePage width={390} />,
+/** A responsive home for sale: facts, floor plans, energy, the explainable estimate, price history, €/m², neighbourhood, and the agent beside it. */
+export const SalePage: Story = {
+  render: () => <SalePageDemo />,
 };
 
-/** A rental at 1280: facts, a certificate still in progress, the place's rent history, neighbourhood rings, the landlord. */
-export const RentalPageWide: Story = {
-  name: 'Rental page — 1280',
-  render: () => <RentalPage width={1280} />,
-};
-export const RentalPageNarrow: Story = {
-  name: 'Rental page — 390',
-  render: () => <RentalPage width={390} />,
-};
-export const RentalPageNarrowDark: Story = {
-  name: 'Rental page — 390, dark',
-  globals: { theme: 'dark' },
-  render: () => <RentalPage width={390} />,
+/** A responsive rental: facts, a certificate still in progress, the place's rent history, neighbourhood rings, the landlord. */
+export const RentalPage: Story = {
+  render: () => <RentalPageDemo />,
 };
 
 // ---------------------------------------------------------------------------
@@ -591,15 +571,15 @@ export const RentalPageNarrowDark: Story = {
 /** `columns="auto"`: 4 at 800, 3 at 560, 2 at 390 — and a `limit` with "Show all". */
 export const Facts: Story = {
   render: () => (
-    <View style={BLEED}>
+    <View>
       <Frame width={800}>
-        <PropertyFacts items={SALE_FACTS} limit={8} onShowAll={noop} testID="facts" />
+        <PropertyFacts items={SALE_FACTS} limit={8} onShowAll={onDemoAction} testID="facts" />
       </Frame>
       <Frame width={560}>
         <PropertyFacts items={SALE_FACTS.slice(0, 6)} />
       </Frame>
       <Frame width={390}>
-        <PropertyFacts items={SALE_FACTS} limit={4} onShowAll={noop} />
+        <PropertyFacts items={SALE_FACTS} limit={4} onShowAll={onDemoAction} />
       </Frame>
     </View>
   ),
@@ -618,11 +598,11 @@ function RevealedAgent() {
         { value: '19', label: 'Years' },
       ]}
       activeListings={48}
-      onPressListings={noop}
+      onPressListings={onDemoAction}
       phone="+351 220 118 400"
       phoneRevealed={revealed}
       onPhoneRevealedChange={setRevealed}
-      onMessage={noop}
+      onMessage={onDemoAction}
     />
   );
 }
@@ -630,7 +610,7 @@ function RevealedAgent() {
 /** An agent with agency, a landlord, an agency with its number already shown, and `HostCard` (unchanged). */
 export const Contact: Story = {
   render: () => (
-    <View style={BLEED}>
+    <View>
       <Frame width={1040}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 40, alignItems: 'flex-start' }}>
           <View style={{ flex: 1, minWidth: 240, maxWidth: '100%' }}>
@@ -655,7 +635,7 @@ export const Contact: Story = {
                 { value: '214', label: 'Reviews' },
                 { value: '4.92', label: 'Rating', star: true },
               ]}
-              onMessage={noop}
+              onMessage={onDemoAction}
             />
           </View>
         </View>
@@ -684,7 +664,7 @@ function PlansWithGallery({ count }: { count: number }) {
 /** Two plans side by side at 800, one plan full width, and two stacked at 390. Press a plan to open the gallery. */
 export const FloorPlans: Story = {
   render: () => (
-    <View style={BLEED}>
+    <View>
       <Frame width={800}>
         <PlansWithGallery count={2} />
       </Frame>
@@ -701,7 +681,7 @@ export const FloorPlans: Story = {
 /** Both ratings wide (values in the tags) and narrow (values under the column labels), one rating, a pending certificate, and the badges. */
 export const Energy: Story = {
   render: () => (
-    <View style={BLEED}>
+    <View>
       <Frame width={720}>
         <EnergyLabel
           consumption={{ rating: 'C', value: '112 kWh/m²·year' }}
@@ -732,7 +712,7 @@ export const Energy: Story = {
 /** Step (default) with periods and events, a line with no periods, and a home with no history yet. */
 export const PriceHistory: Story = {
   render: () => (
-    <View style={BLEED}>
+    <View>
       <Frame width={720}>
         <PriceHistoryChart periods={PERIODS} testID="history" />
         <PriceHistoryChart
@@ -767,7 +747,7 @@ export const PriceHistory: Story = {
 /** High confidence and fair; medium and 8% above; high and 22% above (error); LOW confidence: the band widens and the verdict is withheld. */
 export const Estimate: Story = {
   render: () => (
-    <View style={BLEED}>
+    <View>
       <Frame width={640}>
         <PriceEstimate
           low={362000}
@@ -830,7 +810,7 @@ export const Estimate: Story = {
 
 export const Comparison: Story = {
   render: () => (
-    <View style={BLEED}>
+    <View>
       <Frame width={640}>
         <PricePerAreaComparison rows={COMPARISON} testID="comparison" />
       </Frame>
@@ -844,7 +824,7 @@ export const Comparison: Story = {
 /** Bars in two columns (auto at 800), rings, one column at 390, and nearby places. */
 export const Neighbourhood: Story = {
   render: () => (
-    <View style={BLEED}>
+    <View>
       <Frame width={800}>
         <NeighbourhoodScores items={SCORES} testID="scores" />
         <NeighbourhoodScores items={SCORES} variant="rings" testID="rings" />
@@ -861,62 +841,13 @@ export const Neighbourhood: Story = {
 /** A place's past rents, and a place with no history. */
 export const RentHistory: Story = {
   render: () => (
-    <View style={BLEED}>
+    <View>
       <Frame width={560}>
         <RentHistoryList items={RENT_HISTORY} testID="rent-history" />
       </Frame>
       <Frame width={390}>
         <RentHistoryList items={RENT_HISTORY.slice(0, 2)} />
         <RentHistoryList items={[]} testID="rent-history-empty" />
-      </Frame>
-    </View>
-  ),
-};
-
-export const PartsDark: Story = {
-  name: 'Parts, dark',
-  globals: { theme: 'dark' },
-  render: () => (
-    <View style={BLEED}>
-      <Frame width={800}>
-        <PropertyFacts items={SALE_FACTS} limit={8} onShowAll={noop} />
-        <EnergyLabel
-          consumption={{ rating: 'C', value: '112 kWh/m²·year' }}
-          emissions={{ rating: 'D', value: '24 kg CO₂/m²·year' }}
-        />
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          <EnergyBadge rating="A" />
-          <EnergyBadge rating="D" />
-          <EnergyBadge pending />
-        </View>
-        <PriceEstimate
-          low={250000}
-          high={278000}
-          estimate={264000}
-          asking={300000}
-          confidence="medium"
-          confidenceNote="Few sales of this size in the last year"
-          reasons={REASONS}
-          expanded
-          comparables={11}
-          method="Automated valuation"
-          updated="Updated 2 Sep 2026"
-        />
-        <PriceHistoryChart periods={PERIODS} />
-        <PricePerAreaComparison rows={COMPARISON} />
-        <NeighbourhoodScores items={SCORES} />
-        <NeighbourhoodScores items={SCORES.slice(0, 4)} variant="rings" />
-        <NearbyPlaces items={NEARBY.slice(0, 3)} />
-        <RentHistoryList items={RENT_HISTORY} />
-        <FloorPlan plans={PLANS} onPressPlan={noop} />
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 40 }}>
-          <View style={{ flex: 1, minWidth: 240, maxWidth: '100%' }}>
-            <AgentContact />
-          </View>
-          <View style={{ flex: 1, minWidth: 240, maxWidth: '100%' }}>
-            <LandlordContact />
-          </View>
-        </View>
       </Frame>
     </View>
   ),

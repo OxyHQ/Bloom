@@ -539,7 +539,7 @@ history or `'none'` to disable content motion while retaining size morphing.
 Reduced motion skips the content transition. First mount and unchanged frame keys
 do not trigger this transition; Dialog's entrance animation is independent.
 
-Header icon `actions` and the close button share one trailing `ButtonGroup`. Back stays in the leading PageHeader island, and `primaryAction` renders separately beside the trailing group. Close remains available alongside back and actions unless `showClose: false`; a custom `right` replaces the entire trailing slot.
+Header icon `actions` and the close button share one trailing `Button.Group`. Back stays in the leading PageHeader island, and `primaryAction` renders separately beside the trailing group. Close remains available alongside back and actions unless `showClose: false`; a custom `right` replaces the entire trailing slot.
 
 A frame can set `colorPreset` to scope the entire dialog, including its navigation, to a Bloom recipe. Use either `frame={{ key, colorPreset }}` or the existing single `useDialogFrame({ key, colorPreset })` declaration. Leaving the preset out on the next frame restores the enclosing palette; changing it preserves mounted content and media.
 

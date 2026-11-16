@@ -31,7 +31,7 @@
  */
 import { useMemo } from 'react';
 
-import { resolveCloseButtonPaint } from '../button/shared';
+import { resolveButtonPalette } from '../button/shared';
 import { resolveNotificationPaint } from '../notification/shared';
 import type { NotificationStatus } from '../notification/types';
 import { useTheme } from '../theme/use-theme';
@@ -93,7 +93,7 @@ export function resolveToastColors({
     description: paint.description,
     icon: disc.foreground,
     iconBackground: disc.background,
-    closeButton: resolveCloseButtonPaint(theme).foreground,
+    closeButton: resolveButtonPalette('outline', theme, 'neutral').rest.foreground,
   };
 }
 

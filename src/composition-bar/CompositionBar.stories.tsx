@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { fn } from 'storybook/test';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -38,19 +39,9 @@ export default meta;
 
 type Story = StoryObj<typeof CompositionBar>;
 
-export const Light: Story = {
+export const Default: Story = {
   parameters: { controls: { disable: true } },
-  globals: { theme: 'light' },
-  render: () => (
-    <View style={{ maxWidth: '100%', padding: 24, width: 360 }}>
-      <Demo />
-    </View>
-  ),
-};
 
-export const Dark: Story = {
-  parameters: { controls: { disable: true } },
-  globals: { theme: 'dark' },
   render: () => (
     <View style={{ maxWidth: '100%', padding: 24, width: 360 }}>
       <Demo />
@@ -61,10 +52,15 @@ export const Dark: Story = {
 export const Empty: Story = {
   args: { hintLabel: 'No data yet' },
   parameters: { controls: { include: ['hintLabel'] } },
-  globals: { theme: 'light' },
+
   render: (args) => (
     <View style={{ maxWidth: '100%', padding: 24, width: 360 }}>
-      <CompositionBar {...args} categories={[]} selectedKey={null} onSelect={() => {}} />
+      <CompositionBar
+        {...args}
+        categories={[]}
+        selectedKey={null}
+        onSelect={fn().mockName('onSelect')}
+      />
     </View>
   ),
 };

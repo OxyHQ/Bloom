@@ -1,3 +1,5 @@
+import { SearchPresentationContext } from '../search/context';
+import { useTouchInput } from '../styles/pointer';
 import { resolvePaintMode } from '../theme/paint';
 import { createHeaderActionsHost, HeaderActionsHostContext } from './context';
 import { pointerEventsStyle } from '../styles/pointer-events';
@@ -7,6 +9,7 @@ import {
   useContext,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type ComponentRef,
@@ -32,10 +35,15 @@ import { useHeaderDockContext } from '../layout/header-dock';
 import { ScreenHeaderContext, useScreenContext } from '../screen/context';
 import { resolveScreenBack } from '../screen/use-screen-back';
 import { Button } from '../button';
-import { BUTTON_SHADOW } from '../button/shared';
+import {
+  BUTTON_SHADOW,
+  BUTTON_GEOMETRY,
+  BUTTON_TOUCH_TARGET,
+  buttonTouchVisualInset,
+} from '../button/shared';
 import { BloomScope } from '../appearance';
-import { BlurIsland } from '../blur';
 import { RiArrowLeftLine } from '../icons/remix/RiArrowLeftLine';
+import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { useScrollMetricsValue } from '../layout/scroll-metrics';
 import { useClaimTopEdge, useScrollOffset } from '../layout';
 import { BREAKPOINTS } from '../styles/breakpoints';
@@ -48,6 +56,8 @@ import { Z_INDEX } from '../styles/z-index';
 import { useThemeRecipe, useThemePaint } from '../theme/use-theme-paint';
 import { useSurfaceFillRecipe } from '../styles/surface-levels';
 import { Title, Subtitle } from '../typography';
+import { Surface } from '../surface/Surface';
+import { PageHeaderIdentity } from './PageHeaderIdentity';
 import { EdgeScrim, SCRIM_TAIL_RATIO } from './EdgeScrim';
 import type { PageHeaderProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
@@ -84,21 +94,21 @@ import { PageHeaderHistory } from './PageHeaderHistory';
  *
  * The header never infers grouping by reading its children's types. The
  * `actions` slot is wrapped in a `BloomScope` with shared control defaults, so
- * a `ButtonGroup` placed there becomes one island with no prop written on it,
- * and two `ButtonGroup`s become two islands. That is a declaration the consumer
+ * a `Button.Group` placed there becomes one island with no prop written on it,
+ * and two `Button.Group`s become two islands. That is a declaration the consumer
  * makes, which is the only way the header can be right about which actions
  * belong together.
  *
  *              floating                      bar
  *   chrome     islands + gradient            opaque strip + hairline + shadow
- *   back       36 capsule, island            secondary medium icon `Button`
+ *   back       standard icon Button          standard icon Button
  *   title      headline-medium, no capsule   headline-medium
  *   scroll     drives the scrim              drives border, background, shadow
  *
  * The geometry both share:
  *
- *   bar         min-height 56, side inset 16 (below `sm`) / 24
- *   islands     36 tall (34 + hairline), 8 apart
+ *   bar         min-height 56, uniform outer inset 12
+ *   islands     Button geometry, 8 apart
  *   title       headline-medium, text-primary, one line
  *   subtitle    body-2-regular, secondary, one line
  *
@@ -108,12 +118,9 @@ import { PageHeaderHistory } from './PageHeaderHistory';
 
 const BAR_HEIGHT = 56;
 const NAVIGATION_HEIGHT = 44;
-const INSET_COMPACT = 16;
-const INSET_WIDE = 24;
-const START_GAP = 6;
+const OUTER_INSET = 12;
 const ROW_GAP = 8;
-const ACTIONS_GAP = 10;
-const FLOATING_ACTIONS_GAP = 8;
+const START_GAP = ROW_GAP;
 const TITLE_PADDING = 4;
 const DEFAULT_THRESHOLD = 20;
 
@@ -129,24 +136,15 @@ const DEFAULT_THRESHOLD = 20;
  * the lesser of the two wrongs and the one a reader can still use.
  */
 const MIN_CENTERED_TITLE_WIDTH = 96;
-/** The widths the header decides at: its inset (`sm`) and its actions (`sm`, `xl`). */
+/** The widths where search and actions change presentation (`sm`, `xl`). */
 const HEADER_WIDTHS = [BREAKPOINTS.sm, BREAKPOINTS.xl];
 
 /** Container queries own continuous web width changes; React only measures content. */
 const PAGE_HEADER_LAYOUT_CSS = `
-[data-bloom-page-header-bar], [data-bloom-page-header-accessory] {
-  --bloom-page-header-inset: ${INSET_COMPACT}px;
+[data-bloom-page-header-bar], [data-bloom-page-header-accessory], [data-bloom-page-header-overline] {
+  --bloom-page-header-inset: calc(${OUTER_INSET}px - var(--bloom-page-header-touch-inset, 0px));
   padding-left: var(--bloom-page-header-inset) !important;
   padding-right: var(--bloom-page-header-inset) !important;
-}
-@container bloom-page-header (min-width: ${BREAKPOINTS.sm}px) {
-  [data-bloom-page-header-bar], [data-bloom-page-header-accessory] { --bloom-page-header-inset: ${INSET_WIDE}px; }
-}
-[data-bloom-page-header-presentation="navigation"] > [data-bloom-page-header-bar],
-[data-bloom-page-header-presentation="navigation"] > [data-bloom-page-header-accessory],
-[data-bloom-page-header-density="compact"] > [data-bloom-page-header-bar],
-[data-bloom-page-header-density="compact"] > [data-bloom-page-header-accessory] {
-  --bloom-page-header-inset: 12px;
 }
 [data-bloom-page-header-start="center"] {
   inset-inline-start: var(--bloom-page-header-inset) !important;
@@ -166,14 +164,18 @@ const PAGE_HEADER_LAYOUT_CSS = `
 }
 `;
 
-/** 44pt touch target from a 36pt capsule. Only for an island that stands alone. */
-const CAPSULE_HIT_SLOP = { top: 4, bottom: 4, left: 4, right: 4 } as const;
-
 const NO_INSETS = { top: 0, right: 0, bottom: 0, left: 0 };
 
 function PageHeaderComponent({
   title,
+  titleVariant,
+  overline,
   subtitle,
+  titleVisual,
+  titleLayout = 'inline',
+  titleAppearance = 'plain',
+  onPressTitle,
+  titleAccessibilityLabel,
   titleAlign = 'start',
   headingLevel = 1,
   titleReveal: requestedTitleReveal = 'auto',
@@ -185,8 +187,11 @@ function PageHeaderComponent({
   density = 'default',
   onBack: screenOnBack,
   backLabel: backLabelProp,
+  backCount,
   leading,
   actions: screenActions,
+  search,
+  searchActions,
   accessory,
   border = 'auto',
   transparent = false,
@@ -210,7 +215,7 @@ function PageHeaderComponent({
   const isWeb = Platform.OS === 'web';
   const floating = presentation === 'floating';
   const navigationPresentation = presentation === 'navigation';
-  const actionGap = navigationPresentation ? 2 : floating ? FLOATING_ACTIONS_GAP : ACTIONS_GAP;
+  const actionGap = navigationPresentation ? 2 : ROW_GAP;
   const overlay = placement === 'overlay';
   const colors = useThemePaint();
   const surfaceRecipe = useSurfaceFillRecipe();
@@ -227,6 +232,16 @@ function PageHeaderComponent({
   const [measuredHeight, setMeasuredHeight] = useState(0);
   const lastHeight = useRef(0);
   const width = measured.width;
+  const touch = useTouchInput();
+  const controlInset = buttonTouchVisualInset(BUTTON_GEOMETRY.md.height, touch);
+  const [searchActive, setSearchActive] = useState(false);
+  const searchCompact = search != null && width < BREAKPOINTS.sm;
+  const searchOccupiesRow = searchCompact && searchActive;
+  const controlHeight = touch ? BUTTON_TOUCH_TARGET : BUTTON_GEOMETRY.md.height;
+  const searchHost = useMemo(
+    () => ({ compact: searchCompact, onActiveChange: setSearchActive }),
+    [searchCompact],
+  );
   // Web starts conservatively until its own box is known. Continuous panel
   // resizing stays in CSS; React sees only a crossing of the action breakpoint.
   const [actionsCompact, setActionsCompact] = useState(isWeb || width < BREAKPOINTS.sm);
@@ -268,11 +283,14 @@ function PageHeaderComponent({
   const barEmpty =
     title == null &&
     subtitle == null &&
+    titleVisual == null &&
     leading == null &&
     onBack == null &&
     history == null &&
     screenActions == null &&
-    hostActions == null;
+    hostActions == null &&
+    search == null &&
+    searchActions == null;
   const windowToolbar =
     positionedByScreen && windowChrome && platformWindow && !barEmpty
       ? windowToolbarHeight(platformWindow.metrics)
@@ -291,20 +309,14 @@ function PageHeaderComponent({
             : compact
               ? 32
               : BAR_HEIGHT);
-  const sideInset =
-    compact || navigationPresentation ? 12 : width >= BREAKPOINTS.sm ? INSET_WIDE : INSET_COMPACT;
+  const sideInset = OUTER_INSET - controlInset;
   const barStart = Math.max(sideInset, windowRoom);
 
   const updateActionBudget = () => {
     const localWidth = actionGeometry.current.width;
     if (!onBack && !history && leading == null) actionGeometry.current.leading = 0;
-    const hasTitle = title != null || subtitle != null;
-    const inset =
-      compact || navigationPresentation
-        ? 12
-        : localWidth < BREAKPOINTS.sm
-          ? INSET_COMPACT
-          : INSET_WIDE;
+    const hasTitle = title != null || subtitle != null || titleVisual != null;
+    const inset = sideInset;
     const budget =
       titleAlign === 'center' && hasTitle
         ? (localWidth - MIN_CENTERED_TITLE_WIDTH) / 2 - inset - ROW_GAP
@@ -318,6 +330,7 @@ function PageHeaderComponent({
   };
   useLayoutEffect(updateActionBudget, [
     titleAlign,
+    titleVisual,
     title,
     subtitle,
     leading,
@@ -326,6 +339,7 @@ function PageHeaderComponent({
     compact,
     navigationPresentation,
     windowRoom,
+    sideInset,
   ]);
   // Keep web leading controls as direct flex children: a CSS-hidden menu must
   // remove its gap as well as its width. Measure those children, never a wrapper
@@ -550,30 +564,30 @@ function PageHeaderComponent({
     [scrollY, threshold, transparent],
   );
 
+  const imageScrim = tone === 'onImage' && scrimColor == null;
   const scrimStyle = useAnimatedStyle(
     () => ({
       opacity:
         (1 - (dockProgress?.value ?? 0)) *
+        (imageScrim ? 0.72 : 1) *
         (scrim === 'always'
           ? 1
           : scrim === 'none'
             ? 0
             : interpolate(scrollY.value, [0, threshold], [0, 1], Extrapolation.CLAMP)),
     }),
-    [scrollY, threshold, scrim, dockProgress],
+    [scrollY, threshold, scrim, dockProgress, imageScrim],
   );
 
   // Separate from the background's: a header can be transparent and still name
   // its screen, and one over a hero photo can do the opposite.
-  const titleStyle = useAnimatedStyle(
-    () => ({
-      opacity:
-        titleReveal.value === 'always'
-          ? 1
-          : titleReveal.value === 'onDock'
-            ? (dockProgress?.value ?? 0)
-            : Math.min(1, Math.max(0, (scrollY.value - revealOffset.value) / revealDistance.value)),
-    }),
+  const titlePresence = useDerivedValue(
+    () =>
+      titleReveal.value === 'always'
+        ? 1
+        : titleReveal.value === 'onDock'
+          ? (dockProgress?.value ?? 0)
+          : Math.min(1, Math.max(0, (scrollY.value - revealOffset.value) / revealDistance.value)),
     [scrollY, titleReveal, revealOffset, revealDistance, dockProgress],
   );
 
@@ -598,8 +612,10 @@ function PageHeaderComponent({
   const [startMeasure, setStartMeasure] = useState(0);
   const [endMeasure, setEndMeasure] = useState(0);
   const centered = titleAlign === 'center';
+  const stacked = titleLayout === 'stacked';
+  const stackedVisual = stacked && titleVisual != null;
   const hasStart = onBack != null || history != null || leading != null;
-  const hasEnd = actions != null;
+  const hasEnd = actions != null || search != null || searchActions != null;
   // A centred title also clears the controls' room past the side inset.
   const startWidth = (hasStart ? startMeasure : 0) + (barStart - sideInset);
   const endWidth = hasEnd ? endMeasure : 0;
@@ -641,103 +657,185 @@ function PageHeaderComponent({
       />
     ) : null;
 
-  const titleBlock =
-    title != null || subtitle != null ? (
-      <Animated.View
-        {...dataHook('bloomPageHeaderTitleBlock')}
-        aria-hidden={titleHidden}
-        accessibilityElementsHidden={titleHidden}
-        importantForAccessibility={titleHidden ? 'no-hide-descendants' : 'auto'}
-        {...(isWeb && titleHidden ? { inert: true } : {})}
-        style={[
-          [
-            styles.titleBlock,
-            navigationPresentation && { paddingLeft: 0, paddingRight: 0 },
-            centered ? styles.titleBlockCentered : styles.titleBlockStart,
-            titleStyle,
-          ],
-          pointerEventsStyle(titleHidden ? 'none' : 'auto'),
-        ]}
-        testID={testID ? `${testID}-title-block` : undefined}
+  const titleLabel =
+    typeof title === 'string' || typeof title === 'number' ? (
+      <Title
+        role="heading"
+        aria-level={headingLevel}
+        variant={
+          titleVariant ??
+          (navigationPresentation
+            ? 'body-medium'
+            : titleAppearance === 'capsule'
+              ? 'body-semibold'
+              : 'headline-medium')
+        }
+        numberOfLines={1}
+        style={{
+          color: tone === 'onImage' && titleAppearance === 'plain' ? '#FFFFFF' : colors.text,
+          textAlign: centered ? 'center' : 'left',
+          maxWidth: '100%',
+        }}
+        testID={testID ? `${testID}-title` : undefined}
       >
-        {typeof title === 'string' || typeof title === 'number' ? (
-          <Title
-            role="heading"
-            aria-level={headingLevel}
-            variant={navigationPresentation ? 'body-medium' : 'headline-medium'}
-            numberOfLines={1}
-            style={{
-              color: tone === 'onImage' ? '#FFFFFF' : colors.text,
-              textAlign: centered ? 'center' : 'left',
-              maxWidth: '100%',
-            }}
-            testID={testID ? `${testID}-title` : undefined}
+        {title}
+      </Title>
+    ) : (
+      title
+    );
+  const titleText = (
+    <View
+      style={{
+        minWidth: 0,
+        maxWidth: '100%',
+        flexShrink: 1,
+        alignItems: centered ? 'center' : 'stretch',
+      }}
+    >
+      {onPressTitle && titleAppearance === 'capsule' ? (
+        <View
+          style={{
+            minWidth: 0,
+            maxWidth: '100%',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 2,
+          }}
+        >
+          <View style={{ minWidth: 0, flexShrink: 1 }}>{titleLabel}</View>
+          <View
+            aria-hidden
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+            style={{ flexShrink: 0 }}
           >
-            {title}
-          </Title>
-        ) : (
-          title
-        )}
-        {typeof subtitle === 'string' || typeof subtitle === 'number' ? (
-          <Subtitle
-            variant="body-2-regular"
-            numberOfLines={1}
+            <RiArrowRightSLine width={14} height={14} fill={paint.textSecondary} />
+          </View>
+        </View>
+      ) : (
+        titleLabel
+      )}
+      {typeof subtitle === 'string' || typeof subtitle === 'number' ? (
+        <Subtitle
+          variant="body-2-regular"
+          numberOfLines={1}
+          style={{
+            color:
+              tone === 'onImage' && titleAppearance === 'plain'
+                ? 'rgba(255,255,255,0.82)'
+                : paint.textSecondary,
+            textAlign: centered ? 'center' : 'left',
+            maxWidth: '100%',
+          }}
+          testID={testID ? `${testID}-subtitle` : undefined}
+        >
+          {subtitle}
+        </Subtitle>
+      ) : (
+        subtitle
+      )}
+    </View>
+  );
+  const identityContent = (
+    <View
+      style={{
+        minWidth: 0,
+        maxWidth: '100%',
+        flexShrink: 1,
+        flexDirection: titleLayout === 'stacked' ? 'column' : 'row',
+        alignItems: titleLayout === 'stacked' && !centered ? 'flex-start' : 'center',
+        gap: stackedVisual ? 4 : ROW_GAP,
+      }}
+    >
+      {titleVisual != null ? (
+        <View style={{ flexShrink: 0, paddingTop: stackedVisual ? controlInset : 0 }}>
+          {titleVisual}
+        </View>
+      ) : null}
+      {title != null || subtitle != null ? (
+        titleAppearance === 'capsule' ? (
+          <Surface
+            radius={24}
+            testID={testID ? `${testID}-title-capsule` : undefined}
             style={{
-              color: tone === 'onImage' ? 'rgba(255,255,255,0.82)' : paint.textSecondary,
-              textAlign: centered ? 'center' : 'left',
+              minWidth: 0,
               maxWidth: '100%',
+              flexShrink: 1,
+              // The whole visual + label is the hit target, not this paint layer.
+              minHeight: stackedVisual ? undefined : controlHeight,
+              justifyContent: 'center',
+              paddingVertical: stackedVisual ? 4 : 6,
+              paddingHorizontal: stackedVisual ? 10 : 14,
             }}
-            testID={testID ? `${testID}-subtitle` : undefined}
           >
-            {subtitle}
-          </Subtitle>
+            {titleText}
+          </Surface>
         ) : (
-          subtitle
+          titleText
+        )
+      ) : null}
+    </View>
+  );
+  const titleBlock =
+    title != null || subtitle != null || titleVisual != null ? (
+      <PageHeaderIdentity
+        presence={titlePresence}
+        hidden={titleHidden}
+        testID={testID ? `${testID}-title-block` : undefined}
+        style={[
+          styles.titleBlock,
+          navigationPresentation && { paddingLeft: 0, paddingRight: 0 },
+          centered ? styles.titleBlockCentered : styles.titleBlockStart,
+        ]}
+      >
+        {onPressTitle ? (
+          <Button
+            appearance="plain"
+            material="flat"
+            tone="neutral"
+            onPress={onPressTitle}
+            accessibilityLabel={
+              titleAccessibilityLabel ?? (typeof title === 'string' ? title : undefined)
+            }
+            testID={testID ? `${testID}-identity` : undefined}
+            style={{
+              height: 'auto',
+              // Each identity part owns its shape; the button's focus outline
+              // encloses the composition without clipping avatar or capsule.
+              borderRadius: 24,
+              overflow: 'visible',
+              minWidth: 0,
+              maxWidth: '100%',
+              paddingTop: 0,
+              paddingBottom: 0,
+              paddingLeft: 0,
+              paddingRight: 0,
+              flexShrink: 1,
+              alignSelf: centered ? 'center' : 'flex-start',
+            }}
+          >
+            {identityContent}
+          </Button>
+        ) : (
+          identityContent
         )}
-      </Animated.View>
+      </PageHeaderIdentity>
     ) : null;
 
   const backButton = onBack ? (
-    floating ? (
-      // Its own island: a back action is not a member of the page's action
-      // group, and a `role="group"` of one is noise a screen reader reads out.
-      // One shared pane; the back action is plain so it adds no second material.
-      <BlurIsland testID={testID ? `${testID}-back-island` : undefined}>
-        <Button
-          appearance="outline"
-          material="shared"
-          tone="neutral"
-          size="md"
-          iconOnly
-          iconSize={16}
-          style={{
-            width: 34,
-            minWidth: 34,
-            height: 34,
-            paddingLeft: 0,
-            paddingRight: 0,
-            borderWidth: 0,
-            boxShadow: 'none',
-          }}
-          leadingIcon={RiArrowLeftLine}
-          accessibilityLabel={backLabel}
-          onPress={onBack}
-          hitSlop={CAPSULE_HIT_SLOP}
-          testID={testID ? `${testID}-back` : undefined}
-        />
-      </BlurIsland>
-    ) : (
-      <Button
-        appearance={navigationPresentation ? 'plain' : 'outline'}
-        material="shared"
-        tone="neutral"
-        size="md"
-        icon={RiArrowLeftLine}
-        accessibilityLabel={backLabel}
-        onPress={onBack}
-        testID={testID ? `${testID}-back` : undefined}
-      />
-    )
+    <Button
+      appearance={navigationPresentation ? 'plain' : 'outline'}
+      tone="neutral"
+      icon={backCount == null ? RiArrowLeftLine : undefined}
+      leadingIcon={backCount != null ? RiArrowLeftLine : undefined}
+      accessibilityLabel={
+        backLabelProp ?? (backCount == null ? backLabel : `${backLabel}, ${backCount}`)
+      }
+      onPress={onBack}
+      testID={testID ? `${testID}-back` : undefined}
+    >
+      {backCount}
+    </Button>
   ) : null;
 
   const leadingControls = (
@@ -784,7 +882,7 @@ function PageHeaderComponent({
       <EdgeScrim
         // Fade into the containing surface (ContentPanel publishes its fill),
         // falling back to the page. Explicit scrimColor remains an override.
-        color={scrimColor ?? surfaceFill}
+        color={scrimColor ?? (imageScrim ? '#000000' : surfaceFill)}
         falloff={scrimFalloff}
         testID={testID ? `${testID}-scrim-gradient` : undefined}
       />
@@ -815,20 +913,60 @@ function PageHeaderComponent({
     </>
   );
 
-  const actionsSlot = actions ? (
-    <View
-      style={[
-        [styles.actions, { gap: actionGap }],
-        pointerEventsStyle(floating ? 'box-none' : undefined),
-      ]}
-      onLayout={centered ? onEndLayout : undefined}
-      testID={testID ? `${testID}-actions` : undefined}
-    >
-      <HeaderActionsHostContext.Provider value={actionHost}>
-        {floating ? <BloomScope>{actions}</BloomScope> : actions}
-      </HeaderActionsHostContext.Provider>
-    </View>
-  ) : null;
+  const actionsSlot =
+    actions || search || searchActions ? (
+      <View
+        style={[
+          [
+            styles.actions,
+            { gap: actionGap },
+            Boolean(search) && { flex: 1, minWidth: 0 },
+            searchCompact && !searchOccupiesRow && { flex: 0, flexBasis: 'auto', flexShrink: 0 },
+          ],
+          pointerEventsStyle(floating ? 'box-none' : undefined),
+        ]}
+        onLayout={centered ? onEndLayout : undefined}
+        testID={testID ? `${testID}-actions` : undefined}
+      >
+        <HeaderActionsHostContext.Provider value={actionHost}>
+          {search ? (
+            <View
+              style={{
+                flexDirection: 'row',
+                gap: actionGap,
+                display: searchOccupiesRow ? 'none' : 'flex',
+              }}
+            >
+              {floating ? <BloomScope>{actions}</BloomScope> : actions}
+            </View>
+          ) : floating ? (
+            <BloomScope>{actions}</BloomScope>
+          ) : (
+            actions
+          )}
+          {search && (
+            <View
+              style={
+                searchCompact && !searchOccupiesRow
+                  ? { width: controlHeight }
+                  : { flex: 1, minWidth: 0, maxWidth: searchOccupiesRow ? undefined : 360 }
+              }
+            >
+              <SearchPresentationContext.Provider value={searchHost}>
+                {search}
+              </SearchPresentationContext.Provider>
+            </View>
+          )}
+          {searchActions ? (
+            <View
+              style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: actionGap }}
+            >
+              {floating ? <BloomScope>{searchActions}</BloomScope> : searchActions}
+            </View>
+          ) : null}
+        </HeaderActionsHostContext.Provider>
+      </View>
+    ) : null;
 
   return (
     <>
@@ -851,6 +989,7 @@ function PageHeaderComponent({
             styles.container,
             webLayout,
             { paddingTop: padTop },
+            isWeb && ({ '--bloom-page-header-touch-inset': `${controlInset}px` } as WebCssStyle),
             overlay
               ? [
                   styles.overlay,
@@ -874,10 +1013,28 @@ function PageHeaderComponent({
           <Animated.View
             testID={testID ? `${testID}-docked-fill` : undefined}
             style={[
-              [StyleSheet.absoluteFill, { backgroundColor: surfaceFill }, dockFillStyle],
+              [
+                StyleSheet.absoluteFill,
+                { backgroundColor: tone === 'onImage' ? '#000000' : surfaceFill },
+                dockFillStyle,
+              ],
               pointerEventsStyle('none'),
             ]}
           />
+        ) : null}
+        {overline ? (
+          <View
+            {...dataHook('bloomPageHeaderOverline')}
+            testID={testID ? `${testID}-overline` : undefined}
+            style={[
+              { minWidth: 0 },
+              isWeb
+                ? ({ paddingTop: 'var(--bloom-page-header-inset)' } as WebCssStyle)
+                : { paddingTop: sideInset, paddingLeft: sideInset, paddingRight: sideInset },
+            ]}
+          >
+            {overline}
+          </View>
         ) : null}
         {barEmpty ? null : (
           <BloomScope controlDensity={navigationPresentation ? 'compact' : undefined}>
@@ -890,11 +1047,21 @@ function PageHeaderComponent({
                   ? 'py-0'
                   : compact
                     ? 'min-h-8 py-0'
-                    : 'min-h-14 py-2'
+                    : 'min-h-14'
               }
               style={[
                 [
                   styles.bar,
+                  stacked && { alignItems: 'flex-start' },
+                  !compact &&
+                    !navigationPresentation &&
+                    windowToolbar === 0 &&
+                    (isWeb
+                      ? ({
+                          paddingTop: 'var(--bloom-page-header-inset)',
+                          paddingBottom: accessory ? ROW_GAP : 'var(--bloom-page-header-inset)',
+                        } as WebCssStyle)
+                      : { paddingTop: sideInset, paddingBottom: accessory ? ROW_GAP : sideInset }),
                   navigationPresentation
                     ? { gap: 2, minHeight: windowToolbar || NAVIGATION_HEIGHT }
                     : windowToolbar > 0 && { minHeight: windowToolbar },
@@ -911,17 +1078,30 @@ function PageHeaderComponent({
             >
               <View
                 ref={startRef}
-                {...dataHook('bloomPageHeaderStart', centered ? 'center' : 'start')}
+                {...dataHook(
+                  'bloomPageHeaderStart',
+                  centered && !searchOccupiesRow ? 'center' : 'start',
+                )}
                 style={[
                   [
                     styles.start,
+                    stacked && { alignItems: 'flex-start' },
                     !isWeb && { gap: nativeLeadingPresent ? START_GAP : 0 },
-                    centered
+                    centered && !searchOccupiesRow
                       ? { position: 'absolute', ...(!isWeb ? { insetInlineStart: barStart } : {}) }
-                      : styles.startFill,
+                      : [
+                          !centered && styles.startFill,
+                          Boolean(search) &&
+                            title == null &&
+                            subtitle == null &&
+                            titleVisual == null && { flex: 0, flexBasis: 'auto', flexShrink: 0 },
+                        ],
+                    searchOccupiesRow && { display: 'none' },
                   ],
                   pointerEventsStyle(floating ? 'box-none' : undefined),
                 ]}
+                accessibilityElementsHidden={searchOccupiesRow}
+                importantForAccessibility={searchOccupiesRow ? 'no-hide-descendants' : 'auto'}
                 onLayout={centered ? onStartLayout : undefined}
                 testID={testID ? `${testID}-start` : undefined}
               >
@@ -943,18 +1123,20 @@ function PageHeaderComponent({
                 ) : null}
                 {centered ? null : titleBlock}
               </View>
-              {centered && titleBlock ? centerSpacer('before') : null}
+              {centered && !searchOccupiesRow && titleBlock ? centerSpacer('before') : null}
               {centered && titleBlock ? (
                 <View
-                  {...dataHook('bloomPageHeaderCenter')}
+                  {...(!searchOccupiesRow ? dataHook('bloomPageHeaderCenter') : {})}
                   style={[
                     [
                       styles.centerSlot,
-                      !isWeb && {
-                        flexBasis: MIN_CENTERED_TITLE_WIDTH,
-                        flexGrow: 1,
-                        flexShrink: 0,
-                      },
+                      searchOccupiesRow && { display: 'none' },
+                      !isWeb &&
+                        !searchOccupiesRow && {
+                          flexBasis: MIN_CENTERED_TITLE_WIDTH,
+                          flexGrow: 1,
+                          flexShrink: 0,
+                        },
                     ],
                     pointerEventsStyle('box-none'),
                   ]}
@@ -963,12 +1145,33 @@ function PageHeaderComponent({
                   {titleBlock}
                 </View>
               ) : null}
-              {centered && titleBlock ? centerSpacer('after') : null}
+              {centered && !searchOccupiesRow && titleBlock ? centerSpacer('after') : null}
               {centered ? (
                 <View
-                  {...dataHook('bloomPageHeaderEnd')}
+                  {...(!searchOccupiesRow ? dataHook('bloomPageHeaderEnd') : {})}
                   style={[
-                    { position: 'absolute', ...(!isWeb ? { insetInlineEnd: sideInset } : {}) },
+                    {
+                      position: 'absolute',
+                      ...(search
+                        ? isWeb
+                          ? ({
+                              width: `max(0px, calc(50% - ${MIN_CENTERED_TITLE_WIDTH / 2 + ROW_GAP}px - var(--bloom-page-header-inset)))`,
+                            } as WebCssStyle)
+                          : {
+                              width: Math.max(
+                                0,
+                                (width - MIN_CENTERED_TITLE_WIDTH) / 2 - sideInset - ROW_GAP,
+                              ),
+                            }
+                        : {}),
+                      ...(!isWeb ? { insetInlineEnd: sideInset } : {}),
+                    },
+                    searchOccupiesRow && {
+                      position: 'relative',
+                      width: undefined,
+                      insetInlineEnd: 0,
+                      flex: searchOccupiesRow ? 1 : undefined,
+                    },
                     pointerEventsStyle('box-none'),
                   ]}
                 >
@@ -985,7 +1188,10 @@ function PageHeaderComponent({
             {...dataHook('bloomPageHeaderAccessory')}
             testID={testID ? `${testID}-accessory` : undefined}
             style={[
-              { minWidth: 0, paddingBottom: 8 },
+              { minWidth: 0 },
+              isWeb
+                ? ({ paddingBottom: 'var(--bloom-page-header-inset)' } as WebCssStyle)
+                : { paddingBottom: sideInset },
               !isWeb ? { paddingLeft: sideInset, paddingRight: sideInset } : undefined,
             ]}
           >

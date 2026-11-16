@@ -1,109 +1,18 @@
-import React, { useState } from 'react';
-import {
-  Pressable,
-  StyleSheet,
-  View,
-  type GestureResponderEvent,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
-import { openHref } from '../hooks/link-activation';
+import { AvatarGroup } from '../avatar-group';
+import { useState } from 'react';
+import { Pressable, type StyleProp, type ViewStyle } from 'react-native';
 
 import { webDataSet } from '../styles/web-data';
 import { AvatarPresence } from '../chat-indicators';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { Text } from '../typography';
-import { GroupAvatar } from './GroupAvatar';
-import { CHAT_ROW_RADIUS, type ChatListPaint } from './shared';
-import type { ChatAction, ChatFace, ChatIconComponent } from './types';
+import type { ChatListPaint } from './shared';
+import type { ChatFace, ChatIconComponent } from './types';
 import type { Shape } from '../shapes';
 import type { PresenceStatus } from '../chat-indicators/types';
 import { IS_WEB } from '../styles/platform';
 
 // ---------------------------------------------------------------------------
 //  The link that covers a row
-// ---------------------------------------------------------------------------
-
-export interface RowLinkProps {
-  /** The whole row, read aloud. */
-  name: string;
-  onPress?: () => void;
-  onLongPress?: () => void;
-  href?: string;
-  selected?: boolean;
-  paint: ChatListPaint;
-  /**
-   * The fill the link paints over the row WHILE Pressable reports it pressed;
-   * omit for none. Native only: on web the adopted sheet owns the fill.
-   */
-  pressedFill?: string;
-  testID?: string;
-}
-
-/**
- * A ROW'S LINK IS A SIBLING LAID UNDER ITS CONTENT, NOT A WRAPPER AROUND IT. It
- * fills the row absolutely and carries the whole composed name; the avatar and
- * the two text lines are drawn over it with `pointerEvents="none"`, so a press
- * anywhere on them falls through, while the hover action buttons are drawn over
- * it as their OWN targets. A button inside an anchor is invalid HTML and would
- * make every "Archive" click open the conversation.
- *
- * THE PRESSED FILL IS PRESSABLE'S OWN `pressed`, read in a style function and
- * painted on the link itself (it fills the row and sits under the content). It
- * used to be MIRRORED into the row's state from `onPressIn`/`onPressOut`, and a
- * mirror is only as good as the last press-out it heard: on Android a tap that
- * pushes a screen can lose it (the delayed press-out is a timer the Pressable
- * cancels when it unmounts or resets), and the row came back still painted
- * pressed. A fill derived from the Pressable has no second copy to go stale.
- */
-export function RowLink({
-  name,
-  onPress,
-  onLongPress,
-  href,
-  selected = false,
-  paint,
-  pressedFill,
-  testID,
-}: RowLinkProps) {
-  const handlePress = (event: GestureResponderEvent) => {
-    if (onPress) {
-      if (IS_WEB && href) event.preventDefault();
-      onPress();
-      return;
-    }
-    if (!IS_WEB && href) openHref(href);
-  };
-  const interactive = Boolean(onPress || href || onLongPress);
-  const style: WebCssStyle = {
-    ...StyleSheet.absoluteFill,
-    borderRadius: CHAT_ROW_RADIUS,
-    '--bloom-chat-ring': paint.ring,
-  };
-  return (
-    <Pressable
-      {...webDataSet({ bloomChatFocusable: '' })}
-      {...(IS_WEB && href ? { href } : null)}
-      {...(IS_WEB && selected ? { 'aria-current': 'true' } : null)}
-      role={href ? 'link' : interactive ? 'button' : undefined}
-      accessibilityLabel={name}
-      // `selected` on a link is `aria-current` on web — `aria-selected` is for a
-      // tab or an option, and a row is neither. Native reads the state object.
-      accessibilityState={{ selected }}
-      onPress={onPress || (!IS_WEB && href) ? handlePress : undefined}
-      onLongPress={onLongPress}
-      style={
-        pressedFill === undefined
-          ? style
-          : ({ pressed }) => (pressed ? [style, { backgroundColor: pressedFill }] : style)
-      }
-      testID={testID}
-    />
-  );
-}
-
-// ---------------------------------------------------------------------------
-//  A round glyph button
 // ---------------------------------------------------------------------------
 
 export interface ChatGlyphButtonProps {
@@ -165,21 +74,6 @@ export function ChatGlyphButton({
 }
 
 /** The glyph colour an action's tone paints, on the page (not on a filled pane). */
-export function actionGlyphColor(action: ChatAction, paint: ChatListPaint): string {
-  switch (action.tone) {
-    case 'negative':
-      return paint.negative;
-    case 'accent':
-      return paint.accent;
-    default:
-      return paint.textMuted;
-  }
-}
-
-// ---------------------------------------------------------------------------
-//  The avatar slot
-// ---------------------------------------------------------------------------
-
 export interface ChatAvatarProps {
   name: string;
   avatar?: string;
@@ -208,8 +102,14 @@ export function ChatAvatar({
 }: ChatAvatarProps) {
   if (faces && faces.length > 1) {
     return (
-      <GroupAvatar
-        faces={faces}
+      <AvatarGroup
+        layout="conversation"
+        showInitials
+        items={faces.map((face) => ({
+          uri: 'source' in face ? face.source : undefined,
+          name: face.name,
+          initials: 'initials' in face ? face.initials : undefined,
+        }))}
         size={size}
         shape={shape}
         ringColor={paint.background}
@@ -233,32 +133,3 @@ export function ChatAvatar({
 // ---------------------------------------------------------------------------
 //  A section heading
 // ---------------------------------------------------------------------------
-
-export function SectionHeading({
-  title,
-  paint,
-  paddingHorizontal,
-  testID,
-}: {
-  title: string;
-  paint: ChatListPaint;
-  paddingHorizontal: number;
-  testID?: string;
-}) {
-  return (
-    <View
-      role="presentation"
-      style={{
-        paddingLeft: paddingHorizontal,
-        paddingRight: paddingHorizontal,
-        paddingTop: 12,
-        paddingBottom: 4,
-      }}
-      testID={testID}
-    >
-      <Text variant="caption-1-semibold" style={{ color: paint.heading }}>
-        {title}
-      </Text>
-    </View>
-  );
-}

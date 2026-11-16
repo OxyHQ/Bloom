@@ -33,7 +33,7 @@ import { atoms as a, web, android, platform, tokens, type TextStyleProp } from '
 import { RiInformationFill } from '../icons/remix/RiInformationFill';
 import { RiEyeLine } from '../icons/remix/RiEyeLine';
 import { RiEyeOffLine } from '../icons/remix/RiEyeOffLine';
-import { GlyphButton } from '../button/GlyphButton';
+import { Button } from '../button';
 import { useMessages } from '../locale/messages';
 import { TEXT_FIELD_MESSAGES } from './messages';
 import { Text } from '../typography';
@@ -98,6 +98,7 @@ interface TextFieldContextValue {
   /** Inside an `InputGroup`: the group paints the shell, so the field draws none. */
   bare: boolean;
   chromeClassName?: string;
+  chromeInset: number;
 }
 
 /**
@@ -177,6 +178,7 @@ export function TextField({
   leadingAddon,
   className,
   chromeClassName,
+  chromeInset = 0,
   style,
 }: TextFieldProps) {
   const theme = useTheme();
@@ -237,6 +239,7 @@ export function TextField({
       radius,
       bare,
       chromeClassName,
+      chromeInset,
     }),
     [
       inputRef,
@@ -254,6 +257,7 @@ export function TextField({
       radius,
       bare,
       chromeClassName,
+      chromeInset,
     ],
   );
 
@@ -368,6 +372,8 @@ function Chrome({ invalid, focused }: { invalid: boolean; focused?: boolean }) {
       {/* The fill is the shared surface material, under the outline and ring. */}
       <SurfacePaint
         fill={paint.backgroundColor}
+        testID="text-field-paint"
+        outset={-Math.max(0, ctx.chromeInset)}
         radius={ctx.radius}
         composite
         transition={TEXT_FIELD_FILL_TRANSITION}
@@ -383,6 +389,10 @@ function Chrome({ invalid, focused }: { invalid: boolean; focused?: boolean }) {
             a.absolute,
             a.inset_0,
             {
+              top: ctx.chromeInset,
+              right: ctx.chromeInset,
+              bottom: ctx.chromeInset,
+              left: ctx.chromeInset,
               borderRadius: ctx.radius,
               borderWidth: TEXT_FIELD_REST_BORDER_WIDTH,
               borderColor: ctx.palette.restBorder,
@@ -404,6 +414,10 @@ function Chrome({ invalid, focused }: { invalid: boolean; focused?: boolean }) {
           a.absolute,
           a.inset_0,
           {
+            top: ctx.chromeInset,
+            right: ctx.chromeInset,
+            bottom: ctx.chromeInset,
+            left: ctx.chromeInset,
             borderRadius: ctx.radius,
             borderWidth: TEXT_FIELD_RING_WIDTH,
             backgroundColor: 'transparent',
@@ -773,9 +787,12 @@ function RevealButton({
       }}
       {...KEEP_FOCUS_WHERE_IT_IS}
     >
-      <GlyphButton
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
         size={size}
-        glyphSize={glyph}
+        iconSize={glyph}
         icon={revealed ? RiEyeOffLine : RiEyeLine}
         accessibilityLabel={label}
         color={resolveIconColor(ctx.palette, { invalid, disabled: ctx.disabled })}

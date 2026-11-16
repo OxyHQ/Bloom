@@ -8,7 +8,7 @@ import { PREFERENCES_MESSAGES } from './messages';
 
 /**
  * The ready-made haptics row, for a `SettingsGeneralPage` section (or
- * `SettingsRow`). The app places it; Bloom owns its state, persistence and
+ * `GroupedSectionItem`). The app places it; Bloom owns its state, persistence and
  * text. A `Switch` and nothing heavier: it links no `Select`.
  */
 export function useHapticsSettingRow(): SettingsRowData {

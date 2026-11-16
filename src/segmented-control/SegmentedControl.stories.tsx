@@ -1,11 +1,10 @@
 import { useArgs } from 'storybook/preview-api';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from './index';
 import { Text } from '../typography';
-import { useTheme } from '../theme/use-theme';
 
 const meta: Meta = {
   component: SegmentedControl,
@@ -25,7 +24,6 @@ type Story = StoryObj;
 export const Matrix: Story = {
   parameters: { controls: { disable: true } },
   render: function MatrixStory() {
-    const theme = useTheme();
     const [value, setValue] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
     return (
       <View
@@ -33,7 +31,6 @@ export const Matrix: Story = {
           gap: 16,
           padding: 16,
           alignItems: 'flex-start',
-          backgroundColor: theme.colors.background,
         }}
       >
         {(['sm', 'md', 'lg'] as const).map((size) => (

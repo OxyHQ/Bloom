@@ -1,11 +1,16 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 
+import { alert, prompt } from '../../src/surfaces';
+import {
+  ZoomableMediaGallery,
+  type ZoomableMediaGalleryHandle,
+} from '../../src/zoomable-media-gallery';
 import { BookingBar, BookingCard } from '../../src/booking';
-import { Button, LinkButton } from '../../src/button';
+import { Button } from '../../src/button';
 import { RangeCalendar, type DateRange } from '../../src/date-picker';
 import { Dialog, useDialogControl } from '../../src/dialog';
-import { RiFlagLine, RiHeart3Fill, RiHeart3Line, RiShareLine } from '../../src/icons/remix';
+import { RiFlagLine, RiHeart3Fill, RiHeart3Line } from '../../src/icons/remix';
 import {
   ActionBar,
   ExchangeProposalCard,
@@ -89,11 +94,20 @@ import {
   HousingHeader,
   PageColumn,
   useHousingLayout,
+  useHousingNav,
   webSticky,
 } from './HousingHeader';
 
 const LISTING_WIDTH = 1120;
-const noop = () => undefined;
+async function saveDraft(title: string, placeholder?: string) {
+  const value = await prompt({
+    title,
+    placeholder,
+    description: 'This draft stays in the demo.',
+    confirmLabel: 'Save draft',
+  });
+  if (value?.trim()) void alert('Draft saved', value.trim());
+}
 
 // ---------------------------------------------------------------------------
 //  The frame every listing page shares
@@ -131,6 +145,12 @@ function ListingFrame({
 }: ListingFrameProps) {
   const { md, lg } = useHousingLayout();
   const [saved, setSaved] = useState(false);
+  const gallery = useRef<ZoomableMediaGalleryHandle>(null);
+  const openPhoto = (index: number) =>
+    gallery.current?.open(
+      photos.map((photo) => ({ uri: photo.source, alt: photo.alt })),
+      index,
+    );
   const bar = !lg && narrowAside === 'bar' && mobileBar;
 
   return (
@@ -149,12 +169,9 @@ function ListingFrame({
           subtitle={subtitle}
           rating={rating}
           reviewsLabel={reviewsLabel}
-          onPressReviews={reviewsLabel ? noop : undefined}
           location={location}
-          onPressLocation={noop}
           actions={
             <>
-              <ListingHeaderAction icon={RiShareLine} label="Share" iconOnly={!md} onPress={noop} />
               <ListingHeaderAction
                 icon={saved ? RiHeart3Fill : RiHeart3Line}
                 label={saved ? 'Saved' : 'Save'}
@@ -166,7 +183,7 @@ function ListingFrame({
             </>
           }
         />
-        <ListingPhotoGrid photos={photos} onShowAll={noop} onPressPhoto={noop} />
+        <ListingPhotoGrid photos={photos} onShowAll={() => openPhoto(0)} onPressPhoto={openPhoto} />
         <View
           style={{
             flexDirection: lg ? 'row' : 'column',
@@ -188,6 +205,7 @@ function ListingFrame({
           ) : null}
         </View>
       </PageColumn>
+      <ZoomableMediaGallery ref={gallery} />
     </HousingFrame>
   );
 }
@@ -211,9 +229,15 @@ function Paragraphs({ text }: { text: string }) {
 
 function ReportLink() {
   return (
-    <LinkButton linkTone="secondary" size="sm" leadingIcon={RiFlagLine} onPress={noop}>
+    <Button
+      appearance="plain"
+      linkTone="secondary"
+      size="sm"
+      leadingIcon={RiFlagLine}
+      onPress={() => saveDraft('Report this listing', 'Describe the issue')}
+    >
       Report this listing
-    </LinkButton>
+    </Button>
   );
 }
 
@@ -230,6 +254,9 @@ function Highlights({ items }: { items: readonly ListingHighlight[] }) {
 // ---------------------------------------------------------------------------
 
 export function RentListingPage() {
+  const go = useHousingNav();
+  const [allAmenities, setAllAmenities] = useState(false);
+  const plans = useRef<ZoomableMediaGalleryHandle>(null);
   const { md } = useHousingLayout();
   const viewing = useDialogControl();
   const [day, setDay] = useState<string | null>('2026-09-22');
@@ -260,7 +287,7 @@ export function RentListingPage() {
             billsNote="Bills not included"
             facts={RENT_KEY_FACTS}
             onRequestViewing={() => viewing.open()}
-            onApply={noop}
+            onApply={() => go('my-home')}
             note={requestedLabel}
             footer={<ReportLink />}
             testID="housing-rent-card"
@@ -286,10 +313,22 @@ export function RentListingPage() {
           </View>
         </ListingSection>
         <ListingSection title="What this home has">
-          <AmenityList items={RENT_AMENITIES} limit={8} onShowAll={noop} />
+          <AmenityList
+            items={RENT_AMENITIES}
+            limit={allAmenities ? undefined : 8}
+            onShowAll={() => setAllAmenities(true)}
+          />
         </ListingSection>
         <ListingSection title="Floor plans">
-          <FloorPlan plans={RENT_PLANS} onPressPlan={noop} />
+          <FloorPlan
+            plans={RENT_PLANS}
+            onPressPlan={(index) =>
+              plans.current?.open(
+                RENT_PLANS.map((plan) => ({ uri: plan.source, alt: plan.alt ?? plan.label })),
+                index,
+              )
+            }
+          />
         </ListingSection>
         <ListingSection title="The neighbourhood" subtitle="Old Halden, city centre">
           <View style={{ gap: 32 }}>
@@ -316,7 +355,7 @@ export function RentListingPage() {
                 {...review}
                 helpful={helpful[index] ?? false}
                 onHelpfulChange={(next) => setHelpful((h) => ({ ...h, [index]: next }))}
-                onReport={noop}
+                onReport={() => saveDraft('Report review', 'Describe the issue')}
               />
             ))}
           </View>
@@ -329,16 +368,16 @@ export function RentListingPage() {
             verified
             responseTime="Usually responds within a day"
             activeListings={3}
-            onPressListings={noop}
             phone="+00 612 480 115"
             phoneRevealed={phoneRevealed}
             onPhoneRevealedChange={setPhoneRevealed}
-            onMessage={noop}
+            onMessage={() => saveDraft(`Message ${PEOPLE.landlord.name}`)}
             style={{ maxWidth: md ? 560 : undefined }}
           />
         </ListingSection>
       </ListingFrame>
 
+      <ZoomableMediaGallery ref={plans} />
       <Dialog
         control={viewing}
         label="Schedule a viewing"
@@ -411,9 +450,9 @@ export function SaleListingPage() {
             mortgageEstimate={monthly}
             onPressMortgage={() => mortgage.open()}
             facts={SALE_KEY_FACTS}
-            onContact={noop}
-            onRequestVisit={noop}
-            onMakeOffer={noop}
+            onContact={() => saveDraft(`Message ${PEOPLE.agent.name}`)}
+            onRequestVisit={() => saveDraft('Request a visit', 'Preferred date and time')}
+            onMakeOffer={() => saveDraft('Make an offer', 'Offer amount and conditions')}
             note="Listed by Harbourside Estates"
             footer={<ReportLink />}
             testID="housing-sale-card"
@@ -425,7 +464,7 @@ export function SaleListingPage() {
             subtitle={monthly}
             onPressSubtitle={() => mortgage.open()}
             primaryLabel="Contact agent"
-            onPrimary={noop}
+            onPrimary={() => saveDraft(`Message ${PEOPLE.agent.name}`)}
             testID="housing-sale-actionbar"
           />
         }
@@ -481,12 +520,10 @@ export function SaleListingPage() {
             agency="Harbourside Estates"
             responseTime="Usually responds within an hour"
             activeListings={12}
-            onPressListings={noop}
             phone="+00 604 221 870"
             phoneRevealed={phoneRevealed}
             onPhoneRevealedChange={setPhoneRevealed}
-            onCall={phoneRevealed ? noop : undefined}
-            onMessage={noop}
+            onMessage={() => saveDraft(`Message ${PEOPLE.agent.name}`)}
             style={{ maxWidth: md ? 560 : undefined }}
           />
         </ListingSection>
@@ -569,9 +606,14 @@ function DatesDialog({
             alignItems: 'center',
           }}
         >
-          <LinkButton onPress={() => onChange(null)} disabled={!value}>
+          <Button
+            appearance="plain"
+            linkTone="primary"
+            onPress={() => onChange(null)}
+            disabled={!value}
+          >
             Clear dates
-          </LinkButton>
+          </Button>
           <Button
             onPress={() => control.close()}
             testID="housing-dates-done"
@@ -667,7 +709,15 @@ export function StayListingPage() {
                 note="This place has a maximum of 4 guests, not including infants."
               />
             }
-            onReserve={nights > 0 ? noop : openDates}
+            onReserve={
+              nights > 0
+                ? () =>
+                    alert(
+                      'Review reservation',
+                      `${formatRange(range)} · ${guestSummary(guests)} · ${breakdown?.total}. Preview only; no booking has been placed.`,
+                    )
+                : openDates
+            }
             breakdown={breakdown}
             footer={<ReportLink />}
             testID="housing-booking"
@@ -679,7 +729,15 @@ export function StayListingPage() {
             priceUnit="night"
             dates={formatRange(range) ?? 'Add dates'}
             onPressDates={openDates}
-            onReserve={nights > 0 ? noop : openDates}
+            onReserve={
+              nights > 0
+                ? () =>
+                    alert(
+                      'Review reservation',
+                      `${formatRange(range)} · ${guestSummary(guests)} · ${breakdown?.total}. Preview only; no booking has been placed.`,
+                    )
+                : openDates
+            }
             testID="housing-booking-bar"
           />
         }
@@ -689,7 +747,7 @@ export function StayListingPage() {
           <Paragraphs text={STAY_LISTING.description} />
         </ListingSection>
         <ListingSection title="What this place offers">
-          <AmenityList items={STAY_AMENITY_LIST} onShowAll={noop} total={32} />
+          <AmenityList items={STAY_AMENITY_LIST} />
         </ListingSection>
         <ListingSection title="Reviews">
           <View style={{ gap: 32 }}>
@@ -729,7 +787,7 @@ export function StayListingPage() {
               { value: '7', label: 'Years hosting' },
             ]}
             responseTime="Usually responds within an hour"
-            onMessage={noop}
+            onMessage={() => saveDraft(`Message ${PEOPLE.host.name}`)}
             style={{ maxWidth: md ? 560 : undefined }}
           />
         </ListingSection>
@@ -818,7 +876,7 @@ export function SwapListingPage() {
             ]}
             responseTime="Usually responds within two days"
             messageLabel="Message"
-            onMessage={noop}
+            onMessage={() => saveDraft('Message the Oriel family')}
             style={{ maxWidth: md ? 560 : undefined }}
           />
         </ListingSection>

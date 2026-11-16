@@ -21,7 +21,7 @@ import { render } from '@testing-library/react-native';
 import { Text, View } from 'react-native';
 
 import { Button } from '../button';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+
 import { BloomThemeProvider } from '../theme';
 
 /** An app icon: `size`/`color`, the spelling Bloom's slot cannot name. */
@@ -32,15 +32,15 @@ function AppGlyph({ size, color }: { size?: number; color?: string }) {
 const wrap = (ui: React.ReactElement) => render(<BloomThemeProvider>{ui}</BloomThemeProvider>);
 
 describe('renderLeadingIcon hands an app glyph the box and the live colour', () => {
-  it('ButtonGroupItem passes a numeric size and a non-empty colour', () => {
+  it('Button passes a numeric size and a non-empty colour', () => {
     const { getByTestId } = wrap(
-      <ButtonGroup accessibilityLabel="Actions">
-        <ButtonGroupItem
+      <Button.Group accessibilityLabel="Actions">
+        <Button
           iconOnly
           accessibilityLabel="Search"
           renderLeadingIcon={({ size, color }) => <AppGlyph size={size} color={color} />}
         />
-      </ButtonGroup>,
+      </Button.Group>,
     );
 
     const [size, color] = getByTestId('app-glyph').props.accessibilityLabel.split('|');
@@ -62,7 +62,7 @@ describe('renderLeadingIcon hands an app glyph the box and the live colour', () 
     );
 
     expect(getByTestId('app-glyph')).toBeTruthy();
-    // Precedence, matching GlyphButton, where the caller-painted glyph wins.
+    // Precedence, matching Button, where the caller-painted glyph wins.
     expect(queryByTestId('bloom-shaped')).toBeNull();
   });
 
@@ -82,9 +82,9 @@ describe('renderLeadingIcon hands an app glyph the box and the live colour', () 
       <AppGlyph size={width} color={fill} />
     );
     const { getByTestId } = wrap(
-      <ButtonGroup accessibilityLabel="Actions">
-        <ButtonGroupItem iconOnly accessibilityLabel="Search" leadingIcon={Adapter} />
-      </ButtonGroup>,
+      <Button.Group accessibilityLabel="Actions">
+        <Button iconOnly accessibilityLabel="Search" leadingIcon={Adapter} />
+      </Button.Group>,
     );
     const [size, color] = getByTestId('app-glyph').props.accessibilityLabel.split('|');
     expect(Number(size)).toBeGreaterThan(0);
@@ -93,11 +93,11 @@ describe('renderLeadingIcon hands an app glyph the box and the live colour', () 
 
   it('draws nothing when neither form is given', () => {
     const { queryByTestId } = wrap(
-      <ButtonGroup accessibilityLabel="Actions">
-        <ButtonGroupItem accessibilityLabel="Plain">
+      <Button.Group accessibilityLabel="Actions">
+        <Button accessibilityLabel="Plain">
           <Text>Plain</Text>
-        </ButtonGroupItem>
-      </ButtonGroup>,
+        </Button>
+      </Button.Group>,
     );
     expect(queryByTestId('app-glyph')).toBeNull();
   });

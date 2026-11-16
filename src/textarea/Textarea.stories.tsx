@@ -1,9 +1,7 @@
 import { useArgs } from 'storybook/preview-api';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-
-import { useTheme } from '../theme/use-theme';
 
 import { Textarea } from './index';
 
@@ -59,7 +57,6 @@ export const Matrix: Story = {
     return (
       <View
         style={{
-          backgroundColor: useTheme().colors.background,
           width: 352,
           maxWidth: '100%',
           gap: 16,

@@ -12,7 +12,7 @@ import { PageHeader } from '../page-header/PageHeader';
 import { PageFooter } from '../page-footer';
 import { AgentThinking } from '../agent-thinking';
 import { Breadcrumb, BreadcrumbItem } from '../breadcrumb';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { Button } from '../button';
 import { RiFolderLine } from '../icons/remix/RiFolderLine';
 import { RiMoreFill } from '../icons/remix/RiMoreFill';
 import { RiShare2Line } from '../icons/remix/RiShare2Line';
@@ -77,9 +77,9 @@ export function AiChatContainerBase({
   const headerActions =
     actions ??
     (onShare || onMore ? (
-      <ButtonGroup>
+      <Button.Group>
         {onShare ? (
-          <ButtonGroupItem
+          <Button
             iconOnly
             leadingIcon={RiShare2Line}
             accessibilityLabel={l.share}
@@ -87,14 +87,9 @@ export function AiChatContainerBase({
           />
         ) : null}
         {onMore ? (
-          <ButtonGroupItem
-            iconOnly
-            leadingIcon={RiMoreFill}
-            accessibilityLabel={l.more}
-            onPress={onMore}
-          />
+          <Button iconOnly leadingIcon={RiMoreFill} accessibilityLabel={l.more} onPress={onMore} />
         ) : null}
-      </ButtonGroup>
+      </Button.Group>
     ) : undefined);
   return (
     <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
@@ -117,28 +112,28 @@ export function AiChatContainerBase({
               safeArea={false}
               leading={
                 shell?.navCollapsed && shell.hasNav ? (
-                  <ButtonGroup>
-                    <ButtonGroupItem
+                  <Button.Group>
+                    <Button
                       iconOnly
                       leadingIcon={RiMenuLine}
                       accessibilityLabel={shell.labels.openNavigation}
                       onPress={shell.openNav}
                     />
-                  </ButtonGroup>
+                  </Button.Group>
                 ) : undefined
               }
               actions={
                 <>
                   {headerActions}
                   {shell?.compact && shell.hasPanel ? (
-                    <ButtonGroup>
-                      <ButtonGroupItem
+                    <Button.Group>
+                      <Button
                         iconOnly
                         leadingIcon={shell.panelIcon}
                         accessibilityLabel={shell.labels.openPanel(shell.panelLabel)}
                         onPress={shell.openPanel}
                       />
-                    </ButtonGroup>
+                    </Button.Group>
                   ) : null}
                 </>
               }

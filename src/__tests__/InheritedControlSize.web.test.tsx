@@ -1,4 +1,6 @@
 /** @jest-environment jsdom */
+import { ListItem } from '../list/index.web';
+
 import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -7,7 +9,6 @@ jest.mock('../portal', () => jest.requireActual('../portal/index.web'));
 jest.mock('../button', () => jest.requireActual('../button/index.web'));
 
 import { BloomScope, type BloomSize } from '../appearance';
-import { ContactRow } from '../chat-people/ContactRow';
 import { ReleaseStatusBadge } from '../creator-studio/ReleaseCard';
 import { OfferingBadge } from '../offering-badge/OfferingBadge';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -63,29 +64,6 @@ const subjects = [
     small: '20px',
     medium: '24px',
     large: '24px',
-  },
-  {
-    name: 'contact row avatar',
-    render: (size?: 'sm' | 'md') => (
-      <ContactRow id="person" name="Ana" size={size} testID="contact" />
-    ),
-    measure: () => {
-      const row = element('[data-testid="contact"]');
-      const avatar = Array.from(row.querySelectorAll<HTMLElement>('div')).find((node) => {
-        const style = getComputedStyle(node);
-        return (
-          style.position === 'relative' &&
-          style.width === style.height &&
-          ['36px', '44px'].includes(style.width)
-        );
-      });
-      if (!avatar) throw new Error('Missing sized contact avatar');
-      return getComputedStyle(avatar).width;
-    },
-    defaultSize: '44px',
-    small: '36px',
-    medium: '44px',
-    large: '44px',
   },
 ];
 it.each(subjects)(
@@ -160,5 +138,17 @@ it.each(['content', 'text bubble'] as const)(
     expect(padding()).toBe('10px');
     mount(<BloomScope size="sm">{content('md')}</BloomScope>);
     expect(padding()).toBe('12px');
+  },
+);
+
+it.each(['xs', 'sm', 'md', 'lg'] as const)(
+  'ListItem retains compact content geometry under control scope %s',
+  (size) => {
+    mount(
+      <BloomScope size={size}>
+        <ListItem person={{ name: 'Ana' }} testID="contact" />
+      </BloomScope>,
+    );
+    expect(getComputedStyle(element('[data-testid="contact"]')).minHeight).toBe('56px');
   },
 );

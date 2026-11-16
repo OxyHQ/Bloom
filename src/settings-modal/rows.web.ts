@@ -10,17 +10,13 @@
  * calendar in Metro, which does not tree-shake barrel exports.
  */
 export {
-  SettingsCard,
-  SettingsRow,
   SettingsSection,
   SettingsSectionLabel,
   SettingsValueField,
 } from './SettingsRows';
 export { SettingsSelect } from './SettingsSelect.web';
 export type {
-  SettingsCardProps,
   SettingsIcon,
-  SettingsRowProps,
   SettingsSectionLabelProps,
   SettingsSectionProps,
   SettingsSelectProps,

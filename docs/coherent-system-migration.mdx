@@ -6,7 +6,7 @@ order: 2
 
 # Coherent system migration
 
-This integration adds a shared vocabulary while retaining the current Button, field, Chip, Badge and AppShell APIs. The table shows the preferred spellings for new code, not a list of removed props. Explicit shared props win over compatibility presets. Existing AppShell variants, slots and drawer behavior remain supported; passing a navigation model selects the adaptive composition.
+This guide describes the shared vocabulary and earlier API migrations. Bloom 22 also removes duplicate button and list renderers: use the [Bloom 22 migration guide](./migrating-to-22.mdx) for the exact removed exports and entry points. Existing AppShell variants, slots and drawer behavior remain supported; passing a navigation model selects the adaptive composition.
 
 | Previous usage | Replacement |
 | --- | --- |
@@ -18,7 +18,7 @@ This integration adds a shared vocabulary while retaining the current Button, fi
 | Button `variant="text/link"` | `appearance="plain"`; add `href` for navigation |
 | `PrimaryButton`, `SecondaryButton`, `GhostButton`, `OutlineButton`, `TextButton`, `DestructiveButton`, `LinkButton` | `Button` with explicit semantic props |
 | `IconButton`, `iconOnly`, `size="icon"` | `Button icon={IconComponent}` with no children |
-| `InverseButton` | Explicit scoped colors or a themed surface; no implicit white control over unknown media |
+| `InverseButton` | `Button inverted` or explicit scoped colors |
 | Button `onClick` | `onPress` |
 | Button `aria-label` | `accessibilityLabel` |
 | Button `fullWidth` | `style={{ width: '100%' }}` or layout class |
@@ -31,11 +31,11 @@ This integration adds a shared vocabulary while retaining the current Button, fi
 | Radio/RadioCard `selected/onSelect` | `checked/onValueChange`; selection callback receives the option value |
 | SegmentedControl `onChange` | `onValueChange` |
 | DataTableSearch `onChangeText` | `onValueChange` |
-| Chip / ButtonGroupItem `selected`; FrostedIconButton `active` | `checked`; optionally use `onCheckedChange` for a controlled toggle. `onPress` remains the action callback |
+| Button `selected`; FrostedIconButton `active` / `checked` | `Button pressed` with `onPressedChange`; Chip keeps `checked` / `onCheckedChange`. `onPress` remains the action callback |
 | Card `variant="elevated/filled/outlined/plain"` | `appearance="solid/subtle/outline/plain"`; `elevation` remains an independent override |
-| FrostedIconButton icon element or `children` alias | `icon={IconComponent}`; size and active-state `tone` inherit from `BloomScope` |
+| FrostedIconButton | `Button appearance="outline" tone="neutral"`; `icon` accepts the glyph. Named sizes inherit `BloomScope`. |
 | Menu item `variant="default/destructive"` | `tone="neutral/danger"` |
-| ButtonGroup / ButtonGroupItem `variant="solid/glass"` or `material` | Removed; one shared Surface material. BloomScope supplies control size and tone |
+| Button.Group / Button `variant="solid/glass"` | Use semantic appearance/tone; the shared Surface owns material. `Button material="flat"` remains supported. |
 | ControlSurface `density="medium/small"` | BloomScope `size="md/sm"`; item heights remain 34/30 |
 | ThemeToggle `appearance`, `ThemeToggleAppearance` | Structural `variant`, `ThemeToggleVariant` |
 | FAB `placement/offset/zIndex/minimizeBehavior` | Still supported; prefer parent composition with `Screen` / `BottomBar` for new screens |

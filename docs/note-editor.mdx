@@ -64,7 +64,7 @@ published or shared note, so it is not drawn as if it were.
 
 ## NoteEditorToolbar
 
-One `ButtonGroup` of icon-only items, and — the moment they stop fitting — a `…`
+One `Button.Group` of icon-only items, and — the moment they stop fitting — a `…`
 item **fused onto the end of the same group** that opens the rest as a
 `DropdownMenu`. The overflow is not a second control beside the row; it is the
 row's last item, so the toolbar stays one object at every width.
@@ -74,7 +74,7 @@ toolbar in a 420px side panel of a 1440px desktop collapses exactly as it does o
 a phone. A window-width breakpoint leaves that panel overflowing with no error.
 
 The arithmetic is `toolbarCapacity(width, size)`, exported and pure: a solid
-`ButtonGroup` is `1px border + n items + (n-1) hairlines + 1px border`, so every
+`Button.Group` is `1px border + n items + (n-1) hairlines + 1px border`, so every
 item after the first costs `item + 1`. `splitToolbarActions` then applies the two
 rules that are the whole design:
 
@@ -113,10 +113,10 @@ the label, the glyph and whether the state is on.
 ## Traps
 
 - **Toolbar items are 34px tall (`md`) or 30 (`sm`)**, which is below the
-  44 a touch target wants. That is `ButtonGroup`'s scale, not this family's;
+  44 a touch target wants. That is `Button.Group`'s scale, not this family's;
   `hitSlop` is not the answer for adjacent items, because slop on one overlaps
   its neighbour and the press lands on whichever the platform hit-tests first.
-- **`ButtonGroupItem` writes `aria-pressed` on every item**, including one with
+- **`Button` writes `aria-pressed` on every item**, including one with
   no `active`. A non-toggle in the row therefore announces "not pressed". It is
   the base layer's spelling and this family does not work around it.
 - **`accessibilityLabel` on the toolbar is required in substance.** A row of

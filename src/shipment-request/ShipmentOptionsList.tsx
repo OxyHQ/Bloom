@@ -1,9 +1,9 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { View, type TextStyle } from 'react-native';
 
 import { Chip } from '../chip';
 import { useMessages } from '../locale/messages';
-import { SettingsListGroup, SettingsListItem } from '../settings-list';
+import { GroupedSection, GroupedSectionItem } from '../grouped-section';
 import { Switch } from '../switch';
 import { TextFieldLabel } from '../text-field';
 import { useTheme } from '../theme/use-theme';
@@ -18,7 +18,7 @@ import type { ShipmentOptionsListProps } from './types';
  *
  * Three groups, and the CONTROL is the difference between them:
  *
- *   extras  independent of each other, so each is a `SettingsListItem` with a
+ *   extras  independent of each other, so each is a `GroupedSectionItem` with a
  *           `Switch` and its own price at the end of the row. A switch is the
  *           control for "and also this"
  *   access  exactly one is true — a place is on the ground, up stairs, or has a
@@ -77,13 +77,13 @@ function ShipmentOptionsListComponent({
       {extras?.length ? (
         <View style={{ gap: 8 }} testID={id('extras')}>
           <TextFieldLabel>{labels.extras}</TextFieldLabel>
-          <SettingsListGroup>
+          <GroupedSection>
             {extras.map((extra) => {
               const on = chosen.has(extra.key);
               const blocked = disabled || extra.disabled === true;
               const name = joinShipmentName([extra.title, extra.description, extra.price]);
               return (
-                <SettingsListItem
+                <GroupedSectionItem
                   key={extra.key}
                   icon={
                     extra.icon ? (
@@ -114,7 +114,7 @@ function ShipmentOptionsListComponent({
                 />
               );
             })}
-          </SettingsListGroup>
+          </GroupedSection>
         </View>
       ) : null}
 

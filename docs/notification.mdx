@@ -44,7 +44,7 @@ import { Notification } from '@oxy.so/bloom/notification';
 | header | wraps; title body-medium text/primary, timestamp body-regular text/tertiary, gap 8 × 2 |
 | description | body-regular text/secondary; content column gap 4 |
 | actions | margin-top 6, gap 8, `Button size="sm"` — first `appearance="subtle" tone="neutral"`, the rest `appearance="solid" tone="accent"`, unless action props override them |
-| close | `CloseButton` xs (20px disc) at top 12 / right 12 |
+| close | dismiss `Button size={20}` (20px disc) at top 12 / right 12 |
 | countdown | 3px primary-colour bar along the bottom edge, shrinking linearly over `autoDismissDuration` |
 
 Buttons are full pills (Bloom's rule for button-like controls); everything else

@@ -1,5 +1,14 @@
 import { useSurfaceFill } from '../styles/surface-levels';
-import { type ReactNode, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import {
+  type ReactNode,
+  type ComponentRef,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -7,6 +16,8 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
+  withSpring,
+  cancelAnimation,
 } from 'react-native-reanimated';
 
 import { useTheme } from '../theme/use-theme';
@@ -28,6 +39,11 @@ import { useHapticFeedback } from '../hooks/use-haptics';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { webDataSet } from '../styles/web-data';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { canFullSwipe, fullSwipeThreshold } from './bubble-geometry';
+import { SwipeRowBubble } from './SwipeRowBubble';
+import { IS_WEB } from '../styles/platform';
+
+const BUBBLE_SPRING = { damping: 18, stiffness: 260, mass: 0.7 };
 
 /**
  * ONE drag affordance for every list row in this library.
@@ -74,6 +90,8 @@ import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
  * to its resting position instead of easing to it.
  */
 export function SwipeRow({
+  actionPresentation = 'panes',
+  fullSwipeAction,
   actions,
   onAction,
   height,
@@ -84,6 +102,7 @@ export function SwipeRow({
   closeLabel: closeLabelProp,
   onOpenChange,
   children,
+  style,
   testID,
 }: SwipeRowProps) {
   useInteractiveWebCss(
@@ -96,6 +115,39 @@ export function SwipeRow({
   const closeLabel = closeLabelProp ?? messages.closeActions;
   const theme = useTheme();
   const translateX = useSharedValue(0);
+  const rowWidth = useSharedValue(0);
+  const committing = useSharedValue(false);
+  const bubbles = actionPresentation === 'bubbles';
+  const host = useRef<ComponentRef<typeof View>>(null);
+  const suppressClick = useRef(false);
+  const [dragging, setDragging] = useState(false);
+  const beginDrag = useCallback(() => {
+    suppressClick.current = true;
+    setDragging(true);
+  }, []);
+  // RNW can synthesize a click after a mouse drag. Suppress that release only;
+  // a new pointer press or a keyboard activation remains an ordinary action.
+  useEffect(() => {
+    if (!bubbles || !IS_WEB) return;
+    const node = host.current as unknown as HTMLElement | null;
+    if (!node?.addEventListener) return;
+    const reset = () => {
+      suppressClick.current = false;
+    };
+    const click = (event: MouseEvent) => {
+      if (!suppressClick.current || event.detail === 0) return;
+      suppressClick.current = false;
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    node.addEventListener('pointerdown', reset, true);
+    node.addEventListener('click', click, true);
+    return () => {
+      node.removeEventListener('pointerdown', reset, true);
+      node.removeEventListener('click', click, true);
+    };
+  }, [bubbles]);
+  useEffect(() => () => cancelAnimation(translateX), [translateX]);
   const reducedMotion = usePrefersReducedMotion();
   const [open, setOpen] = useState<'left' | 'right' | null>(null);
   const [horizontalScrollers, setHorizontalScrollers] = useState(0);
@@ -115,6 +167,12 @@ export function SwipeRow({
   const right = actions.right ?? [];
   const leftWidth = left.length * actionWidth;
   const rightWidth = right.length * actionWidth;
+  const leftPrimary = bubbles
+    ? left.findIndex((action) => action.key === fullSwipeAction?.left)
+    : -1;
+  const rightPrimary = bubbles
+    ? right.findIndex((action) => action.key === fullSwipeAction?.right)
+    : -1;
 
   const openRef = useRef<'left' | 'right' | null>(null);
   const settle = useCallback(
@@ -136,23 +194,66 @@ export function SwipeRow({
   );
 
   const close = useCallback(() => {
-    translateX.value = reducedMotion ? 0 : withTiming(0, { duration: SWIPE_SNAP_DURATION });
+    setDragging(false);
+    committing.value = false;
+    translateX.value = reducedMotion
+      ? 0
+      : bubbles
+        ? withSpring(0, { ...BUBBLE_SPRING, overshootClamping: true })
+        : withTiming(0, { duration: SWIPE_SNAP_DURATION });
     settle(null);
-  }, [reducedMotion, settle, translateX]);
+  }, [bubbles, committing, reducedMotion, settle, translateX]);
+
+  // Keep the gesture identity stable when action objects change. Nested scrollers
+  // register against that gesture, while completion must read the current callbacks.
+  const completion = useRef({
+    left: left[leftPrimary],
+    right: right[rightPrimary],
+    close,
+    haptics,
+    onAction,
+  });
+  completion.current = {
+    left: left[leftPrimary],
+    right: right[rightPrimary],
+    close,
+    haptics,
+    onAction,
+  };
+  const completeSwipe = useCallback((side: 'left' | 'right') => {
+    const current = completion.current;
+    const action = current[side];
+    current.close();
+    if (!action) return;
+    current.haptics.tap();
+    action.onPress?.();
+    current.onAction?.(action.key);
+  }, []);
 
   const pan = useMemo(
     () =>
       Gesture.Pan()
         .activeOffsetX([-SWIPE_ACTIVATE_OFFSET, SWIPE_ACTIVATE_OFFSET])
         .failOffsetY([-SWIPE_ACTIVATE_OFFSET, SWIPE_ACTIVATE_OFFSET])
+        .onStart(() => {
+          'worklet';
+          if (bubbles && !committing.value) runOnJS(beginDrag)();
+        })
         .onChange((event) => {
           'worklet';
+          if (committing.value) return;
           const next = translateX.value + event.changeX;
-          translateX.value = Math.max(-rightWidth, Math.min(leftWidth, next));
+          const maxLeft = canFullSwipe(rowWidth.value, leftWidth, leftPrimary >= 0)
+            ? rowWidth.value
+            : leftWidth;
+          const maxRight = canFullSwipe(rowWidth.value, rightWidth, rightPrimary >= 0)
+            ? rowWidth.value
+            : rightWidth;
+          translateX.value = Math.max(-maxRight, Math.min(maxLeft, next));
         })
         .onEnd((_event, success) => {
           'worklet';
-          if (!success) return;
+          if (!success || committing.value) return;
           const travelled = Math.abs(translateX.value);
           if (travelled < SWIPE_TAP_SLOP) {
             translateX.value = 0;
@@ -161,20 +262,54 @@ export function SwipeRow({
           }
           const opening = translateX.value > 0 ? 'left' : 'right';
           const full = opening === 'left' ? leftWidth : rightWidth;
+          const primary = opening === 'left' ? leftPrimary : rightPrimary;
+          if (
+            canFullSwipe(rowWidth.value, full, primary >= 0) &&
+            travelled >= fullSwipeThreshold(rowWidth.value, full)
+          ) {
+            committing.value = true;
+            const target = opening === 'left' ? rowWidth.value : -rowWidth.value;
+            if (reducedMotion) {
+              translateX.value = target;
+              runOnJS(completeSwipe)(opening);
+            } else {
+              translateX.value = withTiming(target, { duration: 220 }, (finished) => {
+                if (finished) runOnJS(completeSwipe)(opening);
+              });
+            }
+            return;
+          }
           const commit = travelled >= full * SWIPE_COMMIT_FRACTION && full > 0;
           const target = commit ? (opening === 'left' ? leftWidth : -rightWidth) : 0;
           translateX.value = reducedMotion
             ? target
-            : withTiming(target, { duration: SWIPE_SNAP_DURATION });
+            : bubbles
+              ? withSpring(target, BUBBLE_SPRING)
+              : withTiming(target, { duration: SWIPE_SNAP_DURATION });
           runOnJS(settleSwipe)(commit ? opening : null);
         })
         .onFinalize((_event, success) => {
           'worklet';
-          if (success) return;
+          if (bubbles && !committing.value) runOnJS(setDragging)(false);
+          if (success || committing.value) return;
           translateX.value = reducedMotion ? 0 : withTiming(0, { duration: SWIPE_SNAP_DURATION });
           runOnJS(settle)(null);
         }),
-    [leftWidth, reducedMotion, rightWidth, settle, settleSwipe, translateX],
+    [
+      beginDrag,
+      bubbles,
+      committing,
+      completeSwipe,
+      leftPrimary,
+      leftWidth,
+      reducedMotion,
+      rightPrimary,
+      rightWidth,
+      rowWidth,
+      settle,
+      settleSwipe,
+      translateX,
+    ],
   );
 
   const scrollContext = useMemo(
@@ -207,9 +342,32 @@ export function SwipeRow({
         flexDirection: 'row',
       }}
     >
-      {list.map((action) => {
+      {list.map((action, index) => {
         const tone = swipeActionPaint(action, tones);
         const Icon = action.icon;
+        if (bubbles)
+          return (
+            <SwipeRowBubble
+              key={action.key}
+              action={action}
+              side={side}
+              index={index}
+              count={list.length}
+              primary={side === 'left' ? leftPrimary : rightPrimary}
+              actionWidth={actionWidth}
+              translateX={translateX}
+              rowWidth={rowWidth}
+              background={tone.background}
+              foreground={tone.foreground}
+              open={open === side}
+              onPress={() => {
+                action.onPress?.();
+                onAction?.(action.key);
+                close();
+              }}
+              testID={testID ? `${testID}-action-${action.key}` : undefined}
+            />
+          );
         return (
           <Pressable
             key={action.key}
@@ -250,12 +408,24 @@ export function SwipeRow({
 
   return (
     <View
-      style={{
-        position: 'relative',
-        ...(height === undefined ? null : { height }),
-        borderRadius: radius,
-        overflow: 'hidden',
-      }}
+      ref={host}
+      {...(bubbles ? webDataSet({ bloomSwipeActive: String(dragging || open !== null) }) : {})}
+      onLayout={
+        bubbles
+          ? (event) => {
+              rowWidth.value = event.nativeEvent.layout.width;
+            }
+          : undefined
+      }
+      style={[
+        {
+          position: 'relative',
+          ...(height === undefined ? null : { height }),
+          borderRadius: radius,
+          overflow: 'hidden',
+        },
+        style,
+      ]}
       testID={testID}
     >
       {leftWidth > 0 ? (
@@ -285,7 +455,11 @@ export function SwipeRow({
       <GestureDetector gesture={pan} touchAction={horizontalScrollers > 0 ? 'auto' : 'pan-y'}>
         <Animated.View
           {...webDataSet({ bloomSwipeContent: '' })}
-          style={[{ backgroundColor: rowFill }, height === undefined ? null : { height }, rowStyle]}
+          style={[
+            { backgroundColor: rowFill, borderRadius: bubbles ? radius : 0 },
+            height === undefined ? null : { height },
+            rowStyle,
+          ]}
         >
           <SwipeRowScrollContext.Provider value={scrollContext}>
             {children}

@@ -1,4 +1,4 @@
-import React, { memo, useInsertionEffect, useState } from 'react';
+import { memo, useInsertionEffect, useState } from 'react';
 import { View } from 'react-native';
 
 import { PageFooter } from '../page-footer';
@@ -36,13 +36,7 @@ const WIZARD_FOOTER_CSS = `
 }
 `;
 
-export function createWizardFooter({
-  Button,
-  LinkButton,
-}: {
-  Button: typeof import('../button')['Button'];
-  LinkButton: typeof import('../button')['LinkButton'];
-}) {
+export function createWizardFooter({ Button }: { Button: typeof import('../button')['Button'] }) {
   function WizardFooterComponent({
     onBack,
     backLabel: backLabelProp,
@@ -106,7 +100,8 @@ export function createWizardFooter({
         >
           {onBack ? (
             <View>
-              <LinkButton
+              <Button
+                appearance="plain"
                 linkTone="text"
                 underline="rest"
                 size="sm"
@@ -117,7 +112,7 @@ export function createWizardFooter({
                 testID={testID ? `${testID}-back` : undefined}
               >
                 {backLabel}
-              </LinkButton>
+              </Button>
             </View>
           ) : (
             <View />

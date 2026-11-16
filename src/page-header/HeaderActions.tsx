@@ -1,10 +1,9 @@
 import { ScrollArea } from '../layout/ScrollArea';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { Button } from '../button';
 import * as Menu from '../dropdown-menu';
 import { createHeaderActions } from './HeaderActionsBase';
 export const HeaderActions = createHeaderActions({
   ScrollArea,
-  ButtonGroup,
-  ButtonGroupItem,
+  Button,
   ...Menu,
 });

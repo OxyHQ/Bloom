@@ -5,7 +5,7 @@
  * assertions read the emitted DOM — plus the pure colour and title-size maths
  * walked over every preset, mode and a sweep of artwork colours.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -555,18 +555,29 @@ describe('FollowButton', () => {
 // ---------------------------------------------------------------------------
 
 describe('StickyMediaTopBar', () => {
-  it('fills with the band colour and names its play button by the title', () => {
+  it('uses the shared header scrim in the band colour and names its play button', () => {
     mount(
       <StickyMediaTopBar title="Moss" playing={false} artworkColor="#1f3b73" visible testID="t" />,
     );
     const paint = resolveMediaHeaderPaint(theme, '#1f3b73');
-    expect(byTestId('t').style.height).toBe('64px');
+    expect(byTestId('t').style.height).toBe('');
     expect(byTestId('t-play').getAttribute('aria-label')).toBe('Play Moss');
-    // The fill is its own layer under the content, so the bar can fade it
-    // without fading the material play button's ancestors.
-    const fill = byTestId('t').firstElementChild?.firstElementChild as HTMLElement;
-    expect(fill.style.backgroundColor).toBe(normalise(paint.bar));
+    // The shared header owns the gradient; the material control has no faded ancestor.
+    expect(byTestId('t-header').hasAttribute('data-bloom-page-header')).toBe(true);
+    const stops = Array.from(byTestId('t-header').querySelectorAll('stop'));
+    expect(stops.length).toBeGreaterThan(0);
+    expect(
+      stops.every(
+        (stop) => (stop.getAttribute('stop-color') ?? stop.getAttribute('stopColor')) === paint.bar,
+      ),
+    ).toBe(true);
     expect(byTestId('t').style.opacity).toBe('');
+  });
+
+  it('respects an explicit host height without changing the default control scale', () => {
+    mount(<StickyMediaTopBar title="Moss" playing={false} visible height={80} testID="t" />);
+    expect(byTestId('t').style.height).toBe('80px');
+    expect(byTestId('t-play').getAttribute('aria-label')).toBe('Play Moss');
   });
 
   it('hides itself from assistive tech and the pointer below half progress', () => {

@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -292,7 +293,7 @@ function MapDemo() {
                 setVisited((v) => new Set(v).add(current.id));
                 setActive(null);
               }}
-              onPress={() => {}}
+              onPress={fn().mockName('MapListingPreview.onPress')}
               testID="preview"
             />
           </View>
@@ -369,8 +370,8 @@ function StatesBody() {
         {caption('Search pill — toggle · button · disabled')}
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 16 }}>
           <MapSearchAreaButton variant="toggle" checked={checked} onCheckedChange={setChecked} />
-          <MapSearchAreaButton onPress={() => {}} />
-          <MapSearchAreaButton onPress={() => {}} disabled />
+          <MapSearchAreaButton onPress={fn().mockName('MapSearchAreaButton.onPress')} />
+          <MapSearchAreaButton onPress={fn().mockName('MapSearchAreaButton.onPress')} disabled />
         </View>
         {caption('Preview card — vertical · compact · no photo, new')}
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start', gap: 24 }}>
@@ -385,8 +386,8 @@ function StatesBody() {
             priceDetail="night"
             favorite={favorite}
             onFavoriteChange={setFavorite}
-            onClose={() => {}}
-            onPress={() => {}}
+            onClose={fn().mockName('Cabin by the pines with a very long name.onClose')}
+            onPress={fn().mockName('Cabin by the pines with a very long name.onPress')}
           />
           <View style={{ gap: 24 }}>
             <MapListingPreview
@@ -400,8 +401,8 @@ function StatesBody() {
               priceDetail="night"
               favorite={favorite}
               onFavoriteChange={setFavorite}
-              onClose={() => {}}
-              onPress={() => {}}
+              onClose={fn().mockName('Studio over the harbour.onClose')}
+              onPress={fn().mockName('Studio over the harbour.onPress')}
             />
             <MapListingPreview
               layout="compact"
@@ -410,8 +411,8 @@ function StatesBody() {
               subtitle="Private room · 1 bed"
               price="€64"
               priceDetail="night"
-              onClose={() => {}}
-              onPress={() => {}}
+              onClose={fn().mockName('Garden room.onClose')}
+              onPress={fn().mockName('Garden room.onPress')}
             />
           </View>
         </View>
@@ -419,15 +420,3 @@ function StatesBody() {
     );
   }
 }
-
-/** The map in dark mode. */
-export const Dark: Story = {
-  globals: { theme: 'dark' },
-  render: () => <MapDemo />,
-};
-
-/** Every state in dark mode. */
-export const DarkStates: Story = {
-  globals: { theme: 'dark' },
-  render: () => <StatesBody />,
-};

@@ -25,7 +25,7 @@ import { Button } from '../button/Button.web';
 import { Checkbox } from '../checkbox';
 import { Chip } from '../chip';
 import { Fab } from '../fab/Fab.web';
-import { FrostedIconButton } from '../frosted-icon-button/FrostedIconButton.web';
+
 import { NOT_DISABLED, interactiveWebCss } from '../styles/interactive-web-css';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -60,7 +60,15 @@ const FAMILIES = [
     styleId: 'bloom-button-web-css',
     selector: '.bloom-btn',
     varPrefix: 'bloom-btn',
-    element: <FrostedIconButton accessibilityLabel="Back" icon={() => <span />} />,
+    element: (
+      <Button
+        appearance="outline"
+        tone="neutral"
+        iconOnly
+        accessibilityLabel="Back"
+        icon={() => <span />}
+      />
+    ),
   },
   {
     name: 'Chip',

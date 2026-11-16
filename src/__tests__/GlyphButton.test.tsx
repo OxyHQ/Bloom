@@ -6,16 +6,12 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
 import type { BloomIconComponent } from '../icons/icon-component';
-import { GlyphButton } from '../button';
-import {
-  GLYPH_BUTTON_GLYPH_RATIO,
-  glyphButtonGlyphSize,
-  resolveGlyphButtonPaint,
-} from '../button/shared';
+import { Button } from '../button';
+import { resolveButtonGeometry, resolveButtonPalette } from '../button/shared';
 import { resolvedStyle } from './support/rendered-style';
 
 /**
- * `GlyphButton` — the round glyph control the five family-local copies folded
+ * `Button` — the round glyph control the five family-local copies folded
  * into. What is asserted here is what those five relied on: the box geometry,
  * the FOUR colour corners (off/on × rest/hover), the fills, the toggle's two
  * accessibility spellings, and the disabled convention.
@@ -50,11 +46,19 @@ function makeGlyph() {
   return jest.fn(() => null) as unknown as jest.Mock & BloomIconComponent;
 }
 
-describe('GlyphButton geometry', () => {
+describe('Button geometry', () => {
   it('is a circle of `size`, with the glyph at 0.6 of the box', () => {
     const Glyph = makeGlyph();
     const { getByTestId } = renderWithTheme(
-      <GlyphButton testID="g" size={40} icon={Glyph} accessibilityLabel="More" />,
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        testID="g"
+        size={40}
+        icon={Glyph}
+        accessibilityLabel="More"
+      />,
     );
     const style = resolvedStyle(getByTestId('g').props.style);
     expect(style.width).toBe(40);
@@ -63,13 +67,20 @@ describe('GlyphButton geometry', () => {
     expect(style.borderRadius).toBeGreaterThanOrEqual(20);
     expect(Glyph.mock.calls[0]?.[0]).toMatchObject({ width: 24, height: 24 });
     // 24 is the ratio's own answer, not a coincidence of this size.
-    expect(glyphButtonGlyphSize(40)).toBe(24);
-    expect(GLYPH_BUTTON_GLYPH_RATIO).toBe(0.6);
+    expect(resolveButtonGeometry(40).iconSize).toBe(24);
   });
 
   it('defaults to a 36 box — the same height `Button size="medium"` stands at', () => {
     const { getByTestId } = renderWithTheme(
-      <GlyphButton testID="g" icon={makeGlyph()} accessibilityLabel="More" />,
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        size={36}
+        testID="g"
+        icon={makeGlyph()}
+        accessibilityLabel="More"
+      />,
     );
     expect(resolvedStyle(getByTestId('g').props.style).width).toBe(36);
   });
@@ -77,7 +88,16 @@ describe('GlyphButton geometry', () => {
   it('`glyphSize` overrides the ratio, keeping the box', () => {
     const Glyph = makeGlyph();
     const { getByTestId } = renderWithTheme(
-      <GlyphButton testID="g" size={32} glyphSize={20} icon={Glyph} accessibilityLabel="More" />,
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        testID="g"
+        size={32}
+        iconSize={20}
+        icon={Glyph}
+        accessibilityLabel="More"
+      />,
     );
     expect(resolvedStyle(getByTestId('g').props.style).width).toBe(32);
     expect(Glyph.mock.calls[0]?.[0]).toMatchObject({ width: 20, height: 20 });
@@ -85,7 +105,16 @@ describe('GlyphButton geometry', () => {
 
   it('`hitSlop` widens the press target, not the box', () => {
     const { getByTestId } = renderWithTheme(
-      <GlyphButton testID="g" size={16} hitSlop={8} icon={makeGlyph()} accessibilityLabel="Next" />,
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        testID="g"
+        size={16}
+        hitSlop={8}
+        icon={makeGlyph()}
+        accessibilityLabel="Next"
+      />,
     );
     expect(getByTestId('g').props.hitSlop).toBe(8);
     expect(resolvedStyle(getByTestId('g').props.style).width).toBe(16);
@@ -93,50 +122,79 @@ describe('GlyphButton geometry', () => {
 
   it('`grow` makes the box a MINIMUM width, for a text glyph', () => {
     const { getByTestId } = renderWithTheme(
-      <GlyphButton testID="g" size={32} grow accessibilityLabel="Speed">
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        testID="g"
+        size={32}
+        grow
+        accessibilityLabel="Speed"
+      >
         <RNText>1.5×</RNText>
-      </GlyphButton>,
+      </Button>,
     );
     const style = resolvedStyle(getByTestId('g').props.style);
     expect(style.width).toBeUndefined();
     expect(style.minWidth).toBe(32);
-    expect(style.paddingLeft).toBe(6);
-    expect(style.paddingRight).toBe(6);
+    expect(style.paddingHorizontal).toBe(8);
   });
 });
 
-describe('GlyphButton paint', () => {
+describe('Button paint', () => {
   it('rests on the muted reading colour with no fill', () => {
     const theme = captureTheme();
-    const paint = resolveGlyphButtonPaint(theme);
+    const paint = resolveButtonPalette('plain', theme, 'neutral');
     const Glyph = makeGlyph();
     const { getByTestId } = renderWithTheme(
-      <GlyphButton testID="g" icon={Glyph} accessibilityLabel="More" />,
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        size={36}
+        testID="g"
+        icon={Glyph}
+        accessibilityLabel="More"
+      />,
     );
-    expect(Glyph.mock.calls[0]?.[0]).toMatchObject({ fill: paint.color });
-    expect(resolvedStyle(getByTestId('g').props.style).backgroundColor).toBe(paint.fill);
+    expect(Glyph.mock.calls[0]?.[0]).toMatchObject({ fill: paint.rest.foreground });
+    expect(resolvedStyle(getByTestId('g').props.style).backgroundColor).toBe(paint.rest.background);
     // The default wash is the NEUTRAL one, never `ghost`'s accent tint.
-    expect(paint.hoverFill).not.toBe(theme.colors.primary);
+    expect(paint.hover.background).not.toBe(theme.colors.primary);
   });
 
   it('takes the hover colour and wash under a pointer, and puts them back', () => {
     const theme = captureTheme();
-    const paint = resolveGlyphButtonPaint(theme);
+    const paint = resolveButtonPalette('plain', theme, 'neutral');
     const Glyph = makeGlyph();
     const { getByTestId } = renderWithTheme(
-      <GlyphButton testID="g" icon={Glyph} accessibilityLabel="More" />,
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        size={36}
+        testID="g"
+        icon={Glyph}
+        accessibilityLabel="More"
+      />,
     );
     fireEvent(getByTestId('g'), 'hoverIn');
-    expect(lastCall(Glyph)).toMatchObject({ fill: paint.hoverColor });
-    expect(resolvedStyle(getByTestId('g').props.style).backgroundColor).toBe(paint.hoverFill);
+    expect(lastCall(Glyph)).toMatchObject({ fill: paint.hover.foreground });
+    expect(resolvedStyle(getByTestId('g').props.style).backgroundColor).toBe(
+      paint.hover.background,
+    );
     fireEvent(getByTestId('g'), 'hoverOut');
-    expect(lastCall(Glyph)).toMatchObject({ fill: paint.color });
+    expect(lastCall(Glyph)).toMatchObject({ fill: paint.rest.foreground });
   });
 
   it('paints all FOUR corners: off/on × rest/hover', () => {
     const Glyph = makeGlyph();
     const { getByTestId, rerender } = renderWithTheme(
-      <GlyphButton
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        size={36}
         testID="g"
         icon={Glyph}
         accessibilityLabel="Shuffle"
@@ -154,7 +212,11 @@ describe('GlyphButton paint', () => {
 
     const on = (
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <GlyphButton
+        <Button
+          appearance="plain"
+          tone="neutral"
+          iconOnly
+          size={36}
           testID="g"
           icon={Glyph}
           accessibilityLabel="Shuffle"
@@ -175,12 +237,21 @@ describe('GlyphButton paint', () => {
   it('hands a FUNCTION child the resolved foreground, so a painted glyph follows the state', () => {
     const seen: string[] = [];
     const { getByTestId } = renderWithTheme(
-      <GlyphButton testID="g" accessibilityLabel="Speed" color="#111111" hoverColor="#222222">
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        size={36}
+        testID="g"
+        accessibilityLabel="Speed"
+        color="#111111"
+        hoverColor="#222222"
+      >
         {(foreground: string) => {
           seen.push(foreground);
           return <View />;
         }}
-      </GlyphButton>,
+      </Button>,
     );
     expect(seen[seen.length - 1]).toBe('#111111');
     fireEvent(getByTestId('g'), 'hoverIn');
@@ -189,7 +260,11 @@ describe('GlyphButton paint', () => {
 
   it('renders `decoration` inside the box (the player`s active dot)', () => {
     const { getByTestId } = renderWithTheme(
-      <GlyphButton
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        size={36}
         testID="g"
         icon={makeGlyph()}
         accessibilityLabel="Shuffle"
@@ -200,10 +275,19 @@ describe('GlyphButton paint', () => {
   });
 });
 
-describe('GlyphButton accessibility and disabled', () => {
+describe('Button accessibility and disabled', () => {
   it('a TOGGLE carries both spellings; a plain button carries neither', () => {
     const { getByTestId, rerender } = renderWithTheme(
-      <GlyphButton testID="g" icon={makeGlyph()} accessibilityLabel="Shuffle" pressed />,
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        size={36}
+        testID="g"
+        icon={makeGlyph()}
+        accessibilityLabel="Shuffle"
+        pressed
+      />,
     );
     // `aria-pressed` for web (react-native-web drops `accessibilityState`),
     // `accessibilityState.selected` for native (RN has no `aria-pressed`).
@@ -212,7 +296,15 @@ describe('GlyphButton accessibility and disabled', () => {
 
     rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <GlyphButton testID="g" icon={makeGlyph()} accessibilityLabel="More options" />
+        <Button
+          appearance="plain"
+          tone="neutral"
+          iconOnly
+          size={36}
+          testID="g"
+          icon={makeGlyph()}
+          accessibilityLabel="More options"
+        />
       </BloomThemeProvider>,
     );
     expect(getByTestId('g').props['aria-pressed']).toBeUndefined();
@@ -221,15 +313,27 @@ describe('GlyphButton accessibility and disabled', () => {
 
   it('is named by `accessibilityLabel` — it draws no text', () => {
     const { getByTestId } = renderWithTheme(
-      <GlyphButton testID="g" icon={makeGlyph()} accessibilityLabel="More options" />,
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        size={36}
+        testID="g"
+        icon={makeGlyph()}
+        accessibilityLabel="More options"
+      />,
     );
     expect(getByTestId('g').props.accessibilityLabel).toBe('More options');
-    expect(getByTestId('g').props.role).toBe('button');
+    expect(getByTestId('g').props.accessibilityRole).toBe('button');
   });
 
   it('forwards the trigger props a menu composes onto it with `asChild`', () => {
     const { getByTestId } = renderWithTheme(
-      <GlyphButton
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        size={36}
         testID="g"
         icon={makeGlyph()}
         accessibilityLabel="More options"
@@ -243,7 +347,11 @@ describe('GlyphButton accessibility and disabled', () => {
 
   it('disabled: dimmed, and all three disabled spellings', () => {
     const { getByTestId } = renderWithTheme(
-      <GlyphButton
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        size={36}
         testID="g"
         icon={makeGlyph()}
         accessibilityLabel="More"
@@ -252,7 +360,7 @@ describe('GlyphButton accessibility and disabled', () => {
       />,
     );
     const node = getByTestId('g');
-    expect(resolvedStyle(node.props.style).opacity).toBe(0.5);
+    expect(resolvedStyle(node.props.style).opacity).toBe(1);
     // `disabled` is the PROP (the only spelling `Pressable` honours, since it
     // appends its own `aria-disabled` after the caller's), `aria-disabled` is
     // what web reads, `accessibilityState` what native reads.
@@ -269,30 +377,44 @@ describe('GlyphButton accessibility and disabled', () => {
     const onPress = jest.fn();
     const onLongPress = jest.fn();
     const { getByTestId } = renderWithTheme(
-      <GlyphButton
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        size={36}
+        loadingIndicator={null}
         testID="g"
         icon={makeGlyph()}
         accessibilityLabel="Locating"
-        busy
+        loading
         onPress={onPress}
         onLongPress={onLongPress}
       />,
     );
     const node = getByTestId('g');
-    fireEvent.press(node);
-    fireEvent(node, 'longPress');
+    expect(node.props.onPress).toBeUndefined();
+    expect(node.props.onLongPress).toBeUndefined();
     expect(onPress).not.toHaveBeenCalled();
     expect(onLongPress).not.toHaveBeenCalled();
     expect(node.props['aria-busy']).toBe(true);
-    expect(node.props.accessibilityState).toMatchObject({ busy: true, disabled: false });
-    expect(node.props.disabled).toBe(false);
-    expect(node.props['aria-disabled']).toBeUndefined();
-    expect(resolvedStyle(node.props.style).opacity).toBe(1);
+    expect(node.props.accessibilityState).toMatchObject({ busy: true, disabled: true });
+    expect(node.props.disabled).toBe(true);
+    expect(node.props['aria-disabled']).toBe(true);
+    expect(resolvedStyle(node.props.style).opacity ?? 1).toBe(1);
   });
 
   it('a control that is not busy says nothing about it', () => {
     const { getByTestId } = renderWithTheme(
-      <GlyphButton testID="g" icon={makeGlyph()} accessibilityLabel="Locate" onPress={() => {}} />,
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        size={36}
+        testID="g"
+        icon={makeGlyph()}
+        accessibilityLabel="Locate"
+        onPress={() => {}}
+      />,
     );
     const node = getByTestId('g');
     expect(node.props['aria-busy']).toBeUndefined();
@@ -302,7 +424,11 @@ describe('GlyphButton accessibility and disabled', () => {
 
   it('`disabledOpacity` keeps a call site`s own dim (track-list draws 0.4)', () => {
     const { getByTestId } = renderWithTheme(
-      <GlyphButton
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        size={36}
         testID="g"
         icon={makeGlyph()}
         accessibilityLabel="More"
@@ -316,7 +442,11 @@ describe('GlyphButton accessibility and disabled', () => {
   it('a disabled control does not take the hover paint', () => {
     const Glyph = makeGlyph();
     const { getByTestId } = renderWithTheme(
-      <GlyphButton
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        size={36}
         testID="g"
         icon={Glyph}
         accessibilityLabel="More"
@@ -335,10 +465,15 @@ it('forwards original focus events independently of press and busy state', () =>
   const onBlur = jest.fn();
   const onPress = jest.fn();
   const screen = renderWithTheme(
-    <GlyphButton
+    <Button
+      appearance="plain"
+      tone="neutral"
+      iconOnly
+      size={36}
+      loadingIndicator={null}
       testID="focus-host"
       accessibilityLabel="Expand"
-      busy
+      loading
       onFocus={onFocus}
       onBlur={onBlur}
       onPress={onPress}

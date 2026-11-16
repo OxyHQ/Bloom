@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import { AppShell } from '../app-shell';
+import { fn } from 'storybook/test';
+import type React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import { Button } from '../button';
 import { Avatar } from '../avatar';
 import { BottomSheet } from '../bottom-sheet';
 import { Card, CardBody } from '../card';
@@ -56,7 +60,7 @@ const LINES: CartLineEntry[] = [
   },
 ];
 
-const SUMMARY: PriceLine[] = [
+const _SUMMARY: PriceLine[] = [
   { id: 'subtotal', label: 'Subtotal', sublabel: '4 items', amount: '€51.80' },
   { id: 'delivery', label: 'Delivery', sublabel: '1.2 km', amount: '€1.90' },
   { id: 'service', label: 'Service fee', amount: '€1.30', tone: 'muted' },
@@ -92,10 +96,39 @@ function useBasket() {
   const [code, setCode] = useState('');
   const [applied, setApplied] = useState<string | undefined>('FIRSTBITE');
   const [error, setError] = useState<string | null>(null);
+  const subtotal = lines.reduce((sum, line) => sum + Number(line.price.replace('€', '')), 0);
+  const tipAmount = Number(tip === 'none' ? 0 : (tip ?? 0));
+  const total = subtotal + (lines.length ? 3.2 : 0) + tipAmount - (applied && lines.length ? 5 : 0);
+  const amount = (value: number) => `€${Math.max(0, value).toFixed(2)}`;
   return {
     lines,
+    summary: {
+      lines: [
+        { id: 'subtotal', label: 'Subtotal', amount: amount(subtotal) },
+        { id: 'fees', label: 'Delivery and service', amount: amount(lines.length ? 3.2 : 0) },
+        { id: 'tip', label: 'Courier tip', amount: amount(tipAmount) },
+        ...(applied && lines.length
+          ? [{ id: 'promo', label: applied, amount: '−€5.00', tone: 'discount' as const }]
+          : []),
+      ],
+      total: { label: 'Total', amount: amount(total) },
+    },
     onLineQuantityChange: (id: string, quantity: number) =>
-      setLines((current) => current.map((l) => (l.id === id ? { ...l, quantity } : l))),
+      setLines((current) =>
+        current.map((l) =>
+          l.id === id
+            ? {
+                ...l,
+                quantity,
+                price: amount(
+                  (Number(LINES.find((entry) => entry.id === id)?.price.replace('€', '')) /
+                    (LINES.find((entry) => entry.id === id)?.quantity ?? 1)) *
+                    quantity,
+                ),
+              }
+            : l,
+        ),
+      ),
     onLineRemove: (id: string) => setLines((current) => current.filter((l) => l.id !== id)),
     tip: {
       options: TIPS,
@@ -126,6 +159,7 @@ function useBasket() {
 export const Panel: Story = {
   render: function PanelStory() {
     const basket = useBasket();
+    const [checkout, setCheckout] = useState(false);
     return (
       <Page>
         <Section title="Inline — a desktop sidebar">
@@ -136,15 +170,17 @@ export const Panel: Story = {
                   vendorName="Fig & Ember"
                   vendorPhoto={photo('fig-ember')}
                   vendorMeta="25–35 min · €1.90 delivery"
-                  onPressVendor={() => undefined}
                   {...basket}
-                  summary={{
-                    lines: SUMMARY,
-                    total: { label: 'Total', amount: '€52.00', note: 'Includes taxes' },
-                  }}
-                  onCheckout={() => undefined}
+                  summary={basket.summary}
+                  onCheckout={() => setCheckout(true)}
                   testID="cart"
                 />
+                {checkout ? (
+                  <View style={{ gap: 8 }}>
+                    <Text>Demo checkout ready.</Text>
+                    <Button onPress={() => setCheckout(false)}>Back to basket</Button>
+                  </View>
+                ) : null}
               </CardBody>
             </Card>
           </View>
@@ -182,7 +218,7 @@ export const UnderMinimum: Story = {
                     lines: [{ id: 'subtotal', label: 'Subtotal', amount: '€9.50' }],
                     total: { label: 'Total', amount: '€9.50', state: 'estimated' },
                   }}
-                  onCheckout={() => undefined}
+                  onCheckout={fn().mockName('onCheckout')}
                   checkoutDisabled
                   testID="cart-min"
                 />
@@ -220,12 +256,13 @@ export const Empty: Story = {
 
 /** The same content on a phone: a `BottomSheet` holds it. */
 export const InASheet: Story = {
-  parameters: { viewport: { defaultViewport: 'mobile1' } },
   render: function InASheetStory() {
     const basket = useBasket();
+    const [open, setOpen] = useState(true);
     return (
-      <View style={{ height: 760 }}>
-        <BottomSheet open onDismiss={() => undefined}>
+      <AppShell header={null} scroll="fixed" contentMaxWidth="none">
+        <Button onPress={() => setOpen(true)}>Open basket</Button>
+        <BottomSheet open={open} onDismiss={() => setOpen(false)}>
           <View style={{ padding: 16, paddingBottom: 32 }}>
             <CartPanel
               vendorName="Fig & Ember"
@@ -233,17 +270,13 @@ export const InASheet: Story = {
               vendorMeta="25–35 min · €1.90 delivery"
               density="compact"
               {...basket}
-              summary={{
-                lines: SUMMARY,
-                total: { label: 'Total', amount: '€52.00' },
-                collapsible: true,
-              }}
-              onCheckout={() => undefined}
+              summary={{ ...basket.summary, collapsible: true }}
+              onCheckout={() => setOpen(false)}
               testID="cart-sheet"
             />
           </View>
         </BottomSheet>
-      </View>
+      </AppShell>
     );
   },
 };

@@ -8,7 +8,6 @@ import type { BloomIconRenderer } from '../icons/render-icon';
 import type { AriaAttributes, ReactNode } from 'react';
 import type {
   GestureResponderEvent,
-  Insets,
   FocusEvent as NativeFocusEvent,
   MouseEvent as NativeMouseEvent,
   LayoutChangeEvent,
@@ -30,6 +29,10 @@ export type ButtonFocusEvent = NativeFocusEvent | React.FocusEvent<HTMLElement>;
 export type ButtonHoverEvent = NativeMouseEvent | React.PointerEvent<HTMLElement>;
 
 export interface ButtonProps {
+  /** False renders the same visual as decoration, without focus or interaction. A label names it as an image. */
+  interactive?: boolean;
+  /** Announces background work without blocking presses. `loading` also announces busy and blocks interaction. */
+  'aria-busy'?: boolean;
   /** Focus lifecycle on the interactive host; does not activate the button. */
   onFocus?: (event: ButtonFocusEvent) => void;
   onBlur?: (event: ButtonFocusEvent) => void;
@@ -42,12 +45,33 @@ export interface ButtonProps {
   importantForAccessibility?: ViewProps['importantForAccessibility'];
   /** Explicit paired brand fill and label; preserves semantic geometry. */
   colors?: { background: string; foreground: string };
+  /** Swap the theme background and foreground for a high-contrast action. */
+  inverted?: boolean;
+  /** Optional state colours for controls over artwork or branded surfaces. */
+  color?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  activeHoverColor?: string;
+  fill?: string;
+  hoverFill?: string;
+  ring?: string;
+  disabledOpacity?: number;
+  /** A numeric size is an explicit control diameter; grow keeps it as a minimum width. */
+  grow?: boolean;
+  paddingHorizontal?: number;
+  /** Changes pulse the content without moving or remounting the press target. */
+  attention?: number;
+  decoration?: ReactNode;
+  /** Override the loading glyph; null keeps caller-rendered busy content visible. */
+  loadingIndicator?: ReactNode;
   /** Preview lifecycle; activation remains onPress. */
   onPressIn?: () => void;
   onPressOut?: () => void;
   onLongPress?: (event: GestureResponderEvent) => void;
   /** Toggle state, announced on web and native. Omit for ordinary actions. */
   pressed?: boolean;
+  /** Controlled toggle callback. Works for both standalone and grouped buttons. */
+  onPressedChange?: (pressed: boolean) => void;
   /** Keep an embedded action from also activating its parent. Default false. */
   stopPropagation?: boolean;
   appearance?: BloomAppearance;
@@ -57,10 +81,10 @@ export interface ButtonProps {
   leading?: ReactNode;
   trailing?: ReactNode;
   onPress?: (event: GestureResponderEvent) => void;
-  children?: React.ReactNode;
+  children?: React.ReactNode | ((foreground: string) => React.ReactNode);
   disabled?: boolean;
 
-  size?: ButtonSize;
+  size?: ButtonSize | number;
   /** Explicit override of the nearest BloomScope's contextual action geometry. */
   density?: BloomControlDensity;
   style?: StyleProp<ViewStyle>;
@@ -309,147 +333,20 @@ export type ButtonLinkTone = 'primary' | 'secondary' | 'text';
 /** When {@link ButtonProps.underline} draws the label's underline. */
 export type ButtonUnderline = 'rest' | 'hover' | 'none';
 
-/** Inline action with explicit link colour and underline behavior. */
-export type LinkButtonProps = ButtonProps;
-
-/** Props of `CloseButton`. */
-export interface CloseButtonProps {
-  /** Utility classes applied to the control laid out by its parent. */
-  className?: string;
-  /** Called on press, with the press event. */
-  onPress?: (event: GestureResponderEvent) => void;
-  /**
-   * Keep the press from also activating a pressable parent: the dismiss X on a
-   * pressable card or row. Default false, like `Button`'s.
-   */
-  stopPropagation?: boolean;
-  /** `2xs` 16 · `xs` 20 (default) · `sm` 24 · `md` 32. */
-  size?: '2xs' | 'xs' | 'sm' | 'md' | 'lg';
-  disabled?: boolean;
-  /** Required — the control draws no text. */
-  accessibilityLabel: string;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-}
-
-/**
- * `GlyphButton`: the round glyph-only control — an arbitrary diameter, a glyph
- * (an icon COMPONENT Bloom sizes and paints, or any node), fills at rest and
- * under a pointer, and an optional `pressed` toggle.
- *
- * It exists because `Button iconOnly`'s heights are FIXED (24 / 32 / 36 / 44)
- * and `variant="icon"` paints a surface, so every family that wanted a 28, 40 or
- * 44 transparent glyph wrote its own: `track-list`, `queue-panel`,
- * `media-player`, `media-header` and `music-library` shipped five of them.
- *
- * The glyph is {@link GLYPH_BUTTON_GLYPH_RATIO} × the box unless `glyphSize`
- * says otherwise — measured across those five, the ratio ran 0.50 to 0.75 and
- * 0.6 is the middle of it (and exactly what the 40-box media header used).
- */
-export interface GlyphButtonProps {
-  /** Original focus events from the interactive host; never activate the button. */
-  onFocus?: (event: ButtonFocusEvent) => void;
-  onBlur?: (event: ButtonFocusEvent) => void;
-  /**
-   * Opt-in attention token. Initialize it (for example to 0), then change it for
-   * each event that should softly pulse the glyph. Mounting is silent; repeated
-   * values do nothing. The button and its target keep their size and identity.
-   * Reduced motion, disabled and busy suppress the pulse. Supply a label or
-   * other visible feedback too: this motion carries no accessibility message.
-   */
-  attention?: number;
-  /** Diameter of the round target. Default 36. */
-  size?: number;
-  /**
-   * Glyph edge. Defaults to `round(size × 0.6)`; pass it to keep a call site's
-   * own measured ratio.
-   */
-  glyphSize?: number;
-  /**
-   * An icon COMPONENT (`icon={RiMoreFill}`), sized and painted by the button so
-   * it follows the rest / hover / pressed colours. For anything else — a text
-   * glyph, an icon you paint yourself — pass `children` instead.
-   */
-  icon?: ButtonIconComponent;
-  /**
-   * A glyph node rendered as-is, centred. Wins over `icon`. As a FUNCTION it is
-   * handed the resolved foreground for the current state, which is the only way
-   * a caller-painted glyph (a text glyph, a two-tone icon) can follow hover and
-   * the toggle the way `icon` does.
-   */
-  children?: ReactNode | ((foreground: string) => ReactNode);
-  onPress?: (event: GestureResponderEvent) => void;
-  onLongPress?: (event: GestureResponderEvent) => void;
-  disabled?: boolean;
-  /**
-   * Working — locating, loading — so a second press is refused. Announced as
-   * busy (`aria-busy` on the web, `accessibilityState.busy` on native) and NOT
-   * dimmed: the control is in use, not unavailable. The caller swaps the glyph
-   * for a spinner if it wants one.
-   */
-  busy?: boolean;
-  /**
-   * A TOGGLE. Emits `aria-pressed` (web) AND `accessibilityState.selected`
-   * (native) — react-native-web drops `accessibilityState` and React Native has
-   * no `aria-pressed`, so a toggle needs both spellings. Leave it undefined for
-   * a plain button: `aria-pressed="false"` on a button that is not a toggle
-   * announces a state nobody set.
-   */
-  pressed?: boolean;
-  /** Foreground at rest. Default `colors.textSecondary`. */
-  color?: string;
-  /** Foreground under a pointer or a press. Default `colors.text`. */
-  hoverColor?: string;
-  /** Foreground while `pressed` is true. Default the theme accent. */
-  activeColor?: string;
-  /**
-   * Foreground while `pressed` is true AND under a pointer or a press. Defaults
-   * to `activeColor`. The on-state and the hover state are INDEPENDENT — a
-   * player's lit shuffle still brightens under the cursor — and a single
-   * `activeColor` cannot say that, which is why all four corners are spellable.
-   */
-  activeHoverColor?: string;
-  /** Fill at rest. Default transparent. */
-  fill?: string;
-  /** Fill under a pointer or a press. Default the neutral wash (100 / dark 800). */
-  hoverFill?: string;
-  /**
-   * The focus ring's colour. Default the accent — pass a light colour on a dark
-   * surface Bloom does not own (artwork, a player bar), or the ring is invisible
-   * exactly where a keyboard user needs it.
-   */
-  ring?: string;
-  /** Opacity of the whole control when disabled. Default 0.5. */
-  disabledOpacity?: number;
-  /**
-   * The box is a MINIMUM width and the control grows with its content, for a
-   * text glyph ("1.5×"). Adds `paddingHorizontal` (default 6).
-   */
-  grow?: boolean;
-  /** Horizontal padding when `grow`. Default 6. */
-  paddingHorizontal?: number;
-  /**
-   * An extra layer painted over the box (`position: absolute`, no pointer
-   * events) — the media player's 4px active dot. The family owns its geometry,
-   * because the two that draw one place it differently.
-   */
-  /**
-   * Extra pressable reach beyond the box, on every side (`8`) or per side. For
-   * a box smaller than a finger — a 16px month chevron — so the visible size
-   * stays measured while the target does not shrink with it. None by default.
-   */
-  hitSlop?: number | Insets;
-  decoration?: ReactNode;
-  /** Required — the control draws no text. */
-  accessibilityLabel: string;
-  accessibilityHint?: string;
-  accessibilityRole?: 'button';
-  'aria-expanded'?: boolean;
-  'aria-haspopup'?: WebAriaProps['aria-haspopup'];
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-}
-
 /** The props `Button` hands an icon component: Bloom icons accept all three. */
 /** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
 export type ButtonIconComponent = BloomIconComponent;
+
+/** Layout and shared surface for ordinary Button children. */
+export interface ButtonGroupProps {
+  orientation?: 'horizontal' | 'vertical';
+  size?: ButtonSize;
+  /** Hairlines between controls. Default true. */
+  dividers?: boolean;
+  /** Flat segments with a gap, sharing the outer pill. Default false. */
+  separated?: boolean;
+  children: React.ReactNode;
+  accessibilityLabel?: string;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}

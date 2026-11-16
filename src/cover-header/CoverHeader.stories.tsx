@@ -25,6 +25,7 @@ const COVER = 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=12
 const AVATAR = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop';
 
 function Profile(args: React.ComponentProps<typeof CoverHeader>) {
+  const [following, setFollowing] = React.useState(false);
   return (
     <View style={{ maxWidth: 600 }}>
       <CoverHeader {...args} contentStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}>
@@ -32,8 +33,13 @@ function Profile(args: React.ComponentProps<typeof CoverHeader>) {
           style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}
         >
           <Avatar size={90} source={AVATAR} initials="MC" />
-          <Button size="sm" appearance="subtle" tone="neutral">
-            Follow
+          <Button
+            appearance="subtle"
+            tone="neutral"
+            pressed={following}
+            onPressedChange={setFollowing}
+          >
+            {following ? 'Following' : 'Follow'}
           </Button>
         </View>
         <Text variant="title-2-medium" style={{ marginTop: 10 }}>
@@ -57,13 +63,16 @@ export const WithoutPhoto: Story = {
 
 function EditablePageCover() {
   const [position, setPosition] = React.useState({ x: 0.5, y: 0.5 });
+  const [alternate, setAlternate] = React.useState(false);
   return (
     <CoverHeader
-      coverSource={COVER}
+      coverSource={
+        alternate ? 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=1200' : COVER
+      }
       coverHeight={280}
       overlap={40}
       coverPosition={position}
-      onChangeCover={() => {}}
+      onChangeCover={() => setAlternate(!alternate)}
       repositionable
       repositionAxes="vertical"
       onCoverPositionCommit={async (next) => {

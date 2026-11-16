@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -9,6 +10,9 @@ import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { SwipeRow } from './SwipeRow';
+import { Button } from '../button';
+import { ListItem } from '../list';
+import { alert } from '../surfaces';
 import { ChipRow, Chip } from '../chip';
 import type { SwipeRowActions } from './types';
 
@@ -35,26 +39,7 @@ const ACTIONS: SwipeRowActions = {
 };
 
 function Row({ title, subtitle }: { title: string; subtitle: string }) {
-  const theme = useTheme();
-  return (
-    <View
-      style={{
-        height: 72,
-        justifyContent: 'center',
-        paddingLeft: 16,
-        paddingRight: 16,
-        gap: 2,
-        backgroundColor: theme.colors.background,
-      }}
-    >
-      <Text variant="headline-regular" numberOfLines={1} style={{ color: theme.colors.text }}>
-        {title}
-      </Text>
-      <Text variant="body-regular" numberOfLines={1} style={{ color: theme.colors.textSecondary }}>
-        {subtitle}
-      </Text>
-    </View>
-  );
+  return <ListItem title={title} supporting={subtitle} />;
 }
 
 function Frame({ children }: { children: React.ReactNode }) {
@@ -69,28 +54,55 @@ function Frame({ children }: { children: React.ReactNode }) {
 export const Rows: Story = {
   render: () => {
     const [last, setLast] = useState<string>('—');
+    const [dismissed, setDismissed] = useState<string[]>([]);
     return (
       <Frame>
+        <Text variant="body-2-regular" style={{ padding: 16 }}>
+          {
+            'Drag to reveal the bubbles. Keep dragging to expand an action; release to confirm, or drag back to cancel.'
+          }
+        </Text>
         <View style={{ gap: 2 }}>
           {[
             ['Mireia Solans', 'Roof survey — the tiles on the north pitch'],
             ['Bastia Ferrers', 'Invoice 2214 is ready'],
             ['Tordera Studio', 'Are we still on for one o’clock?'],
-          ].map(([title, subtitle]) => (
-            <SwipeRow
-              key={title}
-              actions={ACTIONS}
-              height={72}
-              onAction={setLast}
-              testID={`swipe-${title}`}
-            >
-              <Row title={title as string} subtitle={subtitle as string} />
-            </SwipeRow>
-          ))}
+          ]
+            .filter(([title]) => !dismissed.includes(title!))
+            .map(([title, subtitle]) => (
+              <SwipeRow
+                actionPresentation="bubbles"
+                actionWidth={56}
+                radius={28}
+                key={title}
+                actions={ACTIONS}
+                height={56}
+                fullSwipeAction={{ left: 'read', right: 'delete' }}
+                onAction={(action) => {
+                  setLast(`${title}: ${action}`);
+                  if (action === 'delete') setDismissed((items) => [...items, title!]);
+                }}
+                testID={`swipe-${title}`}
+              >
+                <Row title={title as string} subtitle={subtitle as string} />
+              </SwipeRow>
+            ))}
         </View>
         <Text variant="caption-1-regular" style={{ padding: 16 }}>
           {`Last action: ${last}`}
         </Text>
+        {dismissed.length ? (
+          <Button
+            appearance="subtle"
+            tone="neutral"
+            onPress={() => {
+              setDismissed([]);
+              setLast('—');
+            }}
+          >
+            {'Reset demo'}
+          </Button>
+        ) : null}
       </Frame>
     );
   },
@@ -100,8 +112,12 @@ export const OneSide: Story = {
   render: () => (
     <Frame>
       <SwipeRow
+        actionPresentation="bubbles"
+        actionWidth={56}
+        radius={28}
         actions={{ right: [{ key: 'archive', label: 'Archive', icon: RiArchiveLine }] }}
-        height={72}
+        height={56}
+        onAction={(action) => alert('Row action', action)}
         testID="swipe-one-side"
       >
         <Row title="Vall de Nit Council" subtitle="Permit 8841: decision" />
@@ -116,12 +132,13 @@ export const OwnPaint: Story = {
     return (
       <Frame>
         <SwipeRow
+          actionPresentation="bubbles"
+          actionWidth={56}
+          radius={28}
           actions={ACTIONS}
-          height={72}
-          radius={0}
-          actionWidth={64}
+          height={56}
           // A family that already resolved its own pairs passes them, so the
-          // panes match the rest of its rows exactly.
+          // bubbles match the rest of its rows exactly.
           paint={{
             neutral: theme.colors.contrast50,
             onNeutral: theme.colors.text,
@@ -130,6 +147,7 @@ export const OwnPaint: Story = {
             negative: theme.colors.error,
             onNegative: theme.colors.primaryForeground,
           }}
+          onAction={(action) => alert('Row action', action)}
           testID="swipe-own-paint"
         >
           <Row title="Pere Aguiló" subtitle="Quote for the shutters" />
@@ -145,8 +163,11 @@ export const HorizontalContent: Story = {
     return (
       <Frame>
         <SwipeRow
+          actionPresentation="bubbles"
+          actionWidth={56}
+          radius={28}
           actions={ACTIONS}
-          onAction={() => {}}
+          onAction={(action) => alert('Row action', action)}
           onOpenChange={(side) => {
             if (side) setOpenCount((count) => count + 1);
           }}

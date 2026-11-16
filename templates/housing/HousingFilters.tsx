@@ -1,10 +1,11 @@
+import { ScrollArea as ScrollView } from '../../src/layout';
 import {
   SegmentedControl,
   SegmentedControlItem,
   SegmentedControlItemText,
 } from '../../src/segmented-control';
-import React, { useEffect, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View } from 'react-native';
 
 import { Dialog, type DialogControlProps } from '../../src/dialog';
 import type { HomeSearchMode } from '../../src/home-search';

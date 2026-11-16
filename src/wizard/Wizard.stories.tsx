@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
-import { useTheme } from '../theme/use-theme';
+import { alert } from '../surfaces';
 import { Text } from '../typography';
 import { WizardFooter } from './WizardFooter';
 import { WizardProgress } from './WizardProgress';
@@ -29,22 +29,8 @@ const STEPS: WizardStep[] = [
   { title: 'Publish' },
 ];
 
-function Frame({ width, children }: { width: number; children: React.ReactNode }) {
-  const theme = useTheme();
-  return (
-    <View
-      style={{
-        width: '100%',
-        maxWidth: width,
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-        overflow: 'hidden',
-      }}
-    >
-      {children}
-    </View>
-  );
+function Frame({ children }: { children: React.ReactNode }) {
+  return <View style={{ width: '100%' }}>{children}</View>;
 }
 
 /** Stepping through the flow: the bar, the count and the title follow `current`. */
@@ -52,53 +38,54 @@ export const Playground: Story = {
   render: function PlaygroundStory() {
     const [current, setCurrent] = useState(2);
     const [loading, setLoading] = useState(false);
-    const theme = useTheme();
     const last = current === STEPS.length - 1;
     return (
       <View style={{ width: '100%', gap: 32 }}>
-        {[720, 375].map((width) => (
-          <Frame key={width} width={width}>
-            <View
-              style={{
-                paddingTop: 24,
-                paddingLeft: width < 480 ? 16 : 24,
-                paddingRight: width < 480 ? 16 : 24,
-                paddingBottom: 24,
-              }}
-            >
-              <WizardProgress
-                steps={STEPS}
-                current={current}
-                action={
-                  <Button size="sm" tone="neutral" appearance="outline">
-                    Save and exit
-                  </Button>
-                }
-                testID={`progress-${width}`}
-              />
-              <View style={{ height: 160, justifyContent: 'center' }}>
-                <Text variant="body-regular" style={{ color: theme.colors.textSecondary }}>
-                  Step content
-                </Text>
-              </View>
-            </View>
-            <WizardFooter
-              onBack={current > 0 ? () => setCurrent((c) => c - 1) : undefined}
-              onNext={() => {
-                if (last) {
-                  setLoading(true);
-                  setTimeout(() => setLoading(false), 1500);
-                  return;
-                }
-                setCurrent((c) => c + 1);
-              }}
-              nextLabel={last ? 'Publish' : 'Next'}
-              loading={loading}
-              status="Draft saved"
-              testID={`footer-${width}`}
+        <Frame>
+          <View
+            style={{
+              paddingTop: 24,
+              paddingLeft: 16,
+              paddingRight: 16,
+              paddingBottom: 24,
+            }}
+          >
+            <WizardProgress
+              steps={STEPS}
+              current={current}
+              action={
+                <Button
+                  onPress={() =>
+                    alert('Draft saved', `You can resume at ${STEPS[current]?.title}.`)
+                  }
+                  tone="neutral"
+                  appearance="outline"
+                >
+                  Save and exit
+                </Button>
+              }
+              testID="progress"
             />
-          </Frame>
-        ))}
+            <View style={{ height: 160, justifyContent: 'center' }}>
+              <Text variant="body-regular">Step content</Text>
+            </View>
+          </View>
+          <WizardFooter
+            onBack={current > 0 ? () => setCurrent((c) => c - 1) : undefined}
+            onNext={() => {
+              if (last) {
+                setLoading(true);
+                setTimeout(() => setLoading(false), 1500);
+                return;
+              }
+              setCurrent((c) => c + 1);
+            }}
+            nextLabel={last ? 'Publish' : 'Next'}
+            loading={loading}
+            status="Draft saved"
+            testID="footer"
+          />
+        </Frame>
       </View>
     );
   },
@@ -121,16 +108,33 @@ export const FooterStates: Story = {
     <View style={{ width: '100%', gap: 20 }}>
       {[
         { key: 'first', props: {} },
-        { key: 'disabled', props: { onBack: () => undefined, nextDisabled: true } },
-        { key: 'loading', props: { onBack: () => undefined, loading: true, nextLabel: 'Publish' } },
+        {
+          key: 'disabled',
+          props: {
+            onBack: () => alert('Previous step', 'The footer reported its action.'),
+            nextDisabled: true,
+          },
+        },
+        {
+          key: 'loading',
+          props: {
+            onBack: () => alert('Previous step', 'The footer reported its action.'),
+            loading: true,
+            nextLabel: 'Publish',
+          },
+        },
         {
           key: 'last',
-          props: { onBack: () => undefined, nextLabel: 'Publish', status: 'Everything looks good' },
+          props: {
+            onBack: () => alert('Previous step', 'The footer reported its action.'),
+            nextLabel: 'Publish',
+            status: 'Everything looks good',
+          },
         },
       ].map(({ key, props }) => (
-        <Frame key={key} width={560}>
+        <Frame key={key}>
           <WizardFooter
-            onNext={() => undefined}
+            onNext={() => alert('Next step', 'The footer reported its action.')}
             sticky={false}
             {...props}
             testID={`footer-${key}`}

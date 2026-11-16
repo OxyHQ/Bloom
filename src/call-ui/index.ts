@@ -1,6 +1,4 @@
 export { CallControlButton, CallControls } from './CallControls';
-export { CallHistoryList } from './CallHistoryList';
-export { CallHistoryRow } from './CallHistoryRow';
 export { CallMinimisedPill } from './CallMinimisedPill';
 export { CallScreen } from './CallScreen';
 export { GroupCallBar } from './GroupCallBar';
@@ -35,8 +33,6 @@ export type {
   CallDirection,
   CallHistoryItem,
   CallHistoryLabels,
-  CallHistoryListProps,
-  CallHistoryRowProps,
   CallHistorySection,
   CallMinimisedPillProps,
   CallMode,

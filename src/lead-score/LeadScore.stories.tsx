@@ -1,9 +1,7 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { SleepScoreCard } from '../chart-cards';
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { LeadScoreCard } from './LeadScoreCard';
@@ -46,24 +44,6 @@ function Caption({ children }: { children: string }) {
     <Text variant="caption-1-medium" style={{ color: theme.colors.textSecondary }}>
       {children}
     </Text>
-  );
-}
-
-function BothModes({ children }: { children: React.ReactNode }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
-  return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-      <BloomThemeProvider mode="light" colorPreset={preset}>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 520 }}>
-          <Page>{children}</Page>
-        </View>
-      </BloomThemeProvider>
-      <BloomThemeProvider mode="dark" colorPreset={preset}>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 520 }}>
-          <Page>{children}</Page>
-        </View>
-      </BloomThemeProvider>
-    </View>
   );
 }
 
@@ -122,10 +102,10 @@ export const Bands: Story = {
   ),
 };
 
-/** A five-point scale, long factor labels, and a narrow column. */
-export const NarrowAndLong: Story = {
+/** A five-point scale and long factor labels adapt to the viewport. */
+export const LongFactors: Story = {
   render: () => (
-    <View style={{ width: 320 }}>
+    <View style={{ width: '100%', maxWidth: 420 }}>
       <Page>
         <LeadScoreCard
           score={4}
@@ -161,75 +141,6 @@ export const ScoreOnly: Story = {
           accessibilityLabel="Lead score for an unnamed inbound lead"
           testID="lead-bare"
         />
-      </View>
-    </Page>
-  ),
-};
-
-export const BothThemes: Story = {
-  render: () => (
-    <BothModes>
-      <LeadScoreCard
-        score={82}
-        accessibilityLabel="Lead score for Larkspur Freight"
-        factors={FACTORS.slice(0, 3)}
-        trend={{ label: '+8 against last week', direction: 'up' }}
-      />
-    </BothModes>
-  ),
-};
-
-/**
- * The card this one is drawn to, in the same shot and at the same width.
- * `SleepScoreCard` is the reference for a SCORE: a tinted header panel with a
- * quiet label over a big verdict word, a large centred ring holding the number,
- * and a separate inner panel whose rows are `mark · label · detail` on the left
- * with the value right-aligned. No bars anywhere.
- */
-export const BesideTheReference: Story = {
-  render: () => (
-    <Page>
-      <View style={{ flexDirection: 'row', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-        <View
-          style={{
-            flexGrow: 1,
-            flexShrink: 1,
-            flexBasis: 340,
-            minWidth: 0,
-            maxWidth: 400,
-            gap: 12,
-          }}
-        >
-          <Caption>Bloom reference — chart-cards / SleepScoreCard</Caption>
-          <SleepScoreCard
-            metrics={[
-              { label: 'Duration', detail: '7h 50m', score: 32, max: 40 },
-              { label: 'Quality', detail: '88%', score: 28, max: 30 },
-              { label: 'Restfulness', detail: '4 wakes', score: 22, max: 30 },
-            ]}
-            range="29 Jun - 5 Jul"
-          />
-        </View>
-        <View
-          style={{
-            flexGrow: 1,
-            flexShrink: 1,
-            flexBasis: 340,
-            minWidth: 0,
-            maxWidth: 400,
-            gap: 12,
-          }}
-        >
-          <Caption>This family — lead-score / LeadScoreCard</Caption>
-          <LeadScoreCard
-            score={82}
-            accessibilityLabel="Lead score for Larkspur Freight"
-            valueText="82 of 100, hot"
-            factors={FACTORS.slice(0, 3)}
-            trend={{ label: '+8 against last week', direction: 'up' }}
-            testID="lead-beside"
-          />
-        </View>
       </View>
     </Page>
   ),

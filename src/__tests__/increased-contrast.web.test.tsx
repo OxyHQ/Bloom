@@ -5,7 +5,7 @@
  * the document attributes and the hooks; the material CSS turns the edge light
  * into each host's own hairline; every host sets that hairline on itself.
  */
-import React, { act } from 'react';
+import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Platform } from 'react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -179,7 +179,7 @@ describe('every host sets its own hairline', () => {
     expect(hairlineOf('[data-testid="own-border"]')).toBe('transparent');
   });
 
-  it('Button: a hairline on a filled button, none on an outlined one', () => {
+  it('Button: the shared material hairline remains visible on filled and outline actions', () => {
     act(() =>
       root.render(
         <BloomThemeProvider fonts={false} mode="light">
@@ -192,6 +192,6 @@ describe('every host sets its own hairline', () => {
     );
     const solid = container.querySelector('[data-testid="solid"]') as HTMLElement;
     expect(solid.style.getPropertyValue(SURFACE_HAIRLINE_VAR)).toMatch(/^(rgb|#)/);
-    expect(hairlineOf('[data-testid="outline"]')).toBe('transparent');
+    expect(hairlineOf('[data-testid="outline"]')).toMatch(/^(rgb|#)/);
   });
 });

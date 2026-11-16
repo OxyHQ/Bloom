@@ -5,10 +5,10 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { resolveHeaderActionLayout } from '../src/page-header/action-layout.ts';
 const require = createRequire(import.meta.url);
-const { chromium } = require(process.env.BLOOM_PLAYWRIGHT_MODULE || 'playwright');
+const puppeteer = require(process.env.PUPPETEER_CORE_PATH ?? 'puppeteer-core');
 const output = process.env.BLOOM_MEASUREMENT_OUTPUT || '/tmp/bloom-header-measurement';
 mkdirSync(output, { recursive: true });
-const browser = await chromium.launch({
+const browser = await puppeteer.launch({
   executablePath: process.env.CHROME_PATH,
   args: ['--no-sandbox'],
 });
@@ -35,24 +35,31 @@ const actions = [
 ];
 try {
   for (const touch of [false, true]) {
-    const page = await browser.newPage({
-      viewport: { width: 1100, height: 900 },
-      hasTouch: touch,
-      isMobile: touch,
-    });
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1100, height: 900, hasTouch: touch, isMobile: touch });
     await page.goto(
-      `${process.argv[2] || 'http://localhost:6137'}/iframe.html?id=composition-headers-adaptive-actions--local-width&viewMode=story`,
-      { timeout: 120000 },
+      `${process.argv[2] || process.env.STORYBOOK_URL || 'http://localhost:6006'}/iframe.html?id=composition-headers-adaptive-actions--local-width&viewMode=story`,
+      { waitUntil: 'domcontentloaded' },
     );
+    await page.waitForSelector('[data-testid="action-host"]');
     for (const width of [240, 320, 390, 640, 900]) {
-      await page.getByTestId(`actions-width-${width}`).click();
-      await page.waitForTimeout(300);
+      await page.setViewport({ width, height: 900, hasTouch: touch, isMobile: touch });
+      await page.$eval(
+        '[data-testid="action-host"]',
+        (host, value) => {
+          host.style.width = `${value}px`;
+        },
+        width,
+      );
+      await new Promise((done) => setTimeout(done, 300));
       const actual = await page.evaluate(() => {
         const get = (id) => document.querySelector(`[data-testid="adaptive-actions-${id}"]`);
         const probe = get('measure-overflow');
         const child = probe.querySelector('button');
         const trigger = get('overflow');
         return {
+          documentOverflow:
+            document.documentElement.scrollWidth - document.documentElement.clientWidth,
           coarse: matchMedia('(pointer:coarse)').matches,
           probe: probe.getBoundingClientRect().width,
           child: child.getBoundingClientRect().width,
@@ -75,13 +82,18 @@ try {
         };
       });
       assert.equal(actual.coarse, touch);
+      assert.equal(
+        actual.documentOverflow,
+        0,
+        'intrinsic measurement probes must not overflow the document',
+      );
       assert.ok(Math.abs(actual.probe - actual.child) < 0.1, 'probe hugs its own button');
       if (actual.trigger > 0)
         assert.ok(
           Math.abs(actual.probe - actual.trigger) < 0.1,
           'probe equals visible overflow recipe',
         );
-      assert.equal(actual.probe, touch ? 44 : 34);
+      assert.equal(actual.probe, touch ? 44 : 36);
       const expected = resolveHeaderActionLayout(
         actions,
         new Map(Object.entries(actual.measurements)),

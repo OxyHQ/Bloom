@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { View } from 'react-native';
+import type React from 'react';
+import { useState } from 'react';
+import { View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Badge } from '../badge';
@@ -65,105 +66,43 @@ const CATEGORIES: CategoryBarItem[] = [
   { key: 'farms', label: 'Farms', icon: RiSeedlingLine },
 ];
 
-function FiltersButton({ count, compact = false }: { count: number; compact?: boolean }) {
-  return (
-    <Badge content={count} placement="top-right" invisible={count === 0}>
-      {compact ? (
-        <Button
-          size="md"
-          iconOnly
-          leadingIcon={RiEqualizerLine}
-          accessibilityLabel={`Filters, ${count} applied`}
-          tone="neutral"
-          appearance="outline"
-        />
-      ) : (
-        <Button
-          size="md"
-          leadingIcon={RiEqualizerLine}
-          accessibilityLabel={`Filters, ${count} applied`}
-          tone="neutral"
-          appearance="outline"
-        >
-          Filters
-        </Button>
-      )}
-    </Badge>
-  );
+function Frame({ children }: { children: React.ReactNode }) {
+  return <View style={{ width: '100%', maxWidth: 1280, padding: 16 }}>{children}</View>;
 }
-
-function Frame({
-  width,
-  caption,
-  children,
-}: {
-  width: number;
-  caption: string;
-  children: React.ReactNode;
-}) {
-  const theme = useTheme();
-  const { neutral: n } = resolveButtonRamps(theme);
-  return (
-    <View style={{ gap: 8 }}>
-      <Text variant="caption-1-medium" style={{ color: theme.colors.textSecondary }}>
-        {caption}
-      </Text>
-      <View
-        style={{
-          width,
-          maxWidth: '100%',
-          paddingLeft: width < 600 ? 16 : 40,
-          paddingRight: width < 600 ? 16 : 40,
-          borderBottomWidth: 1,
-          borderColor: theme.isDark ? n[800] : n[200],
-          backgroundColor: theme.colors.background,
-        }}
-      >
-        {children}
-      </View>
-    </View>
-  );
-}
-
-function Bar({ width, initial = 'trending' }: { width: number; initial?: string }) {
-  const [value, setValue] = useState(initial);
-  return (
-    <CategoryBar
-      items={CATEGORIES}
-      value={value}
-      onValueChange={setValue}
-      accessibilityLabel="Categories"
-      trailing={<FiltersButton count={3} compact={width < 600} />}
-      testID={`bar-${width}`}
-    />
-  );
-}
-
-/**
- * The strip at 1280, 768 and 375 with a Filters button pinned right. Hover
- * the strip on web: the arrows appear only on a side with more to scroll, and
- * each scrolls about a page. Tab onto the selected item and use the arrow keys.
- */
-export const Widths: Story = {
-  render: function CategoryBarWidths() {
-    const theme = useTheme();
+export const Responsive: Story = {
+  render: function ResponsiveCategoryBar() {
+    const [value, setValue] = useState('trending');
+    const [filtered, setFiltered] = useState(false);
+    const compact = useWindowDimensions().width < 600;
     return (
-      <View style={{ gap: 24, padding: 16, backgroundColor: theme.colors.background }}>
-        <Frame width={1280} caption="1280">
-          <Bar width={1280} />
-        </Frame>
-        <Frame width={768} caption="768">
-          <Bar width={768} initial="kitchens" />
-        </Frame>
-        <Frame width={375} caption="375">
-          <Bar width={375} />
-        </Frame>
-      </View>
+      <Frame>
+        <CategoryBar
+          items={CATEGORIES}
+          value={value}
+          onValueChange={setValue}
+          accessibilityLabel="Categories"
+          trailing={
+            <Badge content={filtered ? 1 : 0} invisible={!filtered}>
+              <Button
+                icon={compact ? RiEqualizerLine : undefined}
+                leadingIcon={compact ? undefined : RiEqualizerLine}
+                accessibilityLabel="Filter categories"
+                pressed={filtered}
+                onPressedChange={setFiltered}
+              >
+                {compact ? undefined : 'Filters'}
+              </Button>
+            </Badge>
+          }
+        />
+        <Text>
+          {value}
+          {filtered ? ' · Filter applied' : ''}
+        </Text>
+      </Frame>
     );
   },
 };
-
-/** A trailing switch row instead of a button. */
 export const TrailingSwitch: Story = {
   render: function CategoryBarTrailingSwitch() {
     const theme = useTheme();
@@ -172,7 +111,7 @@ export const TrailingSwitch: Story = {
     const [total, setTotal] = useState(false);
     return (
       <View style={{ padding: 16, backgroundColor: theme.colors.background }}>
-        <Frame width={1280} caption="Trailing switch">
+        <Frame>
           <CategoryBar
             items={CATEGORIES}
             value={value}
@@ -216,7 +155,7 @@ export const Fits: Story = {
     const [value, setValue] = useState('beachfront');
     return (
       <View style={{ padding: 16, backgroundColor: theme.colors.background }}>
-        <Frame width={768} caption="Six items">
+        <Frame>
           <CategoryBar
             items={CATEGORIES.slice(0, 6)}
             value={value}
@@ -228,23 +167,3 @@ export const Fits: Story = {
     );
   },
 };
-
-/** The same strips in dark mode. */
-export const Dark: Story = {
-  globals: { theme: 'dark' },
-  render: () => <DarkBody />,
-};
-
-function DarkBody() {
-  const theme = useTheme();
-  return (
-    <View style={{ gap: 24, padding: 16, backgroundColor: theme.colors.background }}>
-      <Frame width={1280} caption="1280">
-        <Bar width={1280} initial="arctic" />
-      </Frame>
-      <Frame width={375} caption="375">
-        <Bar width={375} />
-      </Frame>
-    </View>
-  );
-}

@@ -41,7 +41,7 @@ import {
 | `AgentReplyActions` | Helpful, unhelpful and — with `onCopy` — copy, as bare icons in a row (a plain [`Button`](./button.mdx) each): nothing around them until one is hovered. Add your own after them with `AgentReplyAction` children (read aloud, retry…). |
 | `AgentReplyAction` | One bare icon button. It draws no text, so `label` is its name. `selected` lights it and is announced as a toggle. |
 | `AgentProfile` | The conversation's header target: one agent large, two or three overlapped, a longer team as its first three and "+N". The capsule names them ("Lumi + Atlas + Sol"). Pressing it makes every avatar in it wave, then calls `onPress`. |
-| `AgentStack` | Up to three avatars overlapped in one square, for a list row. |
+| `AvatarGroup layout="conversation"` | Shared grouped identity for people and agents. |
 
 An agent is `{ id, name, label?, avatar }`, where `avatar` is an [`AvatarCharacter`](./agent-avatar.mdx).
 

@@ -24,9 +24,9 @@ export interface ChatListMessages {
   clearSearch: string;
   /** `NewChatButton`'s name and extended text. */
   newChat: string;
-  /** `ArchivedRow`'s label. */
+  /** Archive destination label. */
   archived: string;
-  /** `ArchivedRow`'s name with a count: "Archived, 3 chats". */
+  /** Archive destination name with a count: "Archived, 3 chats". */
   archivedName: (label: string, count: number) => string;
   /** A folder tab's name with a count: "Work, 3 unread". */
   folderName: (label: string, count: number) => string;

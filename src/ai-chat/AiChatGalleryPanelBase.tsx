@@ -38,7 +38,7 @@ import type {
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
 import { useAiChatPlatform } from './context';
-import { ButtonGroupItem } from '../button-group';
+import { Button } from '../button';
 import { useReducedTransparency } from '../theme/reduced-transparency';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
@@ -583,7 +583,7 @@ export function AiChatGalleryPanelBase({
             label={l.tabs}
           >
             {actions.map((action) => (
-              <ButtonGroupItem
+              <Button
                 key={action.key}
                 iconOnly
                 accessibilityLabel={action.label}

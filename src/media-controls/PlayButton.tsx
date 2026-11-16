@@ -1,22 +1,17 @@
 import { useBloomAppearance } from '../appearance';
-import React, { memo, useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { memo, useMemo } from 'react';
+import { StyleSheet } from 'react-native';
 
+import { Button } from '../button';
+import { DISABLED_OPACITY } from '../styles/tokens';
 import { RiPlayFill } from '../icons/remix/RiPlayFill';
-import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
-import { SurfacePaint } from '../surface/SurfacePaint';
-import { IS_WEB } from '../styles/platform';
-import { adoptStyleSheet } from '../styles/adopt-style-sheet';
-import type { WebCssStyle } from '../styles/web-view-style';
-import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
-import { MEDIA_CONTROLS_CSS, MEDIA_CONTROLS_STYLE_ID, resolveMediaControlsPaint } from './shared';
+import { resolveMediaControlsPaint } from './shared';
 import { PauseGlyph } from './PauseGlyph';
 import { SpinnerRing } from './SpinnerRing';
 import type { PlayButtonProps, PlayButtonSize } from './types';
 import { useMessages } from '../locale/messages';
 import { MEDIA_CONTROLS_MESSAGES } from './messages';
-import { useInteractionState } from '../hooks/use-interaction-state';
 
 /**
  * The round play / pause button.
@@ -27,7 +22,7 @@ import { useInteractionState } from '../hooks/use-interaction-state';
  *   large    56         28
  *
  *   accent    accent-500 fill, primaryForeground glyph; hover accent-600
- *             (dark 400), press accent-700 (dark 300)
+ *             (dark 400), press uses the shared Button state paint
  *   inverse   text-colour fill, background-colour glyph; hover mixes 16% of
  *             the background in
  *   plain     the glyph alone in the text colour; hover turns it accent
@@ -55,20 +50,6 @@ const SIZE_CONFIG: Record<PlayButtonSize, { box: number; glyph: number }> = {
   lg: { box: 56, glyph: 28 },
 };
 
-/**
- * The web glyph follows its disc's material in and out: a host that reveals the
- * button fades the material through `--bloom-surface-presence` (an `opacity`
- * there would blank its blur), and the glyph fades with it.
- */
-function glyphPresence(dim: number): WebCssStyle {
-  return {
-    opacity: `calc(var(--bloom-surface-presence, 1) * ${dim})` as unknown as number,
-    transitionProperty: 'opacity',
-    transitionDuration: 'var(--bloom-surface-presence-ms, 0ms)',
-    transitionTimingFunction: 'ease-out',
-  };
-}
-
 function PlayButtonComponent({
   playing,
   onPress,
@@ -90,19 +71,11 @@ function PlayButtonComponent({
     { size: 'md', tone: 'neutral' },
   );
   const size = inheritedSize === 'xs' ? 'sm' : inheritedSize;
-
   const { messages } = useMessages(MEDIA_CONTROLS_MESSAGES);
   const theme = useTheme();
-  useEffect(() => {
-    adoptStyleSheet(MEDIA_CONTROLS_STYLE_ID, MEDIA_CONTROLS_CSS);
-  }, []);
   const paint = useMemo(() => resolveMediaControlsPaint(theme), [theme]);
-  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
-  const [pressed, setPressed] = useState(false);
   const { box, glyph } = SIZE_CONFIG[size];
 
-  // A caller's word keeps the old "<word> <subject>" shape; the catalog's is a
-  // whole phrase per language, so the subject sits where the language puts it.
   const custom = playing ? pauseLabel : playLabel;
   const action = custom ?? (playing ? messages.pause : messages.play);
   const withSubject = (s: string) =>
@@ -112,111 +85,44 @@ function PlayButtonComponent({
         ? messages.pauseSubject(s)
         : messages.playSubject(s);
   const name = accessibilityLabel ?? (subject ? withSubject(subject) : action);
-
-  const active = !disabled && (pressed || hovered);
-  let fill: string | undefined;
-  let glyphColor: string;
-  if (variant === 'accent') {
-    fill = !disabled && pressed ? paint.accentPressed : active ? paint.accentHover : paint.accent;
-    glyphColor = paint.onAccent;
-  } else if (variant === 'inverse') {
-    fill = active ? paint.inverseHover : paint.inverse;
-    glyphColor = paint.onInverse;
-  } else {
-    fill = undefined;
-    glyphColor = active ? paint.accent : paint.text;
-  }
-
+  const plain = variant === 'plain';
+  const fill = plain ? 'transparent' : variant === 'inverse' ? paint.inverse : paint.accent;
+  const hoverFill = plain
+    ? 'transparent'
+    : variant === 'inverse'
+      ? paint.inverseHover
+      : paint.accentHover;
+  const color = plain ? paint.text : variant === 'inverse' ? paint.onInverse : paint.onAccent;
+  const authoredFill = StyleSheet.flatten(style)?.backgroundColor;
   const Glyph = playing ? PauseGlyph : RiPlayFill;
 
-  const rootStyle: WebCssStyle = {
-    width: box,
-    height: box,
-    borderRadius: borderRadius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    // The web dims a disabled disc's glyph and material instead: an `opacity`
-    // here would make the host the material's backdrop root.
-    opacity: disabled && !IS_WEB ? DISABLED_OPACITY : 1,
-    '--bloom-media-ring': paint.ring,
-  };
-  const dimmed = disabled && IS_WEB;
-
-  // The disc paints through the shared surface material, unless a caller's own
-  // background owns it; `plain` has no disc.
-  const disc =
-    fill === undefined || StyleSheet.flatten(style)?.backgroundColor !== undefined ? null : (
-      <SurfacePaint
-        fill={fill}
-        radius={box / 2}
-        composite
-        transition="background-color 150ms ease"
-        presence={dimmed ? DISABLED_OPACITY : undefined}
-      />
-    );
-
-  const glyphBox = (
-    <View
-      pointerEvents="none"
-      style={{
-        width: glyph,
-        height: glyph,
-        ...(IS_WEB ? glyphPresence(dimmed ? DISABLED_OPACITY : 1) : null),
-      }}
-    >
-      {loading ? (
-        <SpinnerRing size={glyph} color={glyphColor} />
-      ) : (
-        <Glyph width={glyph} height={glyph} fill={glyphColor} />
-      )}
-    </View>
-  );
-
-  // `interactive={false}` makes this DECORATION — the poster frame or the row around it
-  // is the press target, and a second `role="button"` inside one is invalid HTML
-  // (react-dom says so out loud) and a second stop for a screen reader on the
-  // same action. It keeps its box and its fill; it just stops claiming to be a
-  // control. An explicit `accessibilityLabel` still names it, for the rare case
-  // where the glyph is the only thing saying what state the media is in.
-  if (!interactive) {
-    return (
-      <View
-        {...webDataSet({ bloomPlayButton: variant })}
-        role={accessibilityLabel ? 'img' : undefined}
-        accessibilityLabel={accessibilityLabel}
-        aria-hidden={accessibilityLabel ? undefined : true}
-        importantForAccessibility={accessibilityLabel ? 'yes' : 'no-hide-descendants'}
-        accessibilityElementsHidden={!accessibilityLabel}
-        style={[rootStyle, style]}
-        testID={testID}
-      >
-        {disc}
-        {glyphBox}
-      </View>
-    );
-  }
-
   return (
-    <Pressable
-      {...webDataSet({ bloomMediaFocusable: '', bloomPlayButton: variant })}
-      role="button"
-      accessibilityLabel={name}
-      aria-busy={loading || undefined}
-      aria-disabled={disabled || undefined}
-      accessibilityState={{ busy: loading, disabled }}
+    <Button
+      interactive={interactive}
+      iconOnly
+      icon={loading ? undefined : Glyph}
+      size={box}
+      iconSize={glyph}
+      appearance={plain ? 'plain' : 'solid'}
+      tone="neutral"
+      color={color}
+      hoverColor={plain ? paint.accent : color}
+      fill={typeof authoredFill === 'string' ? authoredFill : fill}
+      hoverFill={typeof authoredFill === 'string' ? authoredFill : hoverFill}
+      ring={paint.ring}
       disabled={disabled}
+      disabledOpacity={DISABLED_OPACITY}
+      aria-busy={loading || undefined}
+      accessibilityLabel={interactive ? name : accessibilityLabel}
       onPress={onPress}
       onLongPress={onLongPress}
-      onHoverIn={onHoverIn}
-      onHoverOut={onHoverOut}
-      onPressIn={() => setPressed(true)}
-      onPressOut={() => setPressed(false)}
-      style={[rootStyle, style]}
+      style={style}
       testID={testID}
     >
-      {disc}
-      {glyphBox}
-    </Pressable>
+      {loading
+        ? (foreground: string) => <SpinnerRing size={glyph} color={foreground} />
+        : undefined}
+    </Button>
   );
 }
 

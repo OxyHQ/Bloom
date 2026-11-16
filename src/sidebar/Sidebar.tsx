@@ -1,3 +1,4 @@
+import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
 import { resolveSidebarArrangement } from './arrangement';
 import { resolvePaintMode } from '../theme/paint';
 import {
@@ -40,7 +41,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { Badge } from '../badge';
-import { CloseButton } from '../button';
+import { Button } from '../button';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useBrowserTitle } from '../hooks/use-browser-title';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -182,8 +183,12 @@ function SearchField({
         style={inputStyle}
         testID="sidebar-search-input"
       />
-      <CloseButton
-        size="xs"
+      <Button
+        appearance="outline"
+        tone="neutral"
+        iconOnly
+        icon={DismissActionIcon}
+        size={20}
         accessibilityLabel={clearLabel}
         onPress={() => onDismiss(true)}
         style={{ backgroundColor: palette.tertiaryHover }}

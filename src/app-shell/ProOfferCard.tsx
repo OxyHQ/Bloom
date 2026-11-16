@@ -1,3 +1,4 @@
+import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
@@ -26,7 +27,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Mask, Rect, Stop } from 'react-native-svg';
 
-import { Button, CloseButton } from '../button';
+import { Button } from '../button';
 import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { WEB_POSITION_FIXED, type WebCssStyle } from '../styles/web-view-style';
@@ -339,8 +340,12 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
             <Shimmer width={ctaWidth} />
           </View>
         </View>
-        <CloseButton
-          size="xs"
+        <Button
+          appearance="outline"
+          tone="neutral"
+          iconOnly
+          icon={DismissActionIcon}
+          size={20}
           accessibilityLabel={dismissLabel}
           onPress={onDismiss}
           style={{ position: 'absolute', top: 12, insetInlineEnd: 12, zIndex: Z_INDEX.raised }}

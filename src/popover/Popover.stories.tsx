@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import { useArgs } from 'storybook/preview-api';
 import React, { useMemo, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -45,7 +46,7 @@ type Story = StoryObj;
 function PanelRow({
   icon: Icon,
   label,
-  onPress = () => {},
+  onPress = fn().mockName('onAction'),
 }: {
   icon: BloomIconComponent;
   label: string;

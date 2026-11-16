@@ -48,7 +48,7 @@ it.each(['android', 'ios'] as const)(
       expect(screen.getByTestId('header-title')).toBe(title);
       expect(screen.getByTestId('menu')).toBeTruthy();
       layout(36);
-      expect(resolvedStyle(screen.getByTestId('header-start').props.style).gap).toBe(6);
+      expect(resolvedStyle(screen.getByTestId('header-start').props.style).gap).toBe(8);
       screen.rerender(<Subject shown={false} />);
       layout(0);
       expect(screen.getByTestId('header-title')).toBe(title);

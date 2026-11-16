@@ -1,3 +1,4 @@
+import { ScrollArea as ScrollView } from '../../src/layout';
 import {
   SegmentedControl,
   SegmentedControlItem,
@@ -7,9 +8,9 @@ import { useMessages } from '../../src/locale/messages';
 import { HOME_SEARCH_MESSAGES } from '../../src/home-search/messages';
 import { HOME_SEARCH_MODES } from '../../src/home-search/constants';
 import React, { useState } from 'react';
-import { ScrollView, View, useWindowDimensions } from 'react-native';
+import { View, useWindowDimensions } from 'react-native';
 
-import { Button, LinkButton } from '../../src/button';
+import { Button } from '../../src/button';
 import { RangeCalendar, type DateRange } from '../../src/date-picker';
 import { Dialog, useDialogControl } from '../../src/dialog';
 import { Divider } from '../../src/divider';
@@ -645,14 +646,16 @@ export function MobileSearch({
               paddingRight: 16,
             }}
           >
-            <LinkButton
+            <Button
+              appearance="plain"
+              linkTone="primary"
               onPress={() => {
                 search.clear();
                 setOpen('location');
               }}
             >
               Clear all
-            </LinkButton>
+            </Button>
             <Button
               size="lg"
               leadingIcon={RiSearchLine}

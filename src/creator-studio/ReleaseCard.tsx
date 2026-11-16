@@ -7,7 +7,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { BloomImage } from '../image';
 
 import { Badge } from '../badge';
-import { GlyphButton } from '../button';
+import { Button } from '../button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -199,10 +199,13 @@ function ReleaseCardComponent({
           {/* The neutral transparent ⋯: the same affordance `media-card`
               draws, rather than a bordered `secondary` on a card that already
               has a border. */}
-          <GlyphButton
+          <Button
+            appearance="plain"
+            tone="neutral"
+            iconOnly
             size={32}
             icon={RiMoreFill}
-            glyphSize={20}
+            iconSize={20}
             color={paint.textSecondary}
             hoverColor={paint.text}
             ring={paint.ring}

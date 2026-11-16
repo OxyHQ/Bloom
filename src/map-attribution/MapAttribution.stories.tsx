@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -124,7 +125,7 @@ export const Everything: Story = {
         credit="Map data © Open Map Project contributors"
         scales={BOTH}
         updated="Updated 12 March"
-        onPressCredit={() => {}}
+        onPressCredit={fn().mockName('MapAttribution.onPressCredit')}
         testID="attr"
       />
       <Caption>Credit only — the smallest a provider's licence allows</Caption>
@@ -181,7 +182,7 @@ export const OnAMap: Story = {
           credit="Map data © Open Map Project contributors"
           scales={BOTH}
           updated="Updated 12 March"
-          onPressCredit={() => {}}
+          onPressCredit={fn().mockName('MapAttribution.onPressCredit')}
         />
       </MockMap>
       <Caption>Night</Caption>
@@ -190,7 +191,7 @@ export const OnAMap: Story = {
           credit="Map data © Open Map Project contributors"
           scales={BOTH}
           updated="Updated 12 March"
-          onPressCredit={() => {}}
+          onPressCredit={fn().mockName('MapAttribution.onPressCredit')}
         />
       </MockMap>
       <Caption>Satellite</Caption>

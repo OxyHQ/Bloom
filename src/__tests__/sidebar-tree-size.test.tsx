@@ -65,9 +65,15 @@ describe('sidebar tree section follows the sidebar size metrics', () => {
     );
     const px = (variant: Parameters<typeof typeScale>[0]) => typeScale(variant).fontSize;
     expect(fontSizeOf(view.getByText('Recently viewed'))).toBe(px(tree.label));
-    expect(fontSizeOf(view.getByText('Loft in Gracia'))).toBe(px(tree.label));
-    expect(fontSizeOf(view.getByText('Shortlist'))).toBe(px(tree.label));
-    expect(fontSizeOf(view.getByText('Two-bed flat'))).toBe(px(tree.label));
+    expect(fontSizeOf(view.getByText('Loft in Gracia', { includeHiddenElements: true }))).toBe(
+      px(tree.label),
+    );
+    expect(fontSizeOf(view.getByText('Shortlist', { includeHiddenElements: true }))).toBe(
+      px(tree.label),
+    );
+    expect(fontSizeOf(view.getByText('Two-bed flat', { includeHiddenElements: true }))).toBe(
+      px(tree.label),
+    );
     expect(fontSizeOf(view.getByText('2h'))).toBe(px(tree.meta));
     expect(fontSizeOf(view.getByText('1d'))).toBe(px(tree.meta));
     expect(fontSizeOf(view.getByText('Nothing archived'))).toBe(px(tree.status));

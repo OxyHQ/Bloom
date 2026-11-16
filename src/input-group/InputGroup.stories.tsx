@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { fn } from 'storybook/test';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -48,7 +49,12 @@ export const ButtonAddon: Story = {
         <InputGroup>
           <TextFieldInput label="Invite" value={v} onValueChange={setV} placeholder="email" />
           <InputGroupAddon divider noPadding>
-            <Button size="sm" onPress={() => {}} appearance="subtle" tone="accent">
+            <Button
+              size="sm"
+              onPress={fn().mockName('Button.onPress')}
+              appearance="subtle"
+              tone="accent"
+            >
               Send
             </Button>
           </InputGroupAddon>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { useTheme } from '../theme/use-theme';
+import { Button } from '../button';
 import { Text } from '../typography';
 import { QueuePanel } from './QueuePanel';
 import { RecentlyPlayedList } from './RecentlyPlayedList';
@@ -98,22 +98,8 @@ const RECENT: QueueTrack[] = [
   },
 ];
 
-function Canvas({ children, width }: { children: React.ReactNode; width?: number }) {
-  const theme = useTheme();
-  return (
-    <View
-      style={{
-        padding: 16,
-        gap: 16,
-        backgroundColor: theme.colors.background,
-        width: '100%',
-        maxWidth: width,
-        minHeight: 760,
-      }}
-    >
-      {children}
-    </View>
-  );
+function Canvas({ children }: { children: React.ReactNode }) {
+  return <View style={{ padding: 16, gap: 16, width: '100%' }}>{children}</View>;
 }
 
 function InteractiveQueue({
@@ -137,11 +123,7 @@ function InteractiveQueue({
   const setter = (section: QueueSection) => (section === 'queue' ? setQueue : setContext);
 
   if (closed) {
-    return (
-      <Text variant="body-medium" onPress={() => setClosed(false)}>
-        Queue closed — press to reopen
-      </Text>
-    );
+    return <Button onPress={() => setClosed(false)}>Reopen queue</Button>;
   }
 
   return (
@@ -193,23 +175,17 @@ export const States: Story = {
   render: () => (
     <Canvas>
       <View style={{ flexDirection: 'row', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-        <QueuePanel
-          style={{ height: 260, maxWidth: '100%' }}
-          nowPlaying={NOW}
-          playing={false}
-          onClose={() => {}}
-        />
-        <QueuePanel style={{ height: 300, maxWidth: '100%' }} onClose={() => {}} />
+        <QueuePanel style={{ height: 260, maxWidth: '100%' }} nowPlaying={NOW} playing={false} />
+        <QueuePanel style={{ height: 300, maxWidth: '100%' }} />
         <QueuePanel
           style={{ height: 300, maxWidth: '100%' }}
           queue={QUEUE.slice(0, 2)}
-          onClose={() => {}}
           labels={{ queueTab: 'Up next', recentTab: 'History', nextInQueue: 'Added by you' }}
         />
       </View>
       <View style={{ width: '100%', maxWidth: 360 }}>
         <Text variant="caption-1-medium">RecentlyPlayedList on its own, and empty</Text>
-        <RecentlyPlayedList items={RECENT} currentId="now" onPlay={() => {}} />
+        <RecentlyPlayedList items={RECENT} currentId="now" />
         <RecentlyPlayedList items={[]} />
       </View>
     </Canvas>
@@ -217,59 +193,12 @@ export const States: Story = {
 };
 
 /** The flat `sheet` variant at phone width, as it sits inside a bottom sheet. */
-export const Narrow: Story = {
+export const Sheet: Story = {
   render: () => (
-    <Canvas width={390}>
+    <Canvas>
       <InteractiveQueue variant="sheet" height={720} />
     </Canvas>
   ),
 };
 
 /** A wide app frame: content beside the panel. */
-export const Wide: Story = {
-  render: function WideStory() {
-    const theme = useTheme();
-    return (
-      <View
-        style={{
-          flexDirection: 'row',
-          gap: 8,
-          padding: 8,
-          height: 760,
-          backgroundColor: theme.colors.background,
-        }}
-      >
-        <View
-          style={{ flex: 1, borderRadius: 8, backgroundColor: theme.colors.backgroundSecondary }}
-        />
-        <InteractiveQueue height={744} width={380} />
-      </View>
-    );
-  },
-};
-
-/** Dark mode: the panel and the sheet. */
-export const Dark: Story = {
-  globals: { theme: 'dark' },
-  render: () => <DarkCanvas />,
-};
-
-function DarkCanvas() {
-  const theme = useTheme();
-  return (
-    <View
-      style={{
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 16,
-        padding: 16,
-        backgroundColor: theme.colors.background,
-      }}
-    >
-      <InteractiveQueue height={720} />
-      <View style={{ width: '100%', maxWidth: 390 }}>
-        <InteractiveQueue variant="sheet" height={720} initialTab="recent" />
-      </View>
-    </View>
-  );
-}

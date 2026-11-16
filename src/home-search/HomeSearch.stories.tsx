@@ -1,10 +1,14 @@
+import { AppShell } from '../app-shell';
+import { Screen, ScreenScrollView } from '../screen';
+import { PageHeader } from '../page-header';
+import { PageFooter } from '../page-footer';
+import { fn } from 'storybook/test';
 import React, { useState } from 'react';
-import { ScrollView, View, useWindowDimensions } from 'react-native';
+import { View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Button, LinkButton } from '../button';
+import { Button } from '../button';
 import { RangeCalendar, type DateRange } from '../date-picker';
-import { Divider } from '../divider';
 import { RiBuilding2Line } from '../icons/remix/RiBuilding2Line';
 import { RiHome4Line } from '../icons/remix/RiHome4Line';
 import { RiMapPinLine } from '../icons/remix/RiMapPinLine';
@@ -380,6 +384,7 @@ function DesktopDemo({
 }) {
   const theme = useTheme();
   const [mode, setMode] = useState<HomeSearchMode>(initialMode);
+  const [searched, setSearched] = useState(false);
   const [segment, setSegment] = useState<string | null>(initialSegment);
   const api = useSearchState(initial);
 
@@ -538,7 +543,7 @@ export const BarsPerMode: Story = {
             <HomeSearchBar
               segments={segmentsFor(mode, filled)}
               activeSegment={null}
-              onActiveSegmentChange={() => {}}
+              onActiveSegmentChange={fn().mockName('HomeSearchBar.onActiveSegmentChange')}
             />
           </View>
         ))}
@@ -678,6 +683,7 @@ function MobileFlow({
 }) {
   const theme = useTheme();
   const [mode, setMode] = useState<HomeSearchMode>(initialMode);
+  const [searched, setSearched] = useState(false);
   const [open, setOpen] = useState<string>('location');
   const api = useSearchState();
   const { state, set } = api;
@@ -829,8 +835,40 @@ function MobileFlow({
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.backgroundSecondary }}>
-      <ScrollView
+    <Screen
+      header={
+        <PageHeader
+          title={searched ? 'Search ready' : 'Find a home'}
+          subtitle={
+            searched
+              ? `${state.location ?? 'Anywhere'} · ${DEFAULT_HOME_SEARCH_MODE_LABELS[mode]}`
+              : undefined
+          }
+        />
+      }
+      bottomBar={
+        <PageFooter
+          actions={
+            <Button icon={RiSearchLine} onPress={() => setSearched(true)}>
+              Search
+            </Button>
+          }
+        >
+          <Button
+            appearance="plain"
+            linkTone="primary"
+            onPress={() => {
+              set(INITIAL);
+              setSearched(false);
+            }}
+          >
+            Clear all
+          </Button>
+        </PageFooter>
+      }
+      style={{ backgroundColor: theme.colors.backgroundSecondary }}
+    >
+      <ScreenScrollView
         contentContainerStyle={{
           paddingTop: 16,
           paddingBottom: 16,
@@ -864,55 +902,10 @@ function MobileFlow({
             {step.content}
           </StaySearchStep>
         ))}
-      </ScrollView>
-      <Divider />
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingTop: 12,
-          paddingBottom: 12,
-          paddingLeft: 20,
-          paddingRight: 16,
-          backgroundColor: theme.colors.card,
-        }}
-      >
-        <LinkButton onPress={() => set(INITIAL)}>Clear all</LinkButton>
-        <Button size="lg" icon={RiSearchLine} tone="accent" appearance="solid">
-          Search
-        </Button>
-      </View>
-    </View>
+      </ScreenScrollView>
+    </Screen>
   );
 }
-
-function PhoneFrame({ children }: { children: React.ReactNode }) {
-  const theme = useTheme();
-  return (
-    <View
-      style={{
-        width: 375,
-        maxWidth: '100%',
-        height: 780,
-        borderRadius: 16,
-        overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-      }}
-    >
-      {children}
-    </View>
-  );
-}
-
-const mobileStory = (mode: HomeSearchMode): Story => ({
-  render: () => (
-    <PhoneFrame>
-      <MobileFlow initialMode={mode} />
-    </PhoneFrame>
-  ),
-});
 
 /** The compact triggers per mode at 343: the summary line says what the mode searches. */
 export const MobileTriggers: Story = {
@@ -921,44 +914,35 @@ export const MobileTriggers: Story = {
       <SearchModeTabs<HomeSearchMode>
         variant="segmented"
         value="rent"
-        onValueChange={() => {}}
+        onValueChange={fn().mockName('SearchModeTabs.onValueChange')}
         labels={{ stays: 'Holidays' }}
       />
       <StaySearchCompact
-        onPress={() => {}}
+        onPress={fn().mockName('Find a home to rent.onPress')}
         title="Find a home to rent"
         summary="Anywhere · Any time · Any budget"
-        onFilterPress={() => {}}
+        onFilterPress={fn().mockName('Find a home to rent.onFilterPress')}
       />
       <StaySearchCompact
-        onPress={() => {}}
+        onPress={fn().mockName('Find a home to buy.onPress')}
         title="Find a home to buy"
         summary="Marrowfield · €150K – €300K · House"
-        onFilterPress={() => {}}
+        onFilterPress={fn().mockName('Find a home to buy.onFilterPress')}
       />
       <StaySearchCompact
-        onPress={() => {}}
+        onPress={fn().mockName('StaySearchCompact.onPress')}
         summary="Anywhere · Any week · Add guests"
-        onFilterPress={() => {}}
+        onFilterPress={fn().mockName('StaySearchCompact.onFilterPress')}
       />
       <StaySearchCompact
-        onPress={() => {}}
+        onPress={fn().mockName('Swap your home.onPress')}
         title="Swap your home"
         summary="Solvia Bay · Oct 12 – 26 · 2+ bd"
-        onFilterPress={() => {}}
+        onFilterPress={fn().mockName('Swap your home.onFilterPress')}
       />
     </View>
   ),
 };
-
-/** The rent flow at 375: Location, Move-in, Budget; switch mode with the pill tabs. */
-export const MobileRent: Story = mobileStory('rent');
-/** The buy flow at 375: Location, Price, Type. */
-export const MobileBuy: Story = mobileStory('buy');
-/** The vacation-rental flow at 375: Where, When, Who. */
-export const MobileStays: Story = mobileStory('stays');
-/** The swap flow at 375: Where, Dates, Home size. */
-export const MobileSwap: Story = mobileStory('swap');
 
 // ---------------------------------------------------------------------------
 //  Saved searches
@@ -987,9 +971,9 @@ function SavedSearchList({ width }: { width: number }) {
         criteria={['Rent', '€800 – €1,200', '2+ bedrooms', 'Furnished']}
         newCount={12}
         alertFrequency="Instant alerts"
-        onPress={() => {}}
-        onEdit={() => {}}
-        onDelete={() => {}}
+        onPress={fn().mockName('2-bed flats in Old Halden.onPress')}
+        onEdit={fn().mockName('2-bed flats in Old Halden.onEdit')}
+        onDelete={fn().mockName('2-bed flats in Old Halden.onDelete')}
         testID="saved-0"
       />
       <SavedSearchCard
@@ -998,16 +982,16 @@ function SavedSearchList({ width }: { width: number }) {
         criteria={['Buy', '€300K – €600K', 'House', 'Garden', 'A–C energy']}
         newCount={3}
         alertFrequency="Daily alerts"
-        onPress={() => {}}
-        onEdit={() => {}}
-        onDelete={() => {}}
+        onPress={fn().mockName('Family houses by the lake in Marrowfield.onPress')}
+        onEdit={fn().mockName('Family houses by the lake in Marrowfield.onEdit')}
+        onDelete={fn().mockName('Family houses by the lake in Marrowfield.onDelete')}
       />
       <SavedSearchCard
         title="Summer swap, Solvia Bay"
         criteria={['Swap', 'Jul 4 – 25', 'Sleeps 4']}
-        onPress={() => {}}
-        onEdit={() => {}}
-        onDelete={() => {}}
+        onPress={fn().mockName('Summer swap, Solvia Bay.onPress')}
+        onEdit={fn().mockName('Summer swap, Solvia Bay.onEdit')}
+        onDelete={fn().mockName('Summer swap, Solvia Bay.onDelete')}
       />
     </View>
   );
@@ -1046,38 +1030,37 @@ export const SaveButton: Story = {
         }}
       >
         <SaveSearchButton saved={saved} onSavedChange={setSaved} testID="save" />
-        <SaveSearchButton saved onSavedChange={() => {}} />
-        <SaveSearchButton saved={false} onSavedChange={() => {}} disabled />
+        <SaveSearchButton saved onSavedChange={fn().mockName('SaveSearchButton.onSavedChange')} />
+        <SaveSearchButton
+          saved={false}
+          onSavedChange={fn().mockName('SaveSearchButton.onSavedChange')}
+          disabled
+        />
       </View>
     );
   },
 };
 
-// ---------------------------------------------------------------------------
-//  Dark
-// ---------------------------------------------------------------------------
-
-function DarkCanvas() {
-  const theme = useTheme();
-  return (
-    <View style={{ padding: 24, gap: 24, backgroundColor: theme.colors.background }}>
-      <DesktopDemo
-        initialMode="buy"
-        initialSegment="propertyType"
-        initial={{ location: 'Marrowfield', types: ['apartment'] }}
-      />
-      <View style={{ flexDirection: 'row', gap: 24, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-        <PhoneFrame>
-          <MobileFlow initialMode="rent" />
-        </PhoneFrame>
-        <SavedSearchList width={400} />
-      </View>
-    </View>
-  );
-}
-
-/** Dark: the buy bar with property types open, the rent flow and saved searches. */
-export const Dark: Story = {
-  globals: { theme: 'dark' },
-  render: () => <DarkCanvas />,
+/** A compact search flow; choose the product mode in Controls and the viewport in Storybook. */
+export const CompactFlow: StoryObj<{ mode: HomeSearchMode }> = {
+  parameters: { layout: 'fullscreen' },
+  args: { mode: 'rent' },
+  argTypes: { mode: { control: 'select', options: ['rent', 'buy', 'stays', 'swap'] } },
+  render: (args) => (
+    <AppShell
+      header={null}
+      scroll="fixed"
+      contentMaxWidth="none"
+      panelLayout={{
+        flow: 'bounded',
+        panels: [
+          {
+            id: 'search',
+            span: 1,
+            content: <MobileFlow key={args.mode} initialMode={args.mode} />,
+          },
+        ],
+      }}
+    />
+  ),
 };

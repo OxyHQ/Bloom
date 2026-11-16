@@ -79,3 +79,9 @@ it('composes the child ref and forwards hidden semantics without another DOM nod
   expect(childRef.current).toBe(anchor);
   expect(anchor.getAttribute('aria-hidden')).toBe('true');
 });
+
+it('does not rerender ordinary buttons just to acquire a disabled-presence host', () => {
+  const content = jest.fn(() => 'Action');
+  act(() => root.render(<Button>{content}</Button>));
+  expect(content).toHaveBeenCalledTimes(1);
+});

@@ -4,7 +4,6 @@ import Svg, { Path } from 'react-native-svg';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Text } from '../typography';
-import { useTheme } from '../theme/use-theme';
 import {
   SocialButton,
   SOCIAL_PROVIDERS,
@@ -26,12 +25,8 @@ const BRANDS = Object.keys(SOCIAL_PROVIDERS) as SocialProvider[];
 const APPEARANCES: SocialButtonAppearance[] = ['colorful', 'black', 'white'];
 
 function Surface({ children }: { children: React.ReactNode }) {
-  const theme = useTheme();
   return (
-    <View
-      testID="social-surface"
-      style={{ padding: 16, maxWidth: '100%', gap: 24, backgroundColor: theme.colors.background }}
-    >
+    <View testID="social-surface" style={{ padding: 16, maxWidth: '100%', gap: 24 }}>
       {children}
     </View>
   );

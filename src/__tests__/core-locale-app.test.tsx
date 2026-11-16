@@ -4,7 +4,7 @@
  * own `labels` / `*Label` prop still wins. The web-only strings are in
  * `core-locale.web.test.tsx`.
  */
-import React from 'react';
+import type React from 'react';
 import * as ReactNative from 'react-native';
 import { render, within } from '@testing-library/react-native';
 
@@ -139,8 +139,8 @@ describe('calendar, data-table, notifications, app-shell', () => {
           inboxAccounts={[{ email: 'me@example.com', feeds: [] }]}
         />,
       );
-      expect(screen.getByText('Crear cita')).toBeTruthy();
-      expect(screen.queryByText('Nuevo evento')).toBeNull();
+      expect(screen.getByLabelText('Crear cita')).toBeTruthy();
+      expect(screen.queryByLabelText('Nuevo evento')).toBeNull();
       expect(screen.getByLabelText('Bandeja de entrada')).toBeTruthy();
     });
   });

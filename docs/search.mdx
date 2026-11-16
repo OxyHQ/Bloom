@@ -157,3 +157,41 @@ against the logical edges. Use `fieldChromeClassName` for background/border/ring
 ```
 
 `TextFieldIcon` also accepts `size` when composing a field directly.
+
+
+## Adaptive toolbar search
+
+`presentation="auto"` shows the input when its allocated container is at least
+`expandedMinWidth` (default 240px). In a narrower slot it shows the canonical
+Button. Activating it expands Search and focuses the existing input. Resizing
+never replaces the input, clears the query or steals focus. A focused field or
+active query stays visible; explicit close can hide it while retaining the query.
+
+```tsx
+<Search presentation="auto" value={query} onValueChange={setQuery}
+  onClearText={() => setQuery('')} containerStyle={{ flex: 1 }} />
+```
+
+Use `presentation="collapsible"` for an always-collapsed resting state, as in
+SidebarToolbar. `open` / `onOpenChange` allow the surrounding toolbar to animate
+its allocation and adjacent actions. `clearOnClose` opts into clearing when
+closing; ordinary clear only clears the query. `triggerProps` configures the
+same Button used everywhere else, and `trailing` accepts a field action such as
+voice search. Escape closes only Search, returning focus to its trigger. Empty
+blur closes after a short delay unless focus returns inside the search.
+
+
+For a header, pass `<Search presentation="auto" … />` to `PageHeader.search`; the integration demo is
+**Composition / Layout / Page Header / Adaptive Search**. The capsule animates
+width and content presence together using the shared motion/material owners.
+Its input remains mounted, inactive controls leave focus and accessibility,
+and interrupted transitions continue from their current width. Reduced motion
+lands immediately.
+
+
+On touch web, a standard Search trigger retains Button's 36px visible capsule
+inside a 44px interactive host. The expanded field reserves the same host
+height; TextField's shared `chromeInset` keeps its material, resting outline and
+focus ring together at 36px. The input and its clear/back controls retain their
+full hit areas. The same input and trigger stay mounted through the transition.
+This does not change the existing native Search geometry.

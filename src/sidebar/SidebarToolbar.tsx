@@ -1,18 +1,16 @@
-import React, { type ComponentRef, useEffect, useRef, useState } from 'react';
-import type { TextInput } from 'react-native';
+import { useTouchInput } from '../styles/pointer';
+import { BUTTON_GEOMETRY, BUTTON_TOUCH_TARGET } from '../button/shared';
+import { useEffect, useState } from 'react';
 import Animated, {
   Easing,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { Button, CloseButton } from '../button';
+import { Search } from '../search';
 import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
-import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { useCommonMessages } from '../locale/common-messages';
 import { StyledView } from '../styles/styled-primitives';
-import { TextField, TextFieldIcon, TextFieldInput } from '../text-field';
-import { useSidebarPalette } from './palette';
 
 import type { SidebarToolbarProps } from './types';
 import { IS_WEB } from '../styles/platform';
@@ -20,8 +18,6 @@ import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 const AnimatedView = Animated.createAnimatedComponent(StyledView);
 
-/** How long after the field loses focus the empty search closes. */
-const BLUR_CLOSE_MS = 150;
 /** Between two slots of the row. */
 const SLOT_GAP = 8;
 
@@ -32,11 +28,10 @@ const SLOT_GAP = 8;
  */
 export function SidebarToolbar({ actions = [], search, style, testID }: SidebarToolbarProps) {
   const common = useCommonMessages();
-  const palette = useSidebarPalette();
+  const touch = useTouchInput();
+  const height = Math.max(BUTTON_GEOMETRY.md.height, touch ? BUTTON_TOUCH_TARGET : 0);
   const direction = useDirectionProps();
   const rtl = useIsRtl();
-  const input = useRef<ComponentRef<typeof TextInput>>(null);
-  const trigger = useRef<React.ComponentRef<typeof Button>>(null);
   const [width, setWidth] = useState(0);
   const reduced = usePrefersReducedMotion();
   const progress = useSharedValue(Number(search.open));
@@ -53,11 +48,6 @@ export function SidebarToolbar({ actions = [], search, style, testID }: SidebarT
         ? Number(search.open)
         : withTiming(Number(search.open), { duration: 200, easing });
     }
-    if (search.open) {
-      const frame = requestAnimationFrame(() => input.current?.focus());
-      return () => cancelAnimationFrame(frame);
-    }
-    return undefined;
   }, [search.open, reduced, progress, actionsProgress]);
   const slots = actions.length + 1;
   const gaps = SLOT_GAP * (slots - 1);
@@ -83,29 +73,13 @@ export function SidebarToolbar({ actions = [], search, style, testID }: SidebarT
       transform: [{ translateX: (rtl ? -8 : 8) * hidden }, { scale: 1 - 0.05 * hidden }],
     };
   }, [actionsProgress, rtl]);
-  const close = () => {
-    search.onValueChange('');
-    search.onOpenChange(false);
-    requestAnimationFrame(() => trigger.current?.focus?.());
-  };
-  // Leaving the field leaves the search when nothing was typed: an empty field open on its own is
-  // only in the way. With text it stays, so the filter it applies is never hidden. The decision waits
-  // a moment so that a press on the field's own clear button (which blurs the field first) is
-  // that button's, and the value it reads is the latest one.
-  const value = useRef(search.value);
-  value.current = search.value;
-  const onBlur = () => {
-    setTimeout(() => {
-      if (value.current === '') search.onOpenChange(false);
-    }, BLUR_CLOSE_MS);
-  };
   const label = search.accessibilityLabel ?? common.search;
   return (
     <StyledView
       {...direction}
       testID={testID}
-      className="relative h-9 shrink-0"
-      style={[{ height: 36 }, style]}
+      className="relative shrink-0"
+      style={[{ height }, style]}
       onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
     >
       <StyledView
@@ -131,7 +105,7 @@ export function SidebarToolbar({ actions = [], search, style, testID }: SidebarT
       </StyledView>
       <AnimatedView
         testID={testID ? `${testID}-search` : undefined}
-        className={`absolute inset-y-0 start-0 z-10 overflow-hidden rounded-full bg-background-tertiary-default ${IS_WEB ? 'transition-[width] duration-300 ease-in-out motion-reduce:transition-none' : ''}`}
+        className={`absolute inset-y-0 start-0 z-10 overflow-hidden rounded-full ${IS_WEB ? 'transition-[width] duration-300 ease-in-out motion-reduce:transition-none' : ''}`}
         style={[
           {
             position: 'absolute',
@@ -139,69 +113,23 @@ export function SidebarToolbar({ actions = [], search, style, testID }: SidebarT
             bottom: 0,
             insetInlineStart: 0,
             borderRadius: 999,
-            backgroundColor: palette.tertiary,
           },
           IS_WEB ? { width: search.open ? '100%' : webCollapsedWidth } : searchWidth,
         ]}
       >
-        {!search.open ? (
-          <Button
-            ref={trigger}
-            appearance="subtle"
-            tone="neutral"
-            iconOnly
-            leadingIcon={RiSearchLine}
-            accessibilityLabel={label}
-            aria-expanded={false}
-            className="absolute inset-0 w-full min-w-0 rounded-full border-0 bg-background-tertiary-default text-foreground-icon-secondary shadow-none transition-opacity duration-150 hover:bg-background-tertiary-hover active:bg-background-tertiary-hover motion-reduce:transition-none"
-            style={{
-              borderWidth: 0,
-              borderRadius: 999,
-              width: '100%',
-              height: 36,
-            }}
-            onPress={() => search.onOpenChange(true)}
-          />
-        ) : (
-          <StyledView
-            className="relative transition-opacity duration-150 motion-reduce:transition-none"
-            style={{ flex: 1 }}
-          >
-            <TextField
-              radius={999}
-              style={{
-                height: 36,
-                borderWidth: 0,
-                backgroundColor: palette.tertiary,
-                paddingInlineStart: 12,
-                paddingInlineEnd: 36,
-              }}
-            >
-              <TextFieldIcon icon={RiSearchLine} />
-              <TextFieldInput
-                inputRef={input}
-                label={label}
-                placeholder={search.placeholder ?? label}
-                value={search.value}
-                onChangeText={search.onValueChange}
-                onBlur={onBlur}
-                onKeyPress={(event) => {
-                  if (event.nativeEvent.key === 'Escape') close();
-                }}
-              />
-            </TextField>
-            <StyledView
-              className="absolute end-2 top-2"
-              style={{ position: 'absolute', insetInlineEnd: 8, top: 8 }}
-            >
-              <CloseButton
-                accessibilityLabel={search.closeLabel ?? common.close}
-                size="xs"
-                onPress={close}
-              />
-            </StyledView>
-          </StyledView>
-        )}
+        <Search
+          presentation="collapsible"
+          open={search.open}
+          onOpenChange={search.onOpenChange}
+          value={search.value}
+          onValueChange={search.onValueChange}
+          onClearText={() => search.onValueChange('')}
+          clearOnClose
+          label={label}
+          placeholder={search.placeholder ?? label}
+          closeLabel={search.closeLabel ?? common.close}
+          triggerProps={{ style: { width: '100%' } }}
+        />
       </AnimatedView>
     </StyledView>
   );

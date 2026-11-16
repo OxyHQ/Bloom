@@ -5,19 +5,45 @@
 // desync those reads. Back it with a ref so identity is preserved per call site.
 const { useRef } = require('react') as typeof import('react');
 
+// Web-owned effects can subscribe to a shared value without React renders.
+// Keep listener methods non-enumerable, like the existing value-only fixture shape.
+function mutableBox(initial: unknown) {
+  let value = initial;
+  const listeners = new Map<number, (next: unknown) => void>();
+  return Object.defineProperties(
+    {},
+    {
+      value: {
+        configurable: true,
+        enumerable: true,
+        get: () => value,
+        set: (next: unknown) => {
+          if (Object.is(value, next)) return;
+          value = next;
+          for (const listener of listeners.values()) listener(next);
+        },
+      },
+      addListener: {
+        value: (id: number, listener: (next: unknown) => void) => listeners.set(id, listener),
+      },
+      removeListener: { value: (id: number) => listeners.delete(id) },
+    },
+  ) as { value: unknown };
+}
+
 export const ReduceMotion = { System: 'system', Always: 'always', Never: 'never' } as const;
 
 const Reanimated = {
   ReduceMotion,
   useSharedValue: (init: unknown) => {
     const ref = useRef<{ value: unknown } | null>(null);
-    if (ref.current === null) ref.current = { value: init };
+    if (ref.current === null) ref.current = mutableBox(init);
     return ref.current;
   },
   // Mirror useSharedValue: a stable box whose `.value` is the derivation result.
   useDerivedValue: (fn: () => unknown) => {
     const ref = useRef<{ value: unknown } | null>(null);
-    if (ref.current === null) ref.current = { value: undefined };
+    if (ref.current === null) ref.current = mutableBox(undefined);
     ref.current.value = fn();
     return ref.current;
   },
@@ -25,7 +51,7 @@ const Reanimated = {
   // one per flight because the flight is started by an imperative call and only
   // read by the layer, so there is no hook position to create it in. The real
   // one is a box with a `.value`; so is this.
-  makeMutable: (init: unknown) => ({ value: init }),
+  makeMutable: (init: unknown) => mutableBox(init),
   useAnimatedStyle: (fn: () => Record<string, unknown>) => fn(),
   // RENDER-driven, because there is no UI thread here to observe a `.value`
   // write from. The real hook re-runs `prepare` whenever any shared value it

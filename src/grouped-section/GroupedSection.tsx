@@ -148,6 +148,7 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
   descriptionLines = 2,
   value,
   rightElement,
+  wrapControl = false,
   showChevron,
   destructive = false,
   onPress,
@@ -188,6 +189,7 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
       style={[
         styles.itemContainer,
         compact ? styles.itemContainerCompact : undefined,
+        wrapControl ? styles.wrappingItem : undefined,
         leftInset !== undefined ? { paddingLeft: leftInset } : undefined,
       ]}
       testID="settings-list-item-content"
@@ -203,7 +205,7 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
         <View style={styles.textContainer}>{customContent}</View>
       ) : (
         <>
-          <View style={styles.textContainer}>
+          <View style={[styles.textContainer, wrapControl ? styles.wrappingText : undefined]}>
             <Text
               variant={compact ? 'body-regular' : undefined}
               style={[compact ? undefined : styles.title, { color: titleColor }]}
@@ -301,6 +303,7 @@ export const GroupedSection = memo<GroupedSectionProps>(function GroupedSection(
   density: densityProp,
   radius: radiusProp,
   separator: separatorProp,
+  testID,
 }) {
   const theme = useTheme();
   const layer = useSurfaceLayer();
@@ -316,7 +319,10 @@ export const GroupedSection = memo<GroupedSectionProps>(function GroupedSection(
         : layer.fill;
 
   return (
-    <View style={[compact ? styles.groupContainerCompact : styles.groupContainer, style]}>
+    <View
+      testID={testID}
+      style={[compact ? styles.groupContainerCompact : styles.groupContainer, style]}
+    >
       {title ? (
         compact ? (
           // A desktop form's section title: the headline style (bold body), in the label's colour,
@@ -413,6 +419,10 @@ const styles = StyleSheet.create({
     minHeight: GROUPED_SECTION_GEOMETRY.compact.minHeight,
     gap: GROUPED_SECTION_GEOMETRY.compact.gap,
   },
+  // Yoga only honors a minWidth in this wrap decision: a positive flexBasis
+  // on the only grow/shrink child is computed as zero on native.
+  wrappingItem: { flexWrap: 'wrap', rowGap: 8 },
+  wrappingText: { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 140 },
   iconContainer: {
     minWidth: 28,
     minHeight: 28,

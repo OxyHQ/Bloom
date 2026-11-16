@@ -1,5 +1,6 @@
+import { ScrollArea as ScrollView } from '../layout';
 import React, { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Card, CardBody } from '../card';
@@ -154,13 +155,13 @@ export const Edges: Story = {
   ),
 };
 
-/** 360px, with a long heading that has to truncate rather than wrap. */
-export const Phone: Story = {
-  render: function PhoneStory() {
+/** A long heading truncates as the viewport narrows. */
+export const LongHeading: Story = {
+  render: function LongHeadingStory() {
     const [active, setActive] = useState('lens');
     return (
       <Page>
-        <ScrollView style={{ width: '100%', maxWidth: 360 }}>
+        <ScrollView style={{ width: '100%' }}>
           <OutlineNav
             headings={[
               ...HEADINGS,

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Image, View } from 'react-native';
+import { BloomImage as Image } from '../image';
+import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { MediaInsetBorder } from './index';

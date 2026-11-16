@@ -2,7 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 
 import { Badge } from '../../src/badge';
-import { Button, LinkButton } from '../../src/button';
+import { Button } from '../../src/button';
 import { Card, CardBody, CardHeader, CardTitle } from '../../src/card';
 import { SavedSearchCard } from '../../src/home-search';
 import { RiAlarmWarningLine, RiArrowRightLine, RiMegaphoneLine } from '../../src/icons/remix';
@@ -11,8 +11,6 @@ import { useTheme } from '../../src/theme/use-theme';
 import { Text } from '../../src/typography';
 import { AREA_PRICES, NEIGHBOURHOOD, REPORTS, SAVED_SEARCHES } from './data';
 import { useHousingNav } from './HousingHeader';
-
-const noop = () => undefined;
 
 /**
  * One widget: a title row with an optional action, then the body. Every widget
@@ -67,9 +65,9 @@ export function HousingWidgets({ testID = 'housing-widgets' }: { testID?: string
       <Widget
         title="Saved searches"
         action={
-          <LinkButton linkTone="secondary" size="sm" onPress={() => go('saved')}>
+          <Button appearance="plain" linkTone="secondary" size="sm" onPress={() => go('saved')}>
             See all
-          </LinkButton>
+          </Button>
         }
         testID="housing-widget-searches"
       >
@@ -79,7 +77,7 @@ export function HousingWidgets({ testID = 'housing-widgets' }: { testID?: string
               key={id}
               {...search}
               onPress={() => go('explore')}
-              onEdit={noop}
+              onEdit={() => go('saved')}
               testID={`housing-widget-search-${id}`}
             />
           ))}

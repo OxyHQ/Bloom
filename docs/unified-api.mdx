@@ -46,7 +46,7 @@ Viewport access (`viewportRef`) operates on the existing horizontal owner; panel
 
 ## Controls and overlays
 
-Use `appearance` for visual emphasis, `tone` for semantic colour and `size` for geometry. Named button adapters remain useful where they express intent; they compose the same Button implementation. `LinkButton` uses `linkTone`; `InverseButton` supplies a paired inverse palette. `iconOnly` describes square icon-control geometry.
+Use `appearance` for visual emphasis, `tone` for semantic colour and `size` for geometry. Named button adapters remain useful where they express intent; they compose the same Button implementation. `Button` uses `linkTone`; `InverseButton` supplies a paired inverse palette. `iconOnly` describes square icon-control geometry.
 
 Boolean controls use `checked` / `defaultChecked` / `onCheckedChange`; value selections use `value` / `defaultValue` / `onValueChange` where uncontrolled operation is supported. Radio options retain their option value and cannot toggle themselves off. Field membership associates the visible label, help and error with the actual input. Field disabled/invalid constraints combine with the control's state rather than acting as overridable visual defaults.
 
@@ -71,8 +71,8 @@ These removals require a breaking release. Migrate consumers before adopting tha
 | Button `variant="text"` | `appearance="plain" tone="accent"` |
 | Button `variant="destructive"` | `appearance="solid" tone="danger"` |
 | Button `variant="icon"` | `appearance="outline" tone="neutral" iconOnly` |
-| Button `variant="inverse"` / `link` | `InverseButton` / `LinkButton` |
-| LinkButton `variant` | `linkTone` |
+| Button `variant="inverse"` / `link` | `InverseButton` / `Button` |
+| Button `variant` | `linkTone` |
 | Card `variant="plain"` | `appearance="solid" elevation="none"` |
 | Card `variant="elevated"` / `outlined` / `filled` | `appearance="solid"` / `outline` / `subtle` |
 | Switch `value` / `onValueChange` | `checked` / `onCheckedChange` |

@@ -1,4 +1,4 @@
-import React from 'react';
+import { alert } from '../surfaces';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -36,13 +36,30 @@ export const Default: Story = {
       <RowActions
         {...args}
         actions={[
-          { icon: RiDeleteBin6Line, label: 'Delete', accessibilityLabel: `Delete ${args.name}` },
-          { icon: RiEditLine, label: 'Edit' },
+          {
+            icon: RiDeleteBin6Line,
+            label: 'Delete',
+            onPress: () => alert('Delete', 'Invoice.pdf'),
+            accessibilityLabel: `Delete ${args.name}`,
+          },
+          { icon: RiEditLine, label: 'Edit', onPress: () => alert('Edit', 'Invoice.pdf') },
         ]}
         menu={[
-          { icon: RiUserLine, label: 'View owner' },
-          { icon: RiFileCopyLine, label: 'Copy link' },
-          { icon: RiDownload2Line, label: 'Download' },
+          {
+            icon: RiUserLine,
+            label: 'View owner',
+            onPress: () => alert('View owner', 'Invoice.pdf'),
+          },
+          {
+            icon: RiFileCopyLine,
+            label: 'Copy link',
+            onPress: () => alert('Copy link', 'Invoice.pdf'),
+          },
+          {
+            icon: RiDownload2Line,
+            label: 'Download',
+            onPress: () => alert('Download', 'Invoice.pdf'),
+          },
         ]}
       />
     </View>
@@ -53,12 +70,20 @@ export const MenuOnly: Story = {
   args: { menuAppearance: 'outline', menuWidth: 200 },
   render: (args) => (
     <View style={{ width: 160 }}>
-      <RowActions {...args} menu={[{ label: 'Rename' }, { label: 'Move to folder' }]} />
+      <RowActions
+        {...args}
+        menu={[
+          { label: 'Rename', onPress: () => alert('Rename', 'Invoice.pdf') },
+          { label: 'Move to folder', onPress: () => alert('Move to folder', 'Invoice.pdf') },
+        ]}
+      />
     </View>
   ),
 };
 
 export const SingleButton: Story = {
   parameters: { controls: { disable: true } },
-  render: () => <RowActionButton icon={RiEditLine} label="Edit" />,
+  render: () => (
+    <RowActionButton icon={RiEditLine} label="Edit" onPress={() => alert('Edit', 'Invoice.pdf')} />
+  ),
 };

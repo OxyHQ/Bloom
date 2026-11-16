@@ -24,7 +24,6 @@ import {
   ChatEmptyState,
   ChatHeader,
   ChatInfoPanel,
-  ChatMemberRow,
   ChatSplitLayout,
   JumpToMentionButton,
   PinnedMessageBar,
@@ -248,7 +247,7 @@ describe('ChatHeader identity and actions', () => {
       <ChatHeader
         title="Ana"
         onPressMore={() => {}}
-        renderMore={() => <ChatMemberRow member={MEMBERS[0] as ChatMember} testID="custom-more" />}
+        renderMore={() => <span data-testid="custom-more">More</span>}
       />,
     );
     expect(maybeTestId('custom-more')).not.toBeNull();
@@ -647,35 +646,18 @@ describe('ChatEmptyState', () => {
 //  ChatMemberRow
 // ---------------------------------------------------------------------------
 
-describe('ChatMemberRow', () => {
-  it('composes the name, the role and the second line into ONE announcement', () => {
-    mount(<ChatMemberRow member={MEMBERS[0] as ChatMember} onPress={() => {}} testID="row" />);
-    expect(byTestId('row').getAttribute('aria-label')).toBe('Ana Restrepo, Owner, online');
-  });
-
-  it('badges owner and admin, and only those', () => {
-    mount(<ChatMemberRow member={MEMBERS[0] as ChatMember} testID="row" />);
-    expect(byTestId('row-role').textContent).toBe('Owner');
-
-    mount(<ChatMemberRow member={MEMBERS[1] as ChatMember} testID="row" />);
-    expect(byTestId('row-role').textContent).toBe('Admin');
-
-    mount(<ChatMemberRow member={MEMBERS[2] as ChatMember} testID="row" />);
-    expect(maybeTestId('row-role')).toBeNull();
-
-    mount(<ChatMemberRow member={{ id: 'x', name: 'Plain', role: 'member' }} testID="row" />);
-    expect(maybeTestId('row-role')).toBeNull();
-  });
-
-  it('takes translated role words', () => {
-    mount(
-      <ChatMemberRow
-        member={MEMBERS[0] as ChatMember}
-        roleLabels={{ owner: 'Propietaria' }}
-        testID="row"
-      />,
+describe('Shared member rows in ChatInfoPanel', () => {
+  it('composes the name, role and second line into one open target', () => {
+    mount(<ChatInfoPanel members={[MEMBERS[0] as ChatMember]} onPressMember={() => {}} />);
+    expect(byTestId('chat-info-member-m1-link').getAttribute('aria-label')).toBe(
+      'Ana Restrepo, Owner, online',
     );
-    expect(byTestId('row-role').textContent).toBe('Propietaria');
+  });
+  it('badges only owner and admin, including translated labels', () => {
+    mount(<ChatInfoPanel members={MEMBERS} roleLabels={{ owner: 'Propietaria' }} />);
+    expect(byTestId('chat-info-member-m1-role').textContent).toBe('Propietaria');
+    expect(byTestId('chat-info-member-m2-role').textContent).toBe('Admin');
+    expect(maybeTestId('chat-info-member-m3-role')).toBeNull();
   });
 });
 
@@ -833,7 +815,7 @@ describe('ChatInfoPanel', () => {
       />,
     );
     expect(byTestId('panel-close').getAttribute('aria-label')).toBe('Close');
-    expect(byTestId('panel-add-member').getAttribute('aria-label')).toBe('Add members');
+    expect(byTestId('panel-add-member-link').getAttribute('aria-label')).toBe('Add members');
   });
 });
 

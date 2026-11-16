@@ -5,11 +5,9 @@ import { AppShell, AppShellMenuButton, NotificationBell } from '../../src/app-sh
 import { PageHeader } from '../../src/page-header';
 import { Avatar } from '../../src/avatar';
 import { Breadcrumb, BreadcrumbItem } from '../../src/breadcrumb';
-import { Button } from '../../src/button';
 import type { ButtonIconComponent } from '../../src/button/types';
-import type { DataTableRowActionItem } from '../../src/data-table';
+
 import {
-  RiAddFill,
   RiAsterisk,
   RiBankCardLine,
   RiBankLine,
@@ -17,10 +15,7 @@ import {
   RiCalendarLine,
   RiChatAiLine,
   RiCustomerServiceLine,
-  RiDeleteBin6Line,
   RiDownloadCloud2Line,
-  RiEditLine,
-  RiFilter3Fill,
   RiFolder6Line,
   RiGitPullRequestLine,
   RiGroupLine,
@@ -169,7 +164,7 @@ export const NAV_ITEMS: SidebarNavItem[] = [
 
 export const SECONDARY_ITEMS: SidebarNavItem[] = [
   { key: 'support', label: 'Support', icon: RiCustomerServiceLine },
-  { key: 'settings', label: 'Settings', icon: RiSettings4Line, onPress: () => {} },
+  { key: 'settings', label: 'Settings', icon: RiSettings4Line },
 ];
 
 export const ACCOUNT: SidebarAccount = {
@@ -180,8 +175,6 @@ export const ACCOUNT: SidebarAccount = {
     { id: 's', name: 'Sam Rivera', avatar: { initials: 'S', color: 'lime' } },
     { id: 'l', name: 'Lena Park', avatar: { initials: 'L', color: 'pink' } },
   ],
-  onAddUser: () => {},
-  onManage: () => {},
 };
 
 export const TEAM: SidebarTeam = {
@@ -322,8 +315,6 @@ export interface DashboardShellProps {
   crumb?: string;
   /** The breadcrumb leaf's icon. */
   crumbIcon: ButtonIconComponent;
-  /** The primary header action: "Create ticket", "Add transaction"… */
-  primaryAction: string;
   testID?: string;
   children: React.ReactNode;
 }
@@ -331,14 +322,13 @@ export interface DashboardShellProps {
 /**
  * Document-scrolling content, a sticky rail/sidebar and mobile drawer, the
  * Design team › Maya › page trail, the title with the notification bell,
- * Filters and the primary action, and the 1300px content column.
+ * and the 1300px content column.
  */
 export function DashboardShell({
   selected: initialSelected,
   title,
   crumb = title,
   crumbIcon,
-  primaryAction,
   testID,
   children,
 }: DashboardShellProps) {
@@ -384,12 +374,6 @@ export function DashboardShell({
             actions={
               <>
                 <NotificationBell notifications={NOTIFICATIONS} unreadCount={5} width={430} />
-                <Button size="md" leadingIcon={RiFilter3Fill} appearance="subtle" tone="neutral">
-                  Filters
-                </Button>
-                <Button size="md" leadingIcon={RiAddFill} appearance="solid" tone="action">
-                  {primaryAction}
-                </Button>
               </>
             }
           />
@@ -489,12 +473,6 @@ export function TwoUpChartRow({ children }: { children: [React.ReactNode, React.
 // ---------------------------------------------------------------------------
 //  Table cells the templates' columns compose
 // ---------------------------------------------------------------------------
-
-/** Delete and Edit — the two icon buttons most rows lead their actions with. */
-export const DELETE_EDIT_ACTIONS: readonly DataTableRowActionItem[] = [
-  { icon: RiDeleteBin6Line, label: 'Delete' },
-  { icon: RiEditLine, label: 'Edit' },
-];
 
 /** `flex min-w-0 items-center gap-2` — a leading mark and the row's name. */
 export function NameCell({

@@ -20,7 +20,7 @@ try {
       const errors = [];
       page.on('pageerror', (error) => errors.push(error.message));
       await page.goto(
-        `${base}/iframe.html?id=ai-multi-agent-chat--default&viewMode=story&args=defaultEditorId:!null`,
+        `${base}/iframe.html?id=agents-multi-agent-chat--default&viewMode=story&args=defaultEditorId:!null`,
       );
       const profile = page.getByTestId('chat-agent-profile');
       await profile.waitFor({ timeout: 60000 });

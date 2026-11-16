@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -42,8 +43,8 @@ const rings = ({ month, day }: ActivityDay) =>
     ? null
     : [0, 1, 2].map((r) => ringPct(month, day, r));
 
-const Frame = ({ children, width = 360 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
+const Frame = ({ children }: { children: React.ReactNode }) => (
+  <View style={{ width: '100%', maxWidth: 760, gap: 24 }}>{children}</View>
 );
 
 function Selectable({ testID, width }: { testID?: string; width?: number }) {
@@ -84,16 +85,6 @@ export const January: Story = {
         rings={rings}
         ringColors={['#f97316', '#8b5cf6', '#14b8a6']}
       />
-    </Frame>
-  ),
-};
-
-/** The widest dashboard column. */
-export const Wide: Story = {
-  parameters: { controls: { disable: true } },
-  render: () => (
-    <Frame width={440}>
-      <Selectable />
     </Frame>
   ),
 };

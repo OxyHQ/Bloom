@@ -14,7 +14,7 @@ try {
   const page = await browser.newPage();
   await page.setViewport({ width: 900, height: 900 });
   const url = new URL('iframe.html', process.env.STORYBOOK_URL ?? 'http://localhost:6014');
-  url.searchParams.set('id', 'templates-social--light-olive');
+  url.searchParams.set('id', 'templates-social--default');
   url.searchParams.set('viewMode', 'story');
   await page.goto(url.href, { waitUntil: 'networkidle0' });
   await page.waitForSelector('[data-testid="social-main"]');

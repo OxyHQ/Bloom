@@ -63,7 +63,6 @@ try {
   });
   await page.waitForSelector('[data-testid="action-header"]');
   await wait(900);
-  await page.click('[data-testid="actions-width-900"]');
   await setHostWidth(1400);
   await page.screenshot({ path: resolve(output, 'spacious.png') });
 

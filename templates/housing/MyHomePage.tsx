@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
 
+import { alert, confirm, prompt } from '../../src/surfaces';
 import { Button } from '../../src/button';
 import { RiChat3Line, RiToolsLine } from '../../src/icons/remix';
 import { ApplicationChecklist } from '../../src/listing-actions';
@@ -15,8 +16,6 @@ import { useTheme } from '../../src/theme/use-theme';
 import { Text } from '../../src/typography';
 import { APPLICATION, DOCUMENTS, LEASE, MAINTENANCE, PAYMENTS, TENANCY_EVENTS } from './data';
 import { HousingFrame, HousingHeader, PageColumn } from './HousingHeader';
-
-const noop = () => undefined;
 
 function SectionTitle({ children, action }: { children: string; action?: React.ReactNode }) {
   const theme = useTheme();
@@ -46,6 +45,45 @@ function SectionTitle({ children, action }: { children: string; action?: React.R
 /** The tenant's lease, payments, repairs, documents and timeline in one reading panel. */
 export function MyHomePage() {
   const [application, setApplication] = useState(APPLICATION);
+  const [requests, setRequests] = useState(MAINTENANCE);
+  const [payments, setPayments] = useState(PAYMENTS);
+  const [paid, setPaid] = useState(false);
+  const addRepair = async () => {
+    const title = await prompt({
+      title: 'Report a repair',
+      placeholder: 'What needs fixing?',
+      confirmLabel: 'Add request',
+    });
+    if (title?.trim())
+      setRequests((all) => [
+        {
+          title: title.trim(),
+          category: 'other',
+          reference: `#${Date.now()}`,
+          stage: 'reported',
+          commentCount: 0,
+        },
+        ...all,
+      ]);
+  };
+  const payRent = async () => {
+    if (
+      await confirm({
+        title: 'Record a demo payment?',
+        description: 'Mark the outstanding €450 as paid in this preview. No money is transferred.',
+        confirmLabel: 'Record payment',
+      })
+    ) {
+      setPaid(true);
+      setPayments((all) =>
+        all.map((payment) =>
+          payment.status === 'partial'
+            ? { ...payment, amount: '€950', status: 'paid', statusLabel: 'Paid' }
+            : payment,
+        ),
+      );
+    }
+  };
 
   return (
     <HousingFrame testID="housing-my-home">
@@ -63,13 +101,7 @@ export function MyHomePage() {
           <Text role="heading" aria-level={1} variant="title-1-semibold">
             My home
           </Text>
-          <Button
-            size="sm"
-            leadingIcon={RiToolsLine}
-            onPress={noop}
-            tone="accent"
-            appearance="solid"
-          >
+          <Button leadingIcon={RiToolsLine} onPress={addRepair} tone="accent" appearance="solid">
             Report a repair
           </Button>
         </View>
@@ -77,13 +109,18 @@ export function MyHomePage() {
           {...LEASE}
           actions={
             <>
-              <Button size="sm" onPress={noop} tone="accent" appearance="solid">
+              <Button onPress={payRent} disabled={paid} tone="accent" appearance="solid">
                 Pay rent
               </Button>
               <Button
-                size="sm"
                 leadingIcon={RiChat3Line}
-                onPress={noop}
+                onPress={async () => {
+                  const message = await prompt({
+                    title: 'Message landlord',
+                    confirmLabel: 'Save draft',
+                  });
+                  if (message?.trim()) void alert('Message draft', message.trim());
+                }}
                 tone="neutral"
                 appearance="outline"
               >
@@ -96,30 +133,42 @@ export function MyHomePage() {
 
         <SectionTitle>Rent payments</SectionTitle>
         <RentPaymentList
-          payments={PAYMENTS.map((p) =>
-            p.status === 'paid' || p.status === 'partial' ? { ...p, onDownloadReceipt: noop } : p,
-          )}
-          paidThisYear="€7,550"
-          outstanding="€450"
-          outstandingTone="error"
+          payments={payments}
+          paidThisYear={paid ? '€8,000' : '€7,550'}
+          outstanding={paid ? '€0' : '€450'}
+          outstandingTone={paid ? 'default' : 'error'}
           testID="housing-payments"
         />
 
         <SectionTitle
           action={
-            <Button size="sm" onPress={noop} tone="neutral" appearance="outline">
+            <Button onPress={addRepair} tone="neutral" appearance="outline">
               New request
             </Button>
           }
         >
           Repairs
         </SectionTitle>
-        {MAINTENANCE.map((request) => (
+        {requests.map((request) => (
           <MaintenanceRequestCard
             key={request.reference}
             {...request}
-            onPressComments={noop}
-            onPressPhoto={noop}
+            onPressComments={async () => {
+              const comment = await prompt({
+                title: `Comment on ${request.title}`,
+                confirmLabel: 'Add comment',
+              });
+              if (comment?.trim()) {
+                setRequests((all) =>
+                  all.map((item) =>
+                    item.reference === request.reference
+                      ? { ...item, commentCount: (item.commentCount ?? 0) + 1 }
+                      : item,
+                  ),
+                );
+                void alert('Comment added', comment.trim());
+              }
+            }}
           />
         ))}
 
@@ -127,9 +176,7 @@ export function MyHomePage() {
         <DocumentList
           documents={DOCUMENTS.map((d) => ({
             ...d,
-            onView: noop,
-            onDownload: d.status === 'pending' ? undefined : noop,
-            onSign: d.status === 'pending' ? noop : undefined,
+            onView: () => alert(d.name, [d.date, d.size, d.status].filter(Boolean).join(' · ')),
           }))}
           testID="housing-documents"
         />

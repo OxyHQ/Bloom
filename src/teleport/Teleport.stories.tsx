@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Button } from '../button';
 import { Text } from '../typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -20,9 +21,9 @@ function TeleportDemo() {
   return (
     <PortalProvider>
       <View style={styles.page}>
-        <Pressable onPress={() => setAway((v) => !v)} testID="teleport-toggle">
-          <Text>{away ? 'Bring it back' : 'Send it across'}</Text>
-        </Pressable>
+        <Button onPress={() => setAway((v) => !v)} testID="teleport-toggle">
+          {away ? 'Bring it back' : 'Send it across'}
+        </Button>
 
         <View style={styles.slot}>
           <Text style={styles.label}>here</Text>

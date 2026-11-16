@@ -1,23 +1,20 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View } from 'react-native';
 
 import { Chip } from '../../src/chip';
 import {
   DataTable,
   DataTableFilter,
-  DataTableRowActions,
   DataTableSearch,
   DataTableSelect,
   type DataTableColumn,
-  type DataTableRowActionItem,
 } from '../../src/data-table';
-import { RiEditLine, RiFileTextLine } from '../../src/icons/remix';
+
 import { CellText, NameCell, PersonAvatar } from '../shared/dashboard';
 import {
   ADMISSIONS,
   CONDITIONS,
   DEFAULT_SELECTED,
-  MORE_ACTIONS,
   PATIENTS,
   STATUSES,
   type Patient,
@@ -32,11 +29,6 @@ import {
  */
 
 const PAGE_SIZE = 12;
-
-const ROW_ACTIONS: readonly DataTableRowActionItem[] = [
-  { icon: RiFileTextLine, label: 'View chart' },
-  { icon: RiEditLine, label: 'Edit patient' },
-];
 
 const COLUMNS: DataTableColumn<Patient>[] = [
   {
@@ -105,14 +97,6 @@ const COLUMNS: DataTableColumn<Patient>[] = [
     // Both sortable columns start ascending.
     sortDescFirst: false,
     cell: ({ row }) => <CellText>{row.nextAppointment}</CellText>,
-  },
-  {
-    id: 'actions',
-    header: 'Actions',
-    width: 140,
-    cell: ({ row }) => (
-      <DataTableRowActions name={row.name} actions={ROW_ACTIONS} menu={MORE_ACTIONS} />
-    ),
   },
 ];
 

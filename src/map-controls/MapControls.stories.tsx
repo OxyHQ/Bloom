@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import { fn } from 'storybook/test';
+import type React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -180,37 +182,37 @@ export const States: Story = {
         <MockMap height={360}>
           <View style={{ position: 'absolute', top: 16, right: 16 }}>
             <MapControls
-              onLocate={() => undefined}
+              onLocate={fn().mockName('onLocate')}
               following
               heading={120}
-              onResetNorth={() => undefined}
-              onZoomIn={() => undefined}
-              onZoomOut={() => undefined}
+              onResetNorth={fn().mockName('onResetNorth')}
+              onZoomIn={fn().mockName('onZoomIn')}
+              onZoomOut={fn().mockName('onZoomOut')}
               canZoomIn={false}
               tilted
-              onTiltChange={() => undefined}
+              onTiltChange={fn().mockName('onTiltChange')}
               testID="states"
             />
           </View>
           <View style={{ position: 'absolute', top: 16, left: 16 }}>
             <MapControls
               align="start"
-              onLocate={() => undefined}
-              onZoomIn={() => undefined}
-              onZoomOut={() => undefined}
+              onLocate={fn().mockName('onLocate')}
+              onZoomIn={fn().mockName('onZoomIn')}
+              onZoomOut={fn().mockName('onZoomOut')}
               labels={{ group: 'Map controls, left' }}
             />
           </View>
         </MockMap>
       </Section>
       <Section title="The compass on its own, at four headings — it hides itself at north">
-        <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16, alignItems: 'center' }}>
           {[0, 45, 135, 270].map((heading) => (
             <View key={heading} style={{ alignItems: 'center', gap: 6, width: 72 }}>
               <View style={{ height: 44, justifyContent: 'center' }}>
                 <MapCompass
                   heading={heading}
-                  onPress={() => undefined}
+                  onPress={fn().mockName('onPress')}
                   testID={`compass-${heading}`}
                 />
               </View>
@@ -221,7 +223,7 @@ export const States: Story = {
           ))}
           <View style={{ alignItems: 'center', gap: 6, width: 72 }}>
             <View style={{ height: 44, justifyContent: 'center' }}>
-              <MapCompass heading={0} hideAtNorth={false} onPress={() => undefined} />
+              <MapCompass heading={0} hideAtNorth={false} onPress={fn().mockName('onPress')} />
             </View>
             <Text variant="caption-2-regular" style={{ opacity: 0.6 }}>
               0°, pinned

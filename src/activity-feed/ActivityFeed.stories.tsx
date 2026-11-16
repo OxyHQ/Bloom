@@ -1,9 +1,8 @@
 import type React from 'react';
-import { useContext, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { ActivityFeed } from './ActivityFeed';
@@ -107,24 +106,6 @@ function Caption({ children }: { children: string }) {
   );
 }
 
-function BothModes({ children }: { children: React.ReactNode }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
-  return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-      <BloomThemeProvider mode="light" colorPreset={preset}>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 520 }}>
-          <Page>{children}</Page>
-        </View>
-      </BloomThemeProvider>
-      <BloomThemeProvider mode="dark" colorPreset={preset}>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 520 }}>
-          <Page>{children}</Page>
-        </View>
-      </BloomThemeProvider>
-    </View>
-  );
-}
-
 export const Feed: Story = {
   render: () => (
     <Page>
@@ -175,9 +156,9 @@ export const Empty: Story = {
 };
 
 /** Narrow column, long bodies: the clamp and its reveal. */
-export const NarrowAndLong: Story = {
+export const LongContent: Story = {
   render: () => (
-    <View style={{ width: 340 }}>
+    <View style={{ width: '100%' }}>
       <Page>
         <ActivityFeed
           entries={ENTRIES}
@@ -187,14 +168,6 @@ export const NarrowAndLong: Story = {
         />
       </Page>
     </View>
-  ),
-};
-
-export const BothThemes: Story = {
-  render: () => (
-    <BothModes>
-      <ActivityFeed entries={ENTRIES.slice(0, 4)} accessibilityLabel="Activity" />
-    </BothModes>
   ),
 };
 

@@ -13,6 +13,7 @@ import { Screen, ScreenScrollView } from '../screen/index.web';
 import { Meter } from '../stat-bar/index.web';
 import { PageHeader } from '../page-header';
 import { Text } from '../typography';
+import { List } from '../list';
 import {
   RiAddLine,
   RiArrowRightLine,
@@ -20,7 +21,6 @@ import {
   RiFolderLine,
   RiInbox2Line,
   RiSettings3Line,
-  RiCheckLine,
 } from '../icons/remix';
 
 type PreviewArgs = { preset: AppColorName; direction: 'roles' | 'single-accent' };
@@ -217,34 +217,24 @@ function Workspace({ direction }: Pick<PreviewArgs, 'direction'>) {
                     <Text style={{ color: colors.text, fontSize: 17, fontWeight: '600' }}>
                       Next up
                     </Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                      <Button
-                        icon={RiCheckLine}
-                        accessibilityLabel={done ? 'Reopen review task' : 'Complete review task'}
-                        appearance={done ? 'subtle' : 'plain'}
-                        tone={done ? 'success' : 'neutral'}
-                        onPress={() => setDone((value) => !value)}
-                      />
-                      <View style={{ flex: 1, gap: 4 }}>
-                        <Text
-                          style={{
-                            color: colors.text,
-                            fontSize: 14,
-                            textDecorationLine: done ? 'line-through' : 'none',
-                          }}
-                        >
-                          Review the first direction
-                        </Text>
-                        <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
-                          Maya · Today at 14:00
-                        </Text>
-                      </View>
-                      <Badge
-                        content={done ? 'Done' : 'Today'}
-                        tone={done ? 'success' : support}
-                        appearance="subtle"
-                      />
-                    </View>
+                    <List
+                      items={[
+                        {
+                          id: 'review',
+                          title: 'Review the first direction',
+                          supporting: 'Maya · Today at 14:00',
+                          checked: done,
+                          onCheckedChange: setDone,
+                          trailing: (
+                            <Badge
+                              content={done ? 'Done' : 'Today'}
+                              tone={done ? 'success' : support}
+                              appearance="subtle"
+                            />
+                          ),
+                        },
+                      ]}
+                    />
                   </View>
                 </ScreenScrollView>
               </Screen>

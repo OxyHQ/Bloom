@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import type React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
@@ -122,7 +123,7 @@ function App() {
           <Text>A card on the material</Text>
         </Card>
         <BlurIsland style={{ padding: 6 }}>
-          <Button onPress={() => {}}>Primary</Button>
+          <Button onPress={fn().mockName('Button.onPress')}>Primary</Button>
         </BlurIsland>
       </View>
     </View>

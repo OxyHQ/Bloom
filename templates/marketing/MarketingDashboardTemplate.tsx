@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
 
 import {
@@ -47,12 +47,7 @@ export function MarketingDashboardTemplate() {
   );
 
   return (
-    <DashboardShell
-      selected="marketing"
-      title="Marketing"
-      crumbIcon={RiMegaphoneLine}
-      primaryAction="New campaign"
-    >
+    <DashboardShell selected="marketing" title="Marketing" crumbIcon={RiMegaphoneLine}>
       {/* One per row on phones (`max-sm:grid-cols-1`) — a 2-up KPI grid at
           390px crushes the values. The shared 2-up from sm, 4-up from lg. */}
       <StatCards stats={MARKETING_STATS} columns={width < BREAKPOINTS.sm ? 1 : 4} />

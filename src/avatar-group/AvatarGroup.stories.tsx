@@ -1,6 +1,7 @@
 import React from 'react';
 // Aliased: this file already exports a story named `Pressable`.
-import { Pressable as RNPressable, View } from 'react-native';
+import { View } from 'react-native';
+import { Button } from '../button';
 import { Text } from '../typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -117,18 +118,9 @@ function HoverCardStory() {
         hoverCard
         onPressItem={(item) => setPressed(`profile @${item.username}`)}
         renderItemAction={(item) => (
-          <RNPressable
-            onPress={() => setPressed(`follow @${item.username}`)}
-            testID="hovercard-action"
-            style={{
-              paddingHorizontal: 12,
-              paddingVertical: 6,
-              borderRadius: 999,
-              backgroundColor: '#1A73E8',
-            }}
-          >
-            <Text style={{ color: '#fff', fontWeight: '600', fontSize: 13 }}>Follow</Text>
-          </RNPressable>
+          <Button onPress={() => setPressed(`follow @${item.username}`)} testID="hovercard-action">
+            Follow
+          </Button>
         )}
       />
       <Text testID="press-result">{pressed}</Text>

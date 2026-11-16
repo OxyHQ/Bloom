@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Text } from '../typography';
+import { Chip } from '../chip';
 import { SortableChipRow } from './SortableChipRow';
 import type { SortableChipItem } from './types';
 
@@ -21,13 +20,7 @@ function chip(label: string): SortableChipItem {
   return {
     key: label,
     label,
-    node: (
-      <View
-        style={{ borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 }}
-      >
-        <Text>{label}</Text>
-      </View>
-    ),
+    node: <Chip>{label}</Chip>,
   };
 }
 

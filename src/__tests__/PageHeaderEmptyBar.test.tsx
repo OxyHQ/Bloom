@@ -10,6 +10,7 @@ import { render } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
 import { PageHeader } from '../page-header';
+import { Search } from '../search';
 import type { PageHeaderProps } from '../page-header';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
@@ -31,7 +32,9 @@ describe('PageHeader bar', () => {
     expect(hasBar({ title: 'Ajustes' })).toBe(true);
     expect(hasBar({ onBack: () => {} })).toBe(true);
     expect(hasBar({ leading: <Text>L</Text> })).toBe(true);
+    expect(hasBar({ titleVisual: <Text>Identity</Text> })).toBe(true);
     expect(hasBar({ actions: <Text>A</Text> })).toBe(true);
+    expect(hasBar({ search: <Search presentation="auto" label="Search notes" /> })).toBe(true);
   });
 
   it('still owns the top safe area and its scrim when it has no bar', () => {

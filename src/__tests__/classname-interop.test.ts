@@ -79,8 +79,6 @@ const CAST_EXEMPTIONS = [
   // Web-only `data-*` hooks for the adopted sheets, as `Chip` and `Checkbox`.
   'select/Select.web.tsx',
   // The `dataSet` sheet hook plus the web-only `href`, like `Breadcrumb`.
-  'button/CloseButton.tsx',
-  'button/GlyphButton.tsx',
   // The web-only `href` that makes a heading row a real anchor, like `Breadcrumb`.
   'outline-nav/OutlineNav.tsx',
   // The `dataSet` sheet hooks (shimmer, reveal, focus rings) of the agent blocks.

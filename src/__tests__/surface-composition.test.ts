@@ -30,13 +30,12 @@ it.each([
   'src/notification/Notification.tsx',
   'src/announcement/Announcement.tsx',
   'src/admonition/Admonition.tsx',
-  'src/button/CloseButton.tsx',
+  'src/button/Button.tsx',
   'src/menubar/MenubarBase.tsx',
   'src/pagination/Pagination.tsx',
   'src/input-otp/InputOtp.tsx',
   'src/file-upload/FileUpload.tsx',
   'src/share-sheet/ShareTargetButton.tsx',
-  'src/media-controls/PlayButton.tsx',
   'src/switch/Switch.tsx',
   'src/slider/Slider.tsx',
   'src/checkbox/shared.tsx',
@@ -47,6 +46,14 @@ it.each([
     /import\s+\{\s*SurfacePaint\s*\}\s+from\s+['"][^'"]*surface\/SurfacePaint['"]/,
   );
   expect(source).toContain('<SurfacePaint');
+});
+
+// Transport owns its icon and state, while Button owns the material and hit target.
+it('PlayButton composes Button rather than painting a second control', () => {
+  const source = read('src/media-controls/PlayButton.tsx');
+  expect(source).toMatch(/import\s+\{\s*Button\s*\}\s+from\s+['"]\.\.\/button['"]/);
+  expect(source).toContain('<Button');
+  expect(source).not.toContain('<SurfacePaint');
 });
 
 // The composer is the shared `Surface` itself, so its tone is the one buttons and bubbles have.

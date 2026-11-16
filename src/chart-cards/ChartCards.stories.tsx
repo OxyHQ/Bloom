@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -73,8 +74,8 @@ const FLAT: ChartCardPoint[] = ORDERS.map((p) => ({
   previous: p.current,
 }));
 
-const Frame = ({ children, width = 560 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
+const Frame = ({ children }: { children: React.ReactNode }) => (
+  <View style={{ width: '100%', maxWidth: 760, gap: 24 }}>{children}</View>
 );
 
 export const Revenue: Story = {
@@ -142,17 +143,6 @@ export const Deltas: Story = {
       <RevenueChartCard data={REVENUE} />
       <RevenueChartCard data={DECLINE} title="Revenue (declining)" />
       <OrdersChartCard data={FLAT} title="Orders (flat)" />
-    </Frame>
-  ),
-};
-
-/** Below the `sm` breakpoint the legend drops under the headline; month labels thin out. */
-export const Narrow: Story = {
-  parameters: { controls: { disable: true } },
-  render: () => (
-    <Frame width={320}>
-      <RevenueChartCard data={REVENUE} />
-      <OrdersChartCard data={ORDERS} />
     </Frame>
   ),
 };

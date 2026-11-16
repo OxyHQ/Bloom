@@ -4,7 +4,7 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Carousel, CarouselDots, CarouselItem, type CarouselControls } from '../carousel';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { Button } from '../button';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { Text } from '../typography';
 import { resolveCarouselPaint } from '../carousel/shared';
@@ -893,11 +893,11 @@ it('steps from the accepted controlled destination after fractional native scrol
 
 describe('Carousel composed controls', () => {
   const controls = ({ previous, next }: CarouselControls) => (
-    <ButtonGroup size="sm" testID="custom-controls">
-      <ButtonGroupItem>See more</ButtonGroupItem>
-      <ButtonGroupItem {...previous} leadingIcon={previous.icon} iconOnly />
-      <ButtonGroupItem {...next} leadingIcon={next.icon} iconOnly />
-    </ButtonGroup>
+    <Button.Group size="sm" testID="custom-controls">
+      <Button>See more</Button>
+      <Button {...previous} leadingIcon={previous.icon} iconOnly />
+      <Button {...next} leadingIcon={next.icon} iconOnly />
+    </Button.Group>
   );
 
   it('replaces default arrows with grouped actions while preserving navigation and edges', () => {

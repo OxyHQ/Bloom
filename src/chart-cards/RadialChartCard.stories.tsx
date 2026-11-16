@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -94,8 +94,8 @@ const STACKED_RANGES: RadialRange[] = [
   },
 ];
 
-const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
+const Frame = ({ children }: { children: React.ReactNode }) => (
+  <View style={{ width: '100%', maxWidth: 760, gap: 24 }}>{children}</View>
 );
 
 /** Default look: one ring per browser over a grey track, first innermost. */
@@ -274,21 +274,10 @@ export const Hovered: Story = {
       <RadialChartCard
         variant="stacked"
         range="Last 7 days"
-        data={STACKED_RANGES[0]!.data}
+        data={STACKED_RANGES[0]?.data}
         max={2400}
         activeIndex={1}
       />
-    </Frame>
-  ),
-};
-
-/** A phone-width card: the half gauge's chart area keeps a 180px floor and the card grows. */
-export const Narrow: Story = {
-  parameters: { controls: { disable: true } },
-  render: () => (
-    <Frame width={320}>
-      <RadialChartCard variant="stacked" ranges={STACKED_RANGES} />
-      <RadialChartCard ranges={RING_RANGES} tiles />
     </Frame>
   ),
 };

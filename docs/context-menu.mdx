@@ -7,6 +7,10 @@ order: 16
 # ContextMenu
 
 The secondary menu for an object on screen. Right-click on web, long press on native.
+The web trigger also handles the Menu key and Shift+F10 on a focused descendant;
+it does not claim a touch hold. Lists that use a long press for selection should
+keep that gesture on the row and compose the context-menu trigger for desktop
+input only. Tapping an avatar can provide a visible selection entry point.
 
 Its parts are shadcn's, and its rows are the SAME rows `DropdownMenu` and `Menubar` publish — one implementation under three prefixes, so a row behaves identically wherever it is.
 

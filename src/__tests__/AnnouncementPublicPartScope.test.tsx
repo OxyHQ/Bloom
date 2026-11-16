@@ -41,15 +41,15 @@ it('keeps explicitly sized announcement controls stable under BloomScope', () =>
   };
 
   expect(actionHeight()).toBe(32);
-  expect(closeSize()).toEqual({ box: 20, glyph: 10.8 });
-  expect(close().props.hitSlop).toEqual({ top: 10, bottom: 10, left: 10, right: 10 });
+  expect(closeSize()).toEqual({ box: 20, glyph: 12 });
+  expect(close().props.hitSlop).toEqual({ top: 12, bottom: 12, left: 12, right: 12 });
   screen.rerender(<Subject scope="xs" />);
   expect(actionHeight()).toBe(32);
-  expect(closeSize()).toEqual({ box: 20, glyph: 10.8 });
+  expect(closeSize()).toEqual({ box: 20, glyph: 12 });
   screen.rerender(<Subject scope="lg" />);
   expect(actionHeight()).toBe(32);
-  expect(closeSize()).toEqual({ box: 20, glyph: 10.8 });
+  expect(closeSize()).toEqual({ box: 20, glyph: 12 });
   screen.rerender(<Subject scope="xs" nestedScope="lg" />);
   expect(actionHeight()).toBe(32);
-  expect(closeSize()).toEqual({ box: 20, glyph: 10.8 });
+  expect(closeSize()).toEqual({ box: 20, glyph: 12 });
 });

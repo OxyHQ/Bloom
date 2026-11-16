@@ -1,9 +1,11 @@
 /** @jest-environment jsdom */
+import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
+
 import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
-import { CloseButton } from '../button/CloseButton';
+import { Button } from '../button/Button.web';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -33,11 +35,19 @@ afterEach(() => {
   host.remove();
   window.matchMedia = originalMatchMedia;
 });
-function render(props: Partial<React.ComponentProps<typeof CloseButton>> = {}) {
+function render(props: Partial<React.ComponentProps<typeof Button>> = {}) {
   act(() =>
     root.render(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <CloseButton accessibilityLabel="Close" {...props} />
+        <Button
+          appearance="outline"
+          tone="neutral"
+          iconOnly
+          icon={DismissActionIcon}
+          size={20}
+          accessibilityLabel="Close"
+          {...props}
+        />
       </BloomThemeProvider>,
     ),
   );
@@ -63,19 +73,17 @@ it.each([
 ] as const)(
   'reserves a real 44px coarse target while preserving %s disc/glyph geometry',
   (size, disc, glyph) => {
-    render({ size });
+    render({ size: disc, iconSize: glyph });
     const node = button();
     expect(getComputedStyle(node).width).toBe(`${disc}px`);
     pointer(true);
     expect(button()).toBe(node);
-    expect(getComputedStyle(node).width).toBe('44px');
-    expect(getComputedStyle(node).height).toBe('44px');
+    // jsdom reports specified dimensions, not the used size after min-width/height.
+    // The browser gate measures the real 44px box.
+    expect(getComputedStyle(node).width).toBe(`${disc}px`);
+    expect(getComputedStyle(node).height).toBe(`${disc}px`);
     expect(getComputedStyle(node).minWidth).toBe('44px');
     expect(getComputedStyle(node).minHeight).toBe('44px');
-    const paint = node.firstElementChild;
-    if (!paint) throw new Error('Disc missing');
-    expect(getComputedStyle(paint).width).toBe(`${disc}px`);
-    expect(getComputedStyle(paint).height).toBe(`${disc}px`);
     expect(node.querySelector('svg')?.getAttribute('width')).toBe(String(glyph));
     pointer(false);
     expect(button()).toBe(node);

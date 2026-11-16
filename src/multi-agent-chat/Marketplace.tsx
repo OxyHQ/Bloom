@@ -1,3 +1,5 @@
+import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
+import { Card } from '../card';
 import React, { useRef, useState, type ReactNode } from 'react';
 import {
   Platform,
@@ -8,7 +10,7 @@ import {
 } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 import { AgentAvatar, avatarCharacterInColor } from '../agent-avatar';
-import { Button, CloseButton } from '../button';
+import { Button } from '../button';
 import { RiArrowLeftLine } from '../icons/remix/RiArrowLeftLine';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
@@ -19,7 +21,7 @@ import { RiPlugLine } from '../icons/remix/RiPlugLine';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { RiStore2Line } from '../icons/remix/RiStore2Line';
 import { useMessages, formatMessage } from '../locale/messages';
-import { SettingsCard, SettingsSectionLabel } from '../settings-modal';
+import { SettingsSectionLabel } from '../settings-modal';
 import { SOCIAL_COLOR_LOGOS } from '../social-button/color-logos';
 import { ColorLogo } from '../social-button/SocialButtonBase';
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
@@ -229,7 +231,7 @@ export function Marketplace({
   const grid = (items: MarketplaceItem[]) => (
     <CatalogGrid className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {items.map((item) => (
-        <SettingsCard
+        <Card
           key={item.id}
           className="group min-w-0 gap-3 p-3 transition-colors hover:bg-background-secondary-hover"
         >
@@ -261,7 +263,7 @@ export function Marketplace({
           >
             {isAdded(item) ? messages.added : messages.add}
           </Button>
-        </SettingsCard>
+        </Card>
       ))}
     </CatalogGrid>
   );
@@ -321,9 +323,13 @@ export function Marketplace({
               )}
               <Text className="text-title-3-medium text-text-primary">{messages.marketplace}</Text>
             </StyledView>
-            <CloseButton
+            <Button
+              appearance="outline"
+              tone="neutral"
+              iconOnly
+              icon={DismissActionIcon}
               accessibilityLabel={messages.closeMarketplace}
-              size="sm"
+              size={24}
               onPress={onClose}
             />
           </StyledView>
@@ -336,7 +342,7 @@ export function Marketplace({
               label={formatMessage(messages.itemDetails, detail.name)}
             >
               <StyledView className="flex flex-col gap-5 pt-1">
-                <SettingsCard
+                <Card
                   className="items-center gap-4 p-5 text-center"
                   style={{
                     paddingLeft: 20,
@@ -405,14 +411,14 @@ export function Marketplace({
                       {messages.website}
                     </Button>
                   </CatalogGrid>
-                </SettingsCard>
+                </Card>
                 <StyledView className="flex flex-col gap-1">
                   <SettingsSectionLabel>
                     {formatMessage(messages.skills2, detail.skills.length)}
                   </SettingsSectionLabel>
                   <StyledView className="flex flex-col gap-2">
                     {detail.skills.map((skill) => (
-                      <SettingsCard key={skill.name} className="flex-row items-center gap-3 p-3">
+                      <Card key={skill.name} className="flex-row items-center gap-3 p-3">
                         <RiCodeSSlashLine
                           className="size-5 shrink-0 text-foreground-icon-secondary"
                           aria-hidden
@@ -423,7 +429,7 @@ export function Marketplace({
                             {skill.description}
                           </Text>
                         </StyledView>
-                      </SettingsCard>
+                      </Card>
                     ))}
                   </StyledView>
                 </StyledView>
@@ -434,7 +440,7 @@ export function Marketplace({
                     </SettingsSectionLabel>
                     <CatalogGrid gap={8} className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                       {detail.apps.map((app) => (
-                        <SettingsCard key={app} className="flex-row items-center gap-3 p-3">
+                        <Card key={app} className="flex-row items-center gap-3 p-3">
                           <RiPlugLine
                             className="size-5 shrink-0 text-foreground-icon-secondary"
                             aria-hidden
@@ -445,14 +451,14 @@ export function Marketplace({
                               {messages.connector}
                             </Text>
                           </StyledView>
-                        </SettingsCard>
+                        </Card>
                       ))}
                     </CatalogGrid>
                   </StyledView>
                 )}
                 <StyledView className="flex flex-col gap-1">
                   <SettingsSectionLabel>{messages.details}</SettingsSectionLabel>
-                  <SettingsCard
+                  <Card
                     className="gap-4 p-4"
                     style={{
                       paddingLeft: 16,
@@ -483,7 +489,7 @@ export function Marketplace({
                         </StyledView>
                       ))}
                     </CatalogGrid>
-                  </SettingsCard>
+                  </Card>
                 </StyledView>
                 {detail.kind === 'plugin' && (
                   <Text className="px-3 text-caption-1-regular text-text-tertiary">

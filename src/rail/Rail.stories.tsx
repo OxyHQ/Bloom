@@ -1,12 +1,13 @@
 import { useArgs } from 'storybook/preview-api';
-import React, { useState, type PropsWithChildren } from 'react';
-import { ScrollView, View } from 'react-native';
-import { Text } from '../typography';
+import { useState, type PropsWithChildren } from 'react';
+import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import * as Icons from '../icons';
 import { useTheme } from '../theme/use-theme';
 import { Rail } from './Rail';
+import { List } from '../list';
+import { ScrollArea } from '../layout';
 import type { RailItem } from './types';
 
 /**
@@ -35,44 +36,14 @@ const SCREEN_HEIGHT = 480;
 const ROWS = Array.from({ length: 24 }, (_, index) => index + 1);
 
 function Screen({ children }: PropsWithChildren) {
-  const { colors } = useTheme();
-  return (
-    <View
-      style={{
-        flexDirection: 'row',
-        height: SCREEN_HEIGHT,
-        backgroundColor: colors.background,
-        borderWidth: 1,
-        borderColor: colors.border,
-        borderRadius: 12,
-        overflow: 'hidden',
-      }}
-    >
-      {children}
-    </View>
-  );
+  return <View style={{ flexDirection: 'row', height: SCREEN_HEIGHT }}>{children}</View>;
 }
 
-/** Tall filler content so the column beside the rail actually scrolls. */
 function Feed() {
-  const { colors } = useTheme();
   return (
-    <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
-      {ROWS.map((row) => (
-        <View
-          key={row}
-          style={{
-            padding: 16,
-            borderRadius: 16,
-            borderWidth: 1,
-            borderColor: colors.border,
-            backgroundColor: colors.backgroundSecondary,
-          }}
-        >
-          <Text style={{ color: colors.text, fontSize: 15, fontWeight: '600' }}>Row {row}</Text>
-        </View>
-      ))}
-    </ScrollView>
+    <ScrollArea style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
+      <List items={ROWS.map((row) => ({ id: String(row), title: `Row ${row}` }))} />
+    </ScrollArea>
   );
 }
 
@@ -141,9 +112,10 @@ export const NoSelection: Story = {
   parameters: { controls: { disable: true } },
   render: () => {
     const items = useDemoItems();
+    const [activeId, setActiveId] = useState<string>();
     return (
       <Screen>
-        <Rail items={items} onSelect={() => {}} />
+        <Rail items={items} activeId={activeId} onSelect={setActiveId} />
         <Feed />
       </Screen>
     );

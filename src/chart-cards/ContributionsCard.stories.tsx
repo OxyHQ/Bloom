@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -75,8 +75,8 @@ const STATS: ContributionsStat[] = [
   { value: '62 days', label: 'Top streak' },
 ];
 
-const Frame = ({ children, width = 720 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
+const Frame = ({ children }: { children: React.ReactNode }) => (
+  <View style={{ width: '100%', maxWidth: 760, gap: 24 }}>{children}</View>
 );
 
 /** The card: header + chip, four stat cards, the Weekly / Monthly / Yearly control, the year grid. */
@@ -229,7 +229,7 @@ export const FromDays: Story = {
 export const Grid: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <Frame width={600}>
+    <Frame>
       <ContributionsGrid testID="grid" cells={demoCells(38)} columns={38} />
     </Frame>
   ),

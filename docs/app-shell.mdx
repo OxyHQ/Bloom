@@ -11,6 +11,10 @@ Start with [Compose application layouts](/docs/bloom/main/compose-layouts) for t
 
 `AppShell`, with `AppShellPanel`, `AppShellPanels`, `useAppShellPanel`, `AppShellHeader`, `AppShellMenuButton`, `useAppShell`, `NotificationBell` and `ProOfferCard`.
 
+`AppShellHeader` maps the shell's title, breadcrumb and navigation action into
+PageHeader. It has no separate header renderer or typography/spacing recipe.
+
+
 ```tsx
 import { AppShell, NotificationBell, ProOfferCard } from '@oxy.so/bloom/app-shell';
 
@@ -507,6 +511,14 @@ overlapping another, and no console error.
 - `drawerOpen` / `onDrawerOpenChange` control it.
 - `drawerSwipe` (native, default off) adds the edge swipe expo-router's `Drawer` has: see [Edge swipe](#edge-swipe-native).
 - `sidebar={{ variant: 'rail', … }}` keeps the 80px navigation rail in flow from `sm` instead of `lg`; below `sm` the menu button opens the drawer, which always shows the full panel.
+
+An in-flow rail meets the shell's logical start edge and spans its available
+height without an outer gutter. Its own item insets remain inside the rail.
+The content begins at the rail's trailing edge with no additional navigation
+gap, while retaining its top, bottom and outer-end frame. An expanded card
+sidebar keeps its normal outer gutter and navigation gap. An explicit
+`navigationGap` still overrides the rail's zero default in engine layouts. The
+zero default applies to adaptive navigation, descriptor panels and RTL layouts.
 
 Web reveal writes its target once and uses one CSS transition recipe for the
 page, rail, chrome and veil (325ms, `cubic-bezier(0.42, 0, 0.58, 1)`), without

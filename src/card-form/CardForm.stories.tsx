@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import { fn } from 'storybook/test';
+import type React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -220,7 +222,7 @@ export const Parts: Story = {
                 schemes={SCHEMES}
                 accessibilityLabel="Card details"
               />
-              <Button onPress={() => undefined}>Pay €48.00</Button>
+              <Button onPress={fn().mockName('onPress')}>Pay €48.00</Button>
             </View>
           </CardBody>
         </Card>

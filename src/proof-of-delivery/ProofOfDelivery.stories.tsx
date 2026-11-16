@@ -1,8 +1,8 @@
-import React, { useContext, useState } from 'react';
+import { fn } from 'storybook/test';
+import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { ProofOfDelivery } from './ProofOfDelivery';
@@ -19,7 +19,7 @@ export default meta;
 
 type Story = StoryObj;
 
-const noop = () => undefined;
+const onDemoAction = fn().mockName('proof-of-delivery.action');
 
 /**
  * A stand-in for a camera. A story takes no photograph, so the "photo" it adds
@@ -50,24 +50,6 @@ function Caption({ children }: { children: string }) {
     <Text variant="caption-1-medium" style={{ color: theme.colors.textSecondary }}>
       {children}
     </Text>
-  );
-}
-
-function BothModes({ children }: { children: React.ReactNode }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
-  return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-      <BloomThemeProvider mode="light" colorPreset={preset}>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 380, minWidth: 0, maxWidth: 560 }}>
-          <Page>{children}</Page>
-        </View>
-      </BloomThemeProvider>
-      <BloomThemeProvider mode="dark" colorPreset={preset}>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 380, minWidth: 0, maxWidth: 560 }}>
-          <Page>{children}</Page>
-        </View>
-      </BloomThemeProvider>
-    </View>
   );
 }
 
@@ -172,7 +154,7 @@ export const Required: Story = {
           required={['recipient', 'signature', 'code']}
           value={value}
           onChange={setValue}
-          onSubmit={noop}
+          onSubmit={onDemoAction}
           testID="pod"
         />
       </Page>
@@ -189,7 +171,7 @@ export const CodeOnly: Story = {
         required={['code']}
         codeLength={6}
         defaultValue={{ code: '8214' }}
-        onSubmit={noop}
+        onSubmit={onDemoAction}
         testID="pod"
       />
     </Page>
@@ -209,7 +191,7 @@ export const Submitting: Story = {
           photos: [{ id: 'photo-1', uri: SWATCH, alt: 'Left inside the porch' }],
         }}
         submitting
-        onSubmit={noop}
+        onSubmit={onDemoAction}
         testID="pod"
       />
     </Page>
@@ -224,18 +206,9 @@ export const Disabled: Story = {
         proofs={['recipient', 'signature', 'note']}
         defaultValue={{ recipient: 'Nuno Peralta', note: 'Left with the neighbour at number 5.' }}
         disabled
-        onSubmit={noop}
+        onSubmit={onDemoAction}
         testID="pod"
       />
     </Page>
-  ),
-};
-
-/** Both modes side by side. */
-export const Modes: Story = {
-  render: () => (
-    <BothModes>
-      <ProofOfDelivery proofs={['recipient', 'signature']} onSubmit={noop} />
-    </BothModes>
   ),
 };

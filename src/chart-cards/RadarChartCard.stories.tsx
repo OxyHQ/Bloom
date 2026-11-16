@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -83,8 +83,8 @@ const SCORE_RANGES: RadarRange[] = [
   { id: 'this-month', label: 'This month', data: scoreRows([91, 48, 96, 84, 93]) },
 ];
 
-const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
+const Frame = ({ children }: { children: React.ReactNode }) => (
+  <View style={{ width: '100%', maxWidth: 760, gap: 24 }}>{children}</View>
 );
 
 /** Default look: soft fill + 2px outline, a period dropdown. */

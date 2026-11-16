@@ -1,7 +1,7 @@
 import { type ComponentRef, forwardRef, useMemo } from 'react';
 import { View, type GestureResponderEvent, type StyleProp, type ViewStyle } from 'react-native';
 
-import { GlyphButton } from '../button';
+import { Button } from '../button';
 import type { BloomIconComponent } from '../icons/icon-component';
 import { resolveMediaControlsPaint } from '../media-controls/shared';
 import type { WebAriaProps } from '../styles/styled-primitives';
@@ -46,13 +46,13 @@ export interface PlayerIconButtonProps {
  *   active   accent glyph + a 4px accent dot under it
  *   disabled 50% opacity
  *
- * `button/GlyphButton` with this family's wash and two things only it has: the
+ * `button/Button` with this family's wash and two things only it has: the
  * ACTIVE DOT (its `decoration`) and a TEXT glyph ("1.5×"), which is what `grow`
  * is for — the box becomes a minimum width and the control widens to its label.
  *
  * `lit` is `pressed || active`, so the accent reaches a menu TRIGGER that is not
  * itself a toggle; that is why the lit colours are handed over as
- * `color`/`hoverColor` rather than left to `GlyphButton`'s `pressed` default.
+ * `color`/`hoverColor` rather than left to `Button`'s `pressed` default.
  *
  * Colour change only. Forwards the trigger props `asChild` hands it
  * (`aria-expanded`, `aria-haspopup`, `onPress`, the name).
@@ -83,11 +83,14 @@ export const PlayerIconButton: RefComponent<PlayerIconButtonProps> = forwardRef<
   const lit = pressed === true || active === true;
 
   return (
-    <GlyphButton
+    <Button
+      appearance="plain"
+      tone="neutral"
+      iconOnly
       ref={ref}
       icon={Icon}
       size={box}
-      glyphSize={glyph}
+      iconSize={glyph}
       grow={text !== undefined}
       accessibilityLabel={accessibilityLabel ?? ''}
       disabled={disabled}
@@ -131,6 +134,6 @@ export const PlayerIconButton: RefComponent<PlayerIconButtonProps> = forwardRef<
               {text ?? ''}
             </Text>
           )}
-    </GlyphButton>
+    </Button>
   );
 });

@@ -3,7 +3,6 @@ import { View } from 'react-native';
 
 import { addMonths, startOfMonth, today } from '../date-picker/calendar-grid';
 import { useControllableState } from '../hooks/use-controllable-state';
-import { Z_INDEX } from '../styles/z-index';
 import { useTheme } from '../theme/use-theme';
 import { CalendarViewHeader } from './CalendarViewHeader';
 import { CalendarViewMonthGrid } from './CalendarViewMonthGrid';
@@ -65,28 +64,15 @@ export function CalendarView({
       testID={testID}
       style={[{ width: '100%', maxWidth: 1300, alignSelf: 'center', gap: 10 }, style]}
     >
-      <View
-        style={
-          dense
-            ? {
-                paddingLeft: 12,
-                paddingRight: 12,
-                paddingTop: 12,
-                zIndex: Z_INDEX.floating,
-              }
-            : { zIndex: Z_INDEX.floating }
-        }
-      >
-        <CalendarViewHeader
-          {...header}
-          month={month}
-          locale={locale}
-          onPreviousMonth={() => setMonth(addMonths(month, -1))}
-          onNextMonth={() => setMonth(addMonths(month, 1))}
-          onSelectDate={selectDate}
-          testID={testID ? `${testID}-header` : undefined}
-        />
-      </View>
+      <CalendarViewHeader
+        {...header}
+        month={month}
+        locale={locale}
+        onPreviousMonth={() => setMonth(addMonths(month, -1))}
+        onNextMonth={() => setMonth(addMonths(month, 1))}
+        onSelectDate={selectDate}
+        testID={testID ? `${testID}-header` : undefined}
+      />
       <View
         style={
           dense

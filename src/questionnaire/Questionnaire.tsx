@@ -1,3 +1,4 @@
+import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
 import { FieldConstraintScope } from '../field/FieldConstraintScope';
 import { useFieldMembership } from '../field/membership';
 import { useChoiceSpaceKey } from '../hooks/use-choice-space-key';
@@ -49,7 +50,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { Button, CloseButton } from '../button';
+import { Button } from '../button';
 import {
   CHECKBOX_GLYPH_CSS,
   CHECKBOX_GLYPH_STYLE_ID,
@@ -1322,8 +1323,12 @@ function QuestionnaireComponent({
           </Animated.View>
 
           {onDismiss ? (
-            <CloseButton
-              size="xs"
+            <Button
+              appearance="outline"
+              tone="neutral"
+              iconOnly
+              icon={DismissActionIcon}
+              size={20}
               accessibilityLabel={text.dismiss}
               onPress={onDismiss}
               style={{ position: 'absolute', top: CARD_PADDING, right: CARD_PADDING }}

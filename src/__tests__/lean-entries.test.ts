@@ -189,23 +189,14 @@ describe('lean entries stay lean', () => {
     }
   });
 
-  it('chat-people/contact-row links one row, not the lists, form or story viewer', () => {
-    const row = graph('chat-people/contact-row.ts');
-    expect(row.has('chat-people/ContactRow.tsx')).toBe(true);
+  it('ListItem does not link contact forms, story viewers or message lists', () => {
+    const row = graph('list/ListItem.tsx');
     for (const heavy of [
-      'ContactList.tsx',
-      'MemberList.tsx',
-      'MemberRow.tsx',
-      'NewGroupForm.tsx',
-      'StoryViewer.tsx',
-      'StoryProgressBars.tsx',
-      'ChannelPostCard.tsx',
-      'SelectedChipsRow.tsx',
-      'index.ts',
-    ]) {
-      expect(row.has(`chat-people/${heavy}`)).toBe(false);
-    }
-    report('chat-people/contact-row', row, graph('chat-people/index.ts'));
+      'chat-people/NewGroupForm.tsx',
+      'chat-people/StoryViewer.tsx',
+      'message-bubble/MessageList.tsx',
+    ])
+      expect(row.has(heavy)).toBe(false);
   });
 
   it.each(['app-shell/index.ts', 'app-shell/index.web.ts', 'chat-screen/ChatSplitLayout.tsx'])(

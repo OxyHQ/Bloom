@@ -3,7 +3,6 @@ export { AgentReply } from './AgentReply';
 export { AgentReplyAction, AgentReplyActions } from './AgentReplyActions';
 export { AgentReplyBubble } from './AgentReplyBubble';
 export { AgentReplyIdentity } from './AgentReplyIdentity';
-export { AgentStack } from './AgentStack';
 export type {
   AgentProfileProps,
   AgentReplyActionProps,
@@ -13,5 +12,4 @@ export type {
   AgentReplyIdentityProps,
   AgentReplyProps,
   AgentReplyVote,
-  AgentStackProps,
 } from './types';

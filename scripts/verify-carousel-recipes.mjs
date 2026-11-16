@@ -19,7 +19,7 @@ try {
           const errors = [];
           page.on('pageerror', (error) => errors.push(error.message));
           await page.goto(
-            `${base}/iframe.html?id=base-carousel--arrow-recipe-${mode}&viewMode=story&args=arrowsPlacement:${placement}&globals=theme:${mode}`,
+            `${base}/iframe.html?id=base-carousel--arrow-recipe&viewMode=story&args=arrowsPlacement:${placement}&globals=theme:${mode}`,
           );
           const carousel = page.getByTestId('recipe-carousel');
           await carousel.waitFor({ timeout: 120000 });

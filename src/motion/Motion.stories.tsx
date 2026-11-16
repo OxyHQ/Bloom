@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
+import { Button } from '../button';
 import { Text } from '../typography';
 import Animated from 'react-native-reanimated';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -27,18 +28,7 @@ function Toggle({ children }: { children: React.ReactNode }) {
   const [shown, setShown] = useState(true);
   return (
     <View style={{ gap: 16, alignItems: 'flex-start' }}>
-      <Pressable
-        accessibilityLabel="Toggle"
-        onPress={() => setShown((v) => !v)}
-        style={{
-          paddingVertical: 8,
-          paddingHorizontal: 16,
-          borderRadius: 8,
-          backgroundColor: '#111827',
-        }}
-      >
-        <Text style={{ color: 'white', fontWeight: '600' }}>{shown ? 'Hide' : 'Show'}</Text>
-      </Pressable>
+      <Button onPress={() => setShown((v) => !v)}>{shown ? 'Hide' : 'Show'}</Button>
       <View style={{ height: 96, justifyContent: 'center' }}>{shown ? children : null}</View>
     </View>
   );
@@ -82,20 +72,9 @@ export const Transition: Story = {
       const [forward, setForward] = useState(true);
       return (
         <View style={{ gap: 16, alignItems: 'flex-start' }}>
-          <Pressable
-            accessibilityLabel="Swap direction"
-            onPress={() => setForward((v) => !v)}
-            style={{
-              paddingVertical: 8,
-              paddingHorizontal: 16,
-              borderRadius: 8,
-              backgroundColor: '#111827',
-            }}
-          >
-            <Text style={{ color: 'white', fontWeight: '600' }}>
-              Direction: {forward ? 'forward' : 'backward'}
-            </Text>
-          </Pressable>
+          <Button onPress={() => setForward((v) => !v)}>
+            Direction: {forward ? 'forward' : 'backward'}
+          </Button>
           <ScreenTransition
             key={forward ? 'forward' : 'backward'}
             direction={forward ? 'forward' : 'backward'}
@@ -119,12 +98,12 @@ export const Rolling: Story = {
     return (
       <View style={{ gap: 16, alignItems: 'flex-start' }}>
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Pressable accessibilityLabel="Down" onPress={() => setN((v) => Math.max(0, v - 1))}>
-            <Text>−</Text>
-          </Pressable>
-          <Pressable accessibilityLabel="Up" onPress={() => setN((v) => v + 1)}>
-            <Text>+</Text>
-          </Pressable>
+          <Button accessibilityLabel="Down" onPress={() => setN((v) => Math.max(0, v - 1))}>
+            −
+          </Button>
+          <Button accessibilityLabel="Up" onPress={() => setN((v) => v + 1)}>
+            +
+          </Button>
         </View>
         <RollingText value={`Week ${n}`} align="center" clip containerStyle={{ width: 120 }} />
         <RollingText value={String(n)} variant="title-2-regular" />

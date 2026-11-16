@@ -224,10 +224,10 @@ paints it. It only decides what the panel tells its content.
 
 ### What reads it
 
-`SettingsListGroup` is the first component to stop taking a prop for this: with
+`GroupedSection` is the first component to stop taking a prop for this: with
 no `variant` it paints one step off the panel's published fill, so a settings
 screen reads the same on a page and inside a panel without repeating the answer
-at every group ([Settings list](/docs/bloom/main/settings-list)).
+at every group ([Grouped section](/docs/bloom/main/grouped-section)).
 
 A surface opened *from* the panel does not inherit it. React context reaches
 through a portal and through an RN `<Modal>` even though neither paints

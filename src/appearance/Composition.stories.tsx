@@ -1,4 +1,5 @@
-import React, { memo, useState } from 'react';
+import { fn } from 'storybook/test';
+import { memo, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { BloomScope } from './BloomScope';
@@ -6,7 +7,7 @@ import type { BloomSize } from './types';
 import { Surface } from '../surface';
 import { Card } from '../card';
 import { Button } from '../button';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+
 import { Text } from '../typography';
 import { LinkPreviewCard } from '../link-preview';
 import { Field } from '../field';
@@ -30,6 +31,7 @@ type Story = StoryObj;
 
 function Composer({ disabled = false }: { disabled?: boolean }) {
   const [message, setMessage] = useState('');
+  const [published, setPublished] = useState('');
   return (
     <View style={{ gap: 12 }}>
       <Field
@@ -47,15 +49,23 @@ function Composer({ disabled = false }: { disabled?: boolean }) {
       <Field label="Notify followers" disabled={disabled}>
         <Switch defaultChecked testID="composition-notify" />
       </Field>
-      <Button disabled={disabled || !message.trim()} testID="composition-send">
+      <Button
+        disabled={disabled || !message.trim()}
+        testID="composition-send"
+        onPress={() => {
+          setPublished(message);
+          setMessage('');
+        }}
+      >
         Publish
       </Button>
+      {published ? <Text>Published: {published}</Text> : null}
     </View>
   );
 }
 
 function ConnectedScene() {
-  const [size, setSize] = useState<BloomSize>('sm');
+  const [size, setSize] = useState<BloomSize>('md');
   const [disabled, setDisabled] = useState(false);
   const [range, setRange] = useState('Week');
   const editor = useDialogControl();
@@ -63,13 +73,13 @@ function ConnectedScene() {
     <View style={{ padding: 24, gap: 20, maxWidth: 760, width: '100%' }}>
       <Text variant="title-2-semibold">Connected components</Text>
       <Text>Change the inherited size, open the menu, then move the composer into a dialog.</Text>
-      <ButtonGroup accessibilityLabel="Control size" testID="composition-size">
+      <Button.Group accessibilityLabel="Control size" testID="composition-size">
         {(['xs', 'sm', 'md', 'lg'] as const).map((value) => (
-          <ButtonGroupItem key={value} checked={size === value} onPress={() => setSize(value)}>
+          <Button key={value} pressed={size === value} onPress={() => setSize(value)}>
             {value}
-          </ButtonGroupItem>
+          </Button>
         ))}
-      </ButtonGroup>
+      </Button.Group>
       <BloomScope size={size} tone="neutral">
         <Surface testID="composition-surface" style={{ padding: 20, gap: 18 }}>
           <Text variant="headline-semibold">Post</Text>
@@ -98,17 +108,13 @@ function ConnectedScene() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </View>
-            <ButtonGroup accessibilityLabel="Post range" testID="composition-range">
+            <Button.Group accessibilityLabel="Post range" testID="composition-range">
               {['Day', 'Week', 'Month'].map((value) => (
-                <ButtonGroupItem
-                  key={value}
-                  checked={range === value}
-                  onPress={() => setRange(value)}
-                >
+                <Button key={value} pressed={range === value} onPress={() => setRange(value)}>
                   {value}
-                </ButtonGroupItem>
+                </Button>
               ))}
-            </ButtonGroup>
+            </Button.Group>
             <Switch
               checked={disabled}
               onCheckedChange={setDisabled}
@@ -143,7 +149,7 @@ const DensePost = memo(function DensePost({ index }: { index: number }) {
         url={`https://example.com/article/${index}`}
         title={`Article ${index + 1}`}
         description="A nested card with its own surface level."
-        onPress={() => {}}
+        onPress={fn().mockName('onPress')}
       />
       <View style={{ flexDirection: 'row', gap: 12 }}>
         <Button
@@ -153,7 +159,6 @@ const DensePost = memo(function DensePost({ index }: { index: number }) {
         >
           {liked ? 'Liked' : 'Like'}
         </Button>
-        <Button appearance="plain">Reply</Button>
       </View>
     </Card>
   );

@@ -1,9 +1,9 @@
-import React, { useContext } from 'react';
+import { fn } from 'storybook/test';
+import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { EarningsBreakdown } from './EarningsBreakdown';
@@ -21,7 +21,7 @@ export default meta;
 
 type Story = StoryObj;
 
-const noop = () => undefined;
+const onDemoAction = fn().mockName('earnings.action');
 
 // ---------------------------------------------------------------------------
 //  Demo data — invented amounts, in euros because the app that owns them is.
@@ -157,24 +157,6 @@ function Caption({ children }: { children: string }) {
   );
 }
 
-function BothModes({ children }: { children: React.ReactNode }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
-  return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-      <BloomThemeProvider mode="light" colorPreset={preset}>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 640 }}>
-          <Page>{children}</Page>
-        </View>
-      </BloomThemeProvider>
-      <BloomThemeProvider mode="dark" colorPreset={preset}>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 640 }}>
-          <Page>{children}</Page>
-        </View>
-      </BloomThemeProvider>
-    </View>
-  );
-}
-
 /** The whole panel: the chart card's own switch drives everything under it. */
 export const Summary: Story = {
   render: () => (
@@ -183,7 +165,7 @@ export const Summary: Story = {
         periods={PERIODS}
         defaultPeriod="week"
         formatAxisValue={axis}
-        onPressPayout={noop}
+        onPressPayout={onDemoAction}
         testID="earnings"
       />
     </Page>
@@ -232,7 +214,7 @@ export const PayoutStates: Story = {
           note: 'Confirm your tax number before the next payout run.',
         }}
         action={
-          <Button size="sm" onPress={noop} tone="neutral" appearance="outline">
+          <Button size="sm" onPress={onDemoAction} tone="neutral" appearance="outline">
             Confirm the number
           </Button>
         }
@@ -247,7 +229,7 @@ export const PayoutStates: Story = {
           note: 'The bank refused the transfer. Check the account and try again.',
         }}
         action={
-          <Button size="sm" onPress={noop} tone="neutral" appearance="outline">
+          <Button size="sm" onPress={onDemoAction} tone="neutral" appearance="outline">
             Try again
           </Button>
         }
@@ -292,14 +274,5 @@ export const Nothing: Story = {
         testID="earnings"
       />
     </Page>
-  ),
-};
-
-/** Both modes side by side. */
-export const Modes: Story = {
-  render: () => (
-    <BothModes>
-      <EarningsSummary periods={[WEEK]} formatAxisValue={axis} />
-    </BothModes>
   ),
 };

@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
@@ -35,7 +35,7 @@ import type { CheckoutSummaryRowProps } from './types';
  * `Item`'s job, and this family owns no second copy of any of them.
  *
  * The label/value pair is a CAPTION OVER A VALUE rather than a title with the
- * value on the right, which is the other row Bloom draws (`SettingsListItem`).
+ * value on the right, which is the other row Bloom draws (`GroupedSectionItem`).
  * The difference is the length: a settings value is a word, and a checkout
  * value is an address, a window and a card number — none of which fits in the
  * right half of a 390 row without truncating the thing the reader came to

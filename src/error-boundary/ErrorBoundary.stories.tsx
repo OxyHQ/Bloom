@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
+import { Button } from '../button';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { ErrorBoundary, PanelErrorBoundary } from './index';
@@ -25,9 +26,7 @@ function Harness({ children }: { children: (armed: boolean) => React.ReactNode }
   const [armed, setArmed] = useState(false);
   return (
     <View style={{ maxWidth: '100%', width: 420, gap: 12 }}>
-      <Pressable onPress={() => setArmed((value) => !value)}>
-        <Text>{armed ? 'Disarm' : 'Throw'}</Text>
-      </Pressable>
+      <Button onPress={() => setArmed((value) => !value)}>{armed ? 'Disarm' : 'Throw'}</Button>
       {children(armed)}
     </View>
   );
@@ -89,9 +88,7 @@ export const CustomFallback: Story = {
             <View style={{ gap: 8 }}>
               <Text>{error.message}</Text>
               {retryCount < 2 ? (
-                <Pressable onPress={retry}>
-                  <Text>Retry ({retryCount})</Text>
-                </Pressable>
+                <Button onPress={retry}>Retry ({retryCount})</Button>
               ) : (
                 <Text>Still failing — check your connection.</Text>
               )}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Platform, View, useWindowDimensions } from 'react-native';
+import { View, useWindowDimensions } from 'react-native';
 
 import { AppShell } from '../../src/app-shell';
 import { Button } from '../../src/button';
@@ -18,7 +18,6 @@ import {
   TrackMetadataForm,
   TrackUploadRow,
   type PitchStatus,
-  type ReleaseAction,
   type ReleaseStatus,
   type TrackCredit,
   type TrackMetadata,
@@ -29,14 +28,7 @@ import {
   RiAddFill,
   RiAlbumLine,
   RiDashboardLine,
-  RiDeleteBinLine,
-  RiEditLine,
-  RiEyeLine,
-  RiFileCopyLine,
-  RiGroupLine,
-  RiMegaphoneLine,
   RiMusic2Fill,
-  RiSettings4Line,
   RiUploadCloud2Line,
 } from '../../src/icons/remix';
 import { FilterChips } from '../../src/media-shelf';
@@ -76,10 +68,7 @@ import {
 
 export type StudioPage = 'dashboard' | 'releases' | 'new-release';
 
-const FRAME: WebCssStyle =
-  Platform.OS === 'web'
-    ? { alignSelf: 'stretch', marginTop: -24, marginBottom: -24, marginLeft: -24, marginRight: -24 }
-    : { flex: 1, width: '100%' };
+const FRAME: WebCssStyle = { flex: 1, minWidth: 0, minHeight: 0, width: '100%' };
 
 const NAV: SidebarNavItem[] = [
   { key: 'dashboard', label: 'Dashboard', icon: RiDashboardLine, href: '#dashboard' },
@@ -91,11 +80,7 @@ const NAV: SidebarNavItem[] = [
     href: '#releases',
   },
   { key: 'new-release', label: 'New release', icon: RiUploadCloud2Line, href: '#new-release' },
-  { key: 'audience', label: 'Audience', icon: RiGroupLine, href: '#audience' },
-  { key: 'pitching', label: 'Pitching', icon: RiMegaphoneLine, href: '#pitching' },
 ];
-
-const SECONDARY: SidebarNavItem[] = [{ key: 'settings', label: 'Settings', icon: RiSettings4Line }];
 
 function StudioMark() {
   const theme = useTheme();
@@ -138,7 +123,6 @@ export function StudioApp({ initialPage = 'dashboard' }: { initialPage?: StudioP
         sidebar={{
           logo: { icon: <StudioMark />, wordmark: 'Studio', onPress: () => setPage('dashboard') },
           items: NAV,
-          secondaryItems: SECONDARY,
           selected: page,
           onNavigate: (item) => {
             if (item.key === 'dashboard' || item.key === 'releases' || item.key === 'new-release')
@@ -149,11 +133,7 @@ export function StudioApp({ initialPage = 'dashboard' }: { initialPage?: StudioP
         }}
         title={title}
         actions={
-          page === 'new-release' ? (
-            <Button size="sm" tone="neutral" appearance="outline">
-              Save draft
-            </Button>
-          ) : (
+          page !== 'new-release' ? (
             <Button
               size="sm"
               leadingIcon={RiAddFill}
@@ -163,7 +143,7 @@ export function StudioApp({ initialPage = 'dashboard' }: { initialPage?: StudioP
             >
               New release
             </Button>
-          )
+          ) : undefined
         }
       >
         {page === 'dashboard' ? <Dashboard /> : page === 'releases' ? <Releases /> : <NewRelease />}
@@ -240,7 +220,6 @@ function Dashboard() {
           lastPayout={{ amount: '$5,120.00', date: '28 Aug' }}
           nextPayoutDate="28 Sep 2026"
           months={STUDIO_PAYOUT_MONTHS}
-          onViewStatements={() => {}}
         />
       </Columns>
       <TopTracksTable tracks={STUDIO_TOP_TRACKS} summary="Last 28 days" />
@@ -252,13 +231,6 @@ function Dashboard() {
 // ---------------------------------------------------------------------------
 //  Releases
 // ---------------------------------------------------------------------------
-
-const RELEASE_ACTIONS: ReleaseAction[] = [
-  { label: 'View details', icon: RiEyeLine },
-  { label: 'Edit metadata', icon: RiEditLine },
-  { label: 'Duplicate', icon: RiFileCopyLine },
-  { label: 'Delete', icon: RiDeleteBinLine, destructive: true },
-];
 
 const RELEASE_FILTERS: { value: string; label: string; statuses: readonly ReleaseStatus[] }[] = [
   {
@@ -315,7 +287,7 @@ function Releases() {
                   key={release.id}
                   style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 }}
                 >
-                  <ReleaseCard release={release} onPress={() => {}} actions={RELEASE_ACTIONS} />
+                  <ReleaseCard release={release} />
                 </View>
               ))}
               {Array.from({ length: columns - row.length }, (_, i) => (
@@ -327,13 +299,7 @@ function Releases() {
       ) : (
         <View style={{ gap: 8 }}>
           {shown.map((release) => (
-            <ReleaseCard
-              key={release.id}
-              release={release}
-              layout="row"
-              onPress={() => {}}
-              actions={RELEASE_ACTIONS}
-            />
+            <ReleaseCard key={release.id} release={release} layout="row" />
           ))}
         </View>
       )}
@@ -434,21 +400,10 @@ function NewRelease() {
 
   return (
     <View style={{ gap: 24, paddingBottom: 32 }}>
-      <View
-        style={{
-          backgroundColor: theme.colors.backgroundSecondary,
-          borderRadius: 16,
-          paddingTop: 20,
-          paddingBottom: 16,
-          paddingLeft: 12,
-          paddingRight: 12,
-        }}
-      >
-        <ReleaseTimeline
-          steps={STUDIO_STEPS}
-          orientation={width >= 900 ? 'horizontal' : 'vertical'}
-        />
-      </View>
+      <ReleaseTimeline
+        steps={STUDIO_STEPS}
+        orientation={width >= 900 ? 'horizontal' : 'vertical'}
+      />
 
       <Columns from={1100} ratio={[3, 2]}>
         <View style={{ gap: 24 }}>

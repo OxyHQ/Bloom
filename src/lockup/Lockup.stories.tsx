@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -99,11 +100,11 @@ const PRODUCTS = [
   },
 ];
 
-const noop = () => {};
+const onDemoAction = fn().mockName('lockup.action');
 
 function Get({ label = 'Get' }: { label?: string }) {
   return (
-    <Button size="sm" appearance="subtle" tone="accent" onPress={noop}>
+    <Button size="sm" appearance="subtle" tone="accent" onPress={onDemoAction}>
       {label}
     </Button>
   );
@@ -128,7 +129,7 @@ export const Sizes: Story = {
           subtitle={second.subtitle}
           icon={second.icon}
           caption={<Rating value={second.rating} count={second.count} size="sm" />}
-          onPress={noop}
+          onPress={onDemoAction}
           action={<Get />}
         />
         <Lockup
@@ -136,7 +137,7 @@ export const Sizes: Story = {
           title={third.title}
           subtitle={third.subtitle}
           icon={third.icon}
-          onPress={noop}
+          onPress={onDemoAction}
           action={<Get />}
         />
       </View>
@@ -151,7 +152,7 @@ export const Sizes: Story = {
  */
 export const PagedShelf: Story = {
   render: () => (
-    <View style={{ maxWidth: 1040 }}>
+    <View style={{ width: '100%', maxWidth: 1040 }}>
       <Shelf
         title="Apps we love"
         layout="paged"
@@ -159,7 +160,7 @@ export const PagedShelf: Story = {
         minItemWidth={300}
         gap={20}
         rowGap={0}
-        onShowAll={noop}
+        onShowAll={onDemoAction}
       >
         {PRODUCTS.map((product) => (
           <Lockup
@@ -167,7 +168,7 @@ export const PagedShelf: Story = {
             title={product.title}
             subtitle={product.subtitle}
             icon={product.icon}
-            onPress={noop}
+            onPress={onDemoAction}
             action={<Get />}
           />
         ))}
@@ -187,7 +188,7 @@ export const Ranked: Story = {
           title={product.title}
           subtitle={product.subtitle}
           icon={product.icon}
-          onPress={noop}
+          onPress={onDemoAction}
           action={<Get />}
           divider={index < 3}
         />

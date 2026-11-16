@@ -17,7 +17,8 @@
       "@oxy.so/bloom/popover": ["../../lib/typescript/module/popover/index.d.ts"],
       "@oxy.so/bloom/overlay/back": ["../../lib/typescript/module/overlay/back.d.ts"],
       "@oxy.so/bloom-text": ["../bloom-text/src/index.ts"],
-      "@oxy.so/bloom-text/model": ["../bloom-text/src/model.ts"]
+      "@oxy.so/bloom-text/model": ["../bloom-text/src/model.ts"],
+      "@oxy.so/bloom/button": ["../../lib/typescript/module/button/index.d.ts"]
     }
   },
   "include": ["src"],

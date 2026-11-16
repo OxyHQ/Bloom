@@ -1,4 +1,0 @@
-import { Surface } from '../surface/index.web';
-import { Button } from '../button/index.web';
-import { createButtonGroup } from './ButtonGroupBase';
-export const { ButtonGroup, ButtonGroupItem } = createButtonGroup(Button, Surface);

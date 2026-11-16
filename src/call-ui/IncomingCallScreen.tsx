@@ -8,7 +8,11 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { ScrollArea } from '../layout/ScrollArea';
 import { Avatar } from '../avatar/Avatar';
+import { Button } from '../button';
+import { useMeasuredSizeClass } from '../hooks/use-width-class';
+import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { RiMessage2Line } from '../icons/remix/RiMessage2Line';
 import { RiPhoneFill } from '../icons/remix/RiPhoneFill';
@@ -48,6 +52,8 @@ import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
  */
 
 const AVATAR_SIZE = 132;
+const NO_WIDTH_THRESHOLDS: readonly number[] = [];
+const IDENTITY_HEIGHT_THRESHOLDS = [480] as const;
 const TRACK_HEIGHT = 64;
 const KNOB = 56;
 const TRACK_PADDING = (TRACK_HEIGHT - KNOB) / 2;
@@ -76,13 +82,7 @@ function SlideHint({ paint, reduced }: { paint: CallPaint; reduced: boolean }) {
   );
 }
 
-/**
- * A quiet text action on the stage.
- *
- * Not Bloom's `text` `Button`: that paints its ICON from the accent ramp while
- * the caller can only override the LABEL's colour, so the control ends up two
- * colours on a surface neither of them was chosen for.
- */
+/** Secondary stage commands share Button geometry, colour and interaction. */
 function StageAction({
   icon: Icon,
   label,
@@ -97,27 +97,18 @@ function StageAction({
   testID?: string;
 }) {
   return (
-    <Pressable
-      role="button"
+    <Button
+      appearance="plain"
+      tone="neutral"
+      icon={Icon}
+      color={color}
+      hoverColor={color}
       accessibilityLabel={label}
       onPress={onPress}
-      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        paddingTop: 6,
-        paddingRight: 10,
-        paddingBottom: 6,
-        paddingLeft: 10,
-      }}
       testID={testID}
     >
-      <Icon width={16} height={16} fill={color} />
-      <Text variant="body-medium" style={{ color }}>
-        {label}
-      </Text>
-    </Pressable>
+      {label}
+    </Button>
   );
 }
 
@@ -139,6 +130,10 @@ function IncomingCallScreenComponent({
   testID,
 }: IncomingCallScreenProps) {
   const { messages } = useMessages(CALL_UI_MESSAGES);
+  const directionProps = useDirectionProps();
+  const textStart = useIsRtl() ? 'right' : 'left';
+  const stage = useMeasuredSizeClass(NO_WIDTH_THRESHOLDS, IDENTITY_HEIGHT_THRESHOLDS);
+  const short = stage.height < IDENTITY_HEIGHT_THRESHOLDS[0];
   const theme = useTheme();
   const paint = useMemo(() => resolveCallPaint(theme, accentColor), [theme, accentColor]);
   const reduced = usePrefersReducedMotion();
@@ -280,10 +275,12 @@ function IncomingCallScreenComponent({
 
   return (
     <View
+      {...directionProps}
+      onLayout={stage.onLayout}
       style={[
         {
           flex: 1,
-          minHeight: 520,
+          minHeight: 0,
           backgroundColor: paint.stage,
           borderRadius: CALL_UI_RADIUS.stage,
           overflow: 'hidden',
@@ -293,47 +290,68 @@ function IncomingCallScreenComponent({
       testID={testID}
     >
       <CallStageBackdrop paint={paint} />
-      <View
-        style={{
-          flex: 1,
+      <ScrollArea
+        style={{ flex: 1, minHeight: 0 }}
+        testID={testID ? `${testID}-identity-scroll` : undefined}
+        contentContainerStyle={{
+          flexGrow: 1,
           alignItems: 'center',
           justifyContent: 'center',
           gap: 20,
-          paddingTop: 48,
+          paddingTop: short ? 16 : 48,
           paddingRight: 24,
           paddingBottom: 24,
           paddingLeft: 24,
         }}
       >
-        <Avatar
-          source={avatar}
-          variant={avatarVariant}
-          name={name}
-          size={AVATAR_SIZE}
-          testID={testID ? `${testID}-avatar` : undefined}
-        />
-        <View style={{ alignItems: 'center', gap: 6 }}>
-          <Text
-            variant="title-1-semibold"
-            numberOfLines={1}
-            style={{ color: paint.onStage, textAlign: 'center' }}
+        <View
+          style={{
+            flexDirection: short ? 'row' : 'column',
+            alignItems: 'center',
+            gap: 20,
+            maxWidth: '100%',
+          }}
+        >
+          <Avatar
+            source={avatar}
+            variant={avatarVariant}
+            name={name}
+            size={AVATAR_SIZE}
+            testID={testID ? `${testID}-avatar` : undefined}
+          />
+          <View
+            style={{
+              alignItems: short ? 'flex-start' : 'center',
+              gap: 6,
+              minWidth: 0,
+              flexShrink: 1,
+            }}
           >
-            {name}
-          </Text>
-          <Text
-            variant="body-medium"
-            numberOfLines={1}
-            style={{ color: paint.onStageMuted, textAlign: 'center' }}
-            testID={testID ? `${testID}-subtitle` : undefined}
-          >
-            {line}
-          </Text>
+            <Text
+              testID={testID ? `${testID}-name` : undefined}
+              variant="title-1-semibold"
+              numberOfLines={1}
+              style={{ color: paint.onStage, textAlign: short ? textStart : 'center' }}
+            >
+              {name}
+            </Text>
+            <Text
+              variant="body-medium"
+              numberOfLines={1}
+              style={{ color: paint.onStageMuted, textAlign: short ? textStart : 'center' }}
+              testID={testID ? `${testID}-subtitle` : undefined}
+            >
+              {line}
+            </Text>
+          </View>
         </View>
         {children}
-      </View>
+      </ScrollArea>
 
-      <View
-        style={{
+      <ScrollArea
+        style={{ flexGrow: 0, flexShrink: 1, minHeight: 0 }}
+        testID={testID ? `${testID}-controls-scroll` : undefined}
+        contentContainerStyle={{
           gap: 20,
           paddingRight: 24,
           paddingBottom: 40,
@@ -348,7 +366,7 @@ function IncomingCallScreenComponent({
             {secondary}
           </View>
         )}
-      </View>
+      </ScrollArea>
     </View>
   );
 }

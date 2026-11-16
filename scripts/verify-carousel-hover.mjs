@@ -20,7 +20,7 @@ try {
           const errors = [];
           page.on('pageerror', (error) => errors.push(error.message));
           await page.goto(
-            `${base}/iframe.html?id=base-carousel--hover-arrows-${mode}&viewMode=story&args=arrowsPlacement:${placement}`,
+            `${base}/iframe.html?id=base-carousel--hover-arrows&viewMode=story&args=arrowsPlacement:${placement}&globals=theme:${mode}`,
           );
           const carousel = page.getByTestId('hover-carousel');
           await carousel.waitFor({ timeout: 120000 });

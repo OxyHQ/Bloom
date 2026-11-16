@@ -1,14 +1,4 @@
-import React from 'react';
-import {
-  Pressable,
-  StyleSheet,
-  View,
-  type AccessibilityActionEvent,
-  type GestureResponderEvent,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
-import { openHref } from '../hooks/link-activation';
+import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Chip } from '../chip';
 import type { BloomIconComponent } from '../icons/icon-component';
@@ -16,121 +6,13 @@ import { RiStarFill } from '../icons/remix/RiStarFill';
 import { RiStarLine } from '../icons/remix/RiStarLine';
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { Text } from '../typography';
-import { MAIL_LABEL_DOT, MAIL_ROW_RADIUS, MAIL_TOUCH_TARGET, type MailPaint } from './shared';
-import type { MailAction, MailLabel, MailStrings } from './types';
+import { MAIL_TOUCH_TARGET, type MailPaint } from './shared';
+import type { MailLabel, MailStrings } from './types';
 import { IS_WEB } from '../styles/platform';
 import { useInteractionState } from '../hooks/use-interaction-state';
 
 // ---------------------------------------------------------------------------
 //  The link that covers a row
-// ---------------------------------------------------------------------------
-
-export interface MailRowLinkProps {
-  /** The whole row, read aloud. */
-  name: string;
-  onPress?: () => void;
-  onLongPress?: () => void;
-  href?: string;
-  selected?: boolean;
-  paint: MailPaint;
-  /**
-   * The fill the link paints over the row WHILE Pressable reports it pressed;
-   * omit for none. Native only: on web the adopted sheet owns the fill.
-   */
-  pressedFill?: string;
-  /** Every action the row offers, as platform accessibility actions. */
-  actions?: readonly MailAction[];
-  onAction?: (key: string) => void;
-  testID?: string;
-}
-
-/**
- * A ROW'S LINK IS A SIBLING LAID UNDER ITS CONTENT, NOT A WRAPPER AROUND IT.
- *
- * It fills the row absolutely and carries the whole composed name; the avatar,
- * the text lines and the label chips are drawn over it with
- * `pointerEvents="none"`, so a press anywhere on them falls through. The star,
- * the checkbox and the hover rail are drawn over it as their OWN targets — a
- * button inside an anchor is invalid HTML, and nesting them would make every
- * "Archive" click open the message.
- *
- * `actions` also reaches it as `accessibilityActions`, which is the ONLY path a
- * screen-reader user has to a swipe: the rotor lists them on the row itself.
- * react-native-web drops the prop, and rightly — there the rail is in the tab
- * order and `:focus-within` reveals it.
- *
- * The pressed fill is Pressable's OWN `pressed`, painted on the link, never a
- * copy mirrored from `onPressIn`/`onPressOut` into the row: Android can lose
- * the press-out of a tap that navigates, and a mirror then stays pressed
- * (`docs/mail-list.mdx`).
- */
-export function MailRowLink({
-  name,
-  onPress,
-  onLongPress,
-  href,
-  selected = false,
-  paint,
-  pressedFill,
-  actions,
-  onAction,
-  testID,
-}: MailRowLinkProps) {
-  const handlePress = (event: GestureResponderEvent) => {
-    if (onPress) {
-      if (IS_WEB && href) event.preventDefault();
-      onPress();
-      return;
-    }
-    if (!IS_WEB && href) openHref(href);
-  };
-  const interactive = Boolean(onPress || href || onLongPress);
-  const style: WebCssStyle = {
-    ...StyleSheet.absoluteFill,
-    borderRadius: MAIL_ROW_RADIUS,
-    '--bloom-mail-ring': paint.accent,
-  };
-  const rotor =
-    actions === undefined || actions.length === 0
-      ? null
-      : {
-          accessibilityActions: actions.map((action) => ({
-            name: action.key,
-            label: action.label,
-          })),
-          onAccessibilityAction: (event: AccessibilityActionEvent) => {
-            const match = actions.find((action) => action.key === event.nativeEvent.actionName);
-            if (match === undefined) return;
-            match.onPress?.();
-            onAction?.(match.key);
-          },
-        };
-  return (
-    <Pressable
-      {...webDataSet({ bloomMailFocusable: '' })}
-      {...rotor}
-      {...(IS_WEB && href ? { href } : null)}
-      {...(IS_WEB && selected ? { 'aria-current': 'true' } : null)}
-      role={href ? 'link' : interactive ? 'button' : undefined}
-      accessibilityLabel={name}
-      // `selected` on a row is `aria-current` on web — `aria-selected` is for a
-      // tab or an option, and a message row is neither. Native reads the state.
-      accessibilityState={{ selected }}
-      onPress={onPress || (!IS_WEB && href) ? handlePress : undefined}
-      onLongPress={onLongPress}
-      style={
-        pressedFill === undefined
-          ? style
-          : ({ pressed }) => (pressed ? [style, { backgroundColor: pressedFill }] : style)
-      }
-      testID={testID}
-    />
-  );
-}
-
-// ---------------------------------------------------------------------------
-//  A round glyph button
 // ---------------------------------------------------------------------------
 
 export interface MailGlyphButtonProps {
@@ -144,6 +26,7 @@ export interface MailGlyphButtonProps {
   ring: string;
   /** A toggle emits `aria-pressed` AND the native state; a plain button emits neither. */
   pressed?: boolean;
+  disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -162,6 +45,7 @@ export function MailGlyphButton({
   hoverFill,
   ring,
   pressed,
+  disabled,
   style,
   testID,
 }: MailGlyphButtonProps) {
@@ -197,7 +81,9 @@ export function MailGlyphButton({
       {...(pressed === undefined
         ? null
         : { 'aria-pressed': pressed, accessibilityState: { selected: pressed } })}
-      onPress={onPress}
+      disabled={disabled}
+      aria-disabled={disabled || undefined}
+      onPress={disabled ? undefined : onPress}
       hitSlop={{ top: slop, bottom: slop, left: slop, right: slop }}
       onHoverIn={onHoverIn}
       onHoverOut={onHoverOut}
@@ -214,6 +100,7 @@ export function MailGlyphButton({
 // ---------------------------------------------------------------------------
 
 export interface MailStarProps {
+  disabled?: boolean;
   starred: boolean;
   /** No handler, no star: the row draws nothing rather than a dead glyph. */
   onStarredChange?: (starred: boolean) => void;
@@ -236,6 +123,7 @@ export interface MailStarProps {
  * a status.
  */
 export function MailStar({
+  disabled,
   starred,
   onStarredChange,
   size,
@@ -252,6 +140,7 @@ export function MailStar({
       label={starred ? strings.starred : strings.star}
       icon={Icon}
       pressed={starred}
+      disabled={disabled}
       onPress={() => onStarredChange(!starred)}
       size={size}
       glyph={glyph}
@@ -328,90 +217,3 @@ export function MailLabelChips({
 // ---------------------------------------------------------------------------
 //  Label marks — one chip, then dots
 // ---------------------------------------------------------------------------
-
-export interface MailLabelMarksProps {
-  /** The one label that keeps its name. */
-  chip?: MailLabel;
-  /** The rest, already resolved to a fill: id and colour, nothing to read. */
-  dots: readonly { id: string; color: string }[];
-  surface: string;
-  testID?: string;
-}
-
-/**
- * What a TWO-LINE row draws for its labels: one chip and a dot per label that
- * did not fit. Which labels those are is `labelMarks`, and it is pure.
- *
- * A dot is not a smaller chip. It carries no name, so it is the row saying
- * "there is another one of these" in 8px of the label's own tone — and the
- * row's composed name is where the names are. Hidden from assistive technology
- * for exactly that reason, like every other glyph inside the row's content.
- */
-export function MailLabelMarks({ chip, dots, surface, testID }: MailLabelMarksProps) {
-  if (chip === undefined && dots.length === 0) return null;
-  return (
-    <View
-      aria-hidden
-      importantForAccessibility="no-hide-descendants"
-      style={{ flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 0 }}
-      testID={testID}
-    >
-      {chip === undefined ? null : (
-        <Chip
-          size="sm"
-          variant="subtle"
-          color={chip.tone ?? 'default'}
-          surface={surface}
-          testID={testID ? `${testID}-${chip.id}` : undefined}
-        >
-          {chip.name}
-        </Chip>
-      )}
-      {dots.map((dot) => (
-        <View
-          key={dot.id}
-          style={{
-            width: MAIL_LABEL_DOT,
-            height: MAIL_LABEL_DOT,
-            borderRadius: MAIL_LABEL_DOT / 2,
-            backgroundColor: dot.color,
-          }}
-          testID={testID ? `${testID}-dot-${dot.id}` : undefined}
-        />
-      ))}
-    </View>
-  );
-}
-
-// ---------------------------------------------------------------------------
-//  A section heading
-// ---------------------------------------------------------------------------
-
-export function MailSectionHeading({
-  title,
-  paint,
-  paddingHorizontal,
-  testID,
-}: {
-  title: string;
-  paint: MailPaint;
-  paddingHorizontal: number;
-  testID?: string;
-}) {
-  return (
-    <View
-      role="presentation"
-      style={{
-        paddingLeft: paddingHorizontal,
-        paddingRight: paddingHorizontal,
-        paddingTop: 12,
-        paddingBottom: 4,
-      }}
-      testID={testID}
-    >
-      <Text variant="caption-1-semibold" style={{ color: paint.textTertiary }}>
-        {title}
-      </Text>
-    </View>
-  );
-}

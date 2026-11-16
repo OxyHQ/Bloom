@@ -6,12 +6,17 @@
  * or `COMMON_MESSAGES`, plurals follow the language's rules, and a caller's
  * `labels` / `*Label` prop still wins over the catalog.
  */
-import React from 'react';
+import type { PersonSummary } from '../chat-people/types';
+
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
+import { List, ListItem } from '../list/index.web';
+import { EmptyState } from '../empty-state';
+import { CHAT_LIST_MESSAGES } from '../chat-list/messages';
 import { LocaleProvider } from '../locale';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { MessageStatus, PresenceDot, UnreadBadge } from '../chat-indicators';
@@ -19,20 +24,12 @@ import { MessageBubble, TypingBubble, UnreadSeparator } from '../message-bubble'
 import {
   ChatEmptyState,
   ChatHeader,
-  ChatMemberRow,
+  ChatInfoPanel,
   PinnedMessageBar,
   ScrollToBottomButton,
 } from '../chat-screen';
 import { FileMessage, MediaAlbum, PollMessage, VoiceMessage } from '../message-media';
-import {
-  ChannelPostCard,
-  ContactList,
-  ContactRow,
-  MemberList,
-  MemberRow,
-  NewGroupForm,
-  StoryProgressBars,
-} from '../chat-people';
+import { NewGroupForm, StoryProgressBars } from '../chat-people';
 import { CHAT_PEOPLE_MESSAGES } from '../chat-people/messages';
 import {
   ATTACHMENT_MENU_ITEMS,
@@ -45,10 +42,7 @@ import {
 import { attachmentMenuItems } from '../chat-composer/shared';
 import { CHAT_COMPOSER_MESSAGES } from '../chat-composer/messages';
 import {
-  ArchivedRow,
   ChatFolderTabs,
-  ChatList,
-  ChatListItem,
   ChatSearchField,
   ChatSearchResults,
   NewChatButton,
@@ -215,7 +209,7 @@ describe('chat-indicators, message-bubble and chat-screen', () => {
           />
           <ChatEmptyState />
           <ScrollToBottomButton onPress={() => {}} />
-          <ChatMemberRow member={{ id: 'm', name: 'Ana', role: 'owner' }} />
+          <ChatInfoPanel members={[{ id: 'm', name: 'Ana', role: 'owner' }]} />
         </>,
       );
       expect(el.textContent).toContain('Mensaje fijado n.º 2');
@@ -330,58 +324,55 @@ describe('chat-people', () => {
       expect(label('f-remove-a')).toBe('Quitar a Ana Restrepo');
     });
 
-    it('names roles, the member menu and the list controls', () => {
+    it('names member roles and the add action through the shared info panel', () => {
       mount(
-        <MemberRow
-          id="a"
-          name="Ana"
-          role="admin"
-          onPress={() => undefined}
-          onRemove={() => undefined}
-          testID="r"
+        <ChatInfoPanel
+          members={[{ id: 'a', name: 'Ana', role: 'admin' }]}
+          onPressMember={() => undefined}
+          onAddMember={() => undefined}
+          testID="m"
         />,
       );
-      expect(label('r-open')).toBe('Ana, Administrador');
-      expect(label('r-actions')).toBe('Acciones de Ana');
-    });
-
-    it('draws the add row and the member search in Spanish', () => {
-      mount(<MemberList members={[]} onAddMembers={() => undefined} testID="m" />);
-      expect(label('m-add')).toBe('Añadir miembros');
+      expect(label('chat-info-member-a-link')).toBe('Ana, Administrador');
+      expect(label('m-add-member-link')).toBe('Añadir miembros');
     });
 
     it('names the rail, the contact action and the story strip', () => {
       mount(
-        <ContactList
+        <List
           sections={[
             { letter: 'A', contacts: [{ id: 'a', name: 'Ana' }] },
             { letter: 'K', contacts: [{ id: 'k', name: 'Kofi' }] },
-          ]}
-          onJumpToLetter={() => undefined}
-          testID="l"
+          ].map((section) => ({
+            id: section.letter,
+            title: section.letter,
+            items: section.contacts.map((contact: PersonSummary) => ({
+              id: contact.id,
+              person: { ...contact },
+            })),
+          }))}
+          testID={'l'}
+          scrollable
+          sectionIndex={
+            [
+              { letter: 'A', contacts: [{ id: 'a', name: 'Ana' }] },
+              { letter: 'K', contacts: [{ id: 'k', name: 'Kofi' }] },
+            ].filter((section) => section.contacts.length > 0).length > 1
+              ? {
+                  ids: undefined,
+                  activeId: undefined,
+                  onJump: () => undefined,
+                  labelFor: undefined,
+                }
+              : undefined
+          }
         />,
       );
       expect(label('l-jump-K')).toBe('Ir a la K');
-      mount(<ContactRow id="a" name="Ana" onAction={() => undefined} testID="c" />);
+      mount(<ListItem person={{ name: 'Ana', onAction: () => undefined }} testID="c" />);
       expect(label('c-action')).toBe('Añadir: Ana');
       mount(<StoryProgressBars count={5} index={1} progress={0.5} testID="s" />);
       expect(label('s')).toBe('Historia 2 de 5');
-    });
-
-    it('names a post’s counts and controls', () => {
-      mount(
-        <ChannelPostCard
-          channelName="Canal"
-          time="12:41"
-          views="1"
-          forwards="318"
-          onShare={() => undefined}
-          testID="p"
-        />,
-      );
-      expect(label('p-views')).toBe('1 visualización');
-      expect(label('p-forwards')).toBe('318 reenvíos');
-      expect(label('p-share')).toBe('Compartir');
     });
   });
 
@@ -396,7 +387,6 @@ describe('chat-people', () => {
       expect(count('ru', 5)).toBe('5 участников');
       expect(count('ar', 2)).toBe('عضوان');
       expect(count('ar', 11)).toBe('11 عضوًا');
-      expect(messagesIn(CHAT_PEOPLE_MESSAGES, 'ru').views('12.4K')).toBe('12.4K просмотров');
     });
 
     it('renders the Russian few form in the group form', () => {
@@ -430,21 +420,22 @@ describe('chat-people', () => {
       );
       expect(label('f-photo')).toBe('Foto del equipo');
       mount(
-        <MemberList
+        <ChatInfoPanel
           members={[]}
-          onAddMembers={() => undefined}
-          addMembersLabel="Invitar"
+          onAddMember={() => undefined}
+          addMemberLabel="Invitar"
           testID="m"
         />,
       );
-      expect(label('m-add')).toBe('Invitar');
+      expect(label('m-add-member-link')).toBe('Invitar');
       mount(
-        <ContactRow
-          id="a"
-          name="Ana"
-          onAction={() => undefined}
-          actionDone
-          actionDoneLabel="Invitada"
+        <ListItem
+          person={{
+            name: 'Ana',
+            onAction: () => undefined,
+            actionDone: true,
+            actionDoneLabel: 'Invitada',
+          }}
           testID="c"
         />,
       );
@@ -555,14 +546,16 @@ describe('chat-list', () => {
   describe('chat-list in Spanish', () => {
     it('names a row with its glyph states, unread count and draft in Spanish', () => {
       mount(
-        <ChatListItem
-          name="Ana"
-          verified
-          preview={{ draft: true, text: 'nos vemos' }}
-          time="12:41"
-          unreadCount={3}
-          muted
-          pinned
+        <ListItem
+          conversation={{
+            name: 'Ana',
+            verified: true,
+            preview: { draft: true, text: 'nos vemos' },
+            time: '12:41',
+            unreadCount: 3,
+            muted: true,
+            pinned: true,
+          }}
           testID="row"
         />,
       );
@@ -575,14 +568,18 @@ describe('chat-list', () => {
     });
 
     it('names the delivery ticks in Spanish once nothing is unread', () => {
-      mount(<ChatListItem name="Ana" outgoingStatus="read" testID="row" />);
+      mount(<ListItem conversation={{ name: 'Ana', outgoingStatus: 'read' }} testID="row" />);
       expect(labelled('Ana, Leído')).not.toBeNull();
     });
 
     it('draws the empty list, the search field and the results region in Spanish', () => {
       mount(
         <>
-          <ChatList chats={[]} />
+          <List
+            items={[]}
+            accessibilityLabel={messagesIn(CHAT_LIST_MESSAGES, 'es').list}
+            empty={<EmptyState title={messagesIn(CHAT_LIST_MESSAGES, 'es').emptyTitle} />}
+          />
           <ChatSearchField value="x" onChangeText={() => {}} onClear={() => {}} />
           <ChatSearchResults query="zz" results={[]} />
           <NewChatButton onPress={() => {}} />
@@ -600,7 +597,14 @@ describe('chat-list', () => {
     it('pluralises the archived count and the folder unread count', () => {
       mount(
         <>
-          <ArchivedRow count={1} onPress={() => {}} />
+          <ListItem
+            title={messagesIn(CHAT_LIST_MESSAGES, 'es').archived}
+            label={messagesIn(CHAT_LIST_MESSAGES, 'es').archivedName(
+              messagesIn(CHAT_LIST_MESSAGES, 'es').archived,
+              1,
+            )}
+            onPress={() => {}}
+          />
           <ChatFolderTabs
             folders={[{ key: 'w', label: 'Trabajo', unreadCount: 5 }]}
             accessibilityLabel="Carpetas"
@@ -612,9 +616,29 @@ describe('chat-list', () => {
     });
 
     it('pluralises the archived count in Russian', () => {
-      mount(<ArchivedRow count={3} onPress={() => {}} />, 'ru');
+      mount(
+        <ListItem
+          title={messagesIn(CHAT_LIST_MESSAGES, 'ru').archived}
+          label={messagesIn(CHAT_LIST_MESSAGES, 'ru').archivedName(
+            messagesIn(CHAT_LIST_MESSAGES, 'ru').archived,
+            3,
+          )}
+          onPress={() => {}}
+        />,
+        'ru',
+      );
       expect(labelled('Архив, 3 чата')).not.toBeNull();
-      mount(<ArchivedRow count={5} onPress={() => {}} />, 'ru');
+      mount(
+        <ListItem
+          title={messagesIn(CHAT_LIST_MESSAGES, 'ru').archived}
+          label={messagesIn(CHAT_LIST_MESSAGES, 'ru').archivedName(
+            messagesIn(CHAT_LIST_MESSAGES, 'ru').archived,
+            5,
+          )}
+          onPress={() => {}}
+        />,
+        'ru',
+      );
       expect(labelled('Архив, 5 чатов')).not.toBeNull();
     });
 
@@ -638,13 +662,13 @@ describe('chat-list', () => {
     it('keeps labels and *Label props over the catalog', () => {
       mount(
         <>
-          <ChatListItem name="Ana" pinned labels={{ pinned: 'Anclado' }} />
-          <ChatList
-            chats={[]}
-            labels={{ emptyTitle: 'Nada por aquí' }}
+          <ListItem conversation={{ name: 'Ana', pinned: true, labels: { pinned: 'Anclado' } }} />
+          <List
+            items={[]}
+            empty={<EmptyState title="Nada por aquí" />}
             accessibilityLabel="Conversaciones"
           />
-          <ArchivedRow label="Guardados" onPress={() => {}} />
+          <ListItem title="Guardados" onPress={() => {}} />
         </>,
       );
       expect(labelled('Ana, Anclado')).not.toBeNull();

@@ -37,7 +37,7 @@ export interface AddressRowProps {
   meta?: string;
   /** A node after the title — a `Badge` ("Default"), a `Chip`. */
   badge?: ReactNode;
-  /** A trailing control — a `GlyphButton`, a `Button`. */
+  /** A trailing control — a `Button`, a `Button`. */
   action?: ReactNode;
   /** Highlights the row and announces the selection, for the role it is given. */
   selected?: boolean;

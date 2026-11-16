@@ -33,6 +33,8 @@ export interface GroupedSectionItemProps {
   value?: string;
   /** Custom right-side element (toggle, badge, etc.) */
   rightElement?: React.ReactNode;
+  /** Let a wide trailing control wrap below the label, preserving at least 140px for text. */
+  wrapControl?: boolean;
   /** Show trailing chevron (default: true when onPress is set) */
   showChevron?: boolean;
   /** Destructive action styling (red text) */
@@ -80,6 +82,7 @@ export interface GroupedSectionProps {
   footer?: string;
   /** Group items */
   children: React.ReactNode;
+  testID?: string;
   /** Override group container style */
   style?: StyleProp<ViewStyle>;
   /** Explicit legacy fill override. Unset uses the same neutral material as Card/UsageCard. */

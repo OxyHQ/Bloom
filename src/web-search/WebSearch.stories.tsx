@@ -4,7 +4,6 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
 import { RiFileTextLine, RiGlobalLine, RiSearchLine, RiBookOpenLine } from '../icons/remix';
-import { useTheme } from '../theme/use-theme';
 import { WebSearch } from './index';
 import type { WebSearchStep } from './types';
 
@@ -18,9 +17,8 @@ export default meta;
 
 type Story = StoryObj<typeof WebSearch>;
 
-/** Paints the theme background, so the dark globals read as a dark page. */
+/** A content-width frame; the Storybook provider owns the canvas. */
 function Frame({ children, testID }: { children: React.ReactNode; testID?: string }) {
-  const { colors } = useTheme();
   return (
     <View
       testID={testID}
@@ -29,7 +27,6 @@ function Frame({ children, testID }: { children: React.ReactNode; testID?: strin
         width: 560,
         maxWidth: '100%',
         gap: 40,
-        backgroundColor: colors.background,
       }}
     >
       {children}

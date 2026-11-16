@@ -1,6 +1,6 @@
 import * as Accordion from '../accordion/index.web';
 import { Screen, ScreenScrollView } from '../screen/index.web';
-import { Button, CloseButton } from '../button/index.web';
+import { Button } from '../button/index.web';
 import { AppShellPanels } from '../app-shell/index.web';
 import { Dialog } from '../dialog/index.web';
 import * as Menu from '../dropdown-menu/index.web';
@@ -24,7 +24,6 @@ const platform = {
   TicketGenieSurface,
   TicketCornerGenieSurface,
   Button,
-  CloseButton,
   Dialog,
   Portal,
   ...Select,

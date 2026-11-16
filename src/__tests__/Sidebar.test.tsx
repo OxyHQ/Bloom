@@ -572,8 +572,17 @@ describe('Sidebar tree sections', () => {
     const row = screen.getByLabelText('Loft in Gràcia, 2h');
     expect(row.props.accessibilityState).toMatchObject({ selected: true });
     expect(row.props.role).toBe('link');
-    // Not inside a folder: no disclosure to open first, inset to the folder glyph.
-    expect(resolvedStyle(row.props.style)).toMatchObject({ paddingInlineStart: 8 });
+    // Shared ListItem owns row geometry; its navigation target covers that row.
+    expect(resolvedStyle(row.props.style)).toMatchObject({
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+    });
+    expect(screen.getByTestId('sidebar-tree-item-loft')).toBeTruthy();
+    fireEvent(row, 'focus');
+    expect(onPrefetch).toHaveBeenCalledTimes(1);
     const nav = screen.getByLabelText('Recently viewed');
     const order = nav.findAll(
       (node) =>

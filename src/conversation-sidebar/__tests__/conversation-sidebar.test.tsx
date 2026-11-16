@@ -1,5 +1,5 @@
 import { fireEvent, render } from '@testing-library/react-native';
-import React from 'react';
+import type React from 'react';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
 import { RiDeleteBinLine } from '../../icons/remix/RiDeleteBinLine';
 import { ConversationSidebar, type ConversationSidebarItem } from '..';
@@ -37,15 +37,15 @@ describe('ConversationSidebar', () => {
     const view = render(
       scope(<ConversationSidebar conversations={CHATS} activeId="a" onSelect={onSelect} />),
     );
-    expect(view.getByLabelText('Launch plan')).toBeTruthy();
-    expect(view.getByText('Review access.')).toBeTruthy();
-    fireEvent.press(view.getByLabelText('Security'));
+    expect(view.getByLabelText('Launch plan, Two days., Pinned chat')).toBeTruthy();
+    expect(view.getByText('Review access.', { includeHiddenElements: true })).toBeTruthy();
+    fireEvent.press(view.getByLabelText('Security, Review access.'));
     expect(onSelect).toHaveBeenCalledWith('b');
   });
 
   it('marks a pinned conversation and says when there are none', () => {
     const view = render(scope(<ConversationSidebar conversations={CHATS} onSelect={() => {}} />));
-    expect(view.getByLabelText('Pinned chat')).toBeTruthy();
+    expect(view.getByLabelText('Launch plan, Two days., Pinned chat')).toBeTruthy();
     view.rerender(scope(<ConversationSidebar conversations={[]} onSelect={() => {}} />));
     expect(view.getByText('No conversations found.')).toBeTruthy();
   });
@@ -112,8 +112,8 @@ describe('ConversationSidebar', () => {
         />,
       ),
     );
-    expect(view.getByLabelText('Launch plan')).toBeTruthy();
-    expect(view.getByLabelText('Security')).toBeTruthy();
+    expect(view.getByLabelText('Launch plan, Two days., Pinned chat')).toBeTruthy();
+    expect(view.getByLabelText('Security, Review access.')).toBeTruthy();
   });
 
   it('makes "+" act directly with onCreate, and a menu only with createOptions', () => {

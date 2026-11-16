@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { ButtonGroupItem } from '../button-group';
+import { Button } from '../button';
 import { Popover, PopoverTrigger } from '../popover';
 
 const mount = (children: React.ReactNode) =>
@@ -17,9 +17,9 @@ it('forwards anchored-trigger state and the original event through a grouped ite
   const screen = mount(
     <Popover>
       <PopoverTrigger asChild label="Open details">
-        <ButtonGroupItem testID="item" onPress={onPress}>
+        <Button testID="item" onPress={onPress}>
           Details
-        </ButtonGroupItem>
+        </Button>
       </PopoverTrigger>
     </Popover>,
   );
@@ -36,17 +36,17 @@ it('keeps explicit long-press, hit area and controlled toggle callbacks', () => 
   const onLongPress = jest.fn();
   const onCheckedChange = jest.fn();
   const screen = mount(
-    <ButtonGroupItem
+    <Button
       testID="item"
-      checked
-      onCheckedChange={onCheckedChange}
+      pressed
+      onPressedChange={onCheckedChange}
       onLongPress={onLongPress}
       hitSlop={4}
       aria-expanded={false}
       aria-haspopup="menu"
     >
       Toggle
-    </ButtonGroupItem>,
+    </Button>,
   );
   const item = screen.getByTestId('item');
   expect(screen.UNSAFE_getByType(Pressable).props.hitSlop).toBe(4);

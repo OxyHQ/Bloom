@@ -1,12 +1,8 @@
+import { AvatarGroup } from '../avatar-group';
 import { MULTI_AGENT_CHAT_MESSAGES } from './messages';
 import { useMessages } from '../locale/messages';
-import React from 'react';
-import { Button } from '../button';
 import { AgentAvatar } from '../agent-avatar';
-import { RiAddLine } from '../icons/remix/RiAddLine';
-import { RiStore2Line } from '../icons/remix/RiStore2Line';
 import { RiCustomerService2Line } from '../icons/remix/RiCustomerService2Line';
-import { AgentStack } from '../agent-reply';
 import { RiSettings3Line } from '../icons/remix/RiSettings3Line';
 import { RiPushpinLine } from '../icons/remix/RiPushpinLine';
 import { RiEditLine } from '../icons/remix/RiEditLine';
@@ -14,9 +10,8 @@ import { RiGroupLine } from '../icons/remix/RiGroupLine';
 import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
 import { RiHashtag } from '../icons/remix/RiHashtag';
 import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
-import { Sidebar, SidebarItem, SidebarToolbar } from '../sidebar';
 import { useChatComponents } from './context';
-import type { Agent, Conversation } from './data';
+import { agentCharacter, type Agent, type Conversation } from './data';
 import type { SidebarProps, SidebarTeam } from '../sidebar/types';
 
 export interface ChatSidebarProps {
@@ -56,7 +51,7 @@ export function ChatSidebar(props: ChatSidebarProps) {
         : last
           ? last.text
           : messages.startAConversation,
-      agents,
+      agents: agents.map((agent) => ({ ...agent, avatar: agentCharacter(agent) })),
       pinned: chat.pinned,
     };
   });
@@ -93,7 +88,23 @@ export function ChatSidebar(props: ChatSidebarProps) {
           key: 'picker',
           label: messages.chatWithYourAgents,
           description: messages.bringYourAgentsIntoOneChat,
-          leading: <AgentStack agents={props.agents.slice(0, 3)} size={32} />,
+          leading: (
+            <AvatarGroup
+              layout="conversation"
+              showInitials
+              items={props.agents.slice(0, 3).map((agent) => ({
+                id: agent.id,
+                name: agent.name,
+                kind: 'bot',
+                character: agentCharacter(agent),
+              }))}
+              accessibilityLabel={props.agents
+                .slice(0, 3)
+                .map((agent) => agent.name)
+                .join(', ')}
+              size={32}
+            />
+          ),
           onPress: props.onPicker,
         },
       ]}

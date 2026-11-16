@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -58,8 +58,8 @@ const RANGES: ComboRange[] = [
   },
 ];
 
-const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
+const Frame = ({ children }: { children: React.ReactNode }) => (
+  <View style={{ width: '100%', maxWidth: 760, gap: 24 }}>{children}</View>
 );
 
 /** Bars on the left axis, the line on the right, a period dropdown. */
@@ -125,30 +125,6 @@ export const HeadlineFromLine: Story = {
             : 'last 12 months'
         }
       />
-    </Frame>
-  ),
-};
-
-/** Phone width: month labels thin out, tiles go two per row. */
-export const Narrow: Story = {
-  args: { tiles: true },
-  parameters: {
-    controls: {
-      include: [
-        'tiles',
-        'title',
-        'headline',
-        'delta',
-        'range',
-        'defaultRange',
-        'headlineFrom',
-        'activeIndex',
-      ],
-    },
-  },
-  render: (args) => (
-    <Frame width={320}>
-      <ComboChartCard {...args} bar={BAR} line={LINE} ranges={RANGES} />
     </Frame>
   ),
 };

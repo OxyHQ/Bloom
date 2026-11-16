@@ -1,6 +1,6 @@
 import Svg, { Path } from 'react-native-svg';
 
-import { GlyphButton } from '../button/GlyphButton';
+import { Button } from '../button';
 
 /** The chevron box, and the button's: a 16px target with 8px of reach around it. */
 export const MONTH_NAV_SIZE = 16;
@@ -42,7 +42,7 @@ export interface MonthNavButtonProps {
 /**
  * The previous / next month control of every month header — the date picker's
  * panel, the calendar's month switcher, the chart cards' range pill: a 16px
- * `GlyphButton` (a full pill, a neutral wash on hover, its focus ring) with
+ * `Button` (a full pill, a neutral wash on hover, its focus ring) with
  * 8px of reach around it, drawing {@link MonthChevron}. Disabled, the chevron
  * takes `disabledColor` instead of the whole control fading.
  */
@@ -58,7 +58,10 @@ export function MonthNavButton({
   testID,
 }: MonthNavButtonProps) {
   return (
-    <GlyphButton
+    <Button
+      appearance="plain"
+      tone="neutral"
+      iconOnly
       size={MONTH_NAV_SIZE}
       hitSlop={8}
       accessibilityLabel={accessibilityLabel}
@@ -70,6 +73,6 @@ export function MonthNavButton({
       testID={testID}
     >
       <MonthChevron direction={direction} color={disabled ? (disabledColor ?? color) : color} />
-    </GlyphButton>
+    </Button>
   );
 }

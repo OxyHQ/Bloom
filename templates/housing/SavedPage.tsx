@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
 
+import { alert, prompt } from '../../src/surfaces';
 import { TripCard } from '../../src/booking';
 import { Button } from '../../src/button';
 import { SavedSearchCard } from '../../src/home-search';
-import { RiAddLine, RiChat3Line, RiMapPinLine } from '../../src/icons/remix';
+import { RiAddLine, RiChat3Line } from '../../src/icons/remix';
 import { WishlistCard } from '../../src/listing-card';
 import { useTheme } from '../../src/theme/use-theme';
 import { Text } from '../../src/typography';
@@ -16,8 +17,6 @@ import {
   useHousingLayout,
   useHousingNav,
 } from './HousingHeader';
-
-const noop = () => undefined;
 
 function Section({
   title,
@@ -93,7 +92,19 @@ export function SavedPage() {
                     key={id}
                     {...search}
                     onPress={() => go('explore')}
-                    onEdit={noop}
+                    onEdit={async () => {
+                      const title = await prompt({
+                        title: 'Rename saved search',
+                        defaultValue: search.title,
+                        confirmLabel: 'Save',
+                      });
+                      if (title?.trim())
+                        setSearches((all) =>
+                          all.map((item) =>
+                            item.id === id ? { ...item, title: title.trim() } : item,
+                          ),
+                        );
+                    }}
                     onDelete={() => setSearches((list) => list.filter((s) => s.id !== id))}
                     testID={`housing-saved-search-${id}`}
                   />
@@ -112,22 +123,18 @@ export function SavedPage() {
                     actions={
                       <>
                         <Button
-                          size="sm"
                           leadingIcon={RiChat3Line}
-                          onPress={noop}
+                          onPress={async () => {
+                            const message = await prompt({
+                              title: `Message about ${trip.title}`,
+                              confirmLabel: 'Save draft',
+                            });
+                            if (message?.trim()) void alert('Message draft', message.trim());
+                          }}
                           tone="neutral"
                           appearance="outline"
                         >
                           Message
-                        </Button>
-                        <Button
-                          size="sm"
-                          leadingIcon={RiMapPinLine}
-                          onPress={noop}
-                          tone="accent"
-                          appearance="subtle"
-                        >
-                          Directions
                         </Button>
                       </>
                     }

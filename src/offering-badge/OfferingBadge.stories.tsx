@@ -1,5 +1,5 @@
-import React from 'react';
-import { Image, View } from 'react-native';
+import { BloomImage as Image } from '../image';
+import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RiHome4Line } from '../icons/remix';
@@ -101,11 +101,5 @@ function MatrixBody() {
 
 /** Every offering × size × variant. */
 export const Matrix: Story = {
-  render: () => <MatrixBody />,
-};
-
-/** The matrix in dark mode. */
-export const Dark: Story = {
-  globals: { theme: 'dark' },
   render: () => <MatrixBody />,
 };

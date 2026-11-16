@@ -33,14 +33,14 @@ export interface BloomIconPaint {
  * exactly the callers who already did the right thing. Hence its own prop.
  *
  * ```tsx
- * <ButtonGroupItem
+ * <Button
  *   iconOnly
  *   renderLeadingIcon={({ size, color }) => <AppSearchIcon size={size} color={color} />}
  *   accessibilityLabel="Search"
  * />
  * ```
  *
- * This is `GlyphButton`'s `children?: ReactNode | ((foreground: string) => ReactNode)`
+ * This is `Button`'s `children?: ReactNode | ((foreground: string) => ReactNode)`
  * generalised to the slots that take an icon rather than a child — including
  * its precedence rule: where a family offers both, the renderer wins over the
  * icon component.
@@ -50,7 +50,7 @@ export type BloomIconRenderer = (paint: BloomIconPaint) => ReactNode;
 /**
  * Resolve an icon slot that offers both forms.
  *
- * `render` wins when present, matching `GlyphButton`, where the caller-painted
+ * `render` wins when present, matching `Button`, where the caller-painted
  * glyph wins over `icon`. Returns `null` when neither is set, so a call site
  * stays a single expression.
  */

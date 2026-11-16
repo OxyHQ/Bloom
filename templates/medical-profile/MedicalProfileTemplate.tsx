@@ -97,7 +97,6 @@ export function MedicalProfileTemplate() {
       selected="medical"
       title="Medical Profile"
       crumbIcon={RiAsterisk}
-      primaryAction="File a report"
     >
       <View style={{ width: '100%', gap: 16 }} testID="medical-cards">
         {rows.map((row, r) => (

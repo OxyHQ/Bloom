@@ -8,7 +8,9 @@
  * grid, and the one piece of logic with a wrong answer — the status line's
  * precedence.
  */
-import React from 'react';
+import { List, ListItem } from '../list/index.web';
+
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -47,8 +49,6 @@ const motion = ((globalThis as { __callMotion?: MotionState }).__callMotion ??= 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import {
   CallControls,
-  CallHistoryList,
-  CallHistoryRow,
   CallMinimisedPill,
   CallScreen,
   GroupCallBar,
@@ -252,18 +252,30 @@ describe('CallControls', () => {
 
 describe('CallScreen', () => {
   it('names the top-bar buttons, and counts the participants on one of them', () => {
+    const onMinimise = jest.fn();
+    const onOpenChat = jest.fn();
+    const onOpenParticipants = jest.fn();
     mount(
       <CallScreen
         name="Ana Restrepo"
         status="active"
         duration="00:10"
-        onMinimise={() => undefined}
-        onOpenChat={() => undefined}
-        onOpenParticipants={() => undefined}
+        onMinimise={onMinimise}
+        onOpenChat={onOpenChat}
+        onOpenParticipants={onOpenParticipants}
         participantCount={4}
         testID="c"
       />,
     );
+    expect(byTestId('c-header').hasAttribute('data-bloom-page-header')).toBe(true);
+    act(() => {
+      byTestId('c-minimise').click();
+      byTestId('c-chat').click();
+      byTestId('c-participants').click();
+    });
+    expect(onMinimise).toHaveBeenCalledTimes(1);
+    expect(onOpenChat).toHaveBeenCalledTimes(1);
+    expect(onOpenParticipants).toHaveBeenCalledTimes(1);
     expect(byTestId('c-minimise').getAttribute('aria-label')).toBe('Minimise call');
     expect(byTestId('c-chat').getAttribute('aria-label')).toBe('Open chat');
     expect(byTestId('c-participants').getAttribute('aria-label')).toBe('Participants (4)');
@@ -634,15 +646,17 @@ describe('GroupCallBar', () => {
 //  Call history
 // ---------------------------------------------------------------------------
 
-describe('CallHistoryRow', () => {
+describe('ListItem call content', () => {
   it('names the direction in WORDS as well as in colour', () => {
-    mount(<CallHistoryRow name="Ana" direction="missed" meta="Yesterday, 18:40" testID="r" />);
+    mount(
+      <ListItem call={{ name: 'Ana', direction: 'missed', meta: 'Yesterday, 18:40' }} testID="r" />,
+    );
     expect(text(byTestId('r-meta'))).toBe('Missed · Yesterday, 18:40');
   });
 
   it('paints only missed and declined calls negative', () => {
     const colorOf = (direction: 'incoming' | 'outgoing' | 'missed' | 'declined') => {
-      mount(<CallHistoryRow name="Ana" direction={direction} meta="18:40" testID="r" />);
+      mount(<ListItem call={{ name: 'Ana', direction: direction, meta: '18:40' }} testID="r" />);
       return getComputedStyle(byTestId('r-name')).color;
     };
     const quiet = colorOf('incoming');
@@ -652,28 +666,52 @@ describe('CallHistoryRow', () => {
     expect(colorOf('declined')).toBe(loud);
   });
 
-  it('names the row and the call-back button separately', () => {
+  it('disables both opening and calling back', () => {
+    const open = jest.fn(),
+      callBack = jest.fn();
     mount(
-      <CallHistoryRow
-        name="Ana Restrepo"
-        direction="incoming"
-        meta="18:40 · 4:32"
-        onPress={() => undefined}
-        onCallBack={() => undefined}
+      <ListItem
+        disabled
+        call={{ name: 'Ana', direction: 'missed', meta: '09:14', onCallBack: callBack }}
+        onPress={open}
         testID="r"
       />,
     );
-    expect(byTestId('r-open').getAttribute('aria-label')).toBe(
+    expect(byTestId('r-callback').getAttribute('aria-disabled')).toBe('true');
+    press(byTestId('r-callback'));
+    press(byTestId('r-link'));
+    expect(open).not.toHaveBeenCalled();
+    expect(callBack).not.toHaveBeenCalled();
+  });
+
+  it('names the row and the call-back button separately', () => {
+    mount(
+      <ListItem
+        call={{
+          name: 'Ana Restrepo',
+          direction: 'incoming',
+          meta: '18:40 · 4:32',
+          onCallBack: () => undefined,
+        }}
+        onPress={() => undefined}
+        testID="r"
+      />,
+    );
+    expect(byTestId('r-link').getAttribute('aria-label')).toBe(
       'Ana Restrepo, incoming, 18:40 · 4:32',
     );
     expect(byTestId('r-callback').getAttribute('aria-label')).toBe('Call Ana Restrepo back');
-    expect(byTestId('r-open').contains(byTestId('r-callback'))).toBe(false);
+    expect(byTestId('r-link').contains(byTestId('r-callback'))).toBe(false);
   });
 
   it('draws a repeat count only when there is more than one call', () => {
-    mount(<CallHistoryRow name="Ana" direction="missed" meta="18:40" count={1} testID="r" />);
+    mount(
+      <ListItem call={{ name: 'Ana', direction: 'missed', meta: '18:40', count: 1 }} testID="r" />,
+    );
     expect(text(byTestId('r'))).not.toContain('(1)');
-    mount(<CallHistoryRow name="Ana" direction="missed" meta="18:40" count={3} testID="r" />);
+    mount(
+      <ListItem call={{ name: 'Ana', direction: 'missed', meta: '18:40', count: 3 }} testID="r" />,
+    );
     expect(text(byTestId('r'))).toContain('(3)');
   });
 });
@@ -692,34 +730,49 @@ describe('CallHistoryList', () => {
   ];
 
   it('drops an empty section rather than heading nothing', () => {
-    mount(<CallHistoryList sections={sections} testID="l" />);
-    expect(maybe('l-section-Today')).not.toBeNull();
-    expect(maybe('l-section-Yesterday')).not.toBeNull();
-    expect(maybe('l-section-Empty')).toBeNull();
+    mount(
+      <List
+        sections={sections.map((section) => ({
+          id: section.title,
+          title: section.title,
+          items: section.items.map((item) => ({ id: item.id, call: item })),
+        }))}
+        testID="l"
+      />,
+    );
+    expect(maybe('l-heading-Today')).not.toBeNull();
+    expect(maybe('l-heading-Yesterday')).not.toBeNull();
+    expect(maybe('l-heading-Empty')).toBeNull();
   });
 
   it('routes presses back with the item id', () => {
     const opened: string[] = [];
     const called: string[] = [];
     mount(
-      <CallHistoryList
-        sections={sections}
-        onItemPress={(id) => opened.push(id)}
-        onCallBack={(id) => called.push(id)}
+      <List
+        sections={sections.map((section) => ({
+          id: section.title,
+          title: section.title,
+          items: section.items.map((item) => ({
+            id: item.id,
+            call: { ...item, onCallBack: () => called.push(item.id) },
+            onPress: () => opened.push(item.id),
+          })),
+        }))}
         testID="l"
       />,
     );
-    press(byTestId('l-item-2-open'));
-    press(byTestId('l-item-1-callback'));
+    press(byTestId('l-2-link'));
+    press(byTestId('l-1-callback'));
     expect(opened).toEqual(['2']);
     expect(called).toEqual(['1']);
   });
 
   it('shows the empty state only when every section is empty', () => {
     mount(
-      <CallHistoryList
-        sections={[{ title: 'Today', items: [] }]}
-        emptyState={<div data-testid="none" />}
+      <List
+        sections={[{ id: 'today', title: 'Today', items: [] }]}
+        empty={<div data-testid="none" />}
         testID="l"
       />,
     );

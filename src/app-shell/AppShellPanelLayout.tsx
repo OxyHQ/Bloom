@@ -1,3 +1,4 @@
+import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
 import React, {
   useEffect,
   useCallback,
@@ -26,7 +27,7 @@ import { ContentPanelNestingContext } from '../content-panel/context';
 import type { ContentPanelProps } from '../content-panel/types';
 import type { DialogProps } from '../dialog/types';
 import { useDialogControl, useDialogContext } from '../dialog/context';
-import { CloseButton } from '../button/CloseButton';
+import { Button } from '../button';
 import { useCommonMessages } from '../locale/common-messages';
 import type { BloomColorScopeProps } from '../theme/color-scope/ColorScope';
 import type { ScrollAreaProps, ScrollBarProps } from '../layout/types';
@@ -173,7 +174,15 @@ export function createPanelLayoutView(
     const surface = useDialogContext();
     const messages = useCommonMessages();
     return (
-      <CloseButton size="md" accessibilityLabel={messages.close} onPress={() => surface.close()} />
+      <Button
+        appearance="outline"
+        tone="neutral"
+        iconOnly
+        icon={DismissActionIcon}
+        size={32}
+        accessibilityLabel={messages.close}
+        onPress={() => surface.close()}
+      />
     );
   }
   function PanelFloatingSurface({

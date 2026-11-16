@@ -340,7 +340,6 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
     'home-search': { verdict: 'does-not-apply', reason: BARE_INPUT },
     'music-library': { verdict: 'does-not-apply', reason: BARE_INPUT },
     sidebar: { verdict: 'does-not-apply', reason: BARE_INPUT },
-    'chat-people': { verdict: 'does-not-apply', reason: SELECTION_ROW },
     'stay-filters': { verdict: 'does-not-apply', reason: SELECTION_ROW },
     'project-board': {
       verdict: 'does-not-apply',

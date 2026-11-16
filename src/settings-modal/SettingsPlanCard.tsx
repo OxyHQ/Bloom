@@ -1,3 +1,4 @@
+import { GroupedSection, GroupedSectionItem } from '../grouped-section';
 import React from 'react';
 import { EmptyState } from '../empty-state';
 import { StyleSheet, View } from 'react-native';
@@ -8,7 +9,7 @@ import { Text } from '../typography';
 import { useSettingsPalette } from './context';
 import { SETTINGS_MODAL_MESSAGES } from './messages';
 import { RadialFade, SettingsPlanArt } from './SettingsArt';
-import { SettingsCard, SettingsRow, SettingsSection } from './SettingsRows';
+import { SettingsSection } from './SettingsRows';
 import type {
   SettingsGeneralPageProps,
   SettingsPageSection,
@@ -81,16 +82,20 @@ function Sections({ sections }: { sections: SettingsPageSection[] }) {
     <>
       {sections.map((section) => {
         const card = (
-          <SettingsCard>
+          <GroupedSection separator="line">
             {section.rows.length === 0 && section.emptyState ? (
               <EmptyState variant="compact" {...section.emptyState} />
             ) : null}
             {section.rows.map((row) => (
-              <SettingsRow key={row.key} label={row.label} description={row.description}>
-                {row.control}
-              </SettingsRow>
+              <GroupedSectionItem
+                key={row.key}
+                title={row.label}
+                description={row.description}
+                wrapControl
+                rightElement={row.control}
+              />
             ))}
-          </SettingsCard>
+          </GroupedSection>
         );
         return section.label || section.description || section.action ? (
           <SettingsSection

@@ -19,10 +19,10 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiUserAddLine } from '../icons/remix/RiUserAddLine';
 import { Search } from '../search';
-import { SettingsListGroup, SettingsListItem } from '../settings-list';
+import { GroupedSection, GroupedSectionItem } from '../grouped-section';
 import { Tabs, TabsTrigger } from '../tabs';
 import { Text } from '../typography';
-import { ChatMemberRow } from './ChatMemberRow';
+import { Badge } from '../badge';
 import {
   CHAT_INFO_PANE_WIDTH,
   useChatScreenPaint,
@@ -110,7 +110,7 @@ function ActionTile({ action, paint }: { action: ChatInfoAction; paint: ChatScre
  * THE SETTINGS BLOCK IS A SLOT, NOT A SCHEMA. A notifications switch owns state,
  * a disappearing-messages row owns a picker, an encryption key owns a
  * verification flow — every one of them needs semantics the panel cannot hold.
- * Compose it from `SettingsListGroup` / `SettingsListItem` (worked example in
+ * Compose it from `GroupedSection` / `GroupedSectionItem` (worked example in
  * `docs/chat-screen.mdx`) and hand it in.
  *
  * The SHARED-CONTENT tabs are the same bargain one level up: the panel owns the
@@ -125,10 +125,12 @@ export function createChatInfoPanel({
   Screen,
   ScreenScrollView,
   Button,
+  ListItem,
 }: {
   Screen: typeof import('../screen')['Screen'];
   ScreenScrollView: typeof import('../screen')['ScreenScrollView'];
   Button: typeof import('../button')['Button'];
+  ListItem: typeof import('../list')['ListItem'];
 }) {
   function ChatInfoPanelComponent(props: ChatInfoPanelProps) {
     const paint = useChatScreenPaint();
@@ -366,37 +368,26 @@ export function createChatInfoPanel({
               </View>
             ) : null}
             {onAddMember ? (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={addMemberLabel}
+              <ListItem
+                label={addMemberLabel}
+                title={addMemberLabel}
                 onPress={onAddMember}
                 testID={testID ? `${testID}-add-member` : undefined}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 12,
-                  paddingLeft: 16,
-                  paddingRight: 16,
-                  paddingTop: 10,
-                  paddingBottom: 10,
-                }}
-              >
-                <View
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 20,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: paint.accentSubtle,
-                  }}
-                >
-                  <RiUserAddLine width={20} height={20} fill={paint.accentColor} />
-                </View>
-                <Text variant="body-medium" style={{ color: paint.accentColor }}>
-                  {addMemberLabel}
-                </Text>
-              </Pressable>
+                leading={
+                  <View
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 18,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: paint.accentSubtle,
+                    }}
+                  >
+                    <RiUserAddLine width={20} height={20} fill={paint.accentColor} />
+                  </View>
+                }
+              />
             ) : null}
             {visibleMembers.length === 0 ? (
               <Text
@@ -407,15 +398,44 @@ export function createChatInfoPanel({
                 {membersEmptyLabel}
               </Text>
             ) : (
-              visibleMembers.map((member) => (
-                <ChatMemberRow
-                  key={member.id}
-                  member={member}
-                  onPress={onPressMember}
-                  roleLabels={roleLabels}
-                  testID={`chat-info-member-${member.id}`}
-                />
-              ))
+              visibleMembers.map((member) => {
+                const role =
+                  member.role && member.role !== 'member'
+                    ? (roleLabels?.[member.role] ?? messages[member.role])
+                    : undefined;
+                return (
+                  <ListItem
+                    key={member.id}
+                    label={[member.name, role, member.subtitle].filter(Boolean).join(', ')}
+                    title={member.name}
+                    supporting={member.subtitle}
+                    leading={
+                      <View pointerEvents="none" aria-hidden>
+                        <AvatarPresence
+                          source={member.source ?? undefined}
+                          name={member.name}
+                          size={36}
+                          status={member.status}
+                          presenceRingColor={fill}
+                          presenceLabel=""
+                        />
+                      </View>
+                    }
+                    trailing={
+                      role ? (
+                        <Badge
+                          content={role}
+                          size="sm"
+                          appearance="subtle"
+                          testID={`chat-info-member-${member.id}-role`}
+                        />
+                      ) : undefined
+                    }
+                    onPress={onPressMember ? () => onPressMember(member) : undefined}
+                    testID={`chat-info-member-${member.id}`}
+                  />
+                );
+              })
             )}
           </View>
         ) : null}
@@ -426,9 +446,9 @@ export function createChatInfoPanel({
             testID={testID ? `${testID}-destructive` : undefined}
             style={{ paddingLeft: 12, paddingRight: 12 }}
           >
-            <SettingsListGroup variant="filled">
+            <GroupedSection variant="filled">
               {destructiveActions.map((action) => (
-                <SettingsListItem
+                <GroupedSectionItem
                   key={action.key}
                   title={action.label}
                   icon={<action.icon width={20} height={20} fill={paint.destructive} />}
@@ -439,7 +459,7 @@ export function createChatInfoPanel({
                   accessibilityLabel={action.accessibilityLabel ?? action.label}
                 />
               ))}
-            </SettingsListGroup>
+            </GroupedSection>
           </View>
         ) : null}
 
@@ -452,20 +472,19 @@ export function createChatInfoPanel({
         title={title}
         safeArea={false}
         sticky={false}
-        style={{ borderBottomWidth: 1, borderBottomColor: paint.border }}
+        onBack={null}
+        testID={testID ? `${testID}-header` : undefined}
         actions={
           <>
             {headerActions}
             {onClose ? (
               <Button
-                size="sm"
                 iconOnly
-                icon={<RiCloseLine width={18} height={18} fill={paint.textSecondary} />}
+                icon={RiCloseLine}
                 accessibilityLabel={closeLabel}
                 onPress={onClose}
                 testID={testID ? `${testID}-close` : undefined}
-                tone="accent"
-                appearance="plain"
+                tone="neutral"
               />
             ) : null}
           </>

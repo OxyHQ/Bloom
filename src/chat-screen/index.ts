@@ -3,7 +3,6 @@ export { ChatDateHeader } from './ChatDateHeader';
 export { ChatEmptyState } from './ChatEmptyState';
 export { ChatHeader } from './ChatHeader';
 export { ChatInfoPanel } from './ChatInfoPanel';
-export { ChatMemberRow } from './ChatMemberRow';
 export { ChatSplitLayout } from './ChatSplitLayout';
 export { PinnedMessageBar } from './PinnedMessageBar';
 export { JumpToMentionButton, ScrollToBottomButton } from './ScrollToBottomButton';
@@ -36,7 +35,6 @@ export type {
   ChatInfoTab,
   ChatMember,
   ChatMemberRole,
-  ChatMemberRowProps,
   ChatPane,
   ChatPinnedMessage,
   ChatSplitLayoutProps,

@@ -1,9 +1,9 @@
-import React, { memo, useEffect, useMemo } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Avatar } from '../avatar';
 import { Badge } from '../badge';
-import { GlyphButton } from '../button';
+import { Button } from '../button';
 import { Card } from '../card';
 import { RiArrowLeftRightLine } from '../icons/remix/RiArrowLeftRightLine';
 import { useMessages } from '../locale/messages';
@@ -128,10 +128,13 @@ function DealCardComponent({
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 4 }}>
           {subject}
           {onMove ? (
-            <GlyphButton
+            <Button
+              appearance="plain"
+              tone="neutral"
+              iconOnly
               icon={RiArrowLeftRightLine}
               size={32}
-              glyphSize={18}
+              iconSize={18}
               onPress={onMove}
               hoverFill={paint.raised}
               ring={paint.ring}

@@ -1,7 +1,6 @@
-import React from 'react';
 import type { GestureResponderEvent, StyleProp, TextStyle, ViewStyle } from 'react-native';
 
-import { LinkButton } from '../button';
+import { Button } from '../button';
 import type { TypeScaleVariant } from '../typography/scale';
 
 /**
@@ -48,7 +47,8 @@ export function BookingLink({
   ...handle
 }: BookingLinkProps) {
   return (
-    <LinkButton
+    <Button
+      appearance="plain"
       {...handle}
       linkTone="text"
       underline="rest"
@@ -63,6 +63,6 @@ export function BookingLink({
       testID={testID}
     >
       {children}
-    </LinkButton>
+    </Button>
   );
 }

@@ -27,7 +27,6 @@ export interface ProjectBoardPlatform {
   TicketGenieSurface: ComponentType<{ children: ReactNode }>;
   TicketCornerGenieSurface: ComponentType<{ children: ReactNode }>;
   Button: typeof NativeButton.Button;
-  CloseButton: typeof NativeButton.CloseButton;
   Dialog: typeof NativeDialog.Dialog;
   Portal: ComponentType<{ children?: ReactNode }>;
   Select: typeof NativeSelect.Select;

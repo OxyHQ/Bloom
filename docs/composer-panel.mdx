@@ -196,7 +196,7 @@ Provider marks and shadows retain their existing branding and geometry. The acti
 
 ## Motion
 
-State colours 150ms; chevrons and the plus 200ms; mic ↔ equalizer crossfade 280ms (scale 0.8 + blur on web); equalizer bars on staggered clocks; effort level blurs in over 350ms; the list's soft top edge fades in over 200ms once scrolled (backdrop blurs on web, a wash on native). Everything snaps under reduced motion. No press or scale feedback on any control.
+State colours 150ms; chevrons and the plus 200ms; mic ↔ equalizer crossfade 280ms (scale 0.8 + blur on web); equalizer bars on staggered clocks; effort level blurs in over 350ms. The model list uses `SurfaceFade` in `ScrollArea.viewportOverlay` for its soft top edge once scrolled (200ms opacity transition on web); the shared scroll owner keeps it pinned and owns the scrollbar. Everything snaps under reduced motion. No press or scale feedback on any control.
 
 **Known gaps:** a Max-effort flourish (a WebGL rocket-exhaust shader over a canvas starfield, with the ticks blown off the track) has no native counterpart; the slider simply rests at Max. A layout animation of sibling tiles sliding into a removed tile's slot is not reproduced — siblings reflow when the tile unmounts.
 

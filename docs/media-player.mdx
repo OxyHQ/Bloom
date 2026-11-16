@@ -145,8 +145,8 @@ The phone's floating bar above the tab bar. Press it to open the full player.
 />
 ```
 
-- **56 tall, 12 corner** (a panel, not a pill), 8 side margins. 40 cover, title (`body-2-semibold`) and artist (`caption-1-regular`), like, and a plain play button. Text truncates — nothing scrolls.
-- **A 2px progress line** along the bottom, 8 in from each side: the text colour over the text colour composited at 24% on the bar's fill. It is decorative (`aria-hidden`) — the full player has the scrubber.
+- **56 tall, fully rounded capsule**, 8 side margins. 40 cover, title (`body-2-semibold`) and artist (`caption-1-regular`), like, and a plain play button. Text truncates — nothing scrolls.
+- **A 2px progress line** sits 4px above the bottom and 28px from each end, inside the capsule: the text colour over the text colour composited at 24% on the bar's fill. It is decorative (`aria-hidden`) — the full player has the scrubber.
 - **Casting** — the artist line becomes the device name with a speaker glyph (accent on the neutral surface, the text colour on a tint).
 - **Swipe** — on native, a horizontal swipe past 48 calls `onNext` (left) or `onPrevious` (right). Web does not swipe.
 - **Accessibility** — the cover and text are ONE button, "Open player: Title, Artists" (`openLabel` translates the prefix). Like and play are its siblings, not nested inside it.
@@ -190,7 +190,7 @@ The phone's expanded player and the desktop's immersive view. It **fills its par
 />
 ```
 
-- **Top bar** — collapse chevron, "PLAYING FROM PLAYLIST" over "Night Drive", more.
+- **Top bar** — shared `PageHeader`: collapse and more `Button` actions, centred context name and supporting context label. Header insets are owned by PageHeader; artwork keeps its own content inset.
 - **Narrow** — square artwork (16 corner, ≤ 480) over title + artists + like, the scrubber with times below it, the `lg` transport spread to the column's width, and a row of device (with the device name while casting), share and queue.
 - **Wide (≥ 900, measured)** — artwork and details side by side, 64 apart.
 - **The first screen is exactly the parent's height**, painted with a vertical gradient from the contrast-safe artwork tint to neutral-950. **Below the fold**, in the same scroll, a lyrics preview card (earlier lines dimmed up to `activeIndex`; a button when `onPress` is given) and the `aboutArtist` slot — side by side when wide.

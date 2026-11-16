@@ -1,11 +1,12 @@
 import type { ComponentRef } from 'react';
 import React from 'react';
-import { Image, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Text } from '../typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
-import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomImage } from '../image';
+import { Card } from '../card';
 import { ZoomableMediaGallery } from './ZoomableMediaGallery';
 import type {
   GalleryImage,
@@ -132,8 +133,9 @@ function GalleryDemo({ items, ...props }: ZoomableMediaGalleryProps & { items: G
                 void openAt(index);
               }}
             >
-              <Image
+              <BloomImage
                 source={poster === undefined ? undefined : { uri: poster }}
+                alt={item.alt}
                 style={{ width: THUMB, height: THUMB, borderRadius: 8 }}
               />
             </Pressable>
@@ -188,22 +190,22 @@ function RatioLifetimeDemo() {
   const galleryRef = React.useRef<ZoomableMediaGalleryHandle>(null);
   return (
     <View>
-      <Pressable
+      <Button
         testID="ratio-open-old"
         onPress={() =>
           galleryRef.current?.open([{ uri: '/gallery-ratio-old.svg', alt: 'old image' }], 0)
         }
       >
         <Text>Open old image</Text>
-      </Pressable>
-      <Pressable
+      </Button>
+      <Button
         testID="ratio-open-current"
         onPress={() =>
           galleryRef.current?.open([{ uri: '/gallery-ratio-current.svg', alt: 'current image' }], 0)
         }
       >
         <Text>Open current image</Text>
-      </Pressable>
+      </Button>
       <ZoomableMediaGallery ref={galleryRef} />
     </View>
   );
@@ -247,11 +249,11 @@ export const Playground: StoryObj<typeof ZoomableMediaGallery> = {
   },
 };
 
-function PageGalleryDemo({ mode }: { mode: 'light' | 'dark' }) {
+function PageGalleryDemo() {
   const [index, setIndex] = React.useState(-1);
   const [events, setEvents] = React.useState<number[]>([]);
   return (
-    <BloomThemeProvider mode={mode} colorPreset="oxy">
+    <>
       <Text testID="gallery-index">{index}</Text>
       <Text testID="gallery-events">{JSON.stringify(events)}</Text>
       <GalleryDemo
@@ -263,11 +265,10 @@ function PageGalleryDemo({ mode }: { mode: 'light' | 'dark' }) {
           setEvents((old) => [...old, next]);
         }}
       />
-    </BloomThemeProvider>
+    </>
   );
 }
-export const PageLight: Story = { render: () => <PageGalleryDemo mode="light" /> };
-export const PageDark: Story = { render: () => <PageGalleryDemo mode="dark" /> };
+export const Page: Story = { render: () => <PageGalleryDemo /> };
 
 function LifecycleDemo({ unmountOnOpen = false }: { unmountOnOpen?: boolean }) {
   const [mounted, setMounted] = React.useState(true);
@@ -326,7 +327,7 @@ function VideoStatusDemo() {
               style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
               pointerEvents="box-none"
             >
-              <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, gap: 12 }}>
+              <Card style={{ padding: 24, gap: 12 }}>
                 <Text>
                   {media.id}: {status}
                 </Text>
@@ -339,7 +340,7 @@ function VideoStatusDemo() {
                   Retry video
                 </Button>
                 <Button onPress={() => setMounted(false)}>Return to inline video</Button>
-              </View>
+              </Card>
             </View>
           )}
         />

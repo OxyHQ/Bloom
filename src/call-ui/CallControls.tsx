@@ -1,8 +1,9 @@
 import { useBloomAppearance } from '../appearance';
-import React, { memo, useMemo } from 'react';
-import { Pressable, View } from 'react-native';
+import { memo, useMemo } from 'react';
+import { View } from 'react-native';
+import { Button } from '../button';
+import { DISABLED_OPACITY } from '../styles/tokens';
 
-import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiCameraSwitchLine } from '../icons/remix/RiCameraSwitchLine';
 import { RiCastLine } from '../icons/remix/RiCastLine';
 import { RiMicLine } from '../icons/remix/RiMicLine';
@@ -23,7 +24,6 @@ import {
 } from './shared';
 import { CallEndGlyph } from './glyphs';
 import type { CallControlButtonProps, CallControlKey, CallControlsProps } from './types';
-import { DISABLED_OPACITY } from '../styles/tokens';
 import { useMessages } from '../locale/messages';
 
 /**
@@ -71,40 +71,41 @@ function CallControlButtonComponent({
 
   const theme = useTheme();
   const paint = useMemo(() => resolveCallPaint(theme, accentColor), [theme, accentColor]);
-  const { state: hovered, onIn, onOut } = useInteractionState();
   const geometry = CALL_CONTROL_GEOMETRY[size];
   const Glyph = active === true && activeIcon !== undefined ? activeIcon : Icon;
 
-  const { background, foreground } = resolveControlColors(paint, tone, active === true, hovered);
+  const rest = resolveControlColors(paint, tone, active === true, false);
+  const hover = resolveControlColors(paint, tone, active === true, true);
 
   return (
     <View style={[{ alignItems: 'center', gap: 6 }, style]}>
-      <Pressable
-        role="button"
+      <Button
+        iconOnly
+        icon={Glyph}
+        size={geometry.size}
+        iconSize={geometry.glyph}
+        tone="neutral"
         accessibilityLabel={label}
-        aria-pressed={active}
-        accessibilityState={active === undefined ? { disabled } : { selected: active, disabled }}
-        aria-disabled={disabled || undefined}
+        pressed={active}
         disabled={disabled}
+        disabledOpacity={DISABLED_OPACITY}
         onPress={onPress}
-        onHoverIn={onIn}
-        onHoverOut={onOut}
+        color={rest.foreground}
+        hoverColor={hover.foreground}
+        activeColor={rest.foreground}
+        activeHoverColor={hover.foreground}
+        fill={rest.background}
+        hoverFill={hover.background}
         testID={testID}
-        style={{
-          width: geometry.size,
-          height: geometry.size,
-          borderRadius: geometry.size / 2,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: background,
-          opacity: disabled ? DISABLED_OPACITY : 1,
-        }}
-      >
-        <Glyph width={geometry.glyph} height={geometry.glyph} fill={foreground} />
-        {badge === undefined ? null : (
-          <View style={{ position: 'absolute', top: -2, right: -2 }}>{badge}</View>
-        )}
-      </Pressable>
+        style={badge === undefined ? undefined : { overflow: 'visible' }}
+        decoration={
+          badge === undefined ? undefined : (
+            <View pointerEvents="none" style={{ position: 'absolute', top: -2, right: -2 }}>
+              {badge}
+            </View>
+          )
+        }
+      />
       {showLabel ? (
         <Text
           variant="caption-2-medium"

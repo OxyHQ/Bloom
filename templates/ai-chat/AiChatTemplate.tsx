@@ -27,7 +27,7 @@ import {
 import { AppShell } from '../../src/app-shell/index.web';
 import { useAppShell } from '../../src/app-shell/hooks';
 import { PageHeader } from '../../src/page-header';
-import { ButtonGroup, ButtonGroupItem } from '../../src/button-group/index.web';
+import { Button } from '../../src/button/index.web';
 import { CodeBlock } from '../../src/code';
 import { ComposerLoader } from '../../src/composer-loader';
 import { ComposerPill, ComposerStatusBar } from '../../src/composer-panel';
@@ -47,7 +47,6 @@ import {
   PLAN,
   REPOSITORIES,
   SCENARIOS,
-  SECONDARY_ITEMS,
   type AiChatScenario,
 } from './demo-data';
 
@@ -368,7 +367,6 @@ export function AiChatTemplate({ defaultScenario }: { defaultScenario: AiChatSce
   const image = scenario === 'image-generation';
   const sidebarProps = {
     items: NAV_ITEMS,
-    secondaryItems: SECONDARY_ITEMS(() => {}),
     account: ACCOUNT,
     tree: REPOSITORIES,
     selectedTreeItem: scenario,
@@ -398,14 +396,14 @@ export function AiChatTemplate({ defaultScenario }: { defaultScenario: AiChatSce
               minWidth: 320,
               resizable: true,
               headerActions: (
-                <ButtonGroup>
-                  <ButtonGroupItem
+                <Button.Group>
+                  <Button
                     iconOnly
                     leadingIcon={image ? RiGalleryLine : RiCodeSLine}
                     accessibilityLabel={image ? 'Open gallery' : 'Open code'}
                     onPress={() => setActivePanel('context')}
                   />
-                </ButtonGroup>
+                </Button.Group>
               ),
               content: (
                 <AiChatContainer
@@ -537,15 +535,15 @@ function TemplateChatHeader({ title }: { title: string }) {
       safeArea={false}
       leading={
         shell.drawerAvailable ? (
-          <ButtonGroup>
-            <ButtonGroupItem
+          <Button.Group>
+            <Button
               iconOnly
               leadingIcon={RiMenuLine}
               accessibilityLabel="Open navigation"
               aria-expanded={shell.drawerOpen}
               onPress={shell.toggleDrawer}
             />
-          </ButtonGroup>
+          </Button.Group>
         ) : undefined
       }
     />

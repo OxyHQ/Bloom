@@ -84,7 +84,6 @@ it('finds the followers, so the scan is not vacuous', () => {
     'ai-chat/AiChatGalleryPanelBase.tsx',
     'ai-chat/AiChatImageGenerationBase.tsx',
     'chart-cards/RadarChartCard.tsx',
-    'composer-panel/ModelPickerBase.tsx',
     'message-media/parts.tsx',
     'overlay/Overlay.tsx',
     'progressive-blur/ProgressiveBlur.tsx',

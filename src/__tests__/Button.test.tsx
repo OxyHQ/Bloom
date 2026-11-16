@@ -1,3 +1,4 @@
+import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
 import React from 'react';
 import { Platform, Pressable, Text, View } from 'react-native';
 import { Stop } from 'react-native-svg';
@@ -7,19 +8,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { BloomScope } from '../appearance/BloomScope';
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
-import {
-  Button,
-  CloseButton,
-  DestructiveButton,
-  GhostButton,
-  IconButton,
-  InverseButton,
-  LinkButton,
-  OutlineButton,
-  PrimaryButton,
-  SecondaryButton,
-  TextButton,
-} from '../button';
+import { Button } from '../button';
 import {
   BUTTON_GEOMETRY,
   BUTTON_RADIUS,
@@ -57,6 +46,73 @@ function captureTheme(): Theme {
 }
 
 describe('Button', () => {
+  it('announces background work without disabling presses, while loading and disabled still block them', () => {
+    const onPress = jest.fn();
+    const api = renderWithTheme(
+      <Button aria-busy onPress={onPress} testID="busy">
+        Play
+      </Button>,
+    );
+    expect(api.getByTestId('busy').props['aria-busy']).toBe(true);
+    expect(api.getByTestId('busy').props.accessibilityState.busy).toBe(true);
+    api.getByTestId('busy').props.onPress?.();
+    expect(onPress).toHaveBeenCalledTimes(1);
+    api.rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <Button aria-busy disabled onPress={onPress} testID="busy">
+          Play
+        </Button>
+      </BloomThemeProvider>,
+    );
+    api.getByTestId('busy').props.onPress?.();
+    expect(onPress).toHaveBeenCalledTimes(1);
+    api.rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <Button aria-busy={false} loading onPress={onPress} testID="busy">
+          Play
+        </Button>
+      </BloomThemeProvider>,
+    );
+    expect(api.getByTestId('busy').props['aria-busy']).toBe(true);
+    api.getByTestId('busy').props.onPress?.();
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders noninteractive visuals with shared geometry and no press target', () => {
+    const onPress = jest.fn();
+    const api = renderWithTheme(
+      <Button
+        interactive={false}
+        onPress={onPress}
+        onHoverIn={onPress}
+        size={48}
+        iconOnly
+        testID="visual"
+      >
+        ▶
+      </Button>,
+    );
+    const host = api.getByTestId('visual', { includeHiddenElements: true });
+    expect(host.props.role).toBeUndefined();
+    expect(host.props.accessibilityRole).toBeUndefined();
+    expect(host.props.onPress).toBeUndefined();
+    expect(host.props.onHoverIn).toBeUndefined();
+    expect(host.props.focusable).toBe(false);
+    expect(host.props['aria-hidden']).toBe(true);
+    expect(resolvedStyle(host.props.style).width).toBe(48);
+    host.props.onPress?.();
+    expect(onPress).not.toHaveBeenCalled();
+    api.rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <Button interactive={false} accessibilityLabel="Playing" testID="visual">
+          ▶
+        </Button>
+      </BloomThemeProvider>,
+    );
+    expect(api.getByTestId('visual').props.role).toBe('img');
+    expect(api.getByTestId('visual').props['aria-hidden']).toBe(false);
+  });
+
   it.each([undefined, false, 'false', true, 'page', 'step', 'location', 'date', 'time'] as const)(
     'announces current=%s through the native selected trait without inventing a toggle',
     (current) => {
@@ -342,7 +398,7 @@ describe('layout: the button IS the node its parent lays out', () => {
     const style = resolvedStyle(getByTestId('icon').props.style);
     expect(style.backgroundColor).toBe('transparent');
     expect(style.borderColor).toBe(palette.rest.border);
-    expect(style.borderWidth).toBe(1);
+    expect(style.borderWidth).toBe(palette.borderWidth);
     expect(classNamesOn(getByTestId('icon').props.style)).toContain('flex-1');
   });
 });
@@ -545,36 +601,39 @@ describe('Button variants', () => {
     const draw = (size?: 'lg') => (
       <BloomScope size="xs">
         <>
-          <PrimaryButton testID="primary" size={size}>
+          <Button appearance="solid" tone="accent" testID="primary" size={size}>
             Primary
-          </PrimaryButton>
-          <SecondaryButton testID="secondary" size={size}>
+          </Button>
+          <Button appearance="outline" tone="neutral" testID="secondary" size={size}>
             Secondary
-          </SecondaryButton>
-          <IconButton
+          </Button>
+          <Button
+            appearance="outline"
+            tone="neutral"
+            iconOnly
             testID="icon"
             size={size}
             icon={() => <Text>+</Text>}
             accessibilityLabel="Add"
           />
-          <GhostButton testID="ghost" size={size}>
+          <Button appearance="subtle" tone="accent" testID="ghost" size={size}>
             Ghost
-          </GhostButton>
-          <InverseButton testID="inverse" size={size}>
+          </Button>
+          <Button appearance="solid" tone="neutral" inverted testID="inverse" size={size}>
             Inverse
-          </InverseButton>
-          <TextButton testID="text" size={size}>
+          </Button>
+          <Button appearance="plain" tone="accent" testID="text" size={size}>
             Text
-          </TextButton>
-          <OutlineButton testID="outline" size={size}>
+          </Button>
+          <Button appearance="outline" tone="neutral" testID="outline" size={size}>
             Outline
-          </OutlineButton>
-          <LinkButton testID="link" size={size}>
+          </Button>
+          <Button appearance="plain" linkTone="primary" testID="link" size={size}>
             Link
-          </LinkButton>
-          <DestructiveButton testID="destructive" size={size}>
+          </Button>
+          <Button appearance="solid" tone="danger" testID="destructive" size={size}>
             Delete
-          </DestructiveButton>
+          </Button>
         </>
       </BloomScope>
     );
@@ -740,7 +799,9 @@ describe('button details', () => {
     // stretched to the height available to the button: a link in a column became thousands of
     // points tall on a native host.
     const { getByText } = renderWithTheme(
-      <LinkButton linkTone="secondary">Use a different account</LinkButton>,
+      <Button appearance="plain" linkTone="secondary">
+        Use a different account
+      </Button>,
     );
     expect(contentOf(getByText('Use a different account')).flexGrow).toBe(0);
   });
@@ -752,7 +813,9 @@ describe('button details', () => {
 
   it('a LinkButton given a height by its caller fills it', () => {
     const { getByText } = renderWithTheme(
-      <LinkButton style={{ height: 40 }}>Learn more</LinkButton>,
+      <Button appearance="plain" linkTone="primary" style={{ height: 40 }}>
+        Learn more
+      </Button>,
     );
     expect(contentOf(getByText('Learn more')).flexGrow).toBe(1);
   });
@@ -776,12 +839,20 @@ describe('button details', () => {
     ['lg', 44],
   ] as const)('CloseButton %s is a %ipx disc', (size, box) => {
     const { getByTestId } = renderWithTheme(
-      <CloseButton testID="close" size={size} accessibilityLabel="Close" />,
+      <Button
+        appearance="outline"
+        tone="neutral"
+        iconOnly
+        icon={DismissActionIcon}
+        testID="close"
+        size={({ '2xs': 18, xs: 20, sm: 24, md: 32, lg: 44 } as const)[size]}
+        accessibilityLabel="Close"
+      />,
     );
     const style = resolvedStyle(getByTestId('close').props.style);
     expect(style.width).toBe(box);
     expect(style.height).toBe(box);
-    expect(style.borderRadius).toBe(box / 2);
+    expect(style.borderRadius).toBe(BUTTON_RADIUS);
   });
 });
 
@@ -803,18 +874,26 @@ describe('filled button material', () => {
 
 describe('Button underline and the reading tone', () => {
   it('underline="rest" draws the underline with no pointer at all', () => {
-    const { getByText } = renderWithTheme(<LinkButton underline="rest">Clear all</LinkButton>);
+    const { getByText } = renderWithTheme(
+      <Button appearance="plain" linkTone="primary" underline="rest">
+        Clear all
+      </Button>,
+    );
     expect(resolvedStyle(getByText('Clear all').props.style).textDecorationLine).toBe('underline');
   });
 
   it('underline="hover" and the link default draw NO underline at rest', () => {
     const { getByText, rerender } = renderWithTheme(
-      <LinkButton underline="hover">Learn more</LinkButton>,
+      <Button appearance="plain" linkTone="primary" underline="hover">
+        Learn more
+      </Button>,
     );
     expect(resolvedStyle(getByText('Learn more').props.style).textDecorationLine).toBeUndefined();
     rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <LinkButton>Learn more</LinkButton>
+        <Button appearance="plain" linkTone="primary">
+          Learn more
+        </Button>
       </BloomThemeProvider>,
     );
     expect(resolvedStyle(getByText('Learn more').props.style).textDecorationLine).toBeUndefined();
@@ -822,9 +901,9 @@ describe('Button underline and the reading tone', () => {
 
   it('underline="hover" underlines once the pointer arrives', () => {
     const { getByTestId, getByText } = renderWithTheme(
-      <LinkButton testID="btn" underline="hover">
+      <Button appearance="plain" linkTone="primary" testID="btn" underline="hover">
         Learn more
-      </LinkButton>,
+      </Button>,
     );
     fireEvent(getByTestId('btn'), 'hoverIn');
     expect(resolvedStyle(getByText('Learn more').props.style).textDecorationLine).toBe('underline');
@@ -858,9 +937,9 @@ describe('Button underline and the reading tone', () => {
   it('linkTone="text" takes the secondary colour under a pointer', () => {
     const theme = captureTheme();
     const { getByTestId, getByText } = renderWithTheme(
-      <LinkButton testID="btn" linkTone="text" underline="rest">
+      <Button appearance="plain" testID="btn" linkTone="text" underline="rest">
         Show more
-      </LinkButton>,
+      </Button>,
     );
     expect(resolvedStyle(getByText('Show more').props.style).color).toBe(theme.colors.text);
     fireEvent(getByTestId('btn'), 'hoverIn');
@@ -886,16 +965,18 @@ describe('Button underline and the reading tone', () => {
 
   it('numberOfLines reaches the label', () => {
     const { getByText } = renderWithTheme(
-      <LinkButton numberOfLines={1}>A label far longer than its button</LinkButton>,
+      <Button appearance="plain" linkTone="primary" numberOfLines={1}>
+        A label far longer than its button
+      </Button>,
     );
     expect(getByText('A label far longer than its button').props.numberOfLines).toBe(1);
   });
 
   it('accessibilityRole overrides the role, for a link with no href', () => {
     const { getByTestId } = renderWithTheme(
-      <LinkButton testID="btn" accessibilityRole="link">
+      <Button appearance="plain" linkTone="primary" testID="btn" accessibilityRole="link">
         128 reviews
-      </LinkButton>,
+      </Button>,
     );
     expect(getByTestId('btn').props.accessibilityRole).toBe('link');
   });

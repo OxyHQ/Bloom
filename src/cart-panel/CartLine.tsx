@@ -1,7 +1,7 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
-import { GlyphButton } from '../button';
+import { Button } from '../button';
 import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
 import { Item } from '../item';
 import { ListingPriceLines } from '../listing-card/parts';
@@ -187,7 +187,10 @@ function CartLineComponent(props: CartLineProps) {
             </Text>
           )}
           {onRemove && !stepperRemoves ? (
-            <GlyphButton
+            <Button
+              appearance="plain"
+              tone="neutral"
+              iconOnly
               size={32}
               icon={RiDeleteBinLine}
               accessibilityLabel={removeName}

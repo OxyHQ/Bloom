@@ -10,7 +10,7 @@ import {
 import { Platform, View } from 'react-native';
 import { UNSET } from '../styles/animated-style';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
-import type * as Group from '../button-group';
+import type * as Group from '../button';
 import type * as Menu from '../dropdown-menu';
 import type { ScrollArea as ScrollAreaComponent } from '../layout/ScrollArea';
 import { RiMoreFill } from '../icons/remix/RiMoreFill';
@@ -21,10 +21,7 @@ import { resolveHeaderActionLayout, type HeaderActionMeasurement } from './actio
 import { HeaderActionsHostContext } from './context';
 import type { HeaderAction, HeaderActionsProps } from './types';
 
-type Parts = { ScrollArea: typeof ScrollAreaComponent } & Pick<
-  typeof Group,
-  'ButtonGroup' | 'ButtonGroupItem'
-> &
+type Parts = { ScrollArea: typeof ScrollAreaComponent } & Pick<typeof Group, 'Button'> &
   Pick<
     typeof Menu,
     | 'DropdownMenu'
@@ -40,8 +37,7 @@ const AnimatedRoot = Animated.createAnimatedComponent(View);
 /** Platform bindings share command identity, packing, measurement and lifecycle. */
 export function createHeaderActions({
   ScrollArea,
-  ButtonGroup,
-  ButtonGroupItem,
+  Button,
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
@@ -52,6 +48,7 @@ export function createHeaderActions({
   return function HeaderActions({
     actions,
     persistentActions,
+    persistentActionsPlacement = 'start',
     availableWidth,
     accessibilityLabel,
     overflowLabel,
@@ -120,7 +117,10 @@ export function createHeaderActions({
       position: 'absolute',
       top: 0,
       left: 0,
-      ...(Platform.OS === 'web' ? { visibility: 'hidden' } : { opacity: 0 }),
+      // Invisible intrinsic probes must not contribute to the document's scroll extent.
+      ...(Platform.OS === 'web'
+        ? { visibility: 'hidden', width: 0, height: 0, overflow: 'hidden' }
+        : { opacity: 0 }),
     };
     const measure = (id: string, mode: keyof HeaderActionMeasurement, width: number) => {
       if (width <= 0) return;
@@ -161,20 +161,20 @@ export function createHeaderActions({
         }
       }
       previousHidden.current = hidden;
-    }, [encoded, open]);
+    }, [hidden.has, hidden, focusedIdBeforeCommit]);
     const command = (action: HeaderAction, iconOnly: boolean, measurement = false) => (
-      <ButtonGroupItem
+      <Button
         leadingIcon={action.icon}
         iconOnly={Boolean(action.icon) && iconOnly}
         accessibilityLabel={action.label}
-        selected={measurement || hidden.has(action.id) ? undefined : action.selected}
+        pressed={measurement || hidden.has(action.id) ? undefined : action.selected}
         loading={measurement ? false : action.busy}
         disabled={measurement || action.disabled || action.busy}
         onPress={measurement ? undefined : action.onPress}
         testID={!measurement && testID ? `${testID}-${action.id}` : undefined}
       >
         {action.label}
-      </ButtonGroupItem>
+      </Button>
     );
     if (!persistentActions && actions.every((action) => action.visible === false)) return null;
     return (
@@ -205,7 +205,7 @@ export function createHeaderActions({
           {actions
             .filter((action) => action.visible !== false)
             .map((action) => (
-              <View key={action.id} style={{ flexDirection: 'row' }}>
+              <View key={action.id} style={{ flexDirection: 'row', alignSelf: 'flex-start' }}>
                 <View
                   testID={testID ? `${testID}-measure-${action.id}-full` : undefined}
                   onLayout={(event) => measure(action.id, 'full', event.nativeEvent.layout.width)}
@@ -229,12 +229,7 @@ export function createHeaderActions({
             testID={testID ? `${testID}-measure-overflow` : undefined}
             onLayout={(event) => setTriggerWidth(event.nativeEvent.layout.width)}
           >
-            <ButtonGroupItem
-              iconOnly
-              leadingIcon={RiMoreFill}
-              accessibilityLabel={label}
-              disabled
-            />
+            <Button iconOnly leadingIcon={RiMoreFill} accessibilityLabel={label} disabled />
           </View>
         </View>
         <ScrollArea
@@ -242,7 +237,7 @@ export function createHeaderActions({
           style={{ flexGrow: 0, minWidth: 0, maxWidth: '100%' }}
           contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
         >
-          {persistentActions != null ? (
+          {persistentActions != null && persistentActionsPlacement === 'start' ? (
             <View onLayout={(event) => setPersistentWidth(event.nativeEvent.layout.width)}>
               {persistentActions}
             </View>
@@ -254,7 +249,7 @@ export function createHeaderActions({
               setOpen(next);
             }}
           >
-            <ButtonGroup
+            <Button.Group
               dividers={false}
               accessibilityLabel={accessibilityLabel ?? common.moreActions}
               testID={testID ? `${testID}-group` : undefined}
@@ -277,7 +272,7 @@ export function createHeaderActions({
                 style={menuActions.length || open ? undefined : { display: 'none' }}
               >
                 <DropdownMenuTrigger asChild label={label}>
-                  <ButtonGroupItem
+                  <Button
                     iconOnly
                     leadingIcon={RiMoreFill}
                     accessibilityLabel={label}
@@ -285,7 +280,7 @@ export function createHeaderActions({
                   />
                 </DropdownMenuTrigger>
               </View>
-            </ButtonGroup>
+            </Button.Group>
             <DropdownMenuContent label={label} align="end">
               {menuActions.map((action, index) => (
                 <View key={action.id}>
@@ -319,6 +314,11 @@ export function createHeaderActions({
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+          {persistentActions != null && persistentActionsPlacement === 'end' ? (
+            <View onLayout={(event) => setPersistentWidth(event.nativeEvent.layout.width)}>
+              {persistentActions}
+            </View>
+          ) : null}
         </ScrollArea>
       </AnimatedRoot>
     );

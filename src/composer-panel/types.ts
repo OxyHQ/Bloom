@@ -372,6 +372,8 @@ export interface ComposerPopoverProps {
    * picker would read a press inside that panel as an outside press.
    */
   modal?: boolean;
+  /** Use external when the contents already own their scroll viewports. */
+  scroll?: 'auto' | 'external';
   /** Panel box: width, radius, padding, shadow… Colours are the caller's. */
   style?: StyleProp<ViewStyle>;
   testID?: string;

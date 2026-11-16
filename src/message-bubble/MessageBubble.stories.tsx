@@ -1,10 +1,10 @@
-import React, { useContext, useState } from 'react';
+import { fn } from 'storybook/test';
+import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RiPushpinLine } from '../icons/remix';
 import { ContactMessage, ImageMessage, LocationMessage, PollMessage } from '../message-media';
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { CallSummaryRow } from './CallSummaryRow';
@@ -53,19 +53,6 @@ function Surface({ width, children }: { width: number; children: React.ReactNode
 }
 
 /** The same block in both modes, side by side — every colour here flips. */
-function BothModes({ children }: { children: React.ReactNode }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
-  return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, padding: 20 }}>
-      <BloomThemeProvider mode="light" colorPreset={preset}>
-        {children}
-      </BloomThemeProvider>
-      <BloomThemeProvider mode="dark" colorPreset={preset}>
-        {children}
-      </BloomThemeProvider>
-    </View>
-  );
-}
 
 function Caption({ children }: { children: string }) {
   const theme = useTheme();
@@ -156,7 +143,7 @@ const DIRECT: MessageListItem[] = [
     time: '09:23',
     status: 'failed',
     failed: true,
-    onRetry: () => undefined,
+    onRetry: fn().mockName('onRetry'),
   },
 ];
 
@@ -164,11 +151,11 @@ const DIRECT: MessageListItem[] = [
 export const DirectConversation: Story = {
   render: function DirectStory() {
     return (
-      <BothModes>
-        <Surface width={390}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, padding: 20 }}>
+        <Surface width={900}>
           <MessageList items={DIRECT} showAvatars={false} showSenderNames={false} />
         </Surface>
-      </BothModes>
+      </View>
     );
   },
 };
@@ -260,29 +247,12 @@ const GROUP: MessageListItem[] = [
 export const GroupConversation: Story = {
   render: function GroupStory() {
     return (
-      <BothModes>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, padding: 20 }}>
         <Surface width={390}>
           <MessageList items={GROUP} />
           <TypingBubble senderName="Ana Restrepo" avatarSource={ANA} label="Ana is typing…" />
         </Surface>
-      </BothModes>
-    );
-  },
-};
-
-// ---------------------------------------------------------------------------
-//  Wide
-// ---------------------------------------------------------------------------
-
-/** The same group thread in a 900px transcript — the bubbles cap at 78%. */
-export const Wide: Story = {
-  render: function WideStory() {
-    return (
-      <BothModes>
-        <Surface width={900}>
-          <MessageList items={GROUP} />
-        </Surface>
-      </BothModes>
+      </View>
     );
   },
 };
@@ -295,7 +265,7 @@ export const Wide: Story = {
 export const States: Story = {
   render: function StatesStory() {
     return (
-      <BothModes>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, padding: 20 }}>
         <Surface width={390}>
           <View style={{ gap: 10, paddingLeft: 8, paddingRight: 8 }}>
             <Caption>run geometry — first, middle, last, single</Caption>
@@ -334,7 +304,7 @@ export const States: Story = {
               time="12:44"
               status="failed"
               failed
-              onRetry={() => undefined}
+              onRetry={fn().mockName('onRetry')}
             />
             <MessageBubble direction="incoming" deleted />
             <MessageBubble direction="incoming" text="Selected." time="12:45" selected />
@@ -363,7 +333,7 @@ export const States: Story = {
             />
           </View>
         </Surface>
-      </BothModes>
+      </View>
     );
   },
 };
@@ -376,7 +346,7 @@ export const States: Story = {
 export const Separators: Story = {
   render: function SeparatorsStory() {
     return (
-      <BothModes>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, padding: 20 }}>
         <Surface width={390}>
           <DateSeparator label="Today" />
           <UnreadSeparator />
@@ -408,7 +378,7 @@ export const Separators: Story = {
           />
           <TypingBubble senderName="Nour Haddad" avatarSource={NOUR} label="Nour is typing…" />
         </Surface>
-      </BothModes>
+      </View>
     );
   },
 };
@@ -440,7 +410,7 @@ export const SelectionAndReactions: Story = {
         ),
       );
     return (
-      <BothModes>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, padding: 20 }}>
         <Surface width={390}>
           <View style={{ gap: 4, paddingLeft: 8, paddingRight: 8 }}>
             <MessageBubble
@@ -460,11 +430,11 @@ export const SelectionAndReactions: Story = {
               onPress={() => setPicked((s) => ({ ...s, b: s.b !== true }))}
               reactions={reactions}
               onToggleReaction={toggle}
-              onAddReaction={() => undefined}
+              onAddReaction={fn().mockName('onAddReaction')}
             />
           </View>
         </Surface>
-      </BothModes>
+      </View>
     );
   },
 };
@@ -490,7 +460,7 @@ const POLL_OPTIONS = [
 export const MediaSlot: Story = {
   render: function MediaSlotStory() {
     return (
-      <BothModes>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, padding: 20 }}>
         <Surface width={390}>
           <View style={{ gap: 10, paddingLeft: 8, paddingRight: 8 }}>
             <Caption>a photo — the default, edge to edge</Caption>
@@ -581,8 +551,8 @@ export const MediaSlot: Story = {
                   detail="+34 600 11 22 33"
                   avatar={MARCEL}
                   width={236}
-                  onMessage={() => undefined}
-                  onAdd={() => undefined}
+                  onMessage={fn().mockName('onMessage')}
+                  onAdd={fn().mockName('onAdd')}
                 />
               }
               time="18:12"
@@ -597,8 +567,8 @@ export const MediaSlot: Story = {
                   detail="+34 600 11 22 33"
                   avatar={MARCEL}
                   width={236}
-                  onMessage={() => undefined}
-                  onAdd={() => undefined}
+                  onMessage={fn().mockName('onMessage')}
+                  onAdd={fn().mockName('onAdd')}
                 />
               }
               time="18:13"
@@ -606,7 +576,7 @@ export const MediaSlot: Story = {
             />
           </View>
         </Surface>
-      </BothModes>
+      </View>
     );
   },
 };

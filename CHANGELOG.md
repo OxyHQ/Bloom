@@ -1,5 +1,19 @@
 # Changelog
 
+## 22.0.0
+
+### Breaking changes
+
+- Consolidate chat, mail, people and call rows into List/ListItem; settings rows into GroupedSection; named button presets, glyph controls and grouped items into Button/Button.Group. Remove the duplicate renderers and four obsolete package subpaths. The [migration guide](docs/migrating-to-22.mdx) lists every retired family and its replacement.
+- Replace grouped conversation and agent avatar renderers with AvatarGroup. Remove ChannelPostCard and MAP_CONTROL_BOX.
+
+### Changed
+
+- PageHeader, Screen and AppShell compose responsive navigation, identity, search and media headers. Search keeps one input through its animated button/field transition. Tree rows retain drag/drop, hierarchy, keyboard navigation and prefetch through ListItem.
+- Touch web buttons keep their normal visual size inside separate, non-overlapping 44px interaction boxes; grouped controls and Search share their geometry, border and material.
+- Consolidate Storybook examples around shared owners and the toolbar theme/viewport; retain meaningful regression fixtures and wire example interactions.
+- Preserve bottom-bar reservations and rail/panel alignment in shared layout owners.
+
 ## 21.7.1
 
 ### Fixed

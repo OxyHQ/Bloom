@@ -1,9 +1,9 @@
 /** One shared Surface paint per group, with actual Buttons sharing that material. */
-import React from 'react';
+import type React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { Button } from '../button';
 import { BloomScope } from '../appearance';
 import { hostNodes, resolvedStyle, surfaceSheens } from './support/rendered-style';
 
@@ -21,13 +21,13 @@ const materialCount = (tree: unknown) => surfaceSheens(tree).length;
 const hairlineCount = (tree: unknown) =>
   hostNodes(tree).filter((n) => resolvedStyle(n.props.style).width === 1).length;
 
-describe('ButtonGroup, surface', () => {
+describe('Button.Group, surface', () => {
   it('paints ONE material for the whole group and none on the items', () => {
     const { getByTestId, toJSON } = renderWithTheme(
-      <ButtonGroup accessibilityLabel="Actions" testID="group">
-        <ButtonGroupItem testID="a" iconOnly accessibilityLabel="Search" />
-        <ButtonGroupItem testID="b" iconOnly accessibilityLabel="Share" />
-      </ButtonGroup>,
+      <Button.Group accessibilityLabel="Actions" testID="group">
+        <Button testID="a" iconOnly accessibilityLabel="Search" />
+        <Button testID="b" iconOnly accessibilityLabel="Share" />
+      </Button.Group>,
     );
     expect(materialCount(toJSON())).toBe(1);
     expect(resolvedStyle(getByTestId('a').props.style).backgroundColor).toMatch(
@@ -40,10 +40,10 @@ describe('ButtonGroup, surface', () => {
 
   it('keeps the group a named group, and draws a divider between items by default', () => {
     const { getByTestId, toJSON } = renderWithTheme(
-      <ButtonGroup accessibilityLabel="Actions" testID="group">
-        <ButtonGroupItem testID="a" iconOnly accessibilityLabel="Search" />
-        <ButtonGroupItem testID="b" iconOnly accessibilityLabel="Share" />
-      </ButtonGroup>,
+      <Button.Group accessibilityLabel="Actions" testID="group">
+        <Button testID="a" iconOnly accessibilityLabel="Search" />
+        <Button testID="b" iconOnly accessibilityLabel="Share" />
+      </Button.Group>,
     );
     const group = getByTestId('group');
     expect(group.props.role).toBe('group');
@@ -61,10 +61,10 @@ describe('ButtonGroup, surface', () => {
     // sentence in a doc with nothing behind it.
     const group = (dividers: boolean) =>
       renderWithTheme(
-        <ButtonGroup dividers={dividers} testID="group" accessibilityLabel="Actions">
-          <ButtonGroupItem testID="a" iconOnly accessibilityLabel="Search" />
-          <ButtonGroupItem testID="b" iconOnly accessibilityLabel="Share" />
-        </ButtonGroup>,
+        <Button.Group dividers={dividers} testID="group" accessibilityLabel="Actions">
+          <Button testID="a" iconOnly accessibilityLabel="Search" />
+          <Button testID="b" iconOnly accessibilityLabel="Share" />
+        </Button.Group>,
       ).toJSON();
     expect(hairlineCount(group(false))).toBe(0);
     expect(hairlineCount(group(true))).toBe(1);
@@ -72,19 +72,19 @@ describe('ButtonGroup, surface', () => {
 
   it('does not clip — an island that clips loses its shadow on iOS', () => {
     const { getByTestId } = renderWithTheme(
-      <ButtonGroup accessibilityLabel="Actions" testID="group">
-        <ButtonGroupItem testID="a" iconOnly accessibilityLabel="Search" />
-      </ButtonGroup>,
+      <Button.Group accessibilityLabel="Actions" testID="group">
+        <Button testID="a" iconOnly accessibilityLabel="Search" />
+      </Button.Group>,
     );
     expect(resolvedStyle(getByTestId('group').props.style).overflow ?? 'visible').toBe('visible');
   });
 
   it('keeps joined geometry and clips only the inner row', () => {
     const { getByTestId, toJSON } = renderWithTheme(
-      <ButtonGroup testID="group" accessibilityLabel="Align">
-        <ButtonGroupItem testID="a">Left</ButtonGroupItem>
-        <ButtonGroupItem testID="b">Right</ButtonGroupItem>
-      </ButtonGroup>,
+      <Button.Group testID="group" accessibilityLabel="Align">
+        <Button testID="a">Left</Button>
+        <Button testID="b">Right</Button>
+      </Button.Group>,
     );
     expect(materialCount(toJSON())).toBe(1);
     const group = resolvedStyle(getByTestId('group').props.style);
@@ -99,34 +99,34 @@ describe('ButtonGroup, surface', () => {
 it('inherits compact density while explicit group and item sizes win', () => {
   const screen = renderWithTheme(
     <BloomScope size="sm">
-      <ButtonGroup accessibilityLabel="Inherited">
-        <ButtonGroupItem testID="inherited">A</ButtonGroupItem>
-      </ButtonGroup>
-      <ButtonGroup size="md" accessibilityLabel="Override">
-        <ButtonGroupItem testID="group-size">B</ButtonGroupItem>
-        <ButtonGroupItem size="sm" testID="item-size">
+      <Button.Group accessibilityLabel="Inherited">
+        <Button testID="inherited">A</Button>
+      </Button.Group>
+      <Button.Group size="md" accessibilityLabel="Override">
+        <Button testID="group-size">B</Button>
+        <Button size="sm" testID="item-size">
           C
-        </ButtonGroupItem>
-      </ButtonGroup>
+        </Button>
+      </Button.Group>
     </BloomScope>,
   );
-  expect(resolvedStyle(screen.getByTestId('inherited').props.style).height).toBe(30);
-  expect(resolvedStyle(screen.getByTestId('group-size').props.style).height).toBe(34);
-  expect(resolvedStyle(screen.getByTestId('item-size').props.style).height).toBe(30);
+  expect(resolvedStyle(screen.getByTestId('inherited').props.style).height).toBe(32);
+  expect(resolvedStyle(screen.getByTestId('group-size').props.style).height).toBe(36);
+  expect(resolvedStyle(screen.getByTestId('item-size').props.style).height).toBe(32);
 });
 
 it('adds an inset material only for checked items', () => {
   const { getByTestId, toJSON } = renderWithTheme(
-    <ButtonGroup testID="group">
-      <ButtonGroupItem testID="selected" checked>
+    <Button.Group testID="group">
+      <Button testID="selected" pressed>
         Day
-      </ButtonGroupItem>
-      <ButtonGroupItem testID="unselected">Week</ButtonGroupItem>
-      <ButtonGroupItem>Month</ButtonGroupItem>
-    </ButtonGroup>,
+      </Button>
+      <Button testID="unselected">Week</Button>
+      <Button>Month</Button>
+    </Button.Group>,
   );
   expect(materialCount(toJSON())).toBe(2);
-  expect(resolvedStyle(getByTestId('group-items').props.style).padding).toBe(2);
+  expect(resolvedStyle(getByTestId('group-items').props.style).padding).toBe(0);
   expect(resolvedStyle(getByTestId('selected').props.style).borderRadius).toBeGreaterThan(0);
   expect(getByTestId('selected').props['aria-pressed']).toBe(true);
   const separators = hostNodes(toJSON()).filter((n) => resolvedStyle(n.props.style).width === 1);
@@ -141,16 +141,16 @@ it('adds an inset material only for checked items', () => {
 function selectionFixture(checked: readonly string[], removeFirst = false) {
   return (
     <BloomThemeProvider mode="light" colorPreset="teal">
-      <ButtonGroup testID="moving-group">
+      <Button.Group testID="moving-group">
         {!removeFirst ? (
-          <ButtonGroupItem key="day" testID="day" checked={checked.includes('day')}>
+          <Button key="day" testID="day" pressed={checked.includes('day')}>
             Day
-          </ButtonGroupItem>
+          </Button>
         ) : null}
-        <ButtonGroupItem key="month" testID="month" checked={checked.includes('month')}>
+        <Button key="month" testID="month" pressed={checked.includes('month')}>
           Long month label
-        </ButtonGroupItem>
-      </ButtonGroup>
+        </Button>
+      </Button.Group>
     </BloomThemeProvider>
   );
 }

@@ -1,10 +1,11 @@
-import React from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Text } from '../typography';
 import { AuthCard, AuthMediaCarousel } from './index';
-import type { AuthMediaSlide } from './types';
+import type { AuthCardProps, AuthMediaSlide } from './types';
 
 const meta: Meta<typeof AuthCard> = {
   argTypes: {
@@ -38,6 +39,37 @@ function Page({ children }: { children: React.ReactNode }) {
 }
 
 /** Sign in, stacked providers — the default. */
+function AuthDemo(props: AuthCardProps) {
+  const [mode, setMode] = useState<AuthCardProps['mode']>();
+  const [result, setResult] = useState('');
+  const currentMode = mode ?? props.mode ?? 'signin';
+  return (
+    <View style={{ width: '100%', gap: 16 }}>
+      <AuthCard
+        {...props}
+        mode={currentMode}
+        onSubmit={() =>
+          setResult(currentMode === 'signup' ? 'Demo account created.' : 'Demo form submitted.')
+        }
+        onProvider={(provider) =>
+          setResult(`${provider} sign-in selected. No account connection is made in this demo.`)
+        }
+        onSwitch={() => {
+          setMode(currentMode === 'signup' ? 'signin' : 'signup');
+          setResult('');
+        }}
+        onForgotPassword={() => {
+          setMode('verify');
+          setResult('Enter a demo verification code.');
+        }}
+        onComplete={() => setResult('Demo code complete.')}
+        onResend={() => setResult('A new code was requested in this demo.')}
+      />
+      {result ? <Text accessibilityRole="alert">{result}</Text> : null}
+    </View>
+  );
+}
+
 export const SignIn: Story = {
   args: { headingLevel: 2 },
   parameters: {
@@ -57,7 +89,7 @@ export const SignIn: Story = {
   },
   render: (args) => (
     <Page>
-      <AuthCard {...args} testID="auth" onSubmit={(values) => console.log(values)} />
+      <AuthDemo {...args} testID="auth" />
     </Page>
   ),
 };
@@ -82,7 +114,7 @@ export const Inline: Story = {
   },
   render: (args) => (
     <Page>
-      <AuthCard {...args} testID="auth" providers={['google', 'apple', 'github', 'x']} />
+      <AuthDemo {...args} testID="auth" providers={['google', 'apple', 'github', 'x']} />
     </Page>
   ),
 };
@@ -107,7 +139,7 @@ export const Grid: Story = {
   },
   render: (args) => (
     <Page>
-      <AuthCard {...args} testID="auth" />
+      <AuthDemo {...args} testID="auth" />
     </Page>
   ),
 };
@@ -131,7 +163,7 @@ export const SignUp: Story = {
   },
   render: (args) => (
     <Page>
-      <AuthCard {...args} testID="auth" />
+      <AuthDemo {...args} testID="auth" />
     </Page>
   ),
 };
@@ -163,7 +195,7 @@ export const SignUpConfirmPassword: Story = {
   },
   render: (args) => (
     <Page>
-      <AuthCard {...args} testID="auth" />
+      <AuthDemo {...args} testID="auth" />
     </Page>
   ),
 };
@@ -187,7 +219,7 @@ export const Verify: Story = {
   },
   render: (args) => (
     <Page>
-      <AuthCard {...args} testID="auth" />
+      <AuthDemo {...args} testID="auth" />
     </Page>
   ),
 };
@@ -211,7 +243,7 @@ export const CenteredWithLogo: Story = {
   },
   render: (args) => (
     <Page>
-      <AuthCard
+      <AuthDemo
         {...args}
         testID="auth"
         logo={
@@ -260,7 +292,7 @@ export const SplitWithCarousel: Story = {
   },
   render: (args) => (
     <Page>
-      <AuthCard {...args} testID="auth" media={<AuthMediaCarousel slides={SLIDES} />} />
+      <AuthDemo {...args} testID="auth" media={<AuthMediaCarousel slides={SLIDES} />} />
     </Page>
   ),
 };
@@ -285,7 +317,7 @@ export const AllProviders: Story = {
   },
   render: (args) => (
     <Page>
-      <AuthCard
+      <AuthDemo
         {...args}
         testID="auth"
         providers={[

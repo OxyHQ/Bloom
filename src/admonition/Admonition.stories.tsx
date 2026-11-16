@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -51,19 +51,28 @@ export const Types: Story = {
  */
 export const WithAction: Story = {
   parameters: { controls: { disable: true } },
-  render: () => (
-    <View style={{ maxWidth: '100%', width: 460 }}>
-      <AdmonitionRoot type="warning">
-        <AdmonitionRow>
-          <AdmonitionIcon />
-          <AdmonitionContent>
-            <AdmonitionText>Two-factor authentication is off for this account.</AdmonitionText>
-            <AdmonitionButton onPress={() => {}}>Turn on</AdmonitionButton>
-          </AdmonitionContent>
-        </AdmonitionRow>
-      </AdmonitionRoot>
-    </View>
-  ),
+  render: function ActionDemo() {
+    const [enabled, setEnabled] = useState(false);
+    return (
+      <View style={{ maxWidth: '100%', width: 460 }}>
+        <AdmonitionRoot type={enabled ? 'tip' : 'warning'}>
+          <AdmonitionRow>
+            <AdmonitionIcon />
+            <AdmonitionContent>
+              <AdmonitionText>
+                {enabled
+                  ? 'Two-factor authentication is on for this account.'
+                  : 'Two-factor authentication is off for this account.'}
+              </AdmonitionText>
+              <AdmonitionButton onPress={() => setEnabled(!enabled)}>
+                {enabled ? 'Turn off' : 'Turn on'}
+              </AdmonitionButton>
+            </AdmonitionContent>
+          </AdmonitionRow>
+        </AdmonitionRoot>
+      </View>
+    );
+  },
 };
 
 /** Edit the props in Controls; interactive state stays in sync. */

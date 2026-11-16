@@ -1,10 +1,8 @@
-import React from 'react';
 import { View, ScrollView } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { ActivityHeatmap, bucketByDay } from './index';
 import type { ActivityHeatmapDay } from './index';
-import { BloomThemeProvider } from '../theme';
 
 const END_DATE = '2026-06-30';
 
@@ -47,25 +45,9 @@ export default meta;
 
 type Story = StoryObj<typeof ActivityHeatmap>;
 
-export const Light: Story = {
+export const Default: Story = {
   parameters: { controls: { disable: true } },
-  globals: { theme: 'light' },
-  render: () => (
-    <View style={{ padding: 24 }}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <ActivityHeatmap
-          data={DATA}
-          endDate={END_DATE}
-          weekdayLabels={['', 'Mon', '', 'Wed', '', 'Fri', '']}
-        />
-      </ScrollView>
-    </View>
-  ),
-};
 
-export const Dark: Story = {
-  parameters: { controls: { disable: true } },
-  globals: { theme: 'dark' },
   render: () => (
     <View style={{ padding: 24 }}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -82,7 +64,7 @@ export const Dark: Story = {
 export const CustomScale: Story = {
   args: { numDays: 140, cellSize: 14, gap: 4 },
   parameters: { controls: { include: ['numDays', 'cellSize', 'gap', 'emptyColor'] } },
-  globals: { theme: 'dark' },
+
   render: (args) => (
     <View style={{ padding: 24 }}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -107,13 +89,11 @@ export const FromRawEvents: Story = {
     const events = DATA.flatMap((d) => Array.from({ length: d.count }, () => ({ at: d.date })));
     const bucketed = bucketByDay(events, (e) => e.at);
     return (
-      <BloomThemeProvider mode="light">
-        <View style={{ padding: 24 }}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <ActivityHeatmap data={bucketed} endDate={END_DATE} />
-          </ScrollView>
-        </View>
-      </BloomThemeProvider>
+      <View style={{ padding: 24 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <ActivityHeatmap data={bucketed} endDate={END_DATE} />
+        </ScrollView>
+      </View>
     );
   },
 };

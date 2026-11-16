@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import { Text } from '../typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { ChoiceList } from './index';
+import { Avatar } from '../avatar';
 import { useTheme } from '../theme/use-theme';
 
 const meta: Meta<typeof ChoiceList> = {
@@ -41,15 +42,7 @@ export const Accounts: Story = {
           style={{ gap: 28 }}
           renderContent={(option, { selected }) => (
             <>
-              <View
-                style={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: 32,
-                  backgroundColor: theme.colors.primary,
-                  opacity: selected ? 1 : 0.6,
-                }}
-              />
+              <Avatar name={option.label} size={64} />
               <Text
                 style={{
                   marginTop: 10,

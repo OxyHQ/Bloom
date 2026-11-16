@@ -45,6 +45,7 @@ export interface AvatarGroupProps {
    * - `'row'`: avatars placed adjacent with a positive `spacing` gap and NO
    *   separator ring — an "adjacent row" of icons (e.g. a top-tokens strip).
    *   Still collapses into the `+N` overflow chip at `max`.
+   * - `'conversation'`: one avatar-sized box; two diagonal, three in a triangle, four in a grid.
    * - `'cluster'`: a compact 2D "magnetic bubble cluster" (iMessage-style) —
    *   avatars of VARYING sizes deterministically packed into a round bounding
    *   box with a uniform gap: the first item (primary) is the largest and sits
@@ -54,7 +55,13 @@ export interface AvatarGroupProps {
    *   overall box diameter (see `size`) and `max` defaults to 20 (see `max`), so
    *   it drops in where a single round Avatar would.
    */
-  layout?: 'stack' | 'row' | 'cluster';
+  layout?: 'stack' | 'row' | 'cluster' | 'conversation';
+  /** Shape of each identity. Defaults to circle. */
+  shape?: import('../shapes').Shape;
+  /** Names the group as one image; conversation groups are otherwise decorative. */
+  accessibilityLabel?: string;
+  /** Conversation groups truncate at four by default; other layouts show a count. */
+  overflow?: 'count' | 'truncate';
   /**
    * Diameter in pixels. For `'stack'`/`'row'` this is the diameter of EACH
    * avatar. For `'cluster'` this is the diameter of the whole bounding box (the

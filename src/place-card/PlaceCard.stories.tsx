@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -29,7 +30,7 @@ export default meta;
 
 type Story = StoryObj<typeof PlaceCard>;
 
-const noop = () => undefined;
+const onDemoAction = fn().mockName('place-card.action');
 
 /** An inline illustration so the story needs no network. */
 function photo(sky: string, wall: string, awning: string): string {
@@ -48,15 +49,15 @@ const PARK = photo('#D9EBF5', '#8FB08B', '#4E7A4A');
 
 function actions(saved: boolean, onSave: () => void): PlaceAction[] {
   return [
-    { id: 'directions', label: 'Directions', icon: RiRouteLine, onPress: noop },
-    { id: 'call', label: 'Call', icon: RiPhoneLine, onPress: noop },
+    { id: 'directions', label: 'Directions', icon: RiRouteLine, onPress: onDemoAction },
+    { id: 'call', label: 'Call', icon: RiPhoneLine, onPress: onDemoAction },
     {
       id: 'save',
       label: saved ? 'Saved' : 'Save',
       icon: saved ? RiBookmarkFill : RiBookmarkLine,
       onPress: onSave,
     },
-    { id: 'share', label: 'Share', icon: RiShare2Line, onPress: noop },
+    { id: 'share', label: 'Share', icon: RiShare2Line, onPress: onDemoAction },
   ];
 }
 
@@ -134,7 +135,7 @@ function ResultsList() {
         <PlaceCard
           key={place.name}
           {...place}
-          onPress={noop}
+          onPress={onDemoAction}
           favorite={saved.has(place.name)}
           onFavoriteChange={() => toggle(place.name)}
           saveLabel={`Save ${place.name}`}
@@ -155,10 +156,10 @@ export const Results: Story = {
       <Section title="With an action row">
         <PlaceCard
           {...RESULTS[0]!}
-          onPress={noop}
+          onPress={onDemoAction}
           actions={[
-            { id: 'directions', label: 'Directions', icon: RiRouteLine, onPress: noop },
-            { id: 'call', label: 'Call', icon: RiPhoneLine, onPress: noop },
+            { id: 'directions', label: 'Directions', icon: RiRouteLine, onPress: onDemoAction },
+            { id: 'call', label: 'Call', icon: RiPhoneLine, onPress: onDemoAction },
           ]}
         />
       </Section>
@@ -229,7 +230,7 @@ export const Edges: Story = {
           openState="closed"
           hours="Opens 10:00 on Tuesday"
           address="Passatge del Vidre 8"
-          onPress={noop}
+          onPress={onDemoAction}
         />
       </Section>
       <Section title="A very long name and category in a narrow column">
@@ -248,7 +249,7 @@ export const Edges: Story = {
               { label: '450 m' },
               { label: 'Step-free' },
             ]}
-            onPress={noop}
+            onPress={onDemoAction}
           />
         </View>
       </Section>
@@ -258,7 +259,7 @@ export const Edges: Story = {
             <PlaceCard
               {...RESULTS[1]!}
               badge={<Badge content="Verified" variant="subtle" color="info" size="label-small" />}
-              onPress={noop}
+              onPress={onDemoAction}
             />
           </CardBody>
         </Card>
@@ -272,7 +273,9 @@ export const Edges: Story = {
           openState="closed"
           hours="Opens 07:00 tomorrow"
           address="Avinguda dels Til·lers 61"
-          actions={[{ id: 'directions', label: 'Directions', icon: RiRouteLine, onPress: noop }]}
+          actions={[
+            { id: 'directions', label: 'Directions', icon: RiRouteLine, onPress: onDemoAction },
+          ]}
         />
       </Section>
     </Page>

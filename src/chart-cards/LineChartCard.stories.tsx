@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -55,8 +55,8 @@ const RANGES: LineRange[] = [
   },
 ];
 
-const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
+const Frame = ({ children }: { children: React.ReactNode }) => (
+  <View style={{ width: '100%', maxWidth: 760, gap: 24 }}>{children}</View>
 );
 
 /** The home dashboard's revenue card: curved line over a gradient, Weekly / Monthly / Yearly. */
@@ -113,24 +113,10 @@ export const Variants: Story = {
       <LineChartCard ranges={RANGES} defaultRange="yearly" />
       <LineChartCard
         title="Signups"
-        data={RANGES[0]!.data}
+        data={RANGES[0]?.data}
         format={(v) => String(Math.round(v))}
         formatAxisValue={(v) => `${Math.round(v / 1000)}K`}
       />
-    </Frame>
-  ),
-};
-
-/**
- * A narrower card. The header stacks on the VIEWPORT (`sm`, 640) — on a phone
- * the switcher drops under the headline; on a desktop viewport a narrow card
- * keeps one row.
- */
-export const Narrow: Story = {
-  parameters: { controls: { disable: true } },
-  render: () => (
-    <Frame width={420}>
-      <LineChartCard ranges={RANGES} />
     </Frame>
   ),
 };

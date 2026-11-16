@@ -70,6 +70,8 @@ interface FieldBoxProps {
   dir?: 'rtl';
   pointerEvents?: 'none' | 'auto';
   onClick?: () => void;
+  onFocusCapture?: React.FocusEventHandler<HTMLElement>;
+  onBlurCapture?: React.FocusEventHandler<HTMLElement>;
   onMouseOver?: () => void;
   onMouseOut?: () => void;
   testID?: string;
@@ -83,6 +85,8 @@ function FieldBoxComponent({
   dir,
   pointerEvents,
   onClick,
+  onFocusCapture,
+  onBlurCapture,
   onMouseOver,
   onMouseOut,
   testID,
@@ -121,13 +125,15 @@ function FieldBoxComponent({
       className={className}
       dir={dir ?? 'ltr'}
       onClick={onClick}
+      onFocusCapture={onFocusCapture}
+      onBlurCapture={onBlurCapture}
       onMouseOver={onMouseOver}
       onMouseOut={onMouseOut}
       style={{
         ...variables,
         ...resolveNativeWebStyle(style),
         ...resolveNativeWebStyle(stateStyle),
-        pointerEvents,
+        ...(pointerEvents !== undefined ? { pointerEvents } : {}),
       }}
     >
       {/* RNW resolves logical styles from its own direction context. This

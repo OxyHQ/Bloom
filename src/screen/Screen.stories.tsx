@@ -13,13 +13,14 @@ const meta: Meta<typeof Screen> = {
   id: 'foundations-screen',
   title: 'Composition/Layout/Screen',
   component: Screen,
+  parameters: { layout: 'fullscreen' },
 };
 export default meta;
 type Story = StoryObj<typeof Screen>;
 export const ContinuousContent: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ height: 600, maxWidth: 420 }}>
+    <AppShell header={null} scroll="fixed" contentMaxWidth="none">
       <Screen header={<PageHeader title="A continuous canvas" />}>
         <ScreenScrollView>
           {Array.from({ length: 24 }, (_, index) => (
@@ -29,7 +30,7 @@ export const ContinuousContent: Story = {
           ))}
         </ScreenScrollView>
       </Screen>
-    </View>
+    </AppShell>
   ),
 };
 
@@ -42,19 +43,17 @@ export const Playground: StoryObj<typeof Screen> = {
   },
   render: function Playground(args) {
     return (
-      <View style={{ width: 520, maxWidth: '100%' }}>
-        <View style={{ height: 500 }}>
-          <Screen {...args} header={<PageHeader title="A continuous canvas" />}>
-            <ScreenScrollView>
-              {Array.from({ length: 20 }, (_, index) => (
-                <View key={index} style={{ padding: 20 }}>
-                  <Text>Row {index + 1}</Text>
-                </View>
-              ))}
-            </ScreenScrollView>
-          </Screen>
-        </View>
-      </View>
+      <AppShell header={null} scroll="fixed" contentMaxWidth="none">
+        <Screen {...args} header={<PageHeader title="A continuous canvas" />}>
+          <ScreenScrollView>
+            {Array.from({ length: 20 }, (_, index) => (
+              <View key={index} style={{ padding: 20 }}>
+                <Text>Row {index + 1}</Text>
+              </View>
+            ))}
+          </ScreenScrollView>
+        </Screen>
+      </AppShell>
     );
   },
 };
@@ -125,45 +124,40 @@ export const DeclarativeHost: Story = {
   render: () => {
     const [document, setDocument] = useState(false);
     return (
-      <View style={{ height: 680 }}>
-        <AppShell
-          testID="declarative-shell"
-          panelLayout={{
-            flow: document ? 'document' : 'bounded',
-            panels: [
-              {
-                id: 'conversation',
-                headerActions: (
-                  <Button
-                    testID="declarative-toggle"
-                    onPress={() => setDocument((value) => !value)}
-                  >
-                    Change host
-                  </Button>
-                ),
-                content: (
-                  <Screen
-                    scroll="auto"
-                    testID="declarative-screen"
-                    header={<PageHeader title="Conversation" />}
-                    bottomBar={
-                      <PageFooter testID="declarative-footer" actions={<Button>Reply</Button>} />
-                    }
-                  >
-                    <ScreenScrollView testID="declarative-body">
-                      <View testID="declarative-content" style={{ padding: 20, gap: 16 }}>
-                        {Array.from({ length: 80 }, (_, index) => (
-                          <Text key={index}>Message {index + 1}</Text>
-                        ))}
-                      </View>
-                    </ScreenScrollView>
-                  </Screen>
-                ),
-              },
-            ],
-          }}
-        />
-      </View>
+      <AppShell
+        testID="declarative-shell"
+        panelLayout={{
+          flow: document ? 'document' : 'bounded',
+          panels: [
+            {
+              id: 'conversation',
+              headerActions: (
+                <Button testID="declarative-toggle" onPress={() => setDocument((value) => !value)}>
+                  Change host
+                </Button>
+              ),
+              content: (
+                <Screen
+                  scroll="auto"
+                  testID="declarative-screen"
+                  header={<PageHeader title="Conversation" />}
+                  bottomBar={
+                    <PageFooter testID="declarative-footer" actions={<Button>Reply</Button>} />
+                  }
+                >
+                  <ScreenScrollView testID="declarative-body">
+                    <View testID="declarative-content" style={{ padding: 20, gap: 16 }}>
+                      {Array.from({ length: 80 }, (_, index) => (
+                        <Text key={index}>Message {index + 1}</Text>
+                      ))}
+                    </View>
+                  </ScreenScrollView>
+                </Screen>
+              ),
+            },
+          ],
+        }}
+      />
     );
   },
 };

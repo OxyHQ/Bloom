@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { View } from 'react-native';
 import { AppShell } from '../app-shell';
 import { Button } from '../button';
 import { PageHeader } from '../page-header';
@@ -82,22 +81,20 @@ const routes: readonly PanelRouteDefinition[] = [
 
 export const IndependentRoutes: Story = {
   render: () => (
-    <View style={{ height: 620 }}>
-      <AppShell
-        panelLayout={{
-          mode: 'deck',
-          flow: 'bounded',
-          horizontalScroll: 'contained',
-          panels: ['left', 'right'].map((id) => ({
-            id,
-            width: 380,
-            navigation: {
-              initialEntries: [{ key: `${id}-feed`, name: '/' }],
-              render: () => <PanelRouterProvider routes={routes} />,
-            },
-          })),
-        }}
-      />
-    </View>
+    <AppShell
+      panelLayout={{
+        mode: 'deck',
+        flow: 'bounded',
+        horizontalScroll: 'contained',
+        panels: ['left', 'right'].map((id) => ({
+          id,
+          width: 380,
+          navigation: {
+            initialEntries: [{ key: `${id}-feed`, name: '/' }],
+            render: () => <PanelRouterProvider routes={routes} />,
+          },
+        })),
+      }}
+    />
   ),
 };

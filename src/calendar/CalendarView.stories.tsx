@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import { AppShell } from '../app-shell';
+import type React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Breadcrumb, BreadcrumbItem } from '../breadcrumb';
 import { Button } from '../button';
 import { RiCalendarLine, RiGroupLine, RiUserLine } from '../icons/remix';
-import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
   CalendarView,
@@ -180,23 +181,12 @@ const BREADCRUMB = (
   </Breadcrumb>
 );
 
-/** The page: `background-full` behind the block, so dark mode reads as it ships. */
+/** Calendar examples use the same application viewport and scroll owner as consumers. */
 function Page({ children }: { children: React.ReactNode }) {
-  const theme = useTheme();
   return (
-    <View
-      style={{
-        width: '100%',
-        minHeight: '100%',
-        backgroundColor: theme.colors.background,
-        paddingTop: 24,
-        paddingBottom: 24,
-        paddingLeft: 12,
-        paddingRight: 12,
-      }}
-    >
+    <AppShell header={null} scroll="page" contentMaxWidth="none">
       {children}
-    </View>
+    </AppShell>
   );
 }
 
@@ -208,20 +198,35 @@ export const Demo: Story = {
       include: ['gmtLabel', 'compact', 'title', 'newEventLabel', 'monthSwitcherWidth', 'locale'],
     },
   },
-  render: (args) => (
-    <Page>
-      <CalendarView
-        {...args}
-        testID="calendar"
-        defaultMonth={AUGUST}
-        events={EVENTS}
-        breadcrumb={BREADCRUMB}
-        inboxAccounts={FEEDS}
-        onNewEvent={() => {}}
-        onMenuPress={() => {}}
-      />
-    </Page>
-  ),
+  render: function CalendarDemo(args) {
+    const [events, setEvents] = useState(EVENTS);
+    const [month, setMonth] = useState(AUGUST);
+    return (
+      <Page>
+        <CalendarView
+          {...args}
+          testID="calendar"
+          month={month}
+          onMonthChange={setMonth}
+          events={events}
+          breadcrumb={BREADCRUMB}
+          inboxAccounts={FEEDS}
+          onNewEvent={() =>
+            setEvents((items) => [
+              ...items,
+              {
+                id: `event-${Date.now()}`,
+                date: new Date(month.getFullYear(), month.getMonth(), 12),
+                title: 'New event',
+                time: '10:00',
+                color: 'blue',
+              },
+            ])
+          }
+        />
+      </Page>
+    );
+  },
 };
 
 /** No breadcrumb, no inbox — the smallest header. */
@@ -355,7 +360,7 @@ export const InboxMenu: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <Page>
-      <View style={{ padding: 40, paddingLeft: 320, height: 560 }}>
+      <View style={{ padding: 24, height: 560 }}>
         <View style={{ alignSelf: 'flex-start' }}>
           <CalendarViewInboxMenu testID="inbox" accounts={FEEDS} />
         </View>

@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Button } from '../button';
 import { hashContributionCell, type ContributionCell } from '../chart-cards/contributions-cells';
-import { RiEditBoxLine, RiShare2Line } from '../icons/remix';
 import { AiProfileCard } from './index';
 import type { AiProfileCardStat } from './types';
 
@@ -78,19 +77,8 @@ function cells(columns: number): ContributionCell[] {
 const CELLS = cells(38);
 const COVER = 'https://images.unsplash.com/photo-1614728263952-84ea256f9679?w=1400&h=340&fit=crop';
 
-const Frame = ({ children, width = 680 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ maxWidth: '100%', padding: 40, width: width + 80 }}>{children}</View>
-);
-
-const actions = (
-  <>
-    <Button size="sm" leadingIcon={RiShare2Line} appearance="outline" tone="neutral">
-      Share
-    </Button>
-    <Button size="sm" leadingIcon={RiEditBoxLine} appearance="outline" tone="neutral">
-      Edit
-    </Button>
-  </>
+const Frame = ({ children }: { children: React.ReactNode }) => (
+  <View style={{ width: '100%', maxWidth: 760, padding: 16 }}>{children}</View>
 );
 
 /** Cover, overlapping avatar, count-up headline, tiles and the heatmap popping in. */
@@ -130,7 +118,6 @@ export const Default: Story = {
           {...args}
           testID="profile"
           coverSource={COVER}
-          actions={actions}
           stats={STATS}
           cells={CELLS}
           period={period}
@@ -168,44 +155,6 @@ export const Minimal: Story = {
   render: (args) => (
     <Frame>
       <AiProfileCard {...args} stats={STATS.slice(0, 2)} cells={CELLS} periods={[]} />
-    </Frame>
-  ),
-};
-
-/** Below 640 the tiles go two by two and the heatmap scrolls sideways with 13px cells (resize the viewport). */
-export const Phone: Story = {
-  args: {
-    name: 'Maya Collins',
-    handle: '@maya',
-    badge: 'PRO',
-    contributions: 7462,
-    delta: '+14.8%',
-    color: '#10b981',
-  },
-  parameters: {
-    controls: {
-      include: [
-        'name',
-        'handle',
-        'badge',
-        'contributions',
-        'delta',
-        'color',
-        'initials',
-        'contributionsLabel',
-        'countUpDuration',
-        'activityLabel',
-        'period',
-        'defaultPeriod',
-        'columns',
-        'animateIn',
-        'activeCell',
-      ],
-    },
-  },
-  render: (args) => (
-    <Frame width={358}>
-      <AiProfileCard {...args} coverSource={COVER} actions={actions} stats={STATS} cells={CELLS} />
     </Frame>
   ),
 };

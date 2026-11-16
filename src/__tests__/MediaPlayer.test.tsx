@@ -7,7 +7,7 @@
  * tint's contrast guarantee and fallback.
  */
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -421,6 +421,28 @@ describe('artwork tint contrast', () => {
 });
 
 describe('MiniPlayer', () => {
+  it('uses a compact capsule with progress contained inside its curved ends', () => {
+    mount(
+      <MiniPlayer
+        track={TRACK}
+        playing
+        onPlayPause={noop}
+        position={100}
+        duration={100}
+        testID="m"
+      />,
+    );
+    const bar = byTestId('m');
+    expect(bar.style.height).toBe('56px');
+    expect(getComputedStyle(bar).borderTopLeftRadius).toBe('28px');
+    const progress = byTestId('m-progress');
+    expect(progress.style.left).toBe('28px');
+    expect(progress.style.right).toBe('28px');
+    expect(progress.style.bottom).toBe('4px');
+    expect(getComputedStyle(progress).overflowX).toBe('hidden');
+    expect(byTestId('m-progress-fill').style.width).toBe('100%');
+  });
+
   it('paints the contrast-safe tint and draws its content with the dark theme', () => {
     mount(
       <MiniPlayer
@@ -464,12 +486,13 @@ describe('MiniPlayer', () => {
 
   it('is one open button plus sibling like and play; the device replaces the artist line', () => {
     const onPress = jest.fn();
+    const onPlayPause = jest.fn();
     const onLikedChange = jest.fn();
     mount(
       <MiniPlayer
         track={TRACK}
         playing
-        onPlayPause={noop}
+        onPlayPause={onPlayPause}
         onPress={onPress}
         position={0}
         duration={100}
@@ -491,6 +514,11 @@ describe('MiniPlayer', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
     expect(byTestId('m-like').getAttribute('aria-pressed')).toBe('false');
     expect(byTestId('m-play').getAttribute('aria-label')).toBe('Pause Glass Harbour Lights');
+    act(() => byTestId('m-play').click());
+    act(() => byTestId('m-like').click());
+    expect(onPlayPause).toHaveBeenCalledTimes(1);
+    expect(onLikedChange).toHaveBeenCalledWith(true);
+    expect(onPress).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -525,6 +553,7 @@ describe('FullScreenPlayer', () => {
     expect(byTestId('f-collapse').getAttribute('aria-label')).toBe('Close player');
     act(() => byTestId('f-collapse').click());
     expect(onCollapse).toHaveBeenCalled();
+    expect(byTestId('f-top-bar').hasAttribute('data-bloom-page-header')).toBe(true);
     expect(byTestId('f-top-bar').textContent).toContain('Night Drive');
     expect(byTestId('f-queue').getAttribute('aria-pressed')).toBe('true');
     expect(byTestId('f-transport-play').style.width).toBe('56px');

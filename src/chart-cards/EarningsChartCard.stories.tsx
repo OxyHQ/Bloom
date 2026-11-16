@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -57,8 +57,8 @@ const RANGES: EarningsRange[] = [
   },
 ];
 
-const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
+const Frame = ({ children }: { children: React.ReactNode }) => (
+  <View style={{ width: '100%', maxWidth: 760, gap: 24 }}>{children}</View>
 );
 
 /** "Earned so far": bars in full-height tracks, Figma ticks, Weekly / Monthly / Yearly. */
@@ -101,20 +101,7 @@ export const AutoAxis: Story = {
   render: () => (
     <Frame>
       <EarningsChartCard ranges={RANGES} defaultRange="yearly" />
-      <EarningsChartCard title="Payouts" data={RANGES[1]!.data} delta={-0.021} />
-    </Frame>
-  ),
-};
-
-/** The dashboard's wide slot (`xl:w-[673px]`), and a narrower card (the header stacks on the viewport, not the card). */
-export const Widths: Story = {
-  parameters: { controls: { disable: true } },
-  render: () => (
-    <Frame width={673}>
-      <EarningsChartCard ranges={RANGES} yTicks={Y_TICKS} yMax={Y_MAX} />
-      <View style={{ maxWidth: '100%', width: 420 }}>
-        <EarningsChartCard ranges={RANGES} yTicks={Y_TICKS} yMax={Y_MAX} />
-      </View>
+      <EarningsChartCard title="Payouts" data={RANGES[1]?.data} delta={-0.021} />
     </Frame>
   ),
 };

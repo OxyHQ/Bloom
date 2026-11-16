@@ -13,7 +13,7 @@ const ratio = async (page) =>
 try {
   for (const mode of ['document', 'clipped']) {
     const page = await browser.newPage({ viewport: { width: 800, height: 600 } });
-    await page.goto(`${base}/iframe.html?id=layout-viewport--${mode}-reveal&viewMode=story`);
+    await page.goto(`${base}/iframe.html?id=foundations-viewport--${mode}-reveal&viewMode=story`);
     const meter = page.getByRole('progressbar', { name: 'Five stars' });
     await expect(meter).toHaveAttribute('aria-valuenow', '75', { timeout: 120000 });
     await expect(page.getByTestId('histogram-visible')).toHaveText('false');
@@ -82,7 +82,7 @@ try {
       viewport: { width: 800, height: 600 },
       reducedMotion: reducedInitially ? 'reduce' : 'no-preference',
     });
-    await page.goto(`${base}/iframe.html?id=layout-viewport--document-reveal&viewMode=story`);
+    await page.goto(`${base}/iframe.html?id=foundations-viewport--document-reveal&viewMode=story`);
     await expect(page.getByRole('progressbar', { name: 'Five stars' })).toHaveAttribute(
       'aria-valuenow',
       '75',

@@ -9,7 +9,7 @@ import { TOOLBAR_DIVIDER, TOOLBAR_GROUP_BORDER, TOOLBAR_ITEM_SIZE } from './cons
 import type { NoteEditorAction, NoteEditorToolbarProps, NoteSaveState } from './types';
 
 /**
- * How many `ButtonGroup` items fit in `width`.
+ * How many `Button.Group` items fit in `width`.
  *
  * A solid group is `1px border + n items + (n-1) hairlines + 1px border`, so
  * every item after the first costs `item + 1` and the first costs `item + 2`.

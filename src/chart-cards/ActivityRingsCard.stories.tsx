@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -48,8 +49,8 @@ const DAYS: { title: string; rings: ActivityRing[] }[] = [
   },
 ];
 
-const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
+const Frame = ({ children }: { children: React.ReactNode }) => (
+  <View style={{ width: '100%', maxWidth: 760, gap: 24 }}>{children}</View>
 );
 
 /** Three goal rings under their stat tiles; hover a ring to focus it. */
@@ -102,16 +103,6 @@ export const SelectedDay: Story = {
   render: () => (
     <Frame>
       <DayPicker />
-    </Frame>
-  ),
-};
-
-/** A narrow column: the rings keep their 200 viewBox and scale to fit. */
-export const Narrow: Story = {
-  parameters: { controls: { disable: true } },
-  render: () => (
-    <Frame width={300}>
-      <ActivityRingsCard rings={RINGS} />
     </Frame>
   ),
 };

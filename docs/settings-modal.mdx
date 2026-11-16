@@ -73,11 +73,11 @@ The modal's base size is a fixed 871×614 panel. Bloom adapts it to the window w
 | `medium` | 640–899px | Same panel inside a 16px gutter; rail 220px, insets 24px. |
 | `compact` | < 640px | Full screen (no radius or gutter, content inside the safe area). Two levels: the section list with chevrons, then the page pushed over it with the shared `PageHeader` back island. Android's back button returns to the list before it closes. The panel rises 16px instead of scaling from .85. |
 
-In every layout `SettingsRow` wraps its control under the label when both do not fit, and the label column never gets narrower than `SETTINGS_ROW_LABEL_MIN_WIDTH` (140): a switch stays beside it, a long `Select` drops below and truncates inside its pill, and in `compact` a `SettingsValueField` drops below and fills the row. The column is `flexBasis: 0` + grow + that `minWidth`, never a positive `flexBasis`: Yoga gives a row's ONLY grow-and-shrink child a computed basis of 0 and breaks lines on that basis bounded by min/max alone, so the old `flexBasis: 140` never reached the decision. A 300px colour chooser stayed on the label's line on Android, the description wrapped one word per line in ~48dp, and the chooser's text ran off the card (Allo, Bloom 15.48). In `compact` the Storage table keeps the file name and actions while the date and size columns drop and its toolbar wraps. `labels.back` names the back button (default `Back`). Every default string — the modal's `labels`, the Storage and Tools pages' copy, the plan chip — is localised via `BloomProvider locale`, and `SettingsDateField` formats its date in that locale.
+In every layout `GroupedSectionItem wrapControl` wraps its control under the label when both do not fit, and the label column never gets narrower than 140px: a switch stays beside it, a long `Select` drops below and truncates inside its pill, and in `compact` a `SettingsValueField` drops below and fills the row. The column is `flexBasis: 0` + grow + that `minWidth`, never a positive `flexBasis`: Yoga gives a row's ONLY grow-and-shrink child a computed basis of 0 and breaks lines on that basis bounded by min/max alone, so the old `flexBasis: 140` never reached the decision. A 300px colour chooser stayed on the label's line on Android, the description wrapped one word per line in ~48dp, and the chooser's text ran off the card (Allo, Bloom 15.48). In `compact` the Storage table keeps the file name and actions while the date and size columns drop and its toolbar wraps. `labels.back` names the back button (default `Back`). Every default string — the modal's `labels`, the Storage and Tools pages' copy, the plan chip — is localised via `BloomProvider locale`, and `SettingsDateField` formats its date in that locale.
 
 ## Shared header
 
-Every layout uses `PageHeader` as the opaque `bar` presentation (the floating islands and gradient scrim let scrolling content ghost through), painted in the modal's published surface fill with its hairline once scrolled. A `ButtonGroupItem` supplies the close action; compact pages use its native back action to return to sections. The modal owns safe-area padding once, so the header uses `safeArea={false}`. Each page uses `Screen scroll="auto" documentScroll={false}` with an isolated navigation scope, a `PageHeader` in its header slot and `ScreenScrollView` for its body. The viewport fills the entire panel and Bloom's shared scrollbar observes that owner. Screen reserves header clearance once and the header reads this viewport's offset to update its material; neither follows the document underneath. Compact section navigation uses the same Screen composition. Changing pages resets the page viewport. Only the page body owns content padding. See [Compose application layouts](/docs/bloom/main/compose-layouts) for the shared contract.
+Every layout uses `PageHeader` as the opaque `bar` presentation (the floating islands and gradient scrim let scrolling content ghost through), painted in the modal's published surface fill with its hairline once scrolled. A `Button` supplies the close action; compact pages use its native back action to return to sections. The modal owns safe-area padding once, so the header uses `safeArea={false}`. Each page uses `Screen scroll="auto" documentScroll={false}` with an isolated navigation scope, a `PageHeader` in its header slot and `ScreenScrollView` for its body. The viewport fills the entire panel and Bloom's shared scrollbar observes that owner. Screen reserves header clearance once and the header reads this viewport's offset to update its material; neither follows the document underneath. Compact section navigation uses the same Screen composition. Changing pages resets the page viewport. Only the page body owns content padding. See [Compose application layouts](/docs/bloom/main/compose-layouts) for the shared contract.
 
 Pages with `fullBleed: true` own their scrolling and insets. A `content` render callback receives `{ onBack, backLabel, onClose, closeLabel }` and owns its header too: `onBack` returns to sections on compact screens and is absent beside the desktop rail. Render that action in the page’s existing header to avoid a second title. A full-bleed page with static React content keeps the compact shell’s back header. The default page layout continues to use its shared `PageHeader`.
 
@@ -122,8 +122,8 @@ It is centred by a full-width row, never by its own measured width. It used to s
 
 | Export | Geometry |
 | --- | --- |
-| `SettingsCard` | background/secondary, radius 16, **pl 12** |
-| `SettingsRow` | min-height 52, py 10 pr 10, column gap 16 (12 compact), row gap 8, label column ≥ 140, 1px separator under every row **except the last** |
+| `GroupedSection` | shared rounded material; `separator="line"` draws the settings dividers |
+| `GroupedSectionItem` | shared label, description, leading icon and trailing content; `wrapControl` preserves a label column ≥ 140px and wraps wide controls below it |
 | `SettingsSection` | label body-2-medium (inset 12, or 8 on Tools), optional description and trailing action, 8 above the card |
 | `SettingsSectionLabel` | body-2-medium text/secondary |
 | `SettingsValueField` | 32×202, radius 10, background/tertiary |
@@ -133,7 +133,7 @@ It is centred by a full-width row, never by its own measured width. It used to s
 
 `SettingsSelect` is the one select for a settings row — Bloom's own pages and an app's. Beyond `label`, `value`, `onChange`, `items` and `compact` (default `true`; `false` keeps the regular field padding) it takes `size` (the trigger's; otherwise the nearest `BloomScope`), `disabled`, `width` (a fixed web dropdown width) and `style` (the trigger's box — a `maxWidth` caps a long value in a tight row). The web entries (`settings-modal`, `settings-modal/rows`, `settings-modal/select`) bind it to the web `Select` and the native ones to the native `Select`, so the anchored list opens on web whichever bundler resolves the import.
 
-**The hairline stops 12px short of the card's left edge** because the padding lives on the card, not the row — rows must be direct children of `SettingsCard` (fragments are flattened). "Last" is derived from the card's children, since React Native has no `:last-child`.
+`GroupedSection` owns separators between rows and flattens fragments. Rows do not paint their own backgrounds or bottom borders. Use `title` for the label and `rightElement` for the control; `SettingsCard` and `SettingsRow` have been removed.
 
 ## Entries
 
@@ -146,9 +146,9 @@ you draw:
 | Entry | Exports | Does not link |
 | --- | --- | --- |
 | `@oxy.so/bloom/settings-modal` | everything on this page | — |
-| `@oxy.so/bloom/settings-modal/modal` | `SettingsModal` (not `SettingsLayout`, which links `AppShell`), `SettingsCard`, `SettingsRow`, `SettingsSection`, `SettingsSectionLabel`, `SettingsValueField`, `useSettingsSavedToast` and the modal/nav/page/row prop types | the General/Profile/Tools/Storage pages, `SettingsPlanCard`/`SettingsPlanArt`, the text/date fields — and through them `Select`, `FileUpload`, `Pagination`, `DropdownMenu`, `Checkbox`, `Chip`, `Tooltip`, `EmptyState`, `TextField`, `Popover` and the calendar |
+| `@oxy.so/bloom/settings-modal/modal` | `SettingsModal` (not `SettingsLayout`, which links `AppShell`), `SettingsSection`, `SettingsSectionLabel`, `SettingsValueField`, `useSettingsSavedToast` and the modal/nav/page/row prop types | the General/Profile/Tools/Storage pages, `SettingsPlanCard`/`SettingsPlanArt`, the text/date fields — and through them `Select`, `FileUpload`, `Pagination`, `DropdownMenu`, `Checkbox`, `Chip`, `Tooltip`, `EmptyState`, `TextField`, `Popover` and the calendar |
 | `@oxy.so/bloom/settings-modal/fields` | `SettingsTextField`, `SettingsDateField` and their prop types | the modal and every page |
-| `@oxy.so/bloom/settings-modal/rows` | `SettingsCard`, `SettingsRow`, `SettingsSection`, `SettingsSectionLabel`, `SettingsValueField`, `SettingsSelect` and their prop types | the modal, every page and the fields |
+| `@oxy.so/bloom/settings-modal/rows` | `SettingsSection`, `SettingsSectionLabel`, `SettingsValueField`, `SettingsSelect` and their prop types | the modal, every page and the fields |
 | `@oxy.so/bloom/settings-modal/select` | `SettingsSelect` and `SettingsSelectProps` | the rows, the modal, every page and the fields |
 
 Every entry hands out the same components (identical references) as the full one,
@@ -160,12 +160,11 @@ fields:
 
 ```tsx
 import {
-  SettingsCard,
   SettingsModal,
-  SettingsRow,
   SettingsSection,
 } from '@oxy.so/bloom/settings-modal/modal';
 import { SettingsTextField } from '@oxy.so/bloom/settings-modal/fields';
+import { GroupedSection, GroupedSectionItem } from '@oxy.so/bloom/grouped-section';
 ```
 
 Measured in GoWay's web export (Bloom 6.2.1, before `modal` existed): its
@@ -174,10 +173,10 @@ the Storage page it never rendered. Another lazy chunk also uses `Select`, so th
 bundler moved it into the first-paint common chunk: +4.7 KB gzip on every page
 load.
 
-A preference card on a screen or in a sheet, outside the dialog, imports `rows`:
+A preference group on a screen or in a sheet imports the shared family:
 
 ```tsx
-import { SettingsCard, SettingsRow } from '@oxy.so/bloom/settings-modal/rows';
+import { GroupedSection, GroupedSectionItem } from '@oxy.so/bloom/grouped-section';
 ```
 
 Gate: `lean-entries.test.ts` walks each entry's static import graph, with

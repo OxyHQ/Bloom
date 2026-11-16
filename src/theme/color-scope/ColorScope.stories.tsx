@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { TextFieldInput } from '../../text-field';
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { BloomColorScope } from './ColorScope.web';
 import { useTheme } from '../use-theme';
@@ -20,6 +21,9 @@ function Probe({ name }: { name: string }) {
       data-color={theme.colors.background}
       style={{
         padding: 12,
+        maxWidth: '100%',
+        boxSizing: 'border-box',
+        flexWrap: 'wrap',
         backgroundColor: 'var(--background)',
         color: 'var(--color-text)',
         pointerEvents: 'auto',
@@ -29,11 +33,7 @@ function Probe({ name }: { name: string }) {
       }}
     >
       <span>Exact scoped surface</span>
-      <input
-        aria-label={`${name} draft`}
-        value={value}
-        onChange={(event) => setValue(event.currentTarget.value)}
-      />
+      <TextFieldInput label={`${name} draft`} value={value} onChangeText={setValue} />
     </div>
   );
 }
@@ -44,7 +44,15 @@ function ExactScopeFixture({ placement = 'end' }: { placement?: 'end' | 'bottom'
   const [alternate, setAlternate] = useState(false);
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 12 }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        width: '100%',
+        gap: 12,
+      }}
+    >
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
         <Button size="sm" tone="neutral" onPress={() => setExact((value) => !value)}>
           Toggle exact scope
@@ -58,6 +66,7 @@ function ExactScopeFixture({ placement = 'end' }: { placement?: 'end' | 'bottom'
       </div>
       <Probe name="outside-scope" />
       <BloomColorScope
+        style={{ maxWidth: '100%' }}
         mode={exact ? (alternate ? 'light' : 'dark') : undefined}
         tokens={
           exact
@@ -80,7 +89,14 @@ function ExactScopeFixture({ placement = 'end' }: { placement?: 'end' | 'bottom'
         </Dialog>
         {open ? (
           <Portal>
-            <div style={{ position: WEB_POSITION_FIXED, bottom: 12, right: 12 }}>
+            <div
+              style={{
+                position: WEB_POSITION_FIXED,
+                bottom: 12,
+                right: 12,
+                maxWidth: 'calc(100% - 24px)',
+              }}
+            >
               <Probe name="portal-scope" />
             </div>
           </Portal>

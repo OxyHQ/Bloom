@@ -1,50 +1,18 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { View } from 'react-native';
 
-import { ButtonGroupItem } from '../button-group';
-import { BlurIsland } from '../blur';
+import { Button } from '../button';
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import { RiBox3Line } from '../icons/remix/RiBox3Line';
 import { RiFocus3Line } from '../icons/remix/RiFocus3Line';
 import { RiSubtractLine } from '../icons/remix/RiSubtractLine';
 import { useMessages } from '../locale/messages';
-import { MAP_CONTROL_BOX, MAP_CONTROLS_GEOMETRY } from './constants';
+import { MAP_CONTROLS_GEOMETRY } from './constants';
 import { MapCompass } from './MapCompass';
 import { MAP_CONTROLS_MESSAGES } from './messages';
 import type { MapControlsProps } from './types';
 
-/**
- * The chrome that floats over a map — locate, compass, zoom, tilt — as a
- * column of translucent capsules.
- *
- *   island   every group is a `BlurIsland`: rung 1 of the surface ladder at
- *            the chrome alpha, with the material's own hairline and shadow.
- *            One capsule per GROUP, so the column reads as separate controls
- *            rather than as one bar — which is exactly what the island was
- *            written for.
- *   control  `ButtonGroupItem` at 44 square. It is Bloom's island-aware
- *            control: it reads the `material` the island publishes through
- *            `BloomScope` and paints flush, with no `variant` written on
- *            it, and it carries a toggle's `aria-pressed` and native selected
- *            state in one prop.
- *   zoom     ONE island, two items, laid out in a column. The island's `style`
- *            is where that is said; nothing else about it changes.
- *   stack    44 controls, 8 apart, hugging whichever edge `align` names.
- *
- * WHY NOT `FrostedIconButton`: it is one of the three translucent materials Bloom
- * grew independently, and `blur/` exists so there is not a fourth. Two material
- * recipes side by side in one stack is the drift the island was written to
- * end, so the whole stack is one material. A single frosted button over a
- * photograph is still the right control where there is no island.
- *
- * WHAT THIS DOES NOT DO: it never touches a map. Every control is a callback,
- * every state is a prop, and there is no engine, no projection and no tile
- * here — the app owns the map and tells the chrome what it is doing.
- *
- * The `MapLayerPicker` is not a prop: it is an island of its own, placed in
- * `children`, so an app can put it above the stack, below it, or somewhere
- * else entirely without this component growing a placement vocabulary.
- */
+/** Map chrome composed from Button and Button.Group; applications own map state and callbacks. */
 function MapControlsComponent({
   orientation = 'vertical',
   onLocate,
@@ -86,21 +54,21 @@ function MapControlsComponent({
       ]}
     >
       {onLocate ? (
-        <BlurIsland testID={id('locate-island')}>
-          <ButtonGroupItem
-            iconOnly
-            leadingIcon={RiFocus3Line}
-            selected={following}
-            accessibilityLabel={
-              following
-                ? (labels?.following ?? messages.following)
-                : (labels?.locate ?? messages.locate)
-            }
-            onPress={onLocate}
-            style={MAP_CONTROL_BOX}
-            testID={id('locate')}
-          />
-        </BlurIsland>
+        <Button
+          appearance="outline"
+          tone="neutral"
+          iconOnly
+          leadingIcon={RiFocus3Line}
+          pressed={following}
+          accessibilityLabel={
+            following
+              ? (labels?.following ?? messages.following)
+              : (labels?.locate ?? messages.locate)
+          }
+          onPress={onLocate}
+          size="lg"
+          testID={id('locate')}
+        />
       ) : null}
 
       {onResetNorth && heading !== undefined ? (
@@ -113,47 +81,52 @@ function MapControlsComponent({
       ) : null}
 
       {zoomable ? (
-        <BlurIsland
-          role="group"
+        <Button.Group
+          orientation={orientation}
+          size="lg"
+          dividers={false}
           accessibilityLabel={zoomLabel}
-          style={{ flexDirection: orientation === 'horizontal' ? 'row' : 'column' }}
           testID={id('zoom')}
         >
-          <ButtonGroupItem
+          <Button
+            appearance="outline"
+            tone="neutral"
             iconOnly
             leadingIcon={RiAddLine}
             accessibilityLabel={labels?.zoomIn ?? messages.zoomIn}
             onPress={onZoomIn}
             disabled={!canZoomIn}
-            style={MAP_CONTROL_BOX}
+            size="lg"
             testID={id('zoom-in')}
           />
-          <ButtonGroupItem
+          <Button
+            appearance="outline"
+            tone="neutral"
             iconOnly
             leadingIcon={RiSubtractLine}
             accessibilityLabel={labels?.zoomOut ?? messages.zoomOut}
             onPress={onZoomOut}
             disabled={!canZoomOut}
-            style={MAP_CONTROL_BOX}
+            size="lg"
             testID={id('zoom-out')}
           />
-        </BlurIsland>
+        </Button.Group>
       ) : null}
 
       {onTiltChange ? (
-        <BlurIsland testID={id('tilt-island')}>
-          <ButtonGroupItem
-            iconOnly
-            leadingIcon={RiBox3Line}
-            selected={tilted ?? false}
-            accessibilityLabel={
-              tilted ? (labels?.tiltOff ?? messages.tiltOff) : (labels?.tilt ?? messages.tilt)
-            }
-            onPress={() => onTiltChange(!tilted)}
-            style={MAP_CONTROL_BOX}
-            testID={id('tilt')}
-          />
-        </BlurIsland>
+        <Button
+          appearance="outline"
+          tone="neutral"
+          iconOnly
+          leadingIcon={RiBox3Line}
+          pressed={tilted ?? false}
+          accessibilityLabel={
+            tilted ? (labels?.tiltOff ?? messages.tiltOff) : (labels?.tilt ?? messages.tilt)
+          }
+          onPress={() => onTiltChange(!tilted)}
+          size="lg"
+          testID={id('tilt')}
+        />
       ) : null}
 
       {children}

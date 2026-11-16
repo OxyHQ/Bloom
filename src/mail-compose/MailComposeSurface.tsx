@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { StyleSheet, View } from 'react-native';
 
-import { Button, GlyphButton } from '../button';
+import { Button } from '../button';
 import { ComposerAttachmentStrip } from '../chat-composer/ComposerAttachmentStrip';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiAttachment2 } from '../icons/remix/RiAttachment2';
@@ -135,7 +135,10 @@ export function MailComposeSurface({
         {heading}
       </Text>
       {docked && onMinimizedChange !== undefined ? (
-        <GlyphButton
+        <Button
+          appearance="plain"
+          tone="neutral"
+          iconOnly
           icon={RiSubtractLine}
           size={geo.action}
           accessibilityLabel={text.minimize}
@@ -145,7 +148,10 @@ export function MailComposeSurface({
         />
       ) : null}
       {onExpand === undefined ? null : (
-        <GlyphButton
+        <Button
+          appearance="plain"
+          tone="neutral"
+          iconOnly
           icon={RiExpandDiagonalSLine}
           size={geo.action}
           accessibilityLabel={text.expand}
@@ -154,7 +160,10 @@ export function MailComposeSurface({
         />
       )}
       {onClose === undefined ? null : (
-        <GlyphButton
+        <Button
+          appearance="plain"
+          tone="neutral"
+          iconOnly
           icon={RiCloseLine}
           size={geo.action}
           accessibilityLabel={text.close}
@@ -213,10 +222,13 @@ export function MailComposeSurface({
           </Button>
         )}
         {onAttach === undefined ? null : (
-          <GlyphButton
+          <Button
+            appearance="plain"
+            tone="neutral"
+            iconOnly
             icon={RiAttachment2}
             size={geo.action}
-            glyphSize={geo.actionGlyph}
+            iconSize={geo.actionGlyph}
             accessibilityLabel={text.attach}
             onPress={onAttach}
             testID={testID ? `${testID}-attach` : undefined}
@@ -225,10 +237,13 @@ export function MailComposeSurface({
         {footer}
         <View style={{ flex: 1 }} />
         {onDiscard === undefined ? null : (
-          <GlyphButton
+          <Button
+            appearance="plain"
+            tone="neutral"
+            iconOnly
             icon={RiDeleteBinLine}
             size={geo.action}
-            glyphSize={geo.actionGlyph}
+            iconSize={geo.actionGlyph}
             accessibilityLabel={text.discard}
             onPress={onDiscard}
             testID={testID ? `${testID}-discard` : undefined}

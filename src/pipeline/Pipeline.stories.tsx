@@ -1,10 +1,10 @@
-import React, { useContext, useState } from 'react';
+import { fn } from 'storybook/test';
+import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { GlyphButton } from '../button';
+import { Button } from '../button';
 import { RiMore2Line } from '../icons/remix';
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { DealCard } from './DealCard';
@@ -22,7 +22,7 @@ export default meta;
 
 type Story = StoryObj;
 
-const noop = () => undefined;
+const onDemoAction = fn().mockName('pipeline.action');
 
 // ---------------------------------------------------------------------------
 //  Demo data — invented accounts, invented amounts, all pre-formatted.
@@ -109,8 +109,8 @@ function renderStage(stage: PipelineStage) {
       owner={deal.owner}
       health={deal.health}
       stalledFor={deal.stalledFor}
-      onPress={noop}
-      onMove={noop}
+      onPress={onDemoAction}
+      onMove={onDemoAction}
       testID={`deal-${deal.id}`}
     />
   ));
@@ -131,24 +131,6 @@ function Caption({ children }: { children: string }) {
     <Text variant="caption-1-medium" style={{ color: theme.colors.textSecondary }}>
       {children}
     </Text>
-  );
-}
-
-function BothModes({ children }: { children: React.ReactNode }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
-  return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-      <BloomThemeProvider mode="light" colorPreset={preset}>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 520 }}>
-          <Page>{children}</Page>
-        </View>
-      </BloomThemeProvider>
-      <BloomThemeProvider mode="dark" colorPreset={preset}>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 520 }}>
-          <Page>{children}</Page>
-        </View>
-      </BloomThemeProvider>
-    </View>
   );
 }
 
@@ -214,7 +196,7 @@ export const Columns: Story = {
           count={12}
           total="€318,500"
           width={288}
-          onLoadMore={noop}
+          onLoadMore={onDemoAction}
           testID="col-more"
         >
           {renderStage(STAGES[2] as PipelineStage)}
@@ -238,13 +220,16 @@ export const Cards: Story = {
             closeDate="Closes 30 Sep"
             owner={{ name: 'Marta Oyeleye' }}
             health="on-track"
-            onPress={noop}
-            onMove={noop}
+            onPress={onDemoAction}
+            onMove={onDemoAction}
             actions={
-              <GlyphButton
+              <Button
+                appearance="plain"
+                tone="neutral"
+                iconOnly
                 icon={RiMore2Line}
                 size={32}
-                onPress={noop}
+                onPress={onDemoAction}
                 accessibilityLabel="More actions for Fleet telematics rollout"
               />
             }
@@ -261,8 +246,8 @@ export const Cards: Story = {
             health="stalled"
             stalledFor="23 days"
             stage="Proposal"
-            onPress={noop}
-            onMove={noop}
+            onPress={onDemoAction}
+            onMove={onDemoAction}
             testID="card-stalled"
           />
         </View>
@@ -274,7 +259,7 @@ export const Cards: Story = {
             closeDate="Closes 18 October 2027"
             owner={{ name: 'Wilhelmina Featherstonehaugh' }}
             health="at-risk"
-            onPress={noop}
+            onPress={onDemoAction}
             testID="card-long"
           />
         </View>
@@ -287,18 +272,5 @@ export const Cards: Story = {
         </View>
       </View>
     </Page>
-  ),
-};
-
-export const BothThemes: Story = {
-  render: () => (
-    <BothModes>
-      <PipelineBoard
-        stages={STAGES.slice(0, 3)}
-        renderStage={renderStage}
-        layout="single"
-        accessibilityLabel="Sales pipeline"
-      />
-    </BothModes>
   ),
 };

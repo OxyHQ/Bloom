@@ -5,7 +5,7 @@
  * read the emitted DOM: names, pressed/checked state, geometry and paint.
  */
 import { materialFill } from './support/material-fill';
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -266,9 +266,11 @@ describe('MapListingPreview', () => {
     const fav = byTestId('p-favorite');
     expect(fav.getAttribute('aria-label')).toBe('Save');
     expect(fav.getAttribute('aria-pressed')).toBe('false');
-    expect(getComputedStyle(fav).width).toBe('24px');
+    expect(getComputedStyle(fav).width).toBe('36px');
+    expect(onPress).not.toHaveBeenCalled();
     act(() => fav.click());
     expect(onFavoriteChange).toHaveBeenCalledWith(true);
+    expect(onPress).not.toHaveBeenCalled();
 
     expect(byTestId('p-close').getAttribute('aria-label')).toBe('Close');
     act(() => byTestId('p-close').click());

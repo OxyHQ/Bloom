@@ -36,12 +36,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { RiCheckboxCircleFill } from '../icons/remix/RiCheckboxCircleFill';
 import { PageHeader } from '../page-header/PageHeader';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { Button } from '../button';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import {
   SettingsHeaderPresentationContext,
   SettingsPageActionsContext,
-  type SettingsHeaderPresentation,
   type SettingsPageActionsState,
 } from './page-actions';
 import { Backdrop, OverlayRoot } from '../overlay';
@@ -1582,9 +1581,9 @@ export function createSettings(
             pageActions || onClose ? (
               <>
                 {pageActions && pageActions.actions.length > 0 ? (
-                  <ButtonGroup accessibilityLabel={pageActions.label}>
+                  <Button.Group accessibilityLabel={pageActions.label}>
                     {pageActions.actions.map((action) => (
-                      <ButtonGroupItem
+                      <Button
                         key={action.key}
                         iconOnly={action.icon !== undefined}
                         leadingIcon={action.icon}
@@ -1594,20 +1593,20 @@ export function createSettings(
                         testID={testID ? `${testID}-action-${action.key}` : undefined}
                       >
                         {action.icon === undefined ? action.label : undefined}
-                      </ButtonGroupItem>
+                      </Button>
                     ))}
-                  </ButtonGroup>
+                  </Button.Group>
                 ) : null}
                 {onClose ? (
-                  <ButtonGroup accessibilityLabel={closeLabel}>
-                    <ButtonGroupItem
+                  <Button.Group accessibilityLabel={closeLabel}>
+                    <Button
                       iconOnly
                       leadingIcon={RiCloseLine}
                       accessibilityLabel={closeLabel}
                       onPress={onClose}
                       testID={testID ? `${testID}-close` : undefined}
                     />
-                  </ButtonGroup>
+                  </Button.Group>
                 ) : null}
               </>
             ) : undefined

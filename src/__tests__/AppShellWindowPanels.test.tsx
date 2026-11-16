@@ -151,10 +151,10 @@ describe('a split panel layout with nothing else at the corner', () => {
     setWidth(1440);
     const screen = shell(fakeWindow().adapter, { panelLayout: SPLIT });
     // The panel starts at the frame's 16 inset, so 72 of the 88 are its own;
-    // the room holds the gap after the controls, so it replaces the 24 inset.
+    // the room holds the gap after the controls, so it replaces the 12 inset.
     expect(style(screen, 'inbox-bar-bar')).toMatchObject({
       paddingInlineStart: 72,
-      paddingInlineEnd: 24,
+      paddingInlineEnd: 12,
     });
     expect(style(screen, 'inbox-bar-bar').paddingLeft).toBeUndefined();
     expect(moves(screen, 'inbox')).toBe(true);
@@ -166,7 +166,7 @@ describe('a split panel layout with nothing else at the corner', () => {
     setWidth(1440);
     const screen = shell(fakeWindow().adapter, { panelLayout: SPLIT });
     expect(moves(screen, 'detail')).toBe(true);
-    expect(barStart(screen, 'detail')).toBe(24);
+    expect(barStart(screen, 'detail')).toBe(12);
   });
 
   it("the panes start at the window's top edge; the other frame insets stay", () => {
@@ -247,7 +247,7 @@ describe('a split panel layout with nothing else at the corner', () => {
   it('`overlay`: the panels keep no room and move nothing; the controls float on a plate', () => {
     setWidth(1440);
     const screen = shell(fakeWindow().adapter, { panelLayout: SPLIT, windowControls: 'overlay' });
-    expect(barStart(screen, 'inbox')).toBe(24);
+    expect(barStart(screen, 'inbox')).toBe(12);
     expect(moves(screen, 'inbox')).toBe(false);
     expect(screen.getByTestId('shell-window-controls')).toBeTruthy();
   });
@@ -262,7 +262,7 @@ describe('full screen', () => {
     // Full screen is laid out as without windows: the frame and the bars as before.
     expect(style(screen, 'shell')).toMatchObject({ padding: 16 });
     expect(style(screen, 'inbox-bar-bar').minHeight).toBeUndefined();
-    expect(barStart(screen, 'inbox')).toBe(24);
+    expect(barStart(screen, 'inbox')).toBe(12);
     expect(moves(screen, 'inbox')).toBe(false);
     expect(moves(screen, 'detail')).toBe(false);
     // Not the chrome, the slot lets presses through to the content as before.
@@ -294,8 +294,8 @@ describe('other panel shapes', () => {
       },
     });
     expect(barStart(screen, 'one')).toBe(72);
-    expect(barStart(screen, 'two')).toBe(24);
-    expect(barStart(screen, 'three')).toBe(24);
+    expect(barStart(screen, 'two')).toBe(12);
+    expect(barStart(screen, 'three')).toBe(12);
     expect(['one', 'two', 'three'].map((id) => moves(screen, id))).toEqual([true, true, true]);
   });
 
@@ -319,7 +319,7 @@ describe('other panel shapes', () => {
     });
     expect(barStart(screen, 'inbox')).toBe(72);
     expect(moves(screen, 'inbox')).toBe(true);
-    expect(barStart(screen, 'detail')).toBe(24);
+    expect(barStart(screen, 'detail')).toBe(12);
     expect(moves(screen, 'detail')).toBe(false);
     // Only the top pane touches the window's top: its toolbar and corners are
     // the window's; the one below keeps its own bar and corners.
@@ -337,7 +337,7 @@ describe('other panel shapes', () => {
     });
     expect(barStart(screen, 'inbox')).toBe(72);
     expect(moves(screen, 'inbox')).toBe(true);
-    expect(barStart(screen, 'detail')).toBe(24);
+    expect(barStart(screen, 'detail')).toBe(12);
     expect(moves(screen, 'detail')).toBe(true);
   });
 
@@ -352,7 +352,7 @@ describe('other panel shapes', () => {
     expect(style(screen, 'workspace-bar-bar').paddingInlineStart).toBe(72);
     expect(moves(screen, 'shell-panels-workspace')).toBe(true);
     expect(moves(screen, 'inbox')).toBe(false);
-    expect(barStart(screen, 'inbox')).toBe(24);
+    expect(barStart(screen, 'inbox')).toBe(12);
   });
 
   it('a panel with no Screen of its own reads the room for its own toolbar', () => {
@@ -400,8 +400,8 @@ describe('panes beside a sidebar flush to the window', () => {
     expect(screen.getByTestId('sidebar-window-band')).toBeTruthy();
     expect(moves(screen, 'inbox')).toBe(true);
     expect(moves(screen, 'detail')).toBe(true);
-    expect(barStart(screen, 'inbox')).toBe(24);
-    expect(barStart(screen, 'detail')).toBe(24);
+    expect(barStart(screen, 'inbox')).toBe(12);
+    expect(barStart(screen, 'detail')).toBe(12);
   });
 
   it("every pane's title row is the window's toolbar, centred on the controls", () => {
@@ -440,7 +440,7 @@ describe('panes beside a sidebar flush to the window', () => {
     });
     // The content's edge is at the frame's 7 start inset: 81 of the 88 are its own.
     expect(barStart(screen, 'inbox')).toBe(81);
-    expect(barStart(screen, 'detail')).toBe(24);
+    expect(barStart(screen, 'detail')).toBe(12);
     expect(moves(screen, 'inbox')).toBe(true);
     // The panes take whatever room the row leaves them, as flex: the sidebar's
     // too while its dock hides it (its slot closes natively beside them).
@@ -466,7 +466,7 @@ describe('panes beside a sidebar flush to the window', () => {
       sidebar: { ...FLUSH, surface: 'card' },
     });
     expect(moves(card, 'inbox')).toBe(false);
-    expect(barStart(card, 'inbox')).toBe(24);
+    expect(barStart(card, 'inbox')).toBe(12);
   });
 
   it('full screen: no controls, no room, no drag', () => {
@@ -485,7 +485,7 @@ describe('the corner has one owner', () => {
     setWidth(1440);
     const screen = shell(fakeWindow().adapter, { panelLayout: SPLIT, sidebar: { items: NAV } });
     expect(screen.getByTestId('sidebar-window-band')).toBeTruthy();
-    expect(barStart(screen, 'inbox')).toBe(24);
+    expect(barStart(screen, 'inbox')).toBe(12);
     expect(moves(screen, 'inbox')).toBe(false);
     expect(moves(screen, 'detail')).toBe(false);
   });
@@ -495,7 +495,7 @@ describe('the corner has one owner', () => {
     const screen = shell(fakeWindow().adapter, { panelLayout: SPLIT, title: 'Mail' });
     expect(screen.getByTestId('shell-header-drag')).toBeTruthy();
     expect(moves(screen, 'inbox')).toBe(false);
-    expect(barStart(screen, 'inbox')).toBe(24);
+    expect(barStart(screen, 'inbox')).toBe(12);
   });
 
   it("panels inside a panel's Screen are below its header: they keep nothing", () => {
@@ -525,7 +525,7 @@ describe('the corner has one owner', () => {
     });
     expect(screen.getAllByLabelText('Close')).toHaveLength(1);
     expect(barStart(screen, 'outer')).toBe(72);
-    expect(barStart(screen, 'nested')).toBe(24);
+    expect(barStart(screen, 'nested')).toBe(12);
     expect(moves(screen, 'nested')).toBe(false);
   });
 
@@ -539,7 +539,7 @@ describe('the corner has one owner', () => {
     );
     expect(screen.getAllByLabelText('Close')).toHaveLength(1);
     expect(screen.queryByTestId('inner-window-controls')).toBeNull();
-    expect(barStart(screen, 'inbox')).toBe(24);
+    expect(barStart(screen, 'inbox')).toBe(12);
     expect(moves(screen, 'inbox')).toBe(false);
   });
 });
@@ -577,7 +577,7 @@ describe('a Screen that is the window', () => {
     );
     expect(screen.getAllByLabelText('Close')).toHaveLength(1);
     expect(screen.queryByTestId('inner-window-controls')).toBeNull();
-    expect(barStart(screen, 'inner')).toBe(24);
+    expect(barStart(screen, 'inner')).toBe(12);
     expect(moves(screen, 'inner')).toBe(false);
   });
 
@@ -597,7 +597,7 @@ describe('a Screen that is the window', () => {
     const { window, adapter } = fakeWindow({ state: { fullscreen: true } });
     const screen = mount(adapter, app());
     expect(screen.queryByTestId('root-window-controls')).toBeNull();
-    expect(barStart(screen, 'root')).toBe(24);
+    expect(barStart(screen, 'root')).toBe(12);
     expect(moves(screen, 'root')).toBe(false);
     act(() => window.set({ fullscreen: false }));
     expect(barStart(screen, 'root')).toBe(88);
@@ -613,11 +613,11 @@ describe('a Screen that is the window', () => {
         header={<PageHeader title="Notes" titleAlign="center" testID="root-bar" />}
       />,
     );
-    // The centre slot clears the room (88 − the 24 side inset) + the row gap on
+    // The centre slot clears the room (88 − the 12 side inset) + the row gap on
     // both sides: spacers of that clearance, flex, around the title.
     for (const side of ['before', 'after'])
       expect(style(screen, `root-bar-center-${side}`)).toMatchObject({
-        width: 72,
+        width: 84,
         flexShrink: 1,
       });
   });
@@ -629,7 +629,7 @@ describe('right to left', () => {
     setWidth(1440);
     const screen = shell(fakeWindow().adapter, { panelLayout: SPLIT });
     const bar = style(screen, 'inbox-bar-bar');
-    expect(bar).toMatchObject({ paddingInlineStart: 72, paddingInlineEnd: 24 });
+    expect(bar).toMatchObject({ paddingInlineStart: 72, paddingInlineEnd: 12 });
     expect(bar.paddingLeft).toBeUndefined();
     expect(bar.paddingRight).toBeUndefined();
     expect(style(screen, 'shell-window-controls')).toMatchObject({ insetInlineStart: 14 });

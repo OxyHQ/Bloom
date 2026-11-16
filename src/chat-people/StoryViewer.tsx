@@ -1,7 +1,11 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
+import { Button } from '../button';
+import { PageHeader } from '../page-header';
+import { ScrollArea } from '../layout/ScrollArea';
+import type { ButtonIconComponent } from '../button/types';
 import { Avatar } from '../avatar/Avatar';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiMore2Line } from '../icons/remix/RiMore2Line';
@@ -130,30 +134,22 @@ function StoryViewerComponent({
   const iconButton = (
     key: string,
     label: string,
-    glyph: React.ReactNode,
+    icon: ButtonIconComponent,
     onPress?: () => void,
     pressed?: boolean,
   ) =>
     onPress === undefined ? null : (
-      <Pressable
+      <Button
+        tone="neutral"
+        appearance="outline"
         key={key}
-        role="button"
+        iconOnly
+        leadingIcon={icon}
         accessibilityLabel={label}
-        aria-pressed={pressed}
-        accessibilityState={pressed === undefined ? undefined : { selected: pressed }}
+        pressed={pressed}
         onPress={onPress}
-        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        style={{
-          width: 32,
-          height: 32,
-          borderRadius: 16,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
         testID={testID ? `${testID}-${key}` : undefined}
-      >
-        {glyph}
-      </Pressable>
+      />
     );
 
   return (
@@ -161,7 +157,7 @@ function StoryViewerComponent({
       style={[
         {
           flex: 1,
-          minHeight: 480,
+          minHeight: 0,
           height,
           backgroundColor: paint.stage,
           borderRadius: 20,
@@ -177,7 +173,6 @@ function StoryViewerComponent({
         </View>
       )}
 
-      <StoryScrim color={paint.stage} edge="top" height={132} opacity={0.72} />
       <StoryScrim color={paint.stage} edge="bottom" height={176} opacity={0.7} />
 
       {/* Tap zones sit UNDER the chrome, so a press on the close button is not
@@ -203,69 +198,61 @@ function StoryViewerComponent({
         </View>
       </View>
 
-      <View
-        style={{ paddingTop: 12, paddingRight: 12, paddingLeft: 12, gap: 10 }}
-        pointerEvents="box-none"
-      >
-        <StoryProgressBars
-          count={stories.length}
-          index={index}
-          progress={progress}
-          duration={storyDuration}
-          paused={paused}
-          onComplete={onNext}
-          accessibilityLabel={l.progress(index, stories.length)}
-          testID={testID ? `${testID}-progress` : undefined}
-        />
-
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Avatar source={avatar} variant={avatarVariant} name={name} size={32} />
-          <View
-            style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 6 }}
+      <PageHeader
+        onBack={null}
+        sticky={false}
+        safeArea={false}
+        tone="onImage"
+        scrim="always"
+        overline={
+          <StoryProgressBars
+            count={stories.length}
+            index={index}
+            progress={progress}
+            duration={storyDuration}
+            paused={paused}
+            onComplete={onNext}
+            accessibilityLabel={l.progress(index, stories.length)}
+            testID={testID ? `${testID}-progress` : undefined}
+          />
+        }
+        title={
+          <Text
+            variant="body-semibold"
+            numberOfLines={1}
+            style={{ color: paint.onStage }}
+            testID={testID ? `${testID}-name` : undefined}
           >
-            <Text
-              variant="body-semibold"
-              numberOfLines={1}
-              style={{ color: paint.onStage, flexShrink: 1 }}
-              testID={testID ? `${testID}-name` : undefined}
-            >
-              {name}
-            </Text>
-            <Text variant="caption-1-regular" style={{ color: paint.onStageMuted }}>
-              {time}
-            </Text>
-          </View>
-          {iconButton(
-            'mute',
-            muted ? l.unmute : l.mute,
-            muted ? (
-              <RiVolumeMuteLine width={18} height={18} fill={paint.onStage} />
-            ) : (
-              <RiVolumeUpLine width={18} height={18} fill={paint.onStage} />
-            ),
-            onMutedChange === undefined ? undefined : () => onMutedChange(!muted),
-            muted,
-          )}
-          {iconButton(
-            'more',
-            l.more,
-            <RiMore2Line width={18} height={18} fill={paint.onStage} />,
-            onMore,
-          )}
-          {iconButton(
-            'close',
-            l.close,
-            <RiCloseLine width={20} height={20} fill={paint.onStage} />,
-            onClose,
-          )}
-        </View>
-      </View>
+            {name}
+          </Text>
+        }
+        subtitle={time}
+        titleVisual={<Avatar source={avatar} variant={avatarVariant} name={name} size={32} />}
+        actions={
+          onMutedChange || onMore || onClose ? (
+            <Button.Group>
+              {iconButton(
+                'mute',
+                muted ? l.unmute : l.mute,
+                muted ? RiVolumeMuteLine : RiVolumeUpLine,
+                onMutedChange === undefined ? undefined : () => onMutedChange(!muted),
+                muted,
+              )}
+              {iconButton('more', l.more, RiMore2Line, onMore)}
+              {iconButton('close', l.close, RiCloseLine, onClose)}
+            </Button.Group>
+          ) : undefined
+        }
+        testID={testID ? `${testID}-header` : undefined}
+      />
 
-      <View style={{ flex: 1 }} pointerEvents="box-none" />
+      <View style={{ flex: 1, minHeight: 0 }} pointerEvents="box-none" />
 
-      <View
-        style={{ gap: 10, paddingRight: 12, paddingBottom: 14, paddingLeft: 12 }}
-        pointerEvents="box-none"
+      <ScrollArea
+        style={{ flexGrow: 0, flexShrink: 1, minHeight: 0 }}
+        contentContainerStyle={{ gap: 10, paddingRight: 12, paddingBottom: 14, paddingLeft: 12 }}
+        keyboardShouldPersistTaps="handled"
+        testID={testID ? `${testID}-composer-scroll` : undefined}
       >
         {reactions === undefined || reactions.length === 0 ? null : (
           <View
@@ -273,25 +260,18 @@ function StoryViewerComponent({
             testID={testID ? `${testID}-reactions` : undefined}
           >
             {reactions.map((emoji) => (
-              <Pressable
+              <Button
+                tone="neutral"
+                appearance="outline"
                 key={emoji}
-                role="button"
+                iconOnly
                 accessibilityLabel={l.react(emoji)}
                 onPress={onReact === undefined ? undefined : () => onReact(emoji)}
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 20,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: paint.stageControl,
-                }}
+                disabled={onReact === undefined}
                 testID={testID ? `${testID}-react-${emoji}` : undefined}
               >
-                <Text variant="title-3-regular" style={{ color: paint.onStage }}>
-                  {emoji}
-                </Text>
-              </Pressable>
+                {emoji}
+              </Button>
             ))}
           </View>
         )}
@@ -309,26 +289,19 @@ function StoryViewerComponent({
                 testID={testID ? `${testID}-reply` : undefined}
               />
             </View>
-            <Pressable
-              role="button"
+            <Button
+              tone="neutral"
+              appearance="outline"
+              iconOnly
+              leadingIcon={RiSendPlaneLine}
               accessibilityLabel={l.send}
               onPress={onReplySend}
               disabled={onReplySend === undefined}
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: paint.stageControl,
-              }}
               testID={testID ? `${testID}-send` : undefined}
-            >
-              <RiSendPlaneLine width={18} height={18} fill={paint.onStage} />
-            </Pressable>
+            />
           </View>
         )}
-      </View>
+      </ScrollArea>
     </View>
   );
 }

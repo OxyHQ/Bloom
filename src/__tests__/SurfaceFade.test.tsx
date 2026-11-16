@@ -7,9 +7,9 @@ import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { resolvedStyle } from './support/rendered-style';
 
-function fadeIn(ui: React.ReactElement, fill = '#123456') {
+function fadeIn(ui: React.ReactElement, fill = '#123456', reduceTransparency = false) {
   const screen = render(
-    <BloomThemeProvider fonts={false}>
+    <BloomThemeProvider fonts={false} reduceTransparency={reduceTransparency}>
       <SurfaceLevelProvider level={1} fill={fill}>
         {ui}
       </SurfaceLevelProvider>
@@ -70,4 +70,16 @@ it('is decoration: out of the hit test and the accessibility tree', () => {
   const node = screen.getByTestId('fade', { includeHiddenElements: true });
   expect(node.props.pointerEvents).toBe('none');
   expect(node.props['aria-hidden']).toBe(true);
+});
+
+// ModelPicker delegates its overflow edge here instead of drawing backdrop
+// blurs. Reduced transparency must retain the edge without introducing filters.
+it('retains its surface-coloured edge without backdrop filters under reduced transparency', () => {
+  const normal = fadeIn(<SurfaceFade testID="fade" />, '#123456', false);
+  const reduced = fadeIn(<SurfaceFade testID="fade" />, '#123456', true);
+  expect(reduced.experimental_backgroundImage).toBe(normal.experimental_backgroundImage);
+  for (const style of [normal, reduced]) {
+    expect(style.backdropFilter).toBeUndefined();
+    expect(style.WebkitBackdropFilter).toBeUndefined();
+  }
 });

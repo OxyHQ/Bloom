@@ -1,221 +1,35 @@
 ---
 title: Chat List
-description: The conversations screen — rows with previews and unread state, folders, stories, search and the swipe actions behind each row.
+description: Conversation content, folders, stories and search composed with the shared List.
 order: 64
 ---
 
-# Chat List
+# Chat lists
+
+Conversations use `List` / `ListItem` from `@oxy.so/bloom/list`.
 
 ```tsx
-import {
-  ArchivedRow,
-  ChatFolderTabs,
-  ChatList,
-  ChatListItem,
-  ChatListItemSkeleton,
-  ChatSearchField,
-  ChatSearchResults,
-  GroupAvatar,
-  HighlightedText,
-  NewChatButton,
-  StoriesRow,
-} from '@oxy.so/bloom/chat-list';
-```
-
-Everything a messaging app's first screen needs. It builds on
-[`chat-indicators`](./chat-indicators.mdx) — the presence dot, the delivery
-ticks, the unread badge, the typing dots and the story ring are all from there,
-and nothing is reimplemented here.
-
-Every string is a PROP. No component in this family reads the clock, formats a
-duration, pluralises a count or decides what "recently" means: `time` arrives as
-`"12:41"` or `"Yesterday"`, an attachment arrives as `"Voice message 0:12"`, and
-a typing line arrives as `"Ana is typing…"`. The app owns the locale.
-
-## `ChatListItem`
-
-```tsx
-<ChatListItem
-  name="Mirela Antunes"
-  avatar="https://…/mirela.jpg"
-  status="online"
-  verified
-  time="12:41"
-  preview={{ sender: 'You', text: 'Sent the floor plan over' }}
-  outgoingStatus="read"
-  onPress={() => router.push('/chats/mirela')}
+<ListItem
+  conversation={{name:'Ana',preview:{text:'See you soon'},time:'12:41',unreadCount:3}}
+  active={open}
+  checked={checked}
+  onCheckedChange={setChecked}
+  onPress={openConversation}
+  actions={commands}
+  swipeActions={swipeCommands}
 />
 ```
 
-Two densities:
+Conversation display data preserves typing, drafts, sender prefixes, attachment
+glyphs, delivery status, pin/mute markers, unread counts, presence and grouped
+avatars. Localized glyph descriptions are included in the composed accessible
+name. Typing replaces the preview, draft takes precedence over attachment glyphs,
+and unread state takes precedence over outgoing ticks.
 
-| `density` | height | avatar | padding | name / preview |
-| --- | --- | --- | --- | --- |
-| `comfortable` (default) | 72 | 48 | 16 | `headline` / `body` |
-| `compact` | 56 | 36 | 12 | `body` / `body-2` |
-
-`comfortable` is the phone conversations screen; `compact` is the narrow pane of
-a desktop split view and the search results. A one-line row (no `preview`) keeps
-the same height, so a list never develops a ragged rhythm.
-
-### The preview line
-
-Exactly one shape wins, in this order:
-
-```tsx
-<ChatListItem preview={{ draft: true, text: 'about the deposit — can we' }} />
-<ChatListItem preview={{ attachment: { kind: 'voice', label: 'Voice message 0:12' } }} />
-<ChatListItem preview={{ sender: 'You', text: 'on my way' }} />
-<ChatListItem preview={{ sender: 'Pau', text: 'Meeting at the car park at seven' }} />
-```
-
-- **A draft** turns the line into an italic `Draft:` in the negative colour
-  followed by what was typed. It beats everything, including an attachment —
-  a half-written reply is the thing you came back for.
-- **An attachment** draws its glyph beside the label. The glyph comes from
-  `kind` (`photo`, `video`, `voice`, `audio`, `file`, `sticker`, `gif`,
-  `location`, `contact`, `poll`); the WORDS come from `label`, always, because
-  "Photo" is a translation and a duration is a format.
-- **A sender prefix** (`sender`) is the muted `"You: "` or a member's name in a
-  group, and is dropped on a draft (two lead-ins compete).
-
-`typingLabel` replaces the whole line with bouncing dots and that text:
-
-```tsx
-<ChatListItem name="Inés Bordoy" typingLabel="typing…" unreadCount={3} />
-```
-
-### The right column
-
-The time sits over the states: the mute bell, the pin, then EITHER the unread
-badge OR the delivery ticks of your own last message.
-
-**Those two are mutually exclusive, and the badge wins.** If their message is
-the last one in the conversation, yours is not in this row and has no status to
-report — so `unreadCount={3}` with `outgoingStatus="read"` draws the badge and
-no ticks. `unreadDot` counts as unread for the same rule. The time turns accent
-while there is something unread, except on a muted chat.
-
-### Groups
-
-```tsx
-<ChatListItem
-  name="Tramuntana Hikers"
-  kind="group"
-  faces={[{ source: a, name: 'Nuria' }, { source: b, name: 'Pau' }, { name: 'Ivet' }]}
-/>
-```
-
-`faces` draws a `GroupAvatar` cluster instead of one avatar. A group has no
-presence dot: "online" is a property of a person, and a dot on a cluster of four
-claims it about whichever face it lands on.
-
-`kind` also picks the marker beside the name — `channel` a megaphone, `bot` a
-robot, `group` a pair of figures — and `verified` beats all three. Pass `marker`
-for your own node.
-
-### Actions
-
-```tsx
-const actions = {
-  left: [{ key: 'read', label: 'Read', icon: RiCheckDoubleLine, tone: 'accent' }],
-  right: [
-    { key: 'mute', label: 'Mute', icon: RiNotificationOffLine },
-    { key: 'archive', label: 'Archive', icon: RiArchiveLine, tone: 'accent' },
-    { key: 'delete', label: 'Delete', icon: RiDeleteBinLine, tone: 'negative' },
-  ],
-};
-
-<ChatListItem name="Ana" swipeActions={actions} onAction={(key) => run(key)} />
-```
-
-One list, two affordances:
-
-- **Touch** — dragging right uncovers `left`, dragging left uncovers `right`. The
-  row travels with the finger and snaps open past 40% of the pane, closed below;
-  while a pane is open, pressing the row closes it rather than opening the chat.
-  The gesture fails on vertical travel, so a list scroll never becomes a swipe.
-  It is `SwipeRow`, the library's one drag implementation — see
-  [Swipe Row](/docs/swipe-row).
-- **A mouse** — the same actions appear as icon buttons over the right column on
-  hover and on keyboard focus, because a drag is undiscoverable with a pointer.
-  They are hidden entirely under `@media (hover: none)`.
-
-`swipeEnabled` defaults to `useSwipeAvailable()` — every touch pointer on any
-platform, which includes a web build running on a phone. Set it to `false` to
-keep the hover buttons and drop the gesture, or to `true` to force it.
-
-A swipe is not reachable by keyboard or by a screen reader. On web the hover
-buttons are that second path (they appear on `:focus-within` and are in the tab
-order); on native this family offers none, and a host that needs one should give
-the row a long-press menu of the same actions.
-
-`tone` paints the pane: `accent`, `negative` (delete), or the default neutral.
-
-### Accessibility
-
-The row is ONE target with ONE name, and its content is hidden from assistive
-technology. A pin, a bell, a badge and a pair of ticks are four states no text on
-the row carries, so the name says all of them:
-
-> Ana Ferrer, Verified, Draft: see you at eight, 12:41, 3 unread messages, Muted, Pinned
-
-The words this family supplies — and every other fixed string in it (headings,
-empty states, the search field's and stories row's names) — are localised via
-`BloomProvider locale`. Pass `accessibilityLabel` to replace the name whole, or
-`labels` to reword just those words (`draft`, `pinned`, `muted`, `verified`,
-`channel`, `bot`, `group`).
-
-With `href` the row is a `link`; with `onPress` alone it is a `button`; with
-neither it is not a control at all. `selected` is `aria-current` on web and
-`accessibilityState.selected` on native.
-
-### The pressed fill (native)
-
-On native a pressed row is painted by the row's covering link from
-**Pressable's own `pressed`** (a style function), never from a copy the row
-keeps in its own state. That copy, set by `onPressIn` and cleared by
-`onPressOut`, stuck on Allo's Android release: tap a row that pushes a screen,
-come back, and the row was still painted pressed, because Pressability delays a
-short tap's press-out on a timer that a reset or remount of the Pressable
-cancels, and the mirror never heard it. `ChatListItem`, `ArchivedRow`, the
-`ChatSearchResults` rows and the hover buttons all read the press from the
-Pressable; a `selected` row keeps its selected fill and gains no pressed one.
-On web the adopted sheet paints hover and press. Gate:
-`ListRowPressedNative.test.tsx` (the same contract holds `mail-list`).
-
-## `ChatList`
-
-```tsx
-<ChatList
-  sections={[
-    { key: 'pinned', title: 'Pinned', chats: pinned },
-    { key: 'all', title: 'All', chats: all },
-  ]}
-  selectedId={openChatId}
-  onChatPress={openChat}
-  onChatAction={(key, id) => run(key, id)}
-  archived={{ count: 6, onPress: openArchive }}
-  header={<ScreenHeader />}
-/>
-```
-
-`chats` is the shorthand for one unlabelled section. `archived` pins the archive
-row above the first section — it is a destination, not a conversation, so it
-never sorts in among them.
-
-`header` and `footer` are where the search field, the stories row and the folder
-tabs go; putting them inside the list is what makes the whole screen scroll as
-one.
-
-It MAPS every chat, which is right for the few hundred a phone shows. For a
-longer list render `ChatListItem` yourself inside a virtualised list — every row
-prop is on `ChatSummary` and `ChatList` holds no list state of its own.
-
-`loading` draws `ChatListItemSkeleton` rows at the same geometry and marks the
-region `aria-busy`, so "loading" is announced once rather than eight times.
-`empty` replaces the built-in empty state; `labels.emptyTitle` /
-`labels.emptyDescription` just reword it.
+The `@oxy.so/bloom/chat-list` entry exports folders, story rings, highlighted search matches and the new-chat action as
+composable controls. Search results also render through the shared list.
+See [List](./list.mdx) for selection, menus, swipe bubbles, archive entries,
+attachment rails, loading and the native pressed-state regression protection.
 
 ## `ChatFolderTabs`
 
@@ -328,23 +142,11 @@ The match is marked with COLOUR, not a band: inside a one-line result a tinted
 background reads as a second badge beside the unread pill. Pass
 `highlightBackground` where the text has room.
 
-## `GroupAvatar`
+## Group identities
 
-```tsx
-<GroupAvatar size={48} faces={[{ source: a }, { source: b }, { name: 'Rut' }]} />
-```
-
-Two to four faces packed into one avatar-sized cluster: diagonal at 62% for two,
-one-above-two at 55% for three, a 2×2 rosette at 48% for four. A longer array is
-truncated; ONE face renders as a plain avatar at the full size, so a group that
-lost a member does not suddenly draw a lone disc in the corner.
-
-Every face carries a hairline ring in the surface colour, which is what makes the
-overlap read as two discs rather than one silhouette — pass `ringColor` when the
-cluster sits on a card rather than the page.
-
-It is decorative by default. Inside a `ChatListItem` the row's own name already
-says which group this is; pass `accessibilityLabel` when it stands alone.
+Use `AvatarGroup` from `@oxy.so/bloom/avatar-group` with `layout="conversation"`.
+Two faces form a diagonal, three a triangle and four a grid. `ListItem`'s
+conversation content uses that same component automatically for `faces`.
 
 ## `NewChatButton`
 

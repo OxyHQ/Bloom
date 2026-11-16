@@ -1,18 +1,23 @@
-import React, { useContext, useState } from 'react';
-import { Image, View } from 'react-native';
+import { AppShell } from '../app-shell';
+import { fn } from 'storybook/test';
+import type React from 'react';
+import { useState } from 'react';
+import { View } from 'react-native';
+import { BloomImage } from '../image';
+import { Button } from '../button';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { CallHistoryList } from './CallHistoryList';
+import { List } from '../list';
+import { PageHeader } from '../page-header';
 import { CallMinimisedPill } from './CallMinimisedPill';
 import { CallScreen } from './CallScreen';
 import { GroupCallBar } from './GroupCallBar';
 import { GroupCallGrid } from './GroupCallGrid';
 import { IncomingCallBanner } from './IncomingCallBanner';
 import { IncomingCallScreen } from './IncomingCallScreen';
-import type { CallHistorySection, CallPipCorner, GroupCallParticipant } from './types';
+import type { CallHistorySection, CallPipCorner, CallStatus, GroupCallParticipant } from './types';
 
 /**
  * Invented people, invented calls. Every avatar and every video frame is a
@@ -58,10 +63,10 @@ function group(count: number): GroupCallParticipant[] {
 
 function VideoFrame({ seed }: { seed: string }) {
   return (
-    <Image
+    <BloomImage
       source={{ uri: PHOTO(seed, 640, 640) }}
       style={{ width: '100%', height: '100%' }}
-      resizeMode="cover"
+      contentFit="cover"
     />
   );
 }
@@ -126,25 +131,6 @@ function Surface({ children, pad = 20 }: { children: React.ReactNode; pad?: numb
   );
 }
 
-/** Both modes side by side; the ambient preset is forwarded so the toolbar reaches them. */
-function BothModes({ children, min = 380 }: { children: React.ReactNode; min?: number }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
-  return (
-    <View style={{ width: '100%', flexDirection: 'row', flexWrap: 'wrap' }}>
-      <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: min }}>
-        <BloomThemeProvider mode="light" colorPreset={preset}>
-          <Surface>{children}</Surface>
-        </BloomThemeProvider>
-      </View>
-      <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: min }}>
-        <BloomThemeProvider mode="dark" colorPreset={preset}>
-          <Surface>{children}</Surface>
-        </BloomThemeProvider>
-      </View>
-    </View>
-  );
-}
-
 function Caption({ children }: { children: string }) {
   const theme = useTheme();
   return (
@@ -154,233 +140,145 @@ function Caption({ children }: { children: string }) {
   );
 }
 
-function Phone({ children }: { children: React.ReactNode }) {
+/** One call component adapts to its actual viewport; controls own local demo state. */
+function CallDemo({ mode, status = 'active' }: { mode: 'voice' | 'video'; status?: CallStatus }) {
+  const [muted, setMuted] = useState(false);
+  const [speaker, setSpeaker] = useState(true);
+  const [videoOn, setVideoOn] = useState(mode === 'video');
+  const [screenSharing, setScreenSharing] = useState(false);
+  const [minimised, setMinimised] = useState(false);
+  const [ended, setEnded] = useState(false);
+  const [participants, setParticipants] = useState(2);
+  const [camera, setCamera] = useState(false);
+  const [corner, setCorner] = useState<CallPipCorner>('top-right');
   return (
-    <View style={{ width: '100%', maxWidth: 390, height: 760, alignSelf: 'center' }}>
-      {children}
-    </View>
+    <AppShell variant="canvas" header={null}>
+      <CallScreen
+        mode={videoOn ? 'video' : 'voice'}
+        name="Ana Restrepo"
+        subtitle={`${participants} participants`}
+        avatar={PHOTO('ana', 400, 400)}
+        status={ended ? 'ended' : status}
+        duration="04:08"
+        encryption="End-to-end encrypted"
+        remoteVideo={videoOn ? <VideoFrame seed="remote" /> : undefined}
+        localVideo={videoOn ? <VideoFrame seed={camera ? 'local-back' : 'local'} /> : undefined}
+        localVideoCorner={corner}
+        onMoveLocal={setCorner}
+        minimised={minimised}
+        onMinimise={() => setMinimised(!minimised)}
+        participantCount={participants}
+        controls={{
+          muted,
+          onMutedChange: setMuted,
+          speaker,
+          onSpeakerChange: setSpeaker,
+          videoOn,
+          onVideoChange: setVideoOn,
+          screenSharing,
+          onScreenShareChange: setScreenSharing,
+          onFlipCamera: () => setCamera(!camera),
+          onAddParticipant: () => setParticipants(participants + 1),
+          onEndCall: () => setEnded(true),
+        }}
+        controlsSlot={
+          ended ? <Button onPress={() => setEnded(false)}>Restart demo call</Button> : undefined
+        }
+        testID={mode === 'video' ? 'video' : 'voice'}
+      />
+    </AppShell>
   );
 }
-
-// ---------------------------------------------------------------------------
-
-/** A voice call at phone width, mid-call: timer, encryption line, four controls. */
-export const VoiceCall: Story = {
-  render: function VoiceCallStory() {
-    const [muted, setMuted] = useState(false);
-    const [speaker, setSpeaker] = useState(true);
-    return (
-      <Phone>
-        <CallScreen
-          mode="voice"
-          name="Ana Restrepo"
-          subtitle="Mobile"
-          avatar={PHOTO('ana', 400, 400)}
-          status="active"
-          duration="00:42"
-          encryption="End-to-end encrypted"
-          onMinimise={() => undefined}
-          onOpenChat={() => undefined}
-          controls={{
-            muted,
-            onMutedChange: setMuted,
-            speaker,
-            onSpeakerChange: setSpeaker,
-            videoOn: false,
-            onVideoChange: () => undefined,
-            onAddParticipant: () => undefined,
-            onEndCall: () => undefined,
-          }}
-          testID="voice"
-        />
-      </Phone>
-    );
-  },
-};
-
-/** The same call on a desktop pane, with a caller-supplied artwork hue. */
-export const VoiceCallWide: Story = {
-  render: () => (
-    <View style={{ width: '100%', maxWidth: 1280, height: 720, alignSelf: 'center' }}>
-      <CallScreen
-        mode="voice"
-        name="Saturday planning"
-        subtitle="4 participants"
-        avatar={PHOTO('group', 400, 400)}
-        accentColor="rgb(214 86 120)"
-        status="reconnecting"
-        duration="02:11"
-        encryption="End-to-end encrypted"
-        onMinimise={() => undefined}
-        onOpenChat={() => undefined}
-        onOpenParticipants={() => undefined}
-        participantCount={4}
-        controls={{
-          muted: true,
-          onMutedChange: () => undefined,
-          speaker: false,
-          onSpeakerChange: () => undefined,
-          videoOn: false,
-          onVideoChange: () => undefined,
-          onScreenShareChange: () => undefined,
-          onAddParticipant: () => undefined,
-          onEndCall: () => undefined,
-        }}
-        testID="wide"
-      />
-    </View>
-  ),
-};
-
-/** A video call: the remote frame fills the stage, the PiP cycles corners on press. */
-export const VideoCall: Story = {
-  render: function VideoCallStory() {
-    const [corner, setCorner] = useState<CallPipCorner>('top-right');
-    const [videoOn, setVideoOn] = useState(true);
-    return (
-      <Phone>
-        <CallScreen
-          mode="video"
-          name="Nour Haddad"
-          status="active"
-          duration="04:08"
-          remoteVideo={<VideoFrame seed="remote" />}
-          localVideo={<VideoFrame seed="local" />}
-          localVideoCorner={corner}
-          onMoveLocal={setCorner}
-          onMinimise={() => undefined}
-          onOpenChat={() => undefined}
-          onOpenParticipants={() => undefined}
-          participantCount={2}
-          controls={{
-            muted: false,
-            onMutedChange: () => undefined,
-            videoOn,
-            onVideoChange: setVideoOn,
-            onFlipCamera: () => undefined,
-            onScreenShareChange: () => undefined,
-            onEndCall: () => undefined,
-          }}
-          testID="video"
-        />
-      </Phone>
-    );
-  },
-};
-
-/** The video call on a wide pane. */
-export const VideoCallWide: Story = {
-  render: () => (
-    <View style={{ width: '100%', maxWidth: 1280, height: 720, alignSelf: 'center' }}>
-      <CallScreen
-        mode="video"
-        name="Ito Nakamura"
-        status="active"
-        duration="12:55"
-        remoteVideo={<VideoFrame seed="remote-wide" />}
-        localVideo={<VideoFrame seed="local-wide" />}
-        localVideoCorner="bottom-right"
-        onMoveLocal={() => undefined}
-        onMinimise={() => undefined}
-        onOpenChat={() => undefined}
-        onOpenParticipants={() => undefined}
-        participantCount={2}
-        controls={{
-          muted: true,
-          onMutedChange: () => undefined,
-          videoOn: true,
-          onVideoChange: () => undefined,
-          onFlipCamera: () => undefined,
-          screenSharing: true,
-          onScreenShareChange: () => undefined,
-          onAddParticipant: () => undefined,
-          onEndCall: () => undefined,
-        }}
-        testID="video-wide"
-      />
-    </View>
-  ),
+export const VoiceCall: Story = { render: () => <CallDemo mode="voice" /> };
+export const VideoCall: Story = { render: () => <CallDemo mode="video" /> };
+export const Reconnecting: Story = {
+  render: () => <CallDemo mode="voice" status="reconnecting" />,
 };
 
 /** The minimised pill, in both modes — the app owns where it sits. */
 export const MinimisedPill: Story = {
   render: () => (
-    <BothModes min={340}>
+    <Surface>
       <Caption>a voice call, muted</Caption>
       <CallMinimisedPill
         name="Ana Restrepo"
         duration="00:42"
         muted
-        onMutedChange={() => undefined}
-        onExpand={() => undefined}
-        onEndCall={() => undefined}
+        onMutedChange={fn().mockName('onMutedChange')}
+        onExpand={fn().mockName('onExpand')}
+        onEndCall={fn().mockName('onEndCall')}
       />
       <Caption>a video call, reconnecting, no controls</Caption>
       <CallMinimisedPill
         name="Nour Haddad"
         mode="video"
         statusText="Reconnecting…"
-        onExpand={() => undefined}
+        onExpand={fn().mockName('onExpand')}
       />
-    </BothModes>
+    </Surface>
   ),
 };
 
 /** The in-app banner: an ordinary card, so it flips with the mode. */
 export const IncomingBanner: Story = {
   render: () => (
-    <BothModes min={360}>
+    <Surface>
       <Caption>video</Caption>
       <IncomingCallBanner
         name="Marcel Dubé"
         avatar={PHOTO('marcel')}
         mode="video"
         status="online"
-        onAccept={() => undefined}
-        onDecline={() => undefined}
-        onPress={() => undefined}
+        onAccept={fn().mockName('onAccept')}
+        onDecline={fn().mockName('onDecline')}
+        onPress={fn().mockName('onPress')}
       />
       <Caption>voice</Caption>
       <IncomingCallBanner
         name="Kofi Mensah"
         avatar={PHOTO('kofi')}
-        onAccept={() => undefined}
-        onDecline={() => undefined}
+        onAccept={fn().mockName('onAccept')}
+        onDecline={fn().mockName('onDecline')}
       />
-    </BothModes>
+    </Surface>
   ),
 };
 
-/** The full-screen incoming call, both answer modes. */
-export const IncomingScreens: Story = {
-  render: () => (
-    <View style={{ flexDirection: 'row', gap: 24, padding: 24, flexWrap: 'wrap' }}>
-      <View style={{ width: '100%', maxWidth: 390, height: 760 }}>
-        <IncomingCallScreen
-          name="Ana Restrepo"
-          avatar={PHOTO('ana', 400, 400)}
-          mode="video"
-          onAccept={() => undefined}
-          onDecline={() => undefined}
-          onMessage={() => undefined}
-          onRemind={() => undefined}
-          testID="incoming-buttons"
-        />
-      </View>
-      <View style={{ width: '100%', maxWidth: 390, height: 760 }}>
-        <IncomingCallScreen
-          name="Lucía Ferrer"
-          avatar={PHOTO('lucia', 400, 400)}
-          accentColor="rgb(96 132 214)"
-          answerMode="slide"
-          onAccept={() => undefined}
-          onDecline={() => undefined}
-          onMessage={() => undefined}
-          testID="incoming-slide"
-        />
-      </View>
-    </View>
-  ),
+/** Incoming calls use the viewport; controls choose the answer interaction. */
+export const IncomingScreens: StoryObj<{
+  answerMode: 'buttons' | 'slide';
+  mode: 'voice' | 'video';
+}> = {
+  args: { answerMode: 'buttons', mode: 'video' },
+  argTypes: {
+    answerMode: { control: 'inline-radio', options: ['buttons', 'slide'] },
+    mode: { control: 'inline-radio', options: ['voice', 'video'] },
+  },
+  render: function IncomingStory({ answerMode, mode }) {
+    const [result, setResult] = useState<string | null>(null);
+    return (
+      <AppShell variant="canvas" header={null}>
+        {result ? (
+          <Surface>
+            <Text>{result}</Text>
+            <Button onPress={() => setResult(null)}>Receive another call</Button>
+          </Surface>
+        ) : (
+          <IncomingCallScreen
+            name="Ana Restrepo"
+            avatar={PHOTO('ana', 400, 400)}
+            mode={mode}
+            answerMode={answerMode}
+            onAccept={() => setResult('Call accepted')}
+            onDecline={() => setResult('Call declined')}
+            onMessage={() => setResult('Reply to Ana')}
+            onRemind={() => setResult('Reminder set')}
+            testID="incoming"
+          />
+        )}
+      </AppShell>
+    );
+  },
 };
 
 /** 2, 4, 6 and 9 participants, one speaking in each. */
@@ -392,15 +290,14 @@ export const GroupGrids: Story = {
           <Caption>{`${count} participants`}</Caption>
           <GroupCallGrid
             participants={group(count)}
-            width={330}
-            onParticipantPress={() => undefined}
+            onParticipantPress={fn().mockName('onParticipantPress')}
             testID={`grid-${count}`}
           />
         </View>
       ))}
       <View style={{ width: '100%', maxWidth: 330, gap: 8 }}>
         <Caption>12 participants, 9-up (8 faces + overflow)</Caption>
-        <GroupCallGrid participants={group(12)} width={330} testID="grid-12" />
+        <GroupCallGrid participants={group(12)} testID="grid-12" />
       </View>
       <View style={{ width: '100%', maxWidth: 330, gap: 8 }}>
         <Caption>spotlight</Caption>
@@ -408,7 +305,6 @@ export const GroupGrids: Story = {
           participants={group(6)}
           layout="spotlight"
           spotlightId="marcel"
-          width={330}
           testID="grid-spotlight"
         />
       </View>
@@ -419,14 +315,14 @@ export const GroupGrids: Story = {
 /** The strip that says a call is happening, joined and not. */
 export const GroupBar: Story = {
   render: () => (
-    <BothModes min={380}>
+    <Surface>
       <Caption>not joined</Caption>
       <GroupCallBar
         title="Saturday planning"
         statusText="4 on the call"
         participants={PEOPLE.slice(0, 6)}
-        onJoin={() => undefined}
-        onPress={() => undefined}
+        onJoin={fn().mockName('onJoin')}
+        onPress={fn().mockName('onPress')}
       />
       <Caption>joined, someone speaking</Caption>
       <GroupCallBar
@@ -435,24 +331,31 @@ export const GroupBar: Story = {
         participants={PEOPLE.slice(0, 4)}
         joined
         muted
-        onMutedChange={() => undefined}
-        onLeave={() => undefined}
-        onPress={() => undefined}
+        onMutedChange={fn().mockName('onMutedChange')}
+        onLeave={fn().mockName('onLeave')}
+        onPress={fn().mockName('onPress')}
       />
-    </BothModes>
+    </Surface>
   ),
 };
 
 /** The call log, in day sections. */
 export const History: Story = {
   render: () => (
-    <BothModes min={380}>
-      <CallHistoryList
-        sections={HISTORY}
-        onItemPress={() => undefined}
-        onCallBack={() => undefined}
+    <Surface>
+      <PageHeader title="Calls" onBack={null} safeArea={false} sticky={false} />
+      <List
+        sections={HISTORY.map((section) => ({
+          id: section.id ?? section.title,
+          title: section.title,
+          items: section.items.map((item) => ({
+            id: item.id,
+            call: { ...item, onCallBack: fn().mockName('onCallBack') },
+            onPress: fn().mockName('onPress'),
+          })),
+        }))}
         testID="history"
       />
-    </BothModes>
+    </Surface>
   ),
 };

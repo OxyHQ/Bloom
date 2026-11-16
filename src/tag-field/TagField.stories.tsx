@@ -8,7 +8,6 @@ import type { PersonSummary } from '../chat-people';
 import { Field } from '../field';
 import { TextFieldInput } from '../text-field';
 import { Text } from '../typography';
-import { useTheme } from '../theme/use-theme';
 import { TagField } from './TagField';
 import type { TagSuggestion } from './types';
 
@@ -35,12 +34,19 @@ const VOCABULARY: TagSuggestion[] = [
 ];
 
 function Page({ children, width = 480 }: { children: React.ReactNode; width?: number }) {
-  const { colors } = useTheme();
   return (
-    <View style={{ backgroundColor: colors.background, padding: 24, minHeight: 420 }}>
+    <View style={{ padding: 24, minHeight: 420 }}>
       <View style={{ maxWidth: width, gap: 20 }}>{children}</View>
     </View>
   );
+}
+
+function EditableTags({
+  value: initial,
+  ...props
+}: Omit<React.ComponentProps<typeof TagField>, 'onChange'>) {
+  const [value, setValue] = useState(initial);
+  return <TagField {...props} value={value} onChange={setValue} />;
 }
 
 /** Type, comma or Enter to add; backspace on an empty caret removes the last. */
@@ -92,16 +98,11 @@ function Pair({ label, children }: { label: string; children: React.ReactNode })
 export const BesideItsNeighbours: Story = {
   render: function NeighboursStory() {
     const [tags, setTags] = useState<string[]>(['field notes', 'tide', 'autumn']);
+    const [people, setPeople] = useState(PICKED);
     return (
       <Page width={860}>
         <Pair label="Empty — the same rung, the same corner, the same fill">
-          <TagField
-            value={[]}
-            onChange={() => {}}
-            placeholder="Add a tag"
-            label="Tags"
-            testID="empty"
-          />
+          <EditableTags value={[]} placeholder="Add a tag" label="Tags" testID="empty" />
           <TextFieldInput label="Notebook" placeholder="Notebook" testID="plain" />
         </Pair>
         <Pair label="Filled">
@@ -116,16 +117,14 @@ export const BesideItsNeighbours: Story = {
           <TextFieldInput label="Notebook" defaultValue="Field notes" testID="plain-filled" />
         </Pair>
         <Pair label="The same chosen-thing pill, outside a field">
-          <SelectedChipsRow people={PICKED} layout="wrap" onRemove={() => undefined} />
+          <SelectedChipsRow
+            people={people}
+            layout="wrap"
+            onRemove={(id) => setPeople((all) => all.filter((person) => person.id !== id))}
+          />
         </Pair>
         <Pair label="Invalid">
-          <TagField
-            value={['tide']}
-            onChange={() => {}}
-            invalid
-            placeholder="Add a tag"
-            label="Tags"
-          />
+          <EditableTags value={['tide']} invalid placeholder="Add a tag" label="Tags" />
           <TextFieldInput label="Notebook" defaultValue="Field notes" isInvalid />
         </Pair>
         <Pair label="Disabled">
@@ -170,7 +169,7 @@ export const InAField: Story = {
           Toggle the error
         </Button>
         <Field label="Disabled by the field" disabled>
-          <TagField value={['locked', 'by the field']} onChange={() => {}} />
+          <EditableTags value={['locked', 'by the field']} />
         </Field>
         <Field label="A form row above it" description="So the shells can be compared.">
           <TextFieldInput label="Notebook" defaultValue="Field notes" />
@@ -215,15 +214,9 @@ export const LimitsAndVocabulary: Story = {
         </View>
         <View style={{ gap: 6 }}>
           <Text variant="caption-1-medium">Small, toned, disabled</Text>
-          <TagField value={['recipes', 'winter']} onChange={() => {}} size="sm" tone="primary" />
+          <EditableTags value={['recipes', 'winter']} size="sm" tone="primary" />
           <TagField value={['recipes', 'winter']} onChange={() => {}} disabled />
-          <TagField
-            value={[]}
-            onChange={() => {}}
-            invalid
-            placeholder="Invalid and empty"
-            label="Tags"
-          />
+          <EditableTags value={[]} invalid placeholder="Invalid and empty" label="Tags" />
         </View>
       </Page>
     );
@@ -275,7 +268,7 @@ export const NotAboutNotes: Story = {
 };
 
 /** 360px: many chips, wrapping, and the list under a full-width field. */
-export const Phone: Story = {
+export const Wrapping: Story = {
   render: function PhoneStory() {
     const [tags, setTags] = useState<string[]>([
       'field notes',
@@ -285,7 +278,7 @@ export const Phone: Story = {
       'planning — legacy',
     ]);
     return (
-      <Page width={360}>
+      <Page>
         <Field label="Tags" description="Comma or Enter adds one.">
           <TagField
             value={tags}

@@ -15,6 +15,8 @@
  * It renders through the `react-native` MOCK (`Platform.OS === 'ios'`), so the
  * assertions are on the element TREE rather than on DOM attributes.
  */
+import { ListItem } from '../list';
+
 import type React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 import { Pressable, Text, type AccessibilityActionEvent } from 'react-native';
@@ -23,8 +25,8 @@ import { RiArchiveLine } from '../icons/remix/RiArchiveLine';
 import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { MailRow } from '../mail-list';
-import type { MailAction, MailRowProps } from '../mail-list/types';
+import type { ListMailData } from '../list/types';
+import type { MailAction } from '../mail-list/types';
 
 const ARCHIVE: MailAction = { key: 'archive', label: 'Archive', icon: RiArchiveLine };
 const SNOOZE: MailAction = { key: 'snooze', label: 'Snooze', icon: RiTimeLine };
@@ -40,7 +42,7 @@ const ROW = {
   subject: 'Roof survey',
   snippet: 'The surveyor came back this morning',
   time: '14:02',
-} satisfies Partial<MailRowProps> as MailRowProps;
+} satisfies Partial<ListMailData> as ListMailData;
 
 function mount(ui: React.ReactElement) {
   return render(<BloomThemeProvider mode="light">{ui}</BloomThemeProvider>);
@@ -57,8 +59,8 @@ const HIDDEN = { includeHiddenElements: true } as const;
 describe('MailRow on a touch pointer', () => {
   it('draws NO action icon in the row at rest, and puts them behind the drag', () => {
     const screen = mount(
-      <MailRow
-        {...ROW}
+      <ListItem
+        mail={{ ...ROW }}
         actions={[ARCHIVE, SNOOZE, DELETE]}
         swipeActions={{ left: [ARCHIVE], right: [SNOOZE, DELETE] }}
         testID="r"
@@ -73,7 +75,9 @@ describe('MailRow on a touch pointer', () => {
   });
 
   it('takes the drag by DEFAULT on a touch pointer, with no prop asked of the app', () => {
-    const screen = mount(<MailRow {...ROW} swipeActions={{ right: [DELETE] }} testID="r" />);
+    const screen = mount(
+      <ListItem mail={{ ...ROW }} swipeActions={{ right: [DELETE] }} testID="r" />,
+    );
     expect(screen.getByTestId('r-swipe', HIDDEN)).toBeTruthy();
   });
 
@@ -81,11 +85,9 @@ describe('MailRow on a touch pointer', () => {
     const fired: string[] = [];
     const own = jest.fn();
     const screen = mount(
-      <MailRow
-        {...ROW}
-        // `archive` is on both affordances: one action, announced once.
+      <ListItem
+        mail={{ ...ROW }}
         actions={[{ ...ARCHIVE, onPress: own }, SNOOZE]}
-        actionsPlacement="inline"
         swipeActions={{ left: [ARCHIVE], right: [DELETE] }}
         onAction={(key) => fired.push(key)}
         testID="r"
@@ -113,9 +115,8 @@ describe('MailRow on a touch pointer', () => {
     const openMessage = jest.fn();
     const openAttachment = jest.fn();
     const screen = mount(
-      <MailRow
-        {...ROW}
-        density="compact"
+      <ListItem
+        mail={{ ...ROW }}
         onPress={openMessage}
         swipeActions={{ right: [DELETE] }}
         footer={
@@ -140,7 +141,7 @@ describe('MailRow on a touch pointer', () => {
   });
 
   it('carries no rotor actions at all when the row has none', () => {
-    const screen = mount(<MailRow {...ROW} onPress={() => undefined} testID="r" />);
+    const screen = mount(<ListItem mail={{ ...ROW }} onPress={() => undefined} testID="r" />);
     expect(screen.getByTestId('r-link', HIDDEN).props.accessibilityActions).toBeUndefined();
   });
 });

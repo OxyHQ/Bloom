@@ -9,7 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { SEGMENTED_THUMB_EASE_BEZIER, SEGMENTED_THUMB_MS } from '../button/shared';
-import { FrostedIconButton } from '../frosted-icon-button/FrostedIconButton';
+import { Button } from '../button';
 import { useBrowserTitle } from '../hooks/use-browser-title';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { borderRadius } from '../styles/tokens';
@@ -167,11 +167,14 @@ function CompactModeToggle({
   const next = selected ? first : second;
   const title = messages.switchMode(next.label);
   return (
-    <FrostedIconButton
+    <Button
+      appearance="outline"
+      tone="neutral"
+      iconOnly
       icon={second.icon}
       size={28}
-      checked={selected}
-      onCheckedChange={() => onValueChange(next.key)}
+      pressed={selected}
+      onPressedChange={() => onValueChange(next.key)}
       accessibilityLabel={accessibilityLabel ?? messages.mode}
       accessibilityHint={title}
       title={title}

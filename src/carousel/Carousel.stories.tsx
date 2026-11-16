@@ -1,12 +1,13 @@
+import { fn } from 'storybook/test';
 import type React from 'react';
 import { useState } from 'react';
-import { Pressable, useWindowDimensions, View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Text } from '../typography';
 import { Button } from '../button';
+import { Card } from '../card';
 import { useTheme } from '../theme/use-theme';
-import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Carousel, CarouselDots, CarouselItem } from './index';
 
 const meta: Meta<typeof Carousel> = {
@@ -183,13 +184,13 @@ export const OverlayArrows: Story = {
         >
           {[1, 2, 3, 4, 5].map((index) => (
             <CarouselItem key={index} width={172} testID={`overlay-slide-${index}`}>
-              <Pressable
-                accessibilityRole="button"
+              <Card
+                appearance="plain"
                 accessibilityLabel={`Choose category ${index}`}
                 onPress={() => setPicked(index)}
               >
                 <Slide label={`Category ${index}`} />
-              </Pressable>
+              </Card>
             </CarouselItem>
           ))}
         </Carousel>
@@ -260,119 +261,97 @@ export const Controlled: Story = {
   },
 };
 
-function HoverArrowsDemo({
-  mode,
-  placement,
-}: {
-  mode: 'light' | 'dark';
-  placement: 'header' | 'overlay' | 'footer';
-}) {
+function HoverArrowsDemo({ placement }: { placement: 'header' | 'overlay' | 'footer' }) {
   const [index, setIndex] = useState(0);
   const [show, setShow] = useState(true);
   return (
-    <BloomThemeProvider mode={mode} colorPreset="oxy">
-      <Frame width={440}>
-        <Button testID="before-carousel" onPress={() => {}}>
-          Before gallery
-        </Button>
-        <Carousel
-          testID="hover-carousel"
-          accessibilityLabel="Interactive photo gallery"
-          index={index}
-          onIndexChange={setIndex}
-          arrowsPlacement={placement}
-          arrowsVisibility="hover"
-          showArrows={show}
-          showDots={false}
-        >
-          {[0, 1, 2].map((value) => (
-            <CarouselItem key={value}>
-              <Slide label={`Photo ${value + 1}`} />
-            </CarouselItem>
-          ))}
-        </Carousel>
-        <Text testID="hover-index">{index}</Text>
-        <Button testID="after-carousel" onPress={() => setShow((value) => !value)}>
-          Toggle arrows
-        </Button>
-        <Carousel
-          testID="always-carousel"
-          accessibilityLabel="Always visible controls"
-          arrowsPlacement="overlay"
-          showDots={false}
-        >
-          {[0, 1].map((value) => (
-            <CarouselItem key={value}>
-              <Slide label={`Other photo ${value + 1}`} />
-            </CarouselItem>
-          ))}
-        </Carousel>
-      </Frame>
-    </BloomThemeProvider>
+    <Frame width={440}>
+      <Button testID="before-carousel" onPress={fn().mockName('onPress')}>
+        Before gallery
+      </Button>
+      <Carousel
+        testID="hover-carousel"
+        accessibilityLabel="Interactive photo gallery"
+        index={index}
+        onIndexChange={setIndex}
+        arrowsPlacement={placement}
+        arrowsVisibility="hover"
+        showArrows={show}
+        showDots={false}
+      >
+        {[0, 1, 2].map((value) => (
+          <CarouselItem key={value}>
+            <Slide label={`Photo ${value + 1}`} />
+          </CarouselItem>
+        ))}
+      </Carousel>
+      <Text testID="hover-index">{index}</Text>
+      <Button testID="after-carousel" onPress={() => setShow((value) => !value)}>
+        Toggle arrows
+      </Button>
+      <Carousel
+        testID="always-carousel"
+        accessibilityLabel="Always visible controls"
+        arrowsPlacement="overlay"
+        showDots={false}
+      >
+        {[0, 1].map((value) => (
+          <CarouselItem key={value}>
+            <Slide label={`Other photo ${value + 1}`} />
+          </CarouselItem>
+        ))}
+      </Carousel>
+    </Frame>
   );
 }
-export const HoverArrowsLight: Story = {
-  render: (args) => <HoverArrowsDemo mode="light" placement={args.arrowsPlacement ?? 'overlay'} />,
-};
-export const HoverArrowsDark: Story = {
-  render: (args) => <HoverArrowsDemo mode="dark" placement={args.arrowsPlacement ?? 'overlay'} />,
+export const HoverArrows: Story = {
+  render: (args) => <HoverArrowsDemo placement={args.arrowsPlacement ?? 'overlay'} />,
 };
 
-function ArrowRecipeDemo({
-  mode,
-  placement,
-}: {
-  mode: 'light' | 'dark';
-  placement: 'header' | 'overlay' | 'footer';
-}) {
+function ArrowRecipeDemo({ placement }: { placement: 'header' | 'overlay' | 'footer' }) {
   const [index, setIndex] = useState(0);
   const [width, setWidth] = useState(440);
   const [count, setCount] = useState(3);
   return (
-    <BloomThemeProvider mode={mode} colorPreset="oxy">
-      <Frame width={width}>
-        <Button testID="recipe-before" onPress={() => {}}>
-          Before gallery
-        </Button>
-        <Carousel
-          testID="recipe-carousel"
-          accessibilityLabel="Styled gallery"
-          index={index}
-          onIndexChange={setIndex}
-          arrowsPlacement={placement}
-          arrowsVisibility="hover"
-          hideUnavailableArrows
-          showDots={false}
-          arrowButtonProps={{
-            material: 'flat',
-            className: 'bloom-demo-carousel-arrow',
-            iconSize: 20,
-          }}
-        >
-          {Array.from({ length: count }, (_, value) => (
-            <CarouselItem key={value}>
-              <Slide label={`Photo ${value + 1}`} />
-            </CarouselItem>
-          ))}
-        </Carousel>
-        <Text testID="recipe-index">{index}</Text>
-        <Button testID="recipe-after" onPress={() => setIndex(0)}>
-          First photo
-        </Button>
-        <Button onPress={() => setIndex(count - 1)}>Last photo</Button>
-        <Button onPress={() => setWidth((value) => (value === 440 ? 280 : 440))}>
-          Resize gallery
-        </Button>
-        <Button onPress={() => setCount(1)}>Single photo</Button>
-      </Frame>
-    </BloomThemeProvider>
+    <Frame width={width}>
+      <Button testID="recipe-before" onPress={fn().mockName('onPress')}>
+        Before gallery
+      </Button>
+      <Carousel
+        testID="recipe-carousel"
+        accessibilityLabel="Styled gallery"
+        index={index}
+        onIndexChange={setIndex}
+        arrowsPlacement={placement}
+        arrowsVisibility="hover"
+        hideUnavailableArrows
+        showDots={false}
+        arrowButtonProps={{
+          material: 'flat',
+          className: 'bloom-demo-carousel-arrow',
+          iconSize: 20,
+        }}
+      >
+        {Array.from({ length: count }, (_, value) => (
+          <CarouselItem key={value}>
+            <Slide label={`Photo ${value + 1}`} />
+          </CarouselItem>
+        ))}
+      </Carousel>
+      <Text testID="recipe-index">{index}</Text>
+      <Button testID="recipe-after" onPress={() => setIndex(0)}>
+        First photo
+      </Button>
+      <Button onPress={() => setIndex(count - 1)}>Last photo</Button>
+      <Button onPress={() => setWidth((value) => (value === 440 ? 280 : 440))}>
+        Resize gallery
+      </Button>
+      <Button onPress={() => setCount(1)}>Single photo</Button>
+    </Frame>
   );
 }
-export const ArrowRecipeLight: Story = {
-  render: (args) => <ArrowRecipeDemo mode="light" placement={args.arrowsPlacement ?? 'overlay'} />,
-};
-export const ArrowRecipeDark: Story = {
-  render: (args) => <ArrowRecipeDemo mode="dark" placement={args.arrowsPlacement ?? 'overlay'} />,
+export const ArrowRecipe: Story = {
+  render: (args) => <ArrowRecipeDemo placement={args.arrowsPlacement ?? 'overlay'} />,
 };
 
 export const FooterLoop: Story = {

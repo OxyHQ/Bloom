@@ -1,12 +1,12 @@
-import React, { useContext } from 'react';
+import { fn } from 'storybook/test';
+import type React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { AiProfileCard } from '../ai-profile-card';
-import { Button, GlyphButton } from '../button';
+import { Button } from '../button';
 import { hashContributionCell, type ContributionCell } from '../chart-cards/contributions-cells';
 import { RiDraftLine, RiMore2Line } from '../icons/remix';
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { ContactProfileCard } from './ContactProfileCard';
@@ -22,7 +22,7 @@ export default meta;
 
 type Story = StoryObj;
 
-const noop = () => undefined;
+const onExampleAction = fn().mockName('Example action');
 
 // ---------------------------------------------------------------------------
 //  Demo data — invented people and invented companies.
@@ -34,9 +34,9 @@ const NORA: ContactProfileCardProps = {
   company: 'Larkspur Freight',
   status: { label: 'Customer', tone: 'success' },
   channels: [
-    { kind: 'email', onPress: noop },
-    { kind: 'phone', onPress: noop },
-    { kind: 'chat', onPress: noop },
+    { kind: 'email', onPress: onExampleAction },
+    { kind: 'phone', onPress: onExampleAction },
+    { kind: 'chat', onPress: onExampleAction },
   ],
   owner: { name: 'Marta Oyeleye' },
   headline: { label: 'Open pipeline', value: '€248,000', delta: '+2 deals' },
@@ -57,8 +57,8 @@ const IDRIS: ContactProfileCardProps = {
   company: 'Meridian Tiles',
   coverTone: 'warning',
   channels: [
-    { kind: 'email', onPress: noop },
-    { kind: 'meeting', onPress: noop },
+    { kind: 'email', onPress: onExampleAction },
+    { kind: 'meeting', onPress: onExampleAction },
   ],
   owner: { name: 'Teodor Nagy' },
   headline: { label: 'Open pipeline', value: '€31,400', delta: '-1 deal', deltaTone: 'warning' },
@@ -79,8 +79,8 @@ const COMPANY: ContactProfileCardProps = {
   status: { label: 'Prospect', tone: 'info' },
   coverTone: 'info',
   channels: [
-    { kind: 'website', onPress: noop },
-    { kind: 'email', onPress: noop },
+    { kind: 'website', onPress: onExampleAction },
+    { kind: 'email', onPress: onExampleAction },
   ],
   owner: { name: 'Marta Oyeleye', label: 'Account owner' },
   headline: { label: 'Open pipeline', value: '€1.2M', delta: '+18%' },
@@ -109,9 +109,9 @@ const LONG: ContactProfileCardProps = {
   role: 'Interim Director of Procurement and Supplier Relations',
   company: 'Sablefield Studio and Manufacturing Partners',
   channels: [
-    { kind: 'email', onPress: noop },
-    { kind: 'phone', onPress: noop },
-    { kind: 'video', onPress: noop },
+    { kind: 'email', onPress: onExampleAction },
+    { kind: 'phone', onPress: onExampleAction },
+    { kind: 'video', onPress: onExampleAction },
   ],
   owner: { name: 'Wilhelmina Featherstonehaugh' },
   headline: {
@@ -170,27 +170,16 @@ function Caption({ children }: { children: string }) {
 }
 
 /** The same block in both modes — every colour here flips. */
-function BothModes({ children }: { children: React.ReactNode }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
-  return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-      <BloomThemeProvider mode="light" colorPreset={preset}>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 560 }}>
-          <Page>{children}</Page>
-        </View>
-      </BloomThemeProvider>
-      <BloomThemeProvider mode="dark" colorPreset={preset}>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 560 }}>
-          <Page>{children}</Page>
-        </View>
-      </BloomThemeProvider>
-    </View>
-  );
-}
 
 /** The labelled actions a card carries once it is wide enough for words. */
 const logANote = (
-  <Button size="sm" leadingIcon={RiDraftLine} onPress={noop} tone="neutral" appearance="outline">
+  <Button
+    size="sm"
+    leadingIcon={RiDraftLine}
+    onPress={onExampleAction}
+    tone="neutral"
+    appearance="outline"
+  >
     Log a note
   </Button>
 );
@@ -198,8 +187,13 @@ const logANote = (
 export const Person: Story = {
   render: () => (
     <Page maxWidth={680}>
-      <ContactProfileCard {...NORA} onPress={noop} actions={logANote} testID="contact-nora" />
-      <ContactProfileCard {...IDRIS} onPress={noop} testID="contact-idris" />
+      <ContactProfileCard
+        {...NORA}
+        onPress={onExampleAction}
+        actions={logANote}
+        testID="contact-nora"
+      />
+      <ContactProfileCard {...IDRIS} onPress={onExampleAction} testID="contact-idris" />
     </Page>
   ),
 };
@@ -209,12 +203,15 @@ export const Company: Story = {
     <Page maxWidth={680}>
       <ContactProfileCard
         {...COMPANY}
-        onPress={noop}
+        onPress={onExampleAction}
         actions={
-          <GlyphButton
+          <Button
+            appearance="plain"
+            tone="neutral"
+            iconOnly
             icon={RiMore2Line}
             size={32}
-            onPress={noop}
+            onPress={onExampleAction}
             accessibilityLabel="More actions for Quillon Health"
           />
         }
@@ -231,7 +228,7 @@ export const WithCover: Story = {
       <ContactProfileCard
         {...NORA}
         coverSource={COVER_IMAGE}
-        onPress={noop}
+        onPress={onExampleAction}
         actions={logANote}
         testID="contact-cover"
       />
@@ -252,7 +249,7 @@ export const CompactRows: Story = {
               key={row.name}
               {...row}
               density="compact"
-              onPress={noop}
+              onPress={onExampleAction}
               testID={`contact-row-${index}`}
             />
           ))}
@@ -275,29 +272,20 @@ export const Minimal: Story = {
 export const LongText: Story = {
   render: () => (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16, padding: 20 }}>
-      <View style={{ width: 360 }}>
-        <ContactProfileCard {...LONG} onPress={noop} testID="contact-long" />
+      <View style={{ width: '100%', maxWidth: 680 }}>
+        <ContactProfileCard {...LONG} onPress={onExampleAction} testID="contact-long" />
       </View>
-      <View style={{ width: 280 }}>
-        <ContactProfileCard {...LONG} density="compact" onPress={noop} testID="contact-long-row" />
+      <View style={{ width: '100%', maxWidth: 680 }}>
+        <ContactProfileCard
+          {...LONG}
+          density="compact"
+          onPress={onExampleAction}
+          testID="contact-long-row"
+        />
       </View>
     </View>
   ),
 };
-
-export const BothThemes: Story = {
-  render: () => (
-    <BothModes>
-      <ContactProfileCard {...NORA} onPress={noop} />
-      <ContactProfileCard {...COMPANY} onPress={noop} />
-      <ContactProfileCard {...IDRIS} density="compact" onPress={noop} />
-    </BothModes>
-  ),
-};
-
-// ---------------------------------------------------------------------------
-//  The reference, in the same shot
-// ---------------------------------------------------------------------------
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const BANDS: [number, number][] = [
@@ -358,7 +346,12 @@ export const BesideTheReference: Story = {
           periods={[]}
         />
         <Caption>This family — contact-card / ContactProfileCard</Caption>
-        <ContactProfileCard {...NORA} onPress={noop} actions={logANote} testID="contact-beside" />
+        <ContactProfileCard
+          {...NORA}
+          onPress={onExampleAction}
+          actions={logANote}
+          testID="contact-beside"
+        />
       </View>
     </Page>
   ),

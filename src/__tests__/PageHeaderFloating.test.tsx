@@ -2,7 +2,7 @@ import { Text, View } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { Button } from '../button';
 import { TopEdgeProvider, useTopEdgeInset } from '../layout';
 import { PageHeader } from '../page-header';
 import type { PageHeaderProps } from '../page-header';
@@ -41,10 +41,10 @@ describe('PageHeader, floating', () => {
   it('puts the back control in an island of its own, and names it', () => {
     const onBack = jest.fn();
     const screen = renderHeader({ title: 'Inbox', onBack, backLabel: 'Go back' });
-    const island = screen.getByTestId('h-back-island');
+    const island = screen.getByTestId('h-back');
     // Its own capsule, not a member of the page's action group: a `group` of
     // one is a container a screen reader steps into for nothing.
-    expect(island.props.role).toBeUndefined();
+    expect(island.props.role).not.toBe('group');
     expect(materialCount(screen.toJSON())).toBe(1);
     const back = screen.getByTestId('h-back');
     expect(back.props.accessibilityLabel).toBe('Go back');
@@ -55,15 +55,72 @@ describe('PageHeader, floating', () => {
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps a back count inside the same actionable capsule, including zero', () => {
+    const onBack = jest.fn();
+    const screen = renderHeader({
+      title: 'Conversation',
+      onBack,
+      backLabel: 'Back to chats, 0 unread',
+      backCount: 0,
+    });
+    expect(screen.getByText('0')).toBeTruthy();
+    expect(materialCount(screen.toJSON())).toBe(1);
+    expect(screen.getByTestId('h-back').props.accessibilityLabel).toBe('Back to chats, 0 unread');
+    fireEvent.press(screen.getByTestId('h-back'));
+    expect(onBack).toHaveBeenCalledTimes(1);
+  });
+
+  it('makes the visual, title and supporting line one identity action', () => {
+    const onPressTitle = jest.fn();
+    const screen = renderHeader({
+      title: 'Study group',
+      subtitle: 'Two people online',
+      titleVisual: <Text>Group portrait</Text>,
+      titleAlign: 'center',
+      titleLayout: 'stacked',
+      titleAppearance: 'capsule',
+      onPressTitle,
+      titleAccessibilityLabel: 'Open group profile',
+    });
+    const identity = screen.getByTestId('h-identity');
+    expect(identity.props.accessibilityLabel).toBe('Open group profile');
+    // Stacked avatar and capsule retain their own shapes inside the hit target.
+    expect(resolvedStyle(identity.props.style).overflow).toBe('visible');
+    expect(resolvedStyle(identity.props.style).borderRadius).toBe(24);
+    expect(materialCount(screen.toJSON())).toBe(1);
+    fireEvent.press(screen.getByText('Group portrait'));
+    expect(onPressTitle).toHaveBeenCalledTimes(1);
+    fireEvent.press(identity);
+    expect(onPressTitle).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not expose a hidden identity action during heading handoff', () => {
+    const onPressTitle = jest.fn();
+    const screen = renderHeader({
+      title: 'Profile',
+      titleAppearance: 'capsule',
+      titleReveal: 'onScroll',
+      titleRevealOffset: 100,
+      scrollY: { value: 50 } as never,
+      onPressTitle,
+    });
+    expect(screen.queryByRole('button', { name: 'Profile' })).toBeNull();
+    expect(
+      resolvedStyle(
+        screen.getByTestId('h-title-block', { includeHiddenElements: true }).props.style,
+      ).opacity,
+    ).toBe(0);
+  });
+
   it('gives a declared action group ONE island, without the caller naming a variant', () => {
     const screen = renderHeader({
       title: 'Inbox',
       onBack: () => {},
       actions: (
-        <ButtonGroup accessibilityLabel="Page actions">
-          <ButtonGroupItem testID="search" iconOnly accessibilityLabel="Search" />
-          <ButtonGroupItem testID="share" iconOnly accessibilityLabel="Share" />
-        </ButtonGroup>
+        <Button.Group accessibilityLabel="Page actions">
+          <Button testID="search" iconOnly accessibilityLabel="Search" />
+          <Button testID="share" iconOnly accessibilityLabel="Share" />
+        </Button.Group>
       ),
     });
     // One for the back capsule, one for the group. Two controls in the group,
@@ -82,13 +139,13 @@ describe('PageHeader, floating', () => {
       title: 'Inbox',
       actions: (
         <>
-          <ButtonGroup accessibilityLabel="Page actions">
-            <ButtonGroupItem iconOnly accessibilityLabel="Search" />
-            <ButtonGroupItem iconOnly accessibilityLabel="Share" />
-          </ButtonGroup>
-          <ButtonGroup accessibilityLabel="More">
-            <ButtonGroupItem iconOnly accessibilityLabel="More" />
-          </ButtonGroup>
+          <Button.Group accessibilityLabel="Page actions">
+            <Button iconOnly accessibilityLabel="Search" />
+            <Button iconOnly accessibilityLabel="Share" />
+          </Button.Group>
+          <Button.Group accessibilityLabel="More">
+            <Button iconOnly accessibilityLabel="More" />
+          </Button.Group>
         </>
       ),
     });
@@ -108,6 +165,30 @@ describe('PageHeader, floating', () => {
     const none = renderHeader({ title: 'A', scrim: 'none', scrollY: { value: 500 } as never });
     expect(opacity(none.getByTestId('h-scrim'))).toBe(0);
   });
+
+  it.each(['light', 'dark'] as const)(
+    'keeps image headings readable with a dark translucent scrim in %s',
+    (mode) => {
+      const screen = renderHeader({ title: 'Library', tone: 'onImage', scrim: 'always' }, mode);
+      const stops = hostNodes(screen.toJSON()).filter((node) => node.type === 'Stop');
+      expect(stops.length).toBeGreaterThan(1);
+      expect(stops.every((node) => node.props.stopColor === '#000000')).toBe(true);
+      expect(opacity(screen.getByTestId('h-scrim'))).toBe(0.72);
+      expect(resolvedStyle(screen.getByTestId('h-title').props.style).color).toBe('#FFFFFF');
+      expect(opacity(screen.getByTestId('h-title-block'))).toBe(1);
+      screen.unmount();
+      const custom = renderHeader(
+        { title: 'Library', tone: 'onImage', scrim: 'always', scrimColor: '#123456' },
+        mode,
+      );
+      expect(
+        hostNodes(custom.toJSON())
+          .filter((node) => node.type === 'Stop')
+          .every((node) => node.props.stopColor === '#123456'),
+      ).toBe(true);
+      expect(opacity(custom.getByTestId('h-scrim'))).toBe(1);
+    },
+  );
 
   it('passes a linear falloff to its edge effect without dimming the title', () => {
     const screen = renderHeader({
@@ -186,9 +267,9 @@ describe('PageHeader, floating', () => {
       title: 'A',
       onBack: () => {},
       actions: (
-        <ButtonGroup accessibilityLabel="Page actions">
-          <ButtonGroupItem iconOnly accessibilityLabel="Search" />
-        </ButtonGroup>
+        <Button.Group accessibilityLabel="Page actions">
+          <Button iconOnly accessibilityLabel="Search" />
+        </Button.Group>
       ),
     });
     // A floating header covers content it does not own. A decoration that ate

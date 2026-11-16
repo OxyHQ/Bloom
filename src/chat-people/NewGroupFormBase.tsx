@@ -1,0 +1,186 @@
+import { memo, useMemo } from 'react';
+import { Pressable, View } from 'react-native';
+
+import { Avatar } from '../avatar/Avatar';
+import { RiCameraLine } from '../icons/remix/RiCameraLine';
+import { RiCloseLine } from '../icons/remix/RiCloseLine';
+import { RiUserAddLine } from '../icons/remix/RiUserAddLine';
+import { TextFieldInput } from '../text-field';
+import { useMessages } from '../locale/messages';
+import { useTheme } from '../theme/use-theme';
+import { Text } from '../typography';
+import { nameCounterTone, resolveChatPeoplePaint } from './shared';
+import type { NewGroupFormProps } from './types';
+import { CHAT_PEOPLE_MESSAGES } from './messages';
+
+/**
+ * `NewGroupForm`: the sheet that turns a pile of selected people into a group.
+ *
+ *   photo   a 72px round picker — the picked image, or a camera glyph on the
+ *           accent-tinted fill
+ *   name    a field with a live `12/64` counter, the input's own `maxLength`
+ *           set to the same number
+ *   about   an optional multi-line field
+ *   members the chosen people, each removable, over an "Add members" row
+ *
+ * The COUNTER and the LIMIT are one number. Setting `maxLength` on the input
+ * and drawing a denominator from a different constant is how a counter ends up
+ * saying 64 while the field stops at 50, and nothing catches it: both halves
+ * look right on their own.
+ *
+ * The counter goes amber at 90%, not at 100%. The input has already stopped
+ * accepting characters by then, so a warning that arrives at the limit is
+ * telling the user about something that has already happened.
+ */
+
+const PHOTO = 72;
+
+export function createNewGroupForm({
+  List,
+  Button,
+}: {
+  List: typeof import('../list/List')['List'];
+  Button: typeof import('../button')['Button'];
+}) {
+  function NewGroupFormComponent({
+    photo,
+    photoVariant,
+    onPickPhoto,
+    name,
+    onNameChange,
+    nameMaxLength = 64,
+    description,
+    onDescriptionChange,
+    descriptionMaxLength = 255,
+    members = [],
+    onRemoveMember,
+    onAddMembers,
+    labels,
+    children,
+    style,
+    testID,
+  }: NewGroupFormProps) {
+    const theme = useTheme();
+    const { messages } = useMessages(CHAT_PEOPLE_MESSAGES);
+    const paint = useMemo(() => resolveChatPeoplePaint(theme), [theme]);
+    const l = { ...messages.newGroup, ...labels };
+    const tone = nameCounterTone(name.length, nameMaxLength);
+    const counterColor =
+      tone === 'over' ? paint.negative : tone === 'warn' ? paint.owner : paint.textTertiary;
+
+    return (
+      <View style={[{ gap: 20 }, style]} testID={testID}>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 16 }}>
+          {onPickPhoto === undefined ? null : (
+            <Pressable
+              role="button"
+              accessibilityLabel={l.photo}
+              onPress={onPickPhoto}
+              style={{
+                width: PHOTO,
+                height: PHOTO,
+                borderRadius: PHOTO / 2,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: paint.accentSubtle,
+                overflow: 'hidden',
+              }}
+              testID={testID ? `${testID}-photo` : undefined}
+            >
+              {photo === undefined || photo === null ? (
+                <RiCameraLine width={26} height={26} fill={paint.onAccentSubtle} />
+              ) : (
+                <Avatar source={photo} variant={photoVariant} name="" size={PHOTO} />
+              )}
+            </Pressable>
+          )}
+
+          <View style={{ flex: 1, minWidth: 0, gap: 6 }}>
+            <TextFieldInput
+              label={l.name}
+              placeholder={l.namePlaceholder}
+              value={name}
+              onChangeText={onNameChange}
+              maxLength={nameMaxLength}
+              testID={testID ? `${testID}-name` : undefined}
+            />
+            <Text
+              variant="caption-1-regular"
+              style={{ color: counterColor, alignSelf: 'flex-end', fontVariant: ['tabular-nums'] }}
+              testID={testID ? `${testID}-counter` : undefined}
+            >
+              {`${name.length}/${nameMaxLength}`}
+            </Text>
+          </View>
+        </View>
+
+        {onDescriptionChange === undefined ? null : (
+          <TextFieldInput
+            label={l.description}
+            placeholder={l.descriptionPlaceholder}
+            value={description ?? ''}
+            onChangeText={onDescriptionChange}
+            maxLength={descriptionMaxLength}
+            multiline
+            numberOfLines={3}
+            testID={testID ? `${testID}-description` : undefined}
+          />
+        )}
+
+        {children}
+
+        {members.length === 0 && onAddMembers === undefined ? null : (
+          <List
+            accessibilityLabel={l.members(members.length)}
+            header={
+              <Text
+                variant="caption-1-semibold"
+                style={{ color: paint.textSecondary, paddingHorizontal: 10 }}
+                testID={testID ? `${testID}-members-title` : undefined}
+              >
+                {l.members(members.length)}
+              </Text>
+            }
+            items={[
+              ...(onAddMembers
+                ? [
+                    {
+                      id: 'add-members',
+                      title: l.addMembers,
+                      leading: (
+                        <View pointerEvents="none">
+                          <RiUserAddLine size="md" />
+                        </View>
+                      ),
+                      onPress: onAddMembers,
+                      testID: testID ? `${testID}-add` : undefined,
+                    },
+                  ]
+                : []),
+              ...members.map((member) => ({
+                id: member.id,
+                person: member,
+                testID: testID ? `${testID}-member-${member.id}` : undefined,
+                trailing: onRemoveMember ? (
+                  <Button
+                    icon={RiCloseLine}
+                    iconOnly
+                    tone="neutral"
+                    appearance="plain"
+                    accessibilityLabel={l.remove(member.name)}
+                    onPress={() => onRemoveMember(member.id)}
+                    testID={testID ? `${testID}-remove-${member.id}` : undefined}
+                  />
+                ) : undefined,
+              })),
+            ]}
+          />
+        )}
+      </View>
+    );
+  }
+
+  const NewGroupForm = memo(NewGroupFormComponent);
+  NewGroupForm.displayName = 'NewGroupForm';
+  return NewGroupForm;
+}

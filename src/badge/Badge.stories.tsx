@@ -1,4 +1,3 @@
-import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -29,7 +28,10 @@ export const Tones: Story = {
   render: () => (
     <View style={{ gap: 12 }}>
       {FILLS.map((variant) => (
-        <View key={variant} style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+        <View
+          key={variant}
+          style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}
+        >
           {TONES.map((color) => (
             <Badge
               key={color}
@@ -53,7 +55,10 @@ export const Counters: Story = {
   render: () => (
     <View style={{ gap: 12 }}>
       {FILLS.map((variant) => (
-        <View key={variant} style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+        <View
+          key={variant}
+          style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}
+        >
           {(['primary', 'default'] as const).map((color) =>
             [3, 12, 128].map((count) => (
               <Badge key={`${color}-${count}`} variant={variant} color={color} content={count} />
@@ -73,7 +78,10 @@ export const StatusDots: Story = {
   render: () => (
     <View style={{ gap: 12 }}>
       {(['sm', 'md', 'lg'] as const).map((size) => (
-        <View key={size} style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+        <View
+          key={size}
+          style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}
+        >
           {TONES.map((color) => (
             <Badge key={color} dot size={size} color={color} testID={`dot-${size}-${color}`} />
           ))}
@@ -89,7 +97,7 @@ export const StatusDots: Story = {
  */
 export const Placements: Story = {
   render: () => (
-    <View style={{ flexDirection: 'row', gap: 32 }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 32 }}>
       {(['top-right', 'top-left', 'bottom-right', 'bottom-left'] as const).map((placement) => (
         <Badge key={placement} content={8} color="error" placement={placement}>
           <IconCircle icon={BellIcon} size="lg" />
@@ -106,7 +114,7 @@ export const Placements: Story = {
  */
 export const CountsAndDots: Story = {
   render: () => (
-    <View style={{ flexDirection: 'row', gap: 32, alignItems: 'center' }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 32, alignItems: 'center' }}>
       <Badge content={5} color="primary">
         <IconCircle icon={BellIcon} size="lg" />
       </Badge>
@@ -133,12 +141,12 @@ export const CountsAndDots: Story = {
 export const Sizes: Story = {
   render: () => (
     <View style={{ gap: 12 }}>
-      <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
         <Badge size="sm" color="primary" content="sm" />
         <Badge size="md" color="primary" content="md" />
         <Badge size="lg" color="primary" content="lg" />
       </View>
-      <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
         <Badge
           size="label-small"
           variant="subtle"

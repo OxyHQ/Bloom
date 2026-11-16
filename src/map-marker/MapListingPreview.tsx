@@ -1,9 +1,8 @@
-import React, { memo, useEffect, useMemo } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import { Pressable, View, type ViewStyle } from 'react-native';
 
 import { Button } from '../button';
 import { bloomShadowStyle } from '../design-tokens/shadows';
-import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiHeart3Fill } from '../icons/remix/RiHeart3Fill';
 import { RiHeart3Line } from '../icons/remix/RiHeart3Line';
@@ -16,13 +15,7 @@ import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import {
-  MAP_MARKER_CSS,
-  MAP_MARKER_STYLE_ID,
-  mapWebData,
-  resolveMapMarkerPaint,
-  type MapMarkerPaint,
-} from './shared';
+import { MAP_MARKER_CSS, MAP_MARKER_STYLE_ID, mapWebData, resolveMapMarkerPaint } from './shared';
 import type { MapListingPreviewProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { BloomImage } from '../image';
@@ -41,7 +34,7 @@ import { BloomImage } from '../image';
  *               `ListingCard` draws (`listing-card/parts.tsx`)
  *   close       Button secondary xs iconOnly — over the photo's top-left
  *               (vertical) or the card's top-right (compact)
- *   heart       24 round surface pill, 14px heart — the photo's other top corner;
+ *   heart       shared Button toggle — the photo's other top corner;
  *               a filled red heart when saved
  *
  * The card never clips (so the native shadow survives); the photo clips
@@ -57,53 +50,7 @@ const RADIUS = 16;
 const INNER_RADIUS = RADIUS - 1;
 const PHOTO_HEIGHT = 200;
 const COMPACT_PHOTO_WIDTH = 112;
-const HEART_SIZE = 24;
 const INSET = 8;
-
-function FavoriteButton({
-  favorite,
-  label,
-  paint,
-  onToggle,
-  testID,
-}: {
-  favorite: boolean;
-  label: string;
-  paint: MapMarkerPaint;
-  onToggle: () => void;
-  testID?: string;
-}) {
-  const { state: hovered, onIn, onOut } = useInteractionState();
-  const Icon = favorite ? RiHeart3Fill : RiHeart3Line;
-  const style: WebCssStyle = {
-    width: HEART_SIZE,
-    height: HEART_SIZE,
-    borderRadius: HEART_SIZE / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: paint.border,
-    backgroundColor: hovered ? paint.hoverSurface : paint.surface,
-    '--bloom-map-ring': paint.ring,
-  };
-  return (
-    <Pressable
-      {...mapWebData({ bloomMapPressable: '' })}
-      role="button"
-      accessibilityLabel={label}
-      aria-pressed={favorite}
-      accessibilityState={{ selected: favorite }}
-      onPress={onToggle}
-      onHoverIn={onIn}
-      onHoverOut={onOut}
-      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-      testID={testID}
-      style={[style, bloomShadowStyle('s')]}
-    >
-      <Icon width={14} height={14} fill={favorite ? paint.heart : paint.label} />
-    </Pressable>
-  );
-}
 
 function MapListingPreviewComponent({
   image,
@@ -198,11 +145,15 @@ function MapListingPreviewComponent({
   ) : null;
 
   const heartButton = onFavoriteChange ? (
-    <FavoriteButton
-      favorite={favorite}
-      label={favoriteLabel}
-      paint={paint}
-      onToggle={() => onFavoriteChange(!favorite)}
+    <Button
+      tone="neutral"
+      appearance="outline"
+      iconOnly
+      leadingIcon={favorite ? RiHeart3Fill : RiHeart3Line}
+      activeColor={paint.heart}
+      pressed={favorite}
+      accessibilityLabel={favoriteLabel}
+      onPress={() => onFavoriteChange(!favorite)}
       testID={testID ? `${testID}-favorite` : undefined}
     />
   ) : null;

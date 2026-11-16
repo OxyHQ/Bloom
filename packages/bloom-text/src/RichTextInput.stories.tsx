@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@oxy.so/bloom/typography';
 import { EnrichedTextInput } from 'react-native-enriched-html';
 import { RichTextInput } from './RichTextInput';
 import type { Segment } from './types';

@@ -1,21 +1,25 @@
+import { fn } from 'storybook/test';
+import { PageHeader } from '../page-header';
+import { AvatarGroup } from '../avatar-group';
+import { List, ListItem, type ListItemProps } from '../list';
+import { UnreadBadge } from '../chat-indicators';
+import type { ListConversationData, ListCommonProps } from '../list/types';
 import type React from 'react';
-import { useContext, useMemo, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { View } from 'react-native';
+import { AppShell } from '../app-shell';
+import { Screen, ScreenScrollView } from '../screen';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RiArchiveLine } from '../icons/remix/RiArchiveLine';
 import { RiCheckDoubleLine } from '../icons/remix/RiCheckDoubleLine';
 import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
 import { RiNotificationOffLine } from '../icons/remix/RiNotificationOffLine';
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { ChatFolderTabs } from './ChatFolderTabs';
-import { ChatList } from './ChatList';
-import { ChatListItem } from './ChatListItem';
 import { ChatSearchField } from './ChatSearchField';
 import { ChatSearchResults } from './ChatSearchResults';
-import { GroupAvatar } from './GroupAvatar';
 import { NewChatButton } from './NewChatButton';
 import { StoriesRow } from './StoriesRow';
 import type {
@@ -275,20 +279,6 @@ function Surface({ children, width }: { children: React.ReactNode; width?: numbe
 }
 
 /** The same block in both modes, side by side — every colour here flips. */
-function BothModes({ children }: { children: React.ReactNode }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
-  return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, padding: 20 }}>
-      <BloomThemeProvider mode="light" colorPreset={preset}>
-        <Surface width={390}>{children}</Surface>
-      </BloomThemeProvider>
-      <BloomThemeProvider mode="dark" colorPreset={preset}>
-        <Surface width={390}>{children}</Surface>
-      </BloomThemeProvider>
-    </View>
-  );
-}
-
 function Caption({ children }: { children: string }) {
   const theme = useTheme();
   return (
@@ -305,83 +295,142 @@ function Caption({ children }: { children: string }) {
 //  Stories
 // ---------------------------------------------------------------------------
 
-function ConversationsScreen({ width = 390 }: { width?: number }) {
-  const theme = useTheme();
+const ARCHIVED_NAMES = [
+  'Vera Soler',
+  'Weekend plans',
+  'Júlia Costa',
+  'Design notes',
+  'Marc Vidal',
+  'Old studio',
+];
+const ARCHIVED_PREVIEW = ARCHIVED_NAMES.join(', ');
+
+const ARCHIVED = {
+  id: 'archived',
+  label: `Archived chats, ${ARCHIVED_NAMES.length}: ${ARCHIVED_PREVIEW}`,
+  title: 'Archived chats',
+  supporting: ARCHIVED_PREVIEW,
+  leading: <RiArchiveLine size="md" />,
+  trailing: <UnreadBadge count={ARCHIVED_NAMES.length} muted size="sm" />,
+  onPress: fn().mockName('onPress'),
+};
+
+function ConversationsScreen() {
   const [folder, setFolder] = useState('all');
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<string | undefined>(undefined);
-  const density = width < 380 ? 'compact' : 'comfortable';
+  const [checked, setChecked] = useState<string[]>([]);
+  const [chats, setChats] = useState([...PINNED, ...ALL]);
+  const [archived, setArchived] = useState(false);
+  const [status, setStatus] = useState('');
+  const visible = chats.filter(
+    (chat) =>
+      `${chat.name} ${chat.preview?.text ?? ''}`.toLowerCase().includes(query.toLowerCase()) &&
+      (folder === 'all' ||
+        (folder === 'unread'
+          ? Boolean(chat.unreadCount)
+          : chat.kind ===
+            ({ groups: 'group', channels: 'channel', bots: 'bot' } as Record<string, string>)[
+              folder
+            ])),
+  );
 
   return (
-    <View
-      style={{
-        width: '100%',
-        maxWidth: width,
-        height: 760,
-        backgroundColor: theme.colors.background,
-      }}
-    >
-      <ScrollView>
-        <ChatList
-          sections={SECTIONS}
-          density={density}
-          selectedId={selected}
-          onChatPress={setSelected}
-          archived={{ count: 6, onPress: () => undefined }}
-          header={
-            <View>
-              <View style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 12 }}>
-                <ChatSearchField
-                  value={query}
-                  onChangeText={setQuery}
-                  onClear={() => setQuery('')}
+    <AppShell header={null} scroll="fixed" contentMaxWidth="none">
+      <Screen
+        header={
+          <PageHeader
+            title={archived ? 'Archived chats' : 'Chats'}
+            onBack={archived ? () => setArchived(false) : null}
+            safeArea={false}
+          />
+        }
+        primaryAction={
+          <NewChatButton
+            onPress={() => {
+              const id = `new-${Date.now()}`;
+              setChats((items) => [
+                { id, name: 'New conversation', preview: { text: 'Start writing' } },
+                ...items,
+              ]);
+              setQuery('');
+              setFolder('all');
+              setArchived(false);
+              setSelected(id);
+            }}
+          />
+        }
+      >
+        <ScreenScrollView>
+          {status ? <Text>{status}</Text> : null}
+          <List
+            items={[
+              ...(archived
+                ? ARCHIVED_NAMES.map((name) => ({
+                    id: name,
+                    conversation: { name, preview: { text: 'Archived conversation' } },
+                    onPress: () => setStatus(`Opened ${name}`),
+                  }))
+                : [{ ...ARCHIVED, onPress: () => setArchived(true) }]),
+              ...(archived ? [] : visible).map((chat) => ({
+                ...conversationItem(chat),
+                id: chat.id,
+                active: chat.id === selected,
+                checked: checked.includes(chat.id),
+                selecting: checked.length > 0,
+                onPress: () => setSelected(chat.id),
+                onCheckedChange: (next: boolean) =>
+                  setChecked((ids) =>
+                    next
+                      ? [...ids.filter((id) => id !== chat.id), chat.id]
+                      : ids.filter((id) => id !== chat.id),
+                  ),
+              })),
+            ]}
+            header={
+              <View>
+                <View style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 12 }}>
+                  <ChatSearchField
+                    value={query}
+                    onChangeText={setQuery}
+                    onClear={() => setQuery('')}
+                  />
+                </View>
+                <StoriesRow
+                  stories={STORIES}
+                  own={{ avatar: face('you') }}
+                  onStoryPress={(id) =>
+                    setStatus(`Viewing ${STORIES.find((story) => story.id === id)?.name}’s story`)
+                  }
+                  onOwnPress={() => setStatus('Your story is ready to create')}
+                />
+                <ChatFolderTabs
+                  folders={FOLDERS}
+                  value={folder}
+                  onValueChange={setFolder}
+                  accessibilityLabel="Chat folders"
                 />
               </View>
-              <StoriesRow
-                stories={STORIES}
-                own={{ avatar: face('you') }}
-                onStoryPress={() => undefined}
-                onOwnPress={() => undefined}
-              />
-              <ChatFolderTabs
-                folders={FOLDERS}
-                value={folder}
-                onValueChange={setFolder}
-                accessibilityLabel="Chat folders"
-              />
-            </View>
-          }
-          footer={<View style={{ height: 88 }} />}
-        />
-      </ScrollView>
-      <NewChatButton onPress={() => undefined} />
-    </View>
+            }
+          />
+        </ScreenScrollView>
+      </Screen>
+    </AppShell>
   );
 }
 
-/** The whole conversations screen at phone width, light and dark. */
+/** The conversations screen using the shared list and Storybook theme. */
 export const ConversationsPhone: Story = {
-  render: () => (
-    <BothModes>
-      <ConversationsScreen />
-    </BothModes>
-  ),
+  parameters: { layout: 'fullscreen' },
+  render: () => <ConversationsScreen />,
 };
 
 /** The same list as a 360px desktop pane beside the open conversation. */
 export const DesktopPane: Story = {
+  parameters: { layout: 'fullscreen' },
   render: function DesktopPaneStory() {
-    const preset = useContext(BloomThemeContext)?.colorPreset;
     const [selected, setSelected] = useState<string | undefined>('ines');
-    return (
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, padding: 20 }}>
-        {(['light', 'dark'] as const).map((mode) => (
-          <BloomThemeProvider key={mode} mode={mode} colorPreset={preset}>
-            <PaneAndDetail selected={selected} onSelect={setSelected} />
-          </BloomThemeProvider>
-        ))}
-      </View>
-    );
+    return <PaneAndDetail selected={selected} onSelect={setSelected} />;
   },
 };
 
@@ -392,51 +441,93 @@ function PaneAndDetail({
   selected?: string;
   onSelect: (id: string) => void;
 }) {
-  const theme = useTheme();
+  const [query, setQuery] = useState('');
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [archived, setArchived] = useState(false);
   const open = useMemo(() => [...PINNED, ...ALL].find((chat) => chat.id === selected), [selected]);
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        width: '100%',
-        maxWidth: 760,
-        height: 620,
-        borderRadius: 20,
-        overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-        backgroundColor: theme.colors.background,
+    <AppShell
+      header={null}
+      scroll="fixed"
+      contentMaxWidth="none"
+      panelLayout={{
+        collapseBelow: 'sm',
+        activePanel: detailOpen ? 'conversation' : 'conversations',
+        panels: [
+          {
+            id: 'conversations',
+            width: 360,
+            minWidth: 280,
+            content: (
+              <Screen
+                header={
+                  <PageHeader
+                    title={archived ? 'Archived chats' : 'Chats'}
+                    onBack={archived ? () => setArchived(false) : null}
+                    accessory={
+                      <ChatSearchField
+                        value={query}
+                        onChangeText={setQuery}
+                        onClear={() => setQuery('')}
+                      />
+                    }
+                  />
+                }
+              >
+                <ScreenScrollView>
+                  <List
+                    items={
+                      archived
+                        ? ARCHIVED_NAMES.filter((name) =>
+                            name.toLowerCase().includes(query.toLowerCase()),
+                          ).map((name) => ({
+                            id: name,
+                            title: name,
+                            supporting: 'Archived conversation',
+                          }))
+                        : [
+                            { ...ARCHIVED, onPress: () => setArchived(true) },
+                            ...SECTIONS.flatMap((section) => section.chats)
+                              .filter((chat) =>
+                                chat.name.toLowerCase().includes(query.toLowerCase()),
+                              )
+                              .map((chat) => ({
+                                ...conversationItem(chat),
+                                id: chat.id,
+                                active: chat.id === selected,
+                                onPress: () => {
+                                  onSelect(chat.id);
+                                  setDetailOpen(true);
+                                },
+                              })),
+                          ]
+                    }
+                  />
+                </ScreenScrollView>
+              </Screen>
+            ),
+          },
+          {
+            id: 'conversation',
+            span: 1,
+            content: (
+              <Screen
+                header={
+                  <PageHeader
+                    title={open?.name ?? 'Conversation'}
+                    onBack={() => setDetailOpen(false)}
+                  />
+                }
+              >
+                <ScreenScrollView contentContainerStyle={{ padding: 24 }}>
+                  <Text>{open?.preview?.text ?? 'Pick a conversation'}</Text>
+                </ScreenScrollView>
+              </Screen>
+            ),
+          },
+        ],
       }}
-    >
-      <View
-        style={{
-          width: '100%',
-          maxWidth: 360,
-          borderRightWidth: 1,
-          borderRightColor: theme.colors.border,
-        }}
-      >
-        <ScrollView>
-          <ChatList
-            sections={SECTIONS}
-            density="compact"
-            selectedId={selected}
-            onChatPress={onSelect}
-            archived={{ count: 6, onPress: () => undefined, density: 'compact' }}
-            header={
-              <View style={{ padding: 12 }}>
-                <ChatSearchField value="" onChangeText={() => undefined} />
-              </View>
-            }
-          />
-        </ScrollView>
-      </View>
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-        <Text variant="title-3-semibold" style={{ color: theme.colors.text }}>
-          {open?.name ?? 'Pick a conversation'}
-        </Text>
-      </View>
-    </View>
+    />
   );
 }
 
@@ -445,94 +536,112 @@ function PaneAndDetail({
  * for what a row can say.
  */
 export const RowVariants: Story = {
-  render: () => (
-    <BothModes>
-      <View style={{ paddingBottom: 16 }}>
-        <Caption>Preview shapes</Caption>
-        <ChatListItem
-          name="Mirela Antunes"
-          avatar={face('mirela')}
-          status="online"
-          verified
-          time="12:41"
-          preview={{ sender: 'You', text: 'Sent the floor plan over, have a look' }}
-          outgoingStatus="read"
-        />
-        <ChatListItem
-          name="Darío Quintana"
-          avatar={face('dario')}
-          time="11:20"
-          preview={{ draft: true, text: 'about the deposit — can we' }}
-        />
-        <ChatListItem
-          name="Oriol Nadal"
-          avatar={face('oriol')}
-          time="09:47"
-          preview={{ attachment: { kind: 'voice', label: 'Voice message 0:12' } }}
-        />
-        <ChatListItem
-          name="Inés Bordoy"
-          avatar={face('ines')}
-          status="online"
-          typingLabel="typing…"
-          time="11:58"
-          unreadCount={3}
-        />
-        <Caption>States</Caption>
-        <ChatListItem
-          name="Saltwater Studio"
-          kind="channel"
-          avatar={face('saltwater')}
-          time="10:32"
-          muted
-          unreadCount={148}
-          preview={{ text: 'Three new rooms, same light' }}
-        />
-        <ChatListItem
-          name="Tramuntana Hikers"
-          kind="group"
-          faces={PINNED[1]?.faces}
-          time="12:04"
-          pinned
-          unreadCount={12}
-          preview={{ sender: 'Pau', text: 'Meeting at the car park at seven' }}
-        />
-        <ChatListItem
-          name="Bru Ferragut"
-          avatar={face('bru')}
-          status="busy"
-          time="Mon"
-          selected
-          preview={{ sender: 'You', text: 'On my way' }}
-          outgoingStatus="sending"
-        />
-        <Caption>Compact</Caption>
-        <ChatListItem
-          density="compact"
-          name="Ledger Assistant"
-          kind="bot"
-          avatar={face('ledger')}
-          time="Yesterday"
-          preview={{ text: 'Your weekly summary is ready' }}
-          outgoingStatus="delivered"
-        />
-        <ChatListItem
-          density="compact"
-          name="Flat 4B"
-          kind="group"
-          faces={ALL[4]?.faces}
-          time="Yesterday"
-          muted
-          unreadDot
-          preview={{
-            sender: 'Lia',
-            attachment: { kind: 'poll', label: 'Poll' },
-            text: 'Who is cooking?',
-          }}
-        />
-      </View>
-    </BothModes>
-  ),
+  render: function RowVariantsStory() {
+    return (
+      <Surface width={390}>
+        <View style={{ paddingBottom: 16 }}>
+          <Caption>Preview shapes</Caption>
+          <ListItem
+            {...conversationItem({
+              name: 'Mirela Antunes',
+              avatar: face('mirela'),
+              status: 'online',
+              verified: true,
+              time: '12:41',
+              preview: { sender: 'You', text: 'Sent the floor plan over, have a look' },
+              outgoingStatus: 'read',
+            })}
+          />
+          <ListItem
+            {...conversationItem({
+              name: 'Darío Quintana',
+              avatar: face('dario'),
+              time: '11:20',
+              preview: { draft: true, text: 'about the deposit — can we' },
+            })}
+          />
+          <ListItem
+            {...conversationItem({
+              name: 'Oriol Nadal',
+              avatar: face('oriol'),
+              time: '09:47',
+              preview: { attachment: { kind: 'voice', label: 'Voice message 0:12' } },
+            })}
+          />
+          <ListItem
+            {...conversationItem({
+              name: 'Inés Bordoy',
+              avatar: face('ines'),
+              status: 'online',
+              typingLabel: 'typing…',
+              time: '11:58',
+              unreadCount: 3,
+            })}
+          />
+          <Caption>States</Caption>
+          <ListItem
+            {...conversationItem({
+              name: 'Saltwater Studio',
+              kind: 'channel',
+              avatar: face('saltwater'),
+              time: '10:32',
+              muted: true,
+              unreadCount: 148,
+              preview: { text: 'Three new rooms, same light' },
+            })}
+          />
+          <ListItem
+            {...conversationItem({
+              name: 'Tramuntana Hikers',
+              kind: 'group',
+              faces: PINNED[1]?.faces,
+              time: '12:04',
+              pinned: true,
+              unreadCount: 12,
+              preview: { sender: 'Pau', text: 'Meeting at the car park at seven' },
+            })}
+          />
+          <ListItem
+            {...conversationItem({
+              name: 'Bru Ferragut',
+              avatar: face('bru'),
+              status: 'busy',
+              time: 'Mon',
+              active: true,
+              preview: { sender: 'You', text: 'On my way' },
+              outgoingStatus: 'sending',
+            })}
+          />
+          <Caption>More content types</Caption>
+          <ListItem
+            {...conversationItem({
+              name: 'Ledger Assistant',
+              kind: 'bot',
+              avatar: face('ledger'),
+              time: 'Yesterday',
+              preview: { text: 'Your weekly summary is ready' },
+              outgoingStatus: 'delivered',
+            })}
+          />
+          <ListItem
+            {...conversationItem({
+              name: 'Flat 4B',
+              kind: 'group',
+              faces: ALL[4]?.faces,
+              time: 'Yesterday',
+              muted: true,
+              unreadDot: true,
+              preview: {
+                sender: 'Lia',
+                attachment: { kind: 'poll', label: 'Poll' },
+                text: 'Who is cooking?',
+              },
+            })}
+          />
+        </View>
+      </Surface>
+    );
+  },
 };
 
 /**
@@ -540,16 +649,21 @@ export const RowVariants: Story = {
  * the same actions are behind a swipe.
  */
 export const Actions: Story = {
-  render: () => (
-    <BothModes>
-      <View style={{ paddingTop: 8, paddingBottom: 16 }}>
-        <Caption>Hover a row (web) — swipe it on touch</Caption>
-        {ALL.slice(0, 4).map((chat) => (
-          <ChatListItem key={chat.id} {...chat} onAction={() => undefined} />
-        ))}
-      </View>
-    </BothModes>
-  ),
+  render: function ActionsStory() {
+    return (
+      <Surface width={390}>
+        <View style={{ paddingTop: 8, paddingBottom: 16 }}>
+          <Caption>Hover a row (web) — swipe it on touch</Caption>
+          {ALL.slice(0, 4).map((chat) => (
+            <ListItem
+              key={chat.id}
+              {...conversationItem({ ...chat, onAction: fn().mockName('onAction') })}
+            />
+          ))}
+        </View>
+      </Surface>
+    );
+  },
 };
 
 /**
@@ -559,7 +673,7 @@ export const Actions: Story = {
  */
 export const StoriesOwnEntry: Story = {
   render: () => (
-    <BothModes>
+    <Surface width={390}>
       <Caption>no name or picture — the placeholder, never the label's first letter</Caption>
       <StoriesRow stories={STORIES} own={{}} labels={{ own: 'Your status' }} />
       <Caption>a name — its initial and tint; the caption is still the label</Caption>
@@ -574,48 +688,41 @@ export const StoriesOwnEntry: Story = {
         own={{ name: 'Mireia Solans', avatar: face('you') }}
         labels={{ own: 'Add to your status' }}
       />
-    </BothModes>
+    </Surface>
   ),
 };
 
 /** Two to four faces in one avatar-sized cluster. */
 export const GroupAvatars: Story = {
   render: () => (
-    <BothModes>
+    <Surface width={390}>
       <View style={{ flexDirection: 'row', gap: 20, padding: 20, alignItems: 'center' }}>
         {[1, 2, 3, 4].map((count) => (
-          <GroupAvatar
+          <AvatarGroup
+            layout="conversation"
+            showInitials
             key={count}
             size={56}
-            faces={[
-              { source: face('hiker-1'), name: 'Nuria' },
-              { source: face('hiker-2'), name: 'Pau' },
-              { source: face('hiker-3'), name: 'Ivet' },
+            items={[
+              { uri: face('hiker-1'), name: 'Nuria' },
+              { uri: face('hiker-2'), name: 'Pau' },
+              { uri: face('hiker-3'), name: 'Ivet' },
               { name: 'Roc' },
             ].slice(0, count)}
           />
         ))}
       </View>
-    </BothModes>
+    </Surface>
   ),
 };
 
 /** The search field with grouped results and the matched run highlighted. */
 export const Search: Story = {
-  render: function SearchStory() {
-    const preset = useContext(BloomThemeContext)?.colorPreset;
-    return (
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, padding: 20 }}>
-        {(['light', 'dark'] as const).map((mode) => (
-          <BloomThemeProvider key={mode} mode={mode} colorPreset={preset}>
-            <Surface width={390}>
-              <SearchPane />
-            </Surface>
-          </BloomThemeProvider>
-        ))}
-      </View>
-    );
-  },
+  render: () => (
+    <Surface width={390}>
+      <SearchPane />
+    </Surface>
+  ),
 };
 
 function SearchPane() {
@@ -642,7 +749,11 @@ function SearchPane() {
           placeholder="Search chats and messages"
         />
       </View>
-      <ChatSearchResults query={query} results={results} onResultPress={() => undefined} />
+      <ChatSearchResults
+        query={query}
+        results={results}
+        onResultPress={fn().mockName('onResultPress')}
+      />
     </View>
   );
 }
@@ -650,13 +761,38 @@ function SearchPane() {
 /** Nothing yet, and waiting for the conversations to arrive. */
 export const EmptyAndLoading: Story = {
   render: () => (
-    <BothModes>
+    <Surface width={390}>
       <View style={{ paddingBottom: 16 }}>
         <Caption>Empty</Caption>
-        <ChatList chats={[]} />
+        <List items={[]} empty={<Text>No conversations yet</Text>} />
         <Caption>Loading</Caption>
-        <ChatList loading loadingCount={5} />
+        <List loading loadingCount={5} />
       </View>
-    </BothModes>
+    </Surface>
   ),
 };
+
+/** Fixture mapping; content and interactions are rendered by the shared ListItem. */
+function conversationItem({
+  active,
+  onPress,
+  onLongPress,
+  href,
+  onAction,
+  swipeEnabled,
+  swipeActions,
+  label,
+  ...conversation
+}: ListConversationData & ListCommonProps): ListItemProps {
+  return {
+    conversation,
+    active,
+    onPress,
+    onLongPress,
+    href,
+    onAction,
+    swipeEnabled,
+    swipeActions,
+    label,
+  };
+}

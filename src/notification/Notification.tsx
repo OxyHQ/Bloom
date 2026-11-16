@@ -1,3 +1,4 @@
+import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
 import type React from 'react';
 import { memo, useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View, type ViewStyle } from 'react-native';
@@ -7,7 +8,7 @@ import { IS_WEB } from '../styles/platform';
 import { useTheme } from '../theme/use-theme';
 import { useMessages } from '../locale/messages';
 import { Avatar } from '../avatar';
-import { Button, CloseButton } from '../button';
+import { Button } from '../button';
 import { Text } from '../typography';
 import { RiCheckboxCircleFill } from '../icons/remix/RiCheckboxCircleFill';
 import { RiErrorWarningFill } from '../icons/remix/RiErrorWarningFill';
@@ -294,8 +295,12 @@ function NotificationComponent({
       </View>
 
       {dismissible ? (
-        <CloseButton
-          size="xs"
+        <Button
+          appearance="outline"
+          tone="neutral"
+          iconOnly
+          icon={DismissActionIcon}
+          size={20}
           accessibilityLabel={closeLabel}
           onPress={dismiss}
           style={[

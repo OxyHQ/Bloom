@@ -114,7 +114,7 @@ export interface OrderStatusBarProps {
   icon?: BloomIconComponent;
   /** An arbitrary leading node — an `Avatar`, a photo. Wins over `icon`. */
   leading?: ReactNode;
-  /** A trailing control — a `Button`, a `GlyphButton`. */
+  /** A trailing control — a `Button`, a `Button`. */
   action?: ReactNode;
   /** Default `surface`. */
   variant?: OrderStatusBarVariant;

@@ -15,7 +15,7 @@
  * is exactly wrong for one — a descendant would be able to re-enable itself.
  * The gate on that is structural: the visual scope carries size and tone only; Field owns constraints.
  */
-import React from 'react';
+import type React from 'react';
 import { Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
@@ -169,7 +169,7 @@ describe('density adoption', () => {
 
 import { Switch } from '../switch';
 import { Button } from '../button';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+
 import { Field } from '../field';
 import { resolvedStyle } from './support/rendered-style';
 
@@ -179,9 +179,9 @@ it('sizes Button, Switch and joined controls from the same nearest scope', () =>
       <BloomScope size="sm">
         <Button testID="button">Save</Button>
         <Switch testID="switch" accessibilityLabel="Enabled" />
-        <ButtonGroup>
-          <ButtonGroupItem testID="item">Day</ButtonGroupItem>
-        </ButtonGroup>
+        <Button.Group>
+          <Button testID="item">Day</Button>
+        </Button.Group>
         <Button testID="explicit" size="lg">
           Large
         </Button>
@@ -190,7 +190,7 @@ it('sizes Button, Switch and joined controls from the same nearest scope', () =>
   );
   expect(resolvedStyle(screen.getByTestId('button').props.style).height).toBe(32);
   expect(resolvedStyle(screen.getByTestId('explicit').props.style).height).toBe(44);
-  expect(resolvedStyle(screen.getByTestId('item').props.style).height).toBe(30);
+  expect(resolvedStyle(screen.getByTestId('item').props.style).height).toBe(32);
   expect(
     screen.getByTestId('switch').findAll((node) => resolvedStyle(node.props.style).width === 36)
       .length,

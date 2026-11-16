@@ -3,8 +3,8 @@ import { Text, View } from 'react-native';
 import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { FrostedIconButton } from '../frosted-icon-button';
-import { resolveFrostedSize } from '../frosted-icon-button/shared';
+import { Button } from '../button';
+import { resolveButtonGeometry } from '../button/shared';
 import { pressHost } from './support/press-host';
 import { classNamesOn, renderedChildren, resolvedStyle } from './support/rendered-style';
 
@@ -24,7 +24,10 @@ function MockIcon({ fill, testID }: { fill?: string; testID?: string }) {
 describe('FrostedIconButton (native)', () => {
   it('renders its icon content', () => {
     const { getByText } = renderWithTheme(
-      <FrostedIconButton
+      <Button
+        appearance="outline"
+        tone="neutral"
+        iconOnly
         accessibilityLabel="Back"
         icon={(iconProps) => <Text {...iconProps}>x</Text>}
       />,
@@ -35,7 +38,10 @@ describe('FrostedIconButton (native)', () => {
   it('calls onPress when pressed', () => {
     const onPress = jest.fn();
     const { getByTestId } = renderWithTheme(
-      <FrostedIconButton
+      <Button
+        appearance="outline"
+        tone="neutral"
+        iconOnly
         testID="btn"
         accessibilityLabel="Back"
         onPress={onPress}
@@ -52,7 +58,10 @@ describe('FrostedIconButton (native)', () => {
   it('marks the disabled a11y state and drops the press handler', () => {
     const onPress = jest.fn();
     const { getByTestId } = renderWithTheme(
-      <FrostedIconButton
+      <Button
+        appearance="outline"
+        tone="neutral"
+        iconOnly
         testID="btn"
         disabled
         accessibilityLabel="Back"
@@ -61,15 +70,18 @@ describe('FrostedIconButton (native)', () => {
       />,
     );
     const btn = getByTestId('btn');
-    expect(btn.props.accessibilityState).toMatchObject({ disabled: true, selected: false });
+    expect(btn.props.accessibilityState).toMatchObject({ disabled: true });
     expect(btn.props.onPress).toBeUndefined();
   });
 
   it('reports the selected a11y state when active', () => {
     const { getByTestId } = renderWithTheme(
-      <FrostedIconButton
+      <Button
+        appearance="outline"
+        tone="neutral"
+        iconOnly
         testID="btn"
-        checked
+        pressed
         accessibilityLabel="Mute"
         icon={(iconProps) => <Text {...iconProps}>x</Text>}
       />,
@@ -82,7 +94,10 @@ describe('FrostedIconButton (native)', () => {
 
   it('injects the theme icon color as a fallback fill on a bare icon', () => {
     const { getByTestId } = renderWithTheme(
-      <FrostedIconButton
+      <Button
+        appearance="outline"
+        tone="neutral"
+        iconOnly
         accessibilityLabel="Back"
         icon={(iconProps) => <MockIcon {...iconProps} testID="ic" />}
       />,
@@ -93,7 +108,10 @@ describe('FrostedIconButton (native)', () => {
 
   it('never overrides an explicit fill on the icon', () => {
     const { getByTestId } = renderWithTheme(
-      <FrostedIconButton
+      <Button
+        appearance="outline"
+        tone="neutral"
+        iconOnly
         accessibilityLabel="Back"
         icon={(iconProps) => <MockIcon {...iconProps} testID="ic" fill="rgb(1, 2, 3)" />}
       />,
@@ -103,7 +121,10 @@ describe('FrostedIconButton (native)', () => {
 
   it('resolves preset sizes to concrete geometry (md=36, sm=32)', () => {
     const { getByTestId, rerender } = renderWithTheme(
-      <FrostedIconButton
+      <Button
+        appearance="outline"
+        tone="neutral"
+        iconOnly
         testID="btn"
         size="md"
         accessibilityLabel="Back"
@@ -113,7 +134,10 @@ describe('FrostedIconButton (native)', () => {
     expect(resolvedStyle(getByTestId('btn').props.style).width).toBe(36);
     rerender(
       <BloomThemeProvider mode="dark" colorPreset="blue">
-        <FrostedIconButton
+        <Button
+          appearance="outline"
+          tone="neutral"
+          iconOnly
           testID="btn"
           size="sm"
           accessibilityLabel="Back"
@@ -126,14 +150,20 @@ describe('FrostedIconButton (native)', () => {
 
   it('renders a supplied icon component', () => {
     const { getByText } = renderWithTheme(
-      <FrostedIconButton accessibilityLabel="Back" icon={() => <Text>★</Text>} />,
+      <Button
+        appearance="outline"
+        tone="neutral"
+        iconOnly
+        accessibilityLabel="Back"
+        icon={() => <Text>★</Text>}
+      />,
     );
     expect(getByText('★')).toBeTruthy();
   });
 });
 
 it('preserves numeric diameter and icon sizing', () => {
-  expect(resolveFrostedSize(44)).toEqual({ diameter: 44, iconBox: 25 });
+  expect(resolveButtonGeometry(44)).toMatchObject({ height: 44, iconSize: 26 });
 });
 
 // Regression: the same two-node shape `Button` and `Fab` carried — an unstyled
@@ -145,7 +175,10 @@ describe('layout: the button IS the node its parent lays out', () => {
   it('renders the pressable as its outermost node — no wrapper in between', () => {
     const { toJSON } = renderWithTheme(
       <View testID="host">
-        <FrostedIconButton
+        <Button
+          appearance="outline"
+          tone="neutral"
+          iconOnly
           testID="fib"
           accessibilityLabel="Back"
           icon={(iconProps) => <Text {...iconProps}>x</Text>}
@@ -160,7 +193,10 @@ describe('layout: the button IS the node its parent lays out', () => {
 
   it('lands className, the caller style and the chrome on that one node', () => {
     const { getByTestId } = renderWithTheme(
-      <FrostedIconButton
+      <Button
+        appearance="outline"
+        tone="neutral"
+        iconOnly
         testID="fib"
         className="flex-1"
         style={{ marginTop: 7 }}
@@ -171,7 +207,7 @@ describe('layout: the button IS the node its parent lays out', () => {
     const style = getByTestId('fib').props.style;
     expect(classNamesOn(style)).toContain('flex-1');
     const resolved = resolvedStyle(style);
-    expect(resolved.borderRadius).toBe(18);
+    expect(resolved.borderRadius).toBe(9999);
     expect(resolved.marginTop).toBe(7);
     expect(resolved.transform).toBeUndefined();
   });

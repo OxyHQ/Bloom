@@ -17,7 +17,7 @@ import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { GROUPED_SECTION_TEST_ID } from '../grouped-section/surface';
-import { SettingsListGroup, SettingsListItem } from '../settings-list/SettingsList';
+import { GroupedSection, GroupedSectionItem } from '../grouped-section/GroupedSection';
 import { useTheme } from '../theme/use-theme';
 import { pressHost } from './support/press-host';
 import { resolvedStyle } from './support/rendered-style';
@@ -40,10 +40,10 @@ function renderWithTheme(ui: React.ReactElement) {
   );
 }
 
-describe('SettingsListItem', () => {
+describe('GroupedSectionItem', () => {
   it('renders title and description', () => {
     const { getByText } = renderWithTheme(
-      <SettingsListItem title="Title" description="Description" />,
+      <GroupedSectionItem title="Title" description="Description" />,
     );
 
     expect(getByText('Title')).toBeTruthy();
@@ -53,12 +53,12 @@ describe('SettingsListItem', () => {
   it('calls onPress when pressed', () => {
     const onPress = jest.fn();
     const { getByLabelText } = renderWithTheme(
-      <SettingsListItem title="Press me" onPress={onPress} />,
+      <GroupedSectionItem title="Press me" onPress={onPress} />,
     );
 
     // The row's own host node, found by the label the item derives from
     // `title`. Pressing the title `Text` instead would walk up past the row to
-    // `<SettingsListItem onPress={…}>` in this file's own JSX and report a call
+    // `<GroupedSectionItem onPress={…}>` in this file's own JSX and report a call
     // the component had no part in.
     pressHost(getByLabelText('Press me'));
     expect(onPress).toHaveBeenCalledTimes(1);
@@ -66,7 +66,7 @@ describe('SettingsListItem', () => {
 
   it('sets accessibility props when pressable', () => {
     const { getByLabelText } = renderWithTheme(
-      <SettingsListItem
+      <GroupedSectionItem
         title="Accessible"
         onPress={() => {}}
         accessibilityLabel="Custom label"
@@ -81,7 +81,7 @@ describe('SettingsListItem', () => {
   });
 
   it('respects left inset when provided', () => {
-    const { getByTestId } = renderWithTheme(<SettingsListItem title="Inset" leftInset={32} />);
+    const { getByTestId } = renderWithTheme(<GroupedSectionItem title="Inset" leftInset={32} />);
 
     const content = getByTestId('settings-list-item-content');
     expect(content.props['data-left-inset']).toBe(32);
@@ -103,12 +103,12 @@ describe('SettingsListItem', () => {
       return getByText('Carrer del Forn 12, 08002').props.numberOfLines as number | undefined;
     };
 
-    expect(lines(<SettingsListItem title="Carrer del Forn 12, 08002" />)).toBe(1);
+    expect(lines(<GroupedSectionItem title="Carrer del Forn 12, 08002" />)).toBe(1);
     expect(
-      lines(<SettingsListItem title="Carrer del Forn 12, 08002" titleNumberOfLines={2} />),
+      lines(<GroupedSectionItem title="Carrer del Forn 12, 08002" titleNumberOfLines={2} />),
     ).toBe(2);
     expect(
-      lines(<SettingsListItem title="Carrer del Forn 12, 08002" titleNumberOfLines={0} />),
+      lines(<GroupedSectionItem title="Carrer del Forn 12, 08002" titleNumberOfLines={0} />),
     ).toBeUndefined();
   });
 });
@@ -116,7 +116,7 @@ describe('SettingsListItem', () => {
 describe('GroupedSectionItem description lines', () => {
   const lines = (props: { descriptionLines?: number }): number | undefined => {
     const { getByText } = renderWithTheme(
-      <SettingsListItem title="Policy" description="A long description" {...props} />,
+      <GroupedSectionItem title="Policy" description="A long description" {...props} />,
     );
     return getByText('A long description').props.numberOfLines as number | undefined;
   };
@@ -129,7 +129,7 @@ describe('GroupedSectionItem description lines', () => {
   });
 });
 
-describe('SettingsListGroup', () => {
+describe('GroupedSection', () => {
   // The colours the provider resolves, read through the same hook the group uses,
   // so the assertion names roles rather than hex values that move with presets.
   function surfaceOf(variant?: 'plain' | 'filled') {
@@ -148,10 +148,10 @@ describe('SettingsListGroup', () => {
     const { toJSON, UNSAFE_root } = renderWithTheme(
       <>
         <Probe />
-        <SettingsListGroup variant={variant}>
-          <SettingsListItem title="Row" />
+        <GroupedSection variant={variant}>
+          <GroupedSectionItem title="Row" />
           <PublishedProbe />
-        </SettingsListGroup>
+        </GroupedSection>
       </>,
     );
     const backgrounds: string[] = [];
@@ -186,15 +186,15 @@ describe('SettingsListGroup', () => {
   });
 });
 
-describe('SettingsListGroup card radius', () => {
+describe('GroupedSection card radius', () => {
   it.each([
     [undefined, 28],
     ['radius-28', 28],
   ] as const)('applies %s to the actual painted card', (radius, expected) => {
     const screen = renderWithTheme(
-      <SettingsListGroup radius={radius}>
-        <SettingsListItem title="Account" />
-      </SettingsListGroup>,
+      <GroupedSection radius={radius}>
+        <GroupedSectionItem title="Account" />
+      </GroupedSection>,
     );
     expect(
       resolvedStyle(screen.getByTestId(GROUPED_SECTION_TEST_ID).props.style).borderRadius,
@@ -204,10 +204,10 @@ describe('SettingsListGroup card radius', () => {
 
 it('separates grouped settings with parent-colored spacing by default', () => {
   const screen = renderWithTheme(
-    <SettingsListGroup>
-      <SettingsListItem title="First" />
-      <SettingsListItem title="Second" />
-    </SettingsListGroup>,
+    <GroupedSection>
+      <GroupedSectionItem title="First" />
+      <GroupedSectionItem title="Second" />
+    </GroupedSection>,
   );
   const group = screen.getByTestId(GROUPED_SECTION_TEST_ID);
   expect(cardLayout(group)).toMatchObject({
@@ -221,10 +221,10 @@ it('separates grouped settings with parent-colored spacing by default', () => {
 
 it('keeps explicit legacy divider separation and supports no separator', () => {
   const screen = renderWithTheme(
-    <SettingsListGroup separator="line" radius="radius-16">
-      <SettingsListItem title="First" />
-      <SettingsListItem title="Second" />
-    </SettingsListGroup>,
+    <GroupedSection separator="line" radius="radius-16">
+      <GroupedSectionItem title="First" />
+      <GroupedSectionItem title="Second" />
+    </GroupedSection>,
   );
   expect(screen.queryAllByTestId('grouped-section-divider')).toHaveLength(1);
   expect(resolvedStyle(screen.getByTestId(GROUPED_SECTION_TEST_ID).props.style).borderRadius).toBe(
@@ -232,10 +232,10 @@ it('keeps explicit legacy divider separation and supports no separator', () => {
   );
   screen.unmount();
   const plain = renderWithTheme(
-    <SettingsListGroup separator="none">
-      <SettingsListItem title="First" />
-      <SettingsListItem title="Second" />
-    </SettingsListGroup>,
+    <GroupedSection separator="none">
+      <GroupedSectionItem title="First" />
+      <GroupedSectionItem title="Second" />
+    </GroupedSection>,
   );
   expect(plain.queryAllByTestId('grouped-section-divider')).toHaveLength(0);
 });

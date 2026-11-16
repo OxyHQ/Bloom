@@ -111,12 +111,12 @@ The event and swatch hues are hardcoded (Tailwind blue, pink, purple, lime, emer
 - **Web:** the inbox panel anchors below its button, aligned to its end, 8px away; the details panel anchors to the right of the DAY CARD (not the chip), 6px away, flipping left when it does not fit. Both are `Popover` surfaces — portaled, ranked by open order, dismissed by outside press and Escape; no `zIndex` of their own.
 - **Native:** both present in the bottom sheet every Bloom popover uses; the details panel becomes a bottom sheet on phones.
 - The details popover takes its anchor from the popover's own context (`popover/context`) rather than a `PopoverTrigger`: the anchor is whichever day card holds the pressed chip, and a trigger can only wrap one fixed element.
-- The switcher and the header are raised with `Z_INDEX.floating` — the switcher grows DOWN over the grid in document flow, which is local stacking, not an overlay.
+- `CalendarViewHeader` composes `PageHeader`: page commands occupy its actions and the month switcher its accessory. The switcher expands in document flow; the shared header owns chrome and stacking without an additional header wrapper.
 
 ## Design decisions
 
 - **Panel motion:** the inbox and details panels wear `Popover`'s motion (fade + zoom + a short slide, 200ms). The motion belongs to the overlay family, not the block itself.
-- **Switcher chevrons** are `date-picker`'s `MonthNavButton` (a 16px `GlyphButton`), full pills as in its panel.
+- **Switcher chevrons** are `date-picker`'s `MonthNavButton` (a 16px `Button`), full pills as in its panel.
 - **Slots, not ports:** the breadcrumb (with its workspace avatars), the notification bell and the dashboard sidebar are the app shell's; the block takes `breadcrumb` and `actions` and leaves the sidebar to the page.
 - **Keyboard (switcher grid):** one tab stop, arrow keys / Home / End / PageUp / PageDown move focus; leaving the month pages the pill's own month.
 

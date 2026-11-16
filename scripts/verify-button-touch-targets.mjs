@@ -39,6 +39,8 @@ try {
               width: box.width,
               height: box.height,
               direction: getComputedStyle(node).direction,
+              paintHeight: Number.parseFloat(getComputedStyle(node, '::before').height),
+              paintWidth: Number.parseFloat(getComputedStyle(node, '::before').width),
             };
           }),
         );
@@ -73,6 +75,30 @@ try {
         assert.ok(row.width >= 44 && row.height >= 44, `${row.id}: ${row.width}×${row.height}`);
         assert.equal(row.direction, row.id.startsWith('rtl-') ? 'rtl' : 'ltr');
       }
+      for (const direction of ['ltr', 'rtl'])
+        for (const [size, expected] of [
+          ['xs', 24],
+          ['sm', 32],
+          ['md', 36],
+          ['lg', 44],
+        ]) {
+          const text = coarse.find((row) => row.id === `${direction}-${size}-text`);
+          const icon = coarse.find((row) => row.id === `${direction}-${size}-icon`);
+          assert.equal(text.paintHeight, expected, `${text.id} visual height`);
+          assert.equal(icon.paintHeight, expected, `${icon.id} visual height`);
+          assert.equal(icon.paintWidth, expected, `${icon.id} visual width`);
+        }
+      const groups = await page.$$eval('.bloom-surface.bloom-button-group-touch-paint', (nodes) =>
+        nodes.map((node) => ({
+          target: node.getBoundingClientRect().height,
+          paint: Number.parseFloat(getComputedStyle(node, '::before').height),
+        })),
+      );
+      assert.equal(groups.length, 2);
+      for (const group of groups) {
+        assert.equal(group.target, 44);
+        assert.equal(group.paint, 24, 'xs group keeps its visual size');
+      }
       for (let i = 0; i < coarse.length; i++)
         for (let j = i + 1; j < coarse.length; j++) {
           const a = coarse[i],
@@ -104,6 +130,47 @@ try {
         long.content <= long.width + 1 && long.height > 44,
         'long label wraps without horizontal clipping',
       );
+      // A CSS-authored border changes the absolute containing box. Resolve the
+      // actual pseudo styles onto a temporary empty element so its painted box
+      // can be measured, including logical insets/translate in both directions.
+      const authoredPaint = await page.evaluate(() => {
+        const sheet = document.createElement('style');
+        sheet.textContent =
+          '.verify-authored-paint { height:44px!important; width:52px!important; border:4px solid blue!important; }';
+        document.head.append(sheet);
+        const result = ['ltr', 'rtl'].map((direction) => {
+          const host = document.querySelector(`[data-testid="${direction}-md-icon"]`);
+          host.classList.add('verify-authored-paint');
+          const styles = getComputedStyle(host, '::before');
+          const probe = document.createElement('span');
+          for (const property of styles)
+            probe.style.setProperty(property, styles.getPropertyValue(property));
+          probe.style.visibility = 'hidden';
+          host.append(probe);
+          const outer = host.getBoundingClientRect(),
+            paint = probe.getBoundingClientRect();
+          const geometry = {
+            direction,
+            width: paint.width,
+            height: paint.height,
+            dx: paint.x - outer.x,
+            dy: paint.y - outer.y,
+          };
+          probe.remove();
+          host.classList.remove('verify-authored-paint');
+          return geometry;
+        });
+        sheet.remove();
+        return result;
+      });
+      for (const paint of authoredPaint) {
+        assert.equal(paint.width, 52, `${paint.direction} authored paint width`);
+        assert.equal(paint.height, 44, `${paint.direction} authored paint height`);
+        assert(
+          Math.abs(paint.dx) < 0.1 && Math.abs(paint.dy) < 0.1,
+          `${paint.direction} authored paint stays centered`,
+        );
+      }
       await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: false });
       await page.waitForFunction(
         () =>

@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { ScrollView, View, useWindowDimensions } from 'react-native';
@@ -7,7 +8,7 @@ import { Breadcrumb, BreadcrumbItem } from '../breadcrumb';
 import { Button } from '../button';
 import { BottomBar } from '../bottom-bar';
 import { RiAddFill, RiFilter3Fill, RiHomeLine } from '../icons/remix';
-import { DEMO_NOTIFICATIONS } from '../notification-center/NotificationCenter.stories';
+import { DEMO_NOTIFICATIONS } from '../notification-center/__fixtures__/story-data';
 import {
   DEMO_ACCOUNT,
   DEMO_NAV,
@@ -83,6 +84,8 @@ function Trail() {
 
 function Actions() {
   const compact = useWindowDimensions().width < 600;
+  const [filtered, setFiltered] = useState(false);
+  const [created, setCreated] = useState(0);
   return (
     <>
       <NotificationBell notifications={DEMO_NOTIFICATIONS} testID="bell" />
@@ -91,6 +94,8 @@ function Actions() {
         icon={compact ? RiFilter3Fill : undefined}
         leadingIcon={compact ? undefined : RiFilter3Fill}
         accessibilityLabel="Filters"
+        pressed={filtered}
+        onPressedChange={setFiltered}
         appearance="outline"
         tone="neutral"
       >
@@ -100,11 +105,12 @@ function Actions() {
         size="md"
         icon={compact ? RiAddFill : undefined}
         leadingIcon={compact ? undefined : RiAddFill}
-        accessibilityLabel="Create ticket"
+        accessibilityLabel={`Create ticket; ${created} created`}
+        onPress={() => setCreated((count) => count + 1)}
         appearance="solid"
         tone="accent"
       >
-        {compact ? undefined : 'Create ticket'}
+        {compact ? undefined : created ? `${created} created` : 'Create ticket'}
       </Button>
     </>
   );
@@ -122,49 +128,48 @@ function Shell({
   const [collapsed, setCollapsed] = useState(true);
   const [offer, setOffer] = useState(true);
   return (
-    <View style={{ width: '100%', height: 860 }}>
-      <AppShell
-        {...args}
-        testID="shell"
-        navigationPlacement={rail ? 'rail' : (args?.navigationPlacement ?? 'auto')}
-        sidebar={{
-          variant: rail ? 'rail' : 'panel',
-          collapsed: compact ? collapsed : undefined,
-          onCollapsedChange: setCollapsed,
-          items: rail ? DEMO_RAIL_NAV : DEMO_NAV,
-          secondaryItems: rail ? DEMO_RAIL_SECONDARY : DEMO_SECONDARY,
-          selected,
-          onNavigate: (item) => setSelected(item.key),
-          account: DEMO_ACCOUNT,
-          team: DEMO_TEAM,
-        }}
-        title={args?.title ?? 'Welcome Maya'}
-        breadcrumb={compact ? undefined : <Trail />}
-        actions={<Actions />}
-        overlay={
-          offer ? (
-            <ProOfferCard
-              title="Get lifetime access to Pro"
-              description="8 full-page templates and 23 Pro components, 17 of them chart cards. One payment, updates for life, installed into this project as source."
-              ctaLabel="Get Pro"
-              onDismiss={() => setOffer(false)}
-              testID="offer"
-            />
-          ) : null
-        }
-      >
-        <View style={{ flexDirection: 'row', gap: 16 }}>
-          <View style={{ flex: 1 }}>
-            <Placeholder height={280} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Placeholder height={280} />
-          </View>
+    <AppShell
+      {...args}
+      testID="shell"
+      navigationPlacement={rail ? 'rail' : (args?.navigationPlacement ?? 'auto')}
+      sidebar={{
+        variant: rail ? 'rail' : 'panel',
+        collapsed: compact ? collapsed : undefined,
+        onCollapsedChange: setCollapsed,
+        items: rail ? DEMO_RAIL_NAV : DEMO_NAV,
+        secondaryItems: rail ? DEMO_RAIL_SECONDARY : DEMO_SECONDARY,
+        selected,
+        onNavigate: (item) => setSelected(item.key),
+        account: DEMO_ACCOUNT,
+        team: DEMO_TEAM,
+      }}
+      title={args?.title ?? 'Welcome Maya'}
+      breadcrumb={compact ? undefined : <Trail />}
+      actions={<Actions />}
+      overlay={
+        offer ? (
+          <ProOfferCard
+            title="Get lifetime access to Pro"
+            description="8 full-page templates and 23 Pro components, 17 of them chart cards. One payment, updates for life, installed into this project as source."
+            ctaLabel="Get Pro"
+            onDismiss={() => setOffer(false)}
+            onCtaPress={() => setOffer(false)}
+            testID="offer"
+          />
+        ) : null
+      }
+    >
+      <View style={{ flexDirection: 'row', gap: 16 }}>
+        <View style={{ flex: 1 }}>
+          <Placeholder height={280} />
         </View>
-        <Placeholder height={337} />
-        <Placeholder height={420} />
-      </AppShell>
-    </View>
+        <View style={{ flex: 1 }}>
+          <Placeholder height={280} />
+        </View>
+      </View>
+      <Placeholder height={337} />
+      <Placeholder height={420} />
+    </AppShell>
   );
 }
 
@@ -205,7 +210,7 @@ export const Header: Story = {
 export const Bell: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ maxWidth: '100%', width: 900, height: 760, alignItems: 'flex-end' }}>
+    <View style={{ maxWidth: '100%', width: 900, alignItems: 'flex-end' }}>
       <NotificationBell notifications={DEMO_NOTIFICATIONS} testID="bell" />
     </View>
   ),
@@ -220,7 +225,7 @@ export const ProOffer: Story = {
       title="Get lifetime access to Pro"
       description="8 full-page templates and 23 Pro components, 17 of them chart cards. One payment, updates for life, installed into this project as source."
       ctaLabel="Get Pro"
-      onDismiss={() => {}}
+      onDismiss={fn().mockName('onDismiss')}
       testID="offer"
     />
   ),
@@ -527,89 +532,85 @@ export const ModularDeck: Story = {
     const [activePanel, setActivePanel] = useState<string>();
     const [revealPanel, setRevealPanel] = useState<{ id: string; requestKey: number }>();
     return (
-      <View style={{ height: 680 }}>
-        <AppShell
-          testID="modular-deck"
-          navigationAlign="content"
-          sidebar={{ items: DEMO_NAV, surface: 'plain' }}
-          panelLayout={{
-            mode: 'deck',
-            activePanel,
-            revealPanel,
-            trailingAction: (
-              <Button
-                accessibilityLabel="Add column"
-                onPress={() => {
-                  const id = `Column ${columns.length + 1}`;
-                  setColumns([...columns, id]);
-                  setActivePanel(id);
-                  setRevealPanel({ id, requestKey: columns.length });
-                }}
-              >
-                Add
-              </Button>
-            ),
-            panels: columns.map((id) => ({
-              id,
-              width: 360,
-              minWidth: 280,
-              maxWidth: 520,
-              resizable: true,
-              scroll: 'content',
-              headerActions: <DeckHeader column={id} />,
-              navigation: {
-                initialEntries: [{ key: 'home', name: 'Home' }],
-                render: () => <DeckPage column={id} />,
-              },
-            })),
-          }}
-        />
-      </View>
+      <AppShell
+        testID="modular-deck"
+        navigationAlign="content"
+        sidebar={{ items: DEMO_NAV, surface: 'plain' }}
+        panelLayout={{
+          mode: 'deck',
+          activePanel,
+          revealPanel,
+          trailingAction: (
+            <Button
+              accessibilityLabel="Add column"
+              onPress={() => {
+                const id = `Column ${columns.length + 1}`;
+                setColumns([...columns, id]);
+                setActivePanel(id);
+                setRevealPanel({ id, requestKey: columns.length });
+              }}
+            >
+              Add
+            </Button>
+          ),
+          panels: columns.map((id) => ({
+            id,
+            width: 360,
+            minWidth: 280,
+            maxWidth: 520,
+            resizable: true,
+            scroll: 'content',
+            headerActions: <DeckHeader column={id} />,
+            navigation: {
+              initialEntries: [{ key: 'home', name: 'Home' }],
+              render: () => <DeckPage column={id} />,
+            },
+          })),
+        }}
+      />
     );
   },
 };
 /** Joined or separated tracks use the same accessible resize grip and pair constraints. */
 export const ModularInbox: Story = {
   render: () => (
-    <View style={{ height: 680 }}>
-      <AppShell
-        testID="modular-inbox"
-        variant="dashboard"
-        contentMaxWidth="none"
-        panelLayout={{
-          appearance: 'joined',
-          collapseBelow: 700,
-          activePanel: 'message',
-          panels: [
-            {
-              id: 'list',
-              width: 380,
-              minWidth: 320,
-              maxWidth: 480,
-              resizable: true,
-              scroll: 'panel',
-              content: (
-                <View style={{ padding: 16, gap: 16 }}>
-                  {Array.from({ length: 30 }, (_, i) => (
-                    <Text key={i}>Message {i + 1}</Text>
-                  ))}
-                </View>
-              ),
-            },
-            {
-              id: 'message',
-              span: 2,
-              minWidth: 300,
-              content: (
-                <View style={{ padding: 24 }}>
-                  <Text variant="title-1-medium">A message with room to read</Text>
-                </View>
-              ),
-            },
-          ],
-        }}
-      />
-    </View>
+    <AppShell
+      testID="modular-inbox"
+      variant="dashboard"
+      contentMaxWidth="none"
+      panelLayout={{
+        appearance: 'joined',
+        collapseBelow: 700,
+        activePanel: 'message',
+        panels: [
+          {
+            id: 'list',
+            width: 380,
+            minWidth: 320,
+            maxWidth: 480,
+            resizable: true,
+            scroll: 'panel',
+            content: (
+              <View style={{ padding: 16, gap: 16 }}>
+                {Array.from({ length: 30 }, (_, i) => (
+                  <Text key={i}>Message {i + 1}</Text>
+                ))}
+              </View>
+            ),
+          },
+          {
+            id: 'message',
+            span: 2,
+            minWidth: 300,
+            content: (
+              <View style={{ padding: 24 }}>
+                <Text variant="title-1-medium">A message with room to read</Text>
+              </View>
+            ),
+          },
+        ],
+      }}
+    />
   ),
 };
 
@@ -649,44 +650,42 @@ export const BoundedChrome: Story = {
 };
 export const ModularMap: Story = {
   render: () => (
-    <View style={{ height: 680 }}>
-      <AppShell
-        testID="modular-map"
-        variant="dashboard"
-        contentMaxWidth="none"
-        panelLayout={{
-          collapseBelow: 800,
-          activePanel: 'results',
-          panels: [
-            {
-              id: 'results',
-              width: 400,
-              minWidth: 320,
-              maxWidth: 520,
-              resizable: true,
-              scroll: 'panel',
-              content: (
-                <View style={{ padding: 16, gap: 20 }}>
-                  {Array.from({ length: 80 }, (_, i) => (
-                    <Text key={i}>Property {i + 1}</Text>
-                  ))}
-                </View>
-              ),
-            },
-            {
-              id: 'map',
-              span: 1,
-              minWidth: 320,
-              content: (
-                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                  <Text variant="title-1-medium">Map canvas</Text>
-                </View>
-              ),
-            },
-          ],
-        }}
-      />
-    </View>
+    <AppShell
+      testID="modular-map"
+      variant="dashboard"
+      contentMaxWidth="none"
+      panelLayout={{
+        collapseBelow: 800,
+        activePanel: 'results',
+        panels: [
+          {
+            id: 'results',
+            width: 400,
+            minWidth: 320,
+            maxWidth: 520,
+            resizable: true,
+            scroll: 'panel',
+            content: (
+              <View style={{ padding: 16, gap: 20 }}>
+                {Array.from({ length: 80 }, (_, i) => (
+                  <Text key={i}>Property {i + 1}</Text>
+                ))}
+              </View>
+            ),
+          },
+          {
+            id: 'map',
+            span: 1,
+            minWidth: 320,
+            content: (
+              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                <Text variant="title-1-medium">Map canvas</Text>
+              </View>
+            ),
+          },
+        ],
+      }}
+    />
   ),
 };
 function ExpandingFeedDemo() {
@@ -754,39 +753,37 @@ function WorkspacePanel({ id }: { id: string }) {
 /** Same mounted workspace stacks below lg and shares a row when its shell has room. */
 export const ModularResponsiveWorkspace: Story = {
   render: () => (
-    <View style={{ height: 680 }}>
-      <AppShell
-        testID="responsive-workspace"
-        variant="dashboard"
-        contentMaxWidth="none"
-        panelLayout={{
-          axis: { base: 'vertical', lg: 'horizontal' },
-          appearance: 'joined',
-          gap: 1,
-          panels: [
-            {
-              id: 'editor',
-              width: 480,
-              minWidth: 300,
-              height: 300,
-              minHeight: 160,
-              maxHeight: 450,
-              resizable: true,
-              scroll: 'panel',
-              content: <WorkspacePanel id="editor" />,
-            },
-            {
-              id: 'preview',
-              span: 1,
-              minWidth: 250,
-              minHeight: 180,
-              scroll: 'panel',
-              content: <WorkspacePanel id="preview" />,
-            },
-          ],
-        }}
-      />
-    </View>
+    <AppShell
+      testID="responsive-workspace"
+      variant="dashboard"
+      contentMaxWidth="none"
+      panelLayout={{
+        axis: { base: 'vertical', lg: 'horizontal' },
+        appearance: 'joined',
+        gap: 1,
+        panels: [
+          {
+            id: 'editor',
+            width: 480,
+            minWidth: 300,
+            height: 300,
+            minHeight: 160,
+            maxHeight: 450,
+            resizable: true,
+            scroll: 'panel',
+            content: <WorkspacePanel id="editor" />,
+          },
+          {
+            id: 'preview',
+            span: 1,
+            minWidth: 250,
+            minHeight: 180,
+            scroll: 'panel',
+            content: <WorkspacePanel id="preview" />,
+          },
+        ],
+      }}
+    />
   ),
 };
 /** Natural height sections share the page's document scroll without viewport-sized rows. */
@@ -916,7 +913,7 @@ export const BoundedRevealPanels: Story = {
         <BottomBar
           items={[{ name: 'inbox', label: 'Inbox', icon: <RiHomeLine /> }]}
           value="inbox"
-          onValueChange={() => undefined}
+          onValueChange={fn().mockName('onValueChange')}
         />
       }
       testID="bounded-reveal"

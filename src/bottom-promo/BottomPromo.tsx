@@ -2,7 +2,7 @@ import { memo, useContext } from 'react';
 import { View } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { EdgeScrim } from '../page-header/EdgeScrim';
-import { InverseButton } from '../button';
+import { Button } from '../button';
 import { Text } from '../typography';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
@@ -58,9 +58,9 @@ function BottomPromoComponent({
             </Text>
           ) : null}
         </View>
-        <InverseButton fullWidth size="lg" onPress={onAction}>
+        <Button appearance="solid" tone="neutral" inverted fullWidth size="lg" onPress={onAction}>
           {actionLabel}
-        </InverseButton>
+        </Button>
       </View>
     </View>
   );

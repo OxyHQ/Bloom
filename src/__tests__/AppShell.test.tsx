@@ -72,7 +72,7 @@ afterEach(() => {
 });
 
 describe('AppShellHeader', () => {
-  it('title is a level-1 heading in title-2-medium with the px4 inset', () => {
+  it('title keeps level-1 semantics and typography through PageHeader', () => {
     setWidth(1440);
     const screen = renderIn(<AppShellHeader title="Welcome" onMenuPress={() => {}} />);
     const title = screen.getByText('Welcome');
@@ -80,8 +80,6 @@ describe('AppShellHeader', () => {
     expect(resolvedStyle(title.props.style)).toMatchObject({
       fontSize: 20,
       lineHeight: 26,
-      paddingLeft: 4,
-      paddingRight: 4,
     });
   });
 });
@@ -1417,12 +1415,15 @@ describe('AppShell panels: the frame', () => {
           </AppShellPanel>
         </AppShell>,
       );
-      // The reveal shell keeps its page host mounted across widths, so the
-      // gutter frames the region's row rather than the page: measure the box
-      // around the region, which is the frame either way.
+      // A tablet rail sits flush; its page owns the gutter. Expanded sidebars
+      // keep the gutter on the row, while compact pages remain full bleed.
+      const pageInset = Number(
+        resolvedStyle(screen.getByTestId('shell-page').props.style).paddingTop ?? 0,
+      );
       expect([
         width,
-        framePadding(screen.getByTestId('shell-content', { includeHiddenElements: true })),
+        framePadding(screen.getByTestId('shell-content', { includeHiddenElements: true })) +
+          pageInset,
       ]).toEqual([width, outer]);
       screen.unmount();
     }

@@ -15,8 +15,8 @@ try {
   for (const [story, width, selector] of [
     ['base-fab--default', 900, '[aria-label="Compose"]'],
     ['base-bottom-bar--default', 900, '[aria-label="Create"]'],
-    ['templates-social--light-olive', 900, '[data-testid="sidebar-primary-action"]'],
-    ['templates-social--light-olive', 390, '[aria-label="New post"]'],
+    ['templates-social--default', 900, '[data-testid="sidebar-primary-action"]'],
+    ['templates-social--default', 390, '[aria-label="New post"]'],
   ]) {
     await page.setViewport({ width, height: 900 });
     const url = new URL('iframe.html', process.env.STORYBOOK_URL ?? 'http://localhost:6014');

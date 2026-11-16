@@ -1,3 +1,4 @@
+import { List } from '../list';
 import { Screen, ScreenScrollView } from '../screen/index';
 import { AppShell } from '../app-shell';
 import { ComposerLoader } from '../composer-loader';
@@ -18,6 +19,7 @@ import { bindAgentChat } from './bindAgentChat';
  * forked families.
  */
 const parts = bindAgentChat({
+  List,
   Screen,
   ScreenScrollView,
   AppShell,

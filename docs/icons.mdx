@@ -72,7 +72,7 @@ import { GifAttachmentIcon } from '@oxy.so/bloom/icons/GifAttachmentIcon';
 import { LikeIcon } from '@oxy.so/bloom/icons/LikeIcon';
 import { LikeFillIcon } from '@oxy.so/bloom/icons/LikeFillIcon';
 
-<GlyphButton icon={MediaAttachmentIcon} accessibilityLabel="Add media" />
+<Button appearance="plain" tone="neutral" icon={MediaAttachmentIcon} accessibilityLabel="Add media" />
 <EngagementAction icon={LikeIcon} activeIcon={LikeFillIcon} active={liked}
   onPress={toggleLike} accessibilityLabel="Like" />
 ```
@@ -187,10 +187,10 @@ with the box and the foreground for the CURRENT state:
 import { RiSearchLine } from '@oxy.so/bloom/icons/RiSearchLine';
 
 // Bloom's own glyph: the component, sized and tinted for you.
-<ButtonGroupItem iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search" />
+<Button iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search" />
 
 // Your app's glyph, whose props are `size` and `color`.
-<ButtonGroupItem
+<Button
   iconOnly
   renderLeadingIcon={({ size, color }) => <AppSearchGlyph size={size} color={color} />}
   accessibilityLabel="Search"
@@ -202,7 +202,7 @@ type BloomIconPaint = { size: number; color: string };
 type BloomIconRenderer = (paint: BloomIconPaint) => ReactNode;
 ```
 
-Where a family offers both, the renderer WINS, which is the rule `GlyphButton`
+Where a family offers both, the renderer WINS, which is the rule `Button`
 already uses for a caller-painted `children` over `icon`.
 
 **On web `color` is `currentColor`.** Bloom paints web glyphs that way so they
@@ -216,7 +216,7 @@ function, and so is a paint callback. One prop taking both could not tell them
 apart, and would silently re-interpret every existing adapter. Both forms are
 pinned in `src/__tests__/icon-render-slot.test.tsx`.
 
-Today this is on `Button` and `ButtonGroupItem`. The other icon slots still take
+Today this is on `Button` and `Button`. The other icon slots still take
 the component only.
 
 ### The per-family names

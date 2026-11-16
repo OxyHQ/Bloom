@@ -1,7 +1,8 @@
+import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
-import type { GlyphButtonProps } from '../button/types';
+import type { ButtonProps } from '../button/types';
 import type { BloomIconComponent } from '../icons/icon-component';
-import type { TextFieldInputProps } from '../text-field/types';
+import type { TextFieldProps, TextFieldInputProps } from '../text-field/types';
 
 /**
  * A filter the person chose, drawn as a token inside the field before the
@@ -18,10 +19,28 @@ export type SearchToken = {
 
 export type SearchProps = Omit<TextFieldInputProps, 'label'> & {
   label?: TextFieldInputProps['label'];
+  /** Field always visible, button on demand, or adapt to the allocated container width. */
+  presentation?: 'field' | 'collapsible' | 'auto';
+  /** Minimum allocated width for an automatic field, in pixels. Default 240. */
+  expandedMinWidth?: number;
+  open?: boolean;
+  defaultOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** Explicit close also clears the query (sidebar behavior). Default false. */
+  clearOnClose?: boolean;
+  closeLabel?: string;
+  /** The closed state is the canonical Button. Search owns activation and its name. */
+  triggerProps?: Pick<
+    ButtonProps,
+    'appearance' | 'tone' | 'size' | 'style' | 'className' | 'testID'
+  >;
+  /** Optional field action, such as voice search. */
+  trailing?: ReactNode;
+  fieldStyle?: TextFieldProps['style'];
   /** Leading icon edge in pixels. Default 20. */
   iconSize?: number;
   /** Clear glyph/target geometry. Search owns its name, callback and disabled state. */
-  clearButtonProps?: Pick<GlyphButtonProps, 'icon' | 'size' | 'glyphSize'>;
+  clearButtonProps?: Pick<ButtonProps, 'icon' | 'size' | 'iconSize'>;
   /**
    * Called when the user presses the clear button. With `tokens`, the button
    * clears the whole query: the caller empties the text AND the tokens here

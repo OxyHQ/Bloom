@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import { fn } from 'storybook/test';
+import { useState, type ReactNode } from 'react';
+import { AppShell } from '../app-shell';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -40,6 +42,18 @@ const meta: Meta = {
 export default meta;
 
 type Story = StoryObj;
+
+/** Actual bounded application viewport; each domain component owns its Screen. */
+function ApplicationFrame({ children }: { children: ReactNode }) {
+  return (
+    <AppShell
+      header={null}
+      scroll="fixed"
+      contentMaxWidth="none"
+      panelLayout={{ flow: 'bounded', panels: [{ id: 'workspace', span: 1, content: children }] }}
+    />
+  );
+}
 
 const SNIPPET = `const nextTheme = theme === "dark" ? "light" : "dark";
 
@@ -143,8 +157,18 @@ export const TurnActions: Story = {
       <View style={{ maxWidth: '100%', width: 718, gap: 12 }}>
         <AiChatUserMessage
           actions={[
-            { key: 'copy', label: 'Copy message', icon: RiFileCopyLine, onPress: () => {} },
-            { key: 'edit', label: 'Edit message', icon: RiPencilLine, onPress: () => {} },
+            {
+              key: 'copy',
+              label: 'Copy message',
+              icon: RiFileCopyLine,
+              onPress: fn().mockName('onPress'),
+            },
+            {
+              key: 'edit',
+              label: 'Edit message',
+              icon: RiPencilLine,
+              onPress: fn().mockName('onPress'),
+            },
           ]}
         >
           what changed in the theme tokens?
@@ -204,9 +228,9 @@ export const ImageGenerating: Story = {
 
 /** The changes / code panel with its summary card and a soft-wrapping, numbered code view. */
 export const CodePanel: Story = {
-  parameters: { controls: { disable: true } },
+  parameters: { layout: 'fullscreen', controls: { disable: true } },
   render: () => (
-    <View style={{ height: 640, width: 410, maxWidth: '100%' }}>
+    <ApplicationFrame>
       <AiChatCodePanel
         width="100%"
         code={PANEL_CODE}
@@ -215,9 +239,9 @@ export const CodePanel: Story = {
         additions={156}
         deletions={23}
         changedFiles={[{ path: 'app/components/button.tsx', additions: 74, status: 'New' }]}
-        onUndo={() => {}}
+        onUndo={fn().mockName('onUndo')}
       />
-    </View>
+    </ApplicationFrame>
   ),
 };
 
@@ -239,39 +263,41 @@ const WALL: AiChatGeneration[] = [
  * generation" pins a new image at the top-left.
  */
 export const GalleryPanel: Story = {
-  parameters: { controls: { disable: true } },
+  parameters: { layout: 'fullscreen', controls: { disable: true } },
   render: function Render() {
     const [generated, setGenerated] = useState<AiChatGeneration[]>([]);
     return (
-      <View style={{ gap: 16 }}>
-        <Button
-          size="sm"
-          onPress={() =>
-            setGenerated((list) => [
-              {
-                id: `new-${list.length}`,
-                prompt: 'Fresh generation',
-                source: ARTWORK,
-                aspectRatio: 449 / 600,
-              },
-              ...list,
-            ])
-          }
-          appearance="outline"
-          tone="neutral"
-        >
-          Land a generation
-        </Button>
-        <View style={{ height: 640, width: 410, maxWidth: '100%' }}>
-          <AiChatGalleryPanel
-            width="100%"
-            generations={WALL}
-            generated={generated}
-            onDownload={() => {}}
-            onMore={() => {}}
-          />
+      <ApplicationFrame>
+        <View style={{ flex: 1, minHeight: 0, gap: 12 }}>
+          <Button
+            size="sm"
+            onPress={() =>
+              setGenerated((list) => [
+                {
+                  id: `new-${list.length}`,
+                  prompt: 'Fresh generation',
+                  source: ARTWORK,
+                  aspectRatio: 449 / 600,
+                },
+                ...list,
+              ])
+            }
+            appearance="outline"
+            tone="neutral"
+          >
+            Land a generation
+          </Button>
+          <View style={{ flex: 1, minHeight: 0 }}>
+            <AiChatGalleryPanel
+              width="100%"
+              generations={WALL}
+              generated={generated}
+              onDownload={fn().mockName('onDownload')}
+              onMore={fn().mockName('onMore')}
+            />
+          </View>
         </View>
-      </View>
+      </ApplicationFrame>
     );
   },
 };
@@ -306,51 +332,58 @@ export const PanelsWithoutBackend: Story = {
 
 /** The chat container: breadcrumb header, a thread, and the frosted composer lit while `working`. */
 export const Container: Story = {
-  parameters: { controls: { disable: true } },
+  parameters: { layout: 'fullscreen', controls: { disable: true } },
   render: function Render() {
     const [working, setWorking] = useState(false);
     return (
-      <View style={{ gap: 16 }}>
-        <Button size="sm" onPress={() => setWorking((w) => !w)} appearance="outline" tone="neutral">
-          {working ? 'Stop working' : 'Start working'}
-        </Button>
-        <View style={{ maxWidth: '100%', width: 718, height: 640 }}>
-          <AiChatContainer
-            project="vibl coding project"
-            title="coding scenario"
-            working={working}
-            composer={
-              <>
-                <ComposerLoader phase={working ? 'streaming' : 'idle'}>
-                  <ComposerPill
-                    surface={false}
-                    frosted={working}
-                    models={['Composer 2.5', 'Fable 5', 'Sonnet 5']}
-                  />
-                </ComposerLoader>
-                <View style={{ paddingLeft: 6, paddingRight: 6 }}>
-                  <ComposerStatusBar
-                    branch="Main"
-                    folders={[
-                      { prefix: 'users/maya/', name: 'project-sea' },
-                      { prefix: 'users/desktop/', name: 'vibl' },
-                    ]}
-                    mode="Agent"
-                    context={57}
-                  />
-                </View>
-              </>
-            }
+      <ApplicationFrame>
+        <View style={{ flex: 1, minHeight: 0, gap: 12 }}>
+          <Button
+            size="sm"
+            onPress={() => setWorking((w) => !w)}
+            appearance="outline"
+            tone="neutral"
           >
-            <AiChatThread>
-              <AiChatUserMessage>
-                update our colour tokens for dark mode and add a reusable theme toggle to the
-                registry.
-              </AiChatUserMessage>
-            </AiChatThread>
-          </AiChatContainer>
+            {working ? 'Stop working' : 'Start working'}
+          </Button>
+          <View style={{ flex: 1, minHeight: 0 }}>
+            <AiChatContainer
+              project="vibl coding project"
+              title="coding scenario"
+              working={working}
+              composer={
+                <>
+                  <ComposerLoader phase={working ? 'streaming' : 'idle'}>
+                    <ComposerPill
+                      surface={false}
+                      frosted={working}
+                      models={['Composer 2.5', 'Fable 5', 'Sonnet 5']}
+                    />
+                  </ComposerLoader>
+                  <View style={{ paddingLeft: 6, paddingRight: 6 }}>
+                    <ComposerStatusBar
+                      branch="Main"
+                      folders={[
+                        { prefix: 'users/maya/', name: 'project-sea' },
+                        { prefix: 'users/desktop/', name: 'vibl' },
+                      ]}
+                      mode="Agent"
+                      context={57}
+                    />
+                  </View>
+                </>
+              }
+            >
+              <AiChatThread>
+                <AiChatUserMessage>
+                  update our colour tokens for dark mode and add a reusable theme toggle to the
+                  registry.
+                </AiChatUserMessage>
+              </AiChatThread>
+            </AiChatContainer>
+          </View>
         </View>
-      </View>
+      </ApplicationFrame>
     );
   },
 };
@@ -374,7 +407,7 @@ export const ResizeHandle: Story = {
             backgroundColor: colors.backgroundSecondary,
           }}
         >
-          <LayoutResizeHandle onResize={setDx} onResizeEnd={() => {}} />
+          <LayoutResizeHandle onResize={setDx} onResizeEnd={fn().mockName('onResizeEnd')} />
         </View>
       </View>
     );
@@ -391,10 +424,11 @@ export const ResizeHandle: Story = {
  * breadcrumb is the chat's own crumb alone rather than an empty folder.
  */
 export const BackgroundLayer: Story = {
+  parameters: { layout: 'fullscreen' },
   render: function Render() {
     const { colors } = useTheme();
     return (
-      <View style={{ width: 720, height: 460 }}>
+      <ApplicationFrame>
         <AiChatContainer
           title="no project, own wallpaper"
           surface={false}
@@ -429,7 +463,7 @@ export const BackgroundLayer: Story = {
             </AiChatAssistantMessage>
           </AiChatThread>
         </AiChatContainer>
-      </View>
+      </ApplicationFrame>
     );
   },
 };
@@ -442,93 +476,93 @@ export const BackgroundLayer: Story = {
  * dissolve under the composer while the top clears.
  */
 export const FloatingChrome: Story = {
+  parameters: { layout: 'fullscreen' },
   render: function Render() {
     const [working, setWorking] = useState(false);
     const [turns, setTurns] = useState(6);
     return (
-      <View style={{ gap: 16 }}>
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Button
-            size="sm"
-            onPress={() => setWorking((w) => !w)}
-            appearance="outline"
-            tone="neutral"
-          >
-            {working ? 'Stop working' : 'Start working'}
-          </Button>
-          <Button
-            size="sm"
-            onPress={() => setTurns((n) => n + 1)}
-            appearance="outline"
-            tone="neutral"
-          >
-            Add a turn
-          </Button>
+      <ApplicationFrame>
+        <View style={{ flex: 1, minHeight: 0, gap: 12 }}>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <Button
+              size="sm"
+              onPress={() => setWorking((w) => !w)}
+              appearance="outline"
+              tone="neutral"
+            >
+              {working ? 'Stop working' : 'Start working'}
+            </Button>
+            <Button
+              size="sm"
+              onPress={() => setTurns((n) => n + 1)}
+              appearance="outline"
+              tone="neutral"
+            >
+              Add a turn
+            </Button>
+          </View>
+          <View style={{ flex: 1, minHeight: 0 }}>
+            <AiChatContainer
+              floatingChrome
+              testID="floating-chat"
+              project="vibl coding project"
+              title="coding scenario"
+              onShare={fn().mockName('onShare')}
+              onMore={fn().mockName('onMore')}
+              working={working}
+              composer={
+                <ComposerPill
+                  surface={false}
+                  frosted={working}
+                  models={['Composer 2.5', 'Fable 5', 'Sonnet 5']}
+                />
+              }
+            >
+              <AiChatThread>
+                {Array.from({ length: turns }, (_, i) =>
+                  i % 2 === 0 ? (
+                    <AiChatUserMessage key={i}>
+                      {`Turn ${i + 1}: update our colour tokens for dark mode and add a reusable theme toggle.`}
+                    </AiChatUserMessage>
+                  ) : (
+                    <AiChatAssistantMessage key={i} feedback={false}>
+                      <AiChatMessageLine>{`Turn ${i + 1}: the toggle updates the root theme from one place and persists the selection.`}</AiChatMessageLine>
+                      <AiChatBulletList>
+                        <AiChatBullet>
+                          <AiChatStrong>Tokens</AiChatStrong> — dark surfaces now come from the
+                          semantic ramp.
+                        </AiChatBullet>
+                        <AiChatBullet>
+                          <AiChatStrong>Toggle</AiChatStrong> — one component, registered once.
+                        </AiChatBullet>
+                      </AiChatBulletList>
+                    </AiChatAssistantMessage>
+                  ),
+                )}
+              </AiChatThread>
+            </AiChatContainer>
+          </View>
         </View>
-        <View style={{ maxWidth: '100%', width: 718, height: 560 }}>
-          <AiChatContainer
-            floatingChrome
-            testID="floating-chat"
-            project="vibl coding project"
-            title="coding scenario"
-            onShare={() => {}}
-            onMore={() => {}}
-            working={working}
-            composer={
-              <ComposerPill
-                surface={false}
-                frosted={working}
-                models={['Composer 2.5', 'Fable 5', 'Sonnet 5']}
-              />
-            }
-          >
-            <AiChatThread>
-              {Array.from({ length: turns }, (_, i) =>
-                i % 2 === 0 ? (
-                  <AiChatUserMessage key={i}>
-                    {`Turn ${i + 1}: update our colour tokens for dark mode and add a reusable theme toggle.`}
-                  </AiChatUserMessage>
-                ) : (
-                  <AiChatAssistantMessage key={i} feedback={false}>
-                    <AiChatMessageLine>{`Turn ${i + 1}: the toggle updates the root theme from one place and persists the selection.`}</AiChatMessageLine>
-                    <AiChatBulletList>
-                      <AiChatBullet>
-                        <AiChatStrong>Tokens</AiChatStrong> — dark surfaces now come from the
-                        semantic ramp.
-                      </AiChatBullet>
-                      <AiChatBullet>
-                        <AiChatStrong>Toggle</AiChatStrong> — one component, registered once.
-                      </AiChatBullet>
-                    </AiChatBulletList>
-                  </AiChatAssistantMessage>
-                ),
-              )}
-            </AiChatThread>
-          </AiChatContainer>
-        </View>
-      </View>
+      </ApplicationFrame>
     );
   },
 };
 
 /** Empty navigation still needs a keyboard destination while its rows load. */
 export const EmptyNavigationFocus: Story = {
+  parameters: { layout: 'fullscreen' },
   render: function EmptyNavigationFocusStory() {
     const [open, setOpen] = useState(false);
     return (
-      <View style={{ height: 600 }}>
-        <Button style={{ flexShrink: 0 }} onPress={() => setOpen(true)}>
-          Open empty navigation
-        </Button>
-        <AiChatShell
-          sidebar={null}
-          mobileSidebar={<Text testID="empty-navigation-content">Loading navigation</Text>}
-          navOpen={open}
-          onNavOpenChange={setOpen}
-        >
-          <Text>Workspace</Text>
-        </AiChatShell>
-      </View>
+      <AiChatShell
+        sidebar={null}
+        mobileSidebar={<Text testID="empty-navigation-content">Loading navigation</Text>}
+        navOpen={open}
+        onNavOpenChange={setOpen}
+      >
+        <Button onPress={() => setOpen(true)}>Open empty navigation</Button>
+        <Text>Workspace</Text>
+      </AiChatShell>
     );
   },
 };

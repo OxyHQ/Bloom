@@ -98,6 +98,50 @@ panes match the rest of its rows exactly. That is what `chat-list` does.
 
 ## Who gets the gesture
 
+### Elastic action capsules
+
+`actionPresentation="bubbles"` replaces the touching rectangular panes with
+separate rounded capsules. Their widths follow the revealed space, compressing
+together as the row closes and settling with a spring. Reduced motion removes
+the spring. The existing `panes` presentation remains the default.
+
+An optional `fullSwipeAction={{ right: 'archive' }}` chooses an action **by key**
+for a complete swipe on that side. Only the bubbles presentation uses it. The
+chosen capsule expands while its neighbours shrink; the action runs on release,
+after the completion animation. Moving back before release cancels that intent.
+There is no built-in undo state. Without an explicit key the gesture only reveals
+buttons, and a missing key or a row too narrow for the extra travel also falls
+back to reveal-only.
+
+Full swipe requires the greater of 72% of the measured row width or the resting
+action width plus 48px. This keeps revealing two actions distinct from executing
+one. Cancelling a gesture or unmounting during completion does not execute it.
+The same menu/keyboard alternative remains required.
+
+The Unified Lists Storybook demo opts into this presentation for review.
+`CHROME_PATH=<chrome> node scripts/verify-swipe-bubbles.mjs` checks actual capsule
+growth, compression, reversal, release-only action dispatch and prevention of
+an accidental row click in the browser. Explicit Reanimated mapper dependencies
+must include the shared travel and row-width values on web: depending only on a
+helper callback leaves the capsules frozen even while the row itself moves.
+
+```tsx
+<SwipeRow
+  actionPresentation="bubbles"
+  actionWidth={56}
+  fullSwipeAction={{ right: 'archive' }}
+  actions={{ right: [
+    { key: 'pin', label: 'Pin', icon: RiPushpinLine },
+    { key: 'archive', label: 'Archive', icon: RiArchiveLine, tone: 'accent' },
+  ] }}
+  onAction={runAction}
+>
+  <MyRow />
+</SwipeRow>
+```
+
+## Pointer availability
+
 `useSwipeAvailable()` — every touch pointer, on any platform:
 
 ```tsx

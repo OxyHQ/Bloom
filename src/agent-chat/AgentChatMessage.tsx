@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import Animated, {
   Easing,
@@ -19,14 +19,8 @@ import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
-import { IconAction } from './AgentChatControls';
-import {
-  ACTION_SIZE,
-  CONFIRM_MS,
-  formatAgo,
-  useAgentChatPalette,
-  useAgentChatWebCss,
-} from './shared';
+import { Button } from '../button';
+import { CONFIRM_MS, formatAgo, useAgentChatPalette, useAgentChatWebCss } from './shared';
 import { AGENT_CHAT_MESSAGES } from './messages';
 import type { AgentChatMessageProps } from './types';
 import { clipboardAvailable, writeClipboardText } from '../hooks/clipboard';
@@ -189,14 +183,6 @@ function MessageActions({
     ...(IS_WEB ? null : { opacity: hidden ? 0 : 1 }),
   };
 
-  const iconProps = {
-    size: ACTION_SIZE,
-    color: palette.iconTertiary,
-    hoverColor: palette.iconSecondary,
-    hoverBackground: palette.card,
-    palette,
-  };
-
   return (
     <View
       {...dataHook('bloomAgentChatActions', hidden ? 'hidden' : 'shown')}
@@ -204,33 +190,26 @@ function MessageActions({
       style={rowStyle}
     >
       {copyHandler ? (
-        <IconAction
-          {...iconProps}
-          label={copied ? labels.copied : labels.copy}
+        <Button
+          iconOnly
+          tone="neutral"
+          appearance="plain"
+          accessibilityLabel={copied ? labels.copied : labels.copy}
           onPress={copy}
-          icon={(color) =>
-            copied ? (
-              <RiCheckLine width={16} height={16} fill={color} />
-            ) : (
-              <RiFileCopyLine width={16} height={16} fill={color} />
-            )
-          }
+          icon={copied ? RiCheckLine : RiFileCopyLine}
         />
       ) : null}
       {canSpeak ? (
-        <IconAction
-          {...iconProps}
-          label={speaking ? labels.stopReading : labels.readAloud}
+        <Button
+          iconOnly
+          tone="neutral"
+          appearance="plain"
+          accessibilityLabel={speaking ? labels.stopReading : labels.readAloud}
           onPress={toggleSpeech}
-          icon={(color) =>
-            speaking ? (
-              <RiVolumeMuteLine width={16} height={16} fill={color} />
-            ) : (
-              <RiVolumeUpLine width={16} height={16} fill={color} />
-            )
-          }
+          icon={speaking ? RiVolumeMuteLine : RiVolumeUpLine}
         />
       ) : null}
+
       {at ? (
         <Text variant="caption-1-regular" style={{ marginLeft: 4, color: palette.textTertiary }}>
           {formatTime(at)}

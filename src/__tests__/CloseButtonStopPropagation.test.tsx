@@ -1,3 +1,4 @@
+import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
 /**
  * `CloseButton`'s `stopPropagation`, like `Button`'s: the dismiss X on a
  * pressable card hands over the press event and, on request, stops it.
@@ -6,13 +7,22 @@ import type React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
-import { CloseButton } from '../button';
+import { Button } from '../button';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
-function renderClose(props: Partial<React.ComponentProps<typeof CloseButton>>) {
+function renderClose(props: Partial<React.ComponentProps<typeof Button>>) {
   return render(
     <BloomThemeProvider mode="light" colorPreset="teal">
-      <CloseButton accessibilityLabel="Dismiss" testID="close" {...props} />
+      <Button
+        appearance="outline"
+        tone="neutral"
+        iconOnly
+        icon={DismissActionIcon}
+        size={20}
+        accessibilityLabel="Dismiss"
+        testID="close"
+        {...props}
+      />
     </BloomThemeProvider>,
   );
 }
@@ -49,6 +59,6 @@ describe('CloseButton stopPropagation', () => {
 it('preserves native disc geometry and existing hit slop', () => {
   const { getByTestId } = renderClose({ size: 'md' });
   const close = getByTestId('close');
-  expect(StyleSheet.flatten(close.props.style)).toMatchObject({ width: 32, height: 32 });
-  expect(close.props.hitSlop).toEqual({ top: 10, bottom: 10, left: 10, right: 10 });
+  expect(StyleSheet.flatten(close.props.style)).toMatchObject({ width: 36, height: 36 });
+  expect(close.props.hitSlop).toEqual({ top: 4, bottom: 4, left: 4, right: 4 });
 });

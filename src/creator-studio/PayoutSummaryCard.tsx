@@ -2,7 +2,7 @@ import { memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { LinkButton } from '../button';
+import { Button } from '../button';
 import { chartHueTone } from '../chart-cards/palette';
 import { bandSize } from '../chart-cards/geometry';
 import { CartesianPlot } from '../chart-cards/primitives/CartesianPlot';
@@ -201,7 +201,9 @@ function PayoutSummaryCardComponent({
       </View>
 
       {onViewStatements || statementsHref ? (
-        <LinkButton
+        <Button
+          appearance="plain"
+          linkTone="primary"
           size="sm"
           trailingIcon={RiArrowRightSLine}
           onPress={onViewStatements}
@@ -210,7 +212,7 @@ function PayoutSummaryCardComponent({
           testID={testID ? `${testID}-statements` : undefined}
         >
           {labels.statements}
-        </LinkButton>
+        </Button>
       ) : null}
     </ChartCardSurface>
   );

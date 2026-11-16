@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
 import { View } from 'react-native';
+import { useState } from 'react';
 
 import { Checkbox } from '../checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
@@ -33,6 +33,8 @@ export default meta;
 function Rung({ level }: { level: SurfaceLevel }) {
   const theme = useTheme();
   const paint = resolveSurfaceLevel(theme, level);
+  const [tab, setTab] = useState('one');
+  const [checked, setChecked] = useState(false);
   return (
     <SurfaceLevelProvider level={level}>
       <View
@@ -64,13 +66,13 @@ function Rung({ level }: { level: SurfaceLevel }) {
             testID={`field-${level}`}
           />
         </TextField>
-        <Tabs value="one" onValueChange={() => {}}>
+        <Tabs value={tab} onValueChange={setTab}>
           <TabsTrigger value="one" label="Overview" />
           <TabsTrigger value="two" label="Activity" />
         </Tabs>
         <Checkbox
-          checked={false}
-          onCheckedChange={() => {}}
+          checked={checked}
+          onCheckedChange={setChecked}
           label="A focused ring's gap takes this fill"
         />
       </View>
@@ -99,6 +101,7 @@ export const Ladder: StoryObj = {
 export const FieldInsideAPopover: StoryObj = {
   render: () => {
     const theme = useTheme();
+    const [tab, setTab] = useState('one');
     return (
       <View style={{ backgroundColor: theme.colors.background, padding: 24, minHeight: 420 }}>
         <Popover>
@@ -110,7 +113,7 @@ export const FieldInsideAPopover: StoryObj = {
               <TextField>
                 <TextFieldInput label="Search" placeholder="Search" testID="field-in-popover" />
               </TextField>
-              <Tabs value="one" onValueChange={() => {}}>
+              <Tabs value={tab} onValueChange={setTab}>
                 <TabsTrigger value="one" label="All" />
                 <TabsTrigger value="two" label="Mine" />
               </Tabs>

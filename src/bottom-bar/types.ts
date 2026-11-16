@@ -15,6 +15,8 @@ export interface BottomBarProps {
   action?: ReactNode;
   /** Auto places the action above navigation when side-by-side targets would be cramped. */
   actionPlacement?: 'auto' | 'beside' | 'above';
+  /** Intrinsic keeps natural width; fill lends the available lane; adaptive lets Search borrow a full row until its closing motion finishes. */
+  actionSizing?: 'intrinsic' | 'fill' | 'adaptive';
   /**
    * `hide` fades the accessory on scroll (default), `visible` retains it.
    * `dock` keeps one editable action: above expanded navigation, beside the

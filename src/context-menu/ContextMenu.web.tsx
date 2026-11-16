@@ -10,7 +10,7 @@ import { BloomScope } from '../appearance';
  * The `anchor` prop hands the same point in from outside (a menu opened by
  * code, with no element to right-click), and the rest is identical.
  */
-import React, { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import type { View } from 'react-native';
 
 import { MENU_MIN_WIDTH_CLASS, MENU_TRIGGER_POPUP } from '../floating/constants';
@@ -127,6 +127,18 @@ export function ContextMenuTrigger({
     if (disabled) return;
     const element = wrapperRef.current as unknown as HTMLElement | null;
     if (typeof element?.addEventListener !== 'function') return;
+    const keyDown = (event: KeyboardEvent) => {
+      if (
+        event.defaultPrevented ||
+        (event.key !== 'ContextMenu' && !(event.shiftKey && event.key === 'F10'))
+      )
+        return;
+      event.preventDefault();
+      event.stopPropagation();
+      const box = (event.target as HTMLElement).getBoundingClientRect();
+      if (focusIntent) focusIntent.edge.current = 'first';
+      openAt({ top: box.bottom, bottom: box.bottom, left: box.left, right: box.left });
+    };
 
     const onContextMenu = (event: MouseEvent) => {
       // A trigger inside this one (an item in a list that has a menu of its
@@ -135,7 +147,7 @@ export function ContextMenuTrigger({
       if (event.defaultPrevented) return;
       event.preventDefault();
       // A context menu takes focus on its first row however it opened — the
-      // right-click is the only way in, and without focus in the panel its
+      // pointer or Menu key opens it, and without focus in the panel its
       // arrows and Escape have nothing to act on. A pointer open paints no
       // ring: the rows highlight on `:focus-visible` only.
       if (focusIntent) focusIntent.edge.current = 'first';
@@ -146,8 +158,12 @@ export function ContextMenuTrigger({
         right: event.clientX,
       });
     };
+    element.addEventListener('keydown', keyDown);
     element.addEventListener('contextmenu', onContextMenu);
-    return () => element.removeEventListener('contextmenu', onContextMenu);
+    return () => {
+      element.removeEventListener('keydown', keyDown);
+      element.removeEventListener('contextmenu', onContextMenu);
+    };
   }, [openAt, disabled, focusIntent]);
 
   return (

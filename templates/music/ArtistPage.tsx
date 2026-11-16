@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollArea as ScrollView } from '../../src/layout';
+import { useMemo, useState } from 'react';
+import { View } from 'react-native';
 
 import { formatDuration } from '../../src/media-controls';
 import {
@@ -91,7 +92,6 @@ export function ArtistPage({ id }: { id: string }) {
             onShuffleChange={player.setShuffle}
             following={following}
             onFollowChange={setFollowing}
-            onMorePress={() => {}}
           />
         }
       />
@@ -145,11 +145,7 @@ export function ArtistPage({ id }: { id: string }) {
           </WithPageWidth>
 
           <View style={{ gap: 16 }}>
-            <DiscographyFilter
-              value={discography}
-              onValueChange={setDiscography}
-              onShowAll={() => {}}
-            />
+            <DiscographyFilter value={discography} onValueChange={setDiscography} />
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -166,7 +162,7 @@ export function ArtistPage({ id }: { id: string }) {
             </ScrollView>
           </View>
 
-          <Shelf title="Fans also like" onShowAll={() => {}} contentInset={gutter}>
+          <Shelf title="Fans also like" contentInset={gutter}>
             {ARTISTS.filter((a) => a.id !== id).map((a) => (
               <ArtistTile key={a.id} id={a.id} size={tileSize} />
             ))}

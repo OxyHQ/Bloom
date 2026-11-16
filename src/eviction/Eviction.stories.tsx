@@ -1,6 +1,8 @@
+import { fn } from 'storybook/test';
 import React, { useState } from 'react';
-import { View, useWindowDimensions } from 'react-native';
+import { View, type ViewProps } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 import {
   SegmentedControl,
@@ -23,7 +25,7 @@ export default meta;
 
 type Story = StoryObj;
 
-const noop = () => undefined;
+const onDemoAction = fn().mockName('eviction.action');
 
 // ---------------------------------------------------------------------------
 //  Demo data — invented reports. Areas are coarse on purpose: a neighbourhood
@@ -156,31 +158,18 @@ const HISTORY: EvictionEvent[] = [
 //  Frames
 // ---------------------------------------------------------------------------
 
-function Page({ width, children }: { width: number; children: React.ReactNode }) {
-  width = Math.min(width, useWindowDimensions().width - 32);
-  const theme = useTheme();
+function Page({
+  width = 1280,
+  children,
+  onLayout,
+}: {
+  width?: number;
+  children: React.ReactNode;
+  onLayout?: ViewProps['onLayout'];
+}) {
   return (
-    <View
-      style={{
-        width: '100%',
-        minHeight: '100%',
-        alignItems: 'flex-start',
-        backgroundColor: theme.colors.background,
-      }}
-    >
-      <View
-        style={{
-          width,
-          paddingTop: 32,
-          paddingBottom: 48,
-          paddingLeft: width < 600 ? 16 : 40,
-          paddingRight: width < 600 ? 16 : 40,
-          gap: 24,
-          backgroundColor: theme.colors.background,
-        }}
-      >
-        {children}
-      </View>
+    <View onLayout={onLayout} style={{ width: '100%', maxWidth: width, padding: 24, gap: 24 }}>
+      {children}
     </View>
   );
 }
@@ -197,19 +186,20 @@ function useAttending() {
 //  List with a filter
 // ---------------------------------------------------------------------------
 
-function EvictionList({ width }: { width: number }) {
-  width = Math.min(width, useWindowDimensions().width - 32);
+function EvictionList() {
+  const { width: measuredWidth, onLayout } = useContainerWidth();
+  const width = measuredWidth ?? 0;
   const theme = useTheme();
   const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming');
   const attend = useAttending();
   const columns = width >= 1000 ? 3 : width >= 700 ? 2 : 1;
   const gap = 16;
-  const inner = width - (width < 600 ? 32 : 80);
+  const inner = Math.max(0, width - 48);
   const cardWidth = Math.floor((inner - gap * (columns - 1)) / columns);
   const shown = REPORTS.filter((r) => r.past === (tab === 'past'));
 
   return (
-    <Page width={width}>
+    <Page onLayout={onLayout}>
       <View style={{ gap: 4 }}>
         <Text
           role="heading"
@@ -246,10 +236,10 @@ function EvictionList({ width }: { width: number }) {
               {...(report.status === 'scheduled' || report.status === 'postponed'
                 ? {
                     ...attend(id),
-                    onShare: noop,
-                    onContactSupport: report.organisationsLabel ? noop : undefined,
+                    onShare: onDemoAction,
+                    onContactSupport: report.organisationsLabel ? onDemoAction : undefined,
                   }
-                : { onShare: noop })}
+                : { onShare: onDemoAction })}
             />
           </View>
         ))}
@@ -258,35 +248,18 @@ function EvictionList({ width }: { width: number }) {
   );
 }
 
-/** Upcoming and past reports in a grid at 1280, with the status filter. */
-export const ListWide: Story = {
-  name: 'List — 1280',
-  render: () => <EvictionList width={1280} />,
-};
-
-export const ListNarrow: Story = {
-  name: 'List — 375',
-  render: () => <EvictionList width={375} />,
-};
-
-export const ListWideDark: Story = {
-  name: 'List — 1280, dark',
-  globals: { theme: 'dark' },
-  render: () => <EvictionList width={1280} />,
-};
-
-export const ListNarrowDark: Story = {
-  name: 'List — 375, dark',
-  globals: { theme: 'dark' },
-  render: () => <EvictionList width={375} />,
+/** Upcoming and past reports in a responsive grid, with the status filter. */
+export const List: Story = {
+  render: () => <EvictionList />,
 };
 
 // ---------------------------------------------------------------------------
 //  Report detail
 // ---------------------------------------------------------------------------
 
-function ReportDetail({ width }: { width: number }) {
-  width = Math.min(width, useWindowDimensions().width - 32);
+function ReportDetail() {
+  const { width: measuredWidth, onLayout } = useContainerWidth();
+  const width = measuredWidth ?? 0;
   const theme = useTheme();
   const attend = useAttending();
   const wide = width >= 900;
@@ -296,8 +269,8 @@ function ReportDetail({ width }: { width: number }) {
       {...report}
       numberOfLines={0}
       {...attend(id)}
-      onShare={noop}
-      onContactSupport={noop}
+      onShare={onDemoAction}
+      onContactSupport={onDemoAction}
     />
   );
   const history = (
@@ -314,7 +287,7 @@ function ReportDetail({ width }: { width: number }) {
     </View>
   );
   return (
-    <Page width={width}>
+    <Page onLayout={onLayout}>
       {wide ? (
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 40 }}>
           <View style={{ width: 460, maxWidth: '100%' }}>{card}</View>
@@ -331,20 +304,8 @@ function ReportDetail({ width }: { width: number }) {
 }
 
 /** One report opened: the full description and the case history beside it. */
-export const DetailWide: Story = {
-  name: 'Report detail — 1280',
-  render: () => <ReportDetail width={1280} />,
-};
-
-export const DetailNarrow: Story = {
-  name: 'Report detail — 375',
-  render: () => <ReportDetail width={375} />,
-};
-
-export const DetailNarrowDark: Story = {
-  name: 'Report detail — 375, dark',
-  globals: { theme: 'dark' },
-  render: () => <ReportDetail width={375} />,
+export const Detail: Story = {
+  render: () => <ReportDetail />,
 };
 
 // ---------------------------------------------------------------------------
@@ -377,11 +338,5 @@ function Statuses() {
 
 /** The five statuses: scheduled warning, postponed info, suspended success, executed solid neutral, cancelled neutral. */
 export const AllStatuses: Story = {
-  render: () => <Statuses />,
-};
-
-export const AllStatusesDark: Story = {
-  name: 'All statuses, dark',
-  globals: { theme: 'dark' },
   render: () => <Statuses />,
 };

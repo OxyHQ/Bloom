@@ -1,3 +1,4 @@
+import type { StyleProp, ViewStyle } from 'react-native';
 import type { ReactNode } from 'react';
 
 import type { BloomIconComponent } from '../icons/icon-component';
@@ -45,6 +46,13 @@ export interface SwipeRowPaint {
 }
 
 export interface SwipeRowProps {
+  /** Separate elastic capsules, or the existing edge-to-edge action panes (default). */
+  actionPresentation?: 'panes' | 'bubbles';
+  /**
+   * An explicitly chosen action per side to run on RELEASE after a full swipe.
+   * Bubbles only. Omitted sides only reveal buttons; action order never selects a default.
+   */
+  fullSwipeAction?: { left?: string; right?: string };
   /** What is behind the row on each side. A side with no actions cannot open. */
   actions: SwipeRowActions;
   /** Called with the action's `key` when one is pressed. */
@@ -75,5 +83,7 @@ export interface SwipeRowProps {
   /** Fires whenever a pane settles open or closed. */
   onOpenChange?: (side: 'left' | 'right' | null) => void;
   children: ReactNode;
+  /** Layout of the parent-facing swipe host, including flex, width and margins. */
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 }

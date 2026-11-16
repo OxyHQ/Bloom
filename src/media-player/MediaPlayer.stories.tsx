@@ -1,5 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { Image, ScrollView, useWindowDimensions, View } from 'react-native';
+import { BloomImage as Image } from '../image';
+import { AppShell } from '../app-shell';
+import { Screen, ScreenScrollView } from '../screen';
+import { PageHeader } from '../page-header';
+import { fn } from 'storybook/test';
+import { BottomBar } from '../bottom-bar';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { resolveButtonRamps } from '../button/shared';
@@ -62,7 +69,7 @@ const DEVICES: PlaybackDevice[] = [
   { id: 'group', name: 'Downstairs', kind: 'group', description: '3 speakers' },
 ];
 
-const noop = () => {};
+const onDemoAction = fn().mockName('media-player.action');
 
 /** Advances a fake position once a second while playing, looping at the end. */
 function useFakePlayback(duration: number, start = 42) {
@@ -91,15 +98,13 @@ function useFakePlayback(duration: number, start = 42) {
 }
 
 function PageBehind({ children }: { children?: React.ReactNode }) {
-  const theme = useTheme();
   return (
-    <View style={{ flex: 1, paddingBottom: 24, gap: 8, backgroundColor: theme.colors.background }}>
-      <Text variant="title-2-semibold">Night Drive</Text>
-      <Text variant="body-regular" style={{ color: theme.colors.textSecondary }}>
-        A playlist of 38 tracks · 2 h 14 min
-      </Text>
-      {children}
-    </View>
+    <Screen header={<PageHeader title="Night Drive" onBack={null} />}>
+      <ScreenScrollView contentContainerStyle={{ padding: 16, gap: 8 }}>
+        <Text>A playlist of 38 tracks · 2 h 14 min</Text>
+        {children}
+      </ScreenScrollView>
+    </Screen>
   );
 }
 
@@ -115,67 +120,71 @@ function DesktopPlayer({ initialDevicePickerOpen = false }: { initialDevicePicke
   const [muted, setMuted] = useState(false);
   const [device, setDevice] = useState<PlaybackDevice>(DEVICES[1] as PlaybackDevice);
   const [pickerOpen, setPickerOpen] = useState(initialDevicePickerOpen);
-  const window = useWindowDimensions();
   const remote = device.id !== 'this';
 
   return (
-    <View style={{ alignSelf: 'stretch', height: window.height - 48 }}>
-      <PageBehind />
-      <NowPlayingBar
-        track={TRACK}
-        onTitlePress={noop}
-        onArtistPress={noop}
-        liked={liked}
-        onLikedChange={setLiked}
-        transport={{
-          playing: p.playing,
-          onPlayPause: p.togglePlaying,
-          onPrevious: () => p.setPosition(0),
-          onNext: () => p.setPosition(0),
-          shuffle,
-          onShuffleChange: setShuffle,
-          repeat,
-          onRepeatChange: setRepeat,
-        }}
-        position={p.position}
-        duration={duration}
-        buffered={Math.min(duration, p.position + 60)}
-        onSeek={p.seek}
-        onSeekPreview={p.setPreview}
-        lyricsActive={lyrics}
-        onLyricsChange={setLyrics}
-        queueActive={queue}
-        onQueueChange={setQueue}
-        deviceName={remote ? device.name : undefined}
-        devicePickerOpen={pickerOpen}
-        onDevicePickerOpenChange={setPickerOpen}
-        devicePicker={
-          <DevicePicker
-            current={device}
-            devices={DEVICES}
-            onSelect={(d) => {
-              setDevice(d);
-              setPickerOpen(false);
+    <PlayerFrame
+      bottomBar={
+        <>
+          <NowPlayingBar
+            track={TRACK}
+            onTitlePress={onDemoAction}
+            onArtistPress={onDemoAction}
+            liked={liked}
+            onLikedChange={setLiked}
+            transport={{
+              playing: p.playing,
+              onPlayPause: p.togglePlaying,
+              onPrevious: () => p.setPosition(0),
+              onNext: () => p.setPosition(0),
+              shuffle,
+              onShuffleChange: setShuffle,
+              repeat,
+              onRepeatChange: setRepeat,
             }}
-            onHelpPress={noop}
-            testID="device-picker"
+            position={p.position}
+            duration={duration}
+            buffered={Math.min(duration, p.position + 60)}
+            onSeek={p.seek}
+            onSeekPreview={p.setPreview}
+            lyricsActive={lyrics}
+            onLyricsChange={setLyrics}
+            queueActive={queue}
+            onQueueChange={setQueue}
+            deviceName={remote ? device.name : undefined}
+            devicePickerOpen={pickerOpen}
+            onDevicePickerOpenChange={setPickerOpen}
+            devicePicker={
+              <DevicePicker
+                current={device}
+                devices={DEVICES}
+                onSelect={(d) => {
+                  setDevice(d);
+                  setPickerOpen(false);
+                }}
+                onHelpPress={onDemoAction}
+                testID="device-picker"
+              />
+            }
+            volume={volume}
+            onVolumeChange={setVolume}
+            muted={muted}
+            onMutedChange={setMuted}
+            onFullscreenPress={onDemoAction}
+            testID="bar"
           />
-        }
-        volume={volume}
-        onVolumeChange={setVolume}
-        muted={muted}
-        onMutedChange={setMuted}
-        onFullscreenPress={noop}
-        testID="bar"
-      />
-      {remote ? (
-        <ConnectBanner
-          deviceName={device.name}
-          kind={device.kind}
-          onPress={() => setPickerOpen(true)}
-        />
-      ) : null}
-    </View>
+          {remote ? (
+            <ConnectBanner
+              deviceName={device.name}
+              kind={device.kind}
+              onPress={() => setPickerOpen(true)}
+            />
+          ) : null}
+        </>
+      }
+    >
+      <PageBehind />
+    </PlayerFrame>
   );
 }
 
@@ -189,94 +198,49 @@ export const DevicePickerOpen: Story = {
   render: () => <DesktopPlayer initialDevicePickerOpen />,
 };
 
-/** The same bar measured at 1280, 900 and 700: the fullscreen button, then lyrics/volume/times collapse. */
-export const Collapsing: Story = {
-  render: function Collapsing() {
-    const theme = useTheme();
-    const p = useFakePlayback(227);
-    return (
-      <ScrollView
-        horizontal
-        contentContainerStyle={{ gap: 24, padding: 16, flexDirection: 'column' }}
-      >
-        {[1280, 900, 700].map((w) => (
-          <View key={w} style={{ width: w, gap: 6 }}>
-            <Text variant="caption-1-medium" style={{ color: theme.colors.textSecondary }}>
-              {`${w}px`}
-            </Text>
-            <NowPlayingBar
-              track={TRACK}
-              liked={false}
-              onLikedChange={noop}
-              transport={{
-                playing: p.playing,
-                onPlayPause: p.togglePlaying,
-                onPrevious: noop,
-                onNext: noop,
-                onShuffleChange: noop,
-                repeat: 'all',
-                onRepeatChange: noop,
-              }}
-              position={p.position}
-              duration={227}
-              onSeek={p.seek}
-              lyricsActive
-              onLyricsChange={noop}
-              onQueueChange={noop}
-              onDevicePress={noop}
-              volume={0.5}
-              onVolumeChange={noop}
-              onFullscreenPress={noop}
-              testID={`bar-${w}`}
-            />
-          </View>
-        ))}
-      </ScrollView>
-    );
-  },
-};
-
 /** Podcast mode: speed, back 15, forward 30 and a sleep timer. */
 export const Podcast: Story = {
   render: function Podcast() {
     const duration = 3725;
     const p = useFakePlayback(duration, 1210);
     const [sleep, setSleep] = useState<SleepTimerValue>(30);
-    const window = useWindowDimensions();
     return (
-      <View style={{ alignSelf: 'stretch', height: window.height - 48 }}>
+      <PlayerFrame
+        bottomBar={
+          <NowPlayingBar
+            track={EPISODE}
+            transport={{
+              variant: 'podcast',
+              playing: p.playing,
+              onPlayPause: p.togglePlaying,
+              onSkipBack: () => p.setPosition(Math.max(0, p.position - 15)),
+              onSkipForward: () => p.setPosition(Math.min(duration, p.position + 30)),
+              playbackRate: p.rate,
+              onPlaybackRateChange: p.setRate,
+              trailing: (
+                <SleepTimerMenu
+                  value={sleep}
+                  onValueChange={setSleep}
+                  remaining={sleep === 'off' ? undefined : '24:10'}
+                  size="sm"
+                  testID="sleep"
+                />
+              ),
+            }}
+            position={p.position}
+            duration={duration}
+            onSeek={p.seek}
+            onSeekPreview={p.setPreview}
+            onQueueChange={onDemoAction}
+            onDevicePress={onDemoAction}
+            volume={0.6}
+            onVolumeChange={onDemoAction}
+            testID="podcast-bar"
+          />
+        }
+      >
         <PageBehind />
-        <NowPlayingBar
-          track={EPISODE}
-          transport={{
-            variant: 'podcast',
-            playing: p.playing,
-            onPlayPause: p.togglePlaying,
-            onSkipBack: () => p.setPosition(Math.max(0, p.position - 15)),
-            onSkipForward: () => p.setPosition(Math.min(duration, p.position + 30)),
-            playbackRate: p.rate,
-            onPlaybackRateChange: p.setRate,
-            trailing: (
-              <SleepTimerMenu
-                value={sleep}
-                onValueChange={setSleep}
-                remaining={sleep === 'off' ? undefined : '24:10'}
-                size="sm"
-                testID="sleep"
-              />
-            ),
-          }}
-          position={p.position}
-          duration={duration}
-          onSeek={p.seek}
-          onSeekPreview={p.setPreview}
-          onQueueChange={noop}
-          onDevicePress={noop}
-          volume={0.6}
-          onVolumeChange={noop}
-          testID="podcast-bar"
-        />
-      </View>
+      </PlayerFrame>
     );
   },
 };
@@ -308,8 +272,8 @@ export const Transport: Story = {
               size={size}
               playing={playing}
               onPlayPause={() => setPlaying((v) => !v)}
-              onPrevious={noop}
-              onNext={noop}
+              onPrevious={onDemoAction}
+              onNext={onDemoAction}
               shuffle={shuffle}
               onShuffleChange={setShuffle}
               repeat={repeat}
@@ -326,13 +290,13 @@ export const Transport: Story = {
                 key={mode}
                 playing
                 loading={mode === 'one'}
-                onPlayPause={noop}
-                onPrevious={noop}
+                onPlayPause={onDemoAction}
+                onPrevious={onDemoAction}
                 previousDisabled={mode === 'off'}
-                onNext={noop}
-                onShuffleChange={noop}
+                onNext={onDemoAction}
+                onShuffleChange={onDemoAction}
                 repeat={mode}
-                onRepeatChange={noop}
+                onRepeatChange={onDemoAction}
               />
             ))}
           </View>
@@ -343,8 +307,8 @@ export const Transport: Story = {
             variant="podcast"
             playing={playing}
             onPlayPause={() => setPlaying((v) => !v)}
-            onSkipBack={noop}
-            onSkipForward={noop}
+            onSkipBack={onDemoAction}
+            onSkipForward={onDemoAction}
             playbackRate={rate}
             onPlaybackRateChange={setRate}
             trailing={<SleepTimerMenu value={sleep} onValueChange={setSleep} remaining="12:04" />}
@@ -355,18 +319,18 @@ export const Transport: Story = {
             onPlayPause={() => setPlaying((v) => !v)}
             skipBackSeconds={10}
             skipForwardSeconds={45}
-            onSkipBack={noop}
-            onSkipForward={noop}
+            onSkipBack={onDemoAction}
+            onSkipForward={onDemoAction}
           />
           <TransportControls
             variant="podcast"
             size="lg"
             playing={playing}
             onPlayPause={() => setPlaying((v) => !v)}
-            onSkipBack={noop}
-            onSkipForward={noop}
+            onSkipBack={onDemoAction}
+            onSkipForward={onDemoAction}
             playbackRate={1}
-            onPlaybackRateChange={noop}
+            onPlaybackRateChange={onDemoAction}
           />
         </View>
       </View>
@@ -409,56 +373,25 @@ export const SpeedMenuOpen: Story = { render: () => <MenusDemo openMenu="speed" 
 /** The sleep-timer menu, open. */
 export const SleepMenuOpen: Story = { render: () => <MenusDemo openMenu="sleep" /> };
 
-function MockTabBar() {
-  const theme = useTheme();
-  const { neutral } = resolveButtonRamps(theme);
-  const tabs = [
-    { label: 'Home', Icon: RiHome5Line },
-    { label: 'Search', Icon: RiSearchLine },
-    { label: 'Library', Icon: RiBookOpenLine },
-  ];
+function PlayerFrame({
+  children,
+  bottomBar,
+  immersive = false,
+}: {
+  children: React.ReactNode;
+  bottomBar?: React.ReactNode;
+  immersive?: boolean;
+}) {
   return (
-    <View
-      style={{
-        height: 64,
-        flexDirection: 'row',
-        borderTopWidth: 1,
-        borderTopColor: theme.isDark ? neutral[800] : neutral[200],
-        backgroundColor: theme.colors.background,
-      }}
-    >
-      {tabs.map(({ label, Icon }, i) => (
-        <View
-          key={label}
-          style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2 }}
-        >
-          <Icon width={22} height={22} fill={i === 0 ? theme.colors.text : neutral[500]} />
-          <Text
-            variant="caption-2-medium"
-            style={{ color: i === 0 ? theme.colors.text : neutral[500] }}
-          >
-            {label}
-          </Text>
-        </View>
-      ))}
-    </View>
-  );
-}
-
-function Phone({ children, height = 844 }: { children: React.ReactNode; height?: number }) {
-  const theme = useTheme();
-  return (
-    <View
-      style={{
-        width: '100%',
-        maxWidth: 390,
-        height,
-        overflow: 'hidden',
-        backgroundColor: theme.colors.background,
-      }}
+    <AppShell
+      variant={immersive ? 'canvas' : 'dashboard'}
+      header={null}
+      scroll="fixed"
+      contentMaxWidth="none"
+      bottomBar={bottomBar}
     >
       {children}
-    </View>
+    </AppShell>
   );
 }
 
@@ -479,30 +412,22 @@ function AboutArtistDemo() {
   );
 }
 
-function FullPlayer({
-  width,
-  height,
-  onCollapse = noop,
-}: {
-  width: number;
-  height: number;
-  onCollapse?: () => void;
-}) {
+function FullPlayer({ onCollapse = onDemoAction }: { onCollapse?: () => void }) {
   const duration = 227;
   const p = useFakePlayback(duration);
   const [liked, setLiked] = useState(true);
   const [shuffle, setShuffle] = useState(true);
   const [repeat, setRepeat] = useState<RepeatMode>('one');
   return (
-    <View style={{ width, height, overflow: 'hidden' }}>
+    <PlayerFrame immersive>
       <FullScreenPlayer
         track={TRACK}
         artworkColor="#3A6EA5"
         contextLabel="Playing from playlist"
         contextName="Night Drive"
         onCollapse={onCollapse}
-        onMore={noop}
-        onArtistPress={noop}
+        onMore={onDemoAction}
+        onArtistPress={onDemoAction}
         liked={liked}
         onLikedChange={setLiked}
         transport={{
@@ -521,10 +446,10 @@ function FullPlayer({
         onSeek={p.seek}
         onSeekPreview={p.setPreview}
         deviceName="Living Room Speaker"
-        onDevicePress={noop}
-        onShare={noop}
+        onDevicePress={onDemoAction}
+        onShare={onDemoAction}
         queueActive={false}
-        onQueuePress={noop}
+        onQueuePress={onDemoAction}
         lyrics={{
           lines: [
             'The harbour hums in borrowed light',
@@ -533,34 +458,32 @@ function FullPlayer({
             'Of all the things we never heard',
           ],
           activeIndex: 1,
-          onPress: noop,
+          onPress: onDemoAction,
         }}
         aboutArtist={<AboutArtistDemo />}
         testID="full"
       />
-    </View>
+    </PlayerFrame>
   );
 }
 
-/** The full-screen player at 390 × 844. */
-export const FullScreenMobile: Story = {
-  render: () => <FullPlayer width={390} height={844} />,
-};
-
-/** The immersive player at 1280 × 800. */
-export const FullScreenDesktop: Story = {
-  render: () => <FullPlayer width={1280} height={800} />,
+/** The immersive player adapts to the Storybook viewport. */
+export const FullScreen: Story = {
+  render: () => <FullPlayer />,
 };
 
 /**
- * The phone's mini player over a mock tab bar at 390: tinted, a pale colour darkened, no colour,
+ * Mini players over shared bottom navigation: tinted, a pale colour darkened, no colour,
  * casting. Pressing one opens the full-screen player over the screen (as a route would).
  */
-export const MobileMiniPlayer: Story = {
-  render: function MobileMiniPlayer() {
+export const MiniPlayers: StoryObj<{ variant: string }> = {
+  args: { variant: 'tinted' },
+  argTypes: { variant: { control: 'select', options: ['tinted', 'pale', 'neutral', 'casting'] } },
+  render: function MiniPlayersDemo({ variant }) {
     const p = useFakePlayback(227);
     const [liked, setLiked] = useState(false);
     const [expanded, setExpanded] = useState(false);
+    const [destination, setDestination] = useState('home');
     const variants: {
       key: string;
       artworkColor?: string;
@@ -581,13 +504,12 @@ export const MobileMiniPlayer: Story = {
       { key: 'neutral', track: EPISODE },
       { key: 'casting', artworkColor: '#8B3A62', deviceName: 'Living Room Speaker', track: TRACK },
     ];
+    if (expanded) return <FullPlayer onCollapse={() => setExpanded(false)} />;
+    const v = variants.find((item) => item.key === variant) ?? variants[0]!;
     return (
-      <Phone>
-        <View style={{ flex: 1 }}>
-          <PageBehind />
-        </View>
-        <View style={{ gap: 8, paddingBottom: 8 }}>
-          {variants.map((v) => (
+      <PlayerFrame
+        bottomBar={
+          <>
             <MiniPlayer
               key={v.key}
               track={v.track}
@@ -602,15 +524,20 @@ export const MobileMiniPlayer: Story = {
               onPress={() => setExpanded(true)}
               testID={`mini-${v.key}`}
             />
-          ))}
-        </View>
-        <MockTabBar />
-        {expanded ? (
-          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-            <FullPlayer width={390} height={844} onCollapse={() => setExpanded(false)} />
-          </View>
-        ) : null}
-      </Phone>
+            <BottomBar
+              value={destination}
+              onValueChange={setDestination}
+              items={[
+                { name: 'home', label: 'Home', icon: <RiHome5Line /> },
+                { name: 'search', label: 'Search', icon: <RiSearchLine /> },
+                { name: 'library', label: 'Library', icon: <RiBookOpenLine /> },
+              ]}
+            />
+          </>
+        }
+      >
+        <PageBehind />
+      </PlayerFrame>
     );
   },
 };
@@ -645,11 +572,11 @@ export const Devices: Story = {
             current={device}
             devices={DEVICES}
             onSelect={setDevice}
-            onHelpPress={noop}
+            onHelpPress={onDemoAction}
           />
         </View>
         <View style={{ width: '100%', maxWidth: 390, gap: 8 }}>
-          <ConnectBanner deviceName="Living Room Speaker" onPress={noop} />
+          <ConnectBanner deviceName="Living Room Speaker" onPress={onDemoAction} />
           <ConnectBanner deviceName="Den TV" kind="tv" />
         </View>
       </View>

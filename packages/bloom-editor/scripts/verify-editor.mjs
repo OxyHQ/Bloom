@@ -114,7 +114,8 @@ async function press(page, key, modifier) {
   await type(page, '# Section');
   await press(page, 'Enter');
   await type(page, '/quo');
-  await check(page, await page.$('[role="menu"]'), 'the slash menu opens');
+  await page.waitForSelector('[role="listbox"] [role="option"]');
+  await check(page, await page.$('[role="listbox"]'), 'the slash suggestions open');
   await press(page, 'Enter');
   await type(page, 'Quoted');
   let doc = await outline(page);
@@ -266,7 +267,7 @@ async function press(page, key, modifier) {
   const clip = (kind) =>
     page.evaluate((k) => {
       const data = new DataTransfer();
-      document.dispatchEvent(
+      document.activeElement.dispatchEvent(
         new ClipboardEvent(k, { clipboardData: data, bubbles: true, cancelable: true }),
       );
       return data.getData('text/plain');
@@ -323,7 +324,7 @@ async function press(page, key, modifier) {
   await press(page, 'End');
   await press(page, 'Enter');
   await type(page, '/quo');
-  const item = await page.waitForSelector('[role="menuitem"]', { timeout: 2000 });
+  const item = await page.waitForSelector('[role="listbox"] [role="option"]', { timeout: 2000 });
   await item.click();
   await sleep(250);
   await check(page, (await outline(page)).includes('quote:'), 'clicking a slash item picks it');
@@ -359,7 +360,9 @@ async function press(page, key, modifier) {
   await tap('Mention');
   await type(page, 'ben');
   await sleep(200);
-  const menu = await page.$$eval('[role="menuitem"]', (els) => els.map((e) => e.innerText));
+  const menu = await page.$$eval('[role="listbox"] [role="option"]', (els) =>
+    els.map((e) => e.innerText),
+  );
   await check(
     page,
     menu.some((label) => label.includes('Ben Ito')),
@@ -375,7 +378,9 @@ async function press(page, key, modifier) {
   await press(page, 'End');
   await type(page, ' with @an');
   await sleep(200);
-  const menu = await page.$$eval('[role="menuitem"]', (els) => els.map((e) => e.innerText));
+  const menu = await page.$$eval('[role="listbox"] [role="option"]', (els) =>
+    els.map((e) => e.innerText),
+  );
   await check(
     page,
     menu.some((label) => label.includes('Ana Ruiz')),
@@ -397,7 +402,7 @@ async function press(page, key, modifier) {
       mention?.mention?.attributes?.id === 'Ana Ruiz',
     `Return inserts the mention with its attributes (${JSON.stringify(mention)})`,
   );
-  await check(page, !(await page.$('[role="menu"]')), 'the mention menu closes');
+  await check(page, !(await page.$('[role="listbox"]')), 'the mention suggestions close');
   await page.close();
 }
 
@@ -504,7 +509,8 @@ async function press(page, key, modifier) {
   );
 
   await type(page, ' /');
-  await check(page, await page.$('[role="menu"]'), 'the slash menu opens inside a note');
+  await page.waitForSelector('[role="listbox"] [role="option"]');
+  await check(page, await page.$('[role="listbox"]'), 'the slash suggestions open inside a note');
   await press(page, 'Escape');
 
   for (let i = 0; i < 4; i += 1) await press(page, 'z', 'Control');
@@ -518,15 +524,16 @@ async function press(page, key, modifier) {
 }
 
 // Notion parity: colour, ⌘K, HTML paste, block selection, code, block links, equations.
-const SELECTED = 'rgba(35, 131, 226, 0.14)';
+// Selection paint comes from the Storybook theme. Block content colours live
+// inside the row; the outer block background is reserved for block selection.
 const selectedRows = (page) =>
-  page.$$eval(
-    '[id^="bloom-block-"]',
-    (els, bg) =>
-      els
-        .filter((el) => getComputedStyle(el).backgroundColor === bg)
-        .map((el) => el.querySelector('[contenteditable]')?.innerText.trim() ?? ''),
-    SELECTED,
+  page.$$eval('[id^="bloom-block-"]', (els) =>
+    els
+      .filter((el) => {
+        const background = getComputedStyle(el).backgroundColor;
+        return background !== 'rgba(0, 0, 0, 0)' && background !== 'transparent';
+      })
+      .map((el) => el.querySelector('[contenteditable]')?.innerText.trim() ?? ''),
   );
 const textOf = (page, needle) =>
   page.evaluate((t) => {

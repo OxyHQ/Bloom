@@ -9,7 +9,12 @@
  * Rendered through the REAL react-native-web, as each family's own suite is,
  * so the assertions read the emitted names and text.
  */
-import React from 'react';
+import { ListItem } from '../list/index.web';
+
+import { List } from '../list/index.web';
+import { EmptyState } from '../empty-state';
+
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { within } from '@testing-library/dom';
@@ -18,12 +23,12 @@ jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { Avatar } from '../avatar';
 import { LABELS, labels } from '../shapes';
-import { CallControls, CallHistoryRow, GroupCallBar, IncomingCallBanner } from '../call-ui';
+import { CallControls, GroupCallBar, IncomingCallBanner } from '../call-ui';
 import { CALL_STATUS_LABELS } from '../call-ui/shared';
 import { LocaleProvider } from '../locale';
 import { MailComposeSurface } from '../mail-compose';
 import { MAIL_COMPOSE_MESSAGES } from '../mail-compose/messages';
-import { MailList, MailSelectionBar } from '../mail-list';
+import { ListSelectionBar } from '../list';
 import { MAIL_LIST_MESSAGES } from '../mail-list/messages';
 import { groupMailByDay } from '../mail-list/shared';
 import { MailThread } from '../mail-thread';
@@ -128,7 +133,9 @@ describe('call-ui', () => {
     expect(
       mountIn(
         'ja',
-        <CallHistoryRow name="Ana" direction="missed" meta="18:40" onCallBack={() => undefined} />,
+        <ListItem
+          call={{ name: 'Ana', direction: 'missed', meta: '18:40', onCallBack: () => undefined }}
+        />,
       ).getByLabelText('Anaにかけ直す'),
     ).toBeTruthy();
   });
@@ -191,24 +198,50 @@ describe('mail-thread', () => {
 
 describe('mail-list', () => {
   it('draws the empty state and names the list in the locale; accessibilityLabel still wins', () => {
-    const view = mountIn('it', <MailList mails={[]} testID="l" />);
+    const view = mountIn(
+      'it',
+      <List
+        items={[]}
+        accessibilityLabel={messagesIn(MAIL_LIST_MESSAGES, 'it').list}
+        testID={'l'}
+        empty={
+          <EmptyState
+            title={messagesIn(MAIL_LIST_MESSAGES, 'it').emptyTitle}
+            description={messagesIn(MAIL_LIST_MESSAGES, 'it').emptyDescription}
+          />
+        }
+      />,
+    );
     expect(view.getByText('Nessun elemento')).toBeTruthy();
     expect(byTestId('l').getAttribute('aria-label')).toBe('Posta');
     act(() => root.render(<div />));
-    mountIn('it', <MailList mails={[]} accessibilityLabel="Posta in arrivo" testID="l" />);
+    mountIn(
+      'it',
+      <List
+        items={[]}
+        accessibilityLabel={'Posta in arrivo'}
+        testID={'l'}
+        empty={
+          <EmptyState
+            title={messagesIn(MAIL_LIST_MESSAGES, 'it').emptyTitle}
+            description={messagesIn(MAIL_LIST_MESSAGES, 'it').emptyDescription}
+          />
+        }
+      />,
+    );
     expect(byTestId('l').getAttribute('aria-label')).toBe('Posta in arrivo');
   });
 
   it("counts the selection in the language's plural", () => {
     mountIn(
       'fr',
-      <MailSelectionBar count={1} total={4} onSelectAll={() => undefined} testID="b" />,
+      <ListSelectionBar count={1} total={4} onSelectAll={() => undefined} testID="b" />,
     );
     expect(byTestId('b-count').textContent).toBe('1 sélectionné');
     act(() => root.render(<div />));
     mountIn(
       'fr',
-      <MailSelectionBar count={3} total={4} onSelectAll={() => undefined} testID="b" />,
+      <ListSelectionBar count={3} total={4} onSelectAll={() => undefined} testID="b" />,
     );
     expect(byTestId('b-count').textContent).toBe('3 sélectionnés');
     expect(messagesIn(MAIL_LIST_MESSAGES, 'ar').threadCount(2)).toBe('رسالتان');

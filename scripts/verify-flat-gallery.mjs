@@ -55,7 +55,7 @@ try {
       const errors = [];
       page.on('pageerror', (error) => errors.push(error.message));
       await page.goto(
-        `${base}/iframe.html?id=base-zoomable-media-gallery--page-${mode}&viewMode=story`,
+        `${base}/iframe.html?id=base-zoomable-media-gallery--page&viewMode=story&globals=theme:${mode}`,
       );
       await page.getByTestId('gallery-open-0').waitFor({ timeout: 120000 });
       await page.getByTestId('gallery-open-0').click();

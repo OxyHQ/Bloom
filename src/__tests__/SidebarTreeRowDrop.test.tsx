@@ -101,7 +101,7 @@ const over = (action: DropTargetDragEvent['action']): DropTargetDragEvent => ({
 });
 
 const labelColor = (screen: ReturnType<typeof mount>, text: string) =>
-  resolvedStyle(screen.getByText(text).props.style).color;
+  resolvedStyle(screen.getByText(text, { includeHiddenElements: true }).props.style).color;
 
 beforeEach(() => targets.clear());
 

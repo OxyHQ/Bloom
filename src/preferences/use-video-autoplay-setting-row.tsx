@@ -7,7 +7,7 @@ import type { VideoAutoplayPolicy } from './types';
 
 /**
  * The ready-made video-autoplay row (always / Wi-Fi only / never), for a
- * `SettingsGeneralPage` section (or `SettingsRow`). The app places it; Bloom
+ * `SettingsGeneralPage` section (or `GroupedSectionItem`). The app places it; Bloom
  * owns its state, persistence and text.
  */
 export function useVideoAutoplaySettingRow(): SettingsRowData {

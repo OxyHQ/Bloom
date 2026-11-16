@@ -46,7 +46,7 @@ try {
           'false',
         );
         await page.goto(
-          `${base}/iframe.html?id=controls-follow-button--styled&viewMode=story&globals=theme:${mode}`,
+          `${base}/iframe.html?id=base-follow-button--styled&viewMode=story&globals=theme:${mode}`,
         );
         const follow = page.getByTestId('styled-follow');
         await follow.waitFor({ timeout: 120000 });

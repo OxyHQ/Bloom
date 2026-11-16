@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import type React from 'react';
+import { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -52,8 +53,8 @@ function weekLabel(offset: number) {
   return `${start.getDate()} ${MONTHS[start.getMonth()]} - ${end.getDate()} ${MONTHS[end.getMonth()]}`;
 }
 
-const Frame = ({ children, width = 360 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
+const Frame = ({ children }: { children: React.ReactNode }) => (
+  <View style={{ width: '100%', maxWidth: 760, gap: 24 }}>{children}</View>
 );
 
 function Weekly({ testID, width }: { testID?: string; width?: number }) {
@@ -105,10 +106,10 @@ export const Hovered: Story = {
 };
 
 /** The widest dashboard column: bars cap at 50px. A static pill and a custom colour. */
-export const Wide: Story = {
+export const CustomUnits: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
-    <Frame width={440}>
+    <Frame>
       <StepsCard data={weekData(2)} range="This week" />
       <StepsCard
         title="Floors"

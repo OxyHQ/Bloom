@@ -1,3 +1,4 @@
+import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import { Platform, type View } from 'react-native';
 import { useCharacterHistory } from './use-character-history';
@@ -11,10 +12,10 @@ import {
 import { normalizeAvatarSkinColor } from '../agent-avatar/skin-color';
 import { accountBodyHex, drawnCharacter } from './paint';
 import { editorShapeId } from './shape-choices';
-import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { Button } from '../button';
 import { RiArrowGoBackLine } from '../icons/remix/RiArrowGoBackLine';
 import { RiArrowGoForwardLine } from '../icons/remix/RiArrowGoForwardLine';
-import { CloseButton } from '../button/CloseButton';
+
 import { useDirectionProps } from '../hooks/use-is-rtl';
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import { TextFieldInput } from '../text-field';
@@ -185,27 +186,31 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                 sticky={false}
                 safeArea={false}
                 leading={
-                  <ButtonGroup accessibilityLabel={messages.avatarHistory}>
-                    <ButtonGroupItem
+                  <Button.Group accessibilityLabel={messages.avatarHistory}>
+                    <Button
                       iconOnly
                       leadingIcon={RiArrowGoBackLine}
                       accessibilityLabel={messages.undoAvatar}
                       disabled={!history.canUndo}
                       onPress={history.undo}
                     />
-                    <ButtonGroupItem
+                    <Button
                       iconOnly
                       leadingIcon={RiArrowGoForwardLine}
                       accessibilityLabel={messages.redoAvatar}
                       disabled={!history.canRedo}
                       onPress={history.redo}
                     />
-                  </ButtonGroup>
+                  </Button.Group>
                 }
                 actions={
                   !isWithinDialog && onClose ? (
-                    <CloseButton
-                      size="xs"
+                    <Button
+                      appearance="outline"
+                      tone="neutral"
+                      iconOnly
+                      icon={DismissActionIcon}
+                      size={20}
                       accessibilityLabel={messages.closeEditor}
                       onPress={onClose}
                     />

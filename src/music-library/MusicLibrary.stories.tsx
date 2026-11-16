@@ -1,3 +1,5 @@
+import { fn } from 'storybook/test';
+import { useContainerWidth } from '../hooks/use-container-width';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -155,21 +157,6 @@ const LIBRARY: LibraryEntry[] = [
   },
 ];
 
-function contextMenu(item: LibraryEntry) {
-  return (
-    <>
-      <ContextMenuItem onPress={() => {}}>{item.pinned ? 'Unpin' : 'Pin'}</ContextMenuItem>
-      <ContextMenuItem onPress={() => {}}>
-        {item.downloaded ? 'Remove download' : 'Download'}
-      </ContextMenuItem>
-      <ContextMenuSeparator />
-      <ContextMenuItem variant="destructive" onPress={() => {}}>
-        Remove from Your Library
-      </ContextMenuItem>
-    </>
-  );
-}
-
 function Page({ children, row = true }: { children: React.ReactNode; row?: boolean }) {
   const theme = useTheme();
   return (
@@ -201,42 +188,75 @@ function Caption({ children }: { children: string }) {
 /** The whole panel, interactive: filters, search, sort and view menu, rail and expand toggles. */
 function InteractivePanel({
   height = 720,
-  fullWidth = false,
+  initiallyCollapsed = false,
 }: {
   height?: number;
-  fullWidth?: boolean;
+  initiallyCollapsed?: boolean;
 }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(initiallyCollapsed);
+  const { width, onLayout } = useContainerWidth();
+  const fullWidth = (width ?? 0) < 600;
+  const [items, setItems] = useState(LIBRARY);
   const [expanded, setExpanded] = useState(false);
   const [selectedId, setSelectedId] = useState('night-drive');
   const [paused, setPaused] = useState(false);
+  const update = (id: string, patch: Partial<LibraryEntry>) =>
+    setItems((current) => current.map((item) => (item.id === id ? { ...item, ...patch } : item)));
   return (
-    <LibraryPanel
-      items={LIBRARY}
-      collapsed={collapsed}
-      onCollapsedChange={setCollapsed}
-      expanded={expanded}
-      onExpandedChange={fullWidth ? undefined : setExpanded}
-      onCreatePress={() => {}}
-      selectedId={selectedId}
-      nowPlayingId="night-drive"
-      paused={paused}
-      onItemPress={(item) => {
-        if (item.id === 'night-drive') setPaused((p) => !p);
-        setSelectedId(item.id);
-      }}
-      renderContextMenu={contextMenu}
-      style={{
-        height,
-        width: collapsed ? undefined : '100%',
-        maxWidth: fullWidth ? undefined : expanded ? 560 : 360,
-      }}
-      testID="library"
-    />
+    <View onLayout={onLayout} style={{ width: '100%' }}>
+      <LibraryPanel
+        items={items}
+        collapsed={collapsed}
+        onCollapsedChange={setCollapsed}
+        expanded={expanded}
+        onExpandedChange={fullWidth ? undefined : setExpanded}
+        onCreatePress={() =>
+          setItems((current) => [
+            {
+              id: `playlist-${current.length}`,
+              title: `New playlist ${current.length - LIBRARY.length + 1}`,
+              kind: 'playlist',
+              meta: 'Playlist · 0 songs',
+            },
+            ...current,
+          ])
+        }
+        selectedId={selectedId}
+        nowPlayingId="night-drive"
+        paused={paused}
+        onItemPress={(item) => {
+          if (item.id === 'night-drive') setPaused((p) => !p);
+          setSelectedId(item.id);
+        }}
+        renderContextMenu={(item) => (
+          <>
+            <ContextMenuItem onPress={() => update(item.id, { pinned: !item.pinned })}>
+              {item.pinned ? 'Unpin' : 'Pin'}
+            </ContextMenuItem>
+            <ContextMenuItem onPress={() => update(item.id, { downloaded: !item.downloaded })}>
+              {item.downloaded ? 'Remove download' : 'Download'}
+            </ContextMenuItem>
+            <ContextMenuSeparator />
+            <ContextMenuItem
+              variant="destructive"
+              onPress={() => setItems((current) => current.filter((entry) => entry.id !== item.id))}
+            >
+              Remove from Your Library
+            </ContextMenuItem>
+          </>
+        )}
+        style={{
+          height,
+          width: collapsed ? undefined : '100%',
+          maxWidth: fullWidth ? undefined : expanded ? 560 : 360,
+        }}
+        testID="library"
+      />
+    </View>
   );
 }
 
-export const Desktop: Story = {
+export const Default: Story = {
   render: () => (
     <Page>
       <InteractivePanel />
@@ -257,7 +277,7 @@ export const Views: Story = {
               view={view}
               nowPlayingId="night-drive"
               selectedId="lumen-vale"
-              onCreatePress={() => {}}
+              onCreatePress={fn().mockName('LibraryPanel.onCreatePress')}
               style={{ width: '100%', maxWidth: 340, height: 620 }}
               testID={`library-${view}`}
             />
@@ -309,17 +329,7 @@ export const Filtered: Story = {
 export const Collapsed: Story = {
   render: () => (
     <Page>
-      <LibraryPanel
-        items={LIBRARY}
-        collapsed
-        onCollapsedChange={() => {}}
-        onCreatePress={() => {}}
-        nowPlayingId="night-drive"
-        selectedId="lumen-vale"
-        renderContextMenu={contextMenu}
-        style={{ height: 720 }}
-        testID="library-rail"
-      />
+      <InteractivePanel initiallyCollapsed />
     </Page>
   ),
 };
@@ -330,15 +340,29 @@ export const Items: Story = {
     <Page row={false}>
       <View style={{ width: '100%', maxWidth: 360, gap: 4 }}>
         <Caption>list — rest, selected, now playing, paused, artist, no cover</Caption>
-        <LibraryItem item={LIBRARY[4]!} onPress={() => {}} />
-        <LibraryItem item={LIBRARY[3]!} selected onPress={() => {}} />
-        <LibraryItem item={LIBRARY[1]!} nowPlaying onPress={() => {}} />
-        <LibraryItem item={LIBRARY[1]!} nowPlaying paused onPress={() => {}} />
-        <LibraryItem item={LIBRARY[2]!} onPress={() => {}} />
-        <LibraryItem item={LIBRARY[9]!} onPress={() => {}} />
+        <LibraryItem item={LIBRARY[4]!} onPress={fn().mockName('LibraryItem.onPress')} />
+        <LibraryItem item={LIBRARY[3]!} selected onPress={fn().mockName('LibraryItem.onPress')} />
+        <LibraryItem item={LIBRARY[1]!} nowPlaying onPress={fn().mockName('LibraryItem.onPress')} />
+        <LibraryItem
+          item={LIBRARY[1]!}
+          nowPlaying
+          paused
+          onPress={fn().mockName('LibraryItem.onPress')}
+        />
+        <LibraryItem item={LIBRARY[2]!} onPress={fn().mockName('LibraryItem.onPress')} />
+        <LibraryItem item={LIBRARY[9]!} onPress={fn().mockName('LibraryItem.onPress')} />
         <Caption>compact</Caption>
-        <LibraryItem item={LIBRARY[0]!} variant="compact" onPress={() => {}} />
-        <LibraryItem item={LIBRARY[1]!} variant="compact" nowPlaying onPress={() => {}} />
+        <LibraryItem
+          item={LIBRARY[0]!}
+          variant="compact"
+          onPress={fn().mockName('LibraryItem.onPress')}
+        />
+        <LibraryItem
+          item={LIBRARY[1]!}
+          variant="compact"
+          nowPlaying
+          onPress={fn().mockName('LibraryItem.onPress')}
+        />
       </View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {[LIBRARY[1]!, LIBRARY[2]!, LIBRARY[5]!].map((item) => (
@@ -347,43 +371,16 @@ export const Items: Story = {
               item={item}
               variant="grid"
               nowPlaying={item.id === 'night-drive'}
-              onPress={() => {}}
+              onPress={fn().mockName('LibraryItem.onPress')}
             />
           </View>
         ))}
-        <LibraryItem item={LIBRARY[2]!} variant="rail" onPress={() => {}} />
+        <LibraryItem
+          item={LIBRARY[2]!}
+          variant="rail"
+          onPress={fn().mockName('LibraryItem.onPress')}
+        />
       </View>
-    </Page>
-  ),
-};
-
-/** A 390-wide phone: the panel fills the screen, no expand toggle. */
-export const Mobile: Story = {
-  render: () => (
-    <View style={{ width: '100%', maxWidth: 390 }}>
-      <InteractivePanel height={760} fullWidth />
-    </View>
-  ),
-};
-
-export const Dark: Story = {
-  globals: { theme: 'dark' },
-  render: () => (
-    <Page>
-      <InteractivePanel />
-      <LibraryPanel
-        items={LIBRARY}
-        view="grid"
-        nowPlayingId="night-drive"
-        style={{ width: '100%', maxWidth: 360, height: 720 }}
-      />
-      <LibraryPanel
-        items={LIBRARY}
-        collapsed
-        onCollapsedChange={() => {}}
-        onCreatePress={() => {}}
-        style={{ height: 720 }}
-      />
     </Page>
   ),
 };

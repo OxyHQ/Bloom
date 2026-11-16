@@ -1,25 +1,13 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
-import {
-  GroupedSection,
-  GroupedSectionItem,
-  GroupedSectionDivider,
-  GroupedSectionCollapse,
-} from '../grouped-section';
-import { SettingsListGroup, SettingsListItem, SettingsListDivider } from '../settings-list';
+import { GroupedSection, GroupedSectionItem, GroupedSectionCollapse } from '../grouped-section';
 import { BloomScope } from '../appearance';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { GROUPED_SECTION_TEST_ID } from '../grouped-section/surface';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { cardLayout } from './support/card-surface';
 import { resolvedStyle } from './support/rendered-style';
-
-it('keeps compatibility names bound to the exact canonical component objects', () => {
-  expect(SettingsListGroup).toBe(GroupedSection);
-  expect(SettingsListItem).toBe(GroupedSectionItem);
-  expect(SettingsListDivider).toBe(GroupedSectionDivider);
-});
 
 it('renders the neutral family with intrinsic rounded spacing and arbitrary row content', () => {
   const screen = render(

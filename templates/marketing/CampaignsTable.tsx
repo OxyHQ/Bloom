@@ -1,20 +1,15 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { ButtonIconComponent } from '../../src/button/types';
 import { Chip, type ChipHue } from '../../src/chip';
 import {
   DataTable,
   DataTableFilter,
-  DataTableRowActions,
   DataTableSearch,
   DataTableSelect,
   type DataTableColumn,
-  type DataTableRowActionItem,
   type DataTableSelectOption,
 } from '../../src/data-table';
 import {
-  RiArchiveLine,
-  RiDownload2Line,
-  RiFileCopyLine,
   RiGlobalLine,
   RiGoogleFill,
   RiLinkedinBoxFill,
@@ -24,15 +19,7 @@ import {
 } from '../../src/icons/remix';
 import { useTheme } from '../../src/theme/use-theme';
 import { Text } from '../../src/typography';
-import {
-  CellText,
-  DELETE_EDIT_ACTIONS,
-  IconTile,
-  MONTHS,
-  NameCell,
-  dateValue,
-  makeRng,
-} from '../shared/dashboard';
+import { CellText, IconTile, MONTHS, NameCell, dateValue, makeRng } from '../shared/dashboard';
 
 /**
  * The marketing template's campaigns table: the
@@ -98,12 +85,6 @@ const DELIVERY_OPTIONS: DataTableSelectOption[] = [
   { value: 'active', label: 'Active', dot: 'success' },
   { value: 'paused', label: 'Paused', dot: 'warning' },
   { value: 'draft', label: 'Draft', dot: 'info' },
-];
-
-const MORE_MENU: DataTableRowActionItem[] = [
-  { icon: RiFileCopyLine, label: 'Duplicate campaign' },
-  { icon: RiDownload2Line, label: 'Export report' },
-  { icon: RiArchiveLine, label: 'Archive campaign' },
 ];
 
 export interface Campaign {
@@ -211,14 +192,6 @@ const COLUMNS: DataTableColumn<Campaign>[] = [
       ) : (
         <ZeroSpend />
       ),
-  },
-  {
-    id: 'actions',
-    header: 'Actions',
-    width: 140,
-    cell: ({ row }) => (
-      <DataTableRowActions name={row.name} actions={DELETE_EDIT_ACTIONS} menu={MORE_MENU} />
-    ),
   },
 ];
 

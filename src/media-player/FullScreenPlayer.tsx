@@ -2,6 +2,8 @@ import { ScrollArea } from '../layout/ScrollArea';
 import { memo, useContext, useMemo, useState } from 'react';
 import { Pressable, View, type LayoutChangeEvent } from 'react-native';
 
+import { Button } from '../button';
+import { PageHeader } from '../page-header';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { RiMore2Fill } from '../icons/remix/RiMore2Fill';
 import { RiPlayListLine } from '../icons/remix/RiPlayListLine';
@@ -145,46 +147,38 @@ function FullScreenPlayerBody({
   );
 
   const topBar = (
-    <View
-      style={{ height: 56, flexDirection: 'row', alignItems: 'center', gap: 8 }}
+    <PageHeader
       testID={id('top-bar')}
-    >
-      <PlayerIconButton
-        icon={RiArrowDownSLine}
-        glyph={28}
-        box={40}
-        restColor={paint.text}
-        accessibilityLabel={labels.collapse}
-        onPress={onCollapse}
-        testID={id('collapse')}
-      />
-      <View style={{ flex: 1, minWidth: 0, alignItems: 'center' }}>
-        {contextLabel ? (
-          <Text
-            variant="caption-2-semibold"
-            numberOfLines={1}
-            style={{ color: paint.textMuted, textTransform: 'uppercase', letterSpacing: 0.6 }}
-          >
-            {contextLabel}
-          </Text>
-        ) : null}
-        {contextName ? (
-          <Text variant="body-2-semibold" numberOfLines={1} style={{ color: paint.text }}>
-            {contextName}
-          </Text>
-        ) : null}
-      </View>
-      <PlayerIconButton
-        icon={RiMore2Fill}
-        glyph={24}
-        box={40}
-        restColor={paint.text}
-        accessibilityLabel={labels.more}
-        onPress={onMore}
-        disabled={!onMore}
-        testID={id('more')}
-      />
-    </View>
+      onBack={null}
+      sticky={false}
+      tone="onImage"
+      titleAlign="center"
+      title={contextName}
+      subtitle={contextLabel}
+      leading={
+        <Button
+          tone="neutral"
+          appearance="outline"
+          iconOnly
+          leadingIcon={RiArrowDownSLine}
+          accessibilityLabel={labels.collapse}
+          onPress={onCollapse}
+          testID={id('collapse')}
+        />
+      }
+      actions={
+        <Button
+          tone="neutral"
+          appearance="outline"
+          iconOnly
+          leadingIcon={RiMore2Fill}
+          accessibilityLabel={labels.more}
+          onPress={onMore}
+          disabled={!onMore}
+          testID={id('more')}
+        />
+      }
+    />
   );
 
   const details = (
@@ -334,8 +328,6 @@ function FullScreenPlayerBody({
           style={[
             {
               minHeight: size.height || undefined,
-              paddingLeft: wide ? 48 : 16,
-              paddingRight: wide ? 48 : 16,
               paddingBottom: 24,
             },
             gradient,
@@ -351,6 +343,8 @@ function FullScreenPlayerBody({
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 64,
+                paddingLeft: 48,
+                paddingRight: 48,
                 paddingTop: 16,
               }}
             >
@@ -358,7 +352,16 @@ function FullScreenPlayerBody({
               {details}
             </View>
           ) : (
-            <View style={{ flex: 1, alignItems: 'center', gap: 24, paddingTop: 16 }}>
+            <View
+              style={{
+                flex: 1,
+                alignItems: 'center',
+                gap: 24,
+                paddingTop: 16,
+                paddingLeft: 16,
+                paddingRight: 16,
+              }}
+            >
               <View
                 style={{ flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center' }}
               >
@@ -379,7 +382,7 @@ function FullScreenPlayerBody({
  * immersive view. It fills its parent — present it as a route, or inside a
  * full-height sheet / dialog.
  *
- *   top bar      40 collapse chevron · "PLAYING FROM PLAYLIST" / "Night Drive" · 40 more
+ *   top bar      PageHeader with collapse, context identity and more actions
  *   narrow       square artwork (16 corner, ≤ 480) over the details
  *   wide ≥ 900   artwork and details side by side, 64 apart
  *   details      title + artists + like · scrubber with times below ·

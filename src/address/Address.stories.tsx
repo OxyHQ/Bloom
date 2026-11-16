@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import { fn } from 'storybook/test';
+import type React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Avatar } from '../avatar';
 import { Badge } from '../badge';
-import { GlyphButton } from '../button';
+import { Button } from '../button';
 import { Card, CardBody } from '../card';
 import { RiMore2Line } from '../icons';
 import { Text } from '../typography';
@@ -22,7 +24,7 @@ export default meta;
 
 type Story = StoryObj;
 
-const noop = () => undefined;
+const onExampleAction = fn().mockName('Example action');
 
 // ---------------------------------------------------------------------------
 //  Demo data — invented places. Street names and buildings are made up.
@@ -106,14 +108,14 @@ export const Rows: Story = {
             kind="place"
             title="Plaça de les Bruixes 2"
             subtitle="Next to the fountain"
-            onPress={noop}
+            onPress={onExampleAction}
             testID="place"
           />
           <AddressRow
             kind="saved"
             title="Home"
             subtitle="Carrer de l’Om 14, 3r 2a"
-            onPress={noop}
+            onPress={onExampleAction}
             badge={<Badge content="Default" variant="subtle" color="primary" size="label-small" />}
           />
           <AddressRow
@@ -121,13 +123,13 @@ export const Rows: Story = {
             title="Mercat de la Serra"
             subtitle="Avinguda dels Til·lers 61"
             meta="3.8 km"
-            onPress={noop}
+            onPress={onExampleAction}
           />
           <AddressRow
             kind="suggestion"
             title="Carrer del Roure 33B"
             subtitle="Sant Genís, behind the school"
-            onPress={noop}
+            onPress={onExampleAction}
           />
         </View>
       </Section>
@@ -139,34 +141,37 @@ export const Rows: Story = {
             subtitle="Passatge del Vidre 8"
             role="option"
             selected
-            onPress={noop}
+            onPress={onExampleAction}
           />
           <AddressRow
             kind="saved"
             title="Old flat"
             subtitle="No longer serviced"
             disabled
-            onPress={noop}
+            onPress={onExampleAction}
           />
           <AddressRow
             kind="recent"
             title="Carrer del Roure 3"
             subtitle="Sant Genís"
             density="compact"
-            onPress={noop}
+            onPress={onExampleAction}
           />
           <AddressRow
             kind="saved"
             title="Home"
             subtitle="Carrer de l’Om 14"
-            onPress={noop}
+            onPress={onExampleAction}
             action={
-              <GlyphButton
+              <Button
+                appearance="plain"
+                tone="neutral"
+                iconOnly
                 size={32}
-                glyphSize={16}
+                iconSize={16}
                 icon={RiMore2Line}
                 accessibilityLabel="More for Home"
-                onPress={noop}
+                onPress={onExampleAction}
               />
             }
           />
@@ -178,13 +183,13 @@ export const Rows: Story = {
             title="Marta"
             subtitle="Passatge del Vidre 8 · leave it with her"
             leading={<Avatar name="Marta Vidal" size={40} />}
-            onPress={noop}
+            onPress={onExampleAction}
           />
           <AddressRow
             title="Carrer del Roure 3"
             subtitle="Sant Genís"
             leading={null}
-            onPress={noop}
+            onPress={onExampleAction}
           />
         </View>
       </Section>
@@ -195,7 +200,7 @@ export const Rows: Story = {
             title="Avinguda dels Til·lers 61, escala B, planta 4"
             subtitle="Between the market and the old water tower, ring the second bell"
             meta="12 km"
-            onPress={noop}
+            onPress={onExampleAction}
           />
         </View>
       </Section>
@@ -224,7 +229,11 @@ export const List: Story = {
         <PickerDemo />
       </Section>
       <Section title="A result list — sections of listitems">
-        <AddressList sections={RESULTS} onSelect={noop} accessibilityLabel="Search results" />
+        <AddressList
+          sections={RESULTS}
+          onSelect={onExampleAction}
+          accessibilityLabel="Search results"
+        />
       </Section>
       <Section title="Inside a checkout card">
         <Card>

@@ -29,6 +29,42 @@ Use the existing subgroups before creating another root. New siblings sort
 alphabetically; the curated order only brings shared contracts and common
 controls to the front. Add a new subgroup to `storySort` when its position matters.
 
+## Composing examples
+
+Stories and templates are consumers of Bloom. Use the existing Button, List,
+PageHeader, Card, Screen and other complete components for surrounding UI.
+Keep business fixtures and local interaction state in the story; do not duplicate
+component paint, control sizing, selection, search or navigation behavior there.
+
+An ordinary screen example must use the whole canvas as its app viewport, with
+AppShell composing navigation and panels and Screen owning its header, scrolling
+content and footer. A framed message area is not a complete app example. For an
+unconstrained workspace, use `contentMaxWidth="none"` and an explicit flexible
+panel `span: 1`; do not reproduce the shell with fixed preview dimensions,
+background layers, manual safe areas or footer clearance. Keep standalone
+measurement fixtures clearly documented under Labs when their host itself is
+the regression subject.
+
+Use the Storybook viewport and global theme/material/preset toolbar. Ordinary
+examples must not add their own Narrow/Wide or Light/Dark controls, duplicate
+stories solely by width/theme, force a phone frame, or compensate canvas padding
+with negative margins. Use Controls for actual component options. A bounded
+container regression may keep a measured host when its behavior differs from
+window resizing; document that purpose and keep its browser verification.
+
+Show one responsive example per distinct behavior. Optional actions without an
+implementation should be omitted. Integrated examples should update local state;
+isolated callback demonstrations should use named Storybook action spies. Raw
+primitives remain appropriate when the primitive, adapter, content illustration,
+or measurement contract is the subject itself. They are not a shortcut around an
+existing Bloom control. Preserve those regression subjects when simplifying UI.
+
+When consolidating redundant examples, update references in browser verifiers and
+docs to the canonical story and exercise themes and widths through the harness.
+`scripts/verify-storybook-catalog.mjs` renders the indexed catalogue and records
+runtime failures and overflow for review; rendering alone does not verify every
+interaction or establish native-device behavior.
+
 ## Writing a story
 
 The preview decorator (`preview.tsx`) owns the providers, the theme and the canvas
@@ -76,8 +112,8 @@ it.
 
 Use `args` and `argTypes` so the Controls panel is the way to change a story. Do not
 draw a second picker for the same arguments. A fixture that a browser verification
-script drives by `testid` (the width buttons in `HeaderActions`, the size group in
-`Composition`) may keep its own controls; its comment says which script depends on it.
+script drives by `testid` may keep controls that exercise a distinct bounded-container
+contract; its comment names that script. Ordinary viewport controls are removed.
 
 ### Workspace packages
 
@@ -113,6 +149,18 @@ For example, these existing deep links still identify the same stories:
 When checking links, read `/index.json` from the running Storybook. Do not derive
 an old story ID from its new title. Browser verification scripts, bookmarks and
 published documentation may still use the historical ID.
+
+## Composition audit (2026-11-15)
+
+The [file-by-file record](../docs/audits/storybook-cleanup-2026-11-15.json)
+covers all 305 CSF files, including workspace packages and template helpers.
+The index went from 1,667 to 1,589 stories: redundant theme/width copies were
+consolidated while distinct interaction and regression scenarios were retained.
+The record distinguishes code review, catalogue rendering, real interactions and
+physical-platform limits. Its 2026-11-16 follow-up records missed full-app
+composition in footer and media examples and the targeted corrections; the
+earlier audit does not prove every screen layout is correct. Use the current
+index for links after consolidation.
 
 ## Catalogue audit (2026-10-19)
 

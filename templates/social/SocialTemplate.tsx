@@ -1,10 +1,10 @@
-import React, { useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 
 import { SocialLogo, SocialFeed, SocialWidgets } from './SocialContent';
 import { Dialog, useDialogControl } from '../../src/dialog/index.web';
 import { TextFieldInput } from '../../src/text-field';
-import { ButtonGroup, ButtonGroupItem } from '../../src/button-group';
+import { Button } from '../../src/button';
 import { BottomBar } from '../../src/bottom-bar/index.web';
 import { useScreen } from '../../src/screen';
 import type { BottomBarProps } from '../../src/bottom-bar/types';
@@ -115,21 +115,21 @@ export function SocialTemplate({
       titleAlign="center"
       presentation="floating"
       actions={
-        <ButtonGroup accessibilityLabel="Page actions">
+        <Button.Group accessibilityLabel="Page actions">
           {headerActions}
-          <ButtonGroupItem
+          <Button
             iconOnly
             leadingIcon={RiSearchLine}
             accessibilityLabel="Explore"
             onPress={() => setSelected('explore')}
           />
-          <ButtonGroupItem
+          <Button
             iconOnly
             leadingIcon={RiNotification3Line}
             accessibilityLabel="Notifications"
             onPress={() => setSelected('notifications')}
           />
-        </ButtonGroup>
+        </Button.Group>
       }
     />
   );

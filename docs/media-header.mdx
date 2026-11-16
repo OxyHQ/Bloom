@@ -127,7 +127,7 @@ The pieces are exported too: `ShuffleButton`, `DownloadButton`, `FollowButton`, 
 
 ## `StickyMediaTopBar`
 
-The compact bar (64 high, band colour, play button + title) that takes over when the header scrolls away. It does not position itself — put it in an absolutely positioned, `sticky` or `fixed` container over the page. Below half shown it is `aria-hidden` and takes no pointer events.
+The compact bar (play button + title) uses `PageHeader` for its intrinsic height, layout and band-coloured edge gradient. Supply `height` only when the host requires an explicit fixed height. It takes over when the header scrolls away. It does not position itself — put it in an absolutely positioned, `sticky` or `fixed` container over the page. Below half shown it is `aria-hidden` and takes no pointer events.
 
 Drive it one of two ways:
 

@@ -43,26 +43,35 @@ export interface NativeBox {
 }
 
 /**
- * A horizontal ScrollView as React Native lays it out natively: a row that
+ * A ScrollView as React Native lays it out natively: a viewport that
  * scrolls (`overflow: scroll`, its base style), holding a content container —
- * a row carrying `contentContainerStyle` — that Yoga sizes to its children
+ * a view carrying `contentContainerStyle` — that Yoga sizes to its children
  * rather than to the viewport. The test renderer draws neither, and without
  * them a track that only fits by shrinking measured as fitting here while it
  * overflowed on the device.
  */
-function horizontalScroller(node: HostNode): { view: HostNode; content: HostNode } | null {
-  if (node.type !== 'ScrollView' || node.props.horizontal !== true) return null;
+function nativeScroller(node: HostNode): { view: HostNode; content: HostNode } | null {
+  if (node.type !== 'ScrollView') return null;
+  const horizontal = node.props.horizontal === true;
+  const direction = horizontal ? 'row' : 'column';
   return {
     view: {
       ...node,
       props: {
         ...node.props,
-        style: [node.props.style, { flexDirection: 'row', overflow: 'scroll' }],
+        style: [
+          horizontal ? undefined : { flexGrow: 1, flexShrink: 1 },
+          node.props.style,
+          { flexDirection: direction, overflow: 'scroll' },
+        ],
       },
     },
     content: {
       type: 'View',
-      props: { style: [{ flexDirection: 'row' }, node.props.contentContainerStyle] },
+      props: {
+        testID: node.props.testID ? `${node.props.testID}-content-layout` : undefined,
+        style: [{ flexDirection: direction }, node.props.contentContainerStyle],
+      },
       children: [],
     },
   };
@@ -96,11 +105,12 @@ export function createYogaHostRenderer() {
   );
   return {
     dispose: () => rmSync(directory, { recursive: true, force: true }),
-    layout(tree: HostNode, rtl = false, textWidth = 40): Map<string, NativeBox> {
+    /** Absolute coordinates allow assertions across nested scroll and content hosts. */
+    layout(tree: HostNode, rtl = false, textWidth = 40, absolute = false): Map<string, NativeBox> {
       const nodes: Array<{ node: HostNode; parent: number }> = [];
       const visit = (node: HostNode, parent: number) => {
         const index = nodes.length;
-        const scroller = horizontalScroller(node);
+        const scroller = nativeScroller(node);
         nodes.push({ node: scroller?.view ?? node, parent });
         // Native Text is one measured leaf, including any nested spans.
         if (node.type === 'Text') return;
@@ -155,10 +165,22 @@ export function createYogaHostRenderer() {
       ].join('\n');
       const lines = execFileSync(binary, { input, encoding: 'utf8' }).trim().split('\n');
       const boxes = new Map<string, NativeBox>();
-      nodes.forEach(({ node }, index) => {
-        const [x, y, width, height] = lines[index]!.split(' ').map(Number);
-        if (typeof node.props.testID === 'string')
-          boxes.set(node.props.testID, { x: x!, y: y!, width: width!, height: height! });
+      const positions = lines.map((line): NativeBox => {
+        const [x, y, width, height] = line.split(' ').map(Number);
+        if (x == null || y == null || width == null || height == null)
+          throw new Error('Incomplete Yoga layout result');
+        return { x, y, width, height };
+      });
+      nodes.forEach(({ node, parent }, index) => {
+        const position = positions[index];
+        if (!position) throw new Error('Missing Yoga node layout');
+        if (absolute && parent >= 0) {
+          const ancestor = positions[parent];
+          if (!ancestor) throw new Error('Missing Yoga parent layout');
+          position.x += ancestor.x;
+          position.y += ancestor.y;
+        }
+        if (typeof node.props.testID === 'string') boxes.set(node.props.testID, position);
       });
       return boxes;
     },

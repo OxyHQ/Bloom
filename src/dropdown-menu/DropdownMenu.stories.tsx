@@ -1,18 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
 import { BloomScope } from '../appearance';
-import {
-  RiArrowDownSLine as ChevronBottomIcon,
-  RiCheckLine as CheckIcon,
-  RiShareLine,
-  RiUserLine as PersonIcon,
-} from '../icons/remix';
+import { RiShareLine, RiUserLine as PersonIcon } from '../icons/remix';
 import { useMenuPalette } from '../floating/menu-palette';
-import { StyledView } from '../styles/styled-primitives';
-import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
   DropdownMenu,

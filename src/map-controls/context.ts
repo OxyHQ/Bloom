@@ -3,7 +3,7 @@ import { createContext } from 'react';
 /**
  * The map's heading, in degrees clockwise from north, for the compass needle.
  *
- * WHY A CONTEXT FOR ONE NUMBER: `ButtonGroupItem` takes its glyph as a
+ * WHY A CONTEXT FOR ONE NUMBER: `Button` takes its glyph as a
  * COMPONENT (`leadingIcon={RiCompass3Line}`), and a needle has to rotate. A
  * component built from the heading would be a new component TYPE on every
  * degree, so React would unmount and remount the SVG on every frame of a map

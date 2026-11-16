@@ -1,6 +1,6 @@
 import type { ImageSource } from '../shapes';
 import type { ReactNode } from 'react';
-import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { PresenceStatus } from '../chat-indicators/types';
 
@@ -29,97 +29,10 @@ export interface PersonSummary {
   status?: PresenceStatus;
 }
 
-// ---------------------------------------------------------------------------
-//  ContactRow / ContactList
-// ---------------------------------------------------------------------------
-
-/**
- * What sits at the end of a contact row.
- *
- *   none      nothing — the row is a plain press target
- *   chevron   a disclosure mark, for a row that opens something
- *   checkbox  multi-select, driven by `selected` / `onSelectedChange`
- *   action    a small button ("Invite", "Add"), driven by `onAction`
- */
-export type ContactRowTrailing = 'none' | 'chevron' | 'checkbox' | 'action';
-
-export interface ContactRowProps extends PersonSummary {
-  /** Replaces AvatarPresence. Caller owns avatar size, badges and presence semantics. */
-  avatarSlot?: ReactNode;
-  /** Replaces the visible name/subtitle block; name and subtitle still name the row accessibly. */
-  identitySlot?: ReactNode;
-  /** Defaults to `checkbox` with `onSelectedChange`, `action` with `onAction`, else `none`. */
-  trailing?: ContactRowTrailing;
-  /** Replaces the trailing slot entirely. */
-  trailingSlot?: ReactNode;
-  selected?: boolean;
-  onSelectedChange?: (next: boolean) => void;
-  /** The action button's label — "Invite", "Add". */
-  actionLabel?: string;
-  onAction?: () => void;
-  /** Swaps the action button for a quiet "Added" mark. */
-  actionDone?: boolean;
-  actionDoneLabel?: string;
-  onPress?: () => void;
-  disabled?: boolean;
-  /** `md` 44px avatar (default), `sm` 36 for a dense picker. */
-  size?: 'sm' | 'md';
-  /** Horizontal inset around the avatar/text area. Default 10; use 0 in an already-inset widget. */
-  horizontalInset?: number;
-  style?: StyleProp<ViewStyle>;
-  textStyle?: StyleProp<TextStyle>;
-  testID?: string;
-}
-
+/** Contacts grouped by the consumer's alphabet or category. */
 export interface ContactSection {
-  /** The heading — one letter, or "Frequently contacted". */
   letter: string;
-  contacts: readonly ContactRowProps[];
-}
-
-/** `sections` — A–Z headings and the rail. `flat` — one list of matches. */
-export type ContactListLayout = 'sections' | 'flat';
-
-export interface ContactListProps {
-  sections: readonly ContactSection[];
-  /** Draws the A–Z rail down the right edge. Default true when there are 2+ sections. */
-  showIndex?: boolean;
-  /** The rail's letters. Defaults to every section's `letter`, in order. */
-  indexLetters?: readonly string[];
-  /** Highlights one letter in the rail — the section currently at the top. */
-  activeLetter?: string;
-  /** Called with the letter the user pressed in the rail. */
-  onJumpToLetter?: (letter: string) => void;
-  /** Names a rail button. Defaults to the app's locale (`"Jump to A"` in English). */
-  formatJumpLabel?: (letter: string) => string;
-  onContactPress?: (id: string) => void;
-  onContactSelectedChange?: (id: string, next: boolean) => void;
-  onContactAction?: (id: string) => void;
-  /**
-   * Pins each section heading while its rows scroll under it. Default `true` on
-   * iOS and web, `false` on ANDROID: React Native's sticky wrappers (an
-   * animated, `zIndex`-layered view per heading) left the rows between them
-   * unpainted until the first scroll on an Android release build. Pass `true`
-   * to opt in there. Ignored by `layout="flat"`.
-   */
-  stickyHeaders?: boolean;
-  /**
-   * `'sections'` (default): one heading per section, plus the A–Z rail.
-   * `'flat'`: every contact in ONE section in the order given — for search
-   * results — under `flatLabel` (or no heading), with NO rail and no pinning;
-   * `showIndex`, `indexLetters` and `activeLetter` are ignored.
-   */
-  layout?: ContactListLayout;
-  /** The one heading of `layout="flat"`, e.g. "Results". Omit for none. */
-  flatLabel?: string;
-  /** Fixes the scroller's height. Without it the list grows to its content. */
-  height?: number;
-  header?: ReactNode;
-  footer?: ReactNode;
-  /** Drawn when every section is empty. */
-  emptyState?: ReactNode;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
+  contacts: readonly PersonSummary[];
 }
 
 // ---------------------------------------------------------------------------
@@ -181,7 +94,7 @@ export interface NewGroupFormProps {
 }
 
 // ---------------------------------------------------------------------------
-//  MemberRow / MemberList
+//  Member roles
 // ---------------------------------------------------------------------------
 
 /** `owner` and `admin` wear a badge; `member` wears nothing. */
@@ -195,90 +108,6 @@ export interface MemberRoleLabels {
   remove: string;
   /** Names the more button: `actions('Ana Restrepo')`. */
   actions: (name: string) => string;
-}
-
-export interface MemberRowProps extends PersonSummary {
-  /** Default `member`. */
-  role?: MemberRole;
-  /** Replaces the badge's text — "Creator". */
-  roleLabel?: string;
-  onPress?: () => void;
-  onPromote?: () => void;
-  onRestrict?: () => void;
-  onRemove?: () => void;
-  /** Replaces the whole trailing slot — your own menu, a button, nothing. */
-  trailingSlot?: ReactNode;
-  labels?: Partial<MemberRoleLabels>;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-}
-
-export interface MemberListItem
-  extends Omit<MemberRowProps, 'onPress' | 'onPromote' | 'onRestrict' | 'onRemove'> {
-  id: string;
-}
-
-export interface MemberListProps {
-  members: readonly MemberListItem[];
-  /** Draws the search field. */
-  search?: string;
-  onSearchChange?: (value: string) => void;
-  searchPlaceholder?: string;
-  /** Draws the "Add members" row at the top. */
-  onAddMembers?: () => void;
-  addMembersLabel?: string;
-  onMemberPress?: (id: string) => void;
-  onPromote?: (id: string) => void;
-  onRestrict?: (id: string) => void;
-  onRemove?: (id: string) => void;
-  /** A heading over the rows — "412 members". */
-  title?: string;
-  /** Drawn when `members` is empty (a search that found nobody). */
-  emptyState?: ReactNode;
-  labels?: Partial<MemberRoleLabels>;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-}
-
-// ---------------------------------------------------------------------------
-//  ChannelPostCard
-// ---------------------------------------------------------------------------
-
-export interface ChannelPostCardProps {
-  channelName: string;
-  channelAvatar?: PersonAvatarSource;
-  channelAvatarVariant?: string;
-  verified?: boolean;
-  /** Pre-formatted — "12:41", "Yesterday". */
-  time: string;
-  /** The post body. A string is drawn as `body-regular`; anything else is rendered as-is. */
-  children?: ReactNode;
-  /** Media, a poll, a quoted post — drawn above the body, edge to edge. */
-  media?: ReactNode;
-  /** Pre-formatted counts — "12.4K", "318". The app owns the abbreviation. */
-  views?: string;
-  forwards?: string;
-  /** The reactions row — usually a row of `Chip`s. */
-  reactions?: ReactNode;
-  /** The comments button's text — "128 comments". Without it there is no button. */
-  comments?: string;
-  onComments?: () => void;
-  onShare?: () => void;
-  shareLabel?: string;
-  onPress?: () => void;
-  /** Draws the pin mark beside the channel name. */
-  pinned?: boolean;
-  /** Draws the more button. */
-  onMore?: () => void;
-  moreLabel?: string;
-  /** Names the two counts for assistive tech. */
-  labels?: Partial<{
-    views: (count: string) => string;
-    forwards: (count: string) => string;
-    pinned: string;
-  }>;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
 }
 
 // ---------------------------------------------------------------------------

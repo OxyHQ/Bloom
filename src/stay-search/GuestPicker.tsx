@@ -1,7 +1,7 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { View } from 'react-native';
 
-import { LinkButton } from '../button';
+import { Button } from '../button';
 
 import { StepperRow } from '../stepper';
 import { useTheme } from '../theme/use-theme';
@@ -107,9 +107,15 @@ function GuestPickerComponent({
       ) : null}
       {close ? (
         <View style={{ alignItems: 'flex-end', paddingTop: 12 }}>
-          <LinkButton size="sm" onPress={close} testID={testID ? `${testID}-close` : undefined}>
+          <Button
+            appearance="plain"
+            linkTone="primary"
+            size="sm"
+            onPress={close}
+            testID={testID ? `${testID}-close` : undefined}
+          >
             {closeLabel}
-          </LinkButton>
+          </Button>
         </View>
       ) : null}
     </View>

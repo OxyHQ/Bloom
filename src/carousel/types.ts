@@ -58,7 +58,7 @@ export interface CarouselProps {
   /** Optional visual recipe for both arrow buttons. Navigation remains carousel-owned. */
   arrowButtonProps?: CarouselArrowButtonProps;
   /**
-   * Replace the default arrows with composed controls (for example a ButtonGroup
+   * Replace the default arrows with composed controls (for example a Button.Group
    * containing previous, See more, and next). Called only when showArrows is true
    * and slides exist, in the arrowsPlacement slot. Supplied Button props retain
    * carousel navigation, disabled state, localised names and RTL-aware icons.

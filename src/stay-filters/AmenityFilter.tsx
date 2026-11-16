@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 
-import { LinkButton } from '../button';
+import { Button } from '../button';
 import { ToggleChipGroup } from './ToggleChipGroup';
 import type { AmenityFilterProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
@@ -47,7 +47,8 @@ export function AmenityFilter<T extends string = string>({
       />
       {foldable ? (
         <View style={{ alignItems: 'flex-start' }}>
-          <LinkButton
+          <Button
+            appearance="plain"
             linkTone="text"
             underline="rest"
             size="sm"
@@ -58,7 +59,7 @@ export function AmenityFilter<T extends string = string>({
             testID={testID ? `${testID}-toggle` : undefined}
           >
             {expanded ? showLessLabel : showMoreLabel}
-          </LinkButton>
+          </Button>
         </View>
       ) : null}
     </View>

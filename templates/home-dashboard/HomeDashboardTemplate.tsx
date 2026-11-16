@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View } from 'react-native';
 
 import { ContributionsCard, EarningsChartCard, LineChartCard } from '../../src/chart-cards';
@@ -7,19 +7,11 @@ import { Chip } from '../../src/chip';
 import {
   DataTable,
   DataTableFilter,
-  DataTableRowActions,
   DataTableSearch,
   DataTableSelect,
   type DataTableColumn,
-  type DataTableRowActionItem,
 } from '../../src/data-table';
-import {
-  RiArchiveLine,
-  RiDownload2Line,
-  RiFileCopyLine,
-  RiHomeLine,
-  RiUserLine,
-} from '../../src/icons/remix';
+import { RiHomeLine } from '../../src/icons/remix';
 import { RecentHiresCard } from '../../src/recent-hires-card';
 import { StatCards } from '../../src/stat-cards';
 import { useTheme } from '../../src/theme/use-theme';
@@ -43,7 +35,6 @@ import {
 } from './demo-data';
 import {
   CellText,
-  DELETE_EDIT_ACTIONS,
   DashboardShell,
   NameCell,
   PersonAvatar,
@@ -61,13 +52,6 @@ import {
  *   table    customers: filters, search, sortable columns, selection,
  *            purchase selects, status chips, row actions, 12 a page
  */
-
-const CUSTOMER_MENU: readonly DataTableRowActionItem[] = [
-  { icon: RiUserLine, label: 'View profile' },
-  { icon: RiFileCopyLine, label: 'Duplicate row' },
-  { icon: RiDownload2Line, label: 'Download invoice' },
-  { icon: RiArchiveLine, label: 'Archive customer' },
-];
 
 function customerColumns(): DataTableColumn<Customer>[] {
   return [
@@ -121,14 +105,6 @@ function customerColumns(): DataTableColumn<Customer>[] {
         <Chip size="lg" hue="gray">
           {formatPrice(row.price)}
         </Chip>
-      ),
-    },
-    {
-      id: 'actions',
-      header: 'Actions',
-      width: 140,
-      cell: ({ row }) => (
-        <DataTableRowActions name={row.name} actions={DELETE_EDIT_ACTIONS} menu={CUSTOMER_MENU} />
       ),
     },
   ];
@@ -220,13 +196,7 @@ export function HomeDashboardTemplate() {
   const violet = useMemo(() => violetBase(theme), [theme]);
 
   return (
-    <DashboardShell
-      selected="home"
-      title="Welcome Maya"
-      crumb="Home"
-      crumbIcon={RiHomeLine}
-      primaryAction="Create ticket"
-    >
+    <DashboardShell selected="home" title="Welcome Maya" crumb="Home" crumbIcon={RiHomeLine}>
       <View
         style={{
           width: '100%',

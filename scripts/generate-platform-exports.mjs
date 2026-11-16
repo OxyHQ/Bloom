@@ -89,7 +89,6 @@ const SUBPATHS = /** @type {const} */ ([
   ['./panel-routing/expo-router', 'panel-routing/expo-router/index.ts'],
   ['./bottom-bar', 'bottom-bar/index.ts'],
   ['./button', 'button/index.ts'],
-  ['./button-group', 'button-group/index.ts'],
   // The inherited control-presentation contract: what a container tells the
   // controls inside it about density, and nothing else.
   // Window-edge geometry shared by every floating surface, plus the registry
@@ -98,7 +97,6 @@ const SUBPATHS = /** @type {const} */ ([
   ['./viewport', 'viewport/index.ts'],
   ['./collapsible', 'collapsible/index.ts'],
   ['./fab', 'fab/index.ts'],
-  ['./frosted-icon-button', 'frosted-icon-button/index.ts'],
   ['./divider', 'divider/index.ts'],
   ['./breadcrumb', 'breadcrumb/index.ts'],
   ['./pagination', 'pagination/index.ts'],
@@ -323,7 +321,6 @@ const SUBPATHS = /** @type {const} */ ([
   ['./call-ui', 'call-ui/index.ts'],
   ['./chat-people', 'chat-people/index.ts'],
   // One person row should not link the lists, group form and story viewer.
-  ['./chat-people/contact-row', 'chat-people/contact-row.ts'],
   ['./chat-screen', 'chat-screen/index.ts'],
   ['./chat-composer', 'chat-composer/index.ts'],
   ['./message-media', 'message-media/index.ts'],
@@ -417,7 +414,6 @@ const SUBPATHS = /** @type {const} */ ([
   ['./checkbox', 'checkbox/index.ts'],
   ['./accordion', 'accordion/index.ts'],
   ['./grouped-section', 'grouped-section/index.ts'],
-  ['./settings-list', 'settings-list/index.ts'],
   ['./link-preview', 'link-preview/index.ts'],
   ['./code', 'code/index.ts'],
   ['./fonts', 'fonts/index.ts'],
@@ -453,6 +449,11 @@ const SUBPATHS = /** @type {const} */ ([
  * if you remove a fork delete the entry here and re-run the script.
  */
 const WEB_FORKED_SUBPATHS = new Set([
+  './chat-list',
+  './chat-people',
+  './property-insights',
+  './tenancy',
+  './notification-center',
   './page-header',
   './breadcrumb',
   './wizard',
@@ -484,7 +485,6 @@ const WEB_FORKED_SUBPATHS = new Set([
   './surfaces',
   './surface',
   './sticker',
-  './button-group',
   './social-button',
   './zoomable-media-gallery',
   './zoomable-image-gallery',
@@ -492,7 +492,6 @@ const WEB_FORKED_SUBPATHS = new Set([
   './dialog',
   './button',
   './fab',
-  './frosted-icon-button',
   './avatar-group',
   './connection-dots',
   './loading',

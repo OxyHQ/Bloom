@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -46,7 +47,7 @@ function Page({ children, width }: { children: React.ReactNode; width?: number }
   );
 }
 
-const noop = () => {};
+const onDemoAction = fn().mockName('media-controls.action');
 
 /** Every control in every size, variant and state. */
 export const Matrix: Story = {
@@ -62,12 +63,17 @@ export const Matrix: Story = {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
               {(['sm', 'md', 'lg'] as const).map((size) => (
                 <React.Fragment key={size}>
-                  <PlayButton variant={variant} size={size} playing={false} onPress={noop} />
-                  <PlayButton variant={variant} size={size} playing onPress={noop} />
+                  <PlayButton
+                    variant={variant}
+                    size={size}
+                    playing={false}
+                    onPress={onDemoAction}
+                  />
+                  <PlayButton variant={variant} size={size} playing onPress={onDemoAction} />
                 </React.Fragment>
               ))}
-              <PlayButton variant={variant} playing={false} loading onPress={noop} />
-              <PlayButton variant={variant} playing={false} disabled onPress={noop} />
+              <PlayButton variant={variant} playing={false} loading onPress={onDemoAction} />
+              <PlayButton variant={variant} playing={false} disabled onPress={onDemoAction} />
             </View>
           </View>
         ))}
@@ -83,8 +89,8 @@ export const Matrix: Story = {
                 onLikedChange={(next) => setLiked((l) => ({ ...l, [size]: next }))}
               />
             ))}
-            <LikeButton liked onLikedChange={noop} activeColor="#E0457B" />
-            <LikeButton liked={false} onLikedChange={noop} disabled />
+            <LikeButton liked onLikedChange={onDemoAction} activeColor="#E0457B" />
+            <LikeButton liked={false} onLikedChange={onDemoAction} disabled />
           </View>
         </View>
 
@@ -140,8 +146,8 @@ export const Matrix: Story = {
               onMutedChange={setMuted}
               sliderVisibility="hover"
             />
-            <VolumeControl volume={0.2} onVolumeChange={noop} />
-            <VolumeControl volume={0.8} onVolumeChange={noop} disabled />
+            <VolumeControl volume={0.2} onVolumeChange={onDemoAction} />
+            <VolumeControl volume={0.8} onVolumeChange={onDemoAction} disabled />
           </View>
         </View>
       </Page>

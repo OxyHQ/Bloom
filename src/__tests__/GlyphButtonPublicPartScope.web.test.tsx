@@ -4,12 +4,12 @@ import { createRoot } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { BloomScope } from '../appearance';
-import { GlyphButton } from '../button/GlyphButton';
+import { Button } from '../button';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-it('keeps GlyphButton numeric diameters independent from control-size scopes in web DOM', () => {
+it('keeps Button numeric diameters independent from control-size scopes in web DOM', () => {
   const host = document.createElement('div');
   document.body.appendChild(host);
   const root = createRoot(host);
@@ -17,13 +17,41 @@ it('keeps GlyphButton numeric diameters independent from control-size scopes in 
     act(() =>
       root.render(
         <BloomThemeProvider fonts={false}>
-          <GlyphButton testID="default" accessibilityLabel="Default" />
+          <Button
+            appearance="plain"
+            tone="neutral"
+            iconOnly
+            size={36}
+            testID="default"
+            accessibilityLabel="Default"
+          />
           <BloomScope size="xs">
-            <GlyphButton testID="compact-scope-default" accessibilityLabel="Default in xs" />
-            <GlyphButton testID="compact-scope-explicit" size={40} accessibilityLabel="40 in xs" />
+            <Button
+              appearance="plain"
+              tone="neutral"
+              iconOnly
+              size={36}
+              testID="compact-scope-default"
+              accessibilityLabel="Default in xs"
+            />
+            <Button
+              appearance="plain"
+              tone="neutral"
+              iconOnly
+              testID="compact-scope-explicit"
+              size={40}
+              accessibilityLabel="40 in xs"
+            />
           </BloomScope>
           <BloomScope size="lg">
-            <GlyphButton testID="large-scope-explicit" size={28} accessibilityLabel="28 in lg" />
+            <Button
+              appearance="plain"
+              tone="neutral"
+              iconOnly
+              testID="large-scope-explicit"
+              size={28}
+              accessibilityLabel="28 in lg"
+            />
           </BloomScope>
         </BloomThemeProvider>,
       ),
@@ -31,7 +59,7 @@ it('keeps GlyphButton numeric diameters independent from control-size scopes in 
 
     const dimensions = (id: string) => {
       const button = host.querySelector<HTMLElement>(`[data-testid="${id}"]`);
-      if (!button) throw new Error(`GlyphButton ${id} did not render`);
+      if (!button) throw new Error(`Button ${id} did not render`);
       return [button.style.width, button.style.height];
     };
     expect(dimensions('default')).toEqual(['36px', '36px']);

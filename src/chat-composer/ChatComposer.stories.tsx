@@ -1,5 +1,6 @@
+import { fn } from 'storybook/test';
 import type React from 'react';
-import { useContext, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { TextFieldInput } from '../text-field';
 import { suggestionOptionId } from './suggestion-option-id';
@@ -31,11 +32,11 @@ import { RiPencilLine } from '../icons/remix/RiPencilLine';
 import { RiPushpinLine } from '../icons/remix/RiPushpinLine';
 import { RiShareForwardLine } from '../icons/remix/RiShareForwardLine';
 import { RiTimerLine } from '../icons/remix/RiTimerLine';
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Dialog, useDialogControl } from '../dialog';
 import { Button } from '../button';
+import { MessageBubble } from '../message-bubble';
 
 const meta: Meta = {
   id: 'blocks-chat-composer',
@@ -225,23 +226,6 @@ function Surface({ children, width }: { children: React.ReactNode; width?: numbe
 }
 
 /** The same block in both modes, side by side — every colour here flips. */
-function BothModes({ children, width }: { children: React.ReactNode; width?: number }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
-  return (
-    <View style={{ width: '100%', flexDirection: 'row', flexWrap: 'wrap' }}>
-      <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: 360 }}>
-        <BloomThemeProvider mode="light" colorPreset={preset}>
-          <Surface width={width}>{children}</Surface>
-        </BloomThemeProvider>
-      </View>
-      <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: 360 }}>
-        <BloomThemeProvider mode="dark" colorPreset={preset}>
-          <Surface width={width}>{children}</Surface>
-        </BloomThemeProvider>
-      </View>
-    </View>
-  );
-}
 
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -254,26 +238,7 @@ function Block({ title, children }: { title: string; children: React.ReactNode }
 
 /** A mock incoming bubble, so the reaction bar and menu have something to sit over. */
 function Bubble({ children }: { children: string }) {
-  const theme = useTheme();
-  return (
-    <View
-      style={{
-        alignSelf: 'flex-start',
-        maxWidth: 280,
-        borderRadius: 18,
-        borderBottomLeftRadius: 6,
-        backgroundColor: theme.colors.backgroundSecondary,
-        paddingTop: 8,
-        paddingBottom: 8,
-        paddingLeft: 12,
-        paddingRight: 12,
-      }}
-    >
-      <Text variant="body-regular" style={{ color: theme.colors.text }}>
-        {children}
-      </Text>
-    </View>
-  );
+  return <MessageBubble direction="incoming" text={children} />;
 }
 
 // ---------------------------------------------------------------------------
@@ -284,28 +249,32 @@ function Bubble({ children }: { children: string }) {
 export const States: Story = {
   render: function ComposerStates() {
     return (
-      <BothModes width={390}>
+      <Surface width={900}>
         <Block title="empty — the mic is the right control">
-          <ChatComposer onAttachPress={() => {}} onEmojiPress={() => {}} onMicPress={() => {}} />
+          <ChatComposer
+            onAttachPress={fn().mockName('onAttachPress')}
+            onEmojiPress={fn().mockName('onEmojiPress')}
+            onMicPress={fn().mockName('onMicPress')}
+          />
         </Block>
 
         <Block title="typing — the send disc has swapped in">
           <ChatComposer
             defaultValue="Can you send the floor plan before Thursday?"
-            onAttachPress={() => {}}
-            onEmojiPress={() => {}}
-            onMicPress={() => {}}
-            onSend={() => {}}
+            onAttachPress={fn().mockName('onAttachPress')}
+            onEmojiPress={fn().mockName('onEmojiPress')}
+            onMicPress={fn().mockName('onMicPress')}
+            onSend={fn().mockName('onSend')}
           />
         </Block>
 
         <Block title="multi-line, camera button, keyboard hint">
           <ChatComposer
             defaultValue={'Three things:\n1. the lease\n2. the keys\n3. the meter readings'}
-            onAttachPress={() => {}}
-            onCameraPress={() => {}}
-            onEmojiPress={() => {}}
-            onSend={() => {}}
+            onAttachPress={fn().mockName('onAttachPress')}
+            onCameraPress={fn().mockName('onCameraPress')}
+            onEmojiPress={fn().mockName('onEmojiPress')}
+            onSend={fn().mockName('onSend')}
             showKeyboardHint
           />
         </Block>
@@ -318,12 +287,12 @@ export const States: Story = {
                 kind="reply"
                 title="Ana Restrepo"
                 preview="Are we still meeting at the harbour café?"
-                onClose={() => {}}
+                onClose={fn().mockName('onClose')}
               />
             }
-            onAttachPress={() => {}}
-            onEmojiPress={() => {}}
-            onSend={() => {}}
+            onAttachPress={fn().mockName('onAttachPress')}
+            onEmojiPress={fn().mockName('onEmojiPress')}
+            onSend={fn().mockName('onSend')}
           />
         </Block>
 
@@ -335,12 +304,12 @@ export const States: Story = {
                 kind="edit"
                 title="Edit message"
                 preview="See you at six"
-                onClose={() => {}}
+                onClose={fn().mockName('onClose')}
               />
             }
-            onAttachPress={() => {}}
-            onEmojiPress={() => {}}
-            onSend={() => {}}
+            onAttachPress={fn().mockName('onAttachPress')}
+            onEmojiPress={fn().mockName('onEmojiPress')}
+            onSend={fn().mockName('onSend')}
           />
         </Block>
 
@@ -352,22 +321,22 @@ export const States: Story = {
                 title="Forward to Harbour crew"
                 preview="1 photo"
                 thumbnail="https://picsum.photos/seed/harbour/80"
-                onClose={() => {}}
+                onClose={fn().mockName('onClose')}
               />
             }
-            onAttachPress={() => {}}
-            onMicPress={() => {}}
+            onAttachPress={fn().mockName('onAttachPress')}
+            onMicPress={fn().mockName('onMicPress')}
           />
         </Block>
 
         <Block title="attachments — one still uploading">
           <ChatComposer
             attachments={ATTACHMENTS}
-            onRemoveAttachment={() => {}}
+            onRemoveAttachment={fn().mockName('onRemoveAttachment')}
             defaultValue="Everything from the viewing"
-            onAttachPress={() => {}}
-            onEmojiPress={() => {}}
-            onSend={() => {}}
+            onAttachPress={fn().mockName('onAttachPress')}
+            onEmojiPress={fn().mockName('onEmojiPress')}
+            onSend={fn().mockName('onSend')}
           />
         </Block>
 
@@ -380,13 +349,13 @@ export const States: Story = {
                   kind="note"
                   title="Scheduled"
                   preview="Tomorrow, 09:00"
-                  onClose={() => {}}
+                  onClose={fn().mockName('onClose')}
                 />
               </View>
             }
             defaultValue="Morning all"
-            onAttachPress={() => {}}
-            onSend={() => {}}
+            onAttachPress={fn().mockName('onAttachPress')}
+            onSend={fn().mockName('onSend')}
           />
         </Block>
 
@@ -394,8 +363,8 @@ export const States: Story = {
           <ChatComposer
             defaultValue="Draft kept"
             disabled
-            onAttachPress={() => {}}
-            onSend={() => {}}
+            onAttachPress={fn().mockName('onAttachPress')}
+            onSend={fn().mockName('onSend')}
           />
         </Block>
 
@@ -403,49 +372,7 @@ export const States: Story = {
           <ChatComposer notice="You can't send messages in this group" />
           <ChatComposer notice="Channel muted" noticeIcon={RiNotificationOffLine} />
         </Block>
-      </BothModes>
-    );
-  },
-};
-
-/** The composer on a wide column, where the bar stretches and the field does not. */
-export const Wide: Story = {
-  render: function ComposerWide() {
-    return (
-      <BothModes width={900}>
-        <Block title="900 — empty">
-          <ChatComposer onAttachPress={() => {}} onEmojiPress={() => {}} onMicPress={() => {}} />
-        </Block>
-        <Block title="900 — reply, attachments, hint">
-          <ChatComposer
-            defaultValue="Sending the three photos from the roof inspection now."
-            banner={
-              <ComposerBanner
-                kind="reply"
-                title="Ivo Brenner"
-                preview="Did the surveyor send anything yet?"
-                onClose={() => {}}
-              />
-            }
-            attachments={ATTACHMENTS}
-            onRemoveAttachment={() => {}}
-            onAttachPress={() => {}}
-            onCameraPress={() => {}}
-            onEmojiPress={() => {}}
-            onSend={() => {}}
-            showKeyboardHint
-          />
-        </Block>
-        <Block title="900 — recording, locked">
-          <VoiceRecorder
-            state="locked"
-            seconds={38}
-            amplitudes={WAVE}
-            onCancel={() => {}}
-            onSend={() => {}}
-          />
-        </Block>
-      </BothModes>
+      </Surface>
     );
   },
 };
@@ -464,9 +391,9 @@ export const Suggestions: Story = {
               suggestionKind="mention"
               activeIndex={index}
               onActiveIndexChange={setIndex}
-              onSelectSuggestion={() => {}}
-              onAttachPress={() => {}}
-              onSend={() => {}}
+              onSelectSuggestion={fn().mockName('onSelectSuggestion')}
+              onAttachPress={fn().mockName('onAttachPress')}
+              onSend={fn().mockName('onSend')}
             />
           </Block>
           <Block title="slash commands">
@@ -492,9 +419,9 @@ export const Suggestions: Story = {
       );
     };
     return (
-      <BothModes width={390}>
+      <Surface width={900}>
         <Demo />
-      </BothModes>
+      </Surface>
     );
   },
 };
@@ -503,15 +430,15 @@ export const Suggestions: Story = {
 export const Recorder: Story = {
   render: function ComposerRecorder() {
     return (
-      <BothModes width={390}>
+      <Surface width={900}>
         <Block title="recording — slide to cancel (native) and the lock">
           <VoiceRecorder
             state="recording"
             seconds={7}
             amplitudes={WAVE.slice(0, 20)}
             slideToCancel
-            onCancel={() => {}}
-            onLock={() => {}}
+            onCancel={fn().mockName('onCancel')}
+            onLock={fn().mockName('onLock')}
           />
         </Block>
         <Block title="recording — pointer: an explicit cancel">
@@ -520,8 +447,8 @@ export const Recorder: Story = {
             seconds={7}
             amplitudes={WAVE.slice(0, 20)}
             slideToCancel={false}
-            onCancel={() => {}}
-            onLock={() => {}}
+            onCancel={fn().mockName('onCancel')}
+            onLock={fn().mockName('onLock')}
           />
         </Block>
         <Block title="locked — hands free">
@@ -529,8 +456,8 @@ export const Recorder: Story = {
             state="locked"
             seconds={64}
             amplitudes={WAVE}
-            onCancel={() => {}}
-            onSend={() => {}}
+            onCancel={fn().mockName('onCancel')}
+            onSend={fn().mockName('onSend')}
           />
         </Block>
         <Block title="preview — play it back, delete or send">
@@ -539,9 +466,9 @@ export const Recorder: Story = {
             seconds={12}
             duration={41}
             amplitudes={WAVE}
-            onPlayToggle={() => {}}
-            onDelete={() => {}}
-            onSend={() => {}}
+            onPlayToggle={fn().mockName('onPlayToggle')}
+            onDelete={fn().mockName('onDelete')}
+            onSend={fn().mockName('onSend')}
           />
         </Block>
         <Block title="preview, playing">
@@ -551,9 +478,9 @@ export const Recorder: Story = {
             duration={41}
             amplitudes={WAVE}
             playing
-            onPlayToggle={() => {}}
-            onDelete={() => {}}
-            onSend={() => {}}
+            onPlayToggle={fn().mockName('onPlayToggle')}
+            onDelete={fn().mockName('onDelete')}
+            onSend={fn().mockName('onSend')}
           />
         </Block>
         <Block title="in the composer's `recorder` slot">
@@ -563,13 +490,13 @@ export const Recorder: Story = {
                 state="recording"
                 seconds={3}
                 amplitudes={WAVE.slice(0, 8)}
-                onCancel={() => {}}
-                onLock={() => {}}
+                onCancel={fn().mockName('onCancel')}
+                onLock={fn().mockName('onLock')}
               />
             }
           />
         </Block>
-      </BothModes>
+      </Surface>
     );
   },
 };
@@ -585,12 +512,16 @@ export const Attachments: Story = {
           <View>
             <ChatComposer
               leading={
-                <AttachmentMenu open={grid} onOpenChange={setGrid} onSelect={() => {}}>
+                <AttachmentMenu
+                  open={grid}
+                  onOpenChange={setGrid}
+                  onSelect={fn().mockName('onSelect')}
+                >
                   <ComposerIconButton icon={RiAddLine} accessibilityLabel="Attach" iconSize={22} />
                 </AttachmentMenu>
               }
-              onEmojiPress={() => {}}
-              onMicPress={() => {}}
+              onEmojiPress={fn().mockName('onEmojiPress')}
+              onMicPress={fn().mockName('onMicPress')}
             />
             <Caption>grid (default) — the panel opens upward from the plus</Caption>
           </View>
@@ -601,7 +532,7 @@ export const Attachments: Story = {
                   open={list}
                   onOpenChange={setList}
                   layout="list"
-                  onSelect={() => {}}
+                  onSelect={fn().mockName('onSelect')}
                   recent={
                     <View style={{ flexDirection: 'row', gap: 6 }}>
                       {['a', 'b', 'c'].map((seed) => (
@@ -628,7 +559,7 @@ export const Attachments: Story = {
                   <ComposerIconButton icon={RiAddLine} accessibilityLabel="Attach" iconSize={22} />
                 </AttachmentMenu>
               }
-              onMicPress={() => {}}
+              onMicPress={fn().mockName('onMicPress')}
             />
             <Caption>list layout, with a recent-gallery strip at the top</Caption>
           </View>
@@ -636,9 +567,9 @@ export const Attachments: Story = {
       );
     };
     return (
-      <BothModes width={390}>
+      <Surface width={900}>
         <Demo />
-      </BothModes>
+      </Surface>
     );
   },
 };
@@ -683,9 +614,9 @@ export const Emoji: Story = {
       );
     };
     return (
-      <BothModes width={390}>
+      <Surface width={900}>
         <Demo />
-      </BothModes>
+      </Surface>
     );
   },
 };
@@ -728,7 +659,7 @@ export const Reactions: Story = {
               <ReactionPicker
                 selected={reaction}
                 onSelectEmoji={setReaction}
-                onMorePress={() => {}}
+                onMorePress={fn().mockName('onMorePress')}
               />
               <Bubble>The surveyor can come Tuesday morning — does that work?</Bubble>
             </View>
@@ -740,7 +671,7 @@ export const Reactions: Story = {
                 size="sm"
                 surface={false}
                 emojis={['👍', '❤️', '😂']}
-                onSelectEmoji={() => {}}
+                onSelectEmoji={fn().mockName('onSelectEmoji')}
               />
               <RiCheckboxCircleLine width={18} height={18} fill="#8a8a8a" />
             </View>
@@ -750,7 +681,7 @@ export const Reactions: Story = {
             <MessageContextMenu
               items={MENU_ITEMS.slice(0, 4)}
               reactions={false}
-              onSelect={() => {}}
+              onSelect={fn().mockName('onSelect')}
             >
               <View>
                 <Bubble>Channels where reactions are off.</Bubble>
@@ -765,8 +696,8 @@ export const Reactions: Story = {
               items={MENU_ITEMS}
               selectedReaction={reaction}
               onSelectReaction={setReaction}
-              onMoreReactions={() => {}}
-              onSelect={() => {}}
+              onMoreReactions={fn().mockName('onMoreReactions')}
+              onSelect={fn().mockName('onSelect')}
             >
               <View>
                 <Bubble>Long-press me on a phone, right-click me on a pointer.</Bubble>
@@ -778,9 +709,9 @@ export const Reactions: Story = {
       );
     };
     return (
-      <BothModes width={390}>
+      <Surface width={900}>
         <Demo />
-      </BothModes>
+      </Surface>
     );
   },
 };

@@ -1,4 +1,6 @@
-import React, { useContext } from 'react';
+import { List } from '../list';
+import { fn } from 'storybook/test';
+import type React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -10,7 +12,6 @@ import { TypingDots } from './TypingDots';
 import { UnreadBadge } from './UnreadBadge';
 import type { MessageDeliveryStatus, PresenceStatus, StoryRingState } from './types';
 import { Avatar } from '../avatar';
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 
@@ -50,23 +51,6 @@ function Surface({ children }: { children: React.ReactNode }) {
  * ambient preset is forwarded, or the nested providers would drop back to the
  * default one and the toolbar's preset switch would stop reaching these.
  */
-function BothModes({ children }: { children: React.ReactNode }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
-  return (
-    <View style={{ width: '100%', flexDirection: 'row', flexWrap: 'wrap' }}>
-      <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: 340 }}>
-        <BloomThemeProvider mode="light" colorPreset={preset}>
-          <Surface>{children}</Surface>
-        </BloomThemeProvider>
-      </View>
-      <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: 340 }}>
-        <BloomThemeProvider mode="dark" colorPreset={preset}>
-          <Surface>{children}</Surface>
-        </BloomThemeProvider>
-      </View>
-    </View>
-  );
-}
 
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -83,7 +67,7 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
 export const Matrix: Story = {
   render: function ChatIndicatorMatrix() {
     return (
-      <BothModes>
+      <Surface>
         <Group title="presence — online, away, busy, offline (8 / 10 / 12)">
           {(['sm', 'md', 'lg'] as const).map((size) => (
             <View key={size} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -129,7 +113,7 @@ export const Matrix: Story = {
           <TypingDots size={8} />
           <TypingDots label="Ana is typing…" />
         </Group>
-      </BothModes>
+      </Surface>
     );
   },
 };
@@ -187,71 +171,29 @@ export const ConversationRows: Story = {
     ];
 
     function Rows() {
-      const theme = useTheme();
       return (
-        <View style={{ gap: 2 }}>
-          {rows.map((row) => (
-            <View
-              key={row.name}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 12,
-                paddingTop: 10,
-                paddingBottom: 10,
-                paddingLeft: 12,
-                paddingRight: 12,
-                borderRadius: 16,
-                backgroundColor: theme.colors.backgroundSecondary,
-              }}
-            >
-              <AvatarPresence
-                name={row.name}
-                size={44}
-                status={row.status}
-                presenceRingColor={theme.colors.backgroundSecondary}
-              />
-              <View style={{ flex: 1, gap: 2 }}>
-                <Text
-                  variant="body-semibold"
-                  numberOfLines={1}
-                  style={{ color: theme.colors.text }}
-                >
-                  {row.name}
-                </Text>
-                {row.typing ? (
-                  <TypingDots label="typing…" />
-                ) : (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    {row.delivery ? (
-                      <MessageStatus status={row.delivery} size={14} label="" />
-                    ) : null}
-                    <Text
-                      variant="body-2-regular"
-                      numberOfLines={1}
-                      style={{ color: theme.colors.textSecondary }}
-                    >
-                      {row.preview}
-                    </Text>
-                  </View>
-                )}
-              </View>
-              <View style={{ alignItems: 'flex-end', gap: 6 }}>
-                <Text variant="caption-1-regular" style={{ color: theme.colors.textSecondary }}>
-                  {row.time}
-                </Text>
-                {row.unread ? <UnreadBadge count={row.unread} size="sm" muted={row.muted} /> : null}
-              </View>
-            </View>
-          ))}
-        </View>
+        <List
+          items={rows.map((row) => ({
+            id: row.name,
+            conversation: {
+              name: row.name,
+              status: row.status,
+              time: row.time,
+              preview: { text: row.preview },
+              outgoingStatus: row.delivery,
+              unreadCount: row.unread,
+              muted: row.muted,
+              typingLabel: row.typing ? 'typing…' : undefined,
+            },
+          }))}
+        />
       );
     }
 
     return (
-      <BothModes>
+      <Surface>
         <Rows />
-      </BothModes>
+      </Surface>
     );
   },
 };
@@ -265,7 +207,7 @@ export const Stories: Story = {
           <StoryRing
             state={state}
             size={56}
-            onPress={() => {}}
+            onPress={fn().mockName('onPress')}
             accessibilityLabel={`${name}'s story`}
           >
             <Avatar name={name} size={56} />
@@ -333,9 +275,9 @@ export const Stories: Story = {
     }
 
     return (
-      <BothModes>
+      <Surface>
         <Row />
-      </BothModes>
+      </Surface>
     );
   },
 };

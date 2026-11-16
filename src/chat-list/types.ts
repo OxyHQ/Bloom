@@ -1,12 +1,8 @@
+import type { ListCommonProps, ListConversationData } from '../list/types';
 import type { ReactNode } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
-import type { Shape } from '../shapes';
-import type {
-  MessageDeliveryStatus,
-  PresenceStatus,
-  StoryRingState,
-} from '../chat-indicators/types';
+import type { PresenceStatus, StoryRingState } from '../chat-indicators/types';
 import type { FabProps } from '../fab/types';
 import type { TypeScaleVariant } from '../typography/scale';
 
@@ -43,32 +39,6 @@ export interface ChatFace {
   name?: string;
   /** Overrides the letter derived from `name`. */
   initials?: string;
-}
-
-export interface GroupAvatarProps {
-  /**
-   * 2–4 faces. A longer array is truncated (the extra members are not summarised
-   * — the row's name already says who the group is); a single face renders as a
-   * plain avatar at the full size.
-   */
-  faces: readonly ChatFace[];
-  /** Diameter of the whole cluster. Default `48`. */
-  size?: number;
-  /** Shape of each face. Default `'circle'`. */
-  shape?: Shape;
-  /**
-   * The colour of the hairline that separates overlapping faces — the surface
-   * behind the cluster. Default the page background.
-   */
-  ringColor?: string;
-  /**
-   * Names the cluster for assistive tech. Omitted, it is decorative: inside a
-   * `ChatListItem` the row's own name already says which group this is, and a
-   * second announcement of the same thing is noise.
-   */
-  accessibilityLabel?: string;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -175,99 +145,10 @@ export interface ChatListItemLabels {
   group?: string;
 }
 
-export interface ChatListItemProps {
-  /** The conversation's name — a person, a group or a channel. */
-  name: string;
-  /** A single avatar: a URL, an `{ uri }`-style URL string, or an ImageResolver id. */
-  avatar?: string;
-  /** 2–4 faces instead of `avatar`, drawn as a {@link GroupAvatarProps} cluster. */
-  faces?: readonly ChatFace[];
-  /** Shape of the avatar. Default `'circle'`. */
-  avatarShape?: Shape;
-  /** Draws a presence dot on the avatar's corner. */
-  status?: PresenceStatus;
-  /** Decides the default marker beside the name. Default `'direct'`. */
-  kind?: ChatKind;
-  /** Draws the verified marker; wins over the `kind` marker. */
-  verified?: boolean;
-  /** Your own marker, in place of whatever `kind`/`verified` would draw. */
-  marker?: ReactNode;
-  /** The second line. Omit it for a one-line row. */
-  preview?: ChatPreview;
-  /**
-   * Replaces the preview with bouncing dots and this text ("Ana is typing…",
-   * "3 people are typing…"). PRE-FORMATTED — the component never composes it.
-   */
-  typingLabel?: string;
-  /**
-   * The relative time, PRE-FORMATTED ("12:41", "Yesterday", "Tue"). Never read
-   * from the clock here: the app owns the locale and the refresh.
-   */
-  time?: string;
-  /** Unread messages. `0` or absent draws no badge. */
-  unreadCount?: number;
-  /** Draw an unread DOT with no number (a muted chat, or a count you do not track). */
-  unreadDot?: boolean;
-  /** Notifications off: the mute glyph, and a neutral unread badge instead of the accent one. */
-  muted?: boolean;
-  /** Pinned to the top: draws the pin glyph. */
-  pinned?: boolean;
-  /**
-   * Delivery state of YOUR last message. Drawn only when there is nothing
-   * unread — an unread chat's last message is theirs, so it has no ticks.
-   */
-  outgoingStatus?: MessageDeliveryStatus;
-  /** Default `'comfortable'`. */
-  density?: ChatListDensity;
-  /** The open conversation in a desktop split view. */
-  selected?: boolean;
-  onPress?: () => void;
-  onLongPress?: () => void;
-  /** Renders the row as a link on web, and opens the URL on native when there is no `onPress`. */
-  href?: string;
-  /**
-   * Row actions. On touch they are revealed by a swipe; on web they appear as
-   * icon buttons on hover and keyboard focus (see the doc).
-   */
-  swipeActions?: ChatSwipeActions;
-  /** Called with the action's `key` when one is triggered, from either affordance. */
-  onAction?: (key: string) => void;
-  /**
-   * Turns the drag gesture on or off explicitly. It defaults to
-   * `useSwipeAvailable()` — on for every touch pointer, off for a mouse, which
-   * keeps the hover buttons instead.
-   */
-  swipeEnabled?: boolean;
-  /**
-   * Replaces the composed row name entirely. By default the row announces
-   * everything its glyphs say — "Ana Ferrer, Verified, Draft: see you at, 12:41,
-   * 3 unread messages, Muted, Pinned".
-   */
-  accessibilityLabel?: string;
-  labels?: ChatListItemLabels;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-}
-
-export interface ChatListItemSkeletonProps {
-  /** How many placeholder rows. Default `1`. */
-  count?: number;
-  /** Matches the rows it stands in for. Default `'comfortable'`. */
-  density?: ChatListDensity;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-}
-
-// ---------------------------------------------------------------------------
-//  ChatList
-// ---------------------------------------------------------------------------
-
-/** One chat, as the list takes it. Everything a row draws, plus its identity. */
+/** Conversation display data plus its identity and available actions. */
 export interface ChatSummary
-  extends Omit<
-    ChatListItemProps,
-    'density' | 'selected' | 'onPress' | 'onLongPress' | 'onAction' | 'style' | 'testID'
-  > {
+  extends ListConversationData,
+    Pick<ListCommonProps, 'href' | 'swipeActions' | 'swipeEnabled' | 'label'> {
   id: string;
 }
 
@@ -277,67 +158,6 @@ export interface ChatListSection {
   /** The heading above the group ("Pinned", "All"). Omit for an unlabelled run. */
   title?: string;
   chats: readonly ChatSummary[];
-}
-
-export interface ArchivedRowProps {
-  /** Chats in the archive. `0` or absent draws no badge. */
-  count?: number;
-  /** `'Archived'` in English (localised). */
-  label?: string;
-  /** The folder glyph. Default an archive box. */
-  icon?: ReactNode;
-  onPress?: () => void;
-  href?: string;
-  /** Default `'comfortable'`. */
-  density?: ChatListDensity;
-  /**
-   * Paints the count neutral rather than accent. Default `true` — the archive is
-   * a place you visit, not a chat shouting for attention.
-   */
-  muted?: boolean;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-}
-
-export interface ChatListLabels {
-  /** The empty state's heading. `'No conversations yet'` in English (localised). */
-  emptyTitle?: string;
-  /** The line under it. `'Start a chat and it will show up here.'` in English (localised). */
-  emptyDescription?: string;
-}
-
-export interface ChatListProps {
-  /** Grouped chats. Sections render in order, each under its own heading. */
-  sections?: readonly ChatListSection[];
-  /** One unlabelled run of chats — shorthand for a single section. Ignored when `sections` is set. */
-  chats?: readonly ChatSummary[];
-  /** Default `'comfortable'`. */
-  density?: ChatListDensity;
-  /** The open conversation's `id` (desktop split view). */
-  selectedId?: string;
-  onChatPress?: (id: string) => void;
-  onChatLongPress?: (id: string) => void;
-  /** Called with the action key and the chat it was triggered on. */
-  onChatAction?: (actionKey: string, id: string) => void;
-  /** Turns the drag gesture off for every row. */
-  swipeEnabled?: boolean;
-  /** The archived folder row, pinned above the first section. */
-  archived?: ArchivedRowProps;
-  /** Draw placeholder rows instead of the chats. */
-  loading?: boolean;
-  /** Placeholder rows while `loading`. Default `8`. */
-  loadingCount?: number;
-  /** Rendered above the first section — a stories row, folder tabs, a search field. */
-  header?: ReactNode;
-  /** Rendered below the last section. */
-  footer?: ReactNode;
-  /** Replaces the built-in empty state. */
-  empty?: ReactNode;
-  labels?: ChatListLabels;
-  /** Names the list. `'Chats'` in English (localised). */
-  accessibilityLabel?: string;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -499,8 +319,6 @@ export interface ChatSearchResultsProps {
   loading?: boolean;
   /** Placeholder rows while `loading`. Default `6`. */
   loadingCount?: number;
-  /** Default `'comfortable'`. */
-  density?: ChatListDensity;
   /** Names the results region. `'Search results'` in English (localised). */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;

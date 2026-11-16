@@ -1,8 +1,9 @@
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
+import { alert } from '../surfaces';
 import {
   RiShakeHandsLine,
   RiShieldCheckLine,
@@ -13,7 +14,6 @@ import { OfferingEditor } from '../listing-editor';
 import type { OfferingValue } from '../listing-editor';
 import type { RouteStop } from '../route-stops';
 import type { SortablePhoto } from '../sortable-media';
-import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { SHIPMENT_ACCESS_OPTIONS } from './constants';
@@ -32,8 +32,6 @@ const meta: Meta = {
 export default meta;
 
 type Story = StoryObj;
-
-const noop = () => undefined;
 
 // ---------------------------------------------------------------------------
 //  Demo data — invented places, invented amounts.
@@ -98,9 +96,8 @@ const A_SOFA: ShipmentLoad = {
 };
 
 function Page({ children, maxWidth = 640 }: { children: React.ReactNode; maxWidth?: number }) {
-  const theme = useTheme();
   return (
-    <View style={{ backgroundColor: theme.colors.background, padding: 20 }}>
+    <View style={{ padding: 16 }}>
       <View style={{ width: '100%', maxWidth }}>{children}</View>
     </View>
   );
@@ -112,24 +109,6 @@ function Caption({ children }: { children: string }) {
     <Text variant="caption-1-medium" style={{ color: theme.colors.textSecondary }}>
       {children}
     </Text>
-  );
-}
-
-function BothModes({ children }: { children: React.ReactNode }) {
-  const preset = useContext(BloomThemeContext)?.colorPreset;
-  return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-      <BloomThemeProvider mode="light" colorPreset={preset}>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 600 }}>
-          <Page>{children}</Page>
-        </View>
-      </BloomThemeProvider>
-      <BloomThemeProvider mode="dark" colorPreset={preset}>
-        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 420, minWidth: 0, maxWidth: 600 }}>
-          <Page>{children}</Page>
-        </View>
-      </BloomThemeProvider>
-    </View>
   );
 }
 
@@ -236,7 +215,15 @@ function FullForm({ maxWidth = 640, photos = true }: { maxWidth?: number; photos
                 photos: grid,
                 onReorder: setGrid,
                 onRemove: (id) => setGrid(grid.filter((photo) => photo.id !== id)),
-                onAdd: noop,
+                onAdd: () =>
+                  setGrid((all) => [
+                    ...all,
+                    {
+                      id: `photo-${Date.now()}`,
+                      uri: `https://picsum.photos/seed/bloom-load-${all.length}/480/360`,
+                      alt: 'Added load photo',
+                    },
+                  ]),
                 addHint: 'JPG or PNG, up to 20 MB',
               }
             : undefined
@@ -261,7 +248,12 @@ function FullForm({ maxWidth = 640, photos = true }: { maxWidth?: number; photos
             size="lg"
             fullWidth
             disabled={!isShipmentLoadComplete(load)}
-            onPress={noop}
+            onPress={() =>
+              alert(
+                'Quote request preview',
+                `${stops.length} stops · ${load.quantity} item(s) · ${load.weight} kg`,
+              )
+            }
             tone="accent"
             appearance="solid"
           >
@@ -280,37 +272,10 @@ export const Form: Story = {
 };
 
 /** Phone width. Every paired control stacks; nothing overflows. */
-export const Narrow: Story = {
-  render: () => <FullForm maxWidth={358} />,
-};
 
 /** No photos section at all — a job that needs no picture is not asked for one. */
 export const WithoutPhotos: Story = {
   render: () => <FullForm photos={false} />,
-};
-
-/** Both modes in one shot. */
-export const Modes: Story = {
-  parameters: { controls: { disable: true } },
-  render: function ModesStory() {
-    const [load, setLoad] = useState<ShipmentLoad>(A_SOFA);
-    const [extras, setExtras] = useState<string[]>(['loading', 'insurance']);
-    return (
-      <BothModes>
-        <View style={{ gap: 20 }}>
-          <ShipmentLoadPicker value={load} onValueChange={setLoad} />
-          <ShipmentOptionsList
-            extras={EXTRAS}
-            selectedExtras={extras}
-            onExtrasChange={setExtras}
-            accessOptions={SHIPMENT_ACCESS_OPTIONS}
-            access="stairs"
-            onAccessChange={noop}
-          />
-        </View>
-      </BothModes>
-    );
-  },
 };
 
 /**

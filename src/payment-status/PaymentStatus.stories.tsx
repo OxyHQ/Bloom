@@ -1,3 +1,4 @@
+import { fn } from 'storybook/test';
 import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -18,7 +19,7 @@ export default meta;
 
 type Story = StoryObj;
 
-const noop = () => undefined;
+const onDemoAction = fn().mockName('payment-status.action');
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -62,7 +63,7 @@ export const Bar: Story = {
             amount="€48.00"
             detail="Your bank turned this one down."
             action={
-              <Button size="sm" onPress={noop} tone="neutral" appearance="outline">
+              <Button size="sm" onPress={onDemoAction} tone="neutral" appearance="outline">
                 Retry
               </Button>
             }
@@ -114,7 +115,7 @@ export const Block: Story = {
           detail="Aurora •••• 4417"
           reference="8F2K-41QD-7T"
           actions={
-            <Button onPress={noop} tone="neutral" appearance="outline">
+            <Button onPress={onDemoAction} tone="neutral" appearance="outline">
               View receipt
             </Button>
           }
@@ -130,8 +131,8 @@ export const Block: Story = {
           reason="Your bank turned this one down and did not say why. Trying another card usually works; if it does not, they can tell you more."
           actions={
             <View style={{ gap: 8 }}>
-              <Button onPress={noop}>Try again</Button>
-              <Button onPress={noop} tone="neutral" appearance="outline">
+              <Button onPress={onDemoAction}>Try again</Button>
+              <Button onPress={onDemoAction} tone="neutral" appearance="outline">
                 Use another method
               </Button>
             </View>
