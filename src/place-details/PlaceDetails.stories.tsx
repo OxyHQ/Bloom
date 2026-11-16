@@ -553,6 +553,7 @@ function PlaceSheet({ children }: { children: React.ReactNode }) {
     <BottomSheet
       open
       sizing="fill"
+      maxHeightRatio={0.8}
       showHandle
       accessibilityLabel="Place details"
       backdropComponent={() => null}
