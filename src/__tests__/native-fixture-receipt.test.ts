@@ -20,6 +20,7 @@ it('hashes the local native fixture when Bloom source comes from another checkou
     );
     for (const name of [
       'PanelSessionLab.tsx',
+      'DetailDialogLab.tsx',
       'PanelGroupsLab.tsx',
       'index.js',
       'app.config.js',
