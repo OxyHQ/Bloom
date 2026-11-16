@@ -37,6 +37,8 @@ const fixtureFiles = [
   'babel.config.js',
   'metro.config.js',
   'global.css',
+  'package.json',
+  'bun.lock',
 ];
 const inputs = [
   ...files
