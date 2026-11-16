@@ -1,4 +1,7 @@
-import { ScrollArea as ScrollView } from '../layout';
+import { AppShell } from '../app-shell';
+import { Screen, ScreenScrollView } from '../screen';
+import { PageHeader } from '../page-header';
+import { PageFooter } from '../page-footer';
 import { fn } from 'storybook/test';
 import React, { useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
@@ -6,7 +9,6 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
 import { RangeCalendar, type DateRange } from '../date-picker';
-import { Divider } from '../divider';
 import { RiBuilding2Line } from '../icons/remix/RiBuilding2Line';
 import { RiHome4Line } from '../icons/remix/RiHome4Line';
 import { RiMapPinLine } from '../icons/remix/RiMapPinLine';
@@ -382,6 +384,7 @@ function DesktopDemo({
 }) {
   const theme = useTheme();
   const [mode, setMode] = useState<HomeSearchMode>(initialMode);
+  const [searched, setSearched] = useState(false);
   const [segment, setSegment] = useState<string | null>(initialSegment);
   const api = useSearchState(initial);
 
@@ -680,6 +683,7 @@ function MobileFlow({
 }) {
   const theme = useTheme();
   const [mode, setMode] = useState<HomeSearchMode>(initialMode);
+  const [searched, setSearched] = useState(false);
   const [open, setOpen] = useState<string>('location');
   const api = useSearchState();
   const { state, set } = api;
@@ -831,8 +835,40 @@ function MobileFlow({
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.backgroundSecondary }}>
-      <ScrollView
+    <Screen
+      header={
+        <PageHeader
+          title={searched ? 'Search ready' : 'Find a home'}
+          subtitle={
+            searched
+              ? `${state.location ?? 'Anywhere'} · ${DEFAULT_HOME_SEARCH_MODE_LABELS[mode]}`
+              : undefined
+          }
+        />
+      }
+      bottomBar={
+        <PageFooter
+          actions={
+            <Button icon={RiSearchLine} onPress={() => setSearched(true)}>
+              Search
+            </Button>
+          }
+        >
+          <Button
+            appearance="plain"
+            linkTone="primary"
+            onPress={() => {
+              set(INITIAL);
+              setSearched(false);
+            }}
+          >
+            Clear all
+          </Button>
+        </PageFooter>
+      }
+      style={{ backgroundColor: theme.colors.backgroundSecondary }}
+    >
+      <ScreenScrollView
         contentContainerStyle={{
           paddingTop: 16,
           paddingBottom: 16,
@@ -866,34 +902,8 @@ function MobileFlow({
             {step.content}
           </StaySearchStep>
         ))}
-      </ScrollView>
-      <Divider />
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingTop: 12,
-          paddingBottom: 12,
-          paddingLeft: 20,
-          paddingRight: 16,
-          backgroundColor: theme.colors.card,
-        }}
-      >
-        <Button appearance="plain" linkTone="primary" onPress={() => set(INITIAL)}>
-          Clear all
-        </Button>
-        <Button
-          size="lg"
-          icon={RiSearchLine}
-          tone="accent"
-          appearance="solid"
-          onPress={fn().mockName('HomeSearch.onSearch')}
-        >
-          Search
-        </Button>
-      </View>
-    </View>
+      </ScreenScrollView>
+    </Screen>
   );
 }
 
@@ -1033,11 +1043,24 @@ export const SaveButton: Story = {
 
 /** A compact search flow; choose the product mode in Controls and the viewport in Storybook. */
 export const CompactFlow: StoryObj<{ mode: HomeSearchMode }> = {
+  parameters: { layout: 'fullscreen' },
   args: { mode: 'rent' },
   argTypes: { mode: { control: 'select', options: ['rent', 'buy', 'stays', 'swap'] } },
   render: (args) => (
-    <View style={{ width: '100%', height: 780 }}>
-      <MobileFlow key={args.mode} initialMode={args.mode} />
-    </View>
+    <AppShell
+      header={null}
+      scroll="fixed"
+      contentMaxWidth="none"
+      panelLayout={{
+        flow: 'bounded',
+        panels: [
+          {
+            id: 'search',
+            span: 1,
+            content: <MobileFlow key={args.mode} initialMode={args.mode} />,
+          },
+        ],
+      }}
+    />
   ),
 };

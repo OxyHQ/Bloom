@@ -59,6 +59,14 @@ try {
         document.querySelector('[data-testid="split-conversation"]')?.getBoundingClientRect()
           .width > 500,
     );
+    const host = await page.$eval('[data-testid="split"]', (element) => ({
+      width: element.getBoundingClientRect().width,
+      height: element.getBoundingClientRect().height,
+    }));
+    assert(
+      host.width >= width - 32 && host.height >= 836,
+      `The workspace follows the real shell viewport: ${JSON.stringify(host)}`,
+    );
     const list = await pane('split-list');
     const conversation = await pane('split-conversation');
     if (compact) {
@@ -76,7 +84,12 @@ try {
       () =>
         Math.round(
           document.querySelector('[data-testid="split-info"]')?.getBoundingClientRect().width ?? 0,
-        ) === (innerWidth < 800 ? 600 : 380),
+        ) ===
+        (innerWidth < 800
+          ? Math.round(
+              document.querySelector('[data-testid="split"]').getBoundingClientRect().width,
+            )
+          : 380),
     );
     const info = await pane('split-info');
     if (compact) {

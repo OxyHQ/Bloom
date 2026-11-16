@@ -5,6 +5,7 @@ import { ScrollView, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Avatar } from '../avatar';
+import { AppShell } from '../app-shell';
 import { ChatComposer } from '../chat-composer';
 import { MessageBubble } from '../message-bubble';
 import { List } from '../list';
@@ -417,7 +418,7 @@ function ConversationWorkspace() {
   const [member, setMember] = useState(MEMBERS[0]!);
   const [listWidth, setListWidth] = useState(340);
   return (
-    <View style={{ width: '100%', height: 820 }}>
+    <AppShell header={null} scroll="fixed" contentMaxWidth="none">
       <ChatSplitLayout
         testID="split"
         pane={pane}
@@ -445,7 +446,7 @@ function ConversationWorkspace() {
           onOpenInfo={() => setPane('info')}
         />
       </ChatSplitLayout>
-    </View>
+    </AppShell>
   );
 }
 
