@@ -39,6 +39,8 @@ like every other card in Bloom.
 
 ## `CallScreen`
 
+Call screens fill the height supplied by their host. Identity content scrolls within the remaining stage when a window is short; action controls retain their normal size in a separate bounded region. Incoming calls use the same arrangement, keeping answer and secondary actions accessible without imposing a minimum viewport height.
+
 The top chrome uses `PageHeader` with `tone="onImage"`; minimise, chat and participants are shared `Button` actions. Video uses the header’s own edge scrim. The bottom call controls retain their separate scrim and transport behavior. `CallControlButton` also delegates to `Button`, supplying only call-state colors, diameter, glyph, label and badge.
 
 ```tsx

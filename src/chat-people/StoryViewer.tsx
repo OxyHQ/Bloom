@@ -4,6 +4,7 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { Button } from '../button';
 import { PageHeader } from '../page-header';
+import { ScrollArea } from '../layout/ScrollArea';
 import type { ButtonIconComponent } from '../button/types';
 import { Avatar } from '../avatar/Avatar';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
@@ -156,7 +157,7 @@ function StoryViewerComponent({
       style={[
         {
           flex: 1,
-          minHeight: 480,
+          minHeight: 0,
           height,
           backgroundColor: paint.stage,
           borderRadius: 20,
@@ -245,11 +246,13 @@ function StoryViewerComponent({
         testID={testID ? `${testID}-header` : undefined}
       />
 
-      <View style={{ flex: 1 }} pointerEvents="box-none" />
+      <View style={{ flex: 1, minHeight: 0 }} pointerEvents="box-none" />
 
-      <View
-        style={{ gap: 10, paddingRight: 12, paddingBottom: 14, paddingLeft: 12 }}
-        pointerEvents="box-none"
+      <ScrollArea
+        style={{ flexGrow: 0, flexShrink: 1, minHeight: 0 }}
+        contentContainerStyle={{ gap: 10, paddingRight: 12, paddingBottom: 14, paddingLeft: 12 }}
+        keyboardShouldPersistTaps="handled"
+        testID={testID ? `${testID}-composer-scroll` : undefined}
       >
         {reactions === undefined || reactions.length === 0 ? null : (
           <View
@@ -298,7 +301,7 @@ function StoryViewerComponent({
             />
           </View>
         )}
-      </View>
+      </ScrollArea>
     </View>
   );
 }

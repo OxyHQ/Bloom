@@ -128,6 +128,8 @@ commands are not offered. Data filtering and pagination stay with the consumer.
 
 ## `StoryViewer`
 
+The viewer fits its host, including short landscape windows. Reactions and the composer keep their normal control size in a bounded scroll region; the media and previous/next tap zones continue to fill the viewer. Caller height and style constraints remain explicit overrides.
+
 Identity, actions and the progress overline use `PageHeader`. Mute, more, close, reactions and send use the shared `Button` control, including focus, disabled and toggle states. The header’s shared media scrim protects the progress strip and identity together. The previous/next media tap zones retain their asymmetric targets and independent handlers.
 
 ```tsx

@@ -8,6 +8,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { ScrollArea } from '../layout/ScrollArea';
 import { Avatar } from '../avatar/Avatar';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { RiMessage2Line } from '../icons/remix/RiMessage2Line';
@@ -283,7 +284,7 @@ function IncomingCallScreenComponent({
       style={[
         {
           flex: 1,
-          minHeight: 520,
+          minHeight: 0,
           backgroundColor: paint.stage,
           borderRadius: CALL_UI_RADIUS.stage,
           overflow: 'hidden',
@@ -293,9 +294,11 @@ function IncomingCallScreenComponent({
       testID={testID}
     >
       <CallStageBackdrop paint={paint} />
-      <View
-        style={{
-          flex: 1,
+      <ScrollArea
+        style={{ flex: 1, minHeight: 0 }}
+        testID={testID ? `${testID}-identity-scroll` : undefined}
+        contentContainerStyle={{
+          flexGrow: 1,
           alignItems: 'center',
           justifyContent: 'center',
           gap: 20,
@@ -330,10 +333,12 @@ function IncomingCallScreenComponent({
           </Text>
         </View>
         {children}
-      </View>
+      </ScrollArea>
 
-      <View
-        style={{
+      <ScrollArea
+        style={{ flexGrow: 0, flexShrink: 1, minHeight: 0 }}
+        testID={testID ? `${testID}-controls-scroll` : undefined}
+        contentContainerStyle={{
           gap: 20,
           paddingRight: 24,
           paddingBottom: 40,
@@ -348,7 +353,7 @@ function IncomingCallScreenComponent({
             {secondary}
           </View>
         )}
-      </View>
+      </ScrollArea>
     </View>
   );
 }

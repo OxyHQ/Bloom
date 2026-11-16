@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Button } from '../button';
 import { PageHeader } from '../page-header';
+import { ScrollArea } from '../layout/ScrollArea';
 import { Avatar } from '../avatar/Avatar';
 import { RiChat3Line } from '../icons/remix/RiChat3Line';
 import { RiCollapseDiagonalLine } from '../icons/remix/RiCollapseDiagonalLine';
@@ -163,7 +164,7 @@ function CallScreenComponent({
       style={[
         {
           flex: 1,
-          minHeight: 420,
+          minHeight: 0,
           backgroundColor: paint.stage,
           overflow: 'hidden',
           borderRadius: CALL_UI_RADIUS.stage,
@@ -238,20 +239,20 @@ function CallScreenComponent({
         testID={testID ? `${testID}-header` : undefined}
       />
 
-      {/* Stage */}
-      {onStage ? (
-        <View style={{ paddingRight: 16, paddingLeft: 16 }}>{identity}</View>
-      ) : (
-        <View
-          style={{
-            flex: 1,
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 24,
-            paddingRight: 24,
-            paddingLeft: 24,
-          }}
-        >
+      {/* Identity can scroll within the stage; controls retain their own space. */}
+      <ScrollArea
+        style={{ flex: 1, minHeight: 0 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          alignItems: 'center',
+          justifyContent: onStage ? 'flex-start' : 'center',
+          gap: 24,
+          paddingRight: onStage ? 16 : 24,
+          paddingLeft: onStage ? 16 : 24,
+        }}
+        testID={testID ? `${testID}-identity-scroll` : undefined}
+      >
+        {onStage ? null : (
           <Avatar
             source={avatar}
             variant={avatarVariant}
@@ -259,11 +260,9 @@ function CallScreenComponent({
             size={AVATAR_SIZE}
             testID={testID ? `${testID}-avatar` : undefined}
           />
-          {identity}
-        </View>
-      )}
-
-      {onStage ? <View style={{ flex: 1 }} /> : null}
+        )}
+        {identity}
+      </ScrollArea>
 
       {/* Local picture-in-picture */}
       {localVideo === undefined ? null : (
@@ -291,7 +290,16 @@ function CallScreenComponent({
       {children}
 
       {/* Controls */}
-      <View style={{ paddingRight: 16, paddingBottom: 24, paddingLeft: 16, paddingTop: 8 }}>
+      <ScrollArea
+        style={{ flexGrow: 0, flexShrink: 1, minHeight: 0 }}
+        contentContainerStyle={{
+          paddingRight: 16,
+          paddingBottom: 24,
+          paddingLeft: 16,
+          paddingTop: 8,
+        }}
+        testID={testID ? `${testID}-controls-scroll` : undefined}
+      >
         {controlsSlot !== undefined ? (
           controlsSlot
         ) : controls !== undefined && live ? (
@@ -301,7 +309,7 @@ function CallScreenComponent({
             testID={testID ? `${testID}-controls` : undefined}
           />
         ) : null}
-      </View>
+      </ScrollArea>
     </View>
   );
 }
