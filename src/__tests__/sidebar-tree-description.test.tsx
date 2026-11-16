@@ -35,11 +35,11 @@ describe('tree rows with a description', () => {
         <Sidebar size={size} items={[]} tree={TREE} showSearch={false} showThemeToggle={false} />
       </BloomThemeProvider>,
     );
-    const description = view.getByText('Sent the quarterly notes');
+    const description = view.getByText('Sent the quarterly notes', { includeHiddenElements: true });
     expect(description.props.numberOfLines).toBe(1);
     expect(fontSizeOf(description)).toBe(typeScale(SIDEBAR_METRICS[size].tree.meta).fontSize);
     // The label and the chip are still there beside it.
-    expect(view.getByText('Pepe')).toBeTruthy();
+    expect(view.getByText('Pepe', { includeHiddenElements: true })).toBeTruthy();
     expect(view.getByText('2h')).toBeTruthy();
     expect(view.getByLabelText('Pepe, Sent the quarterly notes, 2h')).toBeTruthy();
   });
@@ -50,7 +50,9 @@ describe('tree rows with a description', () => {
         <Sidebar items={[]} tree={TREE} showSearch={false} showThemeToggle={false} />
       </BloomThemeProvider>,
     );
-    expect(view.getByText('Ana')).toBeTruthy();
-    expect(view.getAllByText('Sent the quarterly notes')).toHaveLength(1);
+    expect(view.getByText('Ana', { includeHiddenElements: true })).toBeTruthy();
+    expect(
+      view.getAllByText('Sent the quarterly notes', { includeHiddenElements: true }),
+    ).toHaveLength(1);
   });
 });

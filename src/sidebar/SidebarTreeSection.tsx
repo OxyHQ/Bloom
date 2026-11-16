@@ -1,4 +1,5 @@
 import { ListItem } from '../list';
+import { LIST_ROW_INSET } from '../list/list-style';
 import React, { memo, useCallback, useEffect, useRef, type ComponentRef } from 'react';
 import {
   Pressable,
@@ -52,7 +53,7 @@ export const TREE_INDENT = 16;
  * Where a top-level row's content starts (its disclosure, glyph, avatar or label), and so where
  * the section's label and status start: one edge from the title down.
  */
-export const TREE_INSET = 8;
+export const TREE_INSET = LIST_ROW_INSET;
 /** Where a row's `actions` end: the section's own `actions` end there too. */
 const TREE_ACTIONS_INSET = 4;
 /** Long enough that a press opens the row and a swipe still scrolls the sidebar. */

@@ -20,7 +20,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { SwipeRow, useSwipeAvailable } from '../swipe-row';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { LIST_CSS, LIST_STYLE_ID } from './list-style';
+import { LIST_CSS, LIST_STYLE_ID, LIST_ROW_INSET } from './list-style';
 import type { ListAction, ListItemProps, ListCommonProps } from './types';
 
 type Bindings = Pick<
@@ -247,7 +247,7 @@ export function createListItem({
             flexDirection: 'row',
             alignItems: 'center',
             gap: 10,
-            paddingHorizontal: 10,
+            paddingHorizontal: LIST_ROW_INSET,
             paddingVertical: 8,
           }}
         >

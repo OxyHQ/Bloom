@@ -29,7 +29,7 @@ const TREE: SidebarTree[] = [
 type Node = { props: { style?: unknown } };
 const start = (node: Node) => {
   const style = StyleSheet.flatten(node.props.style as never) as Record<string, unknown>;
-  return Number(style?.paddingInlineStart ?? 0);
+  return Number(style?.paddingInlineStart ?? style?.paddingHorizontal ?? 0);
 };
 
 it.each([
@@ -43,9 +43,14 @@ it.each([
     </BloomThemeProvider>,
   );
   const label = view.getByTestId(`sidebar-tree-label-${section}`) as unknown as Node;
-  // The row's own inset and its press target's: the content starts after both.
+  // Disclosure is the first content for a branch; a leaf starts at List's shared content edge.
   const line = view.getByTestId(`sidebar-tree-row-${row}`) as unknown as Node;
-  const press = view.getByLabelText(name) as unknown as Node;
+  expect(view.getByLabelText(name)).toBeTruthy();
+  const content = view.getByTestId(`sidebar-tree-item-${row}`).findAll((node) => {
+    const style = StyleSheet.flatten(node.props.style);
+    return style?.paddingHorizontal != null;
+  })[0]!;
+  const disclosure = view.queryByTestId(`sidebar-tree-disclosure-${row}`);
   expect(start(label)).toBe(TREE_INSET);
-  expect(start(line) + start(press)).toBe(TREE_INSET);
+  expect(start(line) + (disclosure ? 0 : start(content))).toBe(TREE_INSET);
 });

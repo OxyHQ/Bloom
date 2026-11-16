@@ -1,3 +1,5 @@
+/** Shared content edge used by list sections and sidebar headings. */
+export const LIST_ROW_INSET = 10;
 export const LIST_STYLE_ID = 'bloom-list';
 export const LIST_CSS = `
 [data-bloom-list-row] { container-type:inline-size; transition:background-color 120ms; }
