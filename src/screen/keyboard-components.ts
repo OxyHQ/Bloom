@@ -2,6 +2,8 @@ import type { ComponentRef, ComponentType, RefAttributes } from 'react';
 import type { ScrollView, ScrollViewProps, ViewProps } from 'react-native';
 
 export interface ScreenKeyboardComponents {
+  /** The controller's window coordinate space, including its native resize events. */
+  useWindowDimensions?: () => { width: number; height: number };
   KeyboardAwareScrollView: ComponentType<
     ScrollViewProps &
       RefAttributes<ComponentRef<typeof ScrollView>> & {
