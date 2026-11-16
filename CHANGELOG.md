@@ -4,11 +4,16 @@
 
 ### Added
 
+- Shared `DetailDialog`, property sections and `ProjectBoardCardContent` extracted from the ProjectBoard reference. Products supply record slots while Bloom owns detail motion, header, scrolling, card geometry and fixed footer.
+
 - Semantic `AppShell.layout` families and independent continuous, framed and floating presentations. Panel roles, route inheritance and local groups resolve through the existing compositor; contradictory continuous frames produce actionable errors. `explainAppShellComposition` reports declared policy and ownership.
 - `Screen.kind` and container-aware `ScreenContent` for document, collection, table, canvas and form bodies. Screen primary actions support start/center/end placement and alone-only visibility without reserving empty clearance.
 - Panel session state and focus registration for inline/sheet adaptation. Registered drafts and focus survive host replacement; arbitrary React state and native media/view identity are not retained across that replacement.
 
 ### Fixed
+
+- Semantic native frames consume device edges once; `useContentSafeAreaInsets` exposes remaining content edges without erasing physical insets needed by overlays. Native side/custom dialogs now use the root window portal and preserve triggering providers.
+- Joined CSS-first panels now paint their shared divider from resolved CSS gap/axis geometry.
 
 - Semantic family and surface-style changes preserve the main mounted content. Bounded workspaces in document flow allocate their viewport once, including a shared header.
 

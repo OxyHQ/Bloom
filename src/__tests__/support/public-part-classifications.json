@@ -2039,7 +2039,7 @@
       "src/project-board/ProjectBoardCardContent.tsx",
       "src/dialog/DetailDialog.stories.tsx"
     ],
-    "verification": "Existing template domain tests and shared owner source types pass; actual browser and native verification pending.",
+    "verification": "Eight actual Chromium scenarios cover side/center, 1440/390 widths, motion/reduced motion, first-field pointer input, long-body scrolling, fixed header/footer, close/reopen and product draft retention. DOM/native renderer tests cover provider continuity, bounded canvas and native window portal geometry; final device verification is recorded separately in the compositor audit.",
     "parts": [
       "src/dialog/DetailDialog.tsx#DetailDialog",
       "src/dialog/DetailDialogSection.tsx#DetailDialogSection",
