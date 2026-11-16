@@ -29,7 +29,40 @@ nine focused tests. Final protected CI must validate the containing commit.
 The browser and Android receipts below remain evidence for their named sources.
 Bloom 22 changes PageHeader geometry, so final combined browser/native header,
 frame and detail acceptance is required before publication. Registry-installed
-application gates also require the compatible Oxy Services release.
+application gates also require compatible Oxy Services and Gemies SDK releases.
+
+The branch subsequently rebased onto `22.0.1` (`d82feb54`), preserving its
+Sidebar/List changes and retaining the `22.1.0` target. The pre-rebase native
+correction checkpoint `24652b4c` passes all 1,047 suites / 15,856 tests /
+9 snapshots, TypeScript and 4,138 consumer source files, lint, build, packed
+exports/freshness and the task catalog. The combined branch still requires its
+protected CI checks; the earlier full-suite receipt does not include the
+concurrent Sidebar changes.
+
+On Bloom 22, actual browser checks pass 36 family/presentation transitions,
+eight detail scenarios, and ten registered focus transitions. Repeated Android
+checks exposed two timing races: selecting before native focus completed, and
+requesting an additional keyboard reveal when the controller already owns that
+operation. The correction waits for native `onFocus` and delegates reveal to
+the controller's existing keyboard/offset synchronization. Twenty focused tests
+pass; reverting the two production files makes six regression cases fail.
+
+Final Android receipt
+`f82bca7e4754a6e57d258aaaabd4be0c0d2f2aca854fd9bb66a85ab1342aed5f`, APK SHA256
+`069f1463374fd4eab02568501b4e1a64ee99c02743b419aaa47117a6acb35da3`, passes
+two runs of both selection-transfer directions with real typed replacement and
+two detail/keyboard runs on the same APK. The lower field ends at 1294 physical
+pixels and the footer begins at 1292, within the existing three-pixel rounding
+tolerance; the true IME begins at 1533. Close/reopen, footer action and unfocused
+reopen pass. All 19 declared production source hashes in the embedded receipt
+match the branch after the `22.0.1` rebase. Generic panel verification passed
+on the combined `2adc5190` artifact before these two bounded event-order fixes.
+The session harness only omits intermediate captures so the real selection
+gesture fits its arming window; range, focus and replacement assertions remain.
+Evidence resides under the integration session's
+`android22-fixed-artifact`, `android22-fixed-session-{1,2}` and
+`android22-fixed-detail-{1,2}` directories. These are emulator fixture receipts,
+not registry publication, physical-device, iOS or five-app deployment claims.
 
 ## Six-phase acceptance
 
