@@ -12,7 +12,7 @@ import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { remainingScrollDistance, useScrollMetricsValue } from '../layout/scroll-metrics';
 import { BloomScope } from '../appearance';
 import { useBottomEdgeInset } from '../layout/bottom-edge';
-import { EdgeScrim, SCRIM_TAIL_RATIO } from '../page-header/EdgeScrim';
+import { EdgeScrim, SCRIM_CHROME_FRACTION, SCRIM_TAIL_RATIO } from '../page-header/EdgeScrim';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { dataHook } from '../styles/data-hook';
@@ -147,6 +147,7 @@ function PageFooterComponent({
           >
             <EdgeScrim
               edge="bottom"
+              opaqueFraction={SCRIM_CHROME_FRACTION}
               color={scrimColor ?? fill}
               testID={testID ? `${testID}-scrim-gradient` : undefined}
             />

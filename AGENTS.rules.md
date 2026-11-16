@@ -136,6 +136,10 @@ BloomThemeProvider sets preset/mode, dark class + full-color CSS vars via applyC
 - Determinate geometry: stat-bar Meter/MeterRing, accent fill/semantic track/flat aria-value*. Seventeen copies differed: three colors.text; rails200/700,200/800,300/700,100/800. Decorative subsegments never duplicate progressbars. Charts encode WHICH datum via chart-cards/palette.ts chartHueTone/resolveMonoTone; dark neutralSeries800 vanished on rail, now semantic. Meter.test.tsx, Meter subjects in aria-state-web.test.tsx
 - Read token pairs; never derive colors. Appended alpha failure: docs/badge.mdx. Controls use resolveAccentColors(colors,tone,fill), theme/accent-colors.ts; classes use opacity utilities (bg-primary/10). theme/__tests__/accent-colors.test.ts. Surface material exception: withAlpha parses/re-emits resolved fill, never concatenates; foreground follows its semantic pair
 
+## Scroll-edge paint
+
+- Header/footer smooth scrims must remain opaque across measured chrome (including subtitle/accessories/safe area), then fade only in the external tail. A full-box curve let scrolled record text overlap the detail subtitle on Android. EdgeScrim defaults remain full-box for artwork/overflow fades; explicit linear/onImage headers retain that contract. Protect both native gradient and SVG paths, fractional stop precision, dynamic heights: EdgeScrim.test.tsx, PageHeader.test.tsx, PageFooter.test.tsx; scripts/verify-edge-scrim-chrome.mjs.
+
 ## Material (surface/)
 
 `Surface` owns material; Button/Card/Sidebar/BlurIsland reuse its paint, preserving semantics. blur/ owns grouping + Android blur targets. docs/surface.mdx

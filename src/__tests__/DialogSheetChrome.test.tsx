@@ -10,7 +10,7 @@ import { DIALOG_HEADER_CONTENT_TOP, DIALOG_NAV_BAR_HEIGHT } from '../dialog/Dial
 import type { DialogHeaderConfig } from '../dialog/types';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
-import { SCRIM_STOPS } from '../page-header/EdgeScrim';
+import { SCRIM_CHROME_FRACTION, SCRIM_STOPS } from '../page-header/EdgeScrim';
 import { resolvedStyle } from './support/rendered-style';
 
 /**
@@ -187,9 +187,14 @@ describe('the nav bar paints its own background', () => {
 
     const stops = stopsIn(scrim);
     const normalize = (color: unknown) => String(color).replace(/[ ,]+/g, '');
-    expect(stops.map((stop) => ({ ...stop, color: normalize(stop.color) }))).toEqual(
-      SCRIM_STOPS.map(({ offset, opacity }) => ({ offset, opacity, color: normalize(background) })),
-    );
+    expect(stops.map((stop) => ({ ...stop, color: normalize(stop.color) }))).toEqual([
+      { offset: 0, opacity: 1, color: normalize(background) },
+      ...SCRIM_STOPS.map(({ offset, opacity }) => ({
+        offset: SCRIM_CHROME_FRACTION + (1 - SCRIM_CHROME_FRACTION) * offset,
+        opacity,
+        color: normalize(background),
+      })),
+    ]);
   });
 
   it('swaps to a dark scrim over media', () => {
