@@ -1,5 +1,11 @@
 # Changelog
 
+## 22.1.2
+
+### Fixed
+
+- Detail dialogs paint and publish their card background through Screen, so the shared header fades into the same surface in light and dark themes. Removes the redundant painted wrapper without changing dialog motion or scrolling.
+
 ## 22.1.1
 
 ### Fixed
