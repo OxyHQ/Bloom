@@ -1,3 +1,4 @@
+import { PortalProvider, PortalOutlet } from '../../portal';
 import { fireEvent, render } from '@testing-library/react-native';
 import type React from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
@@ -66,12 +67,15 @@ const members = { maya: { id: 'maya', name: 'Maya Chen', initials: 'MC' } };
 function renderBoard(extra: Partial<React.ComponentProps<typeof ProjectBoard>> = {}) {
   return render(
     <BloomThemeProvider colorPreset="teal" mode="light">
-      <ProjectBoard
-        initialColumns={columns}
-        members={members}
-        projects={['Bloom', 'vibl']}
-        {...extra}
-      />
+      <PortalProvider>
+        <ProjectBoard
+          initialColumns={columns}
+          members={members}
+          projects={['Bloom', 'vibl']}
+          {...extra}
+        />
+        <PortalOutlet />
+      </PortalProvider>
     </BloomThemeProvider>,
   );
 }
