@@ -151,6 +151,18 @@ describe('semantic composition', () => {
     expect(layout.panels[1]!.maxWidth).toBeUndefined();
   });
 
+  it('labels default-family and legacy diagnostics by their actual declaration source', () => {
+    expect(explainAppShellComposition({ presentation: 'framed' }).frame.sources).toEqual({
+      gutter: 'family',
+      navigationGap: 'family',
+    });
+    expect(explainAppShellComposition({ variant: 'feed' }).frame.source).toBe('legacy');
+    expect(
+      explainAppShellComposition({ layout: 'workspace', navigationGap: 7 }).frame.sources
+        .navigationGap,
+    ).toBe('explicit');
+  });
+
   it('exposes declared ownership without pretending to measure a viewport', () => {
     expect(
       explainAppShellComposition({ layout: 'workspace', presentation: 'continuous' }),

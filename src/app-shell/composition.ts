@@ -211,7 +211,7 @@ export function explainAppShellComposition(props: AppShellProps) {
             ? 'explicit'
             : resolved.presentation === 'continuous'
               ? 'presentation'
-              : props.layout
+              : resolved.layout
                 ? 'family'
                 : 'legacy',
         navigationGap:
@@ -219,16 +219,18 @@ export function explainAppShellComposition(props: AppShellProps) {
             ? 'explicit'
             : resolved.presentation === 'continuous'
               ? 'presentation'
-              : props.layout
+              : resolved.layout
                 ? 'family'
                 : 'legacy',
       },
       source:
-        props.presentation === 'continuous'
+        resolved.presentation === 'continuous'
           ? 'presentation'
           : props.gutter !== undefined
             ? 'explicit'
-            : 'family',
+            : resolved.layout
+              ? 'family'
+              : 'legacy',
     },
     owners: { frame: 'AppShell', surfaces: 'panel group', scroll: 'Screen', state: 'application' },
     panels:
