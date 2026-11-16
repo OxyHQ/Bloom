@@ -13,6 +13,16 @@ handles ignore imperative scrolling while inactive, including calls held by a
 background chat as new messages arrive. `ScreenScrollView.onLayout` on web reports
 the enclosing Screen's viewport, rather than the growing transcript wrapper.
 
+## Body intent and measure
+
+`kind="document|collection|table|canvas|form"` describes body intent independently
+of the shell's surface presentation. Within the existing `ScreenScrollView`,
+`ScreenContent` inherits the kind and supplies body padding and reading measure.
+`width="full"` removes the readable cap while retaining body inset. Adaptation
+follows the body's container, so a narrow inspector does not get desktop padding
+just because the window is wide. This helper creates neither another scroll
+owner nor another panel. See [semantic composition](./semantic-composition.mdx).
+
 ## Declarative screens in any host
 
 A route declares its own chrome once. The shell supplies the surface and available
@@ -136,6 +146,11 @@ it and its scroller pads its end clear of it. While that screen is the
 active one, an `AppShell`'s own floating action (the compose FAB) steps aside: one
 floating action on screen at a time. The app's action belongs to the shell's
 `primaryAction`, never to every screen.
+`primaryActionPlacement="start|center|end"` selects placement through this same
+footer owner. For a map/list toggle, `primaryActionVisibility="alone"` includes
+both the action and its clearance only when the enclosing panel is alone; it
+also leaves the shell action unclaimed while hidden. Returning null from an
+action component does not communicate that ownership decision.
 `headerHeight` and `bottomBarHeight` declare initial footprints for custom chrome;
 defaults match Bloom's 56-point header and 58-point bottom bar plus safe area.
 For compact PageHeader chrome without a top safe area, `headerHeight={32}`
