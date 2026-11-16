@@ -214,7 +214,11 @@ is still using elsewhere. The list's origin is re-read whenever its box could
 have moved — shown again, or content above it grew — never from a box-less
 wrapper. Returning to retained content or resizing the viewport preserves measured
 row heights; it must not reset unchanged rows to `estimatedItemSize`. Row resize
-observations update actual content changes. When a retained list changes between
+observations update actual content changes. Zero-width observations and finite compositor
+geometry transitions preserve the prior row measurements; once the panel settles,
+the list measures its final box before applying ordinary scroll anchoring. This
+uses the existing panel transition lifecycle, without a product delay or a new
+scroll owner. When a retained list changes between
 document and panel scrolling, the same virtualizer retains its row measurements
 and mounted row identities; only its owner adapters change. The adapter reads the
 current Screen scroll ref during layout. A post-commit fallback covers a parent

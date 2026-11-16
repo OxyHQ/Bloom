@@ -571,7 +571,16 @@ export function BottomBarBase({
               {...(dock ? {} : actionMeasurement)}
               style={{
                 flexShrink: 0,
-                ...(dock || fillAction || actionWidth == null ? {} : { width: actionWidth }),
+                // Measure the intrinsic action independently of the animated
+                // outer width. A hidden desktop bar reports zero; feeding that
+                // back into this measurer locks it at zero on compact reveal.
+                ...(dock || fillAction
+                  ? {}
+                  : IS_WEB
+                    ? { width: cssLength('max-content') }
+                    : actionWidth == null
+                      ? {}
+                      : { width: actionWidth }),
               }}
             >
               <SearchPresentationContext.Provider value={adaptiveAction ? searchHost : null}>

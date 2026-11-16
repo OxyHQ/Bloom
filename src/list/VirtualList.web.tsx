@@ -67,6 +67,7 @@ import {
 } from '@tanstack/react-virtual';
 
 import type { VirtualListHandle, VirtualListProps, VirtualListSlot } from './types';
+import { createStableRowMeasurement } from './row-measurement.web';
 
 // Rows in these lists (user rows, pack cards) are short and fairly uniform; a
 // small estimate + per-row measurement keeps the mounted node count bounded.
@@ -220,6 +221,13 @@ function VirtualListWebInner<T>(
   const viewport = useScreenViewport();
   const scroller = viewport?.kind === 'element' ? viewport.scrollRef : null;
   const active = viewport?.active !== false;
+  const activeRef = React.useRef(active);
+  activeRef.current = active;
+  const rowMeasurement = React.useMemo(
+    () => createStableRowMeasurement(() => activeRef.current),
+    [],
+  );
+  React.useLayoutEffect(() => () => rowMeasurement.cancel(), [rowMeasurement, active]);
   const [scrollElement, setScrollElement] = React.useState<HTMLElement | null>(null);
   // Parent host refs attach after child layout effects. Publish the resolved
   // element after commit so TanStack binds it even without another app render.
@@ -298,6 +306,7 @@ function VirtualListWebInner<T>(
     scrollMargin,
     useFlushSync: false,
     rangeExtractor,
+    measureElement: rowMeasurement.measure,
     getItemKey: keyExtractor ? (row: number) => itemKey(firstItemOf(row)) : undefined,
   };
   // Owner changes and inactivity detach observers, not the measurement model.
