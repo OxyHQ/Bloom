@@ -1,6 +1,6 @@
 ---
 title: AppShell
-description: Page frame with four layout variants and panels (one reading surface or several side by side), the sidebar and a responsive drawer, pinned top/bottom/floating slots, a breadcrumb + title header, a notification bell and a floating Pro offer card.
+description: Semantic application families, independent presentation, panel roles and shared navigation, with legacy variant compatibility.
 order: 83
 ---
 
@@ -28,7 +28,21 @@ import { AppShell, NotificationBell, ProOfferCard } from '@oxy.so/bloom/app-shel
 </AppShell>
 ```
 
-## Variants
+## Semantic composition
+
+For new application composition, choose `layout="workspace|collection-detail|feed|deck|catalog|map-browser"`
+and `presentation="continuous|framed|floating"`. Continuous removes the structural
+outer frame at every size; Screen body measure and padding remain independent.
+Panels declare roles; controlled inspectors supply `open`, `onOpenChange` and
+`label`. Root descriptors and route `AppShellPanels` resolve through the same
+engine, while `scope="local"` isolates an embedded composition.
+
+[Semantic application composition](./semantic-composition.mdx) documents precedence,
+constraints, `explainAppShellComposition`, registered panel state/focus and migration
+acceptance. The variants below remain compatibility inputs; they do not form a
+second compositor and are not removed by this release.
+
+## Compatibility variants
 
 One engine, four shapes. `variant` picks the shape; everything else — the nav,
 the drawer, the pinned regions, the slots, the sizes, and the [panels](#panels)
