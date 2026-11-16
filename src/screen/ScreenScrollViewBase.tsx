@@ -242,7 +242,6 @@ export function createScreenScrollView(
   type KeyboardScrollProps = React.ComponentProps<
     ScreenKeyboardComponents['KeyboardAwareScrollView']
   >;
-  type KeyboardScrollHandle = ScrollViewRef & { assureFocusedInputVisible?: () => void };
 
   // The controller reveals an input relative to the WINDOW. A Screen can end
   // above that window edge (system bars, a framed dialog, or another panel).
@@ -264,7 +263,7 @@ export function createScreenScrollView(
       const useControllerDimensions = integration.useWindowDimensions ?? useWindowDimensions;
       const { height: windowHeight } = useControllerDimensions();
       const keyboard = useKeyboardMetrics({ enabled });
-      const target = useRef<KeyboardScrollHandle | null>(null);
+      const target = useRef<ScrollViewRef | null>(null);
       const measureRevision = useRef(0);
       const [bottomDistance, setBottomDistance] = useState(0);
       const measureViewport = useCallback(() => {
@@ -286,10 +285,8 @@ export function createScreenScrollView(
           measureRevision.current++;
         };
       }, [measureViewport, keyboard.visible, keyboard.height]);
-      // biome-ignore lint/correctness/useExhaustiveDependencies: Reveal after the measured clearance has committed to the controller.
-      useEffect(() => {
-        if (enabled && keyboard.visible) target.current?.assureFocusedInputVisible?.();
-      }, [enabled, keyboard.visible, bottomDistance]);
+      // The controller already reveals on IME changes and bottomOffset updates.
+      // A second imperative reveal races its native focus/scroll measurements.
       const setRef = useCallback(
         (node: ScrollViewRef | null) => {
           target.current = node;

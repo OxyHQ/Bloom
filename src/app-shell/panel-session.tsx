@@ -128,14 +128,34 @@ export function usePanelSessionFocus<T extends PanelSessionFocusTarget>(key: str
   const ref: RefCallback<T> = useCallback((node: T | null) => {
     target.current = node;
   }, []);
+  const restoreSelection = useCallback(
+    (pending: NonNullable<PanelSession['focus']>) => {
+      if (!session.active || session.focus !== pending || !target.current) return;
+      if (pending.selection) {
+        selection.current = pending.selection;
+        const { start, end } = pending.selection;
+        if (target.current.setSelection) target.current.setSelection(start, end);
+        else if (target.current.setSelectionRange) target.current.setSelectionRange(start, end);
+        else target.current.setNativeProps?.({ selection: pending.selection });
+      }
+      session.focus = { ...pending, presentation, target: target.current };
+    },
+    [session, presentation],
+  );
   const onFocus = useCallback(() => {
+    if (!session.active || session.presentation !== presentation) return;
     const pending = session.focus;
     // An imperatively opened Dialog can autofocus its first field before the
     // session's restoration frame. Keep that transfer's snapshot intact until
     // the frame restores selection. A user pointer/key already cancels it.
-    if (pending?.key === key && pending.presentation !== presentation) return;
+    if (pending?.key === key && pending.presentation !== presentation) {
+      // Native focus is asynchronous and can initialize the caret AFTER focus()
+      // returns. Send the selection command only after its focus event arrives.
+      if (Platform.OS !== 'web') restoreSelection(pending);
+      return;
+    }
     session.focus = { key, presentation, target: target.current, selection: selection.current };
-  }, [session, key, presentation]);
+  }, [session, key, presentation, restoreSelection]);
   const onBlur = useCallback(() => {
     // CSS resolves responsive presentation before ResizeObserver commits React
     // state. Read that same owner rather than clearing a transfer on early blur.
@@ -205,15 +225,14 @@ export function usePanelSessionFocus<T extends PanelSessionFocusTarget>(key: str
         session.focus = null;
         return;
       }
-      target.current.focus();
-      if (focused.selection) {
-        selection.current = focused.selection;
-        const { start, end } = focused.selection;
-        if (target.current.setSelection) target.current.setSelection(start, end);
-        else if (target.current.setSelectionRange) target.current.setSelectionRange(start, end);
-        else target.current.setNativeProps?.({ selection: focused.selection });
+      if (Platform.OS !== 'web') {
+        // TextInput.State/isFocused can change before the native event too.
+        // Even an autofocused host must confirm focus through onFocus.
+        target.current.focus();
+        return;
       }
-      session.focus = { ...focused, presentation, target: target.current };
+      target.current.focus();
+      restoreSelection(focused);
     });
     return () => {
       cancelAnimationFrame(frame);
@@ -222,6 +241,6 @@ export function usePanelSessionFocus<T extends PanelSessionFocusTarget>(key: str
         document.removeEventListener('keydown', cancelForInteraction, true);
       }
     };
-  }, [session, key, presentation]);
+  }, [session, key, presentation, restoreSelection]);
   return { ref, onFocus, onBlur, onSelectionChange };
 }

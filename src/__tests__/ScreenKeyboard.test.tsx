@@ -1,5 +1,5 @@
 import { createRef, type Ref, type ComponentRef } from 'react';
-import { Platform, View, type ScrollView } from 'react-native';
+import { Keyboard, Platform, View, type ScrollView } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { Screen, ScreenScrollView } from '../screen';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -90,7 +90,8 @@ it.each([
   const native = {
     measureInWindow: jest.fn((callback) => callback(0, measuredY, 400, measuredHeight)),
   };
-  const handle = { getNativeScrollRef: () => native, scrollTo };
+  const assureFocusedInputVisible = jest.fn();
+  const handle = { getNativeScrollRef: () => native, scrollTo, assureFocusedInputVisible };
   const forwarded = createRef<ComponentRef<typeof ScrollView>>();
   const tree = render(fixture(true, forwarded), {
     createNodeMock: (element) => (element.type === 'KeyboardAwareScrollView' ? handle : null),
@@ -107,6 +108,17 @@ it.each([
   forwarded.current?.scrollTo({ y: 30, animated: false });
   expect(scrollTo).toHaveBeenCalledWith({ y: 30, animated: false });
 
+  // The controller owns both IME-show reveal and bottomOffset synchronization.
+  // Bloom must pass the measured clearance without requesting a second scroll.
+  const subscriptions = (Keyboard.addListener as jest.Mock).mock.calls;
+  act(() => {
+    for (const [event, listener] of subscriptions) {
+      if (event === 'keyboardDidShow') {
+        listener({ endCoordinates: { height: 320, screenY: 580 } });
+      }
+    }
+  });
+
   // An ancestor can move this viewport without changing its own local layout.
   measuredY = 80;
   measuredHeight = 700;
@@ -114,6 +126,7 @@ it.each([
   expect(scroll.props.bottomOffset).toBe(192);
   expect(scroll.props.extraKeyboardSpace).toBe(192);
   expect(resolvedStyle(scroll.props.contentContainerStyle).paddingBottom).toBe(120);
+  expect(assureFocusedInputVisible).not.toHaveBeenCalled();
 });
 
 it('does not mount native keyboard surfaces on web', () => {
