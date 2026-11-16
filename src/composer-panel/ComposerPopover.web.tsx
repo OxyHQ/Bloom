@@ -23,6 +23,7 @@ export function ComposerPopover({
   side,
   sideOffset,
   modal = false,
+  scroll,
   style,
   testID,
   children,
@@ -43,6 +44,7 @@ export function ComposerPopover({
       align="start"
       sideOffset={sideOffset}
       modal={modal}
+      scroll={scroll}
       onDismiss={dismiss}
       surface="menu"
       style={style}

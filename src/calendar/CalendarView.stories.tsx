@@ -1,3 +1,4 @@
+import { AppShell } from '../app-shell';
 import type React from 'react';
 import { useState } from 'react';
 import { View } from 'react-native';
@@ -6,7 +7,6 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Breadcrumb, BreadcrumbItem } from '../breadcrumb';
 import { Button } from '../button';
 import { RiCalendarLine, RiGroupLine, RiUserLine } from '../icons/remix';
-import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
   CalendarView,
@@ -181,23 +181,12 @@ const BREADCRUMB = (
   </Breadcrumb>
 );
 
-/** The page: `background-full` behind the block, so dark mode reads as it ships. */
+/** Calendar examples use the same application viewport and scroll owner as consumers. */
 function Page({ children }: { children: React.ReactNode }) {
-  const theme = useTheme();
   return (
-    <View
-      style={{
-        width: '100%',
-        minHeight: '100%',
-        backgroundColor: theme.colors.background,
-        paddingTop: 24,
-        paddingBottom: 24,
-        paddingLeft: 12,
-        paddingRight: 12,
-      }}
-    >
+    <AppShell header={null} scroll="page" contentMaxWidth="none">
       {children}
-    </View>
+    </AppShell>
   );
 }
 

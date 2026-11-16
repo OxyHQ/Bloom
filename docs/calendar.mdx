@@ -111,7 +111,7 @@ The event and swatch hues are hardcoded (Tailwind blue, pink, purple, lime, emer
 - **Web:** the inbox panel anchors below its button, aligned to its end, 8px away; the details panel anchors to the right of the DAY CARD (not the chip), 6px away, flipping left when it does not fit. Both are `Popover` surfaces — portaled, ranked by open order, dismissed by outside press and Escape; no `zIndex` of their own.
 - **Native:** both present in the bottom sheet every Bloom popover uses; the details panel becomes a bottom sheet on phones.
 - The details popover takes its anchor from the popover's own context (`popover/context`) rather than a `PopoverTrigger`: the anchor is whichever day card holds the pressed chip, and a trigger can only wrap one fixed element.
-- The switcher and the header are raised with `Z_INDEX.floating` — the switcher grows DOWN over the grid in document flow, which is local stacking, not an overlay.
+- `CalendarViewHeader` composes `PageHeader`: page commands occupy its actions and the month switcher its accessory. The switcher expands in document flow; the shared header owns chrome and stacking without an additional header wrapper.
 
 ## Design decisions
 

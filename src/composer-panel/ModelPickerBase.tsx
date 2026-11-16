@@ -2,14 +2,20 @@ import { ScrollArea } from '../layout/ScrollArea';
 import { useComposerButton } from './context';
 import { COMPOSER_BUTTON_LAYOUT } from './button-layout';
 import React, { type ComponentRef, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, ScrollView, TextInput, View, type TextInputKeyPressEvent } from 'react-native';
+import {
+  Pressable,
+  type ScrollView,
+  TextInput,
+  View,
+  type TextInputKeyPressEvent,
+} from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+import { SurfaceFade } from '../fill/SurfaceFade';
 
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
@@ -42,7 +48,6 @@ import { useComposerWebCss } from './web-hooks';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { useReducedTransparency } from '../theme/reduced-transparency';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /** CSS `ease`, the chevrons' 200ms turn. */
@@ -145,82 +150,6 @@ function ProviderMark({
       >
         {provider.name.slice(0, 1)}
       </Text>
-    </View>
-  );
-}
-
-/**
- * The soft top edge of a scrolled list: on web three backdrop blurs of growing
- * strength, each masked shorter than the last, under a wash of the panel colour
- * (surface → surface/70 → transparent). Native has no backdrop filter, so only
- * the wash draws — as an SVG gradient whose alpha lives in `stopOpacity`, never
- * in the stop colour (react-native-svg drops a colour's own alpha). Fades in
- * over 200ms once the list has scrolled.
- */
-function ScrollFade({ visible, palette }: { visible: boolean; palette: ComposerPalette }) {
-  // Reduced transparency: the wash alone, as native draws it, with nothing blurred.
-  const reduced = useReducedTransparency();
-  const base: WebCssStyle = {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 32,
-    zIndex: 10,
-    opacity: visible ? 1 : 0,
-    ...(IS_WEB
-      ? {
-          transitionProperty: 'opacity',
-          transitionDuration: '200ms',
-          transitionTimingFunction: 'cubic-bezier(0, 0, 0.2, 1)',
-        }
-      : null),
-  };
-  if (IS_WEB) {
-    const layer = (blur: number, mask: string): WebCssStyle => ({
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backdropFilter: `blur(${blur}px)`,
-      WebkitBackdropFilter: `blur(${blur}px)`,
-      maskImage: `linear-gradient(to bottom, ${mask})`,
-      WebkitMaskImage: `linear-gradient(to bottom, ${mask})`,
-    });
-    const wash: WebCssStyle = {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundImage: `linear-gradient(to bottom, ${palette.surface} 0%, ${withAlpha(palette.surface, 0.7)} 50%, ${withAlpha(palette.surface, 0)} 100%)`,
-    };
-    return (
-      <View pointerEvents="none" style={base}>
-        {reduced ? null : (
-          <>
-            <View style={layer(1, 'black 0%, black 45%, transparent 100%')} />
-            <View style={layer(3, 'black 0%, black 25%, transparent 75%')} />
-            <View style={layer(8, 'black 0%, transparent 50%')} />
-          </>
-        )}
-        <View style={wash} />
-      </View>
-    );
-  }
-  return (
-    <View pointerEvents="none" style={base}>
-      <Svg width="100%" height="100%">
-        <Defs>
-          <LinearGradient id="bloom-composer-scroll-fade" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={palette.surface} stopOpacity={1} />
-            <Stop offset="0.5" stopColor={palette.surface} stopOpacity={0.7} />
-            <Stop offset="1" stopColor={palette.surface} stopOpacity={0} />
-          </LinearGradient>
-        </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill="url(#bloom-composer-scroll-fade)" />
-      </Svg>
     </View>
   );
 }
@@ -691,6 +620,7 @@ export function ModelPickerBase({
         side="top"
         sideOffset={8}
         modal
+        scroll="external"
         testID={testID ? `${testID}-panel` : undefined}
         style={panelStyle}
       >
@@ -706,9 +636,7 @@ export function ModelPickerBase({
             railOffset.current = event.nativeEvent.contentOffset.y;
           }}
           style={{
-            position: 'absolute',
-            top: 2,
-            left: 2,
+            margin: 2,
             height: RAIL_HEIGHT,
             width: 42,
             borderRadius: 17,
@@ -828,9 +756,23 @@ export function ModelPickerBase({
               flexDirection: 'column',
             }}
           >
-            <ScrollFade visible={scrolled} palette={palette} />
             <ScrollArea
               ref={listRef}
+              viewportOverlay={
+                <SurfaceFade
+                  edge="top"
+                  size={32}
+                  color={palette.surface}
+                  style={
+                    {
+                      opacity: scrolled ? 1 : 0,
+                      ...(IS_WEB && !reducedMotion
+                        ? { transitionProperty: 'opacity', transitionDuration: '200ms' }
+                        : null),
+                    } as WebCssStyle
+                  }
+                />
+              }
               {...dataHook('bloomComposerScroll')}
               accessibilityRole="radiogroup"
               accessibilityLabel={
@@ -838,7 +780,6 @@ export function ModelPickerBase({
                   ? messages.matchingModels
                   : messages.providerModels(activeProvider?.name ?? '')
               }
-              showsVerticalScrollIndicator={false}
               scrollEventThrottle={16}
               onScroll={(event) => setScrolled(event.nativeEvent.contentOffset.y > 0)}
               style={{ flex: 1, minHeight: 0 }}

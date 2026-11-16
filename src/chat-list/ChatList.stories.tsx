@@ -6,7 +6,9 @@ import { UnreadBadge } from '../chat-indicators';
 import type { ListConversationData, ListCommonProps } from '../list/types';
 import type React from 'react';
 import { useMemo, useState } from 'react';
-import { ScrollView, View, useWindowDimensions } from 'react-native';
+import { View } from 'react-native';
+import { AppShell } from '../app-shell';
+import { Screen, ScreenScrollView } from '../screen';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RiArchiveLine } from '../icons/remix/RiArchiveLine';
@@ -313,8 +315,7 @@ const ARCHIVED = {
   onPress: fn().mockName('onPress'),
 };
 
-function ConversationsScreen({ width = 760 }: { width?: number }) {
-  const theme = useTheme();
+function ConversationsScreen() {
   const [folder, setFolder] = useState('all');
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<string | undefined>(undefined);
@@ -335,98 +336,98 @@ function ConversationsScreen({ width = 760 }: { width?: number }) {
   );
 
   return (
-    <View
-      style={{
-        width: '100%',
-        maxWidth: width,
-        height: 760,
-        backgroundColor: theme.colors.background,
-      }}
-    >
-      <PageHeader
-        title={archived ? 'Archived chats' : 'Chats'}
-        onBack={archived ? () => setArchived(false) : null}
-        safeArea={false}
-        sticky={false}
-      />
-      {status ? <Text>{status}</Text> : null}
-      <ScrollView>
-        <List
-          items={[
-            ...(archived
-              ? ARCHIVED_NAMES.map((name) => ({
-                  id: name,
-                  conversation: { name, preview: { text: 'Archived conversation' } },
-                  onPress: () => setStatus(`Opened ${name}`),
-                }))
-              : [{ ...ARCHIVED, onPress: () => setArchived(true) }]),
-            ...(archived ? [] : visible).map((chat) => ({
-              ...conversationItem(chat),
-              id: chat.id,
-              active: chat.id === selected,
-              checked: checked.includes(chat.id),
-              selecting: checked.length > 0,
-              onPress: () => setSelected(chat.id),
-              onCheckedChange: (next: boolean) =>
-                setChecked((ids) =>
-                  next
-                    ? [...ids.filter((id) => id !== chat.id), chat.id]
-                    : ids.filter((id) => id !== chat.id),
-                ),
-            })),
-          ]}
-          header={
-            <View>
-              <View style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 12 }}>
-                <ChatSearchField
-                  value={query}
-                  onChangeText={setQuery}
-                  onClear={() => setQuery('')}
+    <AppShell header={null} scroll="fixed" contentMaxWidth="none">
+      <Screen
+        header={
+          <PageHeader
+            title={archived ? 'Archived chats' : 'Chats'}
+            onBack={archived ? () => setArchived(false) : null}
+            safeArea={false}
+          />
+        }
+        primaryAction={
+          <NewChatButton
+            onPress={() => {
+              const id = `new-${Date.now()}`;
+              setChats((items) => [
+                { id, name: 'New conversation', preview: { text: 'Start writing' } },
+                ...items,
+              ]);
+              setQuery('');
+              setFolder('all');
+              setArchived(false);
+              setSelected(id);
+            }}
+          />
+        }
+      >
+        <ScreenScrollView>
+          {status ? <Text>{status}</Text> : null}
+          <List
+            items={[
+              ...(archived
+                ? ARCHIVED_NAMES.map((name) => ({
+                    id: name,
+                    conversation: { name, preview: { text: 'Archived conversation' } },
+                    onPress: () => setStatus(`Opened ${name}`),
+                  }))
+                : [{ ...ARCHIVED, onPress: () => setArchived(true) }]),
+              ...(archived ? [] : visible).map((chat) => ({
+                ...conversationItem(chat),
+                id: chat.id,
+                active: chat.id === selected,
+                checked: checked.includes(chat.id),
+                selecting: checked.length > 0,
+                onPress: () => setSelected(chat.id),
+                onCheckedChange: (next: boolean) =>
+                  setChecked((ids) =>
+                    next
+                      ? [...ids.filter((id) => id !== chat.id), chat.id]
+                      : ids.filter((id) => id !== chat.id),
+                  ),
+              })),
+            ]}
+            header={
+              <View>
+                <View style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 12 }}>
+                  <ChatSearchField
+                    value={query}
+                    onChangeText={setQuery}
+                    onClear={() => setQuery('')}
+                  />
+                </View>
+                <StoriesRow
+                  stories={STORIES}
+                  own={{ avatar: face('you') }}
+                  onStoryPress={(id) =>
+                    setStatus(`Viewing ${STORIES.find((story) => story.id === id)?.name}’s story`)
+                  }
+                  onOwnPress={() => setStatus('Your story is ready to create')}
+                />
+                <ChatFolderTabs
+                  folders={FOLDERS}
+                  value={folder}
+                  onValueChange={setFolder}
+                  accessibilityLabel="Chat folders"
                 />
               </View>
-              <StoriesRow
-                stories={STORIES}
-                own={{ avatar: face('you') }}
-                onStoryPress={(id) =>
-                  setStatus(`Viewing ${STORIES.find((story) => story.id === id)?.name}’s story`)
-                }
-                onOwnPress={() => setStatus('Your story is ready to create')}
-              />
-              <ChatFolderTabs
-                folders={FOLDERS}
-                value={folder}
-                onValueChange={setFolder}
-                accessibilityLabel="Chat folders"
-              />
-            </View>
-          }
-          footer={<View style={{ height: 88 }} />}
-        />
-      </ScrollView>
-      <NewChatButton
-        onPress={() => {
-          const id = `new-${Date.now()}`;
-          setChats((items) => [
-            { id, name: 'New conversation', preview: { text: 'Start writing' } },
-            ...items,
-          ]);
-          setQuery('');
-          setFolder('all');
-          setArchived(false);
-          setSelected(id);
-        }}
-      />
-    </View>
+            }
+          />
+        </ScreenScrollView>
+      </Screen>
+    </AppShell>
   );
 }
 
 /** The conversations screen using the shared list and Storybook theme. */
 export const ConversationsPhone: Story = {
+  parameters: { layout: 'fullscreen' },
   render: () => <ConversationsScreen />,
 };
 
 /** The same list as a 360px desktop pane beside the open conversation. */
 export const DesktopPane: Story = {
+  parameters: { layout: 'fullscreen' },
   render: function DesktopPaneStory() {
     const [selected, setSelected] = useState<string | undefined>('ines');
     return <PaneAndDetail selected={selected} onSelect={setSelected} />;
@@ -440,64 +441,93 @@ function PaneAndDetail({
   selected?: string;
   onSelect: (id: string) => void;
 }) {
-  const theme = useTheme();
-  const compact = useWindowDimensions().width < 640;
   const [query, setQuery] = useState('');
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [archived, setArchived] = useState(false);
   const open = useMemo(() => [...PINNED, ...ALL].find((chat) => chat.id === selected), [selected]);
   return (
-    <View
-      style={{
-        flexDirection: compact ? 'column' : 'row',
-        width: '100%',
-        maxWidth: 760,
-        height: 620,
-        borderRadius: 20,
-        overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-        backgroundColor: theme.colors.background,
+    <AppShell
+      header={null}
+      scroll="fixed"
+      contentMaxWidth="none"
+      panelLayout={{
+        collapseBelow: 'sm',
+        activePanel: detailOpen ? 'conversation' : 'conversations',
+        panels: [
+          {
+            id: 'conversations',
+            width: 360,
+            minWidth: 280,
+            content: (
+              <Screen
+                header={
+                  <PageHeader
+                    title={archived ? 'Archived chats' : 'Chats'}
+                    onBack={archived ? () => setArchived(false) : null}
+                    accessory={
+                      <ChatSearchField
+                        value={query}
+                        onChangeText={setQuery}
+                        onClear={() => setQuery('')}
+                      />
+                    }
+                  />
+                }
+              >
+                <ScreenScrollView>
+                  <List
+                    items={
+                      archived
+                        ? ARCHIVED_NAMES.filter((name) =>
+                            name.toLowerCase().includes(query.toLowerCase()),
+                          ).map((name) => ({
+                            id: name,
+                            title: name,
+                            supporting: 'Archived conversation',
+                          }))
+                        : [
+                            { ...ARCHIVED, onPress: () => setArchived(true) },
+                            ...SECTIONS.flatMap((section) => section.chats)
+                              .filter((chat) =>
+                                chat.name.toLowerCase().includes(query.toLowerCase()),
+                              )
+                              .map((chat) => ({
+                                ...conversationItem(chat),
+                                id: chat.id,
+                                active: chat.id === selected,
+                                onPress: () => {
+                                  onSelect(chat.id);
+                                  setDetailOpen(true);
+                                },
+                              })),
+                          ]
+                    }
+                  />
+                </ScreenScrollView>
+              </Screen>
+            ),
+          },
+          {
+            id: 'conversation',
+            span: 1,
+            content: (
+              <Screen
+                header={
+                  <PageHeader
+                    title={open?.name ?? 'Conversation'}
+                    onBack={() => setDetailOpen(false)}
+                  />
+                }
+              >
+                <ScreenScrollView contentContainerStyle={{ padding: 24 }}>
+                  <Text>{open?.preview?.text ?? 'Pick a conversation'}</Text>
+                </ScreenScrollView>
+              </Screen>
+            ),
+          },
+        ],
       }}
-    >
-      <View
-        style={{
-          width: '100%',
-          maxWidth: compact ? undefined : 360,
-          flex: 1,
-          borderRightWidth: 1,
-          borderRightColor: theme.colors.border,
-        }}
-      >
-        <ScrollView>
-          <List
-            items={[
-              ARCHIVED,
-              ...SECTIONS.flatMap((section) => section.chats)
-                .filter((chat) => chat.name.toLowerCase().includes(query.toLowerCase()))
-                .map((chat) => ({
-                  ...conversationItem(chat),
-                  id: chat.id,
-                  active: chat.id === selected,
-                  onPress: () => onSelect(chat.id),
-                })),
-            ]}
-            header={
-              <View style={{ padding: 12 }}>
-                <ChatSearchField
-                  value={query}
-                  onChangeText={setQuery}
-                  onClear={() => setQuery('')}
-                />
-              </View>
-            }
-          />
-        </ScrollView>
-      </View>
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-        <Text variant="title-3-semibold" style={{ color: theme.colors.text }}>
-          {open?.name ?? 'Pick a conversation'}
-        </Text>
-      </View>
-    </View>
+    />
   );
 }
 

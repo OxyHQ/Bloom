@@ -4,6 +4,7 @@ import { Platform, View, useWindowDimensions, type ViewStyle } from 'react-nativ
 
 import { AppShell, AppShellPanel, useAppShell } from '../../src/app-shell';
 import { Screen, ScreenScrollView } from '../../src/screen';
+import { PageHeader } from '../../src/page-header';
 import { BottomBar } from '../../src/bottom-bar';
 import { useContainerWidth } from '../../src/hooks/use-container-width';
 import { Avatar } from '../../src/avatar';
@@ -21,7 +22,6 @@ import {
 import type { SidebarNavItem } from '../../src/sidebar';
 import { BREAKPOINTS } from '../../src/styles/breakpoints';
 import { WEB_POSITION_STICKY, type WebCssStyle } from '../../src/styles/web-view-style';
-import { Z_INDEX } from '../../src/styles/z-index';
 import { useTheme } from '../../src/theme/use-theme';
 
 import { TEMPLATE_FRAME } from '../shared/dashboard';
@@ -295,18 +295,12 @@ export function NavToggle() {
   return (
     <Button
       onPress={onPress}
-      size="lg"
+      size="md"
       tone="neutral"
       appearance="outline"
       leadingIcon={RiMenuLine}
       accessibilityLabel={drawer ? 'Navigation' : 'Collapse navigation'}
       aria-expanded={expanded}
-      style={{
-        gap: 10,
-        paddingLeft: 14,
-        paddingRight: 5,
-        borderRadius: 999,
-      }}
       testID="housing-nav-toggle"
     >
       <Avatar size="sm" source={PEOPLE.you.avatar} name={PEOPLE.you.name} />
@@ -358,7 +352,7 @@ export interface HousingHeaderProps {
  * From `lg`: the nav pill left, in the corner the mark used to hold, `tabs`
  * centred, "List your home" and the globe right, and `search` on a second row.
  * Below `lg`: the nav pill, `compact` in the middle, the page actions;
- * `compactBelow` under it. A hairline closes it.
+ * `compactBelow` under it. PageHeader owns spacing, actions and the surface edge.
  */
 export function HousingHeader({
   tabs,
@@ -367,7 +361,6 @@ export function HousingHeader({
   compactBelow,
   maxWidth = 1280,
 }: HousingHeaderProps) {
-  const theme = useTheme();
   const windowLayout = useHousingLayout();
   const measured = useContainerWidth();
   const width = measured.width ?? windowLayout.width;
@@ -375,53 +368,25 @@ export function HousingHeader({
   const lg = width >= BREAKPOINTS.lg;
 
   return (
-    // Above the content that follows (a sticky category row), so an open
-    // search panel paints over it.
-    <View
-      style={{ zIndex: Z_INDEX.dropdown, backgroundColor: theme.colors.background }}
-      testID="housing-header"
-      onLayout={measured.onLayout}
-    >
-      {lg ? (
-        <PageColumn maxWidth={maxWidth} style={{ paddingBottom: search ? 20 : 0 }}>
-          <View
-            style={{
-              height: 80,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
-            <View style={{ flex: 1, alignItems: 'flex-start' }}>
-              <NavToggle />
-            </View>
-            {tabs ? <View>{tabs}</View> : null}
-            <View style={{ flex: 1, alignItems: 'flex-end' }}>
-              <HeaderActions />
-            </View>
-          </View>
-          {search ? <View style={{ alignItems: 'center' }}>{search}</View> : null}
-        </PageColumn>
-      ) : (
-        <PageColumn maxWidth={maxWidth} style={{ paddingTop: 12, paddingBottom: 12, gap: 12 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            {compact ? (
-              <>
-                <NavToggle />
-                <View style={{ flex: 1 }}>{compact}</View>
-              </>
-            ) : (
-              <>
-                <NavToggle />
-                <View style={{ flex: 1 }} />
-                <HeaderActions listHome={md} />
-              </>
-            )}
-          </View>
-          {compactBelow}
-        </PageColumn>
-      )}
-      <Hairline />
+    <View onLayout={measured.onLayout} style={{ width: '100%', maxWidth, alignSelf: 'center' }}>
+      <PageHeader
+        testID="housing-header"
+        onBack={null}
+        safeArea={false}
+        leading={<NavToggle />}
+        title={lg ? tabs : compact}
+        titleAlign={lg ? 'center' : 'start'}
+        actions={lg || !compact ? <HeaderActions listHome={md} /> : undefined}
+        accessory={
+          lg ? (
+            search ? (
+              <View style={{ alignItems: 'center' }}>{search}</View>
+            ) : undefined
+          ) : (
+            compactBelow
+          )
+        }
+      />
     </View>
   );
 }
