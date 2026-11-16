@@ -96,7 +96,7 @@ export {
   resolvePanelComposition,
   explainAppShellComposition,
 } from './composition';
-export { useAppShellComposition } from './composition-context';
+export { useAppShellComposition } from './context';
 export type {
   AppShellLayout,
   AppShellPresentation,

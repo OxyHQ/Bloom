@@ -23,7 +23,7 @@ export function ScreenContent({ kind, width = 'readable', style, ...props }: Scr
   const scope = `bloom-body-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
   const web = Platform.OS === 'web';
   const css = reading
-    ? `@container ${scope} (min-width:768px){[data-bloom-body="${scope}"]{padding-left:40px!important;padding-right:40px!important}}`
+    ? `@container ${scope} (min-width:768px){[data-bloom-body="${scope}"]{--bloom-body-inset:40px}}`
     : '';
   return (
     <View
@@ -36,12 +36,20 @@ export function ScreenContent({ kind, width = 'readable', style, ...props }: Scr
         } as WebCssStyle
       }
     >
-      {web ? <ServerStyleSheet id={scope} css={css} /> : null}
+      {web ? <ServerStyleSheet id={scope} css={css} owned /> : null}
       <StyledView
         {...props}
         {...(web ? { dataSet: { bloomBody: scope } } : {})}
         style={[
-          screenContentStyle(resolvedKind, width === 'full', !web && available.width >= 768),
+          {
+            ...screenContentStyle(resolvedKind, width === 'full', !web && available.width >= 768),
+            ...(web && reading
+              ? {
+                  paddingLeft: 'var(--bloom-body-inset, 24px)',
+                  paddingRight: 'var(--bloom-body-inset, 24px)',
+                }
+              : {}),
+          } as WebCssStyle,
           style,
         ]}
       />

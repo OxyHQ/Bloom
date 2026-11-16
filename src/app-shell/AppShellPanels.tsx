@@ -1,4 +1,4 @@
-import { useAppShellComposition, AppShellCompositionContext } from './composition-context';
+import { useAppShellComposition, AppShellCompositionContext } from './context';
 import { resolvePanelComposition } from './composition';
 import type { ScrollAreaProps } from '../layout/types';
 /**
@@ -286,11 +286,7 @@ export function createAppShellPanels(
           : presentation === 'continuous'
             ? { ...inheritedRegion, framed: false, presentation }
             : inheritedRegion,
-      [local, inheritedRegion, parentFill, presentation],
-    );
-    const boundedRegion = useMemo<AppShellRegionValue>(
-      () => ({ ...region, flow: 'bounded' }),
-      [region],
+      [local, inheritedRegion, parentFill, presentation, family],
     );
     const scope = panelCssScope(useId());
     const { messages } = useMessages(APP_SHELL_MESSAGES);
@@ -324,22 +320,28 @@ export function createAppShellPanels(
         onWidthsChange,
         spans,
         onSpansChange,
-        flow: 'bounded',
-        horizontalScroll: 'contained',
+        flow: local || !family ? 'bounded' : undefined,
+        horizontalScroll: local || !family ? 'contained' : undefined,
         gap,
         ...layout,
       },
       composition,
     );
+    const flow = Platform.OS === 'web' && panelLayout.flow === 'document' ? 'document' : 'bounded';
+    const boundedRegion = useMemo<AppShellRegionValue>(() => ({ ...region, flow }), [region, flow]);
     // The frame's width decides only the axis, at the layout's breakpoints.
     const { width, onLayout } = useMeasuredSizeClass(panelLayoutWidthThresholds(panelLayout));
     const box =
-      region.flow === 'document'
-        ? {
-            height: webViewportHeightMinus(region.viewportInset.top + region.viewportInset.bottom),
-            flexShrink: 0,
-          }
-        : GROW;
+      flow === 'document'
+        ? { minWidth: 0 }
+        : region.flow === 'document'
+          ? {
+              height: webViewportHeightMinus(
+                region.viewportInset.top + region.viewportInset.bottom,
+              ),
+              flexShrink: 0,
+            }
+          : GROW;
     return (
       <View
         testID={testID ? `${testID}-frame` : undefined}

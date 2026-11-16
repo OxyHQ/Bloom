@@ -1451,6 +1451,7 @@
       "src/row-actions/RowActions.tsx#RowActions",
       "src/screen/Screen.tsx#Screen",
       "src/screen/ScreenActivity.tsx#ScreenActivity",
+      "src/screen/ScreenContent.tsx#ScreenContent",
       "src/screen/ScreenPager.tsx#ScreenPager",
       "src/screen/ScreenScrollView.tsx#ScreenScrollView",
       "src/screen/reselect.tsx#ScreenReselectScope",

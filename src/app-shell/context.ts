@@ -1,3 +1,4 @@
+import type { AppShellComposition } from './composition';
 /**
  * What `AppShell` tells the page inside it about its navigation drawer, so a
  * page without a `title` — or with its own `header` — can still open it.
@@ -156,3 +157,7 @@ export function usePanelScrollContainer<T = unknown>(): RefObject<T | null> | nu
  */
 export const ShellColorClaimContext = createContext<ColorClaim | null>(null);
 ShellColorClaimContext.displayName = 'BloomShellColorClaimContext';
+
+/** Semantic defaults are scoped to a shell or an intentionally local group. */
+export const AppShellCompositionContext = createContext<AppShellComposition>({});
+export const useAppShellComposition = () => useContext(AppShellCompositionContext);
