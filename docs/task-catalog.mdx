@@ -8,7 +8,7 @@ order: 1
 
 # Choose an API by task
 
-This guide belongs to **@oxy.so/bloom 22.0.1**. Read it from the installed package alongside [the structured index](./task-catalog.json). A source build version is not a registry-publication receipt. Use the containing package’s manifest for exact peer ranges.
+This guide belongs to **@oxy.so/bloom 22.1.0**. Read it from the installed package alongside [the structured index](./task-catalog.json). A source build version is not a registry-publication receipt. Use the containing package’s manifest for exact peer ranges.
 
 Start under the application’s BloomProvider and follow [getting started](./getting-started.mdx) for CSS, fonts and platform setup. These examples accept domain content/actions and require a bounded host. They do not add a provider per route. For document scrolling, follow [the host contract](./compose-layouts.mdx); Expo’s bounded reset must not silently prevent document overflow.
 
@@ -39,7 +39,7 @@ import { Screen, ScreenScrollView } from '@oxy.so/bloom/screen';
 
 Runnable component: [workspace.tsx](./examples/workspace.tsx). Story: `blocks-app-shell--continuous-workspace` (`ContinuousWorkspace`).
 
-Canonical guides: [compose-layouts](./compose-layouts.mdx), [app-shell](./app-shell.mdx), [screen](./screen.mdx), [page-header](./page-header.mdx).
+Canonical guides: [semantic-composition](./semantic-composition.mdx), [compose-layouts](./compose-layouts.mdx), [app-shell](./app-shell.mdx), [screen](./screen.mdx), [page-header](./page-header.mdx).
 
 - **state:** Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.
 - **scroll:** AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.
@@ -72,7 +72,7 @@ import { Screen } from '@oxy.so/bloom/screen';
 
 Runnable component: [canvas.tsx](./examples/canvas.tsx). Story: `blocks-app-shell--modular-map` (`ModularMap`).
 
-Canonical guides: [compose-layouts](./compose-layouts.mdx), [screen](./screen.mdx), [map-controls](./map-controls.mdx).
+Canonical guides: [semantic-composition](./semantic-composition.mdx), [compose-layouts](./compose-layouts.mdx), [screen](./screen.mdx), [map-controls](./map-controls.mdx).
 
 - **state:** Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.
 - **scroll:** Screen scroll=none reserves the viewport; the domain canvas owns its gestures. MapControls supplies callback-driven controls, not a scroller or map engine.
@@ -131,7 +131,7 @@ import { Screen, ScreenScrollView } from '@oxy.so/bloom/screen';
 
 Runnable component: [master-detail.tsx](./examples/master-detail.tsx). Story: `blocks-app-shell--modular-inbox` (`ModularInbox`).
 
-Canonical guides: [compose-layouts](./compose-layouts.mdx), [app-shell](./app-shell.mdx), [screen](./screen.mdx).
+Canonical guides: [semantic-composition](./semantic-composition.mdx), [compose-layouts](./compose-layouts.mdx), [app-shell](./app-shell.mdx), [screen](./screen.mdx).
 
 - **state:** Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.
 - **scroll:** AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.
@@ -162,7 +162,7 @@ import { Screen, ScreenScrollView } from '@oxy.so/bloom/screen';
 
 Runnable component: [discovery.tsx](./examples/discovery.tsx). Story: `blocks-app-shell--modular-expanding-feed` (`ModularExpandingFeed`).
 
-Canonical guides: [compose-layouts](./compose-layouts.mdx), [screen](./screen.mdx), [list](./list.mdx), [page-header](./page-header.mdx).
+Canonical guides: [semantic-composition](./semantic-composition.mdx), [compose-layouts](./compose-layouts.mdx), [screen](./screen.mdx), [list](./list.mdx), [page-header](./page-header.mdx).
 
 - **state:** Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.
 - **scroll:** AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.
@@ -194,7 +194,7 @@ import { Screen, ScreenScrollView } from '@oxy.so/bloom/screen';
 
 Runnable component: [dashboard.tsx](./examples/dashboard.tsx). Story: `templates-home-dashboard--default` (`Default`).
 
-Canonical guides: [compose-layouts](./compose-layouts.mdx), [grid](./grid.mdx), [chart-cards](./chart-cards.mdx), [page-header](./page-header.mdx).
+Canonical guides: [semantic-composition](./semantic-composition.mdx), [compose-layouts](./compose-layouts.mdx), [grid](./grid.mdx), [chart-cards](./chart-cards.mdx), [page-header](./page-header.mdx).
 
 - **state:** Application owns data, navigation, permissions and persistence. Stable panel IDs preserve UI identity.
 - **scroll:** AppShell bounds the viewport; each Screen owns its region. ScreenScrollView binds to that owner.

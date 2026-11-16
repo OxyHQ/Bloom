@@ -1,4 +1,5 @@
-import { Platform, View } from 'react-native';
+import { createRef, type Ref, type ComponentRef } from 'react';
+import { Keyboard, Platform, View, type ScrollView } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { Screen, ScreenScrollView } from '../screen';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -8,12 +9,19 @@ import {
   KeyboardStickyView,
 } from '../../__mocks__/react-native-keyboard-controller';
 
+jest.mock('react-native-keyboard-controller', () => ({
+  ...jest.requireActual('../../__mocks__/react-native-keyboard-controller'),
+  // Deliberately distinct from React Native's test window: use the same
+  // coordinate space as the controller that performs focused-input scrolling.
+  useWindowDimensions: () => ({ width: 400, height: 900 }),
+}));
+
 const originalOS = Platform.OS;
 afterEach(() => {
   Platform.OS = originalOS;
 });
 
-function fixture(active = true) {
+function fixture(active = true, scrollRef?: Ref<ComponentRef<typeof ScrollView>>) {
   return (
     <BloomThemeProvider fonts={false}>
       <Screen
@@ -25,7 +33,7 @@ function fixture(active = true) {
         bottomBarKeyboardBehavior="follow"
         contentClearance={48}
       >
-        <ScreenScrollView testID="body" keyboardShouldPersistTaps="handled" />
+        <ScreenScrollView ref={scrollRef} testID="body" keyboardShouldPersistTaps="handled" />
       </Screen>
     </BloomThemeProvider>
   );
@@ -69,6 +77,57 @@ it.each(['ios', 'android'] as const)(
     expect(tree.UNSAFE_getByType(KeyboardStickyView).props.enabled).toBe(false);
   },
 );
+
+it.each([
+  ['window-filling', 0, 900, 72],
+  ['inset dialog', 32, 812, 128],
+  ['nested panel', 260, 500, 212],
+] as const)('keeps the %s viewport and footer clearances distinct', (_name, y, height, offset) => {
+  Platform.OS = 'android';
+  const scrollTo = jest.fn();
+  let measuredY: number = y;
+  let measuredHeight: number = height;
+  const native = {
+    measureInWindow: jest.fn((callback) => callback(0, measuredY, 400, measuredHeight)),
+  };
+  const assureFocusedInputVisible = jest.fn();
+  const handle = { getNativeScrollRef: () => native, scrollTo, assureFocusedInputVisible };
+  const forwarded = createRef<ComponentRef<typeof ScrollView>>();
+  const tree = render(fixture(true, forwarded), {
+    createNodeMock: (element) => (element.type === 'KeyboardAwareScrollView' ? handle : null),
+  });
+  fireEvent(tree.getByTestId('editor-bottom'), 'layout', {
+    nativeEvent: { layout: { height: 72 } },
+  });
+  const scroll = tree.UNSAFE_getByType(KeyboardAwareScrollView);
+  expect(scroll.props.bottomOffset).toBe(offset);
+  expect(scroll.props.extraKeyboardSpace).toBe(offset);
+  // Follow owns an overlaid footer: it reserves content, not viewport height.
+  expect(resolvedStyle(tree.getByTestId('editor-content').props.style).paddingBottom).toBe(0);
+  expect(forwarded.current).toBe(handle);
+  forwarded.current?.scrollTo({ y: 30, animated: false });
+  expect(scrollTo).toHaveBeenCalledWith({ y: 30, animated: false });
+
+  // The controller owns both IME-show reveal and bottomOffset synchronization.
+  // Bloom must pass the measured clearance without requesting a second scroll.
+  const subscriptions = (Keyboard.addListener as jest.Mock).mock.calls;
+  act(() => {
+    for (const [event, listener] of subscriptions) {
+      if (event === 'keyboardDidShow') {
+        listener({ endCoordinates: { height: 320, screenY: 580 } });
+      }
+    }
+  });
+
+  // An ancestor can move this viewport without changing its own local layout.
+  measuredY = 80;
+  measuredHeight = 700;
+  fireEvent(scroll, 'touchStart', { nativeEvent: {} });
+  expect(scroll.props.bottomOffset).toBe(192);
+  expect(scroll.props.extraKeyboardSpace).toBe(192);
+  expect(resolvedStyle(scroll.props.contentContainerStyle).paddingBottom).toBe(120);
+  expect(assureFocusedInputVisible).not.toHaveBeenCalled();
+});
 
 it('does not mount native keyboard surfaces on web', () => {
   Platform.OS = 'web';

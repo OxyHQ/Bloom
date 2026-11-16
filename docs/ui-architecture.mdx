@@ -50,10 +50,12 @@ slots, with the application supplying steps and actions.
 Use `BloomProvider`, `AppShell`, panels, `Screen` and their documented slots for
 application framing, navigation, headers, content, side panels and bottom
 chrome. Use explicit local composition scopes for an embedded region, not a
-second application layout. Preserve the compositor's normal frame and spacing
-when adapting a visual reference. Removing its gutters or navigation spacing
-requires an explicit product decision; visual similarity alone is not a reason
-to flatten the established Bloom frame.
+second application layout. Declare `layout` and `presentation` separately. A
+continuous workspace intentionally removes the outer frame; a framed catalog
+retains it. Body reading measure is a Screen concern, not an outer shell gutter.
+Use the shared semantic contract instead of consumer geometry overrides. See
+[Semantic application composition](/docs/semantic-composition) for resolution,
+registered state continuity and migration acceptance criteria.
 
 Components coordinate through the existing contracts: inherited presentation,
 field membership, surface backing, screen scope, edge claims, scroll ownership,

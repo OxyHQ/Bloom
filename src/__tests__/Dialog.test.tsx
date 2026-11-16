@@ -1,3 +1,4 @@
+import { PortalProvider, PortalOutlet } from '../portal';
 import React from 'react';
 import { Modal, Text } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
@@ -10,7 +11,10 @@ import { mockWindowSize } from './support/window-size';
 function renderWithTheme(ui: React.ReactElement) {
   return render(
     <BloomThemeProvider mode="light" colorPreset="teal">
-      {ui}
+      <PortalProvider>
+        {ui}
+        <PortalOutlet />
+      </PortalProvider>
     </BloomThemeProvider>,
   );
 }

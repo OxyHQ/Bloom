@@ -1,3 +1,4 @@
+import type { AppShellComposition } from './composition';
 import type { ScrollRestorationPersistence } from '../scroll/types';
 import type { ReactNode, Ref } from 'react';
 import type { Breakpoint } from '../styles/breakpoints';
@@ -96,7 +97,7 @@ export interface AppShellPanelViewport {
   scrollBy(offset: { x?: number; y?: number }): void;
   reveal(id: string): void;
 }
-export interface AppShellPanelLayout {
+export interface AppShellPanelLayout extends AppShellComposition {
   panels: readonly AppShellPanelDefinition[];
   /** Chrome spanning the complete workspace. The group's Screen reserves it once.
    * In joined layouts it shares the group's one Surface. Use null to temporarily

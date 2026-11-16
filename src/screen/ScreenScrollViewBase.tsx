@@ -14,6 +14,7 @@ import {
   Platform,
   StyleSheet,
   View,
+  useWindowDimensions,
   type LayoutChangeEvent,
   type StyleProp,
   type ViewStyle,
@@ -37,6 +38,7 @@ import { useScreenWindowScroll } from './use-screen-window-scroll';
 import type { ScreenScrollViewProps } from './types';
 import type { RefComponent } from '../styles/native-refs';
 import type { ScreenKeyboardComponents } from './keyboard-components';
+import { useKeyboardMetrics } from '../hooks/use-keyboard-metrics';
 
 export function createScreenScrollView(
   ScrollBar: React.ComponentType<ScrollBarProps>,
@@ -181,7 +183,7 @@ export function createScreenScrollView(
         ];
     const ScrollContainer =
       screen.keyboardFollow && getKeyboardComponents
-        ? getKeyboardComponents().KeyboardAwareScrollView
+        ? KeyboardFollowScrollView
         : Animated.ScrollView;
     const content = (
       <ScrollContainer
@@ -236,6 +238,83 @@ export function createScreenScrollView(
   }
 
   type ScrollViewRef = ComponentRef<typeof ScrollView>;
+
+  type KeyboardScrollProps = React.ComponentProps<
+    ScreenKeyboardComponents['KeyboardAwareScrollView']
+  >;
+
+  // The controller reveals an input relative to the WINDOW. A Screen can end
+  // above that window edge (system bars, a framed dialog, or another panel).
+  // Translate only that measured distance; footer height remains its own slot.
+  const KeyboardFollowScrollView = forwardRef<ScrollViewRef, KeyboardScrollProps>(
+    function KeyboardFollowScrollView(
+      {
+        enabled = true,
+        bottomOffset = 0,
+        extraKeyboardSpace = 0,
+        onLayout,
+        onTouchStart,
+        ...props
+      },
+      forwardedRef,
+    ) {
+      const integration = getKeyboardComponents?.();
+      if (!integration) throw new Error('Native keyboard integration is required for follow');
+      const useControllerDimensions = integration.useWindowDimensions ?? useWindowDimensions;
+      const { height: windowHeight } = useControllerDimensions();
+      const keyboard = useKeyboardMetrics({ enabled });
+      const target = useRef<ScrollViewRef | null>(null);
+      const measureRevision = useRef(0);
+      const [bottomDistance, setBottomDistance] = useState(0);
+      const measureViewport = useCallback(() => {
+        const node = target.current;
+        if (!enabled || !node) return;
+        const revision = ++measureRevision.current;
+        const native = node.getNativeScrollRef?.() ?? node;
+        native?.measureInWindow?.((_x: number, y: number, _width: number, height: number) => {
+          if (target.current !== node || measureRevision.current !== revision || height <= 0)
+            return;
+          const distance = Math.max(0, windowHeight - y - height);
+          if (Number.isFinite(distance)) setBottomDistance(distance);
+        });
+      }, [enabled, windowHeight]);
+      // biome-ignore lint/correctness/useExhaustiveDependencies: Keyboard changes require a fresh native window measurement.
+      useEffect(() => {
+        measureViewport();
+        return () => {
+          measureRevision.current++;
+        };
+      }, [measureViewport, keyboard.visible, keyboard.height]);
+      // The controller already reveals on IME changes and bottomOffset updates.
+      // A second imperative reveal races its native focus/scroll measurements.
+      const setRef = useCallback(
+        (node: ScrollViewRef | null) => {
+          target.current = node;
+          if (typeof forwardedRef === 'function') forwardedRef(node);
+          else if (forwardedRef) forwardedRef.current = node;
+        },
+        [forwardedRef],
+      );
+      const KeyboardAwareScrollView = integration.KeyboardAwareScrollView;
+      return (
+        <KeyboardAwareScrollView
+          {...props}
+          ref={setRef}
+          enabled={enabled}
+          bottomOffset={bottomOffset + bottomDistance}
+          extraKeyboardSpace={extraKeyboardSpace + bottomDistance}
+          onLayout={(event) => {
+            measureViewport();
+            onLayout?.(event);
+          }}
+          onTouchStart={(event) => {
+            measureViewport();
+            onTouchStart?.(event);
+          }}
+        />
+      );
+    },
+  );
 
   /**
    * `ScrollView`'s imperative surface, answered by the window. The two node

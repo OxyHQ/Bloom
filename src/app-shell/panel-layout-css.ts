@@ -120,8 +120,12 @@ ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
     );
     const envelope = deck ? '100%' : `${panelEnvelope(layout, lower, gap)}px`;
     let rules = `${root} [data-bloom-reading-envelope="${scope}"]{--bloom-reading-envelope:${envelope}}\n${row}{flex-direction:${vertical ? 'column' : 'row'}!important;--bloom-panel-axis:${axis}}\n`;
+    // The same CSS owner that positions tracks also paints their joined seam.
+    // CSS_TRACK deliberately contains no measured geometry; React must not gate
+    // this decoration on its placeholder gap, which stays zero on the web.
+    rules += `${group} [data-bloom-panel-owner="${scope}"] > [data-bloom-panel-separator="${scope}"]{inset-block-start:${vertical ? 'calc(-1 * var(--bloom-panel-gap, 0px))' : '0'};inset-block-end:${vertical ? 'auto' : '0'};inset-inline-start:${vertical ? '0' : 'calc(-1 * var(--bloom-panel-gap, 0px))'};inset-inline-end:${vertical ? '0' : 'auto'};inline-size:${vertical ? 'auto' : 'var(--bloom-panel-gap, 0px)'};block-size:${vertical ? 'var(--bloom-panel-gap, 0px)' : 'auto'}}\n`;
     const hidden = (index: number) =>
-      `${item(index)}{--bloom-panel-visible:0;--bloom-panel-fade-delay:0ms;scale:${ordered ? 0.98 : 1};flex:0 0 0px!important;display:none!important;width:${vertical ? '100%' : '0px'}!important;height:auto!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;--bloom-surface-presence:0;margin:0!important;contain:size;overflow:hidden!important;pointer-events:none!important}\n${item(index)} [data-bloom-panel-owner]{--bloom-surface-presence:0!important;--bloom-surface-presence-ms:${fadeMs}ms!important;--bloom-panel-fade-delay:0ms!important}\n${item(index)}:not(:has(${PANEL_MATERIAL})){opacity:0!important}\n`;
+      `${item(index)}{--bloom-panel-visible:0;--bloom-panel-gap:0px;--bloom-panel-fade-delay:0ms;scale:${ordered ? 0.98 : 1};flex:0 0 0px!important;display:none!important;width:${vertical ? '100%' : '0px'}!important;height:auto!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;--bloom-surface-presence:0;margin:0!important;contain:size;overflow:hidden!important;pointer-events:none!important}\n${item(index)} [data-bloom-panel-owner]{--bloom-surface-presence:0!important;--bloom-surface-presence-ms:${fadeMs}ms!important;--bloom-panel-fade-delay:0ms!important}\n${item(index)}:not(:has(${PANEL_MATERIAL})){opacity:0!important}\n`;
     for (let index = 0; index < layout.panels.length; index++) {
       const p = layout.panels[index]!;
       rules += `${item(index)}{--bloom-panel-floating:${p.floating && lower < breakpointPx(p.floating.below) ? 1 : 0}}\n`;
@@ -164,7 +168,7 @@ ${group}[data-bloom-panel-resizing="vertical"]{cursor:row-resize}
                 : flexible && dim !== undefined
                   ? 0
                   : (p.span ?? 1);
-      rules += `${item(index)}{--bloom-panel-alone-display:${shown.length === 1 ? 'flex' : 'none'};--bloom-panel-multiple-display:${shown.length === 1 ? 'none' : 'flex'};--bloom-panel-visible:1;--bloom-surface-presence:1;--bloom-panel-fade-delay:${ordered ? 530 : 0}ms;scale:1;display:flex!important;flex:var(${panelGrowProperty(scope, index)}, ${grow}) ${deck || natural ? 0 : 1} ${liveSize(index, basis)}!important;width:${vertical ? '100%' : pageDeck ? (forced ? 'calc(var(--bloom-deck-viewport) - var(--bloom-frame-end))' : liveSize(index, `${dim ?? DEFAULT_PANEL_WIDTH}px`)) : dim !== undefined && !forced ? `${dim}px` : 'auto'}!important;height:auto!important;min-width:${vertical || forced ? 0 : (min ?? 0)}px!important;max-width:${vertical || forced ? '100%' : max === undefined ? (deck ? 'none' : '100%') : `${max}px`}!important;min-height:${vertical && !forced ? (min ?? 0) : 0}px!important;max-height:${vertical && !forced && max !== undefined ? `${max}px` : 'none'}!important;opacity:1!important;margin-inline-start:${!vertical && position > 0 ? gap : 0}px!important;margin-top:${vertical && position > 0 ? gap : 0}px!important}\n`;
+      rules += `${item(index)}{--bloom-panel-alone-display:${shown.length === 1 ? 'flex' : 'none'};--bloom-panel-multiple-display:${shown.length === 1 ? 'none' : 'flex'};--bloom-panel-visible:1;--bloom-panel-gap:${position > 0 ? gap : 0}px;--bloom-surface-presence:1;--bloom-panel-fade-delay:${ordered ? 530 : 0}ms;scale:1;display:flex!important;flex:var(${panelGrowProperty(scope, index)}, ${grow}) ${deck || natural ? 0 : 1} ${liveSize(index, basis)}!important;width:${vertical ? '100%' : pageDeck ? (forced ? 'calc(var(--bloom-deck-viewport) - var(--bloom-frame-end))' : liveSize(index, `${dim ?? DEFAULT_PANEL_WIDTH}px`)) : dim !== undefined && !forced ? `${dim}px` : 'auto'}!important;height:auto!important;min-width:${vertical || forced ? 0 : (min ?? 0)}px!important;max-width:${vertical || forced ? '100%' : max === undefined ? (deck ? 'none' : '100%') : `${max}px`}!important;min-height:${vertical && !forced ? (min ?? 0) : 0}px!important;max-height:${vertical && !forced && max !== undefined ? `${max}px` : 'none'}!important;opacity:1!important;margin-inline-start:${!vertical && position > 0 ? gap : 0}px!important;margin-top:${vertical && position > 0 ? gap : 0}px!important}\n`;
       const entering = item(index).replace(
         group,
         `${group}[data-bloom-panel-ready]:not([data-bloom-panel-ordering])`,
@@ -225,7 +229,7 @@ ${row}{width:100%!important;min-width:0!important}
       layout.panels.forEach((p, index) => {
         rules +=
           p.id === active?.id
-            ? `${item(index)}{--bloom-panel-alone-display:flex;--bloom-panel-multiple-display:none;--bloom-panel-visible:1;display:flex!important;flex:1 1 0px!important;min-width:0!important;min-height:0!important;max-width:100%!important;max-height:none!important;margin:0!important;opacity:1!important;--bloom-surface-presence:1}`
+            ? `${item(index)}{--bloom-panel-alone-display:flex;--bloom-panel-multiple-display:none;--bloom-panel-visible:1;--bloom-panel-gap:0px;display:flex!important;flex:1 1 0px!important;min-width:0!important;min-height:0!important;max-width:100%!important;max-height:none!important;margin:0!important;opacity:1!important;--bloom-surface-presence:1}`
             : hidden(index) +
               (p.floating?.whenConstrained ? `${item(index)}{--bloom-panel-floating:1}` : '');
       });

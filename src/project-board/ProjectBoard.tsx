@@ -1,3 +1,4 @@
+import { DetailDialog } from '../dialog/DetailDialog';
 import * as Accordion from '../accordion';
 import { Screen, ScreenScrollView } from '../screen';
 import { Button } from '../button';
@@ -13,6 +14,7 @@ import { ProjectBoardPlatformContext } from './context';
 import type { ProjectBoardProps } from './types';
 
 const platform = {
+  DetailDialog,
   ...Accordion,
   Screen,
   AppShellPanels,

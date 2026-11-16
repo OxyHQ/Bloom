@@ -1,3 +1,4 @@
+import { PortalProvider, PortalOutlet } from '../portal';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { render } from '@testing-library/react-native';
@@ -9,19 +10,22 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 it('fills the native overlay instead of retaining side width or detached-sheet bounds', () => {
   const { getByTestId, getByText } = render(
     <BloomThemeProvider fonts={false}>
-      <Dialog
-        presentation="fullscreen"
-        open
-        placement="bottom"
-        scrollable={false}
-        contentPadding={0}
-        width={200}
-        inset={{ top: 24, bottom: 32 }}
-        testID="history"
-        label="Version history"
-      >
-        <Text>Version preview</Text>
-      </Dialog>
+      <PortalProvider>
+        <Dialog
+          presentation="fullscreen"
+          open
+          placement="bottom"
+          scrollable={false}
+          contentPadding={0}
+          width={200}
+          inset={{ top: 24, bottom: 32 }}
+          testID="history"
+          label="Version history"
+        >
+          <Text>Version preview</Text>
+        </Dialog>
+        <PortalOutlet />
+      </PortalProvider>
     </BloomThemeProvider>,
   );
   const panel = getByTestId('history');
@@ -36,22 +40,35 @@ it('fills the native overlay instead of retaining side width or detached-sheet b
 it.each([true, false])('delegates native scrolling only when requested: %s', (scrollable) => {
   const view = render(
     <BloomThemeProvider fonts={false}>
-      <Dialog presentation="fullscreen" open scrollable={scrollable} label="Version history">
-        <Text>Version preview</Text>
-      </Dialog>
+      <PortalProvider>
+        <Dialog presentation="fullscreen" open scrollable={scrollable} label="Version history">
+          <Text>Version preview</Text>
+        </Dialog>
+        <PortalOutlet />
+      </PortalProvider>
     </BloomThemeProvider>,
   );
   expect(view.UNSAFE_queryAllByType(ScrollArea)).toHaveLength(scrollable ? 1 : 0);
 });
 
 it('does not reserve a native View for an inactive dialog theme scope', () => {
-  const view = render(<BloomThemeProvider fonts={false}>{null}</BloomThemeProvider>);
+  const view = render(
+    <BloomThemeProvider fonts={false}>
+      <PortalProvider>
+        {null}
+        <PortalOutlet />
+      </PortalProvider>
+    </BloomThemeProvider>,
+  );
   const before = view.UNSAFE_getAllByType(View).length;
   view.rerender(
     <BloomThemeProvider fonts={false}>
-      <Dialog label="Closed">
-        <Text>Hidden</Text>
-      </Dialog>
+      <PortalProvider>
+        <Dialog label="Closed">
+          <Text>Hidden</Text>
+        </Dialog>
+        <PortalOutlet />
+      </PortalProvider>
     </BloomThemeProvider>,
   );
   expect(view.UNSAFE_getAllByType(View)).toHaveLength(before);

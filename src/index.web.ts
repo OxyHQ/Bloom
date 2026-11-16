@@ -190,12 +190,18 @@ export {
 } from './overlay';
 export type { OverlayRootProps, BackdropProps, OverlayLayer } from './overlay';
 export {
+  DetailDialog,
+  DetailDialogSection,
+  DetailDialogSectionGroup,
   Dialog,
   useDialogContext,
   useDialogControl,
   useDialogHeader,
 } from './dialog/index.web';
 export type {
+  DetailDialogProps,
+  DetailDialogSectionProps,
+  DetailDialogSectionGroupProps,
   DialogAction,
   DialogActionColor,
   DialogContextProps,
@@ -243,6 +249,7 @@ export {
   TopEdgeProvider,
   useClaimTopEdge,
   useTopEdgeInset,
+  useContentSafeAreaInsets,
   ScrollOffsetProvider,
   ScrollMetricsProvider,
   useScrollMetricsBinding,

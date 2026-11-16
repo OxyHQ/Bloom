@@ -11,6 +11,12 @@ React props and slots, not a second router or a separate screen definition langu
 Start with `AppShell.panelLayout` and `Screen`, then add navigation or persistence
 only where the product needs them.
 
+Start with [Semantic application composition](/docs/semantic-composition) to choose
+family, presentation and screen intent. The structural APIs below remain the
+same engine; legacy variants are compatibility inputs. For inline/sheet host
+changes, use the explicit registered panel-session and focus contract rather
+than assuming arbitrary local React state is retained.
+
 ## Ownership contract
 
 | Layer | Owns | Application supplies |

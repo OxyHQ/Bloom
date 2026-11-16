@@ -3,9 +3,11 @@
 // Re-run `bun run generate:exports` (or any `bun run build`) after
 // changing that barrel or the set of web-forked subpaths.
 
+export { ProjectBoardCardContent } from './ProjectBoardCardContent';
 export { ProjectBoard } from './ProjectBoard.web';
 export { BoardDragHandle } from './BoardGesture';
 export type {
+  ProjectBoardCardContentProps,
   BoardColumn,
   ProjectBoardLane,
   GroupedProjectBoardProps,

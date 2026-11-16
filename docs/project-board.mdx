@@ -5,13 +5,40 @@ description: Controlled boards, ticket workspaces and their shared layout owners
 
 # Project Board
 
+## Shared card and detail composition
+
+`ProjectBoardCardContent` exposes the template card's inner composition for arbitrary
+records: `preview` (outside the padded body), `header`, `actions`, `badges`, `title`,
+`description`, `children`, and `footer`. The board still owns card material and drag
+behavior. Do not add a second card surface around this content. String titles use the
+shared typography; React nodes remain intact for `BoardDragHandle`, editable fields
+and product controls.
+
+```tsx
+renderCard={(record) => (
+  <ProjectBoardCardContent
+    header={<BoardDragHandle>{record.name}</BoardDragHandle>}
+    actions={recordActions(record)}
+    preview={recordPreview(record)}
+  >
+    {recordProperties(record)}
+  </ProjectBoardCardContent>
+)}
+```
+
+The ticket template itself uses this component and the generic `DetailDialog`,
+`DetailDialogSection` and `DetailDialogSectionGroup` from `@oxy.so/bloom/dialog`.
+Products supply record data and actions through these slots, rather than converting
+their schema to the template's demo ticket model. See [Dialog](/docs/bloom/main/dialog)
+for selection, body scrolling, bounded canvases and editor footer ownership.
+
 ## Controlled records
 
 `ProjectBoard<Item>` composes arbitrary records into caller-controlled columns. Use it
 when a product owns its properties, grouping, permissions and persistence:
 
 ```tsx
-import { ProjectBoard, BoardDragHandle } from '@oxy.so/bloom/project-board';
+import { ProjectBoard, ProjectBoardCardContent, BoardDragHandle } from '@oxy.so/bloom/project-board';
 
 <ProjectBoard
   variant="embedded"

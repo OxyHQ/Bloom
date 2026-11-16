@@ -1,3 +1,4 @@
+import { PortalProvider, PortalOutlet } from '../portal';
 import React from 'react';
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
@@ -11,14 +12,17 @@ it.each(['center', 'end', 'bottom'] as const)(
   (placement) => {
     const api = render(
       <BloomThemeProvider>
-        <Dialog
-          placement={placement}
-          material="flat"
-          open
-          panelStyle={{ backgroundColor: '#f3d7b6' }}
-        >
-          <Text>Flat body</Text>
-        </Dialog>
+        <PortalProvider>
+          <Dialog
+            placement={placement}
+            material="flat"
+            open
+            panelStyle={{ backgroundColor: '#f3d7b6' }}
+          >
+            <Text>Flat body</Text>
+          </Dialog>
+          <PortalOutlet />
+        </PortalProvider>
       </BloomThemeProvider>,
     );
     expect(api.getByText('Flat body')).toBeTruthy();
@@ -33,11 +37,14 @@ it.each(['center', 'end', 'bottom'] as const)(
 it('forwards flat material to the native popover sheet', () => {
   const api = render(
     <BloomThemeProvider>
-      <Popover open>
-        <PopoverContent material="flat" style={{ backgroundColor: '#f3d7b6' }}>
-          <Text>Flat popover</Text>
-        </PopoverContent>
-      </Popover>
+      <PortalProvider>
+        <Popover open>
+          <PopoverContent material="flat" style={{ backgroundColor: '#f3d7b6' }}>
+            <Text>Flat popover</Text>
+          </PopoverContent>
+        </Popover>
+        <PortalOutlet />
+      </PortalProvider>
     </BloomThemeProvider>,
   );
   expect(api.getByText('Flat popover')).toBeTruthy();

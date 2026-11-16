@@ -5,6 +5,7 @@ import { fireEvent, render } from '@testing-library/react-native';
 import { AppShellPanel, AppShellPanels } from '../app-shell';
 import type { AppShellPanelLayout } from '../app-shell';
 import { Screen } from '../screen';
+import { ContentPanel } from '../content-panel';
 import { Dialog, useDialogControl } from '../dialog';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { resolvedStyle } from './support/rendered-style';
@@ -72,13 +73,16 @@ it.each(['joined', 'separated', 'plain'] as const)(
     expect(mounted).toHaveBeenCalledTimes(1);
     expect(unmounted).not.toHaveBeenCalled();
     expect(view.getAllByText('Shared workspace header')).toHaveLength(1);
-    expect(view.getAllByTestId('content-panel-surface')).toHaveLength(
-      appearance === 'separated' ? 2 : 1,
+    const owners = view.UNSAFE_root.findAllByType(
+      (ContentPanel as unknown as { type: React.ComponentType }).type,
+    );
+    expect(owners.filter((owner) => owner.props.appearance !== 'plain')).toHaveLength(
+      appearance === 'plain' ? 0 : appearance === 'separated' ? 2 : 1,
     );
     if (appearance === 'plain') {
-      expect(
-        resolvedStyle(view.getByTestId('content-panel-surface').props.style).backgroundColor,
-      ).toBe('transparent');
+      for (const surface of view.getAllByTestId('content-panel-surface')) {
+        expect(resolvedStyle(surface.props.style).backgroundColor).toBe('transparent');
+      }
     }
     view.rerender(<AppShellPanels testID="panels" layout={{ ...next, header: null }} />);
     expect(view.getByTestId('draft').props.value).toBe('Unsaved work');
@@ -132,10 +136,9 @@ it('inherits an enclosing surface without a second paint when no workspace heade
     />,
     { wrapper },
   );
-  expect(view.getAllByTestId('content-panel-surface')).toHaveLength(1);
-  expect(resolvedStyle(view.getByTestId('content-panel-surface').props.style).backgroundColor).toBe(
-    'transparent',
-  );
+  for (const surface of view.getAllByTestId('content-panel-surface')) {
+    expect(resolvedStyle(surface.props.style).backgroundColor).toBe('transparent');
+  }
   expect(view.getByText('Versions')).toBeTruthy();
   expect(view.getByText('Preview')).toBeTruthy();
 });

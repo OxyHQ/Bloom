@@ -54,3 +54,5 @@ export type {
   AutoHideBarOptions,
   AutoHideBarProps,
 } from './types';
+
+export { useContentSafeAreaInsets } from './safe-area-ownership';

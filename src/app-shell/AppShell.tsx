@@ -1,3 +1,5 @@
+import { AppShellCompositionContext } from './context';
+import { resolveAppShellComposition } from './composition';
 import { cloneElement, isValidElement, useMemo, useState, useId, type ComponentType } from 'react';
 import { Platform, View } from 'react-native';
 import { openHref } from '../hooks/link-activation';
@@ -566,13 +568,20 @@ export function createAppShell(
    * and one reselect scope for everything under it.
    */
   function ComposedAppShell(declared: AppShellProps) {
-    const props = useDestinationNavigation(declared, DestinationBottomBar, Fab);
+    const resolved = resolveAppShellComposition(declared);
+    const props = useDestinationNavigation(resolved, DestinationBottomBar, Fab);
+    const composition = useMemo(
+      () => ({ family: resolved.layout, presentation: resolved.presentation }),
+      [resolved.layout, resolved.presentation],
+    );
     return (
-      <ShellReselectScope>
-        <ScreenActionScope>
-          <AppShellBody {...props} />
-        </ScreenActionScope>
-      </ShellReselectScope>
+      <AppShellCompositionContext.Provider value={composition}>
+        <ShellReselectScope>
+          <ScreenActionScope>
+            <AppShellBody {...props} />
+          </ScreenActionScope>
+        </ShellReselectScope>
+      </AppShellCompositionContext.Provider>
     );
   }
   function AppShellBody(props: AppShellProps) {

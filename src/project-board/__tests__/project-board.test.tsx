@@ -1,3 +1,4 @@
+import { PortalProvider, PortalOutlet } from '../../portal';
 import { fireEvent, render } from '@testing-library/react-native';
 import type React from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
@@ -66,12 +67,15 @@ const members = { maya: { id: 'maya', name: 'Maya Chen', initials: 'MC' } };
 function renderBoard(extra: Partial<React.ComponentProps<typeof ProjectBoard>> = {}) {
   return render(
     <BloomThemeProvider colorPreset="teal" mode="light">
-      <ProjectBoard
-        initialColumns={columns}
-        members={members}
-        projects={['Bloom', 'vibl']}
-        {...extra}
-      />
+      <PortalProvider>
+        <ProjectBoard
+          initialColumns={columns}
+          members={members}
+          projects={['Bloom', 'vibl']}
+          {...extra}
+        />
+        <PortalOutlet />
+      </PortalProvider>
     </BloomThemeProvider>,
   );
 }
@@ -139,7 +143,14 @@ describe('ProjectBoard interactions', () => {
   });
   it('keeps task columns flat with their original secondary fill', () => {
     const screen = renderBoard();
-    const surfaces = screen.getAllByTestId('content-panel-surface');
+    const surfaces = screen.getAllByTestId('content-panel-surface').filter((surface) => {
+      const style = resolvedStyle(surface.props.style);
+      if (style.backgroundColor !== 'transparent') return true;
+      // Stable compositor owners are transparent, flat wrappers around the columns.
+      expect(style.borderRadius).toBe(0);
+      expect(style.boxShadow).toBeUndefined();
+      return false;
+    });
     expect(surfaces).toHaveLength(columns.length);
     for (const surface of surfaces) {
       expect(classNamesOn(surface.props.style).join(' ')).toContain(
