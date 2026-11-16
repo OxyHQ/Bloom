@@ -4,7 +4,7 @@ import { ListCall } from './ListCall';
 import { ListConversation } from './ListConversation';
 import { ListMail } from './ListMail';
 import { ChipRow } from '../chip';
-import { memo, useEffect } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import { Pressable, StyleSheet, View, type PressableProps } from 'react-native';
 import { Checkbox } from '../checkbox';
 import { openHref } from '../hooks/link-activation';
@@ -80,6 +80,7 @@ export function createListItem({
     const theme = useTheme();
     const surface = useSurfaceFill();
     const touch = useTouchInput();
+    const consumedLongPress = useRef(false);
     const swipeAvailable = useSwipeAvailable();
     const common = useCommonMessages();
     useEffect(() => {
@@ -183,11 +184,28 @@ export function createListItem({
           onPress();
         } else if (!IS_WEB && href) openHref(href);
       },
-      // Keep this mounted throughout selection: RNW only suppresses the release
-      // click after a long press while the handler remains on the same Pressable.
+      // Cancel the browser's compatibility click at its touch source. A consumed
+      // long press can move the layout before release, retargeting that click to
+      // another row whose RNW responder never received the long press.
+      ...(IS_WEB
+        ? {
+            onTouchStart: () => {
+              consumedLongPress.current = false;
+            },
+            onTouchCancel: () => {
+              consumedLongPress.current = false;
+            },
+            onTouchEnd: (event: import('react-native').GestureResponderEvent) => {
+              if (consumedLongPress.current) event.preventDefault();
+              consumedLongPress.current = false;
+            },
+          }
+        : {}),
+      // Keep this mounted throughout selection for RNW's own responder lifecycle.
       onLongPress: touch
         ? () => {
             if (disabled) return;
+            if (IS_WEB && (onCheckedChange || onLongPress)) consumedLongPress.current = true;
             if (onCheckedChange) {
               if (!selecting) onCheckedChange(true);
             } else onLongPress?.();

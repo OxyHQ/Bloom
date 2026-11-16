@@ -73,6 +73,9 @@ function expectPressPaintedByPressable(
   const { link } = linkOf(screen, `${rowID}-link`);
   expect(link.props.onPressIn).toBeUndefined();
   expect(link.props.onPressOut).toBeUndefined();
+  expect(link.props.onTouchStart).toBeUndefined();
+  expect(link.props.onTouchEnd).toBeUndefined();
+  expect(link.props.onTouchCancel).toBeUndefined();
   const style = link.props.style as StyleFn | StyleProp<ViewStyle>;
   if (expected.pressed === undefined) {
     // Nothing to paint: either no function at all, or one that adds no fill.
