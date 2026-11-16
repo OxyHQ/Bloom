@@ -572,7 +572,11 @@ export interface SidebarProps {
 }
 
 /** A row of a tree section, directly under its label, inside a folder or under another row. */
-export interface SidebarTreeItem {
+export interface SidebarTreeItem
+  extends Pick<
+    import('../list/types').ListCommonProps,
+    'checked' | 'onCheckedChange' | 'selecting' | 'selectionLabel' | 'contextMenu' | 'disabled'
+  > {
   /** Secondary controls beside the row, never nested inside its press target. */
   actions?: ReactNode;
   /**

@@ -606,6 +606,22 @@ toggle the containing row. Items expose `onPrefetch` (pointer/touch entry and
 selection) and `onLongPress`; retain a keyboard-accessible menu for touch actions.
 Collapsed folders remove both rows and action slots from interaction.
 
+Tree items opt into the shared list selection with `checked`, `onCheckedChange`,
+`selecting` and `selectionLabel`. This is independent of the active destination
+(`selected` / `selectedTreeItem`). Set `selecting` on every selectable row while
+selection mode is active: pressing a row toggles its check without navigating.
+The existing leading avatar stays visible until hovered, focused or checked;
+touch long press selects without opening a menu. A draggable row retains its
+lift gesture instead; its avatar remains available for selection.
+
+Pass content-only menu items (including submenus and radio groups) through
+`contextMenu`. ListItem owns desktop right click, keyboard menu and hover actions,
+and hides the overflow button on touch. The application can reuse the same menu
+content in a selection toolbar through `header` for mobile commands. `disabled`
+blocks selection, navigation, disclosure and dragging. Existing `actions` remains
+an independent slot for indicators or other controls owned by the application.
+
+
 `arrangement` places the logo and the primary action one by one;
 `contentAlignment="center"` is the preset that groups both. Everything grouped
 is centred, with the destinations, as one block in the room **above** the

@@ -148,7 +148,7 @@ describe('Sidebar tree rows that take drops (native)', () => {
 
   it('lights a folder’s row the same way', () => {
     const screen = mount(sections(jest.fn()));
-    const row = () => resolvedStyle(screen.getByLabelText('Downloads').props.style);
+    const row = () => resolvedStyle(screen.getByTestId('sidebar-tree-row-downloads').props.style);
     act(() => target(DOWNLOADS).onDragEnter?.(over('copy')));
     expect(row().backgroundColor).toBe(palette.selected);
     expect(labelColor(screen, 'Downloads')).toBe(palette.selectedForeground);

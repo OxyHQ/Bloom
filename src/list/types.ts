@@ -1,6 +1,6 @@
 import type { PersonSummary } from '../chat-people/types';
 import type { ReactElement } from 'react';
-import type { ScrollViewProps, StyleProp, ViewStyle } from 'react-native';
+import type { PressableProps, ScrollViewProps, StyleProp, ViewStyle } from 'react-native';
 import type { ScrollAreaScrollbar } from '../layout/types';
 
 /** Info passed to {@link VirtualListProps.renderItem} for each row. */
@@ -167,8 +167,16 @@ export interface ListCommonProps {
   onPrefetch?: () => void;
   href?: string;
   onLongPress?: () => void;
-  /** Optional replacement for the row's open target, e.g. a disclosure trigger. */
-  trigger?: import('react').ReactNode;
+  /**
+   * Optional replacement for the open target. A renderer receives the shared row
+   * handlers, accessibility and geometry; spread them onto the custom Pressable
+   * and compose only the additional behavior. A ready node remains supported.
+   */
+  trigger?:
+    | import('react').ReactNode
+    | ((
+        props: PressableProps & { href?: string; 'aria-current'?: 'true' },
+      ) => import('react').ReactNode);
   /** Controlled selection. The avatar becomes a checkbox only on hover or when checked. */
   checked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
