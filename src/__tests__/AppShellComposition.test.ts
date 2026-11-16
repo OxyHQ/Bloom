@@ -136,6 +136,21 @@ describe('semantic composition', () => {
     expect(root.panels[0]!.group!.panels[0]!.content).toBe(content);
   });
 
+  it('does not constrain the cross axis of a vertical role group', () => {
+    const layout = resolvePanelComposition(
+      {
+        axis: 'vertical',
+        panels: [
+          { id: 'main', role: 'main' },
+          { id: 'comments', role: 'inspector' },
+        ],
+      },
+      { family: 'workspace' },
+    );
+    expect(layout.panels[1]!.minWidth).toBeUndefined();
+    expect(layout.panels[1]!.maxWidth).toBeUndefined();
+  });
+
   it('exposes declared ownership without pretending to measure a viewport', () => {
     expect(
       explainAppShellComposition({ layout: 'workspace', presentation: 'continuous' }),

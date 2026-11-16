@@ -193,6 +193,7 @@ const READING_TRANSITION =
 export function createAppShellEngine() {
   const AppShellComponent: React.FC<AppShellEngineProps> = ({
     variant = 'dashboard',
+    layout: semanticLayout,
     presentation,
     safeArea = false,
     navigationAlign = 'edge',
@@ -392,7 +393,11 @@ export function createAppShellEngine() {
               : hasNav
                 ? navInFlow
                 : width >= BREAKPOINTS.md)));
-    const compactRegion = panelHost && (presentation === 'continuous' ? !navInFlow : !framed);
+    const compactRegion =
+      panelHost &&
+      (presentation === 'continuous'
+        ? (cssShell?.compact ?? (hasNav ? !wide : width < BREAKPOINTS.md))
+        : !framed);
     const stretchReading = compactRegion || contentMaxWidth === 'none';
     // Reveal keeps its page host mounted across compact/desktop changes.
     const drawerStyle = variant === 'dashboard' || variant === 'feed' ? drawer : 'overlay';
@@ -1754,7 +1759,11 @@ export function createAppShellEngine() {
         inherit={!flowBottomBar}
         consume={flowBottomBar ? bottomBarHeight : undefined}
       >
-        {canvas ? canvasBody : centred ? centredBody : dashboardBody}
+        {canvas
+          ? canvasBody
+          : centred || (semanticLayout && panelHost)
+            ? centredBody
+            : dashboardBody}
       </BottomEdgeProvider>
     );
 

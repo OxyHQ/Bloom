@@ -41,6 +41,7 @@ export interface CssShellState {
   capacityCollapsed: boolean;
   framed: boolean;
   small: boolean;
+  compact: boolean;
 }
 
 /** Descriptor compilation only: container queries resolve the live shell width. */
@@ -162,7 +163,7 @@ ${root} [data-bloom-dock-moving] :is([data-bloom-shell-nav="${scope}"],[data-blo
         ? `max(var(--bloom-frame-start), calc((100cqw - var(--bloom-nav-width) - var(--bloom-nav-gap) - ${alignmentEnvelope} - var(--bloom-frame-end) + var(--bloom-frame-start)) / 2))`
         : 'var(--bloom-frame-start)';
     const state = (collapsed: boolean, capacity: boolean) =>
-      `${frame}{--bloom-nav-mode:${mode};--bloom-nav-collapsed:${collapsed ? 1 : 0};--bloom-nav-capacity:${capacity ? 1 : 0};--bloom-framed:${framed ? 1 : 0};--bloom-small:${width >= BREAKPOINTS.sm ? 1 : 0};--bloom-drawer-trigger-display:${hasNav && !inFlow ? 'flex' : 'none'};--bloom-nav-display:${inFlow ? 'flex' : 'none'};--bloom-panel-nav-display:${mode === 'panel' ? 'flex' : 'none'};--bloom-rail-nav-display:${mode === 'rail' ? 'flex' : 'none'};${navGeometry(collapsed)}--bloom-frame-top:${flush ? 0 : edge('top')}px;--bloom-frame-bottom:${flush ? 0 : edge('bottom')}px;--bloom-frame-start:${flush ? 0 : edge('start')}px;--bloom-frame-end:${edge('end')}px;--bloom-body-gutter-top:${flush ? edge('top') : 0}px;--bloom-body-gutter-bottom:${flush ? edge('bottom') : 0}px; --bloom-frame-alignment:${alignment};justify-content:flex-start!important}`;
+      `${frame}{--bloom-nav-mode:${mode};--bloom-nav-collapsed:${collapsed ? 1 : 0};--bloom-nav-capacity:${capacity ? 1 : 0};--bloom-framed:${framed ? 1 : 0};--bloom-small:${width >= BREAKPOINTS.sm ? 1 : 0};--bloom-compact:${(hasNav ? !inFlow : width < BREAKPOINTS.md) ? 1 : 0};--bloom-drawer-trigger-display:${hasNav && !inFlow ? 'flex' : 'none'};--bloom-nav-display:${inFlow ? 'flex' : 'none'};--bloom-panel-nav-display:${mode === 'panel' ? 'flex' : 'none'};--bloom-rail-nav-display:${mode === 'rail' ? 'flex' : 'none'};${navGeometry(collapsed)}--bloom-frame-top:${flush ? 0 : edge('top')}px;--bloom-frame-bottom:${flush ? 0 : edge('bottom')}px;--bloom-frame-start:${flush ? 0 : edge('start')}px;--bloom-frame-end:${edge('end')}px;--bloom-body-gutter-top:${flush ? edge('top') : 0}px;--bloom-body-gutter-bottom:${flush ? edge('bottom') : 0}px; --bloom-frame-alignment:${alignment};justify-content:flex-start!important}`;
     const query = `(min-width:${width}px)${upper === undefined ? '' : ` and (width < ${upper}px)`}`;
     let rules = state(baseCollapsed, false);
     rules += `${root} [data-bloom-shell-bar="${scope}"][data-bloom-shell-bar-visibility="compact"]{display:${inFlow ? 'none' : 'flex'}!important}\n`;
@@ -193,6 +194,7 @@ export function useCssShellLayout(
     capacityCollapsed: false,
     framed: true,
     small: true,
+    compact: false,
   });
   const css = useMemo(() => (scope ? shellLayoutCss(scope, options) : ''), [scope, options]);
   useLayoutEffect(() => {
@@ -212,6 +214,7 @@ export function useCssShellLayout(
         capacityCollapsed: value('--bloom-nav-capacity') === '1',
         framed: value('--bloom-framed') === '1',
         small: value('--bloom-small') === '1',
+        compact: value('--bloom-compact') === '1',
       };
       setState((previous) => (JSON.stringify(previous) === JSON.stringify(next) ? previous : next));
     };

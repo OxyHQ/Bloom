@@ -78,6 +78,15 @@ export function resolvePanelComposition(
               : role === 'main' || role === 'detail'
                 ? { minWidth: 320, span: 1 }
                 : {};
+    if (panel.span !== undefined) {
+      delete defaults.width;
+      delete defaults.maxWidth;
+    }
+    if (layout.axis === 'vertical') {
+      delete defaults.width;
+      delete defaults.minWidth;
+      delete defaults.maxWidth;
+    }
     if (role === 'inspector' && panel.open !== undefined) {
       if (!panel.onOpenChange || !panel.label) {
         throw new Error(
@@ -179,15 +188,41 @@ export function resolveAppShellComposition(props: AppShellProps): AppShellProps 
   return result;
 }
 
-/** Inspectable resolution, suitable for a devtools view without subscribing to layout frames. */
+/** Declarative diagnostics. Actual measured visibility is exposed by useAppShellPanel. */
 export function explainAppShellComposition(props: AppShellProps) {
   const resolved = resolveAppShellComposition(props);
   return {
+    phase: 'declaration' as const,
+    measured: false as const,
+    precedence: [
+      'explicit defined value',
+      'presentation constraint',
+      'role/family default',
+      'legacy default',
+    ],
     family: resolved.layout ?? 'legacy',
     presentation: resolved.presentation ?? 'legacy',
     frame: {
       gutter: resolved.gutter,
       navigationGap: resolved.navigationGap,
+      sources: {
+        gutter:
+          props.gutter !== undefined
+            ? 'explicit'
+            : resolved.presentation === 'continuous'
+              ? 'presentation'
+              : props.layout
+                ? 'family'
+                : 'legacy',
+        navigationGap:
+          props.navigationGap !== undefined
+            ? 'explicit'
+            : resolved.presentation === 'continuous'
+              ? 'presentation'
+              : props.layout
+                ? 'family'
+                : 'legacy',
+      },
       source:
         props.presentation === 'continuous'
           ? 'presentation'
@@ -201,6 +236,11 @@ export function explainAppShellComposition(props: AppShellProps) {
         id: panel.id,
         role: panel.role ?? 'custom',
         minWidth: panel.minWidth,
+        visible: panel.visible ?? true,
+        ownership: { identity: panel.id, navigation: 'panel', contentState: 'application' },
+        reason: panel.floating
+          ? 'floating is eligible below its declared threshold; whenConstrained also responds to available group capacity'
+          : 'the existing panel solver compares available group capacity with declared minimum sizes',
         adaptation: panel.floating
           ? 'sheet below threshold or when constrained'
           : 'active panel when constrained',

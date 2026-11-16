@@ -1,4 +1,4 @@
-import { AppShellCompositionContext } from './composition-context';
+import { AppShellCompositionContext } from './context';
 import { resolveAppShellComposition } from './composition';
 import { cloneElement, isValidElement, useMemo, useState, useId, type ComponentType } from 'react';
 import { Platform, View } from 'react-native';
