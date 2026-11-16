@@ -123,6 +123,11 @@ export function usePanelSessionFocus<T extends PanelSessionFocusTarget>(key: str
     target.current = node;
   }, []);
   const onFocus = useCallback(() => {
+    const pending = session.focus;
+    // An imperatively opened Dialog can autofocus its first field before the
+    // session's restoration frame. Keep that transfer's snapshot intact until
+    // the frame restores selection. A user pointer/key already cancels it.
+    if (pending?.key === key && pending.presentation !== presentation) return;
     session.focus = { key, presentation, target: target.current, selection: selection.current };
   }, [session, key, presentation]);
   const onBlur = useCallback(() => {
