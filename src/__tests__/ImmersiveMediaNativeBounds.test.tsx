@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { CallScreen } from '../call-ui/CallScreen';
 import { IncomingCallScreen } from '../call-ui/IncomingCallScreen';
@@ -45,8 +45,8 @@ const cases = [
     [
       ['media-accept', 56],
       ['media-decline', 56],
-      ['media-message', 32],
-      ['media-remind', 32],
+      ['media-message', 36],
+      ['media-remind', 36],
     ],
     'media-identity-scroll',
   ],
@@ -82,6 +82,9 @@ function treeFor(content: React.ReactNode, width: number, height: number): HostN
       </View>
     </BloomThemeProvider>,
   );
+  const media = api.getByTestId('media');
+  if (media.props.onLayout)
+    fireEvent(media, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width, height } } });
   const tree = findHost(api.toJSON(), 'viewport');
   if (!tree) throw new Error('Missing native viewport');
   return tree;
@@ -123,11 +126,14 @@ describe.each(cases)('%s native bounds', (_name, content, controls, scroller) =>
   });
 });
 
-it('lets incoming identity content exceed its scroll viewport while answer actions remain visible', () => {
+it('keeps the incoming caller name and subtitle initially visible in a short host', () => {
   const boxes = yoga.layout(treeFor(cases[1][1], 1280, 390), false, 40, true);
   const viewport = boxes.get('media-identity-scroll');
-  const content = boxes.get('media-identity-scroll-content-layout');
   expect(viewport).toBeDefined();
-  expect(content).toBeDefined();
-  expect(content?.height).toBeGreaterThan(viewport?.height ?? Infinity);
+  for (const id of ['media-name', 'media-subtitle']) {
+    const box = boxes.get(id);
+    expect(box).toBeDefined();
+    expect(box!.y).toBeGreaterThanOrEqual(viewport!.y);
+    expect(box!.y + box!.height).toBeLessThanOrEqual(viewport!.y + viewport!.height);
+  }
 });
