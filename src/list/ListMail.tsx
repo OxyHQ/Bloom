@@ -14,6 +14,7 @@ import {
 } from '../mail-list/shared';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
+import { webDataSet } from '../styles/web-data';
 import { Text } from '../typography';
 import type { ListCommonProps, ListMailData } from './types';
 
@@ -103,8 +104,11 @@ export function ListMail({
               {sender.name}
             </Text>
             <Text
+              {...webDataSet({ bloomListSupporting: String(props.supportingLines ?? 1) })}
               variant={unread ? 'caption-1-semibold' : 'caption-1-regular'}
-              numberOfLines={1}
+              numberOfLines={
+                props.supportingLines === 'adaptive' ? 3 : (props.supportingLines ?? 1)
+              }
               style={{ color: unread ? paint.text : paint.textSecondary }}
               testID={id('subject')}
             >

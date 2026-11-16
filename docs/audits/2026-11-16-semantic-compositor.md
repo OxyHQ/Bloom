@@ -10,10 +10,26 @@ is complete. Source baseline: Bloom `bd26dc99`, package `21.7.1`. The current
 implementation starts at `8ee6fa87`, resolution corrections at `9ad05da1`, and
 panel session/stable surface ownership at `20c2a45f`. The final deterministic
 CSS-first focus correction is `d900c43d`, integrated as `ee6608ae` in
-[release PR #832](https://github.com/OxyHQ/Bloom/pull/832), targeting `21.8.0`
+[release PR #832](https://github.com/OxyHQ/Bloom/pull/832), originally targeting `21.8.0`
 (cherry-picked commit hashes
 can differ on the release branch). The package version in generated catalogs
 identifies the containing artifact; it does not prove registry publication.
+
+## Integration with Bloom 22
+
+Before publication, concurrent PR #833 merged Bloom `22.0.0` at `58a87187`.
+The reviewed compositor patch was rebased onto that main commit as `a58ff922`,
+using the canonical Button.Group and updated PageHeader owners. The release
+candidate is now `22.1.0`; no `21.8.0` publication is claimed. The combined build,
+TypeScript/consumer types, lint, package/freshness and task catalog pass. A full
+integration run passes 1,046 suites / 15,852 tests / 9 snapshots; a subsequent
+bounded ListMail change honors its existing supportingLines contract and passes
+nine focused tests. Final protected CI must validate the containing commit.
+
+The browser and Android receipts below remain evidence for their named sources.
+Bloom 22 changes PageHeader geometry, so final combined browser/native header,
+frame and detail acceptance is required before publication. Registry-installed
+application gates also require the compatible Oxy Services release.
 
 ## Six-phase acceptance
 
@@ -24,7 +40,7 @@ identifies the containing artifact; it does not prove registry publication.
 | 3. Presentation and interaction | Shared navigation, scroll/edge ownership, inspector dismissal, stable styling transitions and registered state/focus | Browser checks pass: 36 real-click family/presentation transitions and ten registered draft/focus/selection transitions. Android registered selection, the complete generic panel suite, and the expanded detail/keyboard flow pass on the same final source artifact `86e58f5b` below. Arbitrary native view/media continuity is outside the delivered contract. |
 | 4. Consumer migration | All five apps declare their actual structures; redundant geometry removed; product behavior preserved | Source migrations prepared for Nilo, Mention, Inbox, Mercaria and Homiio. Per-app tests, installed version and deployment acceptance tracked below. |
 | 5. Documentation and compatibility | Architecture, examples, task routing, explicit limitations and deprecation exits updated | Semantic guide plus architecture/composition/layout guides updated. Legacy variants remain supported compatibility inputs. Removal requires the criteria in the semantic guide, not this source merge alone. |
-| 6. Release and rollout | Required gates pass on final commits; CI publishes; consumers install exact registry release; main/deploy evidence recorded | Candidate version `21.8.0`, PR #832. Final main commits, CI publication receipt, registry install and production deployments remain pending. Do not mark complete from a built source mirror. |
+| 6. Release and rollout | Required gates pass on final commits; CI publishes; consumers install exact registry release; main/deploy evidence recorded | Candidate version `22.1.0`, PR #832. Final main commits, CI publication receipt, registry install and production deployments remain pending. Do not mark complete from a built source mirror. |
 
 ## Application acceptance
 
@@ -49,7 +65,7 @@ shared frames, safe areas or action clearances are defects to remove.
 | Inspector web focus | Verified independently in Linux Chrome: five fresh contexts × 1440→800→1440 preserve `[0,5]`, focused input and exact draft; typing X replaces the selected prefix. Seven focused tests include incoming initial selection, modal autofocus, CSS-before-React presentation, close, user-choice cancellation and the native TextInput selection command. Reproduce with `scripts/verify-panel-session-focus.mjs`. |
 | Android | Owned Android 30 emulator `emulator-5580`: final artifact `86e58f5b` passes registered selection in both directions, the complete generic panel suite, and shared detail opened from a lower panel, including real IME/footer interaction. This is shared-source fixture acceptance, not five production native-app deployments. Intended physical Pixel 8a is not yet connected; no final physical-device or iOS acceptance is claimed. |
 | iOS | No device identified. Not verified; Android or web evidence must not be presented as iOS acceptance. No new native teleport/Fabric capability is claimed. |
-| Package | Full local baseline `bc78a61a`: 1,040 suites / 15,803 tests / 9 snapshots pass, together with TypeScript plus consumer typecheck, lint, build, packed exports/freshness and task catalog. Independent consumer review confirms 31,979 packed files, 21,164 exported values and 8,011 exported types; the affected keyboard suite passes. The bounded review followup below has targeted validation and requires final protected CI. Candidate `21.8.0` publication remains pending; local gates are not CI/registry evidence. |
+| Package | Full local baseline `bc78a61a`: 1,040 suites / 15,803 tests / 9 snapshots pass, together with TypeScript plus consumer typecheck, lint, build, packed exports/freshness and task catalog. Independent consumer review confirms 31,979 packed files, 21,164 exported values and 8,011 exported types; the affected keyboard suite passes. The bounded review followup below has targeted validation and requires final protected CI. Candidate `22.1.0` publication remains pending; local gates are not CI/registry evidence. |
 | Registry | CI publication receipt and exact registry tarball/install checks pending. Local publication prohibited. |
 | Main/deployments | Final Bloom and five consumer main commits, CI/deploy URLs and successful deployed-route checks pending. |
 

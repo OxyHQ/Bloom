@@ -143,6 +143,20 @@ describe('pressed fill on native list rows', () => {
     });
   });
 
+  it.each([1, 2, 3, 'adaptive'] as const)('honors mail supporting lines: %s', (lines) => {
+    const screen = mount(
+      <ListItem
+        mail={{ sender: { name: 'Mireia' }, subject: 'A long subject', snippet: 'Preview text' }}
+        supportingLines={lines}
+        testID="mail-lines"
+      />,
+    );
+    expect(screen.getByTestId('mail-lines-subject', HIDDEN).props.numberOfLines).toBe(
+      lines === 'adaptive' ? 3 : lines,
+    );
+    expect(screen.getByTestId('mail-lines-sender', HIDDEN).props.numberOfLines).toBe(1);
+  });
+
   it('MailRow, unselected and selected', () => {
     const ROW = {
       sender: { name: 'Mireia Solans' },
