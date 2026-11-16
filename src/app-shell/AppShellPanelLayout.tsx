@@ -401,6 +401,14 @@ export function createPanelLayoutView(
         ? windowEdgeTopCorners(platformWindow.metrics)
         : null;
     const panelRef = useRef<ComponentRef<typeof NativeView>>(null);
+    const readSessionPresentation = useCallback(() => {
+      const node = panelRef.current as unknown as HTMLElement | null;
+      if (Platform.OS === 'web' && cssScope && node) {
+        const floating = getComputedStyle(node).getPropertyValue('--bloom-panel-floating').trim();
+        if (floating) return floating === '1' ? 'floating' : 'inline';
+      }
+      return track.floating ? 'floating' : 'inline';
+    }, [cssScope, track.floating]);
     const dragOffset = useSharedValue(0);
     const dragLayer = useSharedValue(0);
     useEffect(
@@ -862,7 +870,11 @@ export function createPanelLayoutView(
       );
       const resizable = panel.resizable && hasNext && track.visible && !alone;
       return (
-        <PanelSessionProvider presentation={track.floating ? 'floating' : 'inline'} active={active}>
+        <PanelSessionProvider
+          presentation={track.floating ? 'floating' : 'inline'}
+          active={active}
+          readPresentation={readSessionPresentation}
+        >
           <AnimatedView
             ref={panelRef}
             {...(cssScope

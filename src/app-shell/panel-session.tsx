@@ -29,6 +29,7 @@ class PanelSession {
   listeners = new Set<() => void>();
   presentation: Presentation = 'inline';
   active = true;
+  readPresentation?: () => Presentation;
   focus: {
     key: string;
     presentation: Presentation;
@@ -60,16 +61,19 @@ const PanelSessionContext = createContext<PanelSession | null>(null);
 export function PanelSessionProvider({
   presentation,
   active,
+  readPresentation,
   children,
 }: {
   presentation: Presentation;
   active: boolean;
+  readPresentation?: () => Presentation;
   children: ReactNode;
 }) {
   const session = useRef<PanelSession | null>(null);
   if (!session.current) session.current = new PanelSession();
   session.current.presentation = presentation;
   session.current.active = active;
+  session.current.readPresentation = readPresentation;
   // Closing must never leave a pending focus request for a later reopen.
   if (!active) session.current.focus = null;
   return (
@@ -131,8 +135,31 @@ export function usePanelSessionFocus<T extends PanelSessionFocusTarget>(key: str
     session.focus = { key, presentation, target: target.current, selection: selection.current };
   }, [session, key, presentation]);
   const onBlur = useCallback(() => {
-    // The old presentation can emit blur as its native view is removed.
-    if (session.presentation === presentation && session.focus?.key === key) session.focus = null;
+    // CSS resolves responsive presentation before ResizeObserver commits React
+    // state. Read that same owner rather than clearing a transfer on early blur.
+    const currentPresentation = session.readPresentation?.() ?? session.presentation;
+    if (currentPresentation === presentation && session.focus?.key === key) session.focus = null;
+  }, [session, key, presentation]);
+  useLayoutEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    const cancelForUserChoice = (event: Event) => {
+      if (session.focus?.key !== key) return;
+      const keyboard = event as KeyboardEvent;
+      if (
+        event.target !== target.current ||
+        keyboard.key === 'Tab' ||
+        keyboard.key === 'Escape' ||
+        session.focus.presentation !== presentation
+      ) {
+        session.focus = null;
+      }
+    };
+    document.addEventListener('pointerdown', cancelForUserChoice, true);
+    document.addEventListener('keydown', cancelForUserChoice, true);
+    return () => {
+      document.removeEventListener('pointerdown', cancelForUserChoice, true);
+      document.removeEventListener('keydown', cancelForUserChoice, true);
+    };
   }, [session, key, presentation]);
   const onSelectionChange = useCallback(
     (event: { nativeEvent: { selection: Selection } }) => {
