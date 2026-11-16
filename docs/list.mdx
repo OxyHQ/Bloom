@@ -38,7 +38,7 @@ Times, names, permissions, navigation and data filtering belong to the consumer.
 
 `onPrefetch` warms destination data on hover, keyboard focus and touch intent; it
 does not activate or select the row and is disabled with the row. A custom
-`trigger` retains ownership of its input callbacks, including prefetch.
+`trigger` can be a render function receiving the canonical `Pressable` props. Spread those props onto its target to retain selection, prefetch, accessibility, focus and pressed paint, then compose any additional handlers. A ready React node remains supported for targets that own all their interaction callbacks.
 
 Selection is controlled by `checked` / `onCheckedChange`. The avatar remains
 visible until selected, hovered or focused. On touch a long press selects; when

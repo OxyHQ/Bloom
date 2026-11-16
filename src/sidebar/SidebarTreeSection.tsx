@@ -6,7 +6,6 @@ import {
   StyleSheet,
   View,
   type AccessibilityActionEvent,
-  type GestureResponderEvent,
   type KeyDownEvent,
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -407,7 +406,7 @@ const TreeRow = memo(function TreeRow({
   const drag = useTreeDrag();
   const anyDragging = useTreeDragging();
   const { dragging, indicator } = useTreeRowDrag(item.key);
-  const { lit, zone } = useTreeRowDrop(item.drop);
+  const { lit, zone } = useTreeRowDrop(item.disabled ? undefined : item.drop);
   const [open, setOpen] = useControllableState<boolean>({
     value: item.open,
     defaultValue: item.defaultOpen ?? false,
@@ -417,9 +416,10 @@ const TreeRow = memo(function TreeRow({
   const children = item.items ?? [];
   const expanded = expandable && (open || (searching && children.length > 0));
   const selected = item.selected ?? item.key === selectedTreeItem;
-  const canDrag = drag != null && item.draggable === true;
+  const canDrag = drag != null && item.draggable === true && !item.disabled;
   const accepts =
     drag != null &&
+    !item.disabled &&
     section.droppable !== false &&
     (item.droppable !== false || item.dropBeside !== false);
   const insideAllowed = item.droppable !== false;
@@ -516,14 +516,14 @@ const TreeRow = memo(function TreeRow({
       runOnJS(end)(success, Math.abs(event.translationY) < 4);
     });
 
-  const onPress = (event: GestureResponderEvent) => {
-    if (anyDragging) return;
-    item.onPrefetch?.();
-    item.onPress?.();
-    if (!onTreeItemPress) return;
-    if (IS_WEB && item.href) event.preventDefault();
-    onTreeItemPress(item, undefined);
-  };
+  const onPress =
+    item.onPress || onTreeItemPress
+      ? () => {
+          item.onPrefetch?.();
+          item.onPress?.();
+          onTreeItemPress?.(item, undefined);
+        }
+      : undefined;
 
   const { tree } = useSidebarMetrics();
   const lane = tree.icon;
@@ -537,10 +537,6 @@ const TreeRow = memo(function TreeRow({
       ref={ref}
       collapsable={false}
       {...(IS_WEB ? { dataSet: { bloomSidebarRow: item.actionsVisibility ?? 'always' } } : {})}
-      onPointerEnter={() => {
-        item.onPrefetch?.();
-      }}
-      onTouchStart={item.onPrefetch}
       style={{
         position: 'relative',
         width: '100%',
@@ -570,6 +566,7 @@ const TreeRow = memo(function TreeRow({
             }
             aria-expanded={expanded}
             accessibilityState={{ expanded }}
+            disabled={item.disabled}
             onPress={() => setOpen(!open)}
             hitSlop={4}
             style={
@@ -601,26 +598,26 @@ const TreeRow = memo(function TreeRow({
         active={selected}
         label={[item.label, item.description, item.meta].filter(Boolean).join(', ')}
         style={{ flex: 1, minWidth: 0 }}
-        trigger={
+        href={item.href}
+        onPress={onPress}
+        onPrefetch={item.onPrefetch}
+        onLongPress={item.onLongPress}
+        checked={item.checked}
+        onCheckedChange={item.onCheckedChange}
+        selecting={item.selecting}
+        selectionLabel={item.selectionLabel}
+        contextMenu={item.contextMenu}
+        disabled={item.disabled}
+        trigger={(props) => (
           <Pressable
-            {...(IS_WEB
-              ? {
-                  dataSet: { bloomListLink: '' },
-                  ...(item.href ? { href: item.href } : null),
-                  ...(selected ? { 'aria-current': 'page' } : null),
-                }
-              : {})}
-            role={item.href ? 'link' : 'button'}
-            accessibilityLabel={[item.label, item.description, item.meta]
-              .filter(Boolean)
-              .join(', ')}
-            accessibilityState={{ selected }}
-            accessibilityActions={accessibilityActions}
+            {...props}
+            aria-current={selected ? 'page' : undefined}
+            accessibilityActions={accessibilityActions ?? props.accessibilityActions}
             onAccessibilityAction={
               canDrag
                 ? (event: AccessibilityActionEvent) =>
                     runMove(event.nativeEvent.actionName as TreeMove)
-                : undefined
+                : props.onAccessibilityAction
             }
             onKeyDown={
               IS_WEB && canDrag
@@ -640,12 +637,16 @@ const TreeRow = memo(function TreeRow({
                   }
                 : undefined
             }
-            onLongPress={canDrag ? undefined : item.onLongPress}
-            onPress={onPress}
-            onFocus={item.onPrefetch}
-            style={[StyleSheet.absoluteFill, { borderRadius: borderRadius.full }]}
+            onLongPress={canDrag ? undefined : props.onLongPress}
+            onPress={(event) => {
+              if (anyDragging) {
+                event.preventDefault();
+                return;
+              }
+              props.onPress?.(event);
+            }}
           />
-        }
+        )}
         leading={
           Icon || item.leading != null ? (
             <View

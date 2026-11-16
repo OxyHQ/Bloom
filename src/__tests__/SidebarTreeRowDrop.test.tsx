@@ -148,7 +148,7 @@ describe('Sidebar tree rows that take drops (native)', () => {
 
   it('lights a folder’s row the same way', () => {
     const screen = mount(sections(jest.fn()));
-    const row = () => resolvedStyle(screen.getByLabelText('Downloads').props.style);
+    const row = () => resolvedStyle(screen.getByTestId('sidebar-tree-row-downloads').props.style);
     act(() => target(DOWNLOADS).onDragEnter?.(over('copy')));
     expect(row().backgroundColor).toBe(palette.selected);
     expect(labelColor(screen, 'Downloads')).toBe(palette.selectedForeground);
@@ -178,4 +178,17 @@ describe('Sidebar tree rows that take drops (native)', () => {
       resolvedStyle(screen.getByTestId('sidebar-tree-row-documents').props.style).backgroundColor,
     ).toBe('transparent');
   });
+});
+
+it('does not register disabled rows as platform drop targets in sections or folders', () => {
+  const disabled = sections(jest.fn()).map((section) => ({
+    ...section,
+    items: section.items?.map((item) => ({ ...item, disabled: true })),
+    folders: section.folders?.map((folder) => ({
+      ...folder,
+      items: folder.items.map((item) => ({ ...item, disabled: true })),
+    })),
+  }));
+  mount(disabled);
+  expect(targets.size).toBe(0);
 });

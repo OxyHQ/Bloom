@@ -5,7 +5,7 @@ import { ListConversation } from './ListConversation';
 import { ListMail } from './ListMail';
 import { ChipRow } from '../chip';
 import { memo, useEffect } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View, type PressableProps } from 'react-native';
 import { Checkbox } from '../checkbox';
 import { openHref } from '../hooks/link-activation';
 import { RiMore2Line } from '../icons/remix/RiMore2Line';
@@ -20,7 +20,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { SwipeRow, useSwipeAvailable } from '../swipe-row';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { LIST_CSS, LIST_STYLE_ID, LIST_ROW_INSET } from './list-style';
+import { LIST_CSS, LIST_STYLE_ID, LIST_ROW_INSET, LIST_ROW_MIN_HEIGHT } from './list-style';
 import type { ListAction, ListItemProps, ListCommonProps } from './types';
 
 type Bindings = Pick<
@@ -146,6 +146,59 @@ export function createListItem({
     ) : (
       leading
     );
+    const triggerProps: PressableProps & { href?: string; 'aria-current'?: 'true' } = {
+      ...webDataSet({ bloomListLink: '' }),
+      ...(IS_WEB && href && !selecting ? { href } : {}),
+      role: role ?? (href && !selecting ? 'link' : 'button'),
+      accessibilityHint,
+      'aria-checked': role === 'radio' || role === 'checkbox' ? checked : undefined,
+      'aria-selected': role === 'option' ? checked : undefined,
+      accessibilityLabel: label,
+      disabled,
+      'aria-disabled': disabled || undefined,
+      accessibilityState: {
+        selected: active || checked,
+        checked: role === 'radio' || role === 'checkbox' ? checked : undefined,
+        disabled,
+      },
+      'aria-current': active ? 'true' : undefined,
+      accessibilityActions: commands.length
+        ? commands.map((action) => ({ name: action.key, label: action.label }))
+        : undefined,
+      onAccessibilityAction: (event) => {
+        const action = commands.find((item) => item.key === event.nativeEvent.actionName);
+        if (action) perform(action);
+      },
+      onHoverIn: disabled ? undefined : onPrefetch,
+      onFocus: disabled ? undefined : onPrefetch,
+      onPressIn: disabled ? undefined : onPrefetch,
+      onPress: (event) => {
+        if (disabled) return;
+        if (selecting && onCheckedChange) {
+          event.preventDefault();
+          onCheckedChange(!checked);
+        } else if (onPress) {
+          if (href) event.preventDefault();
+          onPress();
+        } else if (!IS_WEB && href) openHref(href);
+      },
+      // Keep this mounted throughout selection: RNW only suppresses the release
+      // click after a long press while the handler remains on the same Pressable.
+      onLongPress: touch
+        ? () => {
+            if (disabled) return;
+            if (onCheckedChange) {
+              if (!selecting) onCheckedChange(true);
+            } else onLongPress?.();
+          }
+        : undefined,
+      style: ({ pressed }) => [
+        StyleSheet.absoluteFill,
+        { borderRadius: 28 },
+        !IS_WEB && pressed && !active && !checked ? { backgroundColor: selectedFill } : undefined,
+      ],
+      testID: testID ? `${testID}-link` : undefined,
+    };
     const row = (
       <View
         {...webDataSet({
@@ -158,7 +211,7 @@ export function createListItem({
         style={[
           {
             opacity: disabled ? DISABLED_OPACITY : 1,
-            minHeight: 56,
+            minHeight: LIST_ROW_MIN_HEIGHT,
             borderRadius: 28,
             '--bloom-list-selected': selectedFill,
             '--bloom-list-ring': theme.colors.primary,
@@ -168,68 +221,9 @@ export function createListItem({
           } as WebCssStyle,
         ]}
       >
-        {trigger ??
+        {(typeof trigger === 'function' ? trigger(triggerProps) : trigger) ??
           (interactive ? (
-            <Pressable
-              {...webDataSet({ bloomListLink: '' })}
-              {...(IS_WEB && href && !selecting ? { href } : {})}
-              role={role ?? (href && !selecting ? 'link' : 'button')}
-              accessibilityHint={accessibilityHint}
-              aria-checked={role === 'radio' || role === 'checkbox' ? checked : undefined}
-              aria-selected={role === 'option' ? checked : undefined}
-              accessibilityLabel={label}
-              disabled={disabled}
-              aria-disabled={disabled || undefined}
-              accessibilityState={{
-                selected: active || checked,
-                checked: role === 'radio' || role === 'checkbox' ? checked : undefined,
-                disabled,
-              }}
-              aria-current={active ? 'true' : undefined}
-              accessibilityActions={
-                commands.length
-                  ? commands.map((action) => ({
-                      name: action.key,
-                      label: action.label,
-                    }))
-                  : undefined
-              }
-              onAccessibilityAction={(event) => {
-                const action = commands.find((item) => item.key === event.nativeEvent.actionName);
-                if (action) perform(action);
-              }}
-              onHoverIn={disabled ? undefined : onPrefetch}
-              onFocus={disabled ? undefined : onPrefetch}
-              onPressIn={disabled ? undefined : onPrefetch}
-              onPress={(event) => {
-                if (selecting && onCheckedChange) {
-                  event.preventDefault();
-                  onCheckedChange(!checked);
-                } else if (onPress) {
-                  if (href) event.preventDefault();
-                  onPress();
-                } else if (!IS_WEB && href) openHref(href);
-              }}
-              // Keep this handler mounted throughout selection: RNW suppresses the release click
-              // after a long press only while onLongPress remains on the same Pressable.
-              onLongPress={
-                touch
-                  ? () => {
-                      if (onCheckedChange) {
-                        if (!selecting) onCheckedChange(true);
-                      } else onLongPress?.();
-                    }
-                  : undefined
-              }
-              style={({ pressed }) => [
-                StyleSheet.absoluteFill,
-                { borderRadius: 28 },
-                !IS_WEB && pressed && !active && !checked
-                  ? { backgroundColor: selectedFill }
-                  : undefined,
-              ]}
-              testID={testID ? `${testID}-link` : undefined}
-            />
+            <Pressable {...triggerProps} />
           ) : labelProp && label ? (
             <View
               accessible
@@ -243,7 +237,7 @@ export function createListItem({
         <View
           pointerEvents="box-none"
           style={{
-            minHeight: 56,
+            minHeight: LIST_ROW_MIN_HEIGHT,
             flexDirection: 'row',
             alignItems: 'center',
             gap: 10,

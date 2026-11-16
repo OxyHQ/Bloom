@@ -6,6 +6,9 @@ import { Text } from '../typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Badge } from '../badge';
+import { Avatar } from '../avatar';
+import { ListSelectionBar } from '../list';
+import { DropdownMenuItem } from '../dropdown-menu';
 import { Button } from '../button';
 import { alert, prompt } from '../surfaces';
 import { useTheme } from '../theme/use-theme';
@@ -491,14 +494,59 @@ export const Tree: Story = {
   parameters: { controls: { disable: true } },
   render: function Render() {
     const [selected, setSelected] = useState('coding');
+    const [checked, setChecked] = useState<string[]>([]);
+    const open = (key: string) => {
+      setSelected(key);
+      setChecked([]);
+    };
+    const tree: SidebarTree = {
+      ...REPOSITORIES,
+      folders: REPOSITORY_FOLDERS.map((folder) => ({
+        ...folder,
+        items: folder.items.map((item) => ({
+          ...item,
+          href: `#conversation-${item.key}`,
+          leading: <Avatar initials={item.label.slice(0, 1).toUpperCase()} size={36} />,
+          checked: checked.includes(item.key),
+          selecting: checked.length > 0,
+          onCheckedChange: (next: boolean) =>
+            setChecked((current) =>
+              next
+                ? [...new Set([...current, item.key])]
+                : current.filter((key) => key !== item.key),
+            ),
+          contextMenu: (
+            <DropdownMenuItem onPress={() => open(item.key)}>Open conversation</DropdownMenuItem>
+          ),
+        })),
+      })),
+    };
     return (
       <Frame>
         <Sidebar
           testID="sidebar"
+          header={
+            checked.length ? (
+              <ListSelectionBar
+                count={checked.length}
+                total={REPOSITORY_FOLDERS.flatMap((folder) => folder.items).length}
+                onClear={() => setChecked([])}
+                actions={[
+                  {
+                    key: 'open',
+                    icon: RiMessage2Line,
+                    label: 'Open conversation',
+                    onPress: () => open(checked[0] ?? selected),
+                  },
+                ]}
+                testID="tree-selection"
+              />
+            ) : undefined
+          }
           items={CHAT_NAV}
           secondaryItems={DEMO_SECONDARY}
           account={DEMO_ACCOUNT}
-          tree={REPOSITORIES}
+          tree={tree}
           selectedTreeItem={selected}
           onTreeItemPress={(item) => setSelected(item.key)}
           plan={PLAN}

@@ -173,7 +173,7 @@ describe('Sidebar tree rows that take drops (web)', () => {
   });
 
   it('lights a folder’s row the same way', () => {
-    const row = byLabel('Downloads');
+    const row = byTestId('sidebar-tree-row-downloads');
     fire(row, 'dragenter', FILES);
     expect(lit(row)).toBe(colorOf(palette.selected));
     fire(row, 'drop', FILES);
