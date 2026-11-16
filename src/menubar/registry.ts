@@ -47,6 +47,11 @@ export interface MenuEntry {
   readonly keepOpen?: boolean;
   /** The application's standard command it is (About, Settings…), for the platform's bar. */
   readonly action?: PlatformMenuAction;
+  /**
+   * The modifiers that show it in place of the item before it (`MenubarItemProps.alternate`),
+   * spelled as `modifiersText` does. A platform's bar shows the item, not its alternate.
+   */
+  readonly alternate?: string;
   /** Runs the item as a press on its row would. Commands only. */
   readonly run?: () => void;
 }
@@ -80,6 +85,7 @@ function sameEntry(a: MenuEntry, b: MenuEntry): boolean {
     a.checked === b.checked &&
     a.keepOpen === b.keepOpen &&
     a.action === b.action &&
+    a.alternate === b.alternate &&
     a.run === b.run
   );
 }
@@ -163,7 +169,10 @@ export class MenubarRegistry {
               items: this.describeItems(entry.id, live),
             },
           ];
+        // The platform's menus have no alternates: the item is shown, and the alternate's
+        // shortcut runs it from Bloom's keys (`shortcutFor`).
         case 'item':
+          if (entry.alternate !== undefined) return [];
           return [
             {
               kind: 'item',

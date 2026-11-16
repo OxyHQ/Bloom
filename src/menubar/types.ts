@@ -125,6 +125,26 @@ export interface MenubarItemProps extends MenuRowProps, MenubarShortcutProp {
    * Its shortcut runs it on every platform, as any item's does.
    */
   action?: PlatformEditAction | PlatformMenuAction;
+  /**
+   * Makes the item the ALTERNATE of the item declared just before it, shown in
+   * its place while exactly these modifiers are held (`Alt`, `Alt+Shift`,
+   * `Mod+Alt`: a chord's modifier names), as a Mac's `isAlternate` item with
+   * its `keyEquivalentModifierMask`: Option turns Restart… into Restart, a
+   * command that asks no question. Several alternates in a row each replace
+   * the first item before them that is not one, with their own modifiers.
+   *
+   * The two are one row of the open menu: it shows the alternate the instant
+   * its modifiers go down and the item again as they go up (the platform's
+   * `keyboard.subscribeModifiers`, its key presses, or the document's keys and
+   * pointer on the web), and keeps its place and highlight as it swaps. Each
+   * keeps its own label, state, handler and `shortcut`, and each shortcut runs
+   * its own item whether the menu is open or closed, and whichever is shown.
+   * An alternate with no item before it (first in its menu or group, or after
+   * a separator or a label) is an ordinary item. Where the platform draws the
+   * bar (`menu-bar`), the platform's menus show the item; the alternate's
+   * shortcut still runs it.
+   */
+  alternate?: string;
 }
 export interface MenubarCheckboxItemProps extends MenuCheckboxRowProps, MenubarShortcutProp {}
 export type MenubarRadioGroupProps = MenuRadioGroupProps;

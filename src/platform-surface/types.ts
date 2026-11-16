@@ -11,6 +11,11 @@ import type { FloatingAlign, FloatingSide } from '../floating/types';
  *   (close, minimize, zoom) in its top leading corner, and can be moved,
  *   zoomed and minimized. Bloom keeps the controls' room and, where the
  *   platform asks it to, draws them (`@oxy.so/bloom/window`).
+ * - `window-layout`: with `window`, the platform lays the window out on its
+ *   display as a Mac tiles windows since macOS 15 (`PlatformWindow.layOut`),
+ *   and moves it between its desktops where it has them
+ *   (`PlatformWindow.moveToDesktop`, `PlatformWindowState.desktops`): the
+ *   zoom control shows the layouts on hover and long press.
  * - `menu-bar`: the platform shows the active window's menus in a bar of its
  *   own (the top of the screen, as on a Mac). A `Menubar` then draws nothing in
  *   the window: it describes its menus to the platform (`PlatformMenuBar`) and
@@ -39,6 +44,7 @@ import type { FloatingAlign, FloatingSide } from '../floating/types';
 export type SurfaceCapability =
   | 'popup-surface'
   | 'window'
+  | 'window-layout'
   | 'pointer'
   | 'menu-bar'
   | 'appearance'
@@ -332,7 +338,35 @@ export interface PlatformWindowState {
   readonly maximized: boolean;
   /** Full screen: no controls and no room. */
   readonly fullscreen: boolean;
+  /**
+   * The platform's desktops (a Mac's Spaces) and the one the window is on, numbered from 0, where
+   * it lets a window move between them (`moveToDesktop`); absent where it does not.
+   */
+  readonly desktops?: { readonly count: number; readonly current: number };
 }
+
+/**
+ * Where a window can be laid out on its display's work area, as a Mac's tiling since macOS 15:
+ * Fill and Center; the halves and quarters; the arrangements of the window with those behind it
+ * (`leftRight`: this one left, the next right); and back to the frame it had before.
+ */
+export type PlatformWindowLayout =
+  | 'fill'
+  | 'center'
+  | 'left'
+  | 'right'
+  | 'top'
+  | 'bottom'
+  | 'topLeft'
+  | 'topRight'
+  | 'bottomLeft'
+  | 'bottomRight'
+  | 'leftRight'
+  | 'rightLeft'
+  | 'topBottom'
+  | 'bottomTop'
+  | 'quarters'
+  | 'returnToPrevious';
 
 /**
  * The application's window, with the `window` capability. Its state is an
@@ -365,6 +399,17 @@ export interface PlatformWindow {
    * any size leaves it out, and Bloom then asks nothing.
    */
   setSizeLimits?(limits: PlatformWindowSizeLimits): void;
+  /**
+   * Lays the window out (`PlatformWindowLayout`), as the platform's own tiling does: required with
+   * the `window-layout` capability, which makes the zoom control show the layouts on hover and
+   * long press, as a Mac's green button does.
+   */
+  layOut?(layout: PlatformWindowLayout): void;
+  /**
+   * Moves the window to another of the platform's desktops, numbered from 0
+   * (`PlatformWindowState.desktops`), with `window-layout`, where the platform has desktops.
+   */
+  moveToDesktop?(desktop: number): void;
 }
 
 /**
@@ -461,19 +506,23 @@ export interface PlatformMenuBar {
   onActivate(listener: (id: string) => void): () => void;
 }
 
-/**
- * A key press as the platform reports it: W3C `KeyboardEvent`'s fields, the
- * shape React Native's own key events carry.
- */
-export interface PlatformKeyEvent {
-  /** `KeyboardEvent.key`: `n`, `N`, `Enter`, `ArrowDown`, … */
-  readonly key: string;
-  /** `KeyboardEvent.code`, the physical key (`KeyN`), when the platform knows it. */
-  readonly code?: string;
+/** The modifier keys held: W3C `KeyboardEvent`'s and `PointerEvent`'s flags. */
+export interface PlatformModifiers {
   readonly altKey: boolean;
   readonly ctrlKey: boolean;
   readonly metaKey: boolean;
   readonly shiftKey: boolean;
+}
+
+/**
+ * A key press as the platform reports it: W3C `KeyboardEvent`'s fields, the
+ * shape React Native's own key events carry.
+ */
+export interface PlatformKeyEvent extends PlatformModifiers {
+  /** `KeyboardEvent.key`: `n`, `N`, `Enter`, `ArrowDown`, … */
+  readonly key: string;
+  /** `KeyboardEvent.code`, the physical key (`KeyN`), when the platform knows it. */
+  readonly code?: string;
   /** Held down and repeating. */
   readonly repeat?: boolean;
   /** Part of an input method's composition. */
@@ -494,6 +543,14 @@ export interface PlatformKeyboard {
    * then does not deliver it to the focused view. Returns the unsubscribe.
    */
   subscribe(listener: (event: PlatformKeyEvent) => boolean): () => void;
+  /**
+   * Calls `listener` with the modifiers held each time they change, as a Mac's
+   * `flagsChanged:`, and with those held as the window takes the keyboard.
+   * Optional: an open menu shows an item's alternate (`MenubarItemProps`'
+   * `alternate`) the instant Option goes down or up with it, and without it
+   * only as a key is pressed with Option held. Returns the unsubscribe.
+   */
+  subscribeModifiers?(listener: (held: PlatformModifiers) => void): () => void;
 }
 
 /**

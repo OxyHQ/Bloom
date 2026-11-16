@@ -74,6 +74,16 @@ const ACCEPTED: ReadonlyArray<{ where: string; statement: string; why: string }>
       'one that knows what hovering means, the store only knows that something ' +
       'says "not yet". The native fork registers nothing.',
   },
+  {
+    where: 'window/layouts.ts',
+    statement: 'registerWindowLayouts(WindowLayouts);',
+    why:
+      "Registers the zoom control's layouts for WindowControls: importing " +
+      '`@oxy.so/bloom/window/layouts` is how the platform adapter that reports ' +
+      '`window-layout` asks for them, so that WindowControls never links ' +
+      'DropdownMenu itself. Nothing else imports this entry; it only stores a ' +
+      'component on globalThis.',
+  },
 ];
 
 function resolveLocal(fromFile: string, spec: string): string | null {
@@ -208,9 +218,6 @@ function declaredRoots(sf: ts.SourceFile): Set<string> {
     } else if (ts.isEnumDeclaration(stmt)) {
       names.add(stmt.name.text);
     } else if (ts.isImportDeclaration(stmt) && stmt.importClause) {
-      // Deliberately NOT added: writing to an imported binding's property is a
-      // reach into another module, which is the thing being forbidden.
-      continue;
     }
   }
   return names;

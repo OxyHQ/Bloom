@@ -18,7 +18,7 @@
  */
 import { Platform } from 'react-native';
 
-import type { PlatformKeyEvent } from '../platform-surface/types';
+import type { PlatformKeyEvent, PlatformModifiers } from '../platform-surface/types';
 
 export interface Chord {
   /** A lower-case character, or a `NAMED_KEYS` name. */
@@ -135,6 +135,57 @@ export function chordText(chord: Chord): string {
   if (chord.meta) parts.push('Meta');
   parts.push(keyText(chord.key));
   return parts.join('+');
+}
+
+/**
+ * Modifier keys alone, without a key: the ones an alternate menu item is shown
+ * with (`MenubarItemProps.alternate`), as a Mac's `keyEquivalentModifierMask`.
+ */
+export type ChordModifiers = Omit<Chord, 'key'>;
+
+/**
+ * Modifiers from their declared text (`Alt`, `Alt+Shift`, `Mod+Alt`: the
+ * names a chord's modifiers take), or null when the text is not one.
+ */
+export function parseModifiers(text: string): ChordModifiers | null {
+  const modifiers = { mod: false, ctrl: false, alt: false, shift: false, meta: false };
+  const names = text.split('+').map((part) => part.trim().toLowerCase());
+  for (const name of names) {
+    const modifier = MODIFIERS[name as keyof typeof MODIFIERS];
+    if (!modifier) return null;
+    modifiers[modifier] = true;
+  }
+  return modifiers;
+}
+
+/** The modifiers in their one canonical spelling, as `chordText` spells a chord's. */
+export function modifiersText(modifiers: ChordModifiers): string {
+  const parts: string[] = [];
+  if (modifiers.mod) parts.push('Mod');
+  if (modifiers.ctrl) parts.push('Ctrl');
+  if (modifiers.alt) parts.push('Alt');
+  if (modifiers.shift) parts.push('Shift');
+  if (modifiers.meta) parts.push('Meta');
+  return parts.join('+');
+}
+
+/**
+ * Whether exactly these modifiers are held, on this platform (`Mod` resolved):
+ * `Alt` is Option alone, not Option with Shift, as a Mac matches an alternate
+ * item's modifier mask.
+ */
+export function modifiersHeld(
+  modifiers: ChordModifiers,
+  held: PlatformModifiers,
+  apple: boolean = isApplePlatform(),
+): boolean {
+  const wanted = modifiersOf({ ...modifiers, key: '' }, apple);
+  return (
+    held.ctrlKey === wanted.ctrl &&
+    held.altKey === wanted.alt &&
+    held.shiftKey === wanted.shift &&
+    held.metaKey === wanted.meta
+  );
 }
 
 /** The modifiers the chord's key press carries on this platform: `Mod` resolved. */

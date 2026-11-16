@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 
-import { usePlatformWindow } from '../platform-surface/context';
+import { usePlatformWindow, usePlatformWindowLayout } from '../platform-surface/context';
 import { useWindowChrome } from './context';
-import type { PlatformWindowState } from '../platform-surface/types';
+import type { PlatformWindowLayout, PlatformWindowState } from '../platform-surface/types';
 import type { WindowControlsRoom, WindowHandle, WindowSizeLimits } from './types';
 
 const NO_ROOM: WindowControlsRoom = { top: 0, leading: 0 };
@@ -16,6 +16,7 @@ function unsubscribed() {}
  */
 export function useWindow(): WindowHandle | null {
   const platform = usePlatformWindow();
+  const layouts = usePlatformWindowLayout();
   // `useSyncExternalStore` compares snapshots by identity, so an adapter that
   // builds a fresh object on every `getState()` must not read as a change.
   const last = useRef<PlatformWindowState | null>(null);
@@ -31,13 +32,16 @@ export function useWindow(): WindowHandle | null {
       previous &&
       previous.active === next.active &&
       previous.maximized === next.maximized &&
-      previous.fullscreen === next.fullscreen
+      previous.fullscreen === next.fullscreen &&
+      previous.desktops?.count === next.desktops?.count &&
+      previous.desktops?.current === next.desktops?.current
     )
       return previous;
     last.current = {
       active: next.active,
       maximized: next.maximized,
       fullscreen: next.fullscreen,
+      ...(next.desktops ? { desktops: { ...next.desktops } } : null),
     };
     return last.current;
   }, [platform]);
@@ -53,9 +57,15 @@ export function useWindow(): WindowHandle | null {
             minimize: () => platform.minimize(),
             zoom: () => platform.zoom(),
             startMove: () => platform.startMove(),
+            ...(layouts?.layOut
+              ? { layOut: (layout: PlatformWindowLayout) => layouts.layOut?.(layout) }
+              : null),
+            ...(layouts?.moveToDesktop
+              ? { moveToDesktop: (desktop: number) => layouts.moveToDesktop?.(desktop) }
+              : null),
           }
         : null,
-    [platform, state],
+    [platform, layouts, state],
   );
 }
 

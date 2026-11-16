@@ -1,5 +1,31 @@
 # Changelog
 
+## 21.7.1
+
+### Fixed
+
+- **A menu in a platform's popup takes every key it is given, however many arrive in one turn.** The panel's keys (`PopupPanel`'s `onKey`, a native `DropdownMenu`, `ContextMenu` or `Menubar` in a platform's popup) moved from the active row of the render they arrived in, so two ↓ delivered in one turn, as OxyOS delivers the keys of one compositor turn on a loaded machine or as a person types ahead, landed on the same row and Return chose the wrong one. Each key now moves on from where the key before it left the highlight (the row the keys see is current at once, the highlight's render follows), as on a Mac: ↓ ↓ Return chooses the second row.
+
+## 21.7.0
+
+### Added
+
+- **The zoom control's layouts, as a Mac's green button since macOS 15** (the `window-layout` capability). Where the platform lays windows out, `WindowControls`' zoom control opens a menu of the window's layouts on hover, a long press or the screen reader's "Show menu": Move & Resize (the halves, then the quarters), Fill & Arrange (Fill, Center and the arrangements with the windows behind), Return to Previous Size, and Move to Desktop *n* for each other desktop. A row asks the platform (`PlatformWindow.layOut`, `moveToDesktop`); the control's press still zooms. Bloom's menu, so its rows take the arrows, typeahead and Return and are named in each of Bloom's languages. The adapter that reports `window-layout` imports **`@oxy.so/bloom/window/layouts`**, which registers the menu; `WindowControls` never imports it, so a window's controls elsewhere link no `DropdownMenu` (reported without the import, the control only zooms, and development warns once).
+- **`PlatformWindow.layOut`, `moveToDesktop`, `PlatformWindowState.desktops` and `PlatformWindowLayout`**, the `window-layout` capability and `usePlatformWindowLayout()`; `useWindow()` carries them.
+
+## 21.6.0
+
+### Added
+
+- **`DropdownMenu activation="hover"` opens on hover natively too, in a platform's popup** (a desktop with a pointer: OxyOS). The pointer resting on the trigger for `openDelay` opens it, and leaving the trigger and the panel closes it after `closeDelay` unless the pointer comes back to either, as on the web. The popup tracks the pointer over the trigger while it holds its grab (`trackingRef`). A key used in the panel keeps it open, and a menu opened by a long press or the keyboard closes only by a choice, Escape or a press outside. A touch, or a phone's sheet, never opens by hover; the trigger's own press and the long press are unchanged. The trigger declares React Native's `longpress` accessibility action ("Show menu", as `ContextMenu`'s), so the screen reader opens a hover menu as a long press does. `TriggerSlot` hears the pointer coming onto and leaving the trigger (`onPointerEnter`, `onPointerLeave`); `PopupPanel` hears the pointer on its panel and its keys (`onPointerEnter`, `onPointerLeave`, `onKey`).
+
+## 21.5.0
+
+### Added
+
+- **A menu item's alternate (`MenubarItem`'s `alternate`), as a Mac's `isAlternate` item.** `<MenubarItem alternate="Alt">Restart</MenubarItem>` placed right after `Restart…` is shown in its place while exactly those modifiers are held (`Alt`, `Alt+Shift`, `Mod+Alt`). The open menu draws the two as one row, which swaps the instant the modifiers go down or up and keeps its place and its keyboard highlight. Each keeps its own label, handler and `shortcut`, and each chord runs its own item, open or closed, whichever is shown. A closed menu's description reads the alternate with its modifiers (`MenuEntry.alternate`), so an OS shell's Option alternates no longer need a wrapper of its own around the rows, which Bloom had to mount headless in the closed menu. Where the platform draws the bar (`menu-bar`) its menus show the item; the alternate's chord still runs. An alternate after a separator, a label or nothing is an ordinary item.
+- **`PlatformKeyboard.subscribeModifiers`** (optional) and **`PlatformModifiers`**: the modifiers held as they change, as a Mac's `flagsChanged:`, which an open menu's alternates follow. Without it a key press's flags are followed; on the web, the document's keys and the pointer's flags.
+
 ## 21.4.0
 
 ### Changed
