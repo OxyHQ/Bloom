@@ -97,6 +97,10 @@ docs/overlay.mdx, docs/styles.mdx Z_INDEX: OverlayRoot/Backdrop is ONLY stacking
 - Native second mechanism: Android-safe; iOS unconfirmed, verify device before shipping (docs/overlay.mdx)
 - Jest sees markup, not covered surfaces/dropped pointer events. overlay-stack-order.test.tsx, scripts/verify-overlay-stacking.mjs (Chrome mouse.click; element.click bypasses hit testing), pointer-events-style-form.test.ts, overlay-pointer-events.test.tsx (real RNW). Verify browser dismissal
 
+## List trailing controls
+
+`ListItem` caller trailing slots and built-in person/call/mail controls stay visible when row commands appear. Only renderer-owned passive metadata may yield. The web shell reserves menu width beside persistent controls: hiding all trailing content swallowed member-action clicks; revealing an unreserved menu shifted the control 46px under the pointer. `ListTrailingControls.web.test.tsx` guards classification; `scripts/verify-list-trailing-controls.mjs` checks the original pointer coordinates, keyboard, menu-open and touch, with old-source and no-reservation negative controls. Run headed Chrome or xvfb and verify hover media; headless Chrome can report `hover:none` and silently skip the desktop failure.
+
 ## Web ARIA
 
 RNW drops accessibilityState + accessibilityValue. Set flat aria-busy/checked/disabled/expanded/selected + aria-value* (RN folds them back). Toggle buttons need BOTH native state + aria-pressed (RN has no pressed concept). Pressable/View aria-disabled inversion: docs/switch.mdx, docs/slider.mdx

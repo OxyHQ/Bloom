@@ -10,7 +10,7 @@ import { RiVideoOnLine } from '../icons/remix/RiVideoOnLine';
 import { useMessages } from '../locale/messages';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import type { ListCommonProps, ListCallData } from './types';
+import type { ListCommonProps, ListItemShellProps, ListCallData } from './types';
 
 export function ListCall({
   Shell,
@@ -18,7 +18,7 @@ export function ListCall({
   call,
   ...props
 }: ListCommonProps & {
-  Shell: ComponentType<ListCommonProps>;
+  Shell: ComponentType<ListItemShellProps>;
   Button: typeof import('../button')['Button'];
   call: ListCallData;
 }) {

@@ -21,7 +21,7 @@ import { SwipeRow, useSwipeAvailable } from '../swipe-row';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { LIST_CSS, LIST_STYLE_ID, LIST_ROW_INSET, LIST_ROW_MIN_HEIGHT } from './list-style';
-import type { ListAction, ListItemProps, ListCommonProps } from './types';
+import type { ListAction, ListItemProps, ListItemShellProps } from './types';
 
 type Bindings = Pick<
   typeof import('../context-menu'),
@@ -54,6 +54,7 @@ export function createListItem({
     content,
     leading,
     trailing,
+    trailingMetadata = false,
     footer,
     attachments,
     disabled = false,
@@ -74,7 +75,7 @@ export function createListItem({
     swipeEnabled,
     style,
     testID,
-  }: ListCommonProps) {
+  }: ListItemShellProps) {
     const label = labelProp ?? (typeof title === 'string' ? title : '');
     const theme = useTheme();
     const surface = useSurfaceFill();
@@ -289,12 +290,19 @@ export function createListItem({
             )}
           </View>
           {trailing ? (
-            <View {...webDataSet({ bloomListMeta: '' })} pointerEvents="box-none">
+            <View
+              {...(trailingMetadata ? webDataSet({ bloomListMeta: '' }) : {})}
+              pointerEvents="box-none"
+            >
               {trailing}
             </View>
           ) : null}
           {(commands.length || contextMenu) && !touch && !disabled ? (
-            <View {...webDataSet({ bloomListActions: '' })}>
+            <View
+              {...webDataSet({
+                bloomListActions: trailing && !trailingMetadata ? 'persistent' : '',
+              })}
+            >
               <DropdownMenu>
                 <DropdownMenuTrigger asChild label={menuLabel}>
                   <Button

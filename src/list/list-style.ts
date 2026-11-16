@@ -12,13 +12,15 @@ export const LIST_CSS = `
 [data-bloom-list-identity]:has(:focus-visible) [data-bloom-list-selection] { opacity:1 !important; }
 [data-bloom-list-identity]:has(:focus-visible) [data-bloom-list-portrait] { opacity:0; }
 [data-bloom-list-actions] { display:none !important; }
+/* Persistent controls never move when the row reveals its command menu. */
+[data-bloom-list-actions="persistent"] { display:flex !important; visibility:hidden; pointer-events:none; }
 [data-bloom-list-row]:has(:focus-visible) [data-bloom-list-actions],
-[data-bloom-list-row]:has([aria-expanded="true"]) [data-bloom-list-actions] { display:flex !important; }
+[data-bloom-list-row]:has([aria-expanded="true"]) [data-bloom-list-actions] { display:flex !important; visibility:visible; pointer-events:auto; }
 [data-bloom-list-row][data-has-actions="true"]:has(:focus-visible) [data-bloom-list-meta],
 [data-bloom-list-row][data-has-actions="true"]:has([aria-expanded="true"]) [data-bloom-list-meta] { display:none !important; }
 @media (hover:hover) {
  [data-bloom-list-row][data-interactive="true"]:hover { background:var(--bloom-list-selected); }
- [data-bloom-list-row]:hover [data-bloom-list-actions] { display:flex !important; }
+ [data-bloom-list-row]:hover [data-bloom-list-actions] { display:flex !important; visibility:visible; pointer-events:auto; }
  [data-bloom-list-row][data-has-actions="true"]:hover [data-bloom-list-meta] { display:none !important; }
  [data-bloom-list-identity]:hover [data-bloom-list-selection] { opacity:1 !important; }
  [data-bloom-list-identity]:hover [data-bloom-list-portrait] { opacity:0; }

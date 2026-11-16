@@ -156,6 +156,7 @@ export interface ListCommonProps {
   /** Custom text body; preserves shared row geometry. */
   content?: import('react').ReactNode;
   leading?: import('react').ReactNode;
+  /** Persistent trailing content, including controls; never replaced by the row menu. */
   trailing?: import('react').ReactNode;
   footer?: import('react').ReactNode;
   /** File chips; the shared horizontal attachment rail owns its inset and swipe handoff. */
@@ -191,6 +192,11 @@ export interface ListCommonProps {
   /** Parent-facing row layout, applied to the swipe host exactly once. */
   style?: StyleProp<ViewStyle>;
   testID?: string;
+}
+
+/** @internal Only domain renderers classify their own passive metadata. */
+export interface ListItemShellProps extends ListCommonProps {
+  trailingMetadata?: boolean;
 }
 
 /** Conversation display data; all interaction and geometry belongs to ListItem. */

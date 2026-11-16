@@ -1,5 +1,11 @@
 # Changelog
 
+## 22.1.4
+
+### Fixed
+
+- List trailing controls remain available when hover, keyboard focus or an open menu reveals row commands. Only renderer-owned passive conversation/mail metadata yields to those commands; person actions, call buttons, mail stars and caller-supplied trailing content remain interactive.
+
 ## 22.1.3
 
 ### Fixed

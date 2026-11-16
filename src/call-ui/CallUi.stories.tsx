@@ -9,6 +9,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { RiInformationLine } from '../icons/remix/RiInformationLine';
 import { List } from '../list';
 import { PageHeader } from '../page-header';
 import { CallMinimisedPill } from './CallMinimisedPill';
@@ -341,21 +342,35 @@ export const GroupBar: Story = {
 
 /** The call log, in day sections. */
 export const History: Story = {
-  render: () => (
-    <Surface>
-      <PageHeader title="Calls" onBack={null} safeArea={false} sticky={false} />
-      <List
-        sections={HISTORY.map((section) => ({
-          id: section.id ?? section.title,
-          title: section.title,
-          items: section.items.map((item) => ({
-            id: item.id,
-            call: { ...item, onCallBack: fn().mockName('onCallBack') },
-            onPress: fn().mockName('onPress'),
-          })),
-        }))}
-        testID="history"
-      />
-    </Surface>
-  ),
+  render: function CallHistoryStory() {
+    const [result, setResult] = useState('');
+    return (
+      <Surface>
+        <PageHeader title="Calls" onBack={null} safeArea={false} sticky={false} />
+        <Text accessibilityLiveRegion="polite" testID="history-result">
+          {result}
+        </Text>
+        <List
+          sections={HISTORY.map((section) => ({
+            id: section.id ?? section.title,
+            title: section.title,
+            items: section.items.map((item) => ({
+              id: item.id,
+              call: { ...item, onCallBack: () => setResult(`Call ${item.id}`) },
+              onPress: () => setResult(`Open ${item.id}`),
+              actions: [
+                {
+                  key: 'details',
+                  label: 'Call details',
+                  icon: RiInformationLine,
+                  onPress: () => setResult(`Details ${item.id}`),
+                },
+              ],
+            })),
+          }))}
+          testID="history"
+        />
+      </Surface>
+    );
+  },
 };

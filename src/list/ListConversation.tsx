@@ -21,7 +21,7 @@ import { useSurfaceFill } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
-import type { ListCommonProps, ListConversationData } from './types';
+import type { ListCommonProps, ListItemShellProps, ListConversationData } from './types';
 
 /** Content recipe only. The same Shell owns every row's structure and interaction. */
 export function ListConversation({
@@ -29,7 +29,7 @@ export function ListConversation({
   conversation,
   ...props
 }: ListCommonProps & {
-  Shell: ComponentType<ListCommonProps>;
+  Shell: ComponentType<ListItemShellProps>;
   conversation: ListConversationData;
 }) {
   const {
@@ -219,6 +219,7 @@ export function ListConversation({
           </View>
         )
       }
+      trailingMetadata={props.trailing === undefined}
       trailing={
         props.trailing !== undefined ? (
           props.trailing

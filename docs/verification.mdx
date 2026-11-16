@@ -30,6 +30,31 @@ Two consequences, both silent:
 
 **Recorded debt:** a platform config needs native peers installed/mocked; asserting native behavior via a web-resolved file measures the wrong file.
 
+## Desktop pointer tests must verify input capabilities
+
+Chrome 146 launched headless through Puppeteer reported `hover:none` despite a
+1280px viewport and `hasTouch:false`. Bloom correctly applied its touch CSS, so
+that setup concealed a desktop List failure. A viewport width alone does not
+prove mouse/hover coverage. Check `matchMedia('(hover:hover)').matches` before
+testing desktop interactions; use headed Chrome (or `xvfb-run`) when the
+headless browser exposes the wrong capabilities.
+
+`scripts/verify-list-trailing-controls.mjs` asserts the capability of each input
+profile, then tests the existing Contact Search Results, Calls History and Mail
+Pointer Targets stories in light/dark mode. Set `CHROME_PATH`, optionally
+`PUPPETEER_CORE_PATH`, `STORYBOOK_URL` and `REPORT_DIR`; the runner defaults to
+headed Chrome. It moves from outside the row to a control's original center,
+checks its bounds and hit target, and clicks those same coordinates. It also
+uses real Tab/Enter input, checks the menu-open state and taps on touch.
+Synthetic `element.click()` and locator retries can bypass the failure.
+
+The measured negative controls restore the old shell metadata attribute (the
+person action disappears) and remove reserved command space (the action moves
+46px under the pointer). Only passive renderer metadata may yield to commands;
+caller trailing content and built-in actions remain visible and stationary.
+`ListTrailingControls.web.test.tsx` separately protects that classification.
+A catalogue load/viewport sweep does not replace this pointer gate.
+
 ## Canvas readbacks can change the backend being verified
 
 Use a **fresh destination canvas for each pose** in avatar pixel gates, and never

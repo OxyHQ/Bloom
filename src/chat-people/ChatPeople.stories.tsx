@@ -3,6 +3,7 @@ import { Screen } from '../screen';
 import { fn } from 'storybook/test';
 import { PageHeader } from '../page-header';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
+import { RiUserAddLine } from '../icons/remix/RiUserAddLine';
 import { List } from '../list';
 import type React from 'react';
 import { useState } from 'react';
@@ -195,13 +196,29 @@ export const Contacts: Story = {
 /** Flat results can have a heading without an alphabet index or sticky header. */
 export const ContactSearchResults: Story = {
   render: () => {
+    const [result, setResult] = useState('');
     const items = SECTIONS.flatMap(({ contacts }) => contacts).map((person) => ({
       id: person.id,
-      person,
-      onPress: fn().mockName('onPress'),
+      person: {
+        ...person,
+        actionLabel: 'Add contact',
+        onAction: () => setResult(`Add ${person.id}`),
+      },
+      actions: [
+        {
+          key: 'add',
+          label: 'Add contact',
+          icon: RiUserAddLine,
+          onPress: () => setResult(`Add ${person.id}`),
+        },
+      ],
+      onPress: () => setResult(`Open ${person.id}`),
     }));
     return (
       <Surface>
+        <Text accessibilityLiveRegion="polite" testID="contacts-result">
+          {result}
+        </Text>
         <Caption>flat, unlabelled</Caption>
         <List items={items} height={260} testID="results" stickyHeaders={false} />
         <Caption>flat, one label</Caption>
