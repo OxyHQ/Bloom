@@ -228,6 +228,7 @@ type ButtonPressableProps = Pick<
   | 'testID'
 > & {
   children?: React.ReactNode;
+  interactive?: boolean;
   style?: StyleProp<ViewStyle>;
   baseStyle?: StyleProp<ViewStyle>;
   'aria-hidden'?: boolean;
@@ -253,7 +254,7 @@ const ContentStyleContext = createContext<{ text?: TextStyle; layout?: ViewStyle
 // Resolve utilities without mixing Bloom's defaults into their input. The
 // defaults are merged only after interop, so caller classes have final say.
 const ButtonPressable = forwardRef<ComponentRef<typeof View>, ButtonPressableProps>(
-  function ButtonPressable({ baseStyle, style, children, ...props }, ref) {
+  function ButtonPressable({ baseStyle, style, children, interactive = true, ...props }, ref) {
     const resolved = StyleSheet.flatten(style) as TextStyle | undefined;
     const layout: TextStyle = { ...resolved };
     const text: TextStyle = {};
@@ -268,23 +269,39 @@ const ButtonPressable = forwardRef<ComponentRef<typeof View>, ButtonPressablePro
     // wrapper horizontally makes RN's compatibility Yoga mode measure a wrapped
     // row as one full-width button per line, despite correct final positions.
     // Caller direction/alignment belong to the content slots below.
+    const hostStyle: StyleProp<ViewStyle> = [
+      baseStyle,
+      layout,
+      { flexDirection: 'column', alignItems: 'center', justifyContent: 'center' },
+    ];
+    const content = (
+      <ContentStyleContext.Provider value={{ text, layout }}>
+        {children}
+      </ContentStyleContext.Provider>
+    );
+    if (!interactive) {
+      return (
+        <View
+          ref={ref}
+          onLayout={props.onLayout}
+          style={hostStyle}
+          pointerEvents="none"
+          focusable={false}
+          accessible={!!props.accessibilityLabel}
+          role={props.accessibilityLabel ? 'img' : undefined}
+          accessibilityLabel={props.accessibilityLabel}
+          aria-hidden={props['aria-hidden'] ?? !props.accessibilityLabel}
+          accessibilityElementsHidden={props.accessibilityElementsHidden}
+          importantForAccessibility={props.importantForAccessibility}
+          testID={props.testID}
+        >
+          {content}
+        </View>
+      );
+    }
     return (
-      <Pressable
-        {...props}
-        ref={ref}
-        style={[
-          baseStyle,
-          layout,
-          {
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-          },
-        ]}
-      >
-        <ContentStyleContext.Provider value={{ text, layout }}>
-          {children}
-        </ContentStyleContext.Provider>
+      <Pressable {...props} ref={ref} style={hostStyle}>
+        {content}
       </Pressable>
     );
   },
@@ -382,6 +399,8 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       onHoverOut,
       onLayout,
       'aria-hidden': ariaHidden,
+      'aria-busy': ariaBusy,
+      interactive = true,
       accessibilityElementsHidden,
       importantForAccessibility,
       colors: colorsProp,
@@ -474,7 +493,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
     const isSquare = !grow && (iconOnly || (icon != null && childrenProp == null));
     const isIconVariant = isSquare;
     const isLink = appearance === 'plain' && (href != null || linkTone != null);
-    const isInteractionBlocked = disabled || loading;
+    const isInteractionBlocked = !interactive || disabled || loading;
     const iconSize =
       typeof iconSizeProp === 'number' && Number.isFinite(iconSizeProp) && iconSizeProp > 0
         ? iconSizeProp
@@ -719,6 +738,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
 
     return (
       <StyledPressable
+        interactive={interactive}
         ref={ref}
         onLayout={onLayout}
         aria-hidden={ariaHidden}
@@ -781,13 +801,13 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         onAccessibilityAction={onAccessibilityAction}
         // `aria-busy` matches what `Button.web.tsx` emits; react-native-web never
         // reads `accessibilityState`, React Native folds `aria-busy` back into it.
-        aria-busy={loading || undefined}
+        aria-busy={loading ? true : ariaBusy}
         aria-disabled={isInteractionBlocked || undefined}
         aria-pressed={togglePressed}
         aria-current={Platform.OS === 'web' ? ariaCurrent : undefined}
         accessibilityState={{
           disabled: isInteractionBlocked,
-          busy: loading,
+          busy: loading || ariaBusy || false,
           ...(selected === undefined ? {} : { selected }),
         }}
         // Forwarded from an anchored family's `asChild` trigger — see

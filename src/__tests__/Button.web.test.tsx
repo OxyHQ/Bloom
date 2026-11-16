@@ -43,6 +43,98 @@ afterEach(() => {
 });
 
 describe('Button.web', () => {
+  it.each(['button', 'link', 'asChild'] as const)(
+    'announces background work on %s without blocking activation',
+    (kind) => {
+      const onPress = jest.fn();
+      const draw = (busy: boolean | undefined, disabled = false, loading = false) =>
+        mount(
+          <Button
+            aria-busy={busy}
+            disabled={disabled}
+            loading={loading}
+            onPress={onPress}
+            href={kind === 'link' ? '/play' : undefined}
+            asChild={kind === 'asChild'}
+          >
+            {kind === 'asChild' ? <a href="/play">Play</a> : 'Play'}
+          </Button>,
+        );
+      draw(true);
+      const action = () => getByRole(container, kind === 'button' ? 'button' : 'link');
+      expect(action()).toHaveAttribute('aria-busy', 'true');
+      fireEvent.click(action());
+      expect(onPress).toHaveBeenCalledTimes(1);
+      draw(false);
+      expect(action()).toHaveAttribute('aria-busy', 'false');
+      draw(undefined);
+      expect(action()).not.toHaveAttribute('aria-busy');
+      draw(false, false, true);
+      expect(action()).toHaveAttribute('aria-busy', 'true');
+      fireEvent.click(action());
+      expect(onPress).toHaveBeenCalledTimes(1);
+      draw(true, true);
+      expect(action()).toHaveAttribute('aria-disabled', 'true');
+      expect(action()).not.toHaveAttribute('data-bloom-button-loading');
+      fireEvent.click(action());
+      expect(onPress).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it('renders the same decoration inside a parent button without a nested control', () => {
+    const onPress = jest.fn();
+    const ref = React.createRef<React.ComponentRef<typeof import('react-native').View>>();
+    mount(
+      <button type="button">
+        <Button
+          interactive={false}
+          ref={ref}
+          onPress={onPress}
+          onHoverIn={onPress}
+          href="/ignored"
+          autoFocus
+          tabIndex={0}
+          className="decoration"
+          size={48}
+          iconOnly
+          testID="decoration"
+        >
+          ▶
+        </Button>
+      </button>,
+    );
+    const visual = container.querySelector('[data-testid="decoration"]') as HTMLElement;
+    expect(visual.tagName).toBe('SPAN');
+    expect(ref.current).toBe(visual);
+    expect(visual).toHaveClass('bloom-btn', 'decoration');
+    expect(visual).toHaveAttribute('aria-hidden', 'true');
+    expect(visual).not.toHaveAttribute('role');
+    expect(visual).not.toHaveAttribute('tabindex');
+    expect(visual.style.pointerEvents).toBe('none');
+    expect(container.querySelectorAll('button')).toHaveLength(1);
+    expect(container.querySelectorAll('a')).toHaveLength(0);
+    fireEvent.click(visual);
+    fireEvent.pointerEnter(visual);
+    expect(onPress).not.toHaveBeenCalled();
+  });
+
+  it('keeps asChild layout and refs on a named decoration without retaining its link', () => {
+    const ref = React.createRef<HTMLAnchorElement>();
+    mount(
+      <Button interactive={false} asChild accessibilityLabel="Playing" testID="visual">
+        <a ref={ref} href="/ignored" className="child-layout" style={{ width: 72 }}>
+          ▶
+        </a>
+      </Button>,
+    );
+    const visual = getByRole(container, 'img', { name: 'Playing' });
+    expect(visual).toHaveClass('child-layout');
+    expect(visual).toHaveStyle({ width: '72px' });
+    expect(ref.current).toBe(visual);
+    expect(visual.querySelector('a')).toBeNull();
+    expect(visual).toHaveTextContent('▶');
+  });
+
   it.each(['link', 'button', 'asChild'] as const)(
     'forwards the current item to its %s host and removes it when omitted',
     (kind) => {

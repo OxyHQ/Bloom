@@ -1,3 +1,4 @@
+import { useSurfacePresence } from '../surface/use-surface-presence';
 import { GlyphAttention } from './GlyphAttention';
 import { resolveButtonOverrides } from './shared';
 import { Group } from './Group.web';
@@ -101,15 +102,15 @@ import type { MemoRefComponent } from '../styles/native-refs';
 //
 //  The material paints the backdrop in ::before and its state tint in ::after.
 //
-//  `aria-busy` is excluded from the disabled paint: a loading button keeps its
-//  rest colours under the spinner instead of greying out.
+//  Loading keeps its rest colours beneath the spinner. Independent aria-busy
+//  does not override disabled paint or interaction.
 // ---------------------------------------------------------------------------
 
 const STYLE_ID = 'bloom-button-web-css';
 
 const T = `${BUTTON_TRANSITION_MS}ms`;
 const DISABLED =
-  '.bloom-btn:disabled:not([aria-busy="true"]),\n.bloom-btn[aria-disabled="true"]:not([aria-busy="true"])';
+  '.bloom-btn:disabled:not([data-bloom-button-loading]),\n.bloom-btn[aria-disabled="true"]:not([data-bloom-button-loading])';
 
 /**
  * The adopted stylesheet. Exported so a suite can assert the RULES: jsdom
@@ -169,17 +170,21 @@ export const BLOOM_BUTTON_CSS = `@layer base {\n${interactiveWebCss({
   box-shadow: none;
   transform: none;
 }
-.bloom-btn[aria-busy="true"] {
+.bloom-btn[data-bloom-button-loading] {
   opacity: 1;
   cursor: progress;
+}
+.bloom-btn.bloom-btn--surface:disabled:not([data-bloom-button-loading]),
+.bloom-btn.bloom-btn--surface[aria-disabled="true"]:not([data-bloom-button-loading]) {
+  opacity: 1;
 }
 ${surfaceMaterialCss('.bloom-btn--surface', 'var(--bloom-btn-bg)', `background-color ${T} ease`)}
 .bloom-btn--surface { background: transparent !important; }
 .bloom-btn--surface::before { inset: 0; }
 .bloom-btn--surface${NOT_DISABLED}:hover::after { background-color: var(--bloom-btn-bg-hover); }
 .bloom-btn--surface${NOT_DISABLED}:active::after { background-color: var(--bloom-btn-bg-active); }
-.bloom-btn--surface:disabled:not([aria-busy="true"])::after,
-.bloom-btn--surface[aria-disabled="true"]:not([aria-busy="true"])::after { background-color: var(--bloom-btn-bg-disabled); }
+.bloom-btn--surface:disabled:not([data-bloom-button-loading])::after,
+.bloom-btn--surface[aria-disabled="true"]:not([data-bloom-button-loading])::after { background-color: var(--bloom-btn-bg-disabled); }
 .bloom-btn--surface:disabled, .bloom-btn--surface[aria-disabled="true"] { box-shadow: var(--bloom-btn-shadow); }
 /* The interactive box keeps its 44px floor. Its existing paint layers stay
    at the requested visual size; no hit region extends over another control. */
@@ -236,13 +241,13 @@ ${surfaceMaterialCss('.bloom-btn--surface', 'var(--bloom-btn-bg)', `background-c
 .bloom-btn[data-bloom-button-touch-paint]:not(.bloom-btn--surface)${NOT_DISABLED}:active::before {
   background-color: var(--bloom-btn-bg-active);
 }
-.bloom-btn[data-bloom-button-touch-paint]:disabled:not([aria-busy="true"])::before,
-.bloom-btn[data-bloom-button-touch-paint][aria-disabled="true"]:not([aria-busy="true"])::before {
+.bloom-btn[data-bloom-button-touch-paint]:disabled:not([data-bloom-button-loading])::before,
+.bloom-btn[data-bloom-button-touch-paint][aria-disabled="true"]:not([data-bloom-button-loading])::before {
   border-color: var(--bloom-btn-border-disabled);
   box-shadow: none;
 }
-.bloom-btn[data-bloom-button-touch-paint]:not(.bloom-btn--surface):disabled:not([aria-busy="true"])::before,
-.bloom-btn[data-bloom-button-touch-paint]:not(.bloom-btn--surface)[aria-disabled="true"]:not([aria-busy="true"])::before {
+.bloom-btn[data-bloom-button-touch-paint]:not(.bloom-btn--surface):disabled:not([data-bloom-button-loading])::before,
+.bloom-btn[data-bloom-button-touch-paint]:not(.bloom-btn--surface)[aria-disabled="true"]:not([data-bloom-button-loading])::before {
   background-color: var(--bloom-btn-bg-disabled);
 }
 .bloom-btn--underline-rest,
@@ -280,6 +285,8 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       onKeyUp,
       onLayout,
       'aria-hidden': ariaHidden,
+      'aria-busy': ariaBusy,
+      interactive = true,
       accessibilityElementsHidden,
       importantForAccessibility,
       onLongPress,
@@ -397,13 +404,14 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       typeof authoredStyle.height === 'number' ? authoredStyle.height : geometry.height;
     const touchPaint = !authoredFlatPaint && buttonTouchVisualInset(paintHeight, touch) > 0;
     const visualData = {
+      'data-bloom-button-loading': loading ? '' : undefined,
       'data-bloom-button-visual-height': paintHeight,
       'data-bloom-button-touch-paint': touchPaint ? '' : undefined,
     };
     const isSquare = !grow && (iconOnly || (icon != null && childrenProp == null));
     const isIconVariant = isSquare;
     const isLink = appearance === 'plain' && (href != null || linkTone != null);
-    const isInteractionBlocked = disabled || loading;
+    const isInteractionBlocked = !interactive || disabled || loading;
     const longPress = useLongPress(onLongPress, isInteractionBlocked, onPressIn, onPressOut);
     const handleBlur: React.FocusEventHandler<HTMLElement> = (event) => {
       onBlur?.(event);
@@ -483,6 +491,15 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       ],
     );
     const palette = paintRecipe.paint.palette;
+    const disabledPresence = disabled && !loading ? (palette.disabledOpacity ?? 1) : 1;
+    const presence = useSurfacePresence(disabledPresence);
+    const setVisualRoot = useCallback(
+      (node: HTMLElement | null) => {
+        setRoot(node);
+        presence.ref(disabledPresence < 1 ? node : null);
+      },
+      [setRoot, presence.ref, disabledPresence],
+    );
     const withPaint = (node: ReactElement) => (
       <>
         {paintRecipe.sheet}
@@ -498,7 +515,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       // from the host's background, so the disabled paint has to arrive through
       // it — as native's `paint` does. The disabled rule's own `background-color`
       // lands on a host the material keeps transparent. Loading keeps its rest
-      // paint under the spinner (`aria-busy` is excluded from that rule too).
+      // paint under the spinner (only loading is excluded from that rule).
       const bodyPaint =
         disabled && !loading
           ? palette.disabled
@@ -643,7 +660,10 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
     // into ONE flat plain object here, once, so neither raw-DOM merge site below
     // spreads a StyleProp array (which would leak numeric keys onto the button's
     // CSSStyleDeclaration). See `flattenWebStyle` for the full rationale.
-    const resolvedStyle = authoredStyle;
+    const resolvedStyle = {
+      ...authoredStyle,
+      ...(disabledPresence < 1 ? (presence.style as CSSProperties) : undefined),
+    };
     const resolvedTextStyle = flattenWebStyle(textStyle);
 
     // Icon components are sized by the button and painted `currentColor`, so they
@@ -678,8 +698,12 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       </span>
     );
 
+    const contentChildren =
+      !interactive && asChild && React.isValidElement<{ children?: React.ReactNode }>(children)
+        ? children.props.children
+        : children;
     const labelPadding = isLink ? 0 : geometry.labelPaddingHorizontal;
-    const hasLabel = !isSquare && children != null && children !== false;
+    const hasLabel = !isSquare && contentChildren != null && contentChildren !== false;
     const content = (
       <>
         {renderLeadingIcon
@@ -690,7 +714,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         {leading}
         {iconNode}
         {hasLabel &&
-          (typeof children === 'string' || typeof children === 'number' ? (
+          (typeof contentChildren === 'string' || typeof contentChildren === 'number' ? (
             <span
               style={{
                 display: 'inline-flex',
@@ -705,13 +729,13 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
                 ...resolvedTextStyle,
               }}
             >
-              {children}
+              {contentChildren}
             </span>
           ) : (
-            children
+            contentChildren
           ))}
-        {isSquare && !renderLeadingIcon && !LeadingIcon && !iconNode && children != null
-          ? children
+        {isSquare && !renderLeadingIcon && !LeadingIcon && !iconNode && contentChildren != null
+          ? contentChildren
           : null}
         {trailing}
         {!isSquare && renderTrailingIcon
@@ -776,6 +800,31 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       </>
     );
 
+    if (!interactive) {
+      return withPaint(
+        <span
+          ref={setVisualRoot}
+          {...visualData}
+          id={resolvedId}
+          className={[
+            composedClassName,
+            asChild && React.isValidElement<{ className?: string }>(children)
+              ? children.props.className
+              : undefined,
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          style={{ ...containerStyle, ...resolvedStyle, pointerEvents: 'none', cursor: 'inherit' }}
+          role={ariaLabel ? 'img' : undefined}
+          aria-label={ariaLabel}
+          aria-hidden={hidden ?? !ariaLabel}
+          data-testid={testID}
+        >
+          {body}
+        </span>,
+      );
+    }
+
     // asChild: render the provided child element (e.g. <a> / router <Link>) with
     // the button styling and handlers merged in. Used for link-buttons.
     if (asChild && React.isValidElement(children)) {
@@ -805,7 +854,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       const childProps = child.props;
       return withPaint(
         React.cloneElement(child, {
-          ref: setRoot,
+          ref: setVisualRoot,
           ...visualData,
           'aria-hidden': hidden,
           className: [composedClassName, childProps.className].filter(Boolean).join(' '),
@@ -857,7 +906,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
             onClick?.(event as React.MouseEvent<HTMLButtonElement>);
           },
           'aria-disabled': isInteractionBlocked || undefined,
-          'aria-busy': loading || undefined,
+          'aria-busy': loading ? true : ariaBusy,
           'aria-pressed': togglePressed,
           'aria-label': ariaLabel ?? childProps['aria-label'],
           'aria-current': ariaCurrent ?? childProps['aria-current'],
@@ -873,7 +922,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
     if (href != null && !asChild) {
       return withPaint(
         <a
-          ref={setRoot}
+          ref={setVisualRoot}
           {...visualData}
           aria-hidden={hidden}
           id={resolvedId}
@@ -893,7 +942,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
           onContextMenu={longPress.onContextMenu}
           onClick={handleClick}
           aria-disabled={isInteractionBlocked || undefined}
-          aria-busy={loading || undefined}
+          aria-busy={loading ? true : ariaBusy}
           aria-pressed={togglePressed}
           aria-label={ariaLabel}
           aria-current={ariaCurrent}
@@ -908,7 +957,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
 
     return withPaint(
       <button
-        ref={setRoot}
+        ref={setVisualRoot}
         {...visualData}
         aria-hidden={hidden}
         id={resolvedId}
@@ -929,7 +978,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         role={accessibilityRole}
         disabled={disabled && !loading}
         aria-disabled={isInteractionBlocked || undefined}
-        aria-busy={loading || undefined}
+        aria-busy={loading ? true : ariaBusy}
         aria-pressed={togglePressed}
         aria-label={ariaLabel}
         aria-current={ariaCurrent}

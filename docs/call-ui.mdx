@@ -39,7 +39,7 @@ like every other card in Bloom.
 
 ## `CallScreen`
 
-The top chrome uses `PageHeader` with `tone="onImage"`; minimise, chat and participants are shared `Button` actions. Video uses the header’s own edge scrim. The bottom call controls retain their separate scrim and transport behavior.
+The top chrome uses `PageHeader` with `tone="onImage"`; minimise, chat and participants are shared `Button` actions. Video uses the header’s own edge scrim. The bottom call controls retain their separate scrim and transport behavior. `CallControlButton` also delegates to `Button`, supplying only call-state colors, diameter, glyph, label and badge.
 
 ```tsx
 <CallScreen

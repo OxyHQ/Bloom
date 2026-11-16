@@ -46,6 +46,73 @@ function captureTheme(): Theme {
 }
 
 describe('Button', () => {
+  it('announces background work without disabling presses, while loading and disabled still block them', () => {
+    const onPress = jest.fn();
+    const api = renderWithTheme(
+      <Button aria-busy onPress={onPress} testID="busy">
+        Play
+      </Button>,
+    );
+    expect(api.getByTestId('busy').props['aria-busy']).toBe(true);
+    expect(api.getByTestId('busy').props.accessibilityState.busy).toBe(true);
+    api.getByTestId('busy').props.onPress?.();
+    expect(onPress).toHaveBeenCalledTimes(1);
+    api.rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <Button aria-busy disabled onPress={onPress} testID="busy">
+          Play
+        </Button>
+      </BloomThemeProvider>,
+    );
+    api.getByTestId('busy').props.onPress?.();
+    expect(onPress).toHaveBeenCalledTimes(1);
+    api.rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <Button aria-busy={false} loading onPress={onPress} testID="busy">
+          Play
+        </Button>
+      </BloomThemeProvider>,
+    );
+    expect(api.getByTestId('busy').props['aria-busy']).toBe(true);
+    api.getByTestId('busy').props.onPress?.();
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders noninteractive visuals with shared geometry and no press target', () => {
+    const onPress = jest.fn();
+    const api = renderWithTheme(
+      <Button
+        interactive={false}
+        onPress={onPress}
+        onHoverIn={onPress}
+        size={48}
+        iconOnly
+        testID="visual"
+      >
+        ▶
+      </Button>,
+    );
+    const host = api.getByTestId('visual', { includeHiddenElements: true });
+    expect(host.props.role).toBeUndefined();
+    expect(host.props.accessibilityRole).toBeUndefined();
+    expect(host.props.onPress).toBeUndefined();
+    expect(host.props.onHoverIn).toBeUndefined();
+    expect(host.props.focusable).toBe(false);
+    expect(host.props['aria-hidden']).toBe(true);
+    expect(resolvedStyle(host.props.style).width).toBe(48);
+    host.props.onPress?.();
+    expect(onPress).not.toHaveBeenCalled();
+    api.rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <Button interactive={false} accessibilityLabel="Playing" testID="visual">
+          ▶
+        </Button>
+      </BloomThemeProvider>,
+    );
+    expect(api.getByTestId('visual').props.role).toBe('img');
+    expect(api.getByTestId('visual').props['aria-hidden']).toBe(false);
+  });
+
   it.each([undefined, false, 'false', true, 'page', 'step', 'location', 'date', 'time'] as const)(
     'announces current=%s through the native selected trait without inventing a toggle',
     (current) => {

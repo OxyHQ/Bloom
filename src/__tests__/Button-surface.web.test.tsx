@@ -173,3 +173,30 @@ it('paints an exact flat brand fill without surface layers, keeping disabled and
   expect(button.getAttribute('aria-busy')).toBe('true');
   expect(button.style.getPropertyValue('--bloom-btn-bg')).toBe('#123456');
 });
+
+it('dims disabled material content without making its host a backdrop root', () => {
+  act(() =>
+    root.render(
+      <Button disabled disabledOpacity={0.5} aria-busy testID="dim">
+        Play
+      </Button>,
+    ),
+  );
+  const host = container.querySelector('[data-testid="dim"]') as HTMLElement;
+  expect(host.style.opacity).toBe('');
+  expect(host.style.getPropertyValue('--bloom-surface-presence')).toBe('0.5');
+  expect((host.firstElementChild as HTMLElement).style.opacity).toBe('0.5');
+  expect(host.getAttribute('aria-busy')).toBe('true');
+  expect(host.getAttribute('aria-disabled')).toBe('true');
+  expect(host.hasAttribute('data-bloom-button-loading')).toBe(false);
+  act(() =>
+    root.render(
+      <Button disabledOpacity={0.5} testID="dim">
+        Play
+      </Button>,
+    ),
+  );
+  act(() => jest.runOnlyPendingTimers());
+  expect(host.style.getPropertyValue('--bloom-surface-presence')).toBe('');
+  expect((host.firstElementChild as HTMLElement).style.opacity).toBe('');
+});

@@ -43,6 +43,8 @@ The English defaults below are localised: each is drawn in the app's language vi
 
 ## `PlayButton`
 
+A media adapter over `Button`: the shared owner supplies geometry, material, interaction states and focus. The adapter supplies the play/pause glyph, localized action name, transport diameter and media colors. Its loading spinner uses independent `aria-busy`, so playback remains pressable. Decorative playback uses the same owner with `interactive={false}`.
+
 | prop                 | decides                                                                                       |
 | -------------------- | --------------------------------------------------------------------------------------------- |
 | `playing`            | draws the pause glyph and is named "Pause"; otherwise the play glyph and "Play"               |

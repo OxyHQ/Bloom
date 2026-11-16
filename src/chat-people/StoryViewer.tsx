@@ -172,7 +172,6 @@ function StoryViewerComponent({
         </View>
       )}
 
-      <StoryScrim color={paint.stage} edge="top" height={132} opacity={0.72} />
       <StoryScrim color={paint.stage} edge="bottom" height={176} opacity={0.7} />
 
       {/* Tap zones sit UNDER the chrome, so a press on the close button is not
@@ -198,24 +197,24 @@ function StoryViewerComponent({
         </View>
       </View>
 
-      <View style={{ paddingTop: 12, paddingRight: 12, paddingLeft: 12 }} pointerEvents="box-none">
-        <StoryProgressBars
-          count={stories.length}
-          index={index}
-          progress={progress}
-          duration={storyDuration}
-          paused={paused}
-          onComplete={onNext}
-          accessibilityLabel={l.progress(index, stories.length)}
-          testID={testID ? `${testID}-progress` : undefined}
-        />
-      </View>
       <PageHeader
         onBack={null}
         sticky={false}
         safeArea={false}
         tone="onImage"
-        scrim="none"
+        scrim="always"
+        overline={
+          <StoryProgressBars
+            count={stories.length}
+            index={index}
+            progress={progress}
+            duration={storyDuration}
+            paused={paused}
+            onComplete={onNext}
+            accessibilityLabel={l.progress(index, stories.length)}
+            testID={testID ? `${testID}-progress` : undefined}
+          />
+        }
         title={
           <Text
             variant="body-semibold"

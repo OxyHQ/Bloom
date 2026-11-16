@@ -29,6 +29,10 @@ export type ButtonFocusEvent = NativeFocusEvent | React.FocusEvent<HTMLElement>;
 export type ButtonHoverEvent = NativeMouseEvent | React.PointerEvent<HTMLElement>;
 
 export interface ButtonProps {
+  /** False renders the same visual as decoration, without focus or interaction. A label names it as an image. */
+  interactive?: boolean;
+  /** Announces background work without blocking presses. `loading` also announces busy and blocks interaction. */
+  'aria-busy'?: boolean;
   /** Focus lifecycle on the interactive host; does not activate the button. */
   onFocus?: (event: ButtonFocusEvent) => void;
   onBlur?: (event: ButtonFocusEvent) => void;
