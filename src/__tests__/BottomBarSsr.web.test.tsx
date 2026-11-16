@@ -1,7 +1,7 @@
 /** @jest-environment jsdom */
 import { act } from 'react';
 import { renderToString } from 'react-dom/server';
-import { hydrateRoot, type Root } from 'react-dom/client';
+import { createRoot, hydrateRoot, type Root } from 'react-dom/client';
 import type { TabBarButtonProps, TabBarProps } from '../tab-bar/types';
 import { BottomBarBase } from '../bottom-bar/BottomBarBase';
 
@@ -33,6 +33,85 @@ function Item({ item }: TabBarButtonProps) {
     </button>
   );
 }
+
+it('recovers the intrinsic action after a hidden desktop frame and follows a changed action label', async () => {
+  const original = globalThis.ResizeObserver;
+  const observers = new Set<{ callback: ResizeObserverCallback; nodes: Set<Element> }>();
+  let hidden = true;
+  let naturalWidth = 132;
+  class Observer {
+    nodes = new Set<Element>();
+    constructor(readonly callback: ResizeObserverCallback) {
+      observers.add(this);
+    }
+    observe(node: Element) {
+      this.nodes.add(node);
+    }
+    unobserve(node: Element) {
+      this.nodes.delete(node);
+    }
+    disconnect() {
+      this.nodes.clear();
+    }
+  }
+  globalThis.ResizeObserver = Observer as unknown as typeof ResizeObserver;
+  const deliver = () => {
+    for (const observer of observers) {
+      const entries = [...observer.nodes].map((node) => {
+        const measured = node as HTMLElement;
+        const fixed = Number.parseFloat(measured.style.width);
+        const width = hidden
+          ? 0
+          : measured.dataset.testid === 'bar-action-content'
+            ? Number.isFinite(fixed)
+              ? fixed
+              : naturalWidth
+            : 320;
+        return { target: node, borderBoxSize: [{ inlineSize: width, blockSize: hidden ? 0 : 50 }] };
+      });
+      observer.callback(
+        entries as unknown as ResizeObserverEntry[],
+        observer as unknown as ResizeObserver,
+      );
+    }
+  };
+  const host = document.createElement('div');
+  document.body.append(host);
+  const root = createRoot(host);
+  try {
+    await act(async () =>
+      root.render(
+        <BottomBarBase
+          Navigation={Navigation}
+          Item={Item}
+          Blur={() => null}
+          items={Array.from({ length: 3 }, (_, i) => ({
+            name: String(i),
+            label: String(i),
+            icon: null,
+          }))}
+          value="0"
+          onValueChange={() => {}}
+          action={<button type="button">Compose</button>}
+          testID="bar"
+        />,
+      ),
+    );
+    act(deliver);
+    hidden = false;
+    act(deliver);
+    const action = host.querySelector<HTMLElement>('[data-testid="bar-action"]')!;
+    expect(action.style.width).toBe('132px');
+    expect(action.style.position).toBe('absolute');
+    naturalWidth = 180;
+    act(deliver);
+    expect(action.style.width).toBe('180px');
+  } finally {
+    await act(async () => root.unmount());
+    host.remove();
+    globalThis.ResizeObserver = original;
+  }
+});
 
 it.each([2, 5])(
   'renders %s destinations before measurements and preserves them through hydration',

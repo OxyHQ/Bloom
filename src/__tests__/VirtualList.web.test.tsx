@@ -50,7 +50,7 @@ class ResizeObserverStub {
           contentRect: target.getBoundingClientRect(),
           borderBoxSize: [
             {
-              inlineSize: 600,
+              inlineSize: Number(target.getAttribute('data-measure-width') ?? 600),
               blockSize: Number(
                 target.firstElementChild?.getAttribute('data-height') ??
                   (target as HTMLElement).offsetHeight,
@@ -77,9 +77,9 @@ beforeAll(() => {
       y: 0,
       top: 0,
       left: 0,
-      right: 0,
+      right: 600,
       bottom: ROW_HEIGHT,
-      width: 0,
+      width: 600,
       height: ROW_HEIGHT,
       toJSON: () => ({}),
     }),
@@ -648,6 +648,69 @@ describe('VirtualList retained row geometry', () => {
   afterEach(() => {
     restoreGeometry();
     ResizeObserverStub.instances.clear();
+  });
+  it('preserves row sizes through zero-width and moving panels, then measures real settled content', async () => {
+    const data = Array.from({ length: 40 }, (_, index) => ({ id: String(index), height: 76 }));
+    jest.useFakeTimers();
+    try {
+      mount(
+        <div data-bloom-panel-owner="fixture">
+          <VirtualList
+            data={data}
+            estimatedItemSize={76}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => <div data-height={item.height}>{item.id}</div>}
+          />
+        </div>,
+      );
+      act(() => ResizeObserverStub.deliverRows());
+      scrollWindowAndSettle(550);
+      const first = container.querySelector<HTMLElement>('[data-index="0"]')!;
+      const next = () => container.querySelector('[data-index="1"]');
+      jest.mocked(window.scrollTo).mockClear();
+      first.setAttribute('data-measure-width', '0');
+      first.firstElementChild!.setAttribute('data-height', '74');
+      act(() => ResizeObserverStub.deliverRows());
+      expect(next()).toHaveStyle({ transform: 'translateY(76px)' });
+      expect(window.scrollTo).not.toHaveBeenCalled();
+      expect(window.scrollY).toBe(550);
+
+      let moving = true;
+      let finish!: () => void;
+      const finished = new Promise<void>((resolve) => {
+        finish = resolve;
+      });
+      const panel = container.querySelector<HTMLElement>('[data-bloom-panel-owner]')!;
+      Object.defineProperty(panel, 'getAnimations', {
+        configurable: true,
+        value: () =>
+          moving ? [{ transitionProperty: 'width', playState: 'running', finished }] : [],
+      });
+      first.setAttribute('data-measure-width', '196');
+      act(() => ResizeObserverStub.deliverRows());
+      expect(next()).toHaveStyle({ transform: 'translateY(76px)' });
+      expect(window.scrollTo).not.toHaveBeenCalled();
+
+      // Content really changed while geometry was moving. No further RO entry
+      // is necessary: completion must remeasure the final box exactly once.
+      first.setAttribute('data-measure-width', '390');
+      first.firstElementChild!.setAttribute('data-height', '90');
+      await act(async () => {
+        moving = false;
+        finish();
+      });
+      expect(next()).toHaveStyle({ transform: 'translateY(90px)' });
+      expect(window.scrollY).toBe(564);
+      // Ordinary resize anchoring remains enabled after the panel settles.
+      act(() => jest.advanceTimersByTime(SCROLL_SETTLE_MS));
+      first.firstElementChild!.setAttribute('data-height', '100');
+      act(() => ResizeObserverStub.deliverRows());
+      expect(next()).toHaveStyle({ transform: 'translateY(100px)' });
+      expect(window.scrollY).toBe(574);
+    } finally {
+      jest.useRealTimers();
+      Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 });
+    }
   });
   it('recovers an initially zero window viewport from its resize observation alone', () => {
     const height = window.innerHeight;

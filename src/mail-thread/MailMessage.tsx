@@ -135,7 +135,9 @@ export function MailMessage({
   // that the group keeps the glyphs and drops the words, which is what
   // `Button` is built for — the accessible name is the label either
   // way, so nothing is lost by the labels going.
-  const compactReplies = !replyLabelsFit(width);
+  const compactReplies = !replyLabelsFit(
+    width === null ? null : Math.max(0, width - MAIL_BODY_INSET - geo.paddingHorizontal),
+  );
   return (
     <Card
       appearance="solid"

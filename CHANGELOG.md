@@ -1,5 +1,13 @@
 # Changelog
 
+## 22.1.3
+
+### Fixed
+
+- Retained web virtual lists preserve measured row heights while their compositor panel is hidden or changing size, then apply the settled measurements without drifting the restored reading position. Actual content changes retain normal scroll anchoring.
+- BottomBar actions recover their intrinsic width when a desktop-hidden bar becomes visible on compact screens, including changed action labels.
+- Mail reply actions use the available body width after shared insets when switching to accessible icon controls.
+
 ## 22.1.2
 
 ### Fixed

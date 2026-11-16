@@ -40,6 +40,7 @@ import {
 import { BloomScope } from '../appearance';
 import { Card } from '../card';
 import type { MailAddress, MailThreadMessage } from '../mail-thread/types';
+import * as ContainerWidth from '../hooks/use-container-width';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -160,6 +161,33 @@ describe('defaultExpandedIds', () => {
 // ---------------------------------------------------------------------------
 
 describe('MailMessage', () => {
+  it('fits reply controls to the padded body capacity and preserves their accessible actions', () => {
+    const measure = jest.spyOn(ContainerWidth, 'useContainerWidth');
+    const onForward = jest.fn();
+    const ui = (
+      <MailMessage
+        {...message('m1')}
+        defaultExpanded
+        onReply={() => {}}
+        onReplyAll={() => {}}
+        onForward={onForward}
+        testID="m"
+      />
+    );
+    try {
+      measure.mockReturnValue({ width: 320, onLayout: () => {} });
+      mount(ui);
+      expect(byTestId('m-forward').textContent).toBe('');
+      expect(byTestId('m-forward').getAttribute('aria-label')).toBe('Forward');
+      click(byTestId('m-forward'));
+      expect(onForward).toHaveBeenCalledTimes(1);
+      measure.mockReturnValue({ width: 480, onLayout: () => {} });
+      mount(React.cloneElement(ui));
+      expect(byTestId('m-forward').textContent).toBe('Forward');
+    } finally {
+      measure.mockRestore();
+    }
+  });
   it('spells the disclosure in BOTH vocabularies and names it after the sender', () => {
     mount(<MailMessage {...message('m1')} testID="m" />);
     const toggle = byTestId('m-toggle');
