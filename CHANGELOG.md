@@ -1,5 +1,11 @@
 # Changelog
 
+## 22.1.5
+
+### Fixed
+
+- Smooth PageHeader and PageFooter scrims keep their measured chrome opaque, including subtitles, accessories and safe areas, so scrolling content cannot show through labels or controls. The existing fade runs only in the external tail. Explicit image and linear header fades, and direct EdgeScrim overflow/artwork uses, retain their behavior.
+
 ## 22.1.4
 
 ### Fixed
