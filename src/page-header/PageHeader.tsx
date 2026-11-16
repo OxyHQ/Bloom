@@ -1,3 +1,4 @@
+import { SafeAreaConsumedContext } from '../layout/safe-area-ownership';
 import { resolvePaintMode } from '../theme/paint';
 import { createHeaderActionsHost, HeaderActionsHostContext } from './context';
 import { pointerEventsStyle } from '../styles/pointer-events';
@@ -216,7 +217,8 @@ function PageHeaderComponent({
   const surfaceRecipe = useSurfaceFillRecipe();
   const surfaceFill = surfaceRecipe.paint;
   const insets = useCssSafeAreaInsets(useContext(SafeAreaInsetsContext) ?? NO_INSETS);
-  const safeTop = (safeArea ?? !isWeb) ? insets.top : 0;
+  const topConsumed = useContext(SafeAreaConsumedContext).top > 0;
+  const safeTop = (safeArea ?? (!isWeb && !topConsumed)) ? insets.top : 0;
 
   // Web container queries own width, including during divider drags. Native
   // measures its own box; the window is its first-render seed only.

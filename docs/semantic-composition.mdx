@@ -190,3 +190,18 @@ required browser/native checks pass, and installed release/deployment evidence
 is recorded. A later removal requires an export/API migration plan and a major
 release where appropriate. Unverified native behavior, missing iOS evidence or
 unresolved state-loss defects cannot be relabeled as complete adoption.
+
+## Native safe-area ownership
+
+Semantic shells default to `safeArea={true}`. The existing shell frame/navigation
+owns physical device edges once; explicit `false` and legacy variants retain their
+previous behavior. Descendant PageHeaders inherit consumed top edges unless their
+own `safeArea` prop is explicit. Ordinary Screens and bounded panels preserve this
+ownership; independent dialogs, sheets and overlays reset it and retain the physical
+device insets.
+
+Custom inline content can use `useContentSafeAreaInsets` from
+`@oxy.so/bloom/layout` instead of recharging a physical inset already owned by its
+frame. This hook reports only the remaining content insets. Keep raw device insets
+for window-level geometry; never globally replace them with zero. Shell bottom
+chrome and the frame coordinate which of them pays the physical bottom edge.

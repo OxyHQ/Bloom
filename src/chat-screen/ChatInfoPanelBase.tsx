@@ -521,7 +521,7 @@ export function createChatInfoPanel({
               </ScreenScrollView>
             </Screen>
           ) : (
-            <ScreenScope>
+            <ScreenScope inheritSafeArea>
               <ScrollMetricsProvider>
                 {header}
                 {body}

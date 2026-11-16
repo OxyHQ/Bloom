@@ -1725,3 +1725,12 @@ On the web the hover strip and the floating region use pointer enter and leave.
 On a native platform without hover pointer events, drive `peek()` from the
 host. Ordering the peek above the content uses `zIndex` among the row's
 children, which needs the New Architecture on macOS.
+
+### Semantic safe areas
+
+A semantic `layout` defaults the existing native `safeArea` owner on. PageHeaders
+inherit frame-consumed top edges, while their explicit `safeArea` prop still wins.
+`useContentSafeAreaInsets` from `@oxy.so/bloom/layout` gives custom inline content the
+remaining edges. Raw physical insets remain available to independent overlays.
+Legacy shells keep their opt-in default; `safeArea={false}` remains an explicit
+opt-out for semantic shells too.

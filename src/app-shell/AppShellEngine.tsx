@@ -1,3 +1,4 @@
+import { SafeAreaConsumedContext } from '../layout/safe-area-ownership';
 import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import { ScrollArea } from '../layout/ScrollArea';
 import { StyledView } from '../styles/styled-primitives';
@@ -634,6 +635,14 @@ export function createAppShellEngine() {
     const bottomChrome = showBottomBar || showFloatingAction;
     const frameBottomInset = ownsSafeArea && !bottomChrome ? insets.bottom : 0;
     const navigationBottomInset = ownsSafeArea && bottomChrome ? insets.bottom : 0;
+    const inheritedSafeArea = useContext(SafeAreaConsumedContext);
+    const consumedSafeArea = useMemo(
+      () =>
+        ownsSafeArea
+          ? { ...insets, bottom: Math.max(insets.bottom, inheritedSafeArea.bottom) }
+          : inheritedSafeArea,
+      [ownsSafeArea, insets, inheritedSafeArea],
+    );
     const safeFrame = (node: React.ReactElement) =>
       ownsSafeArea ? (
         <View
@@ -650,7 +659,9 @@ export function createAppShellEngine() {
             backgroundColor: background,
           }}
         >
-          {node}
+          <SafeAreaConsumedContext.Provider value={consumedSafeArea}>
+            {node}
+          </SafeAreaConsumedContext.Provider>
         </View>
       ) : (
         node

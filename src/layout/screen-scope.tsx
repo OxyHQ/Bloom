@@ -1,3 +1,4 @@
+import { SafeAreaConsumedContext, NO_CONSUMED_SAFE_AREA } from './safe-area-ownership';
 import { BloomScope } from '../appearance/BloomScope';
 import { ScreenHostContext, ScreenViewportContext } from '../screen/context';
 import { ScreenContext, ScreenNavigationContext } from '../screen/context';
@@ -54,13 +55,17 @@ export function ScreenScope({
   children,
   inheritBottomEdge = false,
   inheritNavigation = false,
+  inheritSafeArea = false,
   sizing,
 }: PropsWithChildren<{
   inheritBottomEdge?: boolean;
+  /** Bounded panels inherit the frame; independent overlays clear the ownership claim. */
+  inheritSafeArea?: boolean;
   /** Keep the enclosing navigation motion (a panel the shell's bottom bar follows). */
   inheritNavigation?: boolean;
   sizing?: 'content' | 'fill';
 }>) {
+  const consumedSafeArea = useContext(SafeAreaConsumedContext);
   const navigation = useContext(ScreenNavigationContext);
   // The same host while `sizing` is: a scope draws again with what it holds,
   // and a host made inline would make React look for every reader below it.
@@ -69,27 +74,31 @@ export function ScreenScope({
     [sizing],
   );
   return (
-    <ScreenHostContext.Provider value={host}>
-      <ScreenViewportContext.Provider value={null}>
-        <ScreenContext.Provider value={null}>
-          <ScreenNavigationContext.Provider value={inheritNavigation ? navigation : null}>
-            <TopEdgeProvider>
-              <BottomEdgeProvider inherit={inheritBottomEdge}>
-                {/* null means no scroller has claimed this scope yet. */}
-                <ScrollMetricsContext.Provider value={null}>
-                  <ScrollOffsetProvider value={null}>
-                    <WindowCornerProvider value>
-                      <WindowChromeProvider value={null}>
-                        <BloomScope controlDensity="default">{children}</BloomScope>
-                      </WindowChromeProvider>
-                    </WindowCornerProvider>
-                  </ScrollOffsetProvider>
-                </ScrollMetricsContext.Provider>
-              </BottomEdgeProvider>
-            </TopEdgeProvider>
-          </ScreenNavigationContext.Provider>
-        </ScreenContext.Provider>
-      </ScreenViewportContext.Provider>
-    </ScreenHostContext.Provider>
+    <SafeAreaConsumedContext.Provider
+      value={inheritSafeArea ? consumedSafeArea : NO_CONSUMED_SAFE_AREA}
+    >
+      <ScreenHostContext.Provider value={host}>
+        <ScreenViewportContext.Provider value={null}>
+          <ScreenContext.Provider value={null}>
+            <ScreenNavigationContext.Provider value={inheritNavigation ? navigation : null}>
+              <TopEdgeProvider>
+                <BottomEdgeProvider inherit={inheritBottomEdge}>
+                  {/* null means no scroller has claimed this scope yet. */}
+                  <ScrollMetricsContext.Provider value={null}>
+                    <ScrollOffsetProvider value={null}>
+                      <WindowCornerProvider value>
+                        <WindowChromeProvider value={null}>
+                          <BloomScope controlDensity="default">{children}</BloomScope>
+                        </WindowChromeProvider>
+                      </WindowCornerProvider>
+                    </ScrollOffsetProvider>
+                  </ScrollMetricsContext.Provider>
+                </BottomEdgeProvider>
+              </TopEdgeProvider>
+            </ScreenNavigationContext.Provider>
+          </ScreenContext.Provider>
+        </ScreenViewportContext.Provider>
+      </ScreenHostContext.Provider>
+    </SafeAreaConsumedContext.Provider>
   );
 }

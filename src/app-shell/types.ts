@@ -185,9 +185,10 @@ export interface AppShellEngineProps {
   /**
    * Native: keep the shell, navigation and pages inside the device's safe area.
    * The bottom-bar slot still owns its bottom inset; without bottom chrome the
-   * frame reserves it. Use `safeArea={false}` on descendant PageHeaders because
-   * the frame already owns their top edge. Device insets remain available to
-   * dialogs and other portaled surfaces. Defaults to false; no effect on web.
+   * frame reserves it. Descendant PageHeaders inherit that top-edge ownership;
+   * an explicit header safeArea value still wins. Device insets remain available
+   * to dialogs and other portaled surfaces. Semantic layouts default to true;
+   * legacy layouts default to false. No effect on web.
    */
   safeArea?: boolean;
   /**

@@ -813,7 +813,11 @@ export function createPanelLayoutView(
         </ScreenHostContext.Provider>
       ) : (
         <>
-          <ScreenScope inheritBottomEdge={document || underBar} inheritNavigation={underBar}>
+          <ScreenScope
+            inheritSafeArea
+            inheritBottomEdge={document || underBar}
+            inheritNavigation={underBar}
+          >
             <ScreenHostContext.Provider value={navigation ? { ...host, navigation } : host}>
               <ScrollMetricsContext.Provider value={metrics}>
                 <ScrollOffsetProvider value={scrollY}>

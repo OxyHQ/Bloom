@@ -160,6 +160,7 @@ export function resolveAppShellComposition(props: AppShellProps): AppShellProps 
   const continuous = presentation === 'continuous';
   const result: AppShellProps = {
     variant: recipe.variant,
+    safeArea: true,
     panels: true,
     scroll: recipe.flow === 'document' || family === 'deck' ? 'page' : 'fixed',
     navFrom: 'md',

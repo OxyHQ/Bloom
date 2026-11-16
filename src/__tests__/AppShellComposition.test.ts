@@ -174,3 +174,11 @@ describe('semantic composition', () => {
     });
   });
 });
+
+it('semantic frames own safe areas by default, while explicit false and legacy stay authored', () => {
+  expect(resolveAppShellComposition({ layout: 'workspace', safeArea: undefined }).safeArea).toBe(
+    true,
+  );
+  expect(resolveAppShellComposition({ layout: 'feed', safeArea: false }).safeArea).toBe(false);
+  expect(resolveAppShellComposition({ variant: 'feed' }).safeArea).toBeUndefined();
+});

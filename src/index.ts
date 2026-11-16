@@ -245,6 +245,7 @@ export {
   TopEdgeProvider,
   useClaimTopEdge,
   useTopEdgeInset,
+  useContentSafeAreaInsets,
   ScrollOffsetProvider,
   ScrollMetricsProvider,
   useScrollMetricsBinding,

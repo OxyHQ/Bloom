@@ -595,3 +595,13 @@ function Tab({ tab, current, publish }) {
 ```
 
 `AutoHideBar` itself is the hook, a body and a region in one box.
+
+## Content safe-area insets
+
+`useContentSafeAreaInsets()` returns physical insets minus the edges already owned
+by the enclosing AppShell frame/navigation. Use it for custom inline layout that
+must clear a device edge. Shared PageHeader/Screen ownership already observes this
+contract; applications should prefer those owners over calculating padding.
+Independent `ScreenScope` surfaces reset the consumed-edge claim. Bounded regions
+that create a new scroll/chrome scope inside the same frame use `inheritSafeArea`.
+The raw safe-area provider is never modified by this ownership mechanism.
