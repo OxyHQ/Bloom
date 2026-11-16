@@ -24,7 +24,9 @@ ARTIFACT_DIR=.local/panel-groups-native python3 archive.py
 ```
 
 `prepare.mjs` records source hashes in build.json and displays an abbreviated
-identity in the running app. Preserve that receipt, the packaged sourcemap and APK
+identity in the running app. `src/` entries come from the selected `sourceRoot`;
+`fixture/` entries always come from the local `fixtureRoot` that Metro compiles,
+even when `BLOOM_SOURCE_ROOT` points to another checkout. Preserve that receipt, the packaged sourcemap and APK
 hash with the screenshots/report. The sourcemap is the authoritative source of
 what was bundled if the source checkout changes during compilation. No source
 mirror result should be presented as a published-package result.
