@@ -35,7 +35,10 @@ function Draft({
   const focus = usePanelSessionFocus<TextInputInstance>('comment-input');
   const presentation = useAppShellPanel().presentation ?? 'inline';
   return (
-    <Screen kind="form" header={<PageHeader title="Inspector draft" />}>
+    <Screen
+      kind="form"
+      header={<PageHeader title="Inspector draft" actions={<DetailDialogLab />} />}
+    >
       <View className="gap-4 p-4">
         <Button testID="native-session-adapt" onPress={adapt} disabled={pending}>
           {pending ? 'Adapt queued' : 'Adapt after 8s'}
@@ -126,7 +129,6 @@ export function PanelSessionLab() {
                   Open inspector
                 </Button>
                 <Text>{floating ? 'Floating' : 'Inline'}</Text>
-                <DetailDialogLab />
               </Screen>
             ),
           },
