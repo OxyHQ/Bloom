@@ -132,9 +132,15 @@ export function usePanelSessionFocus<T extends PanelSessionFocusTarget>(key: str
   const onSelectionChange = useCallback(
     (event: { nativeEvent: { selection: Selection } }) => {
       selection.current = event.nativeEvent.selection;
-      if (session.focus?.key === key) session.focus.selection = selection.current;
+      if (
+        session.focus?.key === key &&
+        session.focus.presentation === presentation &&
+        session.focus.target === target.current
+      ) {
+        session.focus.selection = selection.current;
+      }
     },
-    [session, key],
+    [session, key, presentation],
   );
   useLayoutEffect(() => {
     const focused = session.focus;

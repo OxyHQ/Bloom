@@ -1,6 +1,8 @@
 /** @jest-environment jsdom */
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import { Dialog } from '../dialog/index.web';
+import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
@@ -20,6 +22,14 @@ function Editor({ stateKey = 'draft', initial = '' }: { stateKey?: string; initi
   const [value, setValue] = usePanelSessionState(stateKey, initial);
   const focus = usePanelSessionFocus<HTMLInputElement>(stateKey);
   update = setValue;
+  // Native TextInput/RNW may report the newly mounted controlled value's end
+  // selection before the retained focus request runs. It is not the user's
+  // previous selection and must not replace the outgoing host's record.
+  React.useLayoutEffect(() => {
+    focus.onSelectionChange({
+      nativeEvent: { selection: { start: value.length, end: value.length } },
+    });
+  }, []);
   React.useEffect(() => {
     mounts += 1;
   }, []);
@@ -149,4 +159,37 @@ it('cancels pending focus after user interaction, closing, and explicit blur', (
   render('inline');
   frame();
   expect(document.activeElement).not.toBe(input());
+});
+
+it('restores the registered editor through the real Dialog focus boundary, before its first button', () => {
+  function Surface({ floating }: { floating: boolean }) {
+    const editor = <Editor initial="actual dialog draft" />;
+    return (
+      <BloomThemeProvider mode="light">
+        <PanelSessionProvider presentation={floating ? 'floating' : 'inline'} active>
+          {floating ? (
+            <Dialog startOpen label="Inspector" placement="end" scrollable={false}>
+              <button type="button">First dialog button</button>
+              {editor}
+            </Dialog>
+          ) : (
+            <div>{editor}</div>
+          )}
+        </PanelSessionProvider>
+      </BloomThemeProvider>
+    );
+  }
+  act(() => root.render(<Surface floating={false} />));
+  act(() => input().focus());
+  act(() => update('unsent inspector comment'));
+  act(() => root.render(<Surface floating />));
+  frame();
+  const modalInput = document.querySelector('[role="dialog"] input') as HTMLInputElement;
+  expect(modalInput).not.toBeNull();
+  expect(modalInput.value).toBe('unsent inspector comment');
+  expect(document.activeElement).toBe(modalInput);
+  act(() => root.render(<Surface floating={false} />));
+  frame();
+  expect(input().value).toBe('unsent inspector comment');
+  expect(document.activeElement).toBe(input());
 });
