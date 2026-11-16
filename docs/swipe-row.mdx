@@ -204,3 +204,33 @@ put the same actions in it.
 
 
 Horizontal `ScrollArea` descendants reserve their gestures through the shared scroll owner. Their native gesture blocks the enclosing row pan, including drags at the rail's edges. On touch web, the scroller path permits browser scrolling while the surrounding row content keeps vertical browser panning and horizontal row actions. Removing the scroller restores the default row touch policy. Applications do not need event propagation handlers or gesture offsets.
+
+### Native gesture and animation regressions
+
+Android testing of the published 22.0.1 package found that attachment buttons
+inside ListItem did not fire, while the same Button in a standalone ChipRow did.
+`Gesture.Native().shouldActivateOnStart(true)` claimed the touch on DOWN and
+cancelled the child Pressable. The scroll gate now lets the native ScrollView
+intercept actual travel, retaining `blocksExternalGesture` and
+`disallowInterruption`. Do not restore forced activation to reserve the rail.
+The SwipeRow test pins this configuration; the browser gate exercises real
+attachment taps, scrolling and outward drags at both rail edges.
+
+The same Android run exposed invisible swipe bubbles: the row moved, but bubble
+width remained zero. Native mapper subscriptions do not traverse a captured
+function's closure. Calling a geometry worklet that privately reads shared
+values therefore missed drag updates, despite working on web with an explicit
+dependency array. Geometry is a derived shared value read directly by both
+animated styles. `SwipeRowBubbleNativeMapper.test.ts` runs the actual Reanimated
+mapper registry with Babel-generated native closures, checks drag and layout
+updates without a React render, and reproduces the old failure as a negative
+control. This proves subscriptions, not native drawing.
+
+For a native release check, install the exact published package in the Android
+consumer: tap an attachment and check its callback runs once without opening
+the row; drag the rail in both directions and outward at both edges without
+opening row actions; scroll the page vertically; partially swipe the row body,
+check the bubble is visible and accessible, tap it, then verify full-swipe
+dispatch separately. Record package integrity and callback counts. Local
+candidate packages must use a distinct prerelease version and do not replace
+the final published-package check.

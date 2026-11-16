@@ -75,15 +75,15 @@ const argUrl = process.argv.indexOf('--url');
 const BASE = argUrl !== -1 ? process.argv[argUrl + 1] : 'http://localhost:6006';
 
 const STORY = 'blocks-mail-mail-list--inbox';
-const ROW = 'inbox-mail-lunch';
-/** Two actions on the right, one on the left, at the family's 76 per action. */
-const RIGHT_FULL = 152;
-const LEFT_FULL = 76;
+const ROW = 'inbox-lunch';
+/** ListItem's bubble presentation: two 56px actions on the right, one on the left. */
+const RIGHT_FULL = 112;
+const LEFT_FULL = 56;
 
 /** The x of the moving layer's transform, in CSS pixels. */
 async function travel(page) {
   return page.evaluate((row) => {
-    const inner = document.querySelector(`[data-testid="${row}-swipe"] [data-bloom-mail-row]`);
+    const inner = document.querySelector(`[data-testid="${row}-swipe"] [data-bloom-list-row]`);
     if (inner === null) return null;
     const matrix = getComputedStyle(inner.parentElement).transform;
     if (matrix === 'none') return 0;
@@ -132,7 +132,7 @@ async function drag(page, dx, dy) {
  * the functions it calls.
  */
 const DETECTOR_VIEW = `(row) => {
-  const inner = document.querySelector('[data-testid="' + row + '-swipe"] [data-bloom-mail-row]');
+  const inner = document.querySelector('[data-testid="' + row + '-swipe"] [data-bloom-list-row]');
   return inner === null ? null : inner.parentElement;
 }`;
 
@@ -145,7 +145,7 @@ async function touchScroll(page, forceNone) {
     (row, forceNone, detectorViewSrc) => {
       const view = new Function(`return (${detectorViewSrc})`)();
       if (forceNone) {
-        for (const el of document.querySelectorAll('[data-bloom-mail-row]')) {
+        for (const el of document.querySelectorAll('[data-bloom-list-row]')) {
           el.parentElement.style.touchAction = 'none';
         }
       }
@@ -197,6 +197,77 @@ async function open(browser, height = 844) {
 const results = [];
 const record = (name, ok, detail) => results.push({ name, ok, detail });
 
+/** Native responder cancellation needs Android; these are real touch-web guards. */
+async function verifyAttachmentRail(browser) {
+  const page = await browser.newPage();
+  try {
+    await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
+    await page.goto(`${BASE}/iframe.html?id=base-swipe-row--horizontal-content&viewMode=story`, {
+      waitUntil: 'networkidle0',
+    });
+    await page.waitForSelector('[data-testid="scroll-attachment-count"]');
+    const first = await page.$('[data-testid="scroll-attachment-Attachment 1.pdf"]');
+    const box = await first.boundingBox();
+    if (!box || box.width < 1 || box.height < 1) throw new Error('Attachment has no hit target');
+    await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+    await page.waitForFunction(() =>
+      document.querySelector('[data-testid="scroll-attachment-count"]').textContent.endsWith('1'),
+    );
+    record('attachment-tap', true, 'A real touch invokes the attachment action once');
+
+    const rail = '[data-bloom-swipe-scroll]';
+    const state = () =>
+      page.$eval(rail, (el) => ({
+        offset: el.scrollLeft,
+        max: el.scrollWidth - el.clientWidth,
+        opens: document.querySelector('[data-testid="scroll-open-count"]').textContent,
+        taps: document.querySelector('[data-testid="scroll-attachment-count"]').textContent,
+      }));
+    const dragRail = async (dx) => {
+      const bounds = await page.$eval(rail, (el) => {
+        const r = el.getBoundingClientRect();
+        return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+      });
+      await page.touchscreen.touchStart(bounds.x, bounds.y);
+      for (let step = 1; step <= 14; step++) {
+        await page.touchscreen.touchMove(bounds.x + (dx * step) / 14, bounds.y);
+        await new Promise((resolve) => setTimeout(resolve, 16));
+      }
+      await page.touchscreen.touchEnd();
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    };
+    await dragRail(-130);
+    const moved = await state();
+    record(
+      'attachment-scroll',
+      moved.max > 100 && moved.offset > 40 && moved.opens === '0' && moved.taps.endsWith('1'),
+      JSON.stringify(moved),
+    );
+
+    for (const edge of ['start', 'end']) {
+      await page.$eval(
+        rail,
+        (el, atEnd) => {
+          el.scrollLeft = atEnd ? el.scrollWidth : 0;
+        },
+        edge === 'end',
+      );
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      await dragRail(edge === 'start' ? 130 : -130);
+      const settled = await state();
+      const atEdge =
+        edge === 'start' ? settled.offset === 0 : Math.abs(settled.offset - settled.max) < 2;
+      record(
+        `attachment-${edge}-edge`,
+        atEdge && settled.opens === '0' && settled.taps.endsWith('1'),
+        JSON.stringify(settled),
+      );
+    }
+  } finally {
+    await page.close();
+  }
+}
+
 (async () => {
   const puppeteer = loadPuppeteer();
   const browser = await puppeteer.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
@@ -243,7 +314,7 @@ const record = (name, ok, detail) => results.push({ name, ok, detail });
     await page.close();
 
     page = await open(browser);
-    // Past the tap slop, under 40% of the 152 pane: it must spring back.
+    // Past the tap slop, under 40% of the 112px pane: it must spring back.
     const short = await drag(page, -40, 0);
     record(
       'springs-back',
@@ -302,6 +373,7 @@ const record = (name, ok, detail) => results.push({ name, ok, detail });
       `the same gesture with the default restored does not: ${JSON.stringify(frozen)}`,
     );
     await page.close();
+    await verifyAttachmentRail(browser);
   } finally {
     await browser.close();
   }

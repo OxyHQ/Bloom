@@ -36,6 +36,12 @@ and `attachments`. Optional `conversation`, `mail`, `person` and `call` display 
 their domain-specific markers and wording while using exactly the same shell.
 Times, names, permissions, navigation and data filtering belong to the consumer.
 
+For a person, `person.name` and `person.subtitle` (for example, a handle) stay on
+separate lines. Add a bio through the common `supporting` and `supportingLines`
+props; it uses the same clamp as ordinary rows. String supporting text joins the
+default accessible name. A custom `content` slot replaces the full default body,
+including the bio; use `label` when that body needs a different accessible name.
+
 `onPrefetch` warms destination data on hover, keyboard focus and touch intent; it
 does not activate or select the row and is disabled with the row. A custom
 `trigger` can be a render function receiving the canonical `Pressable` props. Spread those props onto its target to retain selection, prefetch, accessibility, focus and pressed paint, then compose any additional handlers. A ready React node remains supported for targets that own all their interaction callbacks.

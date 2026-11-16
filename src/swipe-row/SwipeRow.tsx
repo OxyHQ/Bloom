@@ -488,10 +488,11 @@ function SwipeScrollGate({ children }: { children: ReactNode }) {
   const gesture = useMemo(
     () =>
       pan
-        ? Gesture.Native()
-            .blocksExternalGesture(pan)
-            .disallowInterruption(true)
-            .shouldActivateOnStart(true)
+        ? // Let the ScrollView intercept actual travel before claiming the stream.
+          // Activating on DOWN cancels its child Pressables on Android, so taps
+          // on attachments never reach their actions. The row still waits for
+          // this gesture, and cannot interrupt it once scrolling starts.
+          Gesture.Native().blocksExternalGesture(pan).disallowInterruption(true)
         : null,
     [pan],
   );
