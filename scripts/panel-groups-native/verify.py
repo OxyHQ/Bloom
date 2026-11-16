@@ -20,12 +20,22 @@ def adb(*arguments):
 
 
 def capture(name):
-    adb("shell", "uiautomator", "dump", "/sdcard/panel-groups-ui.xml")
-    data = adb("shell", "cat", "/sdcard/panel-groups-ui.xml")
-    tree = ET.fromstring(data)
-    assert any(node.get("package") == package for node in tree.iter("node")), (
-        "Fixture is no longer foregrounded"
-    )
+    remote = "/sdcard/panel-groups-ui.xml"
+    for attempt in range(6):
+        # UIAutomator can return exit 0 with a null root during app startup.
+        # Never mistake the previous run's still-present XML for this capture.
+        adb("shell", "rm", "-f", remote)
+        result = adb("shell", "uiautomator", "dump", remote)
+        if b"UI hierchary dumped" not in result and b"UI hierarchy dumped" not in result:
+            time.sleep(0.3)
+            continue
+        data = adb("shell", "cat", remote)
+        tree = ET.fromstring(data)
+        if any(node.get("package") == package for node in tree.iter("node")):
+            break
+        time.sleep(0.3)
+    else:
+        raise AssertionError("No fresh foreground fixture hierarchy")
     (output / f"{name}.xml").write_bytes(data)
     (output / f"{name}.png").write_bytes(adb("exec-out", "screencap", "-p"))
     return tree

@@ -457,3 +457,43 @@ export interface DialogScreenFrame {
   /** Defaults to true. false skips resizing for this frame. */
   morph?: boolean;
 }
+
+/** Generic record detail surface, shared with the ProjectBoard template. */
+export interface DetailDialogProps {
+  /** Controlled visibility; omit when the existing Dialog lifecycle owns dismissal. */
+  open?: boolean;
+  /** Initial open intent; onClose then runs after the shared exit completes. */
+  startOpen?: boolean;
+  onClose: () => void;
+  label: string;
+  /** Side detail by default; center retains the same material and slot geometry. */
+  mode?: 'side' | 'center';
+  /** Identity/title rendered by the shared PageHeader. */
+  header?: React.ReactNode;
+  subtitle?: string;
+  actions?: React.ReactNode;
+  children?: React.ReactNode;
+  /** Bottom-aligned content inside the same scroll viewport (activity/composer). */
+  scrollFooter?: React.ReactNode;
+  /** Fixed bottom chrome, sharing the Screen and application providers. */
+  footer?: React.ReactNode;
+  footerKeyboardBehavior?: import('../screen/types').ScreenProps['bottomBarKeyboardBehavior'];
+  contentKind?: import('../screen/content').ScreenKind;
+  /** False gives a canvas a bounded body without an extra scroll viewport. */
+  scrollable?: boolean;
+  closeLabel?: string;
+  testID?: string;
+}
+
+/** A labeled section of record properties or resources. */
+export interface DetailDialogSectionProps {
+  label: React.ReactNode;
+  children?: React.ReactNode;
+  accessibilityLabel?: string;
+  testID?: string;
+}
+
+export interface DetailDialogSectionGroupProps {
+  children?: React.ReactNode;
+  testID?: string;
+}

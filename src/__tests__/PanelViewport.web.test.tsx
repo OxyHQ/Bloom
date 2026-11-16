@@ -2,7 +2,7 @@
 import { act, createRef, useLayoutEffect } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
-import { AppShellPanels } from '../app-shell/index.web';
+import { AppShell, AppShellPanels } from '../app-shell/index.web';
 import type { AppShellPanelViewport } from '../app-shell';
 import { panelLayoutCss } from '../app-shell/panel-layout-css';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -10,6 +10,14 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 let host: HTMLDivElement;
 let root: Root;
 beforeEach(() => {
+  Object.defineProperty(globalThis, 'ResizeObserver', {
+    configurable: true,
+    value: class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    },
+  });
   Object.defineProperty(globalThis, 'CSS', {
     value: { supports: () => true },
     configurable: true,
@@ -38,6 +46,7 @@ afterEach(() => {
   act(() => root.unmount());
   host.remove();
   jest.restoreAllMocks();
+  Reflect.deleteProperty(globalThis, 'ResizeObserver');
 });
 it.each(['contained', 'document'] as const)(
   'exposes the existing %s owner for offset, measure, scrollBy, reveal and scroll observation',
@@ -208,4 +217,74 @@ it('lets an explicitly unrestricted split envelope fill available shell space', 
   expect(fluid).toContain('width:max(0px, calc(100cqw');
   expect(fluid).not.toContain('width:min(var(--bloom-reading-envelope)');
   expect(fluid).toContain('flex:var(--fluid-panel-grow-1, 1) 1');
+});
+
+// A bounded group in a document-flow shell cannot borrow a flex height from
+// the document. Its owner must allocate the viewport before a surface clips it.
+it.each([false, true])(
+  'allocates one viewport for a document-scrolled deck (header=%s)',
+  (header) => {
+    act(() =>
+      root.render(
+        <BloomThemeProvider>
+          <AppShell
+            layout="deck"
+            presentation="continuous"
+            header={null}
+            testID="deck-shell"
+            panelLayout={{
+              header: header ? <button type="button">Shared header</button> : undefined,
+              panels: [{ id: 'main', role: 'main', content: <input aria-label="Draft" /> }],
+            }}
+          />
+        </BloomThemeProvider>,
+      ),
+    );
+    const group = host.querySelector<HTMLElement>('[data-testid="deck-shell-panels"]')!;
+    const workspace = host.querySelector<HTMLElement>(
+      '[data-testid="deck-shell-panels-workspace"]',
+    );
+    const owner = header
+      ? workspace!.closest<HTMLElement>('[data-testid="content-panel-surface"]')!
+      : group;
+    expect(owner.style.height).toContain('calc(');
+    expect(owner.style.flexShrink).toBe('0');
+    if (header) expect(group.style.height).toBe('');
+  },
+);
+
+it('keeps joined separator hosts in the CSS-owned tree even before numeric gap measurement', () => {
+  act(() =>
+    root.render(
+      <BloomThemeProvider>
+        <AppShellPanels
+          testID="joined"
+          layout={{
+            appearance: 'joined',
+            panels: [
+              { id: 'main', minWidth: 320 },
+              { id: 'inspector', minWidth: 280 },
+            ],
+          }}
+        />
+      </BloomThemeProvider>,
+    ),
+  );
+  expect(host.querySelector('[data-testid="joined-inspector-separator"]')).not.toBeNull();
+  const css = panelLayoutCss(
+    'seams',
+    {
+      appearance: 'joined',
+      axis: { base: 'vertical', lg: 'horizontal' },
+      panels: [
+        { id: 'main', minWidth: 320 },
+        { id: 'inspector', minWidth: 280 },
+      ],
+    },
+    1,
+  );
+  expect(css).toContain('--bloom-panel-gap:1px');
+  expect(css).toContain('--bloom-panel-gap:0px');
+  expect(css).toContain('inline-size:var(--bloom-panel-gap, 0px)');
+  expect(css).toContain('block-size:var(--bloom-panel-gap, 0px)');
 });

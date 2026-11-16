@@ -1,4 +1,5 @@
 import build from './build.json';
+import { PanelSessionLab } from './PanelSessionLab';
 import { useState } from 'react';
 import { StyledView as View } from './.source/styles/styled-primitives';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -14,7 +15,15 @@ import { Text } from './.source/typography';
 
 function Reading({ title, short = false }: { title: string; short?: boolean }) {
   return (
-    <Screen header={<PageHeader title={title} />} testID={`native-${title}`}>
+    <Screen
+      header={<PageHeader title={title} />}
+      testID={`native-${title}`}
+      onLayout={(event) => {
+        // Fixture-only raw Yoga measurement distinguishes allocation from
+        // UIAutomator's clipped accessibility bounds on a small viewport.
+        console.info('BLOOM_NATIVE_READING', title, JSON.stringify(event.nativeEvent.layout));
+      }}
+    >
       <ScreenScrollView>
         <View className="gap-4 p-4">
           {Array.from({ length: short ? 3 : 40 }, (_, index) => (
@@ -28,6 +37,7 @@ function Reading({ title, short = false }: { title: string; short?: boolean }) {
   );
 }
 export function PanelGroupsLab() {
+  const [session, setSession] = useState(false);
   const [open, setOpen] = useState(false);
   const [exitCount, setExitCount] = useState(0);
   const [floating, setFloating] = useState(false);
@@ -40,106 +50,115 @@ export function PanelGroupsLab() {
         <BloomProvider mode="light" colorPreset="oxy" haptics={false}>
           <PortalProvider>
             <SurfaceProvider>
-              <AppShell
-                scroll="fixed"
-                header={null}
-                gutter={8}
-                contentMaxWidth="none"
-                panelLayout={{
-                  mode: 'split',
-                  flow: 'bounded',
-                  header: (
-                    <PageHeader
-                      title={`Panels ${build.identity.slice(0, 8)}`}
-                      actions={
-                        <View className="flex-row gap-2">
-                          <Button
-                            testID="native-open"
-                            accessibilityLabel={`Split; completed exits ${exitCount}`}
-                            onPress={() => setOpen(!open)}
-                          >
-                            Split
-                          </Button>
-                          <Button
-                            testID="native-sheet"
-                            onPress={() => {
-                              setFloating(!floating);
-                              setOpen(true);
-                            }}
-                          >
-                            Sheet
-                          </Button>
-                          <Button testID="native-flow" onPress={() => setFlow(!flow)}>
-                            Flow
-                          </Button>
-                          <Button
-                            testID="native-add"
-                            onPress={() => (flow ? setCount(count + 1) : setShort(!short))}
-                          >
-                            Add
-                          </Button>
-                        </View>
-                      }
-                    />
-                  ),
-                  panels: [
-                    {
-                      id: 'workspace',
-                      group: flow
-                        ? {
-                            mode: 'flow',
-                            axis: 'vertical',
-                            panels: Array.from({ length: count }, (_, index) => ({
-                              id: `email-${index}`,
-                              content: (
-                                <View className="gap-4 p-6">
-                                  <Text>Email {index + 1}</Text>
-                                  {Array.from({ length: 8 }, (_, line) => (
-                                    <Text key={`line-${line}`}>Email paragraph {line + 1}</Text>
-                                  ))}
-                                </View>
-                              ),
-                            })),
-                          }
-                        : {
-                            mode: 'split',
-                            axis: 'vertical',
-                            gap: 8,
-                            panels: [
-                              {
-                                id: 'post',
-                                minHeight: 120,
-                                resizable: true,
-                                testID: 'native-post-panel',
-                                content: <Reading title="Post" />,
-                              },
-                              {
-                                id: 'likes',
-                                resizeMaxHeight: 'content',
-                                minHeight: 120,
-                                visible: open,
-                                onExitComplete: () => setExitCount((count) => count + 1),
-                                testID: 'native-likes-panel',
-                                ...(floating
-                                  ? {
-                                      floating: {
-                                        below: 'md' as const,
-                                        whenConstrained: true,
-                                        open,
-                                        onOpenChange: setOpen,
-                                        placement: 'bottom' as const,
-                                        label: 'Likes',
-                                      },
-                                    }
-                                  : {}),
-                                content: <Reading title="Likes" short={short} />,
-                              },
-                            ],
-                          },
-                    },
-                  ],
-                }}
-              />
+              {session ? (
+                <PanelSessionLab />
+              ) : (
+                <AppShell
+                  safeArea
+                  scroll="fixed"
+                  header={null}
+                  gutter={8}
+                  contentMaxWidth="none"
+                  panelLayout={{
+                    mode: 'split',
+                    flow: 'bounded',
+                    header: (
+                      <PageHeader
+                        safeArea={false}
+                        title={`Panels ${build.identity.slice(0, 8)}`}
+                        actions={
+                          <View className="flex-row gap-2">
+                            <Button testID="native-session" onPress={() => setSession(true)}>
+                              Session
+                            </Button>
+                            <Button
+                              testID="native-open"
+                              accessibilityLabel={`Split; completed exits ${exitCount}`}
+                              onPress={() => setOpen(!open)}
+                            >
+                              Split
+                            </Button>
+                            <Button
+                              testID="native-sheet"
+                              onPress={() => {
+                                setFloating(!floating);
+                                setOpen(true);
+                              }}
+                            >
+                              Sheet
+                            </Button>
+                            <Button testID="native-flow" onPress={() => setFlow(!flow)}>
+                              Flow
+                            </Button>
+                            <Button
+                              testID="native-add"
+                              onPress={() => (flow ? setCount(count + 1) : setShort(!short))}
+                            >
+                              Add
+                            </Button>
+                          </View>
+                        }
+                      />
+                    ),
+                    panels: [
+                      {
+                        id: 'workspace',
+                        group: flow
+                          ? {
+                              mode: 'flow',
+                              axis: 'vertical',
+                              panels: Array.from({ length: count }, (_, index) => ({
+                                id: `email-${index}`,
+                                content: (
+                                  <View className="gap-4 p-6">
+                                    <Text>Email {index + 1}</Text>
+                                    {Array.from({ length: 8 }, (_, line) => (
+                                      <Text key={`line-${line}`}>Email paragraph {line + 1}</Text>
+                                    ))}
+                                  </View>
+                                ),
+                              })),
+                            }
+                          : {
+                              mode: 'split',
+                              axis: 'vertical',
+                              gap: 8,
+                              panels: [
+                                {
+                                  id: 'post',
+                                  minHeight: 120,
+                                  resizable: true,
+                                  testID: 'native-post-panel',
+                                  content: <Reading title="Post" />,
+                                },
+                                {
+                                  id: 'likes',
+                                  resizeMaxHeight: 'content',
+                                  minHeight: 120,
+                                  visible: open,
+                                  onExitComplete: () => setExitCount((count) => count + 1),
+                                  testID: 'native-likes-panel',
+                                  ...(floating
+                                    ? {
+                                        floating: {
+                                          below: 'md' as const,
+                                          whenConstrained: true,
+                                          open,
+                                          onOpenChange: setOpen,
+                                          placement: 'bottom' as const,
+                                          label: 'Likes',
+                                        },
+                                      }
+                                    : {}),
+                                  content: <Reading title="Likes" short={short} />,
+                                },
+                              ],
+                            },
+                      },
+                    ],
+                  }}
+                />
+              )}
               <PortalOutlet />
             </SurfaceProvider>
           </PortalProvider>

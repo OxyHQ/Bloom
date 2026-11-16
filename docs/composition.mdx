@@ -22,9 +22,11 @@ an explicit prop  >  the nearest container  >  the component's own default
 
 **A constraint is not a default.** Anything that RESTRICTS a control — `disabled`, a modal's inertness, the user's reduce-transparency or reduce-motion preference — travels on its own channel and combines with `||`, never `??`. The rule above is exactly wrong for those: a descendant must not be able to re-enable an action its group disabled by passing a prop.
 
-**State does not travel either.** `checked`, `selected`, a field's value, a business datum: those belong to the component that holds them. A visual context that also carried state would make every container a place state can leak from.
+**State does not travel through visual scopes.** `checked`, `selected`, field values and business data remain explicitly owned. The separate panel-session contract retains registered UI state across presentation hosts within one descriptor lifetime; it is not inherited visual state or durable persistence. See [semantic composition](/docs/semantic-composition#state-and-focus-continuity).
 
 ## Application and panel composition
+
+Declare the application family with `AppShell.layout` and material with `presentation`; panel roles and `Screen.kind` complete the semantic contract. Root and route groups resolve through the same engine. [Semantic application composition](/docs/semantic-composition) describes defaults, constraints and diagnostics.
 
 `AppShell.panelLayout` and embedded `AppShellPanels layout` share one compositor. Stable descriptors own geometry, visibility, ordering and optional panel histories. A route’s `Screen` owns vertical scrolling and measured chrome; a horizontal Deck has a separate owner for its horizontal axis. The host supplies these scopes, so descriptor content does not add another ContentPanel or wrapper Screen. An intentionally embedded group uses `AppShellPanels scope="local"`; a canvas Screen uses `scroll="none"` to reserve chrome without a second vertical scroller. See [Compose application layouts](/docs/bloom/main/compose-layouts) for complete examples.
 

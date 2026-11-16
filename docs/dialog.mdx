@@ -12,6 +12,63 @@ A single `<Dialog>` component for every overlay surface — centered modal, side
 Your app root **must** be wrapped with `GestureHandlerRootView` from `react-native-gesture-handler` for the bottom-sheet pan gestures to work. See [Getting started](/docs/bloom/main/getting-started).
 </Callout>
 
+## Record details
+
+`DetailDialog` composes the record surface used by ProjectBoard: a 609px side
+surface with 12px outer inset (8px on compact windows), rounded material, shared
+corner entrance/exit motion, `PageHeader`, and one `ScreenScrollView`. `mode="center"`
+centers the same surface on wide windows; compact windows retain the inset full-height
+surface. This is a record presentation, not a second overlay engine: `Dialog` still
+owns focus, Escape, outside dismissal and exit lifetime. Native side/custom dialogs
+use the root portal outlet (provided by BloomProvider), preserving the triggering
+record provider while escaping a bounded panel. Native detail geometry clears
+physical device edges through that shared owner.
+
+```tsx
+import { DetailDialog, DetailDialogSection, DetailDialogSectionGroup } from '@oxy.so/bloom/dialog';
+
+<DetailDialog
+  open={selected != null}
+  onClose={() => setSelected(null)}
+  label="Record details"
+  header={record.name}
+  subtitle={database.name}
+  actions={recordActions}
+  footer={editorToolbar}
+  footerKeyboardBehavior="follow"
+>
+  <DetailDialogSectionGroup>
+    <DetailDialogSection label="Status">{statusControl}</DetailDialogSection>
+    <DetailDialogSection label="Owner">{ownerControl}</DetailDialogSection>
+  </DetailDialogSectionGroup>
+  {editor}
+</DetailDialog>
+```
+
+The application owns the schema, permissions, editable fields, persistence and
+selected record. Keep its editor provider **outside** `DetailDialog` when both the
+body and footer consume it. `header` is the PageHeader title slot; `subtitle` and
+`actions` complete the identity. The surface supplies its dismiss button;
+`closeLabel` overrides its localized accessible name. `scrollFooter` places activity
+or a composer at the bottom of the **same scroller**; `footer` stays fixed.
+
+Keep a controlled detail mounted while `open` becomes false so its exit can finish.
+For a record detail mounted only while selected, omit `open` and use `startOpen`;
+the existing Dialog lifecycle then calls `onClose` after the exit, when the host
+can remove the record. ProjectBoard uses this conditionally mounted form.
+
+The scrolling body clears the actual shared header edge before scrolling underneath
+it. `contentKind="canvas" scrollable={false}` instead gives a bounded body and reserves
+the header through Screen. No extra Screen, dialog width, local ScrollView or copied
+padding is needed. Native `footerKeyboardBehavior="follow"` uses Screen's existing
+keyboard-provider contract; see [Screen](/docs/bloom/main/screen).
+
+`DetailDialogSection` owns the label/values layout and typography, while controls
+remain opaque product content. `DetailDialogSectionGroup` owns the spacing between
+sections and also works in full-page records. `DetailDialog` has no ticket DTO or
+fixed set of properties. A controlled close/reopen preserves only state owned above
+the dialog; move durable drafts into the application's record owner.
+
 ## Declarative (the 90% case)
 
 ```tsx

@@ -90,3 +90,19 @@ export type {
   NotificationBellProps,
   ProOfferCardProps,
 } from './types';
+
+export {
+  resolveAppShellComposition,
+  resolvePanelComposition,
+  explainAppShellComposition,
+} from './composition';
+export { useAppShellComposition } from './context';
+export type {
+  AppShellLayout,
+  AppShellPresentation,
+  AppShellPanelRole,
+  AppShellComposition,
+} from './composition';
+
+export { usePanelSessionState, usePanelSessionFocus } from './panel-session';
+export type { PanelSessionFocusTarget } from './panel-session';

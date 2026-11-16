@@ -30,6 +30,17 @@ An app composes Bloom. It does not build UI of its own.
   only per-item data, such as an aspect ratio, belongs inline.
 - Keep `md` as the normal control size ([UI architecture](./ui-architecture.mdx)).
 
+### Declare application structure
+
+Choose AppShell `layout` and `presentation`, panel roles and Screen `kind` before
+adding geometry overrides. A continuous workspace and framed catalog are both
+first-class compositions. Route groups inherit the shell contract; isolated
+embedded regions use an explicit local scope. Shared owners handle responsive
+frames, body measure, scroll pagination and action clearance. Register adapting
+inspector drafts/focus with the panel-session hooks; domain identity and durable
+persistence stay application-controlled. Follow [semantic composition](./semantic-composition.mdx)
+for the exact lifetime and platform limits.
+
 ### Media goes through one resolver
 
 Register one `ImageResolverProvider` at the app root and pass bare file ids to

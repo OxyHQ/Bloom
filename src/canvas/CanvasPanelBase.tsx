@@ -339,7 +339,7 @@ export function createCanvasPanel(
           style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}
           accessibilityLabel={accessibilityLabel}
         >
-          <ScreenScope sizing="fill">
+          <ScreenScope inheritSafeArea sizing="fill">
             <ScrollOffsetProvider value={scrollY}>
               <GestureDetector gesture={handlePan} touchAction="none">
                 <View style={{ display: lateral ? 'none' : 'flex' }}>

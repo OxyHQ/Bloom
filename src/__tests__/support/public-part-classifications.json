@@ -1588,7 +1588,8 @@
       "src/window/WindowLayouts.tsx#WindowLayouts",
       "src/wizard/WizardFooter.tsx#WizardFooter",
       "src/wizard/WizardProgress.tsx#WizardProgress",
-      "src/zoomable-media-gallery/ZoomableMediaGallery.tsx#ZoomableMediaGallery"
+      "src/zoomable-media-gallery/ZoomableMediaGallery.tsx#ZoomableMediaGallery",
+      "src/screen/ScreenContent.tsx#ScreenContent"
     ]
   },
   "navigation-layout": {
@@ -1968,5 +1969,22 @@
     ],
     "verification": "Native mock and DOM web verify default md, xs/lg inheritance, explicit group and button overrides, nested scopes and portals. Material, selection, trigger composition and callbacks use the existing regression suites. Browser verifies matching header geometry and toggle/keyboard behavior in light/dark with desktop and touch emulation. Physical-device layout and touch fit remain unverified.",
     "parts": ["src/button/Group.tsx#Group"]
+  },
+  "record-detail-composition": {
+    "status": "delegated",
+    "reason": "DetailDialog delegates overlay/focus/dismissal to Dialog, header controls to PageHeader and Button, and scrolling/footer edges to Screen. DetailDialogSection and ProjectBoardCardContent own template record layout and typography, not control sizing; opaque product controls inherit BloomScope.",
+    "evidence": [
+      "src/dialog/DetailDialogBase.tsx",
+      "src/dialog/DetailDialogSection.tsx",
+      "src/project-board/ProjectBoardCardContent.tsx",
+      "src/dialog/DetailDialog.stories.tsx"
+    ],
+    "verification": "Eight actual Chromium scenarios cover side/center, 1440/390 widths, motion/reduced motion, first-field pointer input, long-body scrolling, fixed header/footer, close/reopen and product draft retention. DOM/native renderer tests cover provider continuity, bounded canvas and native window portal geometry; final device verification is recorded separately in the compositor audit.",
+    "parts": [
+      "src/dialog/DetailDialog.tsx#DetailDialog",
+      "src/dialog/DetailDialogSection.tsx#DetailDialogSection",
+      "src/dialog/DetailDialogSection.tsx#DetailDialogSectionGroup",
+      "src/project-board/ProjectBoardCardContent.tsx#ProjectBoardCardContent"
+    ]
   }
 }

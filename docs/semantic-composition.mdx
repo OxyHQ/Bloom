@@ -1,0 +1,207 @@
+---
+title: Semantic application composition
+description: Choose application structure, presentation and screen intent through one compositor, with explicit state and adaptation contracts.
+---
+
+# Semantic application composition
+
+An application declares its structure; Bloom resolves its navigation envelope,
+panel roles, surface ownership, adaptation and screen scopes through the existing
+AppShell compositor. Applications retain domain data, permissions, destinations
+and mutations. This is a declarative UI contract, not automatic discovery of an
+application's business relationships or a replacement router.
+
+Check the installed package and [task catalog](/docs/task-catalog) before using
+these APIs. The [rollout ledger](https://github.com/OxyHQ/Bloom/blob/main/docs/audits/2026-11-16-semantic-compositor.md)
+separates implementation from browser/device checks and registry publication.
+
+## Structure and presentation are separate
+
+| `AppShell.layout` | Structure supplied by the family |
+| --- | --- |
+| `workspace` | Bounded working area with persistent application navigation |
+| `collection-detail` | Collection and selected detail; compact selection adaptation |
+| `feed` | Reading flow with contextual content |
+| `deck` | Multiple panels in a shared horizontal viewport |
+| `catalog` | Document-scrolled public/catalog content and its navigation envelope |
+| `map-browser` | Bounded results/canvas region with explicit active-panel selection |
+
+Choose `presentation="continuous"`, `"framed"` or `"floating"` independently.
+Continuous joins regions with no outer gutter, navigation gap or structural
+rounding at every viewport size. It does not mean compact controls or a narrow
+viewport. A document inside that surface still needs a reading measure and body
+insets. Framed and floating presentations retain their material distinctions.
+The application's existing sidebar, navigation, bottom bar, content constraints
+and controlled panel layout remain available.
+
+Explicit product constraints override family defaults when they are compatible.
+For example, a catalog can retain a product-specific navigation breakpoint.
+Continuous presentation is a constraint: nonzero outer gutters, a card sidebar
+or separated surfaces conflict with its meaning and produce a diagnostic error.
+Use a framed local composition for a genuinely independent embedded region.
+
+## Roles supply shared defaults
+
+Descriptors and JSX panels accept `role="main|collection|detail|inspector|context|canvas"`.
+Roles supply sizing and adaptation defaults; explicit dimensions, spans and
+navigation state retain priority. Vertical groups do not inherit horizontal
+width defaults. Stable descriptor IDs identify regions, independently of their
+position or current presentation.
+
+An inspector supplies `open`, `onOpenChange` and an accessible `label`. Bloom
+owns the inline/sheet decision, dismissal, backdrop, focus boundary, safe area
+and isolated Screen scope. The same open intent controls both presentations.
+An explicit `floating` configuration refines the defaults; missing labels or
+conflicting `visible`/`open` values are rejected.
+
+```tsx
+<AppShell
+  layout="workspace"
+  presentation="continuous"
+  sidebar={navigation}
+  panelLayout={{
+    panels: [
+      { id: 'document', role: 'main', content: documentScreen },
+      {
+        id: 'comments',
+        role: 'inspector',
+        open: commentsOpen,
+        onOpenChange: setCommentsOpen,
+        label: 'Comments',
+        content: commentsScreen,
+      },
+    ],
+  }}
+/>
+```
+
+This snippet assumes the application's existing BloomProvider and bounded shell
+host. A route can instead return `AppShellPanels layout={...}`: shell family and
+presentation flow into that group. Its `layout.family` can select a more specific
+structure, such as a map-browser within a catalog application. `scope="local"`
+starts an independent embedded frame. Do not add a second shell to recreate a
+route's inherited environment.
+
+## Screen owns the body and its edges
+
+`Screen kind="document|collection|table|canvas|form"` describes body intent.
+`ScreenContent` consumes that intent within the existing scroller; it supplies
+reading measure and body padding without another scroll viewport or surface.
+`width="full"` removes the readable width cap while preserving body inset.
+Body adaptation follows the available body container, not the window width.
+
+```tsx
+<Screen kind="document" header={pageHeader}>
+  <ScreenScrollView>
+    <ScreenContent width={fullWidth ? 'full' : 'readable'}>
+      {editor}
+    </ScreenContent>
+  </ScreenScrollView>
+</Screen>
+```
+
+A canvas uses the Screen canvas intent and its existing non-scrolling body.
+Collections use `ScreenScrollView.onEndReached` or the shared list integration;
+applications do not duplicate viewport measurement, end detection or bottom
+bar padding. `primaryActionPlacement="center"` positions a map/list action through
+the Screen footer owner. `primaryActionVisibility="alone"` excludes the action
+from both layout reservation and shell claims when its panel is not alone;
+passing an element whose component happens to return null cannot express that
+ownership decision.
+
+## State and focus continuity
+
+Stable IDs preserve mounted inline panel content through ordinary geometry,
+visibility and ordering changes. A style change between joined and framed
+surfaces keeps the same content owner. Changing the application route or a
+panel's identity still creates a new lifetime.
+
+Inline-to-dialog adaptation crosses platform presentation hosts. Bloom does
+**not** promise preservation of arbitrary local React hooks, DOM/native view
+identity, editor instances, media playback or ongoing composition events across
+that host change. The vendored native teleport specifications do not provide a
+shipped native view-reparenting implementation.
+
+Register state that must survive that transition with the panel session:
+
+```tsx
+const [draft, setDraft] = usePanelSessionState(`comment:${commentId}:draft`, '');
+const focus = usePanelSessionFocus<TextInputInstance>(`comment:${commentId}:input`);
+
+<Textarea
+  inputRef={focus.ref}
+  value={draft}
+  onChangeText={setDraft}
+  onFocus={focus.onFocus}
+  onBlur={focus.onBlur}
+  onSelectionChange={focus.onSelectionChange}
+/>
+```
+
+Both hooks are exported from `@oxy.so/bloom/app-shell/hooks` and
+`@oxy.so/bloom/app-shell`. A session belongs to one descriptor owner. Use stable,
+unique domain keys for drafts, mention ranges, filters, replies and submission
+state. A changed key initializes from its own initial value; updater functions
+read the latest registered state. Separate panels do not share a session.
+
+Closing a panel retains registered drafts for its current route lifetime but
+clears focus intent. Removing the descriptor or route destroys the session.
+Outside a descriptor panel, the hooks have component-local lifetime. They do
+not persist data to disk or a server. Product stores remain responsible for
+cross-route/account persistence and asynchronous mutation ownership.
+
+The focus adapter records the focused input and selection, then restores them
+when its presentation changes. It cancels when the panel closes, the user blurs,
+another destination receives focus or a pointer/key action supersedes the
+request. Compose existing input handlers with the returned handlers. Do not
+force `autoFocus` on every remount: that bypasses the restoration contract and
+can steal focus. Screen-reader focus follows the overlay's existing platform
+contract; keyboard selection restoration is a separate check.
+
+## Inspect resolution
+
+`explainAppShellComposition(props)` exposes resolved family/presentation,
+ownership and the origin/reason for decisions. It is a development diagnostic
+for an explicit declaration, not an interactive inspector UI and not telemetry.
+Use it when investigating a gutter: distinguish the shell frame, panel gap,
+Screen body inset and an explicit product override before changing geometry.
+The task catalog and guide examples do not establish runtime adoption.
+
+## Migrate and retire compatibility deliberately
+
+1. Record each application's current routes, navigation, scrolling and material
+   presentation. Choose a family and presentation for each actual composition.
+2. Replace legacy `variant` selection with semantic declarations, retaining
+   justified explicit product constraints. Do not change approved visuals just
+   to make all applications look alike.
+3. Move responsive frame calculations, body padding, scroll-end detection and
+   action clearance into their Bloom owners. Remove the obsolete consumer code
+   and replace its behavioral tests at the new ownership boundary.
+4. Register drafts and focus for adapting inspectors. Verify data, selection,
+   Back/Escape/backdrop behavior, route resets and mutations across transitions.
+5. Run source gates, a built-package consumer check, actual browser/device flows,
+   and then registry-installed consumer checks. Publish through CI and record
+   the exact package version, commit, release and deployment evidence.
+
+Legacy variants remain compatibility inputs to the same resolver. They are not
+removed in this rollout. Deprecation can advance only when all five consumers
+have migrated their relevant routes, responsive geometry duplicates are removed,
+required browser/native checks pass, and installed release/deployment evidence
+is recorded. A later removal requires an export/API migration plan and a major
+release where appropriate. Unverified native behavior, missing iOS evidence or
+unresolved state-loss defects cannot be relabeled as complete adoption.
+
+## Native safe-area ownership
+
+Semantic shells default to `safeArea={true}`. The existing shell frame/navigation
+owns physical device edges once; explicit `false` and legacy variants retain their
+previous behavior. Descendant PageHeaders inherit consumed top edges unless their
+own `safeArea` prop is explicit. Ordinary Screens and bounded panels preserve this
+ownership; independent dialogs, sheets and overlays reset it and retain the physical
+device insets.
+
+Custom inline content can use `useContentSafeAreaInsets` from
+`@oxy.so/bloom/layout` instead of recharging a physical inset already owned by its
+frame. This hook reports only the remaining content insets. Keep raw device insets
+for window-level geometry; never globally replace them with zero. Shell bottom
+chrome and the frame coordinate which of them pays the physical bottom edge.

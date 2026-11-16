@@ -39,3 +39,6 @@ export function useDialogControl(): DialogControlProps {
     [id],
   );
 }
+
+/** Deferred content begins its own reveal after the detail surface enters. */
+export const DetailDialogEnteredContext = createContext(true);

@@ -1,3 +1,4 @@
+import { SafeAreaConsumedContext } from '../layout/safe-area-ownership';
 import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import { ScrollArea } from '../layout/ScrollArea';
 import { StyledView } from '../styles/styled-primitives';
@@ -193,6 +194,8 @@ const READING_TRANSITION =
 export function createAppShellEngine() {
   const AppShellComponent: React.FC<AppShellEngineProps> = ({
     variant = 'dashboard',
+    layout: semanticLayout,
+    presentation,
     safeArea = false,
     navigationAlign = 'edge',
     navigationGap,
@@ -351,6 +354,7 @@ export function createAppShellEngine() {
       navFrom,
       navExpandedFrom,
       framedFrom,
+      presentation,
       panels,
       variant,
       navigationAlign,
@@ -381,14 +385,20 @@ export function createAppShellEngine() {
     // hosts no panels.
     const panelHost = panels && variant !== 'canvas';
     const framed =
-      cssShell?.framed ??
-      (panelHost &&
-        (framedFrom !== undefined
-          ? width >= breakpointPx(framedFrom)
-          : hasNav
-            ? navInFlow
-            : width >= BREAKPOINTS.md));
-    const compactRegion = panelHost && !framed;
+      presentation === 'continuous'
+        ? false
+        : (cssShell?.framed ??
+          (panelHost &&
+            (framedFrom !== undefined
+              ? width >= breakpointPx(framedFrom)
+              : hasNav
+                ? navInFlow
+                : width >= BREAKPOINTS.md)));
+    const compactRegion =
+      panelHost &&
+      (presentation === 'continuous'
+        ? (cssShell?.compact ?? (hasNav ? !wide : width < BREAKPOINTS.md))
+        : !framed);
     const stretchReading = compactRegion || contentMaxWidth === 'none';
     // Reveal keeps its page host mounted across compact/desktop changes.
     const drawerStyle = variant === 'dashboard' || variant === 'feed' ? drawer : 'overlay';
@@ -625,6 +635,14 @@ export function createAppShellEngine() {
     const bottomChrome = showBottomBar || showFloatingAction;
     const frameBottomInset = ownsSafeArea && !bottomChrome ? insets.bottom : 0;
     const navigationBottomInset = ownsSafeArea && bottomChrome ? insets.bottom : 0;
+    const inheritedSafeArea = useContext(SafeAreaConsumedContext);
+    const consumedSafeArea = useMemo(
+      () =>
+        ownsSafeArea
+          ? { ...insets, bottom: Math.max(insets.bottom, inheritedSafeArea.bottom) }
+          : inheritedSafeArea,
+      [ownsSafeArea, insets, inheritedSafeArea],
+    );
     const safeFrame = (node: React.ReactElement) =>
       ownsSafeArea ? (
         <View
@@ -641,7 +659,9 @@ export function createAppShellEngine() {
             backgroundColor: background,
           }}
         >
-          {node}
+          <SafeAreaConsumedContext.Provider value={consumedSafeArea}>
+            {node}
+          </SafeAreaConsumedContext.Provider>
         </View>
       ) : (
         node
@@ -867,6 +887,7 @@ export function createAppShellEngine() {
     const region = useMemo<AppShellRegionValue>(
       () => ({
         flow: regionFlow,
+        presentation,
         framed,
         gutter,
         viewportInset: {
@@ -882,6 +903,7 @@ export function createAppShellEngine() {
       }),
       [
         regionFlow,
+        presentation,
         framed,
         gutter,
         externalTopHeight,
@@ -1737,7 +1759,11 @@ export function createAppShellEngine() {
         inherit={!flowBottomBar}
         consume={flowBottomBar ? bottomBarHeight : undefined}
       >
-        {canvas ? canvasBody : centred ? centredBody : dashboardBody}
+        {canvas
+          ? canvasBody
+          : centred || (semanticLayout && panelHost)
+            ? centredBody
+            : dashboardBody}
       </BottomEdgeProvider>
     );
 

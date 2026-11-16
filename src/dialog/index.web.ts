@@ -3,12 +3,17 @@
 // Re-run `bun run generate:exports` (or any `bun run build`) after
 // changing that barrel or the set of web-forked subpaths.
 
+export { DetailDialogSection, DetailDialogSectionGroup } from './DetailDialogSection';
+export { DetailDialog } from './DetailDialog.web';
 export { Dialog } from './Dialog.web';
 export { useDialogContext, useDialogControl } from './context';
 export { useDialogHeader } from './DialogHeader';
 export { useDialogFrame } from './DialogMorph';
 export type { DialogFrame } from './DialogMorph';
 export type {
+  DetailDialogProps,
+  DetailDialogSectionProps,
+  DetailDialogSectionGroupProps,
   DialogAction,
   DialogActionColor,
   DialogContextProps,

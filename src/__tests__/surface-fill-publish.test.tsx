@@ -1,3 +1,4 @@
+import { PortalProvider, PortalOutlet } from '../portal';
 /**
  * The gate on WHAT a surface publishes to the subtree it paints.
  *
@@ -22,7 +23,8 @@
  *  - and on web the CSS variable is asserted on the SAME node as the fill,
  *    because the DOM inherits it whether or not React context agrees.
  */
-import React, { createRef } from 'react';
+import type React from 'react';
+import { createRef } from 'react';
 import { resolveSurfaceFill, resolveSurfaceTint } from '../surface/shared';
 import { Platform, Text, View } from 'react-native';
 import { act, render } from '@testing-library/react-native';
@@ -83,7 +85,10 @@ function LevelProbe() {
 function renderIn(mode: 'light' | 'dark', ui: React.ReactNode) {
   return render(
     <BloomThemeProvider mode={mode} colorPreset={PRESET}>
-      {ui}
+      <PortalProvider>
+        {ui}
+        <PortalOutlet />
+      </PortalProvider>
     </BloomThemeProvider>,
   );
 }

@@ -24,7 +24,9 @@ ARTIFACT_DIR=.local/panel-groups-native python3 archive.py
 ```
 
 `prepare.mjs` records source hashes in build.json and displays an abbreviated
-identity in the running app. Preserve that receipt, the packaged sourcemap and APK
+identity in the running app. `src/` entries come from the selected `sourceRoot`;
+`fixture/` entries always come from the local `fixtureRoot` that Metro compiles,
+even when `BLOOM_SOURCE_ROOT` points to another checkout. Preserve that receipt, the packaged sourcemap and APK
 hash with the screenshots/report. The sourcemap is the authoritative source of
 what was bundled if the source checkout changes during compilation. No source
 mirror result should be presented as a published-package result.
@@ -34,3 +36,33 @@ reading position after closing, sheet presentation and Android Back dismissal,
 a 90% sheet height ceiling, and adding email content to the common scroll viewport. It uses only this app's
 controls and captures only while this app is foregrounded. It does not establish
 iOS behavior, production Mention integration or a performance benchmark.
+
+## Inspector selection continuity
+
+Open **Session**. **Adapt after 8s** queues a presentation change and disables
+itself until the transition. The extra time is only for this fixture: refocus
+the editor after tapping the button, obtain its current bounds after keyboard
+reflow, and select text. Before the transition, capture `native-session-trace`
+and confirm a non-collapsed `selection [start,end]`. The trace persists above
+both presentation hosts and records the last observed range in `transition`.
+It also shows incoming focus/blur/selection events.
+
+After adaptation, type a replacement and assert the selected text was replaced,
+not appended. Repeat in both directions. Verify the same selection gesture and
+replacement without adaptation as a negative control. A long press based on
+coordinates from before keyboard movement is not proof that text was selected.
+
+## Shared task detail
+
+In **Session**, open **Open task detail**. The fixture uses the public
+`DetailDialog` and `DetailDialogSection` components with a title field, long
+body, lower notes field, and a footer that follows the keyboard. Tap the first
+field through its visible bounds and type; scroll to the lower field and repeat.
+Check that the header does not cover the first field, the body scrolls while the
+header/footer stay owned by the dialog, and the footer remains reachable with
+the keyboard visible. Android Back must dismiss the dialog; reopening retains
+this fixture's parent-owned form values without forcing focus.
+
+`BLOOM_NATIVE_READING` logcat entries are fixture-only raw `Screen.onLayout`
+measurements. They distinguish allocated Yoga heights from UIAutomator's
+clipped accessibility bounds when investigating generic split geometry.

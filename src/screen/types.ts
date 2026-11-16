@@ -1,3 +1,4 @@
+import type { ScreenKind } from './content';
 import type { AppColorName } from '../theme/color-presets';
 import type { ReactNode, Ref } from 'react';
 import type { ScrollViewProps, ViewProps, StyleProp, ViewStyle } from 'react-native';
@@ -5,6 +6,8 @@ import type { ScrollRestorationBinding } from '../scroll/types';
 import type { ScrollHandlerProcessed } from 'react-native-reanimated';
 
 export interface ScreenProps extends ViewProps {
+  /** Body semantics shared with ScreenContent; canvas owns its own viewport. */
+  kind?: ScreenKind;
   /** Local screen recipe, including its enclosing panel surface. Restored on departure. */
   colorPreset?: AppColorName;
   /**
@@ -55,6 +58,10 @@ export interface ScreenProps extends ViewProps {
    * shell's floating action steps aside while this screen is in front.
    */
   primaryAction?: ReactNode;
+  /** Logical alignment of the screen-owned floating action. */
+  primaryActionPlacement?: 'start' | 'center' | 'end';
+  /** Show a panel-switch action only while this region is shown alone. */
+  primaryActionVisibility?: 'always' | 'alone';
   /**
    * What reselecting this screen means — pressing the place the reader is
    * already on: usually `{ refresh }`. Answered only while the screen is active.
