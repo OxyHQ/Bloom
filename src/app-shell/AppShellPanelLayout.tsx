@@ -965,15 +965,19 @@ export function createPanelLayoutView(
                 fill={typeof panel.surfaceColor === 'string' ? panel.surfaceColor : undefined}
               />
             ) : null}
-            {(joined || !framed) && track.gap > 0 ? (
+            {(joined || !framed) && (cssScope ? gap > 0 : track.gap > 0) ? (
               <View
                 pointerEvents="none"
+                testID={testID ? `${testID}-separator` : undefined}
+                {...(cssScope ? { dataSet: { bloomPanelSeparator: cssScope } } : {})}
                 style={
                   {
                     position: 'absolute',
-                    ...(vertical
-                      ? { left: 0, right: 0, top: -track.gap, height: track.gap }
-                      : { top: 0, bottom: 0, insetInlineStart: -track.gap, width: track.gap }),
+                    ...(cssScope
+                      ? {}
+                      : vertical
+                        ? { left: 0, right: 0, top: -track.gap, height: track.gap }
+                        : { top: 0, bottom: 0, insetInlineStart: -track.gap, width: track.gap }),
                     backgroundColor: theme.colors.border,
                   } as WebCssStyle
                 }

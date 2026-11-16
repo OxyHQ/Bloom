@@ -167,3 +167,23 @@ export const NestedBodyRegions: Story = {
     </View>
   ),
 };
+
+export const SeparatorAxes: Story = {
+  render: () => (
+    <View style={{ height: WEB_VIEWPORT_HEIGHT }}>
+      <AppShell
+        layout="workspace"
+        presentation="continuous"
+        header={null}
+        testID="semantic-axes"
+        panelLayout={{
+          axis: { base: 'vertical', lg: 'horizontal' },
+          panels: [
+            { id: 'main', minHeight: 200, content: <DraftScreen name="main" /> },
+            { id: 'detail', minHeight: 200, content: <DraftScreen name="detail" /> },
+          ],
+        }}
+      />
+    </View>
+  ),
+};

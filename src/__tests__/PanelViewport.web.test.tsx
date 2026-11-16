@@ -252,3 +252,39 @@ it.each([false, true])(
     if (header) expect(group.style.height).toBe('');
   },
 );
+
+it('keeps joined separator hosts in the CSS-owned tree even before numeric gap measurement', () => {
+  act(() =>
+    root.render(
+      <BloomThemeProvider>
+        <AppShellPanels
+          testID="joined"
+          layout={{
+            appearance: 'joined',
+            panels: [
+              { id: 'main', minWidth: 320 },
+              { id: 'inspector', minWidth: 280 },
+            ],
+          }}
+        />
+      </BloomThemeProvider>,
+    ),
+  );
+  expect(host.querySelector('[data-testid="joined-inspector-separator"]')).not.toBeNull();
+  const css = panelLayoutCss(
+    'seams',
+    {
+      appearance: 'joined',
+      axis: { base: 'vertical', lg: 'horizontal' },
+      panels: [
+        { id: 'main', minWidth: 320 },
+        { id: 'inspector', minWidth: 280 },
+      ],
+    },
+    1,
+  );
+  expect(css).toContain('--bloom-panel-gap:1px');
+  expect(css).toContain('--bloom-panel-gap:0px');
+  expect(css).toContain('inline-size:var(--bloom-panel-gap, 0px)');
+  expect(css).toContain('block-size:var(--bloom-panel-gap, 0px)');
+});
