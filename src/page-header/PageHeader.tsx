@@ -689,7 +689,7 @@ function PageHeaderComponent({
         minWidth: 0,
         maxWidth: '100%',
         flexShrink: 1,
-        alignItems: centered ? 'center' : 'flex-start',
+        alignItems: centered ? 'center' : 'stretch',
       }}
     >
       {onPressTitle && titleAppearance === 'capsule' ? (
