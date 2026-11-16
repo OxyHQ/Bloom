@@ -6,7 +6,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { BottomSheet } from '../bottom-sheet';
 import { Button } from '../button';
-import { ContentPanel } from '../content-panel';
+import { AppShell } from '../app-shell';
+import { Screen as AppScreen, ScreenScrollView } from '../screen';
 import {
   RiBankCardLine,
   RiBookmarkLine,
@@ -27,7 +28,6 @@ import {
 import { ListingPhotoGrid, ListingSection } from '../listing-details';
 import { PlaceCard } from '../place-card';
 import { PlaceReviewCard, PlaceReviewSummary } from '../place-reviews';
-import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import ZoomableMediaGallery, { type ZoomableMediaGalleryHandle } from '../zoomable-media-gallery';
@@ -510,67 +510,54 @@ function MapBackdrop({ children }: { children?: React.ReactNode }) {
 function PlaceScreen() {
   const { width } = useWindowDimensions();
   const phone = width < 768;
-
-  if (phone) {
-    return (
-      <View style={{ height: '100%', minHeight: 600 }}>
-        <MapBackdrop />
-        <PlaceSheet>
-          <PlaceScreenBody />
-        </PlaceSheet>
-      </View>
-    );
-  }
-
   return (
-    <View style={{ flexDirection: 'row', height: '100%', minHeight: 720 }}>
-      <View style={{ width: 420, height: '100%' }}>
-        <ContentPanel framed={false} fill>
-          <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 48, gap: 8 }}>
+    <AppShell
+      header={null}
+      scroll="fixed"
+      contentMaxWidth="none"
+      panelLayout={{
+        flow: 'bounded',
+        panels: [
+          ...(!phone
+            ? [
+                {
+                  id: 'place',
+                  width: 420,
+                  content: (
+                    <AppScreen>
+                      <ScreenScrollView contentContainerStyle={{ padding: 16, gap: 8 }}>
+                        <PlaceScreenBody />
+                      </ScreenScrollView>
+                    </AppScreen>
+                  ),
+                },
+              ]
+            : []),
+          { id: 'map', span: 1, content: <MapBackdrop /> },
+        ],
+      }}
+      overlay={
+        phone ? (
+          <PlaceSheet>
             <PlaceScreenBody />
-          </ScrollView>
-        </ContentPanel>
-      </View>
-      <MapBackdrop />
-    </View>
+          </PlaceSheet>
+        ) : undefined
+      }
+    />
   );
 }
 
-/**
- * The phone side: Bloom's own `BottomSheet`, mounted OPEN (the controlled
- * path, so there is no present()-in-an-effect race), over the map.
- *
- * It publishes its fill (`SurfaceLevelProvider` + `surfaceFillVars`) — the
- * contract every block inside reads to paint itself. The settings card, the
- * chart track and the hairlines all resolve off the sheet's colour rather than
- * off the page's, which is the whole reason nothing in this family takes a
- * `surface` prop.
- *
- * The sheet takes its height from its CONTENT, and a whole place screen is
- * taller than any phone — so the story gives the content a height and lets the
- * sheet scroll inside it, which is what leaves the map visible above. An app
- * drives that from its own detents instead.
- */
+/** BottomSheet owns its safe-area bound, surface fill and single scroller. */
 function PlaceSheet({ children }: { children: React.ReactNode }) {
-  const theme = useTheme();
-  const { height } = useWindowDimensions();
-  // No backdrop at all: a place sheet is not a modal over the map, it is the
-  // other half of the screen, and the map has to stay readable beside it.
-  // `backdropOpacity={0}` is not the same thing — the scrim is still drawn.
   return (
-    <BottomSheet open showHandle backdropComponent={() => null}>
-      <SurfaceLevelProvider level={1} fill={theme.colors.card}>
-        <View
-          style={[
-            { height: Math.round(height * 0.78), backgroundColor: theme.colors.card },
-            surfaceFillVars(theme.colors.card),
-          ]}
-        >
-          <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 64, gap: 8 }}>
-            {children}
-          </ScrollView>
-        </View>
-      </SurfaceLevelProvider>
+    <BottomSheet
+      open
+      sizing="fill"
+      showHandle
+      accessibilityLabel="Place details"
+      backdropComponent={() => null}
+    >
+      <View style={{ padding: 16, gap: 8 }}>{children}</View>
     </BottomSheet>
   );
 }

@@ -28,6 +28,8 @@ import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
+// Match the browser resolver for composed controls such as PlayButton.
+jest.mock('../button', () => jest.requireActual('../button/index.web'));
 jest.mock('react-native-reanimated', () => {
   const base = jest.requireActual('../../__mocks__/react-native-reanimated');
   const native = jest.requireActual('react-native-web');
@@ -382,7 +384,7 @@ const SUBJECTS: Record<string, Subject> = {
     states: ['opening', 'rest'],
     render: () => <MailComposeSurface variant="docked" />,
   },
-  'media-controls/PlayButton.tsx': {
+  'button/Button.web.tsx (through PlayButton)': {
     states: ['rest', 'pressed', 'disabled'],
     render: ({ state }) => (
       <PlayButton playing={false} subject="Night Drive" disabled={state === 'disabled'} />

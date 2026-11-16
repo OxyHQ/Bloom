@@ -116,11 +116,7 @@ const ACCOUNT: Pick<
 //  Frames
 // ---------------------------------------------------------------------------
 
-/** The page frame: background-full, p 12, and a viewport-tall workspace. */
-/**
- * The page a chat sits in. With no size given it is the viewport, as in an app;
- * the chat's own shell frames its panels (and drops the frame on narrow screens).
- */
+/** AgentChat already owns AppShell. Only isolated history specimens need a bounded fixture. */
 function Page({
   children,
   height,
@@ -133,16 +129,21 @@ function Page({
   testID?: string;
 }) {
   const { colors } = useTheme();
-  const viewport = useWindowDimensions();
-  const fills = width === undefined && height === undefined;
+  if (width === undefined && height === undefined) {
+    return (
+      <View testID={testID} style={{ flex: 1 }}>
+        {children}
+      </View>
+    );
+  }
   return (
     <View
       testID={testID}
       style={{
         width: width ?? '100%',
         maxWidth: '100%',
-        height: height ?? viewport.height,
-        padding: fills ? 0 : 12,
+        height,
+        padding: 12,
         backgroundColor: colors.background,
       }}
     >
