@@ -54,6 +54,7 @@ export function PanelGroupsLab() {
                 <PanelSessionLab />
               ) : (
                 <AppShell
+                  safeArea
                   scroll="fixed"
                   header={null}
                   gutter={8}
@@ -63,6 +64,7 @@ export function PanelGroupsLab() {
                     flow: 'bounded',
                     header: (
                       <PageHeader
+                        safeArea={false}
                         title={`Panels ${build.identity.slice(0, 8)}`}
                         actions={
                           <View className="flex-row gap-2">

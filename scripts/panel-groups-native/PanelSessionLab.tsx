@@ -35,7 +35,7 @@ function Draft({
   const focus = usePanelSessionFocus<TextInputInstance>('comment-input');
   const presentation = useAppShellPanel().presentation ?? 'inline';
   return (
-    <Screen kind="form" header={<PageHeader title="Inspector draft" />}>
+    <Screen kind="form" header={<PageHeader title="Inspector draft" safeArea={false} />}>
       <View className="gap-4 p-4">
         <Button testID="native-session-adapt" onPress={adapt} disabled={pending}>
           {pending ? 'Adapt queued' : 'Adapt after 8s'}
@@ -110,6 +110,7 @@ export function PanelSessionLab() {
   };
   return (
     <AppShell
+      safeArea
       layout="workspace"
       presentation="continuous"
       scroll="fixed"
@@ -121,7 +122,7 @@ export function PanelSessionLab() {
             role: 'main',
             minHeight: 100,
             content: (
-              <Screen header={<PageHeader title="Session continuity" />}>
+              <Screen header={<PageHeader title="Session continuity" safeArea={false} />}>
                 <Button testID="native-session-open" onPress={() => setOpen(true)}>
                   Open inspector
                 </Button>
