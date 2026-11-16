@@ -5,6 +5,7 @@
 ### Fixed
 
 - Smooth PageHeader and PageFooter scrims keep their measured chrome opaque, including subtitles, accessories and safe areas, so scrolling content cannot show through labels or controls. The existing fade runs only in the external tail. Explicit image and linear header fades, and direct EdgeScrim overflow/artwork uses, retain their behavior.
+- Touch long-press selection on web suppresses its release-generated click even when selection changes the layout, preventing unintended navigation or actions while preserving the next intentional tap.
 
 ## 22.1.4
 
