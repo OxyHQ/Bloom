@@ -9,7 +9,7 @@ import { PageFooter, PageFooterProvider, usePageFooterInset } from '../page-foot
 import { BottomEdgeProvider, useBottomEdgeInset, useClaimBottomEdge } from '../layout/bottom-edge';
 import { Screen } from '../screen';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
-import { SCRIM_STOPS } from '../page-header/EdgeScrim';
+import { SCRIM_CHROME_FRACTION, SCRIM_STOPS } from '../page-header/EdgeScrim';
 import { resolvedStyle } from './support/rendered-style';
 
 const insets = { top: 0, right: 0, bottom: 34, left: 0 };
@@ -252,7 +252,7 @@ describe('PageFooter', () => {
     for (const stop of SCRIM_STOPS) {
       expect(
         ramp.findByProps({
-          offset: String(stop.offset),
+          offset: String(SCRIM_CHROME_FRACTION + (1 - SCRIM_CHROME_FRACTION) * stop.offset),
           stopColor: '#123456',
           stopOpacity: stop.opacity,
         }),
@@ -261,6 +261,26 @@ describe('PageFooter', () => {
     expect(resolvedStyle(screen.getByTestId('footer-scrim').props.style).height).toBeCloseTo(86.8);
     expect(screen.getByTestId('footer').props.pointerEvents).toBe('box-none');
     expect(screen.getByTestId('footer-scrim').props.pointerEvents).toBe('none');
+  });
+
+  it('protects wrapped footer rows and safe area as the measured height changes', () => {
+    const screen = render(
+      <Providers>
+        <PageFooter testID="footer" safeArea>
+          <Text>Selection summary</Text>
+        </PageFooter>
+      </Providers>,
+    );
+    for (const height of [56, 112, 64]) {
+      layout(screen.getByTestId('footer-row'), 390, height);
+      const box = Number(resolvedStyle(screen.getByTestId('footer-scrim').props.style).height);
+      const gradient = screen.getByTestId('footer-scrim-gradient');
+      const stops = gradient.findAll((node) => String(node.type) === 'Stop');
+      const lastOpaque = stops.filter((node) => node.props.stopOpacity === 1).slice(-1)[0]!;
+      expect(Number(lastOpaque.props.offset) * box).toBeCloseTo(height + insets.bottom);
+      expect(box).toBeGreaterThan(height + insets.bottom);
+      expect(gradient.findByProps({ x1: '0', x2: '0' }).props).toMatchObject({ y1: '1', y2: '0' });
+    }
   });
 
   it('supports no scrim and stays usable without a measurement provider', () => {

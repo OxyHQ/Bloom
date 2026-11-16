@@ -170,7 +170,7 @@ export interface PageHeaderProps {
   transparent?: boolean;
   /** `presentation="floating"` only. Default `auto`. */
   scrim?: PageHeaderScrim;
-  /** Floating gradient curve. Default smooth; linear fades uniformly from opaque to transparent. */
+  /** Default smooth protects measured chrome and fades outside it; linear/onImage fade across the full box. */
   scrimFalloff?: 'smooth' | 'linear';
   /**
    * The colour the edge effect fades FROM. Defaults to `theme.colors.background`
