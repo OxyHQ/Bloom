@@ -1,3 +1,5 @@
+import { AppShell } from '../app-shell';
+import { Screen } from '../screen';
 import { fn } from 'storybook/test';
 import { PageHeader } from '../page-header';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
@@ -269,14 +271,19 @@ export const NewGroup: Story = {
 };
 
 /** The story viewer, with the progress strip running. */
-export const Stories: Story = {
-  render: function StoriesStory() {
+export const Stories: StoryObj<{ controlledProgress: boolean; progress: number }> = {
+  args: { controlledProgress: false, progress: 0.35 },
+  argTypes: {
+    controlledProgress: { control: 'boolean' },
+    progress: { control: { type: 'range', min: 0, max: 1, step: 0.01 } },
+  },
+  render: function StoriesStory({ controlledProgress, progress }) {
     const [index, setIndex] = useState(1);
     const [muted, setMuted] = useState(true);
     const [closed, setClosed] = useState(false);
     const [result, setResult] = useState('');
     const [reply, setReply] = useState('');
-    if (closed) return <Button onPress={() => setClosed(false)}>Reopen stories</Button>;
+
     const stories = ['a', 'b', 'c', 'd', 'e'].map((id) => ({
       id,
       media: (
@@ -288,46 +295,38 @@ export const Stories: Story = {
       ),
     }));
     return (
-      <View style={{ flexDirection: 'row', gap: 24, padding: 24, flexWrap: 'wrap' }}>
-        {result ? <Text>{result}</Text> : null}
-        <View style={{ width: '100%', maxWidth: 390, height: 760 }}>
-          <StoryViewer
-            stories={stories}
-            index={index}
-            name="Saoirse Byrne"
-            avatar={PHOTO('saoirse')}
-            time="2 h"
-            muted={muted}
-            onMutedChange={setMuted}
-            onClose={() => setClosed(true)}
-            onNext={() => setIndex((i) => Math.min(stories.length - 1, i + 1))}
-            onPrevious={() => setIndex((i) => Math.max(0, i - 1))}
-            replyValue={reply}
-            onReplyChange={setReply}
-            onReplySend={() => {
-              setResult(`Reply sent: ${reply}`);
-              setReply('');
-            }}
-            reactions={['❤️', '🔥', '😂']}
-            onReact={(reaction) => setResult(`Reacted ${reaction}`)}
-            testID="story"
-          />
-        </View>
-        <View style={{ width: '100%', maxWidth: 390, height: 760 }}>
-          <StoryViewer
-            stories={stories.slice(0, 3)}
-            index={0}
-            progress={0.35}
-            name="Ito Nakamura"
-            avatar={PHOTO('ito')}
-            time="just now"
-            onClose={fn().mockName('onClose')}
-            onNext={fn().mockName('onNext')}
-            onPrevious={fn().mockName('onPrevious')}
-            testID="story-controlled"
-          />
-        </View>
-      </View>
+      <AppShell variant="canvas" header={null}>
+        <Screen
+          bottomBar={result ? <Text accessibilityLiveRegion="polite">{result}</Text> : undefined}
+        >
+          {closed ? (
+            <Button onPress={() => setClosed(false)}>Reopen stories</Button>
+          ) : (
+            <StoryViewer
+              stories={stories}
+              progress={controlledProgress ? progress : undefined}
+              index={index}
+              name="Saoirse Byrne"
+              avatar={PHOTO('saoirse')}
+              time="2 h"
+              muted={muted}
+              onMutedChange={setMuted}
+              onClose={() => setClosed(true)}
+              onNext={() => setIndex((i) => Math.min(stories.length - 1, i + 1))}
+              onPrevious={() => setIndex((i) => Math.max(0, i - 1))}
+              replyValue={reply}
+              onReplyChange={setReply}
+              onReplySend={() => {
+                setResult(`Reply sent: ${reply}`);
+                setReply('');
+              }}
+              reactions={['❤️', '🔥', '😂']}
+              onReact={(reaction) => setResult(`Reacted ${reaction}`)}
+              testID="story"
+            />
+          )}
+        </Screen>
+      </AppShell>
     );
   },
 };

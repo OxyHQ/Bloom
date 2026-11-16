@@ -1,3 +1,4 @@
+import { AppShell } from '../app-shell';
 import { fn } from 'storybook/test';
 import type React from 'react';
 import { useState } from 'react';
@@ -151,7 +152,7 @@ function CallDemo({ mode, status = 'active' }: { mode: 'voice' | 'video'; status
   const [camera, setCamera] = useState(false);
   const [corner, setCorner] = useState<CallPipCorner>('top-right');
   return (
-    <View style={{ width: '100%', height: 720 }}>
+    <AppShell variant="canvas" header={null}>
       <CallScreen
         mode={videoOn ? 'video' : 'voice'}
         name="Ana Restrepo"
@@ -185,7 +186,7 @@ function CallDemo({ mode, status = 'active' }: { mode: 'voice' | 'video'; status
         }
         testID={mode === 'video' ? 'video' : 'voice'}
       />
-    </View>
+    </AppShell>
   );
 }
 export const VoiceCall: Story = { render: () => <CallDemo mode="voice" /> };
@@ -243,36 +244,41 @@ export const IncomingBanner: Story = {
   ),
 };
 
-/** The full-screen incoming call, both answer modes. */
-export const IncomingScreens: Story = {
-  render: () => (
-    <View style={{ flexDirection: 'row', gap: 24, padding: 24, flexWrap: 'wrap' }}>
-      <View style={{ width: '100%', maxWidth: 390, height: 760 }}>
-        <IncomingCallScreen
-          name="Ana Restrepo"
-          avatar={PHOTO('ana', 400, 400)}
-          mode="video"
-          onAccept={fn().mockName('onAccept')}
-          onDecline={fn().mockName('onDecline')}
-          onMessage={fn().mockName('onMessage')}
-          onRemind={fn().mockName('onRemind')}
-          testID="incoming-buttons"
-        />
-      </View>
-      <View style={{ width: '100%', maxWidth: 390, height: 760 }}>
-        <IncomingCallScreen
-          name="Lucía Ferrer"
-          avatar={PHOTO('lucia', 400, 400)}
-          accentColor="rgb(96 132 214)"
-          answerMode="slide"
-          onAccept={fn().mockName('onAccept')}
-          onDecline={fn().mockName('onDecline')}
-          onMessage={fn().mockName('onMessage')}
-          testID="incoming-slide"
-        />
-      </View>
-    </View>
-  ),
+/** Incoming calls use the viewport; controls choose the answer interaction. */
+export const IncomingScreens: StoryObj<{
+  answerMode: 'buttons' | 'slide';
+  mode: 'voice' | 'video';
+}> = {
+  args: { answerMode: 'buttons', mode: 'video' },
+  argTypes: {
+    answerMode: { control: 'inline-radio', options: ['buttons', 'slide'] },
+    mode: { control: 'inline-radio', options: ['voice', 'video'] },
+  },
+  render: function IncomingStory({ answerMode, mode }) {
+    const [result, setResult] = useState<string | null>(null);
+    return (
+      <AppShell variant="canvas" header={null}>
+        {result ? (
+          <Surface>
+            <Text>{result}</Text>
+            <Button onPress={() => setResult(null)}>Receive another call</Button>
+          </Surface>
+        ) : (
+          <IncomingCallScreen
+            name="Ana Restrepo"
+            avatar={PHOTO('ana', 400, 400)}
+            mode={mode}
+            answerMode={answerMode}
+            onAccept={() => setResult('Call accepted')}
+            onDecline={() => setResult('Call declined')}
+            onMessage={() => setResult('Reply to Ana')}
+            onRemind={() => setResult('Reminder set')}
+            testID="incoming"
+          />
+        )}
+      </AppShell>
+    );
+  },
 };
 
 /** 2, 4, 6 and 9 participants, one speaking in each. */

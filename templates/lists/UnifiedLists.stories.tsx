@@ -27,7 +27,8 @@ import { RiArrowRightSLine } from '../../src/icons/remix/RiArrowRightSLine';
 import { RiCheckDoubleLine } from '../../src/icons/remix/RiCheckDoubleLine';
 import { RiPushpinLine } from '../../src/icons/remix/RiPushpinLine';
 import { RiSearchLine } from '../../src/icons/remix/RiSearchLine';
-import { ScrollArea } from '../../src/layout';
+import { AppShell } from '../../src/app-shell';
+import { Screen, ScreenScrollView } from '../../src/screen';
 import * as Skeleton from '../../src/skeleton';
 import { adoptStyleSheet } from '../../src/styles/adopt-style-sheet';
 import { useSurfaceFill } from '../../src/styles/surface-levels';
@@ -61,7 +62,7 @@ type DemoRow = {
   tag?: string;
 };
 type DemoApp = { name: string; title: string; subtitle: string; rows: DemoRow[] };
-type DemoOptions = { state: 'ready' | 'loading' | 'empty' };
+type DemoOptions = { state: 'ready' | 'loading' | 'empty'; app?: string };
 
 const people: [IdentityMember, IdentityMember, IdentityMember, IdentityMember] = [
   { name: 'Ana Ferrer', avatar: ann },
@@ -432,7 +433,7 @@ function UnifiedRow({
   );
 }
 
-function ListPanel({ app, state }: { app: DemoApp } & DemoOptions) {
+function ListPanel({ app, state }: { app: DemoApp; state: DemoOptions['state'] }) {
   const theme = useTheme();
   const [rows, setRows] = useState(app.rows);
   const [query, setQuery] = useState('');
@@ -484,29 +485,14 @@ function ListPanel({ app, state }: { app: DemoApp } & DemoOptions) {
     setNotice('');
   };
   return (
-    <View
-      style={{ flex: 1, flexBasis: 330, minWidth: 0, gap: 12 }}
+    <Screen
       testID={`unified-panel-${app.name}`}
-    >
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingHorizontal: 8,
-        }}
-      >
-        <Text variant="title-3-semibold">{app.name}</Text>
-        <Text variant="caption-1-regular" style={{ color: theme.colors.textSecondary }}>
-          {app.subtitle}
-        </Text>
-      </View>
-      <Surface radius={24} style={{ height: 680, padding: 12, gap: 12 }}>
+      header={
         <PageHeader
           title={app.title}
+          subtitle={app.subtitle}
           onBack={null}
           safeArea={false}
-          sticky={false}
           actions={
             <Button
               tone="neutral"
@@ -519,160 +505,69 @@ function ListPanel({ app, state }: { app: DemoApp } & DemoOptions) {
               {selecting ? 'Terminar' : 'Seleccionar'}
             </Button>
           }
-        />
-        <ChatSearchField
-          value={query}
-          onChangeText={setQuery}
-          onClear={() => setQuery('')}
-          placeholder="Buscar…"
-          accessibilityLabel={`Buscar en ${app.name}`}
-          clearLabel="Borrar búsqueda"
-        />
-        <View style={{ flexDirection: 'row', gap: 6, paddingHorizontal: 4 }}>
-          <Button
-            tone="neutral"
-            size="sm"
-            appearance={unreadOnly ? 'plain' : 'subtle'}
-            pressed={!unreadOnly}
-            onPress={() => setUnreadOnly(false)}
-          >
-            {'Todos'}
-          </Button>
-          <Button
-            tone="neutral"
-            size="sm"
-            appearance={unreadOnly ? 'subtle' : 'plain'}
-            pressed={unreadOnly}
-            onPress={() => setUnreadOnly(true)}
-          >
-            {'No leídos'}
-          </Button>
-          <View style={{ flex: 1 }} />
-          <Button tone="neutral" size="sm" appearance="plain" onPress={reset}>
-            {'Reiniciar'}
-          </Button>
-        </View>
-        <ListSelectionBar
-          selecting={selecting}
-          count={checked.length}
-          total={visible.length}
-          onSelectAll={(next) => setChecked(next ? visible.map((row) => row.id) : [])}
-          onClear={() => {
-            setSelecting(false);
-            setChecked([]);
-          }}
-          strings={{
-            selectAll: `Seleccionar todos en ${app.name}`,
-            clearSelection: 'Terminar selección',
-            selectedCount: (count) => `${count} seleccionados`,
-          }}
-          actions={
-            checked.length ? [{ key: 'archive', label: 'Archivar', icon: RiArchiveLine }] : []
-          }
-          onAction={() => {
-            setRows((items) => items.filter((row) => !checked.includes(row.id)));
-            if (active && checked.includes(active)) setActive(undefined);
-            setNotice(`${checked.length} archivados`);
-            setChecked([]);
-          }}
-        />
-        <ScrollArea
-          style={{ flex: 1, minHeight: 0 }}
-          contentContainerStyle={{ gap: 16, paddingBottom: 8 }}
-        >
-          {state === 'loading' ? (
-            <Skeleton.Region label={`Cargando ${app.title}`}>
-              {app.rows.map((row) => (
-                <View
-                  key={row.id}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 10,
-                    padding: 10,
-                    height: 58,
-                  }}
+          accessory={
+            <View style={{ gap: 8 }}>
+              <ChatSearchField
+                value={query}
+                onChangeText={setQuery}
+                onClear={() => setQuery('')}
+                placeholder="Buscar…"
+                accessibilityLabel={`Buscar en ${app.name}`}
+                clearLabel="Borrar búsqueda"
+              />
+              <View style={{ flexDirection: 'row', gap: 6, paddingHorizontal: 4 }}>
+                <Button
+                  tone="neutral"
+                  size="sm"
+                  appearance={unreadOnly ? 'plain' : 'subtle'}
+                  pressed={!unreadOnly}
+                  onPress={() => setUnreadOnly(false)}
                 >
-                  <Skeleton.Circle size={36} />
-                  <View style={{ flex: 1, gap: 8 }}>
-                    <Skeleton.Box height={12} width="58%" />
-                    <Skeleton.Box height={10} width="88%" />
-                  </View>
-                </View>
-              ))}
-            </Skeleton.Region>
-          ) : visible.length === 0 ? (
-            <EmptyState
-              icon={RiSearchLine}
-              title="Nada por aquí"
-              description={
-                query
-                  ? `No hay resultados para “${query}”.`
-                  : 'No hay elementos que mostrar con este filtro.'
-              }
-            />
-          ) : (
-            ['Fijados', 'Recientes'].map((section) => {
-              const items = visible.filter(
-                (row) => Boolean(row.pinned) === (section === 'Fijados'),
-              );
-              if (!items.length) return null;
-              const closed = collapsed.includes(section);
-              return (
-                <View key={section} style={{ gap: 6 }}>
-                  <Button
-                    tone="neutral"
-                    appearance="plain"
-                    size="sm"
-                    icon={closed ? RiArrowRightSLine : RiArrowDownSLine}
-                    onPress={() =>
-                      setCollapsed((values) =>
-                        closed ? values.filter((value) => value !== section) : [...values, section],
-                      )
-                    }
-                    accessibilityLabel={`${closed ? 'Expandir' : 'Contraer'} ${section} en ${app.name}`}
-                    style={{ alignSelf: 'flex-start' }}
-                  >
-                    {section}
-                  </Button>
-                  {!closed ? (
-                    <View
-                      role="list"
-                      accessibilityLabel={`${app.name}: ${section}`}
-                      style={{ gap: 2 }}
-                    >
-                      {items.map((row) => (
-                        <View role="listitem" key={row.id}>
-                          <UnifiedRow
-                            row={row}
-                            mail={app.name === 'Inbosh'}
-                            active={active === row.id}
-                            selecting={selecting}
-                            checked={checked.includes(row.id)}
-                            onCheck={(next) => check(row.id, next)}
-                            onOpen={() => {
-                              setActive(row.id);
-                              setNotice('');
-                              setRows((values) =>
-                                values.map((value) =>
-                                  value.id === row.id ? { ...value, unread: 0 } : value,
-                                ),
-                              );
-                            }}
-                            onAction={(type) => action(row.id, type)}
-                            onAttachmentPress={(attachment) =>
-                              setNotice(`Adjunto seleccionado: ${attachment.name}`)
-                            }
-                          />
-                        </View>
-                      ))}
-                    </View>
-                  ) : null}
-                </View>
-              );
-            })
-          )}
-        </ScrollArea>
+                  {'Todos'}
+                </Button>
+                <Button
+                  tone="neutral"
+                  size="sm"
+                  appearance={unreadOnly ? 'subtle' : 'plain'}
+                  pressed={unreadOnly}
+                  onPress={() => setUnreadOnly(true)}
+                >
+                  {'No leídos'}
+                </Button>
+                <View style={{ flex: 1 }} />
+                <Button tone="neutral" size="sm" appearance="plain" onPress={reset}>
+                  {'Reiniciar'}
+                </Button>
+              </View>
+              <ListSelectionBar
+                selecting={selecting}
+                count={checked.length}
+                total={visible.length}
+                onSelectAll={(next) => setChecked(next ? visible.map((row) => row.id) : [])}
+                onClear={() => {
+                  setSelecting(false);
+                  setChecked([]);
+                }}
+                strings={{
+                  selectAll: `Seleccionar todos en ${app.name}`,
+                  clearSelection: 'Terminar selección',
+                  selectedCount: (count) => `${count} seleccionados`,
+                }}
+                actions={
+                  checked.length ? [{ key: 'archive', label: 'Archivar', icon: RiArchiveLine }] : []
+                }
+                onAction={() => {
+                  setRows((items) => items.filter((row) => !checked.includes(row.id)));
+                  if (active && checked.includes(active)) setActive(undefined);
+                  setNotice(`${checked.length} archivados`);
+                  setChecked([]);
+                }}
+              />
+            </View>
+          }
+        />
+      }
+      bottomBar={
         <View
           style={{
             borderTopWidth: 1,
@@ -694,8 +589,101 @@ function ListPanel({ app, state }: { app: DemoApp } & DemoOptions) {
                 : 'Abre una fila o pasa el cursor para ver sus acciones.')}
           </Text>
         </View>
-      </Surface>
-    </View>
+      }
+    >
+      <ScreenScrollView contentContainerStyle={{ gap: 16, padding: 12 }}>
+        {state === 'loading' ? (
+          <Skeleton.Region label={`Cargando ${app.title}`}>
+            {app.rows.map((row) => (
+              <View
+                key={row.id}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: 10,
+                  height: 58,
+                }}
+              >
+                <Skeleton.Circle size={36} />
+                <View style={{ flex: 1, gap: 8 }}>
+                  <Skeleton.Box height={12} width="58%" />
+                  <Skeleton.Box height={10} width="88%" />
+                </View>
+              </View>
+            ))}
+          </Skeleton.Region>
+        ) : visible.length === 0 ? (
+          <EmptyState
+            icon={RiSearchLine}
+            title="Nada por aquí"
+            description={
+              query
+                ? `No hay resultados para “${query}”.`
+                : 'No hay elementos que mostrar con este filtro.'
+            }
+          />
+        ) : (
+          ['Fijados', 'Recientes'].map((section) => {
+            const items = visible.filter((row) => Boolean(row.pinned) === (section === 'Fijados'));
+            if (!items.length) return null;
+            const closed = collapsed.includes(section);
+            return (
+              <View key={section} style={{ gap: 6 }}>
+                <Button
+                  tone="neutral"
+                  appearance="plain"
+                  size="sm"
+                  icon={closed ? RiArrowRightSLine : RiArrowDownSLine}
+                  onPress={() =>
+                    setCollapsed((values) =>
+                      closed ? values.filter((value) => value !== section) : [...values, section],
+                    )
+                  }
+                  accessibilityLabel={`${closed ? 'Expandir' : 'Contraer'} ${section} en ${app.name}`}
+                  style={{ alignSelf: 'flex-start' }}
+                >
+                  {section}
+                </Button>
+                {!closed ? (
+                  <View
+                    role="list"
+                    accessibilityLabel={`${app.name}: ${section}`}
+                    style={{ gap: 2 }}
+                  >
+                    {items.map((row) => (
+                      <View role="listitem" key={row.id}>
+                        <UnifiedRow
+                          row={row}
+                          mail={app.name === 'Inbosh'}
+                          active={active === row.id}
+                          selecting={selecting}
+                          checked={checked.includes(row.id)}
+                          onCheck={(next) => check(row.id, next)}
+                          onOpen={() => {
+                            setActive(row.id);
+                            setNotice('');
+                            setRows((values) =>
+                              values.map((value) =>
+                                value.id === row.id ? { ...value, unread: 0 } : value,
+                              ),
+                            );
+                          }}
+                          onAction={(type) => action(row.id, type)}
+                          onAttachmentPress={(attachment) =>
+                            setNotice(`Adjunto seleccionado: ${attachment.name}`)
+                          }
+                        />
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
+              </View>
+            );
+          })
+        )}
+      </ScreenScrollView>
+    </Screen>
   );
 }
 
@@ -1038,59 +1026,15 @@ function AnatomyExamples() {
   );
 }
 
-function UnifiedListsDemo({ state }: DemoOptions) {
-  const theme = useTheme();
+function UnifiedListsDemo({ state, app = 'Gemies' }: DemoOptions) {
   useEffect(() => {
     adoptStyleSheet('bloom-unified-lists-demo', DEMO_CSS);
   }, []);
+  const selected = APPS.find((item) => item.name === app) ?? APPS[0]!;
   return (
-    <View
-      style={{
-        backgroundColor: theme.colors.background,
-        padding: 24,
-        gap: 28,
-        width: '100%',
-        minHeight: '100%',
-      }}
-    >
-      <View style={{ width: '100%', maxWidth: 1240, alignSelf: 'center', gap: 28 }}>
-        <View style={{ gap: 10 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Badge content="Propuesta" appearance="subtle" />
-            <Text variant="caption-1-medium" style={{ color: theme.colors.textSecondary }}>
-              BLOOM · LISTAS
-            </Text>
-          </View>
-          <Text variant="display-3-bold">Una lista. En todas tus apps.</Text>
-          <Text variant="body-regular" style={{ color: theme.colors.textSecondary, maxWidth: 700 }}>
-            La base de Gemies, los grupos de Chat List y los detalles de cada conversación. Mismo
-            ritmo, mismas acciones, distinta información.
-          </Text>
-        </View>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
-          <Text variant="body-2-medium">
-            Desliza para acciones rápidas. Mantén pulsado o toca el avatar para seleccionar. Clic
-            derecho para ver el menú.
-          </Text>
-          <Text
-            variant="caption-1-regular"
-            style={{ color: theme.colors.textSecondary, marginLeft: 8 }}
-          >
-            Cambia el tema desde la barra de Storybook.
-          </Text>
-        </View>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24 }}>
-          {APPS.map((app) => (
-            <ListPanel key={`${app.name}-${state}`} app={app} state={state} />
-          ))}
-        </View>
-        {state === 'ready' ? <AnatomyExamples /> : null}
-        <Text variant="caption-1-regular" style={{ color: theme.colors.textSecondary }}>
-          Demo interactiva con datos de ejemplo. Búsqueda, selección, fijados y archivo funcionan
-          localmente; Reiniciar restaura cada lista.
-        </Text>
-      </View>
-    </View>
+    <AppShell header={null} scroll="fixed" contentMaxWidth="none">
+      <ListPanel key={`${selected.name}-${state}`} app={selected} state={state} />
+    </AppShell>
   );
 }
 
@@ -1098,10 +1042,11 @@ const meta = {
   id: 'unified-lists-demo',
   title: 'Templates/Unified Lists',
   component: UnifiedListsDemo,
-  parameters: { layout: 'fullscreen', bloomScroll: 'document' },
-  args: { state: 'ready' },
+  parameters: { layout: 'fullscreen' },
+  args: { state: 'ready', app: 'Gemies' },
   argTypes: {
     state: { control: 'inline-radio', options: ['ready', 'loading', 'empty'] },
+    app: { control: 'inline-radio', options: APPS.map((item) => item.name) },
   },
 } satisfies Meta<typeof UnifiedListsDemo>;
 export default meta;
@@ -1109,3 +1054,13 @@ type Story = StoryObj<typeof meta>;
 export const Playground: Story = {};
 export const Loading: Story = { args: { state: 'loading' } };
 export const Empty: Story = { args: { state: 'empty' } };
+
+/** Item anatomy is a component gallery, separate from the application examples. */
+export const Anatomy: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <AppShell title="Anatomía de las listas" scroll="page">
+      <AnatomyExamples />
+    </AppShell>
+  ),
+};

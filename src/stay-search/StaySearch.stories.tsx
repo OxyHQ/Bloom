@@ -1,7 +1,8 @@
+import { AppShell } from '../app-shell';
+import { Screen, ScreenScrollView } from '../screen';
 import type React from 'react';
 import { useState } from 'react';
 import { View } from 'react-native';
-import { ScrollArea } from '../layout';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
@@ -359,8 +360,34 @@ function MobileSearchFlow({ onClose }: { onClose?: () => void }) {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollArea
+    <Screen
+      bottomBar={
+        <PageFooter
+          position="inline"
+          scrim="none"
+          actions={
+            <>
+              <Button appearance="plain" onPress={clear}>
+                Clear all
+              </Button>
+              <Button
+                leadingIcon={RiSearchLine}
+                onPress={() => {
+                  alert(
+                    'Search stays',
+                    `${destination ?? 'Anywhere'} · ${guestSummary(guests) ?? 'Any guests'}`,
+                  );
+                  onClose?.();
+                }}
+              >
+                Search
+              </Button>
+            </>
+          }
+        />
+      }
+    >
+      <ScreenScrollView
         contentContainerStyle={{
           paddingTop: 16,
           paddingBottom: 16,
@@ -416,73 +443,51 @@ function MobileSearchFlow({ onClose }: { onClose?: () => void }) {
         >
           <GuestPicker value={guests} onChange={setGuests} max={16} testID="mobile-guests" />
         </StaySearchStep>
-      </ScrollArea>
-      <PageFooter
-        position="inline"
-        scrim="none"
-        actions={
-          <>
-            <Button appearance="plain" onPress={clear}>
-              Clear all
-            </Button>
-            <Button
-              leadingIcon={RiSearchLine}
-              onPress={() => {
-                alert(
-                  'Search stays',
-                  `${destination ?? 'Anywhere'} · ${guestSummary(guests) ?? 'Any guests'}`,
-                );
-                onClose?.();
-              }}
-            >
-              Search
-            </Button>
-          </>
-        }
-      />
-    </View>
+      </ScreenScrollView>
+    </Screen>
   );
 }
 
 /**
- * The narrow-screen flow at 375: the compact trigger opens a full-height sheet
+ * The search flow in the current viewport: the compact trigger opens a sheet
  * of `StaySearchStep` cards — one expanded at a time — over a footer with
  * "Clear all" and "Search". Rendered inline so the whole flow is visible;
  * `MobileFlowInDialog` opens the same content in a `Dialog`.
  */
 export const MobileFlow: Story = {
+  parameters: { layout: 'fullscreen' },
   render: function MobileFlowStory() {
     return (
-      <View
-        style={{
-          width: '100%',
-          maxWidth: '100%',
-          height: 760,
-        }}
-      >
+      <AppShell header={null} scroll="fixed" contentMaxWidth="none">
         <MobileSearchFlow />
-      </View>
+      </AppShell>
     );
   },
 };
 
 /** The compact trigger opening the flow in a bottom `Dialog`. */
 export const MobileFlowInDialog: Story = {
+  parameters: { layout: 'fullscreen' },
   render: function MobileFlowDialogStory() {
     const control = useDialogControl();
     return (
-      <View style={{ width: 375, maxWidth: '100%', padding: 16 }}>
+      <AppShell header={null} scroll="fixed" contentMaxWidth="none">
         <StaySearchCompact
           onPress={() => control.open()}
           summary="Anywhere · Any week · Add guests"
           testID="compact"
         />
-        <Dialog control={control} placement="bottom" title="Search stays">
-          <View style={{ height: 640, marginLeft: -16, marginRight: -16 }}>
-            <MobileSearchFlow onClose={() => control.close()} />
-          </View>
+        <Dialog
+          control={control}
+          placement="bottom"
+          sizing="fill"
+          scrollable={false}
+          contentPadding={0}
+          title="Search stays"
+        >
+          <MobileSearchFlow onClose={() => control.close()} />
         </Dialog>
-      </View>
+      </AppShell>
     );
   },
 };
