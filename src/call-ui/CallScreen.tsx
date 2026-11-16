@@ -1,6 +1,8 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { Button } from '../button';
+import { PageHeader } from '../page-header';
 import { Avatar } from '../avatar/Avatar';
 import { RiChat3Line } from '../icons/remix/RiChat3Line';
 import { RiCollapseDiagonalLine } from '../icons/remix/RiCollapseDiagonalLine';
@@ -9,7 +11,7 @@ import { RiLockLine } from '../icons/remix/RiLockLine';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { useMessages } from '../locale/messages';
-import { CallControlButton, CallControls } from './CallControls';
+import { CallControls } from './CallControls';
 import { CallMinimisedPill } from './CallMinimisedPill';
 import { CallScrim, CallStageBackdrop, PictureInPicture } from './parts';
 import { CALL_UI_MESSAGES } from './messages';
@@ -33,9 +35,8 @@ import type { CallScreenProps } from './types';
  *   top bar   minimise · (slot) · chat · participants
  *   bottom    `CallControls`, over a scrim
  *
- * Two scrims, not a tint: chrome over a video frame has to stay legible
- * whatever the frame is doing, and darkening the whole picture to achieve that
- * throws away the thing the user is looking at.
+ * The shared header scrim and bottom control scrim keep video chrome legible
+ * while preserving the full brightness of the picture between them.
  *
  * `status` is never read directly for the line under the name — that is
  * `resolveCallStatusLine`, which owns the precedence (a `duration` surviving
@@ -51,7 +52,6 @@ import type { CallScreenProps } from './types';
  */
 
 const AVATAR_SIZE = 128;
-const TOP_BAR_HEIGHT = 96;
 const BOTTOM_SCRIM_HEIGHT = 200;
 
 function CallScreenComponent({
@@ -181,60 +181,62 @@ function CallScreenComponent({
       )}
 
       {onStage ? (
-        <>
-          <CallScrim paint={paint} edge="top" height={TOP_BAR_HEIGHT} opacity={0.68} />
-          <CallScrim paint={paint} edge="bottom" height={BOTTOM_SCRIM_HEIGHT} opacity={0.78} />
-        </>
+        <CallScrim paint={paint} edge="bottom" height={BOTTOM_SCRIM_HEIGHT} opacity={0.78} />
       ) : null}
 
-      {/* Top bar */}
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 8,
-          paddingTop: 16,
-          paddingRight: 16,
-          paddingBottom: 8,
-          paddingLeft: 16,
-        }}
-      >
-        {onMinimise === undefined ? null : (
-          <CallControlButton
-            icon={RiCollapseDiagonalLine}
-            label={l.minimise}
-            size="sm"
-            accentColor={accentColor}
-            onPress={onMinimise}
-            testID={testID ? `${testID}-minimise` : undefined}
-          />
-        )}
-        <View style={{ flex: 1 }}>{topBarSlot}</View>
-        {onOpenChat === undefined ? null : (
-          <CallControlButton
-            icon={RiChat3Line}
-            label={l.chat}
-            size="sm"
-            accentColor={accentColor}
-            onPress={onOpenChat}
-            testID={testID ? `${testID}-chat` : undefined}
-          />
-        )}
-        {onOpenParticipants === undefined ? null : (
-          <CallControlButton
-            icon={RiGroupLine}
-            label={
-              participantCount === undefined
-                ? l.participants
-                : `${l.participants} (${participantCount})`
-            }
-            size="sm"
-            accentColor={accentColor}
-            onPress={onOpenParticipants}
-            testID={testID ? `${testID}-participants` : undefined}
-          />
-        )}
-      </View>
+      <PageHeader
+        onBack={null}
+        sticky={false}
+        tone="onImage"
+        scrim={onStage ? 'always' : 'none'}
+        title={topBarSlot}
+        leading={
+          onMinimise === undefined ? null : (
+            <Button
+              tone="neutral"
+              appearance="outline"
+              iconOnly
+              leadingIcon={RiCollapseDiagonalLine}
+              accessibilityLabel={l.minimise}
+              onPress={onMinimise}
+              testID={testID ? `${testID}-minimise` : undefined}
+            />
+          )
+        }
+        actions={
+          onOpenChat || onOpenParticipants ? (
+            <Button.Group>
+              {onOpenChat === undefined ? null : (
+                <Button
+                  tone="neutral"
+                  appearance="outline"
+                  iconOnly
+                  leadingIcon={RiChat3Line}
+                  accessibilityLabel={l.chat}
+                  onPress={onOpenChat}
+                  testID={testID ? `${testID}-chat` : undefined}
+                />
+              )}
+              {onOpenParticipants === undefined ? null : (
+                <Button
+                  tone="neutral"
+                  appearance="outline"
+                  iconOnly
+                  leadingIcon={RiGroupLine}
+                  accessibilityLabel={
+                    participantCount === undefined
+                      ? l.participants
+                      : `${l.participants} (${participantCount})`
+                  }
+                  onPress={onOpenParticipants}
+                  testID={testID ? `${testID}-participants` : undefined}
+                />
+              )}
+            </Button.Group>
+          ) : undefined
+        }
+        testID={testID ? `${testID}-header` : undefined}
+      />
 
       {/* Stage */}
       {onStage ? (

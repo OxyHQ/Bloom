@@ -252,18 +252,30 @@ describe('CallControls', () => {
 
 describe('CallScreen', () => {
   it('names the top-bar buttons, and counts the participants on one of them', () => {
+    const onMinimise = jest.fn();
+    const onOpenChat = jest.fn();
+    const onOpenParticipants = jest.fn();
     mount(
       <CallScreen
         name="Ana Restrepo"
         status="active"
         duration="00:10"
-        onMinimise={() => undefined}
-        onOpenChat={() => undefined}
-        onOpenParticipants={() => undefined}
+        onMinimise={onMinimise}
+        onOpenChat={onOpenChat}
+        onOpenParticipants={onOpenParticipants}
         participantCount={4}
         testID="c"
       />,
     );
+    expect(byTestId('c-header').hasAttribute('data-bloom-page-header')).toBe(true);
+    act(() => {
+      byTestId('c-minimise').click();
+      byTestId('c-chat').click();
+      byTestId('c-participants').click();
+    });
+    expect(onMinimise).toHaveBeenCalledTimes(1);
+    expect(onOpenChat).toHaveBeenCalledTimes(1);
+    expect(onOpenParticipants).toHaveBeenCalledTimes(1);
     expect(byTestId('c-minimise').getAttribute('aria-label')).toBe('Minimise call');
     expect(byTestId('c-chat').getAttribute('aria-label')).toBe('Open chat');
     expect(byTestId('c-participants').getAttribute('aria-label')).toBe('Participants (4)');

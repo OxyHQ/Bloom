@@ -190,7 +190,7 @@ The phone's expanded player and the desktop's immersive view. It **fills its par
 />
 ```
 
-- **Top bar** — collapse chevron, "PLAYING FROM PLAYLIST" over "Night Drive", more.
+- **Top bar** — shared `PageHeader`: collapse and more `Button` actions, centred context name and supporting context label. Header insets are owned by PageHeader; artwork keeps its own content inset.
 - **Narrow** — square artwork (16 corner, ≤ 480) over title + artists + like, the scrubber with times below it, the `lg` transport spread to the column's width, and a row of device (with the device name while casting), share and queue.
 - **Wide (≥ 900, measured)** — artwork and details side by side, 64 apart.
 - **The first screen is exactly the parent's height**, painted with a vertical gradient from the contrast-safe artwork tint to neutral-950. **Below the fold**, in the same scroll, a lyrics preview card (earlier lines dimmed up to `activeIndex`; a button when `onPress` is given) and the `aboutArtist` slot — side by side when wide.

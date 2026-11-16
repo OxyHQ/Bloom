@@ -227,7 +227,7 @@ export interface StickyMediaTopBarProps {
   leading?: ReactNode;
   /** At the far right. */
   trailing?: ReactNode;
-  /** Default `64`. */
+  /** Optional fixed height. Omitted, the shared PageHeader determines its height. */
   height?: number;
   style?: StyleProp<ViewStyle>;
   testID?: string;

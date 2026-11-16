@@ -1,5 +1,5 @@
-import React, { memo, useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { memo, useEffect } from 'react';
+import { View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -7,6 +7,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { PageHeader } from '../page-header';
 import { PlayButton } from '../media-controls/PlayButton';
 import { Text } from '../typography';
 import { useMediaHeaderPaint } from './parts';
@@ -22,7 +23,7 @@ const FadeView = Animated.createAnimatedComponent(View);
 /**
  * The compact bar that takes over when the header scrolls away.
  *
- *   height     64 (default)
+ *   height     PageHeader intrinsic height (explicit height override supported)
  *   fill       the band's top colour (the tinted artwork colour)
  *   content    leading · PlayButton small accent · title (title-2-bold,
  *              one line, the band's text colour) · trailing
@@ -48,7 +49,7 @@ function StickyMediaTopBarComponent({
   progress,
   leading,
   trailing,
-  height = 64,
+  height,
   style,
   testID,
 }: StickyMediaTopBarProps) {
@@ -84,33 +85,33 @@ function StickyMediaTopBarComponent({
       ref={presence.ref}
       testID={testID}
     >
-      <View
-        style={{
-          flex: 1,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 12,
-          paddingLeft: 16,
-          paddingRight: 16,
-        }}
-      >
-        <View
-          pointerEvents="none"
-          style={[StyleSheet.absoluteFill, { backgroundColor: paint.bar }]}
-        />
-        {leading}
-        <PlayButton
-          playing={playing}
-          onPress={onPlayPress}
-          size="md"
-          subject={title}
-          testID={testID ? `${testID}-play` : undefined}
-        />
-        <Text variant="title-2-bold" numberOfLines={1} style={{ flex: 1, color: paint.onBar }}>
-          {title}
-        </Text>
-        {trailing}
-      </View>
+      <PageHeader
+        onBack={null}
+        sticky={false}
+        safeArea={false}
+        scrim="always"
+        scrimColor={paint.bar}
+        title={
+          <Text variant="title-2-bold" numberOfLines={1} style={{ color: paint.onBar }}>
+            {title}
+          </Text>
+        }
+        leading={
+          <>
+            {leading}
+            <PlayButton
+              playing={playing}
+              onPress={onPlayPress}
+              size="md"
+              subject={title}
+              testID={testID ? `${testID}-play` : undefined}
+            />
+          </>
+        }
+        actions={trailing}
+        style={height === undefined ? undefined : { flex: 1 }}
+        testID={testID ? `${testID}-header` : undefined}
+      />
     </FadeView>
   );
 }

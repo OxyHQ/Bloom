@@ -1,4 +1,5 @@
-import React, { memo, useEffect, useMemo } from 'react';
+import { memo, useEffect, useMemo } from 'react';
+import { Button } from '../button';
 import { Pressable } from 'react-native';
 
 import {
@@ -99,21 +100,18 @@ function MapSearchAreaButtonComponent(props: MapSearchAreaButtonProps) {
 
   const label = props.label ?? messages.searchThisArea;
   return (
-    <Pressable
-      {...mapWebData({ bloomMapPressable: '' })}
-      role="button"
+    <Button
+      tone="neutral"
+      appearance="outline"
+      leadingIcon={RiSearchLine}
       accessibilityLabel={label}
-      aria-disabled={disabled || undefined}
       disabled={disabled}
       onPress={props.onPress}
-      onHoverIn={onIn}
-      onHoverOut={onOut}
       testID={testID}
-      style={[pillStyle, bloomShadowStyle('m'), style]}
+      style={style}
     >
-      <RiSearchLine width={16} height={16} fill={paint.label} />
-      {text(label)}
-    </Pressable>
+      {label}
+    </Button>
   );
 }
 

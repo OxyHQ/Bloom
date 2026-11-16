@@ -130,7 +130,7 @@ Centre it on the coordinate like a marker and draw it under the markers.
 A 16-radius card on the floating surface (hairline, `shadow-m`). Vertical: a
 200px photo, then 12px of padding around the title and `Rating` on one line,
 the subtitle, and the price line. The close button is Bloom's `xs` secondary
-icon button over the photo's top-left; the heart a 24px round button in the
+icon button over the photo's top-left; the heart a shared `Button` toggle in the
 opposite corner (compact: heart over the photo, close in the card's top-right).
 The card never clips — the photo clips itself — so the native shadow survives.
 
@@ -147,5 +147,4 @@ is a toggle with `aria-pressed` and native `accessibilityState.selected`.
 `variant="toggle"` with `checked` / `onCheckedChange` draws a Bloom checkbox box
 and "Search as I move the map" as a `checkbox` with `aria-checked`; the default
 `variant="button"` with `onPress` draws a search icon and "Search this area".
-Both take `label`, `disabled`, `style` and `testID`. A 40px floating pill on the
-surface with a hairline and `shadow-m`; hover takes the menu hover fill.
+Both take `label`, `disabled`, `style` and `testID`. The search action uses the shared `Button` geometry, surface and focus behavior. The checkbox variant retains its 40px pill and checkbox semantics.

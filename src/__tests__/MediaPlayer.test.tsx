@@ -7,7 +7,7 @@
  * tint's contrast guarantee and fallback.
  */
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -553,6 +553,7 @@ describe('FullScreenPlayer', () => {
     expect(byTestId('f-collapse').getAttribute('aria-label')).toBe('Close player');
     act(() => byTestId('f-collapse').click());
     expect(onCollapse).toHaveBeenCalled();
+    expect(byTestId('f-top-bar').hasAttribute('data-bloom-page-header')).toBe(true);
     expect(byTestId('f-top-bar').textContent).toContain('Night Drive');
     expect(byTestId('f-queue').getAttribute('aria-pressed')).toBe('true');
     expect(byTestId('f-transport-play').style.width).toBe('56px');

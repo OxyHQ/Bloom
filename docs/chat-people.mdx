@@ -128,6 +128,8 @@ commands are not offered. Data filtering and pagination stay with the consumer.
 
 ## `StoryViewer`
 
+Identity and actions use `PageHeader`, after the progress strip. Mute, more, close, reactions and send use the shared `Button` control, including focus, disabled and toggle states. The story’s top media scrim protects the progress strip and header together; the header adds no duplicate scrim. The previous/next media tap zones retain their asymmetric targets and independent handlers.
+
 ```tsx
 const [index, setIndex] = useState(0);
 
