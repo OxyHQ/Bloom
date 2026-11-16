@@ -21,9 +21,10 @@ export function ScreenContent({ kind, width = 'readable', style, ...props }: Scr
   const reading = resolvedKind === 'document' || resolvedKind === 'form';
   const available = useMeasuredSizeClass([768]);
   const scope = `bloom-body-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const inset = `--${scope}-inset`;
   const web = Platform.OS === 'web';
   const css = reading
-    ? `@container ${scope} (min-width:768px){[data-bloom-body="${scope}"]{--bloom-body-inset:40px}}`
+    ? `@container ${scope} (min-width:768px){[data-bloom-body="${scope}"]{${inset}:40px}}`
     : '';
   return (
     <View
@@ -45,8 +46,8 @@ export function ScreenContent({ kind, width = 'readable', style, ...props }: Scr
             ...screenContentStyle(resolvedKind, width === 'full', !web && available.width >= 768),
             ...(web && reading
               ? {
-                  paddingLeft: 'var(--bloom-body-inset, 24px)',
-                  paddingRight: 'var(--bloom-body-inset, 24px)',
+                  paddingLeft: `var(${inset}, 24px)`,
+                  paddingRight: `var(${inset}, 24px)`,
                 }
               : {}),
           } as WebCssStyle,
