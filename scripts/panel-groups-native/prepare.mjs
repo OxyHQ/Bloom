@@ -20,12 +20,17 @@ const files = [
   'src/app-shell/use-panel-exit-completion.ts',
   'src/dialog/Dialog.tsx',
   'src/dialog/Dialog.web.tsx',
+  'src/dialog/DetailDialog.tsx',
+  'src/dialog/DetailDialogBase.tsx',
+  'src/dialog/DetailDialogMotion.tsx',
+  'src/dialog/DetailDialogSection.tsx',
   'src/bottom-sheet/BottomSheetBase.tsx',
 ];
 // The fixture can select another Bloom worktree. Its entry/components still
 // compile from HERE, so they must never be hashed from BLOOM_SOURCE_ROOT.
 const fixtureFiles = [
   'PanelSessionLab.tsx',
+  'DetailDialogLab.tsx',
   'PanelGroupsLab.tsx',
   'index.js',
   'app.config.js',

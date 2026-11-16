@@ -15,7 +15,15 @@ import { Text } from './.source/typography';
 
 function Reading({ title, short = false }: { title: string; short?: boolean }) {
   return (
-    <Screen header={<PageHeader title={title} />} testID={`native-${title}`}>
+    <Screen
+      header={<PageHeader title={title} />}
+      testID={`native-${title}`}
+      onLayout={(event) => {
+        // Fixture-only raw Yoga measurement distinguishes allocation from
+        // UIAutomator's clipped accessibility bounds on a small viewport.
+        console.info('BLOOM_NATIVE_READING', title, JSON.stringify(event.nativeEvent.layout));
+      }}
+    >
       <ScreenScrollView>
         <View className="gap-4 p-4">
           {Array.from({ length: short ? 3 : 40 }, (_, index) => (

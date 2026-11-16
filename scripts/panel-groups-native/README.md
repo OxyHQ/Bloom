@@ -51,3 +51,18 @@ After adaptation, type a replacement and assert the selected text was replaced,
 not appended. Repeat in both directions. Verify the same selection gesture and
 replacement without adaptation as a negative control. A long press based on
 coordinates from before keyboard movement is not proof that text was selected.
+
+## Shared task detail
+
+In **Session**, open **Open task detail**. The fixture uses the public
+`DetailDialog` and `DetailDialogSection` components with a title field, long
+body, lower notes field, and a footer that follows the keyboard. Tap the first
+field through its visible bounds and type; scroll to the lower field and repeat.
+Check that the header does not cover the first field, the body scrolls while the
+header/footer stay owned by the dialog, and the footer remains reachable with
+the keyboard visible. Android Back must dismiss the dialog; reopening retains
+this fixture's parent-owned form values without forcing focus.
+
+`BLOOM_NATIVE_READING` logcat entries are fixture-only raw `Screen.onLayout`
+measurements. They distinguish allocated Yoga heights from UIAutomator's
+clipped accessibility bounds when investigating generic split geometry.

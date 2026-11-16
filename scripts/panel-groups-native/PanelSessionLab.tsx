@@ -12,6 +12,7 @@ import { Textarea } from './.source/textarea';
 import { Button } from './.source/button';
 import { Text } from './.source/typography';
 import { StyledView as View } from './.source/styles/styled-primitives';
+import { DetailDialogLab } from './DetailDialogLab';
 
 interface SelectionTrace {
   event: 'focus' | 'blur' | 'selection' | 'armed' | 'transition';
@@ -125,6 +126,7 @@ export function PanelSessionLab() {
                   Open inspector
                 </Button>
                 <Text>{floating ? 'Floating' : 'Inline'}</Text>
+                <DetailDialogLab />
               </Screen>
             ),
           },
