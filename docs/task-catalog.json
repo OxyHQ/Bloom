@@ -91,6 +91,7 @@
       "synonyms": ["document", "database", "inspector", "continuous workspace"],
       "status": "recommended",
       "docs": [
+        "docs/semantic-composition.mdx",
         "docs/compose-layouts.mdx",
         "docs/app-shell.mdx",
         "docs/screen.mdx",
@@ -197,7 +198,12 @@
       "title": "Host a map or interactive canvas",
       "synonyms": ["map", "board", "canvas", "persistent panel"],
       "status": "variant",
-      "docs": ["docs/compose-layouts.mdx", "docs/screen.mdx", "docs/map-controls.mdx"],
+      "docs": [
+        "docs/semantic-composition.mdx",
+        "docs/compose-layouts.mdx",
+        "docs/screen.mdx",
+        "docs/map-controls.mdx"
+      ],
       "example": "docs/examples/canvas.tsx",
       "story": {
         "id": "blocks-app-shell--modular-map",
@@ -396,7 +402,12 @@
       "title": "Compose a list and selected detail",
       "synonyms": ["inbox", "list", "detail", "selection"],
       "status": "recommended",
-      "docs": ["docs/compose-layouts.mdx", "docs/app-shell.mdx", "docs/screen.mdx"],
+      "docs": [
+        "docs/semantic-composition.mdx",
+        "docs/compose-layouts.mdx",
+        "docs/app-shell.mdx",
+        "docs/screen.mdx"
+      ],
       "example": "docs/examples/master-detail.tsx",
       "story": {
         "id": "blocks-app-shell--modular-inbox",
@@ -476,6 +487,7 @@
       "synonyms": ["search", "catalog", "filters", "results", "discovery"],
       "status": "recommended",
       "docs": [
+        "docs/semantic-composition.mdx",
         "docs/compose-layouts.mdx",
         "docs/screen.mdx",
         "docs/list.mdx",
@@ -583,6 +595,7 @@
       "synonyms": ["dashboard", "charts", "metrics", "tools", "console"],
       "status": "recommended",
       "docs": [
+        "docs/semantic-composition.mdx",
         "docs/compose-layouts.mdx",
         "docs/grid.mdx",
         "docs/chart-cards.mdx",
