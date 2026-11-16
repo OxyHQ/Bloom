@@ -23,7 +23,7 @@ export interface PageFooterProps {
    */
   safeArea?: boolean;
   /**
-   * Mirrored PageHeader gradient. Default always preserves existing behavior.
+   * Mirrored PageHeader gradient: opaque behind measured chrome, fading above it. Default always.
    * auto follows ScrollMetricsProvider: hidden at the bottom or for short /
    * unmeasured content, fading in over scrollThreshold of remaining content.
    */

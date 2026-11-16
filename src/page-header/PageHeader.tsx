@@ -59,7 +59,7 @@ import { useSurfaceFillRecipe } from '../styles/surface-levels';
 import { Title, Subtitle } from '../typography';
 import { Surface } from '../surface/Surface';
 import { PageHeaderIdentity } from './PageHeaderIdentity';
-import { EdgeScrim, SCRIM_TAIL_RATIO } from './EdgeScrim';
+import { EdgeScrim, SCRIM_CHROME_FRACTION, SCRIM_TAIL_RATIO } from './EdgeScrim';
 import type { PageHeaderProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
@@ -886,6 +886,7 @@ function PageHeaderComponent({
         // falling back to the page. Explicit scrimColor remains an override.
         color={scrimColor ?? (imageScrim ? '#000000' : surfaceFill)}
         falloff={scrimFalloff}
+        opaqueFraction={tone !== 'onImage' && scrimFalloff === 'smooth' ? SCRIM_CHROME_FRACTION : 0}
         testID={testID ? `${testID}-scrim-gradient` : undefined}
       />
     </Animated.View>
