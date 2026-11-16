@@ -34,3 +34,18 @@ reading position after closing, sheet presentation and Android Back dismissal,
 a 90% sheet height ceiling, and adding email content to the common scroll viewport. It uses only this app's
 controls and captures only while this app is foregrounded. It does not establish
 iOS behavior, production Mention integration or a performance benchmark.
+
+## Inspector selection continuity
+
+Open **Session**. **Adapt after 8s** queues a presentation change and disables
+itself until the transition. The extra time is only for this fixture: refocus
+the editor after tapping the button, obtain its current bounds after keyboard
+reflow, and select text. Before the transition, capture `native-session-trace`
+and confirm a non-collapsed `selection [start,end]`. The trace persists above
+both presentation hosts and records the last observed range in `transition`.
+It also shows incoming focus/blur/selection events.
+
+After adaptation, type a replacement and assert the selected text was replaced,
+not appended. Repeat in both directions. Verify the same selection gesture and
+replacement without adaptation as a negative control. A long press based on
+coordinates from before keyboard movement is not proof that text was selected.
