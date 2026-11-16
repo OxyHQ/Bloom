@@ -1,10 +1,12 @@
-import type { ComponentType, ReactNode } from 'react';
+import { useContext, type ComponentType, type ReactNode } from 'react';
 import { PageHeader } from '../page-header/PageHeader';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { useCommonMessages } from '../locale/common-messages';
 import { useTopEdgeInset } from '../layout/top-edge';
 import { useTheme } from '../theme/use-theme';
-import { useWindowDimensions } from 'react-native';
+import { Platform, useWindowDimensions } from 'react-native';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
+import { SafeAreaConsumedContext, NO_CONSUMED_SAFE_AREA } from '../layout/safe-area-ownership';
 import type { Button } from '../button';
 import type { Screen, ScreenScrollView } from '../screen';
 import { BREAKPOINTS } from '../styles/breakpoints';
@@ -13,7 +15,7 @@ import { DetailDialogSectionGroup } from './DetailDialogSection';
 import { useDialogContext } from './context';
 import type { DetailDialogProps, DialogProps } from './types';
 
-type Platform = {
+type DetailPlatform = {
   Dialog: ComponentType<DialogProps>;
   Button: typeof Button;
   Screen: typeof Screen;
@@ -22,7 +24,13 @@ type Platform = {
 };
 
 /** One layout/material/scroll owner for product records and the board template. */
-export function createDetailDialog({ Dialog, Button, Screen, ScreenScrollView, Motion }: Platform) {
+export function createDetailDialog({
+  Dialog,
+  Button,
+  Screen,
+  ScreenScrollView,
+  Motion,
+}: DetailPlatform) {
   function BodyViewport({
     body,
     scrollable,
@@ -128,9 +136,20 @@ export function createDetailDialog({ Dialog, Button, Screen, ScreenScrollView, M
     );
   }
   function DetailDialog(props: DetailDialogProps) {
-    const { width } = useWindowDimensions();
+    const { width, height } = useWindowDimensions();
+    const physical = useContext(SafeAreaInsetsContext) ?? NO_CONSUMED_SAFE_AREA;
+    const native = Platform.OS !== 'web';
     const compact = width < BREAKPOINTS.sm;
     const centered = props.mode === 'center' && !compact;
+    const gap = compact ? 8 : 12;
+    const targetWidth = Math.min(609, width - physical.left - physical.right - gap * 2);
+    const centerY = centered ? (height - physical.top - physical.bottom) * 0.04 : gap;
+    const nativeInset = {
+      top: physical.top + centerY,
+      bottom: physical.bottom + centerY,
+      left: centered ? (width - targetWidth) / 2 : physical.left + gap,
+      right: centered ? (width - targetWidth) / 2 : physical.right + gap,
+    };
     return (
       <Dialog
         open={props.open}
@@ -141,6 +160,8 @@ export function createDetailDialog({ Dialog, Button, Screen, ScreenScrollView, M
         exitDuration={560}
         placement="center"
         width={609}
+        inset={native ? nativeInset : undefined}
+        minSideGutter={0}
         maxWidth={609}
         contentPadding={0}
         scrollable={false}
@@ -151,19 +172,25 @@ export function createDetailDialog({ Dialog, Button, Screen, ScreenScrollView, M
           justifyContent: centered ? 'center' : 'flex-start',
           padding: compact ? 8 : 12,
         }}
-        panelStyle={{
-          width: '100%',
-          maxWidth: 609,
-          height: centered ? '92%' : '100%',
-          maxHeight: '100%',
-          backgroundColor: 'transparent',
-        }}
+        panelStyle={
+          native
+            ? { backgroundColor: 'transparent' }
+            : {
+                width: '100%',
+                maxWidth: 609,
+                height: centered ? '92%' : '100%',
+                maxHeight: '100%',
+                backgroundColor: 'transparent',
+              }
+        }
       >
         <StyledView
           className="h-full w-full max-w-[609px] outline-none"
           style={{ flex: 1, minHeight: 0 }}
         >
-          <DetailContent {...props} />
+          <SafeAreaConsumedContext.Provider value={native ? physical : NO_CONSUMED_SAFE_AREA}>
+            <DetailContent {...props} />
+          </SafeAreaConsumedContext.Provider>
         </StyledView>
       </Dialog>
     );
