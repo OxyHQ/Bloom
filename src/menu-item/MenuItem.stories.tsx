@@ -1,3 +1,4 @@
+import { AppShell } from '../app-shell';
 import { fn } from 'storybook/test';
 import React, { useMemo, useState } from 'react';
 import { View } from 'react-native';
@@ -327,7 +328,7 @@ export const OptionsInASheet: Story = {
     const { value, onValueChange } = useOptionState();
     const [quantity, setQuantity] = useState(1);
     return (
-      <View style={{ height: 720 }}>
+      <AppShell header={null} scroll="fixed" contentMaxWidth="none">
         <BottomSheet open onDismiss={fn().mockName('onDismiss')}>
           <View style={{ padding: 16, paddingBottom: 32 }}>
             <MenuItemOptions
@@ -343,7 +344,7 @@ export const OptionsInASheet: Story = {
             />
           </View>
         </BottomSheet>
-      </View>
+      </AppShell>
     );
   },
 };

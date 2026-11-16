@@ -1,3 +1,4 @@
+import { AppShell } from '../app-shell';
 import { fn } from 'storybook/test';
 import type React from 'react';
 import { useState } from 'react';
@@ -259,7 +260,7 @@ export const InASheet: Story = {
     const basket = useBasket();
     const [open, setOpen] = useState(true);
     return (
-      <View style={{ height: 760 }}>
+      <AppShell header={null} scroll="fixed" contentMaxWidth="none">
         <Button onPress={() => setOpen(true)}>Open basket</Button>
         <BottomSheet open={open} onDismiss={() => setOpen(false)}>
           <View style={{ padding: 16, paddingBottom: 32 }}>
@@ -275,7 +276,7 @@ export const InASheet: Story = {
             />
           </View>
         </BottomSheet>
-      </View>
+      </AppShell>
     );
   },
 };

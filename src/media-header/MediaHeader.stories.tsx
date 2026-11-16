@@ -1,6 +1,8 @@
-import { ScrollArea as ScrollView } from '../layout';
+import { AppShell } from '../app-shell';
+import { Screen, ScreenScrollView } from '../screen';
 import { fn } from 'storybook/test';
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -121,18 +123,10 @@ const TRACKS: PopularTrack[] = [
 // ---------------------------------------------------------------------------
 
 function Page({ children, width = 1280 }: { children: React.ReactNode; width?: number }) {
-  const theme = useTheme();
   return (
-    <View
-      style={{
-        backgroundColor: theme.colors.background,
-        width: '100%',
-        maxWidth: width,
-        minHeight: '100%',
-      }}
-    >
+    <AppShell header={null} scroll="page" contentWidth={width}>
       {children}
-    </View>
+    </AppShell>
   );
 }
 
@@ -568,43 +562,46 @@ export const StickyTopBarOnScroll: Story = {
   render: function StickyDemo() {
     const [playing, setPlaying] = useState(false);
     const { progress, onScroll } = useMediaHeaderScroll({ start: 260, end: 340 });
-    const theme = useTheme();
     return (
-      <View
-        style={{
-          height: 720,
-          width: '100%',
-          maxWidth: 1280,
-          backgroundColor: theme.colors.background,
-        }}
-      >
-        <ScrollView onScroll={onScroll} scrollEventThrottle={16} testID="sticky-scroll">
-          <CollectionHeader
-            typeLabel="Album"
-            title="Lanterns Over Kessel Bay"
-            cover={COVERS.harbour}
-            artworkColor="#1f3b73"
-            owners={[
-              { name: 'Velvet Harbour', avatar: AVATARS.mara, onPress: fn().mockName('onPress') },
-            ]}
-            year="2025"
-            summary="12 songs, 48 min"
-            actions={<Actions subject="Lanterns Over Kessel Bay" view={false} />}
-          />
-          <View style={{ paddingLeft: 24, paddingRight: 24, paddingBottom: 600 }}>
-            <PopularTracks tracks={TRACKS} title="Tracks" collapsedCount={10} />
-          </View>
-        </ScrollView>
-        <StickyMediaTopBar
-          title="Lanterns Over Kessel Bay"
-          artworkColor="#1f3b73"
-          playing={playing}
-          onPlayPress={() => setPlaying((p) => !p)}
-          progress={progress}
-          style={{ position: 'absolute', top: 0, left: 0, right: 0 }}
-          testID="sticky"
-        />
-      </View>
+      <AppShell header={null} scroll="fixed" contentMaxWidth="none">
+        <Screen
+          headerPlacement="overlay"
+          header={
+            <StickyMediaTopBar
+              title="Lanterns Over Kessel Bay"
+              artworkColor="#1f3b73"
+              playing={playing}
+              onPlayPress={() => setPlaying((p) => !p)}
+              progress={progress}
+              testID="sticky"
+            />
+          }
+        >
+          <ScreenScrollView onScroll={onScroll} scrollEventThrottle={16} testID="sticky-scroll">
+            <CollectionHeader
+              typeLabel="Album"
+              title="Lanterns Over Kessel Bay"
+              cover={COVERS.harbour}
+              artworkColor="#1f3b73"
+              owners={[
+                { name: 'Velvet Harbour', avatar: AVATARS.mara, onPress: fn().mockName('onPress') },
+              ]}
+              year="2025"
+              summary="12 songs, 48 min"
+              actions={<Actions subject="Lanterns Over Kessel Bay" view={false} />}
+            />
+            <View style={{ padding: 24 }}>
+              <PopularTracks
+                tracks={Array.from({ length: 4 }, (_, group) =>
+                  TRACKS.map((track) => ({ ...track, id: `${group}-${track.id}` })),
+                ).flat()}
+                title="Tracks"
+                collapsedCount={40}
+              />
+            </View>
+          </ScreenScrollView>
+        </Screen>
+      </AppShell>
     );
   },
 };
