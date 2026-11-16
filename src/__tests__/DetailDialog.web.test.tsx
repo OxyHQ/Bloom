@@ -7,6 +7,8 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { BloomColorScope } from '../theme/color-scope/index.web';
 import { Screen, ScreenContent } from '../screen/index.web';
 import { View } from 'react-native';
+import { useSurfaceFill } from '../styles/surface-levels';
+import { useTheme } from '../theme/use-theme';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 jest.mock('react-native-reanimated', () => {
@@ -185,3 +187,49 @@ it('keeps custom title controls editable and preview outside the card padding', 
   expect(input.closest('span')).toBeNull();
   expect(host.textContent).toContain('Edit property');
 });
+
+function BackingProbe() {
+  const fill = useSurfaceFill();
+  const { colors } = useTheme();
+  return (
+    <div
+      data-testid="backing-probe"
+      data-fill={fill}
+      data-card={colors.card}
+      data-page={colors.background}
+    />
+  );
+}
+
+it.each(['light', 'dark'] as const)(
+  'publishes the painted detail backing to its chrome in %s mode',
+  (mode) => {
+    act(() =>
+      root.render(
+        <BloomThemeProvider colorPreset="teal" mode={mode}>
+          <DetailDialog
+            startOpen
+            label="Record"
+            header="Record"
+            actions={<BackingProbe />}
+            testID="backing-detail"
+            onClose={() => {}}
+          >
+            <BackingProbe />
+          </DetailDialog>
+        </BloomThemeProvider>,
+      ),
+    );
+    settle();
+    const probes = [...document.querySelectorAll<HTMLElement>('[data-testid="backing-probe"]')];
+    expect(probes).toHaveLength(2);
+    for (const probe of probes) {
+      expect(probe.dataset.card).not.toBe(probe.dataset.page);
+      expect(probe.dataset.fill).toBe(probe.dataset.card);
+    }
+    const surface = document.querySelector<HTMLElement>('[data-testid="backing-detail-surface"]')!;
+    const expected = document.createElement('div');
+    expected.style.backgroundColor = probes[0]!.dataset.card!;
+    expect(surface.style.backgroundColor).toBe(expected.style.backgroundColor);
+  },
+);

@@ -677,3 +677,7 @@ height (bounded by `maxHeightRatio`) instead of asking flexible children for an
 intrinsic height. The default `sizing="content"` preserves content-sized dialogs.
 Height morphing applies to content sizing; fill sizing stays attached to its
 available bounds.
+
+DetailDialog delegates its card background to its Screen, which publishes that
+exact backing to PageHeader and other chrome. A separately painted parent would
+be covered by the Screen canvas and leave the header following the page color.

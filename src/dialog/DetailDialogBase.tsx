@@ -94,7 +94,7 @@ export function createDetailDialog({
     );
     return (
       <Motion>
-        <StyledView
+        <Screen
           style={{
             flex: 1,
             minHeight: 0,
@@ -104,38 +104,35 @@ export function createDetailDialog({
             backgroundColor: colors.card,
           }}
           testID={`${testID}-surface`}
+          kind={contentKind}
+          scroll={scrollable ? 'content' : 'none'}
+          navigationScope="isolated"
+          headerPlacement={scrollable ? 'overlay' : 'inset'}
+          header={
+            <PageHeader
+              testID={`${testID}-header`}
+              title={header}
+              subtitle={subtitle}
+              actions={
+                <>
+                  {actions}
+                  <Button
+                    appearance="outline"
+                    tone="neutral"
+                    iconOnly
+                    icon={<RiCloseLine />}
+                    accessibilityLabel={closeLabel ?? common.close}
+                    onPress={() => close()}
+                  />
+                </>
+              }
+            />
+          }
+          bottomBar={footer}
+          bottomBarKeyboardBehavior={footerKeyboardBehavior}
         >
-          <Screen
-            kind={contentKind}
-            scroll={scrollable ? 'content' : 'none'}
-            navigationScope="isolated"
-            headerPlacement={scrollable ? 'overlay' : 'inset'}
-            header={
-              <PageHeader
-                testID={`${testID}-header`}
-                title={header}
-                subtitle={subtitle}
-                actions={
-                  <>
-                    {actions}
-                    <Button
-                      appearance="outline"
-                      tone="neutral"
-                      iconOnly
-                      icon={<RiCloseLine />}
-                      accessibilityLabel={closeLabel ?? common.close}
-                      onPress={() => close()}
-                    />
-                  </>
-                }
-              />
-            }
-            bottomBar={footer}
-            bottomBarKeyboardBehavior={footerKeyboardBehavior}
-          >
-            <BodyViewport body={body} scrollable={scrollable} testID={testID} />
-          </Screen>
-        </StyledView>
+          <BodyViewport body={body} scrollable={scrollable} testID={testID} />
+        </Screen>
       </Motion>
     );
   }
