@@ -1,3 +1,4 @@
+import type { AppShellLayout, AppShellPresentation, AppShellPanelRole } from './composition';
 import type { AppColorName } from '../theme/color-presets';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle, ViewProps } from 'react-native';
@@ -177,6 +178,10 @@ export type AppShellScroll = 'document' | 'container' | 'fixed' | 'page';
 export type AppShellBarVisibility = 'compact' | 'always';
 
 export interface AppShellEngineProps {
+  /** Semantic structure; omitted retains the legacy variant contract. */
+  layout?: AppShellLayout;
+  /** Structural surface policy, independent of navigation compactness. */
+  presentation?: AppShellPresentation;
   /**
    * Native: keep the shell, navigation and pages inside the device's safe area.
    * The bottom-bar slot still owns its bottom inset; without bottom chrome the
@@ -545,6 +550,12 @@ export type AppShellProps = Omit<AppShellEngineProps, 'scroll'> &
 
 /** One panel: a rounded surface in a `panels` shell, alone or in `AppShellPanels`. */
 export interface AppShellPanelProps {
+  /** Meaning of the region; the enclosing family supplies geometry and adaptation defaults. */
+  role?: AppShellPanelRole;
+  /** Controlled inspector visibility across inline and floating presentations. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  label?: string;
   /** Names the panel for `AppShellPanels`' `show` and `useAppShellPanel()`. */
   id?: string;
   children?: ReactNode;

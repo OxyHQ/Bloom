@@ -15,6 +15,7 @@ type Options = Pick<
   | 'navFrom'
   | 'navExpandedFrom'
   | 'framedFrom'
+  | 'presentation'
   | 'panels'
   | 'variant'
   | 'navigationAlign'
@@ -98,6 +99,7 @@ ${root} [data-bloom-dock-moving] :is([data-bloom-shell-nav="${scope}"],[data-blo
           : 'rail'
         : (sidebar?.variant ?? 'panel');
     const framed =
+      options.presentation !== 'continuous' &&
       !!options.panels &&
       options.variant !== 'canvas' &&
       (options.framedFrom !== undefined

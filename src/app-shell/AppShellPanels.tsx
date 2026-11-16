@@ -1,3 +1,5 @@
+import { useAppShellComposition, AppShellCompositionContext } from './composition-context';
+import { resolvePanelComposition } from './composition';
 import type { ScrollAreaProps } from '../layout/types';
 /**
  * `AppShellPanel` and `AppShellPanels` — the surfaces a `panels` shell frames.
@@ -235,7 +237,7 @@ export function createAppShellPanels(
     scope: compositionScope = 'region',
     layout,
     children,
-    appearance = 'separated',
+    appearance,
     collapseBelow,
     show,
     widths,
@@ -244,6 +246,12 @@ export function createAppShellPanels(
     onSpansChange,
     testID,
   }: AppShellPanelsProps) {
+    const inheritedComposition = useAppShellComposition();
+    const family = layout?.family ?? inheritedComposition.family;
+    const presentation =
+      layout?.presentation ??
+      (compositionScope === 'local' ? undefined : inheritedComposition.presentation);
+    const composition = useMemo(() => ({ family, presentation }), [family, presentation]);
     const inheritedRegion = useRegion();
     const nested = useContext(ContentPanelNestingContext);
     const parentFill = useOptionalSurfaceFill();
@@ -257,13 +265,28 @@ export function createAppShellPanels(
           ? {
               ...inheritedRegion,
               flow: 'bounded',
+              presentation,
+              framed:
+                presentation === 'continuous'
+                  ? false
+                  : family || presentation
+                    ? true
+                    : inheritedRegion.framed,
+              gutter:
+                presentation === 'continuous'
+                  ? 0
+                  : family || presentation
+                    ? STANDALONE_GUTTER
+                    : inheritedRegion.gutter,
               viewportInset: { top: 0, bottom: 0 },
               bottomReserve: 0,
               underBottomBar: false,
               maskColor: parentFill ?? inheritedRegion.maskColor,
             }
-          : inheritedRegion,
-      [local, inheritedRegion, parentFill],
+          : presentation === 'continuous'
+            ? { ...inheritedRegion, framed: false, presentation }
+            : inheritedRegion,
+      [local, inheritedRegion, parentFill, presentation],
     );
     const boundedRegion = useMemo<AppShellRegionValue>(
       () => ({ ...region, flow: 'bounded' }),
@@ -283,27 +306,31 @@ export function createAppShellPanels(
           content,
         };
       });
+    const groupAppearance = appearance ?? (presentation === 'continuous' ? 'joined' : 'separated');
     const gap =
       layout?.gap ??
-      ((layout?.appearance ?? appearance) === 'joined' ||
-      (layout?.appearance ?? appearance) === 'plain' ||
+      ((layout?.appearance ?? groupAppearance) === 'joined' ||
+      (layout?.appearance ?? groupAppearance) === 'plain' ||
       !region.framed
         ? 1
         : region.gutter);
-    const panelLayout: AppShellPanelLayout = {
-      panels,
-      appearance,
-      collapseBelow,
-      activePanel: show,
-      widths,
-      onWidthsChange,
-      spans,
-      onSpansChange,
-      flow: 'bounded',
-      horizontalScroll: 'contained',
-      gap,
-      ...layout,
-    };
+    const panelLayout = resolvePanelComposition(
+      {
+        panels,
+        appearance: groupAppearance,
+        collapseBelow,
+        activePanel: show,
+        widths,
+        onWidthsChange,
+        spans,
+        onSpansChange,
+        flow: 'bounded',
+        horizontalScroll: 'contained',
+        gap,
+        ...layout,
+      },
+      composition,
+    );
     // The frame's width decides only the axis, at the layout's breakpoints.
     const { width, onLayout } = useMeasuredSizeClass(panelLayoutWidthThresholds(panelLayout));
     const box =
@@ -324,21 +351,23 @@ export function createAppShellPanels(
           css ? ({ containerType: 'inline-size', containerName: scope } as WebCssStyle) : null,
         ]}
       >
-        <PanelCssContext.Provider value={css ? scope : null}>
-          <BottomEdgeProvider inherit={!local}>
-            <ContentPanelNestingContext.Provider value={local ? false : nested}>
-              <AppShellRegionContext.Provider value={boundedRegion}>
-                <PanelLayoutView
-                  eligibilityFromGroup
-                  layout={panelLayout}
-                  shellWidth={width}
-                  gap={gap}
-                  testID={testID}
-                />
-              </AppShellRegionContext.Provider>
-            </ContentPanelNestingContext.Provider>
-          </BottomEdgeProvider>
-        </PanelCssContext.Provider>
+        <AppShellCompositionContext.Provider value={composition}>
+          <PanelCssContext.Provider value={css ? scope : null}>
+            <BottomEdgeProvider inherit={!local}>
+              <ContentPanelNestingContext.Provider value={local ? false : nested}>
+                <AppShellRegionContext.Provider value={boundedRegion}>
+                  <PanelLayoutView
+                    eligibilityFromGroup
+                    layout={panelLayout}
+                    shellWidth={width}
+                    gap={gap}
+                    testID={testID}
+                  />
+                </AppShellRegionContext.Provider>
+              </ContentPanelNestingContext.Provider>
+            </BottomEdgeProvider>
+          </PanelCssContext.Provider>
+        </AppShellCompositionContext.Provider>
       </View>
     );
   }

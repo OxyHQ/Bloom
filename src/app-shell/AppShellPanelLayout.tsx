@@ -839,7 +839,9 @@ export function createPanelLayoutView(
           chrome={panel.chrome}
           surfaceClassName={panel.surfaceClassName}
           surfaceColor={panel.surfaceColor}
-          framed={cssScope && cssFraming ? true : framed}
+          framed={
+            region?.presentation === 'continuous' ? false : cssScope && cssFraming ? true : framed
+          }
           maskColor={region?.maskColor}
           errorBoundary={panel.errorBoundary}
           fill={!document && !naturalHeight}
@@ -1699,7 +1701,13 @@ export function createPanelLayoutView(
               {joined && !surfaceOwned ? (
                 <ContentPanel
                   appearance={layout.appearance === 'plain' ? 'plain' : undefined}
-                  framed={cssScope && !eligibilityFromGroup ? true : (region?.framed ?? true)}
+                  framed={
+                    layout.presentation === 'continuous'
+                      ? false
+                      : cssScope && !eligibilityFromGroup
+                        ? true
+                        : (region?.framed ?? true)
+                  }
                   fill={!document}
                   scrollable={false}
                   overlaySizing={document ? 'viewport' : 'panel'}
@@ -1775,7 +1783,13 @@ export function createPanelLayoutView(
     return joined ? (
       <ContentPanel
         appearance={props.layout.appearance === 'plain' ? 'plain' : undefined}
-        framed={cssScope && !props.eligibilityFromGroup ? true : (region?.framed ?? true)}
+        framed={
+          props.layout.presentation === 'continuous'
+            ? false
+            : cssScope && !props.eligibilityFromGroup
+              ? true
+              : (region?.framed ?? true)
+        }
         fill={!document}
         scrollable={false}
         overlaySizing={document ? 'viewport' : 'panel'}

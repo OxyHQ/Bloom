@@ -1,3 +1,5 @@
+import { useAppShellPanel } from '../app-shell/context';
+import { ScreenKindContext } from './content';
 import { useThemeRecipe } from '../theme/use-theme-paint';
 import { resolvePaintMode } from '../theme/paint';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
@@ -75,7 +77,9 @@ export function createScreen(
   function Screen(props: ScreenProps) {
     return (
       <BloomColorScope colorPreset={props.colorPreset} seed={props.seed} asChild>
-        <ScreenCanvas {...props} />
+        <ScreenKindContext.Provider value={props.kind}>
+          <ScreenCanvas {...props} />
+        </ScreenKindContext.Provider>
       </BloomColorScope>
     );
   }
@@ -83,14 +87,21 @@ export function createScreen(
   function ScreenCanvas({
     colorPreset,
     seed,
+    kind,
     header,
-    scroll = 'auto',
+    scroll = kind === 'canvas'
+      ? 'none'
+      : kind === 'table' || kind === 'collection'
+        ? 'content'
+        : 'auto',
     headerPlacement = 'inset',
     bottomBarPlacement = 'inset',
     bottomBar,
     underlay,
     bottomBarKeyboardBehavior = 'hide',
-    primaryAction,
+    primaryAction: declaredPrimaryAction,
+    primaryActionVisibility = 'always',
+    primaryActionPlacement = 'end',
     reselect,
     active: requestedActive = true,
     navigationScope = 'inherit',
@@ -103,6 +114,9 @@ export function createScreen(
     testID,
     ...props
   }: ScreenProps) {
+    const panel = useAppShellPanel();
+    const primaryAction =
+      primaryActionVisibility === 'alone' && !panel.alone ? null : declaredPrimaryAction;
     const surfaceRecipe = useSurfaceFillRecipe();
     // On the page the canvas is the page fill. Inside a painted surface (a panel,
     // a sheet) that surface is already the paint, material and edge light included,
@@ -421,7 +435,12 @@ export function createScreen(
         <View
           pointerEvents="box-none"
           style={{
-            alignItems: 'flex-end',
+            alignItems:
+              primaryActionPlacement === 'center'
+                ? 'center'
+                : primaryActionPlacement === 'start'
+                  ? 'flex-start'
+                  : 'flex-end',
             paddingHorizontal: 16,
             paddingBottom: windowEdgeGap(insets?.bottom ?? 0),
             minHeight: host.bottomBar

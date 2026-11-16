@@ -95,3 +95,16 @@ export type {
   NotificationBellProps,
   ProOfferCardProps,
 } from './types';
+
+export {
+  resolveAppShellComposition,
+  resolvePanelComposition,
+  explainAppShellComposition,
+} from './composition';
+export { useAppShellComposition } from './composition-context';
+export type {
+  AppShellLayout,
+  AppShellPresentation,
+  AppShellPanelRole,
+  AppShellComposition,
+} from './composition';

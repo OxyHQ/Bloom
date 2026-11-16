@@ -193,6 +193,7 @@ const READING_TRANSITION =
 export function createAppShellEngine() {
   const AppShellComponent: React.FC<AppShellEngineProps> = ({
     variant = 'dashboard',
+    presentation,
     safeArea = false,
     navigationAlign = 'edge',
     navigationGap,
@@ -351,6 +352,7 @@ export function createAppShellEngine() {
       navFrom,
       navExpandedFrom,
       framedFrom,
+      presentation,
       panels,
       variant,
       navigationAlign,
@@ -381,14 +383,16 @@ export function createAppShellEngine() {
     // hosts no panels.
     const panelHost = panels && variant !== 'canvas';
     const framed =
-      cssShell?.framed ??
-      (panelHost &&
-        (framedFrom !== undefined
-          ? width >= breakpointPx(framedFrom)
-          : hasNav
-            ? navInFlow
-            : width >= BREAKPOINTS.md));
-    const compactRegion = panelHost && !framed;
+      presentation === 'continuous'
+        ? false
+        : (cssShell?.framed ??
+          (panelHost &&
+            (framedFrom !== undefined
+              ? width >= breakpointPx(framedFrom)
+              : hasNav
+                ? navInFlow
+                : width >= BREAKPOINTS.md)));
+    const compactRegion = panelHost && (presentation === 'continuous' ? !navInFlow : !framed);
     const stretchReading = compactRegion || contentMaxWidth === 'none';
     // Reveal keeps its page host mounted across compact/desktop changes.
     const drawerStyle = variant === 'dashboard' || variant === 'feed' ? drawer : 'overlay';
@@ -885,6 +889,7 @@ export function createAppShellEngine() {
     const region = useMemo<AppShellRegionValue>(
       () => ({
         flow: regionFlow,
+        presentation,
         framed,
         gutter,
         viewportInset: {
@@ -900,6 +905,7 @@ export function createAppShellEngine() {
       }),
       [
         regionFlow,
+        presentation,
         framed,
         gutter,
         externalTopHeight,

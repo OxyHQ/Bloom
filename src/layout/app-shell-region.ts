@@ -15,6 +15,8 @@
 import { createContext, useContext } from 'react';
 
 export interface AppShellRegionValue {
+  /** Surface framing is independent from navigation/region compactness. */
+  presentation?: import('../app-shell/composition').AppShellPresentation;
   /**
    * `document`: the region grows the web document (a sole panel grows with its
    * content). `container`: it grows inside the shell's own ScrollView.
