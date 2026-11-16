@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { View } from 'react-native';
-import { AppShell, AppShellPanels } from './index';
+import { View, type TextInputInstance } from 'react-native';
+import { AppShell, AppShellPanels, usePanelSessionFocus, usePanelSessionState } from './index';
 import type { AppShellLayout, AppShellPresentation } from './composition';
 import { Screen, ScreenContent, ScreenScrollView } from '../screen';
 import { PageHeader } from '../page-header';
@@ -21,8 +21,13 @@ export default meta;
 type Story = StoryObj<typeof AppShell>;
 let nextInstance = 0;
 
-function DraftScreen({ name }: { name: string }) {
-  const [draft, setDraft] = useState('');
+function DraftScreen({ name, registered = false }: { name: string; registered?: boolean }) {
+  const [localDraft, setLocalDraft] = useState('');
+  const [sessionDraft, setSessionDraft] = usePanelSessionState(`${name}:draft`, '');
+  const focus = usePanelSessionFocus<TextInputInstance>(`${name}:input`);
+  const [draft, setDraft] = registered
+    ? [sessionDraft, setSessionDraft]
+    : [localDraft, setLocalDraft];
   const instance = useRef<number | null>(null);
   if (instance.current === null) instance.current = ++nextInstance;
   return (
@@ -31,6 +36,14 @@ function DraftScreen({ name }: { name: string }) {
         <ScreenContent testID={`semantic-${name}-body`}>
           <Text testID={`semantic-${name}-instance`}>Instance {instance.current}</Text>
           <TextFieldInput
+            {...(registered
+              ? {
+                  inputRef: focus.ref,
+                  onFocus: focus.onFocus,
+                  onBlur: focus.onBlur,
+                  onSelectionChange: focus.onSelectionChange,
+                }
+              : {})}
             label={`${name} draft`}
             testID={`semantic-${name}-draft`}
             value={draft}
@@ -47,7 +60,21 @@ function DraftScreen({ name }: { name: string }) {
   );
 }
 
-function Example({ routeOwned = false }: { routeOwned?: boolean }) {
+function Example({
+  routeOwned = false,
+  registered = false,
+}: {
+  routeOwned?: boolean;
+  registered?: boolean;
+}) {
+  const families: AppShellLayout[] = [
+    'workspace',
+    'deck',
+    'feed',
+    'catalog',
+    'collection-detail',
+    'map-browser',
+  ];
   const [open, setOpen] = useState(false);
   const [family, setFamily] = useState<AppShellLayout>('workspace');
   const [presentation, setPresentation] = useState<AppShellPresentation>('continuous');
@@ -71,7 +98,8 @@ function Example({ routeOwned = false }: { routeOwned?: boolean }) {
             </Button>
             <Button
               testID="semantic-family"
-              onPress={() => setFamily(family === 'workspace' ? 'deck' : 'workspace')}
+              accessibilityLabel={`Layout: ${family}`}
+              onPress={() => setFamily(families[(families.indexOf(family) + 1) % families.length]!)}
             >
               Layout
             </Button>
@@ -80,14 +108,18 @@ function Example({ routeOwned = false }: { routeOwned?: boolean }) {
       />
     ),
     panels: [
-      { id: 'main', role: 'main' as const, content: <DraftScreen name="main" /> },
+      {
+        id: 'main',
+        role: 'main' as const,
+        content: <DraftScreen name="main" registered={registered} />,
+      },
       {
         id: 'inspector',
         role: 'inspector' as const,
         open,
         onOpenChange: setOpen,
         label: 'Inspector',
-        content: <DraftScreen name="inspector" />,
+        content: <DraftScreen name="inspector" registered={registered} />,
       },
     ],
   };
@@ -109,3 +141,5 @@ function Example({ routeOwned = false }: { routeOwned?: boolean }) {
 
 export const Workspace: Story = { render: () => <Example /> };
 export const RouteOwnedWorkspace: Story = { render: () => <Example routeOwned /> };
+
+export const RegisteredSessionWorkspace: Story = { render: () => <Example registered /> };

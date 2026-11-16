@@ -27,7 +27,15 @@ it('keeps the main draft and mount when a semantic inspector opens and the famil
     }, []);
     return <TextInput testID="draft" value={text} onChangeText={setText} />;
   }
-  function Example({ open, family }: { open: boolean; family: AppShellLayout }) {
+  function Example({
+    open,
+    family,
+    presentation = 'continuous',
+  }: {
+    open: boolean;
+    family: AppShellLayout;
+    presentation?: 'continuous' | 'framed';
+  }) {
     const panels: AppShellPanelLayout = {
       panels: [
         { id: 'main', role: 'main', content: <Editor /> },
@@ -41,12 +49,14 @@ it('keeps the main draft and mount when a semantic inspector opens and the famil
         },
       ],
     };
-    return <AppShell layout={family} presentation="continuous" panelLayout={panels} />;
+    return <AppShell layout={family} presentation={presentation} panelLayout={panels} />;
   }
   const screen = render(<Example open={false} family="workspace" />, { wrapper });
   fireEvent.changeText(screen.getByTestId('draft'), 'Kept draft');
   screen.rerender(<Example open family="workspace" />);
   screen.rerender(<Example open family="deck" />);
+  screen.rerender(<Example open={false} family="feed" />);
+  screen.rerender(<Example open={false} family="feed" presentation="framed" />);
   screen.rerender(<Example open={false} family="feed" />);
   expect(screen.getByTestId('draft').props.value).toBe('Kept draft');
   expect(mounts).toHaveBeenCalledTimes(1);

@@ -1583,8 +1583,9 @@ describe('AppShellPanels', () => {
     const panels = screen.UNSAFE_root.findAllByType(
       (ContentPanel as unknown as { type: React.ComponentType }).type,
     );
-    expect(panels).toHaveLength(2);
-    for (const panel of panels) expect(panel.props).toMatchObject({ framed: true, fill: true });
+    const painted = panels.filter((panel) => panel.props.appearance !== 'plain');
+    expect(painted).toHaveLength(2);
+    for (const panel of painted) expect(panel.props).toMatchObject({ framed: true, fill: true });
   });
 
   it('uses the shared track resolver while preserving declared widths and minimums', () => {
@@ -1729,7 +1730,7 @@ describe('AppShellPanels', () => {
     expect(
       wide.UNSAFE_root.findAllByType(
         (ContentPanel as unknown as { type: React.ComponentType }).type,
-      ),
+      ).filter((panel) => panel.props.appearance !== 'plain'),
     ).toHaveLength(1);
     expect(resolvedStyle(wide.getByTestId('message').props.style).marginInlineStart).toBe(1);
     wide.unmount();
