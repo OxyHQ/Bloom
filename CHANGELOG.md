@@ -1,5 +1,12 @@
 # Changelog
 
+## 22.0.1
+
+### Fixed
+
+- Sidebar tree items share ListItem selection and context menus in sections, nested branches and folders. Controlled selection uses the existing avatar/checkbox target, touch long press and selection-mode row presses without navigating; desktop retains right-click and hover menus, including submenus and radio actions. Draggable rows keep their lift gesture.
+- Custom ListItem triggers can receive the shared Pressable handlers, accessibility and geometry through a render callback; ready React nodes remain supported. Disabled tree rows reject navigation, selection and incoming or outgoing drops.
+
 ## 22.0.0
 
 ### Breaking changes
