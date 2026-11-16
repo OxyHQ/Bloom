@@ -11,6 +11,35 @@ describe('semantic composition', () => {
     expect(resolveAppShellComposition(props)).toBe(props);
   });
 
+  it('resolves root descriptor declarations just like route groups without changing the shell frame', () => {
+    const panelLayout = {
+      family: 'deck' as const,
+      presentation: 'continuous' as const,
+      panels: [
+        { id: 'list', role: 'collection' as const },
+        {
+          id: 'inspector',
+          role: 'inspector' as const,
+          open: false,
+          onOpenChange: jest.fn(),
+          label: 'Inspector',
+        },
+      ],
+    };
+    const result = resolveAppShellComposition({ gutter: 7, panelLayout });
+    expect(result.panelLayout).toEqual(resolvePanelComposition(panelLayout));
+    expect(result.panelLayout).toMatchObject({ mode: 'deck', appearance: 'joined' });
+    expect(result.panelLayout?.panels[0]?.width).toBe(380);
+    expect(result.panelLayout?.panels[1]).toMatchObject({
+      visible: false,
+      floating: { open: false },
+    });
+    expect(result.gutter).toBe(7);
+    expect(result.layout).toBeUndefined();
+    const legacy: AppShellProps = { panelLayout: { panels: [{ id: 'main' }] } };
+    expect(resolveAppShellComposition(legacy)).toBe(legacy);
+  });
+
   it('resolves continuous workspace framing independently from navigation capacity', () => {
     const resolved = resolveAppShellComposition({
       layout: 'workspace',

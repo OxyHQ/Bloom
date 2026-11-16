@@ -139,7 +139,11 @@ export function resolvePanelComposition(
 
 /** Legacy props are accepted at this boundary and resolved once, before any renderer runs. */
 export function resolveAppShellComposition(props: AppShellProps): AppShellProps {
-  if (!props.layout && !props.presentation) return props;
+  if (!props.layout && !props.presentation) {
+    if (!props.panelLayout) return props;
+    const panelLayout = resolvePanelComposition(props.panelLayout);
+    return panelLayout === props.panelLayout ? props : { ...props, panelLayout };
+  }
   const family = props.layout ?? 'workspace';
   const presentation = props.presentation ?? 'framed';
   const recipe = FAMILY[family];

@@ -145,7 +145,7 @@ export function TicketDetailDialog({
   );
   return (
     <DetailDialog
-      open
+      startOpen
       onClose={onClose}
       label={`${ticket.code}: ${m.properties}`}
       closeLabel={m.closeDetails}

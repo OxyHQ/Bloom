@@ -159,6 +159,7 @@ export function createDetailDialog({
     return (
       <Dialog
         open={props.open}
+        startOpen={props.startOpen}
         onClose={props.onClose}
         label={props.label}
         testID={props.testID}

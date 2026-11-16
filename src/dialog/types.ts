@@ -460,7 +460,10 @@ export interface DialogScreenFrame {
 
 /** Generic record detail surface, shared with the ProjectBoard template. */
 export interface DetailDialogProps {
-  open: boolean;
+  /** Controlled visibility; omit when the existing Dialog lifecycle owns dismissal. */
+  open?: boolean;
+  /** Initial open intent; onClose then runs after the shared exit completes. */
+  startOpen?: boolean;
   onClose: () => void;
   label: string;
   /** Side detail by default; center retains the same material and slot geometry. */

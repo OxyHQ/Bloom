@@ -77,11 +77,11 @@ export function createScreen(
   /** One continuous canvas; chrome overlays it and content reserves its measured footprint. */
   function Screen(props: ScreenProps) {
     return (
-      <BloomColorScope colorPreset={props.colorPreset} seed={props.seed} asChild>
-        <ScreenKindContext.Provider value={props.kind}>
+      <ScreenKindContext.Provider value={props.kind}>
+        <BloomColorScope colorPreset={props.colorPreset} seed={props.seed} asChild>
           <ScreenCanvas {...props} />
-        </ScreenKindContext.Provider>
-      </BloomColorScope>
+        </BloomColorScope>
+      </ScreenKindContext.Provider>
     );
   }
 

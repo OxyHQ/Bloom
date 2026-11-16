@@ -52,6 +52,11 @@ body and footer consume it. `header` is the PageHeader title slot; `subtitle` an
 `closeLabel` overrides its localized accessible name. `scrollFooter` places activity
 or a composer at the bottom of the **same scroller**; `footer` stays fixed.
 
+Keep a controlled detail mounted while `open` becomes false so its exit can finish.
+For a record detail mounted only while selected, omit `open` and use `startOpen`;
+the existing Dialog lifecycle then calls `onClose` after the exit, when the host
+can remove the record. ProjectBoard uses this conditionally mounted form.
+
 The scrolling body clears the actual shared header edge before scrolling underneath
 it. `contentKind="canvas" scrollable={false}` instead gives a bounded body and reserves
 the header through Screen. No extra Screen, dialog width, local ScrollView or copied

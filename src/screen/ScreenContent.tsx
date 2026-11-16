@@ -12,6 +12,8 @@ export interface ScreenContentProps extends ViewProps {
   /** Full removes the reading measure, preserving the body's edge inset. */
   width?: 'readable' | 'full';
   className?: string;
+  /** React Native Web data attributes; the internal bloomBody marker is reserved. */
+  dataSet?: Record<string, string | number>;
 }
 
 /** A body column in the existing scroller; never adds a viewport or a surface. */
@@ -40,7 +42,7 @@ export function ScreenContent({ kind, width = 'readable', style, ...props }: Scr
       {web ? <ServerStyleSheet id={scope} css={css} owned /> : null}
       <StyledView
         {...props}
-        {...(web ? { dataSet: { bloomBody: scope } } : {})}
+        {...(web ? { dataSet: { ...props.dataSet, bloomBody: scope } } : {})}
         style={[
           {
             ...screenContentStyle(resolvedKind, width === 'full', !web && available.width >= 768),

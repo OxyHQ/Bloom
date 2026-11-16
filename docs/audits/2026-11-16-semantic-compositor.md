@@ -49,9 +49,18 @@ shared frames, safe areas or action clearances are defects to remove.
 | Inspector web focus | Verified independently in Linux Chrome: five fresh contexts × 1440→800→1440 preserve `[0,5]`, focused input and exact draft; typing X replaces the selected prefix. Seven focused tests include incoming initial selection, modal autofocus, CSS-before-React presentation, close, user-choice cancellation and the native TextInput selection command. Reproduce with `scripts/verify-panel-session-focus.mjs`. |
 | Android | Owned Android 30 emulator `emulator-5580`: final artifact `86e58f5b` passes registered selection in both directions, the complete generic panel suite, and shared detail opened from a lower panel, including real IME/footer interaction. This is shared-source fixture acceptance, not five production native-app deployments. Intended physical Pixel 8a is not yet connected; no final physical-device or iOS acceptance is claimed. |
 | iOS | No device identified. Not verified; Android or web evidence must not be presented as iOS acceptance. No new native teleport/Fabric capability is claimed. |
-| Package | Final runtime `bc78a61a`: 1,040 suites / 15,803 tests / 9 snapshots pass, together with TypeScript plus consumer typecheck, lint, build, packed exports/freshness and task catalog. Independent consumer review confirms 31,979 packed files, 21,164 exported values and 8,011 exported types; the affected keyboard suite passes. Candidate `21.8.0` publication remains pending; local gates are not CI/registry evidence. |
+| Package | Full local baseline `bc78a61a`: 1,040 suites / 15,803 tests / 9 snapshots pass, together with TypeScript plus consumer typecheck, lint, build, packed exports/freshness and task catalog. Independent consumer review confirms 31,979 packed files, 21,164 exported values and 8,011 exported types; the affected keyboard suite passes. The bounded review followup below has targeted validation and requires final protected CI. Candidate `21.8.0` publication remains pending; local gates are not CI/registry evidence. |
 | Registry | CI publication receipt and exact registry tarball/install checks pending. Local publication prohibited. |
 | Main/deployments | Final Bloom and five consumer main commits, CI/deploy URLs and successful deployed-route checks pending. |
+
+The bounded review followup restores Screen color variables on the actual styled
+host, preserves caller content data attributes, resolves descriptor-only root
+panel policies, and lets conditionally mounted ticket details finish the existing
+Dialog exit before removal. Three focused suites (34 tests) and five affected
+suites (35 tests) pass, including rendered web DOM preset/seed colors and native
+detail/keyboard/safe-area contracts. An actual browser template close preserves
+the live node during exit and removes it afterward. The Android receipt below
+predates these bounded corrections; no new physical-device or iOS claim is made.
 
 The final integration owner must replace pending entries with concrete results
 or leave them explicitly pending. A waived platform check is a limitation, not

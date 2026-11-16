@@ -4,6 +4,9 @@ import { createRoot } from 'react-dom/client';
 import { DetailDialog, DetailDialogSection, DetailDialogSectionGroup } from '../dialog/index.web';
 import { ProjectBoardCardContent } from '../project-board/index.web';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { BloomColorScope } from '../theme/color-scope/index.web';
+import { Screen, ScreenContent } from '../screen/index.web';
+import { View } from 'react-native';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 jest.mock('react-native-reanimated', () => {
@@ -68,6 +71,67 @@ afterEach(() => {
   jest.useRealTimers();
 });
 const settle = () => act(() => jest.runOnlyPendingTimers());
+
+it.each([{ colorPreset: 'rose' as const }, { seed: '#8e5137' }])(
+  'paints a Screen color override on its actual DOM host: %j',
+  (color) => {
+    act(() =>
+      root.render(
+        <BloomThemeProvider colorPreset="teal" mode="light">
+          <BloomColorScope {...color} asChild>
+            <View testID="reference-color" />
+          </BloomColorScope>
+          <Screen {...color} kind="document" testID="screen-color">
+            <ScreenContent
+              testID="record-body"
+              dataSet={{ recordId: '42', bloomBody: 'caller-marker' }}
+            />
+          </Screen>
+        </BloomThemeProvider>,
+      ),
+    );
+    const reference = document.querySelector<HTMLElement>('[data-testid="reference-color"]')!;
+    const screen = document.querySelector<HTMLElement>('[data-testid="screen-color"]')!;
+    const expected = reference.style.getPropertyValue('--background');
+    expect(expected).not.toBe('');
+    expect(screen.style.getPropertyValue('--background')).toBe(expected);
+    const body = document.querySelector<HTMLElement>('[data-testid="record-body"]')!;
+    expect(body.dataset.recordId).toBe('42');
+    expect(body.dataset.bloomBody).toMatch(/^bloom-body-/);
+  },
+);
+
+it('retains conditionally mounted detail until the existing Dialog exit completes', () => {
+  const closed = jest.fn();
+  function ConditionalDetail() {
+    const [mounted, setMounted] = useState(true);
+    return (
+      <BloomThemeProvider>
+        {mounted && (
+          <DetailDialog
+            startOpen
+            label="Mounted record"
+            closeLabel="Close mounted record"
+            onClose={() => {
+              closed();
+              setMounted(false);
+            }}
+          />
+        )}
+      </BloomThemeProvider>
+    );
+  }
+  act(() => root.render(<ConditionalDetail />));
+  settle();
+  act(() => (document.querySelector('[aria-label="Close mounted record"]') as HTMLElement).click());
+  expect(closed).not.toHaveBeenCalled();
+  expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+  act(() => jest.advanceTimersByTime(100));
+  expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+  settle();
+  expect(closed).toHaveBeenCalledTimes(1);
+  expect(document.querySelector('[role="dialog"]')).toBeNull();
+});
 
 it('shares the product provider with fixed chrome, keeps one scroller, and closes/reopens through Dialog', () => {
   act(() => root.render(<Fixture />));
