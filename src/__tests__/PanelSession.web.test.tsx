@@ -17,6 +17,7 @@ let root: Root;
 let host: HTMLDivElement;
 let update: React.Dispatch<React.SetStateAction<string>>;
 let mounts = 0;
+let cssPresentation: 'inline' | 'floating' | undefined;
 
 function Editor({ stateKey = 'draft', initial = '' }: { stateKey?: string; initial?: string }) {
   const [value, setValue] = usePanelSessionState(stateKey, initial);
@@ -56,7 +57,11 @@ function Editor({ stateKey = 'draft', initial = '' }: { stateKey?: string; initi
 function render(mode: 'inline' | 'floating', active = true, stateKey = 'draft', initial = '') {
   act(() =>
     root.render(
-      <PanelSessionProvider presentation={mode} active={active}>
+      <PanelSessionProvider
+        presentation={mode}
+        active={active}
+        readPresentation={() => cssPresentation ?? mode}
+      >
         {active ? (
           <div key={mode}>
             <Editor stateKey={stateKey} initial={initial} />
@@ -72,6 +77,7 @@ const frame = () => act(() => jest.runOnlyPendingTimers());
 beforeEach(() => {
   jest.useFakeTimers();
   mounts = 0;
+  cssPresentation = undefined;
   host = document.createElement('div');
   document.body.append(host);
   root = createRoot(host);
@@ -118,7 +124,11 @@ it('restores the focused text input and selection when presentation changes', ()
     previous.dispatchEvent(new Event('select', { bubbles: true }));
     document.dispatchEvent(new Event('selectionchange'));
   });
+  // Browser responsive hiding can blur before React commits the new mode.
+  cssPresentation = 'floating';
+  act(() => previous.blur());
   render('floating');
+  cssPresentation = undefined;
   expect(input()).not.toBe(previous);
   // AppShell's imperative Dialog can autofocus this input before our RAF.
   // No user pointer/key action occurred, so the pending selection must survive.
@@ -159,6 +169,8 @@ it('cancels pending focus after user interaction, closing, and explicit blur', (
     input().focus();
     input().blur();
   });
+  frame();
+  frame();
   render('inline');
   frame();
   expect(document.activeElement).not.toBe(input());
