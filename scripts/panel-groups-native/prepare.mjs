@@ -13,6 +13,8 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = realpathSync(process.env.BLOOM_SOURCE_ROOT ?? path.join(here, '../..'));
 const files = [
   'src/app-shell/AppShellPanelLayout.tsx',
+  'src/app-shell/AppShellEngine.tsx',
+  'src/app-shell/composition.ts',
   'src/app-shell/panel-session.tsx',
   'src/app-shell/panel-layout.ts',
   'src/app-shell/panel-layout-types.ts',
@@ -25,6 +27,10 @@ const files = [
   'src/dialog/DetailDialogMotion.tsx',
   'src/dialog/DetailDialogSection.tsx',
   'src/bottom-sheet/BottomSheetBase.tsx',
+  'src/layout/safe-area-ownership.ts',
+  'src/screen/ScreenBase.tsx',
+  'src/screen/ScreenScrollViewBase.tsx',
+  'src/screen/keyboard-components.ts',
 ];
 // The fixture can select another Bloom worktree. Its entry/components still
 // compile from HERE, so they must never be hashed from BLOOM_SOURCE_ROOT.
