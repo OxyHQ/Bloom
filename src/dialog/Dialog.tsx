@@ -1,3 +1,5 @@
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
+import { WindowSafeAreaInsetsContext, NO_CONSUMED_SAFE_AREA } from '../layout/safe-area-ownership';
 import { Portal } from '../portal';
 import { HeaderActions } from '../page-header/HeaderActions';
 import {
@@ -23,6 +25,7 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import type React from 'react';
 import {
   useCallback,
+  useContext,
   useEffect,
   useId,
   useImperativeHandle,
@@ -657,6 +660,9 @@ function SideSheet({
 }) {
   const motion = useSurfaceTransition(transition);
   const dialogMessages = useMessages(DIALOG_MESSAGES).messages;
+  const savedWindowInsets = useContext(WindowSafeAreaInsetsContext);
+  const triggerInsets = useContext(SafeAreaInsetsContext);
+  const windowInsets = savedWindowInsets ?? triggerInsets ?? NO_CONSUMED_SAFE_AREA;
   const theme = useTheme();
   // React Native drops `aria-describedby`: the description is the panel's hint.
   const descriptionHint = useDescribedByHint({
@@ -798,95 +804,97 @@ function SideSheet({
     // otherwise pass straight to the screen behind it. A drawer that refuses
     // backdrop dismissal still swallows the press, and stays open.
     <Portal>
-      <OverlayRoot
-        style={[sideStyles.root, containerStyle]}
-        className={containerClassName}
-        onRequestClose={handleBackdropPress}
-        modal
-      >
-        <Backdrop
-          {...backdrop}
-          testID={testID ? `${testID}-backdrop` : DIALOG_SHEET_BACKDROP_TESTID}
-          accessibilityLabel={
-            label ? dialogMessages.dismissNamed(label) : dialogMessages.dismissDialog
-          }
-          onPress={handleBackdropPress}
-          disabled={!dismissOnBackdrop}
-          progress={progress}
-          dimOpacity={presentation === 'custom' ? 0 : backdrop?.dimOpacity}
-          blurIntensity={presentation === 'custom' ? 0 : backdrop?.blurIntensity}
-          style={sideStyles.backdrop}
-        />
-
-        <AnimatedStyledView
-          accessibilityViewIsModal
-          role={label || title ? 'dialog' : undefined}
-          // A dialog keeps its children: flattened, its node would be an empty leaf beside them.
-          collapsable={false}
-          accessibilityLabel={label ?? title}
-          aria-labelledby={title ? titleId : undefined}
-          aria-describedby={description ? descriptionId : undefined}
-          accessibilityHint={descriptionHint}
-          testID={testID}
-          onLayout={measurePanel}
-          className={panelClassName}
-          style={[
-            presentation === 'custom' ? { position: 'absolute' } : sideStyles.panel,
-            // `shadowColor` is a valid RN style prop on native (Dialog.tsx is the
-            // native variant); the web `shadow*` deprecation is handled in Dialog.web.tsx.
-            { backgroundColor: 'transparent', pointerEvents: 'auto', ...material.vars },
-            panelGeometry,
-            panelAnimatedStyle,
-            panelStyle,
-            style,
-            { backgroundColor: surfaceMaterial === 'flat' ? paintFill : 'transparent' },
-          ]}
+      <SafeAreaInsetsContext.Provider value={windowInsets}>
+        <OverlayRoot
+          style={[sideStyles.root, containerStyle]}
+          className={containerClassName}
+          onRequestClose={handleBackdropPress}
+          modal
         >
-          {presentation !== 'custom' && surfaceMaterial !== 'flat' && (
-            <SurfacePaint
-              floating
-              fill={paintFill}
-              shape={{ curve: SURFACE_SHAPES.dialog.curve }}
-              radius={panelRadius}
-            />
-          )}
-          <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
-            {header ? (
-              // Nav-header mode on a side drawer: a static titled bar (the drawer body
-              // has no Dialog scroll offset to drive a collapse) over content inset
-              // below the bar.
-              <View
-                style={{ flex: 1, minHeight: 0, borderRadius: panelRadius, overflow: 'hidden' }}
-              >
-                <DialogNavHeader
-                  Actions={HeaderActions}
-                  controller={headerController}
-                  header={header}
-                  onDismiss={onHeaderDismiss}
-                  collapse={false}
-                />
-                <DialogNavBarSpacer controller={headerController} header={header} />
-                <DialogHeaderProvider controller={headerController}>
-                  {surfaceChildren}
-                </DialogHeaderProvider>
-              </View>
-            ) : (
-              <View
-                style={{
-                  padding: contentPadding,
-                  flex: presentation === 'custom' || fullscreen || !scrollable ? 1 : undefined,
-                  minHeight: 0,
-                  borderRadius: panelRadius,
-                  overflow: presentation === 'custom' ? 'visible' : 'hidden',
-                }}
-              >
-                {surfaceChildren}
-              </View>
+          <Backdrop
+            {...backdrop}
+            testID={testID ? `${testID}-backdrop` : DIALOG_SHEET_BACKDROP_TESTID}
+            accessibilityLabel={
+              label ? dialogMessages.dismissNamed(label) : dialogMessages.dismissDialog
+            }
+            onPress={handleBackdropPress}
+            disabled={!dismissOnBackdrop}
+            progress={progress}
+            dimOpacity={presentation === 'custom' ? 0 : backdrop?.dimOpacity}
+            blurIntensity={presentation === 'custom' ? 0 : backdrop?.blurIntensity}
+            style={sideStyles.backdrop}
+          />
+
+          <AnimatedStyledView
+            accessibilityViewIsModal
+            role={label || title ? 'dialog' : undefined}
+            // A dialog keeps its children: flattened, its node would be an empty leaf beside them.
+            collapsable={false}
+            accessibilityLabel={label ?? title}
+            aria-labelledby={title ? titleId : undefined}
+            aria-describedby={description ? descriptionId : undefined}
+            accessibilityHint={descriptionHint}
+            testID={testID}
+            onLayout={measurePanel}
+            className={panelClassName}
+            style={[
+              presentation === 'custom' ? { position: 'absolute' } : sideStyles.panel,
+              // `shadowColor` is a valid RN style prop on native (Dialog.tsx is the
+              // native variant); the web `shadow*` deprecation is handled in Dialog.web.tsx.
+              { backgroundColor: 'transparent', pointerEvents: 'auto', ...material.vars },
+              panelGeometry,
+              panelAnimatedStyle,
+              panelStyle,
+              style,
+              { backgroundColor: surfaceMaterial === 'flat' ? paintFill : 'transparent' },
+            ]}
+          >
+            {presentation !== 'custom' && surfaceMaterial !== 'flat' && (
+              <SurfacePaint
+                floating
+                fill={paintFill}
+                shape={{ curve: SURFACE_SHAPES.dialog.curve }}
+                radius={panelRadius}
+              />
             )}
-            {footer != null && <View style={{ flexShrink: 0 }}>{footer}</View>}
-          </SurfaceLevelProvider>
-        </AnimatedStyledView>
-      </OverlayRoot>
+            <SurfaceLevelProvider level={material.level} fill={surfaceFill}>
+              {header ? (
+                // Nav-header mode on a side drawer: a static titled bar (the drawer body
+                // has no Dialog scroll offset to drive a collapse) over content inset
+                // below the bar.
+                <View
+                  style={{ flex: 1, minHeight: 0, borderRadius: panelRadius, overflow: 'hidden' }}
+                >
+                  <DialogNavHeader
+                    Actions={HeaderActions}
+                    controller={headerController}
+                    header={header}
+                    onDismiss={onHeaderDismiss}
+                    collapse={false}
+                  />
+                  <DialogNavBarSpacer controller={headerController} header={header} />
+                  <DialogHeaderProvider controller={headerController}>
+                    {surfaceChildren}
+                  </DialogHeaderProvider>
+                </View>
+              ) : (
+                <View
+                  style={{
+                    padding: contentPadding,
+                    flex: presentation === 'custom' || fullscreen || !scrollable ? 1 : undefined,
+                    minHeight: 0,
+                    borderRadius: panelRadius,
+                    overflow: presentation === 'custom' ? 'visible' : 'hidden',
+                  }}
+                >
+                  {surfaceChildren}
+                </View>
+              )}
+              {footer != null && <View style={{ flexShrink: 0 }}>{footer}</View>}
+            </SurfaceLevelProvider>
+          </AnimatedStyledView>
+        </OverlayRoot>
+      </SafeAreaInsetsContext.Provider>
     </Portal>
   );
 }

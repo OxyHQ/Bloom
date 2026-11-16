@@ -1,3 +1,4 @@
+import { AppShell } from '../app-shell';
 import React, { createContext, useContext } from 'react';
 import { render } from '@testing-library/react-native';
 import { Platform, Text, View } from 'react-native';
@@ -71,4 +72,45 @@ it('native detail geometry consumes device edges once and delegates header clear
       .findAll((node) => typeof node.type === 'string' && node.props.testID === 'detail'),
   ).toHaveLength(0);
   expect(view.getByTestId('record-state').props.children).toBe('Product-owned record');
+});
+
+it('a detail opened from a lower inline panel uses preserved window insets', () => {
+  const view = render(
+    <SafeAreaInsetsContext.Provider value={physical}>
+      <BloomThemeProvider fonts={false}>
+        <PortalProvider>
+          <AppShell
+            layout="workspace"
+            presentation="continuous"
+            panelLayout={{
+              axis: 'vertical',
+              panels: [
+                { id: 'top', content: <Text>Top</Text> },
+                {
+                  id: 'lower',
+                  content: (
+                    <DetailDialog
+                      open
+                      onClose={() => {}}
+                      testID="lower-detail"
+                      label="Lower record"
+                      header="Record"
+                    >
+                      <Text>Body</Text>
+                    </DetailDialog>
+                  ),
+                },
+              ],
+            }}
+          />
+          <PortalOutlet />
+        </PortalProvider>
+      </BloomThemeProvider>
+    </SafeAreaInsetsContext.Provider>,
+  );
+  expect(resolvedStyle(view.getByTestId('lower-detail').props.style)).toMatchObject({
+    top: 32,
+    bottom: 42,
+  });
+  expect(resolvedStyle(view.getByTestId('lower-detail-header').props.style).paddingTop).toBe(0);
 });

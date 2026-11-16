@@ -6,7 +6,11 @@ import { useTopEdgeInset } from '../layout/top-edge';
 import { useTheme } from '../theme/use-theme';
 import { Platform, useWindowDimensions } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
-import { SafeAreaConsumedContext, NO_CONSUMED_SAFE_AREA } from '../layout/safe-area-ownership';
+import {
+  SafeAreaConsumedContext,
+  NO_CONSUMED_SAFE_AREA,
+  WindowSafeAreaInsetsContext,
+} from '../layout/safe-area-ownership';
 import type { Button } from '../button';
 import type { Screen, ScreenScrollView } from '../screen';
 import { BREAKPOINTS } from '../styles/breakpoints';
@@ -137,7 +141,9 @@ export function createDetailDialog({
   }
   function DetailDialog(props: DetailDialogProps) {
     const { width, height } = useWindowDimensions();
-    const physical = useContext(SafeAreaInsetsContext) ?? NO_CONSUMED_SAFE_AREA;
+    const windowInsets = useContext(WindowSafeAreaInsetsContext);
+    const triggerInsets = useContext(SafeAreaInsetsContext);
+    const physical = windowInsets ?? triggerInsets ?? NO_CONSUMED_SAFE_AREA;
     const native = Platform.OS !== 'web';
     const compact = width < BREAKPOINTS.sm;
     const centered = props.mode === 'center' && !compact;

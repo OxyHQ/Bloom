@@ -1,3 +1,4 @@
+import { PortalProvider, PortalOutlet } from '../portal';
 import type React from 'react';
 import { useState } from 'react';
 import { Text, TextInput } from 'react-native';
@@ -12,7 +13,12 @@ jest.mock('react-native-safe-area-context', () => ({
 }));
 
 const wrapper = ({ children }: React.PropsWithChildren) => (
-  <BloomThemeProvider fonts={false}>{children}</BloomThemeProvider>
+  <BloomThemeProvider fonts={false}>
+    <PortalProvider>
+      {children}
+      <PortalOutlet />
+    </PortalProvider>
+  </BloomThemeProvider>
 );
 const panel = (tree: unknown) =>
   resolvedStyle(

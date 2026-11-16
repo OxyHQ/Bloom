@@ -1,3 +1,4 @@
+import { WindowSafeAreaInsetsContext } from '../layout/safe-area-ownership';
 import React, {
   useEffect,
   useCallback,
@@ -13,7 +14,7 @@ import React, {
 } from 'react';
 import { Platform, type View as NativeView, type ViewStyle } from 'react-native';
 import { StyledView as View } from '../styles/styled-primitives';
-import { SafeAreaInsetsContext, type EdgeInsets } from 'react-native-safe-area-context';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { NO_SAFE_AREA_INSETS } from '../hooks/use-css-safe-area-insets';
 import Animated, {
   cancelAnimation,
@@ -97,7 +98,6 @@ import { PanelDropProvider, PanelDropZones, usePanelDropCoordinator } from './Pa
 import { RetainedPanelLayout } from './RetainedPanelLayout';
 import { PanelSessionProvider } from './panel-session';
 
-const PanelWindowInsetsContext = React.createContext<EdgeInsets | null>(null);
 // The document is one scroll owner. Transparent groups delegate its restoration
 // down the primary branch instead of each layout restoring the same window.
 const PanelDocumentRestorationContext = React.createContext(true);
@@ -386,7 +386,7 @@ export function createPanelLayoutView(
     // The context, never `useSafeAreaInsets()`, which throws outside a provider: an app at
     // whose root `AppShell` is mounted need not have one (`useShellInsets`), and has no insets.
     const safeArea = useContext(SafeAreaInsetsContext) ?? NO_SAFE_AREA_INSETS;
-    const windowInsets = useContext(PanelWindowInsetsContext) ?? safeArea;
+    const windowInsets = useContext(WindowSafeAreaInsetsContext) ?? safeArea;
     const inlineInsets = useMemo(
       () => ({ ...safeArea, top: safeAreaTop }),
       [safeArea, safeAreaTop],
@@ -1255,7 +1255,7 @@ export function createPanelLayoutView(
     // The context, never `useSafeAreaInsets()`, which throws outside a provider: an app at
     // whose root `AppShell` is mounted need not have one (`useShellInsets`), and has no insets.
     const safeArea = useContext(SafeAreaInsetsContext) ?? NO_SAFE_AREA_INSETS;
-    const windowInsets = useContext(PanelWindowInsetsContext) ?? safeArea;
+    const windowInsets = useContext(WindowSafeAreaInsetsContext) ?? safeArea;
     const cssScope = useContext(PanelCssContext);
     const responsiveScope = useContext(PanelResponsiveScopeContext);
     const rootRef = useRef<ComponentRef<typeof NativeView>>(null);
@@ -1670,7 +1670,7 @@ export function createPanelLayoutView(
       </Viewport>
     );
     return (
-      <PanelWindowInsetsContext.Provider value={windowInsets}>
+      <WindowSafeAreaInsetsContext.Provider value={windowInsets}>
         <PanelDropProvider value={drop}>
           <PanelOrderBoundary ids={layout.panels.map((panel) => panel.id)} rootRef={rootRef}>
             <ServerStyleSheet id={cssScope ?? ''} css={cssRules} />
@@ -1780,7 +1780,7 @@ export function createPanelLayoutView(
             </View>
           </PanelOrderBoundary>
         </PanelDropProvider>
-      </PanelWindowInsetsContext.Provider>
+      </WindowSafeAreaInsetsContext.Provider>
     );
   }
   function PanelLayoutView(props: PanelLayoutViewProps) {

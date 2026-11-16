@@ -3,6 +3,7 @@ import { SafeAreaInsetsContext, type EdgeInsets } from 'react-native-safe-area-c
 
 export const NO_CONSUMED_SAFE_AREA: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 /** Frame occupancy stays separate from physical insets, which portals still need. */
+export const WindowSafeAreaInsetsContext = createContext<EdgeInsets | null>(null);
 export const SafeAreaConsumedContext = createContext(NO_CONSUMED_SAFE_AREA);
 
 /** Insets still owed by content after its enclosing frame has consumed its edges. */
