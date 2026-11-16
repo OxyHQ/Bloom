@@ -240,6 +240,40 @@ try {
         await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
         false,
       );
+      // A custom title (the housing search pill) must shrink after real fonts
+      // settle, just like a string title. Document overflow alone misses this
+      // failure because the panel clips the overflowing search control.
+      await page.goto(
+        `${base}/iframe.html?id=templates-housing--explore&viewMode=story&globals=theme:${theme}`,
+        { waitUntil: 'domcontentloaded' },
+      );
+      await page.waitForSelector('[data-testid="housing-header-title-block"]');
+      await page.evaluate(async () => {
+        await document.fonts.ready;
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      });
+      const housing = await page.evaluate(() => {
+        const header = document
+          .querySelector('[data-testid="housing-header"]')
+          .getBoundingClientRect();
+        const controls = [
+          ...document.querySelectorAll(
+            '[data-testid="housing-header-title-block"] button, [data-testid="housing-header-title-block"] [role="button"]',
+          ),
+        ]
+          .map((node) => node.getBoundingClientRect())
+          .filter((rect) => rect.width > 0)
+          .map((rect) => ({ left: rect.left, right: rect.right, width: rect.width }));
+        return { left: header.left, right: header.right, controls };
+      });
+      assert(housing.controls.length > 0, 'Custom housing title has real controls');
+      for (const control of housing.controls) {
+        assert(
+          control.left >= housing.left - 1 && control.right <= housing.right + 1,
+          `Custom title control stays inside the header: ${JSON.stringify({ housing, control })}`,
+        );
+      }
+      await page.screenshot({ path: `${output}/housing-${width}-${theme}.png` });
       assert.deepEqual(errors, []);
       console.log(
         `PASS ${width}px ${theme}: identity navigation, count, group geometry, query, profile docking, tabs, follow, filters, close, detail and saved state`,
