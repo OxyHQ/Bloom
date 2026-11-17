@@ -105,6 +105,8 @@ export function SidebarTreeRow({
       testID={`sidebar-tree-row-${item.key}`}
     >
       <ListItem
+        density="compact"
+        compactPadding={tree.padding}
         style={{ flex: 1, minWidth: 0 }}
         active={item.selected ?? selected}
         label={[item.label, item.description, item.meta].filter(Boolean).join(', ')}

@@ -594,6 +594,8 @@ const TreeRow = memo(function TreeRow({
         )
       ) : null}
       <ListItem
+        density="compact"
+        compactPadding={tree.padding}
         testID={`sidebar-tree-item-${item.key}`}
         active={selected}
         label={[item.label, item.description, item.meta].filter(Boolean).join(', ')}
