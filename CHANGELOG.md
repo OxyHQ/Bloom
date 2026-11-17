@@ -1,5 +1,11 @@
 # Changelog
 
+## 22.1.7
+
+### Fixed
+
+- Compact expanded `sm` sidebar navigation rows independently of their collapsed icon square, removing excess vertical space while keeping the collapsed rail geometry unchanged.
+
 ## 22.1.6
 
 ### Fixed

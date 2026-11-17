@@ -2,6 +2,7 @@ import { useBloomAppearance } from '../appearance';
 import { createContext, useContext } from 'react';
 
 import type { TypeScaleVariant } from '../typography/scale';
+import { typeScale } from '../typography/scale';
 import type { SidebarSize } from './types';
 
 /**
@@ -23,8 +24,12 @@ export interface SidebarMetrics {
   /** The panel's horizontal inset while collapsed. */
   collapsedPaddingX: number;
   row: {
-    /** The row's own inset — its height is this twice, plus the taller of icon and label. */
+    /** The row's horizontal inset; also determines its collapsed square. */
     padding: number;
+    /** The expanded row's vertical inset. */
+    paddingVertical: number;
+    /** The expanded row's minimum content height, independent of its collapsed square. */
+    minHeight: number;
     /** Between the glyph and the label. */
     gap: number;
     /** The glyph's box. */
@@ -64,6 +69,7 @@ function size(
   icon: number,
   label: TypeScaleVariant,
   tree: SidebarMetrics['tree'],
+  paddingVertical = padding,
 ): SidebarMetrics {
   const square = icon + padding * 2;
   return {
@@ -71,7 +77,15 @@ function size(
     collapsed: square + COLLAPSED_PADDING_X * 2 + 2,
     padding: 12,
     collapsedPaddingX: COLLAPSED_PADDING_X,
-    row: { padding, gap: 8, icon, square, label },
+    row: {
+      padding,
+      paddingVertical,
+      minHeight: Math.max(icon, typeScale(label).lineHeight) + paddingVertical * 2,
+      gap: 8,
+      icon,
+      square,
+      label,
+    },
     tree,
   };
 }
@@ -81,14 +95,21 @@ function size(
  * `headline-medium` label.
  */
 export const SIDEBAR_METRICS: Record<SidebarSize, SidebarMetrics> = {
-  sm: size(232, 6, 18, 'body-2-medium', {
-    padding: 4,
-    icon: 16,
-    avatar: 32,
-    label: 'body-2-medium',
-    meta: 'caption-2-medium',
-    status: 'body-2-regular',
-  }),
+  sm: size(
+    232,
+    6,
+    18,
+    'body-2-medium',
+    {
+      padding: 4,
+      icon: 16,
+      avatar: 32,
+      label: 'body-2-medium',
+      meta: 'caption-2-medium',
+      status: 'body-2-regular',
+    },
+    4,
+  ),
   md: size(260, 9, 22, 'headline-medium', {
     padding: 5,
     icon: 20,
