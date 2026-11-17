@@ -1,5 +1,11 @@
 # Changelog
 
+## 22.1.6
+
+### Fixed
+
+- Sidebar tree and folder rows use the sidebar's compact row density instead of inheriting the standard 56px list height. Comfortable ListItem rows retain their existing height.
+
 ## 22.1.5
 
 ### Fixed

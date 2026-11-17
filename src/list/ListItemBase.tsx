@@ -44,6 +44,8 @@ export function createListItem({
   DropdownMenuItem,
 }: Bindings) {
   const Shell = memo(function ListItemShell({
+    density = 'comfortable',
+    compactPadding = 4,
     label: labelProp,
     contextMenu,
     role,
@@ -230,7 +232,7 @@ export function createListItem({
         style={[
           {
             opacity: disabled ? DISABLED_OPACITY : 1,
-            minHeight: LIST_ROW_MIN_HEIGHT,
+            minHeight: density === 'compact' ? 0 : LIST_ROW_MIN_HEIGHT,
             borderRadius: 28,
             '--bloom-list-selected': selectedFill,
             '--bloom-list-ring': theme.colors.primary,
@@ -256,12 +258,12 @@ export function createListItem({
         <View
           pointerEvents="box-none"
           style={{
-            minHeight: LIST_ROW_MIN_HEIGHT,
+            minHeight: density === 'compact' ? 0 : LIST_ROW_MIN_HEIGHT,
             flexDirection: 'row',
             alignItems: 'center',
             gap: 10,
             paddingHorizontal: LIST_ROW_INSET,
-            paddingVertical: 8,
+            paddingVertical: density === 'compact' ? compactPadding : 8,
           }}
         >
           {selection ? (

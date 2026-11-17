@@ -141,6 +141,10 @@ export type ListAction = import('../swipe-row/types').SwipeRowAction;
 
 /** The shared compact row anatomy for conversations, mail, members and content. */
 export interface ListCommonProps {
+  /** Row density. Comfortable preserves the standard 56px list row; compact lets content and insets set its height. */
+  density?: 'comfortable' | 'compact';
+  /** Vertical inset for a compact row. Defaults to 4px. */
+  compactPadding?: number;
   /** Structured menu content for commands with groups, submenus or custom controls. */
   contextMenu?: import('react').ReactNode;
   /** Semantic choice role when a parent owns radio/listbox navigation. */
