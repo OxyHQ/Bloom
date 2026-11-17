@@ -154,14 +154,49 @@ describe('Sidebar', () => {
 
   it('size drives the row, the glyph and the panel together — and the collapsed width is the square plus the panel', () => {
     for (const [size, expected] of [
-      ['sm', { padding: 6, icon: 18, square: 30, collapsed: 46, expanded: 232 }],
-      ['md', { padding: 9, icon: 22, square: 40, collapsed: 56, expanded: 260 }],
-      ['lg', { padding: 10, icon: 24, square: 44, collapsed: 60, expanded: 300 }],
+      [
+        'sm',
+        {
+          padding: 6,
+          icon: 18,
+          square: 30,
+          minHeight: 26,
+          paddingVertical: 4,
+          collapsed: 46,
+          expanded: 232,
+        },
+      ],
+      [
+        'md',
+        {
+          padding: 9,
+          icon: 22,
+          square: 40,
+          minHeight: 40,
+          paddingVertical: 9,
+          collapsed: 56,
+          expanded: 260,
+        },
+      ],
+      [
+        'lg',
+        {
+          padding: 10,
+          icon: 24,
+          square: 44,
+          minHeight: 46,
+          paddingVertical: 10,
+          collapsed: 60,
+          expanded: 300,
+        },
+      ],
     ] as const) {
       const metrics = SIDEBAR_METRICS[size];
       expect(metrics.row.padding).toBe(expected.padding);
+      expect(metrics.row.paddingVertical).toBe(expected.paddingVertical);
       expect(metrics.row.icon).toBe(expected.icon);
       expect(metrics.row.square).toBe(expected.square);
+      expect(metrics.row.minHeight).toBe(expected.minHeight);
       expect(metrics.expanded).toBe(expected.expanded);
       // The rail is the square plus the panel's own collapsed padding and border.
       expect(metrics.collapsed).toBe(expected.square + metrics.collapsedPaddingX * 2 + 2);
@@ -170,9 +205,11 @@ describe('Sidebar', () => {
       const screen = renderIn(<Sidebar testID="sb" size={size} items={ITEMS} />);
       const row = resolvedStyle(screen.getByTestId('sidebar-item-home').props.style);
       expect(row.paddingLeft).toBe(expected.padding);
-      // Expanded, the square is a floor, not a height: at the largest system
-      // font the label is taller than it and a fixed height clipped it.
-      expect(row.minHeight).toBe(expected.square);
+      // Expanded, the content floor is independent of the collapsed square
+      // and remains a minimum so larger system fonts can grow the row.
+      expect(row.minHeight).toBe(expected.minHeight);
+      expect(row.paddingTop).toBe(expected.paddingVertical);
+      expect(row.paddingBottom).toBe(expected.paddingVertical);
       expect(row.height).toBeUndefined();
       screen.unmount();
     }
