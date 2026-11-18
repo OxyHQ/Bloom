@@ -161,6 +161,7 @@ describe('Sidebar', () => {
           icon: 18,
           square: 30,
           minHeight: 26,
+          rowFloor: 30,
           paddingVertical: 4,
           collapsed: 46,
           expanded: 232,
@@ -173,6 +174,7 @@ describe('Sidebar', () => {
           icon: 22,
           square: 40,
           minHeight: 40,
+          rowFloor: 40,
           paddingVertical: 9,
           collapsed: 56,
           expanded: 260,
@@ -185,6 +187,7 @@ describe('Sidebar', () => {
           icon: 24,
           square: 44,
           minHeight: 46,
+          rowFloor: 46,
           paddingVertical: 10,
           collapsed: 60,
           expanded: 300,
@@ -207,7 +210,7 @@ describe('Sidebar', () => {
       expect(row.paddingLeft).toBe(expected.padding);
       // Expanded, the content floor is independent of the collapsed square
       // and remains a minimum so larger system fonts can grow the row.
-      expect(row.minHeight).toBe(expected.minHeight);
+      expect(row.minHeight).toBe(expected.rowFloor);
       expect(row.paddingTop).toBe(expected.paddingVertical);
       expect(row.paddingBottom).toBe(expected.paddingVertical);
       expect(row.height).toBeUndefined();

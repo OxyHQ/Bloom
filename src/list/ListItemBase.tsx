@@ -20,7 +20,15 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { SwipeRow, useSwipeAvailable } from '../swipe-row';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { LIST_CSS, LIST_STYLE_ID, LIST_ROW_INSET, LIST_ROW_MIN_HEIGHT } from './list-style';
+import {
+  LIST_CSS,
+  LIST_STYLE_ID,
+  LIST_ROW_COMPACT_GAP,
+  LIST_ROW_COMPACT_INSET,
+  LIST_ROW_COMPACT_MIN_HEIGHT,
+  LIST_ROW_INSET,
+  LIST_ROW_MIN_HEIGHT,
+} from './list-style';
 import type { ListAction, ListItemProps, ListItemShellProps } from './types';
 
 type Bindings = Pick<
@@ -234,7 +242,7 @@ export function createListItem({
         style={[
           {
             opacity: disabled ? DISABLED_OPACITY : 1,
-            minHeight: density === 'compact' ? 0 : LIST_ROW_MIN_HEIGHT,
+            minHeight: density === 'compact' ? LIST_ROW_COMPACT_MIN_HEIGHT : LIST_ROW_MIN_HEIGHT,
             borderRadius: 28,
             '--bloom-list-selected': selectedFill,
             '--bloom-list-ring': theme.colors.primary,
@@ -260,11 +268,11 @@ export function createListItem({
         <View
           pointerEvents="box-none"
           style={{
-            minHeight: density === 'compact' ? 0 : LIST_ROW_MIN_HEIGHT,
+            minHeight: density === 'compact' ? LIST_ROW_COMPACT_MIN_HEIGHT : LIST_ROW_MIN_HEIGHT,
             flexDirection: 'row',
             alignItems: 'center',
-            gap: compactDecorativeLeading ? 8 : 10,
-            paddingHorizontal: LIST_ROW_INSET,
+            gap: density === 'compact' ? LIST_ROW_COMPACT_GAP : 10,
+            paddingHorizontal: density === 'compact' ? LIST_ROW_COMPACT_INSET : LIST_ROW_INSET,
             paddingVertical: density === 'compact' ? compactPadding : 8,
           }}
         >
@@ -273,7 +281,7 @@ export function createListItem({
               pointerEvents="box-none"
               style={{
                 flexShrink: 0,
-                minWidth: compactDecorativeLeading ? 24 : 36,
+                minWidth: compactDecorativeLeading ? 0 : 36,
                 // Compact decorative content gets a smaller leading column;
                 // a selectable identity keeps its 36px touch target.
                 minHeight: compactDecorativeLeading ? 0 : 36,

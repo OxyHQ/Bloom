@@ -1,5 +1,11 @@
 # Changelog
 
+## 22.1.10
+
+### Fixed
+
+- Restored the 30px small-sidebar row floor and aligned compact list labels to the navigation's 6px inset, intrinsic icon width and 8px gap.
+
 ## 22.1.9
 
 ### Fixed

@@ -5,7 +5,7 @@ import { borderRadius } from '../styles/tokens';
 import Svg, { Path } from 'react-native-svg';
 
 import { ListItem } from '../list';
-import { LIST_ROW_INSET, LIST_ROW_MIN_HEIGHT } from '../list/list-style';
+import { LIST_ROW_COMPACT_INSET, LIST_ROW_MIN_HEIGHT } from '../list/list-style';
 import { Collapsible } from '../collapsible';
 import { DropZone } from '../drop-zone';
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -98,7 +98,7 @@ export function SidebarTreeRow({
         flexDirection: 'row',
         alignItems: 'center',
         width: '100%',
-        paddingInlineStart: folder ? 36 - LIST_ROW_INSET : 0,
+        paddingInlineStart: folder ? 36 - LIST_ROW_COMPACT_INSET : 0,
         backgroundColor: lit ? palette.selected : 'transparent',
         borderRadius: borderRadius.full,
       }}

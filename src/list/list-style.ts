@@ -1,6 +1,10 @@
 /** Shared content edge used by list sections and sidebar headings. */
 export const LIST_ROW_INSET = 10;
 export const LIST_ROW_MIN_HEIGHT = 56;
+/** Compact sidebar rows align with the 6px inset and 8px icon gap of SidebarItem. */
+export const LIST_ROW_COMPACT_INSET = 6;
+export const LIST_ROW_COMPACT_MIN_HEIGHT = 30;
+export const LIST_ROW_COMPACT_GAP = 8;
 export const LIST_STYLE_ID = 'bloom-list';
 export const LIST_CSS = `
 [data-bloom-list-row] { container-type:inline-size; transition:background-color 120ms; }
