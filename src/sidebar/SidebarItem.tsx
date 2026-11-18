@@ -104,7 +104,7 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
     // small sidebar's label fits without inheriting the larger collapsed square.
     // This stays a minimum so larger system fonts can grow without clipping.
     height: collapsed ? metrics.row.square : undefined,
-    minHeight: collapsed ? metrics.row.square : metrics.row.minHeight,
+    minHeight: collapsed ? metrics.row.square : Math.max(metrics.row.square, metrics.row.minHeight),
     paddingLeft: metrics.row.padding,
     paddingRight: metrics.row.padding,
     paddingTop: metrics.row.paddingVertical,
