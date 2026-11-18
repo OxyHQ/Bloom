@@ -150,6 +150,8 @@ export function createListItem({
     ) : (
       leading
     );
+    const compactDecorativeLeading =
+      density === 'compact' && Boolean(selection) && !onCheckedChange;
     const triggerProps: PressableProps & { href?: string; 'aria-current'?: 'true' } = {
       ...webDataSet({ bloomListLink: '' }),
       ...(IS_WEB && href && !selecting ? { href } : {}),
@@ -261,7 +263,7 @@ export function createListItem({
             minHeight: density === 'compact' ? 0 : LIST_ROW_MIN_HEIGHT,
             flexDirection: 'row',
             alignItems: 'center',
-            gap: 10,
+            gap: compactDecorativeLeading ? 8 : 10,
             paddingHorizontal: LIST_ROW_INSET,
             paddingVertical: density === 'compact' ? compactPadding : 8,
           }}
@@ -271,11 +273,10 @@ export function createListItem({
               pointerEvents="box-none"
               style={{
                 flexShrink: 0,
-                minWidth: 36,
-                // A decorative leading slot must not restore the comfortable
-                // row height in compact lists (sidebar tree rows use this
-                // density). A selectable identity still owns its 36px target.
-                minHeight: density === 'compact' && !onCheckedChange ? 0 : 36,
+                minWidth: compactDecorativeLeading ? 24 : 36,
+                // Compact decorative content gets a smaller leading column;
+                // a selectable identity keeps its 36px touch target.
+                minHeight: compactDecorativeLeading ? 0 : 36,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}

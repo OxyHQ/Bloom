@@ -122,11 +122,14 @@ describe('sidebar tree section follows the sidebar size metrics', () => {
       );
 
       let slot = view.getByTestId('leading-icon').parent;
-      while (slot && StyleSheet.flatten(slot.props.style)?.minWidth !== 36) {
+      while (slot && StyleSheet.flatten(slot.props.style)?.minWidth !== 24) {
         slot = slot.parent;
       }
       expect(slot).toBeTruthy();
       expect(StyleSheet.flatten(slot?.props.style)?.minHeight).toBe(0);
+      let row = slot;
+      while (row && StyleSheet.flatten(row.props.style)?.gap === undefined) row = row.parent;
+      expect(StyleSheet.flatten(row?.props.style)?.gap).toBe(8);
     },
   );
 

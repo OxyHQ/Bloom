@@ -1,5 +1,11 @@
 # Changelog
 
+## 22.1.9
+
+### Fixed
+
+- Compact ListItem rows use a narrower leading slot and gap for decorative icons, keeping sidebar labels aligned with navigation rows.
+
 ## 22.1.8
 
 ### Fixed
