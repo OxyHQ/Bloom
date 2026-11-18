@@ -1,5 +1,11 @@
 # Changelog
 
+## 22.1.8
+
+### Fixed
+
+- Compact ListItem rows no longer inherit a 36px minimum height from decorative leading content, keeping sidebar tree rows dense while preserving selectable targets.
+
 ## 22.1.7
 
 ### Fixed

@@ -272,7 +272,10 @@ export function createListItem({
               style={{
                 flexShrink: 0,
                 minWidth: 36,
-                minHeight: 36,
+                // A decorative leading slot must not restore the comfortable
+                // row height in compact lists (sidebar tree rows use this
+                // density). A selectable identity still owns its 36px target.
+                minHeight: density === 'compact' && !onCheckedChange ? 0 : 36,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
