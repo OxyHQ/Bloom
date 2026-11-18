@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render } from '@testing-library/react-native';
 import React from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { RiHome4Line } from '../icons/remix/RiHome4Line';
 import { Sidebar, type SidebarSize, type SidebarTree } from '../sidebar';
 import { SIDEBAR_METRICS } from '../sidebar/metrics';
@@ -92,6 +92,43 @@ describe('sidebar tree section follows the sidebar size metrics', () => {
     expect(SIDEBAR_METRICS.sm.tree.icon).toBeLessThan(SIDEBAR_METRICS.md.tree.icon);
     expect(SIDEBAR_METRICS.md.tree.icon).toBeLessThan(SIDEBAR_METRICS.lg.tree.icon);
   });
+
+  it.each(['section', 'nested', 'folder'] as const)(
+    'keeps a leading icon compact for rows in a %s',
+    (placement) => {
+      const page = {
+        key: 'page',
+        label: 'Page',
+        leading: <View testID="leading-icon" style={{ width: 16, height: 16 }} />,
+      };
+      const tree: SidebarTree[] = [
+        {
+          key: 'pages',
+          label: 'Pages',
+          ...(placement === 'folder'
+            ? { folders: [{ key: 'folder', label: 'Folder', defaultOpen: true, items: [page] }] }
+            : {
+                items:
+                  placement === 'nested'
+                    ? [{ key: 'parent', label: 'Parent', defaultOpen: true, items: [page] }]
+                    : [page],
+              }),
+        },
+      ];
+      const view = render(
+        <BloomThemeProvider mode="light">
+          <Sidebar size="sm" items={NAV} tree={tree} showSearch={false} showThemeToggle={false} />
+        </BloomThemeProvider>,
+      );
+
+      let slot = view.getByTestId('leading-icon').parent;
+      while (slot && StyleSheet.flatten(slot.props.style)?.minWidth !== 36) {
+        slot = slot.parent;
+      }
+      expect(slot).toBeTruthy();
+      expect(StyleSheet.flatten(slot?.props.style)?.minHeight).toBe(0);
+    },
+  );
 
   it.each(SIZES)('gives a row with a description a taller leading box at %s', (size) => {
     const { tree } = SIDEBAR_METRICS[size];
