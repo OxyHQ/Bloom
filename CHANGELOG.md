@@ -1,5 +1,11 @@
 # Changelog
 
+## 22.1.11
+
+### Fixed
+
+- The native `reveal` navigation drawer clears the device's top and bottom edges the shell frame leaves it. Without `safeArea` it ran under the status bar; with it, geometry is unchanged.
+
 ## 22.1.10
 
 ### Fixed
