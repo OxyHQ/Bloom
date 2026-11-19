@@ -88,12 +88,7 @@ function SheetKeyboardSync({ keyboardHeight }: { keyboardHeight: SharedValue<num
  * cross the Modal's native-window boundary, so pan gestures need their own root
  * here). No `<KeyboardProvider>`: see `SheetKeyboardSync`.
  */
-function ModalShell({
-  visible,
-  onRequestClose,
-  keyboardHeight,
-  children,
-}: BottomSheetShellProps) {
+function ModalShell({ visible, onRequestClose, keyboardHeight, children }: BottomSheetShellProps) {
   return (
     <Modal
       visible={visible}
@@ -130,7 +125,12 @@ function ModalShell({
  *  - the surface is `modal`: `OverlayRoot`, through the app's `OverlayInertBoundary`, confines
  *    TalkBack, and consumes Android back via `onRequestClose`, newest surface first.
  */
-function AppWindowShell({ visible, onRequestClose, keyboardHeight, children }: BottomSheetShellProps) {
+function AppWindowShell({
+  visible,
+  onRequestClose,
+  keyboardHeight,
+  children,
+}: BottomSheetShellProps) {
   if (!visible) return null;
   return (
     <Portal>
