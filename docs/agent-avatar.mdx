@@ -327,6 +327,39 @@ contexts or shared instanced GPU scenes in the production avatar path.
 Browser checks do not establish native crowd performance. Native device verification is
 still required; the shared numeric renderer alone does not prove native SVG drawing speed.
 
+### The rest loop
+
+A frame is expensive: every one projects the meshes, rasterises a 322 × 322 depth buffer for the
+occlusion masks and traces their contours, whatever size the avatar is drawn at. On Hermes that
+was about 95 ms for Alia, so on a Pixel 8a the "Ask Alia" icon on Mention's Home kept the JS thread
+at 94 % and still only reached about 10 frames a second.
+
+At rest, though, a character repeats itself. With no gesture, pointer, mood or transition, and no
+reference face (the `bot_*` shapes, whose procedural gaze never repeats), its frame depends only
+on where it is in its idle clip. So the idle clip is drawn once, on a grid of about 30 frames a
+second (`vector-loop.ts`), and every avatar with the same geometry and paint shares those frames:
+the loop. Each grid frame is painted in turn, computed the first time and remembered after. Once
+the loop is complete, native apps hand it to the UI thread (`VectorLoopPlayer`): a frame callback
+steps the grid frame and the paths take that frame's outline, clip and opacity, and the JS thread
+does nothing. A gesture, a mood, the pointer or the screen going out of view takes the drawing back
+to the JS thread, whose clock moves on by what the UI thread played. The web replays the
+remembered frames itself. The loops kept are bounded by `VECTOR_LOOP_CACHE_CHARACTERS` (Alia's
+loop is about 2 M path characters, the largest preset's 10 M).
+
+Measured on the Pixel 8a, Mention release build, idle on Home (`vector-rest-loop.test.tsx` pins
+the hand-off and that the UI thread draws exactly the JS thread's frames):
+
+| | JS thread | UI thread | RenderThread | process | avatar frames/s |
+| --- | --- | --- | --- | --- | --- |
+| before | 94 % | 9 % | 9 % | 118 % | about 10 |
+| rest loop | 6 % | 37 % | 30 % | 82 % | 30 |
+
+The first time round still costs what it did (about 20 s of JS at startup for Alia). What remains
+per frame is native: Reanimated commits the changed path props through the shadow tree,
+`react-native-svg` parses each outline, redraws the whole SVG into a new bitmap and reports each
+path's new bounds as a layout event (most of the 6 % left on the JS thread), and the window is
+recomposited.
+
 `className` and `style` apply to the outer layout node. `label` defaults to the
 translated “Agent avatar”; `locale` overrides the scope and `accessibilityLabel`
 overrides the accessible name. Use an agent's name when it identifies them.
