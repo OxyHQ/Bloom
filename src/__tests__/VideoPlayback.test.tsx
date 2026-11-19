@@ -201,6 +201,24 @@ describe('useViewableNear', () => {
     expect(playing()).toEqual([]);
   });
 
+  it('keeps only the on-screen rows while its screen is in the background', () => {
+    jest.mocked(useScreenVisible).mockReturnValue(false);
+    const store = createViewableKeysStore();
+    const seen = new Map<string, boolean>();
+    function Row({ id }: { id: string }): null {
+      seen.set(id, useViewableNear(id));
+      return null;
+    }
+    render(
+      <VideoViewabilityProvider store={store}>
+        <Row id="a" />
+        <Row id="b" />
+      </VideoViewabilityProvider>,
+    );
+    act(() => store.publish(new Set(['a']), new Set(['b'])));
+    expect(Object.fromEntries(seen)).toEqual({ a: true, b: false });
+  });
+
   it('is near with no list above, and follows a scope while it shows', () => {
     const seen = new Map<string, boolean>();
     function Row({ id, keyName }: { id: string; keyName?: string }): null {
