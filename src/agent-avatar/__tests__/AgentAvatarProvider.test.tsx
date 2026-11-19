@@ -1,7 +1,9 @@
 import { useContext } from 'react';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import { AgentAvatarProvider } from '../AgentAvatarProvider';
+import { createVectorAssetLoader } from '../vector-loader';
 import {
+  VectorCatalogContext,
   CharacterRuntimeContext,
   CharacterCapabilitiesContext,
   type CharacterCapabilities,
@@ -56,5 +58,32 @@ describe('runtime-scoped avatar capabilities', () => {
     expect(context.capabilitiesByKey).toBe(known);
     expect(context).not.toHaveProperty('runtimeUrl');
     expect(context).not.toHaveProperty('stills');
+  });
+});
+
+describe('a nested provider without a catalog', () => {
+  it('keeps the catalog of the provider round it', () => {
+    const appCatalog = createVectorAssetLoader({});
+    const own = createVectorAssetLoader({});
+    const seen: unknown[] = [];
+    function Consumer() {
+      seen.push(useContext(VectorCatalogContext));
+      return null;
+    }
+    let renderer: ReactTestRenderer;
+    act(() => {
+      renderer = create(
+        <AgentAvatarProvider catalog={appCatalog}>
+          <AgentAvatarProvider>
+            <Consumer />
+          </AgentAvatarProvider>
+          <AgentAvatarProvider catalog={own}>
+            <Consumer />
+          </AgentAvatarProvider>
+        </AgentAvatarProvider>,
+      );
+    });
+    expect(seen).toEqual([appCatalog, own]);
+    act(() => renderer.unmount());
   });
 });
