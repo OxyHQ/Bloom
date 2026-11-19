@@ -3,6 +3,7 @@ export { VideoViewabilityProvider, VideoViewabilityScope } from './VideoViewabil
 export { createViewableKeysStore } from './context';
 export { useVideoPlayback } from './use-video-playback';
 export { useViewableVisible } from './use-viewable-visible';
+export { useViewableNear } from './use-viewable-near';
 export { useVideoPlaybackControl } from './use-video-playback-control';
 export { setVideoHasRenderedFrame, subscribeVideoLoadingDemand } from './player-control';
 export type {
