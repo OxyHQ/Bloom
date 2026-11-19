@@ -309,6 +309,9 @@ export function TabPager({
     const route = routeByName.get(page.name);
     const descriptor = route ? descriptors[route.key] : undefined;
     const focused = index === focusedPage;
+    // A page the finger can bring into view: the one in front, the predictive-back
+    // destination and the resting page's neighbours.
+    const reachable = focused || index === previewPage || Math.abs(index - settledPage) <= 1;
     return (
       <View
         key={page.name}
@@ -319,19 +322,15 @@ export function TabPager({
         {route && descriptor && loaded.has(route.key) ? (
           // 2 drives the page in front; 1 keeps a page laid out and painted so
           // it is real under the finger or one tap away (every preloading bar
-          // page, and the resting page's neighbours); 0 parks the rest.
-          // Leaving 0 re-renders a frozen tree, so it is kept off the tap path.
+          // page, and the reachable ones); 0 parks the rest.
+          // A page out of reach is also frozen where the app enables freezing
+          // (`enableFreeze`): it keeps its state and its last picture but does
+          // not re-render until it is reachable again. A reachable page stays
+          // live, so a swipe never reveals one that stopped updating.
           <Screen
             enabled
-            activityState={
-              focused
-                ? 2
-                : index === previewPage ||
-                    (page.bar && page.preload) ||
-                    Math.abs(index - settledPage) <= 1
-                  ? 1
-                  : 0
-            }
+            activityState={focused ? 2 : reachable || (page.bar && page.preload) ? 1 : 0}
+            shouldFreeze={!reachable}
             style={styles.page}
           >
             <ScreenActivity active={focused}>{descriptor.render()}</ScreenActivity>
