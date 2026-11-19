@@ -37,8 +37,8 @@ import {
 } from 'react';
 import { Platform, Text, View } from 'react-native';
 import Svg, { ClipPath, Defs, G, Path } from 'react-native-svg';
-import { useAppForeground } from '../hooks/use-app-state';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { useScreenVisible } from '../screen/use-screen-visible';
 import { useMessages } from '../locale/messages';
 import { resolveAvatarCharacter } from './character';
 import {
@@ -102,7 +102,9 @@ function AnimatedVectorCharacterAvatar(props: Props) {
   const { messages } = useMessages(AGENT_AVATAR_MESSAGES, props.locale);
   const catalog = useVectorAssetLoader(props.catalog);
   const reduced = usePrefersReducedMotion(),
-    foreground = useAppForeground();
+    // Its screen in front and the app in the foreground: a covered scene, another tab page or a
+    // backgrounded app draws no frames.
+    screenVisible = useScreenVisible();
   const { reportCapabilities } = useContext(CharacterRuntimeContext);
   const resolved = useMemo(() => resolveAvatarCharacter(character), [character]);
   const [asset, setAsset] = useState<VectorData>(),
@@ -335,7 +337,7 @@ function AnimatedVectorCharacterAvatar(props: Props) {
     return () => observer.disconnect();
   }, []);
   useEffect(() => {
-    if (!asset || !visible || !foreground) return;
+    if (!asset || !visible || !screenVisible) return;
     let last: number | undefined,
       painted = 0,
       disposed = false;
@@ -465,7 +467,7 @@ function AnimatedVectorCharacterAvatar(props: Props) {
       disposed = true;
       unsubscribe?.();
     };
-  }, [asset, visible, foreground, paused, portrait, reduced, previewPart, revision]);
+  }, [asset, visible, screenVisible, paused, portrait, reduced, previewPart, revision]);
   useEffect(() => {
     if (paused || portrait || reduced) setRevision((value) => value + 1);
   }, [resolved.paint, paused, portrait, reduced]);
