@@ -17,6 +17,7 @@ import {
   type UseVideoPlaybackResult,
   useVideoPlayback,
   useVideoPlaybackControl,
+  useViewableNear,
   useViewableVisible,
   VideoPlaybackProvider,
   VideoViewabilityProvider,
@@ -168,7 +169,87 @@ describe('video playback authority', () => {
   });
 });
 
+describe('useViewableNear', () => {
+  it('is near on screen and inside the published preload window, and nowhere else', () => {
+    const store = createViewableKeysStore(new Set(['a']));
+    const seen = new Map<string, boolean>();
+    function Row({ id }: { id: string }): null {
+      seen.set(id, useViewableNear(id));
+      return null;
+    }
+    render(
+      <VideoViewabilityProvider store={store}>
+        <Row id="a" />
+        <Row id="b" />
+        <Row id="c" />
+      </VideoViewabilityProvider>,
+    );
+    expect(Object.fromEntries(seen)).toEqual({ a: true, b: false, c: false });
+
+    act(() => store.publish(new Set(['b']), new Set(['c'])));
+    expect(Object.fromEntries(seen)).toEqual({ a: false, b: true, c: true });
+
+    // The window carries no audible rank: only the on-screen key may play.
+    probes.clear();
+    render(
+      <VideoPlaybackProvider>
+        <VideoViewabilityProvider store={store}>
+          <Player id="c" viewabilityKey="c" />
+        </VideoViewabilityProvider>
+      </VideoPlaybackProvider>,
+    );
+    expect(playing()).toEqual([]);
+  });
+
+  it('is near with no list above, and follows a scope while it shows', () => {
+    const seen = new Map<string, boolean>();
+    function Row({ id, keyName }: { id: string; keyName?: string }): null {
+      seen.set(id, useViewableNear(keyName));
+      return null;
+    }
+    render(
+      <>
+        <Row id="alone" />
+        <Feed keys={['header']}>
+          <VideoViewabilityScope viewabilityKey="header">
+            <Row id="scoped" keyName="anything" />
+          </VideoViewabilityScope>
+          <VideoViewabilityScope viewabilityKey="gone">
+            <Row id="hidden" keyName="anything" />
+          </VideoViewabilityScope>
+        </Feed>
+      </>,
+    );
+    expect(Object.fromEntries(seen)).toEqual({ alone: true, scoped: true, hidden: false });
+  });
+});
+
 describe('useVideoPlaybackControl', () => {
+  it('asks nothing without a player, and takes one later without remounting', () => {
+    const player = {
+      playing: false,
+      status: 'readyToPlay',
+      play: jest.fn(),
+      pause: jest.fn(),
+      addListener: () => ({ remove: () => {} }),
+    } satisfies ControlledVideoPlayer;
+    const frames: boolean[] = [];
+    function Presenter({ attached }: { attached: boolean }): null {
+      frames.push(useVideoPlaybackControl(attached ? player : null, true));
+      return null;
+    }
+    const view = render(<Presenter attached={false} />);
+    expect(frames[frames.length - 1]).toBe(false);
+    expect(player.play).not.toHaveBeenCalled();
+
+    view.rerender(<Presenter attached />);
+    expect(player.play).toHaveBeenCalled();
+    expect(frames[frames.length - 1]).toBe(true);
+
+    view.rerender(<Presenter attached={false} />);
+    expect(frames[frames.length - 1]).toBe(false);
+  });
+
   it('plays a shared player while ANY presenter asks, and pauses when none does', () => {
     const player = {
       playing: false,
