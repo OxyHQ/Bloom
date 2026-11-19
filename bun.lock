@@ -119,6 +119,14 @@
         "yjs": ">=13.6.0 <14.0.0",
       },
     },
+    "packages/bloom-lens": {
+      "name": "@oxy.so/bloom-lens",
+      "version": "0.1.0",
+      "peerDependencies": {
+        "expo": "*",
+        "react-native": "*",
+      },
+    },
     "packages/bloom-text": {
       "name": "@oxy.so/bloom-text",
       "version": "0.1.6",
@@ -782,6 +790,8 @@
     "@oxy.so/bloom": ["@oxy.so/bloom@root:", {}],
 
     "@oxy.so/bloom-editor": ["@oxy.so/bloom-editor@workspace:packages/bloom-editor"],
+
+    "@oxy.so/bloom-lens": ["@oxy.so/bloom-lens@workspace:packages/bloom-lens"],
 
     "@oxy.so/bloom-text": ["@oxy.so/bloom-text@workspace:packages/bloom-text"],
 
