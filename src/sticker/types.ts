@@ -18,7 +18,11 @@ export interface StickerProps {
   size?: number;
   /** Default true. */
   loop?: boolean;
-  /** Hold the current frame — e.g. while the sticker is scrolled out of view. */
+  /**
+   * Hold the current frame — e.g. while the sticker is scrolled out of view.
+   * It already holds by itself while its screen is not in front or the app is
+   * in the background.
+   */
   paused?: boolean;
   /**
    * A sticker IS its meaning; with no name it announces "Sticker" and conveys
