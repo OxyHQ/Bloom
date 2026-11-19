@@ -22,6 +22,7 @@ jest.mock('../hooks/use-prefers-reduced-motion', () => ({
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { StickerMessage } from '../message-media';
+import { ScreenContext, type ScreenContextValue } from '../screen/context';
 import {
   Sticker,
   provideLottiePlayer,
@@ -121,6 +122,20 @@ describe('Sticker', () => {
     provideLottiePlayer(FakePlayer);
     mount(<Sticker animation={ANIMATION} fallback={STILL} paused testID="s" />);
     expect(lastPlayer?.paused).toBe(true);
+  });
+
+  it('holds its frame while its screen is not in front, and plays again when it is', () => {
+    provideLottiePlayer(FakePlayer);
+    const onScreen = (active: boolean) => (
+      <ScreenContext.Provider value={{ active } as ScreenContextValue}>
+        <Sticker animation={ANIMATION} fallback={STILL} testID="s" />
+      </ScreenContext.Provider>
+    );
+    mount(onScreen(false));
+    expect(lastPlayer?.paused).toBe(true);
+    mount(onScreen(true));
+    expect(lastPlayer?.paused).toBe(false);
+    expect(lastPlayer?.loop).toBe(true);
   });
 
   it('is named as an image unless its container names it', () => {
