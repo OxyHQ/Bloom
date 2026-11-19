@@ -1,6 +1,6 @@
 --- a/GlassMenuAndroidModule.kt
 +++ b/GlassMenuAndroidModule.kt
-@@ -8,7 +8,7 @@
+@@ -8,15 +8,15 @@
  
  class GlassMenuAndroidModule : Module() {
    override fun definition() = ModuleDefinition {
@@ -8,8 +8,9 @@
 +    Name("BloomLensMenu")
  
      View(GlassMenuAndroidView::class) {
-       Events("onItemSelect", "onMenuOpenChange")
-@@ -16,7 +16,7 @@
+-      Events("onItemSelect", "onMenuOpenChange")
++      Events("onItemSelect", "onMenuOpenChange", "onMenuClosed")
+ 
        Prop("items") { view: GlassMenuAndroidView, items: List<GlassMenuItemRecord>? ->
          view.items = items ?: emptyList()
        }
@@ -17,10 +18,70 @@
 +      Prop("lens") { view: GlassMenuAndroidView, glass: Boolean? ->
          view.glass = glass ?: true
        }
-       Prop("cornerRadius") { view: GlassMenuAndroidView, radius: Float? ->
+       Prop("morph") { view: GlassMenuAndroidView, morph: Boolean? ->
+@@ -40,6 +40,9 @@
+       Prop("triggerConfig") { view: GlassMenuAndroidView, config: GlassTriggerConfigRecord? ->
+         view.triggerConfig = config ?: GlassTriggerConfigRecord()
+       }
++      Prop("openOnMount") { view: GlassMenuAndroidView, open: Boolean? ->
++        view.openOnMount = open ?: false
++      }
+       Prop("alignment") { view: GlassMenuAndroidView, alignment: String? ->
+         view.alignment = alignment ?: "auto"
+       }
 --- a/GlassMenuAndroidView.kt
 +++ b/GlassMenuAndroidView.kt
-@@ -270,7 +270,7 @@
+@@ -28,6 +28,7 @@
+ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(context, appContext) {
+   private val onItemSelect by EventDispatcher<Map<String, Any?>>()
+   private val onMenuOpenChange by EventDispatcher<Map<String, Any?>>()
++  private val onMenuClosed by EventDispatcher<Map<String, Any?>>()
+ 
+   private var overlay: GlassMenuOverlay? = null
+   private var glassRenderer: Any? = null
+@@ -56,7 +57,16 @@
+     set(value) {
+       field = value
+       overlay?.menuSession?.takeIf { it.anchor === this }?.refreshItems()
++      openWhenReady()
+     }
++  // The owner mounts this view with its menu already open (rows that arrive only as the menu opens): it opens
++  // itself, once, as soon as it is attached and laid out, since nothing can call `open` on it before it is mounted.
++  internal var openOnMount = false
++    set(value) {
++      field = value
++      openWhenReady()
++    }
++  private var openedOnMount = false
+   internal var glass = true
+     set(value) {
+       field = value
+@@ -101,6 +111,19 @@
+     overlay = GlassMenuOverlay.obtain(root).also { it.register(this) }
+     if (drawsGlass) GlassDevGuard.warnIfInOverscrollScroll(this)
+     refreshDrawing()
++    openWhenReady()
++  }
++
++  override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
++    super.onSizeChanged(w, h, oldw, oldh)
++    openWhenReady()
++  }
++
++  private fun openWhenReady() {
++    if (!openOnMount || openedOnMount || overlay == null || items.isEmpty() || width == 0 || height == 0) return
++    openedOnMount = true
++    // After the rest of this layout pass, so the anchor is measured where it ends up.
++    post { open(null, null, null, null) }
+   }
+ 
+   override fun onDetachedFromWindow() {
+@@ -275,11 +298,12 @@
+   internal fun onSessionFinished() {
+     menuActive = false
+     invalidate()
++    onMenuClosed(mapOf())
+   }
  
    internal companion object {
      const val FieldStep = 4f
@@ -45,7 +106,7 @@
    @Field val rim: Float = 1f
 --- a/content/GlassMenuContent.kt
 +++ b/content/GlassMenuContent.kt
-@@ -65,6 +65,8 @@
+@@ -74,6 +74,8 @@
    var height = 0f
      private set
    var dark = true
@@ -54,7 +115,7 @@
    // Alpha of the whole content: the submenu navigation fades the level in (RowsRevealSpring).
    var contentAlpha = 1f
  
-@@ -190,11 +192,11 @@
+@@ -234,11 +236,11 @@
    // (the submenu header) is drawn by the same code wherever it is. `chevronRotation` turns the trailing chevron
    // around its own centre.
    fun drawRow(canvas: Canvas, row: GlassRow, chevronRotation: Float) {
@@ -72,7 +133,7 @@
        canvas.drawRect(Metrics.SeparatorInset * density, y - half, width - Metrics.SeparatorInset * density, y + half, fillPaint)
 --- a/overlay/GlassMenuSession.kt
 +++ b/overlay/GlassMenuSession.kt
-@@ -96,6 +96,7 @@
+@@ -99,6 +99,7 @@
      val margin = 16f * density
      availableWidth = windowWidth - margin * 2f
      content.dark = anchor.isDark()
@@ -80,7 +141,7 @@
      levelItems = null
      nav.reset(1f)
      parentDim.reset(0f)
-@@ -543,6 +544,7 @@
+@@ -557,6 +558,7 @@
        anchor, density,
        GlassMenuContent(overlay.context, density) { slot -> anchor.iconView(slot) }.also {
          it.dark = content.dark

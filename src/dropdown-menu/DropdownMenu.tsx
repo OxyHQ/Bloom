@@ -44,7 +44,7 @@ import { HOVER_CARD_CLOSE_DELAY, HOVER_CARD_OPEN_DELAY } from '../hover-card/con
 import { useHoverIntent } from '../hover-card/use-hover-intent';
 import { getNativeLens } from '../floating/lens/native-lens';
 import { parseLensMenu } from '../floating/lens/parse-lens-menu';
-import { LensTrigger, useLensMenu } from '../floating/lens/use-lens-menu';
+import { LensTrigger, useLensContent, useLensMenu } from '../floating/lens/use-lens-menu';
 import { DropdownMenuProvider, useDropdownMenu } from './context';
 import type {
   DropdownMenuContentProps,
@@ -123,7 +123,7 @@ export function DropdownMenu({
     }),
     [intent, setMenuOpen],
   );
-  const lens = useLensMenu({
+  const { lens, contentProvider } = useLensMenu({
     children,
     content: DropdownMenuContent,
     parse: (props) => parseLensMenu(props.children as ReactNode, rows),
@@ -140,8 +140,18 @@ export function DropdownMenu({
       ...(activation === 'hover' ? { hover } : null),
       onPrimaryOpenChange,
       lens,
+      lensContent: contentProvider,
     }),
-    [isOpen, setMenuOpen, focusIntent, activation, hover, onPrimaryOpenChange, lens],
+    [
+      isOpen,
+      setMenuOpen,
+      focusIntent,
+      activation,
+      hover,
+      onPrimaryOpenChange,
+      lens,
+      contentProvider,
+    ],
   );
 
   return <DropdownMenuProvider value={value}>{children}</DropdownMenuProvider>;
@@ -237,22 +247,23 @@ export function DropdownMenuTrigger({
   );
 }
 
-export function DropdownMenuContent({
-  children,
-  alignRows,
-  size,
-  label: labelProp,
-  side,
-  align,
-  sideOffset,
-  alignOffset,
-  minWidth,
-  maxWidth,
-  maxHeight,
-  className,
-  style,
-  testID,
-}: DropdownMenuContentProps) {
+export function DropdownMenuContent(props: DropdownMenuContentProps) {
+  const {
+    children,
+    alignRows,
+    size,
+    label: labelProp,
+    side,
+    align,
+    sideOffset,
+    alignOffset,
+    minWidth,
+    maxWidth,
+    maxHeight,
+    className,
+    style,
+    testID,
+  } = props;
   const density = useMenuDensity(size);
   const common = useCommonMessages();
   const label = labelProp ?? common.menu;
@@ -264,8 +275,12 @@ export function DropdownMenuContent({
     [menu, PopupSurface],
   );
 
+  // A `Content` rendered by a component of the owner's (one mounted only while the menu is
+  // open) hands its rows to the root, which cannot see them.
+  const lensDraws = useLensContent(menu.lensContent, props);
+
   // The native lens menu draws the rows itself; the trigger hosts it.
-  if (menu.lens) return null;
+  if (menu.lens || lensDraws) return null;
 
   if (PopupSurface) {
     // The platform's popup: mounted while open, closed by the platform on an

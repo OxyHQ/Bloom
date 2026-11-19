@@ -3,6 +3,7 @@
  * data and handed to the native view, which draws them. The native view is a stub here; what is
  * checked is what React tells it, and that a menu outside the vocabulary keeps its sheet.
  */
+import { useState } from 'react';
 import type React from 'react';
 import { Text, View } from 'react-native';
 import { Button } from '../button/Button';
@@ -13,7 +14,7 @@ import { RiFilterLine } from '../icons/remix/RiFilterLine';
 import { Surface } from '../surface/Surface';
 import { ComposerPopover } from '../composer-panel/ComposerPopover';
 import { BlurWindow } from '../blur';
-import { act, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme';
 import type { LensNativeProps } from '../floating/lens/native-lens';
@@ -132,6 +133,80 @@ describe('DropdownMenu as the native lens menu', () => {
     expect(lastProps).toBeUndefined();
   });
 });
+
+describe('a DropdownMenu whose rows a component of its own renders, only while it is open', () => {
+  it('mounts no native view while closed, and opens the native menu with the rows', () => {
+    const onDelete = jest.fn();
+    const screen = wrap(<Menu onDelete={onDelete} />);
+    expect(screen.queryByTestId('native-lens')).toBeNull();
+
+    fireEvent.press(screen.getByText('Open'));
+    expect(screen.getByTestId('native-lens')).toBeTruthy();
+    expect(lastProps?.openOnMount).toBe(true);
+    const items = lastProps?.items ?? [];
+    expect(items.map((item) => item.title)).toEqual(['Share', '', 'Delete']);
+    act(() => lastProps?.onItemSelect?.({ nativeEvent: { id: items[2]?.id ?? '', index: 2 } }));
+    expect(onDelete).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the native view until the native menu has finished closing', () => {
+    const screen = wrap(<Menu onDelete={() => {}} />);
+    fireEvent.press(screen.getByText('Open'));
+    act(() => lastProps?.onMenuOpenChange?.({ nativeEvent: { open: true } }));
+    // The native menu starts closing: the owner unmounts its rows, the motion goes on.
+    act(() => lastProps?.onMenuOpenChange?.({ nativeEvent: { open: false } }));
+    expect(screen.getByTestId('native-lens')).toBeTruthy();
+    act(() => lastProps?.onMenuClosed?.());
+    expect(screen.queryByTestId('native-lens')).toBeNull();
+  });
+
+  it('keeps its sheet when those rows leave the vocabulary', () => {
+    const screen = wrap(
+      <DropdownMenu defaultOpen>
+        <DropdownMenuTrigger asChild>
+          <Text>Open</Text>
+        </DropdownMenuTrigger>
+        <OwnContent>
+          <Wrapped />
+        </OwnContent>
+      </DropdownMenu>,
+    );
+    expect(screen.queryByTestId('native-lens')).toBeNull();
+  });
+});
+
+// The owner's component: what a feed row's menu is, so a closed menu does no row work.
+function Rows({ onDelete }: { onDelete: () => void }) {
+  return (
+    <DropdownMenuContent>
+      <DropdownMenuItem>Share</DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem variant="destructive" onPress={onDelete}>
+        Delete
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  );
+}
+
+function Menu({ onDelete }: { onDelete: () => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <Text>Open</Text>
+      </DropdownMenuTrigger>
+      {open ? <Rows onDelete={onDelete} /> : null}
+    </DropdownMenu>
+  );
+}
+
+function Wrapped() {
+  return <DropdownMenuItem>Wrapped</DropdownMenuItem>;
+}
+
+function OwnContent({ children }: { children: React.ReactNode }) {
+  return <DropdownMenuContent>{children}</DropdownMenuContent>;
+}
 
 describe('a Button as the trigger of a lens menu', () => {
   it('tells the menu its fill and radius, so the menu morphs out of that shape', () => {

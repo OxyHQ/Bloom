@@ -11,7 +11,7 @@ class GlassMenuAndroidModule : Module() {
     Name("BloomLensMenu")
 
     View(GlassMenuAndroidView::class) {
-      Events("onItemSelect", "onMenuOpenChange")
+      Events("onItemSelect", "onMenuOpenChange", "onMenuClosed")
 
       Prop("items") { view: GlassMenuAndroidView, items: List<GlassMenuItemRecord>? ->
         view.items = items ?: emptyList()
@@ -39,6 +39,9 @@ class GlassMenuAndroidModule : Module() {
       }
       Prop("triggerConfig") { view: GlassMenuAndroidView, config: GlassTriggerConfigRecord? ->
         view.triggerConfig = config ?: GlassTriggerConfigRecord()
+      }
+      Prop("openOnMount") { view: GlassMenuAndroidView, open: Boolean? ->
+        view.openOnMount = open ?: false
       }
       Prop("alignment") { view: GlassMenuAndroidView, alignment: String? ->
         view.alignment = alignment ?: "auto"

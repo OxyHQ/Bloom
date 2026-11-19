@@ -9,13 +9,15 @@ import { createContext, useContext } from 'react';
 
 import type { ViewRef } from '../styles/native-refs';
 import type { OverlayShellContextValue } from '../floating/types';
-import type { MenuLens } from '../floating/lens/use-lens-menu';
+import type { LensContentProvider, MenuLens } from '../floating/lens/use-lens-menu';
 
 export type DropdownMenuLens = MenuLens;
 
 export interface DropdownMenuContextValue extends OverlayShellContextValue {
   /** Set when the native lens menu presents this menu; the sheet is then not used. */
   lens?: DropdownMenuLens;
+  /** Set when a `Content` the root cannot see (rendered by a component of the owner's) may hand it its rows. */
+  lensContent?: LensContentProvider;
   activation?: 'click' | 'hover';
   onPrimaryOpenChange?: (open: boolean) => void;
   panelRef?: React.RefObject<ViewRef | null>;
