@@ -24,7 +24,8 @@
       "!src/icons/remix",
       "!src/theme/__tests__/fixtures",
       "!src/theme/__tests__/__fixtures__",
-      "!src/agent-avatar/__tests__/artwork-golden.json"
+      "!src/agent-avatar/__tests__/artwork-golden.json",
+      "!packages/bloom-lens/src"
     ]
   },
   "formatter": {

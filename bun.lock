@@ -142,6 +142,14 @@
         "metro-source-map": ">=0.83.0",
       },
     },
+    "packages/bloom-lens": {
+      "name": "@oxy.so/bloom-lens",
+      "version": "0.1.0",
+      "peerDependencies": {
+        "expo": "*",
+        "react-native": "*",
+      },
+    },
     "packages/bloom-text": {
       "name": "@oxy.so/bloom-text",
       "version": "0.1.6",
@@ -809,6 +817,7 @@
     "@oxy.so/bloom-language": ["@oxy.so/bloom-language@workspace:packages/bloom-language"],
 
     "@oxy.so/bloom-language-compiler": ["@oxy.so/bloom-language-compiler@workspace:packages/bloom-language-compiler"],
+    "@oxy.so/bloom-lens": ["@oxy.so/bloom-lens@workspace:packages/bloom-lens"],
 
     "@oxy.so/bloom-text": ["@oxy.so/bloom-text@workspace:packages/bloom-text"],
 
