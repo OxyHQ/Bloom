@@ -27,8 +27,13 @@ export interface ViewableKeysStore {
    * Publish what is on screen now. A `Set` keeps insertion order, so the order
    * the list adds keys in (top of the list first) is the rank the audible slot
    * is decided by. An unchanged set, in the same order, wakes nobody.
+   *
+   * `nearKeys` is the list's preload window: rows just off screen that should
+   * already hold a loaded player, so a video scrolled into view is playing on
+   * its first frame. Never visible, never elected; read by `useViewableNear`.
+   * Omitted, the window is the on-screen set alone.
    */
-  publish: (keys: ReadonlySet<string>) => void;
+  publish: (keys: ReadonlySet<string>, nearKeys?: ReadonlySet<string>) => void;
 }
 
 /**
