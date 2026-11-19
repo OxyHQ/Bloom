@@ -14,6 +14,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -34,9 +35,24 @@ import { useLensTint } from './use-lens-tint';
 /** A menu's rows, read as data for the native lens menu. */
 export interface MenuLens extends ParsedLensMenu {
   nativeRef: RefObject<LensNativeHandle | null>;
+  /** Whether the menu was open as these rows arrived: a native view mounted now opens itself. */
+  open: boolean;
   select: (id: string) => void;
   /** The native menu opened or closed itself. */
   openChange: (open: boolean) => void;
+  /** The native menu has finished closing. */
+  closed: () => void;
+}
+
+/**
+ * Where a family's `Content` rendered out of its root's sight (by a component of the owner's,
+ * such as one mounted only while the menu is open) hands the root its props.
+ */
+export interface LensContentProvider {
+  /** Whether the native lens menu can draw a `Content` with these props. */
+  accepts: (props: object) => boolean;
+  /** The mounted `Content`'s props, or `null` as it unmounts. */
+  provide: (props: object | null) => void;
 }
 
 /** The element of `type` among `children`, looking through fragments only. */
@@ -68,10 +84,26 @@ export interface UseLensMenuOptions {
   setOpen: (open: boolean) => void;
 }
 
+export interface LensMenuState {
+  /** The menu as the native lens menu takes it, or `undefined`: the menu keeps its sheet. */
+  lens: MenuLens | undefined;
+  /**
+   * Set when the native lens menu is available and the `Content` is not among the root's
+   * children: the `Content` provides its props through `useLensContent` once it is mounted.
+   */
+  contentProvider: LensContentProvider | undefined;
+}
+
 /**
  * The menu as the native lens menu takes it (Android 13+, in a binary that has Bloom's module),
  * or `undefined` when it cannot: the menu then keeps its sheet. Rows outside the lens menu's
  * vocabulary (see `parseLensMenu`) also keep the sheet.
+ *
+ * The rows are read from the `Content` among the root's children or, when the `Content` is
+ * rendered by a component of the owner's (one that mounts only while the menu is open, so a
+ * closed menu does no row work), from the props that `Content` provides as it mounts. The native
+ * view then mounts with the menu already open and opens itself; the rows are kept until the
+ * native menu has finished closing, so its closing motion is not cut short.
  */
 export function useLensMenu({
   children,
@@ -79,12 +111,41 @@ export function useLensMenu({
   parse,
   open,
   setOpen,
-}: UseLensMenuOptions): MenuLens | undefined {
+}: UseLensMenuOptions): LensMenuState {
   const available = getNativeLens() != null;
   const nativeRef = useRef<LensNativeHandle | null>(null);
   const nativeOpen = useRef(false);
   const element = available ? findElement(children, content) : null;
-  const parsed = element ? parse(element.props as Record<string, unknown>) : null;
+  const [provided, setProvided] = useState<Record<string, unknown> | null>(null);
+  const props = element ? (element.props as Record<string, unknown>) : provided;
+  const parsed = props ? parse(props) : null;
+
+  const parseRef = useRef(parse);
+  parseRef.current = parse;
+  // The native menu is open or still closing; a `Content` that unmounts meanwhile is withdrawn
+  // once it has closed.
+  const showing = useRef(false);
+  const withdrawn = useRef(false);
+  const provider = useMemo<LensContentProvider>(
+    () => ({
+      accepts: (next) => parseRef.current(next as Record<string, unknown>) != null,
+      provide: (next) => {
+        if (next == null && showing.current) {
+          withdrawn.current = true;
+          return;
+        }
+        withdrawn.current = false;
+        setProvided(next as Record<string, unknown> | null);
+      },
+    }),
+    [],
+  );
+  const closed = useCallback(() => {
+    showing.current = false;
+    if (!withdrawn.current) return;
+    withdrawn.current = false;
+    setProvided(null);
+  }, []);
 
   const handlers = useRef(parsed?.handlers ?? {});
   handlers.current = parsed?.handlers ?? {};
@@ -98,6 +159,7 @@ export function useLensMenu({
   const openChange = useCallback(
     (next: boolean) => {
       nativeOpen.current = next;
+      if (next) showing.current = true;
       setOpen(next);
     },
     [setOpen],
@@ -105,20 +167,48 @@ export function useLensMenu({
 
   // An open or close the owner makes through its own state reaches the native menu here; the
   // native menu's own opens and closes arrive through `openChange` first and find nothing to do.
+  // A native view that mounts with the menu open opens itself (`MenuLens.open`): it cannot take
+  // a call before it is mounted.
   const present = items != null;
+  const mounted = useRef(false);
   useEffect(() => {
-    if (!present || open === nativeOpen.current) return;
+    if (!present) {
+      mounted.current = false;
+      nativeOpen.current = false;
+      return;
+    }
+    const mounting = !mounted.current;
+    mounted.current = true;
+    if (open === nativeOpen.current) return;
     nativeOpen.current = open;
+    if (mounting) return;
     void (open ? nativeRef.current?.open() : nativeRef.current?.close());
   }, [present, open]);
 
-  return useMemo(
+  const lens = useMemo(
     () =>
       items && icons
-        ? { items, icons, handlers: handlers.current, nativeRef, select, openChange }
+        ? { items, icons, handlers: handlers.current, nativeRef, open, select, openChange, closed }
         : undefined,
-    [items, icons, select, openChange],
+    [items, icons, open, select, openChange, closed],
   );
+  return { lens, contentProvider: available && !element ? provider : undefined };
+}
+
+/**
+ * For a family's `Content`: provides its props to the root when the root cannot see it (see
+ * `useLensMenu`), and says whether the native lens menu draws its rows, in which case the
+ * `Content` renders nothing. Pass the `Content`'s props object itself, so a render that changes
+ * nothing provides nothing new.
+ */
+export function useLensContent(provider: LensContentProvider | undefined, props: object): boolean {
+  const draws = provider?.accepts(props) ?? false;
+  useLayoutEffect(() => {
+    if (!provider || !draws) return;
+    provider.provide(props);
+    return () => provider.provide(null);
+  }, [provider, draws, props]);
+  return draws;
 }
 
 /** What a trigger's own surface looks like, so the menu can morph out of it. */
@@ -173,6 +263,8 @@ export function LensTrigger({ lens, triggerLens, tone, tint, children }: LensTri
     [surface, border, text, textSecondary, destructive, dark],
   );
   const [origin, setOrigin] = useState<LensOrigin | null>(null);
+  // Read once: the view that mounts with the menu open opens itself.
+  const [openOnMount] = useState(lens.open);
   const triggerConfig = tint
     ? { tintColor: tint, tintOpacity: 0.96 }
     : tone === 'primary'
@@ -190,9 +282,11 @@ export function LensTrigger({ lens, triggerLens, tone, tint, children }: LensTri
       colorScheme={dark ? 'dark' : 'light'}
       config={config}
       triggerConfig={triggerConfig}
+      openOnMount={openOnMount}
       style={TRIGGER_STYLE}
       onItemSelect={(event) => lens.select(event.nativeEvent.id)}
       onMenuOpenChange={(event) => lens.openChange(event.nativeEvent.open)}
+      onMenuClosed={lens.closed}
     >
       <LensOriginContext.Provider value={setOrigin}>{children}</LensOriginContext.Provider>
       <View
