@@ -58,8 +58,9 @@ export type AgentAvatarProviderProps = {
   /** @deprecated SVG portrait frames are cached in memory; raster storage is no longer used. */
   stillStorage?: BloomThemeStorage;
   /**
-   * The vector assets this app ships (`createVectorAssetLoader`). Unset: Bloom's full catalog,
-   * linked lazily; drop it from the bundle as docs/agent-avatar.mdx describes.
+   * The vector assets this app ships (`createVectorAssetLoader`). Unset: the catalog of the
+   * provider round this one, else Bloom's full catalog, linked lazily; drop it from the bundle as
+   * docs/agent-avatar.mdx describes.
    */
   catalog?: VectorAssetLoader;
   children: ReactNode;
