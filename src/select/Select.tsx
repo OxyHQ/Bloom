@@ -142,7 +142,7 @@ export function Select(props: SelectProps) {
   const valueStoreState = useState<unknown>(undefined);
 
   // The native lens list closes itself; the select has no open state of its own to keep in step.
-  const lens = useLensMenu({
+  const { lens } = useLensMenu({
     children,
     content: SelectContent,
     parse: (content) =>
