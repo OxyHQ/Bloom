@@ -79,12 +79,27 @@ every ambiguous case falls to silence.
 that is not a video (an embed that loads only while seen): screen visible AND on
 screen, by the same measured row set on native, by an observer on web.
 
+## The preload window
+
+A list holds a decoder for the rows around the reader, not for every row it has
+mounted (a virtualized list's render-ahead mounts far more than it shows).
+`ViewableKeysStore.publish(keys, nearKeys)` takes, beside the on-screen keys,
+the rows just off screen that should already hold a loaded player;
+`useViewableNear(viewabilityKey)` answers "on screen or in that window" for one
+row, subscribed to its own answer. A near key is never visible and never
+elected: it only says the row may load. With no list above (a screen without
+one, and the web) every player is near; under a scope, near follows the scope.
+The app owns the players and attaches one while its row is near; the
+`useVideoPlaybackControl(null, …)` form below lets the same presenter draw its
+poster and controls before a player is attached and keep them when one is.
+
 ## One player, several presenters
 
 `useVideoPlaybackControl(player, shouldPlay, shouldLoad?)` lets several mounted
 presenters share one player (a row and the media flight carrying it to the next
 route): it plays while ANY presenter asks, re-applies that after a source change
-or once ready, and returns a latched "has painted a frame" for the poster. A
+or once ready, and returns a latched "has painted a frame" for the poster. With
+`null` for the player it asks nothing and reports no frame. A
 presenter unmounting is not a pause command, so a route handoff never stutters.
 `subscribeVideoLoadingDemand` feeds a decoder that runs beside the player (a JS
 HLS decoder on web); `setVideoHasRenderedFrame` reports a frame a view learned
