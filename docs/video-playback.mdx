@@ -87,7 +87,9 @@ mounted (a virtualized list's render-ahead mounts far more than it shows).
 the rows just off screen that should already hold a loaded player;
 `useViewableNear(viewabilityKey)` answers "on screen or in that window" for one
 row, subscribed to its own answer. A near key is never visible and never
-elected: it only says the row may load. With no list above (a screen without
+elected: it only says the row may load. A screen in the background keeps only
+its on-screen rows, so the frame the reader returns to stays and the preloaded
+rows give their decoders to the screen in front. With no list above (a screen without
 one, and the web) every player is near; under a scope, near follows the scope.
 The app owns the players and attaches one while its row is near; the
 `useVideoPlaybackControl(null, …)` form below lets the same presenter draw its
