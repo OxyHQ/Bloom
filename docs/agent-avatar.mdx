@@ -318,7 +318,9 @@ across all 23 templates, plus interrupted exits; endpoint-only counts missed thi
 
 Other instances retain independent clocks. `interactive` enables pointer and drag input;
 otherwise deterministic gaze wandering, breathing and blinking provide idle motion.
-Paused, portrait, reduced-motion, background and offscreen instances stop advancing.
+Paused, portrait, reduced-motion, background and offscreen instances stop advancing, and so do
+instances on a screen that is not in front (a covered stack scene, another tab page): they hold
+their last frame and draw none until the screen is back.
 Composition donors remain immutable and loaded assets are cached. There are no WebGL
 contexts or shared instanced GPU scenes in the production avatar path.
 
