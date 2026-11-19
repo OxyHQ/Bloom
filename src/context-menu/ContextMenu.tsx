@@ -114,7 +114,7 @@ export function ContextMenu({
     (next: boolean) => (next ? openAt(null) : close()),
     [openAt, close],
   );
-  const lens = useLensMenu({
+  const { lens } = useLensMenu({
     children,
     content: ContextMenuContent,
     parse: (props) => parseLensMenu(props.children as ReactNode, rows),

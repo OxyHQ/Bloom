@@ -57,10 +57,14 @@ export interface LensNativeProps {
   triggerConfig?: LensNativeTriggerConfig;
   menuWidth?: number;
   alignment?: string;
+  /** The view mounts with its menu already open: it opens itself once laid out. */
+  openOnMount?: boolean;
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;
   onItemSelect?: (event: { nativeEvent: { id: string; index: number } }) => void;
   onMenuOpenChange?: (event: { nativeEvent: { open: boolean } }) => void;
+  /** The menu has finished closing (its motion ended, or another menu took its place). */
+  onMenuClosed?: () => void;
 }
 
 /** The id of the view that hosts the rows' icons; the native side looks it up. */

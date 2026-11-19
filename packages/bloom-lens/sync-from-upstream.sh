@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Pulls the glass menu engine from the upstream working tree, renames its package to Bloom's, and
-# reapplies Bloom's own changes (patches/*.patch: themable row ink, the BloomGlassMenu module name).
+# reapplies Bloom's own changes (patches/*.patch: themable row ink, the BloomLensMenu module name, opening
+# on mount and the closed event).
 # Usage: sync-from-upstream.sh [upstream-java-dir]
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"

@@ -28,6 +28,7 @@ import kotlin.math.min
 class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(context, appContext) {
   private val onItemSelect by EventDispatcher<Map<String, Any?>>()
   private val onMenuOpenChange by EventDispatcher<Map<String, Any?>>()
+  private val onMenuClosed by EventDispatcher<Map<String, Any?>>()
 
   private var overlay: GlassMenuOverlay? = null
   private var glassRenderer: Any? = null
@@ -56,7 +57,16 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
     set(value) {
       field = value
       overlay?.menuSession?.takeIf { it.anchor === this }?.refreshItems()
+      openWhenReady()
     }
+  // The owner mounts this view with its menu already open (rows that arrive only as the menu opens): it opens
+  // itself, once, as soon as it is attached and laid out, since nothing can call `open` on it before it is mounted.
+  internal var openOnMount = false
+    set(value) {
+      field = value
+      openWhenReady()
+    }
+  private var openedOnMount = false
   internal var glass = true
     set(value) {
       field = value
@@ -101,6 +111,19 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
     overlay = GlassMenuOverlay.obtain(root).also { it.register(this) }
     if (drawsGlass) GlassDevGuard.warnIfInOverscrollScroll(this)
     refreshDrawing()
+    openWhenReady()
+  }
+
+  override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+    super.onSizeChanged(w, h, oldw, oldh)
+    openWhenReady()
+  }
+
+  private fun openWhenReady() {
+    if (!openOnMount || openedOnMount || overlay == null || items.isEmpty() || width == 0 || height == 0) return
+    openedOnMount = true
+    // After the rest of this layout pass, so the anchor is measured where it ends up.
+    post { open(null, null, null, null) }
   }
 
   override fun onDetachedFromWindow() {
@@ -275,6 +298,7 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
   internal fun onSessionFinished() {
     menuActive = false
     invalidate()
+    onMenuClosed(mapOf())
   }
 
   internal companion object {
