@@ -9,6 +9,8 @@ export type OcclusionPart = {
   opaque?: boolean;
   group?: string;
 };
+/** A clip that hides nothing: the frame and a margin round it. Every mask starts from it. */
+export const VECTOR_UNCLIPPED = 'M-2 -2H322V322H-2Z';
 const SIZE = 322,
   STEP = 1,
   ORIGIN = -1,
@@ -190,7 +192,7 @@ function contours(field: Float32Array, bounds: [number, number, number, number])
         next.set(ia, ib);
       }
     }
-  let d = 'M-2 -2H322V322H-2Z';
+  let d = VECTOR_UNCLIPPED;
   for (const start of [...next.keys()]) {
     if (!next.has(start)) continue;
     const loop: number[] = [];
