@@ -39,6 +39,7 @@ interface DotLottieReactLikeProps {
   src: string;
   autoplay?: boolean;
   loop?: boolean;
+  useFrameInterpolation?: boolean;
   dotLottieRefCallback?: (instance: DotLottieInstance | null) => void;
   style?: unknown;
 }
@@ -98,6 +99,12 @@ function isComponent(candidate: unknown): candidate is DotLottieReactLike {
   return typeof candidate === 'object' && candidate !== null && '$$typeof' in candidate;
 }
 
+/**
+ * `useFrameInterpolation: false` draws each of the animation's own frames once
+ * (its `fr`, usually 30 or 60 a second) instead of an in-between frame on every
+ * display refresh. Interpolated, a looping sticker redrew its canvas 120 times a
+ * second on a 120 Hz screen, mostly with sub-frame steps nobody can see.
+ */
 function adapt(DotLottieReact: DotLottieReactLike): ComponentType<LottiePlayerProps> {
   function WebLottiePlayer({ uri, loop, paused, onLoad, onError, style }: LottiePlayerProps) {
     const instance = useRef<DotLottieInstance | null>(null);
@@ -113,6 +120,7 @@ function adapt(DotLottieReact: DotLottieReactLike): ComponentType<LottiePlayerPr
       src: uri,
       autoplay: !paused,
       loop,
+      useFrameInterpolation: false,
       style,
       dotLottieRefCallback: (next) => {
         if (instance.current === next) return;
