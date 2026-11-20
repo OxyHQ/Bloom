@@ -9,7 +9,7 @@ import type { SettingsModalProps } from '../settings-modal';
 import type { DialogControlProps, DialogControlRefProps } from '../dialog/types';
 import { pressHost } from './support/press-host';
 
-let mockWeb = false;
+const mockWeb = false;
 let mockAndroidBack: (() => boolean) | undefined;
 jest.mock('react-native', () => ({
   __esModule: true,

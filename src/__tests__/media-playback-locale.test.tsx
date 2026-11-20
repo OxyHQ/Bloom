@@ -4,7 +4,8 @@
  * the language's own rules, a subject sits where the language puts it (never
  * behind an English "for"), and a caller's `labels`/`*Label` still wins.
  */
-import React, { createRef } from 'react';
+import type React from 'react';
+import { createRef } from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { LocaleProvider } from '../locale';

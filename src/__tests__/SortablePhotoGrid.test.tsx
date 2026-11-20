@@ -10,7 +10,8 @@
  * client coordinates ARE grid coordinates here. The real drag (hit testing,
  * the lifted copy) is verified in a browser.
  */
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

@@ -6,7 +6,7 @@
  * screen reader reads, which a prop-level test on the native preset never sees
  * (`accessibilityState` and friends are dropped on web, `aria-*` is not).
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

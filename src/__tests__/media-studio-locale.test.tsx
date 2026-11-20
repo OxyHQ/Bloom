@@ -7,7 +7,7 @@
  * visible text and accessible names — while a caller's own `labels` /
  * `*Label` prop still wins over them.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { within } from '@testing-library/dom';

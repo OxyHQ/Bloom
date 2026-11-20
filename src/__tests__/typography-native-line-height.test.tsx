@@ -19,7 +19,7 @@
  */
 
 import { join } from 'node:path';
-import React from 'react';
+import type React from 'react';
 import { render } from '@testing-library/react-native';
 
 import { TYPOGRAPHY, type TypeRoleName } from '../design-tokens/scales';

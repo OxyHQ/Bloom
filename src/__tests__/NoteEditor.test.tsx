@@ -8,7 +8,7 @@
  * status line's COLOUR (a warning drawn in the fill token is a perfectly
  * ordinary orange that fails AA in dark mode).
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

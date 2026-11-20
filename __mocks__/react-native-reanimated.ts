@@ -136,6 +136,13 @@ const Reanimated = {
     return (ratio < 0.5 ? outputRange[0] : outputRange[1]) ?? '';
   },
   runOnJS: (fn: (...args: unknown[]) => void) => fn,
+  // Reanimated's CSS engine as data: what Bloom's motion engine hands it is asserted directly.
+  css: {
+    keyframes: (blocks: Record<string, unknown>) => ({ keyframes: blocks }),
+    create: <T>(styles: T) => styles,
+  },
+  cubicBezier: (...points: number[]) => ({ cubicBezier: points }),
+  linear: (...points: number[]) => ({ linear: points }),
   // Custom native-event handlers (a pager's `onPageScroll`): the worklet as-is.
   useHandler: () => ({ context: {}, doDependenciesDiffer: false, useWeb: false }),
   useEvent: <T>(handler: T) => handler,
@@ -247,3 +254,6 @@ export const useEvent = Reanimated.useEvent;
 export const cancelAnimation = Reanimated.cancelAnimation;
 export const Easing = Reanimated.Easing;
 export default Reanimated.default;
+export const css = Reanimated.css;
+export const cubicBezier = Reanimated.cubicBezier;
+export const linear = Reanimated.linear;

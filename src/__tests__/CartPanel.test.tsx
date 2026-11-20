@@ -14,7 +14,8 @@
  * cannot delete, the promo field is an input OR a pill and never both, and an
  * empty basket draws none of the controls that would act on nothing.
  */
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

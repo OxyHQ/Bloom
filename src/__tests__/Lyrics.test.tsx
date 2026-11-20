@@ -11,7 +11,7 @@
  * auto-scroll itself is verified in a real browser (see the stories); what it
  * scrolls TO is `lyricsScrollTarget`, pinned below.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

@@ -10,7 +10,7 @@
  * tree builder is walked directly over the ragged level sequences real documents
  * have.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

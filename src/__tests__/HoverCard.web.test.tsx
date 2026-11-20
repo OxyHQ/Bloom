@@ -8,7 +8,7 @@
  * up while the pointer travels onto it — including onto a `Pressable` inside,
  * which is the hover-lock trap `HoverCardPanel` documents.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { getByText, queryByText } from '@testing-library/dom';

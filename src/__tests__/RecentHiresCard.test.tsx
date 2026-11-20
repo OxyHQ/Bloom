@@ -1,7 +1,7 @@
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { surfaceFillOn } from '../styles/surface-levels';
 import { cardLayout, cardFill } from './support/card-surface';
-import React from 'react';
+import type React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

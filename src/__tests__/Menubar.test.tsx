@@ -23,7 +23,7 @@
  *     flat `aria-*` props are the only ones that reach a screen reader.
  *  4. A caller's `className` reaches the node the parent lays out.
  */
-import React from 'react';
+import type React from 'react';
 import { Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 

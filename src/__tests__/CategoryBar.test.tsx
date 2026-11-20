@@ -5,7 +5,7 @@
  * read the emitted DOM: tab semantics, colours, roving focus, and the arrows
  * that follow the scroll position.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

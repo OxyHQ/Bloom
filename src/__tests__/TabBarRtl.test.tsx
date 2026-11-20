@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { hostsPaintedWith } from './support/material-fill';
 import * as ReactNative from 'react-native';
 import type { ReactTestInstance } from 'react-test-renderer';

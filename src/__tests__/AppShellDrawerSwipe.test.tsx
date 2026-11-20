@@ -12,7 +12,7 @@
  * runs synchronously. What it cannot show is a real finger competing with a
  * real ScrollView, or with iOS's back swipe: that is a device's to verify.
  */
-import React from 'react';
+import type React from 'react';
 import * as ReactNative from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { Gesture } from 'react-native-gesture-handler';

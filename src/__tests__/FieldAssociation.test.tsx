@@ -14,7 +14,7 @@
  * id must still win, a description must stop being described once an error
  * replaces it, and a `multiple` field must NOT hand one id to several controls.
  */
-import React from 'react';
+import type React from 'react';
 import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

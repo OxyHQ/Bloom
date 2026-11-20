@@ -1,5 +1,5 @@
 import { mixColors } from '../styles/color-contrast';
-import React from 'react';
+import type React from 'react';
 import * as Native from 'react-native';
 import { act, fireEvent, render, within } from '@testing-library/react-native';
 

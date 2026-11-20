@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { Text, View } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 

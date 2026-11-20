@@ -5,7 +5,7 @@
  * react-native-web so the assertions read the emitted DOM — the `<input>`, its
  * name, its disabled state and the text it actually shows.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

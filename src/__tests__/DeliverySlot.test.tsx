@@ -17,7 +17,7 @@
  *     to stop families getting backwards;
  *   - loading is not empty.
  */
-import React from 'react';
+import type React from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
