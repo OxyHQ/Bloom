@@ -31,6 +31,10 @@ pub enum Binding {
     DefineTokens,
     /// `regular` or `clear`.
     Glass,
+    /// `opacity`: a transition value, immutable like a glass material.
+    Fade,
+    /// `move`, `scale`, `asymmetric`, `defineKeyframes`: pure builders of motion values.
+    MotionBuilder,
     /// Any other import: a binding the importer cannot reassign.
     Import,
     /// A module-scope `const` with a static value, declared at body index `at`.
@@ -39,6 +43,9 @@ pub enum Binding {
     Tokens { at: usize },
     /// A module-scope `const X = view(…)`: calling it makes a view node.
     ViewConstructor { at: usize },
+    /// A module-scope `const` holding a static transition or keyframes value,
+    /// and whether it changes opacity.
+    MotionConst { at: usize, fades: bool },
 }
 
 pub struct Module {
@@ -93,6 +100,9 @@ impl Module {
             let binding = match self.callee(init, scoping) {
                 Some(Binding::DefineTokens) => Some(Binding::Tokens { at: index }),
                 Some(Binding::View) => Some(Binding::ViewConstructor { at: index }),
+                _ if self.is_motion_value(init, scoping) => self.static_after(init, scoping).map(|_| {
+                    Binding::MotionConst { at: index, fades: crate::check::fades(init, self, scoping) }
+                }),
                 _ => self.static_after(init, scoping).map(|_| Binding::Const { at: index }),
             };
             if let Some(binding) = binding {
@@ -133,9 +143,12 @@ impl Module {
                 Some(floor)
             }
             Expression::Identifier(identifier) => match self.resolve(expression, scoping) {
-                Some(Binding::Const { at } | Binding::Tokens { at } | Binding::ViewConstructor { at }) => {
-                    Some((at + 1).max(floor))
-                }
+                Some(
+                    Binding::Const { at }
+                    | Binding::Tokens { at }
+                    | Binding::ViewConstructor { at }
+                    | Binding::MotionConst { at, .. },
+                ) => Some((at + 1).max(floor)),
                 Some(_) => Some(floor),
                 // An unresolved `undefined` is the global constant; any other free name could change.
                 None => (identifier.name == "undefined"
@@ -182,15 +195,17 @@ impl Module {
                 let after = self.static_arguments(&call.arguments, scoping)?;
                 match &call.callee {
                     Expression::Identifier(_) => match self.resolve(&call.callee, scoping)? {
-                        Binding::Constructor { .. } => Some(after),
+                        Binding::Constructor { .. } | Binding::MotionBuilder => Some(after),
                         Binding::ViewConstructor { at } => Some(after.max(at + 1)),
                         _ => None,
                     },
-                    // A modifier on a static chain, or `.tint()` on a glass value.
+                    // A modifier on a static chain, `.tint()` on a glass value, or a
+                    // method of a motion value (`.combined()`, `.animation()`).
                     Expression::StaticMemberExpression(member) => {
                         let receiver = member.object.without_parentheses();
                         let chain = self.is_chain(receiver, scoping)
-                            || self.resolve(receiver, scoping) == Some(Binding::Glass);
+                            || self.resolve(receiver, scoping) == Some(Binding::Glass)
+                            || self.is_motion_value(receiver, scoping);
                         if !chain {
                             return None;
                         }
@@ -207,6 +222,24 @@ impl Module {
         arguments.iter().try_fold(self.after_imports, |after, argument| {
             Some(after.max(self.static_after(argument.as_expression()?, scoping)?))
         })
+    }
+
+    /// Whether `expression` is a transition or keyframes value: `opacity`, a builder's
+    /// result, a method of one, or a module constant holding one.
+    pub fn is_motion_value(&self, expression: &Expression, scoping: &Scoping) -> bool {
+        match expression.without_parentheses() {
+            Expression::Identifier(_) => {
+                matches!(self.resolve(expression, scoping), Some(Binding::Fade | Binding::MotionConst { .. }))
+            }
+            Expression::CallExpression(call) => match &call.callee {
+                Expression::Identifier(_) => {
+                    self.resolve(&call.callee, scoping) == Some(Binding::MotionBuilder)
+                }
+                Expression::StaticMemberExpression(member) => self.is_motion_value(&member.object, scoping),
+                _ => false,
+            },
+            _ => false,
+        }
     }
 
     /// Whether `expression` is a language chain: a constructor (or view) call with modifiers after it.
@@ -240,6 +273,8 @@ fn language_export(name: &str) -> Binding {
         "view" => Binding::View,
         "defineTokens" => Binding::DefineTokens,
         "regular" | "clear" => Binding::Glass,
+        "opacity" => Binding::Fade,
+        "move" | "scale" | "asymmetric" | "defineKeyframes" => Binding::MotionBuilder,
         _ => NODES
             .iter()
             .find_map(|node| {

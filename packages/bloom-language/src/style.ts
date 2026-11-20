@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 
-import type { FrameSpec, GlassValue, Modifier, OffsetSpec, PositionEdges } from './node';
+import type { FrameSpec, GlassValue, Modifier, PositionEdges } from './node';
 import { SHADOW_BOX, bloomShadowStyle, type ShadowRole } from '@oxy.so/bloom/design-tokens';
 import { surfaceStyle } from '@oxy.so/bloom/shapes';
 import { fontFamilyStyle, type TypeScaleVariant } from '@oxy.so/bloom/typography';
@@ -13,7 +13,6 @@ import { adoptVariantClasses, variantSuffix } from './web-sheet';
 import {
   ALIGNMENT,
   OPACITY,
-  SCALE,
   SHRINK,
   Z_INDEX,
   resolveBorderWidth,
@@ -28,7 +27,6 @@ import {
   type CornerName,
   type CornerSide,
   type LengthToken,
-  type ScaleName,
   type Justify,
   type OverlayAlignment,
   type ZIndexName,
@@ -627,11 +625,9 @@ export interface Placement {
   shrink: ShrinkPriority | undefined;
   alignSelf: Alignment | undefined;
   position: PositionEdges | undefined;
-  offset: OffsetSpec | undefined;
   zIndex: ZIndexName | undefined;
   hidden: boolean | undefined;
   basis: LengthToken | undefined;
-  scale: ScaleName | undefined;
   allowsHitTesting: boolean | undefined;
   accessibilityOnly: boolean;
   /** What variants change in the view's place. */
@@ -649,11 +645,9 @@ export type PlaceModifier = Extract<
       | 'shrink'
       | 'alignSelf'
       | 'position'
-      | 'offset'
       | 'zIndex'
       | 'hidden'
       | 'basis'
-      | 'scale'
       | 'allowsHitTesting'
       | 'accessibilityOnly';
   }
@@ -663,11 +657,9 @@ export const PLACE_KINDS: ReadonlySet<string> = new Set([
   'shrink',
   'alignSelf',
   'position',
-  'offset',
   'zIndex',
   'hidden',
   'basis',
-  'scale',
   'allowsHitTesting',
   'accessibilityOnly',
 ]);
@@ -706,11 +698,9 @@ export function emptyPlacement(): Placement {
     shrink: undefined,
     alignSelf: undefined,
     position: undefined,
-    offset: undefined,
     zIndex: undefined,
     hidden: undefined,
     basis: undefined,
-    scale: undefined,
     allowsHitTesting: undefined,
     accessibilityOnly: false,
     variants: [],
@@ -746,10 +736,20 @@ const POSITION_EDGE: Record<keyof PositionEdges, string> = {
   trailing: 'end',
 };
 
+/** What sizes a view in its parent's flex (grow, shrink, basis): what a box moved around it takes too. */
+export function flexOnly(place: Placement): Resolved {
+  const style: Resolved = {};
+  if (place.grow) style.flex = 1;
+  if (place.shrink !== undefined) style.flexShrink = SHRINK[place.shrink];
+  if (place.basis !== undefined) style.flexBasis = resolveLength(place.basis);
+  return style;
+}
+
 /**
- * `grow`, `shrink`, `basis`, `alignSelf`, `position`, `offset`, `scale`,
- * `zIndex`, `hidden`, hit testing and `accessibilityOnly` place the view in
- * its parent, so they belong to its outermost box. Neither
+ * `grow`, `shrink`, `basis`, `alignSelf`, `position`, `zIndex`, `hidden`,
+ * hit testing and `accessibilityOnly` place the view in its parent, so they
+ * belong to its outermost box. (`offset` and `scale` move it where it is laid
+ * out: the motion layer draws them, render.tsx `motionPlan`.) Neither
  * `grow` nor `shrink` lowers the minimum width; a view that must shrink below
  * its content says so with `.frame({ minWidth: 'none' })`.
  */
@@ -767,15 +767,6 @@ export function placeStyle(place: Placement): Resolved {
     }
   }
   if (place.accessibilityOnly) Object.assign(style, ACCESSIBILITY_ONLY);
-  // Moved, then scaled about its centre: Tailwind's translate and scale, composed in that order.
-  if (place.offset !== undefined || place.scale !== undefined) {
-    const { x, y } = place.offset ?? {};
-    style.transform = [
-      ...(x === undefined ? [] : [{ translateX: resolveSpace(x) }]),
-      ...(y === undefined ? [] : [{ translateY: resolveSpace(y) }]),
-      ...(place.scale === undefined ? [] : [{ scale: SCALE[place.scale] }]),
-    ];
-  }
   if (place.zIndex !== undefined) style.zIndex = Z_INDEX[place.zIndex];
   if (place.hidden !== undefined) style.display = place.hidden ? 'none' : 'flex';
   if (place.allowsHitTesting !== undefined)

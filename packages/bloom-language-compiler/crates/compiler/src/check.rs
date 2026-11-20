@@ -4,8 +4,8 @@
 //! the backstop for JavaScript, casts and generated code.
 
 use oxc_ast::ast::{
-    Argument, ArrowFunctionBody, BindingPattern, Expression, ObjectPropertyKind, Program, PropertyKey,
-    Statement,
+    Argument, ArrowFunctionBody, BindingPattern, CallExpression, Expression, IdentifierReference,
+    ObjectProperty, ObjectPropertyKind, Program, PropertyKey, Statement,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_semantic::Scoping;
@@ -76,8 +76,12 @@ fn check_chain(expression: &Expression, module: &Module, scoping: &Scoping) -> R
     // Modifiers, outside-in; checked in source order.
     let mut modifiers = Vec::new();
     let mut current = expression.without_parentheses();
+    let mut root: Option<&CallExpression> = None;
     while let Expression::CallExpression(call) = current {
-        let Expression::StaticMemberExpression(member) = &call.callee else { break };
+        let Expression::StaticMemberExpression(member) = &call.callee else {
+            root = Some(call);
+            break;
+        };
         modifiers.push((
             member.property.name.as_str(),
             member.property.span,
@@ -86,6 +90,7 @@ fn check_chain(expression: &Expression, module: &Module, scoping: &Scoping) -> R
         ));
         current = member.object.without_parentheses();
     }
+    let holds_glass = root.is_some_and(|root| holds_glass(&root.arguments, module, scoping));
     for (modifier, span, arguments, call_span) in modifiers.into_iter().rev() {
         if !spec.modifiers.contains(&modifier) {
             let help = format!("{name} modifiers: {}", spec.modifiers.join(", "));
@@ -96,8 +101,97 @@ fn check_chain(expression: &Expression, module: &Module, scoping: &Scoping) -> R
             });
         }
         check_arguments(modifier, arguments, spec, call_span, module, scoping)?;
+        if holds_glass && fades_view(modifier, arguments, module, scoping) {
+            return Err(Problem {
+                span: call_span,
+                message: format!(".{modifier}() fades a view that holds glass"),
+                help: Some(
+                    "on the web a faded ancestor flattens the material (it stops blurring); put the fade on the \
+                     .glass() view itself, which fades the material's own layers instead"
+                        .into(),
+                ),
+            });
+        }
     }
     Ok(())
+}
+
+/// Whether this modifier makes the view less than opaque: an opacity below
+/// `opaque`, or a transition or keyframes that change opacity.
+fn fades_view(modifier: &str, arguments: &[Argument], module: &Module, scoping: &Scoping) -> bool {
+    let Some(value) = arguments.first().and_then(Argument::as_expression) else { return false };
+    match modifier {
+        "opacity" => {
+            !matches!(value.without_parentheses(), Expression::StringLiteral(s) if s.value == "opaque")
+        }
+        "transition" | "keyframes" => fades(value, module, scoping),
+        _ => false,
+    }
+}
+
+/// Whether a motion value changes opacity: it names `opacity` (or a constant
+/// that does), or writes an `opacity:` frame.
+pub fn fades(expression: &Expression, module: &Module, scoping: &Scoping) -> bool {
+    let mut finder = FadeFinder { module, scoping, found: false };
+    finder.visit_expression(expression);
+    finder.found
+}
+
+struct FadeFinder<'m> {
+    module: &'m Module,
+    scoping: &'m Scoping,
+    found: bool,
+}
+
+impl<'a> Visit<'a> for FadeFinder<'_> {
+    fn visit_identifier_reference(&mut self, identifier: &IdentifierReference<'a>) {
+        let symbol = identifier.reference_id.get().and_then(|r| self.scoping.get_reference(r).symbol_id());
+        if let Some(symbol) = symbol
+            && matches!(
+                self.module.bindings.get(&symbol),
+                Some(Binding::Fade | Binding::MotionConst { fades: true, .. })
+            )
+        {
+            self.found = true;
+        }
+    }
+
+    fn visit_object_property(&mut self, property: &ObjectProperty<'a>) {
+        if matches!(&property.key, PropertyKey::StaticIdentifier(id) if id.name == "opacity") {
+            self.found = true;
+        }
+        walk::walk_object_property(self, property);
+    }
+}
+
+/// Whether any child (at any depth of the chains passed as children) is glass.
+fn holds_glass(arguments: &[Argument], module: &Module, scoping: &Scoping) -> bool {
+    let mut finder = GlassFinder { module, scoping, found: false };
+    for argument in arguments {
+        if let Some(expression) = argument.as_expression() {
+            finder.visit_expression(expression);
+        }
+    }
+    finder.found
+}
+
+struct GlassFinder<'m> {
+    module: &'m Module,
+    scoping: &'m Scoping,
+    found: bool,
+}
+
+impl<'a> Visit<'a> for GlassFinder<'_> {
+    fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+        if let Expression::StaticMemberExpression(member) = &call.callee
+            && member.property.name == "glass"
+            && self.module.is_chain(&member.object, self.scoping)
+        {
+            self.found = true;
+            return;
+        }
+        walk::walk_call_expression(self, call);
+    }
 }
 
 fn check_arguments(
@@ -151,8 +245,20 @@ fn check_value(
     scoping: &Scoping,
 ) -> Result<(), Problem> {
     match param {
-        "value" | "children" => Ok(()),
+        "value" | "children" | "namespace" => Ok(()),
         "variant" => check_variant(value, spec, module, scoping),
+        "transition" | "keyframes" => match value.without_parentheses() {
+            Expression::StringLiteral(literal) => Err(Problem {
+                span: literal.span,
+                message: format!(".{modifier}() takes a {param} value, not '{}'", literal.value.display()),
+                help: Some(if param == "transition" {
+                    "import { opacity, move, scale, asymmetric } from '@oxy.so/bloom-language'".into()
+                } else {
+                    "declare it once with defineKeyframes([...frames], motion)".into()
+                }),
+            }),
+            _ => Ok(()),
+        },
         param if OBJECTS.iter().any(|(name, _, _)| *name == param) => {
             let &(_, keys, set) = OBJECTS.iter().find(|(name, _, _)| *name == param).expect("matched above");
             let Expression::ObjectExpression(object) = value.without_parentheses() else { return Ok(()) };

@@ -11,3 +11,5 @@ export const windowTier: { current: 'base' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' }
 export function useWindowBreakpoint(): 'base' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' {
   return windowTier.current;
 }
+
+export { usePrefersReducedMotion } from './bloom-runtime';

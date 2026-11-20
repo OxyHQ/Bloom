@@ -94,6 +94,10 @@ interface PaintedProps {
  */
 export function Painted({ host, paint, ...props }: PaintedProps): ReactElement {
   const painted = paintProps(useThemePaint(), paint);
+  // A moving host's motion style (`Outer`) comes after the painted one.
+  if (props.style !== undefined && painted.style !== undefined) {
+    return createElement(host, { ...props, ...painted, style: [painted.style, props.style] });
+  }
   return createElement(host, { ...props, ...painted });
 }
 Painted.displayName = 'BloomPaint';

@@ -44,6 +44,7 @@ import {
   type IconComponent,
   type IconView,
   type ImageView,
+  type LottieView,
   type SpacerView,
   type StackView,
   type TextRun,
@@ -313,3 +314,13 @@ export function actions<P extends object = Record<string, never>>(
 }
 
 const NO_PROPS = Object.freeze({});
+
+/**
+ * A Lottie animation (a URL), drawn by Bloom's `Sticker`: the one Lottie path,
+ * paused while its screen is not in front. `.fallback(Image(still, label))` is
+ * the still it shows while loading, where it cannot play, and under reduced
+ * motion; `.frame({ width })` its square edge.
+ */
+export function Lottie(source: string): LottieView {
+  return new Node('lottie', { source }, NO_CHILDREN);
+}
