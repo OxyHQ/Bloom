@@ -568,6 +568,14 @@ export class Store {
     if (this.persisterFailed || this.closed) return;
     const stored = await persister.readRecords(definition.type, missing);
     if (this.closed) return;
+    await this.applyStored(definition, stored);
+  }
+
+  /** Puts stored records into memory (never over a held one), then reads the records their refs name. */
+  private async applyStored(
+    definition: EntityDefinition,
+    stored: ReadonlyArray<{ id: string; json: string }>,
+  ): Promise<void> {
     const byTarget = new Map<EntityDefinition, Set<string>>();
     this.batch(() => {
       for (const { id, json } of stored) {
@@ -600,8 +608,8 @@ export class Store {
   }
 
   /**
-   * Reads a list (and its records) from the durable copy, unless memory
-   * already holds the list. Returns whether it was read.
+   * Reads a list and its records from the durable copy, in one read, unless
+   * memory already holds the list. Returns whether it was read.
    */
   async hydrateList(definition: ListDefinition, key: string): Promise<boolean> {
     const persister = this.persister;
@@ -609,9 +617,10 @@ export class Store {
     if (this.listSlot(definition, key)?.state) return false;
     await this.ready();
     if (this.persisterFailed || this.closed) return false;
-    const stored = await persister.readList(definition.type, key);
+    const stored = await persister.readList(definition.type, key, definition.of.type);
     if (!stored || this.closed) return false;
-    await this.hydrate(definition.of, stored.ids);
+    if (definition.of.persistVersion !== null)
+      await this.applyStored(definition.of, stored.records);
     const slot = this.listSlot(definition, key, true);
     if (slot.state || this.closed) return false;
     let rest: Omit<ListState, 'ids' | 'origin'>;
