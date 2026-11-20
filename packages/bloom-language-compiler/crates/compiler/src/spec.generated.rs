@@ -39,6 +39,8 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("avatarSize", &["xs", "sm", "md", "lg", "xl"]),
     ("glassOpacity", &["subtle", "medium", "strong"]),
     ("duration", &["instant", "fast", "normal", "slow"]),
+    ("rotation", &["none", "quarter", "half"]),
+    ("motion", &["press", "select", "expand", "present", "dismiss", "fade", "slide", "pop", "roll", "enter", "exit", "restack"]),
     ("edge", &["all", "horizontal", "vertical", "top", "bottom", "leading", "trailing"]),
     ("borderEdge", &["all", "top", "bottom", "leading", "trailing"]),
     ("role", &["button", "link", "header", "image", "text", "none"]),
