@@ -2,16 +2,15 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { readVectorAsset } from './pack-assets.mjs';
 const root = fileURLToPath(new URL('../..', import.meta.url));
 const assetRoot = path.join(root, 'src/agent-avatar/vector-assets');
 const modulePath =
   process.env.BLOOM_VECTOR_FRAME_MODULE || path.join(root, 'src/agent-avatar/vector-frame.ts');
 const { renderVectorFrame } = await import(pathToFileURL(modulePath).href);
 const manifest = JSON.parse(await fs.readFile(path.join(assetRoot, 'manifest.json'), 'utf8'));
-const read = async (file) => {
-  const packed = JSON.parse(await fs.readFile(path.join(assetRoot, file), 'utf8'));
-  return packed.encoding === 'json' ? JSON.parse(packed.data) : packed;
-};
+// Whole assets, payloads included: an asset file alone holds only metadata and payload hashes.
+const read = async (file) => readVectorAsset(assetRoot, file);
 const shapeFrames = {},
   eyeFrames = {};
 for (const entry of manifest.files) {
