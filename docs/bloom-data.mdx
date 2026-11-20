@@ -203,7 +203,8 @@ asynchronous API.
   records and lists. Only the server's copy is written, never a layer still in
   flight.
 - Reads happen when a screen opens (`useList` and `useRecord` read the disk
-  copy while the network read runs) or at boot (`entity.load(ids)`), never
+  copy while the network read runs) or at boot (`list.load(key)`,
+  `entity.load(ids)`), never
   during render. Memory always wins over disk.
 - A changed entity `persist.version` drops that type's rows when the file
   opens. Rows not written for 7 days are dropped too.

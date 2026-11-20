@@ -160,6 +160,12 @@ export interface List<E = unknown> {
   prepend(key: string, ids: readonly string[]): void;
   /** Every key held in memory. */
   keys(): string[];
+  /**
+   * Reads a key's list and its records from the durable copy into memory,
+   * unless memory holds the list already: at boot, for the screen that will
+   * open first. Resolves whether it was read.
+   */
+  load(key: string): Promise<boolean>;
 }
 
 export function list<E = unknown>(type: string, options: ListOptions<E>): List<E> {
@@ -192,6 +198,7 @@ export function list<E = unknown>(type: string, options: ListOptions<E>): List<E
       });
     },
     keys: () => currentStore().listKeys(definition),
+    load: (key) => currentStore().hydrateList(definition, key),
   };
   return handle;
 }
