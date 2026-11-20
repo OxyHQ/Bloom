@@ -10,8 +10,9 @@ import { currentStore, withStore } from './root';
  * update the copy beneath it without moving what the reader sees, which is
  * what an echo guard used to do by hand. Then `run` calls the server:
  *
- * - it resolves: the layer goes and `settle` writes the server's answer, in
- *   one notification, so the reader sees no flicker between the two;
+ * - it resolves: the layer is written into the server copy (the server
+ *   accepted it) and `settle` writes the server's own answer over it, in one
+ *   notification, so the reader sees no flicker between the two;
  * - it rejects: the layer goes (that is the rollback: the copy beneath it is
  *   current, including anything realtime brought meanwhile) and the call
  *   rejects with the error.
@@ -52,7 +53,7 @@ export function action<A extends unknown[], R>(options: ActionOptions<A, R>): Ac
     try {
       const result = await withStore(store, () => options.run(...args));
       store.batch(() => {
-        if (layer) store.dropLayer(layer);
+        if (layer) store.commitLayer(layer);
         if (!store.closed) withStore(store, () => options.settle?.(result, ...args));
       });
       return result;
