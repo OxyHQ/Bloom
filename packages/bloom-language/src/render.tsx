@@ -644,7 +644,7 @@ function renderHost(
     case 'menu': {
       const menu = draw(MenuHost, {
         key: boxed ? undefined : key,
-        trigger: (node.props as MenuProps).trigger,
+        trigger: namedTrigger((node.props as MenuProps).trigger, p.label),
         rows: node.children,
         label: p.label,
         testID: p.testID,
@@ -757,6 +757,17 @@ function viewElement(node: Node, ctx: Context, key: string | number | undefined)
     { value: ctx.env, key },
     draw(component, props as Record<string, unknown>),
   );
+}
+
+/**
+ * A menu's name is its trigger's: what assistive technology says for the
+ * button that opens it. A trigger with a name of its own keeps it.
+ */
+function namedTrigger(trigger: Child, label: string | undefined): Child {
+  if (label === undefined || !isNode(trigger)) return trigger;
+  return trigger.modifiers.some((modifier) => modifier.kind === 'label')
+    ? trigger
+    : trigger.label(label);
 }
 
 function buttonContent(children: readonly Child[]): {

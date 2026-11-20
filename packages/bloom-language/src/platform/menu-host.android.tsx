@@ -59,7 +59,6 @@ function LensMenuHost({
 function OpenLensMenu({
   trigger: given,
   rows: nodes,
-  label,
   testID,
   render,
   NativeLens,
@@ -99,9 +98,7 @@ function OpenLensMenu({
       onItemSelect={(event) => handlers[event.nativeEvent.id]?.()}
       onMenuClosed={onClosed}
     >
-      <View accessibilityLabel={label} testID={testID}>
-        {render(trigger)}
-      </View>
+      <View testID={testID}>{render(trigger)}</View>
       <View nativeID={LENS_ICON_HOST_ID} collapsable={false} pointerEvents="none" style={ICON_HOST}>
         {icons.map((icon, slot) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: the slot index is the identity the engine uses
