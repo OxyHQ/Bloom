@@ -99,4 +99,19 @@ describe('the header is Bloom’s PageHeader', () => {
     });
     expect(header.props.actions).toHaveLength(1);
   });
+
+  it('toolbar items keep their keys, a menu among them too', () => {
+    const r = mount(
+      toElement(
+        Header('Home').toolbar(
+          Button(Icon(Glyph)).shape('circle').label('Search'),
+          Menu(Icon(Glyph), Item('Copy')).label('More'),
+        ),
+      ),
+    );
+    const keys = (only(r, 'PageHeader').props.actions as { key: string | null }[]).map(
+      (a) => a.key,
+    );
+    expect(keys).toEqual(['0', '1']);
+  });
 });
