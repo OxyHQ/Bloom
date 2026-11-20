@@ -135,7 +135,7 @@ be preserved"), so keep the controller in a custom hook (`usePostRowModel`).
 | `Text` | React Native `Text`, styled from tokens. Nested `Text` is an inline span. |
 | `Icon` | the Bloom icon component, at a size rung, filled with the foreground |
 | `Avatar` | Bloom `Avatar` |
-| `Image` | Bloom `shapes` `Image` (square, at an avatar rung). See [Not built yet](#not-built-yet). |
+| `Image` | Bloom `BloomImage` (`@oxy.so/bloom/image`), sized and clipped by its own box (see [Image](#image)) |
 | `Button` | Bloom `Button` (`style` is its appearance, `tint` its tone, `shape` is icon-only) |
 | `ActionBar` / `Action` / `ActionGroup` | Bloom `EngagementBar` / `EngagementAction` / `EngagementGroup` |
 | `.glass()` | Bloom `Surface` (see [Glass](#glass)) |
@@ -170,9 +170,9 @@ variables. The whole vocabulary has to be in the sheet, not only what sources
 name, because a token can be a runtime value (`.spacing(gap)`), so the sheet is
 generated from the spec, not by scanning (no PostCSS plugin).
 
-- *Delivery:* the sheet is a constructed stylesheet adopted once per document,
-  as Bloom's web forks inject theirs (CSP-safe). Bloom's `adoptStyleSheet` is
-  not a public subpath, so the language carries the same small mechanism.
+- *Delivery:* the sheet is a constructed stylesheet adopted once per document
+  through Bloom's `adoptStyleSheet` (`@oxy.so/bloom/styles`), as Bloom's web
+  forks inject theirs (CSP-safe).
 - *Order against react-native-web:* react-native-web inserts its sheet at the
   top of `<head>`, and adopted sheets come after every document sheet, so a
   language class beats react-native-web's base `View`/`Text` reset at equal
@@ -215,6 +215,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `onPress`, `onLongPress`, `onHover`, `hoverGroup` | handlers. `onPress(undefined)` keeps the pressable host, out of the focus order. |
 | `label`, `hint`, `role`, `hitSlop`, `testID`, `id` | accessibility and identity |
 | `lines(n)`, `noWrap()` | text only |
+| `contentFit`, `aspectRatio`, `tint`, `transition`, `onLoad`, `onError` | `Image` only (see [Image](#image)) |
 | `count`, `active`, `tint` | `Action` only |
 | `trailing(...)`, `countFormat(fn)` | `ActionBar` only |
 
@@ -265,6 +266,35 @@ How each will map natively, when a renderer replaces Surface:
 - **Web:** `backdrop-filter`, as Surface's web material already draws it
   (`blur(24px)` with the measured saturate/contrast), `clear` with less blur and
   no sheen, the tint as the fill at the token's opacity.
+
+## Image
+
+`Image(source, alt?)` is Bloom's `BloomImage`: expo-image on a device,
+react-native's `Image` on the web. `source` is anything `BloomImage` takes: a URL,
+a bundled asset (`require()`) or a URI descriptor with headers.
+
+```ts
+Image(post.cover, 'Cover')
+  .frame({ height: '5xl' })
+  .aspectRatio(16 / 9)
+  .contentFit('cover')
+  .corner('lg')
+  .transition('fast')
+```
+
+- **Box.** An image has no size until it loads, so it is sized like a view:
+  `frame`, or one side and `aspectRatio` (width over height). The innermost
+  layer is the image's own style, so `corner` clips the pixels and
+  `background` shows until they arrive.
+- **Options.** `contentFit` takes `BloomImage`'s vocabulary (`cover`, the
+  default, `contain`, `fill`, `none`, `scale-down`). `tint(role)` paints every
+  opaque pixel one colour role, from the theme like an icon's fill.
+  `transition` is a Bloom duration (`instant` 100, `fast` 150, `normal` 200,
+  `slow` 300 ms); without it the image appears at once. `onLoad` receives the
+  intrinsic `{ width, height }` and `onError` `{ error }`.
+- **Presses.** `BloomImage` takes accessibility props but no presses, so an image
+  with `onPress`, `onHover` or `hoverGroup` is drawn inside its pressable host,
+  which also takes `grow` and `shrink`.
 
 ## Interop
 
@@ -389,9 +419,6 @@ a theme switch; each fixture also pins how many chains the compiler hoists.
 
 - No native or CSS renderer: everything renders through React Native and
   react-native-web.
-- `Image` draws only Bloom's square, clipped `shapes` `Image`. A general raster
-  needs `BloomImage`, which is not a public subpath, and exporting it changes
-  `@oxy.so/bloom`'s exports.
 - `ZStack` is basic: the first child sets the size and the rest cover it. There
   is no alignment inside it yet.
 - Glass maps every material onto one Surface (see [Glass](#glass)).
