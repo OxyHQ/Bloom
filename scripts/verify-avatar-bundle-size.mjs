@@ -42,8 +42,8 @@ const SCENARIOS = {
     budget: {
       initial: 0.14 * MiB,
       initialGzip: 0.05 * MiB,
-      total: 32.8 * MiB,
-      totalGzip: 7.5 * MiB,
+      total: 13.8 * MiB,
+      totalGzip: 6.3 * MiB,
     },
   },
   'opt-out': {
@@ -59,8 +59,8 @@ const SCENARIOS = {
     budget: {
       initial: 0.14 * MiB,
       initialGzip: 0.06 * MiB,
-      total: 4.3 * MiB,
-      totalGzip: 1.0 * MiB,
+      total: 3.15 * MiB,
+      totalGzip: 0.95 * MiB,
     },
   },
 };
@@ -212,8 +212,8 @@ const NATIVE_OPT_OUT_ENTRY = [
 ].join('\n');
 mkdirSync(resolve(root, '.local'), { recursive: true });
 for (const [name, entry, optOut, budget] of [
-  ['native default', NATIVE_ENTRY, false, 35.3 * MiB],
-  ['native opt-out', NATIVE_OPT_OUT_ENTRY, true, 6.7 * MiB],
+  ['native default', NATIVE_ENTRY, false, 16.0 * MiB],
+  ['native opt-out', NATIVE_OPT_OUT_ENTRY, true, 5.5 * MiB],
 ]) {
   const bytes = metroBundle(name.replace(' ', '-'), entry, optOut);
   console.log(`${name}: Hermes bundle ${fmt(bytes)}`);

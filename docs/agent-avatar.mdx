@@ -143,6 +143,22 @@ must ship all vector assets; no consumer can depend on the extractor's filesyste
 ends by packing the assets (shared payloads in `vector-assets/blobs/`, one `catalog/<kind>-<id>.ts`
 module per asset); do not edit those files by hand.
 
+A payload (pack format 3) is a JSON module whose header fields are plain values and whose numbers
+are integers in one base64 `data` string, losslessly. The extracted numbers are decimals of at most
+six places, so an array keeps its `decimals` and each number is an integer N with
+`N / 10 ** decimals` exactly the double `JSON.parse` gave. Each column of an array (x, y, z of a
+point or a face; each element of a channel's sample) keeps its smallest N and how many
+little-endian bytes, 0 to 4, hold the rest: points, faces and blink deltas are
+`{ rows, decimals, columns }`, a channel's samples `{ samples, decimals, columns }`; a channel's
+short `value` stays JSON. Bundlers turn a JSON module into an object literal, so loading one parses
+no JSON string: `decodeBlob` in `vector-pack.ts` decodes the base64 with a table and rebuilds the
+`number[][]` rows and `number[]` samples the renderer reads. The packer fails on a number it cannot
+give back exactly (more than 4 bytes of range, `-0`, not finite) and checks every payload decodes
+to its data; packing the packed data again rewrites every file byte for byte
+(`scripts/test-avatar-vector-pack.mjs`), and `vector-pack.test.ts` reads every shipped number
+against its bytes. Format 2 kept each payload as a JSON string parsed on load; `readVectorAsset`
+still reads it, to repack.
+
 `renderer`, including its historical `'webgl'` value, is a deprecated compatibility
 prop and no longer selects another renderer. `AgentAvatarProvider.runtimeUrl`,
 `AgentAvatarProvider.stillStorage` and `BloomProvider.characterRuntimeUrl` are also
@@ -153,18 +169,34 @@ only a bounded capability map, not an offscreen rendering queue.
 ## Choosing which assets an app ships
 
 Bloom ships 70 vector assets (shapes, eyes, eyewear, accessories and authored templates), about
-30 MB of JSON before compression. Each is a lazy module, so none is in an app's first paint, but
-a bundler that sees an `import()` emits the file, and Metro and `expo export` link every one of
-them. The default build therefore ships all of them, whether the app draws one character or all.
+11 MB before compression (pack format 3; 30 MB as JSON before it). Each is a lazy module, so none is
+in an app's first paint, but a bundler that sees an `import()` emits the file, and Metro and
+`expo export` link every one of them. The default build therefore ships all of them, whether the
+app draws one character or all.
 
-Three things keep that bounded:
+These keep that bounded:
 
 - **One copy of every payload.** Assets share most of their geometry and many animation tracks.
   Each distinct payload is stored once under `vector-assets/blobs/<hash>.json`; an asset file keeps
-  only its small metadata and the hashes (`scripts/avatar-vector/pack-assets.mjs`, lossless:
-  `scripts/test-avatar-vector-pack.mjs` and the manifest gate check it). 58 MB became 30 MB with no
-  app change.
-- **Only the clips that are drawn are fetched.** An asset (pack format 2) keeps each part's tracks
+  only its small metadata and the hashes (`scripts/avatar-vector/pack-assets.mjs`; sharing is
+  lossless: `scripts/test-avatar-vector-pack.mjs` and the manifest gate check it). 58 MB became
+  30 MB with no app change.
+- **Numbers are integers, not text.** Pack format 3 (see
+  [Assets and packaging](#assets-and-packaging)) holds the same numbers in fewer bytes: the 855
+  payloads went from 28.7 MB to 11.0 MB raw and from 6.42 MB to 5.46 MB gzip (level 9), but from
+  4.27 MB to 4.78 MB brotli (quality 11): base64 hides the byte structure that brotli found in the
+  JSON digits. Built through `verify-avatar-bundle-size.mjs`, the default web export went from
+  29.95 to 13.08 MiB of JavaScript (6.96 to 5.99 MiB gzip) and the Metro iOS bundle from 32.22 to
+  15.24 MiB; the opt-out (three assets) from 4.15 to 2.97 MiB (0.96 to 0.90 MiB gzip) and from
+  6.41 to 5.23 MiB. Every asset reads back strictly equal to the format 2 data, and every preset,
+  Alia, two bots and a composed character draw the same 1,333 paths over 15 idle, reaction and work
+  frames, vertex for vertex (`vector-pack-frames.test.ts`, with `BLOOM_AVATAR_REFERENCE_PACK`).
+  Decoding Alia's rest payloads (20, from `six_lobed_flower`, `sleepy_lids` and `circle`) in Node
+  takes 1.9 ms warm against 2.9 ms for `JSON.parse` of format 2, but 19 ms against 3 ms with the
+  JIT off (`--jitless`), which is closer to Hermes: measure on a device before relying on it.
+  A 16-bit quantized format (13.2 MB) was tried first and rejected: 201 outlines changed their
+  vertex count, and some frames changed visibly.
+- **Only the clips that are drawn are fetched.** An asset (pack format 2 on) keeps each part's tracks
   per clip, `tracks[i] = { idle, reaction, work }`, each its own payload. An avatar first loads its
   character at rest (`VECTOR_REST_CLIPS`, `['idle']`): the idle tracks and the geometry they draw.
   A mood (`mood="sad"`, the empty state's gemie shaking its head "no") is drawn on the idle clip
@@ -226,7 +258,8 @@ template still renders, retargeted from its parts, without its authored animatio
 
 Without any of this nothing changes: the default is the full catalog, loaded lazily on first use,
 and apps that do nothing keep working. `scripts/verify-avatar-bundle-size.mjs` bundles the built
-package both ways and fails CI past its budgets.
+package both ways and fails CI past its budgets (since pack format 3: 13.8 / 6.3 MiB web default,
+3.15 / 0.95 MiB web opt-out, 16.0 and 5.5 MiB native).
 
 ### Measured (19.3.1 against this change)
 

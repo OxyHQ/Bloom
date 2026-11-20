@@ -1,5 +1,5 @@
 /**
- * Lossless, content-addressed packing of the avatar vector assets.
+ * Content-addressed packing of the avatar vector assets.
  *
  * The 71 character assets share most of their geometry (the same head, the same eye
  * rig appear in many of them) and many animation tracks. Stored whole they weigh
@@ -12,13 +12,28 @@
  * Format 2 (`format: 2`) stores each clip's track on its own, so a character drawn at rest loads
  * its `idle` tracks and not its `reaction` and `work` ones, nor the geometry of its `workOnly`
  * parts (the computer, hands and screens), until a gesture first plays. Format 1 kept the three
- * clips of a part in one payload; `readVectorAsset` still reads it, to repack.
+ * clips of a part in one payload. `readVectorAsset` reads all three formats, to repack.
  *
- * `unpackVectorAsset` is the exact inverse; `src/agent-avatar/vector-pack.ts` mirrors it.
- * Run by `build-avatar-vector-assets.mjs`; also runnable alone (`node pack-assets.mjs`),
- * where it is idempotent. It also writes `src/agent-avatar/catalog/<kind>-<id>.ts`, one
- * lazy module per asset, so an app can import (and therefore ship) only the assets it uses.
+ * Format 3 stores each payload's numeric arrays (points, faces, blink deltas, every channel's
+ * samples) as integers in one base64 `data` string, losslessly. The extracted numbers are decimals
+ * of at most a few places, so each array keeps its `decimals` and every number is an integer N
+ * with `N / 10 ** decimals` the same double JSON.parse gave. An array is split into columns (x, y
+ * and z of a point; each element of a channel's sample), and each column keeps its smallest N,
+ * `min`, and how many little-endian bytes (0 to 4) hold `N - min`:
+ *
+ *   points, faces, delta0, delta1   { rows, decimals, columns: [[min, bytes] x 3] }
+ *   channel.samples                 { samples, decimals, columns: [[min, bytes] x width] }
+ *
+ * Everything else (a channel's short `value`) stays plain JSON beside them, in order, and the
+ * column bytes follow each other in that order. Packing fails on a number that is not exact.
+ *
+ * `unpackVectorAsset` is the exact inverse of the packing and `decodeBlob` reads what `encodeBlob`
+ * writes; `src/agent-avatar/vector-pack.ts` mirrors both. Run by `build-avatar-vector-assets.mjs`; also
+ * runnable alone (`node pack-assets.mjs`), where it is idempotent. It also writes
+ * `src/agent-avatar/catalog/<kind>-<id>.ts`, one lazy module per asset, so an app can import
+ * (and therefore ship) only the assets it uses.
  */
+import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
@@ -30,15 +45,115 @@ const GEOMETRY = ['points', 'faces', 'delta0', 'delta1'];
 const hashOf = (text) => createHash('sha256').update(text).digest('hex').slice(0, 16);
 const wrap = (value) => JSON.stringify({ encoding: 'json', data: JSON.stringify(value) });
 
-export const PACK_FORMAT = 2;
+export const PACK_FORMAT = 3;
 export const isPacked = (data) => Array.isArray(data.tracks);
+const ROW = 3;
+/** The numbers in one sample of each channel: one column each. */
+const CHANNEL_WIDTHS = {
+  translation: 3,
+  rotation: 4,
+  scale: 3,
+  camera: 4,
+  coverage: 4,
+  matrix: 16,
+  parameters: 4,
+  reference: 4,
+};
+/** Decimal places in the shortest text of `n` (`1e-7` has 7). */
+function decimalsOf(n) {
+  const [mantissa, exponent = '0'] = String(n).split('e');
+  return Math.max(0, (mantissa.split('.')[1]?.length ?? 0) - Number(exponent));
+}
 
-/** @returns {{ packed: object, blobs: Map<string, object> }} */
+/** Encodes one payload (a part's geometry or one clip's track) in format 3. */
+export function encodeBlob(value) {
+  const bytes = [];
+  const encode = (numbers, width, where) => {
+    if (numbers.length % width)
+      throw new Error(`${where}: ${numbers.length} is not rows of ${width}`);
+    let decimals = 0;
+    for (const n of numbers) {
+      if (!Number.isFinite(n)) throw new Error(`${where}: ${n} is not a finite number`);
+      if (Object.is(n, -0)) throw new Error(`${where}: -0 would come back as 0`);
+      decimals = Math.max(decimals, decimalsOf(n));
+    }
+    const scale = 10 ** decimals;
+    const integers = numbers.map((n) => {
+      const integer = Math.round(n * scale);
+      if (!Number.isSafeInteger(integer) || !Object.is(integer / scale, n))
+        throw new Error(`${where}: ${n} is not exact at ${decimals} decimals`);
+      return integer;
+    });
+    const columns = [];
+    for (let c = 0; c < width; c++) {
+      const column = integers.filter((_, i) => i % width === c);
+      const min = column.reduce((a, b) => Math.min(a, b), column[0] ?? 0);
+      const range = column.reduce((a, b) => Math.max(a, b), min) - min;
+      const size = [1, 2 ** 8, 2 ** 16, 2 ** 24, 2 ** 32].findIndex((limit) => range < limit);
+      if (size < 0) throw new Error(`${where}: a range of ${range} does not fit 4 bytes`);
+      for (const integer of column)
+        for (let b = 0; b < size; b++) bytes.push(Math.floor((integer - min) / 256 ** b) % 256);
+      columns.push([min, size]);
+    }
+    return { decimals, columns };
+  };
+  const blob = {};
+  for (const [key, field] of Object.entries(value)) {
+    if (Array.isArray(field)) {
+      for (const row of field)
+        if (row.length !== ROW) throw new Error(`${key}: a row of ${row.length}, not ${ROW}`);
+      blob[key] = { rows: field.length, ...encode(field.flat(), ROW, key) };
+    } else if (Array.isArray(field?.samples)) {
+      const width = CHANNEL_WIDTHS[key];
+      if (!width) throw new Error(`${key}: a channel of unknown width`);
+      if (Object.keys(field).length !== 1) throw new Error(`${key}: samples beside other fields`);
+      blob[key] = { samples: field.samples.length, ...encode(field.samples, width, key) };
+    } else blob[key] = field;
+  }
+  return { ...blob, data: Buffer.from(bytes).toString('base64') };
+}
+
+/** The payload a format 3 blob holds; `vector-pack.ts` decodes it the same way at runtime. */
+export function decodeBlob({ data, ...fields }) {
+  const bytes = Buffer.from(data, 'base64');
+  let at = 0;
+  const decode = (count, { decimals, columns }) => {
+    const values = new Array(count);
+    columns.forEach(([min, size], c) => {
+      for (let i = c; i < count; i += columns.length, at += size)
+        values[i] = (min + (size ? bytes.readUIntLE(at, size) : 0)) / 10 ** decimals;
+    });
+    return values;
+  };
+  const payload = {};
+  for (const [key, field] of Object.entries(fields)) {
+    if (typeof field?.rows === 'number') {
+      const values = decode(field.rows * ROW, field);
+      payload[key] = Array.from({ length: field.rows }, (_, r) =>
+        values.slice(r * ROW, r * ROW + ROW),
+      );
+    } else if (typeof field?.samples === 'number')
+      payload[key] = { samples: decode(field.samples, field) };
+    else payload[key] = field;
+  }
+  if (at !== bytes.length) throw new Error('Vector payload: bytes left over');
+  return payload;
+}
+
+/** The text of a payload's blob file; fails unless it decodes to exactly `value`. */
+export function blobText(value) {
+  const text = JSON.stringify(encodeBlob(value));
+  assert.deepStrictEqual(decodeBlob(JSON.parse(text)), value, 'Vector payload: packing is lossy');
+  return text;
+}
+
+/** @returns {{ packed: object, blobs: Map<string, string> }} the asset and its blobs' text */
 export function packVectorAsset(data) {
   const blobs = new Map();
   const put = (value) => {
-    const hash = hashOf(JSON.stringify(value));
-    blobs.set(hash, value);
+    const text = blobText(value);
+    const hash = hashOf(text);
+    blobs.set(hash, text);
     return hash;
   };
   const clipNames = Object.keys(data.clips);
@@ -110,15 +225,14 @@ export const blobHashes = (packed) => [
   ]),
 ];
 
-/** Reads an asset file from `directory` in its full form, packed or not. */
+/** Reads an asset file from `directory` in its full form, packed (format 1 to 3) or not. */
 export function readVectorAsset(directory, file) {
   const data = JSON.parse(JSON.parse(fs.readFileSync(path.join(directory, file), 'utf8')).data);
   if (!isPacked(data)) return data;
-  return unpackVectorAsset(data, (hash) =>
-    JSON.parse(
-      JSON.parse(fs.readFileSync(path.join(directory, 'blobs', `${hash}.json`), 'utf8')).data,
-    ),
-  );
+  return unpackVectorAsset(data, (hash) => {
+    const blob = JSON.parse(fs.readFileSync(path.join(directory, 'blobs', `${hash}.json`), 'utf8'));
+    return data.format >= 3 ? decodeBlob(blob) : JSON.parse(blob.data);
+  });
 }
 
 const idKey = (id) => JSON.stringify(id);
@@ -142,9 +256,8 @@ export function packVectorAssets(root) {
   const allBlobs = {};
   for (const { record, data } of full) {
     const { packed, blobs } = packVectorAsset(data);
-    for (const [hash, value] of blobs) {
+    for (const [hash, text] of blobs) {
       if (allBlobs[hash]) continue;
-      const text = wrap(value);
       fs.writeFileSync(path.join(directory, 'blobs', `${hash}.json`), text);
       allBlobs[hash] = { bytes: Buffer.byteLength(text), gzipBytes: gzipSync(text).length };
     }
