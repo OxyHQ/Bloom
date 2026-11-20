@@ -3,8 +3,12 @@
  * with the sliding selection, the fold as the page scrolls, and the action
  * beside it. On Android and OxyOS Bloom draws the capsule with the lens; on
  * iOS and the web, with its floating material (the system blur on iOS).
+ *
+ * Its action is the shell's: while the screen in front shows a primary action
+ * of its own, the bar's steps aside, as the shell's own FAB does.
  */
 import { createElement } from 'react';
+import { useScreenActionClaimed } from '@oxy.so/bloom/app-shell/hooks';
 import { BottomBar } from '@oxy.so/bloom/bottom-bar';
 
 import { resolveIconSize } from '../tokens';
@@ -41,7 +45,7 @@ const NOOP = () => {};
 export function BottomBarHost({ node, render }: NodeHostProps) {
   const values = valuesOf(node);
   const items = itemsOf(node);
-  const action = values.action;
+  const action = useScreenActionClaimed() ? undefined : values.action;
   return (
     <BottomBar
       items={items}
