@@ -1,6 +1,6 @@
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import { CharacterAvatar } from '../CharacterAvatar';
-import { packedVectorAsset } from '../vector-pack';
+import { packedVectorAsset, type VectorBlob } from '../vector-pack';
 import { vectorShapeImports } from '../vector-asset-imports';
 import { vectorAssetLoader } from '../vector-assets';
 import type { VectorAction, VectorAssetLoader } from '../vector-types';
@@ -14,10 +14,32 @@ import type { VectorAction, VectorAssetLoader } from '../vector-types';
  */
 const encoded = (value: unknown) => async () => ({ default: { data: JSON.stringify(value) } });
 const track = (n: number) => ({ translation: { value: [n, 0, 0] } });
+/** One point at `n, n, n` and one face, as pack format 3 stores them: every column constant. */
+const geometry = (n: number) => ({
+  points: {
+    rows: 1,
+    decimals: 0,
+    columns: [
+      [n, 0],
+      [n, 0],
+      [n, 0],
+    ],
+  },
+  faces: {
+    rows: 1,
+    decimals: 0,
+    columns: [
+      [0, 0],
+      [0, 0],
+      [0, 0],
+    ],
+  },
+  data: '',
+});
 
 describe('a packed asset', () => {
   const asset = {
-    format: 2,
+    format: 3,
     identity: { id: 'x' },
     parts: [
       { id: 0, label: 'body', role: 'body', geo: 'g-body' },
@@ -33,13 +55,13 @@ describe('a packed asset', () => {
       { idle: null, reaction: null, work: 't-hand-work' },
     ],
   };
-  const payloads: Record<string, unknown> = {
-    'g-body': { points: [[0, 0, 0]], faces: [[0, 0, 0]] },
-    'g-hand': { points: [[1, 1, 1]], faces: [[0, 0, 0]] },
-    't-body-idle': track(1),
-    't-body-reaction': track(2),
-    't-body-work': track(3),
-    't-hand-work': track(4),
+  const payloads: Record<string, VectorBlob> = {
+    'g-body': geometry(0),
+    'g-hand': geometry(1),
+    't-body-idle': { ...track(1), data: '' },
+    't-body-reaction': { ...track(2), data: '' },
+    't-body-work': { ...track(3), data: '' },
+    't-hand-work': { ...track(4), data: '' },
   };
   function importer() {
     const read: string[] = [];
@@ -48,7 +70,7 @@ describe('a packed asset', () => {
         hash,
         async () => {
           read.push(hash);
-          return encoded(value)();
+          return { default: value };
         },
       ]),
     );
