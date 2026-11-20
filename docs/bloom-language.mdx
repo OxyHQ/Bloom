@@ -239,11 +239,11 @@ the 3px gap before its text, the 13, 14 and 18px glyphs, and `leading-tight` (1.
 
 ## Glass
 
-SwiftUI's `glassEffect` materials, mapped onto Bloom's one material (`Surface`)
-for now. `regular` and `clear` are exported values; `.tint(role, opacity?)`
-returns a tinted copy.
+SwiftUI's `glassEffect` materials, drawn by each platform's own glass (below),
+and by Bloom's `Surface` where the platform has none. `regular` and `clear` are
+exported values; `.tint(role, opacity?)` returns a tinted copy.
 
-| Chain | Surface today |
+| Chain | On Surface (the web, and native without the platform's glass) |
 | --- | --- |
 | `.glass()` = `.glass(regular)` | Surface with its own fill |
 | `.glass(regular.tint('primary'))` | `fill` = the role's colour (the web paints an opaque fill at 72%, as Surface always does) |
@@ -256,16 +256,100 @@ Opacities are tokens (`glassOpacity` in the spec): `subtle` 0.24, `medium` 0.48,
 Native paints `withAlpha`; the web paints `color-mix(…)`, because a web paint can
 be a CSS variable.
 
-How each will map natively, when a renderer replaces Surface:
+Each platform draws the glass itself (`src/platform/glass-host.*`), and Surface
+is what is left where it cannot:
 
-- **iOS:** `glassEffect(.regular)` / `.clear`, with `.tint(color.opacity(x))`
-  for a tint; the opacity token becomes the colour's opacity.
-- **Android and OxyOS:** the lens engine's material: `regular` its default
-  frosted lens, `clear` its unfrosted lens, the tint and opacity as its tint
-  layer.
-- **Web:** `backdrop-filter`, as Surface's web material already draws it
-  (`blur(24px)` with the measured saturate/contrast), `clear` with less blur and
-  no sheen, the tint as the fill at the token's opacity.
+- **Android and OxyOS:** the lens engine (`BloomLensMenu` with no rows, from
+  `@oxy.so/bloom-lens`), on Android 13+ in a binary that has the module. The
+  material's frost is the spec's `lensBlur` (`regular` 1, `clear` 0.5, a
+  multiplier of the engine's own); the tint is the role at the named opacity,
+  else the engine's own. The lens belongs to the fixed layer (a header, a bar,
+  a floating button): the window draws it, so it does not follow a scroll
+  view's overscroll, and each one is drawn every frame.
+- **iOS:** Liquid Glass (`expo-glass-effect`'s `GlassView`, iOS 26), its style
+  the spec's `iosStyle`, the tint as a colour with the token's opacity,
+  interactive under a control; before iOS 26, `expo-blur`'s system material
+  under the tint. Both are optional.
+- **Web:** Surface, Bloom's frosted material (`blur(24px)` with the measured
+  saturation and contrast under the tint). The web has no glass.
+
+**A control on glass.** A `Button` or `FAB` on glass keeps its own press,
+ink, size and name (Bloom's `material="shared"`); the glass draws its fill.
+An untinted glass under a solid control takes the control's fill (the spec's
+`toneRole`: `accent` is `primary`, `action` is `tertiary`…), so the ink still
+reads. A `FAB` is always on glass.
+
+## Platform components
+
+One API; each platform draws it with its own component (`src/platform/`,
+`*.android.tsx`, `*.ios.tsx`, `*.web.tsx`; OxyOS takes the Android files).
+
+```ts
+Header('Notifications')
+  .titleDisplay('large')
+  .toolbar(
+    Button(Icon(RiSearchLine)).style('subtle').tint('neutral').shape('circle').label('Search'),
+    Menu(
+      Button(Icon(RiMoreFill)).style('plain').shape('circle').label('More'),
+      Item('Copy link').icon(RiLinkM).onPress(copy),
+      Submenu('Share', Item('Copy'), Item('Share to…')).icon(RiShareLine),
+      Section(Item('Delete').icon(RiDeleteBinLine).destructive().onPress(remove)).title('Danger'),
+    ),
+  )
+
+BottomBar(Tab('Home', RiHome5Line).id('home'), Tab('Search', RiSearchLine).id('search'))
+  .selection(page)
+  .onSelect(open)
+  .action(FAB(Icon(RiQuillPenLine)).label('Compose').onPress(compose))
+```
+
+| | Android, OxyOS | iOS (not verified) | Web |
+| --- | --- | --- | --- |
+| `Menu` | the lens menu | the system menu (SwiftUI `Menu` through `@expo/ui`) | Bloom `DropdownMenu` |
+| `Button` | Bloom `Button`; on glass, on the lens | Bloom `Button`; on glass, on Liquid Glass | Bloom `Button`; on glass, on Surface |
+| `FAB` | Bloom `Fab` on the lens | Bloom `Fab` on Liquid Glass | Bloom `Fab` on Surface |
+| `Header` | Bloom `PageHeader` (a floating header's controls take the lens) | the navigation bar (expo-router's native `Stack`) | Bloom `PageHeader` |
+| `BottomBar` | Bloom `BottomBar` (its capsule on the lens) | Bloom `BottomBar` (its capsule on the system blur) | Bloom `BottomBar` |
+
+**Menu.** `Menu(trigger, ...rows)`: `Item` (`.icon`, `.destructive`,
+`.disabled`, `.checked`, `.keepOpen`, `.onPress`), `Submenu` (one level),
+`Section` (`.title`, set apart from the rows beside it) and `Divider`. A
+row's glyph is a Bloom icon in the menu's quiet ink (the negative ink for a
+destructive row). Rows built from hooks, or costly to build, go in one
+`menu()` content, whose body runs only while the menu is open:
+
+```ts
+const PostMenu = menu(function PostMenu({ post }: { post: Post }) {
+  const actions = usePostActions(post);
+  return actions.map((action) => Item(action.label).icon(action.icon).onPress(action.run));
+});
+Menu(MORE, PostMenu({ post }))
+```
+
+- *Android:* a closed menu is only its trigger. A press mounts the lens view
+  around it with the menu open (`openOnMount`), the rows as data and their
+  glyphs as views in the engine's icon slots; the view stays until the engine
+  says the menu has closed. A trigger on glass gives the menu its glass: the
+  menu draws it and morphs out of it. The panel's tint and ink are Bloom's menu
+  palette (the first surface level). Without the engine, Bloom's menu.
+- *iOS:* the system menu takes its rows before it opens and opens itself, so
+  a `menu()` content (built only while open) is Bloom's menu there; rows given
+  as they are are the system's. The system menu draws no Bloom icon: its rows
+  show their titles.
+
+**Header.** `Header(title)` with `.titleDisplay('large' | 'inline')` (large is
+the ramp's `title-1-bold`), `.subtitle`, `.toolbar(...)`, `.toolbarLeading(...)`,
+`.onBack(fn | null)`, `.scrollEdge('auto' | 'always' | 'none')` (Bloom's
+scrim), `.scrollY` and `.presentation('floating' | 'bar' | 'navigation')`. On
+iOS the header sets its screen's options in expo-router's native `Stack`, so
+the screen must be one of its screens with the header shown; the system back
+button pops the stack and a custom `onBack` is not called.
+
+**BottomBar.** `BottomBar(...tabs)`, `Tab(label, icon)` with `.id`,
+`.activeIcon` and `.badge`; the bar takes `.selection`, `.onSelect`,
+`.action(FAB(...))`, `.minimize` (Screen's collapse), `.progress` (a pager's
+selection) and `.hide` (its presence). The system tab bar on iOS is a
+navigator (expo-router's `NativeTabs`), not a view the bar could be.
 
 ## Image
 
@@ -404,7 +488,9 @@ a theme switch; each fixture also pins how many chains the compiler hoists.
 
 ## What comes next
 
-- **Native renderers.** A renderer takes the same node and modifier list. iOS
+- **Native renderers.** Menu, glass and the navigation bar already draw with
+  each platform's own component (see [Platform components](#platform-components)).
+  A renderer takes the same node and modifier list. iOS
   maps it to SwiftUI views and modifiers (the vocabulary was chosen to map one to
   one). Android and OxyOS map it to native views and the lens glass engine. Each
   renderer replaces `render.tsx` for its platform, and paints roles natively, so
@@ -421,7 +507,9 @@ a theme switch; each fixture also pins how many chains the compiler hoists.
   react-native-web.
 - `ZStack` is basic: the first child sets the size and the rest cover it. There
   is no alignment inside it yet.
-- Glass maps every material onto one Surface (see [Glass](#glass)).
+- iOS is written and typechecked against `expo-glass-effect`, `@expo/ui` and
+  expo-router, and tested against stand-ins of each; it is not verified on a
+  device (no Mac here).
 - On the web, hover groups (`hoverGroup()`) set the `group` class through
   `react-native-css`. Web behaviour of the language row is unmeasured.
 - The web stylesheet is not in server-rendered HTML.
