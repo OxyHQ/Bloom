@@ -667,6 +667,7 @@ function renderHost(
         key: boxed ? undefined : key,
         trigger: namedTrigger((node.props as MenuProps).trigger, p.label),
         rows: node.children,
+        actions: ownValue(p, 'actions')?.value,
         label: p.label,
         testID: p.testID,
         render: (child: Child) => renderChild(child, ctx, undefined),

@@ -1,23 +1,26 @@
 /**
  * iOS: the system menu (SwiftUI `Menu`, a UIMenu, through `@expo/ui`). The
  * trigger is the React view the menu opens from; the rows are SwiftUI's own
- * buttons, toggles, sections and nested menus. Without `@expo/ui`, Bloom's
- * menu.
+ * buttons, toggles, sections and nested menus, each with its icon's SF Symbol
+ * (`sfSymbols` in the spec; an icon without one draws no glyph). Without
+ * `@expo/ui`, Bloom's menu.
  *
- * The system menu takes its rows before it opens, and it opens itself: it
- * cannot build them as it is pressed. So a menu whose rows come from a
- * `menu()` content (built only while open, as a row's ⋯ menu is) is Bloom's
- * menu; a menu of rows given as they are is the system's. Row glyphs are
- * Bloom icons, which a system menu cannot draw: its rows show their titles.
+ * The system menu takes its rows before it opens and opens itself. Rows given
+ * as they are, tagged (`Item(title).tag(name)`, resolved by the menu's
+ * `actions()` when chosen) or with their own handlers, are plain data it can
+ * be given then. A `menu()` content, whose rows exist only while the menu is
+ * open, cannot be: such a menu is Bloom's menu.
  *
  * NOT VERIFIED: written without an iOS build (no Mac on this machine).
  */
 import type { ComponentType, ReactNode } from 'react';
 import { useTheme } from '@oxy.so/bloom/theme';
 
-import { isNode } from '../node';
+import { SF_SYMBOLS } from '../generated/sf-symbols.generated';
+import type { IconComponent } from '../node';
+import { useMenuChoice } from './menu-actions';
 import { DropdownMenuHost } from './menu-dropdown';
-import { readMenuRows, type MenuRowData } from './menu-rows';
+import { builtOnOpen, readMenuRows, type MenuRowData } from './menu-rows';
 import type { MenuHostProps } from './host.types';
 
 interface SwiftUI {
@@ -26,15 +29,17 @@ interface SwiftUI {
     colorScheme?: 'light' | 'dark';
     children?: ReactNode;
   }>;
-  Menu: ComponentType<{ label: ReactNode; children?: ReactNode }>;
+  Menu: ComponentType<{ label: ReactNode; systemImage?: string; children?: ReactNode }>;
   Button: ComponentType<{
     label: string;
+    systemImage?: string;
     role?: 'default' | 'destructive';
     onPress?: () => void;
     modifiers?: unknown[];
   }>;
   Toggle: ComponentType<{
     label: string;
+    systemImage?: string;
     isOn: boolean;
     onIsOnChange: (isOn: boolean) => void;
     modifiers?: unknown[];
@@ -63,36 +68,50 @@ function loadSwiftUI() {
   return ui;
 }
 
+/** A Bloom icon's SF Symbol, when the spec names one. */
+export function sfSymbolOf(icon: IconComponent | undefined): string | undefined {
+  return icon === undefined ? undefined : SF_SYMBOLS.get(icon);
+}
+
 export function MenuHost(props: MenuHostProps) {
   const loaded = loadSwiftUI();
-  const builtOnOpen = props.rows.some((row) => isNode(row) && row.kind === 'menuContent');
-  if (!loaded || builtOnOpen) return <DropdownMenuHost {...props} />;
+  if (!loaded || builtOnOpen(props.rows)) return <DropdownMenuHost {...props} />;
   return <SystemMenu {...props} swift={loaded.swift} modifiers={loaded.modifiers} />;
 }
 
 function SystemMenu({
   trigger,
   rows,
+  actions,
   render,
   swift,
   modifiers,
 }: MenuHostProps & { swift: SwiftUI; modifiers: Modifiers }) {
   const { isDark } = useTheme();
+  const { choose, running } = useMenuChoice(actions);
   const { Host, Menu, RNHostView } = swift;
   return (
-    <Host matchContents colorScheme={isDark ? 'dark' : 'light'}>
-      <Menu label={<RNHostView matchContents>{render(trigger)}</RNHostView>}>
-        {drawRows(readMenuRows(rows), swift, modifiers)}
-      </Menu>
-    </Host>
+    <>
+      <Host matchContents colorScheme={isDark ? 'dark' : 'light'}>
+        <Menu label={<RNHostView matchContents>{render(trigger)}</RNHostView>}>
+          {systemMenuRows(readMenuRows(rows, choose), swift, modifiers)}
+        </Menu>
+      </Host>
+      {running}
+    </>
   );
 }
 
-function drawRows(rows: readonly MenuRowData[], swift: SwiftUI, modifiers: Modifiers): ReactNode[] {
-  return rows.map((row) => drawRow(row, swift, modifiers));
+/** Rows as SwiftUI's own menu elements. */
+function systemMenuRows(
+  rows: readonly MenuRowData[],
+  swift: SwiftUI,
+  modifiers: Modifiers,
+): ReactNode[] {
+  return rows.map((row) => systemMenuRow(row, swift, modifiers));
 }
 
-function drawRow(row: MenuRowData, swift: SwiftUI, modifiers: Modifiers): ReactNode {
+function systemMenuRow(row: MenuRowData, swift: SwiftUI, modifiers: Modifiers): ReactNode {
   const { Button, Toggle, Section, Divider, Menu } = swift;
   switch (row.kind) {
     case 'divider':
@@ -100,13 +119,13 @@ function drawRow(row: MenuRowData, swift: SwiftUI, modifiers: Modifiers): ReactN
     case 'section':
       return (
         <Section key={row.id} title={row.title}>
-          {drawRows(row.rows, swift, modifiers)}
+          {systemMenuRows(row.rows, swift, modifiers)}
         </Section>
       );
     case 'submenu':
       return (
-        <Menu key={row.id} label={row.title}>
-          {drawRows(row.rows, swift, modifiers)}
+        <Menu key={row.id} label={row.title} systemImage={sfSymbolOf(row.icon)}>
+          {systemMenuRows(row.rows, swift, modifiers)}
         </Menu>
       );
     case 'item': {
@@ -118,6 +137,7 @@ function drawRow(row: MenuRowData, swift: SwiftUI, modifiers: Modifiers): ReactN
         <Button
           key={row.id}
           label={row.title}
+          systemImage={sfSymbolOf(row.icon)}
           role={row.destructive ? 'destructive' : 'default'}
           onPress={row.onPress}
           modifiers={own}
@@ -126,6 +146,7 @@ function drawRow(row: MenuRowData, swift: SwiftUI, modifiers: Modifiers): ReactN
         <Toggle
           key={row.id}
           label={row.title}
+          systemImage={sfSymbolOf(row.icon)}
           isOn={row.checked}
           onIsOnChange={() => row.onPress?.()}
           modifiers={own}

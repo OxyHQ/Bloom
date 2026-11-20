@@ -14,6 +14,7 @@ import { resolveSurfaceLevel } from '@oxy.so/bloom/styles';
 import { useTheme } from '@oxy.so/bloom/theme';
 
 import { glassTriggerConfig } from './lens-glass';
+import { useMenuChoice } from './menu-actions';
 import { glyph, DropdownMenuHost } from './menu-dropdown';
 import {
   menuHandlers,
@@ -44,14 +45,23 @@ function LensMenuHost({
   ...props
 }: MenuHostProps & { NativeLens: ComponentType<LensNativeProps> }) {
   const [open, setOpen] = useState(false);
-  if (!open) return props.render(pressableTrigger(trigger, () => setOpen(true)));
+  // The choice outlives the open menu: the engine closes the menu as a row is chosen.
+  const { choose, running } = useMenuChoice(props.actions);
   return (
-    <OpenLensMenu
-      {...props}
-      trigger={trigger}
-      NativeLens={NativeLens}
-      onClosed={() => setOpen(false)}
-    />
+    <>
+      {open ? (
+        <OpenLensMenu
+          {...props}
+          trigger={trigger}
+          choose={choose}
+          NativeLens={NativeLens}
+          onClosed={() => setOpen(false)}
+        />
+      ) : (
+        props.render(pressableTrigger(trigger, () => setOpen(true)))
+      )}
+      {running}
+    </>
   );
 }
 
@@ -61,11 +71,16 @@ function OpenLensMenu({
   rows: nodes,
   testID,
   render,
+  choose,
   NativeLens,
   onClosed,
-}: MenuHostProps & { NativeLens: ComponentType<LensNativeProps>; onClosed: () => void }) {
+}: MenuHostProps & {
+  choose: ((tag: string) => void) | undefined;
+  NativeLens: ComponentType<LensNativeProps>;
+  onClosed: () => void;
+}) {
   const theme = useTheme();
-  const rows = readMenuRows(nodes);
+  const rows = readMenuRows(nodes, choose);
   const handlers = menuHandlers(rows);
   const icons: Child[] = [];
   const items = lensItems(rows, icons);

@@ -28,6 +28,7 @@ module.exports = {
     '^@oxy.so/bloom/styles$': `${support}/bloom-styles.ts`,
     '^@oxy.so/bloom/typography$': `${support}/bloom-typography.ts`,
     '^@oxy.so/bloom/icons/shared$': `${support}/bloom-icons.ts`,
+    '^@oxy.so/bloom/icons/Ri[A-Za-z0-9]+$': `${support}/bloom-icon-modules.ts`,
     '^@oxy.so/bloom/avatar$': `${support}/bloom-avatar.ts`,
     '^@oxy.so/bloom/theme$': `${support}/bloom-theme.ts`,
     '^@oxy.so/bloom/app-shell/hooks$': `${support}/bloom-app-shell-hooks.ts`,

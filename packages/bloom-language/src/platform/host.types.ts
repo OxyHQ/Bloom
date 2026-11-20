@@ -13,6 +13,8 @@ export interface MenuHostProps {
   trigger: Child;
   /** The rows, as nodes: read only while the menu is open (see `menu-rows.ts`). */
   rows: readonly Child[];
+  /** What its tagged rows do: an `actions()` view (see `menu-actions.tsx`). */
+  actions: Child | undefined;
   /** The menu's accessible name (the node's `.label()`). */
   label: string | undefined;
   testID: string | undefined;

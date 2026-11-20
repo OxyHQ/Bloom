@@ -1,9 +1,9 @@
 /**
  * A menu's rows as data, read from its nodes: what every platform's menu
  * presents. A `menu()` content among them is built here, by calling its body,
- * so this runs only in the component that presents an OPEN menu (on iOS, where
- * the system menu needs its rows before it opens, in the component that holds
- * it).
+ * so a menu that has one reads its rows only while it is open. Rows given as
+ * they are (tagged, or with their own handlers) can be read before it opens,
+ * which is what the system menu on iOS needs.
  */
 import type { GlassValue } from '../glass';
 import {
@@ -27,6 +27,7 @@ export interface MenuItemRow {
   /** A toggle's state; `undefined` for an action. */
   checked: boolean | undefined;
   keepOpen: boolean;
+  /** What choosing the row runs: its own handler, or its tag's action through `choose`. */
   onPress: (() => void) | undefined;
   testID: string | undefined;
 }
@@ -64,14 +65,31 @@ function flatten(children: readonly Child[], out: Node[] = []): Node[] {
   return out;
 }
 
-/** Reads rows; ids are positional (`r0`, `r0.1`…), stable while the rows are. */
-export function readMenuRows(children: readonly Child[], prefix = 'r'): MenuRowData[] {
+/** Whether the rows are built only while the menu is open (a `menu()` content among them). */
+export function builtOnOpen(children: readonly Child[]): boolean {
+  return children.some(
+    (child) =>
+      (isNode(child) && child.kind === 'menuContent') ||
+      (Array.isArray(child) && builtOnOpen(child)),
+  );
+}
+
+/**
+ * Reads rows; ids are positional (`r0`, `r0.1`…), stable while the rows are. A
+ * tagged row's action is `choose(tag)` (see menu-actions.tsx).
+ */
+export function readMenuRows(
+  children: readonly Child[],
+  choose?: (tag: string) => void,
+  prefix = 'r',
+): MenuRowData[] {
   const rows: MenuRowData[] = [];
   flatten(children).forEach((node, index) => {
     const id = `${prefix}${index}`;
     const values = valuesOf(node);
     switch (node.kind) {
-      case 'menuItem':
+      case 'menuItem': {
+        const tag = values.tag as string | undefined;
         rows.push({
           kind: 'item',
           id,
@@ -81,10 +99,14 @@ export function readMenuRows(children: readonly Child[], prefix = 'r'): MenuRowD
           disabled: values.disabled === true,
           checked: values.checked as boolean | undefined,
           keepOpen: values.keepOpen === true,
-          onPress: values.onPress as (() => void) | undefined,
+          onPress:
+            tag !== undefined && choose
+              ? () => choose(tag)
+              : (values.onPress as (() => void) | undefined),
           testID: values.testID as string | undefined,
         });
         break;
+      }
       case 'menuDivider':
         rows.push({ kind: 'divider', id });
         break;
@@ -93,7 +115,7 @@ export function readMenuRows(children: readonly Child[], prefix = 'r'): MenuRowD
           kind: 'section',
           id,
           title: values.title as string | undefined,
-          rows: readMenuRows(node.children, `${id}.`),
+          rows: readMenuRows(node.children, choose, `${id}.`),
         });
         break;
       case 'menuSubmenu':
@@ -104,7 +126,7 @@ export function readMenuRows(children: readonly Child[], prefix = 'r'): MenuRowD
           icon: values.icon as IconComponent | undefined,
           disabled: values.disabled === true,
           testID: values.testID as string | undefined,
-          rows: readMenuRows(node.children, `${id}.`),
+          rows: readMenuRows(node.children, choose, `${id}.`),
         });
         break;
       default:

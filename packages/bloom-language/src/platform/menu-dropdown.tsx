@@ -21,30 +21,40 @@ import {
 
 import { Icon } from '../primitives';
 import type { Child, IconComponent } from '../node';
+import { useMenuChoice } from './menu-actions';
 import { pressableTrigger, readMenuRows, setApart, type MenuRowData } from './menu-rows';
 import type { MenuHostProps } from './host.types';
 
 const NOOP = () => {};
 
-export function DropdownMenuHost({ trigger, rows, label, testID, render }: MenuHostProps) {
+export function DropdownMenuHost({ trigger, rows, actions, label, testID, render }: MenuHostProps) {
   const [open, setOpen] = useState(false);
+  const { choose, running } = useMenuChoice(actions);
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild label={label}>
-        {render(pressableTrigger(trigger, NOOP))}
-      </DropdownMenuTrigger>
-      {open ? <DropdownRows rows={rows} label={label} testID={testID} render={render} /> : null}
-    </DropdownMenu>
+    <>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenuTrigger asChild label={label}>
+          {render(pressableTrigger(trigger, NOOP))}
+        </DropdownMenuTrigger>
+        {open ? (
+          <DropdownRows rows={rows} choose={choose} label={label} testID={testID} render={render} />
+        ) : null}
+      </DropdownMenu>
+      {running}
+    </>
   );
 }
 
 function DropdownRows({
   rows,
+  choose,
   label,
   testID,
   render,
-}: Pick<MenuHostProps, 'rows' | 'label' | 'testID' | 'render'>) {
-  const data = readMenuRows(rows);
+}: Pick<MenuHostProps, 'rows' | 'label' | 'testID' | 'render'> & {
+  choose: ((tag: string) => void) | undefined;
+}) {
+  const data = readMenuRows(rows, choose);
   const leading = useCallback(
     (icon: IconComponent | undefined, destructive: boolean): ReactNode =>
       icon ? render(glyph(icon, destructive)) : undefined,
