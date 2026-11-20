@@ -96,7 +96,7 @@ jobs:
       # gates their release; the release itself runs no tests.
       - name: Workspace package builds, typecheck and test
         run: |
-          for package in packages/bloom-text packages/bloom-editor; do
+          for package in packages/bloom-text packages/bloom-editor packages/bloom-language; do
             (cd "$package" && bun run build && bun run typescript && bun run test)
           done
       # The built `@oxy.so/bloom/color-engine` subpath, as a server loads it:
