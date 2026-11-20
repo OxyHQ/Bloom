@@ -6,7 +6,13 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
-import { Platform, Pressable, Text as RNText, View } from 'react-native';
+import {
+  Platform,
+  Pressable,
+  Text as RNText,
+  View,
+  type GestureResponderEvent,
+} from 'react-native';
 import { styled } from 'react-native-css';
 import { Avatar as BloomAvatar } from '@oxy.so/bloom/avatar';
 import { Button as BloomButton } from '@oxy.so/bloom/button';
@@ -27,6 +33,7 @@ import {
   type ImageProps,
   type MenuProps,
   type Modifier,
+  type Press,
   type PressHandler,
   type StackProps,
   type TextProps,
@@ -224,8 +231,16 @@ function plan(node: Node): Plan {
   return result;
 }
 
+/** A press modifier's value as a handler in an environment, for a host that wires presses itself. */
+function pressOf(value: Press | undefined, env: Env): (() => void) | undefined {
+  if (value === undefined) return undefined;
+  if (value instanceof Navigation) return navigationPress(env, value);
+  // A system bar item has no gesture of its own to hand the handler.
+  return () => value(undefined as unknown as GestureResponderEvent);
+}
+
 /** A `navigate()` press: through the navigator the view is drawn under. */
-function navigationPress(env: Env, to: Navigation): PressHandler {
+function navigationPress(env: Env, to: Navigation): () => void {
   return () => {
     if (env.navigate) env.navigate(to.href, to.params);
     else if (process.env.NODE_ENV !== 'production') {
@@ -680,12 +695,14 @@ function renderHost(
         key,
         node,
         render: (child: Child) => renderChild(child, ctx, undefined),
+        press: (value: Press | undefined) => pressOf(value, ctx.env),
       });
     case 'bottomBar':
       return draw(BottomBarHost, {
         key,
         node,
         render: (child: Child) => renderChild(child, ctx, undefined),
+        press: (value: Press | undefined) => pressOf(value, ctx.env),
       });
     // Rows and tabs are read by the menu or the bar that holds them; on their own they draw nothing.
     case 'menuItem':

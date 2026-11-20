@@ -15,7 +15,7 @@ describe('Bloom’s menu: tagged rows', () => {
   it('a chosen row runs its action through the actions body, built only then and only once', () => {
     const built = jest.fn();
     const copy = jest.fn();
-    const Actions = actions(function Actions() {
+    const Actions = actions(function actionsBody() {
       built();
       return { copy };
     });

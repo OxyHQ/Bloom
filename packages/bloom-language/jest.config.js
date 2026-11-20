@@ -33,9 +33,11 @@ module.exports = {
     '^@oxy.so/bloom/theme$': `${support}/bloom-theme.ts`,
     '^@oxy.so/bloom/app-shell/hooks$': `${support}/bloom-app-shell-hooks.ts`,
     '^@oxy.so/bloom/(button|engagement-bar|image|surface|fab|page-header|bottom-bar|dropdown-menu)$': `${support}/bloom-components.ts`,
+    '^@oxy.so/bloom/(app-shell|screen|dialog|tab-pager|tab-pager/expo-router|panel-routing/expo-router)$': `${support}/bloom-router.ts`,
     // Optional native modules: absent unless a test mocks one in.
     '^(expo|expo-blur|expo-glass-effect|expo-router|@expo/ui/swift-ui/modifiers)$': `${support}/absent/$1.ts`,
     '^@expo/ui/swift-ui$': `${support}/absent/@expo/ui/swift-ui/index.ts`,
+    '^expo-router/(native-tabs|react-navigation)$': `${support}/absent/expo-router-$1.ts`,
     '^react$': require.resolve('react'),
     '^react/(.*)$': `${require('node:path').dirname(require.resolve('react/package.json'))}/$1`,
   },

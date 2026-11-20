@@ -1,11 +1,13 @@
 import type { ReactNode } from 'react';
 
-import type { Child, Node } from '../node';
+import type { Child, Node, Press } from '../node';
 
 export interface NodeHostProps {
   node: Node;
   /** Draws a node in the environment where the node is placed. */
   render: (child: Child) => ReactNode;
+  /** A press modifier's value as a handler, in that environment (a `navigate()` goes through its navigator). */
+  press: (value: Press | undefined) => (() => void) | undefined;
 }
 
 /** What every platform's menu host takes from a `Menu` node. */

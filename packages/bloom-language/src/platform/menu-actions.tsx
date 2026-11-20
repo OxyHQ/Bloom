@@ -16,6 +16,7 @@ import { isNode, type Child, type MenuActionsProps } from '../node';
 
 interface Choice {
   readonly id: number;
+  readonly actions: MenuActionsProps;
   readonly tag: string;
 }
 
@@ -26,41 +27,54 @@ export interface MenuChoice {
   running: ReactNode;
 }
 
-export function useMenuChoice(actions: Child | undefined): MenuChoice {
+export interface MenuChoices {
+  /** Runs `tag`'s action, from the `actions()` view that resolves it. */
+  choose: (actions: MenuActionsProps, tag: string) => void;
+  running: ReactNode;
+}
+
+/** The choices made in any of several menus (a navigation bar's), each resolved by its own actions. */
+export function useMenuChoices(): MenuChoices {
   const [choices, setChoices] = useState<readonly Choice[]>(NONE);
   const next = useRef(0);
-  const choose = useCallback((tag: string) => {
+  const choose = useCallback((actions: MenuActionsProps, tag: string) => {
     next.current += 1;
     const id = next.current;
-    setChoices((current) => [...current, { id, tag }]);
+    setChoices((current) => [...current, { id, actions, tag }]);
   }, []);
   const settle = useCallback(
     (id: number) => setChoices((current) => current.filter((choice) => choice.id !== id)),
     [],
   );
-  if (!isNode(actions) || actions.kind !== 'menuActions')
-    return { choose: undefined, running: null };
-  const props = actions.props as MenuActionsProps;
   return {
     choose,
     running: choices.map((choice) => (
-      <RunChoice key={choice.id} actions={props} choice={choice} onSettled={settle} />
+      <RunChoice key={choice.id} choice={choice} onSettled={settle} />
     )),
+  };
+}
+
+/** A menu's actions, when it has an `actions()` view. */
+export function actionsOf(actions: Child | undefined): MenuActionsProps | undefined {
+  return isNode(actions) && actions.kind === 'menuActions'
+    ? (actions.props as MenuActionsProps)
+    : undefined;
+}
+
+/** One menu's choices. */
+export function useMenuChoice(actions: Child | undefined): MenuChoice {
+  const { choose, running } = useMenuChoices();
+  const props = actionsOf(actions);
+  return {
+    choose: props ? (tag) => choose(props, tag) : undefined,
+    running,
   };
 }
 
 const NONE: readonly Choice[] = [];
 
-function RunChoice({
-  actions,
-  choice,
-  onSettled,
-}: {
-  actions: MenuActionsProps;
-  choice: Choice;
-  onSettled: (id: number) => void;
-}) {
-  const run = actions.body(actions.props)[choice.tag];
+function RunChoice({ choice, onSettled }: { choice: Choice; onSettled: (id: number) => void }) {
+  const run = choice.actions.body(choice.actions.props)[choice.tag];
   const ran = useRef(false);
   useEffect(() => {
     // One mount is one choice: it runs once, then the component leaves.

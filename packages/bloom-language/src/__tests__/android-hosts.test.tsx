@@ -192,7 +192,7 @@ describe('the lens menu: tagged rows', () => {
   it('a row the engine reports chosen runs its action, after the menu has closed', () => {
     const built = jest.fn();
     const copy = jest.fn();
-    const Actions = actions(function Actions() {
+    const Actions = actions(function actionsBody() {
       built();
       return { copy };
     });

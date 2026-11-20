@@ -2,7 +2,7 @@
  * iOS, NOT VERIFIED on a device: the contract with expo-glass-effect, @expo/ui
  * and expo-router, against stand-ins of each.
  */
-import { createElement, type ReactNode } from 'react';
+import { createContext, createElement, type ReactNode } from 'react';
 
 import { DARK, LIGHT } from './support/bloom-theme';
 import { act, Glyph, hosts, mount, only, quietRenderer } from './support/mount';
@@ -30,7 +30,20 @@ jest.mock('@expo/ui/swift-ui/modifiers', () => ({
   disabled: (value?: boolean) => ({ disabled: value }),
   menuActionDismissBehavior: (value: string) => ({ dismiss: value }),
 }));
-jest.mock('expo-router', () => ({ Stack: { Screen: 'StackScreen' } }));
+jest.mock('expo-router', () => ({
+  Stack: {
+    Screen: 'StackScreen',
+    Toolbar: Object.assign(host('Toolbar'), {
+      Button: host('ToolbarButton'),
+      Menu: host('ToolbarMenu'),
+      MenuAction: host('ToolbarMenuAction'),
+      View: host('ToolbarView'),
+    }),
+  },
+}));
+/** The screen's navigator: a native stack's. */
+const mockNavigation = createContext({ getState: () => ({ type: 'stack' }) });
+jest.mock('expo-router/react-navigation', () => ({ NavigationContext: mockNavigation }));
 
 quietRenderer();
 
@@ -96,7 +109,7 @@ describe('a menu built on open is Bloom’s menu on iOS', () => {
 });
 
 describe('the header is the navigation bar', () => {
-  it('sets its screen’s options: the large title, the bar items, the system back', () => {
+  it('in a native stack, sets its screen’s options and toolbar: the large title, the bar items, the system back', () => {
     const r = mount(
       toElement(
         Header('Home')
@@ -104,15 +117,16 @@ describe('the header is the navigation bar', () => {
           .toolbar(Button(Icon(Glyph))),
       ),
     );
-    const options = only(r, 'StackScreen').props.options;
-    expect(options).toMatchObject({
+    expect(only(r, 'StackScreen').props.options).toMatchObject({
       headerShown: true,
       title: 'Home',
       headerLargeTitle: true,
       headerBackVisible: true,
     });
-    expect(options.headerLeft).toBeUndefined();
-    const right = mount(options.headerRight());
-    expect(hosts(right, 'BloomButton')).toHaveLength(1);
+    expect(only(r, 'Toolbar').props.placement).toBe('right');
+    // A glyph without an SF Symbol keeps Bloom's own button, in the bar.
+    expect(only(r, 'ToolbarView')).toBeTruthy();
+    expect(hosts(r, 'BloomButton')).toHaveLength(1);
+    expect(hosts(r, 'PageHeader')).toHaveLength(0);
   });
 });

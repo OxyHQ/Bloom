@@ -16,12 +16,11 @@
 import type { ComponentType, ReactNode } from 'react';
 import { useTheme } from '@oxy.so/bloom/theme';
 
-import { SF_SYMBOLS } from '../generated/sf-symbols.generated';
-import type { IconComponent } from '../node';
 import { useMenuChoice } from './menu-actions';
 import { DropdownMenuHost } from './menu-dropdown';
 import { builtOnOpen, readMenuRows, type MenuRowData } from './menu-rows';
 import type { MenuHostProps } from './host.types';
+import { sfSymbolOf } from './sf-symbol';
 
 interface SwiftUI {
   Host: ComponentType<{
@@ -66,11 +65,6 @@ function loadSwiftUI() {
     ui = null;
   }
   return ui;
-}
-
-/** A Bloom icon's SF Symbol, when the spec names one. */
-export function sfSymbolOf(icon: IconComponent | undefined): string | undefined {
-  return icon === undefined ? undefined : SF_SYMBOLS.get(icon);
 }
 
 export function MenuHost(props: MenuHostProps) {
