@@ -1,0 +1,27 @@
+[workspace]
+resolver = "3"
+members = ["crates/compiler", "crates/node"]
+
+[workspace.package]
+edition = "2024"
+license-file = "../../LICENSE"
+publish = false
+
+# Direct dependencies are pinned exactly. Every crate in Cargo.lock was
+# checked against the 7-day supply-chain quarantine (see STUDY.md, "Supply
+# chain"); bump them only with that check.
+[workspace.dependencies]
+oxc_allocator = "=0.158.0"
+oxc_ast = "=0.158.0"
+oxc_ast_visit = "=0.158.0"
+oxc_codegen = "=0.158.0"
+oxc_parser = "=0.158.0"
+oxc_span = "=0.158.0"
+oxc_syntax = "=0.158.0"
+napi = { version = "=3.16.1", default-features = false, features = ["napi6"] }
+napi-derive = "=3.7.0"
+napi-build = "=2.6.0"
+
+[profile.release]
+lto = true
+codegen-units = 1

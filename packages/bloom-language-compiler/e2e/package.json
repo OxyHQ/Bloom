@@ -1,0 +1,5 @@
+{
+  "name": "bloom-language-compiler-e2e",
+  "private": true,
+  "main": "index.js"
+}
