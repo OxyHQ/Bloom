@@ -316,7 +316,9 @@
     "shell": ["value"],
     "tag": ["value"],
     "actions": ["value"],
-    "footer": ["value", "value?"]
+    "footer": ["value", "value?"],
+    "headingLevel": ["value"],
+    "backLabel": ["value"]
   },
   "universal": [
     "padding",
@@ -349,6 +351,8 @@
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "backLabel",
+    "headingLevel",
     "footer",
     "sheet",
     "onReselect"
@@ -449,7 +453,9 @@
         "scrollEdge",
         "scrollY",
         "presentation",
-        "testID"
+        "testID",
+        "headingLevel",
+        "backLabel"
       ]
     },
     "bottomBar": {

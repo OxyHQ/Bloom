@@ -869,6 +869,12 @@ export const MODIFIERS = {
   "footer": [
     "value",
     "value?"
+  ],
+  "headingLevel": [
+    "value"
+  ],
+  "backLabel": [
+    "value"
   ]
 } as const;
 
@@ -905,6 +911,8 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "backLabel",
+    "headingLevel",
     "footer",
     "sheet",
     "onReselect",
@@ -942,6 +950,8 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "backLabel",
+    "headingLevel",
     "footer",
     "sheet",
     "onReselect"
@@ -977,6 +987,8 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "backLabel",
+    "headingLevel",
     "footer",
     "sheet",
     "onReselect",
@@ -1014,6 +1026,8 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "backLabel",
+    "headingLevel",
     "footer",
     "sheet",
     "onReselect",
@@ -1050,6 +1064,8 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "backLabel",
+    "headingLevel",
     "footer",
     "sheet",
     "onReselect",
@@ -1086,6 +1102,8 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "backLabel",
+    "headingLevel",
     "footer",
     "sheet",
     "onReselect",
@@ -1127,6 +1145,8 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "backLabel",
+    "headingLevel",
     "footer",
     "sheet",
     "onReselect",
@@ -1168,6 +1188,8 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "backLabel",
+    "headingLevel",
     "footer",
     "sheet",
     "onReselect",
@@ -1208,6 +1230,8 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "backLabel",
+    "headingLevel",
     "footer",
     "sheet",
     "onReselect",
@@ -1243,7 +1267,9 @@ export const NODE_MODIFIERS = {
     "scrollEdge",
     "scrollY",
     "presentation",
-    "testID"
+    "testID",
+    "headingLevel",
+    "backLabel"
   ],
   "bottomBar": [
     "selection",
@@ -1291,6 +1317,8 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "backLabel",
+    "headingLevel",
     "footer",
     "sheet",
     "onReselect",
@@ -1329,6 +1357,8 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "backLabel",
+    "headingLevel",
     "footer",
     "sheet",
     "onReselect",
@@ -1367,6 +1397,8 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "backLabel",
+    "headingLevel",
     "footer",
     "sheet",
     "onReselect"
@@ -1402,6 +1434,8 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "backLabel",
+    "headingLevel",
     "footer",
     "sheet",
     "onReselect"
@@ -1437,6 +1471,8 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "backLabel",
+    "headingLevel",
     "footer",
     "sheet",
     "onReselect"
