@@ -37,7 +37,6 @@ import {
 } from 'react';
 import { Platform, type View } from 'react-native';
 import Svg, { ClipPath, Defs, G, Path } from 'react-native-svg';
-import { useSharedValue } from 'react-native-reanimated';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { useScreenVisible } from '../screen/use-screen-visible';
 import { useMessages } from '../locale/messages';
@@ -64,16 +63,26 @@ import {
 } from './vector-compose';
 import { renderVectorFrame } from './vector-frame';
 import {
+  releaseVectorLoop,
   vectorLoop,
   vectorLoopFrame,
   vectorLoopIndex,
+  vectorLoopKey,
   vectorLoopTime,
   vectorLoopTracks,
   type VectorLoop,
-  type VectorLoopTracks,
 } from './vector-loop';
-import { VectorLoopPlayer } from './VectorLoopPlayer';
-import type { VectorAction, VectorData, VectorFrame } from './vector-types';
+import {
+  nativePaint,
+  nativeVectorLoop,
+  VectorNativeSurface,
+  viewBoxNumbers,
+  type NativeVectorClock,
+  type NativeVectorFrame,
+  type NativeVectorLoop,
+  type NativeVectorSurfaceProps,
+} from './VectorNativeSurface';
+import type { VectorAction, VectorData, VectorDrawPath, VectorFrame } from './vector-types';
 
 type Props = AgentAvatarProps & { previewPart?: 'eyes' };
 /** One computed frame: what is drawn, and the pose and motion a later transition starts from. */
@@ -84,10 +93,12 @@ type PaintedFrame = {
   drawing: VectorFrame;
 };
 /**
- * Native apps hand a complete rest loop to the UI thread (`VectorLoopPlayer`). The web has no other
- * thread to hand it to and replays the remembered frames itself.
+ * The rest loops the native surface has, by `vectorLoopKey`: `true` once it said it has one (from
+ * memory, from an earlier start, or because it was handed over), `false` once it said it has not.
+ * Where there is no native surface (the web) the JS thread replays the remembered frames itself.
  */
-const LOOP_ON_UI_THREAD = Platform.OS !== 'web';
+const nativeLoops = new Map<string, boolean>();
+let lastCapture = 0;
 type Display = {
   geometry: string;
   drawing: VectorFrame;
@@ -152,10 +163,17 @@ function AnimatedVectorCharacterAvatar(props: Props) {
   latestAsset.current = paintedAsset;
   const [display, setDisplay] = useState<Display>(),
     [revision, setRevision] = useState(0);
-  /** The rest loop the UI thread is playing, if it is; the JS thread draws nothing meanwhile. */
-  const [looping, setLooping] = useState<{ tracks: VectorLoopTracks; start: number }>();
-  const loopSession = useRef<{ loop: VectorLoop<PaintedFrame>; asset: VectorData }>(undefined);
-  const loopElapsed = useSharedValue(0);
+  /** The clock of the rest loop the native surface plays, if it does; the JS thread draws nothing meanwhile. */
+  const [looping, setLooping] = useState<NativeVectorClock>();
+  const loopSession = useRef<
+    { key: string; loop: VectorLoop<PaintedFrame>; asset: VectorData } & NativeVectorClock
+  >(undefined);
+  /** The rest loop the native surface is asked about, and the loop handed to it when it has not got it. */
+  const [restKey, setRestKey] = useState<string>();
+  const [handedLoop, setHandedLoop] = useState<{ key: string; loop: NativeVectorLoop }>();
+  const [capture, setCapture] = useState(0);
+  const captures = useRef(new Map<number, (data: string | null) => void>());
+  const drawn = useRef(false);
   const host = useRef<ComponentRef<typeof View> | null>(null);
   const svg = useRef<Svg | null>(null);
   const observeSnapshot = useContext(AvatarSnapshotObserver);
@@ -171,6 +189,16 @@ function AnimatedVectorCharacterAvatar(props: Props) {
             }
           : null;
       }
+      if (VectorNativeSurface)
+        return drawn.current
+          ? new Promise((resolve) => {
+              const id = ++lastCapture;
+              captures.current.set(id, (data) =>
+                resolve(data ? { uri: 'data:image/png;base64,' + data } : null),
+              );
+              setCapture(id);
+            })
+          : null;
       return svg.current
         ? new Promise((resolve) =>
             svg.current!.toDataURL((data) => resolve({ uri: 'data:image/png;base64,' + data })),
@@ -227,24 +255,45 @@ function AnimatedVectorCharacterAvatar(props: Props) {
   const catalogRef = useRef(catalog);
   catalogRef.current = catalog;
   /**
-   * Takes the drawing back from the UI thread: the clock moves on by what it played, and the JS
-   * thread shows the frame it got to. Called before anything changes the motion (a gesture, a mood,
-   * the pointer) and whenever the frame loop restarts, so the character carries on from where it
-   * was.
+   * Takes the drawing back from the native surface: the clock moves on by what it played (both read
+   * the same monotonic clock), and the surface keeps the frame it got to on screen until the JS
+   * thread draws one. Called before anything changes the motion (a gesture, a mood, the pointer) and
+   * whenever the frame loop restarts, so the character carries on from where it was.
    */
   const endLoop = useCallback(() => {
     const session = loopSession.current;
     if (!session) return;
     loopSession.current = undefined;
-    const seconds = loopElapsed.value / 1000,
+    const seconds = Math.max(0, (performance.now() - session.epoch) / 1000),
       motion = state.current;
     advanceVectorPlayback(motion, session.asset, seconds);
     advanceVectorMood(motion.mood, latestMood.current, seconds);
-    const frame = session.loop.frames[vectorLoopIndex(session.loop, motion.time)]!;
-    motion.lastPose = frame.pose;
+    // The pose of that frame, which a gesture blends from: at rest it is the idle clip's pose at the
+    // frame's grid time, as the loop drew it.
+    motion.lastPose = sampleVectorPose(
+      session.asset,
+      'idle',
+      vectorLoopTime(session.loop, vectorLoopIndex(session.loop, motion.time)),
+    );
     setLooping(undefined);
-    setDisplay((shown) => shown && { ...shown, drawing: frame.drawing, time: motion.time });
-  }, [loopElapsed]);
+    setDisplay((shown) => shown && { ...shown, time: motion.time });
+  }, []);
+  const onLoop = useCallback<NonNullable<NativeVectorSurfaceProps['onLoop']>>(
+    ({ nativeEvent: { key, ready } }) => {
+      nativeLoops.set(key, ready);
+      if (ready) setHandedLoop((handed) => (handed?.key === key ? undefined : handed));
+      // The surface lost a loop it was playing: the JS thread draws it again.
+      else if (loopSession.current?.key === key) endLoop();
+    },
+    [endLoop],
+  );
+  const onCapture = useCallback<NonNullable<NativeVectorSurfaceProps['onCapture']>>(
+    ({ nativeEvent: { id, data } }) => {
+      captures.current.get(id)?.(data);
+      captures.current.delete(id);
+    },
+    [],
+  );
   /**
    * The character is first loaded at rest (`VECTOR_REST_CLIPS`): its idle tracks and the geometry
    * they draw, which is what an avatar shows almost always (a mood is drawn on the idle clip). Its
@@ -265,6 +314,8 @@ function AnimatedVectorCharacterAvatar(props: Props) {
         fullGeometry.current = key;
         loadedGeometry.current = key;
         if (value.referenceFace) state.current.workLook = vectorWorkLook(value);
+        // The loop may have been handed over again while this loaded: its clock first.
+        endLoop();
         setAsset(value);
         const action = pendingAction.current;
         pendingAction.current = null;
@@ -275,7 +326,7 @@ function AnimatedVectorCharacterAvatar(props: Props) {
         if (loadingFull.current === key) loadingFull.current = null;
       },
     );
-  }, []);
+  }, [endLoop]);
   const play = useCallback(
     (action: VectorAction) => {
       endLoop();
@@ -434,17 +485,88 @@ function AnimatedVectorCharacterAvatar(props: Props) {
         ? vectorLoop<PaintedFrame>(latestFrameRecipe.current, asset.clips.idle.duration)
         : undefined;
       const index = loop ? vectorLoopIndex(loop, motion.time) : 0;
+      const transition = Math.min(
+        1,
+        Math.max(0, (motion.clock - motion.transitionStarted) / motion.transitionDuration),
+      );
+      const eased = transition * transition * (3 - 2 * transition);
+      const feeling = !portrait && vectorMoodActive(motion.mood) ? { ...motion.mood } : undefined;
+      const draw = (action: VectorAction, time: number): PaintedFrame => {
+        const poseTime = asset.referenceFace && action === 'work' ? referenceWorkTime(time) : time;
+        const targetPose = sampleVectorPose(asset, action, poseTime);
+        const pose =
+          motion.poseFrom && !portrait
+            ? blendVectorPose(motion.poseFrom, targetPose, eased)
+            : targetPose;
+        const procedural = asset.referenceFace
+          ? sampleVectorMotion({
+              personalityKey: latestResolved.current.shape,
+              time: portrait ? 0 : motion.clock,
+              state: action,
+              stateTime: poseTime,
+              workLook: motion.workLook,
+              look: {
+                yaw: motion.yaw,
+                pitch: motion.pitch,
+                mix: portrait ? 0 : motion.lookMix,
+                wander: (action === 'work' ? 0.15 : 1) * (1 - motion.lookMix),
+              },
+              transition:
+                motion.motionFrom && !portrait
+                  ? {
+                      from: motion.motionFrom,
+                      startedAt: motion.transitionStarted,
+                      duration: motion.transitionDuration,
+                    }
+                  : undefined,
+            })
+          : undefined;
+        // The mood goes over the blended motion, never into it: a transition captures the
+        // motion without the mood, which carries on through the transition on its own clock.
+        const framed = vectorMoodFrame(
+          asset,
+          procedural,
+          { yaw: portrait ? 0 : motion.yaw, pitch: portrait ? 0 : motion.pitch },
+          feeling,
+        );
+        const drawing = renderVectorFrame(asset, {
+          action,
+          time,
+          ...framed,
+          eyesOnly: previewPart === 'eyes',
+          pose,
+        });
+        return { pose, procedural, gaze: framed.look ?? framed, drawing };
+      };
+      // Where there is a native surface, a loop it has is played by it, from where the clock is.
+      const key =
+        loop && VectorNativeSurface
+          ? vectorLoopKey(
+              loop,
+              JSON.stringify([
+                vectorGeometryKey(latestResolved.current),
+                latestResolved.current.paint,
+              ]),
+              asset.clips.idle,
+              () => vectorLoopFrame(loop, 0, () => draw('idle', vectorLoopTime(loop, 0))).drawing,
+            )
+          : undefined;
+      if (key !== undefined) {
+        setRestKey(key);
+        // Once a frame is on screen, so the surface is there to play it.
+        if (nativeLoops.get(key) && motion.count > 0) {
+          const clock = { epoch: performance.now(), time: motion.time };
+          loopSession.current = { key, loop: loop!, asset, ...clock };
+          releaseVectorLoop(loop!);
+          setLooping(clock);
+          return;
+        }
+      }
       if (loop ? index !== paintedIndex : !painted || stopped || now - painted >= 1000 / 30) {
         painted = painted ? now - ((now - painted) % (1000 / 30)) : now;
         paintedIndex = loop ? index : -1;
         const action = portrait ? 'idle' : motion.action,
           time = loop ? vectorLoopTime(loop, index) : portrait ? 0 : motion.time;
-        const transition = Math.min(
-          1,
-          Math.max(0, (motion.clock - motion.transitionStarted) / motion.transitionDuration),
-        );
-        const eased = transition * transition * (3 - 2 * transition);
-        const feeling = !portrait && vectorMoodActive(motion.mood) ? { ...motion.mood } : undefined;
         const sharedKey = () =>
           JSON.stringify([
             latestFrameRecipe.current,
@@ -464,57 +586,9 @@ function AnimatedVectorCharacterAvatar(props: Props) {
             portrait,
             previewPart,
           ]);
-        const draw = (): PaintedFrame => {
-          const poseTime =
-            asset.referenceFace && action === 'work' ? referenceWorkTime(time) : time;
-          const targetPose = sampleVectorPose(asset, action, poseTime);
-          const pose =
-            motion.poseFrom && !portrait
-              ? blendVectorPose(motion.poseFrom, targetPose, eased)
-              : targetPose;
-          const procedural = asset.referenceFace
-            ? sampleVectorMotion({
-                personalityKey: latestResolved.current.shape,
-                time: portrait ? 0 : motion.clock,
-                state: action,
-                stateTime: poseTime,
-                workLook: motion.workLook,
-                look: {
-                  yaw: motion.yaw,
-                  pitch: motion.pitch,
-                  mix: portrait ? 0 : motion.lookMix,
-                  wander: (action === 'work' ? 0.15 : 1) * (1 - motion.lookMix),
-                },
-                transition:
-                  motion.motionFrom && !portrait
-                    ? {
-                        from: motion.motionFrom,
-                        startedAt: motion.transitionStarted,
-                        duration: motion.transitionDuration,
-                      }
-                    : undefined,
-              })
-            : undefined;
-          // The mood goes over the blended motion, never into it: a transition captures the
-          // motion without the mood, which carries on through the transition on its own clock.
-          const framed = vectorMoodFrame(
-            asset,
-            procedural,
-            { yaw: portrait ? 0 : motion.yaw, pitch: portrait ? 0 : motion.pitch },
-            feeling,
-          );
-          const drawing = renderVectorFrame(asset, {
-            action,
-            time,
-            ...framed,
-            eyesOnly: previewPart === 'eyes',
-            pose,
-          });
-          return { pose, procedural, gaze: framed.look ?? framed, drawing };
-        };
         const { pose, procedural, gaze, drawing } = loop
-          ? vectorLoopFrame(loop, index, draw)
-          : shareVectorFrame(sharedKey(), draw);
+          ? vectorLoopFrame(loop, index, () => draw(action, time))
+          : shareVectorFrame(sharedKey(), () => draw(action, time));
         motion.lastPose = pose;
         motion.lastMotion = procedural;
         if (transition >= 1) {
@@ -533,13 +607,15 @@ function AnimatedVectorCharacterAvatar(props: Props) {
           gazePitch: gaze.pitch,
           tracking: motion.lookMix,
         });
-        const tracks = loop && LOOP_ON_UI_THREAD ? vectorLoopTracks(loop) : null;
-        if (tracks) {
-          loopElapsed.value = 0;
-          loopSession.current = { loop: loop!, asset };
-          setLooping({ tracks, start: index });
-        }
       }
+      // A complete loop the native surface said it has not got is handed to it once.
+      const tracks = key !== undefined && nativeLoops.get(key) === false && vectorLoopTracks(loop!);
+      if (tracks)
+        setHandedLoop((handed) =>
+          handed?.key === key
+            ? handed
+            : { key: key!, loop: nativeVectorLoop(tracks, avatarViewBox(tracks.viewBox)) },
+        );
     };
     if (stopped) tick(typeof performance === 'undefined' ? 0 : performance.now());
     const unsubscribe = stopped ? undefined : subscribeVectorFrame(tick);
@@ -558,7 +634,6 @@ function AnimatedVectorCharacterAvatar(props: Props) {
     revision,
     looping,
     endLoop,
-    loopElapsed,
   ]);
   useEffect(() => {
     if (paused || portrait || reduced) setRevision((value) => value + 1);
@@ -570,6 +645,41 @@ function AnimatedVectorCharacterAvatar(props: Props) {
       onReady.current?.();
     }
   }, [display]);
+  drawn.current = !!display;
+  /** The paint a drawn path is shown with: the current paint, when the frame is of the current geometry. */
+  const paintOf = (path: VectorDrawPath) => {
+    const part =
+      display?.geometry === loadedGeometry.current
+        ? paintedAsset?.parts[Number(path.id)]
+        : undefined;
+    const stroke = part
+      ? (part.stroke ?? (part.role === 'panel' ? path.stroke : undefined))
+      : path.stroke;
+    return {
+      fill: part?.color ?? path.fill,
+      stroke,
+      strokeWidth: stroke ? (part?.strokeWidth ?? path.strokeWidth ?? 1.5) : undefined,
+    };
+  };
+  const nativeFrame = useMemo<NativeVectorFrame | undefined>(
+    () =>
+      VectorNativeSurface && display
+        ? {
+            revision: display.count,
+            viewBox: viewBoxNumbers(avatarViewBox(display.drawing.viewBox)),
+            opacity: display.entrance,
+            paths: display.drawing.paths.map((path) => ({
+              d: path.d,
+              ...(path.clip !== undefined ? { clip: path.clip } : {}),
+              ...nativePaint(paintOf(path)),
+              opacity: path.opacity,
+              fillOpacity: path.fillOpacity,
+            })),
+          }
+        : undefined,
+    // `paintOf` reads only `display` and `paintedAsset`.
+    [display, paintedAsset],
+  );
   const gaze = (x: number, y: number, width: number, height: number) => {
     if (!interactive || paused || portrait || reduced) return;
     if (![x, y, width, height].every(Number.isFinite) || width <= 0 || height <= 0) return;
@@ -639,70 +749,63 @@ function AnimatedVectorCharacterAvatar(props: Props) {
         <StyledText numberOfLines={2} style={{ fontSize: 10 }}>
           {messages.unavailable}
         </StyledText>
+      ) : display && VectorNativeSurface ? (
+        <VectorNativeSurface
+          style={{ width: '100%', height: '100%' }}
+          pointerEvents="none"
+          accessible={false}
+          importantForAccessibility="no-hide-descendants"
+          testID="bloom-vector-drawing"
+          frame={nativeFrame}
+          loopKey={restKey}
+          loopTracks={handedLoop?.key === restKey ? handedLoop?.loop : undefined}
+          loopClock={looping}
+          capture={capture}
+          onLoop={onLoop}
+          onCapture={onCapture}
+        />
       ) : display ? (
         <Svg
           ref={svg}
           width="100%"
           height="100%"
-          viewBox={avatarViewBox(looping ? looping.tracks.viewBox : display.drawing.viewBox)}
+          viewBox={avatarViewBox(display.drawing.viewBox)}
           testID="bloom-vector-drawing"
           {...svgA11yProps()}
         >
-          {looping ? (
-            <VectorLoopPlayer
-              tracks={looping.tracks}
-              start={looping.start}
-              elapsed={loopElapsed}
-              prefix={prefix}
-            />
-          ) : (
-            <>
-              <Defs>
-                {display.drawing.paths
-                  .filter((path) => path.clip !== undefined)
-                  .map((path) => (
-                    <ClipPath
-                      key={path.id}
-                      id={`${prefix}-${path.id}`}
-                      {...{ clipPathUnits: 'userSpaceOnUse' }}
-                    >
-                      <Path d={path.clip} fillRule="nonzero" clipRule="nonzero" />
-                    </ClipPath>
-                  ))}
-              </Defs>
-              <G opacity={display.entrance}>
-                {display.drawing.paths.map((path) => {
-                  const currentPart =
-                    display.geometry === loadedGeometry.current
-                      ? paintedAsset?.parts[Number(path.id)]
-                      : undefined;
-                  const stroke = currentPart
-                    ? (currentPart.stroke ??
-                      (currentPart.role === 'panel' ? path.stroke : undefined))
-                    : path.stroke;
-                  return (
-                    <Path
-                      key={path.id}
-                      d={path.d}
-                      fill={
-                        display.geometry === loadedGeometry.current
-                          ? (paintedAsset?.parts[Number(path.id)]?.color ?? path.fill)
-                          : path.fill
-                      }
-                      opacity={path.opacity}
-                      fillOpacity={path.fillOpacity}
-                      fillRule="nonzero"
-                      stroke={stroke}
-                      strokeWidth={
-                        stroke ? (currentPart?.strokeWidth ?? path.strokeWidth ?? 1.5) : undefined
-                      }
-                      clipPath={path.clip !== undefined ? `url(#${prefix}-${path.id})` : undefined}
-                    />
-                  );
-                })}
-              </G>
-            </>
-          )}
+          <>
+            <Defs>
+              {display.drawing.paths
+                .filter((path) => path.clip !== undefined)
+                .map((path) => (
+                  <ClipPath
+                    key={path.id}
+                    id={`${prefix}-${path.id}`}
+                    {...{ clipPathUnits: 'userSpaceOnUse' }}
+                  >
+                    <Path d={path.clip} fillRule="nonzero" clipRule="nonzero" />
+                  </ClipPath>
+                ))}
+            </Defs>
+            <G opacity={display.entrance}>
+              {display.drawing.paths.map((path) => {
+                const paint = paintOf(path);
+                return (
+                  <Path
+                    key={path.id}
+                    d={path.d}
+                    fill={paint.fill}
+                    opacity={path.opacity}
+                    fillOpacity={path.fillOpacity}
+                    fillRule="nonzero"
+                    stroke={paint.stroke}
+                    strokeWidth={paint.strokeWidth}
+                    clipPath={path.clip !== undefined ? `url(#${prefix}-${path.id})` : undefined}
+                  />
+                );
+              })}
+            </G>
+          </>
         </Svg>
       ) : null}
     </StyledView>
