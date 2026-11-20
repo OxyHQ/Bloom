@@ -9,6 +9,7 @@ import { act, Glyph, hosts, mount, only, OtherGlyph, quietRenderer } from './sup
 import { pager, router } from './support/bloom-router';
 import { Button, Embed, Header, Icon, Text, VStack } from '../primitives';
 import { AppLayout, layout, navigate, screen, Sheet, Stack, TabView } from '../router';
+import { InPagerContext } from '../router/pager';
 
 jest.mock('expo-router', () => {
   const ExperimentalStack = Object.assign(
@@ -24,6 +25,11 @@ jest.mock('../router/screen-header', () => jest.requireActual('../router/screen-
 jest.mock('../platform/header-host', () => jest.requireActual('../platform/header-host.tsx'));
 
 quietRenderer();
+
+/** A route drawn inside Bloom's pager, as TabView provides it. */
+function TabPagerContextProbe({ children }: { children?: ReactNode }) {
+  return createElement(InPagerContext.Provider, { value: true }, children);
+}
 
 beforeEach(() => {
   pager.pages = [
@@ -103,6 +109,13 @@ describe('AppLayout on Android', () => {
     // The navigator is the panel's content, not the shell's child.
     expect(hosts(r, 'ExperimentalStack')).toHaveLength(0);
     expect(shell.props.panelLayout.panels[0].content).toBeTruthy();
+  });
+
+  it('a stack in a page of the pager is the page in place: the pager’s pages are not fragments', () => {
+    const Page = layout(() => Stack());
+    const r = mount(createElement(TabPagerContextProbe, null, createElement(Page)));
+    expect(hosts(r, 'ExperimentalStack')).toHaveLength(0);
+    expect(only(r, 'Slot')).toBeTruthy();
   });
 
   it('the tabs are Bloom’s pager', () => {

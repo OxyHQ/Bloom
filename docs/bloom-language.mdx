@@ -450,7 +450,11 @@ panel it names.
 directory, pushed over the ones before it; with none, the directory's routes as
 expo-router finds them. A tab page that should have the system navigation bar
 on iOS is a directory with a `Stack()` layout: it holds the page alone, and
-everything opened from it is pushed over the tabs, in the app's stack.
+everything opened from it is pushed over the tabs, in the app's stack. On
+Android and OxyOS a stack inside a page of Bloom's pager is the page in place:
+the pager's pages are not fragments, and a native stack in one throws
+(react-native-screens: "Parent fragment providing view returned nullish
+fragment", on a Pixel 8a).
 
 **`screen()`'s chrome** is the screen modifiers on its body's root (any view
 takes them, as SwiftUI's `navigationTitle`, `toolbar` and `sheet`; elsewhere
