@@ -1165,6 +1165,9 @@ export const ENUMS = {
     "spinner",
     "top",
     "inline"
+  ],
+  "contentTransition": [
+    "roll"
   ]
 } as const;
 
@@ -1370,7 +1373,7 @@ export const MODIFIERS = {
   "aspectRatio": [
     "value"
   ],
-  "transition": [
+  "crossFade": [
     "duration"
   ],
   "onLoad": [
@@ -1656,6 +1659,35 @@ export const MODIFIERS = {
   "image": [
     "value",
     "value?"
+  ],
+  "rotation": [
+    "rotation"
+  ],
+  "animation": [
+    "motion",
+    "value?"
+  ],
+  "transition": [
+    "transition"
+  ],
+  "keyframes": [
+    "keyframes",
+    "value"
+  ],
+  "matchedGeometry": [
+    "value",
+    "namespace"
+  ],
+  "contentTransition": [
+    "contentTransition",
+    "value?"
+  ],
+  "loop": [],
+  "paused": [
+    "value"
+  ],
+  "fallback": [
+    "value"
   ]
 } as const;
 
@@ -1715,6 +1747,11 @@ export const NODE_MODIFIERS = {
     "sheet",
     "onReselect",
     "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
     "spacing",
     "align",
     "justify",
@@ -1777,7 +1814,12 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
-    "when"
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry"
   ],
   "text": [
     "padding",
@@ -1833,6 +1875,11 @@ export const NODE_MODIFIERS = {
     "sheet",
     "onReselect",
     "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
     "lines",
     "noWrap",
     "truncation",
@@ -1845,7 +1892,8 @@ export const NODE_MODIFIERS = {
     "strikethrough",
     "textCase",
     "monospacedDigit",
-    "wordBreak"
+    "wordBreak",
+    "contentTransition"
   ],
   "icon": [
     "padding",
@@ -1901,6 +1949,11 @@ export const NODE_MODIFIERS = {
     "sheet",
     "onReselect",
     "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
     "size"
   ],
   "avatar": [
@@ -1957,6 +2010,11 @@ export const NODE_MODIFIERS = {
     "sheet",
     "onReselect",
     "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
     "size",
     "tint",
     "shape",
@@ -2019,6 +2077,11 @@ export const NODE_MODIFIERS = {
     "sheet",
     "onReselect",
     "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
     "layout",
     "size",
     "shape",
@@ -2084,6 +2147,11 @@ export const NODE_MODIFIERS = {
     "sheet",
     "onReselect",
     "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
     "style",
     "tint",
     "size",
@@ -2146,6 +2214,11 @@ export const NODE_MODIFIERS = {
     "sheet",
     "onReselect",
     "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
     "size"
   ],
   "loading": [
@@ -2202,6 +2275,11 @@ export const NODE_MODIFIERS = {
     "sheet",
     "onReselect",
     "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
     "style",
     "size",
     "tint"
@@ -2259,7 +2337,12 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
-    "when"
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry"
   ],
   "skeletonGroup": [
     "padding",
@@ -2314,7 +2397,12 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
-    "when"
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry"
   ],
   "image": [
     "padding",
@@ -2370,10 +2458,15 @@ export const NODE_MODIFIERS = {
     "sheet",
     "onReselect",
     "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
     "contentFit",
     "aspectRatio",
     "tint",
-    "transition",
+    "crossFade",
     "onLoad",
     "onError"
   ],
@@ -2430,7 +2523,12 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
-    "when"
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry"
   ],
   "ratio": [
     "padding",
@@ -2485,7 +2583,12 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
-    "when"
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry"
   ],
   "grid": [
     "padding",
@@ -2541,6 +2644,11 @@ export const NODE_MODIFIERS = {
     "sheet",
     "onReselect",
     "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
     "columns",
     "minCellWidth",
     "spacing",
@@ -2600,6 +2708,11 @@ export const NODE_MODIFIERS = {
     "sheet",
     "onReselect",
     "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
     "style",
     "shape",
     "size",
@@ -2669,6 +2782,11 @@ export const NODE_MODIFIERS = {
     "sheet",
     "onReselect",
     "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
     "size",
     "fill",
     "stroke",
@@ -2728,6 +2846,11 @@ export const NODE_MODIFIERS = {
     "sheet",
     "onReselect",
     "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
     "axis",
     "size",
     "dividers",
@@ -2787,6 +2910,11 @@ export const NODE_MODIFIERS = {
     "sheet",
     "onReselect",
     "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
     "style",
     "size",
     "tint",
@@ -2847,6 +2975,11 @@ export const NODE_MODIFIERS = {
     "sheet",
     "onReselect",
     "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
     "actions"
   ],
   "menuItem": [
@@ -2921,6 +3054,11 @@ export const NODE_MODIFIERS = {
     "sheet",
     "onReselect",
     "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
     "lineStyle",
     "align",
     "spacing",
@@ -3010,6 +3148,11 @@ export const NODE_MODIFIERS = {
     "sheet",
     "onReselect",
     "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
     "count",
     "active",
     "tint"
@@ -3068,6 +3211,11 @@ export const NODE_MODIFIERS = {
     "sheet",
     "onReselect",
     "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
     "trailing",
     "countFormat",
     "size"
@@ -3125,7 +3273,75 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
-    "when"
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry"
+  ],
+  "lottie": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "loop",
+    "paused",
+    "fallback"
   ],
   "embed": [
     "padding",
@@ -3180,7 +3396,12 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
-    "when"
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry"
   ],
   "view": [
     "padding",
@@ -3235,7 +3456,12 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
-    "when"
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry"
   ],
   "appLayout": [
     "primaryAction",
@@ -3282,6 +3508,7 @@ export const CONSTRUCTORS = {
   "Action": "action",
   "ActionBar": "actionBar",
   "ActionGroup": "actionGroup",
+  "Lottie": "lottie",
   "Embed": "embed",
   "AppLayout": "appLayout",
   "Stack": "navStack",

@@ -485,7 +485,8 @@
     "badgeStyle": ["solid", "subtle", "outlined", "onMedia"],
     "badgeSize": ["xs", "sm", "md", "lg", "label-small", "label-medium"],
     "badgePlacement": ["top-right", "top-left", "bottom-right", "bottom-left"],
-    "loadingStyle": ["spinner", "top", "inline"]
+    "loadingStyle": ["spinner", "top", "inline"],
+    "contentTransition": ["roll"]
   },
   "glass": {
     "$comment": [
@@ -652,7 +653,7 @@
     "noWrap": [],
     "contentFit": ["contentFit"],
     "aspectRatio": ["value"],
-    "transition": ["duration"],
+    "crossFade": ["duration"],
     "onLoad": ["value"],
     "onError": ["value"],
     "size": ["size"],
@@ -750,7 +751,16 @@
     "separated": ["value?"],
     "fill": ["color"],
     "stroke": ["color", "borderWidth?"],
-    "image": ["value", "value?"]
+    "image": ["value", "value?"],
+    "rotation": ["rotation"],
+    "animation": ["motion", "value?"],
+    "transition": ["transition"],
+    "keyframes": ["keyframes", "value"],
+    "matchedGeometry": ["value", "namespace"],
+    "contentTransition": ["contentTransition", "value?"],
+    "loop": [],
+    "paused": ["value"],
+    "fallback": ["value"]
   },
   "universal": [
     "padding",
@@ -805,7 +815,12 @@
     "footer",
     "sheet",
     "onReselect",
-    "when"
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry"
   ],
   "nodes": {
     "$comment": "kind: { constructors, own modifiers beyond the universal ones (universal: false takes only its own), the token sets its size(), tint(), style() and shape() read }",
@@ -841,7 +856,8 @@
         "strikethrough",
         "textCase",
         "monospacedDigit",
-        "wordBreak"
+        "wordBreak",
+        "contentTransition"
       ]
     },
     "icon": {
@@ -902,7 +918,7 @@
     },
     "image": {
       "constructors": ["Image"],
-      "modifiers": ["contentFit", "aspectRatio", "tint", "transition", "onLoad", "onError"],
+      "modifiers": ["contentFit", "aspectRatio", "tint", "crossFade", "onLoad", "onError"],
       "tint": "color"
     },
     "fill": {
@@ -1040,6 +1056,10 @@
     "actionGroup": {
       "constructors": ["ActionGroup"],
       "modifiers": []
+    },
+    "lottie": {
+      "constructors": ["Lottie"],
+      "modifiers": ["loop", "paused", "fallback"]
     },
     "embed": {
       "constructors": ["Embed"],

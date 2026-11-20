@@ -388,3 +388,82 @@ fn a_shape_is_checked() {
     let output = check("export const x = () => Shape('heart').tint('primary');\n");
     assert_eq!(output.diagnostics[0].message, "Shape has no modifier .tint()");
 }
+
+const MOTION_IMPORTS: &str = "import { HStack, Text, VStack, opacity, move, asymmetric, defineKeyframes, regular } from '@oxy.so/bloom-language';
+";
+
+fn motion(body: &str) -> crate::Output {
+    compile(&format!("{MOTION_IMPORTS}{body}"), "motion.tsx")
+}
+
+#[test]
+fn a_static_transition_is_a_static_value_and_its_chain_hoists() {
+    let output = motion(
+        "export function Toast(id) {\n  return Text('Saved').transition(asymmetric(move('top', 'xl').combined(opacity), opacity)).id(id);\n}\n",
+    );
+    assert!(output.diagnostics.is_empty());
+    let code = output.code;
+    assert!(
+        code.contains(
+            "const _bloomStatic0 = Text(\"Saved\").transition(asymmetric(move(\"top\", \"xl\").combined(opacity), opacity));"
+        ),
+        "{code}"
+    );
+    assert!(code.contains("return _bloomStatic0.id(id);"), "{code}");
+}
+
+#[test]
+fn module_constants_holding_motion_values_are_static() {
+    let source = "const pop = defineKeyframes([{ at: 0, scale: 1 }, { at: 1, scale: 1.2 }], 'pop');\nexport function Glyph(on) {\n  return Text('x').keyframes(pop, on);\n}\n";
+    let code = motion(source).code;
+    assert!(code.contains("const _bloomStatic0 = Text(\"x\");"), "{code}");
+    assert!(
+        code.contains("return _bloomStatic0.keyframes(pop, on);"),
+        "the trigger is a runtime value:\n{code}"
+    );
+}
+
+#[test]
+fn motion_tokens_and_offsets_are_checked() {
+    let output = motion("export const x = () => Text('x').animation('slid');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown motion token 'slid' for .animation()");
+    assert!(output.diagnostics[0].help.as_deref().unwrap().starts_with("did you mean 'slide'?"));
+    let output = motion("export const x = () => Text('x').offset({ z: 'md' });\n");
+    assert_eq!(output.diagnostics[0].message, ".offset() has no 'z'");
+    let output = motion("export const x = () => Text('x').offset({ y: '-mdd' });\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown padding token '-mdd' for .offset()");
+    let output = motion("export const x = () => Text('x').scale('tiny');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown scale token 'tiny' for .scale()");
+    let output = motion("export const x = () => Text('x').contentTransition('flip');\n");
+    assert_eq!(
+        output.diagnostics[0].message,
+        "Unknown contentTransition token 'flip' for .contentTransition()"
+    );
+}
+
+#[test]
+fn a_transition_is_a_value_not_a_name() {
+    let output = motion("export const x = () => Text('x').transition('opacity');\n");
+    assert_eq!(output.diagnostics[0].message, ".transition() takes a transition value, not 'opacity'");
+}
+
+#[test]
+fn fading_a_view_that_holds_glass_is_an_error() {
+    let output =
+        motion("export const x = (id) => VStack(Text('t').glass(regular)).transition(opacity).id(id);\n");
+    assert_eq!(output.diagnostics[0].message, ".transition() fades a view that holds glass");
+    let output = motion(
+        "export const x = () => VStack(HStack(Text('t').glass())).keyframes(defineKeyframes([{ at: 0, opacity: 0 }, { at: 1, opacity: 1 }]), 1);\n",
+    );
+    assert_eq!(output.diagnostics[0].message, ".keyframes() fades a view that holds glass");
+    let output = motion("export const x = () => VStack(Text('t').glass()).opacity('disabled');\n");
+    assert_eq!(output.diagnostics[0].message, ".opacity() fades a view that holds glass");
+    // On the glass view itself the renderer routes the fade through the material.
+    let output =
+        motion("export const x = (id) => VStack(Text('t')).glass(regular).transition(opacity).id(id);\n");
+    assert!(output.diagnostics.is_empty());
+    // A move is not a fade.
+    let output =
+        motion("export const x = (id) => VStack(Text('t').glass()).transition(move('top', 'xl')).id(id);\n");
+    assert!(output.diagnostics.is_empty());
+}

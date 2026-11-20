@@ -69,6 +69,7 @@ import type {
   MenuSectionView,
   MenuSubmenuView,
   MenuView,
+  LottieView,
   SpacerView,
   StackView,
   TabView,
@@ -307,6 +308,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<ActionBarView>, Of<'actionBar'>>,
       Same<MethodsOf<ActionGroupView>, Of<'actionGroup'>>,
       Same<MethodsOf<EmbedView>, Of<'embed'>>,
+      Same<MethodsOf<LottieView>, Of<'lottie'>>,
       Same<MethodsOf<ComposedView>, Of<'view'>>,
       Same<MethodsOf<FabView>, Of<'fab'>>,
       Same<MethodsOf<MenuView>, Of<'menu'>>,
@@ -327,6 +329,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<RouteView>, Of<'route'>>,
       Same<MethodsOf<TabNavigatorView>, Of<'tabView'>>,
     ] = [
+      true,
       true,
       true,
       true,

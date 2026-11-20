@@ -52,3 +52,5 @@ export const router = { push: jest.fn(), back: jest.fn() };
 export function useRouter() {
   return router;
 }
+
+export { useScreenVisible } from './bloom-runtime';
