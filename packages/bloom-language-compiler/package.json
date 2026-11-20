@@ -32,11 +32,7 @@
     "@jridgewell/trace-mapping": "0.3.31"
   },
   "peerDependencies": {
-    "@oxy.so/bloom-language": "0.1.0",
     "metro-source-map": ">=0.83.0"
-  },
-  "devDependencies": {
-    "@oxy.so/bloom-language": "workspace:*"
   },
   "packageManager": "bun@1.4.3"
 }
