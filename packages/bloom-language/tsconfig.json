@@ -12,6 +12,7 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "noUncheckedIndexedAccess": true,
+    "moduleSuffixes": [".ios", ".android", ".web", ""],
     "types": ["jest", "node"]
   },
   "include": ["src"],

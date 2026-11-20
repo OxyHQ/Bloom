@@ -12,6 +12,7 @@ import { Avatar as BloomAvatar } from '@oxy.so/bloom/avatar';
 import { Button as BloomButton } from '@oxy.so/bloom/button';
 import { EngagementAction, EngagementBar, EngagementGroup } from '@oxy.so/bloom/engagement-bar';
 import { BloomImage } from '@oxy.so/bloom/image';
+import { Fab as BloomFab } from '@oxy.so/bloom/fab';
 import { Surface } from '@oxy.so/bloom/surface';
 
 import {
@@ -23,6 +24,7 @@ import {
   type EmbedProps,
   type IconProps,
   type ImageProps,
+  type MenuProps,
   type Modifier,
   type PressHandler,
   type StackProps,
@@ -30,7 +32,12 @@ import {
   type TextRun,
   type ViewNodeProps,
 } from './node';
-import { ENVIRONMENT } from './generated/spec.generated';
+import { ENVIRONMENT, TONE_ROLE } from './generated/spec.generated';
+import { regular } from './glass';
+import { getPlatformGlass } from './platform/glass-host';
+import { MenuHost } from './platform/menu-host';
+import { HeaderHost } from './platform/header-host';
+import { BottomBarHost } from './platform/bottom-bar-host';
 import {
   addToLayers,
   cachedStyle,
@@ -118,7 +125,12 @@ interface Plan {
   testID: string | undefined;
   id: string | number | undefined;
   own: Map<Modifier['kind'], Modifier>;
+  /** A Button or FAB on glass: the glass draws its fill, tinted `controlTint` when the glass has no tint. */
+  control: { tint: ColorName | undefined } | undefined;
 }
+
+/** A FAB is on glass: the platform's, unless its chain names another. */
+const FAB_GLASS: Modifier = { kind: 'glass', key: regular.key, value: regular };
 
 function plan(node: Node): Plan {
   const result: Plan = {
@@ -139,8 +151,12 @@ function plan(node: Node): Plan {
     testID: undefined,
     id: undefined,
     own: new Map(),
+    control: undefined,
   };
-  for (const modifier of node.modifiers) {
+  const onGlass = node.modifiers.some((modifier) => modifier.kind === 'glass');
+  const modifiers =
+    node.kind === 'fab' && !onGlass ? [FAB_GLASS, ...node.modifiers] : node.modifiers;
+  for (const modifier of modifiers) {
     if (isLayerModifier(modifier)) {
       addToLayers(result.layers, modifier);
       continue;
@@ -194,7 +210,20 @@ function plan(node: Node): Plan {
         result.own.set(modifier.kind, modifier);
     }
   }
+  if ((node.kind === 'button' || node.kind === 'fab') && result.layers.some((l) => l.glass)) {
+    result.control = { tint: controlTint(node.kind, result) };
+  }
   return result;
+}
+
+/** The colour role a solid control fills with: what an untinted glass under it is tinted with. */
+function controlTint(kind: 'button' | 'fab', p: Plan): ColorName | undefined {
+  const appearance = (p.own.get('style') as { value?: string } | undefined)?.value ?? 'solid';
+  if (appearance !== 'solid') return undefined;
+  const tone = (p.own.get('tint') as { value?: string } | undefined)?.value;
+  const role =
+    TONE_ROLE[(tone ?? (kind === 'fab' ? 'action' : 'accent')) as keyof typeof TONE_ROLE];
+  return role ?? undefined;
 }
 
 function ownValue<K extends Modifier['kind']>(
@@ -301,6 +330,8 @@ function drawNode(node: Node, ctx: Context, key: string | number | undefined): R
   const outermostIsHost = wrappers.length === 0;
   const flex = flexKey(p);
   const behaviour = behaviourProps(p);
+  // A control on glass keeps its own press, focus and name: the glass only draws its fill.
+  const hostBehaves = outermostIsHost || p.control !== undefined;
 
   let element = renderHost(
     node,
@@ -308,7 +339,7 @@ function drawNode(node: Node, ctx: Context, key: string | number | undefined): R
     inner,
     hostLayer,
     outermostIsHost ? flex : '',
-    outermostIsHost ? behaviour : undefined,
+    hostBehaves ? behaviour : undefined,
     outermostIsHost ? reactKey : undefined,
   );
 
@@ -321,7 +352,7 @@ function drawNode(node: Node, ctx: Context, key: string | number | undefined): R
       flexOf,
       p,
       element,
-      outermost ? behaviour : undefined,
+      outermost && !hostBehaves ? behaviour : undefined,
       outermost ? reactKey : undefined,
     );
   }
@@ -346,14 +377,34 @@ function wrapLayer(
   if (glass !== undefined) {
     const resolved = boxStyle(layer, flex, p);
     const corner = resolved.borderRadius;
+    const radius = typeof corner === 'number' ? corner : undefined;
+    const outer = behaviour && !p.pressable ? behaviour : null;
+    const ownKey = behaviour && p.pressable ? undefined : key;
+    const PlatformGlass = getPlatformGlass();
+    if (PlatformGlass !== null) {
+      // The platform draws the glass (the lens, Liquid Glass, the system blur).
+      const out = cachedStyle('host', `${styleKey}|${p.control ? 'c' : ''}`, () =>
+        p.control ? Object.assign({ alignSelf: 'flex-start' }, resolved) : resolved,
+      );
+      const props: Record<string, unknown> = {
+        ...outer,
+        glass,
+        radius,
+        fallbackTint: p.control?.tint,
+        interactive: p.pressable || p.control !== undefined,
+        key: ownKey,
+      };
+      const drawn = drawHost(PlatformGlass, out, props, child);
+      return behaviour && p.pressable ? draw(hostFor(p), { ...behaviour, key }, drawn) : drawn;
+    }
     const out = cachedStyle('component', styleKey, () => resolved);
     const props: Record<string, unknown> = {
-      radius: typeof corner === 'number' ? corner : undefined,
+      radius,
       ...(glass.sheen ? null : { sheen: false }),
-      ...(behaviour && !p.pressable ? behaviour : null),
-      key: behaviour && p.pressable ? undefined : key,
+      ...outer,
+      key: ownKey,
     };
-    const fill = glass.fillRole;
+    const fill = glass.fillRole ?? p.control?.tint;
     const surface =
       fill === undefined
         ? drawHost(Surface, out, props, child)
@@ -362,7 +413,13 @@ function wrapLayer(
             {
               ...props,
               host: Surface,
-              paint: propPaint(styleKey, out, 'fill', fill, glass.fillOpacity),
+              paint: propPaint(
+                styleKey,
+                out,
+                'fill',
+                fill,
+                glass.fillRole === undefined ? undefined : glass.fillOpacity,
+              ),
             },
             child,
           );
@@ -560,10 +617,62 @@ function renderHost(
         iconOnly:
           icon !== undefined && label === undefined && shape !== undefined ? true : undefined,
         children: label,
+        disabled: ownValue(p, 'disabled')?.value,
+        loading: ownValue(p, 'loading')?.value,
+        material: p.control ? 'shared' : undefined,
       });
       if (!boxed) return draw(BloomButton, props);
       return drawHost(BloomButton, box('component', 'B'), props);
     }
+    case 'fab': {
+      const props = hostProps(behaviour, key);
+      delete props.focusable;
+      const { icon, label } = buttonContent(node.children);
+      Object.assign(props, {
+        appearance: ownValue(p, 'style')?.value,
+        tone: ownValue(p, 'tint')?.value,
+        size: ownValue(p, 'size')?.value,
+        icon,
+        label,
+        disabled: ownValue(p, 'disabled')?.value,
+        collapsed: ownValue(p, 'collapsed')?.value,
+        material: p.control ? 'shared' : undefined,
+      });
+      if (!boxed) return draw(BloomFab, props);
+      return drawHost(BloomFab, box('component', 'F'), props);
+    }
+    case 'menu': {
+      const menu = draw(MenuHost, {
+        key: boxed || behaviour ? undefined : key,
+        trigger: (node.props as MenuProps).trigger,
+        rows: node.children,
+        label: p.label,
+        testID: p.testID,
+        render: (child: Child) => renderChild(child, ctx, undefined),
+      });
+      if (!boxed) return menu;
+      return drawHost(View, box('host', 'M'), hostProps(undefined, key), menu);
+    }
+    case 'header':
+      return draw(HeaderHost, {
+        key,
+        node,
+        render: (child: Child) => renderChild(child, ctx, undefined),
+      });
+    case 'bottomBar':
+      return draw(BottomBarHost, {
+        key,
+        node,
+        render: (child: Child) => renderChild(child, ctx, undefined),
+      });
+    // Rows and tabs are read by the menu or the bar that holds them; on their own they draw nothing.
+    case 'menuItem':
+    case 'menuSubmenu':
+    case 'menuSection':
+    case 'menuDivider':
+    case 'menuContent':
+    case 'tab':
+      return null as unknown as ReactElement;
     case 'action': {
       const { icon, label, options } = node.props as ActionProps;
       return draw(EngagementAction, {
