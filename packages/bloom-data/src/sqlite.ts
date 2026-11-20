@@ -37,17 +37,41 @@ CREATE TABLE IF NOT EXISTS bloom_versions (
 ) WITHOUT ROWID;
 `;
 
-/** SQLite caps bound parameters per statement; reads by id go in chunks below it. */
-const CHUNK = 500;
+/**
+ * SQLite caps bound parameters per statement (999 before 3.32); reads by id
+ * and multi-row writes go in chunks below it.
+ */
+const CHUNK = 200;
+
+type Param = string | number | null;
+
+const placeholders = (count: number, width: number) =>
+  Array.from(
+    { length: count },
+    () => `(${Array.from({ length: width }, () => '?').join(', ')})`,
+  ).join(', ');
+
+function* chunks<T>(items: readonly T[]): Generator<T[]> {
+  for (let offset = 0; offset < items.length; offset += CHUNK) {
+    yield items.slice(offset, offset + CHUNK);
+  }
+}
 
 /**
  * A durable copy in one SQLite file: records as JSON by type and id, and each
  * list as one row of ordered ids. Open one per account
  * (`openDatabaseAsync(\`app-\${account}.db\`)`), so switching accounts never
  * needs a wipe and one account's rows can never be read as another's.
+ *
+ * Every call is few statements. Each asynchronous statement costs a turn of
+ * the JS thread, which is busiest exactly when a screen opens, so opening is
+ * one script and one read, a list comes back with its records in one query,
+ * and a write sends its rows in multi-row statements.
  */
 export function sqlitePersister(open: () => Promise<AsyncDatabase>): Persister {
   let database: Promise<AsyncDatabase> | undefined;
+  /** Rows older than this go with the first write, so opening stays short. */
+  let pruneBefore: number | undefined;
   const db = () => {
     database ??= open();
     return database;
@@ -61,27 +85,28 @@ export function sqlitePersister(open: () => Promise<AsyncDatabase>): Persister {
         'SELECT type, version FROM bloom_versions',
       );
       const known = new Map(stored.map((row) => [row.type, row.version]));
-      const cutoff = Date.now() - maxAgeMs;
-      await handle.withTransactionAsync(async () => {
-        for (const [type, version] of Object.entries(versions)) {
-          if (known.get(type) === version) continue;
-          await handle.runAsync('DELETE FROM bloom_records WHERE type = ?', type);
-          await handle.runAsync(
-            'INSERT OR REPLACE INTO bloom_versions (type, version) VALUES (?, ?)',
-            type,
-            version,
-          );
-        }
-        await handle.runAsync('DELETE FROM bloom_records WHERE updated_at < ?', cutoff);
-        await handle.runAsync('DELETE FROM bloom_lists WHERE updated_at < ?', cutoff);
-      });
+      const changed = Object.entries(versions).filter(
+        ([type, version]) => known.get(type) !== version,
+      );
+      if (changed.length > 0) {
+        await handle.withTransactionAsync(async () => {
+          for (const [type, version] of changed) {
+            await handle.runAsync('DELETE FROM bloom_records WHERE type = ?', type);
+            await handle.runAsync(
+              'INSERT OR REPLACE INTO bloom_versions (type, version) VALUES (?, ?)',
+              type,
+              version,
+            );
+          }
+        });
+      }
+      pruneBefore = Date.now() - maxAgeMs;
     },
 
     async readRecords(type, ids) {
       const handle = await db();
       const out: StoredRecord[] = [];
-      for (let offset = 0; offset < ids.length; offset += CHUNK) {
-        const chunk = ids.slice(offset, offset + CHUNK);
+      for (const chunk of chunks(ids)) {
         const rows = await handle.getAllAsync<StoredRecord>(
           `SELECT id, json FROM bloom_records WHERE type = ? AND id IN (${chunk.map(() => '?').join(', ')})`,
           type,
@@ -92,46 +117,76 @@ export function sqlitePersister(open: () => Promise<AsyncDatabase>): Persister {
       return out;
     },
 
-    async readList(type, key) {
+    async readList(type, key, recordType) {
       const handle = await db();
-      const [row] = await handle.getAllAsync<{ ids: string; json: string }>(
-        'SELECT ids, json FROM bloom_lists WHERE type = ? AND key = ?',
+      const rows = await handle.getAllAsync<{
+        ids: string;
+        json: string;
+        id: string | null;
+        record: string | null;
+      }>(
+        `SELECT l.ids AS ids, l.json AS json, r.id AS id, r.json AS record
+           FROM bloom_lists l
+           LEFT JOIN json_each(l.ids) AS j
+           LEFT JOIN bloom_records r ON r.type = ? AND r.id = j.value
+          WHERE l.type = ? AND l.key = ?`,
+        recordType,
         type,
         key,
       );
-      if (!row) return null;
+      const [first] = rows;
+      if (!first) return null;
       let ids: unknown;
       try {
-        ids = JSON.parse(row.ids);
+        ids = JSON.parse(first.ids);
       } catch {
         return null;
       }
       if (!Array.isArray(ids)) return null;
+      const records: StoredRecord[] = [];
+      for (const row of rows) {
+        if (row.id !== null && row.record !== null) records.push({ id: row.id, json: row.record });
+      }
       return {
         ids: ids.filter((id): id is string => typeof id === 'string'),
-        json: row.json,
+        json: first.json,
+        records,
       } satisfies StoredList;
     },
 
     async write(batch: PersistBatch) {
-      if (batch.records.length === 0 && batch.lists.length === 0) return;
+      const cutoff = pruneBefore;
+      if (batch.records.length === 0 && batch.lists.length === 0 && cutoff === undefined) return;
       const handle = await db();
       const now = Date.now();
+      const upserts = batch.records.filter((record) => record.json !== null);
+      const deletes = new Map<string, string[]>();
+      for (const record of batch.records) {
+        if (record.json !== null) continue;
+        const ids = deletes.get(record.type) ?? [];
+        ids.push(record.id);
+        deletes.set(record.type, ids);
+      }
       await handle.withTransactionAsync(async () => {
-        for (const record of batch.records) {
-          if (record.json === null) {
+        if (cutoff !== undefined) {
+          pruneBefore = undefined;
+          await handle.runAsync('DELETE FROM bloom_records WHERE updated_at < ?', cutoff);
+          await handle.runAsync('DELETE FROM bloom_lists WHERE updated_at < ?', cutoff);
+        }
+        for (const chunk of chunks(upserts)) {
+          const params: Param[] = [];
+          for (const record of chunk) params.push(record.type, record.id, record.json, now);
+          await handle.runAsync(
+            `INSERT OR REPLACE INTO bloom_records (type, id, json, updated_at) VALUES ${placeholders(chunk.length, 4)}`,
+            ...params,
+          );
+        }
+        for (const [type, ids] of deletes) {
+          for (const chunk of chunks(ids)) {
             await handle.runAsync(
-              'DELETE FROM bloom_records WHERE type = ? AND id = ?',
-              record.type,
-              record.id,
-            );
-          } else {
-            await handle.runAsync(
-              'INSERT OR REPLACE INTO bloom_records (type, id, json, updated_at) VALUES (?, ?, ?, ?)',
-              record.type,
-              record.id,
-              record.json,
-              now,
+              `DELETE FROM bloom_records WHERE type = ? AND id IN (${chunk.map(() => '?').join(', ')})`,
+              type,
+              ...chunk,
             );
           }
         }
