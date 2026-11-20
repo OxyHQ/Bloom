@@ -10,8 +10,8 @@ import type { ZoomableMediaGalleryHandle } from '../zoomable-media-gallery';
 import { getAspectRatio, getIntrinsicSize, setAspectRatio } from '../image-aspect-ratio-cache';
 
 const mockPending = new Map<string, Array<(size: { width: number; height: number }) => void>>();
-jest.mock('../image', () => ({
-  ...jest.requireActual('../image'),
+jest.mock('../image/BloomImage', () => ({
+  ...jest.requireActual('../image/BloomImage'),
   getImageSize: (uri: string) =>
     new Promise<{ width: number; height: number }>((resolve) => {
       const pending = mockPending.get(uri) ?? [];

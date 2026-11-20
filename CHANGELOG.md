@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `BloomImage`, Bloom's raster renderer (expo-image on a device, react-native's `Image` on web), is public: `@oxy.so/bloom/image` and the root barrel export it with its prop types (`BloomImageProps`, `BloomImageSource`, `BloomImageContentFit`, `BloomImageLoadInfo`, `BloomImageErrorInfo`). See `docs/image.mdx`.
+- `adoptStyleSheet(id, css)` is exported from `@oxy.so/bloom/styles`: the CSP-safe way to put CSS on a web page as a constructed stylesheet, the mechanism Bloom's web forks use.
+
 ## 22.1.10
 
 ### Fixed

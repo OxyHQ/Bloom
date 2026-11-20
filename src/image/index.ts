@@ -1,4 +1,4 @@
-export { BloomImage, getImageSize, prefetchImage } from './BloomImage';
+export { BloomImage } from './BloomImage';
 export type {
   BloomImageContentFit,
   BloomImageErrorInfo,

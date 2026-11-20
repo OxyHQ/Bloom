@@ -183,6 +183,8 @@ const SUBPATHS = /** @type {const} */ ([
   ['./radio-indicator', 'radio-indicator/index.ts'],
   ['./radio', 'radio/index.ts'],
   ['./error-boundary', 'error-boundary/index.ts'],
+  // The one raster renderer (expo-image on a device, react-native's `Image` on web).
+  ['./image', 'image/index.ts'],
   ['./shapes', 'shapes/index.ts'],
   ['./avatar', 'avatar/index.ts'],
   ['./avatar-group', 'avatar-group/index.ts'],

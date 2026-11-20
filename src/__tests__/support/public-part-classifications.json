@@ -1120,6 +1120,7 @@
       "src/hover-card/HoverCard.tsx#HoverCardContent",
       "src/hover-card/HoverCard.tsx#HoverCardTrigger",
       "src/image-resolver/context.ts#ImageResolverProvider",
+      "src/image/BloomImage.tsx#BloomImage",
       "src/important-alerts-card/ImportantAlertsCard.tsx#ImportantAlertsCard",
       "src/input-group/InputGroup.tsx#InputGroup",
       "src/input-group/InputGroup.tsx#InputGroupAddon",
