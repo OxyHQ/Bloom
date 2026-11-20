@@ -46,10 +46,12 @@ export function layout(body: () => Child): ComponentType {
 }
 
 /**
- * A screen route: its body's root view is the screen's content, and the
- * root's screen modifiers are its chrome (`title`, `titleDisplay`,
- * `subtitle`, `header`, `toolbar`, `toolbarLeading`, `onBack`, `footer`,
- * `sheet`, `onReselect`). Bloom's `Screen` draws it; the header is Bloom's
+ * A screen: its body's root view is the screen's content, and the root's
+ * screen modifiers are its chrome (`title`, `titleDisplay`, `subtitle`,
+ * `header`, `toolbar`, `toolbarLeading`, `onBack`, `backLabel`,
+ * `headingLevel`, `footer`, `sheet`, `onReselect`); the root's `testID` names
+ * the screen. A route file default-exports one; a screen a route renders with
+ * props (a post's id) takes them as a component does. Bloom's `Screen` draws it; the header is Bloom's
  * PageHeader, and on iOS inside a native stack the system navigation bar.
  *
  * ```ts
@@ -62,13 +64,15 @@ export function layout(body: () => Child): ComponentType {
  * });
  * ```
  */
-export function screen(body: () => Child): ComponentType {
+export function screen<P extends object = Record<string, never>>(
+  body: (props: P) => Child,
+): ComponentType<P> {
   // biome-ignore lint/correctness/noComponentHookFactories: screen() defines one route component per call by design
-  function RouteScreen(): ReactNode {
+  function RouteScreen(props: P): ReactNode {
     const env = useNavigatorEnv();
     return (
       <EnvContext.Provider value={env}>
-        <ScreenHost root={body()} />
+        <ScreenHost root={body(props)} />
       </EnvContext.Provider>
     );
   }

@@ -12,9 +12,10 @@ import { Screen } from '@oxy.so/bloom/screen';
 import { Header } from '../primitives';
 import {
   isNode,
+  Node,
   type Child,
+  type HeadingLevel,
   type Modifier,
-  type Node,
   type ScreenHeader,
   type SheetOptions,
 } from '../node';
@@ -31,6 +32,10 @@ interface ScreenChrome {
   footer: Extract<Modifier, { kind: 'footer' }> | undefined;
   sheets: Extract<Modifier, { kind: 'sheet' }>[];
   onReselect: (() => void) | undefined;
+  /** The root's testID, which names the screen (Bloom Screen's own). */
+  testID: string | undefined;
+  /** The root without it: the screen's content. */
+  content: Child;
 }
 
 /** The chrome a body's root declares. */
@@ -41,12 +46,23 @@ function chromeOf(root: Child): ScreenChrome {
     footer: undefined,
     sheets: [],
     onReselect: undefined,
+    testID: undefined,
+    content: root,
   };
   if (!isNode(root)) return chrome;
   const values = valuesOf(root);
   for (const modifier of root.modifiers) {
     if (modifier.kind === 'sheet') chrome.sheets.push(modifier);
     else if (modifier.kind === 'footer') chrome.footer = modifier;
+    else if (modifier.kind === 'testID') chrome.testID = modifier.value;
+  }
+  if (chrome.testID !== undefined) {
+    chrome.content = new Node(
+      root.kind,
+      root.props,
+      root.children,
+      root.modifiers.filter((modifier) => modifier.kind !== 'testID'),
+    );
   }
   chrome.onReselect = values.onReselect as (() => void) | undefined;
   const header = values.header as ScreenHeader | undefined;
@@ -65,6 +81,10 @@ function chromeOf(root: Child): ScreenChrome {
     composed = composed.toolbarLeading(...(values.toolbarLeading as Child[]));
   if ('onBack' in values)
     composed = composed.onBack(values.onBack as (() => void) | null | undefined);
+  if (values.backLabel !== undefined) composed = composed.backLabel(values.backLabel as string);
+  if (values.headingLevel !== undefined) {
+    composed = composed.headingLevel(values.headingLevel as HeadingLevel);
+  }
   chrome.header = composed as unknown as Node;
   return chrome;
 }
@@ -77,6 +97,7 @@ export function ScreenHost({ root }: { root: Child }) {
   return (
     <>
       <Screen
+        testID={chrome.testID}
         scroll="auto"
         header={system ? undefined : header}
         reselect={chrome.onReselect ? { refresh: chrome.onReselect } : undefined}
@@ -84,7 +105,7 @@ export function ScreenHost({ root }: { root: Child }) {
         bottomBarPlacement={footer?.options?.placement}
         bottomBarKeyboardBehavior={footer?.options?.keyboard}
       >
-        {toElement(root)}
+        {toElement(chrome.content)}
       </Screen>
       {system ? header : null}
       {sheetsOf(chrome.sheets)}

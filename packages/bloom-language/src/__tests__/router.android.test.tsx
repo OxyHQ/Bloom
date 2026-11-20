@@ -177,6 +177,31 @@ describe('screen() on Android', () => {
     expect(s.props.bottomBar).toBeTruthy();
   });
 
+  it('the root’s testID names the Screen; a screen takes props; the back’s name and the heading level reach PageHeader', () => {
+    const back = jest.fn();
+    const Post = screen(function post(props: { id: string }) {
+      return VStack(Text(props.id))
+        .testID('post-screen')
+        .title('Post')
+        .onBack(back)
+        .backLabel('Back to the feed')
+        .headingLevel(2);
+    });
+    const r = mount(createElement(Post, { id: 'p7' }));
+    expect(only(r, 'Screen').props.testID).toBe('post-screen');
+    // The content does not carry it too: one host has it, the Screen.
+    const named = r.root.findAll(
+      (i) => typeof i.type === 'string' && i.props.testID === 'post-screen',
+    );
+    expect(named.map((i) => i.type)).toEqual(['Screen']);
+    expect(only(r, 'PageHeader').props).toMatchObject({
+      backLabel: 'Back to the feed',
+      headingLevel: 2,
+      onBack: back,
+    });
+    expect(hosts(r, 'Text').some((t) => t.props.children === 'p7')).toBe(true);
+  });
+
   it('a sheet is Bloom’s Dialog: built while open, kept while it closes', () => {
     const built = jest.fn(() => Text('filters'));
     const dismiss = jest.fn();
