@@ -6,7 +6,7 @@
  */
 import { PageHeader } from '@oxy.so/bloom/page-header';
 
-import type { Child, Node, ScrollOffset } from '../node';
+import type { Child, HeadingLevel, Node, ScrollOffset } from '../node';
 import type { HeaderPresentation, ScrollEdge, TitleDisplay } from '../tokens';
 import { valuesOf } from './values';
 import type { NodeHostProps } from './host.types';
@@ -23,6 +23,8 @@ export function readHeader(node: Node) {
     toolbar: (values.toolbar as readonly Child[] | undefined) ?? [],
     leading: (values.toolbarLeading as readonly Child[] | undefined) ?? [],
     onBack: values.onBack as (() => void) | null | undefined,
+    backLabel: values.backLabel as string | undefined,
+    headingLevel: values.headingLevel as HeadingLevel | undefined,
     scrollEdge: values.scrollEdge as ScrollEdge | undefined,
     scrollY: values.scrollY as ScrollOffset | undefined,
     presentation: values.presentation as HeaderPresentation | undefined,
@@ -41,6 +43,8 @@ export function PageHeaderHost({ node, render }: NodeHostProps) {
       scrim={header.scrollEdge}
       scrollY={header.scrollY}
       onBack={header.onBack}
+      backLabel={header.backLabel}
+      headingLevel={header.headingLevel}
       leading={header.leading.length > 0 ? render(header.leading) : undefined}
       actions={header.toolbar.length > 0 ? render(header.toolbar) : undefined}
       testID={header.testID}
