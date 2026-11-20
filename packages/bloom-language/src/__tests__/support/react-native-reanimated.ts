@@ -29,3 +29,5 @@ export const Easing = {
   quad: 'quad',
 };
 export const ReduceMotion = { System: 'system' };
+export const css = { keyframes: (blocks: Record<string, unknown>) => ({ keyframes: blocks }) };
+export type CSSKeyframesRule = { keyframes: Record<string, unknown> };

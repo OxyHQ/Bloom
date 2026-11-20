@@ -361,24 +361,6 @@ valueClass('display', 'list-item');
 valueClass('wordBreak', 'break-all');
 valueClass('overflowWrap', 'break-word');
 
-// Press feedback on the web: a touch pointer's press scales the view (the CSS
-// `scale` property, so it composes with any transform the view has); a mouse
-// or reduced motion leaves it still. The duration and curve are the press token.
-const PRESS_SCALE_CLASS = `bl${hash('pressScale')}`;
-{
-  const [x1, y1, x2, y2] = motionSpecs.press.easing;
-  const curve = `cubic-bezier(${x1},${y1},${x2},${y2})`;
-  rules.push({
-    order: Number.POSITIVE_INFINITY,
-    name: PRESS_SCALE_CLASS,
-    text: [
-      `@media (pointer: coarse) and (prefers-reduced-motion: no-preference){`,
-      `.${PRESS_SCALE_CLASS}{transition:scale ${motionSpecs.press.duration}ms ${curve};}`,
-      `.${PRESS_SCALE_CLASS}:active{scale:${scales.scale.pressed};}}`,
-    ].join(''),
-  });
-}
-
 // react-native-web's precedence (shorthands before longhands), then by name, so
 // the sheet is the same text on every run.
 rules.sort((a, b) => a.order - b.order || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
@@ -394,9 +376,6 @@ export const WEB_SHEET = ${JSON.stringify(rules.map((rule) => rule.text).join('\
 
 /** \`property:value\` (a role as \`property:@role\`) → the class that sets it. */
 export const WEB_CLASS: Readonly<Record<string, string>> = ${ts(classes)};
-
-/** The class \`.pressScale()\` puts on a host: a touch press scales it to \`pressed\`. */
-export const PRESS_SCALE_CLASS = ${JSON.stringify(PRESS_SCALE_CLASS)};
 `;
 
 // ── The compiler's tables ────────────────────────────────────────
