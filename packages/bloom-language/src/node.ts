@@ -13,6 +13,7 @@ import type {
 } from '@oxy.so/bloom/image';
 import type { BottomBarProps } from '@oxy.so/bloom/bottom-bar';
 import type { PageHeaderProps } from '@oxy.so/bloom/page-header';
+import type { AppShellProps } from '@oxy.so/bloom/app-shell';
 import type { AccentTone } from '@oxy.so/bloom/theme';
 
 import { regular, type GlassValue } from './glass';
@@ -61,6 +62,39 @@ export type { GlassValue };
 export type EngagementTone = Exclude<AccentTone, 'default'>;
 export type IconComponent = ComponentType<{ width?: number; height?: number; fill?: string }>;
 export type PressHandler = (event: GestureResponderEvent) => unknown;
+
+/**
+ * A place to go, as data: what `navigate(href, params)` returns. A press
+ * modifier takes it like a handler; the router `layout()` and `screen()` that
+ * draw the view resolve it to their navigator (a deck panel's own, on the web).
+ */
+export class Navigation {
+  constructor(
+    readonly href: string,
+    readonly params: Readonly<Record<string, string | number>> | undefined,
+  ) {}
+}
+export type Press = PressHandler | Navigation;
+
+/** How a screen's sheet is presented: Bloom's Dialog, from the bottom and centred from `md`. */
+export interface SheetOptions {
+  /** Called when the reader dismisses the sheet (a swipe, the backdrop, Escape). */
+  readonly onDismiss?: () => void;
+  readonly title?: string;
+}
+
+/**
+ * The app shell's own options, which stay the app's: its layout mode, panels
+ * and error boundaries. The language places the navigator (in the panel the
+ * app names with `navigator`) and owns the navigation chrome (sidebar rows,
+ * the bottom bar and the primary action).
+ */
+export type ShellOptions = (
+  navigator: ReactNode,
+) => Omit<AppShellProps, 'primaryAction' | 'bottomBar' | 'children'>;
+
+/** What a screen's header is: a presentation of the screen's own title and toolbar, none, or a header of its own. */
+export type ScreenHeader = HeaderPresentation | false | ViewNode;
 export type ImageLoadHandler = (info: BloomImageLoadInfo) => void;
 export type ImageErrorHandler = (info: BloomImageErrorInfo) => void;
 
@@ -98,6 +132,10 @@ export interface ValueModifiers {
   scrollEdge: ScrollEdge;
   scrollY: ScrollOffset | undefined;
   presentation: HeaderPresentation;
+  header: ScreenHeader;
+  onReselect: (() => void) | undefined;
+  bottomBar: boolean;
+  shell: ShellOptions;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -174,7 +212,7 @@ export type Modifier =
       readonly key: string;
       readonly value: (count: number) => string;
     }
-  | { readonly kind: 'onPress'; readonly key: string; readonly value: PressHandler | undefined }
+  | { readonly kind: 'onPress'; readonly key: string; readonly value: Press | undefined }
   | { readonly kind: 'onLongPress'; readonly key: string; readonly value: (() => void) | undefined }
   | {
       readonly kind: 'onHover';
@@ -189,6 +227,20 @@ export type Modifier =
   | { readonly kind: 'hitSlop'; readonly key: string; readonly value: HitSlopName }
   | { readonly kind: 'testID'; readonly key: string; readonly value: string }
   | { readonly kind: 'id'; readonly key: string; readonly value: string | number }
+  | {
+      readonly kind: 'sheet';
+      readonly key: string;
+      readonly open: boolean;
+      readonly content: () => Child;
+      readonly options: SheetOptions | undefined;
+    }
+  | {
+      readonly kind: 'primaryAction';
+      readonly key: string;
+      readonly icon: IconComponent;
+      readonly label: string;
+      readonly destination: string;
+    }
   | ValueModifier;
 
 export type ModifierKind = Modifier['kind'];
@@ -217,7 +269,11 @@ export type NodeKind =
   | 'menuContent'
   | 'header'
   | 'bottomBar'
-  | 'tab';
+  | 'tab'
+  | 'appLayout'
+  | 'navStack'
+  | 'route'
+  | 'tabView';
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -281,6 +337,15 @@ export interface TitleProps {
 export interface TabProps {
   readonly label: string;
   readonly icon: IconComponent;
+}
+export interface RouteProps {
+  /** The route's name in its navigator (the file's name in the layout's directory). */
+  readonly name: string;
+  readonly presentation: 'push' | 'sheet';
+}
+export interface NavStackProps {
+  /** The routes the stack declares, in order; a bare name is pushed. */
+  readonly routes: readonly (string | ViewNode)[];
 }
 export interface MenuContentProps {
   /** The content's body: called while the menu is open, by the component that presents it. */
@@ -433,7 +498,7 @@ export class Node {
    * `undefined` handler keeps the same host, out of the focus order, so a row
    * that is sometimes inert never changes element type (and never remounts).
    */
-  onPress(value: PressHandler | undefined): Node {
+  onPress(value: Press | undefined): Node {
     return this.with({ kind: 'onPress', key: 'onPress', value });
   }
   onLongPress(value: (() => void) | undefined): Node {
@@ -539,6 +604,24 @@ export class Node {
   presentation(value: HeaderPresentation): Node {
     return this.set('presentation', value);
   }
+  header(value: ScreenHeader): Node {
+    return this.set('header', value);
+  }
+  sheet(open: boolean, content: () => Child, options?: SheetOptions): Node {
+    return this.with({ kind: 'sheet', key: 'sheet', open, content, options });
+  }
+  onReselect(value: (() => void) | undefined): Node {
+    return this.set('onReselect', value);
+  }
+  primaryAction(icon: IconComponent, label: string, destination: string): Node {
+    return this.with({ kind: 'primaryAction', key: 'primaryAction', icon, label, destination });
+  }
+  bottomBar(value: boolean): Node {
+    return this.set('bottomBar', value);
+  }
+  shell(value: ShellOptions): Node {
+    return this.set('shell', value);
+  }
 }
 
 const FRAME_KEYS = ['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight'] as const;
@@ -567,7 +650,7 @@ export interface ViewModifiers<Self> extends ViewNode {
   font(value: FontName): Self;
   weight(value: WeightName): Self;
   leading(value: LeadingToken): Self;
-  onPress(value: PressHandler | undefined): Self;
+  onPress(value: Press | undefined): Self;
   onLongPress(value: (() => void) | undefined): Self;
   onHover(enter: (() => void) | undefined, leave: (() => void) | undefined): Self;
   /**
@@ -581,6 +664,28 @@ export interface ViewModifiers<Self> extends ViewNode {
   hitSlop(value: HitSlopName): Self;
   testID(value: string): Self;
   id(value: string | number): Self;
+  // The screen's chrome: read from the root of a router `screen()` body, nothing elsewhere.
+  /** The screen's title: the navigation bar's on iOS, the page header's elsewhere. */
+  title(value: string): Self;
+  /** `large`: the large title that folds into the bar as the page scrolls; `inline` (default). */
+  titleDisplay(value: TitleDisplay): Self;
+  subtitle(value: string | undefined): Self;
+  /**
+   * The screen's header: a presentation of its title and toolbar (`floating`,
+   * the default, `bar` or `navigation`), `false` for none, or a header node of
+   * its own (drawn in the page on every platform).
+   */
+  header(value: ScreenHeader): Self;
+  /** The header's trailing items, in reading order. */
+  toolbar(...value: Child[]): Self;
+  /** The header's leading items, after the back button. */
+  toolbarLeading(...value: Child[]): Self;
+  /** The back button's action; `null` shows none (a top-level destination). */
+  onBack(value: (() => void) | null | undefined): Self;
+  /** A sheet over the screen while `open`: Bloom's Dialog, from the bottom and centred from `md`. */
+  sheet(open: boolean, content: () => Child, options?: SheetOptions): Self;
+  /** Pressing the screen's destination while it is in front (after it scrolled back to the top). */
+  onReselect(value: (() => void) | undefined): Self;
 }
 
 export interface StackView extends ViewModifiers<StackView> {
@@ -727,6 +832,27 @@ export type SpacerView = ViewModifiers<SpacerView>;
 export type EmbedView = ViewModifiers<EmbedView>;
 /** A `view()` component placed in a tree. Its modifiers apply around its body. */
 export type ComposedView = ViewModifiers<ComposedView>;
+
+/** The app's root layout: its navigator in the shell, the primary action, the bottom bar. */
+export interface AppLayoutView extends ViewNode {
+  /**
+   * The prominent action: the bar's FAB and the sidebar's first row on
+   * Android, OxyOS and the web; on iOS, `destination`'s tab, drawn on its own
+   * surface. `destination` is a destination's name (a page of the pager).
+   */
+  primaryAction(icon: IconComponent, label: string, destination: string): AppLayoutView;
+  /** Whether the bottom bar shows on this route (the system tab bar on iOS draws itself). */
+  bottomBar(value: boolean): AppLayoutView;
+  /** The shell's own options (panels, layout mode, error boundaries); `navigator` is where the stack goes. */
+  shell(value: ShellOptions): AppLayoutView;
+  testID(value: string): AppLayoutView;
+}
+/** A stack of routes: the system's on iOS, the predictive-back stack on Android, the document on the web. */
+export type NavStackView = ViewNode;
+/** A stack's route presented as a sheet. */
+export type RouteView = ViewNode;
+/** The tabs group's navigator: the system tab bar on iOS, Bloom's pager elsewhere. */
+export type TabNavigatorView = ViewNode;
 
 export function isNode(value: unknown): value is Node {
   return value instanceof Node;

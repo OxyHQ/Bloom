@@ -25,6 +25,10 @@ import {
 import { WEB_CLASS, WEB_SHEET } from '../generated/web-sheet.generated';
 import type {
   ActionBarView,
+  AppLayoutView,
+  NavStackView,
+  RouteView,
+  TabNavigatorView,
   ActionGroupView,
   ActionView,
   AvatarView,
@@ -152,7 +156,15 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<HeaderView>, Of<'header'>>,
       Same<MethodsOf<BottomBarView>, Of<'bottomBar'>>,
       Same<MethodsOf<TabView>, Of<'tab'>>,
+      Same<MethodsOf<AppLayoutView>, Of<'appLayout'>>,
+      Same<MethodsOf<NavStackView>, Of<'navStack'>>,
+      Same<MethodsOf<RouteView>, Of<'route'>>,
+      Same<MethodsOf<TabNavigatorView>, Of<'tabView'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,
