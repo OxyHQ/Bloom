@@ -1,0 +1,106 @@
+/**
+ * iOS, NOT VERIFIED on a device: the contract with expo-glass-effect, @expo/ui
+ * and expo-router, against stand-ins of each.
+ */
+import { createElement, type ReactNode } from 'react';
+
+import { DARK, LIGHT } from './support/bloom-theme';
+import { act, Glyph, hosts, mount, only, quietRenderer } from './support/mount';
+import { Button, Header, HStack, Icon, Item, Menu, Section, Text } from '../primitives';
+import { clear } from '../glass';
+import { toElement } from '../render';
+
+const host = (name: string) => (props: { children?: ReactNode }) =>
+  createElement(name, props, props.children);
+jest.mock('expo-glass-effect', () => ({
+  GlassView: 'GlassView',
+  isLiquidGlassAvailable: () => true,
+}));
+jest.mock('@expo/ui/swift-ui', () => ({
+  Host: host('Host'),
+  Menu: (props: { label: ReactNode; children?: ReactNode }) =>
+    createElement('SwiftMenu', props, props.label, props.children),
+  Button: 'SwiftButton',
+  Toggle: 'SwiftToggle',
+  Section: host('SwiftSection'),
+  Divider: 'SwiftDivider',
+  RNHostView: host('RNHostView'),
+}));
+jest.mock('@expo/ui/swift-ui/modifiers', () => ({
+  disabled: (value?: boolean) => ({ disabled: value }),
+  menuActionDismissBehavior: (value: string) => ({ dismiss: value }),
+}));
+jest.mock('expo-router', () => ({ Stack: { Screen: 'StackScreen' } }));
+
+quietRenderer();
+
+describe('glass is Liquid Glass', () => {
+  it('the material’s style, the tint at its transparency, interactive under a control', () => {
+    const r = mount(
+      toElement(Button(Icon(Glyph)).shape('circle').glass(clear.tint('primary', 'medium'))),
+      DARK,
+    );
+    expect(only(r, 'GlassView').props).toMatchObject({
+      glassEffectStyle: 'clear',
+      isInteractive: true,
+      colorScheme: 'dark',
+    });
+    expect(only(r, 'GlassView').props.tintColor).not.toBe(LIGHT.primary);
+    expect(only(r, 'BloomButton').props.material).toBe('shared');
+  });
+
+  it('a view on untinted glass is not interactive', () => {
+    const r = mount(toElement(HStack(Text('a')).glass()));
+    expect(only(r, 'GlassView').props).toMatchObject({
+      glassEffectStyle: 'regular',
+      isInteractive: false,
+    });
+  });
+});
+
+describe('the menu is the system menu', () => {
+  it('the trigger is the React view it opens from; rows are SwiftUI buttons, toggles and sections', () => {
+    const pin = jest.fn();
+    const r = mount(
+      toElement(
+        Menu(
+          Icon(Glyph),
+          Item('Pin').checked(true).onPress(pin),
+          Section(Item('Delete').destructive().disabled()).title('Danger'),
+        ),
+      ),
+    );
+    expect(only(r, 'RNHostView')).toBeTruthy();
+    act(() => only(r, 'SwiftToggle').props.onIsOnChange(false));
+    expect(pin).toHaveBeenCalledTimes(1);
+    expect(only(r, 'SwiftSection').props.title).toBe('Danger');
+    expect(only(r, 'SwiftButton').props).toMatchObject({
+      label: 'Delete',
+      role: 'destructive',
+      modifiers: [{ disabled: true }],
+    });
+    expect(hosts(r, 'DropdownMenu')).toHaveLength(0);
+  });
+});
+
+describe('the header is the navigation bar', () => {
+  it('sets its screen’s options: the large title, the bar items, the system back', () => {
+    const r = mount(
+      toElement(
+        Header('Home')
+          .titleDisplay('large')
+          .toolbar(Button(Icon(Glyph))),
+      ),
+    );
+    const options = only(r, 'StackScreen').props.options;
+    expect(options).toMatchObject({
+      headerShown: true,
+      title: 'Home',
+      headerLargeTitle: true,
+      headerBackVisible: true,
+    });
+    expect(options.headerLeft).toBeUndefined();
+    const right = mount(options.headerRight());
+    expect(hosts(right, 'BloomButton')).toHaveLength(1);
+  });
+});

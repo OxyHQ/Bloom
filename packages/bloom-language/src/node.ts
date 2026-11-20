@@ -11,6 +11,8 @@ import type {
   BloomImageLoadInfo,
   BloomImageSource,
 } from '@oxy.so/bloom/image';
+import type { BottomBarProps } from '@oxy.so/bloom/bottom-bar';
+import type { PageHeaderProps } from '@oxy.so/bloom/page-header';
 import type { AccentTone } from '@oxy.so/bloom/theme';
 
 import { regular, type GlassValue } from './glass';
@@ -36,17 +38,74 @@ import {
   type PaddingToken,
   type SpaceToken,
   type WeightName,
+  type HeaderPresentation,
+  type ScrollEdge,
+  type TitleDisplay,
 } from './tokens';
 
 // ── Modifiers: immutable data, applied in order ──────────────────
 
-export type { Alignment, BorderEdge, ButtonShape, ContentFit, Edge, Role, ShrinkPriority };
+export type {
+  Alignment,
+  BorderEdge,
+  ButtonShape,
+  ContentFit,
+  Edge,
+  HeaderPresentation,
+  Role,
+  ScrollEdge,
+  ShrinkPriority,
+  TitleDisplay,
+};
 export type { GlassValue };
 export type EngagementTone = Exclude<AccentTone, 'default'>;
 export type IconComponent = ComponentType<{ width?: number; height?: number; fill?: string }>;
 export type PressHandler = (event: GestureResponderEvent) => unknown;
 export type ImageLoadHandler = (info: BloomImageLoadInfo) => void;
 export type ImageErrorHandler = (info: BloomImageErrorInfo) => void;
+
+/** A progress on the UI thread (a Reanimated shared value), as Bloom's bars take it. */
+export type Progress = NonNullable<BottomBarProps['minimizeProgress']>;
+/** The page's scroll offset on the UI thread, as Bloom's header takes it. */
+export type ScrollOffset = NonNullable<PageHeaderProps['scrollY']>;
+
+/**
+ * The modifiers whose value is stored as given: flags, handlers, slots and the
+ * values only one node kind reads. Each is `{ kind, key, value }`.
+ */
+export interface ValueModifiers {
+  disabled: boolean;
+  loading: boolean;
+  collapsed: boolean;
+  icon: IconComponent;
+  destructive: true;
+  checked: boolean;
+  keepOpen: true;
+  title: string;
+  badge: number | undefined;
+  activeIcon: IconComponent;
+  selection: string;
+  onSelect: (id: string) => void;
+  action: Child;
+  minimize: Progress | undefined;
+  progress: Progress | undefined;
+  hide: Progress | undefined;
+  titleDisplay: TitleDisplay;
+  subtitle: string | undefined;
+  toolbar: readonly Child[];
+  toolbarLeading: readonly Child[];
+  onBack: (() => void) | null | undefined;
+  scrollEdge: ScrollEdge;
+  scrollY: ScrollOffset | undefined;
+  presentation: HeaderPresentation;
+}
+export type ValueModifier = {
+  [K in keyof ValueModifiers]: {
+    readonly kind: K;
+    readonly key: string;
+    readonly value: ValueModifiers[K];
+  };
+}[keyof ValueModifiers];
 
 export interface FrameSpec {
   width?: SpaceToken;
@@ -129,7 +188,8 @@ export type Modifier =
   | { readonly kind: 'role'; readonly key: string; readonly value: Role }
   | { readonly kind: 'hitSlop'; readonly key: string; readonly value: HitSlopName }
   | { readonly kind: 'testID'; readonly key: string; readonly value: string }
-  | { readonly kind: 'id'; readonly key: string; readonly value: string | number };
+  | { readonly kind: 'id'; readonly key: string; readonly value: string | number }
+  | ValueModifier;
 
 export type ModifierKind = Modifier['kind'];
 
@@ -147,7 +207,17 @@ export type NodeKind =
   | 'actionBar'
   | 'actionGroup'
   | 'embed'
-  | 'view';
+  | 'view'
+  | 'fab'
+  | 'menu'
+  | 'menuItem'
+  | 'menuSubmenu'
+  | 'menuSection'
+  | 'menuDivider'
+  | 'menuContent'
+  | 'header'
+  | 'bottomBar'
+  | 'tab';
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -201,6 +271,21 @@ export interface ActionOptions {
 export interface EmbedProps {
   /** A React element, or a function of a renderer that draws language nodes in the current environment. */
   readonly content: ReactNode | ((render: (child: Child) => ReactNode) => ReactNode);
+}
+export interface MenuProps {
+  readonly trigger: Child;
+}
+export interface TitleProps {
+  readonly title: string;
+}
+export interface TabProps {
+  readonly label: string;
+  readonly icon: IconComponent;
+}
+export interface MenuContentProps {
+  /** The content's body: called while the menu is open, by the component that presents it. */
+  readonly body: (props: object) => Child;
+  readonly props: object;
 }
 export interface ViewNodeProps {
   /** The view's component: React's own memo of its host, so props compare key by key. */
@@ -379,6 +464,81 @@ export class Node {
   id(value: string | number): Node {
     return this.with({ kind: 'id', key: 'id', value });
   }
+  private set<K extends keyof ValueModifiers>(kind: K, value: ValueModifiers[K]): Node {
+    return this.with({ kind, key: kind, value } as ValueModifier);
+  }
+  disabled(value = true): Node {
+    return this.set('disabled', value);
+  }
+  loading(value = true): Node {
+    return this.set('loading', value);
+  }
+  collapsed(value = true): Node {
+    return this.set('collapsed', value);
+  }
+  icon(value: IconComponent): Node {
+    return this.set('icon', value);
+  }
+  destructive(): Node {
+    return this.set('destructive', true);
+  }
+  checked(value: boolean): Node {
+    return this.set('checked', value);
+  }
+  keepOpen(): Node {
+    return this.set('keepOpen', true);
+  }
+  title(value: string): Node {
+    return this.set('title', value);
+  }
+  badge(value: number | undefined): Node {
+    return this.set('badge', value);
+  }
+  activeIcon(value: IconComponent): Node {
+    return this.set('activeIcon', value);
+  }
+  selection(value: string): Node {
+    return this.set('selection', value);
+  }
+  onSelect(value: (id: string) => void): Node {
+    return this.set('onSelect', value);
+  }
+  action(value: Child): Node {
+    return this.set('action', value);
+  }
+  minimize(value: Progress | undefined): Node {
+    return this.set('minimize', value);
+  }
+  progress(value: Progress | undefined): Node {
+    return this.set('progress', value);
+  }
+  hide(value: Progress | undefined): Node {
+    return this.set('hide', value);
+  }
+  titleDisplay(value: TitleDisplay): Node {
+    return this.set('titleDisplay', value);
+  }
+  subtitle(value: string | undefined): Node {
+    return this.set('subtitle', value);
+  }
+  toolbar(...value: Child[]): Node {
+    return this.set('toolbar', value);
+  }
+  toolbarLeading(...value: Child[]): Node {
+    return this.set('toolbarLeading', value);
+  }
+  onBack(value: (() => void) | null | undefined): Node {
+    return this.set('onBack', value);
+  }
+  scrollEdge(value: ScrollEdge): Node {
+    return this.set('scrollEdge', value);
+  }
+  scrollY(value: ScrollOffset | undefined): Node {
+    return this.set('scrollY', value);
+  }
+  presentation(value: HeaderPresentation): Node {
+    return this.set('presentation', value);
+  }
 }
 
 const FRAME_KEYS = ['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight'] as const;
@@ -460,6 +620,97 @@ export interface ButtonView extends ViewModifiers<ButtonView> {
   shape(value: ButtonShape): ButtonView;
   size(value: BloomSize): ButtonView;
   tint(value: BloomTone): ButtonView;
+  disabled(value?: boolean): ButtonView;
+  /** Busy: the label gives way to Bloom's spinner and presses are ignored. */
+  loading(value?: boolean): ButtonView;
+}
+/**
+ * Bloom `Fab`: the prominent action, drawn on the platform's glass (see
+ * docs/bloom-language.mdx, Glass). An `Icon` child is its glyph, a `Text`
+ * child its extended label.
+ */
+export interface FabView extends ViewModifiers<FabView> {
+  style(value: BloomAppearance): FabView;
+  size(value: BloomSize): FabView;
+  tint(value: BloomTone): FabView;
+  disabled(value?: boolean): FabView;
+  /** Folds the extended label away, keeping the action and its name. */
+  collapsed(value?: boolean): FabView;
+}
+/** A menu: its trigger, and the rows it presents when the trigger is pressed. */
+export type MenuView = ViewModifiers<MenuView>;
+/** What a menu holds: rows, and at most one `menu()` content. */
+export type MenuRow = MenuItemView | MenuSubmenuView | MenuSectionView | MenuDividerView;
+export type MenuChild = MenuRow | false | null | undefined | readonly MenuChild[];
+export interface MenuItemView extends ViewNode {
+  icon(value: IconComponent): MenuItemView;
+  /** Drawn in the theme's negative colour: an action that deletes or leaves. */
+  destructive(): MenuItemView;
+  disabled(value?: boolean): MenuItemView;
+  /** A check mark: the row is a toggle that is on. */
+  checked(value: boolean): MenuItemView;
+  /** Choosing the row leaves the menu open. */
+  keepOpen(): MenuItemView;
+  onPress(value: (() => void) | undefined): MenuItemView;
+  testID(value: string): MenuItemView;
+}
+export interface MenuSubmenuView extends ViewNode {
+  icon(value: IconComponent): MenuSubmenuView;
+  disabled(value?: boolean): MenuSubmenuView;
+  testID(value: string): MenuSubmenuView;
+}
+export interface MenuSectionView extends ViewNode {
+  /** A quiet heading above the section's rows. */
+  title(value: string): MenuSectionView;
+}
+export type MenuDividerView = ViewNode;
+/** A `menu()` content placed in a menu: its rows are built while the menu is open. */
+export type MenuContentView = ViewNode;
+/**
+ * The page header and the navigation bar: a title, its toolbar items and how
+ * it meets the scrolled content.
+ */
+export interface HeaderView extends ViewNode {
+  /** `large`: the title at the ramp's title step; `inline` (default): the bar's own. */
+  titleDisplay(value: TitleDisplay): HeaderView;
+  subtitle(value: string | undefined): HeaderView;
+  /** Trailing items, in reading order. */
+  toolbar(...value: Child[]): HeaderView;
+  /** Leading items, after the back button. */
+  toolbarLeading(...value: Child[]): HeaderView;
+  /** The back button's action; `null` shows none (a top-level destination). */
+  onBack(value: (() => void) | null | undefined): HeaderView;
+  /** How the edge meets the content under it: `auto` fades in as it scrolls. */
+  scrollEdge(value: ScrollEdge): HeaderView;
+  /** The page's scroll offset, when the header is not in a Bloom `Screen`. */
+  scrollY(value: ScrollOffset | undefined): HeaderView;
+  /** `floating` (default) islands, a `bar`, or the compact `navigation` bar. */
+  presentation(value: HeaderPresentation): HeaderView;
+  testID(value: string): HeaderView;
+}
+/** The bottom bar: its tabs, the selected one, and its action (a `FAB`). */
+export interface BottomBarView extends ViewNode {
+  /** The `id` of the selected tab. */
+  selection(value: string): BottomBarView;
+  onSelect(value: (id: string) => void): BottomBarView;
+  /** The action beside the tabs: a `FAB`. */
+  action(value: Child): BottomBarView;
+  /** Folds the bar as the page scrolls (Bloom `Screen`'s collapse progress). */
+  minimize(value: Progress | undefined): BottomBarView;
+  /** A swipe pager's continuous selection, in tab-index space. */
+  progress(value: Progress | undefined): BottomBarView;
+  /** The bar's presence, 0 (shown) to 1 (gone): it slides off its edge as a pager leaves its pages. */
+  hide(value: Progress | undefined): BottomBarView;
+  testID(value: string): BottomBarView;
+}
+export interface TabView extends ViewNode {
+  /** The selected glyph, when the set draws selection by shape (an outline that fills). */
+  activeIcon(value: IconComponent): TabView;
+  /** A count over the glyph's corner; nothing at 0. */
+  badge(value: number | undefined): TabView;
+  /** The tab's identity: what `selection` and `onSelect` speak. */
+  id(value: string): TabView;
+  testID(value: string): TabView;
 }
 export interface ActionView extends ViewModifiers<ActionView> {
   count(value: number | null | undefined): ActionView;

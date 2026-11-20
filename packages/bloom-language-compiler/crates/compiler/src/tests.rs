@@ -1,7 +1,7 @@
 use crate::compile;
 
 const IMPORTS: &str =
-    "import { HStack, Icon, Image, Text, VStack, view, defineTokens, regular } from '@oxy.so/bloom-language';
+    "import { HStack, Icon, Image, Text, VStack, view, defineTokens, regular, Header, Menu, Item } from '@oxy.so/bloom-language';
 import { RiMoreFill } from '@oxy.so/bloom/icons/RiMoreFill';
 ";
 
@@ -171,4 +171,19 @@ fn files_without_the_language_are_untouched() {
     let output = compile(source, "plain.ts");
     assert!(!output.changed);
     assert_eq!(output.code, source);
+}
+
+#[test]
+fn the_platform_components_are_checked_against_the_spec() {
+    let header = compiled("export const H = () => Header('Home').titleDisplay('huge');\n");
+    assert_eq!(header.diagnostics[0].message, "Unknown titleDisplay token 'huge' for .titleDisplay()");
+    // A menu row is not a view: it takes no box modifier.
+    let row = compiled(
+        "export const M = (copy) => Menu(Icon(RiMoreFill), Item('Copy').padding('md').onPress(copy));\n",
+    );
+    assert_eq!(row.diagnostics[0].message, "Item has no modifier .padding()");
+    let fine = compiled(
+        "export const M = (copy) => Menu(Icon(RiMoreFill), Item('Copy').icon(RiMoreFill).onPress(copy)).label('More');\n",
+    );
+    assert!(fine.diagnostics.is_empty(), "{:?}", fine.diagnostics.first().map(|d| &d.message));
 }

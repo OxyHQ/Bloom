@@ -24,3 +24,9 @@ export function useThemePaint(): ThemeColors {
   return useContext(PaintContext);
 }
 export { withAlpha } from '../../../../../src/theme/color-utils';
+
+/** Stands in for `useTheme`: the palette a test renders under, and whether it is dark. */
+export function useTheme(): { colors: ThemeColors; isDark: boolean } {
+  const colors = useContext(PaintContext);
+  return { colors, isDark: colors === DARK };
+}

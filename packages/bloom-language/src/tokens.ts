@@ -67,6 +67,9 @@ export type Role = (typeof ENUMS.role)[number];
 export type ButtonShape = (typeof ENUMS.buttonShape)[number];
 /** How an image fills its box: `BloomImage`'s `contentFit` vocabulary. */
 export type ContentFit = (typeof ENUMS.contentFit)[number];
+export type TitleDisplay = (typeof ENUMS.titleDisplay)[number];
+export type ScrollEdge = (typeof ENUMS.scrollEdge)[number];
+export type HeaderPresentation = (typeof ENUMS.headerPresentation)[number];
 
 export { COLORS, DURATION, GLASS_OPACITY, HIT_SLOP, OPACITY, SHRINK, ALIGNMENT };
 
