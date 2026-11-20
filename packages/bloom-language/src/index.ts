@@ -1,4 +1,5 @@
 export {
+  actions,
   Action,
   ActionBar,
   ActionGroup,
@@ -56,6 +57,8 @@ export type {
   ImageErrorHandler,
   ImageLoadHandler,
   ImageView,
+  MenuActionsView,
+  MenuActionTable,
   MenuChild,
   MenuContentView,
   MenuDividerView,

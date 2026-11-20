@@ -692,6 +692,7 @@ function renderHost(
     case 'menuSection':
     case 'menuDivider':
     case 'menuContent':
+    case 'menuActions':
     case 'tab':
       return null as unknown as ReactElement;
     // Navigators are drawn by the router's layout(); placed in a view, they draw nothing.

@@ -136,6 +136,8 @@ export interface ValueModifiers {
   onReselect: (() => void) | undefined;
   bottomBar: boolean;
   shell: ShellOptions;
+  tag: string;
+  actions: ViewNode;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -267,6 +269,7 @@ export type NodeKind =
   | 'menuSection'
   | 'menuDivider'
   | 'menuContent'
+  | 'menuActions'
   | 'header'
   | 'bottomBar'
   | 'tab'
@@ -350,6 +353,13 @@ export interface NavStackProps {
 export interface MenuContentProps {
   /** The content's body: called while the menu is open, by the component that presents it. */
   readonly body: (props: object) => Child;
+  readonly props: object;
+}
+/** What a tagged row's choice runs: built only when a row is chosen (see `actions()`). */
+export type MenuActionTable = Readonly<Record<string, (() => void) | undefined>>;
+export interface MenuActionsProps {
+  /** The actions' body: called once per choice, by a component mounted for it. */
+  readonly body: (props: object) => MenuActionTable;
   readonly props: object;
 }
 export interface ViewNodeProps {
@@ -553,6 +563,12 @@ export class Node {
   keepOpen(): Node {
     return this.set('keepOpen', true);
   }
+  tag(value: string): Node {
+    return this.set('tag', value);
+  }
+  actions(value: ViewNode): Node {
+    return this.set('actions', value);
+  }
   title(value: string): Node {
     return this.set('title', value);
   }
@@ -743,7 +759,14 @@ export interface FabView extends ViewModifiers<FabView> {
   collapsed(value?: boolean): FabView;
 }
 /** A menu: its trigger, and the rows it presents when the trigger is pressed. */
-export type MenuView = ViewModifiers<MenuView>;
+export interface MenuView extends ViewModifiers<MenuView> {
+  /**
+   * What its tagged rows do: an `actions()` view, whose body (it may call
+   * hooks) runs only when a row is chosen. The rows stay plain data, which
+   * every platform can present before the menu opens.
+   */
+  actions(value: MenuActionsView): MenuView;
+}
 /** What a menu holds: rows, and at most one `menu()` content. */
 export type MenuRow = MenuItemView | MenuSubmenuView | MenuSectionView | MenuDividerView;
 export type MenuChild = MenuRow | false | null | undefined | readonly MenuChild[];
@@ -757,6 +780,8 @@ export interface MenuItemView extends ViewNode {
   /** Choosing the row leaves the menu open. */
   keepOpen(): MenuItemView;
   onPress(value: (() => void) | undefined): MenuItemView;
+  /** The row's action by name: the menu's `actions()` resolve it when the row is chosen. */
+  tag(value: string): MenuItemView;
   testID(value: string): MenuItemView;
 }
 export interface MenuSubmenuView extends ViewNode {
@@ -771,6 +796,8 @@ export interface MenuSectionView extends ViewNode {
 export type MenuDividerView = ViewNode;
 /** A `menu()` content placed in a menu: its rows are built while the menu is open. */
 export type MenuContentView = ViewNode;
+/** An `actions()` view: what a menu's tagged rows do, built when one is chosen. */
+export type MenuActionsView = ViewNode;
 /**
  * The page header and the navigation bar: a title, its toolbar items and how
  * it meets the scrolled content.

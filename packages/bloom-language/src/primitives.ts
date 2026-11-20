@@ -16,6 +16,8 @@ import {
   type FabView,
   type HeaderView,
   type MenuChild,
+  type MenuActionTable,
+  type MenuActionsView,
   type MenuContentView,
   type MenuDividerView,
   type MenuItemView,
@@ -205,6 +207,29 @@ export function menu<P extends object = Record<string, never>>(
   body: (props: P) => MenuChild,
 ): (...props: Record<string, never> extends P ? [props?: P] : [props: P]) => MenuContentView {
   return (...args) => new Node('menuContent', { body, props: args[0] ?? NO_PROPS }, NO_CHILDREN);
+}
+
+/**
+ * What a menu's tagged rows do, from a body that takes one props object. The
+ * body may call hooks: it runs only when a row is chosen, in a component
+ * mounted for that choice where the menu is placed, and returns each tag's
+ * action. The rows themselves stay plain data (`Item(title).tag(name)`), so a
+ * closed menu costs no hook and no closure, and the system menu on iOS can be
+ * given them before it opens.
+ *
+ * ```ts
+ * const PostActions = actions(function PostActions({ post }: { post: Post }) {
+ *   const router = useRouter();
+ *   return { open: () => router.push(`/p/${post.id}`), copy: () => copyLink(post) };
+ * });
+ * Menu(MORE, Item('Open').tag('open'), Item('Copy link').icon(RiLinkM).tag('copy'))
+ *   .actions(PostActions({ post }))
+ * ```
+ */
+export function actions<P extends object = Record<string, never>>(
+  body: (props: P) => MenuActionTable,
+): (...props: Record<string, never> extends P ? [props?: P] : [props: P]) => MenuActionsView {
+  return (...args) => new Node('menuActions', { body, props: args[0] ?? NO_PROPS }, NO_CHILDREN);
 }
 
 const NO_PROPS = Object.freeze({});

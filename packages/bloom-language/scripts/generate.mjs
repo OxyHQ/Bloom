@@ -8,7 +8,10 @@
  * - `src/generated/web-sheet.generated.ts`: the web stylesheet, one atomic class
  *   per property and token value, and the table the runtime picks classes from;
  * - `../bloom-language-compiler/crates/compiler/src/spec.generated.rs`: the
- *   compiler's tables (every name it checks a chain against).
+ *   compiler's tables (every name it checks a chain against);
+ * - `src/generated/sf-symbols.generated.ts`: each mapped Bloom icon's SF Symbol,
+ *   by the icon component itself, for iOS's own components (imported only by
+ *   `*.ios.tsx` files, so the icons it names reach no other platform's bundle).
  *
  * `--check` writes nothing and fails when a committed output differs, so CI
  * catches a spec edit whose outputs were not regenerated.
@@ -18,7 +21,7 @@
  * same style; only the logical edges (`paddingStart`…) are written as CSS
  * logical properties, which react-native-web leaves to per-render localisation.
  */
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -42,6 +45,7 @@ const colors = withoutComment(spec.colors);
 const modifiers = withoutComment(spec.modifiers);
 const nodes = withoutComment(spec.nodes);
 const glass = withoutComment(spec.glass);
+const sfSymbols = withoutComment(spec.sfSymbols);
 
 const typeFamilies = [];
 for (const variant of Object.keys(typeRamp)) {
@@ -330,12 +334,47 @@ ${Object.entries(nodes)
 pub const FRAME_KEYS: &[&str] = &["width", "height", "minWidth", "minHeight", "maxWidth", "maxHeight"];
 `;
 
+// ── The SF Symbols table ─────────────────────────────────────────
+
+// Both sides of every entry are checked: the icon is one of Bloom's, and the
+// symbol is one SF Symbols names (sf-symbols-typescript, expo-router's own
+// list of them).
+const iconsRoot = join(packageRoot, '../../src/icons/remix');
+const symbolNames = new Set(
+  readFileSync(require.resolve('sf-symbols-typescript/dist/index.d.ts'), 'utf8').match(
+    /(?<=\| ')[^']+(?=')/g,
+  ),
+);
+for (const [icon, symbol] of Object.entries(sfSymbols)) {
+  if (!existsSync(join(iconsRoot, `${icon}.tsx`)))
+    throw new Error(`sfSymbols: ${icon} is not a Bloom icon`);
+  if (!symbolNames.has(symbol))
+    throw new Error(`sfSymbols: ${icon} → ${symbol} is not an SF Symbol`);
+}
+const sfIcons = Object.keys(sfSymbols);
+const sfTable = `// ${HEADER}
+/* eslint-disable */
+${sfIcons.map((icon) => `import { ${icon} } from '@oxy.so/bloom/icons/${icon}';`).join('\n')}
+
+import type { IconComponent } from '../node';
+
+/**
+ * Each mapped Bloom icon's SF Symbol, by the icon component: what the tab
+ * bar, the navigation bar and system menus draw for it on iOS. Import it only
+ * from \`*.ios.tsx\` files.
+ */
+export const SF_SYMBOLS: ReadonlyMap<IconComponent, string> = new Map<IconComponent, string>([
+${sfIcons.map((icon) => `  [${icon} as IconComponent, ${JSON.stringify(sfSymbols[icon])}],`).join('\n')}
+]);
+`;
+
 // ── Write or check ───────────────────────────────────────────────
 
 const outputs = [
   [join(packageRoot, 'src/generated/spec.generated.ts'), runtime],
   [join(packageRoot, 'src/generated/web-sheet.generated.ts'), webSheet],
   [join(compilerRoot, 'crates/compiler/src/spec.generated.rs'), rust],
+  [join(packageRoot, 'src/generated/sf-symbols.generated.ts'), sfTable],
 ];
 
 let stale = 0;

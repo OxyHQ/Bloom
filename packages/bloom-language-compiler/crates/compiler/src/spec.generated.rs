@@ -120,6 +120,8 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("primaryAction", &["value", "value", "value"]),
     ("bottomBar", &["value"]),
     ("shell", &["value"]),
+    ("tag", &["value"]),
+    ("actions", &["value"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -131,12 +133,13 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "image", constructors: &["Image"], modifiers: &["padding", "frame", "grow", "shrink", "background", "border", "corner", "opacity", "glass", "foreground", "font", "weight", "leading", "onPress", "onLongPress", "onHover", "hoverGroup", "label", "hint", "role", "hitSlop", "testID", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "sheet", "onReselect", "contentFit", "aspectRatio", "tint", "transition", "onLoad", "onError"], size: None, tint: Some("color") },
     NodeSpec { kind: "button", constructors: &["Button"], modifiers: &["padding", "frame", "grow", "shrink", "background", "border", "corner", "opacity", "glass", "foreground", "font", "weight", "leading", "onPress", "onLongPress", "onHover", "hoverGroup", "label", "hint", "role", "hitSlop", "testID", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "sheet", "onReselect", "style", "shape", "size", "tint", "disabled", "loading"], size: Some("controlSize"), tint: Some("tone") },
     NodeSpec { kind: "fab", constructors: &["FAB"], modifiers: &["padding", "frame", "grow", "shrink", "background", "border", "corner", "opacity", "glass", "foreground", "font", "weight", "leading", "onPress", "onLongPress", "onHover", "hoverGroup", "label", "hint", "role", "hitSlop", "testID", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "sheet", "onReselect", "style", "size", "tint", "disabled", "collapsed"], size: Some("controlSize"), tint: Some("tone") },
-    NodeSpec { kind: "menu", constructors: &["Menu"], modifiers: &["padding", "frame", "grow", "shrink", "background", "border", "corner", "opacity", "glass", "foreground", "font", "weight", "leading", "onPress", "onLongPress", "onHover", "hoverGroup", "label", "hint", "role", "hitSlop", "testID", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "sheet", "onReselect"], size: None, tint: None },
-    NodeSpec { kind: "menuItem", constructors: &["Item"], modifiers: &["icon", "destructive", "disabled", "checked", "keepOpen", "onPress", "testID"], size: None, tint: None },
+    NodeSpec { kind: "menu", constructors: &["Menu"], modifiers: &["padding", "frame", "grow", "shrink", "background", "border", "corner", "opacity", "glass", "foreground", "font", "weight", "leading", "onPress", "onLongPress", "onHover", "hoverGroup", "label", "hint", "role", "hitSlop", "testID", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "sheet", "onReselect", "actions"], size: None, tint: None },
+    NodeSpec { kind: "menuItem", constructors: &["Item"], modifiers: &["icon", "destructive", "disabled", "checked", "keepOpen", "onPress", "testID", "tag"], size: None, tint: None },
     NodeSpec { kind: "menuSubmenu", constructors: &["Submenu"], modifiers: &["icon", "disabled", "testID"], size: None, tint: None },
     NodeSpec { kind: "menuSection", constructors: &["Section"], modifiers: &["title"], size: None, tint: None },
     NodeSpec { kind: "menuDivider", constructors: &["Divider"], modifiers: &[], size: None, tint: None },
     NodeSpec { kind: "menuContent", constructors: &[], modifiers: &[], size: None, tint: None },
+    NodeSpec { kind: "menuActions", constructors: &[], modifiers: &[], size: None, tint: None },
     NodeSpec { kind: "header", constructors: &["Header"], modifiers: &["titleDisplay", "subtitle", "toolbar", "toolbarLeading", "onBack", "scrollEdge", "scrollY", "presentation", "testID"], size: None, tint: None },
     NodeSpec { kind: "bottomBar", constructors: &["BottomBar"], modifiers: &["selection", "onSelect", "action", "minimize", "progress", "hide", "testID"], size: None, tint: None },
     NodeSpec { kind: "tab", constructors: &["Tab"], modifiers: &["activeIcon", "badge", "id", "testID"], size: None, tint: None },
