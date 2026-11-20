@@ -1,0 +1,228 @@
+---
+title: Bloom data
+description: The data and state layer of the Bloom language. Records by id in memory, field-level subscriptions, sources, optimistic actions, realtime and an asynchronous SQLite copy, in @oxy.so/bloom-data.
+---
+
+# Bloom data
+
+`packages/bloom-data` (`@oxy.so/bloom-data`, a working name, private and not
+published) is the data and state layer of the [Bloom language](./bloom-language.mdx).
+It replaces an app's separate caches (a SQLite table, query pages and snapshot
+maps) with one model, the way SwiftUI pairs `@Observable` with SwiftData. It
+adds no dependency: React is its only peer, and the SQLite copy uses the
+`expo-sqlite` database the app passes in.
+
+## The parts
+
+| Part | SwiftUI and SwiftData | What it is |
+|---|---|---|
+| `entity` | `@Model` | Records of one type, by id, in memory. |
+| `list` | a sorted `@Query` result | Ordered ids into an entity, per key, plus what the source keeps beside them. |
+| `source` | the fetching half of `@Query` | Fills a list (paged) or a record from the server. |
+| `action` | a mutation | An optimistic change, the server call, then settle or roll back. |
+| `realtime` | | Writes a socket's events into the same records. |
+| `useEntity`, `useList`, `useRecord` | `@Observable` reads | Read them, re-rendering only for what changed. |
+
+```ts
+import { action, entity, list, realtime, source } from '@oxy.so/bloom-data';
+
+export const User = entity<PostUser>('user', { id: (u) => u.id, persist: true });
+
+export const Post: Entity<HydratedPost> = entity<HydratedPost>('post', {
+  id: (p) => p.id,
+  refs: { user: User, quotedPost: () => Post, 'boost.originalPost': () => Post },
+  viewerFields: ['viewerState'],
+  persist: { version: 17 },
+});
+
+export const Feed = list('feed', { of: Post, persist: true });
+
+export const feed = source(Feed, {
+  key: (type: FeedType) => type,
+  load: ({ cursor, signal }, type) => api.get(`/feeds/${type}`, { params: { cursor }, signal }),
+});
+
+export const like = action({
+  key: (id: string) => `like:${id}`,
+  optimistic: (id) =>
+    Post.patch(id, (p) => ({
+      viewerState: { isLiked: true },
+      engagement: { likes: p.engagement.likes + 1 },
+    })),
+  run: (id) => api.post(`/posts/${id}/like`),
+  settle: (result, id) => Post.merge(id, result.post),
+});
+
+realtime(socket, {
+  'post:engagement': (e) => Post.merge(e.postId, { engagement: e.counts }),
+});
+```
+
+```tsx
+function Home() {
+  const view = useList(feed, 'for_you'); // ids, state, more(), refresh()
+  return <List data={view.ids} renderItem={({ item }) => <PostRow id={item} />} />;
+}
+
+function PostActions({ id }: { id: string }) {
+  const post = useEntity(Post, id); // re-renders when engagement.likes or viewerState.isLiked changes
+  return <LikeButton count={post?.engagement.likes} active={post?.viewerState.isLiked} />;
+}
+```
+
+Differences from the design proposal, each with its reason:
+
+- A ref to the entity being defined is a function (`() => Post`), and that
+  entity needs its type written out. JavaScript cannot read `Post` inside its
+  own initializer.
+- `load` receives `{ cursor, signal, current }` first and the arguments after
+  it. Cancellation needs the signal, and the arguments are variadic, so
+  nothing could follow them.
+- A list is stored as one row of ordered ids, not one row per position. A page
+  append then rewrites one row.
+- `model()` (one record for app and UI state) is not built yet. It is
+  `entity` with a single id, and nothing has needed it so far.
+
+## Entities
+
+Records are plain JSON-shaped data and are never mutated. A write builds a new
+value and shares every unchanged part with the old one (structural sharing), so
+an equal answer from the server changes nothing and wakes nobody.
+
+- `put(records, { anonymous })` stores records as the server sent them.
+  `anonymous` marks a payload hydrated for no viewer (a broadcast); the
+  entity's `viewerFields` are then kept from the copy already held.
+- `merge(id, partial)` merges plain objects key by key. `patch(id, fn)` merges
+  a partial computed from the current record. `update(id, fn)` replaces it
+  (`null` removes it).
+- `remove(id)` removes the record from memory, disk and every list of its
+  entity. A list's `dropFromExtra` removes it from what the list keeps beside
+  its ids.
+- `refs` normalise embedded records. On write, the embedded record goes to its
+  own entity and the field keeps its id. On read, it resolves again. One copy
+  serves every record that embeds it, and `referencing(target, id)` finds the
+  records that embed one.
+- `accept(incoming, held)` can refuse a payload that is worse than what is
+  held, such as one that lost an embedded record.
+- `onStore(records)` is told about every record a write stored, whichever path
+  wrote it.
+- `get(id)` returns a plain object with its refs resolved, cached until a
+  dependency changes. Use it outside render. Use the hooks in render.
+
+## Field-level subscriptions
+
+This is the one clever piece, and it follows one rule: record what a reader
+reads, two levels deep, and wake the reader when one of those paths changes.
+
+`useEntity(Post, id)` returns a read-only proxy. Each property read is
+recorded: `engagement.likes` for a nested field, `title` for a top-level one.
+A ref resolves to a proxy over the referenced record, recorded under that
+record. A top-level plain object comes back as a proxy of its own, so reading
+`post.engagement` alone records only whether it is there.
+
+A proxy's identity follows what was read through it: it is replaced exactly
+when a path read through it changed. `memo`, `useMemo` and the React Compiler
+therefore see a new value precisely when what they used changed. A child
+handed `post.engagement` keeps the same object until a field it read changes.
+Reads always see the current record, so the first read of a field returns its
+current value. Values below the second level are returned as stored.
+
+`useEntity(Post, id, select, isEqual)` is the selector form. It returns
+`select(record)` and re-renders when that result changes.
+
+Proxies support spread, `Object.keys` and `JSON.stringify`, and they refuse
+writes. Do not pass one to `structuredClone`; use `Post.get(id)` there.
+
+## Sources
+
+A source has one state per store and key: `status`, `fetchStatus`
+(`fetching` or `paused`), `error`, `failureCount`, `updatedAt` and `origin`
+(`network` or `disk`). React Query's edge cases are carried over on purpose,
+and each has a test in `src/__tests__/source.test.tsx`:
+
+- One request per key at a time. A second caller joins the one in flight.
+- `refresh` supersedes what is in flight, and the late answer of a superseded
+  read is dropped. `more` joins a first page in flight and never appends to a
+  list refreshed since it started. A repeated cursor ends paging.
+- A failure retries with exponential backoff (1s, 2s, 4s, up to 30s; `retry`
+  and `retryDelay` change it). The rows on screen stay through retries and
+  errors.
+- Offline, a read waits (`paused`) and resumes on reconnect. A retry also
+  waits while the app is in the background.
+- `stale` is an age in milliseconds (default 0) or a rule. Fresh data is not
+  read again when a screen mounts; stale data is shown and then read again. A
+  disk copy is always stale.
+- Coming to the front and reconnecting read the stale keys that are on screen
+  (`refetchOnFocus`, `refetchOnReconnect`).
+- A key nobody observes leaves memory after `gcTime` (default 5 minutes). Its
+  disk copy stays.
+
+A list source's `fold(current, extra, mode)` folds each page's `extra` into the
+list's (`first` replaces it, `next` appends). A record source's `load` returns
+the record, or `null` when the server says it is gone, which removes it.
+
+Native apps report the device: `environment.setOnline(netInfo.isConnected !==
+false)` and `environment.setFocused(appState === 'active')`. Web reads the
+browser's events.
+
+## Actions
+
+`optimistic` runs first, and every entity write it makes becomes the call's
+layer: concrete values held over the server's copy, not written into it.
+
+- While the layer stands, server writes to the same fields (a feed refresh, a
+  realtime echo) update the copy beneath it without moving what the reader
+  sees. This replaces a hand-written echo guard for the call's duration.
+- When `run` resolves, the layer goes and `settle` writes the answer, in one
+  notification.
+- When `run` rejects, the layer goes. That is the rollback: the copy beneath
+  is current, including anything realtime brought in the meantime.
+
+A `key` makes the action exclusive: a second call with the same key, while the
+first is in flight, resolves to `undefined` at once.
+
+## Realtime
+
+`realtime(socket, handlers)` queues events as they arrive and applies them
+after the next frame, in arrival order, with one notification. Each event goes
+to the store that was in scope when it arrived. An event that arrived for an
+account that has since been left is dropped.
+
+## Persistence
+
+`sqlitePersister(() => SQLite.openDatabaseAsync(name))` from
+`@oxy.so/bloom-data/sqlite` keeps a durable copy, using only expo-sqlite's
+asynchronous API.
+
+- Writes go out after the frame, in one transaction, from a queue of changed
+  records and lists. Only the server's copy is written, never an optimistic
+  layer.
+- Reads happen when a screen opens (`useList` and `useRecord` read the disk
+  copy while the network read runs) or at boot (`entity.load(ids)`), never
+  during render. Memory always wins over disk.
+- A changed entity `persist.version` drops that type's rows when the file
+  opens. Rows not written for 7 days are dropped too.
+- `createAccounts({ persister: (account) => ... })` opens one store, and one
+  file, per account. `open(account)` closes the previous store: its queued
+  writes still reach its own file, and anything that lands for it later is
+  dropped.
+
+Web keeps no durable copy for now. expo-sqlite on web needs `SharedArrayBuffer`,
+and so COOP and COEP headers, which break popup sign-in. The `Persister`
+interface leaves room for IndexedDB.
+
+## Stores, accounts and the server
+
+A `Store` holds one account's data, or one server request's.
+`<DataProvider store>` gives it to the hooks below. Code outside React (an
+action, a handler, a source) acts on the store in scope: the one it captured
+when it started, otherwise the active store. A store makes no timer, listener or
+disk access until it is used, and the hooks pass React a server snapshot, so a
+server render reads a request's own store and nothing else
+(`src/__tests__/server.test.tsx`).
+
+## Gates
+
+`bun run build`, `bun run typescript` and `bun run test` in
+`packages/bloom-data`. CI runs them in the workspace package loop. The tests use
+Node's built-in SQLite behind the same async interface.

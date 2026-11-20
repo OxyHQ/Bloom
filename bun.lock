@@ -102,6 +102,13 @@
         "react-native-pager-view",
       ],
     },
+    "packages/bloom-data": {
+      "name": "@oxy.so/bloom-data",
+      "version": "0.1.0",
+      "peerDependencies": {
+        "react": ">=19.0.0",
+      },
+    },
     "packages/bloom-editor": {
       "name": "@oxy.so/bloom-editor",
       "version": "0.9.0",
@@ -823,6 +830,8 @@
     "@oxc-resolver/binding-win32-x64-msvc": ["@oxc-resolver/binding-win32-x64-msvc@11.21.2", "", { "os": "win32", "cpu": "x64" }, "sha512-VPoCAhKvCQTlG7vxqaBXcmuvbh77BfnGXj8g0pbvVXpm1F/R8rDVwqIWcEbMzrI1JvJlm8v7T9uMVQb6UctMRg=="],
 
     "@oxy.so/bloom": ["@oxy.so/bloom@root:", {}],
+
+    "@oxy.so/bloom-data": ["@oxy.so/bloom-data@workspace:packages/bloom-data"],
 
     "@oxy.so/bloom-editor": ["@oxy.so/bloom-editor@workspace:packages/bloom-editor"],
 
