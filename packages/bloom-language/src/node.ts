@@ -101,6 +101,9 @@ export interface ScreenFooter {
   readonly keyboard?: 'hide' | 'visible' | 'follow';
 }
 
+/** The title's heading level for assistive technology (the web's `aria-level`); 1 by default. */
+export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
+
 /** What a screen's header is: a presentation of the screen's own title and toolbar, none, or a header of its own. */
 export type ScreenHeader = HeaderPresentation | false | ViewNode;
 export type ImageLoadHandler = (info: BloomImageLoadInfo) => void;
@@ -141,6 +144,8 @@ export interface ValueModifiers {
   scrollY: ScrollOffset | undefined;
   presentation: HeaderPresentation;
   header: ScreenHeader;
+  headingLevel: HeadingLevel;
+  backLabel: string | undefined;
   onReselect: (() => void) | undefined;
   bottomBar: boolean;
   shell: ShellOptions;
@@ -637,6 +642,12 @@ export class Node {
   header(value: ScreenHeader): Node {
     return this.set('header', value);
   }
+  headingLevel(value: HeadingLevel): Node {
+    return this.set('headingLevel', value);
+  }
+  backLabel(value: string | undefined): Node {
+    return this.set('backLabel', value);
+  }
   sheet(open: boolean, content: () => Child, options?: SheetOptions): Node {
     return this.with({ kind: 'sheet', key: 'sheet', open, content, options });
   }
@@ -715,6 +726,10 @@ export interface ViewModifiers<Self> extends ViewNode {
   toolbarLeading(...value: Child[]): Self;
   /** The back button's action; `null` shows none (a top-level destination). */
   onBack(value: (() => void) | null | undefined): Self;
+  /** The back button's name for assistive technology; Bloom's "Back" by default. */
+  backLabel(value: string | undefined): Self;
+  /** The title's heading level (the web's `aria-level`); 1 by default. */
+  headingLevel(value: HeadingLevel): Self;
   /** The screen's own bar at its foot (a reply composer), over or under its content. */
   footer(content: Child, options?: ScreenFooter): Self;
   /** A sheet over the screen while `open`: Bloom's Dialog, from the bottom and centred from `md`. */
@@ -831,6 +846,10 @@ export interface HeaderView extends ViewNode {
   toolbarLeading(...value: Child[]): HeaderView;
   /** The back button's action; `null` shows none (a top-level destination). */
   onBack(value: (() => void) | null | undefined): HeaderView;
+  /** The back button's name for assistive technology; Bloom's "Back" by default. */
+  backLabel(value: string | undefined): HeaderView;
+  /** The title's heading level (the web's `aria-level`); 1 by default. The system bar has none. */
+  headingLevel(value: HeadingLevel): HeaderView;
   /** How the edge meets the content under it: `auto` fades in as it scrolls. */
   scrollEdge(value: ScrollEdge): HeaderView;
   /** The page's scroll offset, when the header is not in a Bloom `Screen`. */

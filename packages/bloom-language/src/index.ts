@@ -55,6 +55,7 @@ export type {
   FabView,
   FrameSpec,
   HeaderPresentation,
+  HeadingLevel,
   HeaderView,
   IconComponent,
   IconView,
