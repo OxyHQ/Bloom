@@ -7,6 +7,7 @@ import { tokens } from '@oxy.so/bloom/styles';
 import { TYPE_SCALE } from '@oxy.so/bloom/typography';
 import {
   AVATAR_SIZE,
+  BORDER_WIDTH,
   COLORS,
   CORNER,
   DURATION,
@@ -129,6 +130,7 @@ describe('each motion token is the motion its Bloom owner plays', () => {
     expect(MOTION.pop.easing).toEqual(EASING.outExpo);
     expect(MOTION.roll.easing).toEqual(EASING.outExpo);
     const pop = read('engagement-bar/EngagementPop.tsx');
+    expect(pop).toMatch(`borderWidth: ${BORDER_WIDTH.thick},`);
     expect(pop).toMatch(`withTiming(${SCALE.dip}, QUICK)`);
     expect(pop).toMatch(`withTiming(${SCALE.swell}, SWELL)`);
   });

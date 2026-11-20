@@ -73,7 +73,8 @@ export const OPACITY = {
 } as const;
 export const BORDER_WIDTH = {
   "hairline": "hairline",
-  "thin": 1
+  "thin": 1,
+  "thick": 2
 } as const;
 export const HIT_SLOP = {
   "sm": 6,
@@ -601,6 +602,10 @@ export const COLORS = {
     "paint": "primary",
     "css": "primary"
   },
+  "primaryText": {
+    "paint": "primarySubtleForeground",
+    "css": "primary-text"
+  },
   "onPrimary": {
     "paint": "primaryForeground",
     "css": "primary-foreground"
@@ -645,17 +650,33 @@ export const COLORS = {
     "paint": "success",
     "css": "success"
   },
+  "successText": {
+    "paint": "successSubtleForeground",
+    "css": "success-text"
+  },
   "warning": {
     "paint": "warning",
     "css": "warning"
+  },
+  "warningText": {
+    "paint": "warningSubtleForeground",
+    "css": "warning-text"
   },
   "error": {
     "paint": "error",
     "css": "error"
   },
+  "errorText": {
+    "paint": "errorSubtleForeground",
+    "css": "error-text"
+  },
   "info": {
     "paint": "info",
     "css": "info"
+  },
+  "infoText": {
+    "paint": "infoSubtleForeground",
+    "css": "info-text"
   }
 } as const;
 

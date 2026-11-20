@@ -79,7 +79,8 @@
     },
     "borderWidth": {
       "hairline": "hairline",
-      "thin": 1
+      "thin": 1,
+      "thick": 2
     },
     "hitSlop": {
       "sm": 6,
@@ -181,6 +182,7 @@
     "foreground": ["text", "foreground"],
     "muted": ["textSecondary", "muted-foreground"],
     "primary": ["primary", "primary"],
+    "primaryText": ["primarySubtleForeground", "primary-text"],
     "onPrimary": ["primaryForeground", "primary-foreground"],
     "secondary": ["secondary", "secondary"],
     "onSecondary": ["secondaryForeground", "secondary-foreground"],
@@ -192,9 +194,13 @@
     "border": ["border", "border"],
     "input": ["borderLight", "input"],
     "success": ["success", "success"],
+    "successText": ["successSubtleForeground", "success-text"],
     "warning": ["warning", "warning"],
+    "warningText": ["warningSubtleForeground", "warning-text"],
     "error": ["error", "error"],
-    "info": ["info", "info"]
+    "errorText": ["errorSubtleForeground", "error-text"],
+    "info": ["info", "info"],
+    "infoText": ["infoSubtleForeground", "info-text"]
   },
   "enums": {
     "edge": ["all", "horizontal", "vertical", "top", "bottom", "leading", "trailing"],
