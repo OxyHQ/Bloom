@@ -248,16 +248,17 @@
     }
   },
   "easing": {
-    "$comment": "Cubic-bezier curves by name. inOutQuad is the cubic form of Reanimated's default withTiming curve (Easing.inOut(Easing.quad)); outExpo is the engagement bar's EASE_OUT, outQuart the toast's, ease CSS ease.",
+    "$comment": "Bloom's curves (EASING in @oxy.so/bloom/motion), cubic-beziers by name; spec.test.ts holds them equal.",
     "linear": [0, 0, 1, 1],
     "ease": [0.25, 0.1, 0.25, 1],
     "easeOut": [0, 0, 0.58, 1],
     "inOutQuad": [0.455, 0.03, 0.515, 0.955],
     "outQuart": [0.165, 0.84, 0.44, 1],
-    "outExpo": [0.16, 1, 0.3, 1]
+    "outExpo": [0.16, 1, 0.3, 1],
+    "backOut": [0.34, 1.2, 0.64, 1]
   },
   "motion": {
-    "$comment": "Bloom MotionSpecs by name: { duration, easing } (an easing above) or a spring { response, dampingRatio }. Each timing is a motion a Bloom owner already plays, and spec.test.ts reads it from that owner's source (press: PressableScale; present, dismiss: MOTION_RECIPES; fade, slide: Tabs; pop, roll: the engagement bar; enter, exit, restack: the toast). select and expand are springs in SwiftUI's terms; Bloom's recipes of those names are Reanimated duration springs, a different curve, and nothing ported plays them yet.",
+    "$comment": "Bloom's motion table (MOTION in @oxy.so/bloom/motion) by name, the timings Bloom's own animations play: { duration, easing } (an easing above) or a spring { response, dampingRatio }. spec.test.ts holds this table equal to Bloom's.",
     "press": { "duration": 100, "easing": "inOutQuad" },
     "select": { "response": 0.42, "dampingRatio": 0.82 },
     "expand": { "response": 0.38, "dampingRatio": 1 },
@@ -265,6 +266,7 @@
     "dismiss": { "duration": 150, "easing": "inOutQuad" },
     "fade": { "duration": 160, "easing": "inOutQuad" },
     "slide": { "duration": 200, "easing": "ease" },
+    "thumb": { "duration": 300, "easing": "backOut" },
     "pop": { "duration": 300, "easing": "outExpo" },
     "roll": { "duration": 400, "easing": "outExpo" },
     "enter": { "duration": 300, "easing": "outQuart" },

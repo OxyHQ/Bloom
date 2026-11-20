@@ -1,21 +1,22 @@
-import {
-  cloneElement,
-  isValidElement,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type ReactElement,
-  type ReactNode,
-  type RefObject,
-} from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { usePrefersReducedMotion } from '@oxy.so/bloom/hooks';
+import {
+  SCALE,
+  defineKeyframes,
+  timingOf,
+  transitionStyle,
+  usePlay,
+  usePressScale,
+  type KeyframesValue,
+  type Leaving,
+  type Play,
+  type Timing,
+  type Transform,
+  type TransitionValue,
+} from '@oxy.so/bloom/motion';
 
-import { defineKeyframes, type KeyframesValue } from './keyframes';
 import type { Frame, Namespace } from './namespace';
-import type { Play, Transform } from './play';
-import { transitionStyle, usePlay, usePressScale, PRESS_SCALE_CLASS } from './host';
-import { resolveMotion, timingOf, type MotionToken, type Timing } from './tokens';
-import type { TransitionValue } from './transition';
+import { resolveMotion, type MotionToken } from './tokens';
 
 /**
  * The animation in scope: a `.animation(motion, value?)` on this view or above
@@ -66,15 +67,13 @@ export interface Outer {
   readonly playId: number | undefined;
 }
 
-/** A node's exit in a keyed list: the list sets it while the node leaves. */
-export interface Leaving {
-  readonly onLeft: () => void;
-}
-
 export interface MotionNodeProps {
   motion: MotionPlan;
-  /** Keyed by `.id()`, so a list can tell its removal from a reorder. */
-  identified: boolean;
+  /**
+   * Keyed by `.id()` and with a transition, so a list's `Presence` keeps it
+   * while it leaves (by index, a removal and a reorder look the same).
+   */
+  exit: boolean;
   scope: AnimationScope | undefined;
   leaving: Leaving | undefined;
   /** Draws the node with `outer` on its outermost box. */
@@ -168,7 +167,7 @@ function useMotion(
         keyframes: remove,
         timing: removeTiming,
         fill: 'forwards',
-        glass: motion.glass,
+        material: motion.glass,
         onEnd: leaving.onLeft,
       };
     }
@@ -180,7 +179,7 @@ function useMotion(
         keyframes: motion.keyframes.value,
         timing: kfTiming,
         fill: 'none',
-        glass: motion.glass,
+        material: motion.glass,
         onEnd: () =>
           setKeyframes((state) => (state.id === keyframes.id ? { ...state, on: false } : state)),
       };
@@ -191,7 +190,7 @@ function useMotion(
       keyframes: moved.frames,
       timing: timingOf(resolveMotion(own.motion)),
       fill: 'none',
-      glass: motion.glass,
+      material: motion.glass,
       onEnd: undefined,
     };
   } else if (motion.transition !== undefined && !reduced) {
@@ -203,7 +202,7 @@ function useMotion(
         keyframes: insert,
         timing: insertTiming,
         fill: 'none',
-        glass: motion.glass,
+        material: motion.glass,
         onEnd: undefined,
       };
     }
@@ -264,23 +263,17 @@ export function MotionNode(props: MotionNodeProps): ReactNode {
 }
 MotionNode.displayName = 'BloomMotion';
 
-/** On the web, press feedback is a class (`PRESS_SCALE_CLASS`), as react-native-web takes one. */
-const PRESS_CLASS = PRESS_SCALE_CLASS ? [{ $$css: true, pressScale: PRESS_SCALE_CLASS }] : [];
-
 /** A node with `.pressScale()`: the same, plus press feedback on its outermost box. */
 export function PressMotionNode(props: MotionNodeProps): ReactNode {
   const reduced = usePrefersReducedMotion();
-  const press = usePressScale(!reduced, props.motion.transform);
+  const press = usePressScale(!reduced, props.motion.transform, SCALE.pressed);
+  // Native: the press's one mapper writes the transform, the resting one first.
+  // Web: a class scales with the CSS `scale` property, beside the transform.
   const {
     style,
     props: hostProps,
     play,
-  } = useMotion(
-    props,
-    press.style !== undefined
-      ? { style: [press.style], ownsTransform: true }
-      : { style: PRESS_CLASS, ownsTransform: false },
-  );
+  } = useMotion(props, { style: [press.style], ownsTransform: press.onPressIn !== undefined });
   if (press.onPressIn !== undefined) {
     hostProps.onPressIn = press.onPressIn;
     hostProps.onPressOut = press.onPressOut;
@@ -294,77 +287,3 @@ export function PressMotionNode(props: MotionNodeProps): ReactNode {
   });
 }
 PressMotionNode.displayName = 'BloomPressMotion';
-
-// ── Keyed lists: a leaving child stays until its removal ends ─────────────
-
-interface PresenceState {
-  /** The children as last rendered, in order. */
-  rendered: readonly ReactElement[];
-  /** Children that left, by key, while their removal plays. */
-  leaving: ReadonlyMap<string, { element: ReactElement; index: number }>;
-}
-
-/** Whether an element is a keyed node with a transition, so it can leave. */
-function canLeave(element: ReactNode): element is ReactElement<MotionNodeProps> {
-  return (
-    isValidElement(element) &&
-    (element.type === MotionNode || element.type === PressMotionNode) &&
-    element.key !== null &&
-    (element.props as MotionNodeProps).identified &&
-    (element.props as MotionNodeProps).motion.transition !== undefined
-  );
-}
-
-/**
- * A list slot (`items.map(…)`) that keeps a removed child until its removal
- * transition ends. Only children keyed by `.id()` can leave: by index, a removal
- * and a reorder look the same. A list with no such child is passed through.
- */
-export function Presence({ items }: { items: readonly ReactNode[] }): ReactNode {
-  const [state, setState] = useState<PresenceState>(() => ({ rendered: [], leaving: new Map() }));
-  const current = items.filter(isValidElement) as ReactElement[];
-  const tracked = state.leaving.size > 0 || current.some(canLeave) || state.rendered.some(canLeave);
-  if (!tracked) return items;
-
-  const keys = new Set(current.map((element) => element.key));
-  if (!sameList(state.rendered, current)) {
-    const leaving = new Map(state.leaving);
-    for (const key of keys) if (key !== null) leaving.delete(key);
-    state.rendered.forEach((element, index) => {
-      if (
-        element.key !== null &&
-        !keys.has(element.key) &&
-        canLeave(element) &&
-        !leaving.has(element.key)
-      ) {
-        leaving.set(element.key, { element, index });
-      }
-    });
-    setState({ rendered: current, leaving });
-  }
-
-  const out: ReactNode[] = [...current];
-  for (const [key, { element, index }] of state.leaving) {
-    if (keys.has(key)) continue;
-    const leave: Leaving = {
-      onLeft: () =>
-        setState((now) => {
-          if (!now.leaving.has(key)) return now;
-          const next = new Map(now.leaving);
-          next.delete(key);
-          return { ...now, leaving: next };
-        }),
-    };
-    out.splice(
-      Math.min(index, out.length),
-      0,
-      cloneElement(element as ReactElement<MotionNodeProps>, { leaving: leave }),
-    );
-  }
-  return out;
-}
-Presence.displayName = 'BloomPresence';
-
-function sameList(a: readonly ReactElement[], b: readonly ReactElement[]): boolean {
-  return a.length === b.length && a.every((element, i) => element === b[i]);
-}

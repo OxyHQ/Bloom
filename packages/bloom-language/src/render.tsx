@@ -65,16 +65,14 @@ import {
 } from './tokens';
 import { deriveEnv, EnvContext, type Env } from './env';
 import { adoptLanguageSheet } from './web-sheet';
-import { animatedHost, MotionWrapper } from './motion/host';
+import { MotionWrapper, Presence, animatedHost, type Transform } from '@oxy.so/bloom/motion';
 import {
   MotionNode,
-  Presence,
   PressMotionNode,
   type AnimationScope,
   type MotionPlan,
   type Outer,
 } from './motion/motion-node';
-import type { Transform } from './motion/play';
 import { TextRoll } from './motion/text-roll';
 import { resolveRotation, resolveScale } from './motion/tokens';
 
@@ -451,7 +449,7 @@ function drawMoving(
   return draw(motion.pressScale ? PressMotionNode : MotionNode, {
     key: p.id ?? key,
     motion,
-    identified: p.id !== undefined,
+    exit: p.id !== undefined && motion.transition !== undefined,
     scope: ctx.animation,
     leaving: undefined,
     content: (outer: Outer) => drawNode(node, p, ctx, undefined, outer),

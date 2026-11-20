@@ -34,7 +34,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("duration", &["instant", "fast", "normal", "slow"]),
     ("scale", &["dip", "pressed", "full", "swell"]),
     ("rotation", &["none", "quarter", "half"]),
-    ("motion", &["press", "select", "expand", "present", "dismiss", "fade", "slide", "pop", "roll", "enter", "exit", "restack"]),
+    ("motion", &["press", "select", "expand", "present", "dismiss", "fade", "slide", "thumb", "pop", "roll", "enter", "exit", "restack"]),
     ("edge", &["all", "horizontal", "vertical", "top", "bottom", "leading", "trailing"]),
     ("borderEdge", &["all", "top", "bottom", "leading", "trailing"]),
     ("role", &["button", "link", "header", "image", "text", "none"]),

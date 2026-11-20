@@ -87,6 +87,9 @@ export type AppTokenScale = 'space' | 'iconSize' | 'leading' | 'motion';
 /** What a token of each scale holds: a number, or for `motion` a Bloom `MotionSpec`. */
 type AppTokenValue<S extends AppTokenScale> = S extends 'motion' ? MotionSpec : number;
 
+/** A scale's tokens as `defineTokens` returns them: a motion is its `MotionSpec`, anything else an `AppToken`. */
+type AppTokenOf<S extends AppTokenScale> = S extends 'motion' ? MotionSpec : AppToken<S>;
+
 /**
  * A named value an app declares once, for a measurement Bloom's scales do not
  * have. It is still a name at every call site, never a number.
@@ -102,7 +105,7 @@ export interface AppToken<S extends AppTokenScale = AppTokenScale> {
 let nextAppToken = 0;
 
 type AppTokenTable<T> = {
-  readonly [S in keyof T & AppTokenScale]: { readonly [N in keyof T[S]]: AppToken<S> };
+  readonly [S in keyof T & AppTokenScale]: { readonly [N in keyof T[S]]: AppTokenOf<S> };
 };
 
 /**
@@ -124,6 +127,11 @@ export function defineTokens<T extends { [S in AppTokenScale]?: Record<string, A
     const entries = table[scale] ?? {};
     const named: Record<string, AppToken> = {};
     for (const name of Object.keys(entries)) {
+      if (scale === 'motion') {
+        // A motion token is the Bloom MotionSpec itself, so it plays wherever one does.
+        named[name] = Object.freeze({ ...(entries[name] as MotionSpec) }) as unknown as AppToken;
+        continue;
+      }
       nextAppToken += 1;
       named[name] = Object.freeze({
         scale,
