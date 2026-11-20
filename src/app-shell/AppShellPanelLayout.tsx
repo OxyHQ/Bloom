@@ -128,12 +128,6 @@ import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 const RESIZE_HANDLE_PANE_REACH = 2;
 
 const AnimatedView = Animated.createAnimatedComponent(View);
-// A horizontal ScrollView's content is as wide as its children, so a row that
-// does not scroll (a split, not a deck) is held to the viewport: its tracks fit
-// by shrinking from their preferred widths (`resolvePanelFlex`), which an
-// unbounded content never asks them to. Only the style changes with the mode,
-// so the panels' routes are never remounted by it.
-const VIEWPORT_WIDTH: ViewStyle = { width: '100%' };
 const FILL: ViewStyle = {
   flexGrow: 1,
   flexShrink: 1,
@@ -276,12 +270,20 @@ export function createPanelLayoutView(
           {enabled ? <ScrollBar target={handle} horizontal={horizontal} /> : null}
         </View>
       );
+    // Horizontal only while it scrolls (a horizontal deck). On Android a
+    // horizontal ScrollView is another native component, so a split that flips
+    // its axis would remount every route inside it: Mention's main panel lost
+    // its tabs, Home's place and the reel's prepared video the first time its
+    // inspector turned the group horizontal. A split that does not scroll stays
+    // one vertical, non-scrolling host whatever its axis; its content is the
+    // viewport's width either way, so its tracks fit by shrinking from their
+    // preferred widths (`resolvePanelFlex`).
     return (
       <ScrollArea
         ref={(value) => {
           node.current = value;
         }}
-        horizontal={horizontal}
+        horizontal={enabled && horizontal}
         scrollEnabled={enabled}
         testID={testID}
         onScroll={onScroll}
@@ -290,7 +292,6 @@ export function createPanelLayoutView(
           flexGrow: 1,
           alignItems: 'stretch',
           paddingBottom: bottomInset,
-          ...(horizontal && !enabled ? VIEWPORT_WIDTH : null),
         }}
       >
         {children}
