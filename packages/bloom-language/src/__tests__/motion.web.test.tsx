@@ -9,6 +9,7 @@ import { LIGHT, PaintContext } from './support/bloom-theme';
 import { HStack, Text, VStack } from '../primitives';
 import { toElement } from '../render';
 import { asymmetric, move, opacity } from '../motion/transition';
+import { defineKeyframes } from '../motion/keyframes';
 import { regular } from '../glass';
 import { PRESS_SCALE_CLASS, WEB_SHEET } from '../generated/web-sheet.generated';
 import type { Child } from '../node';
@@ -86,6 +87,7 @@ const flat = (style: unknown): Record<string, unknown> =>
 beforeEach(() => {
   played.length = 0;
 });
+const QUART = 'cubic-bezier(0.165,0.84,0.44,1)';
 
 describe('on the web, motion is CSS and the Web Animations API', () => {
   const rise = asymmetric(
@@ -99,10 +101,10 @@ describe('on the web, motion is CSS and the Web Animations API', () => {
       expect.objectContaining({
         target: 'a',
         frames: [
-          { offset: 0, opacity: 0, transform: 'translateY(-20px)' },
-          { offset: 1, opacity: 1, transform: 'translateY(0px)' },
+          { offset: 0, easing: QUART, opacity: 0, transform: 'translateY(-20px)' },
+          { offset: 1, easing: QUART, opacity: 1, transform: 'translateY(0px)' },
         ],
-        options: { duration: 300, easing: 'cubic-bezier(0.165,0.84,0.44,1)', fill: 'none' },
+        options: { duration: 300, fill: 'none' },
       }),
     ]);
   });
@@ -114,11 +116,11 @@ describe('on the web, motion is CSS and the Web Animations API', () => {
     played.length = 0;
     update(r, list(['b']));
     const removal = played.find((animation) => animation.target === 'a');
-    expect(removal?.options).toEqual({
-      duration: 180,
-      easing: 'cubic-bezier(0,0,1,1)',
-      fill: 'forwards',
-    });
+    expect(removal?.options).toEqual({ duration: 180, fill: 'forwards' });
+    expect(removal?.frames).toEqual([
+      { offset: 0, easing: 'cubic-bezier(0,0,1,1)', opacity: 1 },
+      { offset: 1, easing: 'cubic-bezier(0,0,1,1)', opacity: 0 },
+    ]);
     expect(all(r, 'Text')).toHaveLength(2);
     act(() => removal?.onfinish?.());
     expect(all(r, 'Text').map((text) => text.props.children)).toEqual(['b']);
@@ -130,15 +132,37 @@ describe('on the web, motion is CSS and the Web Animations API', () => {
     expect(targets).toEqual(['box', 'surface::before', 'surface::after', 'content']);
     const [box, before, , piece] = played;
     expect(box?.frames).toEqual([
-      { offset: 0, transform: 'translateY(-20px)' },
-      { offset: 1, transform: 'translateY(0px)' },
+      { offset: 0, easing: QUART, transform: 'translateY(-20px)' },
+      { offset: 1, easing: QUART, transform: 'translateY(0px)' },
     ]);
     expect(before?.frames).toEqual([
-      { offset: 0, opacity: 0 },
-      { offset: 1, opacity: 1 },
+      { offset: 0, easing: QUART, opacity: 0 },
+      { offset: 1, easing: QUART, opacity: 1 },
     ]);
     expect(piece?.frames).toEqual(before?.frames);
     expect(before?.options).toMatchObject({ duration: 300, pseudoElement: '::before' });
+  });
+
+  it('keyframes curve each stretch, as a CSS animation does: a frame’s own easing, else the motion’s', () => {
+    const pop = defineKeyframes(
+      [
+        { at: 0, scale: 1, easing: 'inOutQuad' },
+        { at: 0.1, scale: 0.7 },
+        { at: 1, scale: 1 },
+      ],
+      'pop',
+    );
+    const r = mount(Text('x').testID('glyph').keyframes(pop, 0));
+    update(r, Text('x').testID('glyph').keyframes(pop, 1));
+    expect(played[played.length - 1]).toMatchObject({
+      target: 'glyph',
+      frames: [
+        { offset: 0, easing: 'cubic-bezier(0.455,0.03,0.515,0.955)', transform: 'scale(1)' },
+        { offset: 0.1, easing: 'cubic-bezier(0.16,1,0.3,1)', transform: 'scale(0.7)' },
+        { offset: 1, easing: 'cubic-bezier(0.16,1,0.3,1)', transform: 'scale(1)' },
+      ],
+      options: { duration: 300, fill: 'none' },
+    });
   });
 
   it('.animation() is an inline CSS transition on the host', () => {

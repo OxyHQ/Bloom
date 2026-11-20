@@ -45,22 +45,36 @@ function transformCss(parts: Transform): string {
     .join(' ');
 }
 
-type WebFrame = { offset: number; easing?: string; opacity?: number; transform?: string };
+type WebFrame = { offset: number; easing: string; opacity?: number; transform?: string };
+interface WebFrames {
+  box: WebFrame[];
+  routed: WebFrame[];
+  fade: WebFrame[];
+}
 
-/** The frames as WAAPI keyframes: the box's (transform, and opacity unless routed) and the fade's. */
-const webFrames = new WeakMap<
-  KeyframesValue,
-  { box: WebFrame[]; routed: WebFrame[]; fade: WebFrame[] }
->();
-function framesOf(keyframes: KeyframesValue) {
-  let out = webFrames.get(keyframes);
+/**
+ * The frames as WAAPI keyframes: the box's (transform, and opacity unless it is
+ * routed to glass), and the fade's. Each frame carries its stretch's curve, as
+ * a CSS animation applies its timing function per stretch (Reanimated's CSS
+ * engine does too); the animation as a whole runs linearly.
+ */
+const webFrames = new WeakMap<KeyframesValue, Map<string, WebFrames>>();
+function framesOf(keyframes: KeyframesValue, curve: string): WebFrames {
+  let byCurve = webFrames.get(keyframes);
+  if (byCurve === undefined) {
+    byCurve = new Map();
+    webFrames.set(keyframes, byCurve);
+  }
+  let out = byCurve.get(curve);
   if (out === undefined) {
     const box: WebFrame[] = [];
     const routed: WebFrame[] = [];
     const fade: WebFrame[] = [];
     for (const frame of keyframes.frames) {
-      const base: WebFrame = { offset: frame.at };
-      if (frame.curve !== undefined) base.easing = cssCurve(frame.curve);
+      const base: WebFrame = {
+        offset: frame.at,
+        easing: frame.curve === undefined ? curve : cssCurve(frame.curve),
+      };
       const transform = frame.transform.length > 0 ? transformCss(frame.transform) : undefined;
       const moved = transform === undefined ? { ...base } : { ...base, transform };
       routed.push(moved);
@@ -68,7 +82,7 @@ function framesOf(keyframes: KeyframesValue) {
       if (frame.opacity !== undefined) fade.push({ ...base, opacity: frame.opacity });
     }
     out = { box, routed, fade };
-    webFrames.set(keyframes, out);
+    byCurve.set(curve, out);
   }
   return out;
 }
@@ -90,12 +104,9 @@ export function usePlay(
   useLayoutEffect(() => {
     const box = ref.current as Element | null;
     if (play === undefined || typeof box?.animate !== 'function') return undefined;
-    const { box: boxFrames, routed, fade } = framesOf(play.keyframes);
-    const options: KeyframeAnimationOptions = {
-      duration: play.timing.duration,
-      easing: cssCurve(play.timing.curve),
-      fill: play.fill,
-    };
+    const curve = cssCurve(play.timing.curve);
+    const { box: boxFrames, routed, fade } = framesOf(play.keyframes, curve);
+    const options: KeyframeAnimationOptions = { duration: play.timing.duration, fill: play.fill };
     const animations: Animation[] = [];
     const glass = play.glass && play.keyframes.fades ? box.querySelector(GLASS_HOST) : null;
     if (glass !== null) {
