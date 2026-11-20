@@ -111,7 +111,7 @@ jobs:
       # language's checks that the spec's generated outputs are current.
       - name: Workspace package builds, typecheck and test
         run: |
-          for package in packages/bloom-text packages/bloom-editor packages/bloom-language packages/bloom-language-compiler; do
+          for package in packages/bloom-text packages/bloom-editor packages/bloom-language packages/bloom-language-compiler packages/bloom-data; do
             (cd "$package" && bun run build && bun run typescript && bun run test)
           done
       # The built `@oxy.so/bloom/color-engine` subpath, as a server loads it:
