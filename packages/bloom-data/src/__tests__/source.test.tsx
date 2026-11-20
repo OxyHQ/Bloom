@@ -1,4 +1,13 @@
-import { environment, type Page, setActiveStore, source, Store, useList } from '../index';
+import {
+  environment,
+  type Page,
+  setActiveStore,
+  skip,
+  source,
+  Store,
+  useList,
+  useListState,
+} from '../index';
 import { resetEnvironmentForTests } from '../environment';
 import { Feed, Post, post } from './fixtures';
 import { render, settle, update } from './support/render';
@@ -313,5 +322,54 @@ describe('source', () => {
     Post.put(post('gone'));
     await posts.refresh('gone');
     expect(Post.has('gone')).toBe(false);
+  });
+});
+
+describe('source extras', () => {
+  it('stores a page’s related records without listing them', async () => {
+    const feed = source(Feed, {
+      key: (type: string) => `related:${type}`,
+      load: async () => ({ items: [post('1')], related: [post('side')] }),
+    });
+    await feed.fetch('home');
+    expect(Feed.get('related:home')?.ids).toEqual(['1']);
+    expect(Post.has('side')).toBe(true);
+  });
+
+  it('observes nothing while skipped, then reads once given arguments', async () => {
+    const calls: string[] = [];
+    const feed = source(Feed, {
+      key: (type: string) => `skip:${type}`,
+      load: async (_request, type: string) => {
+        calls.push(type);
+        return { items: [post('1')] };
+      },
+    });
+    function Home({ ready }: { ready: boolean }) {
+      const view = useList(feed, ...(ready ? (['home'] as [string]) : ([skip] as [typeof skip])));
+      return <>{`${view.isLoading}:${view.ids.join(',')}`}</>;
+    }
+    const tree = render(<Home ready={false} />);
+    expect(tree.toJSON()).toBe('false:');
+    expect(calls).toEqual([]);
+    await settle(() => tree.update(<Home ready />));
+    expect(calls).toEqual(['home']);
+    expect(tree.toJSON()).toBe('false:1');
+  });
+
+  it('reads a held list without reading it from the server', async () => {
+    const feed = source(Feed, {
+      key: (type: string) => `passive:${type}`,
+      load: async () => ({ items: [post('1')] }),
+    });
+    function Reader() {
+      const list = useListState(Feed, 'passive:home');
+      return <>{list ? list.ids.join(',') : 'none'}</>;
+    }
+    const tree = render(<Reader />);
+    expect(tree.toJSON()).toBe('none');
+    expect(feed.state('home').status).toBe('idle');
+    await settle(() => feed.fetch('home'));
+    expect(tree.toJSON()).toBe('1');
   });
 });
