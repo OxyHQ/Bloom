@@ -730,6 +730,9 @@ export const ENUMS = {
     "none",
     "scale-down"
   ],
+  "contentTransition": [
+    "roll"
+  ],
   "spacingExtra": [
     "between"
   ]
@@ -830,7 +833,7 @@ export const MODIFIERS = {
   "aspectRatio": [
     "value"
   ],
-  "transition": [
+  "crossFade": [
     "duration"
   ],
   "onLoad": [
@@ -891,6 +894,42 @@ export const MODIFIERS = {
   ],
   "id": [
     "value"
+  ],
+  "scale": [
+    "scale"
+  ],
+  "offset": [
+    "offset"
+  ],
+  "rotation": [
+    "rotation"
+  ],
+  "animation": [
+    "motion",
+    "value?"
+  ],
+  "transition": [
+    "transition"
+  ],
+  "keyframes": [
+    "keyframes",
+    "value"
+  ],
+  "matchedGeometry": [
+    "value",
+    "namespace"
+  ],
+  "pressScale": [],
+  "contentTransition": [
+    "contentTransition",
+    "value?"
+  ],
+  "loop": [],
+  "paused": [
+    "value"
+  ],
+  "fallback": [
+    "value"
   ]
 } as const;
 
@@ -920,6 +959,14 @@ export const NODE_MODIFIERS = {
     "hitSlop",
     "testID",
     "id",
+    "scale",
+    "offset",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "pressScale",
     "spacing",
     "align"
   ],
@@ -946,7 +993,15 @@ export const NODE_MODIFIERS = {
     "role",
     "hitSlop",
     "testID",
-    "id"
+    "id",
+    "scale",
+    "offset",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "pressScale"
   ],
   "text": [
     "padding",
@@ -972,8 +1027,17 @@ export const NODE_MODIFIERS = {
     "hitSlop",
     "testID",
     "id",
+    "scale",
+    "offset",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "pressScale",
     "lines",
-    "noWrap"
+    "noWrap",
+    "contentTransition"
   ],
   "icon": [
     "padding",
@@ -999,6 +1063,14 @@ export const NODE_MODIFIERS = {
     "hitSlop",
     "testID",
     "id",
+    "scale",
+    "offset",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "pressScale",
     "size"
   ],
   "avatar": [
@@ -1025,6 +1097,14 @@ export const NODE_MODIFIERS = {
     "hitSlop",
     "testID",
     "id",
+    "scale",
+    "offset",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "pressScale",
     "size"
   ],
   "image": [
@@ -1051,10 +1131,18 @@ export const NODE_MODIFIERS = {
     "hitSlop",
     "testID",
     "id",
+    "scale",
+    "offset",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "pressScale",
     "contentFit",
     "aspectRatio",
     "tint",
-    "transition",
+    "crossFade",
     "onLoad",
     "onError"
   ],
@@ -1082,6 +1170,14 @@ export const NODE_MODIFIERS = {
     "hitSlop",
     "testID",
     "id",
+    "scale",
+    "offset",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "pressScale",
     "style",
     "shape",
     "size",
@@ -1111,6 +1207,14 @@ export const NODE_MODIFIERS = {
     "hitSlop",
     "testID",
     "id",
+    "scale",
+    "offset",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "pressScale",
     "count",
     "active",
     "tint"
@@ -1139,6 +1243,14 @@ export const NODE_MODIFIERS = {
     "hitSlop",
     "testID",
     "id",
+    "scale",
+    "offset",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "pressScale",
     "trailing",
     "countFormat",
     "size"
@@ -1166,7 +1278,51 @@ export const NODE_MODIFIERS = {
     "role",
     "hitSlop",
     "testID",
-    "id"
+    "id",
+    "scale",
+    "offset",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "pressScale"
+  ],
+  "lottie": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "background",
+    "border",
+    "corner",
+    "opacity",
+    "glass",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "id",
+    "scale",
+    "offset",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "pressScale",
+    "loop",
+    "paused",
+    "fallback"
   ],
   "embed": [
     "padding",
@@ -1191,7 +1347,15 @@ export const NODE_MODIFIERS = {
     "role",
     "hitSlop",
     "testID",
-    "id"
+    "id",
+    "scale",
+    "offset",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "pressScale"
   ],
   "view": [
     "padding",
@@ -1216,7 +1380,15 @@ export const NODE_MODIFIERS = {
     "role",
     "hitSlop",
     "testID",
-    "id"
+    "id",
+    "scale",
+    "offset",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "pressScale"
   ]
 } as const;
 
@@ -1234,5 +1406,6 @@ export const CONSTRUCTORS = {
   "Action": "action",
   "ActionBar": "actionBar",
   "ActionGroup": "actionGroup",
+  "Lottie": "lottie",
   "Embed": "embed"
 } as const;

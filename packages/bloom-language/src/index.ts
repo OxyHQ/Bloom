@@ -8,6 +8,7 @@ export {
   HStack,
   Icon,
   Image,
+  Lottie,
   Spacer,
   Text,
   VStack,
@@ -17,6 +18,12 @@ export { view } from './view';
 export { clear, regular, GlassValue } from './glass';
 export type { GlassMaterial } from './glass';
 export { toElement } from './render';
+export { defineKeyframes, KeyframesValue } from './motion/keyframes';
+export type { Frame as Keyframe } from './motion/keyframes';
+export { asymmetric, move, opacity, scale, TransitionValue } from './motion/transition';
+export { useNamespace } from './motion/namespace';
+export type { Namespace } from './motion/namespace';
+export type { EasingName, MotionName, MotionToken, RotationName, ScaleName } from './motion/tokens';
 export { defineTokens } from './tokens';
 export { Node, isNode } from './node';
 export type {
@@ -42,7 +49,9 @@ export type {
   ImageErrorHandler,
   ImageLoadHandler,
   ImageView,
+  LottieView,
   Modifier,
+  OffsetSpec,
   ModifierKind,
   NodeKind,
   PressHandler,

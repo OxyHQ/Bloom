@@ -36,6 +36,7 @@ import type {
   EmbedView,
   IconView,
   ImageView,
+  LottieView,
   SpacerView,
   StackView,
   TextView,
@@ -193,8 +194,9 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<ActionBarView>, Of<'actionBar'>>,
       Same<MethodsOf<ActionGroupView>, Of<'actionGroup'>>,
       Same<MethodsOf<EmbedView>, Of<'embed'>>,
+      Same<MethodsOf<LottieView>, Of<'lottie'>>,
       Same<MethodsOf<ComposedView>, Of<'view'>>,
-    ] = [true, true, true, true, true, true, true, true, true, true, true, true];
+    ] = [true, true, true, true, true, true, true, true, true, true, true, true, true];
     expect(checks.every(Boolean)).toBe(true);
   });
 

@@ -15,6 +15,7 @@ import {
   type IconComponent,
   type IconView,
   type ImageView,
+  type LottieView,
   type SpacerView,
   type StackView,
   type TextRun,
@@ -103,4 +104,14 @@ export function Embed(
   content: ReactNode | ((render: (child: Child) => ReactNode) => ReactNode),
 ): EmbedView {
   return new Node('embed', { content }, NO_CHILDREN);
+}
+
+/**
+ * A Lottie animation (a URL), drawn by Bloom's `Sticker`: the one Lottie path,
+ * paused while its screen is not in front. `.fallback(Image(still, label))` is
+ * the still it shows while loading, where it cannot play, and under reduced
+ * motion; `.frame({ width })` its square edge.
+ */
+export function Lottie(source: string): LottieView {
+  return new Node('lottie', { source }, NO_CHILDREN);
 }

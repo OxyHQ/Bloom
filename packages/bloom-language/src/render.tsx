@@ -12,6 +12,8 @@ import { Avatar as BloomAvatar } from '@oxy.so/bloom/avatar';
 import { Button as BloomButton } from '@oxy.so/bloom/button';
 import { EngagementAction, EngagementBar, EngagementGroup } from '@oxy.so/bloom/engagement-bar';
 import { BloomImage } from '@oxy.so/bloom/image';
+import { useScreenVisible } from '@oxy.so/bloom/screen';
+import { Sticker } from '@oxy.so/bloom/sticker';
 import { Surface } from '@oxy.so/bloom/surface';
 
 import {
@@ -23,6 +25,7 @@ import {
   type EmbedProps,
   type IconProps,
   type ImageProps,
+  type LottieProps,
   type Modifier,
   type PressHandler,
   type StackProps,
@@ -51,7 +54,9 @@ import {
   HIT_SLOP,
   resolveAvatarSize,
   resolveIconSize,
+  resolveSpace,
   tokenKey,
+  type AppToken,
   type AvatarSizeName,
   type ColorName,
   type IconSizeToken,
@@ -60,6 +65,18 @@ import {
 } from './tokens';
 import { deriveEnv, EnvContext, type Env } from './env';
 import { adoptLanguageSheet } from './web-sheet';
+import { animatedHost, MotionWrapper } from './motion/host';
+import {
+  MotionNode,
+  Presence,
+  PressMotionNode,
+  type AnimationScope,
+  type MotionPlan,
+  type Outer,
+} from './motion/motion-node';
+import type { Transform } from './motion/play';
+import { TextRoll } from './motion/text-roll';
+import { resolveRotation, resolveScale } from './motion/tokens';
 
 const IS_WEB = Platform.OS === 'web';
 
@@ -118,6 +135,106 @@ interface Plan {
   testID: string | undefined;
   id: string | number | undefined;
   own: Map<Modifier['kind'], Modifier>;
+  /** Present when the node has a motion modifier: it is then drawn by `MotionNode`. */
+  motion: MotionPlan | undefined;
+}
+
+const MOTION_KINDS: ReadonlySet<string> = new Set([
+  'scale',
+  'offset',
+  'rotation',
+  'animation',
+  'transition',
+  'keyframes',
+  'matchedGeometry',
+  'pressScale',
+]);
+
+/** Resting transforms, interned by key so a moving host's style keeps its identity. */
+const transforms = new Map<string, Transform>();
+
+function motionPlan(node: Node, layers: readonly Layer[]): MotionPlan {
+  const motion: MotionPlan = {
+    transform: NO_TRANSFORM,
+    transformKey: '',
+    animation: undefined,
+    transition: undefined,
+    keyframes: undefined,
+    matched: undefined,
+    pressScale: false,
+    glass: layers.some((layer) => layer.glass !== undefined),
+    stable: false,
+  };
+  let translateX = 0;
+  let translateY = 0;
+  let rotate = 0;
+  let scale = 1;
+  for (const modifier of node.modifiers) {
+    switch (modifier.kind) {
+      case 'opacity':
+        motion.stable = true;
+        break;
+      case 'scale':
+        motion.stable = true;
+        if (typeof modifier.value === 'string') scale = resolveScale(modifier.value);
+        break;
+      case 'offset':
+        motion.stable = true;
+        if (typeof modifier.value.x === 'string' || isAppToken(modifier.value.x))
+          translateX = resolveSpace(modifier.value.x);
+        if (typeof modifier.value.y === 'string' || isAppToken(modifier.value.y))
+          translateY = resolveSpace(modifier.value.y);
+        break;
+      case 'rotation':
+        motion.stable = true;
+        if (typeof modifier.value === 'string') rotate = resolveRotation(modifier.value);
+        break;
+      case 'animation':
+        motion.animation = {
+          motion: modifier.motion,
+          value: modifier.value,
+          gated: modifier.gated,
+        };
+        break;
+      case 'transition':
+        motion.stable = true;
+        motion.transition = modifier.value;
+        break;
+      case 'keyframes':
+        motion.keyframes = { value: modifier.value, trigger: modifier.trigger };
+        break;
+      case 'matchedGeometry':
+        motion.stable = true;
+        motion.matched = { id: modifier.id, namespace: modifier.namespace };
+        break;
+      case 'pressScale':
+        motion.stable = true;
+        motion.pressScale = true;
+        break;
+    }
+  }
+  const key = `${translateX}|${translateY}|${rotate}|${scale}`;
+  if (key !== '0|0|0|1') {
+    let transform = transforms.get(key);
+    if (transform === undefined) {
+      const parts: Record<string, number | string>[] = [];
+      if (translateX !== 0) parts.push({ translateX });
+      if (translateY !== 0) parts.push({ translateY });
+      if (rotate !== 0) parts.push({ rotate: `${rotate}deg` });
+      if (scale !== 1) parts.push({ scale });
+      transform = Object.freeze(parts);
+      transforms.set(key, transform);
+    }
+    motion.transform = transform;
+    motion.transformKey = key;
+  }
+  return motion;
+}
+
+const NO_TRANSFORM: Transform = Object.freeze([]);
+
+function isAppToken(value: unknown): value is AppToken<'space'> {
+  return typeof value === 'object' && value !== null && 'scale' in value;
 }
 
 function plan(node: Node): Plan {
@@ -139,8 +256,14 @@ function plan(node: Node): Plan {
     testID: undefined,
     id: undefined,
     own: new Map(),
+    motion: undefined,
   };
+  let moving = false;
   for (const modifier of node.modifiers) {
+    if (MOTION_KINDS.has(modifier.kind)) {
+      moving = true;
+      continue;
+    }
     if (isLayerModifier(modifier)) {
       addToLayers(result.layers, modifier);
       continue;
@@ -194,6 +317,7 @@ function plan(node: Node): Plan {
         result.own.set(modifier.kind, modifier);
     }
   }
+  if (moving) result.motion = motionPlan(node, result.layers);
   return result;
 }
 
@@ -242,6 +366,8 @@ function flexKey(p: Plan): string {
 interface Context {
   env: Env;
   provided: Env;
+  /** The `.animation()` in scope, from this view or above it in the same body. */
+  animation: AnimationScope | undefined;
 }
 
 /**
@@ -260,6 +386,35 @@ function drawHost(
   return draw(host, props, ...children);
 }
 
+/**
+ * The outermost box of a moving node (see `Outer`): drawn with `outer` on it,
+ * as its host's animated twin on native. A Bloom component cannot take it, so
+ * `drawNode` boxes one instead (`Outermost.used` stays false).
+ */
+interface Outermost {
+  readonly outer: Outer;
+  used: boolean;
+}
+
+function drawOutermost(
+  box: Outermost | undefined,
+  host: Host,
+  out: StyleOut,
+  props: Record<string, unknown>,
+  ...children: ReactNode[]
+): ReactElement {
+  if (box === undefined) return drawHost(host, out, props, ...children);
+  box.used = true;
+  const { outer } = box;
+  if (!outer.active) return drawHost(host, out, { ...props, ...outer.props }, ...children);
+  const moving = { ...props, ...outer.props, style: outer.style };
+  const animated = (animatedHost(host) ?? host) as Host;
+  if (out.paint !== undefined)
+    return draw(Painted, { ...moving, host: animated, paint: out.paint }, ...children);
+  moving.style = out.style === undefined ? outer.style : [out.style, ...outer.style];
+  return draw(animated, moving, ...children);
+}
+
 // ── Hosts ────────────────────────────────────────────────────────
 
 /**
@@ -273,13 +428,34 @@ function renderNode(node: Node, ctx: Context, key: string | number | undefined):
     last !== undefined &&
     last.env === ctx.env &&
     last.provided === ctx.provided &&
+    last.animation === ctx.animation &&
     last.key === key
   ) {
     return last.element;
   }
-  const element = drawNode(node, ctx, key);
-  node.rendered = { env: ctx.env, provided: ctx.provided, key, element };
+  const p = plan(node);
+  const element =
+    p.motion === undefined ? drawNode(node, p, ctx, key, undefined) : drawMoving(node, p, ctx, key);
+  node.rendered = { env: ctx.env, provided: ctx.provided, animation: ctx.animation, key, element };
   return element;
+}
+
+/** A node with motion modifiers: `MotionNode` holds its motion state and draws it with `Outer`. */
+function drawMoving(
+  node: Node,
+  p: Plan,
+  ctx: Context,
+  key: string | number | undefined,
+): ReactElement {
+  const motion = p.motion as MotionPlan;
+  return draw(motion.pressScale ? PressMotionNode : MotionNode, {
+    key: p.id ?? key,
+    motion,
+    identified: p.id !== undefined,
+    scope: ctx.animation,
+    leaving: undefined,
+    content: (outer: Outer) => drawNode(node, p, ctx, undefined, outer),
+  });
 }
 
 /**
@@ -287,10 +463,19 @@ function renderNode(node: Node, ctx: Context, key: string | number | undefined):
  * host's own style, then each further layer as a view around it. The press,
  * hover and accessibility props go on the outermost box; `grow`/`shrink` too.
  */
-function drawNode(node: Node, ctx: Context, key: string | number | undefined): ReactNode {
-  const p = plan(node);
+function drawNode(
+  node: Node,
+  p: Plan,
+  ctx: Context,
+  key: string | number | undefined,
+  outer: Outer | undefined,
+): ReactNode {
   const env = p.env.length > 0 ? deriveEnv(ctx.env, p.env) : ctx.env;
-  const inner: Context = env === ctx.env ? ctx : { env, provided: ctx.provided };
+  const animation = p.motion?.animation ?? ctx.animation;
+  const inner: Context =
+    env === ctx.env && animation === ctx.animation
+      ? ctx
+      : { env, provided: ctx.provided, animation };
   const reactKey = p.id ?? key;
   const layers = p.layers;
   // A glass layer is a Surface, which the host cannot be; so the host takes
@@ -301,6 +486,7 @@ function drawNode(node: Node, ctx: Context, key: string | number | undefined): R
   const outermostIsHost = wrappers.length === 0;
   const flex = flexKey(p);
   const behaviour = behaviourProps(p);
+  const box: Outermost | undefined = outer === undefined ? undefined : { outer, used: false };
 
   let element = renderHost(
     node,
@@ -310,6 +496,7 @@ function drawNode(node: Node, ctx: Context, key: string | number | undefined): R
     outermostIsHost ? flex : '',
     outermostIsHost ? behaviour : undefined,
     outermostIsHost ? reactKey : undefined,
+    outermostIsHost ? box : undefined,
   );
 
   for (let i = 0; i < wrappers.length; i++) {
@@ -323,6 +510,21 @@ function drawNode(node: Node, ctx: Context, key: string | number | undefined): R
       element,
       outermost ? behaviour : undefined,
       outermost ? reactKey : undefined,
+      outermost ? box : undefined,
+    );
+  }
+  // A Bloom component (a Surface, an Avatar, a bare glyph) takes no motion of
+  // its own: it moves in one box, there only while something plays on it.
+  if (box !== undefined && !box.used && box.outer.active) {
+    const { outer: o } = box;
+    element = draw(
+      animatedHost(View) ?? MotionWrapper,
+      {
+        ...o.props,
+        key: o.playId,
+        style: flex ? [flexStyle(p.grow, p.shrink), ...o.style] : o.style,
+      },
+      element,
     );
   }
   return element;
@@ -340,6 +542,7 @@ function wrapLayer(
   child: ReactNode,
   behaviour: Record<string, unknown> | undefined,
   key: string | number | undefined,
+  box: Outermost | undefined,
 ): ReactElement {
   const styleKey = `L|${layer.key}|${flex}`;
   const glass = layer.glass;
@@ -366,11 +569,15 @@ function wrapLayer(
             },
             child,
           );
-    return behaviour && p.pressable ? draw(hostFor(p), { ...behaviour, key }, surface) : surface;
+    return behaviour && p.pressable
+      ? drawOutermost(box, hostFor(p), NO_STYLE_OUT, { ...behaviour, key }, surface)
+      : surface;
   }
   const out = cachedStyle('host', styleKey, () => boxStyle(layer, flex, p));
-  return drawHost(behaviour ? hostFor(p) : View, out, { ...behaviour, key }, child);
+  return drawOutermost(box, behaviour ? hostFor(p) : View, out, { ...behaviour, key }, child);
 }
+
+const NO_STYLE_OUT: StyleOut = Object.freeze({ style: undefined, paint: undefined });
 
 const propPaints = new Map<string, Paint>();
 
@@ -436,9 +643,10 @@ function renderHost(
   flex: string,
   behaviour: Record<string, unknown> | undefined,
   key: string | number | undefined,
+  box: Outermost | undefined,
 ): ReactElement {
   const layerKey = layer?.key ?? '';
-  const box = (target: Target, prefix: string): StyleOut =>
+  const boxOf = (target: Target, prefix: string): StyleOut =>
     cachedStyle(target, `${prefix}|${layerKey}|${flex}`, () => boxStyle(layer, flex, p));
   const boxed = layer !== undefined || flex !== '';
 
@@ -456,13 +664,13 @@ function renderHost(
           ? renderDepthChildren(node.children, ctx)
           : renderChildren(node.children, ctx);
       const host = behaviour ? hostFor(p) : View;
-      return drawHost(host, out, hostProps(behaviour, key), ...children);
+      return drawOutermost(box, host, out, hostProps(behaviour, key), ...children);
     }
     case 'spacer': {
       const out = cachedStyle('host', `SP|${layerKey}|${flex}`, () =>
         Object.assign({ flex: 1 }, boxStyle(layer, flex, p)),
       );
-      return drawHost(behaviour ? hostFor(p) : View, out, hostProps(behaviour, key));
+      return drawOutermost(box, behaviour ? hostFor(p) : View, out, hostProps(behaviour, key));
     }
     case 'text': {
       const noWrap = ownValue(p, 'noWrap') !== undefined;
@@ -478,7 +686,28 @@ function renderHost(
         props.ellipsizeMode = 'tail';
       }
       if (behaviour?.focusable !== undefined) delete props.focusable;
-      return drawHost(RNText, out, props, ...renderRuns((node.props as TextProps).runs, ctx));
+      const roll = ownValue(p, 'contentTransition');
+      const runs = (node.props as TextProps).runs;
+      if (
+        roll !== undefined &&
+        runs.every((run) => typeof run === 'string' || typeof run === 'number')
+      ) {
+        // The roll draws the text host itself, once at rest and twice while it
+        // rolls, so it takes this node's outermost box (at rest).
+        if (box !== undefined) box.used = true;
+        return draw(TextRoll, {
+          key,
+          text: runs.join(''),
+          direction: roll.direction,
+          scope: ctx.animation,
+          draw: (text: string, rolling: Outer | undefined) => {
+            const { key: _key, ...hostOnly } = props;
+            const at = rolling === undefined ? box : { outer: rolling, used: false };
+            return drawOutermost(at, RNText, out, { ...hostOnly }, text);
+          },
+        });
+      }
+      return drawOutermost(box, RNText, out, props, ...renderRuns(runs, ctx));
     }
     case 'icon': {
       const size = resolveIconSize(
@@ -494,7 +723,7 @@ function renderHost(
       });
       if (bare) return glyph;
       const host = behaviour ? hostFor(p) : View;
-      return drawHost(host, box('host', 'I'), hostProps(behaviour, key), glyph);
+      return drawOutermost(box, host, boxOf('host', 'I'), hostProps(behaviour, key), glyph);
     }
     case 'avatar': {
       const { source, options } = node.props as AvatarProps;
@@ -508,7 +737,7 @@ function renderHost(
         size: size === undefined ? undefined : resolveAvatarSize(size),
       });
       if (!boxed) return draw(BloomAvatar, props);
-      return drawHost(BloomAvatar, box('component', 'A'), props);
+      return drawHost(BloomAvatar, boxOf('component', 'A'), props);
     }
     case 'image': {
       // BloomImage takes the box itself, so the frame sizes the image and the
@@ -524,13 +753,13 @@ function renderHost(
         return style;
       });
       const { source, alt } = node.props as ImageProps;
-      const transition = ownValue(p, 'transition')?.value;
+      const crossFade = ownValue(p, 'crossFade')?.value;
       const props: Record<string, unknown> = interactive ? {} : hostProps(behaviour, key);
       Object.assign(props, {
         source,
         alt,
         contentFit: ownValue(p, 'contentFit')?.value,
-        transition: transition === undefined ? undefined : DURATION[transition],
+        transition: crossFade === undefined ? undefined : DURATION[crossFade],
         onLoad: ownValue(p, 'onLoad')?.value,
         onError: ownValue(p, 'onError')?.value,
       });
@@ -545,7 +774,7 @@ function renderHost(
             });
       if (!interactive) return image;
       const placement = cachedStyle('host', `IMP|${flex}`, () => boxStyle(undefined, flex, p));
-      return drawHost(hostFor(p), placement, hostProps(behaviour, key), image);
+      return drawOutermost(box, hostFor(p), placement, hostProps(behaviour, key), image);
     }
     case 'button': {
       const props = hostProps(behaviour, key);
@@ -562,7 +791,7 @@ function renderHost(
         children: label,
       });
       if (!boxed) return draw(BloomButton, props);
-      return drawHost(BloomButton, box('component', 'B'), props);
+      return drawHost(BloomButton, boxOf('component', 'B'), props);
     }
     case 'action': {
       const { icon, label, options } = node.props as ActionProps;
@@ -597,13 +826,13 @@ function renderHost(
       };
       const children = renderChildren(node.children, ctx);
       if (!boxed) return draw(EngagementBar, props, ...children);
-      return drawHost(EngagementBar, box('component', 'AB'), props, ...children);
+      return drawHost(EngagementBar, boxOf('component', 'AB'), props, ...children);
     }
     case 'actionGroup': {
       const props: Record<string, unknown> = { key, testID: p.testID };
       const children = renderChildren(node.children, ctx);
       if (!boxed) return draw(EngagementGroup, props, ...children);
-      return drawHost(EngagementGroup, box('component', 'AG'), props, ...children);
+      return drawHost(EngagementGroup, boxOf('component', 'AG'), props, ...children);
     }
     case 'embed': {
       const { content } = node.props as EmbedProps;
@@ -615,14 +844,37 @@ function renderHost(
         return key === undefined ? (element as ReactElement) : draw(Fragment, { key }, element);
       }
       const host = behaviour ? hostFor(p) : View;
-      return drawHost(host, box('host', 'E'), hostProps(behaviour, key), element);
+      return drawOutermost(box, host, boxOf('host', 'E'), hostProps(behaviour, key), element);
+    }
+    case 'lottie': {
+      const { source } = node.props as LottieProps;
+      const fallback = ownValue(p, 'fallback')?.value;
+      const still =
+        isNode(fallback) && fallback.kind === 'image' ? (fallback.props as ImageProps) : undefined;
+      const frame = layer?.modifiers.find((modifier) => modifier.kind === 'frame') as
+        | Extract<Modifier, { kind: 'frame' }>
+        | undefined;
+      const width = frame?.value.width;
+      const sticker = draw(LottieHost, {
+        key: boxed || behaviour ? undefined : key,
+        animation: typeof source === 'string' ? source : undefined,
+        fallback: still?.source,
+        accessibilityLabel: still?.alt,
+        size: width === undefined ? undefined : resolveSpace(width),
+        loop: ownValue(p, 'loop') !== undefined,
+        paused: ownValue(p, 'paused')?.value ?? false,
+      });
+      if (!boxed && !behaviour) return sticker;
+      const host = behaviour ? hostFor(p) : View;
+      return drawOutermost(box, host, boxOf('host', 'L'), hostProps(behaviour, key), sticker);
     }
     case 'view': {
       if (!boxed && !behaviour) return viewElement(node, ctx, key);
       const host = behaviour ? hostFor(p) : View;
-      return drawHost(
+      return drawOutermost(
+        box,
         host,
-        box('host', 'V'),
+        boxOf('host', 'V'),
         hostProps(behaviour, key),
         viewElement(node, ctx, undefined),
       );
@@ -688,7 +940,7 @@ function flatten(children: readonly Child[]): Node[] {
 function renderChildren(children: readonly Child[], ctx: Context): ReactNode[] {
   const out: ReactNode[] = [];
   for (const child of children) {
-    if (Array.isArray(child)) out.push(renderList(child, ctx));
+    if (Array.isArray(child)) out.push(draw(Presence, { items: renderList(child, ctx) }));
     else out.push(isNode(child) ? renderNode(child, ctx, undefined) : null);
   }
   return out;
@@ -746,7 +998,7 @@ interface RootProps {
 /** The boundary from JSX into the language: it takes the environment provided where it is placed. */
 function LanguageRoot({ node }: RootProps): ReactNode {
   const env = useContext(EnvContext);
-  return renderChild(node, { env, provided: env }, undefined);
+  return renderChild(node, { env, provided: env, animation: undefined }, undefined);
 }
 LanguageRoot.displayName = 'BloomLanguage';
 
@@ -768,5 +1020,25 @@ export function toElement(node: Child, key?: string | number): ReactElement {
 
 /** What a `view()` component renders: its body, under the environment it is placed in. */
 export function renderBody(body: Child, env: Env): ReactNode {
-  return renderChild(body, { env, provided: env }, undefined);
+  return renderChild(body, { env, provided: env, animation: undefined }, undefined);
 }
+
+interface LottieHostProps {
+  animation: string | undefined;
+  fallback: string | undefined;
+  accessibilityLabel: string | undefined;
+  size: number | undefined;
+  loop: boolean;
+  paused: boolean;
+}
+
+/**
+ * `Lottie()`: Bloom's `Sticker`, the one Lottie path (lottie-react-native on
+ * native, dotLottie on the web, both loaded lazily), paused while its screen
+ * is not in front.
+ */
+function LottieHost({ paused, fallback, ...props }: LottieHostProps): ReactNode {
+  const visible = useScreenVisible();
+  return draw(Sticker, { ...props, fallback: fallback ?? '', paused: paused || !visible });
+}
+LottieHost.displayName = 'BloomLottie';

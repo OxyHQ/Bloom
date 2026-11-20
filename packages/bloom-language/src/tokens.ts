@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import type { MotionSpec } from '@oxy.so/bloom/motion';
 
 import {
   ALIGNMENT,
@@ -79,7 +80,10 @@ export function resolveBorderWidth(width: BorderWidthName): number {
 // ── App tokens ───────────────────────────────────────────────────
 
 /** The scales an app may extend with named values of its own. */
-export type AppTokenScale = 'space' | 'iconSize' | 'leading';
+export type AppTokenScale = 'space' | 'iconSize' | 'leading' | 'motion';
+
+/** What a token of each scale holds: a number, or for `motion` a Bloom `MotionSpec`. */
+type AppTokenValue<S extends AppTokenScale> = S extends 'motion' ? MotionSpec : number;
 
 /**
  * A named value an app declares once, for a measurement Bloom's scales do not
@@ -88,7 +92,7 @@ export type AppTokenScale = 'space' | 'iconSize' | 'leading';
 export interface AppToken<S extends AppTokenScale = AppTokenScale> {
   readonly scale: S;
   readonly name: string;
-  readonly value: number;
+  readonly value: AppTokenValue<S>;
   /** Unique per declared token; what the style caches key on. */
   readonly key: string;
 }
@@ -110,7 +114,7 @@ type AppTokenTable<T> = {
  * The table is frozen, so a chain that reads it is as static as one that
  * names a Bloom rung (the compiler hoists both).
  */
-export function defineTokens<T extends { [S in AppTokenScale]?: Record<string, number> }>(
+export function defineTokens<T extends { [S in AppTokenScale]?: Record<string, AppTokenValue<S>> }>(
   table: T,
 ): AppTokenTable<T> {
   const out: Record<string, Record<string, AppToken>> = {};
@@ -122,7 +126,7 @@ export function defineTokens<T extends { [S in AppTokenScale]?: Record<string, n
       named[name] = Object.freeze({
         scale,
         name,
-        value: entries[name] as number,
+        value: entries[name] as AppTokenValue<AppTokenScale>,
         key: `@${nextAppToken}`,
       });
     }

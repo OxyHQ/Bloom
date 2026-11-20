@@ -342,7 +342,7 @@ describe('interop', () => {
           .aspectRatio(2)
           .corner('lg')
           .contentFit('contain')
-          .transition('fast')
+          .crossFade('fast')
           .onLoad(onLoad)
           .testID('cover'),
       ),

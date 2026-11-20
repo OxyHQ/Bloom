@@ -130,6 +130,7 @@
         "react": ">=19.0.0",
         "react-native": ">=0.81.0",
         "react-native-css": ">=3.1.0-rc.0",
+        "react-native-reanimated": ">=4.6.0",
       },
     },
     "packages/bloom-language-compiler": {
