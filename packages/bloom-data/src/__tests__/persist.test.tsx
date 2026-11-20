@@ -52,6 +52,33 @@ describe('durable copy', () => {
     ]);
   });
 
+  it('opens in two statements, reads a list with its records in one, and writes in few', async () => {
+    const first = open('a.db');
+    Post.put(Array.from({ length: 30 }, (_, i) => post(String(i))));
+    Feed.set('home', () => ({
+      ids: Array.from({ length: 30 }, (_, i) => String(i)),
+      extra: { cards: [] },
+      next: undefined,
+      hasMore: false,
+      visited: [],
+      updatedAt: 1,
+      origin: 'local',
+    }));
+    await first.store.flush();
+    const statements = (log: string[]) => log.filter((sql) => sql !== 'BEGIN' && sql !== 'COMMIT');
+    // The first write: its pruning, 30 posts and their 30 users in one
+    // statement, and the list.
+    expect(statements(first.db().log.slice(first.db().log.lastIndexOf('BEGIN')))).toHaveLength(4);
+    await first.store.close();
+
+    const second = open('a.db');
+    await Feed.load('home');
+    const reads = statements(second.db().log);
+    // The schema script and the versions, then the list with its posts, then their users.
+    expect(reads).toHaveLength(4);
+    expect(Post.get('29')?.user.name).toBe('User 29');
+  });
+
   it('stores records normalised and deletes removed ones', async () => {
     const { store, db } = open('a.db');
     Post.put(post('1', { quotedPost: post('q') }));

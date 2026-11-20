@@ -8,13 +8,17 @@ export interface Persister {
   /**
    * Opens the copy. `versions` is each persisted entity type's schema version:
    * rows of a type stored under another version are deleted. Rows not written
-   * for `maxAgeMs` are deleted too.
+   * for `maxAgeMs` are deleted too (the persister may do that with its first
+   * write, to keep opening short).
    */
   open(options: { versions: Readonly<Record<string, number>>; maxAgeMs: number }): Promise<void>;
   /** The stored JSON of the records that exist among `ids`. */
   readRecords(type: string, ids: readonly string[]): Promise<ReadonlyArray<StoredRecord>>;
-  /** A list's stored ids and page data, or `null`. */
-  readList(type: string, key: string): Promise<StoredList | null>;
+  /**
+   * A list's stored ids and page data, with the stored records of `recordType`
+   * its ids name, in one read; or `null`.
+   */
+  readList(type: string, key: string, recordType: string): Promise<StoredList | null>;
   /** One transaction: records and lists to upsert, or (`json: null`) delete. */
   write(batch: PersistBatch): Promise<void>;
   close(): Promise<void>;
@@ -29,6 +33,8 @@ export interface StoredList {
   readonly ids: readonly string[];
   /** The list state without its ids, as JSON. */
   readonly json: string;
+  /** The records its ids name that are stored. */
+  readonly records: ReadonlyArray<StoredRecord>;
 }
 
 export interface PersistBatch {
