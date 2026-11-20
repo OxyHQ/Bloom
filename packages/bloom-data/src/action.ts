@@ -21,7 +21,8 @@ import { currentStore, withStore } from './root';
  * left before the answer, nothing is applied: the store is closed.
  *
  * A `key` makes the action exclusive: while a call with the same key is in
- * flight, another resolves to `undefined` at once without running.
+ * flight (of this action or any other), another resolves to `undefined` at
+ * once without running. A like and its undo share a key, say.
  */
 export interface ActionOptions<A extends unknown[], R> {
   key?: (...args: A) => string;
@@ -32,8 +33,13 @@ export interface ActionOptions<A extends unknown[], R> {
 
 export type Action<A extends unknown[], R> = (...args: A) => Promise<R | undefined>;
 
+/**
+ * Keys of the actions in flight, per store. One space for every action, so a
+ * like and its undo can share a key and exclude each other.
+ */
+const inFlight = new WeakMap<object, Set<string>>();
+
 export function action<A extends unknown[], R>(options: ActionOptions<A, R>): Action<A, R> {
-  const inFlight = new WeakMap<object, Set<string>>();
   return async (...args) => {
     const store = currentStore();
     const key = options.key?.(...args);
