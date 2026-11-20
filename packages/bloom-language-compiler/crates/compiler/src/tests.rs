@@ -130,7 +130,7 @@ fn a_wrong_modifier_names_the_valid_ones() {
 #[test]
 fn image_options_are_checked_against_the_spec() {
     let valid = compiled(
-        "export const x = (src) => Image(src).contentFit('contain').tint('primary').transition('fast');\n",
+        "export const x = (src) => Image(src).contentFit('contain').tint('primary').crossFade('fast');\n",
     );
     assert!(valid.diagnostics.is_empty());
     let fit = compiled("export const x = (src) => Image(src).contentFit('stretch');\n");
