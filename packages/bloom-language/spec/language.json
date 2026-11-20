@@ -122,6 +122,24 @@
       "half": 180
     }
   },
+  "faces": {
+    "$comment": "The typefaces text draws in, as Bloom's Text sets them (Typography.tsx, fonts/display-face.ts). native: [the family at weights up to 500, the family above 500] (expo-font registers each cut under its own name); web: the CSS variable applyFontFaces sets. display: the ramp families Bloom sets in its display face; every other text is sans.",
+    "sans": { "native": ["Inter", "Inter"], "web": "var(--bloom-font-sans)" },
+    "display": {
+      "native": ["BlomusModernus", "BlomusModernus-Bold"],
+      "web": "var(--bloom-font-display)"
+    },
+    "displayFamilies": [
+      "large-title",
+      "display-1",
+      "display-2",
+      "display-3",
+      "display-4",
+      "title-1",
+      "title-2",
+      "title-3"
+    ]
+  },
   "typeRamp": {
     "$comment": "<family>-<weight>: [fontSize, lineHeight, letterSpacing, fontWeight], Bloom TYPE_SCALE",
     "large-title-regular": [64, 80, 0, "400"],

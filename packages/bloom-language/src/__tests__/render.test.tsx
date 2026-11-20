@@ -83,6 +83,7 @@ describe('rendering through React Native hosts', () => {
     const [text] = hosts(r, 'Text');
     const step = TYPE_SCALE['headline-semibold'];
     expect(text?.props.style).toEqual({
+      fontFamily: 'Inter',
       fontSize: step.fontSize,
       lineHeight: step.lineHeight,
       letterSpacing: step.letterSpacing,
@@ -102,7 +103,11 @@ describe('rendering through React Native hosts', () => {
       height: 16,
       fill: LIGHT.textSecondary,
     });
-    expect(hosts(r, 'Text')[0]?.props.style).toEqual({ fontSize: 13, color: LIGHT.textSecondary });
+    expect(hosts(r, 'Text')[0]?.props.style).toEqual({
+      fontFamily: 'Inter',
+      fontSize: 13,
+      color: LIGHT.textSecondary,
+    });
   });
 
   it('modifier order decides nesting: background then padding wraps', () => {
@@ -122,6 +127,7 @@ describe('rendering through React Native hosts', () => {
       toElement(HStack(Text('a').shrink('first').frame({ minWidth: 'none' }), VStack().grow())),
     );
     expect(hosts(r, 'Text')[0]?.props.style).toEqual({
+      fontFamily: 'Inter',
       color: LIGHT.text,
       minWidth: 0,
       flexShrink: 10,
@@ -151,7 +157,12 @@ describe('rendering through React Native hosts', () => {
     const r = mount(toElement(Text('Reposted by ', Text('Ana').weight('semibold')).font('sm')));
     const [outer, inner] = hosts(r, 'Text');
     expect(outer?.props.children[0]).toBe('Reposted by ');
-    expect(inner?.props.style).toEqual({ fontSize: 13, fontWeight: '600', color: LIGHT.text });
+    expect(inner?.props.style).toEqual({
+      fontFamily: 'Inter',
+      fontSize: 13,
+      fontWeight: '600',
+      color: LIGHT.text,
+    });
   });
 
   it('an onPress modifier makes the host pressable even with no handler, out of the focus order', () => {
@@ -199,6 +210,7 @@ describe('styles are resolved once per theme', () => {
       toElement(Text('a').font('md').leading(t.leading.tight).padding('leading', t.space.gutter)),
     );
     expect(hosts(r, 'Text')[0]?.props.style).toEqual({
+      fontFamily: 'Inter',
       fontSize: 15,
       lineHeight: 18.75,
       color: LIGHT.text,

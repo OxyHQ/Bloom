@@ -22,6 +22,7 @@ describe('tokens resolve to Bloom’s rungs', () => {
   it('a ramp step is Bloom Text’s variant style, exactly', () => {
     const step = TYPE_SCALE['headline-semibold'];
     expect(resolveFont('headline', 'semibold', undefined)).toEqual({
+      fontFamily: 'Inter',
       fontSize: step.fontSize,
       lineHeight: step.lineHeight,
       letterSpacing: step.letterSpacing,
@@ -33,15 +34,31 @@ describe('tokens resolve to Bloom’s rungs', () => {
     );
   });
 
+  it('text draws in Bloom Text’s face: the display face for the title families, its bold cut above 500', () => {
+    expect(resolveFont('title-1', 'regular', undefined).fontFamily).toBe('BlomusModernus');
+    expect(resolveFont('title-1', 'semibold', undefined).fontFamily).toBe('BlomusModernus-Bold');
+    expect(resolveFont('large-title', 'medium', undefined).fontFamily).toBe('BlomusModernus');
+    expect(resolveFont('headline', 'bold', undefined).fontFamily).toBe('Inter');
+    expect(resolveFont(undefined, undefined, undefined).fontFamily).toBe('Inter');
+  });
+
   it('icon and avatar rungs resolve by name', () => {
     expect(resolveIconSize('md')).toBe(20);
     expect(resolveAvatarSize('lg')).toBe(36);
   });
 
   it('a size rung sets the size, and the weight and leading only when given', () => {
-    expect(resolveFont('md', undefined, undefined)).toEqual({ fontSize: tokens.fontSize.md });
-    expect(resolveFont('sm', 'semibold', undefined)).toEqual({ fontSize: 13, fontWeight: '600' });
+    expect(resolveFont('md', undefined, undefined)).toEqual({
+      fontFamily: 'Inter',
+      fontSize: tokens.fontSize.md,
+    });
+    expect(resolveFont('sm', 'semibold', undefined)).toEqual({
+      fontFamily: 'Inter',
+      fontSize: 13,
+      fontWeight: '600',
+    });
     expect(resolveFont('md', undefined, 'snug')).toEqual({
+      fontFamily: 'Inter',
       fontSize: 15,
       lineHeight: 15 * tokens.lineHeight.snug,
     });

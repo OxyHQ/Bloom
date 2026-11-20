@@ -257,6 +257,35 @@ export const MOTION = {
   }
 } as const;
 
+/** The typefaces: each face's native family per cut (up to 500, above it) and web variable. */
+export const FACES = {
+  "sans": {
+    "native": [
+      "Inter",
+      "Inter"
+    ],
+    "web": "var(--bloom-font-sans)"
+  },
+  "display": {
+    "native": [
+      "BlomusModernus",
+      "BlomusModernus-Bold"
+    ],
+    "web": "var(--bloom-font-display)"
+  }
+} as const;
+/** The ramp families Bloom sets in its display face. */
+export const DISPLAY_FAMILIES = [
+  "large-title",
+  "display-1",
+  "display-2",
+  "display-3",
+  "display-4",
+  "title-1",
+  "title-2",
+  "title-3"
+] as const;
+
 /** Bloom's type ramp: `<family>-<weight>` → [fontSize, lineHeight, letterSpacing, fontWeight]. */
 export const TYPE_FAMILIES = [
   "large-title",

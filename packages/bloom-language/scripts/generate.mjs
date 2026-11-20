@@ -107,6 +107,11 @@ export const EASING = ${ts(easing)} as const;
 /** Motion tokens as Bloom \`MotionSpec\`s: a duration and curve, or a spring. */
 export const MOTION = ${ts(motionSpecs)} as const;
 
+/** The typefaces: each face's native family per cut (up to 500, above it) and web variable. */
+export const FACES = ${ts({ sans: spec.faces.sans, display: spec.faces.display })} as const;
+/** The ramp families Bloom sets in its display face. */
+export const DISPLAY_FAMILIES = ${ts(spec.faces.displayFamilies)} as const;
+
 /** Bloom's type ramp: \`<family>-<weight>\` → [fontSize, lineHeight, letterSpacing, fontWeight]. */
 export const TYPE_FAMILIES = ${ts(typeFamilies)} as const;
 export const TYPE_RAMP = ${ts(typeRamp)} as const;
@@ -257,6 +262,7 @@ for (const value of new Set([
   valueClass('fontWeight', value);
 }
 valueClass('whiteSpace', 'nowrap');
+for (const face of ['sans', 'display']) valueClass('fontFamily', spec.faces[face].web);
 
 // Press feedback on the web: a touch pointer's press scales the view (the CSS
 // `scale` property, so it composes with any transform the view has); a mouse

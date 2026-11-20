@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import type { MotionSpec } from '@oxy.so/bloom/motion';
 
 import {
@@ -8,8 +8,10 @@ import {
   COLORS,
   CORNER,
   DURATION,
+  DISPLAY_FAMILIES,
   ENVIRONMENT_DEFAULTS,
   type ENUMS,
+  FACES,
   FONT_SIZE,
   GLASS_OPACITY,
   HIT_SLOP,
@@ -165,6 +167,7 @@ export function resolveAvatarSize(token: AvatarSizeName): number {
 }
 
 export interface FontStyle {
+  fontFamily: string;
   fontSize?: number;
   lineHeight?: number;
   letterSpacing?: number;
@@ -181,12 +184,28 @@ function isFontSizeName(font: FontName): font is FontSizeName {
  * can depend on the weight); a size rung sets the size, and the weight and
  * leading only when they are given.
  */
+const IS_WEB = Platform.OS === 'web';
+const DISPLAY: ReadonlySet<string> = new Set(DISPLAY_FAMILIES);
+
+/**
+ * The family a text draws in, as Bloom's Text picks it: the display face for
+ * the ramp's title families, Inter for everything else. On native each cut is
+ * its own family, so a weight above 500 names the bold cut, as CSS font
+ * matching would pick it on the web.
+ */
+function fontFamily(font: FontName | undefined, weight: WeightName | undefined): string {
+  const face = font !== undefined && DISPLAY.has(font) ? FACES.display : FACES.sans;
+  if (IS_WEB) return face.web;
+  const numeric = Number(WEIGHT[weight ?? ENVIRONMENT_DEFAULTS.rampWeight]);
+  return numeric > 500 ? face.native[1] : face.native[0];
+}
+
 export function resolveFont(
   font: FontName | undefined,
   weight: WeightName | undefined,
   leading: LeadingToken | undefined,
 ): FontStyle {
-  const style: FontStyle = {};
+  const style: FontStyle = { fontFamily: fontFamily(font, weight) };
   if (font !== undefined && !isFontSizeName(font)) {
     const [fontSize, lineHeight, letterSpacing, fontWeight] =
       TYPE_RAMP[`${font}-${weight ?? ENVIRONMENT_DEFAULTS.rampWeight}`];

@@ -10,8 +10,10 @@ import {
   BORDER_WIDTH,
   COLORS,
   CORNER,
+  DISPLAY_FAMILIES,
   DURATION,
   EASING,
+  FACES,
   ENVIRONMENT,
   FONT_SIZE,
   GLASS_OPACITY,
@@ -107,6 +109,42 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
     expect(read('surface/shared.ts')).toMatch(
       new RegExp(`SURFACE_TINT_OPACITY = ${GLASS_OPACITY.strong};`),
     );
+  });
+});
+
+describe('text draws in the face Bloom Text draws in', () => {
+  it('the faces are Bloom’s: Inter, BlomusModernus and its bold cut, and their web variables', () => {
+    const typography = read('typography/Typography.tsx');
+    expect(typography).toMatch(`return { fontFamily: '${FACES.sans.native[0]}' };`);
+    expect(FACES.sans.native[1]).toBe(FACES.sans.native[0]);
+    expect(typography).toMatch('return { fontFamily: `var(--bloom-font-${kind})` };');
+    expect([FACES.sans.web, FACES.display.web]).toEqual([
+      'var(--bloom-font-sans)',
+      'var(--bloom-font-display)',
+    ]);
+    const display = read('fonts/display-face.ts');
+    expect(display).toMatch(`regular: '${FACES.display.native[0]}',`);
+    expect(display).toMatch(`bold: '${FACES.display.native[1]}',`);
+    // The bold cut from 600 up, as display-face.ts picks it.
+    expect(display).toMatch('return numericFontWeight(weight) > 500');
+  });
+
+  it('the display families are the variants Bloom sets in its display face', () => {
+    const typography = read('typography/Typography.tsx');
+    expect(typography).toMatch("variant.startsWith('large-title-') ||");
+    expect(typography).toMatch("variant.startsWith('display-') ||");
+    expect(typography).toMatch('/^title-[123]-/.test(variant);');
+    const isDisplay = (variant: string) =>
+      variant.startsWith('large-title-') ||
+      variant.startsWith('display-') ||
+      /^title-[123]-/.test(variant);
+    for (const variant of Object.keys(TYPE_RAMP)) {
+      const family = variant.replace(/-(regular|medium|semibold|bold)$/, '');
+      expect([variant, (DISPLAY_FAMILIES as readonly string[]).includes(family)]).toEqual([
+        variant,
+        isDisplay(variant),
+      ]);
+    }
   });
 });
 

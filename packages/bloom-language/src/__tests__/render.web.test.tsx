@@ -49,6 +49,7 @@ describe('on the web, styles are classes from the generated sheet', () => {
     const text = r.root.findByType('Text' as never);
     expect(text.props.style).toEqual({
       $$css: true,
+      fontFamily: WEB_CLASS['fontFamily:var(--bloom-font-sans)'],
       fontSize: WEB_CLASS['fontSize:15'],
       color: WEB_CLASS['color:@muted'],
     });
