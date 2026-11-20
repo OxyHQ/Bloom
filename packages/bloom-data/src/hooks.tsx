@@ -33,6 +33,8 @@ export function useStore(): Store {
 
 class EntityReader {
   readonly tracker: Tracker;
+  /** Stable for the reader's life, so the hook needs no `useCallback`. */
+  readonly subscribe = (listener: Listener) => this.tracker.subscribe(listener);
   private definition: EntityDefinition | undefined;
   private id: string | null | undefined;
   private select: ((record: never) => unknown) | undefined;
@@ -115,7 +117,7 @@ export function useEntity<T, S>(
       select as ((record: never) => unknown) | undefined,
       isEqual as (a: unknown, b: unknown) => boolean,
     ) as T | S | undefined;
-  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  return useSyncExternalStore(reader.subscribe, getSnapshot, getSnapshot);
 }
 
 /** A list as a screen reads it: ids in order, the source's state, and its two commands. */
