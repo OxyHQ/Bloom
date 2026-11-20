@@ -97,6 +97,12 @@ export const GLASS_OPACITY = {
   "medium": 0.48,
   "strong": 0.72
 } as const;
+export const DURATION = {
+  "instant": 100,
+  "fast": 150,
+  "normal": 200,
+  "slow": 300
+} as const;
 
 /** Bloom's type ramp: `<family>-<weight>` → [fontSize, lineHeight, letterSpacing, fontWeight]. */
 export const TYPE_FAMILIES = [
@@ -565,6 +571,13 @@ export const ENUMS = {
     "regular",
     "clear"
   ],
+  "contentFit": [
+    "cover",
+    "contain",
+    "fill",
+    "none",
+    "scale-down"
+  ],
   "spacingExtra": [
     "between"
   ]
@@ -659,6 +672,21 @@ export const MODIFIERS = {
     "value"
   ],
   "noWrap": [],
+  "contentFit": [
+    "contentFit"
+  ],
+  "aspectRatio": [
+    "value"
+  ],
+  "transition": [
+    "duration"
+  ],
+  "onLoad": [
+    "value"
+  ],
+  "onError": [
+    "value"
+  ],
   "size": [
     "size"
   ],
@@ -871,7 +899,12 @@ export const NODE_MODIFIERS = {
     "hitSlop",
     "testID",
     "id",
-    "size"
+    "contentFit",
+    "aspectRatio",
+    "tint",
+    "transition",
+    "onLoad",
+    "onError"
   ],
   "button": [
     "padding",

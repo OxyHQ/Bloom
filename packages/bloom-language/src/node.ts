@@ -6,6 +6,11 @@ import type {
   Insets,
 } from 'react-native';
 import type { BloomAppearance, BloomSize, BloomTone } from '@oxy.so/bloom/appearance';
+import type {
+  BloomImageErrorInfo,
+  BloomImageLoadInfo,
+  BloomImageSource,
+} from '@oxy.so/bloom/image';
 import type { AccentTone } from '@oxy.so/bloom/theme';
 
 import { regular, type GlassValue } from './glass';
@@ -14,6 +19,8 @@ import {
   type Alignment,
   type BorderEdge,
   type ButtonShape,
+  type ContentFit,
+  type DurationName,
   type Edge,
   type Role,
   type ShrinkPriority,
@@ -33,11 +40,13 @@ import {
 
 // ── Modifiers: immutable data, applied in order ──────────────────
 
-export type { Alignment, BorderEdge, ButtonShape, Edge, Role, ShrinkPriority };
+export type { Alignment, BorderEdge, ButtonShape, ContentFit, Edge, Role, ShrinkPriority };
 export type { GlassValue };
 export type EngagementTone = Exclude<AccentTone, 'default'>;
 export type IconComponent = ComponentType<{ width?: number; height?: number; fill?: string }>;
 export type PressHandler = (event: GestureResponderEvent) => unknown;
+export type ImageLoadHandler = (info: BloomImageLoadInfo) => void;
+export type ImageErrorHandler = (info: BloomImageErrorInfo) => void;
 
 export interface FrameSpec {
   width?: SpaceToken;
@@ -77,6 +86,15 @@ export type Modifier =
   | { readonly kind: 'align'; readonly key: string; readonly value: Alignment }
   | { readonly kind: 'lines'; readonly key: string; readonly value: number }
   | { readonly kind: 'noWrap'; readonly key: string }
+  | { readonly kind: 'contentFit'; readonly key: string; readonly value: ContentFit }
+  | { readonly kind: 'aspectRatio'; readonly key: string; readonly value: number }
+  | { readonly kind: 'transition'; readonly key: string; readonly value: DurationName }
+  | { readonly kind: 'onLoad'; readonly key: string; readonly value: ImageLoadHandler | undefined }
+  | {
+      readonly kind: 'onError';
+      readonly key: string;
+      readonly value: ImageErrorHandler | undefined;
+    }
   | {
       readonly kind: 'size';
       readonly key: string;
@@ -84,7 +102,11 @@ export type Modifier =
     }
   | { readonly kind: 'style'; readonly key: string; readonly value: BloomAppearance }
   | { readonly kind: 'shape'; readonly key: string; readonly value: ButtonShape }
-  | { readonly kind: 'tint'; readonly key: string; readonly value: EngagementTone | BloomTone }
+  | {
+      readonly kind: 'tint';
+      readonly key: string;
+      readonly value: EngagementTone | BloomTone | ColorName;
+    }
   | { readonly kind: 'count'; readonly key: string; readonly value: number | null | undefined }
   | { readonly kind: 'active'; readonly key: string; readonly value: boolean | undefined }
   | { readonly kind: 'trailing'; readonly key: string; readonly value: readonly Child[] }
@@ -159,7 +181,7 @@ export interface AvatarOptions {
   readonly account?: Record<string, unknown>;
 }
 export interface ImageProps {
-  readonly source: string;
+  readonly source: BloomImageSource | null | undefined;
   readonly alt: string | undefined;
 }
 export interface ActionProps {
@@ -282,6 +304,21 @@ export class Node {
   noWrap(): Node {
     return this.with({ kind: 'noWrap', key: 'nowrap' });
   }
+  contentFit(value: ContentFit): Node {
+    return this.with({ kind: 'contentFit', key: `fit:${value}`, value });
+  }
+  aspectRatio(value: number): Node {
+    return this.with({ kind: 'aspectRatio', key: `aspect:${value}`, value });
+  }
+  transition(value: DurationName): Node {
+    return this.with({ kind: 'transition', key: `transition:${value}`, value });
+  }
+  onLoad(value: ImageLoadHandler | undefined): Node {
+    return this.with({ kind: 'onLoad', key: 'onLoad', value });
+  }
+  onError(value: ImageErrorHandler | undefined): Node {
+    return this.with({ kind: 'onError', key: 'onError', value });
+  }
   size(value: IconSizeToken | AvatarSizeName | BloomSize): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
@@ -291,7 +328,7 @@ export class Node {
   shape(value: ButtonShape): Node {
     return this.with({ kind: 'shape', key: `shape:${value}`, value });
   }
-  tint(value: EngagementTone | BloomTone): Node {
+  tint(value: EngagementTone | BloomTone | ColorName): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
   }
   count(value: number | null | undefined): Node {
@@ -401,8 +438,22 @@ export interface IconView extends ViewModifiers<IconView> {
 export interface AvatarView extends ViewModifiers<AvatarView> {
   size(value: AvatarSizeName): AvatarView;
 }
+/**
+ * A raster image. It is sized like any view (`frame`, or one side and
+ * `aspectRatio`) and clipped by `corner`; it has no intrinsic size until it loads.
+ */
 export interface ImageView extends ViewModifiers<ImageView> {
-  size(value: AvatarSizeName): ImageView;
+  /** How the image fills its box. Defaults to `cover`. */
+  contentFit(value: ContentFit): ImageView;
+  /** Width over height, so one side sizes the other (`16 / 9`). */
+  aspectRatio(value: number): ImageView;
+  /** Paints every opaque pixel one colour role (monochrome artwork). */
+  tint(value: ColorName): ImageView;
+  /** Cross-fades the image in when it arrives, over a Bloom duration. Defaults to none. */
+  transition(value: DurationName): ImageView;
+  /** The intrinsic pixel size, once loaded. */
+  onLoad(value: ImageLoadHandler | undefined): ImageView;
+  onError(value: ImageErrorHandler | undefined): ImageView;
 }
 export interface ButtonView extends ViewModifiers<ButtonView> {
   style(value: BloomAppearance): ButtonView;

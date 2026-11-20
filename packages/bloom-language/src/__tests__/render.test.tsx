@@ -16,6 +16,7 @@ import {
   Embed,
   HStack,
   Icon,
+  Image,
   Spacer,
   Text,
   VStack,
@@ -330,6 +331,57 @@ describe('interop', () => {
     }>[];
     const [save] = trailing;
     expect(save?.props.accessibilityLabel).toBe('Save');
+  });
+
+  it('an image is BloomImage with its options from the chain, sized and clipped by its box', () => {
+    const onLoad = jest.fn();
+    const r = mount(
+      toElement(
+        Image('https://example.com/a.jpg', 'Cover')
+          .frame({ width: '5xl' })
+          .aspectRatio(2)
+          .corner('lg')
+          .contentFit('contain')
+          .transition('fast')
+          .onLoad(onLoad)
+          .testID('cover'),
+      ),
+    );
+    expect(hosts(r, 'View')).toHaveLength(0);
+    const [image] = hosts(r, 'BloomImage');
+    expect(image?.props).toMatchObject({
+      source: 'https://example.com/a.jpg',
+      alt: 'Cover',
+      contentFit: 'contain',
+      transition: tokens.animation.duration.fast,
+      onLoad,
+      testID: 'cover',
+      style: {
+        width: tokens.space._5xl,
+        aspectRatio: 2,
+        borderRadius: tokens.borderRadius.lg,
+        overflow: 'hidden',
+      },
+    });
+  });
+
+  it('an image tint paints tintColor from a colour role', () => {
+    const r = mount(toElement(Image(1).tint('primary').frame({ width: 'xl', height: 'xl' })));
+    expect(hosts(r, 'BloomImage')[0]?.props).toMatchObject({
+      source: 1,
+      tintColor: LIGHT.primary,
+      style: { width: tokens.space.xl, height: tokens.space.xl },
+    });
+  });
+
+  it('a pressable image sits in its pressable host, which takes the placement', () => {
+    const onPress = jest.fn();
+    const r = mount(toElement(Image('a.jpg').frame({ height: 'xl' }).grow().onPress(onPress)));
+    const [press] = hosts(r, 'Pressable');
+    expect(press?.props).toMatchObject({ onPress, focusable: true, style: { flex: 1 } });
+    expect(press?.findByType('BloomImage' as never).props.style).toEqual({
+      height: tokens.space.xl,
+    });
   });
 
   it('glass is Bloom’s Surface, tinted from a colour role', () => {

@@ -30,7 +30,7 @@ module.exports = {
     '^@oxy.so/bloom/icons/shared$': `${support}/bloom-icons.ts`,
     '^@oxy.so/bloom/avatar$': `${support}/bloom-avatar.ts`,
     '^@oxy.so/bloom/theme$': `${support}/bloom-theme.ts`,
-    '^@oxy.so/bloom/(button|engagement-bar|shapes|surface)$': `${support}/bloom-components.ts`,
+    '^@oxy.so/bloom/(button|engagement-bar|image|surface)$': `${support}/bloom-components.ts`,
     '^react$': require.resolve('react'),
     '^react/(.*)$': `${require('node:path').dirname(require.resolve('react/package.json'))}/$1`,
   },

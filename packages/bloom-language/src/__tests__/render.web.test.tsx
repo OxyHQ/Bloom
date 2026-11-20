@@ -2,7 +2,7 @@ import { createElement, type ReactElement } from 'react';
 import TestRenderer, { act, type ReactTestRenderer } from 'react-test-renderer';
 
 import { LIGHT, PaintContext } from './support/bloom-theme';
-import { HStack, Icon, Text, VStack } from '../primitives';
+import { HStack, Icon, Image, Text, VStack } from '../primitives';
 import { toElement } from '../render';
 import { defineTokens } from '../tokens';
 import { WEB_CLASS, WEB_SHEET } from '../generated/web-sheet.generated';
@@ -77,5 +77,13 @@ describe('on the web, styles are classes from the generated sheet', () => {
       r.root.findAll((i) => (i.type as { displayName?: string }).displayName === 'BloomPaint'),
     ).toHaveLength(1);
     expect(r.root.findByType('Glyph' as never).props.fill).toBe(LIGHT.primary);
+  });
+
+  it('an image, a Bloom component, takes its style inline, roles as theme variables', () => {
+    const r = mount(toElement(Image('a.jpg').frame({ width: 'xl' }).background('surface')));
+    expect(r.root.findByType('BloomImage' as never).props.style).toEqual({
+      width: 20,
+      backgroundColor: 'var(--surface)',
+    });
   });
 });

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { BloomImageSource } from '@oxy.so/bloom/image';
 
 import {
   Node,
@@ -61,10 +62,10 @@ export function Avatar(source: string | null | undefined, options: AvatarOptions
 }
 
 /**
- * A raster image, drawn by Bloom (`shapes` `Image`, which draws through
- * Bloom's image renderer). Square, at an avatar size rung, clipped by `shape`.
+ * A raster image, drawn by Bloom's `BloomImage`. `source` is a URL, a bundled
+ * asset (`require()`) or a URI descriptor; `alt` names it for assistive technology.
  */
-export function Image(source: string, alt?: string): ImageView {
+export function Image(source: BloomImageSource | null | undefined, alt?: string): ImageView {
   return new Node('image', { source, alt }, NO_CHILDREN);
 }
 
