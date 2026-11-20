@@ -476,7 +476,8 @@ every chain, and the pass changes only what it proves keeps its meaning.
 - **Adds `"use memo"`** to every function passed to `view()`.
 - **Checks chains** against the spec: an unknown modifier for the node, a wrong
   argument count, or a literal token outside its set fails the build with the
-  source line and a suggestion.
+  source line and a suggestion. Every chain is checked before anything is
+  hoisted, including the chains nested in a hoisted one.
 
 It does not resolve tokens: that stays the runtime's, so the two cannot disagree
 about what a token means, and its output is the same program on every platform.

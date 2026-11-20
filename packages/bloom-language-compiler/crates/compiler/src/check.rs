@@ -3,7 +3,8 @@
 //! values are the runtime's; TypeScript checks them where it can, and this is
 //! the backstop for JavaScript, casts and generated code.
 
-use oxc_ast::ast::{Argument, Expression, ObjectPropertyKind, PropertyKey};
+use oxc_ast::ast::{Argument, Expression, ObjectPropertyKind, Program, PropertyKey};
+use oxc_ast_visit::{Visit, walk};
 use oxc_semantic::Scoping;
 use oxc_span::{GetSpan, Span};
 
@@ -25,8 +26,44 @@ fn node(kind: &str) -> &'static NodeSpec {
     NODES.iter().find(|node| node.kind == kind).expect("every node kind is in the spec")
 }
 
+/// Every chain in `program`, each checked once, whatever the compiler later
+/// does with it: a chain nested in another's arguments is its own chain.
+pub fn check_program(program: &Program, module: &Module, scoping: &Scoping) -> Vec<Problem> {
+    let mut checker = Checker { module, scoping, problems: Vec::new() };
+    checker.visit_program(program);
+    checker.problems
+}
+
+struct Checker<'m> {
+    module: &'m Module,
+    scoping: &'m Scoping,
+    problems: Vec<Problem>,
+}
+
+impl<'a> Visit<'a> for Checker<'_> {
+    fn visit_expression(&mut self, expression: &Expression<'a>) {
+        if !self.module.is_chain(expression, self.scoping) {
+            walk::walk_expression(self, expression);
+            return;
+        }
+        if let Err(problem) = check_chain(expression, self.module, self.scoping) {
+            self.problems.push(problem);
+        }
+        // The chain's own calls were checked together; their arguments are visited
+        // for the chains inside them, never the chain's own prefix again.
+        let mut current = expression.without_parentheses();
+        while let Expression::CallExpression(call) = current {
+            for argument in &call.arguments {
+                self.visit_argument(argument);
+            }
+            let Expression::StaticMemberExpression(member) = &call.callee else { break };
+            current = member.object.without_parentheses();
+        }
+    }
+}
+
 /// Check the chain `expression` (a constructor call and its modifiers), if it is one.
-pub fn check_chain(expression: &Expression, module: &Module, scoping: &Scoping) -> Result<(), Problem> {
+fn check_chain(expression: &Expression, module: &Module, scoping: &Scoping) -> Result<(), Problem> {
     let Some(root) = module.chain_root(expression, scoping) else { return Ok(()) };
     let (kind, name) = match root {
         Binding::Constructor { kind, name } => (kind, name),

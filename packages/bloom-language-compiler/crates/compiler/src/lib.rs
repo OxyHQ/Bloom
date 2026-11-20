@@ -13,6 +13,8 @@
 //!   chains has neither, so each body passed to `view()` gets `"use memo"`.
 //! - **Chains are checked against the spec**: modifiers and literal tokens,
 //!   with the names generated from `spec/language.json` (`spec.generated.rs`).
+//!   Every chain is checked, before anything moves: one nested in a hoisted
+//!   chain as much as one left where it is.
 //!
 //! The output is the same program on every platform: resolving tokens stays
 //! the runtime's job, so the two can never disagree about what a token means.
@@ -74,6 +76,14 @@ pub fn compile(source: &str, filename: &str) -> Output {
         return Output::unchanged(source, Vec::new());
     };
 
+    let diagnostics: Vec<Diagnostic> = check::check_program(&program, &module, &scoping)
+        .into_iter()
+        .map(|problem| Diagnostic::new(source, filename, problem.span, problem.message, problem.help))
+        .collect();
+    if !diagnostics.is_empty() {
+        return Output::unchanged(source, diagnostics);
+    }
+
     let mut bodies =
         ViewBodies { module: &module, scoping: &scoping, spans: HashSet::new(), symbols: HashSet::new() };
     bodies.visit_program(&program);
@@ -84,8 +94,6 @@ pub fn compile(source: &str, filename: &str) -> Output {
     }
     let mut compiler = Compiler {
         allocator: &allocator,
-        source,
-        filename,
         module: &module,
         scoping: &scoping,
         bodies,
@@ -93,12 +101,8 @@ pub fn compile(source: &str, filename: &str) -> Output {
         depth: 0,
         hoisted: Vec::new(),
         memoized: 0,
-        diagnostics: Vec::new(),
     };
     compiler.visit_program(&mut program);
-    if !compiler.diagnostics.is_empty() {
-        return Output::unchanged(source, compiler.diagnostics);
-    }
     if compiler.hoisted.is_empty() && compiler.memoized == 0 {
         return Output::unchanged(source, Vec::new());
     }
@@ -174,8 +178,6 @@ impl<'a> Visit<'a> for ViewBodies<'_> {
 
 struct Compiler<'a, 's> {
     allocator: &'a Allocator,
-    source: &'s str,
-    filename: &'s str,
     module: &'s Module,
     scoping: &'s Scoping,
     bodies: ViewBodies<'s>,
@@ -186,12 +188,11 @@ struct Compiler<'a, 's> {
     /// (body index to declare it before, its name, the expression).
     hoisted: Vec<(usize, String, Expression<'a>)>,
     memoized: usize,
-    diagnostics: Vec<Diagnostic>,
 }
 
 impl<'a> Compiler<'a, '_> {
-    /// Visit a chain already checked: hoist it when static, else hoist what
-    /// is static inside it (its arguments' chains, and its longest static prefix).
+    /// Visit a chain: hoist it when static, else hoist what is static inside it
+    /// (its arguments' chains, and its longest static prefix).
     fn visit_chain(&mut self, expression: &mut Expression<'a>) {
         if self.depth > 0
             && let Some(after) = self.module.static_after(expression, self.scoping)
@@ -267,15 +268,6 @@ impl<'a> VisitMut<'a> for Compiler<'a, '_> {
         if !self.module.is_chain(expression, self.scoping) {
             walk_mut::walk_expression(self, expression);
             return;
-        }
-        if let Err(problem) = check::check_chain(expression, self.module, self.scoping) {
-            self.diagnostics.push(Diagnostic::new(
-                self.source,
-                self.filename,
-                problem.span,
-                problem.message,
-                problem.help,
-            ));
         }
         self.visit_chain(expression);
     }
