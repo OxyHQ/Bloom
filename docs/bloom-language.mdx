@@ -281,7 +281,8 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `label`, `hint`, `role`, `hitSlop`, `testID`, `id` | accessibility and identity |
 | `lines(n)`, `noWrap()`, `truncation`, `selectable`, `textStyle`, `link`, `textAlign`, `italic`, `underline`, `strikethrough`, `textCase`, `monospacedDigit`, `wordBreak` | text only (see [Text](#text)) |
 | `listMarker(m)` | a stack only: a web list behind `disc` or `decimal` markers (see [Layout](#layout)) |
-| `contentFit`, `aspectRatio`, `tint`, `transition`, `onLoad`, `onError` | `Image` only (see [Image](#image)) |
+| `contentFit`, `aspectRatio`, `tint`, `crossFade`, `onLoad`, `onError` | `Image` only (see [Image](#image)) |
+| `contentTransition('roll', direction?)` | text only (see [Animation](#animation)) |
 | `count`, `active`, `tint` | `Action` only |
 | `trailing(...)`, `countFormat(fn)` | `ActionBar` only |
 
@@ -972,7 +973,7 @@ Image(post.cover, 'Cover')
   .aspectRatio(16 / 9)
   .contentFit('cover')
   .corner('lg')
-  .transition('fast')
+  .crossFade('fast')
 ```
 
 - **Box.** An image has no size until it loads, so it is sized like a view:
@@ -982,7 +983,7 @@ Image(post.cover, 'Cover')
 - **Options.** `contentFit` takes `BloomImage`'s vocabulary (`cover`, the
   default, `contain`, `fill`, `none`, `scale-down`). `tint(role)` paints every
   opaque pixel one colour role, from the theme like an icon's fill.
-  `transition` is a Bloom duration (`instant` 100, `fast` 150, `normal` 200,
+  `crossFade` is a Bloom duration (`instant` 100, `fast` 150, `normal` 200,
   `slow` 300 ms); without it the image appears at once. `onLoad` receives the
   intrinsic `{ width, height }` and `onError` `{ error }`.
 - **Presses.** `BloomImage` takes accessibility props but no presses, so an image
@@ -1013,6 +1014,131 @@ VStack(
   comments.map((comment) => CommentRow({ comment }).id(comment.id)),
 )
 ```
+
+## Animations
+
+Motion is a token, like every other value: `press`, `present`, `dismiss`,
+`fade`, `slide`, `pop`, `roll`, `enter`, `exit`, `restack` (each the duration
+and curve a Bloom owner already plays; `spec.test.ts` reads each from that
+owner's source) and the springs `select` and `expand` (SwiftUI's `response`
+and `dampingRatio`). A motion is a Bloom `MotionSpec`; an app names its own with
+`defineTokens({ motion: { … } })`. Curves are named too (`ease`, `inOutQuad`,
+`outQuart`, `outExpo`, `linear`).
+
+| Modifier | Meaning (SwiftUI) |
+| --- | --- |
+| `.scale(s)`, `.offset({ x?, y? })`, `.rotation(r)` | Geometry that moves the view without moving its neighbours: `scale` tokens `dip` `pressed` `full` `swell`; offsets are space tokens (negative ones too); `rotation` `none` `quarter` `half`. |
+| `.animation(motion, value?)` | `.animation(_:value:)`: changes to this view's geometry and opacity, and what animates inside it in the same body (a matched geometry, a content transition, keyframes or a transition without their own motion), play with `motion`. With a value, only on a render where the value changed. |
+| `.transition(t)` | Insertion and removal: `opacity`, `scale('dip')`, `move(edge, distance)`, `t.combined(u)`, `asymmetric(insert, remove)`, `t.animation(motion)`. A half may be keyframes of the app's own. |
+| `.keyframes(k, trigger)` | `keyframeAnimator`: plays `k` each time `trigger` changes to a truthy value (a boolean turning on, or a counter such as a press id). |
+| `.matchedGeometry(id, ns)` | `matchedGeometryEffect`: the view that takes `id` moves from where the last view with it was. `const ns = useNamespace()`. |
+| `.contentTransition('roll', direction?)` | `Text` only; `.contentTransition(.numericText(value:))`: a change of the text inside an animation rolls the old text out and the new one in, up when `direction` rose and down when it fell. |
+| `.pressScale()` | Press feedback (`PressableScale`): eases to `pressed` while a finger holds the view. Off for a mouse on the web and under reduced motion. |
+| `Lottie(url)` | A node: `.loop()`, `.paused(bool)`, `.fallback(Image(still, label))`, `.frame({ width })`. Bloom's `Sticker` draws it (lottie-react-native on native, dotLottie on the web, both lazy), paused while its screen is not in front (`useScreenVisible`). |
+
+Keyframes are frames, as CSS writes them:
+
+```ts
+const pop = defineKeyframes([
+  { at: 0, scale: 1, easing: 'inOutQuad' },
+  { at: 0.1, scale: 0.7 },
+  { at: 0.4, scale: 1.2 },
+  { at: 1, scale: 1 },
+], 'pop');
+Icon(liked ? LikeFillIcon : LikeIcon).size('md').keyframes(pop, press.on);
+```
+
+A frame's `easing` curves the stretch from it to the next; without one the
+stretch takes the motion's curve, as a CSS animation applies its timing function
+per stretch. Values are Bloom-internal numbers (a scale factor, an opacity, px or
+a space token, degrees), as `defineTokens` allows.
+
+### How it runs
+
+| | Native | Web |
+| --- | --- | --- |
+| `.animation()` on geometry and opacity | Reanimated 4's CSS transitions on the host's animated twin (`transitionProperty`, a `cubicBezier` or a spring's `linear()` points). No worklet, no JS frame. | An inline CSS transition. No Reanimated. |
+| `.transition()`, `.keyframes()`, a matched move | Reanimated CSS animations (`animationName` keyframes, `onCSSAnimationEnd`). | `element.animate()` (Web Animations API), started before the frame paints. |
+| `.pressScale()` | One shared value a press retargets with the `press` motion (Bloom's `animateWithSpec`), read by the one mapper the renderer writes: it lists the value in its deps and starts no animation (traps A and B cannot occur). | A generated class: `:active` sets the CSS `scale` property under `(pointer: coarse)` and `prefers-reduced-motion: no-preference`. |
+| `.contentTransition('roll')` | Two text hosts, each playing keyframes, only while a roll plays; the plain text at rest. | Same, with `element.animate()`. |
+| Reduced motion | `usePrefersReducedMotion()`, applied by the renderer: no transition, no keyframes, a removal goes at once. | The same reading. |
+
+A moving node is drawn by one component (`MotionNode`), so nodes without motion
+stay plain elements with no hooks. Its outermost host becomes its animated twin
+(`Animated.View`, `Animated.Text`, an animated `Pressable`) when it rests moved or
+animates its resting state (geometry, opacity, a transition, a matched geometry,
+press feedback), from the first render, because a CSS transition needs its host
+before the change. A node with only keyframes is animated only while they play,
+as `EngagementPop` mounts its layer. A Bloom component (a Surface, an Avatar, a
+bare glyph) cannot take motion itself, so it moves in one box, which takes the
+view's place in its parent.
+
+**Removal.** A list slot (`items.map(…)`) keeps a child that left until its
+removal ends, holding its last frame. Only children keyed by `.id()` can leave:
+by index, a removal and a reorder look the same. A list with no transitioning
+child is passed through.
+
+**Glass.** On the web, an opacity below 1 on a glass host or any ancestor of one
+flattens the material (AGENTS.rules.md, Material). A transition or keyframes
+that fade a glass view are routed: the box only moves, and the fade plays, with
+the same frames, on the material's own layers (`::before` and `::after` of the
+Surface host) and on each piece of content on it. Native glass fades its own
+host. The compiler rejects a fade above glass (`.transition(opacity)`,
+fading keyframes or `.opacity()` on a view whose children hold `.glass()`),
+since the renderer cannot route a fade it does not own.
+
+**Compiler.** `motion`, `scale`, `rotation` and `contentTransition` values are
+token sets it checks; `.offset()` keys and values are checked like `.frame()`'s;
+a string where a transition or keyframes value belongs is an error.
+`opacity`, `move`, `scale`, `asymmetric` and `defineKeyframes` are pure, so a
+chain that names them (`.transition(asymmetric(move('top', 'xl'), opacity))`)
+hoists like any other static chain, and a module constant holding one is static.
+
+### Bloom's animations, rewritten
+
+The motion lab (Mention, branch `feat/bloom-language-motion`,
+`components/motion-lab/ports.ts`) writes four of Bloom's animations with this
+layer at the originals' geometry, curves and timings, and draws each beside the
+original (`mention://motion-lab?demo=like&mode=new`):
+
+- **Press scale** (`PressableScale`): `.onPress(…).pressScale()`.
+- **Like pop and count roll** (`EngagementPop`, `EngagementCountRoll`): the
+  glyph's `pop` keyframes and the ring's `burst`, triggered by the press that
+  turned the action on, and `.contentTransition('roll', likes).animation('roll',
+  press.id)`, so a refetch never rolls.
+- **Tab underline** (`Tabs`, underline): one underline per selected trigger,
+  `.matchedGeometry('underline', ns)` under `.animation('slide', selected)`.
+- **Toast enter and exit** (`ToastRow`, `animations.ts`, bottom, one toast):
+  `asymmetric(move('bottom', rise).combined(opacity).animation('enter'), leave)`
+  on a glass card in a keyed list.
+
+Measured on a Pixel 8a, release build (the language row on, the compiler in
+front of Metro), 3 interleaved rounds per demo, each a cold start into the lab
+and then 30 triggers (8 toasts); medians. Ticks are 10 ms of CPU over exactly the
+triggers.
+
+| | JS ticks old → new | UI thread | RenderThread | Janky frames old → new |
+| --- | --- | --- | --- | --- |
+| Like pop and roll (30 likes) | 193 → 179 | 772 → 708 | 190 → 151 | 6 → 17 of ~1,450 (0.4% → 1.2%) |
+| Tab underline (30 switches) | 130 → 100 | 582 → 525 | 90 → 117 | 2 → 0 of ~745 |
+| Toast enter and exit (8 toasts) | 97 → 71 | 487 → 463 | 99 → 60 | 2 → 6 of ~500 (0.4% → 1.2%) |
+| Press scale (30 presses) | 36 → 40 | 532 → 523 | 140 → 132 | 4 → 3 of ~775 |
+
+Run to run, JS ticks spread by about ±3%. The new like and toast drop a few more
+frames than the old ones; why is not measured yet (a candidate is Reanimated's
+CSS engine registering an animation on the UI thread as a node mounts).
+
+On the web (headless Chromium, the web export, a phone viewport), the lab
+samples the moving value at fixed times after the trigger: the like glyph dips
+to 0.7, swells to 1.2 at 120 ms and settles by 300 ms in both; the underline
+lands at 200 ms in both; the toast rises the same distances at the same times
+(38, 22, 13, 8, 4, 1 px from rest at 20 to 200 ms). The one difference is the
+toast's web fade: the old one fades its content and material through Bloom's
+presence, starting two frames late, with the material on a CSS `ease-out`; the
+new one fades both with the frames' own curve, as native does. No ancestor of a
+material ever has an opacity below 1 in either. Script time over the triggers
+(median of four runs): like 60 → 40 ms, tabs 43 → 27 ms, toast 56 → 36 ms. iOS
+cannot be built here: the native path is type-checked, not run.
 
 ## Mention's feed row
 
@@ -1201,6 +1327,19 @@ a theme switch; each fixture also pins how many chains the compiler hoists.
 - The web stylesheet is not in server-rendered HTML.
 - An app's brand colour: the className table names each raw hex as the app's
   own token, but `defineTokens` has no colour scale yet.
-- A scale or an offset cannot vary on the web (a transform has no class), and
-  the motion classes wait for `feat/bloom-language-motion` (the className
-  table maps them onto its modifiers).
+- A scale or an offset cannot vary (it is geometry the motion layer draws, not a class).
+- Animations, not built: gestures (`.drag`, `.swipe`, `.pinch`,
+  `.onDoubleTap`), `MotionValue` and `map()`, `withAnimation`, and the bottom
+  sheet's drag; `.contentTransition('numeric')` (digit wheels); matched geometry
+  across screens. The spec lists none of them, so the compiler rejects them.
+- An `.animation()` scope reaches the nodes of its own body, not the bodies of
+  `view()`s inside it. A removal plays only for a child of a keyed list; a
+  conditional child (`flag ? X : null`) leaves at once. Geometry modifiers apply
+  to the view's outermost box wherever they stand in the chain.
+- On native, keyframes triggered again while they still play on a language
+  host do not restart (a Bloom component's box does: it is keyed by the playing).
+- Bloom's own animations (`EngagementAction`'s pop and roll, `PressableScale`,
+  `Tabs`, the toast) still run on their own Reanimated code: the language
+  depends on `@oxy.so/bloom`, so Bloom cannot use it. The motion lab draws the
+  rewrites beside them; the language row's `Action` still draws Bloom's
+  `EngagementAction`.
