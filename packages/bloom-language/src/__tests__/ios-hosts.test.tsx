@@ -6,7 +6,7 @@ import { createElement, type ReactNode } from 'react';
 
 import { DARK, LIGHT } from './support/bloom-theme';
 import { act, Glyph, hosts, mount, only, quietRenderer } from './support/mount';
-import { Button, Header, HStack, Icon, Item, Menu, Section, Text } from '../primitives';
+import { Button, Header, HStack, Icon, Item, Menu, menu, Section, Text } from '../primitives';
 import { clear } from '../glass';
 import { toElement } from '../render';
 
@@ -80,6 +80,18 @@ describe('the menu is the system menu', () => {
       modifiers: [{ disabled: true }],
     });
     expect(hosts(r, 'DropdownMenu')).toHaveLength(0);
+  });
+});
+
+const Rows = menu(function Rows() {
+  return Item('Copy');
+});
+
+describe('a menu built on open is Bloom’s menu on iOS', () => {
+  it('the system menu needs its rows before it opens; a menu() content builds them only while open', () => {
+    const r = mount(toElement(Menu(Icon(Glyph), Rows())));
+    expect(hosts(r, 'SwiftMenu')).toHaveLength(0);
+    expect(hosts(r, 'DropdownMenu')).toHaveLength(1);
   });
 });
 

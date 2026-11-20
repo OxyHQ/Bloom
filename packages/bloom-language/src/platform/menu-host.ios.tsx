@@ -4,16 +4,18 @@
  * buttons, toggles, sections and nested menus. Without `@expo/ui`, Bloom's
  * menu.
  *
- * The system menu takes its rows before it opens, so its rows (a `menu()`
- * content too) are built as the trigger is drawn, not as it is pressed. Row
- * glyphs are Bloom icons, which a system menu cannot draw: its rows show
- * their titles.
+ * The system menu takes its rows before it opens, and it opens itself: it
+ * cannot build them as it is pressed. So a menu whose rows come from a
+ * `menu()` content (built only while open, as a row's ⋯ menu is) is Bloom's
+ * menu; a menu of rows given as they are is the system's. Row glyphs are
+ * Bloom icons, which a system menu cannot draw: its rows show their titles.
  *
  * NOT VERIFIED: written without an iOS build (no Mac on this machine).
  */
 import type { ComponentType, ReactNode } from 'react';
 import { useTheme } from '@oxy.so/bloom/theme';
 
+import { isNode } from '../node';
 import { DropdownMenuHost } from './menu-dropdown';
 import { readMenuRows, type MenuRowData } from './menu-rows';
 import type { MenuHostProps } from './host.types';
@@ -63,7 +65,8 @@ function loadSwiftUI() {
 
 export function MenuHost(props: MenuHostProps) {
   const loaded = loadSwiftUI();
-  if (!loaded) return <DropdownMenuHost {...props} />;
+  const builtOnOpen = props.rows.some((row) => isNode(row) && row.kind === 'menuContent');
+  if (!loaded || builtOnOpen) return <DropdownMenuHost {...props} />;
   return <SystemMenu {...props} swift={loaded.swift} modifiers={loaded.modifiers} />;
 }
 
