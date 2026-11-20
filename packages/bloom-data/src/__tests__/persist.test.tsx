@@ -96,6 +96,24 @@ describe('durable copy', () => {
     update(() => tree.unmount());
   });
 
+  it('reads a list at boot, so the screen that opens first finds it in memory', async () => {
+    const first = open('a.db');
+    const feed = source(Feed, {
+      key: (type: string) => type,
+      load: async () => feedPage(['1', '2']),
+      fold: (_current, extra) => extra ?? { cards: [] },
+    });
+    await feed.fetch('home');
+    await first.store.close();
+
+    open('a.db');
+    expect(await Feed.load('home')).toBe(true);
+    expect(Feed.get('home')).toMatchObject({ ids: ['1', '2'], origin: 'disk' });
+    expect(Post.get('2')?.user.name).toBe('User 2');
+    // Held now: a second read leaves memory alone.
+    expect(await Feed.load('home')).toBe(false);
+  });
+
   it('never lets the disk copy overwrite a record written since the screen opened', async () => {
     const first = open('a.db');
     Post.put(post('1', { text: 'old' }));
