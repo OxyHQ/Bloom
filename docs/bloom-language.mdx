@@ -308,8 +308,8 @@ BottomBar(Tab('Home', RiHome5Line).id('home'), Tab('Search', RiSearchLine).id('s
 | `Menu` | the lens menu | the system menu (SwiftUI `Menu` through `@expo/ui`) | Bloom `DropdownMenu` |
 | `Button` | Bloom `Button`; on glass, on the lens | Bloom `Button`; on glass, on Liquid Glass | Bloom `Button`; on glass, on Surface |
 | `FAB` | Bloom `Fab` on the lens | Bloom `Fab` on Liquid Glass | Bloom `Fab` on Surface |
-| `Header` | Bloom `PageHeader` (a floating header's controls take the lens) | the navigation bar (expo-router's native `Stack`) | Bloom `PageHeader` |
-| `BottomBar` | Bloom `BottomBar` (its capsule on the lens) | Bloom `BottomBar` (its capsule on the system blur) | Bloom `BottomBar` |
+| `Header` | Bloom `PageHeader` (a floating header's controls take the lens) | the navigation bar (expo-router's native `Stack`, `Stack.Toolbar`) | Bloom `PageHeader` |
+| `BottomBar` | Bloom `BottomBar` (its capsule on the lens) | Bloom `BottomBar` (its capsule on the system blur); an app's tabs are the system tab bar (see [Navigation](#navigation)) | Bloom `BottomBar` |
 
 **Menu.** `Menu(trigger, ...rows)`: `Item` (`.icon`, `.destructive`,
 `.disabled`, `.checked`, `.keepOpen`, `.onPress`), `Submenu` (one level),
@@ -334,22 +334,133 @@ Menu(MORE, PostMenu({ post }))
   palette (the first surface level). Without the engine, Bloom's menu.
 - *iOS:* the system menu takes its rows before it opens and opens itself, so
   a `menu()` content (built only while open) is Bloom's menu there; rows given
-  as they are are the system's. The system menu draws no Bloom icon: its rows
-  show their titles.
+  as they are (tagged, or with handlers) are the system's. Each row, submenu
+  and toggle shows its icon's SF Symbol (see [Icons on iOS](#icons-on-ios)); an
+  icon without one draws no glyph.
+
+**Tagged rows.** A row can name its action instead of holding a handler, and
+the menu takes what its tags do as an `actions()` view. The rows are plain data
+a closed menu builds without a hook or a closure (so the system menu on iOS can
+be given them); the body runs only when a row is chosen, in a component mounted
+for that choice where the menu is placed, so it may call hooks. The choice
+outlives the menu, so a menu that closes as it is chosen still runs it.
+
+```ts
+const PostActions = actions(function PostActions({ post }: { post: Post }) {
+  const router = useRouter();
+  return { open: () => router.push(`/p/${post.id}`), copy: () => copyLink(post) };
+});
+Menu(MORE, Item('Open').tag('open'), Item('Copy link').icon(RiLinkM).tag('copy'))
+  .actions(PostActions({ post }))
+```
+
+Rows that only exist after a query (a submenu of the reader's lanes) stay a
+`menu()` content, and on iOS that menu stays Bloom's.
+
+### Icons on iOS
+
+`spec/language.json`'s `sfSymbols` maps Bloom icons to SF Symbols, for iOS's
+own components: the tab bar, the navigation bar's items and system menus.
+`scripts/generate.mjs` checks both sides of every entry (a Bloom icon in
+`src/icons/remix`, a symbol `sf-symbols-typescript` names) and writes the table
+by icon component (`src/generated/sf-symbols.generated.ts`), which only
+`*.ios.tsx` files import. An icon without an entry draws no glyph in a system
+component; a toolbar button whose glyph has none stays Bloom's own view in the
+bar.
 
 **Header.** `Header(title)` with `.titleDisplay('large' | 'inline')` (large is
 the ramp's `title-1-bold`), `.subtitle`, `.toolbar(...)`, `.toolbarLeading(...)`,
 `.onBack(fn | null)`, `.scrollEdge('auto' | 'always' | 'none')` (Bloom's
 scrim), `.scrollY` and `.presentation('floating' | 'bar' | 'navigation')`. On
-iOS the header sets its screen's options in expo-router's native `Stack`, so
-the screen must be one of its screens with the header shown; the system back
-button pops the stack and a custom `onBack` is not called.
+iOS, in a screen of a native stack, the header sets the screen's options and
+its `Stack.Toolbar`: a `Button` whose glyph has an SF Symbol (or a text label)
+is a bar button, a `Menu` of plain or tagged rows opened from one is a bar
+menu, anything else Bloom's own view in the bar. The system back button pops
+the stack (a custom `onBack` is not called; `null` hides it). Outside a native
+stack (a tab page without a stack of its own, a panel), Bloom's PageHeader.
 
 **BottomBar.** `BottomBar(...tabs)`, `Tab(label, icon)` with `.id`,
 `.activeIcon` and `.badge`; the bar takes `.selection`, `.onSelect`,
 `.action(FAB(...))`, `.minimize` (Screen's collapse), `.progress` (a pager's
 selection) and `.hide` (its presence). The system tab bar on iOS is a
-navigator (expo-router's `NativeTabs`), not a view the bar could be.
+navigator (expo-router's `NativeTabs`), not a view the bar could be: the
+router's `TabView()` is it (see [Navigation](#navigation)).
+
+## Navigation
+
+`@oxy.so/bloom-language/router`, the only part of the language that imports
+expo-router. expo-router's files stay the URL map, so deep links,
+`+native-intent`, typed routes and the web fallback are untouched; the
+language says what a layout file and a screen file render.
+
+```ts
+// app/(app)/_layout.tsx
+export default layout(function App() {
+  return AppLayout(Stack('(tabs)', Sheet('compose'), 'p/[id]/boost'))
+    .primaryAction(RiQuillPenLine, t('sidebar.compose'), 'write')
+    .bottomBar(signedIn)
+    .shell((navigator) => ({ panelLayout: { panels: [{ id: 'main', role: 'main', content: navigator }] } }));
+});
+
+// app/(app)/(tabs)/_layout.tsx
+export default layout(() => TabView());
+
+// app/(app)/(tabs)/notifications/_layout.tsx: the page's own stack (its system bar on iOS)
+export default layout(() => Stack());
+
+// app/(app)/(tabs)/notifications/index.tsx
+export default screen(function Notifications() {
+  const [filters, setFilters] = useState(false);
+  return Embed(<NotificationsList />)
+    .title(t('notifications.title'))
+    .toolbar(Button(Icon(RiSettings3Line)).label(t('settings')).onPress(openSettings))
+    .onReselect(refresh)
+    .sheet(filters, () => Filters(), { onDismiss: () => setFilters(false) });
+});
+
+// anywhere: through the navigator of the layout() or screen() it is drawn under
+PostRow({ id }).onPress(navigate('/p/[id]', { id }))
+```
+
+| | Android, OxyOS | iOS (not verified) | Web |
+| --- | --- | --- | --- |
+| `Stack(...routes)` | `ExperimentalStack` (predictive back), Bloom's scenes | expo-router's native `Stack` | the route in place (`Slot`): the document scrolls |
+| `Sheet(name)` | pushed | the system page sheet (`presentation: 'modal'`) | the route in place |
+| `TabView()` | Bloom `TabPagerLayout` (swiped) | the system tab bar (`NativeTabs`) | Bloom `TabPagerLayout` (routed in place) |
+| `AppLayout` | `AppShell`; the bar is the language `BottomBar` of the pager's pages with the FAB, on the lens | `AppShell` without a bar; the primary destination is the prominent tab | `AppShell`; the same bar, on Bloom's material |
+| `screen()` | Bloom `Screen` + `PageHeader` | Bloom `Screen` + the system navigation bar, in a native stack | Bloom `Screen` + `PageHeader` |
+
+**`layout(body)`, `screen(body)`.** A route file's default export. The body
+runs as the route's component, so it may call hooks. Both provide the
+environment's navigator (Bloom's panel-aware router, so a deck panel's routes
+push in that panel on the web), which `navigate()` presses go through.
+
+**`AppLayout(navigator)`.** Bloom's `AppShell` around the navigator. The shell
+draws its navigation from the `TabPagerProvider` above it (the sidebar's rows
+and selection), which stays above the shell: bottom sheets and Bloom's native
+portal outlet render above the route, so a provider mounted in the layout is
+invisible to them. `.primaryAction(icon, label, destination)` is the sidebar's
+first row and the bar's FAB, and on iOS the destination's tab, drawn on its own
+surface (`prominent`, iOS 27). `.bottomBar(shown)` says whether the bar shows on
+this route. The shell's own options (layout mode, panels, error boundaries)
+stay the app's: `.shell(navigator => options)` places the navigator in the
+panel it names.
+
+**`Stack(...routes)`, `Sheet(name)`.** Each name is a route of the layout's
+directory, pushed over the ones before it; with none, the directory's routes as
+expo-router finds them. A tab page that should have the system navigation bar
+on iOS is a directory with a `Stack()` layout: it holds the page alone, and
+everything opened from it is pushed over the tabs, in the app's stack.
+
+**`screen()`'s chrome** is the screen modifiers on its body's root (any view
+takes them, as SwiftUI's `navigationTitle`, `toolbar` and `sheet`; elsewhere
+they draw nothing): `.title`, `.titleDisplay`, `.subtitle`, `.toolbar`,
+`.toolbarLeading`, `.onBack`, `.header(presentation | false | node)` (a
+header node of the screen's own is drawn in the page on every platform),
+`.footer(content, { placement, keyboard })` (Bloom Screen's bottom bar),
+`.onReselect` and `.sheet(open, content, { onDismiss, title })`, Bloom's
+`Dialog` from the bottom and centred from `md`, its content built while open
+and kept while it closes.
 
 ## Image
 
@@ -509,8 +620,11 @@ a theme switch; each fixture also pins how many chains the compiler hoists.
 - `ZStack` is basic: the first child sets the size and the rest cover it. There
   is no alignment inside it yet.
 - iOS is written and typechecked against `expo-glass-effect`, `@expo/ui` and
-  expo-router, and tested against stand-ins of each; it is not verified on a
-  device (no Mac here).
+  expo-router (its native `Stack`, `Stack.Toolbar` and `NativeTabs`), and
+  tested against stand-ins of each; it is not verified on a device (no Mac
+  here).
+- `screen()` has no Screen `testID`, heading level or back label of its own
+  yet, so a screen that sets them (Mention's post detail) stays JSX.
 - On the web, hover groups (`hoverGroup()`) set the `group` class through
   `react-native-css`. Web behaviour of the language row is unmeasured.
 - The web stylesheet is not in server-rendered HTML.
