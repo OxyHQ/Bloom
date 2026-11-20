@@ -1,0 +1,255 @@
+---
+title: Bloom language
+description: Views as functions and modifiers chained in order, every value a Bloom token. The design of @oxy.so/bloom-language, what is built and what is not.
+---
+
+# Bloom language
+
+Bloom's UI language is a way to write Bloom interfaces in TypeScript the way
+SwiftUI writes them in Swift: a component is a function, and its look is a chain
+of modifiers applied in order. Every modifier value is a Bloom token, never a
+pixel or a colour. The package is `packages/bloom-language`
+(`@oxy.so/bloom-language`, a working name). It is not published.
+
+Today the language renders through React Native and react-native-web, using
+Bloom's existing components and tokens, so a screen written in it looks the same
+as the JSX it replaces. A build-time compiler and native renderers come later
+(see [What comes next](#what-comes-next)).
+
+## Syntax
+
+```ts
+import { view, HStack, VStack, Text, Avatar, Spacer, Action, ActionBar } from '@oxy.so/bloom-language';
+import { ReplyIcon } from '@oxy.so/bloom/icons/ReplyIcon';
+import { LikeIcon } from '@oxy.so/bloom/icons/LikeIcon';
+
+export const PostRow = view(function PostRow(post: Post) {
+  return HStack(
+    Avatar(post.author.avatar).size('lg'),
+    VStack(
+      HStack(
+        Text(post.author.name).font('body').weight('semibold'),
+        Text(`@${post.author.handle}`).foreground('muted'),
+        Spacer(),
+        Text(post.time).font('caption-1').foreground('muted'),
+      ).spacing('sm'),
+      Text(post.text).font('body'),
+      ActionBar(
+        Action(ReplyIcon, 'Reply').count(post.replies).onPress(reply),
+        Action(LikeIcon, 'Like').count(post.likes).active(post.liked).tint('error').onPress(like),
+      ),
+    ).spacing('xs'),
+  )
+    .padding('md')
+    .spacing('sm')
+    .onPress(() => openPost(post.id));
+});
+```
+
+Differences from the first draft, each forced by the real components:
+
+- `Icon` and `Action` take the icon component (`ReplyIcon`), not a name. A
+  name would need a registry that imports every icon, and Metro cannot tree-shake it.
+- The colour roles are Bloom's: `error`, not `red`; `muted` is `text-muted-foreground`.
+- Avatar sizes are Bloom's avatar rungs (`xs` 20, `sm` 24, `md` 32, `lg` 36).
+- `count && Text(count)` is a type error: with a count of 0 it would put a bare
+  `0` in a view. Write `count ? Text(count) : null`.
+- Glass is `.glass({ tint: 'primary' })`. Bloom has one material and no
+  clear/regular selector, and an alpha would be a raw number.
+
+## Node model
+
+A chain produces plain data: a **node** (`kind`, `props`, `children`) plus an
+ordered list of **modifiers**. Each modifier is an object with its kind, its
+token value and a precomputed cache key (`p:leading:md`). A chain call never
+changes the node it is called on. It returns a new node with one more
+modifier, so a node can be shared and branched safely.
+
+Children are nodes, `false`, `null`, `undefined` or arrays of those. Strings and
+numbers go in `Text`. Each child keeps its position: a child that becomes
+`false` leaves a gap, so its later siblings keep their state. An array
+(`items.map(...)`) is one position, and its items are keyed by `.id()` or by
+index.
+
+## Order means nesting
+
+SwiftUI wraps a new view per modifier. The renderer gets the same meaning from
+fewer React Native views. Within one view, the effects stack as padding, then
+frame, then background or glass, then border, then corner, then opacity. A chain
+that follows that order is one view. A modifier that comes against the order
+starts a new view around the previous ones:
+
+- `.padding('md').background('surface')` is one view: the fill covers the padding.
+- `.background('surface').padding('md')` is two: the padding sits outside the fill.
+- `.corner('lg').background('surface')` is two: a fill after the clip is not clipped.
+- A second padding on the same edge adds to the first, so it wraps.
+
+Text and icon traits (`foreground`, `font`, `weight`, `leading`) are an
+**environment**: set on a stack, they reach every `Text` and `Icon` inside it,
+including inside nested views. `grow` and `shrink` place a view in its parent,
+so they always go on its outermost box. Press, hover and accessibility props
+go there too.
+
+## `view()`
+
+`view(body)` returns a function that makes a node. When React renders that node,
+the body runs as a React function component of its own. Hooks work in the body,
+and the body re-runs only when an argument changes or the theme does. Each
+argument is compared with `Object.is`, and a plain-object argument (a props
+object) is compared key by key, the way React compares props. Name the body
+function (`view(function PostRow(...))`) so the component carries the name.
+
+A view node takes the universal modifiers. Environment modifiers flow into its
+body, and box modifiers wrap it.
+
+Each view is two fibers (a memo with a comparator, then the body), and it reads
+the theme once.
+
+**React Compiler.** The compiler must assume that each chain call can change
+what it is passed. So a component body that builds a tree with manual
+`useMemo`/`useCallback` does not compile: those memos "could not be preserved".
+Keep the controller (hooks, handlers, derived values) in a custom hook
+(`usePostRowModel`). It compiles like any hook, and the view body then
+compiles too. Teaching the compiler that the language's functions are pure is a
+follow-up.
+
+## Rendering today
+
+| Node | Draws |
+| --- | --- |
+| `HStack` / `VStack` / `ZStack` | React Native `View` (`Pressable` when it takes presses or hovers) |
+| `Spacer` | `View` with `flex: 1` |
+| `Text` | React Native `Text`, styled from tokens. Nested `Text` is an inline span. |
+| `Icon` | the Bloom icon component, at a size rung, filled with the foreground |
+| `Avatar` | Bloom `Avatar` |
+| `Image` | Bloom `shapes` `Image` (square, at an avatar rung). See [Not built yet](#not-built-yet). |
+| `Button` | Bloom `Button` (`style` is its appearance, `tint` its tone, `shape` is icon-only) |
+| `ActionBar` / `Action` / `ActionGroup` | Bloom `EngagementBar` / `EngagementAction` / `EngagementGroup` |
+| `.glass()` | Bloom `Surface` (its one material, tinted from a colour role) |
+| `Embed` | the React element as given |
+
+Styles come from caches, not from per-render computation. Each style object is
+built once per theme from the modifier keys that produce it, frozen, and handed
+back by a map lookup on every later render. So React Native receives the same
+object for the same modifiers. A render still allocates the nodes of its tree,
+as JSX allocates elements.
+
+On native, colours read `useThemePaint()`, the same paint Bloom's own components
+use. On the web that paint is per instance (it carries the prepaint CSS
+variables), so the style cache is per view instance there. Keying it once per
+theme on the web is a follow-up.
+
+Fonts follow the existing text host. A language `Text` is the same React Native
+text node a className-styled `Text` is: Inter from Bloom's font loader on
+native, and the inherited family on the web.
+
+## Modifiers
+
+The vocabulary is closed. Every value is a name from a Bloom table, read by
+reference, so a rung cannot drift from Bloom.
+
+| Modifier | Values |
+| --- | --- |
+| `padding(edge?, v)` | space: `none` `2xs` `xs` `sm` `md` `lg` `xl` `2xl`…`5xl`; `-lg` and the like pull outward (a margin) |
+| `spacing(v)` | space, or `between` |
+| `frame({ width, height, min…, max… })` | space |
+| `grow()`, `shrink(p)` | `never` `normal` `first` |
+| `align(a)` | `start` `center` `end` `stretch` `baseline` |
+| `font(f)` | a Bloom type-ramp step (`body`, `headline`, `caption-1`…: size, line height and tracking, as `Text variant`) or a size rung (`sm` 13, `md` 15…) |
+| `weight(w)` | `regular` `medium` `semibold` `bold` |
+| `leading(l)` | Bloom line heights `tight` `snug` `normal` `relaxed` |
+| `foreground(c)`, `background(c)` | colour roles: `foreground` `muted` `primary` `surface` `border` `error` `success`… |
+| `border(c, width?, edge?)` | colour role; `hairline` (the platform hairline) or `thin` |
+| `corner(r)` | radius rungs, `full` |
+| `opacity(o)` | `transparent` `disabled` `opaque` |
+| `size(s)` | icon rungs, avatar rungs, or Bloom sizes, by node |
+| `style(a)` / `shape(s)` / `tint(t)` | Bloom appearance / `circle` `pill` / Bloom tone |
+| `glass({ tint })` | colour role |
+| `onPress`, `onLongPress`, `onHover`, `hoverGroup` | handlers. `onPress(undefined)` keeps the pressable host, out of the focus order. |
+| `label`, `hint`, `role`, `hitSlop`, `testID`, `id` | accessibility and identity |
+| `lines(n)`, `noWrap()` | text only |
+| `count`, `active`, `tint` | `Action` only |
+| `trailing(...)`, `countFormat(fn)` | `ActionBar` only |
+
+Each node type exposes only the modifiers that apply to it, so the editor
+completes `Text(...).` with text modifiers and rejects `HStack().lines(2)`,
+`.padding(12)` and `.foreground('#f00')` at compile time.
+
+**App tokens.** When a screen being ported uses a measurement that Bloom's scales
+lack, the app names it once with `defineTokens`. It is still a name at each call
+site:
+
+```ts
+const row = defineTokens({ space: { gutter: 64 }, iconSize: { context: 13 }, leading: { tight: 1.25 } });
+Icon(RiRepeat2Line).size(row.iconSize.context);
+```
+
+Mention's row needs seven of them: the 64px body gutter, the 18px context row and
+the 3px gap before its text, the 13, 14 and 18px glyphs, and `leading-tight` (1.25).
+`leading-tight` is a class-vocabulary value that Bloom's JS `lineHeight.tight`
+(1.15) does not match. The owner decides whether these become Bloom rungs.
+
+## Interop
+
+**JSX inside the language.** `Embed(element)` places any React element: a
+third-party component, or a Bloom or app component the language has no node for
+yet. `Embed((render) => <Link asChild>{render(Text('…'))}</Link>)` hands the
+element a `render` function. That function draws language nodes in the current
+environment as their host elements, so `asChild`, hover cards and slot props
+receive a real `Text` or `View`. An embed with box modifiers gets one `View`
+around it.
+
+**The language inside JSX.** `toElement(node)` returns a React element. A bare
+`view()` node mounts its component directly. Anything else mounts under one
+boundary component that reads the theme.
+
+## Conditionals and lists
+
+```ts
+VStack(
+  post.title ? Text(post.title).font('headline').weight('semibold') : null,
+  post.media.length > 0 && Embed(<Media items={post.media} />),
+  comments.map((c) => CommentRow(c).id(c.id)),
+)
+```
+
+## Mention's feed row
+
+`Mention/packages/frontend/components/Feed/LanguagePostItem.tsx` (branch
+`feat/bloom-language-row`) is `PostItem` + `PostHeader` + `PostActions` in the
+language, behind `EXPO_PUBLIC_BLOOM_LANGUAGE_ROW=1`. The JSX row is the default.
+A parity suite (`__perf__/languageRowParity.perf.tsx`) mounts both rows under the
+real Bloom provider and compares every committed host node on four things: its
+type, its text, its accessibility and press props, and its resolved style. It
+covers ten fixture kinds plus the thread, reply-branch, repost, pinned, detail
+and marker states. It allows three named re-spellings that draw the same pixels.
+
+## What comes next
+
+- **Compiler (Rust).** The chain is plain data with token values, so a compiler
+  can read a view body statically. It would resolve modifier lists into
+  per-platform style tables at build time, replace the runtime chain with
+  precomputed nodes, and check the vocabulary without TypeScript.
+- **Native renderers.** A renderer takes the same node and modifier list. iOS
+  maps it to SwiftUI views and modifiers (the vocabulary was chosen to map one to
+  one). Android and OxyOS map it to native views and the lens glass engine, and
+  the web to CSS. Each renderer replaces `render.tsx` for its platform. The node
+  model, tokens and `view()` contract stay.
+- **Replacing `className`.** Modifiers cover what the row needed. A port of a
+  screen that uses other utilities adds their modifiers to the closed set, and
+  each modifier maps to a token.
+
+## Not built yet
+
+- No compiler, and no native or CSS renderer: everything renders through React
+  Native and react-native-web.
+- `Image` draws only Bloom's square, clipped `shapes` `Image`. A general raster
+  needs `BloomImage`, which is not a public subpath, and exporting it changes
+  `@oxy.so/bloom`'s exports.
+- `ZStack` is basic: the first child sets the size and the rest cover it. There
+  is no alignment inside it yet.
+- `.glass()` has no clear or regular choice and no alpha (see above).
+- On the web, hover groups (`hoverGroup()`) set the `group` class through
+  `react-native-css`. Web behaviour of the language row is unmeasured.
+- The React Compiler does not compile a view body that holds manual memos
+  (see `view()` above).
