@@ -30,7 +30,7 @@ jest.mock('react-native', () => {
   return jest.requireActual('react-native-web');
 });
 
-import { NativeScrollEvent, NativeSyntheticEvent, Text, View } from 'react-native';
+import { type NativeScrollEvent, type NativeSyntheticEvent, Text, View } from 'react-native';
 
 import {
   AiChatContainer,

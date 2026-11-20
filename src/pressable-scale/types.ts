@@ -1,4 +1,4 @@
-import { type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
+import type { PressableProps, StyleProp, ViewStyle } from 'react-native';
 
 export interface PressableScaleProps extends Omit<PressableProps, 'style'> {
   /** Scale applied while pressed. Defaults to `0.98`. */

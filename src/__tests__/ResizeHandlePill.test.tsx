@@ -5,7 +5,7 @@
  * The web draws its states in CSS (`resize-handle-css.ts`); native holds them
  * in state. Same gestures, keys and semantics as the grip.
  */
-import React from 'react';
+import type React from 'react';
 import * as Native from 'react-native';
 import { StyleSheet } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';

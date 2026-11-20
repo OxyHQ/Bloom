@@ -1,6 +1,6 @@
 // `SurfaceFade` ends media in the colour of the surface it sits on — whatever
 // panel or card published that fill — along one edge, as one linear gradient.
-import React from 'react';
+import type React from 'react';
 import { render } from '@testing-library/react-native';
 import { SurfaceFade } from '../fill';
 import { SurfaceLevelProvider } from '../styles/surface-levels';

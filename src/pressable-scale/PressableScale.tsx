@@ -1,20 +1,13 @@
 import React, { forwardRef, type ComponentRef } from 'react';
-import { type View } from 'react-native';
-import Animated, {
-  cancelAnimation,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import type { View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
-import { SUPPORTS_PRESS_SCALE } from '../styles/pointer';
 import { StyledPressable } from '../styles/styled-primitives';
 import type { PressableScaleProps } from './types';
 import type { RefComponent } from '../styles/native-refs';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
-
-/** Press-in / press-out timing, in ms. */
-const DURATION = 100;
+import { usePressScale } from '../motion/motion-host';
+import { SCALE } from '../motion/tokens';
 
 /**
  * A single animated pressable, built once at module scope so the animated node
@@ -30,38 +23,29 @@ const DURATION = 100;
  */
 const AnimatedPressable = Animated.createAnimatedComponent(StyledPressable);
 
+const NO_TRANSFORM: readonly Record<string, number>[] = [];
+
 /**
- * A drop-in `Pressable` that springs to a smaller scale on press-in and back on
- * release. The scale is applied to the pressable node itself, so a consumer's
- * `className` / layout styles (e.g. `flex-row items-center`) land on the same
- * node that animates.
+ * A drop-in `Pressable` that eases to a smaller scale on press-in and back on
+ * release, with Bloom's `press` motion. The scale is applied to the pressable
+ * node itself, so a consumer's `className` / layout styles (e.g.
+ * `flex-row items-center`) land on the same node that animates.
  *
- * The touch target scales with the content — acceptable at the default ~0.98
- * (the earlier two-node touch-target-preservation was dropped for simplicity).
- * Honours the OS "reduce motion" setting and disables the effect on non-touch
- * web pointers.
+ * Bloom's motion engine plays it: on native a press retargets one shared
+ * value read by one mapper (no React render); on the web it is a class whose
+ * `:active` rule scales a touch press in CSS (no JS, no Reanimated). The touch
+ * target scales with the content — acceptable at the default 0.98. Honours the
+ * OS "reduce motion" setting and stays still for a mouse on the web.
  */
 export const PressableScale: RefComponent<PressableScaleProps> = forwardRef<
   ComponentRef<typeof View>,
   PressableScaleProps
 >(function PressableScale(
-  { targetScale = 0.98, className, style, onPressIn, onPressOut, ...rest },
+  { targetScale = SCALE.pressed, className, style, onPressIn, onPressOut, ...rest },
   ref,
 ) {
   const reducedMotion = usePrefersReducedMotion();
-  const animate = SUPPORTS_PRESS_SCALE && !reducedMotion;
-
-  const scale = useSharedValue(1);
-
-  // `scale` MUST be in the deps array: on web without the worklets Babel
-  // plugin, useAnimatedStyle does not auto-track shared-value reads and would
-  // freeze at frame 1. Native (plugin present) auto-tracks and ignores the dep.
-  const animatedStyle = useAnimatedStyle(
-    () => ({
-      transform: [{ scale: scale.value }],
-    }),
-    [scale],
-  );
+  const press = usePressScale(!reducedMotion, NO_TRANSFORM, targetScale);
 
   return (
     <AnimatedPressable
@@ -69,18 +53,14 @@ export const PressableScale: RefComponent<PressableScaleProps> = forwardRef<
       accessibilityRole="button"
       onPressIn={(e) => {
         onPressIn?.(e);
-        if (!animate) return;
-        cancelAnimation(scale);
-        scale.value = withTiming(targetScale, { duration: DURATION });
+        press.onPressIn?.();
       }}
       onPressOut={(e) => {
         onPressOut?.(e);
-        if (!animate) return;
-        cancelAnimation(scale);
-        scale.value = withTiming(1, { duration: DURATION });
+        press.onPressOut?.();
       }}
       className={className}
-      style={[animate ? animatedStyle : null, style]}
+      style={[press.style, style]}
       {...rest}
     />
   );

@@ -15,7 +15,7 @@
  *   - nothing is computed: the reference, the amounts and the times come out
  *     byte for byte.
  */
-import React from 'react';
+import type React from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

@@ -1,5 +1,6 @@
 /** @jest-environment jsdom */
-import React, { act } from 'react';
+import type React from 'react';
+import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 // jsdom has no measured document viewport. Supply the browser viewport only;
 // the real RNW panel, portal and ScrollArea still render and handle events.

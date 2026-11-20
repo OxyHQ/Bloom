@@ -6,7 +6,7 @@
  * which pins every element that may interrupt, is `live-region-census.test.ts`;
  * the web halves sit beside each family's own web tests.
  */
-import React from 'react';
+import type React from 'react';
 import { Text as RNText, View } from 'react-native';
 import { render } from '@testing-library/react-native';
 

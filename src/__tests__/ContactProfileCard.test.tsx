@@ -9,7 +9,7 @@
  * card states the record — the numbers before the labels, not after them.
  */
 import { materialFill } from './support/material-fill';
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

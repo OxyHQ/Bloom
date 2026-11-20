@@ -13,7 +13,7 @@
  * travel, so the sign is pinned on the function that decides it.
  */
 
-import React from 'react';
+import type React from 'react';
 import * as ReactNative from 'react-native';
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';

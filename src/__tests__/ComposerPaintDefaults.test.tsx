@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { render } from '@testing-library/react-native';
 import { ComposerPill } from '../composer-panel';
 import { ComposerLoaderPaintContext } from '../composer-loader/context';

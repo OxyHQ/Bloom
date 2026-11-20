@@ -29,3 +29,32 @@ export {
   springSettleMs,
 } from './spec';
 export type { MotionCss, MotionSpec, SpringPhysics, SpringSpec } from './spec';
+
+// Bloom's motion engine: motion as tokens, keyframes and transitions as data,
+// played by Reanimated's CSS engine on native and the Web Animations API on
+// the web (docs/motion.mdx). The Bloom language's motion modifiers draw on it.
+export { EASING, MOTION, SCALE } from './tokens';
+export type { EasingName, MotionName, ScaleName } from './tokens';
+export { cssCurve, easingCurve, timingOf } from './timing';
+export type { Curve, Timing } from './timing';
+export { defineKeyframes, KeyframesValue, rollKeyframes } from './keyframes';
+export type { Keyframe, MotionLike, ResolvedFrame, TransformPart } from './keyframes';
+export {
+  TransitionValue,
+  asymmetricTransition,
+  moveTransition,
+  opacityTransition,
+  scaleTransition,
+} from './transition';
+export type { Play, Transform } from './play';
+export { MotionView } from './MotionView';
+export type { MotionViewProps } from './MotionView';
+export { Presence } from './presence';
+export type { Leaving, PresenceChildProps } from './presence';
+export {
+  MotionWrapper,
+  animatedHost,
+  transitionStyle,
+  usePlay,
+  usePressScale,
+} from './motion-host.web';

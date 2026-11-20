@@ -9,7 +9,7 @@
  * for every existing consumer, and the override reaches the node.
  */
 
-import React from 'react';
+import type React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import { AppShell } from '../app-shell';

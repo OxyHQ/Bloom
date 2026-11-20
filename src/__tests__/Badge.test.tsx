@@ -6,7 +6,7 @@
  * has no label, so it must ignore the variant rather than paint a transparent
  * circle).
  */
-import React from 'react';
+import type React from 'react';
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { EdgeScrim } from '../page-header/EdgeScrim';
 import { SurfaceLevelProvider } from '../styles/surface-levels';

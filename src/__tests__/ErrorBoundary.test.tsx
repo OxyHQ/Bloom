@@ -1,4 +1,5 @@
-import React, { type ErrorInfo, type ReactNode } from 'react';
+import type React from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
 import { Text } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 

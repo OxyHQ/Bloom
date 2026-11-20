@@ -16,7 +16,8 @@
  * does not run in this environment. Rather than assert something this
  * environment cannot see, the last test measures the icons DIRECTLY.
  */
-import React, { createRef } from 'react';
+import type React from 'react';
+import { createRef } from 'react';
 import { act, render } from '@testing-library/react-native';
 
 import { PortalProvider, PortalOutlet } from '../portal';

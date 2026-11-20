@@ -8,7 +8,7 @@ jest.mock('react-native-svg', () => ({
   Rect: 'Rect',
 }));
 
-import React from 'react';
+import type React from 'react';
 import { resolveSurfaceTint } from '../surface/shared';
 import { cardLayout } from './support/card-surface';
 import { useSurfaceFill } from '../styles/surface-levels';

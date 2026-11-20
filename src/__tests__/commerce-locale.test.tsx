@@ -5,7 +5,7 @@
  * still wins over the catalog. English output is pinned by each family's own
  * suite, which runs in the English runtime locale.
  */
-import React from 'react';
+import type React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import { CarrierQuoteList } from '../carrier-quote';

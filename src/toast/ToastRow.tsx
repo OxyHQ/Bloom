@@ -45,18 +45,13 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { EXIT_DURATION, easeOutQuartFn, useToastLayoutAnimations } from './animations';
+import { easeOutQuartFn, useToastMotion } from './animations';
 import { IS_WEB } from '../styles/platform';
-import {
-  surfacePresenceStyle,
-  useEnteredPresence,
-  useSurfacePresenceContent,
-} from '../surface/use-surface-presence';
-
-const TOAST_CSS_EASE_OUT_QUART = 'cubic-bezier(0.165, 0.84, 0.44, 1)';
+import { MotionView } from '../motion/MotionView';
+import type { Play } from '../motion/play';
+import type { PresenceChildProps } from '../motion/presence';
 import {
   CLOSE_BUTTON_HIT_AREA,
-  ENTERING_ANIMATION_DURATION,
   STACKING_ANIMATION_DURATION,
   TOAST_MAX_ROW_WIDTH,
   toastDefaults,
@@ -126,9 +121,10 @@ function mergeToastStyles(
   };
 }
 
-type ToastRowProps = ToastProps & {
-  onDismiss: (id: string | number) => void;
-};
+type ToastRowProps = ToastProps &
+  PresenceChildProps & {
+    onDismiss: (id: string | number) => void;
+  };
 
 export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function ToastRow(
   {
@@ -163,6 +159,7 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function Toast
     numberOfToasts,
     index,
     orderedToastIds,
+    leaving,
   },
   ref,
 ) {
@@ -198,12 +195,37 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function Toast
   const distanceFromFront = position === 'top-center' ? index : numberOfToasts - 1 - index;
   const isHiddenByLimit = enableStacking && distanceFromFront >= visibleToasts;
 
-  const { entering, exiting, enterTranslateY } = useToastLayoutAnimations(
-    positionProp,
-    animation,
-    isHiddenByLimit,
-    numberOfToasts,
-  );
+  const motion = useToastMotion(positionProp, animation, isHiddenByLimit, numberOfToasts);
+  // A dismissed row stays while the toaster's Presence keeps it, for as long as
+  // its exit plays on the anchor. With no exit of Bloom's (reduced motion, or a
+  // consumer's builder, which plays on unmount through `exiting`) it goes at once.
+  const leavesAtOnce = leaving !== undefined && motion.exit === undefined;
+  React.useLayoutEffect(() => {
+    if (leavesAtOnce) leaving?.onLeft();
+  }, [leavesAtOnce, leaving]);
+  const exitPlay: Play | undefined =
+    leaving !== undefined && motion.exit !== undefined
+      ? {
+          id: 1,
+          keyframes: motion.exit,
+          timing: motion.exit.timing(undefined) as Play['timing'],
+          fill: 'forwards',
+          material: true,
+          onEnd: leaving.onLeft,
+        }
+      : undefined;
+  // The enter plays once, from the row's first frame.
+  const enterPlay: Play | undefined =
+    motion.enter === undefined
+      ? undefined
+      : {
+          id: 0,
+          keyframes: motion.enter,
+          timing: motion.enter.timing(undefined) as Play['timing'],
+          fill: 'none',
+          material: true,
+          onEnd: undefined,
+        };
 
   const yPosition = useToastPosition({
     index,
@@ -297,31 +319,11 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function Toast
     [yPosition, stackScaleX],
   );
 
-  // 0 -> 1 over the enter animation. Seeded at 1 with NO mount-time `withTiming`
-  // whenever `enterTranslateY` is undefined — i.e. whenever `entering` is playing
-  // the enter instead, or reduced motion is on — leaving this style the identity.
-  const enterProgress = useAnimatedTarget(1, {
-    duration: ENTERING_ANIMATION_DURATION,
-    easing: easeOutQuartFn,
-    from: enterTranslateY === undefined ? undefined : 0,
-  });
-  const enterDistance = enterTranslateY ?? 0;
-
   const wiggleScale = useSharedValue(1);
-  // ONE mapper for both transforms: two animated styles on the same view would
-  // each return a `transform` array and the later one would win outright.
-  // On the web the row only moves: the toast paints the material, so its fade
-  // in and out is its presence (layers through the variables, content piece by
-  // piece) on the measured node, never an opacity above the material.
+  // The wiggle (an attention cue on update) is the row's one shared value.
   const rowStyle = useAnimatedStyle(
-    () => ({
-      ...(IS_WEB ? null : { opacity: enterProgress.value }),
-      transform: [
-        { translateY: (1 - enterProgress.value) * enterDistance },
-        { scale: wiggleScale.value },
-      ],
-    }),
-    [enterProgress, enterDistance, wiggleScale],
+    () => ({ transform: [{ scale: wiggleScale.value }] }),
+    [wiggleScale],
   );
 
   const wiggle = React.useCallback(() => {
@@ -353,15 +355,6 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function Toast
   const measuredRef = React.useRef<
     (React.ComponentRef<typeof View> & { getBoundingClientRect?: () => DOMRect }) | null
   >(null);
-  const entered = useEnteredPresence(true);
-  const presence = enterTranslateY === undefined || entered ? 1 : 0;
-  useSurfacePresenceContent(measuredRef, {
-    presence,
-    duration: ENTERING_ANIMATION_DURATION,
-    easing: TOAST_CSS_EASE_OUT_QUART,
-    exit: exiting ? EXIT_DURATION : 0,
-  });
-
   // Tiers 1 and 2 of the ladder — see the W6 note in the file header.
   React.useLayoutEffect(() => {
     const node = measuredRef.current;
@@ -472,8 +465,9 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function Toast
   // stackTransformStyle on that node loses the departing row's offset/scale.
   // Keeping the stack transform inside also preserves it in the web exit clone.
   return (
-    <Animated.View
-      exiting={exiting}
+    <MotionView
+      exiting={motion.exiting}
+      play={exitPlay}
       pointerEvents="box-none"
       style={[styles.anchor, anchorFor(position), { zIndex: stackZIndex }]}
     >
@@ -502,18 +496,16 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function Toast
                 viewportStyle,
               ]}
             >
-              <Animated.View
-                style={[
-                  {
-                    flexShrink: 0,
-                    marginLeft: -Number(insetLeft),
-                    marginRight: -Number(insetRight),
-                  },
-                  IS_WEB ? surfacePresenceStyle(presence, ENTERING_ANIMATION_DURATION) : null,
-                ]}
+              <MotionView
+                style={{
+                  flexShrink: 0,
+                  marginLeft: -Number(insetLeft),
+                  marginRight: -Number(insetRight),
+                }}
                 ref={measuredRef}
                 onLayout={handleLayout}
-                entering={entering}
+                entering={motion.entering}
+                play={enterPlay}
               >
                 {jsx ?? (
                   <ToastContent
@@ -546,12 +538,12 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function Toast
                     backgroundComponent={backgroundComponent}
                   />
                 )}
-              </Animated.View>
+              </MotionView>
             </Animated.View>
           </Animated.View>
         </ToastSwipeHandler>
       </Animated.View>
-    </Animated.View>
+    </MotionView>
   );
 });
 

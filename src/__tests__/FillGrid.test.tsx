@@ -11,7 +11,7 @@
  * row line up with surrounding content while the columns are still separated.
  * A row that only padded its columns would inset the whole grid.
  */
-import React from 'react';
+import type React from 'react';
 import { Text, View } from 'react-native';
 import { render } from '@testing-library/react-native';
 

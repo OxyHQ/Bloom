@@ -28,7 +28,7 @@
  * So the item declares them, and this measures that they reach the rendered
  * node.
  */
-import React from 'react';
+import type React from 'react';
 import { Pressable, Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 

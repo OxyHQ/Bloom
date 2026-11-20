@@ -1,16 +1,15 @@
-import { useEffect } from 'react';
 import { View, type ViewStyle } from 'react-native';
-import Animated, {
-  ReduceMotion,
-  useAnimatedStyle,
-  useSharedValue,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
 
 import type { BloomIconComponent } from '../icons/icon-component';
-import { EASE_OUT, ENGAGEMENT_ICON_SIZE, POP_MS } from './constants';
+import { defineKeyframes } from '../motion/keyframes';
+import { MotionView } from '../motion/MotionView';
+import type { Play } from '../motion/play';
+import { timingOf } from '../motion/timing';
+import { MOTION, SCALE } from '../motion/tokens';
+import { ENGAGEMENT_ICON_SIZE } from './constants';
 import type { EngagementMotionDone } from './context';
+
+const RING_WIDTH = 2;
 
 const BOX: ViewStyle = {
   width: ENGAGEMENT_ICON_SIZE,
@@ -26,23 +25,44 @@ const RING: ViewStyle = {
   width: ENGAGEMENT_ICON_SIZE,
   height: ENGAGEMENT_ICON_SIZE,
   borderRadius: ENGAGEMENT_ICON_SIZE / 2,
-  borderWidth: 2,
+  borderWidth: RING_WIDTH,
 };
 
-const QUICK = { duration: POP_MS / 10, reduceMotion: ReduceMotion.System };
-const SWELL = { duration: (POP_MS * 3) / 10, easing: EASE_OUT, reduceMotion: ReduceMotion.System };
-const SETTLE = { duration: (POP_MS * 6) / 10, easing: EASE_OUT, reduceMotion: ReduceMotion.System };
-const BURST = { duration: POP_MS, easing: EASE_OUT, reduceMotion: ReduceMotion.System };
+/**
+ * The glyph dips (a plain timing, Reanimated's default curve), swells past
+ * full size and settles (the pop's ease-out); its stretches are 1/10, 3/10
+ * and 6/10 of the pop.
+ */
+const GLYPH = defineKeyframes(
+  [
+    { at: 0, scale: SCALE.full, easing: 'inOutQuad' },
+    { at: 0.1, scale: SCALE.dip },
+    { at: 0.4, scale: SCALE.swell },
+    { at: 1, scale: SCALE.full },
+  ],
+  MOTION.pop,
+);
+
+/** The ring bursts outward from 0.4 to 1.6 and fades from 0.6. */
+const RING_BURST = defineKeyframes(
+  [
+    { at: 0, opacity: 0.6, scale: 0.4 },
+    { at: 1, opacity: 0, scale: 1.6 },
+  ],
+  MOTION.pop,
+);
+
+const POP = timingOf(MOTION.pop);
 
 /**
  * The glyph as a press turns an action on: it dips, swells past full size and
  * settles while a ring in the same colour bursts outward and fades.
  *
- * Mounted only while it plays, in place of the plain glyph, so its two shared
- * values and two mappers exist on the one action that was pressed and never on
- * an action at rest. Both values are driven imperatively from the effect and
- * both are in their mapper's deps — the two rules `docs/motion.mdx` gives for
- * motion that silently does nothing on web. Reduced motion jumps to the end.
+ * Mounted only while it plays, in place of the plain glyph, so its views exist
+ * on the one action that was pressed and never on an action at rest. Both play
+ * as keyframes on Bloom's motion engine (Reanimated's CSS animations on native,
+ * the Web Animations API on the web): no shared value, no mapper, no JS frame.
+ * It is done when the glyph's keyframes end. Reduced motion never mounts it.
  */
 export function EngagementPop({
   icon: Icon,
@@ -55,45 +75,32 @@ export function EngagementPop({
   size?: number;
   onDone?: EngagementMotionDone;
 }) {
-  const scale = useSharedValue(1);
-  const burst = useSharedValue(0);
-
-  useEffect(() => {
-    scale.value = withSequence(
-      withTiming(0.7, QUICK),
-      withTiming(1.2, SWELL),
-      withTiming(1, SETTLE),
-    );
-    burst.value = withTiming(1, BURST);
-  }, [scale, burst]);
-
-  useEffect(() => {
-    if (!onDone) return;
-    const timer = setTimeout(() => onDone(null), POP_MS);
-    return () => clearTimeout(timer);
-  }, [onDone]);
-
-  const glyphStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }), [scale]);
-  const ringStyle = useAnimatedStyle(
-    () => ({
-      opacity: 0.6 * (1 - burst.value),
-      transform: [{ scale: 0.4 + 1.2 * burst.value }],
-    }),
-    [burst],
-  );
-
+  const glyph: Play = {
+    id: 1,
+    keyframes: GLYPH,
+    timing: POP,
+    fill: 'none',
+    material: false,
+    onEnd: onDone ? () => onDone(null) : undefined,
+  };
+  const ring: Play = {
+    id: 1,
+    keyframes: RING_BURST,
+    timing: POP,
+    fill: 'forwards',
+    material: false,
+    onEnd: undefined,
+  };
   return (
     <View style={[BOX, { width: size, height: size }]}>
-      <Animated.View
-        style={[
-          RING,
-          { width: size, height: size, borderRadius: size / 2, borderColor: color },
-          ringStyle,
-        ]}
+      <MotionView
+        play={ring}
+        pointerEvents="none"
+        style={[RING, { width: size, height: size, borderRadius: size / 2, borderColor: color }]}
       />
-      <Animated.View style={glyphStyle}>
+      <MotionView play={glyph}>
         <Icon width={size} height={size} fill={color} />
-      </Animated.View>
+      </MotionView>
     </View>
   );
 }

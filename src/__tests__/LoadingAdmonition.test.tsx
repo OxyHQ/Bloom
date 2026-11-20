@@ -12,7 +12,7 @@
  * reads both for every type.
  */
 import { paintedFill } from './support/material-fill';
-import React from 'react';
+import type React from 'react';
 import { Text, View } from 'react-native';
 import { render } from '@testing-library/react-native';
 

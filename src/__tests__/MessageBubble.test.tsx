@@ -7,7 +7,7 @@
  * test cannot see `accessibilityState` being dropped on web, and that is the
  * defect class a selectable, toggleable bubble is most exposed to.
  */
-import React from 'react';
+import type React from 'react';
 import { Pressable, View as RNView } from 'react-native';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';

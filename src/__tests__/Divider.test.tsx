@@ -7,7 +7,7 @@
  * divider with a hardcoded height is the usual reason a toolbar rule is the
  * wrong length. Plus the three treatments and their content layout.
  */
-import React from 'react';
+import type React from 'react';
 import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

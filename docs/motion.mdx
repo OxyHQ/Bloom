@@ -27,6 +27,45 @@ fast things feel" happens in one place rather than being renegotiated per
 component. It is also where the web rules below are already applied, which is
 the stronger reason to use them rather than hand-writing an enter.
 
+## The motion engine
+
+Bloom's state-driven animations play on one engine (`@oxy.so/bloom/motion`):
+
+- **Motion is a table.** `MOTION` names every timing Bloom plays (`press`, `pop`,
+  `roll`, `slide`, `thumb`, `fade`, `enter`, `exit`, `restack`, the recipes'
+  `present` and `dismiss`, and the springs `select` and `expand`), each a
+  `MotionSpec`; `EASING` names the curves, `SCALE` the press and pop scales.
+  Components read them; the Bloom language's `motion` tokens mirror them.
+- **Keyframes and transitions are data.** `defineKeyframes(frames, motion)`
+  writes what a CSS `@keyframes` block is: a frame's `easing` curves the stretch
+  from it to the next, else the motion's curve does, per stretch.
+  `opacityTransition`, `scaleTransition`, `moveTransition` and
+  `asymmetricTransition` are pairs of them (an insertion and a removal).
+- **Native plays them on Reanimated's CSS engine** (`MotionView`, `usePlay`):
+  a CSS animation (`animationName`, a registered `css.keyframes` rule) or a CSS
+  transition on an `Animated.View`, on the UI thread, with no worklet, no shared
+  value and no JS per frame. Two identical rules alternate by playing, so a
+  new playing restarts even mid-play.
+- **The web plays them with the Web Animations API and CSS**, with no
+  Reanimated: `element.animate()` before the frame paints, each frame carrying
+  its stretch's curve and the whole running linearly. A box that holds a
+  material host never fades (see below): it only moves, and the same frames fade
+  each material host's own layers (`::before`, `::after`) and each piece of
+  content that holds no material (`surfacePresenceTargets`).
+- **Leaving.** `Presence` keeps a keyed child that left (`exit`) while its removal
+  plays, and drops it when the child calls `leaving.onLeft()` (the toast's
+  rows).
+- **Press feedback** (`usePressScale`, `PressableScale`): native retargets one
+  shared value with the `press` motion, read by one mapper; the web is a class
+  whose `:active` rule scales a touch press with the CSS `scale` property.
+- **Gesture-bound motion stays on shared values.** The tab indicator follows the
+  pager's drag, so its slide and fade are `animateWithSpec` on its shared
+  values, with the table's `slide`, `thumb` and `fade`.
+
+It plays the engagement bar's pop and count roll (`EngagementPop`,
+`RollingText`), the toast's enter and exit, and press feedback. Under reduced
+motion nothing plays: a removal leaves at once.
+
 ## Rolling text
 
 `RollingText` is text that rolls when it changes — a count ticking, a range

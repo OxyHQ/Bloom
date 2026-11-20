@@ -24,12 +24,9 @@ import {
   type TextStyle,
   type KeyDownEvent,
 } from 'react-native';
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import { animateWithSpec } from '../motion/spec';
+import { MOTION } from '../motion/tokens';
 
 import { useTheme } from '../theme/use-theme';
 import { useScreenReselect } from '../screen/reselect';
@@ -98,13 +95,13 @@ type TriggerLayout = Pick<LayoutRectangle, 'x' | 'width'>;
 type TriggerMeasure = (report: (layout: TriggerLayout) => void) => void;
 
 /** The underline: `transition-[transform,width] duration-200 ease`. */
-const UNDERLINE_TIMING = { duration: 200, easing: Easing.bezier(0.25, 0.1, 0.25, 1) };
+const UNDERLINE_TIMING = MOTION.slide;
 
 /** The pill thumb: 300ms with a spring-like settle. */
-const PILL_TIMING = { duration: 300, easing: Easing.bezier(0.34, 1.2, 0.64, 1) };
+const PILL_TIMING = MOTION.thumb;
 
 /** Visibility, not travel — the indicator fades, it does not slide, in and out. */
-const HIGHLIGHT_FADE = { duration: 160 };
+const HIGHLIGHT_FADE = MOTION.fade;
 
 /** `transition-colors duration-150 ease` on a trigger's label. */
 const COLOR_TRANSITION_MS = animation.duration.fast;
@@ -483,8 +480,8 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   const moveIndicator = useCallback(
     (target: TriggerLayout, animate: boolean) => {
       if (animate && !reducedMotion) {
-        indicatorX.value = withTiming(target.x, slideTiming);
-        indicatorWidth.value = withTiming(target.width, slideTiming);
+        animateWithSpec(indicatorX, target.x, slideTiming);
+        animateWithSpec(indicatorWidth, target.width, slideTiming);
       } else {
         indicatorX.value = target.x;
         indicatorWidth.value = target.width;
@@ -496,7 +493,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
       // than a ref: a ref written in an effect is still stale at this point,
       // because a child's effect runs before its parent's.
       if (!hasSelection) return;
-      indicatorOpacity.value = withTiming(1, HIGHLIGHT_FADE);
+      animateWithSpec(indicatorOpacity, 1, HIGHLIGHT_FADE, reducedMotion);
     },
     [indicatorX, indicatorWidth, indicatorOpacity, hasSelection, reducedMotion, slideTiming],
   );
@@ -698,8 +695,8 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   // because `indicatorPlacedRef` is left alone here.
   useEffect(() => {
     if (hasSelection) return;
-    indicatorOpacity.value = withTiming(0, HIGHLIGHT_FADE);
-  }, [hasSelection, indicatorOpacity]);
+    animateWithSpec(indicatorOpacity, 0, HIGHLIGHT_FADE, reducedMotion);
+  }, [hasSelection, indicatorOpacity, reducedMotion]);
 
   // Every render of the strip is a render in which its contents may have MOVED:
   // a trigger inserted, removed or reordered, or one re-rendered at a new size.
@@ -769,8 +766,8 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
       },
       release(committed) {
         if (committed === null) {
-          dragOffset.value = reducedMotion ? 0 : withTiming(0, slideTiming);
-          dragWidthDelta.value = reducedMotion ? 0 : withTiming(0, slideTiming);
+          animateWithSpec(dragOffset, 0, slideTiming, reducedMotion);
+          animateWithSpec(dragWidthDelta, 0, slideTiming, reducedMotion);
           return;
         }
         // Fold, do not zero — see `TabsDragController.release`.
