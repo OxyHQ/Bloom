@@ -72,7 +72,8 @@ describe('durable copy', () => {
     await first.store.close();
 
     const second = open('a.db');
-    await Feed.load('home');
+    // The boot read and a screen's own read of the same list share one read.
+    await Promise.all([Feed.load('home'), Feed.load('home')]);
     const reads = statements(second.db().log);
     // The schema script and the versions, then the list with its posts, then their users.
     expect(reads).toHaveLength(4);
@@ -138,6 +139,7 @@ describe('durable copy', () => {
     expect(Feed.get('home')).toMatchObject({ ids: ['1', '2'], origin: 'disk' });
     expect(Post.get('2')?.user.name).toBe('User 2');
     // Held now: a second read leaves memory alone.
+    expect(await Promise.all([Feed.load('home'), Feed.load('home')])).toEqual([false, false]);
     expect(await Feed.load('home')).toBe(false);
   });
 
