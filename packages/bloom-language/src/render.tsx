@@ -643,7 +643,7 @@ function renderHost(
     }
     case 'menu': {
       const menu = draw(MenuHost, {
-        key: boxed || behaviour ? undefined : key,
+        key: boxed ? undefined : key,
         trigger: (node.props as MenuProps).trigger,
         rows: node.children,
         label: p.label,
