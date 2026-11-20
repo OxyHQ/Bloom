@@ -1,0 +1,53 @@
+---
+title: Image
+description: BloomImage, the one way Bloom draws a raster image.
+order: 53
+---
+
+# Image
+
+`BloomImage` is the renderer behind every raster image Bloom draws: avatars,
+covers, media cards. Apps use it for their own images so they decode the same way.
+
+```tsx
+import { BloomImage } from '@oxy.so/bloom/image';
+
+<BloomImage
+  source="https://example.com/cover.jpg"
+  alt="Cover"
+  contentFit="cover"
+  style={{ width: '100%', aspectRatio: 16 / 9, borderRadius: 12 }}
+/>
+```
+
+It is also on the root barrel (`import { BloomImage } from '@oxy.so/bloom'`).
+
+## What draws the pixels
+
+- **iOS and Android:** `expo-image`, loaded through an optional `require`, so an
+  app that does not install it still builds. No image Bloom draws then depends on
+  react-native's GIF and animated WebP decoders, and an app may switch them off
+  (`expo-build-properties` `android.gifEnabled` / `webpEnabled: false`).
+- **Web, and wherever expo-image cannot load:** react-native's `Image` (the
+  browser's `<img>` on web). In development a warning names the missing package
+  once.
+
+## Props
+
+| Prop | |
+| --- | --- |
+| `source` | a bundled asset (`require()`), a URI descriptor (headers included) or a URI string |
+| `contentFit` | `cover` (default), `contain`, `fill`, `none`, `scale-down`: expo-image's names on both renderers |
+| `alt` | the text alternative, the same as `accessibilityLabel` |
+| `tintColor` | paints every opaque pixel one colour (monochrome artwork) |
+| `blurRadius` | blurs the image |
+| `transition` | cross-fade in ms when the image arrives; none by default |
+| `onLoad` | `{ width, height }`: the intrinsic pixel size, from either renderer |
+| `onError` | `{ error }` |
+| `style` | an image style; size it here (a width and a height, or one and an `aspectRatio`) |
+
+View props (accessibility, `testID`, `pointerEvents`, `onLayout`) pass through.
+
+On web, `onLoad` reports the intrinsic size even when react-native-web hands over
+a load event without a target: it then reads the size through `Image.getSize`,
+which needs no CORS headers (details in [CoverHeader](./cover-header.mdx)).

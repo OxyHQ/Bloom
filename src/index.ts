@@ -346,6 +346,14 @@ export type {
   PanelErrorBoundaryOptions,
   PanelErrorBoundaryProps,
 } from './error-boundary';
+export { BloomImage } from './image';
+export type {
+  BloomImageContentFit,
+  BloomImageErrorInfo,
+  BloomImageLoadInfo,
+  BloomImageProps,
+  BloomImageSource,
+} from './image';
 export * as Shapes from './shapes';
 export * from './avatar';
 export { AvatarGroup } from './avatar-group';
