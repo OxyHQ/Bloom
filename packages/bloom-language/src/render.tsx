@@ -643,13 +643,17 @@ function renderHost(
     case 'button': {
       const props = hostProps(behaviour, key);
       delete props.focusable;
-      const { icon, label } = buttonContent(node.children);
+      const { icon, glyph, label } = buttonContent(node.children);
       const shape = ownValue(p, 'shape')?.value;
+      // A glyph in an ink of its own (`Icon(X).foreground(role)`) is drawn as
+      // it is; otherwise the button tints its icon with its tone.
+      const inked = glyph?.modifiers.some((modifier) => modifier.kind === 'foreground');
       Object.assign(props, {
         appearance: ownValue(p, 'style')?.value,
         tone: ownValue(p, 'tint')?.value,
         size: ownValue(p, 'size')?.value,
-        leadingIcon: icon,
+        leadingIcon: inked ? undefined : icon,
+        icon: inked && glyph ? renderNode(glyph, ctx, undefined) : undefined,
         iconOnly:
           icon !== undefined && label === undefined && shape !== undefined ? true : undefined,
         children: label,
@@ -818,12 +822,17 @@ function namedTrigger(trigger: Child, label: string | undefined): Child {
 
 function buttonContent(children: readonly Child[]): {
   icon: IconProps['icon'] | undefined;
+  glyph: Node | undefined;
   label: string | undefined;
 } {
   let icon: IconProps['icon'] | undefined;
+  let glyph: Node | undefined;
   let label: string | undefined;
   for (const child of flatten(children)) {
-    if (child.kind === 'icon' && icon === undefined) icon = (child.props as IconProps).icon;
+    if (child.kind === 'icon' && icon === undefined) {
+      icon = (child.props as IconProps).icon;
+      glyph = child;
+    }
     if (child.kind === 'text') {
       const text = (child.props as TextProps).runs
         .filter((run) => typeof run === 'string' || typeof run === 'number')
@@ -831,7 +840,7 @@ function buttonContent(children: readonly Child[]): {
       label = label === undefined ? text : `${label} ${text}`;
     }
   }
-  return { icon, label };
+  return { icon, glyph, label };
 }
 
 function flatten(children: readonly Child[]): Node[] {
