@@ -17,6 +17,7 @@ import { Surface } from '@oxy.so/bloom/surface';
 
 import {
   isNode,
+  Navigation,
   type Node,
   type ActionProps,
   type AvatarProps,
@@ -114,6 +115,8 @@ interface Plan {
   env: Modifier[];
   pressable: boolean;
   onPress: PressHandler | undefined;
+  /** A press that goes somewhere (`navigate()`), resolved against the environment's navigator. */
+  navigation: Navigation | undefined;
   onLongPress: (() => void) | undefined;
   onHoverIn: (() => void) | undefined;
   onHoverOut: (() => void) | undefined;
@@ -140,6 +143,7 @@ function plan(node: Node): Plan {
     env: [],
     pressable: false,
     onPress: undefined,
+    navigation: undefined,
     onLongPress: undefined,
     onHoverIn: undefined,
     onHoverOut: undefined,
@@ -174,7 +178,11 @@ function plan(node: Node): Plan {
         break;
       case 'onPress':
         result.pressable = true;
-        result.onPress = modifier.value;
+        if (modifier.value instanceof Navigation) result.navigation = modifier.value;
+        else {
+          result.navigation = undefined;
+          result.onPress = modifier.value;
+        }
         break;
       case 'onLongPress':
         result.pressable = true;
@@ -214,6 +222,18 @@ function plan(node: Node): Plan {
     result.control = { tint: controlTint(node.kind, result) };
   }
   return result;
+}
+
+/** A `navigate()` press: through the navigator the view is drawn under. */
+function navigationPress(env: Env, to: Navigation): PressHandler {
+  return () => {
+    if (env.navigate) env.navigate(to.href, to.params);
+    else if (process.env.NODE_ENV !== 'production') {
+      console.warn(
+        `[Bloom language] navigate('${to.href}') was pressed outside a router layout() or screen(): it goes nowhere.`,
+      );
+    }
+  };
 }
 
 /** The colour role a solid control fills with: what an untinted glass under it is tinted with. */
@@ -319,6 +339,7 @@ function renderNode(node: Node, ctx: Context, key: string | number | undefined):
 function drawNode(node: Node, ctx: Context, key: string | number | undefined): ReactNode {
   const p = plan(node);
   const env = p.env.length > 0 ? deriveEnv(ctx.env, p.env) : ctx.env;
+  if (p.navigation !== undefined) p.onPress = navigationPress(env, p.navigation);
   const inner: Context = env === ctx.env ? ctx : { env, provided: ctx.provided };
   const reactKey = p.id ?? key;
   const layers = p.layers;
@@ -672,6 +693,12 @@ function renderHost(
     case 'menuDivider':
     case 'menuContent':
     case 'tab':
+      return null as unknown as ReactElement;
+    // Navigators are drawn by the router's layout(); placed in a view, they draw nothing.
+    case 'appLayout':
+    case 'navStack':
+    case 'route':
+    case 'tabView':
       return null as unknown as ReactElement;
     case 'action': {
       const { icon, label, options } = node.props as ActionProps;

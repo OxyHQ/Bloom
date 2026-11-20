@@ -4,7 +4,8 @@
     "scripts/generate.mjs turns this file into the runtime tables (src/generated/spec.generated.ts),",
     "the web stylesheet (src/generated/web-sheet.generated.ts) and the compiler tables",
     "(packages/bloom-language-compiler/crates/compiler/src/spec.generated.rs). Never edit those by hand.",
-    "Every value here is a Bloom rung: src/__tests__/spec.test.ts holds each one equal to Bloom."
+    "Every value here is a Bloom rung: src/__tests__/spec.test.ts holds each one equal to Bloom.",
+    "Navigation (packages/bloom-language/src/router): appLayout, navStack, route and tabView are drawn by layout(); the screen modifiers in universal (title … onReselect) are read from the root of a screen() body and draw nothing elsewhere."
   ],
   "scales": {
     "space": {
@@ -306,7 +307,13 @@
     "onBack": ["value"],
     "scrollEdge": ["scrollEdge"],
     "scrollY": ["value"],
-    "presentation": ["headerPresentation"]
+    "presentation": ["headerPresentation"],
+    "header": ["value"],
+    "sheet": ["value", "value", "value?"],
+    "onReselect": ["value"],
+    "primaryAction": ["value", "value", "value"],
+    "bottomBar": ["value"],
+    "shell": ["value"]
   },
   "universal": [
     "padding",
@@ -331,7 +338,16 @@
     "role",
     "hitSlop",
     "testID",
-    "id"
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "sheet",
+    "onReselect"
   ],
   "nodes": {
     "$comment": "kind: { constructors, own modifiers beyond the universal ones (universal: false takes only its own), the scale size() and tint() read }",
@@ -448,6 +464,26 @@
     },
     "view": {
       "constructors": [],
+      "modifiers": []
+    },
+    "appLayout": {
+      "constructors": ["AppLayout"],
+      "universal": false,
+      "modifiers": ["primaryAction", "bottomBar", "shell", "testID"]
+    },
+    "navStack": {
+      "constructors": ["Stack"],
+      "universal": false,
+      "modifiers": []
+    },
+    "route": {
+      "constructors": ["Sheet"],
+      "universal": false,
+      "modifiers": []
+    },
+    "tabView": {
+      "constructors": ["TabView"],
+      "universal": false,
       "modifiers": []
     }
   }

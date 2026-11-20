@@ -21,13 +21,30 @@ export interface Env {
   readonly key: string;
   readonly text: TextTraits;
   readonly derived: Map<string, Env>;
+  /**
+   * Where a `navigate()` press goes: the navigator of the router `layout()` or
+   * `screen()` the view is drawn in (a deck panel's own, on the web). Absent
+   * outside one.
+   */
+  readonly navigate: Navigate | undefined;
 }
+
+export type Navigate = (
+  href: string,
+  params: Readonly<Record<string, string | number>> | undefined,
+) => void;
 
 export const ROOT_ENV: Env = {
   key: '',
   text: { foreground: undefined, font: undefined, weight: undefined, leading: undefined },
   derived: new Map(),
+  navigate: undefined,
 };
+
+/** The root environment of a navigator: the same traits as the root, presses that go through `navigate`. */
+export function navigatorEnv(navigate: Navigate): Env {
+  return { ...ROOT_ENV, derived: new Map(), navigate };
+}
 
 export const EnvContext = createContext<Env>(ROOT_ENV);
 EnvContext.displayName = 'BloomEnvironment';
@@ -60,6 +77,7 @@ export function deriveEnv(parent: Env, modifiers: readonly Modifier[]): Env {
     key: `${parent.key}${key}`,
     text: Object.freeze(text) as TextTraits,
     derived: new Map(),
+    navigate: parent.navigate,
   };
   parent.derived.set(key, env);
   return env;

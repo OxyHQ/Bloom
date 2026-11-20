@@ -8,6 +8,7 @@
 import type { GlassValue } from '../glass';
 import {
   isNode,
+  Navigation,
   Node,
   type Child,
   type IconComponent,
@@ -150,8 +151,10 @@ function lastOf<K extends Modifier['kind']>(
 export function pressableTrigger(trigger: Child, open: () => void): Child {
   if (!isNode(trigger)) return trigger;
   const handler = lastOf(trigger, 'onPress')?.value;
+  // A trigger opens its menu: a press that goes somewhere is not a trigger's.
+  const own = handler instanceof Navigation ? undefined : handler;
   return trigger.onPress((event) => {
-    handler?.(event);
+    own?.(event);
     open();
   });
 }

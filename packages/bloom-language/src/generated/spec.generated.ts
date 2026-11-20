@@ -837,6 +837,28 @@ export const MODIFIERS = {
   ],
   "presentation": [
     "headerPresentation"
+  ],
+  "header": [
+    "value"
+  ],
+  "sheet": [
+    "value",
+    "value",
+    "value?"
+  ],
+  "onReselect": [
+    "value"
+  ],
+  "primaryAction": [
+    "value",
+    "value",
+    "value"
+  ],
+  "bottomBar": [
+    "value"
+  ],
+  "shell": [
+    "value"
   ]
 } as const;
 
@@ -866,6 +888,15 @@ export const NODE_MODIFIERS = {
     "hitSlop",
     "testID",
     "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "sheet",
+    "onReselect",
     "spacing",
     "align"
   ],
@@ -892,7 +923,16 @@ export const NODE_MODIFIERS = {
     "role",
     "hitSlop",
     "testID",
-    "id"
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "sheet",
+    "onReselect"
   ],
   "text": [
     "padding",
@@ -918,6 +958,15 @@ export const NODE_MODIFIERS = {
     "hitSlop",
     "testID",
     "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "sheet",
+    "onReselect",
     "lines",
     "noWrap"
   ],
@@ -945,6 +994,15 @@ export const NODE_MODIFIERS = {
     "hitSlop",
     "testID",
     "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "sheet",
+    "onReselect",
     "size"
   ],
   "avatar": [
@@ -971,6 +1029,15 @@ export const NODE_MODIFIERS = {
     "hitSlop",
     "testID",
     "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "sheet",
+    "onReselect",
     "size"
   ],
   "image": [
@@ -997,6 +1064,15 @@ export const NODE_MODIFIERS = {
     "hitSlop",
     "testID",
     "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "sheet",
+    "onReselect",
     "contentFit",
     "aspectRatio",
     "tint",
@@ -1028,6 +1104,15 @@ export const NODE_MODIFIERS = {
     "hitSlop",
     "testID",
     "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "sheet",
+    "onReselect",
     "style",
     "shape",
     "size",
@@ -1059,6 +1144,15 @@ export const NODE_MODIFIERS = {
     "hitSlop",
     "testID",
     "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "sheet",
+    "onReselect",
     "style",
     "size",
     "tint",
@@ -1088,7 +1182,16 @@ export const NODE_MODIFIERS = {
     "role",
     "hitSlop",
     "testID",
-    "id"
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "sheet",
+    "onReselect"
   ],
   "menuItem": [
     "icon",
@@ -1159,6 +1262,15 @@ export const NODE_MODIFIERS = {
     "hitSlop",
     "testID",
     "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "sheet",
+    "onReselect",
     "count",
     "active",
     "tint"
@@ -1187,6 +1299,15 @@ export const NODE_MODIFIERS = {
     "hitSlop",
     "testID",
     "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "sheet",
+    "onReselect",
     "trailing",
     "countFormat",
     "size"
@@ -1214,7 +1335,16 @@ export const NODE_MODIFIERS = {
     "role",
     "hitSlop",
     "testID",
-    "id"
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "sheet",
+    "onReselect"
   ],
   "embed": [
     "padding",
@@ -1239,7 +1369,16 @@ export const NODE_MODIFIERS = {
     "role",
     "hitSlop",
     "testID",
-    "id"
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "sheet",
+    "onReselect"
   ],
   "view": [
     "padding",
@@ -1264,8 +1403,26 @@ export const NODE_MODIFIERS = {
     "role",
     "hitSlop",
     "testID",
-    "id"
-  ]
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "sheet",
+    "onReselect"
+  ],
+  "appLayout": [
+    "primaryAction",
+    "bottomBar",
+    "shell",
+    "testID"
+  ],
+  "navStack": [],
+  "route": [],
+  "tabView": []
 } as const;
 
 /** The constructor functions, by the node kind they make. */
@@ -1291,5 +1448,9 @@ export const CONSTRUCTORS = {
   "Action": "action",
   "ActionBar": "actionBar",
   "ActionGroup": "actionGroup",
-  "Embed": "embed"
+  "Embed": "embed",
+  "AppLayout": "appLayout",
+  "Stack": "navStack",
+  "Sheet": "route",
+  "TabView": "tabView"
 } as const;
