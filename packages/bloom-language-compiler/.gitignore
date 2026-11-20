@@ -1,0 +1,4 @@
+target/
+*.node
+bench/.generated/
+e2e/dist/
