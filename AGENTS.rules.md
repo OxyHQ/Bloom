@@ -77,7 +77,7 @@ Read docs/verification.mdx before tests/installs: Node/Jest, native-resolution, 
 
 `Screen` owns scrollY; AppShell motion (isolated in modals). Measure bottom/rail/sidebar at breakpoints; flex fills rest, not `onLayout` state/window dimensions (resize no JS). Fabric retains Yoga's old size after flexBasis changes (`useMeasuredSizeClass`, docs/app-shell.mdx). `Fab` static: `Screen.primaryAction`/`BottomBar.action`. Never revive registry→React boolean→separate FAB animation (1–3 frame lag: `runOnJS`+2 renders). Pass collapseProgress to `BottomBar.minimizeProgress`; native uses shared values (docs/layout.mdx). Retained screens `active={focused}`; virtual lists use external AppShell scroll + VirtualList restoration; no outer ScrollView
 
-Panels: `panelLayout`/embedded `AppShellPanels layout` own descriptor surfaces. Routes render Screen, never another panel/wrapper Screen. Legacy `AppShell panels` leaves JSX panels to routes. Keep IDs/content trees stable across flow/order changes; AppShellScrollSwitch.web.test.tsx, docs/compose-layouts.mdx
+Panels: `panelLayout`/embedded `AppShellPanels layout` own descriptor surfaces. Routes render Screen, never another panel/wrapper Screen. Legacy `AppShell panels` leaves JSX panels to routes. Keep IDs/content trees stable across flow/order changes; AppShellScrollSwitch.web.test.tsx, docs/compose-layouts.mdx. A native group viewport is horizontal only while it scrolls: an Android horizontal ScrollView is another native component, so an axis flip remounted every route in the group (Mention's tabs, Home's place, the reel's prepared video). AppShellInspectorRemount.test.tsx
 
 ## Scroll restoration
 
