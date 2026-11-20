@@ -6,6 +6,7 @@ import {
   BORDER_WIDTH,
   COLORS,
   CORNER,
+  DURATION,
   ENVIRONMENT_DEFAULTS,
   type ENUMS,
   FONT_SIZE,
@@ -58,12 +59,16 @@ export type ShrinkPriority = keyof typeof SHRINK;
 export type Alignment = keyof typeof ALIGNMENT;
 /** How much of a glass tint shows: a named transparency, never a number. */
 export type GlassOpacityName = keyof typeof GLASS_OPACITY;
+/** Bloom's motion durations (`animation.duration`): an image's cross-fade, by name. */
+export type DurationName = keyof typeof DURATION;
 export type Edge = (typeof ENUMS.edge)[number];
 export type BorderEdge = (typeof ENUMS.borderEdge)[number];
 export type Role = (typeof ENUMS.role)[number];
 export type ButtonShape = (typeof ENUMS.buttonShape)[number];
+/** How an image fills its box: `BloomImage`'s `contentFit` vocabulary. */
+export type ContentFit = (typeof ENUMS.contentFit)[number];
 
-export { COLORS, GLASS_OPACITY, HIT_SLOP, OPACITY, SHRINK, ALIGNMENT };
+export { COLORS, DURATION, GLASS_OPACITY, HIT_SLOP, OPACITY, SHRINK, ALIGNMENT };
 
 /** `hairline` is the platform's hairline (`StyleSheet.hairlineWidth`), the width a row separator uses. */
 export function resolveBorderWidth(width: BorderWidthName): number {

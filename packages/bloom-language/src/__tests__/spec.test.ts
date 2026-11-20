@@ -2,12 +2,14 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import type { BloomImageContentFit } from '@oxy.so/bloom/image';
 import { tokens } from '@oxy.so/bloom/styles';
 import { TYPE_SCALE } from '@oxy.so/bloom/typography';
 import {
   AVATAR_SIZE,
   COLORS,
   CORNER,
+  DURATION,
   ENVIRONMENT,
   FONT_SIZE,
   GLASS_OPACITY,
@@ -35,6 +37,7 @@ import type {
   StackView,
   TextView,
 } from '../node';
+import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
 const PACKAGE = join(__dirname, '../..');
@@ -52,6 +55,14 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
     expect(LEADING).toEqual(tokens.lineHeight);
     expect(HIT_SLOP).toEqual(tokens.hitSlop);
     expect(OPACITY.disabled).toBe(tokens.DISABLED_OPACITY);
+    expect(DURATION).toEqual(tokens.animation.duration);
+  });
+
+  it('an image’s content fits are BloomImage’s', () => {
+    type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
+    // A type error here means spec/language.json and BloomImage's contentFit disagree.
+    const same: Same<ContentFit, BloomImageContentFit> = true;
+    expect(same).toBe(true);
   });
 
   it('the type ramp is Bloom’s TYPE_SCALE, entry for entry', () => {

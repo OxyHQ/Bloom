@@ -102,6 +102,12 @@
       "subtle": 0.24,
       "medium": 0.48,
       "strong": 0.72
+    },
+    "duration": {
+      "instant": 100,
+      "fast": 150,
+      "normal": 200,
+      "slow": 300
     }
   },
   "typeRamp": {
@@ -189,6 +195,7 @@
     "engagementTone": ["primary", "secondary", "tertiary", "success", "warning", "error", "info"],
     "controlSize": ["xs", "sm", "md", "lg"],
     "glassMaterial": ["regular", "clear"],
+    "contentFit": ["cover", "contain", "fill", "none", "scale-down"],
     "spacingExtra": ["between"]
   },
   "glass": {
@@ -232,6 +239,11 @@
     "align": ["alignment"],
     "lines": ["value"],
     "noWrap": [],
+    "contentFit": ["contentFit"],
+    "aspectRatio": ["value"],
+    "transition": ["duration"],
+    "onLoad": ["value"],
+    "onError": ["value"],
     "size": ["size"],
     "style": ["appearance"],
     "shape": ["buttonShape"],
@@ -302,8 +314,8 @@
     },
     "image": {
       "constructors": ["Image"],
-      "modifiers": ["size"],
-      "size": "avatarSize"
+      "modifiers": ["contentFit", "aspectRatio", "tint", "transition", "onLoad", "onError"],
+      "tint": "color"
     },
     "button": {
       "constructors": ["Button"],

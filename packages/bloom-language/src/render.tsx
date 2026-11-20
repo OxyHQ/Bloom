@@ -11,7 +11,7 @@ import { styled } from 'react-native-css';
 import { Avatar as BloomAvatar } from '@oxy.so/bloom/avatar';
 import { Button as BloomButton } from '@oxy.so/bloom/button';
 import { EngagementAction, EngagementBar, EngagementGroup } from '@oxy.so/bloom/engagement-bar';
-import { Image as ShapeImage } from '@oxy.so/bloom/shapes';
+import { BloomImage } from '@oxy.so/bloom/image';
 import { Surface } from '@oxy.so/bloom/surface';
 
 import {
@@ -47,6 +47,7 @@ import {
 } from './style';
 import { Painted, type Paint } from './paint';
 import {
+  DURATION,
   HIT_SLOP,
   resolveAvatarSize,
   resolveIconSize,
@@ -358,7 +359,11 @@ function wrapLayer(
         ? drawHost(Surface, out, props, child)
         : draw(
             Painted,
-            { ...props, host: Surface, paint: glassPaint(styleKey, out, fill, glass.fillOpacity) },
+            {
+              ...props,
+              host: Surface,
+              paint: propPaint(styleKey, out, 'fill', fill, glass.fillOpacity),
+            },
             child,
           );
     return behaviour && p.pressable ? draw(hostFor(p), { ...behaviour, key }, surface) : surface;
@@ -367,27 +372,31 @@ function wrapLayer(
   return drawHost(behaviour ? hostFor(p) : View, out, { ...behaviour, key }, child);
 }
 
-const glassPaints = new Map<string, Paint>();
+const propPaints = new Map<string, Paint>();
 
-/** A glass Surface's paint: its box style (painted on native), and its fill from a role. One per style and fill. */
-function glassPaint(
+/**
+ * A component's style (painted on native) plus one prop painted from a role:
+ * a glass Surface's `fill`, an image's `tintColor`. One per style, prop and role.
+ */
+function propPaint(
   styleKey: string,
   out: StyleOut,
-  fill: ColorName,
-  opacity: number | undefined,
+  prop: string,
+  role: ColorName,
+  opacity?: number,
 ): Paint {
-  const id = `${styleKey}|${fill}|${opacity ?? ''}`;
-  let paint = glassPaints.get(id);
+  const id = `${styleKey}|${prop}|${role}|${opacity ?? ''}`;
+  let paint = propPaints.get(id);
   if (paint === undefined) {
     const base = out.paint ?? {
       style: out.style as object | undefined,
       styleRoles: [],
       propRoles: [],
     };
-    const fillRole: readonly [string, ColorName, number?] =
-      opacity === undefined ? ['fill', fill] : ['fill', fill, opacity];
-    paint = { style: base.style, styleRoles: base.styleRoles, propRoles: [fillRole] };
-    glassPaints.set(id, paint);
+    const propRole: readonly [string, ColorName, number?] =
+      opacity === undefined ? [prop, role] : [prop, role, opacity];
+    paint = { style: base.style, styleRoles: base.styleRoles, propRoles: [propRole] };
+    propPaints.set(id, paint);
   }
   return paint;
 }
@@ -502,15 +511,41 @@ function renderHost(
       return drawHost(BloomAvatar, box('component', 'A'), props);
     }
     case 'image': {
+      // BloomImage takes the box itself, so the frame sizes the image and the
+      // corner clips it. It cannot take presses: a pressable image (or a hover
+      // group) is drawn inside its pressable host, which takes the flex placement.
+      const interactive = p.pressable || p.hoverGroup;
+      const imageFlex = interactive ? '' : flex;
+      const aspectRatio = ownValue(p, 'aspectRatio')?.value;
+      const styleKey = `IM|${aspectRatio ?? ''}|${layerKey}|${imageFlex}`;
+      const out = cachedStyle('component', styleKey, () => {
+        const style = boxStyle(layer, imageFlex, p);
+        if (aspectRatio !== undefined) style.aspectRatio = aspectRatio;
+        return style;
+      });
       const { source, alt } = node.props as ImageProps;
-      const size = resolveAvatarSize(
-        (ownValue(p, 'size')?.value as AvatarSizeName | undefined) ?? 'md',
-      );
-      const bare = !boxed && !behaviour;
-      const image = draw(ShapeImage, { source, alt, size, key: bare ? key : undefined });
-      if (bare) return image;
-      const host = behaviour ? hostFor(p) : View;
-      return drawHost(host, box('host', 'IM'), hostProps(behaviour, key), image);
+      const transition = ownValue(p, 'transition')?.value;
+      const props: Record<string, unknown> = interactive ? {} : hostProps(behaviour, key);
+      Object.assign(props, {
+        source,
+        alt,
+        contentFit: ownValue(p, 'contentFit')?.value,
+        transition: transition === undefined ? undefined : DURATION[transition],
+        onLoad: ownValue(p, 'onLoad')?.value,
+        onError: ownValue(p, 'onError')?.value,
+      });
+      const tint = ownValue(p, 'tint')?.value as ColorName | undefined;
+      const image =
+        tint === undefined
+          ? drawHost(BloomImage, out, props)
+          : draw(Painted, {
+              ...props,
+              host: BloomImage,
+              paint: propPaint(styleKey, out, 'tintColor', tint),
+            });
+      if (!interactive) return image;
+      const placement = cachedStyle('host', `IMP|${flex}`, () => boxStyle(undefined, flex, p));
+      return drawHost(hostFor(p), placement, hostProps(behaviour, key), image);
     }
     case 'button': {
       const props = hostProps(behaviour, key);

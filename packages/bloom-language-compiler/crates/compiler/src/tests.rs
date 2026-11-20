@@ -1,7 +1,7 @@
 use crate::compile;
 
 const IMPORTS: &str =
-    "import { HStack, Icon, Text, VStack, view, defineTokens, regular } from '@oxy.so/bloom-language';
+    "import { HStack, Icon, Image, Text, VStack, view, defineTokens, regular } from '@oxy.so/bloom-language';
 import { RiMoreFill } from '@oxy.so/bloom/icons/RiMoreFill';
 ";
 
@@ -125,6 +125,20 @@ fn a_wrong_modifier_names_the_valid_ones() {
     let diagnostic = &output.diagnostics[0];
     assert_eq!(diagnostic.message, "Text has no modifier .fnt()");
     assert!(diagnostic.help.as_deref().unwrap().starts_with("did you mean 'font'? Text modifiers: padding,"));
+}
+
+#[test]
+fn image_options_are_checked_against_the_spec() {
+    let valid = compiled(
+        "export const x = (src) => Image(src).contentFit('contain').tint('primary').transition('fast');\n",
+    );
+    assert!(valid.diagnostics.is_empty());
+    let fit = compiled("export const x = (src) => Image(src).contentFit('stretch');\n");
+    assert_eq!(fit.diagnostics[0].message, "Unknown contentFit token 'stretch' for .contentFit()");
+    let tint = compiled("export const x = (src) => Image(src).tint('neutral');\n");
+    assert_eq!(tint.diagnostics[0].message, "Unknown color token 'neutral' for .tint()");
+    let size = compiled("export const x = (src) => Image(src).size('lg');\n");
+    assert_eq!(size.diagnostics[0].message, "Image has no modifier .size()");
 }
 
 #[test]

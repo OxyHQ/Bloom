@@ -86,6 +86,7 @@ export const HIT_SLOP = ${ts(scales.hitSlop)} as const;
 export const SHRINK = ${ts(scales.shrink)} as const;
 export const ALIGNMENT = ${ts(scales.alignment)} as const;
 export const GLASS_OPACITY = ${ts(scales.glassOpacity)} as const;
+export const DURATION = ${ts(scales.duration)} as const;
 
 /** Bloom's type ramp: \`<family>-<weight>\` → [fontSize, lineHeight, letterSpacing, fontWeight]. */
 export const TYPE_FAMILIES = ${ts(typeFamilies)} as const;
@@ -275,6 +276,7 @@ const tokenSets = {
   iconSize: Object.keys(scales.iconSize),
   avatarSize: Object.keys(scales.avatarSize),
   glassOpacity: Object.keys(scales.glassOpacity),
+  duration: Object.keys(scales.duration),
   ...enums,
 };
 
