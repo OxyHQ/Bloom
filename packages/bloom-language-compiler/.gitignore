@@ -1,4 +1,4 @@
 target/
 *.node
-bench/.generated/
-e2e/dist/
+# The parity suite writes each fixture's compiled form beside it.
+fixtures/*.compiled.tsx

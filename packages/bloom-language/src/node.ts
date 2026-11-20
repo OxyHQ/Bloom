@@ -8,8 +8,15 @@ import type {
 import type { BloomAppearance, BloomSize, BloomTone } from '@oxy.so/bloom/appearance';
 import type { AccentTone } from '@oxy.so/bloom/theme';
 
+import { regular, type GlassValue } from './glass';
 import {
   tokenKey,
+  type Alignment,
+  type BorderEdge,
+  type ButtonShape,
+  type Edge,
+  type Role,
+  type ShrinkPriority,
   type AvatarSizeName,
   type BorderWidthName,
   type ColorName,
@@ -26,13 +33,8 @@ import {
 
 // ── Modifiers: immutable data, applied in order ──────────────────
 
-export type Edge = 'all' | 'horizontal' | 'vertical' | 'top' | 'bottom' | 'leading' | 'trailing';
-export type BorderEdge = 'all' | 'top' | 'bottom' | 'leading' | 'trailing';
-export type Alignment = 'start' | 'center' | 'end' | 'stretch' | 'baseline';
-/** How readily a view gives up width when its row is too narrow. `first` yields before `normal`. */
-export type ShrinkPriority = 'never' | 'normal' | 'first';
-export type Role = 'button' | 'link' | 'header' | 'image' | 'text' | 'none';
-export type ButtonShape = 'circle' | 'pill';
+export type { Alignment, BorderEdge, ButtonShape, Edge, Role, ShrinkPriority };
+export type { GlassValue };
 export type EngagementTone = Exclude<AccentTone, 'default'>;
 export type IconComponent = ComponentType<{ width?: number; height?: number; fill?: string }>;
 export type PressHandler = (event: GestureResponderEvent) => unknown;
@@ -44,11 +46,6 @@ export interface FrameSpec {
   minHeight?: SpaceToken;
   maxWidth?: SpaceToken;
   maxHeight?: SpaceToken;
-}
-
-export interface GlassSpec {
-  /** The tint the material is painted from; Bloom's surface fill when omitted. */
-  tint?: ColorName;
 }
 
 export type Modifier =
@@ -71,7 +68,7 @@ export type Modifier =
     }
   | { readonly kind: 'corner'; readonly key: string; readonly value: CornerName }
   | { readonly kind: 'opacity'; readonly key: string; readonly value: OpacityName }
-  | { readonly kind: 'glass'; readonly key: string; readonly value: GlassSpec }
+  | { readonly kind: 'glass'; readonly key: string; readonly value: GlassValue }
   | { readonly kind: 'foreground'; readonly key: string; readonly value: ColorName }
   | { readonly kind: 'font'; readonly key: string; readonly value: FontName }
   | { readonly kind: 'weight'; readonly key: string; readonly value: WeightName }
@@ -184,8 +181,24 @@ export interface EmbedProps {
   readonly content: ReactNode | ((render: (child: Child) => ReactNode) => ReactNode);
 }
 export interface ViewNodeProps {
-  readonly component: ComponentType<{ args: readonly unknown[]; env: unknown }>;
-  readonly args: readonly unknown[];
+  /** The view's component: React's own memo of its host, so props compare key by key. */
+  readonly component: ComponentType<object>;
+  /** The props object the view was called with, handed to its body as is. */
+  readonly props: object;
+}
+
+/**
+ * What a node last rendered as, and where: the same node in the same
+ * environment renders the same element, so React sees an unchanged element
+ * and skips the subtree. A node that keeps its identity across renders (a
+ * module constant, one the compiler hoisted, one the React Compiler kept)
+ * costs one comparison per render.
+ */
+export interface Rendered {
+  readonly env: unknown;
+  readonly provided: unknown;
+  readonly key: string | number | undefined;
+  readonly element: ReactNode;
 }
 
 /**
@@ -197,6 +210,9 @@ export interface ViewNodeProps {
  * (`TextView`, `StackView`…) expose only the ones that apply to each kind.
  */
 export class Node {
+  /** The render memo (see `Rendered`). Internal to the renderer; not part of the node's value. */
+  rendered: Rendered | undefined = undefined;
+
   constructor(
     readonly kind: NodeKind,
     readonly props: unknown,
@@ -239,8 +255,8 @@ export class Node {
   opacity(value: OpacityName): Node {
     return this.with({ kind: 'opacity', key: `o:${value}`, value });
   }
-  glass(value: GlassSpec = {}): Node {
-    return this.with({ kind: 'glass', key: `glass:${value.tint ?? ''}`, value });
+  glass(value: GlassValue = regular): Node {
+    return this.with({ kind: 'glass', key: value.key, value });
   }
   foreground(value: ColorName): Node {
     return this.with({ kind: 'foreground', key: `fg:${value}`, value });
@@ -344,8 +360,11 @@ export interface ViewModifiers<Self> extends ViewNode {
   border(value: ColorName, width?: BorderWidthName, edge?: BorderEdge): Self;
   corner(value: CornerName): Self;
   opacity(value: OpacityName): Self;
-  /** Bloom's material (`Surface`), optionally tinted. */
-  glass(value?: GlassSpec): Self;
+  /**
+   * A glass material behind the view: `regular` (the default) or `clear`,
+   * optionally `.tint(role, opacity?)`. Drawn by Bloom's `Surface` today.
+   */
+  glass(value?: GlassValue): Self;
   /** Text and icon colour for this view and everything inside it. */
   foreground(value: ColorName): Self;
   font(value: FontName): Self;

@@ -14,6 +14,8 @@ export {
   ZStack,
 } from './primitives';
 export { view } from './view';
+export { clear, regular, GlassValue } from './glass';
+export type { GlassMaterial } from './glass';
 export { toElement } from './render';
 export { defineTokens } from './tokens';
 export { Node, isNode } from './node';
@@ -34,7 +36,6 @@ export type {
   EmbedView,
   EngagementTone,
   FrameSpec,
-  GlassSpec,
   IconComponent,
   IconView,
   ImageView,
@@ -60,6 +61,8 @@ export type {
   CornerName,
   FontName,
   FontSizeName,
+  GlassOpacityName,
+  TypeFamily,
   HitSlopName,
   IconSizeName,
   IconSizeToken,

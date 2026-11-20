@@ -3,6 +3,16 @@
 Status: spike, 2026-11-20. Branch `spike/bloom-language-compiler`, from `origin/main` at `b4cb97cdc`.
 Nothing here is published or wired into an app.
 
+> **Superseded where it differs.** The compiler that ships on `feat/bloom-language` keeps this
+> study's pipeline (an Oxc pre-pass through napi, the Metro `transformerPath` wrapper, source-map
+> composition, diagnostics, `"use memo"`), and replaces its output. It no longer emits elements,
+> styles, colour role maps or CSS: those would be a second resolver beside the runtime's. It
+> hoists static chains as nodes, the runtime remembers the element a node rendered as, colours
+> are painted by theme-reading leaves (native) or CSS variables (web), and the web stylesheet is
+> generated from the one spec. The current design is in `docs/bloom-language.mdx` ("Compiler",
+> "Rendering", "One spec"). Sections 2, 3 and 5 below describe the spike's own output; their
+> benchmark numbers measure the spike's reference interpreter, not the runtime.
+
 ## Recommendation in one paragraph
 
 Write the compiler as one Rust core on Oxc's parser, AST and code generator, built as a Node addon

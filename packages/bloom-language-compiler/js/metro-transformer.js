@@ -1,8 +1,5 @@
-const crypto = require('node:crypto');
-const fs = require('node:fs');
-const path = require('node:path');
-
 const { compileModule } = require('./compile');
+const { digest } = require('./native');
 const { remapMetroMap } = require('./remap');
 
 /**
@@ -20,12 +17,10 @@ function upstream(config) {
 }
 
 async function transform(config, projectRoot, filename, data, options) {
-  const platform = options.platform === 'web' ? 'web' : 'native';
-  // The spike compiles native only; on web the runtime interprets the chains.
-  const compiled =
-    platform === 'native' && /\.[cm]?[jt]sx?$/.test(filename)
-      ? compileModule(data.toString('utf8'), filename, platform)
-      : null;
+  // The output is the same on every platform: the runtime resolves tokens.
+  const compiled = /\.[cm]?[jt]sx?$/.test(filename)
+    ? compileModule(data.toString('utf8'), filename)
+    : null;
   if (!compiled) return upstream(config).transform(config, projectRoot, filename, data, options);
 
   const result = await upstream(config).transform(
@@ -44,13 +39,8 @@ async function transform(config, projectRoot, filename, data, options) {
   return result;
 }
 
-const addonDigest = crypto
-  .createHash('sha1')
-  .update(fs.readFileSync(path.join(__dirname, '..', 'bloom-language-compiler.node')))
-  .digest('hex');
-
 function getCacheKey(config) {
-  return [upstream(config).getCacheKey(config), 'bloom-language', addonDigest].join('$');
+  return [upstream(config).getCacheKey(config), 'bloom-language', digest].join('$');
 }
 
 module.exports = { transform, getCacheKey };

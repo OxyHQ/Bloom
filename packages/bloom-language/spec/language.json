@@ -1,0 +1,337 @@
+{
+  "$comment": [
+    "The Bloom language, as data: its token scales, colour roles, modifier rules, layering and environment.",
+    "scripts/generate.mjs turns this file into the runtime tables (src/generated/spec.generated.ts),",
+    "the web stylesheet (src/generated/web-sheet.generated.ts) and the compiler tables",
+    "(packages/bloom-language-compiler/crates/compiler/src/spec.generated.rs). Never edit those by hand.",
+    "Every value here is a Bloom rung: src/__tests__/spec.test.ts holds each one equal to Bloom."
+  ],
+  "scales": {
+    "space": {
+      "none": 0,
+      "2xs": 2,
+      "xs": 4,
+      "sm": 8,
+      "md": 12,
+      "lg": 16,
+      "xl": 20,
+      "2xl": 24,
+      "3xl": 32,
+      "4xl": 40,
+      "5xl": 60
+    },
+    "corner": {
+      "none": 0,
+      "2xs": 2,
+      "xs": 4,
+      "sm": 8,
+      "md": 12,
+      "lg": 16,
+      "xl": 20,
+      "2xl": 24,
+      "3xl": 28,
+      "full": 9999
+    },
+    "fontSize": {
+      "2xs": 10,
+      "xs": 12,
+      "sm": 13,
+      "md": 15,
+      "lg": 17,
+      "xl": 20,
+      "2xl": 22,
+      "3xl": 26,
+      "4xl": 32,
+      "5xl": 40
+    },
+    "leading": {
+      "tight": 1.15,
+      "snug": 1.3,
+      "normal": 1.5,
+      "relaxed": 1.625
+    },
+    "weight": {
+      "regular": "400",
+      "medium": "500",
+      "semibold": "600",
+      "bold": "700"
+    },
+    "iconSize": {
+      "2xs": 8,
+      "xs": 12,
+      "sm": 16,
+      "md": 20,
+      "lg": 24,
+      "xl": 28,
+      "2xl": 32,
+      "3xl": 48
+    },
+    "avatarSize": {
+      "xs": 20,
+      "sm": 24,
+      "md": 32,
+      "lg": 36
+    },
+    "opacity": {
+      "transparent": 0,
+      "disabled": 0.5,
+      "opaque": 1
+    },
+    "borderWidth": {
+      "hairline": "hairline",
+      "thin": 1
+    },
+    "hitSlop": {
+      "sm": 6,
+      "md": 8,
+      "lg": 12
+    },
+    "shrink": {
+      "never": 0,
+      "normal": 1,
+      "first": 10
+    },
+    "alignment": {
+      "start": "flex-start",
+      "center": "center",
+      "end": "flex-end",
+      "stretch": "stretch",
+      "baseline": "baseline"
+    },
+    "glassOpacity": {
+      "subtle": 0.24,
+      "medium": 0.48,
+      "strong": 0.72
+    }
+  },
+  "typeRamp": {
+    "$comment": "<family>-<weight>: [fontSize, lineHeight, letterSpacing, fontWeight], Bloom TYPE_SCALE",
+    "large-title-regular": [64, 80, 0, "400"],
+    "large-title-medium": [64, 80, 0, "500"],
+    "large-title-semibold": [64, 80, 0, "600"],
+    "large-title-bold": [64, 80, 0, "700"],
+    "display-1-regular": [56, 72, 0, "400"],
+    "display-1-medium": [56, 72, 0, "500"],
+    "display-1-semibold": [56, 72, 0, "600"],
+    "display-1-bold": [56, 72, 0, "700"],
+    "display-2-regular": [48, 64, 0, "400"],
+    "display-2-medium": [48, 64, 0, "500"],
+    "display-2-semibold": [48, 64, 0, "600"],
+    "display-2-bold": [48, 64, 0, "700"],
+    "display-3-regular": [40, 54, 0, "400"],
+    "display-3-medium": [40, 54, 0, "500"],
+    "display-3-semibold": [40, 54, 0, "600"],
+    "display-3-bold": [40, 54, 0, "700"],
+    "display-4-regular": [32, 44, 0, "400"],
+    "display-4-medium": [32, 44, 0, "500"],
+    "display-4-semibold": [32, 44, 0, "600"],
+    "display-4-bold": [32, 44, 0, "700"],
+    "title-1-regular": [24, 34, 0, "400"],
+    "title-1-medium": [24, 34, 0, "500"],
+    "title-1-semibold": [24, 34, 0, "600"],
+    "title-1-bold": [24, 34, 0, "700"],
+    "title-2-regular": [20, 26, 0, "400"],
+    "title-2-medium": [20, 26, 0, "500"],
+    "title-2-semibold": [20, 26, 0, "600"],
+    "title-2-bold": [20, 26, 0, "700"],
+    "title-3-regular": [18, 24, 0, "400"],
+    "title-3-medium": [18, 26, 0, "500"],
+    "title-3-semibold": [18, 26, 0, "600"],
+    "title-3-bold": [18, 26, 0, "700"],
+    "headline-regular": [16, 22, 0, "400"],
+    "headline-medium": [16, 22, 0, "500"],
+    "headline-semibold": [16, 22, 0, "600"],
+    "headline-bold": [16, 22, 0, "700"],
+    "body-regular": [14, 20, 0, "400"],
+    "body-medium": [14, 20, 0, "500"],
+    "body-semibold": [14, 20, 0, "600"],
+    "body-bold": [14, 20, 0, "700"],
+    "body-2-regular": [13, 18, 0, "400"],
+    "body-2-medium": [13, 18, 0, "500"],
+    "body-2-semibold": [13, 18, 0, "600"],
+    "body-2-bold": [13, 18, 0, "700"],
+    "caption-1-regular": [12, 16, 0.15, "400"],
+    "caption-1-medium": [12, 16, 0.15, "500"],
+    "caption-1-semibold": [12, 16, 0.15, "600"],
+    "caption-1-bold": [12, 16, 0.15, "700"],
+    "caption-2-regular": [11, 15, 0.2, "400"],
+    "caption-2-medium": [11, 15, 0.2, "500"],
+    "caption-2-semibold": [11, 15, 0.2, "600"],
+    "caption-2-bold": [11, 15, 0.2, "700"]
+  },
+  "colors": {
+    "$comment": "role: [ThemeColors key (native paint), canonical CSS variable without -- (web)]",
+    "foreground": ["text", "foreground"],
+    "muted": ["textSecondary", "muted-foreground"],
+    "primary": ["primary", "primary"],
+    "onPrimary": ["primaryForeground", "primary-foreground"],
+    "secondary": ["secondary", "secondary"],
+    "onSecondary": ["secondaryForeground", "secondary-foreground"],
+    "tertiary": ["tertiary", "tertiary"],
+    "onTertiary": ["tertiaryForeground", "tertiary-foreground"],
+    "background": ["background", "background"],
+    "surface": ["backgroundSecondary", "surface"],
+    "popover": ["backgroundTertiary", "popover"],
+    "border": ["border", "border"],
+    "input": ["borderLight", "input"],
+    "success": ["success", "success"],
+    "warning": ["warning", "warning"],
+    "error": ["error", "error"],
+    "info": ["info", "info"]
+  },
+  "enums": {
+    "edge": ["all", "horizontal", "vertical", "top", "bottom", "leading", "trailing"],
+    "borderEdge": ["all", "top", "bottom", "leading", "trailing"],
+    "role": ["button", "link", "header", "image", "text", "none"],
+    "buttonShape": ["circle", "pill"],
+    "appearance": ["solid", "subtle", "outline", "plain"],
+    "tone": ["neutral", "accent", "support", "action", "success", "warning", "danger", "info"],
+    "engagementTone": ["primary", "secondary", "tertiary", "success", "warning", "error", "info"],
+    "controlSize": ["xs", "sm", "md", "lg"],
+    "glassMaterial": ["regular", "clear"],
+    "spacingExtra": ["between"]
+  },
+  "glass": {
+    "$comment": "How each material maps onto Bloom Surface today. fill: the colour role it paints from when untinted (null: Surface keeps its own fill); opacity: the glassOpacity a tint takes by default (null: the colour as it is).",
+    "regular": {
+      "sheen": true,
+      "fill": null,
+      "tintOpacity": null
+    },
+    "clear": {
+      "sheen": false,
+      "fill": "surface",
+      "tintOpacity": "subtle"
+    }
+  },
+  "layers": [["padding"], ["frame"], ["background", "glass"], ["border"], ["corner"], ["opacity"]],
+  "environment": {
+    "$comment": "The text and icon traits a view hands everything inside it, and what each is when nothing sets it.",
+    "traits": ["foreground", "font", "weight", "leading"],
+    "defaults": {
+      "foreground": "foreground",
+      "rampWeight": "regular"
+    }
+  },
+  "modifiers": {
+    "$comment": "name: parameter types, in order. A trailing ? is optional; padding takes (value) or (edge, value).",
+    "padding": ["edge?", "padding"],
+    "frame": ["frame"],
+    "grow": [],
+    "shrink": ["shrink"],
+    "background": ["color"],
+    "border": ["color", "borderWidth?", "borderEdge?"],
+    "corner": ["corner"],
+    "opacity": ["opacity"],
+    "glass": ["glass?"],
+    "foreground": ["color"],
+    "font": ["font"],
+    "weight": ["weight"],
+    "leading": ["leading"],
+    "spacing": ["spacing"],
+    "align": ["alignment"],
+    "lines": ["value"],
+    "noWrap": [],
+    "size": ["size"],
+    "style": ["appearance"],
+    "shape": ["buttonShape"],
+    "tint": ["tint"],
+    "count": ["value"],
+    "active": ["value"],
+    "trailing": ["children"],
+    "countFormat": ["value"],
+    "onPress": ["value"],
+    "onLongPress": ["value"],
+    "onHover": ["value", "value"],
+    "hoverGroup": [],
+    "label": ["value"],
+    "hint": ["value"],
+    "role": ["role"],
+    "hitSlop": ["hitSlop"],
+    "testID": ["value"],
+    "id": ["value"]
+  },
+  "universal": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "background",
+    "border",
+    "corner",
+    "opacity",
+    "glass",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "id"
+  ],
+  "nodes": {
+    "$comment": "kind: { constructors, own modifiers beyond the universal ones, the scale size() and tint() read }",
+    "stack": {
+      "constructors": ["HStack", "VStack", "ZStack"],
+      "modifiers": ["spacing", "align"]
+    },
+    "spacer": {
+      "constructors": ["Spacer"],
+      "modifiers": []
+    },
+    "text": {
+      "constructors": ["Text"],
+      "modifiers": ["lines", "noWrap"]
+    },
+    "icon": {
+      "constructors": ["Icon"],
+      "modifiers": ["size"],
+      "size": "iconSize"
+    },
+    "avatar": {
+      "constructors": ["Avatar"],
+      "modifiers": ["size"],
+      "size": "avatarSize"
+    },
+    "image": {
+      "constructors": ["Image"],
+      "modifiers": ["size"],
+      "size": "avatarSize"
+    },
+    "button": {
+      "constructors": ["Button"],
+      "modifiers": ["style", "shape", "size", "tint"],
+      "size": "controlSize",
+      "tint": "tone"
+    },
+    "action": {
+      "constructors": ["Action"],
+      "modifiers": ["count", "active", "tint"],
+      "tint": "engagementTone"
+    },
+    "actionBar": {
+      "constructors": ["ActionBar"],
+      "modifiers": ["trailing", "countFormat", "size"],
+      "size": "controlSize"
+    },
+    "actionGroup": {
+      "constructors": ["ActionGroup"],
+      "modifiers": []
+    },
+    "embed": {
+      "constructors": ["Embed"],
+      "modifiers": []
+    },
+    "view": {
+      "constructors": [],
+      "modifiers": []
+    }
+  }
+}

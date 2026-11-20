@@ -91,12 +91,27 @@ jobs:
       - name: Verify packed chart card consumer entries
         run: node scripts/verify-chart-card-entries.mjs
       - run: bun run typescript
+      # The language compiler is Rust (Oxc needs 1.97+). Pinned, so a new
+      # stable never changes what CI builds; rustup ships with the runner.
+      - name: Rust toolchain for the language compiler
+        run: |
+          rustup toolchain install 1.99.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.99.0
+      # Cargo has no stable minimum-release-age, so the lockfile is audited
+      # against the same 7-day quarantine bunfig.toml applies to npm.
+      - name: Language compiler crates are past the quarantine
+        run: cd packages/bloom-language-compiler && bun run audit:crates
+      - name: Language compiler Rust format and lint
+        run: cd packages/bloom-language-compiler && bun run lint:rust
       # The separately published workspace packages build, typecheck and test
       # in dependency order (the root jest config ignores packages/). This
-      # gates their release; the release itself runs no tests.
+      # gates their release; the release itself runs no tests. The compiler's
+      # test runs its Rust tests, its adapters and the parity suite (every
+      # fixture rendered interpreted and compiled, native and web); the
+      # language's checks that the spec's generated outputs are current.
       - name: Workspace package builds, typecheck and test
         run: |
-          for package in packages/bloom-text packages/bloom-editor packages/bloom-language; do
+          for package in packages/bloom-text packages/bloom-editor packages/bloom-language packages/bloom-language-compiler; do
             (cd "$package" && bun run build && bun run typescript && bun run test)
           done
       # The built `@oxy.so/bloom/color-engine` subpath, as a server loads it:

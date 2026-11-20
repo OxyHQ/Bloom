@@ -1,18 +1,18 @@
 import {
   createElement,
   Fragment,
+  useContext,
   type ComponentType,
   type ReactElement,
   type ReactNode,
 } from 'react';
-import { Platform, Pressable, Text as RNText, View, type ViewStyle } from 'react-native';
+import { Platform, Pressable, Text as RNText, View } from 'react-native';
 import { styled } from 'react-native-css';
 import { Avatar as BloomAvatar } from '@oxy.so/bloom/avatar';
 import { Button as BloomButton } from '@oxy.so/bloom/button';
 import { EngagementAction, EngagementBar, EngagementGroup } from '@oxy.so/bloom/engagement-bar';
 import { Image as ShapeImage } from '@oxy.so/bloom/shapes';
 import { Surface } from '@oxy.so/bloom/surface';
-import { useThemePaint, type ThemeColors } from '@oxy.so/bloom/theme';
 
 import {
   isNode,
@@ -21,40 +21,44 @@ import {
   type AvatarProps,
   type Child,
   type EmbedProps,
-  type GlassSpec,
   type IconProps,
   type ImageProps,
   type Modifier,
   type PressHandler,
-  type Role,
-  type ShrinkPriority,
   type StackProps,
   type TextProps,
   type TextRun,
   type ViewNodeProps,
 } from './node';
+import { ENVIRONMENT } from './generated/spec.generated';
 import {
   addToLayers,
-  cached,
+  cachedStyle,
   flexStyle,
+  foregroundOf,
   isLayerModifier,
   layerStyle,
   stackStyle,
-  styleCacheFor,
   textStyle,
   type Layer,
-  type StyleCache,
+  type Resolved,
+  type StyleOut,
+  type Target,
 } from './style';
+import { Painted, type Paint } from './paint';
 import {
-  HIT_SLOP_SCALE,
+  HIT_SLOP,
   resolveAvatarSize,
-  resolveColor,
   resolveIconSize,
   tokenKey,
   type AvatarSizeName,
+  type ColorName,
   type IconSizeToken,
+  type Role,
+  type ShrinkPriority,
 } from './tokens';
-import { deriveEnv, ROOT_ENV, type Env } from './env';
+import { deriveEnv, EnvContext, type Env } from './env';
+import { adoptLanguageSheet } from './web-sheet';
 
 const IS_WEB = Platform.OS === 'web';
 
@@ -69,6 +73,9 @@ const HoverGroupPressable = styled(Pressable as ComponentType<{ style?: unknown 
 const HoverGroupView = styled(View as ComponentType<{ style?: unknown }>, {
   className: 'style',
 }) as ComponentType<Record<string, unknown>>;
+
+/** A host or Bloom component, as `draw` takes it. */
+type Host = unknown;
 
 /**
  * `createElement` over the host and Bloom components with props assembled from
@@ -88,6 +95,8 @@ const ROLE: Record<Role, string | undefined> = {
   text: 'text',
   none: 'none',
 };
+
+const ENV_KINDS: ReadonlySet<string> = new Set(ENVIRONMENT);
 
 /** One pass over a node's modifiers: what it draws with, sorted by what it affects. */
 interface Plan {
@@ -135,18 +144,16 @@ function plan(node: Node): Plan {
       addToLayers(result.layers, modifier);
       continue;
     }
+    if (ENV_KINDS.has(modifier.kind)) {
+      result.env.push(modifier);
+      continue;
+    }
     switch (modifier.kind) {
       case 'grow':
         result.grow = true;
         break;
       case 'shrink':
         result.shrink = modifier.value;
-        break;
-      case 'foreground':
-      case 'font':
-      case 'weight':
-      case 'leading':
-        result.env.push(modifier);
         break;
       case 'onPress':
         result.pressable = true;
@@ -174,7 +181,7 @@ function plan(node: Node): Plan {
         result.role = modifier.value;
         break;
       case 'hitSlop':
-        result.hitSlop = HIT_SLOP_SCALE[modifier.value];
+        result.hitSlop = HIT_SLOP[modifier.value];
         break;
       case 'testID':
         result.testID = modifier.value;
@@ -221,36 +228,73 @@ function behaviourProps(p: Plan): Record<string, unknown> | undefined {
   return undefined;
 }
 
-function mergedStyle(cache: StyleCache, key: string, parts: () => ViewStyle[]): ViewStyle {
-  return cached(cache, key, () => Object.assign({}, ...parts()));
-}
-
 /** The style key of a node's flex placement, '' when it has none. */
 function flexKey(p: Plan): string {
   return p.grow || p.shrink ? `grow:${p.grow ? 1 : 0}:${p.shrink ?? ''}` : '';
 }
 
+/**
+ * Where a node renders: its environment, and the environment `EnvContext`
+ * holds at this point of the React tree (they differ below an environment
+ * modifier, until a `view()` needs it provided).
+ */
 interface Context {
-  cache: StyleCache;
   env: Env;
+  provided: Env;
+}
+
+/**
+ * Draws `host` with a resolved style: directly when the style is final, or
+ * through a `Painted` leaf when the style names theme colours (native).
+ */
+function drawHost(
+  host: Host,
+  out: StyleOut,
+  props: Record<string, unknown>,
+  ...children: ReactNode[]
+): ReactElement {
+  if (out.paint !== undefined)
+    return draw(Painted, { ...props, host, paint: out.paint }, ...children);
+  if (out.style !== undefined) props.style = out.style;
+  return draw(host, props, ...children);
 }
 
 // ── Hosts ────────────────────────────────────────────────────────
+
+/**
+ * Draws one node, or hands back what it drew last time in the same place
+ * (see `Rendered` in node.ts): a node that keeps its identity across renders
+ * gives React the same element, and React skips the subtree.
+ */
+function renderNode(node: Node, ctx: Context, key: string | number | undefined): ReactNode {
+  const last = node.rendered;
+  if (
+    last !== undefined &&
+    last.env === ctx.env &&
+    last.provided === ctx.provided &&
+    last.key === key
+  ) {
+    return last.element;
+  }
+  const element = drawNode(node, ctx, key);
+  node.rendered = { env: ctx.env, provided: ctx.provided, key, element };
+  return element;
+}
 
 /**
  * Draws one node: its host element with the innermost layer merged into the
  * host's own style, then each further layer as a view around it. The press,
  * hover and accessibility props go on the outermost box; `grow`/`shrink` too.
  */
-function renderNode(node: Node, ctx: Context, key: string | number | undefined): ReactNode {
+function drawNode(node: Node, ctx: Context, key: string | number | undefined): ReactNode {
   const p = plan(node);
   const env = p.env.length > 0 ? deriveEnv(ctx.env, p.env) : ctx.env;
-  const inner: Context = env === ctx.env ? ctx : { cache: ctx.cache, env };
+  const inner: Context = env === ctx.env ? ctx : { env, provided: ctx.provided };
   const reactKey = p.id ?? key;
   const layers = p.layers;
   // A glass layer is a Surface, which the host cannot be; so the host takes
   // the innermost layer only when that layer is plain.
-  const hostTakesLayer = layers.length > 0 && !(layers[0] as Layer).glass;
+  const hostTakesLayer = layers.length > 0 && (layers[0] as Layer).glass === undefined;
   const hostLayer = hostTakesLayer ? (layers[0] as Layer) : undefined;
   const wrappers = hostTakesLayer ? layers.slice(1) : layers;
   const outermostIsHost = wrappers.length === 0;
@@ -270,67 +314,109 @@ function renderNode(node: Node, ctx: Context, key: string | number | undefined):
   for (let i = 0; i < wrappers.length; i++) {
     const layer = wrappers[i] as Layer;
     const outermost = i === wrappers.length - 1;
-    const styleKey = `L|${layer.key}|${outermost ? flex : ''}`;
-    const style = mergedStyle(ctx.cache, styleKey, () => [
-      layerStyle(ctx.cache.colors, layer),
-      outermost ? flexStyle(p.grow, p.shrink) : {},
-    ]);
+    const flexOf = outermost ? flex : '';
     element = wrapLayer(
       layer,
-      style,
-      ctx.cache.colors,
+      flexOf,
+      p,
       element,
       outermost ? behaviour : undefined,
-      p,
       outermost ? reactKey : undefined,
     );
   }
   return element;
 }
 
+function boxStyle(layer: Layer | undefined, flex: string, p: Plan): Resolved {
+  const style = layerStyle(layer);
+  return flex ? Object.assign(style, flexStyle(p.grow, p.shrink)) : style;
+}
+
 function wrapLayer(
   layer: Layer,
-  style: ViewStyle,
-  colors: ThemeColors,
+  flex: string,
+  p: Plan,
   child: ReactNode,
   behaviour: Record<string, unknown> | undefined,
-  p: Plan,
   key: string | number | undefined,
 ): ReactElement {
-  if (layer.glass) {
-    const glass = layer.modifiers.find((m) => m.kind === 'glass') as { value: GlassSpec };
-    const corner = style.borderRadius;
-    const surface = draw(
-      Surface,
-      {
-        style,
-        fill: glass.value.tint ? resolveColor(colors, glass.value.tint) : undefined,
-        radius: typeof corner === 'number' ? corner : undefined,
-        ...(behaviour && !p.pressable ? behaviour : {}),
-        key: behaviour && p.pressable ? undefined : key,
-      },
-      child,
-    );
+  const styleKey = `L|${layer.key}|${flex}`;
+  const glass = layer.glass;
+  if (glass !== undefined) {
+    const resolved = boxStyle(layer, flex, p);
+    const corner = resolved.borderRadius;
+    const out = cachedStyle('component', styleKey, () => resolved);
+    const props: Record<string, unknown> = {
+      radius: typeof corner === 'number' ? corner : undefined,
+      ...(glass.sheen ? null : { sheen: false }),
+      ...(behaviour && !p.pressable ? behaviour : null),
+      key: behaviour && p.pressable ? undefined : key,
+    };
+    const fill = glass.fillRole;
+    const surface =
+      fill === undefined
+        ? drawHost(Surface, out, props, child)
+        : draw(
+            Painted,
+            { ...props, host: Surface, paint: glassPaint(styleKey, out, fill, glass.fillOpacity) },
+            child,
+          );
     return behaviour && p.pressable ? draw(hostFor(p), { ...behaviour, key }, surface) : surface;
   }
-  return draw(behaviour ? hostFor(p) : View, { ...behaviour, style, key }, child);
+  const out = cachedStyle('host', styleKey, () => boxStyle(layer, flex, p));
+  return drawHost(behaviour ? hostFor(p) : View, out, { ...behaviour, key }, child);
+}
+
+const glassPaints = new Map<string, Paint>();
+
+/** A glass Surface's paint: its box style (painted on native), and its fill from a role. One per style and fill. */
+function glassPaint(
+  styleKey: string,
+  out: StyleOut,
+  fill: ColorName,
+  opacity: number | undefined,
+): Paint {
+  const id = `${styleKey}|${fill}|${opacity ?? ''}`;
+  let paint = glassPaints.get(id);
+  if (paint === undefined) {
+    const base = out.paint ?? {
+      style: out.style as object | undefined,
+      styleRoles: [],
+      propRoles: [],
+    };
+    const fillRole: readonly [string, ColorName, number?] =
+      opacity === undefined ? ['fill', fill] : ['fill', fill, opacity];
+    paint = { style: base.style, styleRoles: base.styleRoles, propRoles: [fillRole] };
+    glassPaints.set(id, paint);
+  }
+  return paint;
 }
 
 /** The outermost box's host: pressable when the view takes presses or hovers, a hover group's class host on the web. */
-function hostFor(p: Plan): ComponentType<Record<string, unknown>> {
-  if (p.pressable) return IS_WEB && p.hoverGroup ? HoverGroupPressable : (Pressable as never);
-  return IS_WEB && p.hoverGroup ? HoverGroupView : (View as never);
+function hostFor(p: Plan): Host {
+  if (p.pressable) return IS_WEB && p.hoverGroup ? HoverGroupPressable : Pressable;
+  return IS_WEB && p.hoverGroup ? HoverGroupView : View;
 }
 
 function hostProps(
   behaviour: Record<string, unknown> | undefined,
-  style: object | undefined,
   key: string | number | undefined,
 ): Record<string, unknown> {
   const props: Record<string, unknown> = behaviour ? { ...behaviour } : {};
-  if (style !== undefined) props.style = style;
   if (key !== undefined) props.key = key;
   return props;
+}
+
+const iconPaints = new Map<ColorName, Paint>();
+
+/** An icon's fill, painted from its foreground role. */
+function iconPaint(color: ColorName): Paint {
+  let paint = iconPaints.get(color);
+  if (paint === undefined) {
+    paint = { style: undefined, styleRoles: [], propRoles: [['fill', color]] };
+    iconPaints.set(color, paint);
+  }
+  return paint;
 }
 
 function renderHost(
@@ -342,12 +428,10 @@ function renderHost(
   behaviour: Record<string, unknown> | undefined,
   key: string | number | undefined,
 ): ReactElement {
-  const { cache } = ctx;
   const layerKey = layer?.key ?? '';
-  const layerAndFlex = (): ViewStyle[] => [
-    layer ? layerStyle(cache.colors, layer) : {},
-    flex ? flexStyle(p.grow, p.shrink) : {},
-  ];
+  const box = (target: Target, prefix: string): StyleOut =>
+    cachedStyle(target, `${prefix}|${layerKey}|${flex}`, () => boxStyle(layer, flex, p));
+  const boxed = layer !== undefined || flex !== '';
 
   switch (node.kind) {
     case 'stack': {
@@ -355,95 +439,85 @@ function renderHost(
       const spacing = ownValue(p, 'spacing')?.value;
       const align = ownValue(p, 'align')?.value;
       const styleKey = `S|${axis}|${spacing === undefined ? '' : tokenKey(spacing)}|${align ?? ''}|${layerKey}|${flex}`;
-      const style = mergedStyle(cache, styleKey, () => [
-        stackStyle(axis, spacing, align),
-        ...layerAndFlex(),
-      ]);
+      const out = cachedStyle('host', styleKey, () =>
+        Object.assign(stackStyle(axis, spacing, align), boxStyle(layer, flex, p)),
+      );
       const children =
         axis === 'depth'
           ? renderDepthChildren(node.children, ctx)
           : renderChildren(node.children, ctx);
       const host = behaviour ? hostFor(p) : View;
-      return draw(host, hostProps(behaviour, style, key), ...children);
+      return drawHost(host, out, hostProps(behaviour, key), ...children);
     }
     case 'spacer': {
-      const style = mergedStyle(cache, `SP|${layerKey}|${flex}`, () => [
-        { flex: 1 },
-        ...layerAndFlex(),
-      ]);
-      return draw(behaviour ? hostFor(p) : View, hostProps(behaviour, style, key));
+      const out = cachedStyle('host', `SP|${layerKey}|${flex}`, () =>
+        Object.assign({ flex: 1 }, boxStyle(layer, flex, p)),
+      );
+      return drawHost(behaviour ? hostFor(p) : View, out, hostProps(behaviour, key));
     }
     case 'text': {
-      const style = cached(
-        cache,
-        `T|${ctx.env.key}|${ownValue(p, 'noWrap') ? 'nw' : ''}|${layerKey}|${flex}`,
-        () =>
-          Object.assign(
-            textStyle(cache.colors, ctx.env.text, ownValue(p, 'noWrap') !== undefined, IS_WEB),
-            ...layerAndFlex(),
-          ),
+      const noWrap = ownValue(p, 'noWrap') !== undefined;
+      const out = cachedStyle(
+        'host',
+        `T|${ctx.env.key}|${noWrap ? 'nw' : ''}|${layerKey}|${flex}`,
+        () => Object.assign(textStyle(ctx.env.text, noWrap), boxStyle(layer, flex, p)),
       );
       const lines = ownValue(p, 'lines')?.value;
-      const props = hostProps(behaviour, style, key);
+      const props = hostProps(behaviour, key);
       if (lines !== undefined) {
         props.numberOfLines = lines;
         props.ellipsizeMode = 'tail';
       }
       if (behaviour?.focusable !== undefined) delete props.focusable;
-      return draw(RNText, props, ...renderRuns((node.props as TextProps).runs, ctx));
+      return drawHost(RNText, out, props, ...renderRuns((node.props as TextProps).runs, ctx));
     }
     case 'icon': {
       const size = resolveIconSize(
         (ownValue(p, 'size')?.value as IconSizeToken | undefined) ?? 'md',
       );
-      const bare = !layer && !flex && !behaviour;
-      const glyph = draw((node.props as IconProps).icon, {
+      const bare = !boxed && !behaviour;
+      const glyph = draw(Painted, {
+        host: (node.props as IconProps).icon,
+        paint: iconPaint(foregroundOf(ctx.env.text)),
         width: size,
         height: size,
-        fill: resolveColor(cache.colors, ctx.env.text.foreground ?? 'foreground'),
         key: bare ? key : undefined,
       });
       if (bare) return glyph;
-      const style = mergedStyle(cache, `I|${layerKey}|${flex}`, layerAndFlex);
       const host = behaviour ? hostFor(p) : View;
-      return draw(host, hostProps(behaviour, style, key), glyph);
+      return drawHost(host, box('host', 'I'), hostProps(behaviour, key), glyph);
     }
     case 'avatar': {
       const { source, options } = node.props as AvatarProps;
       const size = ownValue(p, 'size')?.value as AvatarSizeName | undefined;
-      const style =
-        layer || flex ? mergedStyle(cache, `A|${layerKey}|${flex}`, layerAndFlex) : undefined;
-      const props = hostProps(behaviour, style, key);
+      const props = hostProps(behaviour, key);
       delete props.focusable;
-      return draw(BloomAvatar, {
-        ...props,
+      Object.assign(props, {
         source,
         variant: options.variant,
         account: options.account,
         size: size === undefined ? undefined : resolveAvatarSize(size),
       });
+      if (!boxed) return draw(BloomAvatar, props);
+      return drawHost(BloomAvatar, box('component', 'A'), props);
     }
     case 'image': {
       const { source, alt } = node.props as ImageProps;
       const size = resolveAvatarSize(
         (ownValue(p, 'size')?.value as AvatarSizeName | undefined) ?? 'md',
       );
-      const bare = !layer && !flex && !behaviour;
+      const bare = !boxed && !behaviour;
       const image = draw(ShapeImage, { source, alt, size, key: bare ? key : undefined });
       if (bare) return image;
-      const style = mergedStyle(cache, `IM|${layerKey}|${flex}`, layerAndFlex);
       const host = behaviour ? hostFor(p) : View;
-      return draw(host, hostProps(behaviour, style, key), image);
+      return drawHost(host, box('host', 'IM'), hostProps(behaviour, key), image);
     }
     case 'button': {
-      const style =
-        layer || flex ? mergedStyle(cache, `B|${layerKey}|${flex}`, layerAndFlex) : undefined;
-      const props = hostProps(behaviour, style, key);
+      const props = hostProps(behaviour, key);
       delete props.focusable;
       const { icon, label } = buttonContent(node.children);
       const shape = ownValue(p, 'shape')?.value;
-      return draw(BloomButton, {
-        ...props,
+      Object.assign(props, {
         appearance: ownValue(p, 'style')?.value,
         tone: ownValue(p, 'tint')?.value,
         size: ownValue(p, 'size')?.value,
@@ -452,6 +526,8 @@ function renderHost(
           icon !== undefined && label === undefined && shape !== undefined ? true : undefined,
         children: label,
       });
+      if (!boxed) return draw(BloomButton, props);
+      return drawHost(BloomButton, box('component', 'B'), props);
     }
     case 'action': {
       const { icon, label, options } = node.props as ActionProps;
@@ -477,29 +553,22 @@ function renderHost(
     }
     case 'actionBar': {
       const trailing = ownValue(p, 'trailing')?.value;
-      const style =
-        layer || flex ? mergedStyle(cache, `AB|${layerKey}|${flex}`, layerAndFlex) : undefined;
-      return draw(
-        EngagementBar,
-        {
-          key,
-          style,
-          testID: p.testID,
-          size: ownValue(p, 'size')?.value,
-          formatCount: ownValue(p, 'countFormat')?.value,
-          trailing: trailing ? renderChildren(trailing, ctx) : undefined,
-        },
-        ...renderChildren(node.children, ctx),
-      );
+      const props: Record<string, unknown> = {
+        key,
+        testID: p.testID,
+        size: ownValue(p, 'size')?.value,
+        formatCount: ownValue(p, 'countFormat')?.value,
+        trailing: trailing ? renderChildren(trailing, ctx) : undefined,
+      };
+      const children = renderChildren(node.children, ctx);
+      if (!boxed) return draw(EngagementBar, props, ...children);
+      return drawHost(EngagementBar, box('component', 'AB'), props, ...children);
     }
     case 'actionGroup': {
-      const style =
-        layer || flex ? mergedStyle(cache, `AG|${layerKey}|${flex}`, layerAndFlex) : undefined;
-      return draw(
-        EngagementGroup,
-        { key, style, testID: p.testID },
-        ...renderChildren(node.children, ctx),
-      );
+      const props: Record<string, unknown> = { key, testID: p.testID };
+      const children = renderChildren(node.children, ctx);
+      if (!boxed) return draw(EngagementGroup, props, ...children);
+      return drawHost(EngagementGroup, box('component', 'AG'), props, ...children);
     }
     case 'embed': {
       const { content } = node.props as EmbedProps;
@@ -507,22 +576,43 @@ function renderHost(
         typeof content === 'function'
           ? content((child) => renderChild(child, ctx, undefined))
           : content;
-      if (!layer && !flex && !behaviour) {
+      if (!boxed && !behaviour) {
         return key === undefined ? (element as ReactElement) : draw(Fragment, { key }, element);
       }
-      const style = mergedStyle(cache, `E|${layerKey}|${flex}`, layerAndFlex);
       const host = behaviour ? hostFor(p) : View;
-      return draw(host, hostProps(behaviour, style, key), element);
+      return drawHost(host, box('host', 'E'), hostProps(behaviour, key), element);
     }
     case 'view': {
-      const { component, args } = node.props as ViewNodeProps;
-      if (!layer && !flex && !behaviour) return draw(component, { args, env: ctx.env, key });
-      const body = draw(component, { args, env: ctx.env });
-      const style = mergedStyle(cache, `V|${layerKey}|${flex}`, layerAndFlex);
+      if (!boxed && !behaviour) return viewElement(node, ctx, key);
       const host = behaviour ? hostFor(p) : View;
-      return draw(host, hostProps(behaviour, style, key), body);
+      return drawHost(
+        host,
+        box('host', 'V'),
+        hostProps(behaviour, key),
+        viewElement(node, ctx, undefined),
+      );
     }
   }
+}
+
+/**
+ * A `view()` node: its component with the props it was called with, under
+ * an `EnvContext` provider only when the environment here differs from the
+ * one already provided.
+ */
+function viewElement(node: Node, ctx: Context, key: string | number | undefined): ReactElement {
+  const { component, props } = node.props as ViewNodeProps;
+  if (ctx.env === ctx.provided) {
+    return draw(
+      component,
+      key === undefined ? (props as Record<string, unknown>) : { ...props, key },
+    );
+  }
+  return draw(
+    EnvContext.Provider,
+    { value: ctx.env, key },
+    draw(component, props as Record<string, unknown>),
+  );
 }
 
 function buttonContent(children: readonly Child[]): {
@@ -579,14 +669,21 @@ function renderList(children: readonly Child[], ctx: Context): ReactNode[] {
   return out;
 }
 
-const DEPTH_LAYER: ViewStyle = { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 };
+const DEPTH_LAYER = (): Resolved => ({
+  position: 'absolute',
+  top: 0,
+  right: 0,
+  bottom: 0,
+  left: 0,
+});
 
 /** A ZStack: the first child sets the size; each later one covers it, in order. */
 function renderDepthChildren(children: readonly Child[], ctx: Context): ReactNode[] {
+  const out = cachedStyle('host', 'Z', DEPTH_LAYER);
   return renderChildren(children, ctx).map((child, index) =>
     index === 0 || child === null
       ? child
-      : draw(View, { style: DEPTH_LAYER, pointerEvents: 'box-none' }, child),
+      : drawHost(View, out, { pointerEvents: 'box-none' }, child),
   );
 }
 
@@ -611,27 +708,30 @@ interface RootProps {
   node: Child;
 }
 
-/** The boundary from JSX into the language: it reads the theme once for the tree under it. */
+/** The boundary from JSX into the language: it takes the environment provided where it is placed. */
 function LanguageRoot({ node }: RootProps): ReactNode {
-  const colors = useThemePaint();
-  return renderChild(node, { cache: styleCacheFor(colors), env: ROOT_ENV }, undefined);
+  const env = useContext(EnvContext);
+  return renderChild(node, { env, provided: env }, undefined);
 }
 LanguageRoot.displayName = 'BloomLanguage';
 
 /**
  * A language tree as a React element, for JSX. A bare `view()` node mounts its
- * component directly (it reads the theme itself); anything else goes under one
- * boundary component.
+ * component directly; anything else goes under one boundary component.
  */
 export function toElement(node: Child, key?: string | number): ReactElement {
+  adoptLanguageSheet();
   if (isNode(node) && node.kind === 'view' && node.modifiers.length === 0) {
-    const { component, args } = node.props as ViewNodeProps;
-    return draw(component, { args, env: ROOT_ENV, key });
+    const { component, props } = node.props as ViewNodeProps;
+    return draw(
+      component,
+      key === undefined ? (props as Record<string, unknown>) : { ...props, key },
+    );
   }
   return draw(LanguageRoot, { node, key });
 }
 
-/** What a `view()` component renders: its body, in the theme it read, under the environment it was given. */
-export function renderBody(body: Child, colors: ThemeColors, env: Env): ReactNode {
-  return renderChild(body, { cache: styleCacheFor(colors), env }, undefined);
+/** What a `view()` component renders: its body, under the environment it is placed in. */
+export function renderBody(body: Child, env: Env): ReactNode {
+  return renderChild(body, { env, provided: env }, undefined);
 }

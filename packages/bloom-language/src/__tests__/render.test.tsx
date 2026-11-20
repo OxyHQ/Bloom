@@ -23,6 +23,7 @@ import {
 import { toElement } from '../render';
 import { view } from '../view';
 import { defineTokens } from '../tokens';
+import { clear, regular } from '../glass';
 import type { Child } from '../node';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -206,22 +207,20 @@ describe('styles are resolved once per theme', () => {
 });
 
 let press: () => void = () => {};
-const Counter = view(function Counter(label: string) {
+const Counter = view(function Counter(props: { label: string }) {
   const [count, setCount] = useState(0);
   press = () => setCount((n) => n + 1);
-  return Text(`${label} ${count}`);
+  return Text(`${props.label} ${count}`);
 });
-const titleBody = jest.fn((title: string) => Text(title));
-const Title = view(titleBody);
 const cardBody = jest.fn((props: { title: string }) => Text(props.title));
 const Card = view(cardBody);
-const Label = view(function Label(text: string) {
-  return Text(text);
+const Label = view(function Label(props: { text: string }) {
+  return Text(props.text);
 });
 
 describe('view()', () => {
   it('runs its body as a component: hooks work and state survives re-renders', () => {
-    const r = mount(toElement(Counter('taps')));
+    const r = mount(toElement(Counter({ label: 'taps' })));
     expect(hosts(r, 'Text')[0]?.props.children).toBe('taps 0');
     act(() => press());
     expect(hosts(r, 'Text')[0]?.props.children).toBe('taps 1');
@@ -230,16 +229,7 @@ describe('view()', () => {
     ).not.toHaveLength(0);
   });
 
-  it('re-runs only when an argument changes', () => {
-    const tree = (title: string) => VStack(Title(title), Text('sibling'));
-    const r = mount(toElement(tree('a')));
-    update(r, toElement(tree('a')));
-    expect(titleBody).toHaveBeenCalledTimes(1);
-    update(r, toElement(tree('b')));
-    expect(titleBody).toHaveBeenCalledTimes(2);
-  });
-
-  it('a props-object argument compares key by key', () => {
+  it('re-runs only when a prop changes: props compare key by key', () => {
     const tree = (props: { title: string }) => VStack(Card(props));
     const r = mount(toElement(tree({ title: 'a' })));
     update(r, toElement(tree({ title: 'a' })));
@@ -249,7 +239,7 @@ describe('view()', () => {
   });
 
   it('a child that turns false keeps its slot, so later siblings keep their state', () => {
-    const tree = (show: boolean) => VStack(show && Text('banner'), Counter('kept'));
+    const tree = (show: boolean) => VStack(show && Text('banner'), Counter({ label: 'kept' }));
     const r = mount(toElement(tree(false)));
     act(() => press());
     expect(hosts(r, 'Text').map((t) => t.props.children)).toEqual(['kept 1']);
@@ -258,12 +248,12 @@ describe('view()', () => {
   });
 
   it('inherits the environment of where it is placed', () => {
-    const r = mount(toElement(VStack(Label('x')).foreground('muted')));
+    const r = mount(toElement(VStack(Label({ text: 'x' })).foreground('muted')));
     expect(hosts(r, 'Text')[0]?.props.style.color).toBe(LIGHT.textSecondary);
   });
 
   it('a view’s modifiers wrap its body', () => {
-    const r = mount(toElement(VStack(Label('x').padding('md'))));
+    const r = mount(toElement(VStack(Label({ text: 'x' }).padding('md'))));
     const views = hosts(r, 'View');
     expect(views[1]?.props.style).toEqual({
       paddingTop: 12,
@@ -294,7 +284,9 @@ describe('interop', () => {
 
   it('a bare embed, icon or view adds no host of its own', () => {
     const r = mount(
-      toElement(VStack(Embed(createElement('ThirdParty')), Icon(Glyph), Label('x'), Text('y'))),
+      toElement(
+        VStack(Embed(createElement('ThirdParty')), Icon(Glyph), Label({ text: 'x' }), Text('y')),
+      ),
     );
     expect(hosts(r, 'View')).toHaveLength(1);
     expect(hosts(r, 'ThirdParty')[0]?.parent?.type).toBe('View');
@@ -342,10 +334,83 @@ describe('interop', () => {
 
   it('glass is Bloom’s Surface, tinted from a colour role', () => {
     const r = mount(
-      toElement(Button(Icon(Glyph)).shape('circle').glass({ tint: 'primary' }).corner('full')),
+      toElement(Button(Icon(Glyph)).shape('circle').glass(regular.tint('primary')).corner('full')),
     );
     const [surface] = hosts(r, 'Surface');
     expect(surface?.props.fill).toBe(LIGHT.primary);
+    expect(surface?.props.sheen).toBeUndefined();
     expect(hosts(r, 'BloomButton')[0]?.props.iconOnly).toBe(true);
+  });
+});
+
+const countedGlyph = jest.fn((props: { fill?: string }) => createElement('Counted', props));
+/** A module constant: one node for every render, as the compiler hoists it. */
+const STATIC = HStack(Icon(countedGlyph), Text('static')).spacing('sm');
+let bump: () => void = () => {};
+const StaticParent = view(function StaticParent() {
+  const [n, setN] = useState(0);
+  bump = () => setN((v) => v + 1);
+  return VStack(STATIC, Text(`${n}`));
+});
+
+describe('the cost of a view and of a theme switch', () => {
+  it('a view is one fiber: React’s own memo of its host, with no comparator', () => {
+    const node = Card({ title: 'a' });
+    const { component } = node.props as { component: { compare: unknown; type: unknown } };
+    expect(component.compare).toBeNull();
+    expect(typeof component.type).toBe('function');
+  });
+
+  it('a theme switch repaints the leaves and re-runs no view body', () => {
+    const body = jest.fn((props: { title: string }) =>
+      VStack(Text(props.title).foreground('muted'), Icon(Glyph)),
+    );
+    const Row = view(body);
+    const tree = toElement(VStack(Row({ title: 'a' })));
+    const r = mount(tree, LIGHT);
+    update(r, tree, DARK);
+    expect(body).toHaveBeenCalledTimes(1);
+    expect(hosts(r, 'Text')[0]?.props.style.color).toBe(DARK.textSecondary);
+    expect(hosts(r, 'Glyph')[0]?.props.fill).toBe(DARK.text);
+  });
+
+  it('the environment crosses a view boundary only where it changed', () => {
+    const r = mount(
+      toElement(VStack(VStack(Label({ text: 'x' })).foreground('muted'), Label({ text: 'y' }))),
+    );
+    const [x, y] = hosts(r, 'Text');
+    expect(x?.props.style.color).toBe(LIGHT.textSecondary);
+    expect(y?.props.style.color).toBe(LIGHT.text);
+  });
+
+  it('a node that keeps its identity renders the same element, so React skips it', () => {
+    const r = mount(toElement(StaticParent()));
+    act(() => bump());
+    act(() => bump());
+    expect(hosts(r, 'Text').map((t) => t.props.children)).toEqual(['static', '2']);
+    expect(countedGlyph).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('glass', () => {
+  it('regular is Surface’s own material; a tint paints its fill, at a named opacity when given', () => {
+    const r = mount(
+      toElement(VStack(VStack().glass(), VStack().glass(regular.tint('primary', 'medium')))),
+    );
+    const [plain, tinted] = hosts(r, 'Surface');
+    expect(plain?.props.fill).toBeUndefined();
+    expect(tinted?.props.fill).toBe('rgba(0, 0, 255, 0.48)');
+  });
+
+  it('clear drops the sheen and lets the surface (or its tint) through at the subtle opacity', () => {
+    const r = mount(toElement(VStack(VStack().glass(clear), VStack().glass(clear.tint('error')))));
+    const [untinted, tinted] = hosts(r, 'Surface');
+    expect(untinted?.props).toMatchObject({ sheen: false, fill: 'rgba(245, 245, 245, 0.24)' });
+    expect(tinted?.props).toMatchObject({ sheen: false, fill: 'rgba(255, 0, 0, 0.24)' });
+  });
+
+  it('values are named, and equal values share a key', () => {
+    expect(clear.tint('primary', 'subtle').key).toBe(clear.tint('primary', 'subtle').key);
+    expect(regular.key).not.toBe(clear.key);
   });
 });

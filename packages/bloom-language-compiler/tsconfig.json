@@ -1,0 +1,9 @@
+{
+  "extends": "../bloom-language/tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "paths": { "@oxy.so/bloom-language": ["../bloom-language/src/index.ts"] }
+  },
+  "include": ["fixtures", "test"],
+  "exclude": ["fixtures/*.compiled.tsx", "node_modules"]
+}

@@ -1,5 +1,5 @@
 /** @type {import('jest').Config} */
-const support = '<rootDir>/src/__tests__/support';
+const support = `${__dirname}/src/__tests__/support`;
 module.exports = {
   testEnvironment: 'node',
   transform: {
@@ -34,5 +34,6 @@ module.exports = {
     '^react$': require.resolve('react'),
     '^react/(.*)$': `${require('node:path').dirname(require.resolve('react/package.json'))}/$1`,
   },
+  rootDir: __dirname,
   testMatch: ['<rootDir>/src/**/__tests__/**/*.test.ts?(x)'],
 };

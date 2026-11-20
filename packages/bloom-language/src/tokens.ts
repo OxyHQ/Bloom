@@ -1,138 +1,75 @@
 import { StyleSheet } from 'react-native';
-import { tokens } from '@oxy.so/bloom/styles';
-import { TYPE_SCALE, type TypeScaleFamily, type TypeScaleWeight } from '@oxy.so/bloom/typography';
-import { sizes as BLOOM_ICON_SIZES } from '@oxy.so/bloom/icons/shared';
-import { AVATAR_SIZES, type AvatarSizeToken } from '@oxy.so/bloom/avatar';
-import type { ThemeColors } from '@oxy.so/bloom/theme';
+
+import {
+  ALIGNMENT,
+  AVATAR_SIZE,
+  BORDER_WIDTH,
+  COLORS,
+  CORNER,
+  ENVIRONMENT_DEFAULTS,
+  type ENUMS,
+  FONT_SIZE,
+  GLASS_OPACITY,
+  HIT_SLOP,
+  ICON_SIZE,
+  LEADING,
+  OPACITY,
+  SHRINK,
+  SPACE,
+  type TYPE_FAMILIES,
+  TYPE_RAMP,
+  WEIGHT,
+} from './generated/spec.generated';
 
 /**
  * The token vocabulary of the language. Every modifier value is one of these
- * names. Each table reads Bloom's own scale by reference, so a rung cannot
- * exist here with a different number than it has in Bloom.
+ * names. The tables are generated from `spec/language.json`, the one spec the
+ * compiler's tables come from too, and `spec.test.ts` holds every rung equal
+ * to Bloom's own.
  */
 
-// ── Space (padding, spacing, frame) ───────────────────────────────
-
-const SPACE_SCALE = {
-  none: 0,
-  '2xs': tokens.space._2xs,
-  xs: tokens.space.xs,
-  sm: tokens.space.sm,
-  md: tokens.space.md,
-  lg: tokens.space.lg,
-  xl: tokens.space.xl,
-  '2xl': tokens.space._2xl,
-  '3xl': tokens.space._3xl,
-  '4xl': tokens.space._4xl,
-  '5xl': tokens.space._5xl,
-} as const;
-
-export type SpaceName = keyof typeof SPACE_SCALE;
+export type SpaceName = keyof typeof SPACE;
 /** A space rung pulled outward. On padding it is SwiftUI's negative padding: the frame grows past its box. */
 export type NegativeSpaceName = `-${SpaceName}`;
-
-// ── Corner radius ────────────────────────────────────────────────
-
-const CORNER_SCALE = {
-  none: tokens.borderRadius.none,
-  '2xs': tokens.borderRadius._2xs,
-  xs: tokens.borderRadius.xs,
-  sm: tokens.borderRadius.sm,
-  md: tokens.borderRadius.md,
-  lg: tokens.borderRadius.lg,
-  xl: tokens.borderRadius.xl,
-  '2xl': tokens.borderRadius._2xl,
-  '3xl': tokens.borderRadius._3xl,
-  full: tokens.borderRadius.full,
-} as const;
-
-export type CornerName = keyof typeof CORNER_SCALE;
-
-// ── Type ─────────────────────────────────────────────────────────
-
+export type CornerName = keyof typeof CORNER;
 /** Bloom's `fontSize` rungs: a size alone, the platform's own line height. */
-const FONT_SIZE_SCALE = {
-  '2xs': tokens.fontSize._2xs,
-  xs: tokens.fontSize.xs,
-  sm: tokens.fontSize.sm,
-  md: tokens.fontSize.md,
-  lg: tokens.fontSize.lg,
-  xl: tokens.fontSize.xl,
-  '2xl': tokens.fontSize._2xl,
-  '3xl': tokens.fontSize._3xl,
-  '4xl': tokens.fontSize._4xl,
-  '5xl': tokens.fontSize._5xl,
-} as const;
-
-export type FontSizeName = keyof typeof FONT_SIZE_SCALE;
+export type FontSizeName = keyof typeof FONT_SIZE;
+export type TypeFamily = (typeof TYPE_FAMILIES)[number];
 /**
  * A font is either a step of Bloom's type ramp (`body`, `headline`,
  * `caption-1`…: size, line height and tracking together, exactly as Bloom
  * `Text variant` sets them) or a bare size rung (`sm`, `md`…).
  */
-export type FontName = TypeScaleFamily | FontSizeName;
-export type WeightName = TypeScaleWeight;
-
-const WEIGHTS: Record<WeightName, '400' | '500' | '600' | '700'> = {
-  regular: '400',
-  medium: '500',
-  semibold: '600',
-  bold: '700',
-};
-
-/** Bloom's line-height multipliers. */
-const LEADING_SCALE = tokens.lineHeight;
-export type LeadingName = keyof typeof LEADING_SCALE;
-
-// ── Icons and avatars ────────────────────────────────────────────
-
-export type IconSizeName = keyof typeof BLOOM_ICON_SIZES;
-export type AvatarSizeName = AvatarSizeToken;
-
-// ── Colour ───────────────────────────────────────────────────────
-
+export type FontName = TypeFamily | FontSizeName;
+export type WeightName = keyof typeof WEIGHT;
+export type LeadingName = keyof typeof LEADING;
+export type IconSizeName = keyof typeof ICON_SIZE;
+export type AvatarSizeName = keyof typeof AVATAR_SIZE;
 /**
  * Colour roles, by their class-name spelling (`text-muted-foreground` is
- * `muted`), resolved against the theme's paint. Never a hex: the colour
- * engine owns every value.
+ * `muted`). Never a hex: native paints a role from the theme, the web from
+ * the role's CSS variable, so the colour engine owns every value.
  */
-export const COLOR_ROLES = {
-  foreground: 'text',
-  muted: 'textSecondary',
-  primary: 'primary',
-  onPrimary: 'primaryForeground',
-  secondary: 'secondary',
-  onSecondary: 'secondaryForeground',
-  tertiary: 'tertiary',
-  onTertiary: 'tertiaryForeground',
-  background: 'background',
-  surface: 'backgroundSecondary',
-  popover: 'backgroundTertiary',
-  border: 'border',
-  input: 'borderLight',
-  success: 'success',
-  warning: 'warning',
-  error: 'error',
-  info: 'info',
-} as const satisfies Record<string, keyof ThemeColors>;
+export type ColorName = keyof typeof COLORS;
+export type OpacityName = keyof typeof OPACITY;
+export type BorderWidthName = keyof typeof BORDER_WIDTH;
+export type HitSlopName = keyof typeof HIT_SLOP;
+export type ShrinkPriority = keyof typeof SHRINK;
+export type Alignment = keyof typeof ALIGNMENT;
+/** How much of a glass tint shows: a named transparency, never a number. */
+export type GlassOpacityName = keyof typeof GLASS_OPACITY;
+export type Edge = (typeof ENUMS.edge)[number];
+export type BorderEdge = (typeof ENUMS.borderEdge)[number];
+export type Role = (typeof ENUMS.role)[number];
+export type ButtonShape = (typeof ENUMS.buttonShape)[number];
 
-export type ColorName = keyof typeof COLOR_ROLES;
-
-// ── Other closed sets ────────────────────────────────────────────
-
-export const OPACITY_SCALE = {
-  transparent: 0,
-  disabled: tokens.DISABLED_OPACITY,
-  opaque: 1,
-} as const;
-export type OpacityName = keyof typeof OPACITY_SCALE;
+export { COLORS, GLASS_OPACITY, HIT_SLOP, OPACITY, SHRINK, ALIGNMENT };
 
 /** `hairline` is the platform's hairline (`StyleSheet.hairlineWidth`), the width a row separator uses. */
-export const BORDER_WIDTHS = { hairline: StyleSheet.hairlineWidth, thin: 1 } as const;
-export type BorderWidthName = keyof typeof BORDER_WIDTHS;
-
-export const HIT_SLOP_SCALE = tokens.hitSlop;
-export type HitSlopName = keyof typeof HIT_SLOP_SCALE;
+export function resolveBorderWidth(width: BorderWidthName): number {
+  const value = BORDER_WIDTH[width];
+  return value === 'hairline' ? StyleSheet.hairlineWidth : value;
+}
 
 // ── App tokens ───────────────────────────────────────────────────
 
@@ -164,6 +101,9 @@ type AppTokenTable<T> = {
  * export const postTokens = defineTokens({ space: { gutter: 64 }, iconSize: { context: 13 } });
  * HStack(...).padding('leading', postTokens.space.gutter)
  * ```
+ *
+ * The table is frozen, so a chain that reads it is as static as one that
+ * names a Bloom rung (the compiler hoists both).
  */
 export function defineTokens<T extends { [S in AppTokenScale]?: Record<string, number> }>(
   table: T,
@@ -199,42 +139,38 @@ export function tokenKey(token: string | AppToken): string {
 
 export function resolveSpace(token: PaddingToken): number {
   if (typeof token !== 'string') return token.value;
-  if (token.startsWith('-')) return -SPACE_SCALE[token.slice(1) as SpaceName];
-  return SPACE_SCALE[token as SpaceName];
+  if (token.startsWith('-')) return -SPACE[token.slice(1) as SpaceName];
+  return SPACE[token as SpaceName];
 }
 
 export function resolveCorner(token: CornerName): number {
-  return CORNER_SCALE[token];
+  return CORNER[token];
 }
 
 export function resolveIconSize(token: IconSizeToken): number {
-  return typeof token === 'string' ? BLOOM_ICON_SIZES[token] : token.value;
+  return typeof token === 'string' ? ICON_SIZE[token] : token.value;
 }
 
 export function resolveAvatarSize(token: AvatarSizeName): number {
-  return AVATAR_SIZES[token];
-}
-
-export function resolveColor(colors: ThemeColors, token: ColorName): string {
-  return colors[COLOR_ROLES[token]];
+  return AVATAR_SIZE[token];
 }
 
 export interface FontStyle {
   fontSize?: number;
   lineHeight?: number;
   letterSpacing?: number;
-  fontWeight?: '400' | '500' | '600' | '700';
+  fontWeight?: string;
 }
 
 function isFontSizeName(font: FontName): font is FontSizeName {
-  return font in FONT_SIZE_SCALE;
+  return font in FONT_SIZE;
 }
 
 /**
  * A text's type, from its font, weight and leading together. A ramp step
- * reads Bloom's `TYPE_SCALE` entry for that family and weight (the ramp's line
- * height can depend on the weight); a size rung sets the size, and the weight
- * and leading only when they are given.
+ * reads Bloom's ramp entry for that family and weight (the ramp's line height
+ * can depend on the weight); a size rung sets the size, and the weight and
+ * leading only when they are given.
  */
 export function resolveFont(
   font: FontName | undefined,
@@ -243,17 +179,18 @@ export function resolveFont(
 ): FontStyle {
   const style: FontStyle = {};
   if (font !== undefined && !isFontSizeName(font)) {
-    const step = TYPE_SCALE[`${font}-${weight ?? 'regular'}`];
-    style.fontSize = step.fontSize;
-    style.lineHeight = step.lineHeight;
-    style.letterSpacing = step.letterSpacing;
-    style.fontWeight = step.fontWeight as FontStyle['fontWeight'];
+    const [fontSize, lineHeight, letterSpacing, fontWeight] =
+      TYPE_RAMP[`${font}-${weight ?? ENVIRONMENT_DEFAULTS.rampWeight}`];
+    style.fontSize = fontSize;
+    style.lineHeight = lineHeight;
+    style.letterSpacing = letterSpacing;
+    style.fontWeight = fontWeight;
   } else {
-    if (font !== undefined) style.fontSize = FONT_SIZE_SCALE[font];
-    if (weight !== undefined) style.fontWeight = WEIGHTS[weight];
+    if (font !== undefined) style.fontSize = FONT_SIZE[font];
+    if (weight !== undefined) style.fontWeight = WEIGHT[weight];
   }
   if (leading !== undefined && style.fontSize !== undefined) {
-    const ratio = typeof leading === 'string' ? LEADING_SCALE[leading] : leading.value;
+    const ratio = typeof leading === 'string' ? LEADING[leading] : leading.value;
     style.lineHeight = style.fontSize * ratio;
   }
   return style;

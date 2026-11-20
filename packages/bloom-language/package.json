@@ -39,6 +39,7 @@
   ],
   "sideEffects": false,
   "scripts": {
+    "generate": "node scripts/generate.mjs",
     "build": "bob build",
     "typescript": "tsc --noEmit -p .",
     "test": "jest"

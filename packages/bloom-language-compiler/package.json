@@ -1,0 +1,42 @@
+{
+  "name": "@oxy.so/bloom-language-compiler",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Build-time optimiser for @oxy.so/bloom-language: hoists static chains, opts view bodies into the React Compiler and checks chains against the language spec. A pre-pass in front of Metro's and Jest's own transformers.",
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OxyHQ/Bloom.git",
+    "directory": "packages/bloom-language-compiler"
+  },
+  "exports": {
+    "./metro": "./js/metro.js",
+    "./metro-transformer": "./js/metro-transformer.js",
+    "./jest": "./js/jest.js",
+    "./compile": "./js/compile.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "js",
+    "bloom-language-compiler.node",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "./scripts/build-addon.sh",
+    "typescript": "tsc --noEmit -p .",
+    "test": "cargo test --locked && node --test test/adapter.test.cjs && jest",
+    "lint:rust": "cargo fmt --check && cargo clippy --all-targets --locked -- -D warnings",
+    "audit:crates": "python3 scripts/audit-crate-ages.py Cargo.lock"
+  },
+  "dependencies": {
+    "@jridgewell/trace-mapping": "0.3.31"
+  },
+  "peerDependencies": {
+    "@oxy.so/bloom-language": "0.1.0",
+    "metro-source-map": ">=0.83.0"
+  },
+  "devDependencies": {
+    "@oxy.so/bloom-language": "workspace:*"
+  },
+  "packageManager": "bun@1.4.3"
+}
