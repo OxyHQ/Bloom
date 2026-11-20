@@ -9,27 +9,21 @@ import {
 import { View } from 'react-native';
 import { usePrefersReducedMotion } from '@oxy.so/bloom/hooks';
 
-import { usePlay } from './host';
-import { defineKeyframes, type KeyframesValue } from './keyframes';
+import {
+  rollKeyframes,
+  timingOf,
+  usePlay,
+  type KeyframesValue,
+  type Play,
+} from '@oxy.so/bloom/motion';
+
 import type { AnimationScope, Outer } from './motion-node';
-import type { Play } from './play';
-import { resolveMotion, timingOf } from './tokens';
+import { resolveMotion } from './tokens';
 
 /** How far a rolling text travels, in px: the engagement bar's `ROLL_DISTANCE`. */
 export const ROLL_DISTANCE = 10;
-
-const rollFrames = (travel: number): { incoming: KeyframesValue; outgoing: KeyframesValue } => ({
-  incoming: defineKeyframes([
-    { at: 0, opacity: 0, translateY: travel },
-    { at: 1, opacity: 1, translateY: 0 },
-  ]),
-  outgoing: defineKeyframes([
-    { at: 0, opacity: 1, translateY: 0 },
-    { at: 1, opacity: 0, translateY: -travel },
-  ]),
-});
-const UP = rollFrames(ROLL_DISTANCE);
-const DOWN = rollFrames(-ROLL_DISTANCE);
+const UP = rollKeyframes(ROLL_DISTANCE);
+const DOWN = rollKeyframes(-ROLL_DISTANCE);
 
 const CONTAINER = { alignItems: 'flex-start' } as const;
 const OUTGOING = { position: 'absolute', top: 0, insetInlineStart: 0 } as const;
@@ -94,7 +88,7 @@ export function TextRoll({ text, direction, scope, draw }: TextRollProps): React
   const play = (keyframes: KeyframesValue, onEnd?: () => void): Play | undefined =>
     timing === undefined
       ? undefined
-      : { id, keyframes, timing, fill: onEnd ? 'none' : 'forwards', glass: false, onEnd };
+      : { id, keyframes, timing, fill: onEnd ? 'none' : 'forwards', material: false, onEnd };
 
   const incomingRef = useRef<unknown>(null);
   const outgoingRef = useRef<unknown>(null);

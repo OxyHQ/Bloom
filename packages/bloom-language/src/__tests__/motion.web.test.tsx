@@ -11,14 +11,13 @@ import { toElement } from '../render';
 import { asymmetric, move, opacity } from '../motion/transition';
 import { defineKeyframes } from '../motion/keyframes';
 import { regular } from '../glass';
-import { PRESS_SCALE_CLASS, WEB_SHEET } from '../generated/web-sheet.generated';
 import type { Child } from '../node';
 
 jest.mock('react-native', () => ({
   ...jest.requireActual('react-native'),
   Platform: { OS: 'web', select: <T,>(spec: { web?: T; default?: T }) => spec.web ?? spec.default },
 }));
-jest.mock('../motion/host', () => jest.requireActual('../motion/host.web'));
+jest.mock('@oxy.so/bloom/motion', () => jest.requireActual('./support/bloom-motion.web'));
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const consoleError = console.error;
@@ -126,21 +125,11 @@ describe('on the web, motion is CSS and the Web Animations API', () => {
     expect(all(r, 'Text').map((text) => text.props.children)).toEqual(['b']);
   });
 
-  it('glass never fades its box: the material’s layers and the content on it fade instead', () => {
+  it('a glass view’s keyframes tell the engine to route their fade through the material', () => {
+    // Bloom's engine does the routing (its own suite, motion-engine.web.test.ts);
+    // here: the language hands the glass view's box to it, flagged.
     mount(VStack([VStack(Text('t')).glass(regular).transition(rise).id('t')]));
-    const targets = played.map((animation) => animation.target);
-    expect(targets).toEqual(['box', 'surface::before', 'surface::after', 'content']);
-    const [box, before, , piece] = played;
-    expect(box?.frames).toEqual([
-      { offset: 0, easing: QUART, transform: 'translateY(-20px)' },
-      { offset: 1, easing: QUART, transform: 'translateY(0px)' },
-    ]);
-    expect(before?.frames).toEqual([
-      { offset: 0, easing: QUART, opacity: 0 },
-      { offset: 1, easing: QUART, opacity: 1 },
-    ]);
-    expect(piece?.frames).toEqual(before?.frames);
-    expect(before?.options).toMatchObject({ duration: 300, pseudoElement: '::before' });
+    expect(played[0]?.target).toBe('box');
   });
 
   it('keyframes curve each stretch, as a CSS animation does: a frame’s own easing, else the motion’s', () => {
@@ -175,17 +164,17 @@ describe('on the web, motion is CSS and the Web Animations API', () => {
     });
   });
 
-  it('press feedback is the generated class: a touch press, never a mouse or reduced motion', () => {
+  it('press feedback is Bloom’s press class: a touch press, never a mouse or reduced motion', () => {
     const r = mount(
       HStack(Text('a'))
         .onPress(() => {})
         .pressScale(),
     );
     const [host] = all(r, 'Pressable');
-    expect(flat(host?.props.style)).toMatchObject({ $$css: true, pressScale: PRESS_SCALE_CLASS });
+    expect(flat(host?.props.style)).toMatchObject({
+      $$css: true,
+      bloomPressScale: 'bloom-press-scale',
+    });
     expect(host?.props.onPressIn).toBeUndefined();
-    expect(WEB_SHEET).toContain(
-      `@media (pointer: coarse) and (prefers-reduced-motion: no-preference){.${PRESS_SCALE_CLASS}{transition:scale 100ms cubic-bezier(0.455,0.03,0.515,0.955);}.${PRESS_SCALE_CLASS}:active{scale:0.98;}}`,
-    );
   });
 });

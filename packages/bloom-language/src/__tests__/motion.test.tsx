@@ -115,8 +115,10 @@ describe('.transition() in a keyed list', () => {
     const [box] = all(r, 'Animated.Text');
     expect(flat(box?.props.style)).toMatchObject({
       animationName: {
-        '0%': { opacity: 0, transform: [{ translateY: -20 }] },
-        '100%': { opacity: 1, transform: [{ translateY: 0 }] },
+        keyframes: {
+          '0%': { opacity: 0, transform: [{ translateY: -20 }] },
+          '100%': { opacity: 1, transform: [{ translateY: 0 }] },
+        },
       },
       animationDuration: 300,
       animationTimingFunction: { cubicBezier: [0.165, 0.84, 0.44, 1] },
@@ -131,7 +133,7 @@ describe('.transition() in a keyed list', () => {
     expect(texts.map((text) => text.props.children)).toEqual(['a', 'b']);
     const leaving = texts[0] as ReactTestInstance;
     expect(flat(leaving.props.style)).toMatchObject({
-      animationName: { '0%': { opacity: 1 }, '100%': { opacity: 0 } },
+      animationName: { keyframes: { '0%': { opacity: 1 }, '100%': { opacity: 0 } } },
       animationDuration: 180,
       animationFillMode: 'forwards',
     });
@@ -187,13 +189,15 @@ describe('.keyframes()', () => {
     const [box] = all(r, 'Animated.View');
     expect(flat(box?.props.style)).toMatchObject({
       animationName: {
-        '0%': {
-          transform: [{ scale: 1 }],
-          animationTimingFunction: { cubicBezier: [0.455, 0.03, 0.515, 0.955] },
+        keyframes: {
+          '0%': {
+            transform: [{ scale: 1 }],
+            animationTimingFunction: { cubicBezier: [0.455, 0.03, 0.515, 0.955] },
+          },
+          '10%': { transform: [{ scale: 0.7 }] },
+          '40%': { transform: [{ scale: 1.2 }] },
+          '100%': { transform: [{ scale: 1 }] },
         },
-        '10%': { transform: [{ scale: 0.7 }] },
-        '40%': { transform: [{ scale: 1.2 }] },
-        '100%': { transform: [{ scale: 1 }] },
       },
       animationDuration: 300,
       animationTimingFunction: { cubicBezier: [0.16, 1, 0.3, 1] },
@@ -226,8 +230,10 @@ describe('.contentTransition("roll")', () => {
     expect(flat(incoming?.props.style)).toMatchObject({
       fontSize: 13,
       animationName: {
-        '0%': { opacity: 0, transform: [{ translateY: 10 }] },
-        '100%': { opacity: 1, transform: [{ translateY: 0 }] },
+        keyframes: {
+          '0%': { opacity: 0, transform: [{ translateY: 10 }] },
+          '100%': { opacity: 1, transform: [{ translateY: 0 }] },
+        },
       },
       animationDuration: 400,
       animationTimingFunction: { cubicBezier: [0.16, 1, 0.3, 1] },
@@ -236,7 +242,7 @@ describe('.contentTransition("roll")', () => {
     expect(outgoing?.props['aria-hidden']).toBe(true);
     expect(flat(outgoing?.props.style)).toMatchObject({
       position: 'absolute',
-      animationName: { '100%': { opacity: 0, transform: [{ translateY: -10 }] } },
+      animationName: { keyframes: { '100%': { opacity: 0, transform: [{ translateY: -10 }] } } },
       animationFillMode: 'forwards',
     });
     act(() => incoming?.props.onCSSAnimationEnd());
@@ -248,7 +254,7 @@ describe('.contentTransition("roll")', () => {
     const r = mount(count(5, 0));
     update(r, count(4, 1));
     const [incoming] = all(r, 'Animated.Text');
-    expect(flat(incoming?.props.style).animationName).toMatchObject({
+    expect(flat(incoming?.props.style).animationName.keyframes).toMatchObject({
       '0%': { transform: [{ translateY: -10 }] },
     });
   });
@@ -289,10 +295,14 @@ describe('.matchedGeometry()', () => {
     expect(flat(line?.props.style)).toMatchObject({
       transformOrigin: 'left top',
       animationName: {
-        '0%': {
-          transform: [{ translateX: -50 }, { translateY: 0 }, { scaleX: 0.5 }, { scaleY: 1 }],
+        keyframes: {
+          '0%': {
+            transform: [{ translateX: -50 }, { translateY: 0 }, { scaleX: 0.5 }, { scaleY: 1 }],
+          },
+          '100%': {
+            transform: [{ translateX: 0 }, { translateY: 0 }, { scaleX: 1 }, { scaleY: 1 }],
+          },
         },
-        '100%': { transform: [{ translateX: 0 }, { translateY: 0 }, { scaleX: 1 }, { scaleY: 1 }] },
       },
       animationDuration: 200,
       animationTimingFunction: { cubicBezier: [0.25, 0.1, 0.25, 1] },
@@ -330,7 +340,7 @@ describe('glass', () => {
     );
     const box = all(r, 'Animated.View')[0];
     expect(box?.findByType('Surface' as never)).toBeDefined();
-    expect(flat(box?.props.style).animationName).toMatchObject({ '0%': { opacity: 0 } });
+    expect(flat(box?.props.style).animationName.keyframes).toMatchObject({ '0%': { opacity: 0 } });
   });
 });
 

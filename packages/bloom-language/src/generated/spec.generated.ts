@@ -325,6 +325,12 @@ export const EASING = {
     1,
     0.3,
     1
+  ],
+  "backOut": [
+    0.34,
+    1.2,
+    0.64,
+    1
   ]
 } as const;
 /** Motion tokens as Bloom `MotionSpec`s: a duration and curve, or a spring. */
@@ -379,6 +385,15 @@ export const MOTION = {
       0.25,
       0.1,
       0.25,
+      1
+    ]
+  },
+  "thumb": {
+    "duration": 300,
+    "easing": [
+      0.34,
+      1.2,
+      0.64,
       1
     ]
   },
