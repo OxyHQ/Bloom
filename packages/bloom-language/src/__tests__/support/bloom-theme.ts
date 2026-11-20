@@ -23,3 +23,4 @@ export const PaintContext = createContext<ThemeColors>(LIGHT);
 export function useThemePaint(): ThemeColors {
   return useContext(PaintContext);
 }
+export { withAlpha } from '../../../../../src/theme/color-utils';

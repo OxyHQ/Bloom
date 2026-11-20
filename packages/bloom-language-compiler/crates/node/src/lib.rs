@@ -16,24 +16,20 @@ pub struct Diagnostic {
 pub struct Output {
     pub code: String,
     pub map: Option<String>,
-    pub css: String,
     pub changed: bool,
+    pub hoisted: u32,
     pub diagnostics: Vec<Diagnostic>,
 }
 
-/// Compile one module. `platform` is `"native"` or `"web"`.
+/// Compile one module. The output is the same on every platform.
 #[napi]
-pub fn compile(source: String, filename: String, platform: String) -> Output {
-    let platform = match platform.as_str() {
-        "web" => bloom_language_compiler::Platform::Web,
-        _ => bloom_language_compiler::Platform::Native,
-    };
-    let output = bloom_language_compiler::compile(&source, &filename, platform);
+pub fn compile(source: String, filename: String) -> Output {
+    let output = bloom_language_compiler::compile(&source, &filename);
     Output {
         code: output.code,
         map: output.map,
-        css: output.css,
         changed: output.changed,
+        hoisted: output.hoisted,
         diagnostics: output
             .diagnostics
             .into_iter()

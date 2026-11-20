@@ -1,3 +1,5 @@
+import { createContext } from 'react';
+
 import type { Modifier } from './node';
 import type { TextTraits } from './style';
 
@@ -6,9 +8,14 @@ import type { TextTraits } from './style';
  * (`foreground`, `font`, `weight`, `leading`) set above it, as SwiftUI's
  * environment carries `.font` and `.foregroundStyle` down.
  *
+ * Inside one render pass it travels with the renderer's context; across a
+ * `view()` boundary it travels through `EnvContext`, provided only where an
+ * environment modifier changed it, so views under an unchanged environment
+ * add no provider.
+ *
  * Environments are interned: the same parent and the same modifiers always
- * give the same object, so a memoized `view()` below sees an unchanged `env`
- * prop on every re-render, and the style caches key on `key`.
+ * give the same object, so a provider's value and the render memo compare
+ * by identity, and the style caches key on `key`.
  */
 export interface Env {
   readonly key: string;
@@ -21,6 +28,9 @@ export const ROOT_ENV: Env = {
   text: { foreground: undefined, font: undefined, weight: undefined, leading: undefined },
   derived: new Map(),
 };
+
+export const EnvContext = createContext<Env>(ROOT_ENV);
+EnvContext.displayName = 'BloomEnvironment';
 
 type EnvModifier = Extract<Modifier, { kind: 'foreground' | 'font' | 'weight' | 'leading' }>;
 

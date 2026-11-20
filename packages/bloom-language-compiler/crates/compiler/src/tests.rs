@@ -1,125 +1,160 @@
-use crate::{Platform, compile};
+use crate::compile;
 
-const HELLO: &str = "import { HStack, Text } from '@oxy.so/bloom-language';
-export function Hello() {
-  return HStack(Text('x').font('body')).padding('md');
-}
+const IMPORTS: &str =
+    "import { HStack, Icon, Text, VStack, view, defineTokens, regular } from '@oxy.so/bloom-language';
+import { RiMoreFill } from '@oxy.so/bloom/icons/RiMoreFill';
 ";
 
+fn compiled(body: &str) -> crate::Output {
+    compile(&format!("{IMPORTS}{body}"), "row.tsx")
+}
+
 #[test]
-fn folds_a_static_chain_into_a_hoisted_tree() {
-    let output = compile(HELLO, "hello.tsx", Platform::Native);
+fn a_static_chain_inside_a_function_is_hoisted_to_module_scope() {
+    let output =
+        compiled("export function Hello() {\n  return HStack(Text('x').font('body')).padding('md');\n}\n");
     assert!(output.changed && output.diagnostics.is_empty());
+    assert_eq!(output.hoisted, 1);
     let code = output.code;
-    assert!(code.contains(
-        "const _bloomStyle0 = {\n\tflexDirection: \"row\",\n\talignItems: \"center\",\n\tpadding: 12\n};"
-    ));
     assert!(
-        code.contains(
-            "const _bloomStyle1 = {\n\tfontSize: 15,\n\tlineHeight: 22,\n\tfontWeight: \"400\"\n};"
-        )
+        code.contains("const _bloomStatic0 = HStack(Text(\"x\").font(\"body\")).padding(\"md\");"),
+        "{code}"
     );
-    assert!(code.contains("const _bloomColors0 = { color: \"foreground\" };"));
-    assert!(code.contains("return _bloomTree0;"), "the render returns the hoisted tree:\n{code}");
-    assert!(!code.contains(".padding("), "no chain is left to interpret:\n{code}");
+    assert!(code.contains("return _bloomStatic0;"), "{code}");
     assert!(output.map.is_some());
 }
 
 #[test]
-fn web_emits_atomic_classes_and_theme_variables() {
-    let output = compile(HELLO, "hello.tsx", Platform::Web);
-    assert!(output.code.contains("$$css: true"));
-    assert!(output.css.contains("{padding:12px}"));
-    assert!(
-        output.css.contains("{color:var(--foreground)}"),
-        "colour stays a theme variable:\n{}",
-        output.css
+fn module_scope_chains_already_run_once_and_are_left_alone() {
+    let output = compiled("export const Row = HStack(Text('x'));\n");
+    assert!(!output.changed);
+}
+
+#[test]
+fn a_dynamic_chain_keeps_its_runtime_parts_and_hoists_its_static_ones() {
+    let output = compiled(
+        "export function Row(label) {\n  return VStack(Text(label), Icon(RiMoreFill).size('md')).spacing('sm');\n}\n",
     );
-    assert!(!output.code.contains("@oxy.so/bloom-language/compiled"), "web needs no theme-aware host");
+    let code = output.code;
+    assert!(code.contains("const _bloomStatic0 = Icon(RiMoreFill).size(\"md\");"), "{code}");
+    assert!(code.contains("return VStack(Text(label), _bloomStatic0).spacing(\"sm\");"), "{code}");
+}
+
+#[test]
+fn a_static_prefix_of_a_dynamic_chain_is_hoisted() {
+    let code =
+        compiled("export function Row(gap) {\n  return HStack(Text('a')).padding('md').spacing(gap);\n}\n")
+            .code;
+    assert!(code.contains("const _bloomStatic0 = HStack(Text(\"a\")).padding(\"md\");"), "{code}");
+    assert!(code.contains("return _bloomStatic0.spacing(gap);"), "{code}");
+}
+
+#[test]
+fn a_frozen_token_table_is_static_and_the_hoist_follows_its_declaration() {
+    let source = "export function Menu() {\n  return Icon(RiMoreFill).size(row.iconSize.menu);\n}\nconst row = defineTokens({ iconSize: { menu: 18 } });\n";
+    let code = compiled(source).code;
+    let table = code.find("const row = defineTokens").unwrap();
+    let hoist = code.find("const _bloomStatic0 = Icon(RiMoreFill).size(row.iconSize.menu);").expect(&code);
+    assert!(hoist > table, "declared after the table it reads:\n{code}");
+}
+
+#[test]
+fn a_local_that_shadows_an_import_is_not_the_import() {
+    let code = compiled("export function Row(Text) {\n  return Text('x').font('body');\n}\n").code;
+    assert!(!code.contains("_bloomStatic"), "{code}");
+}
+
+#[test]
+fn a_mutable_or_later_value_is_never_hoisted() {
+    // Only the static prefix moves; the modifier reading a `let` stays where it runs.
+    let code =
+        compiled("let size = 'md';\nexport function Row() {\n  return Text('x').font(size);\n}\n").code;
+    assert!(
+        code.contains("const _bloomStatic0 = Text(\"x\");")
+            && code.contains("return _bloomStatic0.font(size);"),
+        "{code}"
+    );
+    let code =
+        compiled("const style = { a: 1 };\nexport function Row() {\n  return Text('x').label(style.a);\n}\n")
+            .code;
+    assert!(
+        code.contains("return _bloomStatic0.label(style.a);"),
+        "a plain object can change after module init:\n{code}"
+    );
+}
+
+#[test]
+fn view_bodies_opt_in_to_the_react_compiler() {
+    let source = "export const Name = view((props) => Text(props.name).font('body'));
+function PostRow(props) {
+  return Text(props.title);
+}
+export const PostRowView = view(PostRow);
+export function helper(text) {
+  return Text(text);
+}
+";
+    let code = compiled(source).code;
+    assert!(
+        code.contains("view((props) => {\n\t\"use memo\";\n\treturn Text(props.name).font(\"body\");\n})"),
+        "{code}"
+    );
+    assert!(code.contains("function PostRow(props) {\n\t\"use memo\";"), "{code}");
+    assert!(code.contains("function helper(text) {\n\treturn"), "not a view body:\n{code}");
 }
 
 #[test]
 fn a_wrong_token_is_a_readable_error() {
-    let source = HELLO.replace("padding('md')", "padding('mdd')");
-    let output = compile(&source, "hello.tsx", Platform::Native);
+    let output = compiled("export function Hello() {\n  return HStack(Text('x')).padding('mdd');\n}\n");
     assert!(!output.changed);
     let [diagnostic] = output.diagnostics.as_slice() else { panic!("one diagnostic") };
-    assert_eq!((diagnostic.line, diagnostic.column), (3, 49));
-    assert_eq!(
-        diagnostic.rendered,
-        "error[bloom]: Unknown spacing token 'mdd' for .padding()
- --> hello.tsx:3:49
-  |
-3 |   return HStack(Text('x').font('body')).padding('mdd');
-  |                                                 ^^^^^
-  = help: did you mean 'md'? spacing tokens: none, xs, sm, md, lg, xl"
+    assert_eq!((diagnostic.line, diagnostic.column), (4, 36));
+    assert!(
+        diagnostic
+            .rendered
+            .starts_with("error[bloom]: Unknown padding token 'mdd' for .padding()\n --> row.tsx:4:36"),
+        "{}",
+        diagnostic.rendered
     );
+    assert!(diagnostic.rendered.contains("= help: did you mean 'md'?"), "{}", diagnostic.rendered);
 }
 
 #[test]
 fn a_wrong_modifier_names_the_valid_ones() {
-    let source = HELLO.replace(".font('body')", ".fnt('body')");
-    let output = compile(&source, "hello.tsx", Platform::Native);
+    let output = compiled("export const x = () => Text('x').fnt('body');\n");
     let diagnostic = &output.diagnostics[0];
     assert_eq!(diagnostic.message, "Text has no modifier .fnt()");
-    assert_eq!(
-        diagnostic.help.as_deref(),
-        Some("did you mean 'font'? Text modifiers: padding, font, weight, foreground")
-    );
+    assert!(diagnostic.help.as_deref().unwrap().starts_with("did you mean 'font'? Text modifiers: padding,"));
 }
 
 #[test]
-fn a_runtime_token_becomes_a_table_lookup() {
-    let source = HELLO.replace("padding('md')", "padding(size)");
-    let output = compile(&source, "hello.tsx", Platform::Native);
-    assert!(output.code.contains("const _bloomTable_padding = {"));
-    assert!(output.code.contains("style: [_bloomStyle0, _bloomTable_padding[size]]"), "{}", output.code);
+fn a_modifier_from_another_node_is_rejected() {
+    let output = compiled("export const x = () => HStack().lines(2);\n");
+    assert_eq!(output.diagnostics[0].message, "HStack has no modifier .lines()");
 }
 
 #[test]
-fn a_fixed_token_after_a_runtime_one_on_the_same_style_is_an_error() {
-    let source = HELLO.replace(".font('body')", ".weight(w).font('body')");
-    let output = compile(&source, "hello.tsx", Platform::Native);
-    assert_eq!(
-        output.diagnostics[0].message,
-        ".font() with a fixed token follows .weight() with a runtime one"
-    );
+fn per_node_scales_and_glass_are_checked() {
+    let output = compiled("export const x = () => Icon(RiMoreFill).size('huge');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown iconSize token 'huge' for .size()");
+    let output = compiled("export const x = () => HStack().glass(regular.tint('primary', 'loud'));\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown glassOpacity token 'loud' for .tint()");
+    let output = compiled("export const x = () => HStack().glass(regular.tint('primary', 'subtle'));\n");
+    assert!(output.diagnostics.is_empty() && output.hoisted == 1);
 }
 
 #[test]
-fn a_runtime_colour_leaves_the_chain_to_the_runtime_but_folds_its_children() {
-    let source = "import { HStack, Text } from '@oxy.so/bloom-language';
-const row = HStack(Text('x').font('body')).background(tone);
-";
-    let output = compile(source, "row.ts", Platform::Native);
-    assert!(output.code.contains("HStack(_bloomTree0).background(tone)"), "{}", output.code);
+fn frame_keys_and_values_are_checked() {
+    let output = compiled("export const x = () => HStack().frame({ hieght: 'md' });\n");
+    assert_eq!(output.diagnostics[0].message, ".frame() has no 'hieght'");
+    let output = compiled("export const x = () => HStack().frame({ height: 'mdd' });\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown space token 'mdd' for .frame()");
 }
 
 #[test]
 fn files_without_the_language_are_untouched() {
     let source = "import { View } from 'react-native';\nexport const x = 1;\n";
-    let output = compile(source, "plain.ts", Platform::Native);
+    let output = compile(source, "plain.ts");
     assert!(!output.changed);
     assert_eq!(output.code, source);
-}
-
-#[test]
-fn components_with_runtime_values_opt_in_to_the_react_compiler() {
-    let source = "import { Text, view } from '@oxy.so/bloom-language';
-export const Name = view((name: string) => Text(name).font('body'));
-export function Title({ title }: { title: string }) {
-  return Text(title).font('subtitle');
-}
-export function label(text: string) {
-  return Text(text).font('caption');
-}
-export function Static() {
-  return Text('x').font('body');
-}
-";
-    let code = compile(source, "view.ts", Platform::Native).code;
-    assert!(code.contains("view((name: string) => {\n\t\"use memo\";\n\treturn _bloomJsx("), "{code}");
-    assert!(code.contains("function Title({ title }: {\n\ttitle: string;\n}) {\n\t\"use memo\";"), "{code}");
-    assert!(code.contains("function label(text: string) {\n\treturn"), "not a component:\n{code}");
-    assert!(code.contains("function Static() {\n\treturn _bloomTree0;"), "nothing to memoize:\n{code}");
 }

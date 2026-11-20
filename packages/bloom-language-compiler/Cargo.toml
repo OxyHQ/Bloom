@@ -6,6 +6,7 @@ members = ["crates/compiler", "crates/node"]
 edition = "2024"
 license-file = "../../LICENSE"
 publish = false
+rust-version = "1.97"
 
 # Direct dependencies are pinned exactly. Every crate in Cargo.lock was
 # checked against the 7-day supply-chain quarantine (see STUDY.md, "Supply
@@ -16,6 +17,7 @@ oxc_ast = "=0.158.0"
 oxc_ast_visit = "=0.158.0"
 oxc_codegen = "=0.158.0"
 oxc_parser = "=0.158.0"
+oxc_semantic = "=0.158.0"
 oxc_span = "=0.158.0"
 oxc_syntax = "=0.158.0"
 napi = { version = "=3.16.1", default-features = false, features = ["napi6"] }

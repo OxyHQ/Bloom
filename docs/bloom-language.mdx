@@ -11,10 +11,12 @@ of modifiers applied in order. Every modifier value is a Bloom token, never a
 pixel or a colour. The package is `packages/bloom-language`
 (`@oxy.so/bloom-language`, a working name). It is not published.
 
-Today the language renders through React Native and react-native-web, using
-Bloom's existing components and tokens, so a screen written in it looks the same
-as the JSX it replaces. A build-time compiler and native renderers come later
-(see [What comes next](#what-comes-next)).
+The language renders through React Native and react-native-web, using Bloom's
+existing components and tokens, so a screen written in it looks the same as the
+JSX it replaces. A build-time compiler (`packages/bloom-language-compiler`)
+optimises it; the runtime stays complete without it. One spec
+(`packages/bloom-language/spec/language.json`) defines the vocabulary both use.
+Native renderers come later (see [What comes next](#what-comes-next)).
 
 ## Syntax
 
@@ -23,7 +25,7 @@ import { view, HStack, VStack, Text, Avatar, Spacer, Action, ActionBar } from '@
 import { ReplyIcon } from '@oxy.so/bloom/icons/ReplyIcon';
 import { LikeIcon } from '@oxy.so/bloom/icons/LikeIcon';
 
-export const PostRow = view(function PostRow(post: Post) {
+export const PostRow = view(function PostRow({ post }: { post: Post }) {
   return HStack(
     Avatar(post.author.avatar).size('lg'),
     VStack(
@@ -54,8 +56,10 @@ Differences from the first draft, each forced by the real components:
 - Avatar sizes are Bloom's avatar rungs (`xs` 20, `sm` 24, `md` 32, `lg` 36).
 - `count && Text(count)` is a type error: with a count of 0 it would put a bare
   `0` in a view. Write `count ? Text(count) : null`.
-- Glass is `.glass({ tint: 'primary' })`. Bloom has one material and no
-  clear/regular selector, and an alpha would be a raw number.
+- Glass takes SwiftUI's materials: `.glass()`, `.glass(clear)`,
+  `.glass(regular.tint('primary'))`, `.glass(clear.tint('primary', 'subtle'))`.
+  A tint's transparency is a named token, never a number (see [Glass](#glass)).
+- A view takes one props object, as a React component does (`Row({ post })`).
 
 ## Node model
 
@@ -92,28 +96,37 @@ go there too.
 
 ## `view()`
 
-`view(body)` returns a function that makes a node. When React renders that node,
-the body runs as a React function component of its own. Hooks work in the body,
-and the body re-runs only when an argument changes or the theme does. Each
-argument is compared with `Object.is`, and a plain-object argument (a props
-object) is compared key by key, the way React compares props. Name the body
-function (`view(function PostRow(...))`) so the component carries the name.
+`view(body)` returns a function that makes a node. The body takes one props
+object, as a React component does, and runs when React renders the node, as a
+React function component of its own, so hooks work in it.
+
+```ts
+const Badge = view(function Badge(props: { label: string }) {
+  return Text(props.label).font('caption-1').foreground('muted');
+});
+HStack(Badge({ label: 'New' }), …)
+```
+
+- **One fiber.** The component is React's own `memo` of the body's host, with
+  no comparator: props compare key by key, `Object.is` each, and the body
+  re-runs only when one changes.
+- **No theme read.** Nothing above a leaf resolves a colour (see
+  [Rendering](#rendering)), so a theme switch re-runs no view body.
+- **The environment** (text traits set above the view) arrives through a
+  context that is provided only where an environment modifier changed it. A
+  view under an unchanged environment adds no provider.
 
 A view node takes the universal modifiers. Environment modifiers flow into its
 body, and box modifiers wrap it.
 
-Each view is two fibers (a memo with a comparator, then the body), and it reads
-the theme once.
+**React Compiler.** Expo runs it in `infer` mode, which finds components by JSX
+or hook calls. A body that returns chains has neither, so naming the function
+is not enough: it needs `"use memo"`. The language compiler adds it to every
+function passed to `view()`; without the compiler, write it yourself. A body
+that holds manual `useMemo`/`useCallback` still does not compile ("could not
+be preserved"), so keep the controller in a custom hook (`usePostRowModel`).
 
-**React Compiler.** The compiler must assume that each chain call can change
-what it is passed. So a component body that builds a tree with manual
-`useMemo`/`useCallback` does not compile: those memos "could not be preserved".
-Keep the controller (hooks, handlers, derived values) in a custom hook
-(`usePostRowModel`). It compiles like any hook, and the view body then
-compiles too. Teaching the compiler that the language's functions are pure is a
-follow-up.
-
-## Rendering today
+## Rendering
 
 | Node | Draws |
 | --- | --- |
@@ -125,19 +138,53 @@ follow-up.
 | `Image` | Bloom `shapes` `Image` (square, at an avatar rung). See [Not built yet](#not-built-yet). |
 | `Button` | Bloom `Button` (`style` is its appearance, `tint` its tone, `shape` is icon-only) |
 | `ActionBar` / `Action` / `ActionGroup` | Bloom `EngagementBar` / `EngagementAction` / `EngagementGroup` |
-| `.glass()` | Bloom `Surface` (its one material, tinted from a colour role) |
+| `.glass()` | Bloom `Surface` (see [Glass](#glass)) |
 | `Embed` | the React element as given |
 
-Styles come from caches, not from per-render computation. Each style object is
-built once per theme from the modifier keys that produce it, frozen, and handed
-back by a map lookup on every later render. So React Native receives the same
-object for the same modifiers. A render still allocates the nodes of its tree,
-as JSX allocates elements.
+**Styles are theme-free.** A style resolves once per modifier key into numbers
+and colour *roles*, and one cache serves every theme. Each role is painted where
+it is cheapest:
 
-On native, colours read `useThemePaint()`, the same paint Bloom's own components
-use. On the web that paint is per instance (it carries the prepaint CSS
-variables), so the style cache is per view instance there. Keying it once per
-theme on the web is a follow-up.
+- **Native:** a `Painted` leaf (`BloomPaint` in the React tree) reads the theme
+  and draws its host with that palette's colours, built once per palette. It is
+  the only reader of the theme, so a theme switch re-renders those leaves and
+  nothing above them.
+- **Web:** a role is its canonical CSS variable (`muted` is
+  `var(--muted-foreground)`) inside a class (below), so a theme switch renders
+  nothing. Colours that are props, not styles (an icon's `fill`, a glass
+  Surface's `fill`), still paint from a `Painted` leaf.
+
+**A node remembers what it rendered.** Rendering a node in the same environment
+and slot gives the same element, so a node that keeps its identity across renders
+(a module constant, a chain the compiler hoisted, a node the React Compiler kept)
+costs one comparison, and React skips its subtree. A fresh node is interpreted.
+
+**Web CSS is generated at build time.** `scripts/generate.mjs` writes one atomic
+class per property and token value (417 today), with declarations from
+react-native-web's own style compiler, so a class says exactly what
+react-native-web would have written inline. The runtime hands react-native-web
+`$$css` class objects for language hosts; a value with no class (an app token's
+own number) stays inline beside them, and a Bloom component (Avatar, Surface…),
+which reads its style as an object, gets an inline object with roles as CSS
+variables. The whole vocabulary has to be in the sheet, not only what sources
+name, because a token can be a runtime value (`.spacing(gap)`), so the sheet is
+generated from the spec, not by scanning (no PostCSS plugin).
+
+- *Delivery:* the sheet is a constructed stylesheet adopted once per document,
+  as Bloom's web forks inject theirs (CSP-safe). Bloom's `adoptStyleSheet` is
+  not a public subpath, so the language carries the same small mechanism.
+- *Order against react-native-web:* react-native-web inserts its sheet at the
+  top of `<head>`, and adopted sheets come after every document sheet, so a
+  language class beats react-native-web's base `View`/`Text` reset at equal
+  specificity. One host never has a language class and a react-native-web class
+  for the same property (styleq keeps one per property). Within the language
+  sheet, rules follow react-native-web's precedence groups (shorthands such as
+  `flex` before longhands such as `flex-shrink`).
+- *Logical edges* (`paddingStart`…) are CSS logical properties, resolved by the
+  document's direction, which Bloom sets on the root (`useDirectionProps`);
+  react-native-web resolves its own against the nearest `dir` prop.
+- *Not covered:* server rendering. An adopted sheet is not in server HTML; an
+  app with Expo static rendering needs the sheet in its document head first.
 
 Fonts follow the existing text host. A language `Text` is the same React Native
 text node a className-styled `Text` is: Inter from Bloom's font loader on
@@ -145,8 +192,8 @@ native, and the inherited family on the web.
 
 ## Modifiers
 
-The vocabulary is closed. Every value is a name from a Bloom table, read by
-reference, so a rung cannot drift from Bloom.
+The vocabulary is closed. Every value is a name from the spec, whose every rung
+`spec.test.ts` holds equal to Bloom's own table, so a rung cannot drift from Bloom.
 
 | Modifier | Values |
 | --- | --- |
@@ -164,7 +211,7 @@ reference, so a rung cannot drift from Bloom.
 | `opacity(o)` | `transparent` `disabled` `opaque` |
 | `size(s)` | icon rungs, avatar rungs, or Bloom sizes, by node |
 | `style(a)` / `shape(s)` / `tint(t)` | Bloom appearance / `circle` `pill` / Bloom tone |
-| `glass({ tint })` | colour role |
+| `glass(material?)` | `regular`, `clear`, `.tint(role, 'subtle' \| 'medium' \| 'strong'?)` |
 | `onPress`, `onLongPress`, `onHover`, `hoverGroup` | handlers. `onPress(undefined)` keeps the pressable host, out of the focus order. |
 | `label`, `hint`, `role`, `hitSlop`, `testID`, `id` | accessibility and identity |
 | `lines(n)`, `noWrap()` | text only |
@@ -189,6 +236,36 @@ the 3px gap before its text, the 13, 14 and 18px glyphs, and `leading-tight` (1.
 `leading-tight` is a class-vocabulary value that Bloom's JS `lineHeight.tight`
 (1.15) does not match. The owner decides whether these become Bloom rungs.
 
+## Glass
+
+SwiftUI's `glassEffect` materials, mapped onto Bloom's one material (`Surface`)
+for now. `regular` and `clear` are exported values; `.tint(role, opacity?)`
+returns a tinted copy.
+
+| Chain | Surface today |
+| --- | --- |
+| `.glass()` = `.glass(regular)` | Surface with its own fill |
+| `.glass(regular.tint('primary'))` | `fill` = the role's colour (the web paints an opaque fill at 72%, as Surface always does) |
+| `.glass(regular.tint('primary', 'medium'))` | `fill` = the role at the named opacity |
+| `.glass(clear)` | `sheen={false}`, `fill` = `surface` at `subtle` |
+| `.glass(clear.tint('error'))` | `sheen={false}`, `fill` = the role at `subtle` (or the opacity given) |
+
+Opacities are tokens (`glassOpacity` in the spec): `subtle` 0.24, `medium` 0.48,
+`strong` 0.72 (`strong` is Surface's own web tint, `SURFACE_TINT_OPACITY`).
+Native paints `withAlpha`; the web paints `color-mix(…)`, because a web paint can
+be a CSS variable.
+
+How each will map natively, when a renderer replaces Surface:
+
+- **iOS:** `glassEffect(.regular)` / `.clear`, with `.tint(color.opacity(x))`
+  for a tint; the opacity token becomes the colour's opacity.
+- **Android and OxyOS:** the lens engine's material: `regular` its default
+  frosted lens, `clear` its unfrosted lens, the tint and opacity as its tint
+  layer.
+- **Web:** `backdrop-filter`, as Surface's web material already draws it
+  (`blur(24px)` with the measured saturate/contrast), `clear` with less blur and
+  no sheen, the tint as the fill at the token's opacity.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -196,12 +273,13 @@ third-party component, or a Bloom or app component the language has no node for
 yet. `Embed((render) => <Link asChild>{render(Text('…'))}</Link>)` hands the
 element a `render` function. That function draws language nodes in the current
 environment as their host elements, so `asChild`, hover cards and slot props
-receive a real `Text` or `View`. An embed with box modifiers gets one `View`
+receive a `Text` or `View` (on native, through its `Painted` leaf, which passes
+every prop, `ref` included, to the host). An embed with box modifiers gets one `View`
 around it.
 
 **The language inside JSX.** `toElement(node)` returns a React element. A bare
 `view()` node mounts its component directly. Anything else mounts under one
-boundary component that reads the theme.
+boundary component, which takes the environment provided where it is placed.
 
 ## Conditionals and lists
 
@@ -209,7 +287,7 @@ boundary component that reads the theme.
 VStack(
   post.title ? Text(post.title).font('headline').weight('semibold') : null,
   post.media.length > 0 && Embed(<Media items={post.media} />),
-  comments.map((c) => CommentRow(c).id(c.id)),
+  comments.map((comment) => CommentRow({ comment }).id(comment.id)),
 )
 ```
 
@@ -224,32 +302,73 @@ type, its text, its accessibility and press props, and its resolved style. It
 covers ten fixture kinds plus the thread, reply-branch, repost, pinned, detail
 and marker states. It allows three named re-spellings that draw the same pixels.
 
+## One spec
+
+`packages/bloom-language/spec/language.json` is the language as data: token
+scales, the type ramp, colour roles (theme colour and CSS variable), glass
+materials, layering, the environment, every modifier's parameters, and which
+node kinds take which modifiers. `bun run generate` (in the package) writes:
+
+- `src/generated/spec.generated.ts`: the runtime's tables;
+- `src/generated/web-sheet.generated.ts`: the web stylesheet and its class table;
+- `../bloom-language-compiler/crates/compiler/src/spec.generated.rs`: the
+  compiler's tables.
+
+Never edit those. A test fails when they are stale, another when a rung differs
+from Bloom's, and a type-level test when a node's TypeScript modifiers differ
+from the spec's list for its kind.
+
+## Compiler
+
+`packages/bloom-language-compiler` is a Rust pass (Oxc, through a Node addon)
+that runs in front of the host's own transformer: a Metro `transformerPath`
+wrapper (`withBloomLanguage(config)` from `@oxy.so/bloom-language-compiler/metro`)
+and a Jest transformer (`/jest`). It is an optimisation: the runtime interprets
+every chain, and the pass changes only what it proves keeps its meaning.
+
+- **Hoists static chains.** A chain whose inputs are literals, imports and
+  static module constants (a literal, a chain, a frozen `defineTokens` table)
+  is the same immutable node on every call, so it is declared once at module
+  scope, after the last declaration it reads. A dynamic chain keeps its runtime
+  parts and hoists what is static inside it, including its longest static
+  prefix (`HStack(…).padding('md')` before `.spacing(gap)`). Names resolve
+  through scope analysis, so a local that shadows an import is never hoisted.
+- **Adds `"use memo"`** to every function passed to `view()`.
+- **Checks chains** against the spec: an unknown modifier for the node, a wrong
+  argument count, or a literal token outside its set fails the build with the
+  source line and a suggestion.
+
+It does not resolve tokens: that stays the runtime's, so the two cannot disagree
+about what a token means, and its output is the same program on every platform.
+
+**Parity is the gate.** CI renders every fixture in
+`packages/bloom-language-compiler/fixtures` interpreted and compiled, on native
+and web, and compares the committed trees on mount, after a re-render, and after
+a theme switch; each fixture also pins how many chains the compiler hoists.
+
 ## What comes next
 
-- **Compiler (Rust).** The chain is plain data with token values, so a compiler
-  can read a view body statically. It would resolve modifier lists into
-  per-platform style tables at build time, replace the runtime chain with
-  precomputed nodes, and check the vocabulary without TypeScript.
 - **Native renderers.** A renderer takes the same node and modifier list. iOS
   maps it to SwiftUI views and modifiers (the vocabulary was chosen to map one to
-  one). Android and OxyOS map it to native views and the lens glass engine, and
-  the web to CSS. Each renderer replaces `render.tsx` for its platform. The node
-  model, tokens and `view()` contract stay.
+  one). Android and OxyOS map it to native views and the lens glass engine. Each
+  renderer replaces `render.tsx` for its platform, and paints roles natively, so
+  a theme switch costs no JS. The node model, the spec and `view()` stay.
+- **Compiler distribution.** Prebuilt addons per platform from CI, and a WASI
+  fallback.
 - **Replacing `className`.** Modifiers cover what the row needed. A port of a
-  screen that uses other utilities adds their modifiers to the closed set, and
-  each modifier maps to a token.
+  screen that uses other utilities adds their modifiers to the spec, and each
+  modifier maps to a token.
 
 ## Not built yet
 
-- No compiler, and no native or CSS renderer: everything renders through React
-  Native and react-native-web.
+- No native or CSS renderer: everything renders through React Native and
+  react-native-web.
 - `Image` draws only Bloom's square, clipped `shapes` `Image`. A general raster
   needs `BloomImage`, which is not a public subpath, and exporting it changes
   `@oxy.so/bloom`'s exports.
 - `ZStack` is basic: the first child sets the size and the rest cover it. There
   is no alignment inside it yet.
-- `.glass()` has no clear or regular choice and no alpha (see above).
+- Glass maps every material onto one Surface (see [Glass](#glass)).
 - On the web, hover groups (`hoverGroup()`) set the `group` class through
   `react-native-css`. Web behaviour of the language row is unmeasured.
-- The React Compiler does not compile a view body that holds manual memos
-  (see `view()` above).
+- The web stylesheet is not in server-rendered HTML.

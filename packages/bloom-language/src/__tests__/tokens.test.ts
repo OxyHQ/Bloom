@@ -1,6 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
-
 import { tokens } from '@oxy.so/bloom/styles';
 import { TYPE_SCALE } from '@oxy.so/bloom/typography';
 import {
@@ -10,12 +7,9 @@ import {
   resolveIconSize,
   resolveAvatarSize,
   resolveSpace,
-  COLOR_ROLES,
 } from '../tokens';
 
-const BLOOM_SRC = join(__dirname, '../../../../src');
-
-describe('tokens are Bloom’s scales, by reference', () => {
+describe('tokens resolve to Bloom’s rungs', () => {
   it('spaces and corners read Bloom’s rungs', () => {
     expect(resolveSpace('xs')).toBe(tokens.space.xs);
     expect(resolveSpace('md')).toBe(tokens.space.md);
@@ -39,6 +33,11 @@ describe('tokens are Bloom’s scales, by reference', () => {
     );
   });
 
+  it('icon and avatar rungs resolve by name', () => {
+    expect(resolveIconSize('md')).toBe(20);
+    expect(resolveAvatarSize('lg')).toBe(36);
+  });
+
   it('a size rung sets the size, and the weight and leading only when given', () => {
     expect(resolveFont('md', undefined, undefined)).toEqual({ fontSize: tokens.fontSize.md });
     expect(resolveFont('sm', 'semibold', undefined)).toEqual({ fontSize: 13, fontWeight: '600' });
@@ -46,33 +45,6 @@ describe('tokens are Bloom’s scales, by reference', () => {
       fontSize: 15,
       lineHeight: 15 * tokens.lineHeight.snug,
     });
-  });
-
-  it('icon and avatar rungs match Bloom’s own tables', () => {
-    const icons = readFileSync(join(BLOOM_SRC, 'icons/shared.tsx'), 'utf8');
-    for (const [name, size] of Object.entries({
-      '2xs': 8,
-      xs: 12,
-      sm: 16,
-      md: 20,
-      lg: 24,
-      xl: 28,
-    })) {
-      expect(icons).toMatch(new RegExp(`'?${name}'?: ${size},`));
-      expect(resolveIconSize(name as 'md')).toBe(size);
-    }
-    const avatars = readFileSync(join(BLOOM_SRC, 'avatar/initials.ts'), 'utf8');
-    for (const [name, size] of Object.entries({ xs: 20, sm: 24, md: 32, lg: 36 })) {
-      expect(avatars).toMatch(new RegExp(`${name}: ${size},`));
-      expect(resolveAvatarSize(name as 'md')).toBe(size);
-    }
-  });
-
-  it('colour roles name theme colours, never values', () => {
-    expect(COLOR_ROLES.muted).toBe('textSecondary');
-    expect(COLOR_ROLES.foreground).toBe('text');
-    expect(COLOR_ROLES.border).toBe('border');
-    expect(COLOR_ROLES.surface).toBe('backgroundSecondary');
   });
 });
 

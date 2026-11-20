@@ -132,6 +132,20 @@
         "react-native-css": ">=3.1.0-rc.0",
       },
     },
+    "packages/bloom-language-compiler": {
+      "name": "@oxy.so/bloom-language-compiler",
+      "version": "0.1.0",
+      "dependencies": {
+        "@jridgewell/trace-mapping": "0.3.31",
+      },
+      "devDependencies": {
+        "@oxy.so/bloom-language": "workspace:*",
+      },
+      "peerDependencies": {
+        "@oxy.so/bloom-language": "0.1.0",
+        "metro-source-map": ">=0.83.0",
+      },
+    },
     "packages/bloom-text": {
       "name": "@oxy.so/bloom-text",
       "version": "0.1.6",
@@ -797,6 +811,8 @@
     "@oxy.so/bloom-editor": ["@oxy.so/bloom-editor@workspace:packages/bloom-editor"],
 
     "@oxy.so/bloom-language": ["@oxy.so/bloom-language@workspace:packages/bloom-language"],
+
+    "@oxy.so/bloom-language-compiler": ["@oxy.so/bloom-language-compiler@workspace:packages/bloom-language-compiler"],
 
     "@oxy.so/bloom-text": ["@oxy.so/bloom-text@workspace:packages/bloom-text"],
 

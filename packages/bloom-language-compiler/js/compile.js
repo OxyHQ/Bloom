@@ -9,13 +9,12 @@ const LANGUAGE_MODULE = '@oxy.so/bloom-language';
  *
  * @param {string} source
  * @param {string} filename
- * @param {'native' | 'web'} platform
- * @returns {{ code: string, map: string, css: string } | null}
+ * @returns {{ code: string, map: string, hoisted: number } | null}
  */
-function compileModule(source, filename, platform) {
+function compileModule(source, filename) {
   // Most modules never import the language; skip the native call for them.
   if (!source.includes(LANGUAGE_MODULE)) return null;
-  const output = compile(source, filename, platform);
+  const output = compile(source, filename);
   if (output.diagnostics.length > 0) {
     const [first] = output.diagnostics;
     const error = new SyntaxError(output.diagnostics.map((d) => d.rendered).join('\n\n'));
@@ -24,7 +23,7 @@ function compileModule(source, filename, platform) {
     error.column = first.column - 1;
     throw error;
   }
-  return output.changed ? { code: output.code, map: output.map, css: output.css } : null;
+  return output.changed ? { code: output.code, map: output.map, hoisted: output.hoisted } : null;
 }
 
 module.exports = { compileModule, LANGUAGE_MODULE };
