@@ -239,6 +239,11 @@ export const SCALE = {
   "full": 1,
   "swell": 1.2
 } as const;
+export const ROTATION = {
+  "none": 0,
+  "quarter": 90,
+  "half": 180
+} as const;
 export const BREAKPOINT = {
   "sm": 640,
   "md": 768,
@@ -281,6 +286,147 @@ export const VARIANT_SELECTORS = {
   "hovered": "&:is(.blsg:hover:where(:not(:has(.blsg:hover))), .blsg:hover:where(:not(:has(.blsg:hover))) *):where(:not(.blsg:hover:where(:not(:has(.blsg:hover))) .blsg, .blsg:hover:where(:not(:has(.blsg:hover))) .blsg *))",
   "focused": "&:is(.blsg:focus-visible, .blsg:focus-visible *):where(:not(.blsg:focus-visible .blsg, .blsg:focus-visible .blsg *))",
   "pressed": "&:is(.blsg:active:where(:not(:has(.blsg:active))), .blsg:active:where(:not(:has(.blsg:active))) *):where(:not(.blsg:active:where(:not(:has(.blsg:active))) .blsg, .blsg:active:where(:not(:has(.blsg:active))) .blsg *))"
+} as const;
+
+/** Cubic-bezier curves by name. */
+export const EASING = {
+  "linear": [
+    0,
+    0,
+    1,
+    1
+  ],
+  "ease": [
+    0.25,
+    0.1,
+    0.25,
+    1
+  ],
+  "easeOut": [
+    0,
+    0,
+    0.58,
+    1
+  ],
+  "inOutQuad": [
+    0.455,
+    0.03,
+    0.515,
+    0.955
+  ],
+  "outQuart": [
+    0.165,
+    0.84,
+    0.44,
+    1
+  ],
+  "outExpo": [
+    0.16,
+    1,
+    0.3,
+    1
+  ]
+} as const;
+/** Motion tokens as Bloom `MotionSpec`s: a duration and curve, or a spring. */
+export const MOTION = {
+  "press": {
+    "duration": 100,
+    "easing": [
+      0.455,
+      0.03,
+      0.515,
+      0.955
+    ]
+  },
+  "select": {
+    "response": 0.42,
+    "dampingRatio": 0.82
+  },
+  "expand": {
+    "response": 0.38,
+    "dampingRatio": 1
+  },
+  "present": {
+    "duration": 220,
+    "easing": [
+      0.455,
+      0.03,
+      0.515,
+      0.955
+    ]
+  },
+  "dismiss": {
+    "duration": 150,
+    "easing": [
+      0.455,
+      0.03,
+      0.515,
+      0.955
+    ]
+  },
+  "fade": {
+    "duration": 160,
+    "easing": [
+      0.455,
+      0.03,
+      0.515,
+      0.955
+    ]
+  },
+  "slide": {
+    "duration": 200,
+    "easing": [
+      0.25,
+      0.1,
+      0.25,
+      1
+    ]
+  },
+  "pop": {
+    "duration": 300,
+    "easing": [
+      0.16,
+      1,
+      0.3,
+      1
+    ]
+  },
+  "roll": {
+    "duration": 400,
+    "easing": [
+      0.16,
+      1,
+      0.3,
+      1
+    ]
+  },
+  "enter": {
+    "duration": 300,
+    "easing": [
+      0.165,
+      0.84,
+      0.44,
+      1
+    ]
+  },
+  "exit": {
+    "duration": 180,
+    "easing": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "restack": {
+    "duration": 600,
+    "easing": [
+      0.165,
+      0.84,
+      0.44,
+      1
+    ]
+  }
 } as const;
 
 /** Bloom's type ramp: `<family>-<weight>` → [fontSize, lineHeight, letterSpacing, fontWeight]. */

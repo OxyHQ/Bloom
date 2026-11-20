@@ -255,6 +255,11 @@
       "fast": 150,
       "normal": 200,
       "slow": 300
+    },
+    "rotation": {
+      "none": 0,
+      "quarter": 90,
+      "half": 180
     }
   },
   "typeRamp": {
@@ -575,6 +580,30 @@
       "focused": "&:is(.blsg:focus-visible, .blsg:focus-visible *):where(:not(.blsg:focus-visible .blsg, .blsg:focus-visible .blsg *))",
       "pressed": "&:is(.blsg:active:where(:not(:has(.blsg:active))), .blsg:active:where(:not(:has(.blsg:active))) *):where(:not(.blsg:active:where(:not(:has(.blsg:active))) .blsg, .blsg:active:where(:not(:has(.blsg:active))) .blsg *))"
     }
+  },
+  "easing": {
+    "$comment": "Cubic-bezier curves by name. inOutQuad is the cubic form of Reanimated's default withTiming curve (Easing.inOut(Easing.quad)); outExpo is the engagement bar's EASE_OUT, outQuart the toast's, ease CSS ease.",
+    "linear": [0, 0, 1, 1],
+    "ease": [0.25, 0.1, 0.25, 1],
+    "easeOut": [0, 0, 0.58, 1],
+    "inOutQuad": [0.455, 0.03, 0.515, 0.955],
+    "outQuart": [0.165, 0.84, 0.44, 1],
+    "outExpo": [0.16, 1, 0.3, 1]
+  },
+  "motion": {
+    "$comment": "Bloom MotionSpecs by name: { duration, easing } (an easing above) or a spring { response, dampingRatio }. Each timing is a motion a Bloom owner already plays, and spec.test.ts reads it from that owner's source (press: PressableScale; present, dismiss: MOTION_RECIPES; fade, slide: Tabs; pop, roll: the engagement bar; enter, exit, restack: the toast). select and expand are springs in SwiftUI's terms; Bloom's recipes of those names are Reanimated duration springs, a different curve, and nothing ported plays them yet.",
+    "press": { "duration": 100, "easing": "inOutQuad" },
+    "select": { "response": 0.42, "dampingRatio": 0.82 },
+    "expand": { "response": 0.38, "dampingRatio": 1 },
+    "present": { "duration": 220, "easing": "inOutQuad" },
+    "dismiss": { "duration": 150, "easing": "inOutQuad" },
+    "fade": { "duration": 160, "easing": "inOutQuad" },
+    "slide": { "duration": 200, "easing": "ease" },
+    "pop": { "duration": 300, "easing": "outExpo" },
+    "roll": { "duration": 400, "easing": "outExpo" },
+    "enter": { "duration": 300, "easing": "outQuart" },
+    "exit": { "duration": 180, "easing": "linear" },
+    "restack": { "duration": 600, "easing": "outQuart" }
   },
   "environment": {
     "$comment": "The text and icon traits a view hands everything inside it, and what each is when nothing sets it. fontSize is the size of a Bloom Text with no variant, which a leading or a tracking measures from when no font is set.",

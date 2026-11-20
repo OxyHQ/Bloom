@@ -50,6 +50,18 @@ const modifiers = withoutComment(spec.modifiers);
 const nodes = withoutComment(spec.nodes);
 const glass = withoutComment(spec.glass);
 const sfSymbols = withoutComment(spec.sfSymbols);
+const easing = withoutComment(spec.easing);
+const motion = withoutComment(spec.motion);
+
+/** A motion token with its easing resolved to its curve: a Bloom `MotionSpec`. */
+const motionSpecs = Object.fromEntries(
+  Object.entries(motion).map(([name, value]) => {
+    if (value.response !== undefined) return [name, value];
+    const curve = easing[value.easing];
+    if (!curve) throw new Error(`motion ${name}: unknown easing ${value.easing}`);
+    return [name, { duration: value.duration, easing: curve }];
+  }),
+);
 
 /** A role's web value: its canonical CSS variable, or, for a colour the same in every theme, the colour. */
 const webColor = (css) => (css.startsWith('#') || css === 'transparent' ? css : `var(--${css})`);
@@ -108,11 +120,17 @@ export const LENGTH = ${ts(scales.length)} as const;
 export const Z_INDEX = ${ts(scales.zIndex)} as const;
 export const SHADOW = ${ts(scales.shadow)} as const;
 export const SCALE = ${ts(scales.scale)} as const;
+export const ROTATION = ${ts(scales.rotation)} as const;
 export const BREAKPOINT = ${ts(scales.breakpoint)} as const;
 
 /** What a variant (\`when()\`) can change, and the web selector of each scheme and state condition. */
 export const VARIANT_MODIFIERS = ${ts(spec.variants.modifiers)} as const;
 export const VARIANT_SELECTORS = ${ts(withoutComment(spec.variants.selectors))} as const;
+
+/** Cubic-bezier curves by name. */
+export const EASING = ${ts(easing)} as const;
+/** Motion tokens as Bloom \`MotionSpec\`s: a duration and curve, or a spring. */
+export const MOTION = ${ts(motionSpecs)} as const;
 
 /** Bloom's type ramp: \`<family>-<weight>\` → [fontSize, lineHeight, letterSpacing, fontWeight]. */
 export const TYPE_FAMILIES = ${ts(typeFamilies)} as const;
@@ -343,6 +361,24 @@ valueClass('display', 'list-item');
 valueClass('wordBreak', 'break-all');
 valueClass('overflowWrap', 'break-word');
 
+// Press feedback on the web: a touch pointer's press scales the view (the CSS
+// `scale` property, so it composes with any transform the view has); a mouse
+// or reduced motion leaves it still. The duration and curve are the press token.
+const PRESS_SCALE_CLASS = `bl${hash('pressScale')}`;
+{
+  const [x1, y1, x2, y2] = motionSpecs.press.easing;
+  const curve = `cubic-bezier(${x1},${y1},${x2},${y2})`;
+  rules.push({
+    order: Number.POSITIVE_INFINITY,
+    name: PRESS_SCALE_CLASS,
+    text: [
+      `@media (pointer: coarse) and (prefers-reduced-motion: no-preference){`,
+      `.${PRESS_SCALE_CLASS}{transition:scale ${motionSpecs.press.duration}ms ${curve};}`,
+      `.${PRESS_SCALE_CLASS}:active{scale:${scales.scale.pressed};}}`,
+    ].join(''),
+  });
+}
+
 // react-native-web's precedence (shorthands before longhands), then by name, so
 // the sheet is the same text on every run.
 rules.sort((a, b) => a.order - b.order || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
@@ -358,6 +394,9 @@ export const WEB_SHEET = ${JSON.stringify(rules.map((rule) => rule.text).join('\
 
 /** \`property:value\` (a role as \`property:@role\`) → the class that sets it. */
 export const WEB_CLASS: Readonly<Record<string, string>> = ${ts(classes)};
+
+/** The class \`.pressScale()\` puts on a host: a touch press scales it to \`pressed\`. */
+export const PRESS_SCALE_CLASS = ${JSON.stringify(PRESS_SCALE_CLASS)};
 `;
 
 // ── The compiler's tables ────────────────────────────────────────
@@ -386,6 +425,9 @@ const tokenSets = {
   avatarSize: Object.keys(scales.avatarSize),
   glassOpacity: Object.keys(scales.glassOpacity),
   duration: Object.keys(scales.duration),
+  scale: Object.keys(scales.scale),
+  rotation: Object.keys(scales.rotation),
+  motion: Object.keys(motion),
   ...enums,
 };
 
