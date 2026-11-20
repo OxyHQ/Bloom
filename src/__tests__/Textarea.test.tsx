@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { surfacePaintOf } from './support/material-fill';
 import { TextInput, View } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';

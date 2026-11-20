@@ -18,7 +18,11 @@ it('rolls a change: the outgoing text stays, hidden, until the roll lands', () =
   expect(screen.getByText('13')).toBeTruthy();
   expect(screen.getByText('12', { includeHiddenElements: true })).toBeTruthy();
   expect(screen.queryByText('12')).toBeNull();
-  act(() => jest.advanceTimersByTime(220));
+  // The roll lands when the incoming text's keyframes end on the CSS engine.
+  let incoming = screen.getByText('13').parent;
+  while (incoming && typeof incoming.props.onCSSAnimationEnd !== 'function')
+    incoming = incoming.parent;
+  act(() => incoming?.props.onCSSAnimationEnd());
   expect(onRollEnd).toHaveBeenCalledTimes(1);
   expect(screen.queryByText('12', { includeHiddenElements: true })).toBeNull();
   jest.useRealTimers();

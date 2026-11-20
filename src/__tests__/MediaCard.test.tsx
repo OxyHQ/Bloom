@@ -5,7 +5,7 @@
  * assertions read the emitted DOM: names on the link, the hover-reveal hooks,
  * cover geometry, the mosaic fallback, progress values and contrast.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

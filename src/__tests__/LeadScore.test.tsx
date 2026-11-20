@@ -10,7 +10,7 @@
  * panels, a tinted one and a neutral one, and every rung inside each is read
  * off that panel rather than off the card.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

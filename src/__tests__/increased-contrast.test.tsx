@@ -7,7 +7,7 @@
  * Increased contrast reduces transparency too, and the native paint swaps the
  * edge light for a 1px hairline that holds 3:1 against the body.
  */
-import React from 'react';
+import type React from 'react';
 import { AccessibilityInfo, Platform, Text } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

@@ -10,7 +10,8 @@
  * assertions read the emitted attributes and the emitted text, never the props.
  */
 import { materialFill } from './support/material-fill';
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

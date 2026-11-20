@@ -18,7 +18,8 @@
  *     in ONE tick, which is the window `busy` alone cannot close because it
  *     only arrives on the next commit.
  */
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

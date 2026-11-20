@@ -214,7 +214,16 @@ describe('EngagementAction motion', () => {
       // The pop's glyph and ring, and the roll's incoming and outgoing counts.
       expect(animated(renderer)).toHaveLength(4);
       expect(renderer.root.findByType(Glyph).props.width).toBe(vertical ? 28 : 20);
-      act(() => jest.runAllTimers());
+      // Each plays as keyframes on the CSS engine; the action returns to rest
+      // when they end (the glyph's ends the pop, the incoming count's the roll).
+      expect(
+        animated(renderer).every((node) =>
+          node.props.style.flat().some((s: object | null) => s && 'animationName' in s),
+        ),
+      ).toBe(true);
+      act(() => {
+        for (const node of animated(renderer)) node.props.onCSSAnimationEnd?.();
+      });
       expect(animated(renderer)).toHaveLength(0);
       renderer.unmount();
     },

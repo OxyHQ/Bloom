@@ -5,7 +5,7 @@
  * which reads as "the gradient looks wrong" rather than as a missing feature)
  * and that `direction` moves the anchor rather than only the gradient.
  */
-import React from 'react';
+import type React from 'react';
 import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

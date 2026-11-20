@@ -5,7 +5,8 @@
  * assertions read emitted DOM attributes rather than props (a prop-level test
  * cannot see what react-native-web does with `aria-*`).
  */
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

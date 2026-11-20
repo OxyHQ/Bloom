@@ -10,11 +10,17 @@ import Animated, {
 
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { Text, TYPE_SCALE } from '../typography';
+import { rollKeyframes } from './keyframes';
+import { MotionView } from './MotionView';
+import type { Play } from './play';
+import { timingOf } from './timing';
+import { EASING } from './tokens';
 import type { RollingTextProps } from './types';
 
 /** CSS `ease-out`, `cubic-bezier(0, 0, 0.58, 1)`: the whole-text roll's default curve. */
-const WHOLE_EASING = Easing.bezier(0, 0, 0.58, 1);
-const DIGIT_EASING = Easing.out(Easing.cubic);
+const WHOLE_EASING = EASING.easeOut;
+/** Ease-out cubic: a digit wheel's default curve. */
+const DIGIT_EASING: readonly [number, number, number, number] = [0.215, 0.61, 0.355, 1];
 const WHOLE_MS = 220;
 const DIGIT_MS = 350;
 const DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
@@ -42,11 +48,16 @@ interface RollState {
   shown: string;
   /** The text leaving, while a roll runs. */
   outgoing: string | null;
-  /** Bumped by every roll, so each one restarts the motion. */
+  /** Bumped by every roll, so each one starts over. */
   id: number;
 }
 
-/** The whole text rolls: the old one leaves while the new one arrives. */
+/**
+ * The whole text rolls: the old one leaves while the new one arrives, as
+ * keyframes on Bloom's motion engine (Reanimated's CSS animations on native,
+ * the Web Animations API on the web), so a roll runs no JS per frame. The
+ * roll lands when the incoming text's keyframes end.
+ */
 function WholeRoll({
   value,
   from,
@@ -72,48 +83,36 @@ function WholeRoll({
   if (roll.shown !== value) {
     setRoll({ shown: value, outgoing: reducedMotion ? null : roll.shown, id: roll.id + 1 });
   }
-
-  const progress = useSharedValue(roll.outgoing === null ? 1 : 0);
   const onRollEndRef = useRef(onRollEnd);
   onRollEndRef.current = onRollEnd;
 
-  // A roll is one `id`; a new duration or curve applies from the next one.
+  // Under reduced motion a roll lands at once.
   // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the roll
   useLayoutEffect(() => {
-    if (roll.id === 0) return undefined;
-    const id = roll.id;
-    cancelAnimation(progress);
-    if (reducedMotion) {
-      progress.value = 1;
-    } else {
-      progress.value = 0;
-      progress.value = withTiming(1, { duration, easing });
-    }
-    const timer = setTimeout(
-      () => {
-        setRoll((current) => (current.id === id ? { ...current, outgoing: null } : current));
-        onRollEndRef.current?.();
-      },
-      reducedMotion ? 0 : duration,
-    );
-    return () => clearTimeout(timer);
+    if (roll.id !== 0 && roll.outgoing === null) onRollEndRef.current?.();
   }, [roll.id]);
 
-  const travel = direction === 'up' ? distance : -distance;
-  const incoming = useAnimatedStyle(
-    () => ({
-      opacity: progress.value,
-      transform: [{ translateY: travel * (1 - progress.value) }],
-    }),
-    [progress, travel],
-  );
-  const outgoing = useAnimatedStyle(
-    () => ({
-      opacity: 1 - progress.value,
-      transform: [{ translateY: -travel * progress.value }],
-    }),
-    [progress, travel],
-  );
+  const id = roll.id;
+  const rolling = roll.outgoing !== null;
+  const halves = rollKeyframes(direction === 'up' ? distance : -distance);
+  const timing = timingOf({ duration, easing });
+  const land = () => {
+    setRoll((current) => (current.id === id ? { ...current, outgoing: null } : current));
+    onRollEndRef.current?.();
+  };
+  const incoming: Play | undefined = rolling
+    ? { id, keyframes: halves.incoming, timing, fill: 'none', material: false, onEnd: land }
+    : undefined;
+  const outgoing: Play | undefined = rolling
+    ? {
+        id,
+        keyframes: halves.outgoing,
+        timing,
+        fill: 'forwards',
+        material: false,
+        onEnd: undefined,
+      }
+    : undefined;
 
   const centered = align === 'center';
   return (
@@ -125,7 +124,7 @@ function WholeRoll({
         containerStyle,
       ]}
     >
-      <Animated.View style={incoming}>
+      <MotionView play={incoming}>
         <Text
           variant={variant}
           numberOfLines={numberOfLines}
@@ -134,12 +133,13 @@ function WholeRoll({
         >
           {value}
         </Text>
-      </Animated.View>
+      </MotionView>
       {roll.outgoing !== null ? (
-        <Animated.View
+        <MotionView
           {...HIDDEN}
           pointerEvents="none"
-          style={[centered ? OUTGOING_CENTER : OUTGOING_START, outgoing]}
+          play={outgoing}
+          style={centered ? OUTGOING_CENTER : OUTGOING_START}
         >
           <Text
             variant={variant}
@@ -149,7 +149,7 @@ function WholeRoll({
           >
             {roll.outgoing}
           </Text>
-        </Animated.View>
+        </MotionView>
       ) : null}
     </View>
   );
@@ -169,7 +169,7 @@ function DigitWheel({
   lineHeight: number;
   width: number;
   duration: number;
-  easing: NonNullable<RollingTextProps['easing']>;
+  easing: readonly [number, number, number, number];
   textStyle: RollingTextProps['style'];
   variant: RollingTextProps['variant'];
 }) {
@@ -178,7 +178,12 @@ function DigitWheel({
   useLayoutEffect(() => {
     cancelAnimation(offset);
     const target = -digit * lineHeight;
-    offset.value = reducedMotion ? target : withTiming(target, { duration, easing });
+    offset.value = reducedMotion
+      ? target
+      : withTiming(target, {
+          duration,
+          easing: Easing.bezier(easing[0], easing[1], easing[2], easing[3]),
+        });
   }, [digit, lineHeight, duration, easing, reducedMotion, offset]);
   const wheel = useAnimatedStyle(() => ({ transform: [{ translateY: offset.value }] }), [offset]);
   return (

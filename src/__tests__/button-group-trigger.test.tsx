@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { Pressable } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

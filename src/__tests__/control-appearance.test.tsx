@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { resolvedStyle, findHost } from './support/rendered-style';
 import { fireEvent, render } from '@testing-library/react-native';
 import { BloomScope } from '../appearance';

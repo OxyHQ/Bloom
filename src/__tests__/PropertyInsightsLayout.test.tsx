@@ -3,7 +3,7 @@
  * reach (react-native-web fires `onLayout` from a ResizeObserver jsdom lacks).
  * Layout events are fired by hand.
  */
-import React from 'react';
+import type React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { FloorPlan, PropertyFacts } from '../listing-details';

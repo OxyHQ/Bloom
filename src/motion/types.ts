@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import type { EasingFunction, EasingFunctionFactory } from 'react-native-reanimated';
 import type { TypeScaleVariant } from '../typography/scale';
@@ -56,8 +56,12 @@ export interface RollingTextProps {
   distance?: number;
   /** Milliseconds. Default 220 (`'whole'`), 350 (`'digits'`). */
   duration?: number;
-  /** Default CSS `ease-out` (`'whole'`), ease-out cubic (`'digits'`). */
-  easing?: EasingFunction | EasingFunctionFactory;
+  /**
+   * A cubic-bezier. Default CSS `ease-out` (`'whole'`), ease-out cubic
+   * (`'digits'`). The whole roll plays as keyframes on Bloom's motion engine,
+   * which takes a curve as data, not a function.
+   */
+  easing?: readonly [number, number, number, number];
   /** `'whole'` only: where the text sits in its box. Default `'start'`. */
   align?: 'start' | 'center';
   /** `'whole'` only: clip the travelling text to the box, so it reads as a counter tick. */

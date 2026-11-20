@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import * as Native from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { AppShell } from '../app-shell';

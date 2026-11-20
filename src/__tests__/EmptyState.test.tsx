@@ -16,7 +16,7 @@
  *   - the two rungs are a real geometry difference, asserted as resolved
  *     padding rather than as the prop that was passed.
  */
-import React from 'react';
+import type React from 'react';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 

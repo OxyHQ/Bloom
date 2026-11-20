@@ -6,7 +6,8 @@
  * they report, the computed price per area, the radio and checkbox semantics,
  * the quality score and the preview toggle.
  */
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

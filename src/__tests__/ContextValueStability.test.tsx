@@ -6,7 +6,7 @@
  * draw every reader below them again: a click in Dropsea's list on OxyOS redrew
  * its whole header and toolbar.
  */
-import React from 'react';
+import type React from 'react';
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { AppShellPanels, useAppShellPanel } from '../app-shell';

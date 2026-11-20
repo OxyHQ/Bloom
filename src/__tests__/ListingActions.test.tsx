@@ -7,7 +7,8 @@
  * rendered through the REAL react-native-web so the assertions read emitted
  * DOM attributes and computed styles rather than props.
  */
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
