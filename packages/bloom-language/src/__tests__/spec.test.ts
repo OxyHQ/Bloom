@@ -10,6 +10,7 @@ import {
   COLORS,
   CORNER,
   DURATION,
+  EASING,
   ENVIRONMENT,
   FONT_SIZE,
   GLASS_OPACITY,
@@ -17,8 +18,10 @@ import {
   ICON_SIZE,
   LAYER_RANK,
   LEADING,
+  MOTION,
   type NODE_MODIFIERS,
   OPACITY,
+  SCALE,
   SPACE,
   TYPE_RAMP,
 } from '../generated/spec.generated';
@@ -102,6 +105,65 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
     expect(read('surface/shared.ts')).toMatch(
       new RegExp(`SURFACE_TINT_OPACITY = ${GLASS_OPACITY.strong};`),
     );
+  });
+});
+
+describe('each motion token is the motion its Bloom owner plays', () => {
+  const bezier = (name: keyof typeof EASING) => `Easing.bezier(${EASING[name].join(', ')})`;
+  const timing = (name: keyof typeof MOTION) => MOTION[name] as { duration: number };
+
+  it('press scale: PressableScale’s timing (Reanimated’s default curve) and target scale', () => {
+    const press = read('pressable-scale/PressableScale.tsx');
+    expect(press).toMatch(`const DURATION = ${timing('press').duration};`);
+    expect(press).toMatch('scale.value = withTiming(targetScale, { duration: DURATION });');
+    expect(press).toMatch(`targetScale = ${SCALE.pressed}`);
+    expect(MOTION.press.easing).toEqual(EASING.inOutQuad);
+  });
+
+  it('the like pop and the count roll: the engagement bar’s constants', () => {
+    const engagement = read('engagement-bar/constants.ts');
+    expect(engagement).toMatch(`POP_MS = ${timing('pop').duration};`);
+    expect(engagement).toMatch(`ROLL_MS = ${timing('roll').duration};`);
+    expect(engagement).toMatch(`EASE_OUT = ${bezier('outExpo')};`);
+    expect(MOTION.pop.easing).toEqual(EASING.outExpo);
+    expect(MOTION.roll.easing).toEqual(EASING.outExpo);
+    const pop = read('engagement-bar/EngagementPop.tsx');
+    expect(pop).toMatch(`withTiming(${SCALE.dip}, QUICK)`);
+    expect(pop).toMatch(`withTiming(${SCALE.swell}, SWELL)`);
+  });
+
+  it('the tab indicator: the underline’s slide and the highlight’s fade', () => {
+    const tabs = read('tabs/Tabs.tsx');
+    expect(tabs).toMatch(
+      `UNDERLINE_TIMING = { duration: ${timing('slide').duration}, easing: ${bezier('ease')} };`,
+    );
+    expect(tabs).toMatch(`HIGHLIGHT_FADE = { duration: ${timing('fade').duration} };`);
+    expect(MOTION.fade.easing).toEqual(EASING.inOutQuad);
+  });
+
+  it('the toast: its enter, exit and restack', () => {
+    const constants = read('toast/constants.ts');
+    expect(constants).toMatch(`ENTERING_ANIMATION_DURATION = ${timing('enter').duration};`);
+    expect(constants).toMatch(`STACKING_ANIMATION_DURATION = ${timing('restack').duration};`);
+    const animations = read('toast/animations.ts');
+    expect(animations).toMatch(`EASE_OUT_QUART = ${bezier('outQuart')};`);
+    expect(animations).toMatch(`EXIT_DURATION = ${timing('exit').duration};`);
+    expect(MOTION.enter.easing).toEqual(EASING.outQuart);
+    expect(MOTION.restack.easing).toEqual(EASING.outQuart);
+    // A Keyframe's segments are linear unless a keyframe names a curve.
+    expect(MOTION.exit.easing).toEqual(EASING.linear);
+  });
+
+  it('present and dismiss: MOTION_RECIPES (withTiming, its default curve)', () => {
+    const recipes = read('motion/recipes.ts');
+    expect(recipes).toMatch(`present: { duration: ${timing('present').duration}, reduceMotion`);
+    expect(recipes).toMatch(`dismiss: { duration: ${timing('dismiss').duration}, reduceMotion`);
+    expect(MOTION.present.easing).toEqual(EASING.inOutQuad);
+    expect(MOTION.dismiss.easing).toEqual(EASING.inOutQuad);
+  });
+
+  it('CSS ease-out is RollingText’s whole-text curve', () => {
+    expect(read('motion/RollingText.tsx')).toMatch(`const WHOLE_EASING = ${bezier('easeOut')};`);
   });
 });
 
