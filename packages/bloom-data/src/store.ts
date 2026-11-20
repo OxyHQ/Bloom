@@ -677,18 +677,23 @@ export class Store {
   }
 
   /**
-   * Closes the store: queued writes still reach the durable copy (they were
-   * this account's), then the copy closes. Every later write is ignored.
+   * Closes the store at once: writes already queued still reach the durable
+   * copy (they were this account's), then the copy closes. Every later write
+   * is ignored.
    */
-  async close(): Promise<void> {
-    if (this.closed) return;
-    await this.flush();
+  close(): Promise<void> {
+    if (this.closing) return this.closing;
+    // The queue is taken now, so it still reaches this account's copy; from
+    // here on, every write to this store is ignored.
+    const flushed = this.flush();
     this.closed = true;
     for (const cleanup of this.cleanups) cleanup();
     this.cleanups.clear();
-    await this.flushing;
-    await this.persister?.close().catch(reportError);
+    this.closing = flushed.then(() => this.persister?.close().catch(reportError));
+    return this.closing;
   }
+
+  private closing: Promise<void> | undefined;
 }
 
 export function reportError(error: unknown): void {

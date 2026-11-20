@@ -183,7 +183,8 @@ layer: concrete values held over the server's copy, not written into it.
   is current, including anything realtime brought in the meantime.
 
 A `key` makes the action exclusive: a second call with the same key, while the
-first is in flight, resolves to `undefined` at once.
+first is in flight, resolves to `undefined` at once. Keys are shared by every
+action, so a like and its undo can use one key.
 
 ## Realtime
 
