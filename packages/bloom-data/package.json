@@ -1,0 +1,89 @@
+{
+  "name": "@oxy.so/bloom-data",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Bloom's data layer: records by id held in memory, read with field-level subscriptions, filled by sources, changed by optimistic actions and realtime events, and copied to SQLite in the background.",
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OxyHQ/Bloom.git",
+    "directory": "packages/bloom-data"
+  },
+  "main": "lib/commonjs/index.js",
+  "module": "lib/module/index.js",
+  "types": "lib/typescript/commonjs/index.d.ts",
+  "react-native": "src/index.ts",
+  "source": "src/index.ts",
+  "exports": {
+    ".": {
+      "react-native": {
+        "types": "./lib/typescript/module/index.d.ts",
+        "default": "./src/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/index.d.ts",
+        "default": "./lib/module/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/index.d.ts",
+        "default": "./lib/commonjs/index.js"
+      }
+    },
+    "./sqlite": {
+      "react-native": {
+        "types": "./lib/typescript/module/sqlite.d.ts",
+        "default": "./src/sqlite.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/sqlite.d.ts",
+        "default": "./lib/module/sqlite.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/sqlite.d.ts",
+        "default": "./lib/commonjs/sqlite.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "lib",
+    "LICENSE",
+    "!**/__tests__/**"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "bob build",
+    "typescript": "tsc --noEmit -p .",
+    "test": "jest"
+  },
+  "peerDependencies": {
+    "react": ">=19.0.0"
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "exclude": "**/__tests__/**",
+    "targets": [
+      [
+        "commonjs",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "module",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "typescript",
+        {
+          "project": "tsconfig.build.json"
+        }
+      ]
+    ]
+  },
+  "packageManager": "bun@1.4.3"
+}
