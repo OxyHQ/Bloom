@@ -196,20 +196,41 @@
     "controlSize": ["xs", "sm", "md", "lg"],
     "glassMaterial": ["regular", "clear"],
     "contentFit": ["cover", "contain", "fill", "none", "scale-down"],
-    "spacingExtra": ["between"]
+    "spacingExtra": ["between"],
+    "headerPresentation": ["floating", "bar", "navigation"],
+    "titleDisplay": ["large", "inline"],
+    "scrollEdge": ["auto", "always", "none"]
   },
   "glass": {
-    "$comment": "How each material maps onto Bloom Surface today. fill: the colour role it paints from when untinted (null: Surface keeps its own fill); opacity: the glassOpacity a tint takes by default (null: the colour as it is).",
+    "$comment": [
+      "How each material draws on each platform. sheen, fill, tintOpacity: Bloom Surface (the web, and native where the platform glass is absent); fill is the colour role it paints from when untinted (null: Surface keeps its own fill), tintOpacity the glassOpacity a tint takes by default (null: the colour as it is).",
+      "lensBlur: the lens engine's frost (Android and OxyOS), a multiplier of the engine's own. iosStyle: the glassEffect style (iOS 26)."
+    ],
     "regular": {
       "sheen": true,
       "fill": null,
-      "tintOpacity": null
+      "tintOpacity": null,
+      "lensBlur": 1,
+      "iosStyle": "regular"
     },
     "clear": {
       "sheen": false,
       "fill": "surface",
-      "tintOpacity": "subtle"
+      "tintOpacity": "subtle",
+      "lensBlur": 0.5,
+      "iosStyle": "clear"
     }
+  },
+  "toneRole": {
+    "$comment": "The colour role a solid control of each Bloom tone fills with: an untinted glass under a solid Button or FAB takes it as its tint (null: the glass stays neutral).",
+    "neutral": null,
+    "accent": "primary",
+    "support": "secondary",
+    "action": "tertiary",
+    "success": "success",
+    "warning": "warning",
+    "danger": "error",
+    "info": "info"
   },
   "layers": [["padding"], ["frame"], ["background", "glass"], ["border"], ["corner"], ["opacity"]],
   "environment": {
@@ -261,7 +282,31 @@
     "role": ["role"],
     "hitSlop": ["hitSlop"],
     "testID": ["value"],
-    "id": ["value"]
+    "id": ["value"],
+    "disabled": ["value?"],
+    "loading": ["value?"],
+    "collapsed": ["value?"],
+    "icon": ["value"],
+    "destructive": [],
+    "checked": ["value"],
+    "keepOpen": [],
+    "title": ["value"],
+    "badge": ["value"],
+    "activeIcon": ["value"],
+    "selection": ["value"],
+    "onSelect": ["value"],
+    "action": ["value"],
+    "minimize": ["value"],
+    "progress": ["value"],
+    "hide": ["value"],
+    "titleDisplay": ["titleDisplay"],
+    "subtitle": ["value"],
+    "toolbar": ["children"],
+    "toolbarLeading": ["children"],
+    "onBack": ["value"],
+    "scrollEdge": ["scrollEdge"],
+    "scrollY": ["value"],
+    "presentation": ["headerPresentation"]
   },
   "universal": [
     "padding",
@@ -289,7 +334,7 @@
     "id"
   ],
   "nodes": {
-    "$comment": "kind: { constructors, own modifiers beyond the universal ones, the scale size() and tint() read }",
+    "$comment": "kind: { constructors, own modifiers beyond the universal ones (universal: false takes only its own), the scale size() and tint() read }",
     "stack": {
       "constructors": ["HStack", "VStack", "ZStack"],
       "modifiers": ["spacing", "align"]
@@ -319,9 +364,69 @@
     },
     "button": {
       "constructors": ["Button"],
-      "modifiers": ["style", "shape", "size", "tint"],
+      "modifiers": ["style", "shape", "size", "tint", "disabled", "loading"],
       "size": "controlSize",
       "tint": "tone"
+    },
+    "fab": {
+      "constructors": ["FAB"],
+      "modifiers": ["style", "size", "tint", "disabled", "collapsed"],
+      "size": "controlSize",
+      "tint": "tone"
+    },
+    "menu": {
+      "constructors": ["Menu"],
+      "modifiers": []
+    },
+    "menuItem": {
+      "constructors": ["Item"],
+      "universal": false,
+      "modifiers": ["icon", "destructive", "disabled", "checked", "keepOpen", "onPress", "testID"]
+    },
+    "menuSubmenu": {
+      "constructors": ["Submenu"],
+      "universal": false,
+      "modifiers": ["icon", "disabled", "testID"]
+    },
+    "menuSection": {
+      "constructors": ["Section"],
+      "universal": false,
+      "modifiers": ["title"]
+    },
+    "menuDivider": {
+      "constructors": ["Divider"],
+      "universal": false,
+      "modifiers": []
+    },
+    "menuContent": {
+      "constructors": [],
+      "universal": false,
+      "modifiers": []
+    },
+    "header": {
+      "constructors": ["Header"],
+      "universal": false,
+      "modifiers": [
+        "titleDisplay",
+        "subtitle",
+        "toolbar",
+        "toolbarLeading",
+        "onBack",
+        "scrollEdge",
+        "scrollY",
+        "presentation",
+        "testID"
+      ]
+    },
+    "bottomBar": {
+      "constructors": ["BottomBar"],
+      "universal": false,
+      "modifiers": ["selection", "onSelect", "action", "minimize", "progress", "hide", "testID"]
+    },
+    "tab": {
+      "constructors": ["Tab"],
+      "universal": false,
+      "modifiers": ["activeIcon", "badge", "id", "testID"]
     },
     "action": {
       "constructors": ["Action"],

@@ -66,7 +66,8 @@ spec.layers.forEach((kinds, rank) => {
 const nodeModifiers = {};
 const constructors = {};
 for (const [kind, node] of Object.entries(nodes)) {
-  nodeModifiers[kind] = [...spec.universal, ...node.modifiers];
+  nodeModifiers[kind] =
+    node.universal === false ? [...node.modifiers] : [...spec.universal, ...node.modifiers];
   for (const name of node.constructors) constructors[name] = kind;
 }
 
@@ -99,8 +100,11 @@ export const COLORS = ${ts(
 
 export const ENUMS = ${ts(enums)} as const;
 
-/** Each glass material on Bloom's Surface. */
+/** Each glass material, as each platform draws it. */
 export const GLASS = ${ts(glass)} as const;
+
+/** The colour role a solid control of each Bloom tone fills with. */
+export const TONE_ROLE = ${ts(withoutComment(spec.toneRole))} as const;
 
 /** A box modifier's place in one view's stack of effects (see style.ts, layers). */
 export const LAYER_RANK = ${ts(layerRank)} as const;

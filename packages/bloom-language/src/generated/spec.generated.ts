@@ -580,21 +580,51 @@ export const ENUMS = {
   ],
   "spacingExtra": [
     "between"
+  ],
+  "headerPresentation": [
+    "floating",
+    "bar",
+    "navigation"
+  ],
+  "titleDisplay": [
+    "large",
+    "inline"
+  ],
+  "scrollEdge": [
+    "auto",
+    "always",
+    "none"
   ]
 } as const;
 
-/** Each glass material on Bloom's Surface. */
+/** Each glass material, as each platform draws it. */
 export const GLASS = {
   "regular": {
     "sheen": true,
     "fill": null,
-    "tintOpacity": null
+    "tintOpacity": null,
+    "lensBlur": 1,
+    "iosStyle": "regular"
   },
   "clear": {
     "sheen": false,
     "fill": "surface",
-    "tintOpacity": "subtle"
+    "tintOpacity": "subtle",
+    "lensBlur": 0.5,
+    "iosStyle": "clear"
   }
+} as const;
+
+/** The colour role a solid control of each Bloom tone fills with. */
+export const TONE_ROLE = {
+  "neutral": null,
+  "accent": "primary",
+  "support": "secondary",
+  "action": "tertiary",
+  "success": "success",
+  "warning": "warning",
+  "danger": "error",
+  "info": "info"
 } as const;
 
 /** A box modifier's place in one view's stack of effects (see style.ts, layers). */
@@ -739,6 +769,74 @@ export const MODIFIERS = {
   ],
   "id": [
     "value"
+  ],
+  "disabled": [
+    "value?"
+  ],
+  "loading": [
+    "value?"
+  ],
+  "collapsed": [
+    "value?"
+  ],
+  "icon": [
+    "value"
+  ],
+  "destructive": [],
+  "checked": [
+    "value"
+  ],
+  "keepOpen": [],
+  "title": [
+    "value"
+  ],
+  "badge": [
+    "value"
+  ],
+  "activeIcon": [
+    "value"
+  ],
+  "selection": [
+    "value"
+  ],
+  "onSelect": [
+    "value"
+  ],
+  "action": [
+    "value"
+  ],
+  "minimize": [
+    "value"
+  ],
+  "progress": [
+    "value"
+  ],
+  "hide": [
+    "value"
+  ],
+  "titleDisplay": [
+    "titleDisplay"
+  ],
+  "subtitle": [
+    "value"
+  ],
+  "toolbar": [
+    "children"
+  ],
+  "toolbarLeading": [
+    "children"
+  ],
+  "onBack": [
+    "value"
+  ],
+  "scrollEdge": [
+    "scrollEdge"
+  ],
+  "scrollY": [
+    "value"
+  ],
+  "presentation": [
+    "headerPresentation"
   ]
 } as const;
 
@@ -933,7 +1031,109 @@ export const NODE_MODIFIERS = {
     "style",
     "shape",
     "size",
-    "tint"
+    "tint",
+    "disabled",
+    "loading"
+  ],
+  "fab": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "background",
+    "border",
+    "corner",
+    "opacity",
+    "glass",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "id",
+    "style",
+    "size",
+    "tint",
+    "disabled",
+    "collapsed"
+  ],
+  "menu": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "background",
+    "border",
+    "corner",
+    "opacity",
+    "glass",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "id"
+  ],
+  "menuItem": [
+    "icon",
+    "destructive",
+    "disabled",
+    "checked",
+    "keepOpen",
+    "onPress",
+    "testID"
+  ],
+  "menuSubmenu": [
+    "icon",
+    "disabled",
+    "testID"
+  ],
+  "menuSection": [
+    "title"
+  ],
+  "menuDivider": [],
+  "menuContent": [],
+  "header": [
+    "titleDisplay",
+    "subtitle",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "scrollEdge",
+    "scrollY",
+    "presentation",
+    "testID"
+  ],
+  "bottomBar": [
+    "selection",
+    "onSelect",
+    "action",
+    "minimize",
+    "progress",
+    "hide",
+    "testID"
+  ],
+  "tab": [
+    "activeIcon",
+    "badge",
+    "id",
+    "testID"
   ],
   "action": [
     "padding",
@@ -1079,6 +1279,15 @@ export const CONSTRUCTORS = {
   "Avatar": "avatar",
   "Image": "image",
   "Button": "button",
+  "FAB": "fab",
+  "Menu": "menu",
+  "Item": "menuItem",
+  "Submenu": "menuSubmenu",
+  "Section": "menuSection",
+  "Divider": "menuDivider",
+  "Header": "header",
+  "BottomBar": "bottomBar",
+  "Tab": "tab",
   "Action": "action",
   "ActionBar": "actionBar",
   "ActionGroup": "actionGroup",
