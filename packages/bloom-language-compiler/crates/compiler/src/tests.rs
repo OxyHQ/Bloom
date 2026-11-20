@@ -187,3 +187,18 @@ fn the_platform_components_are_checked_against_the_spec() {
     );
     assert!(fine.diagnostics.is_empty(), "{:?}", fine.diagnostics.first().map(|d| &d.message));
 }
+
+#[test]
+fn chains_nested_in_a_hoisted_chain_are_checked() {
+    // The whole chain is static, so it is hoisted; the chain inside it is still checked.
+    let modifier =
+        compiled("export function Row() {\n  return HStack(Text('x').fnt('body')).padding('md');\n}\n");
+    assert!(!modifier.changed);
+    assert_eq!(modifier.diagnostics[0].message, "Text has no modifier .fnt()");
+    // Only the static prefix is hoisted; the chain inside that prefix is still checked.
+    let token = compiled(
+        "export function Row(gap) {\n  return HStack(Text('x').font('bodyy')).padding('md').spacing(gap);\n}\n",
+    );
+    assert!(!token.changed);
+    assert_eq!(token.diagnostics[0].message, "Unknown font token 'bodyy' for .font()");
+}
