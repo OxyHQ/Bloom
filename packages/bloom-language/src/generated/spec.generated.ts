@@ -774,6 +774,10 @@ export const COLORS = {
     "paint": "primary",
     "web": "var(--primary)"
   },
+  "primaryText": {
+    "paint": "primarySubtleForeground",
+    "web": "var(--primary-text)"
+  },
   "onPrimary": {
     "paint": "primaryForeground",
     "web": "var(--primary-foreground)"
@@ -818,9 +822,17 @@ export const COLORS = {
     "paint": "success",
     "web": "var(--success)"
   },
+  "successText": {
+    "paint": "successSubtleForeground",
+    "web": "var(--success-text)"
+  },
   "warning": {
     "paint": "warning",
     "web": "var(--warning)"
+  },
+  "warningText": {
+    "paint": "warningSubtleForeground",
+    "web": "var(--warning-text)"
   },
   "error": {
     "paint": "error",
@@ -841,10 +853,6 @@ export const COLORS = {
   "destructive": {
     "paint": "destructive",
     "web": "var(--destructive)"
-  },
-  "primaryText": {
-    "paint": "primarySubtleForeground",
-    "web": "var(--primary-text)"
   },
   "white": {
     "paint": "white",
@@ -869,6 +877,10 @@ export const COLORS = {
   "errorText": {
     "paint": "errorSubtleForeground",
     "web": "var(--error-text)"
+  },
+  "infoText": {
+    "paint": "infoSubtleForeground",
+    "web": "var(--info-text)"
   }
 } as const;
 
