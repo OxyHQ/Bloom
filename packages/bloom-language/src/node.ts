@@ -93,6 +93,14 @@ export type ShellOptions = (
   navigator: ReactNode,
 ) => Omit<AppShellProps, 'primaryAction' | 'bottomBar' | 'children'>;
 
+/** A screen's own bar at its foot (a reply composer): Bloom `Screen`'s `bottomBar`. */
+export interface ScreenFooter {
+  /** `overlay` floats it over the content, whose scroller pads its end clear of it; `inset` (default) keeps the content above it. */
+  readonly placement?: 'inset' | 'overlay';
+  /** `follow` rides the keyboard and keeps the focused input above it; `hide` (default) gives way to it. */
+  readonly keyboard?: 'hide' | 'visible' | 'follow';
+}
+
 /** What a screen's header is: a presentation of the screen's own title and toolbar, none, or a header of its own. */
 export type ScreenHeader = HeaderPresentation | false | ViewNode;
 export type ImageLoadHandler = (info: BloomImageLoadInfo) => void;
@@ -235,6 +243,12 @@ export type Modifier =
       readonly open: boolean;
       readonly content: () => Child;
       readonly options: SheetOptions | undefined;
+    }
+  | {
+      readonly kind: 'footer';
+      readonly key: string;
+      readonly content: Child;
+      readonly options: ScreenFooter | undefined;
     }
   | {
       readonly kind: 'primaryAction';
@@ -629,6 +643,9 @@ export class Node {
   onReselect(value: (() => void) | undefined): Node {
     return this.set('onReselect', value);
   }
+  footer(content: Child, options?: ScreenFooter): Node {
+    return this.with({ kind: 'footer', key: 'footer', content, options });
+  }
   primaryAction(icon: IconComponent, label: string, destination: string): Node {
     return this.with({ kind: 'primaryAction', key: 'primaryAction', icon, label, destination });
   }
@@ -698,6 +715,8 @@ export interface ViewModifiers<Self> extends ViewNode {
   toolbarLeading(...value: Child[]): Self;
   /** The back button's action; `null` shows none (a top-level destination). */
   onBack(value: (() => void) | null | undefined): Self;
+  /** The screen's own bar at its foot (a reply composer), over or under its content. */
+  footer(content: Child, options?: ScreenFooter): Self;
   /** A sheet over the screen while `open`: Bloom's Dialog, from the bottom and centred from `md`. */
   sheet(open: boolean, content: () => Child, options?: SheetOptions): Self;
   /** Pressing the screen's destination while it is in front (after it scrolled back to the top). */
