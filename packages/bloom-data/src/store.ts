@@ -609,9 +609,22 @@ export class Store {
 
   /**
    * Reads a list and its records from the durable copy, in one read, unless
-   * memory already holds the list. Returns whether it was read.
+   * memory already holds the list. Concurrent reads of one list share one
+   * read. Returns whether it was read.
    */
-  async hydrateList(definition: ListDefinition, key: string): Promise<boolean> {
+  hydrateList(definition: ListDefinition, key: string): Promise<boolean> {
+    const id = `${definition.type}\u0000${key}`;
+    let read = this.listReads.get(id);
+    if (!read) {
+      read = this.readList(definition, key).finally(() => this.listReads.delete(id));
+      this.listReads.set(id, read);
+    }
+    return read;
+  }
+
+  private readonly listReads = new Map<string, Promise<boolean>>();
+
+  private async readList(definition: ListDefinition, key: string): Promise<boolean> {
     const persister = this.persister;
     if (!persister || !definition.persist(key)) return false;
     if (this.listSlot(definition, key)?.state) return false;
