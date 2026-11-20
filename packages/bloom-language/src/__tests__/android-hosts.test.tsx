@@ -95,7 +95,7 @@ describe('glass is the lens', () => {
 describe('the menu is the lens menu', () => {
   const remove = jest.fn();
   const node = Menu(
-    Icon(Glyph).label('More'),
+    Icon(Glyph),
     Item('Copy').icon(Glyph),
     Section(Item('Delete').icon(Glyph).destructive().onPress(remove)).title('Danger'),
     Divider(),
@@ -105,7 +105,11 @@ describe('the menu is the lens menu', () => {
   it('closed, it is its trigger alone: no native view and no row work', () => {
     const r = mount(toElement(node));
     expect(hosts(r, 'BloomLensMenu')).toHaveLength(0);
-    expect(only(r, 'Pressable').props.focusable).toBe(true);
+    expect(only(r, 'Pressable').props).toMatchObject({
+      focusable: true,
+      // The menu's name is its trigger's.
+      accessibilityLabel: 'Post options',
+    });
   });
 
   it('a press mounts the lens view open around the trigger, with the rows and their glyphs', () => {
@@ -133,6 +137,11 @@ describe('the menu is the lens menu', () => {
     // The view stays until the engine has finished closing it.
     act(() => lens.props.onMenuClosed());
     expect(hosts(r, 'BloomLensMenu')).toHaveLength(0);
+  });
+
+  it('a trigger with a name of its own keeps it', () => {
+    const r = mount(toElement(Menu(Icon(Glyph).label('More'), Item('a')).label('Post options')));
+    expect(only(r, 'Pressable').props.accessibilityLabel).toBe('More');
   });
 
   it('a trigger on glass gives the menu its glass: the menu draws it, and morphs out of it', () => {
