@@ -317,6 +317,7 @@ describe('interop', () => {
       leadingIcon: Glyph,
       children: 'Compose',
     });
+    expect(hosts(r, 'BloomButton')[0]?.props.icon).toBeUndefined();
     const [like] = hosts(r, 'EngagementAction');
     expect(like?.props).toMatchObject({
       accessibilityLabel: 'Like',
@@ -331,6 +332,19 @@ describe('interop', () => {
     }>[];
     const [save] = trailing;
     expect(save?.props.accessibilityLabel).toBe('Save');
+  });
+
+  it('a Button’s glyph in an ink of its own is drawn as it is; otherwise the button tints it', () => {
+    const r = mount(
+      toElement(
+        Button(Icon(Glyph).foreground('primary')).style('subtle').shape('circle').label('Read'),
+      ),
+    );
+    const button = hosts(r, 'BloomButton')[0];
+    expect(button?.props.leadingIcon).toBeUndefined();
+    expect(button?.props.iconOnly).toBe(true);
+    const glyph = hosts(mount(button?.props.icon), 'Glyph')[0];
+    expect(glyph?.props.fill).toBe(LIGHT.primary);
   });
 
   it('an image is BloomImage with its options from the chain, sized and clipped by its box', () => {
