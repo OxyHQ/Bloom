@@ -6,6 +6,7 @@
 import { DARK, LIGHT } from './support/bloom-theme';
 import { act, Glyph, hosts, mount, only, quietRenderer } from './support/mount';
 import {
+  actions,
   BottomBar,
   Button,
   Divider,
@@ -184,5 +185,29 @@ describe('the bottom bar', () => {
     const action = mount(bar.props.action);
     expect(only(action, 'BloomFab').props.material).toBe('shared');
     expect(hosts(action, 'BloomLensMenu')).toHaveLength(1);
+  });
+});
+
+describe('the lens menu: tagged rows', () => {
+  it('a row the engine reports chosen runs its action, after the menu has closed', () => {
+    const built = jest.fn();
+    const copy = jest.fn();
+    const Actions = actions(function Actions() {
+      built();
+      return { copy };
+    });
+    const r = mount(
+      toElement(Menu(Icon(Glyph).onPress(undefined), Item('Copy').tag('copy')).actions(Actions())),
+    );
+    const open = r.root.find((instance) => typeof instance.props.onPress === 'function');
+    act(() => open.props.onPress());
+    const lens = only(r, 'BloomLensMenu');
+    act(() => {
+      lens.props.onItemSelect({ nativeEvent: { id: 'r0' } });
+      lens.props.onMenuClosed();
+    });
+    expect(copy).toHaveBeenCalledTimes(1);
+    expect(built).toHaveBeenCalledTimes(1);
+    expect(hosts(r, 'BloomLensMenu')).toHaveLength(0);
   });
 });
