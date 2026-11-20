@@ -29,6 +29,20 @@
         "default": "./lib/commonjs/index.js"
       }
     },
+    "./router": {
+      "react-native": {
+        "types": "./lib/typescript/module/router/index.d.ts",
+        "default": "./src/router/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/router/index.d.ts",
+        "default": "./lib/module/router/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/router/index.d.ts",
+        "default": "./lib/commonjs/router/index.js"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [

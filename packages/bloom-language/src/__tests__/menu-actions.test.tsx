@@ -36,7 +36,7 @@ function postActions() {
   const built = jest.fn();
   const copy = jest.fn();
   const remove = jest.fn();
-  const PostActions = actions(function PostActions(props: { id: string }) {
+  const PostActions = actions(function postActionsBody(props: { id: string }) {
     built(props.id);
     return { copy: () => copy(props.id), delete: () => remove(props.id) };
   });
