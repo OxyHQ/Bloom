@@ -1,0 +1,16 @@
+[package]
+name = "bloom_language_compiler_node"
+version = "0.0.0"
+edition.workspace = true
+publish.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+bloom_language_compiler = { path = "../compiler" }
+napi.workspace = true
+napi-derive.workspace = true
+
+[build-dependencies]
+napi-build.workspace = true
