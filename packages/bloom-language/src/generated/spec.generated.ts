@@ -859,6 +859,12 @@ export const MODIFIERS = {
   ],
   "shell": [
     "value"
+  ],
+  "tag": [
+    "value"
+  ],
+  "actions": [
+    "value"
   ]
 } as const;
 
@@ -1191,7 +1197,8 @@ export const NODE_MODIFIERS = {
     "toolbarLeading",
     "onBack",
     "sheet",
-    "onReselect"
+    "onReselect",
+    "actions"
   ],
   "menuItem": [
     "icon",
@@ -1200,7 +1207,8 @@ export const NODE_MODIFIERS = {
     "checked",
     "keepOpen",
     "onPress",
-    "testID"
+    "testID",
+    "tag"
   ],
   "menuSubmenu": [
     "icon",
@@ -1212,6 +1220,7 @@ export const NODE_MODIFIERS = {
   ],
   "menuDivider": [],
   "menuContent": [],
+  "menuActions": [],
   "header": [
     "titleDisplay",
     "subtitle",

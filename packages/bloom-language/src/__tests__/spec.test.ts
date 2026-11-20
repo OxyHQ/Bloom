@@ -40,6 +40,7 @@ import type {
   HeaderView,
   IconView,
   ImageView,
+  MenuActionsView,
   MenuContentView,
   MenuDividerView,
   MenuItemView,
@@ -153,6 +154,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<MenuSectionView>, Of<'menuSection'>>,
       Same<MethodsOf<MenuDividerView>, Of<'menuDivider'>>,
       Same<MethodsOf<MenuContentView>, Of<'menuContent'>>,
+      Same<MethodsOf<MenuActionsView>, Of<'menuActions'>>,
       Same<MethodsOf<HeaderView>, Of<'header'>>,
       Same<MethodsOf<BottomBarView>, Of<'bottomBar'>>,
       Same<MethodsOf<TabView>, Of<'tab'>>,
@@ -161,6 +163,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<RouteView>, Of<'route'>>,
       Same<MethodsOf<TabNavigatorView>, Of<'tabView'>>,
     ] = [
+      true,
       true,
       true,
       true,
