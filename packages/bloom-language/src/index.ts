@@ -32,6 +32,10 @@ export { defineTokens } from './tokens';
 export { Node, isNode } from './node';
 export type {
   ActionBarView,
+  AppLayoutView,
+  NavStackView,
+  RouteView,
+  TabNavigatorView,
   ActionGroupView,
   ActionOptions,
   ActionView,
@@ -74,7 +78,12 @@ export type {
   Progress,
   Role,
   ScrollEdge,
+  ScreenFooter,
+  ScreenHeader,
   ScrollOffset,
+  SheetOptions,
+  ShellOptions,
+  Navigation,
   ShrinkPriority,
   SpacerView,
   StackView,

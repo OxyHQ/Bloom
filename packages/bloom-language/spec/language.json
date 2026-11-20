@@ -315,7 +315,8 @@
     "bottomBar": ["value"],
     "shell": ["value"],
     "tag": ["value"],
-    "actions": ["value"]
+    "actions": ["value"],
+    "footer": ["value", "value?"]
   },
   "universal": [
     "padding",
@@ -348,6 +349,7 @@
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "footer",
     "sheet",
     "onReselect"
   ],

@@ -865,6 +865,10 @@ export const MODIFIERS = {
   ],
   "actions": [
     "value"
+  ],
+  "footer": [
+    "value",
+    "value?"
   ]
 } as const;
 
@@ -901,6 +905,7 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "footer",
     "sheet",
     "onReselect",
     "spacing",
@@ -937,6 +942,7 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "footer",
     "sheet",
     "onReselect"
   ],
@@ -971,6 +977,7 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "footer",
     "sheet",
     "onReselect",
     "lines",
@@ -1007,6 +1014,7 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "footer",
     "sheet",
     "onReselect",
     "size"
@@ -1042,6 +1050,7 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "footer",
     "sheet",
     "onReselect",
     "size"
@@ -1077,6 +1086,7 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "footer",
     "sheet",
     "onReselect",
     "contentFit",
@@ -1117,6 +1127,7 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "footer",
     "sheet",
     "onReselect",
     "style",
@@ -1157,6 +1168,7 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "footer",
     "sheet",
     "onReselect",
     "style",
@@ -1196,6 +1208,7 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "footer",
     "sheet",
     "onReselect",
     "actions"
@@ -1278,6 +1291,7 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "footer",
     "sheet",
     "onReselect",
     "count",
@@ -1315,6 +1329,7 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "footer",
     "sheet",
     "onReselect",
     "trailing",
@@ -1352,6 +1367,7 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "footer",
     "sheet",
     "onReselect"
   ],
@@ -1386,6 +1402,7 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "footer",
     "sheet",
     "onReselect"
   ],
@@ -1420,6 +1437,7 @@ export const NODE_MODIFIERS = {
     "toolbar",
     "toolbarLeading",
     "onBack",
+    "footer",
     "sheet",
     "onReselect"
   ],
