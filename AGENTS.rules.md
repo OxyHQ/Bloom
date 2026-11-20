@@ -159,7 +159,7 @@ BloomThemeProvider sets preset/mode, dark class + full-color CSS vars via applyC
 
 Flat `AvatarCharacter` (`agent-avatar/character.ts`); animation=`resolveAvatarCharacter(c).authored`, not serialized. SVG only ships; runtime/avatar offline (build:avatar-vectors after edits), never ship WebGL/runtime. **Catalog retarget eye pivot uses its own frame, never PARENT** (carrier=eye turn; six-lobed body rolls180° under still eyes; heart eyes ride body). docs/agent-avatar.mdx, catalog-retarget.test.ts.
 
-A live frame costs ~95 ms of Hermes JS (mesh projection + 322² occlusion raster), not a per-frame budget: never add per-frame work to the rest path. At rest the idle clip is a remembered loop (`vector-loop.ts`), played on the UI thread on native (`VectorLoopPlayer`); anything that changes motion calls `endLoop()` first so the JS clock catches up. Pixel 8a Home: JS 94 % → 6 %. vector-rest-loop.test.tsx, docs/agent-avatar.mdx#the-rest-loop.
+A live frame costs ~95 ms of Hermes JS (mesh projection + 322² occlusion raster), not a per-frame budget: never add per-frame work to the rest path. At rest the idle clip is a remembered loop (`vector-loop.ts`). Android draws through `BloomAvatarSurfaceV1` (AvatarSurface.kt): it plays a complete loop on its own Choreographer clock and keeps loops on disk by `vectorLoopKey` (hash of character, idle tracks, first frame: a stale key would replay old art). Anything that changes motion calls `endLoop()` first so the JS clock catches up. iOS Swift twin is UNVERIFIED and unlinked (`ios: null`). `bot_*` cannot loop (aperiodic gaze). vector-rest-loop.test.tsx, AvatarLoopsTest.kt, docs/agent-avatar.mdx#the-native-surface-android.
 
 ## Locale (docs/locale.mdx)
 

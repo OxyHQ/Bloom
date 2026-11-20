@@ -335,30 +335,73 @@ was about 95 ms for Alia, so on a Pixel 8a the "Ask Alia" icon on Mention's Home
 at 94 % and still only reached about 10 frames a second.
 
 At rest, though, a character repeats itself. With no gesture, pointer, mood or transition, and no
-reference face (the `bot_*` shapes, whose procedural gaze never repeats), its frame depends only
-on where it is in its idle clip. So the idle clip is drawn once, on a grid of about 30 frames a
-second (`vector-loop.ts`), and every avatar with the same geometry and paint shares those frames:
-the loop. Each grid frame is painted in turn, computed the first time and remembered after. Once
-the loop is complete, native apps hand it to the UI thread (`VectorLoopPlayer`): a frame callback
-steps the grid frame and the paths take that frame's outline, clip and opacity, and the JS thread
-does nothing. A gesture, a mood, the pointer or the screen going out of view takes the drawing back
-to the JS thread, whose clock moves on by what the UI thread played. The web replays the
-remembered frames itself. The loops kept are bounded by `VECTOR_LOOP_CACHE_CHARACTERS` (Alia's
-loop is about 2 M path characters, the largest preset's 10 M).
+reference face (the `bot_*` shapes, see below), its frame depends only on where it is in its idle
+clip. So the idle clip is drawn once, on a grid of about 30 frames a second (`vector-loop.ts`), and
+every avatar with the same geometry and paint shares those frames: the loop. Each grid frame is
+painted in turn, computed the first time and remembered after. The web replays the remembered
+frames itself. The loops kept are bounded by `VECTOR_LOOP_CACHE_CHARACTERS` (Alia's loop is about
+2 M path characters, the largest preset's 10 M).
 
-Measured on the Pixel 8a, Mention release build, idle on Home (`vector-rest-loop.test.tsx` pins
-the hand-off and that the UI thread draws exactly the JS thread's frames):
+### The native surface (Android)
 
-| | JS thread | UI thread | RenderThread | process | avatar frames/s |
-| --- | --- | --- | --- | --- | --- |
-| before | 94 % | 9 % | 9 % | 118 % | about 10 |
-| rest loop | 6 % | 37 % | 30 % | 82 % | 30 |
+On Android every frame is drawn by Bloom's own view, `BloomAvatarSurfaceV1`
+(`android/.../AvatarSurface.kt`, `VectorNativeSurface.tsx`), not by `react-native-svg`: JS hands it
+the frame's outlines, clips and paint as one prop, and it draws them on the hardware canvas with
+the paint `react-native-svg` used (alpha rounding, miter limit, one layer for the entrance
+opacity). At rest it does more: a complete loop is handed to it once and it plays the loop itself,
+its paths parsed once, on its own `Choreographer` clock (waking only when the next loop frame is
+due). Nothing goes through the shadow tree, no bitmap is drawn and no layout event is sent per
+frame, and the JS thread does nothing.
 
-The first time round still costs what it did (about 20 s of JS at startup for Alia). What remains
-per frame is native: Reanimated commits the changed path props through the shadow tree,
-`react-native-svg` parses each outline, redraws the whole SVG into a new bitmap and reports each
-path's new bounds as a layout event (most of the 6 % left on the JS thread), and the window is
-recomposited.
+Loops are named by `vectorLoopKey`: a hash of the character, its idle clip's tracks and its first
+frame as drawn, so a change to the assets, the paint or the renderer names a different loop. The
+surface keeps the loops in memory and in the app's cache directory (`bloom-avatar-loops`, 48 MB at
+most). At rest the avatar asks its surface for the loop of that name (`loopKey`, answered by
+`onLoop`); a surface that has it, from this start or an earlier one, plays it straight away, so a
+cold start draws only the frame on screen and the first frame. One that has not got it is handed
+the loop once it is complete (`loopTracks`). Playing is `loopClock`: at `epoch`, a
+`performance.now()` reading, the loop is `time` seconds in; Android's `performance.now()` and the
+`Choreographer` frame time are the same monotonic clock, so JS knows exactly which frame is on
+screen. A gesture, a mood, the pointer or the screen going out of view takes the drawing back:
+the JS clock moves on by the time played, the gesture blends from that frame's pose, and the
+surface keeps the frame on screen until JS draws one. `capture` answers the avatar flights'
+snapshot with a PNG. A binary without the view (a JS-only update, an older build) keeps
+`react-native-svg`.
+
+iOS: `ios/BloomAvatarSurface.swift` is the same view on Core Animation and `CADisplayLink`. It
+has never been compiled (it was written without a Mac), so it is neither linked
+(`react-native.config.js` keeps `ios: null`) nor packed, and iOS draws with `react-native-svg` and
+replays the remembered frames on the JS thread, as the web does. Link it only after building it
+and checking it on a device.
+
+The `bot_*` shapes cannot be played as a loop. Their gaze wanders by a sum of sines at unrelated
+frequencies (`vector-motion.ts`), and their blink repeats every 23 s on top of an 8.8 s idle clip,
+so their motion never repeats and every frame is a new projection: about a third of Alia's frame
+cost (Bun: 1.3 to 2 ms against 5.7 ms). The surface still draws their frames, but the JS cost stays
+until their motion is made periodic, which would change it.
+
+Measured on the Pixel 8a, Mention release build, idle on Home with the "Ask Alia" avatar
+(`vector-rest-loop.test.tsx` pins the hand-off, that the surface is handed exactly the JS thread's
+frames, the clock hand-back and a cold start with a kept loop; `AvatarLoopsTest.kt` the native
+path parser, file format and clock):
+
+| | JS thread | UI thread | RenderThread | process | window frames/s | cold start, JS |
+| --- | --- | --- | --- | --- | --- | --- |
+| SVG, every frame computed | 94 % | 9 % | 9 % | 118 % | about 10 | busy throughout |
+| rest loop on the UI thread (Reanimated) | 5 % | 35 % | 28 % | 77 % | 51 | 15.7 s of JS, busy 17 s |
+| native surface | 1 % | 21 % | 24 % | 53 % | 32 | 2.7 s of JS, busy 5 s (loop kept); 17.3 s, busy 20 s (first start) |
+
+(2026-11-20, two runs each, back to back; the first row is the earlier measurement. A screen
+recording confirms 30 distinct avatar frames a second.) The first start after installing, or after
+the loop's assets, paint or renderer change, still computes the loop once.
+
+What remains is not the avatar's drawing but the window's: a profile of the native-surface build
+puts the avatar's paths at about 3 % of the RenderThread and its `onDraw` at about 4 % of the UI
+thread. The rest is Android redrawing Mention's whole window 30 times a second (`prepareTree` over
+every view, replaying every display list, submitting the buffer) and React Native's per-frame
+callbacks, which any view animating in that window costs. With the avatar still, the process idles
+at about 9 %. Going lower needs the avatar off the window's surface (its own `SurfaceView`), which
+draws above every view of the window, sheets and menus included.
 
 `className` and `style` apply to the outer layout node. `label` defaults to the
 translated “Agent avatar”; `locale` overrides the scope and `accessibilityLabel`

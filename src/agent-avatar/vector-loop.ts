@@ -26,6 +26,8 @@ export type VectorLoop<Frame extends { drawing: VectorFrame }> = {
   characters: number;
   /** Its tracks, built once every frame is drawn (`vectorLoopTracks`); `null` if it has none. */
   tracks?: VectorLoopTracks | null;
+  /** What it is made from, as a name that is the same on every start (`vectorLoopKey`). */
+  key?: string;
 };
 
 /**
@@ -75,6 +77,50 @@ export function vectorLoop<Frame extends { drawing: VectorFrame }>(
   };
   loops.set(key, loop);
   return loop;
+}
+
+/**
+ * A name for a loop's content that is the same on every start of the app, for a store that keeps
+ * loops across starts (the native avatar surface). It is a hash of what the loop is drawn from: the
+ * character (`recipe`), its idle clip's tracks, and its first frame as drawn, which carries the
+ * geometry, the paint and what the renderer makes of them. Remembered on the loop.
+ */
+export function vectorLoopKey(
+  loop: VectorLoop<{ drawing: VectorFrame }>,
+  recipe: string,
+  clip: unknown,
+  first: () => VectorFrame,
+): string {
+  loop.key ??= hashText(
+    JSON.stringify([LOOP_KEY_FORMAT, recipe, loop.duration, loop.frames.length, clip, first()]),
+  );
+  return loop.key;
+}
+const LOOP_KEY_FORMAT = 1;
+/** 64 bits of two multiply-xor lanes over the text's UTF-16 units, as 16 hex digits. */
+function hashText(text: string): string {
+  let a = 0xdeadbeef,
+    b = 0x41c6ce57;
+  for (let i = 0; i < text.length; i++) {
+    const unit = text.charCodeAt(i);
+    a = Math.imul(a ^ unit, 2654435761);
+    b = Math.imul(b ^ unit, 1597334677);
+  }
+  a = Math.imul(a ^ (a >>> 16), 2246822507) ^ Math.imul(b ^ (b >>> 13), 3266489909);
+  b = Math.imul(b ^ (b >>> 16), 2246822507) ^ Math.imul(a ^ (a >>> 13), 3266489909);
+  return (b >>> 0).toString(16).padStart(8, '0') + (a >>> 0).toString(16).padStart(8, '0');
+}
+
+/**
+ * Lets go of a loop's frames once something else plays it (the native surface): the JS thread
+ * draws none of them again, and if it ever must, it draws them again.
+ */
+export function releaseVectorLoop(loop: VectorLoop<{ drawing: VectorFrame }>) {
+  held -= loop.characters;
+  loop.frames.fill(undefined);
+  loop.drawn = 0;
+  loop.characters = 0;
+  loop.tracks = undefined;
 }
 
 /** The grid frame a clock of `time` seconds is in. */
