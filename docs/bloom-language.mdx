@@ -302,6 +302,32 @@ type, its text, its accessibility and press props, and its resolved style. It
 covers ten fixture kinds plus the thread, reply-branch, repost, pinned, detail
 and marker states. It allows three named re-spellings that draw the same pixels.
 
+`BLOOM_LANGUAGE_COMPILER=1` puts the compiler in front of Metro
+(`withBloomLanguage` in `metro.config.js`) and of the perf harness's Babel. The
+parity suite passes both ways. In the row, the compiler hoists three chains (the
+context-row spacer, the ⋯ glyph, the repost indicator) and marks four view
+bodies; `TimeLabel`, `PostMenuButton` and `PostActions` are then memoized by the
+React Compiler, which before compiled only `PostRow`. Most of the row is built
+from runtime values and embedded JSX, so it gives the hoisting little to fold.
+
+Measured on a Pixel 8a, release builds, 6 interleaved rounds (order rotated
+ABC, BCA, CAB), each a cold start then 40 fixed drags; medians of n = 6:
+
+| | JSX row | Language, interpreted | Language, compiled |
+| --- | --- | --- | --- |
+| Janky frames | 1.10% | 1.94% | 1.56% |
+| Frame time p50 / p90 / p99 | 8 / 11 / 18.5 ms | 8 / 11.5 / 20.5 ms | 8 / 12 / 19.5 ms |
+| JS thread over the drags (ticks) | 5905 | 6026 | 5992 |
+| Render thread over the drags | 2796 | 2921 | 2966 |
+| JS thread idle, 30 s | 3710 | 3832 | 3689 |
+| RSS | 958 MB | 930 MB | 894 MB |
+
+The three are within run-to-run noise of one another (JS ticks span about ±3%
+within each build). Two runs were disturbed and are in the medians: one compiled
+run (the adb daemon failed mid-run; JS ticks +40%) and one JSX run (about 60%
+more frames counted than any other). For this row, the compiler's gain is not
+measurable on device: what it can fold is three small chains.
+
 ## One spec
 
 `packages/bloom-language/spec/language.json` is the language as data: token
