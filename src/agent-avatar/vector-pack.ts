@@ -37,54 +37,44 @@ type PackedAsset = {
 type Field = { rows?: number; samples?: number; decimals: number; columns: [number, number][] };
 
 const ROW = 3;
-const BASE64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-/** Each base64 character's six bits, by character code (a pure table, built once). */
-const SEXTETS = (() => {
-  const table = new Uint8Array(128);
-  for (let i = 0; i < BASE64.length; i++) table[BASE64.charCodeAt(i)] = i;
-  return table;
-})();
-
-/** The bytes of a base64 string. Padding decodes to zero bytes, dropped at the end. */
-function decodeBase64(text: string): Uint8Array {
-  const padding = text.endsWith('==') ? 2 : text.endsWith('=') ? 1 : 0;
-  const bytes = new Uint8Array((text.length / 4) * 3);
-  for (let i = 0, at = 0; i < text.length; i += 4, at += 3) {
-    const group =
-      (SEXTETS[text.charCodeAt(i)]! << 18) |
-      (SEXTETS[text.charCodeAt(i + 1)]! << 12) |
-      (SEXTETS[text.charCodeAt(i + 2)]! << 6) |
-      SEXTETS[text.charCodeAt(i + 3)]!;
-    bytes[at] = group >> 16;
-    bytes[at + 1] = (group >> 8) & 255;
-    bytes[at + 2] = group & 255;
-  }
-  return bytes.subarray(0, bytes.length - padding);
-}
 
 /**
  * The payload a blob holds, exactly as the extractor wrote it: `number[][]` rows for points, faces
  * and deltas, `number[]` for a channel's samples (see scripts/avatar-vector/pack-assets.mjs, which
  * this mirrors). An integer divided by a power of ten is the double JSON.parse gives its decimal.
+ *
+ * Decoding is one pass over `atob`'s string (native on Hermes and in browsers; each character is a
+ * byte), column by column into the list it ends in. On a Pixel 8a that is what loading costs: the
+ * per-number work, not the format.
  */
 export function decodeBlob({ data, ...fields }: VectorBlob): Payload {
-  const bytes = decodeBase64(data);
+  const bytes = atob(data);
   let at = 0;
-  /** `count` numbers, column after column, starting at byte `at`. */
+  /** `count` numbers, column after column, from byte `at`: `(min + n) / 10 ** decimals`. */
   const decode = (count: number, { decimals, columns }: Field) => {
     const scale = 10 ** decimals;
-    const values = new Float64Array(count);
-    let cursor = at;
+    const values: number[] = new Array(count);
     for (let c = 0; c < columns.length; c++) {
       const [min, size] = columns[c]!;
       for (let i = c; i < count; i += columns.length) {
         let n = 0;
-        for (let b = size - 1; b >= 0; b--) n = n * 256 + bytes[cursor + b]!;
+        if (size === 1) n = bytes.charCodeAt(at);
+        else if (size === 2) n = bytes.charCodeAt(at) | (bytes.charCodeAt(at + 1) << 8);
+        else if (size === 3)
+          n =
+            bytes.charCodeAt(at) |
+            (bytes.charCodeAt(at + 1) << 8) |
+            (bytes.charCodeAt(at + 2) << 16);
+        else if (size === 4)
+          n =
+            bytes.charCodeAt(at) +
+            bytes.charCodeAt(at + 1) * 256 +
+            bytes.charCodeAt(at + 2) * 65536 +
+            bytes.charCodeAt(at + 3) * 16777216;
         values[i] = (min + n) / scale;
-        cursor += size;
+        at += size;
       }
     }
-    at = cursor;
     return values;
   };
   const payload: Payload = {};
@@ -92,12 +82,12 @@ export function decodeBlob({ data, ...fields }: VectorBlob): Payload {
     const field = raw as Field | null;
     if (typeof field?.rows === 'number') {
       const values = decode(field.rows * ROW, field);
-      const rows: number[][] = [];
-      for (let r = 0; r < values.length; r += ROW)
-        rows.push([values[r]!, values[r + 1]!, values[r + 2]!]);
+      const rows: number[][] = new Array(field.rows);
+      for (let r = 0, i = 0; r < field.rows; r++, i += ROW)
+        rows[r] = [values[i]!, values[i + 1]!, values[i + 2]!];
       payload[key] = rows;
     } else if (typeof field?.samples === 'number')
-      payload[key] = { samples: Array.from(decode(field.samples, field)) };
+      payload[key] = { samples: decode(field.samples, field) };
     else payload[key] = raw;
   }
   if (at !== bytes.length) throw new Error('Vector payload: bytes left over');
