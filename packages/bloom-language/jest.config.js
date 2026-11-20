@@ -30,6 +30,7 @@ module.exports = {
     '^@oxy.so/bloom/icons/shared$': `${support}/bloom-icons.ts`,
     '^@oxy.so/bloom/avatar$': `${support}/bloom-avatar.ts`,
     '^@oxy.so/bloom/theme$': `${support}/bloom-theme.ts`,
+    '^@oxy.so/bloom/app-shell/hooks$': `${support}/bloom-app-shell-hooks.ts`,
     '^@oxy.so/bloom/(button|engagement-bar|image|surface|fab|page-header|bottom-bar|dropdown-menu)$': `${support}/bloom-components.ts`,
     // Optional native modules: absent unless a test mocks one in.
     '^(expo|expo-blur|expo-glass-effect|expo-router|@expo/ui/swift-ui/modifiers)$': `${support}/absent/$1.ts`,
