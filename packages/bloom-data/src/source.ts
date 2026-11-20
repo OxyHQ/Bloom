@@ -43,7 +43,7 @@ export interface SourceState {
   readonly origin: 'network' | 'disk' | undefined;
 }
 
-const IDLE: SourceState = {
+export const IDLE_STATE: SourceState = {
   status: 'idle',
   fetchStatus: 'idle',
   error: null,
@@ -82,6 +82,8 @@ export interface Page<T, X = undefined> {
   readonly hasMore?: boolean;
   /** Anything else the page carries, folded into the list's `extra`. */
   readonly extra?: X;
+  /** Records the page carries that are not its items (stored, not listed). */
+  readonly related?: readonly T[];
 }
 
 export interface PageRequest<E> {
@@ -172,7 +174,7 @@ export function source(
     let query = store.queries.get(key) as Query | undefined;
     if (!query) {
       query = {
-        state: IDLE,
+        state: IDLE_STATE,
         listeners: new Set(),
         observers: 0,
         args,
@@ -237,6 +239,9 @@ export function source(
         const slot = listOf(store, query.args);
         if (!slot) return;
         const definition = slot.definition;
+        for (const record of page.related ?? []) {
+          store.put(definition.of, record as Plain, listOptions.put);
+        }
         const ids: string[] = [];
         for (const item of page.items) {
           const itemId = store.put(definition.of, item as Plain, listOptions.put);

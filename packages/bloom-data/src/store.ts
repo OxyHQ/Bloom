@@ -412,6 +412,21 @@ export class Store {
     return scope;
   }
 
+  /** Writes a layer into the server copy of every record it touched, then removes it. */
+  commitLayer(scope: { id: number; slots: Set<Slot> }): void {
+    if (this.closed) return;
+    this.batch(() => {
+      for (const slot of scope.slots) {
+        const layer = slot.layers?.find((entry) => entry.id === scope.id);
+        if (!layer || !slot.layers) continue;
+        slot.layers = slot.layers.filter((entry) => entry.id !== scope.id);
+        if (slot.layers.length === 0) slot.layers = undefined;
+        if (slot.base) this.writeBase(slot, merge(slot.base, layer.partial));
+        else this.recompute(slot);
+      }
+    });
+  }
+
   /** Removes a layer from every record it touched. */
   dropLayer(scope: { id: number; slots: Set<Slot> }): void {
     if (this.closed) return;

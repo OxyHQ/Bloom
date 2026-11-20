@@ -4,8 +4,10 @@ import { reportError, type Store } from './store';
 
 /** What `realtime` needs of a socket: socket.io's `on` and `off`. */
 export interface EventSocket {
-  on(event: string, listener: (payload: never) => void): unknown;
-  off(event: string, listener: (payload: never) => void): unknown;
+  // biome-ignore lint/suspicious/noExplicitAny: socket listeners take any payload
+  on(event: string, listener: (payload: any) => void): unknown;
+  // biome-ignore lint/suspicious/noExplicitAny: socket listeners take any payload
+  off(event: string, listener: (payload: any) => void): unknown;
 }
 
 // biome-ignore lint/suspicious/noExplicitAny: each event has its own payload type
@@ -50,13 +52,13 @@ export function realtime(socket: EventSocket, handlers: RealtimeHandlers): () =>
       queue.push({ store: currentStore(), handler, payload });
       cancel ??= afterFrame(flush);
     };
-    socket.on(event, listener as (payload: never) => void);
+    socket.on(event, listener);
     return [event, listener] as const;
   });
 
   return () => {
     for (const [event, listener] of listeners) {
-      socket.off(event, listener as (payload: never) => void);
+      socket.off(event, listener);
     }
     cancel?.();
     cancel = undefined;

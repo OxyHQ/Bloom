@@ -9,9 +9,9 @@ import {
 } from 'react';
 
 import type { EntityDefinition, ListState } from './definition';
-import type { Entity } from './entity';
+import type { Entity, List } from './entity';
 import { currentStore, withStore } from './root';
-import type { ListSource, RecordSource, SourceState } from './source';
+import { IDLE_STATE, type ListSource, type RecordSource, type SourceState } from './source';
 import type { Listener, Store } from './store';
 import { Tracker } from './track';
 
@@ -135,6 +135,16 @@ export interface ListView<E> extends SourceState {
 
 const NO_IDS: readonly string[] = Object.freeze([]);
 
+/**
+ * Passed as the arguments of `useList`, observes nothing: the
+ * hook returns an idle, empty view and reads nothing (a read that must wait
+ * for something, such as the signed-in account).
+ */
+export const skip: unique symbol = Symbol('bloom-data.skip');
+export type Skip = typeof skip;
+
+const SKIP_KEY = '\u0000skip';
+
 class ListReader<A extends unknown[], E> {
   private cached:
     | { key: string; list: ListState<E> | undefined; state: SourceState; view: ListView<E> }
@@ -148,33 +158,43 @@ class ListReader<A extends unknown[], E> {
     readonly source: ListSource<A, E>,
   ) {}
 
-  subscribe(args: A, listener: Listener): () => void {
-    const slot = this.store.listSlot(this.source.list.definition, this.source.key(...args), true);
+  subscribe(args: A | [Skip], listener: Listener): () => void {
+    if (args[0] === skip) return () => undefined;
+    const slot = this.store.listSlot(
+      this.source.list.definition,
+      this.source.key(...(args as A)),
+      true,
+    );
     const stopList = this.store.listen(slot, listener);
-    const stopState = this.source.listenState(this.store, args, listener);
+    const stopState = this.source.listenState(this.store, args as A, listener);
     return () => {
       stopList();
       stopState();
     };
   }
 
-  snapshot(args: A): ListView<E> {
-    const key = this.source.key(...args);
-    const list = this.store.listSlot(this.source.list.definition, key, true).state as
-      | ListState<E>
-      | undefined;
-    const state = this.source.stateIn(this.store, args);
+  snapshot(args: A | [Skip]): ListView<E> {
+    const skipped = args[0] === skip;
+    const key = skipped ? SKIP_KEY : this.source.key(...(args as A));
+    const list = skipped
+      ? undefined
+      : (this.store.listSlot(this.source.list.definition, key, true).state as
+          | ListState<E>
+          | undefined);
+    const state = skipped ? IDLE_STATE : this.source.stateIn(this.store, args as A);
     const cached = this.cached;
     if (cached && cached.key === key && cached.list === list && cached.state === state) {
       return cached.view;
     }
     if (this.commands?.key !== key) {
       const { store, source } = this;
-      this.commands = {
-        key,
-        more: () => withStore(store, () => source.more(...args)),
-        refresh: () => withStore(store, () => source.refresh(...args)),
-      };
+      this.commands = skipped
+        ? { key, more: () => Promise.resolve(), refresh: () => Promise.resolve() }
+        : {
+            key,
+            more: () => withStore(store, () => source.more(...(args as A))),
+            refresh: () => withStore(store, () => source.refresh(...(args as A))),
+          };
     }
     const view: ListView<E> = {
       ...state,
@@ -183,8 +203,9 @@ class ListReader<A extends unknown[], E> {
       extra: list?.extra,
       hasMore: list?.hasMore ?? false,
       // Before its first read starts (the mount effect), a key with no data is loading.
-      isLoading: !list && (state.status === 'idle' || state.status === 'loading'),
-      isFetching: state.fetchStatus === 'fetching' || (!list && state.status === 'idle'),
+      isLoading: !skipped && !list && (state.status === 'idle' || state.status === 'loading'),
+      isFetching:
+        state.fetchStatus === 'fetching' || (!skipped && !list && state.status === 'idle'),
       list,
       more: this.commands.more,
       refresh: this.commands.refresh,
@@ -198,7 +219,7 @@ class ListReader<A extends unknown[], E> {
  * The arguments, kept while their key is the same: the key is what identifies
  * a read, so equal keys must not start another.
  */
-function useArgs<A extends unknown[]>(key: string, args: A): A {
+function useArgs<A extends unknown[]>(key: string, args: A | [Skip]): A | [Skip] {
   // biome-ignore lint/correctness/useExhaustiveDependencies: the key identifies the arguments
   return useMemo(() => args, [key]);
 }
@@ -209,9 +230,12 @@ function useArgs<A extends unknown[]>(key: string, args: A): A {
  * and re-renders when its ids or state change. A change to one of its
  * records does not re-render the list; rows read records with `useEntity`.
  */
-export function useList<A extends unknown[], E>(source: ListSource<A, E>, ...args: A): ListView<E> {
+export function useList<A extends unknown[], E>(
+  source: ListSource<A, E>,
+  ...args: A | [Skip]
+): ListView<E> {
   const store = useStore();
-  const key = source.key(...args);
+  const key = args[0] === skip ? SKIP_KEY : source.key(...(args as A));
   const stableArgs = useArgs(key, args);
   const reader = useMemo(() => new ListReader(store, source), [store, source]);
   const subscribe = useCallback(
@@ -220,8 +244,31 @@ export function useList<A extends unknown[], E>(source: ListSource<A, E>, ...arg
   );
   const getSnapshot = () => reader.snapshot(stableArgs);
   const view = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
-  useEffect(() => source.observe(store, stableArgs), [source, store, stableArgs]);
+  useEffect(
+    () => (stableArgs[0] === skip ? undefined : source.observe(store, stableArgs as A)),
+    [source, store, stableArgs],
+  );
   return view;
+}
+
+/**
+ * A list as it is held, read without reading it from the server: it re-renders
+ * when the list changes and starts no read (what another screen's source
+ * filled, say). `undefined` while no list is held for `key`.
+ */
+export function useListState<E>(
+  list: List<E>,
+  key: string | null | undefined,
+): ListState<E> | undefined {
+  const store = useStore();
+  const subscribe = useCallback(
+    (listener: Listener) =>
+      key ? store.listen(store.listSlot(list.definition, key, true), listener) : () => undefined,
+    [store, list, key],
+  );
+  const getSnapshot = () =>
+    key ? (store.listSlot(list.definition, key)?.state as ListState<E> | undefined) : undefined;
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
 
 export interface RecordView<T> extends SourceState {
@@ -238,7 +285,7 @@ export function useRecord<A extends unknown[], T>(
 ): RecordView<T> {
   const store = useStore();
   const key = source.key(...args);
-  const stableArgs = useArgs(key, args);
+  const stableArgs = useArgs(key, args) as A;
   const value = useEntity(source.entity, key);
   const subscribe = useCallback(
     (listener: Listener) => source.listenState(store, stableArgs, listener),

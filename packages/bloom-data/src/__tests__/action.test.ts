@@ -68,6 +68,20 @@ describe('action', () => {
     expect(Post.get('1')?.engagement.likes).toBe(11);
   });
 
+  it('keeps the change when the answer carries nothing to settle', async () => {
+    Post.put(post('1', { engagement: { likes: 0, boosts: 2 } }));
+    const boost = action({
+      optimistic: (id: string) =>
+        Post.patch(id, (p) => ({ engagement: { boosts: p.engagement.boosts + 1 } })),
+      run: async () => ({ success: true }),
+    });
+    await boost('1');
+    expect(Post.get('1')?.engagement.boosts).toBe(3);
+    // Written into the server copy: a later server write builds on it.
+    Post.merge('1', { engagement: { likes: 1 } });
+    expect(Post.get('1')?.engagement).toEqual({ likes: 1, boosts: 3 });
+  });
+
   it('ignores a second call with the same key while the first is in flight', async () => {
     Post.put(post('1'));
     const server = deferred<{ likes: number }>();

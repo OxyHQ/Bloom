@@ -21,7 +21,7 @@ adds no dependency: React is its only peer, and the SQLite copy uses the
 | `source` | the fetching half of `@Query` | Fills a list (paged) or a record from the server. |
 | `action` | a mutation | An optimistic change, the server call, then settle or roll back. |
 | `realtime` | | Writes a socket's events into the same records. |
-| `useEntity`, `useList`, `useRecord` | `@Observable` reads | Read them, re-rendering only for what changed. |
+| `useEntity`, `useList`, `useRecord`, `useListState` | `@Observable` reads | Read them, re-rendering only for what changed. |
 
 ```ts
 import { action, entity, list, realtime, source } from '@oxy.so/bloom-data';
@@ -106,6 +106,7 @@ an equal answer from the server changes nothing and wakes nobody.
   held, such as one that lost an embedded record.
 - `onStore(records)` is told about every record a write stored, whichever path
   wrote it.
+- A page can carry `related` records: stored, not listed (slice posts, say).
 - `get(id)` returns a plain object with its refs resolved, cached until a
   dependency changes. Use it outside render. Use the hooks in render.
 
@@ -157,7 +158,9 @@ and each has a test in `src/__tests__/source.test.tsx`:
 - A key nobody observes leaves memory after `gcTime` (default 5 minutes). Its
   disk copy stays.
 
-A list source's `fold(current, extra, mode)` folds each page's `extra` into the
+`useListState(list, key)` reads a held list without reading it from the
+server. `useList(source, skip)` observes nothing until its arguments are known (the
+signed-in account, say). A list source's `fold(current, extra, mode)` folds each page's `extra` into the
 list's (`first` replaces it, `next` appends). A record source's `load` returns
 the record, or `null` when the server says it is gone, which removes it.
 
@@ -173,7 +176,8 @@ layer: concrete values held over the server's copy, not written into it.
 - While the layer stands, server writes to the same fields (a feed refresh, a
   realtime echo) update the copy beneath it without moving what the reader
   sees. This replaces a hand-written echo guard for the call's duration.
-- When `run` resolves, the layer goes and `settle` writes the answer, in one
+- When `run` resolves, the layer is written into the server's copy (the server
+  accepted it) and `settle` writes the server's own answer over it, in one
   notification.
 - When `run` rejects, the layer goes. That is the rollback: the copy beneath
   is current, including anything realtime brought in the meantime.
@@ -195,8 +199,8 @@ account that has since been left is dropped.
 asynchronous API.
 
 - Writes go out after the frame, in one transaction, from a queue of changed
-  records and lists. Only the server's copy is written, never an optimistic
-  layer.
+  records and lists. Only the server's copy is written, never a layer still in
+  flight.
 - Reads happen when a screen opens (`useList` and `useRecord` read the disk
   copy while the network read runs) or at boot (`entity.load(ids)`), never
   during render. Memory always wins over disk.
