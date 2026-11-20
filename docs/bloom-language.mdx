@@ -431,7 +431,8 @@ PostRow({ id }).onPress(navigate('/p/[id]', { id }))
 | `screen()` | Bloom `Screen` + `PageHeader` | Bloom `Screen` + the system navigation bar, in a native stack | Bloom `Screen` + `PageHeader` |
 
 **`layout(body)`, `screen(body)`.** A route file's default export. The body
-runs as the route's component, so it may call hooks. Both provide the
+runs as the route's component, so it may call hooks; a screen a route renders
+with props (a post's id) is a `screen()` whose body takes them. Both provide the
 environment's navigator (Bloom's panel-aware router, so a deck panel's routes
 push in that panel on the web), which `navigate()` presses go through.
 
@@ -459,12 +460,14 @@ fragment", on a Pixel 8a).
 **`screen()`'s chrome** is the screen modifiers on its body's root (any view
 takes them, as SwiftUI's `navigationTitle`, `toolbar` and `sheet`; elsewhere
 they draw nothing): `.title`, `.titleDisplay`, `.subtitle`, `.toolbar`,
-`.toolbarLeading`, `.onBack`, `.header(presentation | false | node)` (a
+`.toolbarLeading`, `.onBack`, `.backLabel`, `.headingLevel` (the web's
+`aria-level`), `.header(presentation | false | node)` (a
 header node of the screen's own is drawn in the page on every platform),
 `.footer(content, { placement, keyboard })` (Bloom Screen's bottom bar),
 `.onReselect` and `.sheet(open, content, { onDismiss, title })`, Bloom's
 `Dialog` from the bottom and centred from `md`, its content built while open
-and kept while it closes.
+and kept while it closes. The root's `.testID` names the Screen itself, not a
+box around the content.
 
 ## Image
 
@@ -627,8 +630,6 @@ a theme switch; each fixture also pins how many chains the compiler hoists.
   expo-router (its native `Stack`, `Stack.Toolbar` and `NativeTabs`), and
   tested against stand-ins of each; it is not verified on a device (no Mac
   here).
-- `screen()` has no Screen `testID`, heading level or back label of its own
-  yet, so a screen that sets them (Mention's post detail) stays JSX.
 - On the web, hover groups (`hoverGroup()`) set the `group` class through
   `react-native-css`. Web behaviour of the language row is unmeasured.
 - The web stylesheet is not in server-rendered HTML.
