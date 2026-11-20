@@ -129,7 +129,7 @@ describe('durable copy', () => {
     User.put({ id: 'me', name: 'Alice' });
     const alice = accounts.store as Store;
     accounts.open('bob');
-    expect(alice.closed).toBe(false); // closing: the queued write is still going to Alice's file
+    expect(alice.closed).toBe(true); // at once; its queued write still goes to Alice's file
     expect(User.get('me')).toBeUndefined();
     User.put({ id: 'me', name: 'Bob' });
     await accounts.close();

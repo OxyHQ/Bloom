@@ -93,6 +93,17 @@ describe('action', () => {
     await first;
   });
 
+  it('shares keys across actions, so an action and its undo exclude each other', async () => {
+    Post.put(post('1'));
+    const server = deferred<{ likes: number }>();
+    const like = likeAction(server);
+    const unlike = action({ key: (id: string) => `like:${id}`, run: async () => ({ likes: 0 }) });
+    const first = like('1');
+    await expect(unlike('1')).resolves.toBeUndefined();
+    server.resolve({ likes: 1 });
+    await first;
+  });
+
   it('applies nothing when its account was left before the answer', async () => {
     Post.put(post('1'));
     const server = deferred<{ likes: number }>();
