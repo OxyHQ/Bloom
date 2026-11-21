@@ -308,15 +308,15 @@ function motionUtility(utility) {
     );
   if (utility === 'transition-colors')
     return motion(
-      `.animation(motion): a change of the view’s colours (fill, border, outline, ink) plays with motion (${MOTION_LAYER})`,
+      `.animation(motion).animatesColors(): a change of the view’s colours (fill, border, outline, ink) plays with motion; a theme switch changes them at once (${MOTION_LAYER})`,
     );
   if (utility === 'transition')
     return motion(
-      `.animation(motion): a change of the view’s colours, opacity and geometry plays with motion; a shadow or a filter changes at once (${MOTION_LAYER})`,
+      `.animation(motion).animatesColors(): a change of the view’s colours, opacity and geometry plays with motion; a shadow or a filter changes at once (${MOTION_LAYER})`,
     );
   if (utility === 'transition-all')
     return modifier(
-      'a transition of every property: .animation(motion) plays colours, opacity and geometry, not a frame or a shadow',
+      'a transition of every property: .animation(motion).animatesColors() plays colours, opacity and geometry, not a frame or a shadow',
     );
   if (/^transition-\[/.test(utility))
     return modifier(
@@ -926,12 +926,15 @@ ${table(byStatus('token'), tokenColumns)}
 ## Maps to the motion layer
 
 Bloom's motion engine (\`@oxy.so/bloom/motion\`) plays the language's motion
-modifiers (\`.animation()\`, \`.transition()\`, \`.keyframes()\`,
-\`.repeatForever()\`, \`.delay()\`, \`.anchor()\`). What it plays is here.
-Tailwind's durations and curves are none of Bloom's motion tokens (its default
-curve is \`cubic-bezier(0.4, 0, 0.2, 1)\`), so each is an app's own motion,
-declared with its exact numbers (*An app's own token*); its spin and pulse are
-the language's loops, and its delays the duration tokens. What the engine has
+modifiers (\`.animation()\`, \`.animatesColors()\`, \`.transition()\`,
+\`.keyframes()\`, \`.repeatForever()\`, \`.delay()\`, \`.anchor()\`). What it
+plays is here. A view's colours animate only when it says so
+(\`.animatesColors()\`, Tailwind's \`transition-colors\`), and a theme switch
+never animates them. Tailwind's durations and curves are none of Bloom's motion
+tokens (its default curve is \`cubic-bezier(0.4, 0, 0.2, 1)\`), so each is an
+app's own motion, declared with its exact numbers (*An app's own token*); its
+spin and pulse are the language's loops, and a delay one of Bloom's durations
+(no app writes \`delay-*\`). What the engine has
 no equivalent for (a transition of every property, a layout transition, a
 bounce or a ping) is under *Needs a modifier the language lacks*.
 
