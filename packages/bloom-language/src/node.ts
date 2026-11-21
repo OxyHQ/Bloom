@@ -19,7 +19,7 @@ import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 
-import type { DialogAction } from '@oxy.so/bloom/dialog';
+import type { DialogAction, DialogHeaderConfig, DialogScreenFrame } from '@oxy.so/bloom/dialog';
 import type { SearchToken } from '@oxy.so/bloom/search';
 
 import type { Binding } from './binding';
@@ -50,6 +50,7 @@ import type {
   AlertDefault,
   AlertView,
   DialogPlacement,
+  DialogTiers,
   DialogView,
   FloatingAlign,
   FloatingSide,
@@ -213,7 +214,7 @@ export interface ValueModifiers {
   disabled: boolean;
   loading: boolean;
   collapsed: boolean;
-  icon: IconComponent;
+  icon: IconComponent | ViewNode;
   destructive: true;
   checked: boolean;
   keepOpen: true;
@@ -234,7 +235,7 @@ export interface ValueModifiers {
   scrollEdge: ScrollEdge;
   scrollY: ScrollOffset | undefined;
   presentation: HeaderPresentation;
-  header: ScreenHeader;
+  header: ScreenHeader | DialogHeaderConfig;
   headingLevel: HeadingLevel;
   backLabel: string | undefined;
   onReselect: (() => void) | undefined;
@@ -327,7 +328,15 @@ export interface ValueModifiers {
   defaultAction: AlertDefault;
   dismissible: boolean;
   buttons: readonly DialogAction[];
-  presentAt: { readonly base: DialogPlacement; readonly md: DialogPlacement | undefined };
+  presentAt: { readonly base: DialogPlacement; readonly tiers: DialogTiers | undefined };
+  page: DialogScreenFrame;
+  sideOffset: SpaceToken;
+  alignOffset: PaddingToken;
+  offlineMessage: string;
+  reconnectingMessage: string;
+  restoredMessage: string;
+  reconnectingDelay: number;
+  restoredDuration: number;
   dismissOnBackdrop: boolean;
   scrollable: boolean;
   side: { readonly side: FloatingSide; readonly align: FloatingAlign | undefined };
@@ -1040,7 +1049,7 @@ export class Node {
   collapsed(value = true): Node {
     return this.set('collapsed', value);
   }
-  icon(value: IconComponent): Node {
+  icon(value: IconComponent | ViewNode): Node {
     return this.set('icon', value);
   }
   destructive(): Node {
@@ -1109,7 +1118,7 @@ export class Node {
   presentation(value: HeaderPresentation): Node {
     return this.set('presentation', value);
   }
-  header(value: ScreenHeader): Node {
+  header(value: ScreenHeader | DialogHeaderConfig): Node {
     return this.set('header', value);
   }
   headingLevel(value: HeadingLevel): Node {
@@ -1432,8 +1441,32 @@ export class Node {
   buttons(value: readonly DialogAction[]): Node {
     return this.set('buttons', value);
   }
-  presentAt(base: DialogPlacement, md?: DialogPlacement): Node {
-    return this.set('presentAt', { base, md });
+  presentAt(base: DialogPlacement, tiers?: DialogTiers): Node {
+    return this.set('presentAt', { base, tiers });
+  }
+  page(value: DialogScreenFrame): Node {
+    return this.set('page', value);
+  }
+  sideOffset(value: SpaceToken): Node {
+    return this.set('sideOffset', value);
+  }
+  alignOffset(value: PaddingToken): Node {
+    return this.set('alignOffset', value);
+  }
+  offlineMessage(value: string): Node {
+    return this.set('offlineMessage', value);
+  }
+  reconnectingMessage(value: string): Node {
+    return this.set('reconnectingMessage', value);
+  }
+  restoredMessage(value: string): Node {
+    return this.set('restoredMessage', value);
+  }
+  reconnectingDelay(ms: number): Node {
+    return this.set('reconnectingDelay', ms);
+  }
+  restoredDuration(ms: number): Node {
+    return this.set('restoredDuration', ms);
   }
   dismissOnBackdrop(value: boolean): Node {
     return this.set('dismissOnBackdrop', value);

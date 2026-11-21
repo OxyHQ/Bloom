@@ -504,7 +504,7 @@ function emptyState(d: ControlDraw): ReactElement {
   return d.pressAround((props) =>
     d.component(BloomEmptyState, {
       ...props,
-      icon: d.own('icon')?.value,
+      icon: d.own('icon')?.value as IconComponent | undefined,
       title: (d.node.props as TitledProps).title,
       description: d.own('description')?.value,
       media: d.own('media')?.value,
@@ -543,7 +543,7 @@ function tabs(d: ControlDraw): ReactElement {
       key: tab,
       value: tab,
       label,
-      leadingIcon: last(item, 'icon')?.value,
+      leadingIcon: last(item, 'icon')?.value as IconComponent | undefined,
       count: last(item, 'count')?.value ?? undefined,
       disabled: last(item, 'disabled')?.value,
       testID: last(item, 'testID')?.value,

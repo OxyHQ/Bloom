@@ -1,20 +1,29 @@
 import { createElement, Fragment, type ReactElement, type ReactNode } from 'react';
 import { AlertDialog } from '@oxy.so/bloom/alert-dialog';
 import { ConnectionStatusToasts } from '@oxy.so/bloom/connection-status';
-import { Dialog as BloomDialog, type DialogAction } from '@oxy.so/bloom/dialog';
+import {
+  Dialog as BloomDialog,
+  type DialogAction,
+  type DialogHeaderConfig,
+  type DialogScreenFrame,
+} from '@oxy.so/bloom/dialog';
 import { Popover as BloomPopover, PopoverContent, PopoverTrigger } from '@oxy.so/bloom/popover';
 
 import type { Binding } from '../binding';
 import type { ENUMS } from '../generated/spec.generated';
 import {
   type Child,
+  type FrameSpec,
   isNode,
   type Modifier,
   Node,
   type NodeKind,
   type ValueModifiers,
+  type ViewModifiers,
   type ViewNode,
 } from '../node';
+import { type PaddingToken, resolveSpace, type SpaceToken } from '../tokens';
+import { lastOf } from './draw';
 import type { ControlRenderer } from './draw';
 
 /** Overlays and feedback: dialogs, alerts, popovers, toasts. */
@@ -24,6 +33,24 @@ export type DialogPlacement = (typeof ENUMS.dialogPlacement)[number];
 export type AlertDefault = (typeof ENUMS.alertDefault)[number];
 export type FloatingSide = (typeof ENUMS.floatingSide)[number];
 export type FloatingAlign = (typeof ENUMS.floatingAlign)[number];
+/** Where a dialog presents from each breakpoint up, over its `base` placement. */
+export interface DialogTiers {
+  readonly sm?: DialogPlacement;
+  readonly md?: DialogPlacement;
+  readonly lg?: DialogPlacement;
+  readonly xl?: DialogPlacement;
+}
+/** A dialog's width and its ceiling (Bloom's `width` and `maxWidth`), as space tokens. */
+export interface DialogFrame {
+  readonly width?: SpaceToken;
+  readonly maxWidth?: SpaceToken;
+}
+/** A popover's widths and height ceiling (Bloom's `minWidth`, `maxWidth`, `maxHeight`). */
+export interface PopoverFrame {
+  readonly minWidth?: SpaceToken;
+  readonly maxWidth?: SpaceToken;
+  readonly maxHeight?: SpaceToken;
+}
 
 /**
  * What a view presents (`.alert()`, `.dialog()`, `.popover()`): data the view
@@ -62,6 +89,8 @@ export interface AlertView extends PresentedNode {
   /** `false`: Escape and the backdrop do not dismiss it. */
   dismissible(value: boolean): AlertView;
   testID(value: string): AlertView;
+  /** A view above the title (the application's icon). */
+  icon(value: ViewNode): AlertView;
 }
 
 /** Bloom `Dialog`: its content, a title, a message and a row of buttons. */
@@ -73,8 +102,18 @@ export interface DialogView extends PresentedNode {
   label(value: string | undefined): DialogView;
   /** The action row: Bloom's `DialogAction`s, in order. */
   buttons(value: readonly DialogAction[]): DialogView;
-  /** Where it presents: `base`, and `md` from the `md` breakpoint (Bloom's responsive placement). */
-  presentAt(base: DialogPlacement, md?: DialogPlacement): DialogView;
+  /** Where it presents: `base`, and from each breakpoint `tiers` names up (Bloom's responsive placement). */
+  presentAt(base: DialogPlacement, tiers?: DialogTiers): DialogView;
+  /** Bloom's dialog header: a collapsing title, its slots and its layout. */
+  header(value: DialogHeaderConfig): DialogView;
+  /** A view pinned under the content (Bloom's `footer`). */
+  footer(content: Child): DialogView;
+  /** A page of a dialog that navigates (Bloom's `frame`: its key, header and travel). */
+  page(value: DialogScreenFrame): DialogView;
+  /** Its width and its ceiling. */
+  frame(value: DialogFrame): DialogView;
+  /** The padding around its content (Bloom's `contentPadding`). */
+  padding(value: SpaceToken): DialogView;
   /** `false`: a press on the backdrop does not dismiss it. */
   dismissOnBackdrop(value: boolean): DialogView;
   /** Its content scrolls when it is taller than the dialog. */
@@ -89,10 +128,25 @@ export interface PopoverView extends PresentedNode {
   /** The side of the view it opens on, and its alignment along that side. */
   side(side: FloatingSide, align?: FloatingAlign): PopoverView;
   testID(value: string): PopoverView;
+  /** The gap between the view and the popover. */
+  sideOffset(value: SpaceToken): PopoverView;
+  /** A shift along the side it opens on (negative toward the start). */
+  alignOffset(value: PaddingToken): PopoverView;
+  /** Its widths and its height ceiling. */
+  frame(value: PopoverFrame): PopoverView;
 }
 
 /** Bloom `ConnectionStatusToasts`: the offline, reconnecting and restored toasts. It draws nothing itself. */
-export type ConnectionStatusView = ViewNode;
+export interface ConnectionStatusView extends ViewNode {
+  /** What the offline toast says (Bloom's localized words without it). */
+  offlineMessage(value: string): ConnectionStatusView;
+  reconnectingMessage(value: string): ConnectionStatusView;
+  restoredMessage(value: string): ConnectionStatusView;
+  /** How long an outage lasts before the reconnecting toast shows, in milliseconds. */
+  reconnectingDelay(ms: number): ConnectionStatusView;
+  /** How long the restored toast stays, in milliseconds. */
+  restoredDuration(ms: number): ConnectionStatusView;
+}
 
 const NO_CHILDREN: readonly Child[] = [];
 
@@ -131,11 +185,39 @@ export function ConnectionStatus(): ConnectionStatusView {
 
 /** The renderer of each kind in this family. */
 export const OVERLAYS: Partial<Record<OverlayKind, ControlRenderer>> = {
-  connectionStatus: (draw) => draw.component(ConnectionStatusToasts, { key: draw.key }),
+  connectionStatus: (d) =>
+    d.component(ConnectionStatusToasts, {
+      key: d.key,
+      offlineMessage: d.own('offlineMessage')?.value,
+      reconnectingMessage: d.own('reconnectingMessage')?.value,
+      restoredMessage: d.own('restoredMessage')?.value,
+      reconnectingDelayMs: d.own('reconnectingDelay')?.value,
+      restoredDurationMs: d.own('restoredDuration')?.value,
+    }),
 };
 
 /** A presented node's own values: the last of each of its modifiers. */
-type Own = Partial<ValueModifiers & { label: string | undefined; testID: string }>;
+type Own = Partial<
+  ValueModifiers & {
+    label: string | undefined;
+    testID: string;
+    frame: FrameSpec;
+    padding: SpaceToken;
+  }
+>;
+
+/** A space token as Bloom's number prop, when it is set. */
+function space(token: PaddingToken | undefined): number | undefined {
+  return token === undefined ? undefined : resolveSpace(token);
+}
+
+/** One presented view, drawn where its presenter is. */
+function one(
+  render: (children: readonly Child[]) => ReactNode[],
+  view: Child | undefined,
+): ReactNode {
+  return view === undefined ? undefined : render([view])[0];
+}
 
 function values(node: PresentedNode): Own {
   const out: Record<string, unknown> = {};
@@ -168,14 +250,18 @@ export function presentAround(
     Fragment,
     { key },
     anchored,
-    alert === undefined ? null : drawAlert(alert),
+    alert === undefined ? null : drawAlert(alert, render),
     dialog === undefined ? null : drawDialog(dialog, render),
   );
 }
 
-function drawAlert({ isPresented: [open, setOpen], content }: Presentation): ReactElement {
+function drawAlert(
+  { isPresented: [open, setOpen], content }: Presentation,
+  render: (children: readonly Child[]) => ReactNode[],
+): ReactElement {
   const own = values(content);
   return createElement(AlertDialog, {
+    icon: one(render, own.icon as ViewNode | undefined),
     open,
     onOpenChange: setOpen,
     title: (content.props as { title: string }).title,
@@ -198,16 +284,28 @@ function drawDialog(
 ): ReactElement {
   const own = values(content);
   const at = own.presentAt;
+  const footer = isNode(content) ? lastOf(content, 'footer')?.content : undefined;
   return createElement(
     BloomDialog,
     {
       open,
       onClose: () => setOpen(false),
+      header: own.header as DialogHeaderConfig | undefined,
+      footer: one(render, footer),
+      frame: own.page,
+      width: space(own.frame?.width as SpaceToken | undefined),
+      maxWidth: space(own.frame?.maxWidth as SpaceToken | undefined),
+      contentPadding: space(own.padding),
       title: own.title,
       description: own.message,
       label: own.label,
       actions: own.buttons as DialogAction[] | undefined,
-      placement: at === undefined ? undefined : at.md === undefined ? at.base : at,
+      placement:
+        at === undefined
+          ? undefined
+          : at.tiers === undefined
+            ? at.base
+            : { base: at.base, ...at.tiers },
       dismissOnBackdrop: own.dismissOnBackdrop,
       scrollable: own.scrollable,
       testID: own.testID,
@@ -234,6 +332,11 @@ function drawPopover(
         label: own.label,
         side: side?.side,
         align: side?.align,
+        sideOffset: space(own.sideOffset),
+        alignOffset: space(own.alignOffset),
+        minWidth: space(own.frame?.minWidth as SpaceToken | undefined),
+        maxWidth: space(own.frame?.maxWidth as SpaceToken | undefined),
+        maxHeight: space(own.frame?.maxHeight as SpaceToken | undefined),
         testID: own.testID,
       },
       ...(isNode(content) ? render(content.children) : []),

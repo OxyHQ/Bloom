@@ -3,14 +3,21 @@ import { Button } from '@oxy.so/bloom/button';
 import { ConnectionStatusToasts } from '@oxy.so/bloom/connection-status';
 import { Dialog } from '@oxy.so/bloom/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@oxy.so/bloom/popover';
+import { RiInformationLine } from '@oxy.so/bloom/icons';
+import { tokens } from '@oxy.so/bloom/styles';
+import { toast as bloomToast, ToastOutlet } from '@oxy.so/bloom/toast';
 import { Text } from '@oxy.so/bloom/typography';
+import { type ReactElement, useEffect } from 'react';
+import { View } from 'react-native';
 
 import { ENUMS } from '../src/generated/spec.generated';
 import * as O from '../src/controls/overlays';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
-import type { ParityCase } from './support/cases';
+import { toast } from '../src/toast';
+import { type ParityCase, Themed } from './support/cases';
 
+const { space } = tokens;
 const onPress = () => {};
 const setOpen = () => {};
 const confirm = () => {};
@@ -205,7 +212,7 @@ const dialogs: ParityCase[] = [
       toElement(
         OPEN.dialog(
           [true, setOpen],
-          O.Dialog(L.Text('Body')).title('Filters').presentAt('bottom', 'center'),
+          O.Dialog(L.Text('Body')).title('Filters').presentAt('bottom', { md: 'center' }),
         ),
       ),
     bloom: () => (
@@ -288,6 +295,248 @@ const feedback: ParityCase[] = [
     language: () => toElement(O.ConnectionStatus()),
     bloom: () => <ConnectionStatusToasts />,
   },
+  {
+    name: 'connection status in its own words and timings',
+    language: () =>
+      toElement(
+        O.ConnectionStatus()
+          .offlineMessage('No network')
+          .reconnectingMessage('Trying again')
+          .restoredMessage('Back online')
+          .reconnectingDelay(1000)
+          .restoredDuration(4000),
+      ),
+    bloom: () => (
+      <ConnectionStatusToasts
+        offlineMessage="No network"
+        reconnectingMessage="Trying again"
+        restoredMessage="Back online"
+        reconnectingDelayMs={1000}
+        restoredDurationMs={4000}
+      />
+    ),
+  },
 ];
 
-export const OVERLAY_CASES: ParityCase[] = [...alerts, ...dialogs, ...popovers, ...feedback];
+// ── Wave 2's remaining overlays ──────────────────────────────────
+
+const ICON = L.Icon(RiInformationLine).size('lg').foreground('primary');
+const BloomIcon = () => <Themed>{(c) => <RiInformationLine size="lg" fill={c.primary} />}</Themed>;
+
+const more: ParityCase[] = [
+  {
+    name: 'alert with an icon',
+    language: () =>
+      toElement(OPEN.alert([true, setOpen], O.Alert('Update ready').icon(ICON).hideCancel())),
+    bloom: () => (
+      <>
+        <OpenButton />
+        <AlertDialog
+          open
+          onOpenChange={setOpen}
+          title="Update ready"
+          icon={<BloomIcon />}
+          hideCancel
+        />
+      </>
+    ),
+  },
+  {
+    name: 'dialog with a width, a ceiling and no content padding',
+    language: () =>
+      toElement(
+        OPEN.dialog(
+          [true, setOpen],
+          O.Dialog(L.Text('Body'))
+            .title('Wide')
+            .frame({ width: '640', maxWidth: '768' })
+            .padding('none'),
+        ),
+      ),
+    bloom: () => (
+      <>
+        <OpenButton />
+        <Dialog
+          open
+          onClose={() => setOpen()}
+          title="Wide"
+          width={640}
+          maxWidth={768}
+          contentPadding={0}
+        >
+          <Text>Body</Text>
+        </Dialog>
+      </>
+    ),
+  },
+  {
+    name: 'dialog with a header and a footer',
+    language: () =>
+      toElement(
+        OPEN.dialog(
+          [true, setOpen],
+          O.Dialog(L.Text('Body'))
+            .header({ title: 'Settings', subtitle: 'Your account', largeTitle: false })
+            .footer(L.Text('Saved a minute ago'))
+            .label('Settings'),
+        ),
+      ),
+    bloom: () => (
+      <>
+        <OpenButton />
+        <Dialog
+          open
+          onClose={() => setOpen()}
+          header={{ title: 'Settings', subtitle: 'Your account', largeTitle: false }}
+          footer={<Text>Saved a minute ago</Text>}
+          label="Settings"
+        >
+          <Text>Body</Text>
+        </Dialog>
+      </>
+    ),
+  },
+  {
+    name: 'dialog on a page of its own',
+    language: () =>
+      toElement(
+        OPEN.dialog(
+          [true, setOpen],
+          O.Dialog(L.Text('Body'))
+            .page({ key: 'details', header: { title: 'Details' }, direction: 'none' })
+            .label('Details'),
+        ),
+      ),
+    bloom: () => (
+      <>
+        <OpenButton />
+        <Dialog
+          open
+          onClose={() => setOpen()}
+          frame={{ key: 'details', header: { title: 'Details' }, direction: 'none' }}
+          label="Details"
+        >
+          <Text>Body</Text>
+        </Dialog>
+      </>
+    ),
+  },
+  ...(['sm', 'md', 'lg', 'xl'] as const).map((tier) => ({
+    name: `dialog from the bottom, at the end from ${tier}`,
+    language: () =>
+      toElement(
+        OPEN.dialog(
+          [true, setOpen],
+          O.Dialog(L.Text('Body'))
+            .title('Filters')
+            .presentAt('bottom', { [tier]: 'end' }),
+        ),
+      ),
+    bloom: () => (
+      <>
+        <OpenButton />
+        <Dialog
+          open
+          onClose={() => setOpen()}
+          title="Filters"
+          placement={{ base: 'bottom', [tier]: 'end' }}
+        >
+          <Text>Body</Text>
+        </Dialog>
+      </>
+    ),
+  })),
+  {
+    name: 'popover with offsets and widths',
+    language: () =>
+      toElement(
+        OPEN.popover(
+          [true, setOpen],
+          O.Popover(L.Text('Details'))
+            .side('bottom', 'start')
+            .sideOffset('xs')
+            .alignOffset('-sm')
+            .frame({ minWidth: '280', maxWidth: '320', maxHeight: '384' }),
+        ),
+      ),
+    bloom: () => (
+      <Popover open onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button onPress={onPress}>Open</Button>
+        </PopoverTrigger>
+        <PopoverContent
+          side="bottom"
+          align="start"
+          sideOffset={4}
+          alignOffset={-8}
+          minWidth={280}
+          maxWidth={320}
+          maxHeight={384}
+        >
+          <Text>Details</Text>
+        </PopoverContent>
+      </Popover>
+    ),
+  },
+];
+
+export const OVERLAY_CASES: ParityCase[] = [
+  ...alerts,
+  ...dialogs,
+  ...popovers,
+  ...feedback,
+  ...more,
+];
+
+/** Bloom's toast outlet with one toast `fire` raised as it mounts, dismissed as it goes. */
+function Toasted({ fire }: { fire: () => string | number }): ReactElement {
+  useEffect(() => {
+    const id = fire();
+    return () => {
+      bloomToast.dismiss(id);
+    };
+  }, [fire]);
+  return <ToastOutlet />;
+}
+
+const TOAST = { id: 'parity-toast' } as const;
+const fireLanguage = () => toast.success('Saved', TOAST);
+const fireBloom = () => bloomToast.success('Saved', TOAST);
+const fireLanguageView = () =>
+  toast.custom(
+    L.HStack(L.Text('Uploaded'), L.Icon(RiInformationLine).size('md')).spacing('sm'),
+    TOAST,
+  );
+const fireBloomView = () =>
+  bloomToast.custom(
+    <Themed>
+      {(c) => (
+        <View style={{ flexDirection: 'row', gap: space.sm }}>
+          <Text>Uploaded</Text>
+          <RiInformationLine size="md" fill={c.text} />
+        </View>
+      )}
+    </Themed>,
+    TOAST,
+  );
+
+/**
+ * Toasts, raised through the language's `toast` and through Bloom's. A page has
+ * one toast store, so two toasters side by side (the story's pairs) would each
+ * draw both toasts: compared by the Jest suites, where one case renders at a
+ * time, and left out of the story. The web suite compares the rows the toaster
+ * portals into the document; native's toaster draws in Bloom's overlay host,
+ * outside the committed tree, as an open dialog does.
+ */
+export const OVERLAY_CASES_TOASTS: ParityCase[] = [
+  {
+    name: 'toast with a title',
+    language: () => <Toasted fire={fireLanguage} />,
+    bloom: () => <Toasted fire={fireBloom} />,
+  },
+  {
+    name: 'toast.custom with a view',
+    language: () => <Toasted fire={fireLanguageView} />,
+    bloom: () => <Toasted fire={fireBloomView} />,
+  },
+];

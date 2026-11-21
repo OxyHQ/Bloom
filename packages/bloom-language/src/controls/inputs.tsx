@@ -473,7 +473,7 @@ const textField: ControlRenderer = (d) => {
   const size = d.own('size')?.value as BloomSize | undefined;
   const invalid = d.own('invalid')?.value;
   const disabled = d.own('disabled')?.value;
-  const icon = d.own('icon')?.value;
+  const icon = d.own('icon')?.value as IconComponent | undefined;
   const trailingIcon = d.own('trailingIcon')?.value;
   const prefix = d.own('prefix')?.value;
   const suffix = d.own('suffix')?.value;

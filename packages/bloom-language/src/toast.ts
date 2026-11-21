@@ -37,6 +37,8 @@ export const toast = Object.assign(
     info: (value: ToastContent, options?: Options) => bloomToast.info(content(value), options),
     loading: (value: ToastContent, options?: Options) =>
       bloomToast.loading(content(value), options),
+    /** A view that is the whole row, with no title of Bloom's around it (Bloom's custom toast). */
+    custom: (value: ViewNode, options?: Options) => bloomToast.custom(toElement(value), options),
     promise: bloomToast.promise,
     dismiss: bloomToast.dismiss,
     wiggle: bloomToast.wiggle,
