@@ -521,3 +521,31 @@ fn a_drag_takes_a_motion_value_and_a_swipe_a_direction() {
     let output = gesture("export const x = () => Text('t').swipe('sideways', () => {});\n");
     assert_eq!(output.diagnostics[0].message, "Unknown swipeDirection token 'sideways' for .swipe()");
 }
+
+#[test]
+fn wave_two_controls_are_checked() {
+    let imports = "import { Chip, ChipRow, Dialog, GroupedSectionIcon, Option, Popover, RadioGroup, Row, SelectionCard, TextField, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (text, open, on) => VStack(TextField(text, 'Name').trailingIcon(I).completion('so').focused(on), RadioGroup(on, Option('a', 'A').tint('success').foreground('white')).style('swatch'), ChipRow(Chip().style('inverted').role('radio')).role('radiogroup').spacing('xs').contentInset('lg'), Row('Ana').density('compact'), GroupedSectionIcon(I).tint('vivid'), SelectionCard('Pro').indicator('check').density('compact')).dialog(open, Dialog().presentAt('bottom', { lg: 'end' }).frame({ maxWidth: '640' }).padding('none')).popover(open, Popover().sideOffset('xs').alignOffset('-sm'));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("RadioGroup(on).style('grid')", "Unknown radioStyle token 'grid' for .style()"),
+        ("Option('a', 'A').tint('lime')", "Unknown color token 'lime' for .tint()"),
+        ("Chip().style('ghost')", "Unknown chipStyle token 'ghost' for .style()"),
+        ("Chip().role('switch')", "Unknown role token 'switch' for .role()"),
+        ("GroupedSectionIcon(I).tint('lime')", "Unknown accentTone token 'lime' for .tint()"),
+        ("SelectionCard('Pro').indicator('dot')", "Unknown selectionIndicator token 'dot' for .indicator()"),
+        ("Row('Ana').density('cozy')", "Unknown density token 'cozy' for .density()"),
+        (
+            "Dialog().presentAt('bottom', { lg: 'top' })",
+            "Unknown dialogPlacement token 'top' for .presentAt()",
+        ),
+        ("Popover().sideOffset('huge')", "Unknown space token 'huge' for .sideOffset()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (on) => {chain};\n"));
+        assert_eq!(output.diagnostics.first().map(|d| d.message.as_str()), Some(message), "{chain}");
+    }
+}
