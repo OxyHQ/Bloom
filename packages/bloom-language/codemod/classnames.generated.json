@@ -482,8 +482,8 @@
   "transition-colors": {
    "count": 116,
    "apps": 7,
-   "status": "modifier",
-   "language": "a colour transition: the motion engine animates geometry and opacity, not colour"
+   "status": "motion",
+   "language": ".animation(motion): a change of the view’s colours (fill, border, outline, ink) plays with motion (the motion layer)"
   },
   "text-[11px]": {
    "count": 114,
@@ -3309,7 +3309,7 @@
    "count": 7,
    "apps": 4,
    "status": "modifier",
-   "language": "a transition of every property: .animation(motion) plays geometry and opacity, not colours or shadows"
+   "language": "a transition of every property: .animation(motion) plays colours, opacity and geometry, not a frame or a shadow"
   },
   "w-3/4": {
    "count": 7,
@@ -3326,8 +3326,8 @@
   "animate-pulse": {
    "count": 6,
    "apps": 3,
-   "status": "modifier",
-   "language": "a looping animation (animate-pulse): the motion engine plays keyframes on a trigger, never in a loop"
+   "status": "motion",
+   "language": ".repeatForever('pulse'): Tailwind’s animate-pulse, frame for frame, repeating (the motion layer)"
   },
   "basis-96": {
    "count": 6,
@@ -3678,8 +3678,8 @@
   "transition": {
    "count": 6,
    "apps": 5,
-   "status": "modifier",
-   "language": "a transition of every property: .animation(motion) plays geometry and opacity, not colours or shadows"
+   "status": "motion",
+   "language": ".animation(motion): a change of the view’s colours, opacity and geometry plays with motion; a shadow or a filter changes at once (the motion layer)"
   },
   "w-4": {
    "count": 6,
@@ -4786,8 +4786,8 @@
   "animate-spin": {
    "count": 3,
    "apps": 3,
-   "status": "modifier",
-   "language": "a looping animation (animate-spin): the motion engine plays keyframes on a trigger, never in a loop"
+   "status": "motion",
+   "language": ".repeatForever('spin'): Tailwind’s animate-spin, frame for frame, repeating (the motion layer)"
   },
   "astro-desktop": {
    "count": 3,
@@ -5387,13 +5387,13 @@
    "count": 3,
    "apps": 2,
    "status": "modifier",
-   "language": "a transform origin: a view scales and rotates about its centre"
+   "language": "a transform origin a library measures (a popover’s anchor): the language’s anchors are named points"
   },
   "origin-(--radix-tooltip-content-transform-origin)": {
    "count": 3,
    "apps": 3,
    "status": "modifier",
-   "language": "a transform origin: a view scales and rotates about its centre"
+   "language": "a transform origin a library measures (a popover’s anchor): the language’s anchors are named points"
   },
   "outline-1": {
    "count": 3,
@@ -10443,13 +10443,13 @@
    "count": 1,
    "apps": 1,
    "status": "modifier",
-   "language": "a transform origin: a view scales and rotates about its centre"
+   "language": "a transform origin a library measures (a popover’s anchor): the language’s anchors are named points"
   },
   "origin-(--transform-origin)": {
    "count": 1,
    "apps": 1,
    "status": "modifier",
-   "language": "a transform origin: a view scales and rotates about its centre"
+   "language": "a transform origin a library measures (a popover’s anchor): the language’s anchors are named points"
   },
   "outline-offset-4": {
    "count": 1,

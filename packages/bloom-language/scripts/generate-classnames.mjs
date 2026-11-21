@@ -307,12 +307,16 @@ function motionUtility(utility) {
       `.animation(motion): a change of the view’s ${utility === 'transition-opacity' ? 'opacity' : 'offset, scale or rotation'} plays with motion (${MOTION_LAYER})`,
     );
   if (utility === 'transition-colors')
-    return modifier(
-      'a colour transition: the motion engine animates geometry and opacity, not colour',
+    return motion(
+      `.animation(motion): a change of the view’s colours (fill, border, outline, ink) plays with motion (${MOTION_LAYER})`,
     );
-  if (utility === 'transition' || utility === 'transition-all')
+  if (utility === 'transition')
+    return motion(
+      `.animation(motion): a change of the view’s colours, opacity and geometry plays with motion; a shadow or a filter changes at once (${MOTION_LAYER})`,
+    );
+  if (utility === 'transition-all')
     return modifier(
-      'a transition of every property: .animation(motion) plays geometry and opacity, not colours or shadows',
+      'a transition of every property: .animation(motion) plays colours, opacity and geometry, not a frame or a shadow',
     );
   if (/^transition-\[/.test(utility))
     return modifier(
@@ -328,11 +332,22 @@ function motionUtility(utility) {
     );
   if (utility === 'animate-out')
     return motion(`.transition(asymmetric(insert, remove)): its removal (${MOTION_LAYER})`);
-  if ((m = /^(animate-(?:spin|pulse|bounce|ping))$/.exec(utility)))
-    return modifier(
-      `a looping animation (${m[1]}): the motion engine plays keyframes on a trigger, never in a loop`,
+  if ((m = /^animate-(spin|pulse)$/.exec(utility)))
+    return motion(
+      `.repeatForever('${m[1]}'): Tailwind’s ${utility}, frame for frame, repeating (${MOTION_LAYER})`,
     );
-  if ((m = /^delay-/.exec(utility))) return modifier('a delay before a motion plays');
+  if ((m = /^(animate-(?:bounce|ping))$/.exec(utility)))
+    return modifier(
+      `a looping animation (${m[1]}): the language’s loops are spin and pulse; an app loops its own keyframes with .repeatForever(k)`,
+    );
+  if ((m = /^delay-(\d+)$/.exec(utility))) {
+    const ms = Number(m[1]);
+    if (ms === 0) return drop('a view’s motion starts at once unless it says otherwise');
+    const name = rung(scales.duration, ms);
+    return name
+      ? motion(`.delay('${name}'): what the view plays waits ${ms}ms (${MOTION_LAYER})`)
+      : token('duration', `${ms}ms`, `.delay(…) (${MOTION_LAYER})`);
+  }
   if (/^(animate|transition)(-|$)/.test(utility))
     return modifier('a motion the engine has no name for');
   return undefined;
@@ -668,8 +683,17 @@ function resolve(utility) {
       ? mapped(`.rotation('${name}')`)
       : token('rotation', `${degrees}°`, `.rotation(…) (${MOTION_LAYER})`);
   }
-  if (/^origin-/.test(utility))
-    return modifier('a transform origin: a view scales and rotates about its centre');
+  if ((m = /^origin-(.+)$/.exec(utility))) {
+    // Tailwind's named origins are the language's anchors (leading and trailing are left and right).
+    const anchor = m[1].replace(/\bleft\b/, 'leading').replace(/\bright\b/, 'trailing');
+    if (Object.hasOwn(scales.anchor, anchor))
+      return motion(
+        `.anchor('${anchor}'): the point the view scales and rotates about (${MOTION_LAYER})`,
+      );
+    return modifier(
+      'a transform origin a library measures (a popover’s anchor): the language’s anchors are named points',
+    );
+  }
   if ((m = /^scale-(\d+|\[\d*\.?\d+\])$/.exec(utility))) {
     const factor = m[1].startsWith('[') ? Number(m[1].slice(1, -1)) : Number(m[1]) / 100;
     const name = rung(scales.scale, factor);
@@ -902,12 +926,14 @@ ${table(byStatus('token'), tokenColumns)}
 ## Maps to the motion layer
 
 Bloom's motion engine (\`@oxy.so/bloom/motion\`) plays the language's motion
-modifiers (\`.animation()\`, \`.transition()\`, \`.keyframes()\`). What it plays
-is here. Tailwind's durations and curves are none of Bloom's motion tokens
-(its default curve is \`cubic-bezier(0.4, 0, 0.2, 1)\`), so each is an app's own
-motion, declared with its exact numbers (*An app's own token*).
-What the engine has no equivalent for (a colour transition, a loop, a delay, a
-transform origin) is under *Needs a modifier the language lacks*.
+modifiers (\`.animation()\`, \`.transition()\`, \`.keyframes()\`,
+\`.repeatForever()\`, \`.delay()\`, \`.anchor()\`). What it plays is here.
+Tailwind's durations and curves are none of Bloom's motion tokens (its default
+curve is \`cubic-bezier(0.4, 0, 0.2, 1)\`), so each is an app's own motion,
+declared with its exact numbers (*An app's own token*); its spin and pulse are
+the language's loops, and its delays the duration tokens. What the engine has
+no equivalent for (a transition of every property, a layout transition, a
+bounce or a ping) is under *Needs a modifier the language lacks*.
 
 ${table(byStatus('motion'), columns)}
 
