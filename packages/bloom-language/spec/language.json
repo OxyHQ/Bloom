@@ -1326,7 +1326,9 @@
     "autoplay": ["value"],
     "closeDelay": ["value"],
     "padded": ["value"],
-    "colorScale": ["value"]
+    "colorScale": ["value"],
+    "openMenu": ["value"],
+    "shortcut": ["value"]
   },
   "universal": [
     "padding",
@@ -1574,7 +1576,8 @@
         "keepOpen",
         "onPress",
         "testID",
-        "tag"
+        "tag",
+        "shortcut"
       ]
     },
     "menuSubmenu": {
@@ -2842,6 +2845,15 @@
     "categoryBar": {
       "constructors": ["CategoryBar"],
       "modifiers": ["trailing", "spacing", "backdrop", "labels"]
+    },
+    "menubar": {
+      "constructors": ["Menubar"],
+      "modifiers": ["openMenu", "actions"]
+    },
+    "menubarMenu": {
+      "constructors": ["MenubarMenu"],
+      "universal": false,
+      "modifiers": ["id", "disabled", "testID"]
     }
   },
   "sfSymbols": {

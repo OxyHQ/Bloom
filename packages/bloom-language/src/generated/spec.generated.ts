@@ -3201,6 +3201,9 @@ export const MODIFIERS = {
   ],
   "colorScale": [
     "value"
+  ],
+  "openMenu": [
+    "value"
   ]
 } as const;
 
@@ -4884,7 +4887,8 @@ export const NODE_MODIFIERS = {
     "keepOpen",
     "onPress",
     "testID",
-    "tag"
+    "tag",
+    "shortcut"
   ],
   "menuSubmenu": [
     "icon",
@@ -13412,6 +13416,92 @@ export const NODE_MODIFIERS = {
     "spacing",
     "backdrop",
     "labels"
+  ],
+  "menubar": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "alert",
+    "dialog",
+    "popover",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
+    "openMenu",
+    "actions"
+  ],
+  "menubarMenu": [
+    "id",
+    "disabled",
+    "testID"
   ]
 } as const;
 
@@ -13594,5 +13684,7 @@ export const CONSTRUCTORS = {
   "VideoViewabilityScope": "videoViewabilityScope",
   "HoverCard": "hoverCard",
   "ExpandableText": "expandableText",
-  "CategoryBar": "categoryBar"
+  "CategoryBar": "categoryBar",
+  "Menubar": "menubar",
+  "MenubarMenu": "menubarMenu"
 } as const;
