@@ -1984,8 +1984,8 @@
   "py-space-6": {
    "count": 15,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "drop",
+   "language": "renders nothing today (no such key in Bloom’s preset): the codemod drops it"
   },
   "right-2": {
    "count": 15,
@@ -5200,8 +5200,8 @@
   "gap-space-6": {
    "count": 3,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "drop",
+   "language": "renders nothing today (no such key in Bloom’s preset): the codemod drops it"
   },
   "gap-x-6": {
    "count": 3,
@@ -7350,8 +7350,8 @@
   "px-space-6": {
    "count": 2,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "drop",
+   "language": "renders nothing today (no such key in Bloom’s preset): the codemod drops it"
   },
   "py-7": {
    "count": 2,
@@ -7528,8 +7528,8 @@
   "size-space-44": {
    "count": 2,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "drop",
+   "language": "renders nothing today (no such key in Bloom’s preset): the codemod drops it"
   },
   "space-y-0.5": {
    "count": 2,
@@ -10416,8 +10416,8 @@
   "min-h-space-44": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "drop",
+   "language": "renders nothing today (no such key in Bloom’s preset): the codemod drops it"
   },
   "min-w-11": {
    "count": 1,
@@ -10812,8 +10812,8 @@
   "p-space-6": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "drop",
+   "language": "renders nothing today (no such key in Bloom’s preset): the codemod drops it"
   },
   "pay-with-peable": {
    "count": 1,
@@ -10946,8 +10946,8 @@
   "pb-space-64": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "drop",
+   "language": "renders nothing today (no such key in Bloom’s preset): the codemod drops it"
   },
   "pe-4": {
    "count": 1,
@@ -10970,8 +10970,8 @@
   "pe-space-6": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "drop",
+   "language": "renders nothing today (no such key in Bloom’s preset): the codemod drops it"
   },
   "pe-space-8": {
    "count": 1,
@@ -11182,8 +11182,8 @@
   "ps-space-6": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "drop",
+   "language": "renders nothing today (no such key in Bloom’s preset): the codemod drops it"
   },
   "pt-24": {
    "count": 1,
@@ -11310,8 +11310,8 @@
   "py-space-10": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "drop",
+   "language": "renders nothing today (no such key in Bloom’s preset): the codemod drops it"
   },
   "qr": {
    "count": 1,
@@ -11688,8 +11688,8 @@
   "size-space-64": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "drop",
+   "language": "renders nothing today (no such key in Bloom’s preset): the codemod drops it"
   },
   "sky-wash": {
    "count": 1,

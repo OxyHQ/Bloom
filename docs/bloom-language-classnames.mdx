@@ -26,10 +26,10 @@ Alia `841e8843a`, Allo `ba28b38`, Astro `8ae8386`, Atlas `037990e`, Authenticato
 | --- | ---: | ---: | ---: |
 | Maps to a modifier and a token | 642 | 41321 | 76.9% |
 | Expressed by the view’s structure | 35 | 3445 | 6.4% |
-| Redundant in the language | 16 | 436 | 0.8% |
+| Redundant in the language | 27 | 465 | 0.9% |
 | Needs a named token (raw value) | 481 | 2575 | 4.8% |
 | Needs a modifier the language lacks | 265 | 4109 | 7.6% |
-| An app’s own class | 481 | 1834 | 3.4% |
+| An app’s own class | 470 | 1805 | 3.4% |
 
 53720 uses of 1920 utilities. Variant prefixes (the language has
 none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 365, `active:` 332, `md:` 290, `hover:` 195, `sm:` 114, `lg:` 107, `focus-visible:` 95, `dark:` 91, `disabled:` 66, `xl:` 41, `data-open:` 38, `after:` 36, `data-closed:` 35, `aria-invalid:` 31, `file:` 31, `focus:` 28.
@@ -47,6 +47,13 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | tracking | 10 | -0.5px (2), 0.04em (2), 0.5px (2), -0.2px (1), -0.4px (1), 1.5px (1), 2px (1) |
 | borderWidth | 6 | 4px (6) |
 | weight | 1 | 900 (1) |
+
+## Classes that render nothing
+
+A utility spelled with a Bloom key its preset does not have (`py-space-6`,
+`gap-space-6`, `pb-space-64`) matches no rule, so it draws nothing today. The
+codemod drops it, which keeps the look exactly as it is; the apps are not
+edited for it. These rows are under *Redundant in the language*.
 
 ## Icons
 

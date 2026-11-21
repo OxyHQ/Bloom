@@ -140,11 +140,21 @@ const drop = (language) => ({ status: 'drop', language });
 /** A space utility to `make(token)`, or the raw value it needs a token for. */
 function space(text, make, negative = false) {
   const value = spaceValue(text);
-  if (value === undefined) return undefined;
+  if (value === undefined) return deadKey(text, 'space');
   if (value === 0) return mapped(make("'none'"));
   const name = rung(scales.space, value);
   if (name) return mapped(make(`'${negative ? '-' : ''}${name}'`));
   return token('space', `${value}px`, make('…'));
+}
+
+/**
+ * A Bloom-spelled key the preset does not have (`py-space-6`, `rounded-radius-6`)
+ * matches no rule: it renders nothing today, so the codemod drops it and the look
+ * stays as it is.
+ */
+const DEAD = 'renders nothing today (no such key in Bloom’s preset): the codemod drops it';
+function deadKey(text, prefix) {
+  return new RegExp(`^${prefix}-\\d+$`).test(text) ? drop(DEAD) : undefined;
 }
 
 const EDGE = {
@@ -215,7 +225,7 @@ function fontSize(name) {
 function corner(name) {
   const value =
     name === '' ? TW_RADIUS[''] : (presetRadius[name] ?? TW_RADIUS[name] ?? spaceValue(name));
-  if (value === undefined) return undefined;
+  if (value === undefined) return deadKey(name, 'radius');
   if (value >= 9999) return mapped(".corner('full')");
   const name2 = rung(scales.corner, value);
   return name2 ? mapped(`.corner('${name2}')`) : token('corner', `${value}px`, '.corner(…)');
@@ -568,6 +578,13 @@ none yet: a breakpoint, a state or a scheme is a decision per family): ${variant
 ## Raw values that need a token
 
 ${tokenTable}
+
+## Classes that render nothing
+
+A utility spelled with a Bloom key its preset does not have (\`py-space-6\`,
+\`gap-space-6\`, \`pb-space-64\`) matches no rule, so it draws nothing today. The
+codemod drops it, which keeps the look exactly as it is; the apps are not
+edited for it. These rows are under *Redundant in the language*.
 
 ## Icons
 
