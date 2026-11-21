@@ -58,3 +58,18 @@ export function cssCurve(curve: Curve): string {
     ? `cubic-bezier(${curve.points.join(',')})`
     : `linear(${curve.points.join(',')})`;
 }
+
+const SAMPLED_POINTS = 48;
+
+/**
+ * A motion from an easing function: its `duration` and the function sampled as
+ * `linear()` points, as a spring already is. For a curve no cubic-bezier draws
+ * (an elastic settle), so both engines still play one set of numbers.
+ */
+export function sampledTiming(duration: number, easing: (fraction: number) => number): Timing {
+  const points: number[] = [];
+  for (let index = 0; index <= SAMPLED_POINTS; index++) {
+    points.push(Math.round(easing(index / SAMPLED_POINTS) * 10000) / 10000);
+  }
+  return { duration, curve: { kind: 'linear', points } };
+}

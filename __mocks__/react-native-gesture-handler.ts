@@ -135,3 +135,35 @@ export const GestureHandlerRootView = ({ children }: { children: React.ReactNode
 
 // Type alias used by withRef<GestureType>() — value not needed at runtime.
 export type GestureType = unknown;
+
+// Gesture Handler 3 hooks. A hook gesture records its config's callbacks on
+// `__handlers` and the rest on `__config`, in the same shape as a builder, so a
+// suite fires `onUpdate` / `onDeactivate` with a real payload the same way.
+const CALLBACKS = new Set([
+  'onBegin',
+  'onActivate',
+  'onUpdate',
+  'onDeactivate',
+  'onFinalize',
+  'onTouchesDown',
+  'onTouchesMove',
+  'onTouchesUp',
+  'onTouchesCancel',
+]);
+const hookGesture = (config: Record<string, unknown>): MockGesture => {
+  const gesture = gestureBuilder();
+  for (const [key, value] of Object.entries(config)) {
+    if (CALLBACKS.has(key)) gesture.__handlers[key] = value as (event: never) => void;
+    else gesture.__config[key] = value;
+  }
+  return gesture;
+};
+export const usePanGesture = hookGesture;
+export const useTapGesture = hookGesture;
+export const useLongPressGesture = hookGesture;
+export const usePinchGesture = hookGesture;
+export const useNativeGesture = hookGesture;
+const composeHook = (...gestures: unknown[]): MockGesture => compose()(...gestures);
+export const useCompetingGestures = composeHook;
+export const useExclusiveGestures = composeHook;
+export const useSimultaneousGestures = composeHook;

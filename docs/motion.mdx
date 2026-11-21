@@ -61,13 +61,50 @@ Bloom's state-driven animations play on one engine (`@oxy.so/bloom/motion`):
 - **Press feedback** (`usePressScale`, `PressableScale`): native retargets one
   shared value with the `press` motion, read by one mapper; the web is a class
   whose `:active` rule scales a touch press with the CSS `scale` property.
-- **Gesture-bound motion stays on shared values.** The tab indicator follows the
-  pager's drag, so its slide and fade are `animateWithSpec` on its shared
-  values, with the table's `slide`, `thumb` and `fade`.
 
 It plays the engagement bar's pop and count roll (`EngagementPop`,
 `RollingText`), the toast's enter and exit, and press feedback. Under reduced
 motion nothing plays: a removal leaves at once.
+
+## Motion values and gestures
+
+A `MotionValue` is the one way Bloom ties a gesture to what moves. A gesture
+writes it from its own callbacks; a view follows it through the one mapper.
+
+- **`useMotionValue(n)`.** Native: a Reanimated shared value, written on the UI
+  thread. Web: a number with the views bound to it, which a write restyles
+  directly (no React render, no Reanimated).
+- **`useMotionStyle(bindings)`** is the one mapper. A key (`translateX`,
+  `translateY`, `rotate`, `scale`, `opacity`, `width`, `height`) takes a value,
+  a constant, or a list of them, summed (`[base, settle, drag]`). Native: one
+  `useAnimatedStyle` that lists every bound value in its deps, writes every
+  bound key on every run, and starts no animation. Web: the style at render,
+  then each move written to the element. Spread its `style` and `ref` onto an
+  animated host (`MotionWrapper`, `Animated.View`). The bindings' shape is the
+  view's for its life.
+- **`useDerivedMotionValue(inputs, f)`**: a value computed from others by a pure
+  worklet of their numbers (the tab underline's travel toward its neighbour).
+- **`animateMotionValue(value, target, motion)`** eases it from where it is,
+  with a motion name, a spec (a spring keeps its physics on native) or a timing
+  (`sampledTiming(duration, easing)` for a curve no cubic-bezier draws, such as
+  an elastic settle). Native: `withSpring`/`withTiming` on the UI thread. Web: a
+  CSS transition of the bound properties, so the browser plays it with no JS per
+  frame and retargets it from where it is. A write (`setMotionValue`) is never
+  eased.
+- **`useDrag(value, { axis, min, max, onEnd })`** and **`useSwipe(direction,
+  onSwipe, options)`** are Gesture Handler 3's hooks (`usePanGesture`,
+  `useTapGesture`, `useCompetingGestures`) writing values. Hand the result to a
+  `GestureDetector`. Native: their callbacks are worklets, so a drag runs no JS
+  until the touch ends (`onEnd`, once). A swipe follows the finger toward its
+  direction, meets resistance against it, and on release flies out (`away`) and
+  calls `onSwipe`, or comes back (`back`).
+
+The tab underline (`Tabs`) is bound this way: `RouterTabs`' drag writes
+`dragTranslation`, and the underline's offset and width follow it toward the
+neighbour `begin()` fixed, on the UI thread; `release()` folds a commit or
+springs home. Its slides and fades are CSS transitions on the web. The toast's
+swipe-to-dismiss is `useSwipe`, its elastic settle and fly-out the curves it
+always had, sampled.
 
 ## Rolling text
 
