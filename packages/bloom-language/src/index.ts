@@ -812,3 +812,16 @@ export type {
   AiChatUserMessageOptions,
   AiChatUserMessageView,
 } from './controls/ai-chat';
+
+// Stat cards (controls/stat-cards.tsx)
+export { StatCard, StatCards } from './controls/stat-cards';
+export type { StatCardView, StatCardsView } from './controls/stat-cards';
+
+// Media controls (controls/media-controls.tsx)
+export { PlayButton, PlaybackProgress } from './controls/media-controls';
+export type {
+  PlayButtonOptions,
+  PlayButtonView,
+  PlaybackProgressOptions,
+  PlaybackProgressView,
+} from './controls/media-controls';

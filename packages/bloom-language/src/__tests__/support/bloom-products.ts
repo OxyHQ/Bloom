@@ -37,3 +37,7 @@ export const AiChatMobileHeader = 'AiChatMobileHeader';
 export const AiChatShell = 'AiChatShell';
 export const AiChatThread = 'AiChatThread';
 export const AiChatUserMessage = 'AiChatUserMessage';
+export const StatCard = 'StatCard';
+export const StatCards = 'StatCards';
+export const PlayButton = 'PlayButton';
+export const PlaybackProgress = 'PlaybackProgress';

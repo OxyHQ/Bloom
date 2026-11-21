@@ -68,6 +68,8 @@ import { CHAT_COMPOSER_CASES } from '../../parity/chat-composer.cases';
 import { CHART_CARD_CASES } from '../../parity/chart-cards.cases';
 import { COMPOSER_PANEL_CASES } from '../../parity/composer-panel.cases';
 import { AI_CHAT_CASES } from '../../parity/ai-chat.cases';
+import { STAT_CARD_CASES } from '../../parity/stat-cards.cases';
+import { MEDIA_CONTROL_CASES } from '../../parity/media-controls.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -141,6 +143,8 @@ export const FAMILIES = {
   chartCard: CHART_CARD_CASES,
   composerPanel: COMPOSER_PANEL_CASES,
   aiChat: AI_CHAT_CASES,
+  statCard: STAT_CARD_CASES,
+  mediaControl: MEDIA_CONTROL_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';
