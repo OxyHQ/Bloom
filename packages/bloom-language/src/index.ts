@@ -534,3 +534,7 @@ export type { VideoView } from './controls/video-view';
 // One-time codes (controls/input-otp.tsx)
 export { InputOtp } from './controls/input-otp';
 export type { InputOtpView } from './controls/input-otp';
+
+// Colour swatch pickers (controls/color-swatch-picker.tsx)
+export { ColorSwatchPicker } from './controls/color-swatch-picker';
+export type { ColorSwatchPickerView } from './controls/color-swatch-picker';

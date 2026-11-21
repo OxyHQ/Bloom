@@ -147,6 +147,7 @@ import type { ActivityHeatmapView } from '../controls/activity-heatmap';
 import type { TagFieldView } from '../controls/tag-field';
 import type { FileUploadView } from '../controls/file-upload';
 import type { VideoView } from '../controls/video-view';
+import type { ColorSwatchPickerView } from '../controls/color-swatch-picker';
 import type { InputOtpView } from '../controls/input-otp';
 import type { ColorPreset, ContentFit } from '../tokens';
 import type {
@@ -435,8 +436,10 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<TagFieldView>, Of<'tagField'>>,
       Same<MethodsOf<FileUploadView>, Of<'fileUpload'>>,
       Same<MethodsOf<VideoView>, Of<'video'>>,
+      Same<MethodsOf<ColorSwatchPickerView>, Of<'colorSwatchPicker'>>,
       Same<MethodsOf<InputOtpView>, Of<'inputOtp'>>,
     ] = [
+      true,
       true,
       true,
       true,

@@ -2034,6 +2034,18 @@ the boxes do not take). It takes `.length(n)` (6 by default),
 `n` boxes), `.onComplete(code => …)`, `.invalid()`, `.disabled()` and
 `.autoFocus()`; `.label()` names the group.
 
+### Colour swatch pickers
+
+```ts
+ColorSwatchPicker('Brand colour', [brand, setBrand], BRAND_COLORS).labels(colorNames)
+```
+
+Bloom's `ColorSwatchPicker`: a wrapping row of swatches, one chosen.
+`ColorSwatchPicker(label, binding, colors)`: the label names the whole, each
+colour (a CSS colour) is its own value. It takes `.labels({ [color]: name })`
+(what a screen reader says of a swatch; its colour string otherwise),
+`.size(space)` (a swatch's diameter, `4xl` by default) and `.disabled()`.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2464,7 +2476,8 @@ and `@oxy.so/bloom-data` beside it.
   tables, rows and lists, carousels, markdown, sliders,
   accordions, code, steppers, tooltips, breadcrumbs, activity heatmaps,
   tag fields, file uploads, videos,
-  one-time codes.
+  one-time codes,
+  colour swatch pickers.
 
 **Not built**
 
