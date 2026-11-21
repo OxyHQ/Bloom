@@ -5,6 +5,7 @@
     "version": "22.1.10",
     "peers": {
       "@lottiefiles/dotlottie-react": ">=0.13.0",
+      "@oxy.so/bloom-lens": "*",
       "@react-native-community/netinfo": ">=11.1.0",
       "@shopify/flash-list": ">=2.0.0",
       "expo": "*",
@@ -35,6 +36,9 @@
       "@lottiefiles/dotlottie-react": {
         "optional": true
       },
+      "@oxy.so/bloom-lens": {
+        "optional": true
+      },
       "@react-native-community/netinfo": {
         "optional": true
       },
@@ -53,10 +57,10 @@
       "expo-haptics": {
         "optional": true
       },
-      "expo-sharing": {
+      "expo-router": {
         "optional": true
       },
-      "expo-router": {
+      "expo-sharing": {
         "optional": true
       },
       "expo-video": {

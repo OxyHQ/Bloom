@@ -15,6 +15,12 @@
  * `playsInline={false}`; native ignores the prop, since iOS and Android views
  * are always inline.
  *
+ * On Android the video is drawn on a `textureView` by default, as `MediaSurface`'s is. expo-video's
+ * own default, a `surfaceView`, is composited outside the app's view hierarchy, so Bloom's lens
+ * (the bottom bar, a header's controls) cannot see it: on a Pixel 8a the bar over a feed video
+ * lost its glass wherever the video was under it. A caller may pass `surfaceType="surfaceView"`
+ * for a full-screen player with nothing over it; expo-video reads the prop once.
+ *
  * The module is loaded through the optional-peer boundary, never imported: an
  * app that paints only images through `MediaSurface` must not have to install a
  * native video module (see `media-flight/expo-video-module.ts`). When it cannot
@@ -34,7 +40,7 @@ import type { VideoViewHandle, VideoViewProps } from './types';
 type ExpoVideoViewComponent = ComponentType<ExpoVideoViewProps & RefAttributes<ExpoVideoView>>;
 
 export const VideoView = forwardRef<VideoViewHandle, VideoViewProps>(function VideoView(
-  { playsInline = true, player, ...props },
+  { playsInline = true, surfaceType = 'textureView', player, ...props },
   ref,
 ) {
   const expoVideo = loadExpoVideo();
@@ -52,6 +58,7 @@ export const VideoView = forwardRef<VideoViewHandle, VideoViewProps>(function Vi
       // structural minimum only so `MediaSurface` need not name the package.
       player={player as ExpoVideoViewProps['player']}
       playsInline={playsInline}
+      surfaceType={surfaceType}
     />
   );
 });
