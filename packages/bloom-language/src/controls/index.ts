@@ -21,6 +21,7 @@ import { ACTIVITY_HEATMAPS } from './activity-heatmap';
 import { TAG_FIELDS } from './tag-field';
 import { FILE_UPLOADS } from './file-upload';
 import { VIDEOS } from './video-view';
+import { GALLERIES } from './zoomable-media-gallery';
 import { INPUT_GROUPS } from './input-group';
 import { PHONE_INPUTS } from './phone-input';
 import { AVATAR_FLIGHTS } from './avatar-flight';
@@ -72,6 +73,7 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...TAG_FIELDS,
   ...FILE_UPLOADS,
   ...VIDEOS,
+  ...GALLERIES,
   ...INPUT_GROUPS,
   ...PHONE_INPUTS,
   ...AVATAR_FLIGHTS,

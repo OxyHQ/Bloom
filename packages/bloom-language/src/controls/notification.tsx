@@ -4,7 +4,7 @@ import {
   type NotificationAvatar,
 } from '@oxy.so/bloom/notification';
 
-import { ENUMS } from '../generated/spec.generated';
+import type { ENUMS } from '../generated/spec.generated';
 import { Node, type Child, type IconComponent, type ViewModifiers } from '../node';
 import type { ControlDraw, ControlRenderer } from './draw';
 

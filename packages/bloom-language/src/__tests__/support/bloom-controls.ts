@@ -101,3 +101,4 @@ export const InputGroupAddon = 'InputGroupAddon';
 export const Notification = 'Notification';
 export const LinkPreviewCard = 'LinkPreviewCard';
 export const SocialButton = 'SocialButton';
+export const ZoomableMediaGallery = 'ZoomableMediaGallery';
