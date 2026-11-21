@@ -509,7 +509,12 @@
     "tableAlign": ["start", "center", "end"],
     "tableSort": ["ascending", "descending", "none"],
     "columnWidthExtra": ["fit"],
-    "listSeparator": ["none", "line", "inset"]
+    "listSeparator": ["none", "line", "inset"],
+    "arrowsPlacement": ["header", "overlay", "footer"],
+    "arrowsVisibility": ["always", "hover"],
+    "carouselAlign": ["start", "center"],
+    "dotsShape": ["pill", "dot"],
+    "dotsStyle": ["default", "onMedia"]
   },
   "glass": {
     "$comment": [
@@ -860,7 +865,15 @@
     "restorationKey": ["value"],
     "tuning": ["value"],
     "onSelectAll": ["value"],
-    "onClear": ["value"]
+    "onClear": ["value"],
+    "groupSize": ["value"],
+    "arrows": ["value"],
+    "arrowsVisibility": ["arrowsVisibility"],
+    "arrowsInset": ["space"],
+    "hidesUnavailableArrows": [],
+    "dots": ["value?"],
+    "contentInset": ["space"],
+    "page": ["value"]
   },
   "universal": [
     "padding",
@@ -1382,6 +1395,32 @@
     "listSelectionBar": {
       "constructors": ["ListSelectionBar"],
       "modifiers": ["selecting", "onSelectAll", "onClear", "rowActions", "labels"]
+    },
+    "carousel": {
+      "constructors": ["Carousel"],
+      "modifiers": [
+        "headerContent",
+        "footerContent",
+        "loop",
+        "groupSize",
+        "arrows",
+        "arrowsVisibility",
+        "arrowsInset",
+        "hidesUnavailableArrows",
+        "dots",
+        "align",
+        "spacing",
+        "contentInset",
+        "page",
+        "labels"
+      ]
+    },
+    "carouselItem": { "constructors": ["CarouselItem"], "modifiers": ["width"] },
+    "carouselDots": {
+      "constructors": ["CarouselDots"],
+      "modifiers": ["shape", "style", "max", "labels"],
+      "shape": "dotsShape",
+      "style": "dotsStyle"
     }
   },
   "sfSymbols": {

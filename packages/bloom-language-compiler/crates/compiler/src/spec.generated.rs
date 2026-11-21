@@ -97,6 +97,11 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("tableSort", &["ascending", "descending", "none"]),
     ("columnWidthExtra", &["fit"]),
     ("listSeparator", &["none", "line", "inset"]),
+    ("arrowsPlacement", &["header", "overlay", "footer"]),
+    ("arrowsVisibility", &["always", "hover"]),
+    ("carouselAlign", &["start", "center"]),
+    ("dotsShape", &["pill", "dot"]),
+    ("dotsStyle", &["default", "onMedia"]),
 ];
 
 /// The modifiers a variant (`when(condition, v => v…)`) can change.
@@ -323,6 +328,14 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("tuning", &["value"]),
     ("onSelectAll", &["value"]),
     ("onClear", &["value"]),
+    ("groupSize", &["value"]),
+    ("arrows", &["value"]),
+    ("arrowsVisibility", &["arrowsVisibility"]),
+    ("arrowsInset", &["space"]),
+    ("hidesUnavailableArrows", &[]),
+    ("dots", &["value?"]),
+    ("contentInset", &["space"]),
+    ("page", &["value"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -387,6 +400,9 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "list", constructors: &["List", "SectionedList"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "separator", "scrollable", "scrollHeight", "stickyHeaders", "sectionIndex", "headerContent", "footerContent", "emptyState", "loading", "loadingRows"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "virtualList", constructors: &["VirtualList"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "itemKey", "itemType", "estimatedItemSize", "columns", "onEndReached", "refreshable", "stickyIndices", "restorationKey", "headerContent", "footerContent", "emptyState", "tuning"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "listSelectionBar", constructors: &["ListSelectionBar"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "selecting", "onSelectAll", "onClear", "rowActions", "labels"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "carousel", constructors: &["Carousel"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "headerContent", "footerContent", "loop", "groupSize", "arrows", "arrowsVisibility", "arrowsInset", "hidesUnavailableArrows", "dots", "align", "spacing", "contentInset", "page", "labels"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "carouselItem", constructors: &["CarouselItem"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "width"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "carouselDots", constructors: &["CarouselDots"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "shape", "style", "max", "labels"], size: None, tint: None, style: Some("dotsStyle"), shape: Some("dotsShape") },
 ];
 
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,
