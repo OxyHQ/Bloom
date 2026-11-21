@@ -88,3 +88,4 @@ export const MenubarSub = 'MenubarSub';
 export const MenubarSubTrigger = 'MenubarSubTrigger';
 export const MenubarSubContent = 'MenubarSubContent';
 export const CompositionBar = 'CompositionBar';
+export const PhoneInput = 'PhoneInput';

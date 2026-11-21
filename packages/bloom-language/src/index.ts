@@ -558,6 +558,10 @@ export type { SortablePhotoGridView } from './controls/sortable-media';
 export { CategoryBar } from './controls/category-bar';
 export type { CategoryBarLabels, CategoryBarView } from './controls/category-bar';
 
+// Phone inputs (controls/phone-input.tsx)
+export { PhoneInput } from './controls/phone-input';
+export type { PhoneInputLabels, PhoneInputView } from './controls/phone-input';
+
 // Animated checks (controls/animated-check.tsx)
 export { AnimatedCheck } from './controls/animated-check';
 export type { AnimatedCheckView } from './controls/animated-check';

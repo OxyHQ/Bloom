@@ -34,6 +34,8 @@ import type { ContextMenuAnchor } from '@oxy.so/bloom/context-menu';
 import type { FileUploadKind } from './controls/file-upload';
 import type { VideoViewKind } from './controls/video-view';
 import type { CompositionBarKind } from './controls/composition-bar';
+import type { PhoneInputKind } from './controls/phone-input';
+import type { Country } from '@oxy.so/bloom/phone-input';
 import type { CategoryBarKind } from './controls/category-bar';
 import type { SortableMediaKind } from './controls/sortable-media';
 import type { VideoPlaybackKind } from './controls/video-playback';
@@ -812,6 +814,10 @@ export interface ValueModifiers {
 
   // Activity heatmaps (controls/activity-heatmap.tsx)
   colorScale: readonly ColorToken[];
+  // Phone inputs (controls/phone-input.tsx)
+  country: Binding<string>;
+  countries: readonly Country[];
+  showsInfo: true;
 
   // Composition bars (controls/composition-bar.tsx)
   readoutFormat: (amount: number, percent: number) => string;
@@ -1218,6 +1224,7 @@ export type NodeKind =
   | TagFieldKind
   | FileUploadKind
   | VideoViewKind
+  | PhoneInputKind
   | CategoryBarKind
   | ChoiceListKind
   | VideoPlaybackKind
@@ -2964,6 +2971,17 @@ export class Node {
   // Composition bars (controls/composition-bar.tsx)
   readoutFormat(value: (amount: number, percent: number) => string): Node {
     return this.set('readoutFormat', value);
+  }
+
+  // Phone inputs (controls/phone-input.tsx)
+  country(value: Binding<string>): Node {
+    return this.set('country', value);
+  }
+  countries(value: readonly Country[]): Node {
+    return this.set('countries', value);
+  }
+  showsInfo(): Node {
+    return this.set('showsInfo', true);
   }
 
   // Context menus (controls/context-menu.tsx)

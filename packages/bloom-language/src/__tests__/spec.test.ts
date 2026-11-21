@@ -148,6 +148,7 @@ import type { TagFieldView } from '../controls/tag-field';
 import type { FileUploadView } from '../controls/file-upload';
 import type { VideoView } from '../controls/video-view';
 import type { CompositionBarView } from '../controls/composition-bar';
+import type { PhoneInputView } from '../controls/phone-input';
 import type { ExpandableTextView } from '../controls/expandable-text';
 import type { CategoryBarView } from '../controls/category-bar';
 import type { FactStripView, FactView } from '../controls/fact-strip';
@@ -454,6 +455,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<TagFieldView>, Of<'tagField'>>,
       Same<MethodsOf<FileUploadView>, Of<'fileUpload'>>,
       Same<MethodsOf<VideoView>, Of<'video'>>,
+      Same<MethodsOf<PhoneInputView>, Of<'phoneInput'>>,
       Same<MethodsOf<CategoryBarView>, Of<'categoryBar'>>,
       Same<MethodsOf<ChoiceListView>, Of<'choiceList'>>,
       Same<MethodsOf<VideoPlaybackView>, Of<'videoPlayback'>>,
@@ -475,6 +477,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<MenubarMenuView>, Of<'menubarMenu'>>,
       Same<MethodsOf<CompositionBarView>, Of<'compositionBar'>>,
     ] = [
+      true,
       true,
       true,
       true,

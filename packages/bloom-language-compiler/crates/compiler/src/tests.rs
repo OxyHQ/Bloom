@@ -1289,3 +1289,22 @@ fn composition_bars_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn phone_inputs_are_checked() {
+    let imports = "import { PhoneInput } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (phone, country, list, icon) => PhoneInput(phone, 'Phone').country(country).countries(list).placeholder('5').description('d').required().showsInfo().size('sm').invalid().disabled().trailingIcon(icon).labels({});\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("PhoneInput(t).size('xl')", "Unknown controlSize token 'xl' for .size()"),
+        ("PhoneInput(t).showsInfo(true)", ".showsInfo() takes 0 argument(s), not 1"),
+        ("PhoneInput(t).keyboard('numeric')", "PhoneInput has no modifier .keyboard()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (t) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
