@@ -23,6 +23,12 @@ import {
   type ButtonGroupView,
   type ScrollViewNode,
   type BottomSheetView,
+  type CommandGroupView,
+  type CommandItemView,
+  type CommandView,
+  type SettingsGroupView,
+  type SettingsItemView,
+  type SettingsModalView,
   type NavItemView,
   type PageFooterView,
   type RailItemView,
@@ -372,6 +378,58 @@ export function Rail(
 /** A destination of a rail: its label and its glyph, a view the app draws (an `Icon` in its ink). */
 export function RailItem(label: string, icon: ViewNode): RailItemView {
   return new Node('railItem', { label, icon }, NO_CHILDREN);
+}
+
+type Rows<T> = (T | false | null | undefined | readonly T[])[];
+
+/**
+ * The command palette (Bloom `Command`), over the app while `presented`.
+ *
+ * ```ts
+ * Command(
+ *   CommandItem('New post').icon(RiQuillPenLine).shortcut('⌘N').onPress(compose),
+ *   CommandGroup('Go to', CommandItem('Settings').onPress(navigate('/settings'))),
+ * ).presented(open).onPresentedChange(setOpen)
+ * ```
+ */
+export function Command(...rows: Rows<CommandItemView | CommandGroupView>): CommandView {
+  return new Node('command', null, rows as Child[]);
+}
+
+/** A command of the palette. */
+export function CommandItem(label: string): CommandItemView {
+  return new Node('commandItem', { label }, NO_CHILDREN);
+}
+
+/** Commands under a title. */
+export function CommandGroup(title: string, ...items: Rows<CommandItemView>): CommandGroupView {
+  return new Node('commandGroup', { title }, items as Child[]);
+}
+
+/**
+ * The settings (Bloom `SettingsModal`), over the app while `presented`.
+ *
+ * ```ts
+ * SettingsModal(
+ *   SettingsGroup('Account',
+ *     SettingsItem('Profile', RiUserLine).content(() => ProfilePage()),
+ *     SettingsItem('Sign out', RiLogoutBoxRLine).onPress(signOut),
+ *   ),
+ * ).presented(open).onPresentedChange(setOpen)
+ * ```
+ */
+export function SettingsModal(...groups: Rows<SettingsGroupView>): SettingsModalView {
+  return new Node('settings', null, groups as Child[]);
+}
+
+/** A group of the settings' navigation. */
+export function SettingsGroup(label: string, ...items: Rows<SettingsItemView>): SettingsGroupView {
+  return new Node('settingsGroup', { label }, items as Child[]);
+}
+
+/** A row of the settings' navigation: its label and glyph. */
+export function SettingsItem(label: string, icon: IconComponent): SettingsItemView {
+  return new Node('settingsItem', { label, icon }, NO_CHILDREN);
 }
 
 /** A page's foot (Bloom `PageFooter`): its content, then its actions (`.toolbar`), on a scrim. */
