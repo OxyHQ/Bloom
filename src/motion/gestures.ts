@@ -55,20 +55,17 @@ export function useDrag(value: MotionValue, options: DragOptions) {
   const { axis, min, max, activeOffset = 10, failOffset, enabled = true, onBegin, onEnd } = options;
   const start = useMotionValue(0);
   const velocity = useMotionValue(0);
-  const offsets =
-    axis === 'x'
-      ? { activeOffsetX: [-activeOffset, activeOffset] as [number, number] }
-      : { activeOffsetY: [-activeOffset, activeOffset] as [number, number] };
-  const fails =
-    failOffset === undefined
-      ? {}
-      : axis === 'x'
-        ? { failOffsetY: [-failOffset, failOffset] as [number, number] }
-        : { failOffsetX: [-failOffset, failOffset] as [number, number] };
+  const active: [number, number] = [-activeOffset, activeOffset];
+  const fail: [number, number] | undefined =
+    failOffset === undefined ? undefined : [-failOffset, failOffset];
+  // One literal config: the worklets plugin workletizes a hook's config object
+  // and takes no spread in it.
   return usePanGesture({
     enabled,
-    ...offsets,
-    ...fails,
+    activeOffsetX: axis === 'x' ? active : undefined,
+    activeOffsetY: axis === 'y' ? active : undefined,
+    failOffsetX: axis === 'y' ? fail : undefined,
+    failOffsetY: axis === 'x' ? fail : undefined,
     onBegin: () => {
       'worklet';
       setMotionValue(start, getMotionValue(value));

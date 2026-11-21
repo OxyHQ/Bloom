@@ -98,6 +98,10 @@ writes it from its own callbacks; a view follows it through the one mapper.
   until the touch ends (`onEnd`, once). A swipe follows the finger toward its
   direction, meets resistance against it, and on release flies out (`away`) and
   calls `onSwipe`, or comes back (`back`).
+- **A hook's config is one literal.** The worklets Babel plugin workletizes a
+  Gesture Handler 3 hook's config object and throws on a spread in it, which
+  fails the app's release bundle and nothing in Bloom's own build would see
+  (`worklets-plugin.test.ts` runs the plugin over every engine file).
 
 The tab underline (`Tabs`) is bound this way: `RouterTabs`' drag writes
 `dragTranslation`, and the underline's offset and width follow it toward the
