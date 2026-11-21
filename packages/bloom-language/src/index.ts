@@ -376,3 +376,7 @@ export type { AnimatedCheckView } from './controls/animated-check';
 // Context menus (controls/context-menu.tsx)
 export { ContextMenu } from './controls/context-menu';
 export type { ContextMenuView } from './controls/context-menu';
+
+// Media inset borders (controls/media-inset-border.tsx)
+export { MediaInsetBorder } from './controls/media-inset-border';
+export type { MediaInsetBorderView } from './controls/media-inset-border';

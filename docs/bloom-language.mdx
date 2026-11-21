@@ -1534,6 +1534,17 @@ types of files it takes), `.dragActions(actions, preferred?)` (`copy`, `move`,
 `.disabled()`, and `.onDragEnter()`, `.onDragOver()` and `.onDragLeave()`.
 Where the platform has no drop target, it is a view that takes nothing.
 
+### Media inset borders
+
+```ts
+ZStack(Image(photo).corner('lg'), MediaInsetBorder().mediaCorner('lg'))
+```
+
+Bloom's `MediaInsetBorder`: a theme hairline that fills its parent, drawn
+inside a media edge so a white photo still has a boundary. `.opaque()` is the
+full-contrast border (softened by default); `.mediaCorner()` follows the
+media's corner (a view's `.corner()` clips, which the hairline must not).
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -1915,7 +1926,8 @@ and `@oxy.so/bloom-data` beside it.
   tag fields, file uploads, videos,
   one-time codes,
   colour swatch pickers,
-  animated checks, context menus, collapsibles, drop zones.
+  animated checks, context menus, collapsibles, drop zones,
+  media inset borders.
 
 **Not built**
 

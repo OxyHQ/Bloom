@@ -36,7 +36,7 @@ module.exports = {
     '^@oxy.so/bloom/theme$': `${support}/bloom-theme.ts`,
     '^@oxy.so/bloom/app-shell/hooks$': `${support}/bloom-app-shell-hooks.ts`,
     '^@oxy.so/bloom/(blur|button|engagement-bar|image|surface|fab|page-header|bottom-bar|dropdown-menu|aspect-ratio|concentric|divider|fill|grid|avatar-group|badge|chat-indicators|icon-circle|loading|skeleton|subtle-hover)$': `${support}/bloom-components.ts`,
-    '^@oxy.so/bloom/(date-picker|rating|stat-bar|table|list|carousel|markdown|slider|accordion|code|stepper|tooltip|breadcrumb|activity-heatmap|tag-field|file-upload|video-view|input-otp|color-swatch-picker|animated-check|context-menu|collapsible|drop-zone)$': `${support}/bloom-controls.ts`,
+    '^@oxy.so/bloom/(date-picker|rating|stat-bar|table|list|carousel|markdown|slider|accordion|code|stepper|tooltip|breadcrumb|activity-heatmap|tag-field|file-upload|video-view|input-otp|color-swatch-picker|animated-check|context-menu|collapsible|drop-zone|media-inset-border)$': `${support}/bloom-controls.ts`,
     '^@oxy.so/bloom/(text-field|textarea|field|label|switch|checkbox|radio|segmented-control|select|search)$': `${support}/bloom-inputs.ts`,
     '^@oxy.so/bloom/(app-shell|screen|dialog|tab-pager|tab-pager/expo-router|panel-routing/expo-router)$': `${support}/bloom-router.ts`,
     // Optional native modules: absent unless a test mocks one in.

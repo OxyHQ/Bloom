@@ -132,6 +132,7 @@ import type { AnimatedCheckView } from '../controls/animated-check';
 import type { ContextMenuView } from '../controls/context-menu';
 import type { CollapsibleView } from '../controls/collapsible';
 import type { DropZoneView } from '../controls/drop-zone';
+import type { MediaInsetBorderView } from '../controls/media-inset-border';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -381,7 +382,9 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<ContextMenuView>, Of<'contextMenu'>>,
       Same<MethodsOf<CollapsibleView>, Of<'collapsible'>>,
       Same<MethodsOf<DropZoneView>, Of<'dropZone'>>,
+      Same<MethodsOf<MediaInsetBorderView>, Of<'mediaInsetBorder'>>,
     ] = [
+      true,
       true,
       true,
       true,

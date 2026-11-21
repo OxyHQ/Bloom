@@ -26,6 +26,7 @@ import { TOOLTIPS } from './tooltip';
 import { VIDEOS } from './video-view';
 import { COLOR_SWATCH_PICKERS } from './color-swatch-picker';
 import { INPUT_OTPS } from './input-otp';
+import { MEDIA_INSET_BORDERS } from './media-inset-border';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -59,4 +60,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...CONTEXT_MENUS,
   ...COLLAPSIBLES,
   ...DROP_ZONES,
+  ...MEDIA_INSET_BORDERS,
 };

@@ -36,6 +36,7 @@ import { DROP_ZONE_CASES } from '../../parity/drop-zone.cases';
 import { COLLAPSIBLE_CASES } from '../../parity/collapsible.cases';
 import { COLOR_SWATCH_PICKER_CASES } from '../../parity/color-swatch-picker.cases';
 import { INPUT_OTP_CASES } from '../../parity/input-otp.cases';
+import { MEDIA_INSET_BORDER_CASES } from '../../parity/media-inset-border.cases';
 
 /**
  * Each language node beside the Bloom element it stands for: the same cases
@@ -115,3 +116,4 @@ export const AnimatedChecks: Story = { args: { cases: ANIMATED_CHECK_CASES } };
 export const ContextMenus: Story = { args: { cases: CONTEXT_MENU_CASES } };
 export const Collapsibles: Story = { args: { cases: COLLAPSIBLE_CASES } };
 export const DropZones: Story = { args: { cases: DROP_ZONE_CASES } };
+export const MediaInsetBorders: Story = { args: { cases: MEDIA_INSET_BORDER_CASES } };
