@@ -1830,3 +1830,14 @@ export type {
   TopResultCardOptions,
   TopResultCardView,
 } from './controls/music-library';
+
+// Queue panel (controls/queue-panel.tsx)
+export { QueuePanel, QueuePanelRow, RecentlyPlayedList } from './controls/queue-panel';
+export type {
+  QueuePanelOptions,
+  QueuePanelRowOptions,
+  QueuePanelRowView,
+  QueuePanelView,
+  RecentlyPlayedListOptions,
+  RecentlyPlayedListView,
+} from './controls/queue-panel';

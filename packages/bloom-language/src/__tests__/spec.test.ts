@@ -346,6 +346,11 @@ import type {
   BrowseGridView,
 } from '../controls/music-library';
 import type {
+  QueuePanelView,
+  QueuePanelRowView,
+  RecentlyPlayedListView,
+} from '../controls/queue-panel';
+import type {
   FilterSectionView,
   PriceRangeFilterView,
   CountFilterView,
@@ -1204,7 +1209,13 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<SearchResultTabsView>, Of<'searchResultTabs'>>,
       Same<MethodsOf<RecentSearchesView>, Of<'recentSearches'>>,
       Same<MethodsOf<BrowseGridView>, Of<'browseGrid'>>,
+      Same<MethodsOf<QueuePanelView>, Of<'queuePanel'>>,
+      Same<MethodsOf<QueuePanelRowView>, Of<'queuePanelRow'>>,
+      Same<MethodsOf<RecentlyPlayedListView>, Of<'recentlyPlayedList'>>,
     ] = [
+      true,
+      true,
+      true,
       true,
       true,
       true,
