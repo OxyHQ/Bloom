@@ -142,6 +142,14 @@ export type ContentFit = (typeof ENUMS.contentFit)[number];
 export type TitleDisplay = (typeof ENUMS.titleDisplay)[number];
 export type ScrollEdge = (typeof ENUMS.scrollEdge)[number];
 export type HeaderPresentation = (typeof ENUMS.headerPresentation)[number];
+export type ScreenKind = (typeof ENUMS.screenKind)[number];
+export type ScreenScroll = (typeof ENUMS.screenScroll)[number];
+export type ChromePlacement = (typeof ENUMS.chromePlacement)[number];
+export type NavigationScope = (typeof ENUMS.navigationScope)[number];
+export type ActionPlacement = (typeof ENUMS.actionPlacement)[number];
+export type ScrollIndicators = (typeof ENUMS.scrollIndicators)[number];
+export type KeyboardDismiss = (typeof ENUMS.keyboardDismiss)[number];
+export type KeyboardTaps = (typeof ENUMS.keyboardTaps)[number];
 /** Bloom's typography components, as a text's style: `h1` is Bloom `H1`, `lead` is `Lead`… */
 export type TextStyleName = (typeof ENUMS.textStyle)[number];
 /** Where a text that does not fit its lines is cut (React Native's `ellipsizeMode`). */

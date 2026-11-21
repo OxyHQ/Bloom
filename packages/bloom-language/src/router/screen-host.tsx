@@ -21,7 +21,16 @@ import {
 } from '../node';
 import { valuesOf } from '../platform/values';
 import { toElement } from '../render';
-import type { TitleDisplay } from '../tokens';
+import {
+  resolveSpace,
+  type ChromePlacement,
+  type NavigationScope,
+  type ScreenKind,
+  type ScreenScroll,
+  type ScrollEdge,
+  type SpaceToken,
+  type TitleDisplay,
+} from '../tokens';
 import { useSystemBar } from './screen-header';
 
 const SHEET_PLACEMENT = { base: 'bottom', md: 'center' } as const;
@@ -30,6 +39,8 @@ interface ScreenChrome {
   header: Node | null;
   custom: boolean;
   footer: Extract<Modifier, { kind: 'footer' }> | undefined;
+  action: Extract<Modifier, { kind: 'floatingAction' }> | undefined;
+  values: Record<string, unknown>;
   sheets: Extract<Modifier, { kind: 'sheet' }>[];
   onReselect: (() => void) | undefined;
   /** The root's testID, which names the screen (Bloom Screen's own). */
@@ -44,6 +55,8 @@ function chromeOf(root: Child): ScreenChrome {
     header: null,
     custom: false,
     footer: undefined,
+    action: undefined,
+    values: {},
     sheets: [],
     onReselect: undefined,
     testID: undefined,
@@ -51,9 +64,11 @@ function chromeOf(root: Child): ScreenChrome {
   };
   if (!isNode(root)) return chrome;
   const values = valuesOf(root);
+  chrome.values = values;
   for (const modifier of root.modifiers) {
     if (modifier.kind === 'sheet') chrome.sheets.push(modifier);
     else if (modifier.kind === 'footer') chrome.footer = modifier;
+    else if (modifier.kind === 'floatingAction') chrome.action = modifier;
     else if (modifier.kind === 'testID') chrome.testID = modifier.value;
   }
   if (chrome.testID !== undefined) {
@@ -85,6 +100,8 @@ function chromeOf(root: Child): ScreenChrome {
   if (values.headingLevel !== undefined) {
     composed = composed.headingLevel(values.headingLevel as HeadingLevel);
   }
+  if (values.scrollEdge !== undefined)
+    composed = composed.scrollEdge(values.scrollEdge as ScrollEdge);
   chrome.header = composed as unknown as Node;
   return chrome;
 }
@@ -94,12 +111,24 @@ export function ScreenHost({ root }: { root: Child }) {
   const system = useSystemBar() && chrome.header !== null && !chrome.custom;
   const header = chrome.header ? toElement(chrome.header) : undefined;
   const footer = chrome.footer;
+  const action = chrome.action;
+  const values = chrome.values;
+  const clearance = values.contentClearance as SpaceToken | undefined;
   return (
     <>
       <Screen
         testID={chrome.testID}
-        scroll="auto"
+        kind={values.screenKind as ScreenKind | undefined}
+        scroll={values.screenScroll as ScreenScroll | undefined}
+        documentScroll={values.documentScroll as boolean | undefined}
         header={system ? undefined : header}
+        headerPlacement={values.headerPlacement as ChromePlacement | undefined}
+        underlay={values.underlay ? toElement(values.underlay as Child) : undefined}
+        primaryAction={action ? toElement(action.content) : undefined}
+        primaryActionPlacement={action?.options?.placement}
+        primaryActionVisibility={action?.options?.visibility}
+        contentClearance={clearance === undefined ? undefined : resolveSpace(clearance)}
+        navigationScope={values.navigationScope as NavigationScope | undefined}
         reselect={chrome.onReselect ? { refresh: chrome.onReselect } : undefined}
         bottomBar={footer ? toElement(footer.content) : undefined}
         bottomBarPlacement={footer?.options?.placement}
