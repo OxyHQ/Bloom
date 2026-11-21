@@ -95,11 +95,13 @@ interface LensButtonHostProps {
   tint?: string;
   /** The corner radius in dp; omitted, the shape is a capsule. */
   radius?: number;
+  /** How far the press and the drag deform the lens, a multiplier of the engine's own (1). */
+  jelly?: number;
   style?: ViewStyle;
   children: ReactNode;
 }
 
-export function LensButtonHost({ tint, radius, style, children }: LensButtonHostProps) {
+export function LensButtonHost({ tint, radius, jelly, style, children }: LensButtonHostProps) {
   const native = useLensAvailable() ? getNativeLens() : null;
   const dark = useTheme().isDark;
   if (!native) return <>{Children.only(children)}</>;
@@ -111,7 +113,11 @@ export function LensButtonHost({ tint, radius, style, children }: LensButtonHost
         lens
         openOnPress={false}
         cornerRadius={radius}
-        config={tint ? { tintColor: tint, tintOpacity: 0.96 } : undefined}
+        config={
+          tint || jelly !== undefined
+            ? { ...(tint ? { tintColor: tint, tintOpacity: 0.96 } : null), jelly }
+            : undefined
+        }
         style={[HOST, style]}
       >
         {children}
