@@ -16,6 +16,7 @@ import {
   SettingsGroup,
   SettingsItem,
   SettingsModal,
+  HStack,
   Sidebar,
   SidebarMode,
   StickySection,
@@ -29,6 +30,13 @@ import {
   TreeItem,
   TreeSection,
 } from '../primitives';
+import {
+  SettingsDateField,
+  SettingsSection,
+  SettingsSelect,
+  SettingsTextField,
+  SettingsValue,
+} from '../controls/settings';
 import { toElement } from '../render';
 
 quietRenderer();
@@ -431,6 +439,107 @@ describe('the layout family', () => {
       thickness: 14,
       label: 'Resize the list',
       testID: 'edge',
+    });
+  });
+});
+
+describe('the settings pages’ rows', () => {
+  it('a section holds its rows under its label, with its description, action and inset', () => {
+    const r = mount(
+      toElement(
+        SettingsSection('Notifications', SettingsValue('On'), SettingsValue('Weekly'))
+          .description('How we reach you')
+          .trailing(Text('Manage'))
+          .inset('sm')
+          .testID('notify'),
+      ),
+    );
+    expect(only(r, 'SettingsSection').props).toMatchObject({
+      label: 'Notifications',
+      description: 'How we reach you',
+      inset: 8,
+      testID: 'notify',
+    });
+    expect(only(r, 'SettingsSection').props.action).toBeTruthy();
+    expect(hosts(r, 'SettingsValueField').map((v) => v.props.children)).toEqual(['On', 'Weekly']);
+    expect(
+      'label' in only(mount(toElement(SettingsSection(undefined))), 'SettingsSection').props,
+    ).toBe(false);
+  });
+
+  it('a value takes its glyph and muted ink', () => {
+    const r = mount(toElement(SettingsValue('a1b2').icon(Glyph).muted()));
+    expect(only(r, 'SettingsValueField').props).toMatchObject({ icon: Glyph, muted: true });
+  });
+
+  it('a select reads and writes its binding, its choices Bloom’s items', () => {
+    const set = jest.fn();
+    const items = [
+      { value: 'always', label: 'Always' },
+      { value: 'never', label: 'Never' },
+    ] as const;
+    const r = mount(
+      toElement(
+        SettingsSelect('Autoplay', ['always', set], items)
+          .compact(false)
+          .size('sm')
+          .disabled()
+          .width('200'),
+      ),
+    );
+    const props = only(r, 'SettingsSelect').props;
+    expect(props).toMatchObject({
+      label: 'Autoplay',
+      value: 'always',
+      onChange: set,
+      items,
+      compact: false,
+      size: 'sm',
+      disabled: true,
+      width: 200,
+    });
+  });
+
+  it('a text field commits into its binding; a date field changes its own', () => {
+    const commit = jest.fn();
+    const change = jest.fn();
+    const born = new Date(1997, 6, 28);
+    const format = (date: Date) => date.toISOString();
+    const r = mount(
+      toElement(
+        HStack(
+          SettingsTextField('Email', ['ana@oxy.so', commit])
+            .icon(Glyph)
+            .placeholder('you@example.com')
+            .keyboard('email-address')
+            .contentType('email')
+            .savedToast(false)
+            .testID('email'),
+          SettingsDateField('Birthday', [born, change])
+            .minDate(new Date(1900, 0, 1))
+            .maxDate(new Date(2020, 0, 1))
+            .dateFormat(format)
+            .testID('born'),
+        ),
+      ),
+    );
+    expect(only(r, 'SettingsTextField').props).toMatchObject({
+      label: 'Email',
+      value: 'ana@oxy.so',
+      onCommit: commit,
+      icon: Glyph,
+      placeholder: 'you@example.com',
+      keyboardType: 'email-address',
+      autoComplete: 'email',
+      showSavedToast: false,
+      testID: 'email',
+    });
+    expect(only(r, 'SettingsDateField').props).toMatchObject({
+      label: 'Birthday',
+      value: born,
+      onChange: change,
+      formatDate: format,
+      testID: 'born',
     });
   });
 });

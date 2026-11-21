@@ -1388,12 +1388,12 @@ actions (`.toolbar(...)`), on its scrim. `.pinning('absolute' \| 'sticky' \|
 
 | | Android, OxyOS | iOS (not verified) | Web |
 | --- | --- | --- | --- |
-| `Sidebar`, `Rail`, `PageFooter` | Bloom's | Bloom's (the iPad system sidebar is not built; see below) | Bloom's |
+| `Sidebar`, `Rail`, `PageFooter` | Bloom's | Bloom's (on iPad too; see below) | Bloom's |
 
-The iPad's system sidebar (SwiftUI's `NavigationSplitView`) is not something
-`@expo/ui` offers: it has a `List` in the sidebar style, but the shell's
-sidebar column, its width, collapse and drawer are Bloom's `AppShell`. The
-sidebar stays Bloom's on iPad until that is decided.
+On iPad the sidebar is Bloom's `AppShell` sidebar, by decision: the system's
+(SwiftUI's `NavigationSplitView`) is not something `@expo/ui` offers (it has a
+`List` in the sidebar style), and the shell's sidebar column, its width,
+collapse and drawer are Bloom's `AppShell`.
 
 ### Command and SettingsModal
 
@@ -1427,9 +1427,33 @@ group, after the ungrouped ones, as Bloom orders them. The palette takes
 `.fullBleed` are the page's) or runs its `.onPress`. The modal takes
 `.presented`, `.onPresentedChange` (its `onClose` is `onPresentedChange(false)`),
 `.selection` and `.onSelect` (the page), `.initialView` and
-`.presentation('bar' \| 'floating')`. A page's rows are the app's views; Bloom's
-`SettingsSection`, `SettingsSelect` and text fields are not language nodes yet
-(an `Embed` carries them).
+`.presentation('bar' \| 'floating')`. A page's rows are views, and Bloom's own
+settings rows are language nodes:
+
+```ts
+SettingsSection(t('account'),
+  SettingsTextField(t('email'), [email, saveEmail]).icon(RiMailLine).keyboard('email-address').contentType('email'),
+  SettingsDateField(t('birthday'), [birthday, setBirthday]).maxDate(today),
+  SettingsSelect(t('autoplay'), useState<Autoplay>('wifi'), autoplayChoices),
+  SettingsValue(device.id).icon(RiSmartphoneLine).muted(),
+).description(t('accountHint')).trailing(Button(Text(t('manage'))).onPress(manage))
+```
+
+| Node | Bloom | Modifiers |
+| --- | --- | --- |
+| `SettingsSection(label, ...rows)` | `SettingsSection` (label `undefined`: an unlabelled card) | `.description`, `.trailing(view)` (its `action`), `.inset(space)`; its box is its `style` |
+| `SettingsValue(text)` | `SettingsValueField` | `.icon(X)`, `.muted()`; its box is its `style` |
+| `SettingsSelect(label, selection, choices)` | `SettingsSelect`: `value` and `onChange` from the binding, `items` the choices (`{ value, label }`) | `.compact(false)`, `.size`, `.disabled`, `.width(space)` (the web dropdown's); its box is the trigger's `style` |
+| `SettingsTextField(label, text)` | `SettingsTextField`: it edits a draft and commits it on submit or blur, `value` and `onCommit` from the binding | `.icon`, `.placeholder`, `.keyboard`, `.contentType` (autofill), `.disabled`, `.savedToast(false)`, `.testID` |
+| `SettingsDateField(label, date)` | `SettingsDateField`: `value` and `onChange` from the binding | `.minDate`, `.maxDate`, `.dateFormat(fn)`, `.savedToast(false)`, `.testID` |
+
+A row's value is a `Binding` (`[value, setValue]`, what `useState` returns),
+the inputs' one mechanism. A select's choices are Bloom's own `items` data,
+since Bloom's settings select has no option rows of its own. A text field takes
+the keyboards and autofill kinds Bloom's settings field offers (its
+`keyboardType` and `autoComplete`), a subset of the inputs' `.keyboard` and
+`.contentType` tokens. The two fields take only their own modifiers: Bloom's
+take no style.
 
 Both are Bloom's on every platform (on iOS not verified), with parity on
 native (the modal through its native portal), the web and Chrome.
@@ -2070,13 +2094,23 @@ and `@oxy.so/bloom-data` beside it.
   reordering), `SelectionCard`, `Kbd` and `ErrorBoundary` (a box, a fallback
   that is a function of the error).
 - App chrome (see [App chrome](#app-chrome)), each Bloom's own component with
-  parity on native and web: `ScrollView` and the rest of `screen()`'s
+  parity on native, the web and Chrome: `ScrollView` and all of `screen()`'s
   `Screen` (kind, scroll owner, document scroll, header placement and scroll
-  edge, underlay, floating action, clearance, navigation scope); a `.sheet()`'s
-  `BottomSheet` (iOS: the system sheet, not verified); `Sidebar` with its
-  destinations and tree, `Rail`, `PageFooter`; `Command`; `SettingsModal`;
-  `AppLayout`'s semantic layout, panels, deck and inspector, and its
-  destinations (Bloom's pager provider); `Toolbar` and `StickySection`.
+  edge, underlay, floating action, clearance, navigation scope, colour preset
+  and seed, activity, starting chrome heights); a `.sheet()`'s `BottomSheet`
+  (iOS: the system sheet, not verified); `Sidebar` with its destinations,
+  tree, modes, team, plan, onboarding card, search query and tree drops (a
+  touch drag on Bloom's gesture layer), `Rail`, `PageFooter`; `Command`;
+  `SettingsModal` and the settings pages' rows (`SettingsSection`,
+  `SettingsValue`, `SettingsSelect`, `SettingsTextField`,
+  `SettingsDateField`); `AppLayout`'s semantic layout, panels, deck and
+  inspector, and its destinations (Bloom's pager provider); the layout
+  family's `Toolbar`, `StickySection`, `ScrollArea`, `ScrollSurface`,
+  `AutoHideBar` and `ResizeHandle`. Decided, not missing: on iPad the sidebar
+  is Bloom's `AppShell` sidebar; an iOS sheet's title is an accessibility name
+  (the system sheet has no title bar); a `.sheet()` whose content is not a
+  `BottomSheet` is Bloom's `Dialog`; Bloom's sheet has no detents, so neither
+  does the node.
 
 **Not built**
 
@@ -2106,13 +2140,11 @@ and `@oxy.so/bloom-data` beside it.
   `.overlay(view, alignment)` is the aligned form.
 - Compiler distribution: prebuilt addons per platform from CI, and a WASI
   fallback.
-- App chrome: the iPad's system sidebar; a screen's colour (`colorPreset`,
-  `seed`) and `active`; the sidebar's modes, team, plan, onboarding, search
-  query and tree drag and drop; the settings pages' own rows
-  (`SettingsSection`, `SettingsSelect`, the text and date fields); Bloom's
-  sheet detents (it has none); the rest of the layout family (`ScrollArea`,
-  `ScrollSurface`, `AutoHideBar`, `ResizeHandle`). The shell's panels
-  render only once it has measured itself, so they are compared in Chrome.
+- App chrome: a handful of props that take a raw value with no token
+  (an `AutoHideBar`'s band colour and a `ScrollSurface`'s fade colour) and an
+  `AutoHideBar`'s own timings and motion, which keep Bloom's. The shell's
+  panels render only once it has measured itself, so they are compared in
+  Chrome.
 - Replacing `className`: the codemods read the className table; what it
   flags needs a modifier or a named token first.
 - Parity: a field that takes the focus as it appears and a toast are

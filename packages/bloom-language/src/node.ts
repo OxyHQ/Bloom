@@ -70,6 +70,7 @@ import type {
   Presentation,
   PresentedNode,
 } from './controls/overlays';
+import type { SettingsAutofill, SettingsKeyboard, SettingsKind } from './controls/settings';
 import { OBJECTS } from './generated/spec.generated';
 import { regular, type GlassValue } from './glass';
 import type { KeyframesValue } from './motion/keyframes';
@@ -556,6 +557,18 @@ export interface ValueModifiers {
   describedBy: string;
   sideGutter: SpaceToken;
   maxHeightRatio: number;
+
+  // Settings rows (controls/settings.tsx)
+  description: string;
+  inset: SpaceToken;
+  muted: boolean;
+  compact: boolean;
+  keyboard: SettingsKeyboard;
+  contentType: SettingsAutofill;
+  savedToast: boolean;
+  minDate: Date;
+  maxDate: Date;
+  dateFormat: (date: Date) => string;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -916,7 +929,8 @@ export type NodeKind =
   | 'scrollArea'
   | 'scrollSurface'
   | 'autoHideBar'
-  | 'resizeHandle';
+  | 'resizeHandle'
+  | SettingsKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -2146,6 +2160,38 @@ export class Node {
   }
   maxHeightRatio(value: number): Node {
     return this.set('maxHeightRatio', value);
+  }
+
+  // Settings rows (controls/settings.tsx)
+  description(value: string): Node {
+    return this.set('description', value);
+  }
+  inset(value: SpaceToken): Node {
+    return this.set('inset', value);
+  }
+  muted(value = true): Node {
+    return this.set('muted', value);
+  }
+  compact(value = true): Node {
+    return this.set('compact', value);
+  }
+  keyboard(value: SettingsKeyboard): Node {
+    return this.set('keyboard', value);
+  }
+  contentType(value: SettingsAutofill): Node {
+    return this.set('contentType', value);
+  }
+  savedToast(value = true): Node {
+    return this.set('savedToast', value);
+  }
+  minDate(value: Date): Node {
+    return this.set('minDate', value);
+  }
+  maxDate(value: Date): Node {
+    return this.set('maxDate', value);
+  }
+  dateFormat(value: (date: Date) => string): Node {
+    return this.set('dateFormat', value);
   }
 }
 

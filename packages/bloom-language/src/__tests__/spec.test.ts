@@ -108,6 +108,13 @@ import type {
   TextView,
 } from '../node';
 import type { ColorPreset, ContentFit } from '../tokens';
+import type {
+  SettingsDateFieldView,
+  SettingsSectionView,
+  SettingsSelectView,
+  SettingsTextFieldView,
+  SettingsValueView,
+} from '../controls/settings';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
 const PACKAGE = join(__dirname, '../..');
@@ -319,6 +326,11 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<AutoHideBarView>, Of<'autoHideBar'>>,
       Same<MethodsOf<ResizeHandleView>, Of<'resizeHandle'>>,
       Same<MethodsOf<SidebarModeView>, Of<'sidebarMode'>>,
+      Same<MethodsOf<SettingsSectionView>, Of<'settingsSection'>>,
+      Same<MethodsOf<SettingsValueView>, Of<'settingsValue'>>,
+      Same<MethodsOf<SettingsSelectView>, Of<'settingsSelect'>>,
+      Same<MethodsOf<SettingsTextFieldView>, Of<'settingsTextField'>>,
+      Same<MethodsOf<SettingsDateFieldView>, Of<'settingsDateField'>>,
       Same<MethodsOf<DestinationView>, Of<'destination'>>,
       Same<MethodsOf<PanelView>, Of<'panel'>>,
       Same<MethodsOf<SettingsItemView>, Of<'settingsItem'>>,
@@ -338,6 +350,11 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<BottomSheetView>, Of<'bottomSheet'>>,
       Same<MethodsOf<ScrollViewNode>, Of<'scrollView'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,
