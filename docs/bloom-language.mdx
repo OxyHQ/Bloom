@@ -1367,6 +1367,35 @@ amounts); `methodContent`, `footer`, `resultIllustration`, `cardEntry` and
 `notice` are language children. Its open sheet is compared by Jest; in
 Chrome it is presented outside the parity table's cells.
 
+### Stay filters
+
+```ts
+FilterSection('Price range', PriceRangeFilter([range, setRange], { min: 20, max: 1000, buckets }).style('log'))
+CountFilter('Bedrooms', [bedrooms, setBedrooms], { max: 5 })
+AmenityFilter(amenities, [chosen, setChosen], { collapsedCount: 6 }).label('Amenities')
+FeatureFilter([features, setFeatures]).style('checkboxes')
+FilterFooter(t('Show {n} places', { n }), { onApply: apply, onClear: clear }).loading(counting)
+FilterTriggerButton(applied).size('sm').onPress(openFilters)
+```
+
+Bloom's `stay-filters`. Each filter edits the value its binding holds (a
+range, a count, a selection, a switch); the second binding of
+`AvailabilityFilter(availableNow, date)` is its day. `FilterSection(title,
+content, options?)` takes its controls as its content and `.dividers(false)`
+on the last one. A chip filter's chips are Bloom's `ToggleChipOption`s: the
+first argument of `ToggleChipGroup` and `AmenityFilter`, the `choices` option
+of `FeatureFilter` and `FloorFilter` (Bloom's `options`); name a group with
+`.label()`.
+
+- `PriceRangeFilter(range, options)`: `.style('linear' | 'log')` is how the
+  slider spreads its prices; its `histogramHeight` a space token.
+- `FeatureFilter`: `.style('chips' | 'checkboxes')`.
+- `FilterTriggerButton(count?, options?)`: `.size('sm' | 'md' | 'lg')`;
+  `.onPress()` is its own.
+- `FilterFooter(resultsLabel, options)`: `.loading()` while the count is
+  fetched.
+- Every filter takes `.disabled()`.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a

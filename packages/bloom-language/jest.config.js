@@ -37,6 +37,7 @@ module.exports = {
     '^@oxy.so/bloom/app-shell/hooks$': `${support}/bloom-app-shell-hooks.ts`,
     '^@oxy.so/bloom/(blur|button|engagement-bar|image|surface|fab|page-header|bottom-bar|dropdown-menu|aspect-ratio|concentric|divider|fill|grid|avatar-group|badge|chat-indicators|icon-circle|loading|skeleton|subtle-hover)$': `${support}/bloom-components.ts`,
     '^@oxy.so/bloom/(agent-avatar|chat-composer|chart-cards|composer-panel|ai-chat|stat-cards|media-controls|agent-limits-card|usage-card|agent-thinking|agent-progress|agent-log|composer-loader|conversation-sidebar|questionnaire|chat-screen|chat-list|message-media|listing-details|map-marker|media-header|media-shelf|subscription-plans|user-hover-card|card-form|checkout-sheet)$': `${support}/bloom-products.ts`,
+    '^@oxy.so/bloom/(stay-filters|stay-search|tenancy|eviction|place-reviews)$': `${support}/bloom-products.ts`,
     '^@oxy.so/bloom/(app-shell|screen|dialog|tab-pager|tab-pager/expo-router|panel-routing/expo-router)$': `${support}/bloom-router.ts`,
     // Optional native modules: absent unless a test mocks one in.
     '^(expo|expo-blur|expo-glass-effect|expo-router|@expo/ui/swift-ui/modifiers)$': `${support}/absent/$1.ts`,

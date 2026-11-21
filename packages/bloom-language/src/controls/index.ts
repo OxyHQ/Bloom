@@ -1,6 +1,7 @@
 import type { NodeKind } from '../node';
 import { AGENT_AVATARS } from './agent-avatar';
 import { CHECKOUT_SHEETS } from './checkout-sheet';
+import { STAY_FILTERS } from './stay-filters';
 import { CARD_FORMS } from './card-form';
 import { MEDIA } from './media';
 import { LISTINGS } from './listings';
@@ -38,4 +39,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...MEDIA,
   ...CARD_FORMS,
   ...CHECKOUT_SHEETS,
+  ...STAY_FILTERS,
 };

@@ -527,3 +527,45 @@ export type {
 // Checkout sheet (controls/checkout-sheet.tsx)
 export { CheckoutSheet } from './controls/checkout-sheet';
 export type { CheckoutSheetOptions, CheckoutSheetView } from './controls/checkout-sheet';
+
+// Stay filters (controls/stay-filters.tsx)
+export {
+  AmenityFilter,
+  AreaRangeFilter,
+  AvailabilityFilter,
+  CountFilter,
+  FeatureFilter,
+  FilterFooter,
+  FilterSection,
+  FilterTriggerButton,
+  FloorFilter,
+  PriceRangeFilter,
+  SwitchFilterRow,
+  ToggleChipGroup,
+} from './controls/stay-filters';
+export type {
+  AmenityFilterOptions,
+  AmenityFilterView,
+  AreaRangeFilterOptions,
+  AreaRangeFilterView,
+  AvailabilityFilterOptions,
+  AvailabilityFilterView,
+  CountFilterOptions,
+  CountFilterView,
+  FeatureFilterOptions,
+  FeatureFilterView,
+  FilterFooterOptions,
+  FilterFooterView,
+  FilterSectionOptions,
+  FilterSectionView,
+  FilterTriggerButtonOptions,
+  FilterTriggerButtonView,
+  FloorFilterOptions,
+  FloorFilterView,
+  PriceRangeFilterOptions,
+  PriceRangeFilterView,
+  SwitchFilterRowOptions,
+  SwitchFilterRowView,
+  ToggleChipGroupOptions,
+  ToggleChipGroupView,
+} from './controls/stay-filters';

@@ -21,6 +21,7 @@ import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 
 import type { AgentAvatarKind } from './controls/agent-avatar';
 import type { CheckoutSheetKind } from './controls/checkout-sheet';
+import type { StayFilterKind } from './controls/stay-filters';
 import type { CardFormKind } from './controls/card-form';
 import type { MediaKind } from './controls/media';
 import type { ListingKind } from './controls/listings';
@@ -77,6 +78,9 @@ import {
   type LoadingStyle,
   type AgentMood,
   type ShelfLayout,
+  type PriceScale,
+  type FeatureFilterStyle,
+  type FilterTriggerSize,
   type FollowButtonSize,
   type MapPriceMarkerSize,
   type MapMarkerState,
@@ -465,7 +469,8 @@ export type Modifier =
         | PlayButtonSize
         | ListingHeaderSize
         | MapPriceMarkerSize
-        | FollowButtonSize;
+        | FollowButtonSize
+        | FilterTriggerSize;
     }
   | {
       readonly kind: 'style';
@@ -488,7 +493,9 @@ export type Modifier =
         | VideoMessageStyle
         | ListingPhotoLayout
         | MapMarkerState
-        | ShelfLayout;
+        | ShelfLayout
+        | PriceScale
+        | FeatureFilterStyle;
     }
   | {
       readonly kind: 'shape';
@@ -657,7 +664,8 @@ export type NodeKind =
   | ListingKind
   | MediaKind
   | CardFormKind
-  | CheckoutSheetKind;
+  | CheckoutSheetKind
+  | StayFilterKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -972,7 +980,8 @@ export class Node {
       | PlayButtonSize
       | ListingHeaderSize
       | MapPriceMarkerSize
-      | FollowButtonSize,
+      | FollowButtonSize
+      | FilterTriggerSize,
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
@@ -995,7 +1004,9 @@ export class Node {
       | VideoMessageStyle
       | ListingPhotoLayout
       | MapMarkerState
-      | ShelfLayout,
+      | ShelfLayout
+      | PriceScale
+      | FeatureFilterStyle,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
