@@ -56,24 +56,88 @@ export interface ListDefinition {
   readonly dropFromExtra: ((extra: unknown, ids: ReadonlySet<string>) => unknown) | undefined;
 }
 
-const persisted = new Map<string, EntityDefinition>();
+/**
+ * A list change an action's `optimistic` makes as its layer (or a local write
+ * outside one). Plain data, so a durable call's layer can be kept in its
+ * outbox entry and re-applied after a restart.
+ */
+export type ListOp =
+  | { readonly op: 'insert'; readonly ids: readonly string[]; readonly at?: number }
+  | { readonly op: 'remove'; readonly ids: readonly string[] }
+  | { readonly op: 'move'; readonly id: string; readonly to: number };
+
+const clamp = (value: number, max: number) => Math.min(Math.max(value, 0), max);
 
 /**
- * Records a persisted entity type, so every store's durable copy checks its
- * version. A module evaluated again (Fast Refresh) replaces its own entry.
+ * `state` with `op` applied, or `state` itself when nothing changes:
+ * - `insert` puts the ids not already in the list at `at` (default: the end);
+ * - `remove` drops the ids, and from `extra` through `dropFromExtra`;
+ * - `move` takes an id out and puts it back at index `to`.
  */
-export function registerPersisted(definition: EntityDefinition): void {
-  if (definition.persistVersion !== null) persisted.set(definition.type, definition);
+export function applyListOp(definition: ListDefinition, state: ListState, op: ListOp): ListState {
+  const { ids } = state;
+  if (op.op === 'insert') {
+    const held = new Set(ids);
+    const added = op.ids.filter((id) => {
+      if (held.has(id)) return false;
+      held.add(id);
+      return true;
+    });
+    if (added.length === 0) return state;
+    const at = clamp(op.at ?? ids.length, ids.length);
+    return { ...state, ids: [...ids.slice(0, at), ...added, ...ids.slice(at)] };
+  }
+  if (op.op === 'remove') {
+    const removed = new Set(op.ids);
+    const kept = ids.filter((id) => !removed.has(id));
+    const extra = definition.dropFromExtra
+      ? definition.dropFromExtra(state.extra, removed)
+      : state.extra;
+    if (kept.length === ids.length && extra === state.extra) return state;
+    return { ...state, ids: kept, extra };
+  }
+  const from = ids.indexOf(op.id);
+  if (from < 0) return state;
+  const rest = ids.filter((id) => id !== op.id);
+  const to = clamp(op.to, rest.length);
+  if (to === from) return state;
+  return { ...state, ids: [...rest.slice(0, to), op.id, ...rest.slice(to)] };
 }
+
+const entities = new Map<string, EntityDefinition>();
+const lists = new Map<string, ListDefinition>();
+
+/**
+ * Records a definition by type: a persisted entity's version is checked by
+ * every store's durable copy, and a durable call's layer finds its records
+ * and lists again after a restart. A module evaluated again (Fast Refresh)
+ * replaces its own entry.
+ */
+export function registerDefinition(definition: EntityDefinition | ListDefinition): void {
+  if (definition.kind === 'entity') entities.set(definition.type, definition);
+  else lists.set(definition.type, definition);
+}
+
+export function entityDefinition(type: string): EntityDefinition | undefined {
+  return entities.get(type);
+}
+
+export function listDefinition(type: string): ListDefinition | undefined {
+  return lists.get(type);
+}
+
+const persisted = () => [...entities.values()].filter((d) => d.persistVersion !== null);
 
 /** The persisted types whose rows never age out. */
 export function persistedKeep(): string[] {
-  return [...persisted.values()].filter((d) => !d.expires).map((d) => d.type);
+  return persisted()
+    .filter((d) => !d.expires)
+    .map((d) => d.type);
 }
 
 export function persistedVersions(): Record<string, number> {
   const versions: Record<string, number> = {};
-  for (const [type, definition] of persisted) versions[type] = definition.persistVersion ?? 0;
+  for (const definition of persisted()) versions[definition.type] = definition.persistVersion ?? 0;
   return versions;
 }
 
