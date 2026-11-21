@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 import { GroupedSection, GroupedSectionItem, GroupedSectionCollapse } from '../grouped-section';
 import { BloomScope } from '../appearance';
@@ -154,6 +154,24 @@ it('preserves state and identity for static rows without adding a button', () =>
   expect(row.props['aria-selected']).toBe(true);
   expect(row.props['aria-busy']).toBe(true);
   expect(row.props.onPress).toBeUndefined();
+});
+
+it('takes a style on its own box, after its press styles, static or pressable', () => {
+  const screen = render(
+    <BloomThemeProvider>
+      <GroupedSectionItem title="Static" testID="static-row" style={{ paddingTop: 4 }} />
+      <GroupedSectionItem
+        title="Pressable"
+        testID="pressable-row"
+        onPress={() => {}}
+        style={{ paddingTop: 4 }}
+      />
+    </BloomThemeProvider>,
+  );
+  expect(screen.getByTestId('static-row').props.style).toEqual({ paddingTop: 4 });
+  expect(StyleSheet.flatten(screen.getByTestId('pressable-row').props.style)).toEqual({
+    paddingTop: 4,
+  });
 });
 
 describe('compact density (a desktop form)', () => {

@@ -55,6 +55,8 @@ export interface GroupedSectionItemProps {
   accessibilityRole?: 'button' | 'link' | 'none';
   /** Left inset to align text when no icon is provided */
   leftInset?: number;
+  /** The row's own box (its padding, size, fill), after its press styles. */
+  style?: StyleProp<ViewStyle>;
 }
 
 export interface GroupedSectionProps {
