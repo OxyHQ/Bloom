@@ -735,7 +735,8 @@
     "socialButtonStyle": ["colorful", "black", "white"],
     "socialIntent": ["continue", "signIn", "signUp"],
     "galleryStyle": ["overlay", "page"],
-    "galleryIndicator": ["dots", "thumbnails"]
+    "galleryIndicator": ["dots", "thumbnails"],
+    "dataTableStyle": ["table", "inset"]
   },
   "glass": {
     "$comment": [
@@ -1361,7 +1362,16 @@
     "onTimezonePress": ["value"],
     "triggerTitle": ["value"],
     "plainRun": ["value"],
-    "linkView": ["value"]
+    "linkView": ["value"],
+    "cell": ["value"],
+    "sortable": ["value?"],
+    "sortsDescendingFirst": ["value?"],
+    "summary": ["value"],
+    "sorting": ["value"],
+    "rowSelection": ["value"],
+    "pageSize": ["value"],
+    "sizeToggle": ["value"],
+    "bordered": ["value"]
   },
   "universal": [
     "padding",
@@ -2992,6 +3002,49 @@
     "inlineMarkdown": {
       "constructors": ["InlineMarkdown"],
       "modifiers": ["streaming", "onLinkPress", "plainRun", "linkView", "suffix"]
+    },
+    "dataTable": {
+      "constructors": ["DataTable"],
+      "modifiers": [
+        "title",
+        "summary",
+        "toolbar",
+        "sorting",
+        "rowSelection",
+        "pageSize",
+        "page",
+        "size",
+        "sizeToggle",
+        "bordered",
+        "emptyState",
+        "minWidth",
+        "style",
+        "labels"
+      ],
+      "size": "tableSize",
+      "style": "dataTableStyle"
+    },
+    "dataColumn": {
+      "constructors": ["DataColumn"],
+      "universal": false,
+      "modifiers": [
+        "label",
+        "width",
+        "share",
+        "minWidth",
+        "basis",
+        "align",
+        "cell",
+        "sortable",
+        "sortsDescendingFirst"
+      ]
+    },
+    "dataTableFilter": { "constructors": ["DataTableFilter"], "modifiers": ["disabled"] },
+    "dataTableSearch": { "constructors": ["DataTableSearch"], "modifiers": ["placeholder"] },
+    "dataTableSelect": {
+      "constructors": ["DataTableSelect"],
+      "modifiers": ["size", "disabled"],
+      "size": "tableSize"
     }
   },
   "sfSymbols": {
