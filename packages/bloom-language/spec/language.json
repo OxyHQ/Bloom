@@ -568,7 +568,9 @@
     "otpCharacters": ["numeric", "alphanumeric"],
     "dragAction": ["copy", "move", "link"],
     "expandableTextStyle": ["below", "inline"],
-    "videoSurface": ["textureView", "surfaceView"]
+    "videoSurface": ["textureView", "surfaceView"],
+    "notificationStatus": ["neutral", "information", "success", "warning", "error"],
+    "liveRole": ["alert", "status"]
   },
   "glass": {
     "$comment": [
@@ -1038,7 +1040,16 @@
     "flightId": ["value"],
     "videoSlot": ["value"],
     "divider": ["value?"],
-    "flush": ["value?"]
+    "flush": ["value?"],
+    "timestamp": ["value"],
+    "status": ["notificationStatus"],
+    "avatar": ["value"],
+    "buttons": ["value"],
+    "dismissible": ["value"],
+    "onDismiss": ["value"],
+    "autoDismiss": ["value"],
+    "introDelay": ["value"],
+    "liveRole": ["liveRole"]
   },
   "universal": [
     "padding",
@@ -2039,7 +2050,24 @@
       "modifiers": ["size", "invalid", "disabled"],
       "size": "controlSize"
     },
-    "inputGroupAddon": { "constructors": ["InputGroupAddon"], "modifiers": ["divider", "flush"] }
+    "inputGroupAddon": { "constructors": ["InputGroupAddon"], "modifiers": ["divider", "flush"] },
+    "notification": {
+      "constructors": ["Notification"],
+      "modifiers": [
+        "description",
+        "timestamp",
+        "status",
+        "icon",
+        "avatar",
+        "buttons",
+        "dismissible",
+        "onDismiss",
+        "autoDismiss",
+        "introDelay",
+        "liveRole",
+        "labels"
+      ]
+    }
   },
   "sfSymbols": {
     "$comment": [
