@@ -176,6 +176,7 @@ export type {
   WeightName,
 } from './tokens';
 export type { Binding } from './binding';
+export type { ContentDensity } from './tokens';
 
 // Inputs (controls/inputs.tsx)
 export {
@@ -239,6 +240,7 @@ export type { ToastContent } from './toast';
 // Containers (controls/containers.tsx)
 export {
   Admonition,
+  CappedChipRow,
   Card,
   CardBody,
   CardDescription,
@@ -246,19 +248,36 @@ export {
   CardHeader,
   CardTitle,
   Chip,
+  ChipRow,
   EmptyState,
   ErrorBoundary,
   GroupedSection,
+  GroupedSectionCollapse,
+  GroupedSectionDivider,
+  GroupedSectionIcon,
   GroupedSectionItem,
   Kbd,
   Row,
+  SelectionCard,
+  TabContent,
   TabItem,
   Tabs,
 } from './controls/containers';
 export type {
+  AccentTone,
   AdmonitionStyle,
   AdmonitionView,
   BoundaryErrorHandler,
+  BoundaryFallback,
+  CappedChipRowView,
+  ChipRowView,
+  ChipStyle,
+  GroupedSectionCollapseView,
+  GroupedSectionDividerView,
+  GroupedSectionIconView,
+  SelectionCardView,
+  SelectionIndicator,
+  TabContentView,
   CardBorder,
   CardElevation,
   CardPartView,

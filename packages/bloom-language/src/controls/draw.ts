@@ -7,6 +7,7 @@ import {
 } from 'react';
 
 import { type Child, isNode, type Modifier, type Node, type Press } from '../node';
+import type { Role } from '../tokens';
 
 /**
  * What a control's renderer is handed (see `controls/index.ts`): its node, its
@@ -23,6 +24,8 @@ export interface ControlDraw {
   readonly label: string | undefined;
   readonly hint: string | undefined;
   readonly testID: string | undefined;
+  /** `.role()`: what the view is to assistive technology. */
+  readonly role: Role | undefined;
   /** The view's React key, for the component that is its outermost host. */
   readonly key: string | number | undefined;
   /**

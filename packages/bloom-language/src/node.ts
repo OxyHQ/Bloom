@@ -25,6 +25,8 @@ import type { SearchToken } from '@oxy.so/bloom/search';
 import type { Binding } from './binding';
 import type {
   BoundaryErrorHandler,
+  BoundaryFallback,
+  SelectionIndicator,
   CardBorder,
   CardElevation,
   CardRadius,
@@ -84,6 +86,7 @@ import {
   type ZIndexName,
   type ButtonLinkTone,
   type ButtonShape,
+  type ContentDensity,
   type ControlDensity,
   type ContentFit,
   type DurationName,
@@ -275,7 +278,7 @@ export interface ValueModifiers {
   colors: readonly [ColorToken, ColorToken];
   linkTone: ButtonLinkTone;
   inverted: boolean;
-  density: ControlDensity;
+  density: ControlDensity | ContentDensity;
   dividers: boolean;
   separated: boolean;
   columns: number;
@@ -349,7 +352,7 @@ export interface ValueModifiers {
   leadingView: readonly Child[];
   selected: boolean;
   highlighted: boolean;
-  caption: string;
+  caption: string | Child;
   separator: GroupedSeparator;
   value: string;
   chevron: boolean;
@@ -361,6 +364,16 @@ export interface ValueModifiers {
   retryLabel: string;
   resetKey: string | number | undefined;
   fullWidth: boolean;
+  contentInset: SpaceToken;
+  inset: SpaceToken;
+  illustration: Child;
+  suggestions: readonly Child[];
+  suggestionsLabel: string;
+  onReorder: (fromValue: string, toValue: string) => void;
+  reorderable: boolean;
+  iconOnly: true;
+  dragTranslation: MotionValue;
+  indicator: SelectionIndicator;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -528,7 +541,7 @@ export type Modifier =
   | {
       readonly kind: 'tint';
       readonly key: string;
-      readonly value: EngagementTone | BloomTone | ColorName | AvatarColor;
+      readonly value: EngagementTone | BloomTone | ColorName | AvatarColor | AccentTone;
     }
   | { readonly kind: 'count'; readonly key: string; readonly value: number | null | undefined }
   | { readonly kind: 'active'; readonly key: string; readonly value: boolean | undefined }
@@ -614,7 +627,11 @@ export type Modifier =
     }
   | { readonly kind: 'loop'; readonly key: string }
   | { readonly kind: 'paused'; readonly key: string; readonly value: boolean }
-  | { readonly kind: 'fallback'; readonly key: string; readonly value: Child }
+  | {
+      readonly kind: 'fallback';
+      readonly key: string;
+      readonly value: Child | BoundaryFallback;
+    }
   | ValueModifier;
 
 export type ModifierKind = Modifier['kind'];
@@ -986,7 +1003,7 @@ export class Node {
   shape(value: ButtonShape | ShapeName): Node {
     return this.with({ kind: 'shape', key: `shape:${value}`, value });
   }
-  tint(value: EngagementTone | BloomTone | ColorName | AvatarColor): Node {
+  tint(value: EngagementTone | BloomTone | ColorName | AvatarColor | AccentTone): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
   }
   count(value: number | null | undefined): Node {
@@ -1251,7 +1268,7 @@ export class Node {
   inverted(value = true): Node {
     return this.with({ kind: 'inverted', key: `inverted:${value}`, value });
   }
-  density(value: ControlDensity): Node {
+  density(value: ControlDensity | ContentDensity): Node {
     return this.with({ kind: 'density', key: `density:${value}`, value });
   }
   dividers(value = true): Node {
@@ -1305,7 +1322,7 @@ export class Node {
   paused(value: boolean): Node {
     return this.with({ kind: 'paused', key: 'paused', value });
   }
-  fallback(value: Child): Node {
+  fallback(value: Child | BoundaryFallback): Node {
     return this.with({ kind: 'fallback', key: 'fallback', value });
   }
 
@@ -1500,7 +1517,7 @@ export class Node {
   highlighted(value = true): Node {
     return this.set('highlighted', value);
   }
-  caption(value: string): Node {
+  caption(value: string | Child): Node {
     return this.set('caption', value);
   }
   separator(value: GroupedSeparator): Node {
@@ -1535,6 +1552,36 @@ export class Node {
   }
   fullWidth(value = true): Node {
     return this.set('fullWidth', value);
+  }
+  contentInset(value: SpaceToken): Node {
+    return this.set('contentInset', value);
+  }
+  inset(value: SpaceToken): Node {
+    return this.set('inset', value);
+  }
+  illustration(value: Child): Node {
+    return this.set('illustration', value);
+  }
+  suggestions(...value: Child[]): Node {
+    return this.set('suggestions', value);
+  }
+  suggestionsLabel(value: string): Node {
+    return this.set('suggestionsLabel', value);
+  }
+  onReorder(value: (fromValue: string, toValue: string) => void): Node {
+    return this.set('onReorder', value);
+  }
+  reorderable(value = true): Node {
+    return this.set('reorderable', value);
+  }
+  iconOnly(): Node {
+    return this.set('iconOnly', true);
+  }
+  dragTranslation(value: MotionValue): Node {
+    return this.set('dragTranslation', value);
+  }
+  indicator(value: SelectionIndicator): Node {
+    return this.set('indicator', value);
   }
 }
 
