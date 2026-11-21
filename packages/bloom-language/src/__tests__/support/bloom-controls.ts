@@ -27,6 +27,7 @@ export const Carousel = 'Carousel';
 export const CarouselDots = 'CarouselDots';
 export const CarouselItem = 'CarouselItem';
 export const Markdown = 'Markdown';
+export const InlineMarkdown = 'InlineMarkdown';
 export const Slider = 'Slider';
 export const RangeSlider = 'RangeSlider';
 export const Accordion = 'Accordion';

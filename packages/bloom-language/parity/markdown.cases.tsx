@@ -1,10 +1,11 @@
-import { Markdown } from '@oxy.so/bloom/markdown';
+import { Text as RNText } from 'react-native';
+import { InlineMarkdown, Markdown } from '@oxy.so/bloom/markdown';
 import { fontFamilyStyle, Text } from '@oxy.so/bloom/typography';
 
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import type { ParityCase } from './support/cases';
+import { type ParityCase, Themed } from './support/cases';
 
 const open = () => {};
 const SOURCE = [
@@ -67,6 +68,94 @@ export const MARKDOWN_CASES: readonly ParityCase[] = [
       >
         {SOURCE}
       </Markdown>
+    ),
+  },
+  {
+    name: 'inline markdown in a text',
+    language: () =>
+      toElement(
+        L.Text(
+          'Note: ',
+          L.InlineMarkdown('Read **this**, `code` and [the docs](https://example.com)'),
+        ),
+      ),
+    bloom: () => (
+      <Text>
+        {'Note: '}
+        <InlineMarkdown source="Read **this**, `code` and [the docs](https://example.com)" />
+      </Text>
+    ),
+  },
+  {
+    name: 'inline markdown streaming, its links pressed by the app',
+    language: () =>
+      toElement(
+        L.Text(
+          L.InlineMarkdown('Half **open and [a link](https://example.com)')
+            .streaming()
+            .onLinkPress(open),
+        ),
+      ),
+    bloom: () => (
+      <Text>
+        <InlineMarkdown
+          source="Half **open and [a link](https://example.com)"
+          streaming
+          onLinkPress={open}
+        />
+      </Text>
+    ),
+  },
+  {
+    name: 'inline markdown with plain runs, links and a suffix of its own',
+    language: () =>
+      toElement(
+        L.Text(
+          L.InlineMarkdown('Hi @ana, see [this](https://example.com)')
+            .plainRun((text) => L.Text(text).weight('medium'))
+            .linkView((link) => L.Text(link.label ?? link.url).underline())
+            .suffix(L.Text(' more').foreground('primary')),
+        ),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Text>
+            <InlineMarkdown
+              source="Hi @ana, see [this](https://example.com)"
+              renderText={(text) => <RNText style={{ fontWeight: '500' }}>{text}</RNText>}
+              renderLink={(link) => (
+                <RNText style={{ textDecorationLine: 'underline' }}>
+                  {link.label ?? link.url}
+                </RNText>
+              )}
+              suffix={<RNText style={{ color: c.primary }}> more</RNText>}
+            />
+          </Text>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'inline markdown of parsed runs',
+    language: () =>
+      toElement(
+        L.Text(
+          L.InlineMarkdown([
+            { type: 'text', value: 'plain ' },
+            { type: 'code', value: 'x' },
+          ]),
+        ),
+      ),
+    bloom: () => (
+      <Text>
+        <InlineMarkdown
+          nodes={[
+            { type: 'text', value: 'plain ' },
+            { type: 'code', value: 'x' },
+          ]}
+        />
+      </Text>
     ),
   },
 ];

@@ -484,8 +484,8 @@ export type {
 } from './controls/carousel';
 
 // Markdown (controls/markdown.tsx)
-export { Markdown } from './controls/markdown';
-export type { MarkdownView } from './controls/markdown';
+export { InlineMarkdown, Markdown } from './controls/markdown';
+export type { InlineMarkdownView, MarkdownView } from './controls/markdown';
 
 // Sliders (controls/slider.tsx)
 export { RangeSlider, Slider } from './controls/slider';

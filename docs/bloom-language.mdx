@@ -1895,8 +1895,20 @@ Bloom's `Markdown`: headings, lists, task lists, quotes, tables, links, rules
 and code, in Bloom's type ramp. `.streaming()` draws text that is still
 arriving (an open span or block as it will close), `.size('sm' | 'md' | 'lg')`
 sets its ramp, `.onLinkPress(fn)` replaces opening a link, and
-`.codeBlock((code, language) => view)` draws a code block of your own. Inline
-markdown inside a line is written as nested `Text` spans (see [Text](#text)).
+`.codeBlock((code, language) => view)` draws a code block of your own.
+
+```ts
+Text(InlineMarkdown(reply.summary).streaming(!reply.done))
+Text(InlineMarkdown(post.body).plainRun(mentions).suffix(Text(' Read more').link(url)))
+```
+
+Inline markdown inside a line is `InlineMarkdown(source)`, Bloom's own: a run
+of a `Text` (emphasis, strikethrough, code and links as spans of it), its
+source a string or Bloom's parsed runs. It takes `.streaming()`,
+`.onLinkPress()`, `.plainRun(text => view)` (each plain run, not inside links
+or code), `.linkView(link => view)` (a link of your own; `undefined` keeps
+Bloom's) and `.suffix(view)`. A line the screen writes itself is nested `Text`
+spans (see [Text](#text)).
 
 ### Sliders
 
