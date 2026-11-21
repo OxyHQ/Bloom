@@ -469,15 +469,22 @@ inside; a stack's layout to its host; a placement to its outermost box.
 - **States are the view's**, as SwiftUI's: the anchor is the view's
   outermost box, and a class answers its NEAREST anchor (its own box or the
   closest around it), as a native leaf reads the nearest press host. A
-  state is the innermost anchor's in it, as react-native-web's Pressable
+  state is the innermost pressable's, as react-native-web's Pressable
   takes it (a hover or a press of an inner pressable is not the outer
-  one's): the selector is the anchor in that state with no anchor in the
-  same state inside it (`:has()`), and no anchor between it and the class
-  (the spec's `variants.selectors`; the `:where()` parts add no
-  specificity). So a pressable inside another answers only its own press
-  and hover, on every platform (the parity case, held in Chrome by
-  `verify-parity-web.mjs`). A text trait a variant sets above a nested
-  pressable answers that nearest one on both platforms.
+  one's): the selector is the anchor in that state with no pressable in
+  the same state inside it (`:has()`), and no anchor between it and the
+  class (the spec's `variants.selectors`; the `:where()` parts add no
+  specificity). A pressable is what react-native-web draws as one, and on
+  the web it carries Bloom's press host class (`blsp`, `PRESS_HOST_CLASS`
+  in `@oxy.so/bloom/styles`): every pressable host of the language, and
+  Bloom's Avatar and EngagementAction, whose press is their own
+  `Pressable`. Bloom's web Button and FAB are DOM buttons, which
+  react-native-web does not keep a hover from, so a hover of one is the
+  stack's too, as it is in Bloom JSX. So a pressable inside another, a
+  Bloom one included, answers only its own press and hover, on every
+  platform (the parity cases, held in Chrome by `verify-parity-web.mjs`,
+  which holds every anchor and pressable). A text trait a variant sets
+  above a nested pressable answers that nearest one on both platforms.
 - **Icons** follow a varied foreground. On the web the glyph paints
   `currentColor` and its colour is a class under each condition (CSS answers
   a hover, as it does for text); on native the glyph's leaf is a
@@ -1371,7 +1378,7 @@ and `@oxy.so/bloom-data` beside it.
   render; a Bloom component's variants in its own style, its state tracked by
   its box (a component with no press of its own takes it on a host around
   it); the innermost pressable owns a hover or a press, as react-native-web's
-  does.
+  does, a Bloom Avatar or Action inside a stack included.
 - Motion (`@oxy.so/bloom/motion`): motion tokens and curves, `.animation()`,
   `.transition()`, `.keyframes()`, `.matchedGeometry()`,
   `.contentTransition('roll')`, `.pressScale()`, geometry (`.scale()`,
@@ -1388,10 +1395,9 @@ and `@oxy.so/bloom-data` beside it.
   layer's, and the web has no transform class to vary); an app colour under
   `when()` (it has no class); a glass's frame, border, corner and fill (only a
   material's padding varies).
-- A Bloom pressable inside a pressable stack on the web: the stack's CSS
-  answers its nearest anchor, and a Bloom component carries none, so the
-  outer stack still answers a hover of the inner component (native leaves
-  read the nearest press host and are right).
+- A pressable of another component inside a pressable stack on the web
+  (`Embed`, or a Bloom component the language does not draw): it carries no
+  press host class, so the stack still answers a hover or a press of it.
 - Motion: `transition-colors` (the engine plays geometry and opacity, not
   colour), loops (`animate-spin`, `animate-pulse`), a `delay`, a transform
   `origin`; `withAnimation`, `map()`, `.pinch`, `.onDoubleTap`, the bottom

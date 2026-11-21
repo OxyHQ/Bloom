@@ -83,7 +83,7 @@ describe('on the web, a variant is the same class under its condition’s CSS', 
     ]);
   });
 
-  it('every pressable host carries Bloom’s press host class, which a state’s selector reads', () => {
+  it('every pressable host carries Bloom’s press host class: a hover or press inside it is its own', () => {
     const r = mount(HStack(Text('a')).onPress(() => {}));
     const press = r.root.findByType('Pressable' as never);
     expect(press.props.style).toEqual([
@@ -96,6 +96,8 @@ describe('on the web, a variant is the same class under its condition’s CSS', 
       $$css: true,
       flexDirection: WEB_CLASS['flexDirection:row'],
     });
+    for (const state of ['hovered', 'pressed'] as const)
+      expect(VARIANT_SELECTORS[state]).toContain(`:not(:has(.${PRESS_HOST_CLASS}:`);
   });
 
   it('a variant sheet puts each class under its condition’s CSS', () => {
@@ -108,7 +110,7 @@ describe('on the web, a variant is the same class under its condition’s CSS', 
       `${VARIANT_SELECTORS.hovered.replaceAll('&', `.${name}-hovered`)}{padding-top:16px;}`,
     );
     expect(VARIANT_SELECTORS.hovered).toBe(
-      '&:is(.blsg:hover:where(:not(:has(.blsg:hover))), .blsg:hover:where(:not(:has(.blsg:hover))) *):where(:not(.blsg:hover:where(:not(:has(.blsg:hover))) .blsg, .blsg:hover:where(:not(:has(.blsg:hover))) .blsg *))',
+      '&:is(.blsg:hover:where(:not(:has(.blsp:hover))), .blsg:hover:where(:not(:has(.blsp:hover))) *):where(:not(.blsg:hover:where(:not(:has(.blsp:hover))) .blsg, .blsg:hover:where(:not(:has(.blsp:hover))) .blsg *))',
     );
   });
 
