@@ -609,7 +609,14 @@
       "info"
     ],
     "selectionIndicator": ["check", "radio"],
-    "keyboardTaps": ["always", "never", "handled"]
+    "keyboardTaps": ["always", "never", "handled"],
+    "screenScroll": ["auto", "content", "none"],
+    "screenKind": ["document", "collection", "table", "canvas", "form"],
+    "chromePlacement": ["inset", "overlay"],
+    "navigationScope": ["inherit", "shared", "isolated"],
+    "actionPlacement": ["start", "center", "end"],
+    "scrollIndicators": ["automatic", "visible", "hidden"],
+    "keyboardDismiss": ["never", "immediately", "interactively"]
   },
   "glass": {
     "$comment": [
@@ -979,7 +986,20 @@
     "nativeID": ["value"],
     "describedBy": ["value"],
     "sideGutter": ["space"],
-    "maxHeightRatio": ["value"]
+    "maxHeightRatio": ["value"],
+    "screenKind": ["screenKind"],
+    "screenScroll": ["screenScroll"],
+    "documentScroll": ["value?"],
+    "headerPlacement": ["chromePlacement"],
+    "underlay": ["value"],
+    "floatingAction": ["value", "value?"],
+    "contentClearance": ["space"],
+    "navigationScope": ["navigationScope"],
+    "contentMargins": ["edge?", "space"],
+    "refreshable": ["value"],
+    "onEndReached": ["value", "value?"],
+    "scrollIndicators": ["scrollIndicators"],
+    "scrollDismissesKeyboard": ["keyboardDismiss"]
   },
   "universal": [
     "padding",
@@ -1044,7 +1064,16 @@
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope"
   ],
   "nodes": {
     "$comment": "kind: { constructors, own modifiers beyond the universal ones (universal: false takes only its own), the token sets its size(), tint(), style() and shape() read }",
@@ -1668,6 +1697,18 @@
         "invalid",
         "nativeID",
         "describedBy"
+      ]
+    },
+    "scrollView": {
+      "constructors": ["ScrollView"],
+      "modifiers": [
+        "contentMargins",
+        "spacing",
+        "refreshable",
+        "onEndReached",
+        "scrollIndicators",
+        "scrollDismissesKeyboard",
+        "keyboardTaps"
       ]
     }
   },
