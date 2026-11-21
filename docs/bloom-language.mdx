@@ -141,6 +141,7 @@ be preserved"), so keep the controller in a custom hook (`usePostRowModel`).
 | `Image` | Bloom `BloomImage` (`@oxy.so/bloom/image`), sized and clipped by its own box (see [Image](#image)) |
 | `Button` | Bloom `Button` (`style` is its appearance, `tint` its tone, `shape` is icon-only: `circle` square, `pill` wide, `fit` grows; see [Button](#button)) |
 | `ButtonGroup` | Bloom `Button.Group` |
+| `Shape` | Bloom `shapes`' `Fill`, `Border` or `Image` (see [Material](#material)) |
 | `ActionBar` / `Action` / `ActionGroup` | Bloom `EngagementBar` / `EngagementAction` / `EngagementGroup` |
 | `.glass()` | Bloom `Surface` (see [Glass](#glass)) |
 | `.blur()` | Bloom `BlurIsland` (`@oxy.so/bloom/blur`; see [Material](#material)) |
@@ -538,8 +539,15 @@ VStack(
   HStack(Icon(RiFilterLine), Text('Filters')).spacing('xs').padding('sm').blur()
   ```
 
-Not built: a silhouette of its own (Bloom's `shapes` `Fill`, `Image` and
-`Border` at a fixed size; apps reach silhouettes through `Avatar`'s shape).
+- **`Shape(name)`** is one of Bloom's silhouettes (`circle`, `squircle` and
+  the named shapes) at a fixed side, `.size(space)` (`4xl`, 40, by default):
+  `.fill(role)` (the default, in the foreground) is Bloom's `shapes` `Fill`,
+  `.stroke(role, width?)` its `Border` (an outline inside the silhouette, a
+  border width), `.image(source, alt?)` its `Image` (clipped to it). The last
+  of the three in the chain is what it draws; two are an overlay
+  (`Shape('heart').fill('primary').overlay(Shape('heart').stroke('border'))`).
+  A silhouette takes no style, so its box is a view around it.
+
 A glass is the platform's own material (see [Glass](#glass)); an island is
 Bloom's.
 

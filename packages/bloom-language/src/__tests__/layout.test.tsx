@@ -8,7 +8,7 @@ import TestRenderer, {
 import { tokens } from '@oxy.so/bloom/styles';
 import { SHADOW_BOX } from './support/bloom-design-tokens';
 import { LIGHT, PaintContext } from './support/bloom-theme';
-import { HStack, Text, VStack } from '../primitives';
+import { HStack, Shape, Text, VStack } from '../primitives';
 import { toElement } from '../render';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -158,6 +158,43 @@ describe('elevation and rings', () => {
       outlineStyle: 'solid',
       outlineWidth: 2,
       outlineOffset: 2,
+    });
+  });
+});
+
+describe('Shape', () => {
+  const ofType = (renderer: ReactTestRenderer, type: string): ReactTestInstance[] =>
+    renderer.root.findAll((instance) => (instance.type as unknown) === type);
+
+  it('fills Bloom’s silhouette in the foreground by default, at a space rung', () => {
+    const r = mount(toElement(Shape('heart').size('xl')));
+    expect(ofType(r, 'ShapeFill')[0]?.props).toEqual({
+      shape: 'heart',
+      size: 20,
+      color: LIGHT.text,
+    });
+    const sized = mount(toElement(Shape('circle')));
+    expect(ofType(sized, 'ShapeFill')[0]?.props.size).toBe(40);
+  });
+
+  it('the last of fill, stroke and image is what it draws; a box is a view around it', () => {
+    const r = mount(
+      toElement(Shape('squircle').fill('muted').stroke('primary', 'thick').padding('xs')),
+    );
+    expect(ofType(r, 'ShapeFill')).toHaveLength(0);
+    expect(ofType(r, 'ShapeBorder')[0]?.props).toEqual({
+      shape: 'squircle',
+      size: 40,
+      width: 2,
+      colors: LIGHT.primary,
+    });
+    expect(views(r)[0]?.props.style).toMatchObject({ paddingTop: 4 });
+    const image = mount(toElement(Shape('flower').image({ uri: 'a.png' }, 'Ana')));
+    expect(ofType(image, 'ShapeImage')[0]?.props).toEqual({
+      shape: 'flower',
+      size: 40,
+      source: { uri: 'a.png' },
+      alt: 'Ana',
     });
   });
 });

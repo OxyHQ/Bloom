@@ -283,6 +283,19 @@ export type Modifier =
       readonly behind: boolean;
     }
   | { readonly kind: 'shadow'; readonly key: string; readonly value: ShadowName }
+  | { readonly kind: 'fill'; readonly key: string; readonly value: ColorToken }
+  | {
+      readonly kind: 'stroke';
+      readonly key: string;
+      readonly value: ColorToken;
+      readonly width: BorderWidthName;
+    }
+  | {
+      readonly kind: 'image';
+      readonly key: string;
+      readonly source: ShapeImageSource;
+      readonly alt: string | undefined;
+    }
   | {
       readonly kind: 'when';
       readonly key: string;
@@ -335,7 +348,7 @@ export type Modifier =
   | {
       readonly kind: 'size';
       readonly key: string;
-      readonly value: IconSizeToken | AvatarSizeToken | BloomSize | BadgeSize;
+      readonly value: IconSizeToken | AvatarSizeToken | BloomSize | BadgeSize | SpaceToken;
     }
   | {
       readonly kind: 'style';
@@ -406,6 +419,7 @@ export type NodeKind =
   | 'image'
   | 'button'
   | 'buttonGroup'
+  | 'shape'
   | 'action'
   | 'actionBar'
   | 'actionGroup'
@@ -713,7 +727,7 @@ export class Node {
   onError(value: ImageErrorHandler | undefined): Node {
     return this.with({ kind: 'onError', key: 'onError', value });
   }
-  size(value: IconSizeToken | AvatarSizeToken | BloomSize | BadgeSize): Node {
+  size(value: IconSizeToken | AvatarSizeToken | BloomSize | BadgeSize | SpaceToken): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
   style(value: BloomAppearance | BadgeStyle | LoadingStyle): Node {
@@ -986,6 +1000,15 @@ export class Node {
   }
   separated(value = true): Node {
     return this.with({ kind: 'separated', key: `separated:${value}`, value });
+  }
+  fill(value: ColorToken): Node {
+    return this.with({ kind: 'fill', key: `fill:${value}`, value });
+  }
+  stroke(value: ColorToken, width: BorderWidthName = 'thin'): Node {
+    return this.with({ kind: 'stroke', key: `stroke:${value}:${width}`, value, width });
+  }
+  image(source: ShapeImageSource, alt?: string): Node {
+    return this.with({ kind: 'image', key: 'image', source, alt });
   }
 }
 
@@ -1288,6 +1311,29 @@ export interface ButtonView extends ViewModifiers<ButtonView> {
   /** The control's geometry over the nearest Bloom scope's: `default` or `compact`. */
   density(value: ControlDensity): ButtonView;
 }
+/** What a shape's image draws: a bundled asset, or a URI descriptor (Bloom `shapes`' `ImageSource`). */
+export type ShapeImageSource =
+  | number
+  | { uri: string; width?: number; height?: number; scale?: number };
+
+export interface ShapeProps {
+  readonly name: ShapeName;
+}
+
+/**
+ * One of Bloom's silhouettes, at a fixed size (Bloom `shapes`): `.fill(role)`
+ * (the default, in the foreground), `.stroke(role, width?)` (an outline inside
+ * the silhouette) or `.image(source, alt?)` (clipped to it). The last of the
+ * three in the chain is what it draws; an overlay draws two.
+ */
+export interface ShapeView extends ViewModifiers<ShapeView> {
+  /** Its side: a space rung or an app token (`4xl`, 40, by default). */
+  size(value: SpaceToken): ShapeView;
+  fill(value: ColorToken): ShapeView;
+  stroke(value: ColorToken, width?: BorderWidthName): ShapeView;
+  image(source: ShapeImageSource, alt?: string): ShapeView;
+}
+
 /**
  * Bloom `Button.Group`: buttons joined on one material, `horizontal` by
  * default (`.axis('vertical')` stacks them), with hairlines between them.

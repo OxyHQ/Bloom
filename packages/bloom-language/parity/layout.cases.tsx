@@ -1,5 +1,6 @@
 import * as RN from 'react-native';
 import { bloomShadowStyle } from '@oxy.so/bloom/design-tokens';
+import { Border, Fill, Image } from '@oxy.so/bloom/shapes';
 import { Z_INDEX } from '@oxy.so/bloom/styles';
 import { tokens } from '@oxy.so/bloom/styles';
 import { Text } from '@oxy.so/bloom/typography';
@@ -201,9 +202,51 @@ const elevation: ParityCase[] = [
   },
 ];
 
+const shapes: ParityCase[] = [
+  {
+    name: 'a filled silhouette',
+    language: () => toElement(L.Shape('heart').size('4xl').fill('primary')),
+    bloom: () => (
+      <Themed>{(colors) => <Fill shape="heart" size={space._4xl} color={colors.primary} />}</Themed>
+    ),
+  },
+  {
+    name: 'a silhouette in the foreground, by default',
+    language: () => toElement(L.Shape('4-sided-cookie').size('3xl')),
+    bloom: () => (
+      <Themed>
+        {(colors) => <Fill shape="4-sided-cookie" size={space._3xl} color={colors.text} />}
+      </Themed>
+    ),
+  },
+  {
+    name: 'a stroked silhouette',
+    language: () => toElement(L.Shape('squircle').size('4xl').stroke('border', 'thick')),
+    bloom: () => (
+      <Themed>
+        {(colors) => <Border shape="squircle" size={space._4xl} width={2} colors={colors.border} />}
+      </Themed>
+    ),
+  },
+  {
+    name: 'an image in a silhouette',
+    language: () =>
+      toElement(L.Shape('flower').size('5xl').image({ uri: 'https://example.com/a.png' }, 'Ana')),
+    bloom: () => (
+      <Image
+        shape="flower"
+        size={space._5xl}
+        source={{ uri: 'https://example.com/a.png' }}
+        alt="Ana"
+      />
+    ),
+  },
+];
+
 export const LAYOUT_CASES: ParityCase[] = [
   ...distribution,
   ...placement,
   ...overlays,
   ...elevation,
+  ...shapes,
 ];

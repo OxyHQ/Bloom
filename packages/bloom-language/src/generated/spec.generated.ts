@@ -1436,6 +1436,17 @@ export const MODIFIERS = {
   ],
   "separated": [
     "value?"
+  ],
+  "fill": [
+    "color"
+  ],
+  "stroke": [
+    "color",
+    "borderWidth?"
+  ],
+  "image": [
+    "value",
+    "value?"
   ]
 } as const;
 
@@ -2328,6 +2339,61 @@ export const NODE_MODIFIERS = {
     "inverted",
     "density"
   ],
+  "shape": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "onReselect",
+    "when",
+    "size",
+    "fill",
+    "stroke",
+    "image"
+  ],
   "buttonGroup": [
     "padding",
     "frame",
@@ -2886,6 +2952,7 @@ export const CONSTRUCTORS = {
   "AspectRatio": "ratio",
   "Grid": "grid",
   "Button": "button",
+  "Shape": "shape",
   "ButtonGroup": "buttonGroup",
   "FAB": "fab",
   "Menu": "menu",
