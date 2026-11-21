@@ -922,6 +922,61 @@ const more: ParityCase[] = [
   },
 ];
 
+const groupedRow = (item: (typeof GROCERIES)[number], index: number) => {
+  const row = (
+    <SelectItem value={item.value} label={item.label}>
+      <SelectItemIndicator />
+      <SelectItemText>{item.label}</SelectItemText>
+    </SelectItem>
+  );
+  return GROCERIES[index - 1]?.group === item.group ? (
+    row
+  ) : (
+    <SelectGroup>
+      <SelectLabel>{item.group}</SelectLabel>
+      {row}
+    </SelectGroup>
+  );
+};
+
+const openPickers: ParityCase[] = [
+  {
+    name: 'Picker open, its groups heading their rows',
+    language: () =>
+      toElement(
+        L.Picker(
+          ['pear', set],
+          L.OptionGroup('Fruit', L.Option('apple', 'Apple'), L.Option('pear', 'Pear')),
+          L.OptionGroup('Vegetable', L.Option('leek', 'Leek')),
+        )
+          .presented(on)
+          .label('Groceries'),
+      ),
+    bloom: () => (
+      <Select value="pear" onValueChange={set} open onOpenChange={set}>
+        <SelectTrigger label="Groceries">
+          <SelectValue />
+          <SelectIcon />
+        </SelectTrigger>
+        <SelectContent label="Groceries" items={GROCERIES} renderItem={groupedRow} />
+      </Select>
+    ),
+  },
+  {
+    name: 'Picker closed through its binding',
+    language: () => toElement(L.Picker(['apple', set], fruits()).presented(off).label('Fruit')),
+    bloom: () => (
+      <Select value="apple" onValueChange={set} open={false} onOpenChange={set}>
+        <SelectTrigger label="Fruit">
+          <SelectValue />
+          <SelectIcon />
+        </SelectTrigger>
+        <SelectContent label="Fruit" items={FRUITS} renderItem={fruitRow} />
+      </Select>
+    ),
+  },
+];
+
 export const INPUT_CASES: ParityCase[] = [
   ...toggles,
   ...checkboxes,
@@ -933,6 +988,7 @@ export const INPUT_CASES: ParityCase[] = [
   ...forms,
   ...searches,
   ...more,
+  ...openPickers,
 ];
 
 /**

@@ -488,6 +488,11 @@ function plan(node: Node): Plan {
       result.own.set('glass', modifier);
       continue;
     }
+    // A card's corner curve is its own (Bloom's `cornerCurve`, beside its `radius`), not its box's.
+    if (node.kind === 'card' && modifier.kind === 'cornerCurve') {
+      result.own.set('cornerCurve', modifier);
+      continue;
+    }
     if (isLayerModifier(modifier)) {
       addToLayers(result.layers, modifier);
       continue;

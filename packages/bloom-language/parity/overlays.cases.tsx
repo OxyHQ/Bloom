@@ -421,6 +421,36 @@ const more: ParityCase[] = [
       </>
     ),
   },
+  {
+    name: 'dialog at an app width, its gutter and height ceiling',
+    language: () =>
+      toElement(
+        OPEN.dialog(
+          [true, setOpen],
+          O.Dialog(L.Text('Body'))
+            .title('Compose')
+            .frame({ width: '560', maxWidth: '720' })
+            .sideGutter('none')
+            .maxHeightRatio(0.9),
+        ),
+      ),
+    bloom: () => (
+      <>
+        <OpenButton />
+        <Dialog
+          open
+          onClose={() => setOpen()}
+          title="Compose"
+          width={560}
+          maxWidth={720}
+          minSideGutter={0}
+          maxHeightRatio={0.9}
+        >
+          <Text>Body</Text>
+        </Dialog>
+      </>
+    ),
+  },
   ...(['sm', 'md', 'lg', 'xl'] as const).map((tier) => ({
     name: `dialog from the bottom, at the end from ${tier}`,
     language: () =>
@@ -456,7 +486,7 @@ const more: ParityCase[] = [
             .side('bottom', 'start')
             .sideOffset('xs')
             .alignOffset('-sm')
-            .frame({ minWidth: '280', maxWidth: '320', maxHeight: '384' }),
+            .frame({ minWidth: '240', maxWidth: '400', maxHeight: '384' }),
         ),
       ),
     bloom: () => (
@@ -469,8 +499,8 @@ const more: ParityCase[] = [
           align="start"
           sideOffset={4}
           alignOffset={-8}
-          minWidth={280}
-          maxWidth={320}
+          minWidth={240}
+          maxWidth={400}
           maxHeight={384}
         >
           <Text>Details</Text>

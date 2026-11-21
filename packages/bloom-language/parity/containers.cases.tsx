@@ -707,6 +707,51 @@ const more: ParityCase[] = [
     ),
   },
   {
+    name: 'ChipRow with its ring inset and keyboard taps',
+    language: () =>
+      toElement(
+        C.ChipRow(C.Chip(L.Text('All')), C.Chip(L.Text('Unread')))
+          .ringInset('2xs')
+          .keyboardTaps('always'),
+      ),
+    bloom: () => (
+      <ChipRow ringInset={2} keyboardShouldPersistTaps="always">
+        <Chip>All</Chip>
+        <Chip>Unread</Chip>
+      </ChipRow>
+    ),
+  },
+  ...ENUMS.cornerCurve.map((curve) => ({
+    name: `Card corner curve ${curve}`,
+    language: () => toElement(C.Card(L.Badge(1)).cornerCurve(curve)),
+    bloom: () => (
+      <Card cornerCurve={curve}>
+        <Badge content={1} />
+      </Card>
+    ),
+  })),
+  {
+    name: 'SelectionCard wired to its description',
+    language: () =>
+      toElement(
+        C.SelectionCard('Pro')
+          .selected(false)
+          .onPress(onPress)
+          .nativeID('plan-pro')
+          .describedBy('plan-hint'),
+      ),
+    bloom: () => (
+      <SelectionCard
+        selection="single"
+        selected={false}
+        onPress={onPress}
+        title="Pro"
+        nativeID="plan-pro"
+        describedBy="plan-hint"
+      />
+    ),
+  },
+  {
     name: 'CappedChipRow',
     language: () =>
       toElement(

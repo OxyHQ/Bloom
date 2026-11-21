@@ -527,7 +527,7 @@ fn wave_two_controls_are_checked() {
     let imports = "import { Chip, ChipRow, Dialog, GroupedSectionIcon, Option, Popover, RadioGroup, Row, SelectionCard, TextField, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (text, open, on) => VStack(TextField(text, 'Name').trailingIcon(I).completion('so').focused(on), RadioGroup(on, Option('a', 'A').tint('success').foreground('white')).style('swatch'), ChipRow(Chip().style('inverted').role('radio')).role('radiogroup').spacing('xs').contentInset('lg'), Row('Ana').density('compact'), GroupedSectionIcon(I).tint('vivid'), SelectionCard('Pro').indicator('check').density('compact')).dialog(open, Dialog().presentAt('bottom', { lg: 'end' }).frame({ maxWidth: '640' }).padding('none')).popover(open, Popover().sideOffset('xs').alignOffset('-sm'));\n",
+        "export const x = (text, open, on) => VStack(TextField(text, 'Name').trailingIcon(I).completion('so').focused(on), RadioGroup(on, Option('a', 'A').tint('success').foreground('white')).style('swatch'), ChipRow(Chip().style('inverted').role('radio')).role('radiogroup').spacing('xs').contentInset('lg').ringInset('2xs').keyboardTaps('always'), Row('Ana').density('compact'), GroupedSectionIcon(I).tint('vivid'), SelectionCard('Pro').indicator('check').density('compact')).dialog(open, Dialog().presentAt('bottom', { lg: 'end' }).frame({ width: '560', maxWidth: '720' }).padding('none').sideGutter('none').maxHeightRatio(0.9)).popover(open, Popover().sideOffset('xs').alignOffset('-sm'));\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
@@ -543,6 +543,9 @@ fn wave_two_controls_are_checked() {
             "Unknown dialogPlacement token 'top' for .presentAt()",
         ),
         ("Popover().sideOffset('huge')", "Unknown space token 'huge' for .sideOffset()"),
+        ("ChipRow().keyboardTaps('sometimes')", "Unknown keyboardTaps token 'sometimes' for .keyboardTaps()"),
+        ("Dialog().sideGutter('wide')", "Unknown space token 'wide' for .sideGutter()"),
+        ("Dialog().frame({ maxWidth: '561' })", "Unknown length token '561' for .frame()"),
     ];
     for (chain, message) in cases {
         let output = check(&format!("export const x = (on) => {chain};\n"));
