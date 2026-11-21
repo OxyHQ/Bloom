@@ -172,6 +172,7 @@ export type {
   KeyboardDismiss,
   KeyboardTaps,
   NavigationScope,
+  ColorPreset,
   ScreenKind,
   ScreenScroll,
   ScrollIndicators,

@@ -242,6 +242,57 @@ const screens: ParityCase[] = [
       </Screen>
     ),
   })),
+  // Every preset: a screen's recipe themes its content (and the panel and shell around it).
+  ...ENUMS.colorPreset.map((preset) => ({
+    name: `a ${preset} screen`,
+    language: () => (
+      <ScreenHost root={L.Text('a').header(false).colorPreset(preset).testID('tinted')} />
+    ),
+    bloom: () => (
+      <Screen colorPreset={preset} testID="tinted">
+        <Text>a</Text>
+      </Screen>
+    ),
+  })),
+  {
+    name: 'a screen seeded by a colour, over a preset',
+    language: () => (
+      <ScreenHost root={L.Text('a').header(false).colorPreset('teal').seed('#8e5137')} />
+    ),
+    bloom: () => (
+      <Screen colorPreset="teal" seed="#8e5137">
+        <Text>a</Text>
+      </Screen>
+    ),
+  },
+  {
+    name: 'a retained screen, with its starting chrome heights',
+    language: () => (
+      <ScreenHost
+        root={L.ScrollView(L.Text('a'))
+          .title('Home')
+          .footer(L.Text('reply'))
+          .screenScroll('content')
+          .screenActive(false)
+          .initialHeaderHeight('64')
+          .initialFooterHeight('96')}
+      />
+    ),
+    bloom: () => (
+      <Screen
+        scroll="content"
+        active={false}
+        header={<PageHeader title="Home" presentation="floating" />}
+        bottomBar={<Text>reply</Text>}
+        headerHeight={64}
+        bottomBarHeight={96}
+      >
+        <ScreenScrollView>
+          <Text>a</Text>
+        </ScreenScrollView>
+      </Screen>
+    ),
+  },
 ];
 
 export const SCREEN_CASES: ParityCase[] = [...scrollViews, ...screens];
