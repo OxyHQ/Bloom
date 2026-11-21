@@ -65,9 +65,12 @@ export function MotionView({
   const exitTiming = exit && !reduced ? exit.keyframes.timing() : undefined;
 
   // Web: the removal plays while the Presence keeps the view; with none to
-  // play, the view goes at once. (Native never sets a leaving.)
-  const leaving = useContext(LeavingContext);
-  const leavesAtOnce = leaving !== undefined && (exit === undefined || exitTiming === undefined);
+  // play (`exit: null`, reduced motion), the view goes at once. Only a view
+  // with an `exit` is the leaver: one inside it without plays nothing and
+  // must not let the child go. (Native never sets a leaving.)
+  const context = useContext(LeavingContext);
+  const leaving = exit === undefined ? undefined : context;
+  const leavesAtOnce = leaving !== undefined && exitTiming === undefined;
   useLayoutEffect(() => {
     if (leavesAtOnce) leaving?.onLeft();
   }, [leavesAtOnce, leaving]);
@@ -88,11 +91,16 @@ export function MotionView({
   const exiting =
     exit && exitTiming !== undefined ? exitingOf(exit.keyframes, exitTiming) : rest.exiting;
   const host = rest.entering !== undefined || exiting !== undefined ? Animated.View : MotionWrapper;
-  return createElement(host as never, {
+  const element = createElement(host as never, {
     ...rest,
     exiting,
     ...played.props,
     ref: merged,
     style: [style, transition ? transitionStyle(transition) : null, played.style],
   });
+  // The leaving is this view's alone: what is inside it, a view with an exit
+  // of its own included, does not leave with it.
+  return exit === undefined
+    ? element
+    : createElement(LeavingContext.Provider, { value: undefined }, element);
 }

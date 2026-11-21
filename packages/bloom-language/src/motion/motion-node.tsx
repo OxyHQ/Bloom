@@ -161,7 +161,10 @@ function useMotion(
   const reduced = usePrefersReducedMotion();
   // Web: set while a list's Presence keeps this node after it left. Native
   // never sets it: there the removal is a layout animation, after the unmount.
-  const leaving = useContext(LeavingContext);
+  // Only a node with a transition is the leaver; one inside it plays nothing
+  // and must not let the child go.
+  const context = useContext(LeavingContext);
+  const leaving = motion.transition === undefined ? undefined : context;
   const ref = useRef<unknown>(null);
   const own = motion.animation ?? scope;
   const committed = useRef<Committed | undefined>(undefined);
@@ -291,17 +294,29 @@ function useMotion(
   return { style, props, play };
 }
 
+/** A leaver's leaving is its own: what is inside it does not leave with it. */
+function leaverOnly(motion: MotionPlan, node: ReactNode): ReactNode {
+  return motion.transition === undefined ? (
+    node
+  ) : (
+    <LeavingContext.Provider value={undefined}>{node}</LeavingContext.Provider>
+  );
+}
+
 const NO_PRESS = { style: [] as readonly unknown[], ownsTransform: false };
 
 export function MotionNode(props: MotionNodeProps): ReactNode {
   const { style, props: hostProps, play } = useMotion(props, NO_PRESS);
-  return props.content({
-    ref: hostProps.ref as RefObject<unknown>,
-    style,
-    props: hostProps,
-    active: props.motion.stable || play !== undefined,
-    playId: play?.id,
-  });
+  return leaverOnly(
+    props.motion,
+    props.content({
+      ref: hostProps.ref as RefObject<unknown>,
+      style,
+      props: hostProps,
+      active: props.motion.stable || play !== undefined,
+      playId: play?.id,
+    }),
+  );
 }
 MotionNode.displayName = 'BloomMotion';
 
@@ -320,13 +335,16 @@ export function PressMotionNode(props: MotionNodeProps): ReactNode {
     hostProps.onPressIn = press.onPressIn;
     hostProps.onPressOut = press.onPressOut;
   }
-  return props.content({
-    ref: hostProps.ref as RefObject<unknown>,
-    style,
-    props: hostProps,
-    active: true,
-    playId: play?.id,
-  });
+  return leaverOnly(
+    props.motion,
+    props.content({
+      ref: hostProps.ref as RefObject<unknown>,
+      style,
+      props: hostProps,
+      active: true,
+      playId: play?.id,
+    }),
+  );
 }
 PressMotionNode.displayName = 'BloomPressMotion';
 
@@ -373,10 +391,11 @@ export function GestureMotionNode(props: MotionNodeProps): ReactNode {
   const own = hostProps.ref as RefObject<unknown>;
   const ref = useMemo(() => mergeRefs([own, mapped.ref]), [own, mapped.ref]);
   hostProps.ref = ref;
-  return (
+  return leaverOnly(
+    motion,
     <GestureDetector gesture={gesture}>
       {props.content({ ref: own, style, props: hostProps, active: true, playId: play?.id })}
-    </GestureDetector>
+    </GestureDetector>,
   );
 }
 GestureMotionNode.displayName = 'BloomGestureMotion';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text } from 'react-native';
-import { render } from '@testing-library/react-native';
+import { act, render } from '@testing-library/react-native';
 import { Keyframe } from 'react-native-reanimated';
 
 import {
@@ -88,6 +88,23 @@ describe('MotionView', () => {
       transitionDuration: 200,
       transitionTimingFunction: { cubicBezier: [0.25, 0.1, 0.25, 1] },
     });
+  });
+});
+
+describe('a finished playing', () => {
+  it('leaves the box once it ends holding no last frame; one that holds it stays', () => {
+    const find = (root: ReturnType<typeof render>['UNSAFE_root']) =>
+      root.find((n) => n.props.testID === 'box' && typeof n.type === 'string');
+    const loose = render(<MotionView play={play(1, 'none')} testID="box" />);
+    act(() => find(loose.UNSAFE_root).props.onCSSAnimationEnd());
+    expect(styleOf(find(loose.UNSAFE_root)).animationName).toBeUndefined();
+    // A new playing plays again.
+    loose.rerender(<MotionView play={play(2, 'none')} testID="box" />);
+    expect(styleOf(find(loose.UNSAFE_root)).animationName).toBeDefined();
+
+    const held = render(<MotionView play={play(1, 'forwards', () => {})} testID="box" />);
+    act(() => find(held.UNSAFE_root).props.onCSSAnimationEnd());
+    expect(styleOf(find(held.UNSAFE_root)).animationName).toBeDefined();
   });
 });
 

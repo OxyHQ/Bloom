@@ -125,6 +125,24 @@ describe('on the web, motion is CSS and the Web Animations API', () => {
     expect(all(r, 'Text').map((text) => text.props.children)).toEqual(['b']);
   });
 
+  it('a moving view inside a leaving child does not let it go: the leaver’s removal does', () => {
+    const list = (ids: string[]) =>
+      VStack(
+        ids.map((id) =>
+          HStack(Text(id).testID(`${id}-label`).scale('pressed'))
+            .testID(id)
+            .transition(rise)
+            .id(id),
+        ),
+      );
+    const r = mount(list(['a', 'b']));
+    played.length = 0;
+    update(r, list(['b']));
+    expect(all(r, 'Text').map((text) => text.props.children)).toEqual(['a', 'b']);
+    act(() => played.find((animation) => animation.target === 'a')?.onfinish?.());
+    expect(all(r, 'Text').map((text) => text.props.children)).toEqual(['b']);
+  });
+
   it('a glass view’s keyframes tell the engine to route their fade through the material', () => {
     // Bloom's engine does the routing (its own suite, motion-engine.web.test.ts);
     // here: the language hands the glass view's box to it, flagged.

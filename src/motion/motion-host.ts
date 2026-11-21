@@ -1,4 +1,4 @@
-import type { ComponentType, RefObject } from 'react';
+import { useState, type ComponentType, type RefObject } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Animated, {
   Easing,
@@ -97,20 +97,39 @@ function rulesOf(keyframes: KeyframesValue): readonly [CSSKeyframesRule, CSSKeyf
  * What a box takes to play `play`: the CSS animation as style, and its end as a
  * prop. Native fades a material host itself (there is no backdrop filter
  * to flatten), so `material` changes nothing here.
+ *
+ * A playing that ended holding no last frame (`fill: 'none'`) leaves the box,
+ * so the box carries no finished animation into what comes later: a layout
+ * animation of an ancestor's removal (a toast's exit) snapshotting a subtree
+ * with a CSS animation still attached cost a slow UI frame on every exit.
  */
 export function usePlay(
   _ref: RefObject<unknown>,
   play: Play | undefined,
 ): { style: object | undefined; props: object | undefined } {
-  if (play === undefined) return { style: undefined, props: undefined };
+  const [ended, setEnded] = useState<{ keyframes: KeyframesValue; id: number } | undefined>();
+  if (
+    play === undefined ||
+    (play.fill === 'none' && ended?.id === play.id && ended.keyframes === play.keyframes)
+  ) {
+    return { style: undefined, props: undefined };
+  }
+  const { id, keyframes, onEnd } = play;
+  const end =
+    play.fill === 'none'
+      ? () => {
+          setEnded({ keyframes, id });
+          onEnd?.();
+        }
+      : onEnd;
   return {
     style: {
-      animationName: rulesOf(play.keyframes)[Math.abs(play.id) % 2],
+      animationName: rulesOf(keyframes)[Math.abs(id) % 2],
       animationDuration: play.timing.duration,
       animationTimingFunction: nativeCurve(play.timing.curve),
       animationFillMode: play.fill,
     },
-    props: play.onEnd ? { onCSSAnimationEnd: play.onEnd } : undefined,
+    props: end ? { onCSSAnimationEnd: end } : undefined,
   };
 }
 
