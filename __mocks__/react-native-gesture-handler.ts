@@ -163,6 +163,20 @@ export const useTapGesture = hookGesture;
 export const useLongPressGesture = hookGesture;
 export const usePinchGesture = hookGesture;
 export const useNativeGesture = hookGesture;
+// Manual activation: what a gesture's own callbacks decided, by handler tag, in
+// order, so a suite asserts which touches a manually activated drag took.
+export const GestureStateManager = {
+  __calls: [] as Array<{ action: 'activate' | 'fail' | 'deactivate'; handlerTag: number }>,
+  activate(handlerTag: number) {
+    GestureStateManager.__calls.push({ action: 'activate', handlerTag });
+  },
+  fail(handlerTag: number) {
+    GestureStateManager.__calls.push({ action: 'fail', handlerTag });
+  },
+  deactivate(handlerTag: number) {
+    GestureStateManager.__calls.push({ action: 'deactivate', handlerTag });
+  },
+};
 const composeHook = (...gestures: unknown[]): MockGesture => compose()(...gestures);
 export const useCompetingGestures = composeHook;
 export const useExclusiveGestures = composeHook;
