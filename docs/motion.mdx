@@ -151,6 +151,27 @@ writes it from its own callbacks; a view follows it through the one mapper.
   Gesture Handler 3 hook's config object and throws on a spread in it, which
   fails the app's release bundle and nothing in Bloom's own build would see
   (`worklets-plugin.test.ts` runs the plugin over every engine file).
+- **A config is one object while what it reads is the same.** Gesture Handler
+  3 rebuilds a gesture for every new config object (it re-sends the config to
+  the native handler and re-shares its worklets), so `useDrag` and `useSwipe`
+  memoize theirs and reach the caller's JS callbacks through one stable
+  function each: a re-render of the owner (a toast row's, as its stack changes)
+  costs the gesture nothing.
+- **Each move still reaches the JS thread.** A hook gesture's worklet
+  callbacks get its events through Reanimated on the UI thread, and Reanimated
+  4.7 then lets each event through to the JS thread as well
+  (`ReanimatedModuleProxy::handleRawEvent`: "for now handleEvent always returns
+  false"), where the detector's Reanimated host holds an empty listener for it.
+  No callback of Bloom's runs, but every move event costs the JS thread a
+  dispatch: on a Pixel 8a a toast swiped away in 240 ms costs about 1.2 ticks
+  (12 ms) more JS than the builder (`Gesture.Pan()`) the toast had, and one
+  dragged over 900 ms about 4.5 more, so the cost follows the number of moves.
+  The same build with the toast's old builder handler spent what the published
+  Bloom spends (90 and 90 ticks over 8 swipes), so nothing else in the swipe
+  costs it. It is Gesture Handler 3's hook path on Reanimated 4.7, not Bloom's
+  code: the UI thread is unaffected (no frame is dropped), and the way out is
+  either Reanimated consuming the events it handles or the layer building its
+  gestures with the builder API.
 
 The tab underline (`Tabs`) is bound this way: `RouterTabs`' drag writes
 `dragTranslation`, and the underline's offset and width follow it toward the
