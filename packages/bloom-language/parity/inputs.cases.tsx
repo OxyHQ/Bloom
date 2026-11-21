@@ -420,7 +420,6 @@ const fields: ParityCase[] = [
           .submitLabel('next')
           .onSubmit(set)
           .maxLength(120)
-          .autoFocus()
           .testID('email'),
       ),
     bloom: () => (
@@ -435,7 +434,6 @@ const fields: ParityCase[] = [
         returnKeyType="next"
         onSubmitEditing={set}
         maxLength={120}
-        autoFocus
         testID="email"
       />
     ),
@@ -622,13 +620,6 @@ const searches: ParityCase[] = [
     ),
   },
   {
-    name: 'Search collapsible, open',
-    language: () => toElement(L.Search(empty).collapsible().presented([true, set])),
-    bloom: () => (
-      <Search value="" onValueChange={set} presentation="collapsible" open onOpenChange={set} />
-    ),
-  },
-  {
     name: 'Search collapsing where there is no room',
     language: () => toElement(L.Search(empty).collapsible('auto')),
     bloom: () => <Search value="" onValueChange={set} presentation="auto" />,
@@ -657,4 +648,25 @@ export const INPUT_CASES: ParityCase[] = [
   ...editors,
   ...forms,
   ...searches,
+];
+
+/**
+ * A field that takes the focus as it appears (an open collapsible search's,
+ * an `autoFocus` one), and a page has one focus: two
+ * side by side (the story's pairs) cannot both draw it. Compared by the Jest
+ * suites, where nothing takes focus, and left out of the story.
+ */
+export const INPUT_CASES_FOCUSED: ParityCase[] = [
+  {
+    name: 'TextField focused as it appears',
+    language: () => toElement(L.TextField(empty, 'Email').autoFocus()),
+    bloom: () => <TextFieldInput label="Email" value="" onValueChange={set} autoFocus />,
+  },
+  {
+    name: 'Search collapsible, open',
+    language: () => toElement(L.Search(empty).collapsible().presented([true, set])),
+    bloom: () => (
+      <Search value="" onValueChange={set} presentation="collapsible" open onOpenChange={set} />
+    ),
+  },
 ];
