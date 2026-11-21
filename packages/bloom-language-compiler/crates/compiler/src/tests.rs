@@ -1764,3 +1764,21 @@ fn a_gradient_is_checked_colour_by_colour() {
         assert_eq!(output.diagnostics.first().map(|d| d.message.as_str()), Some(message), "{call}");
     }
 }
+
+#[test]
+fn the_stay_filters_are_checked() {
+    let imports =
+        "import { FeatureFilter, FilterTriggerButton, PriceRangeFilter } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (s, r) => [FeatureFilter(s).style('checkboxes'), \
+         FilterTriggerButton(2).size('lg').disabled(), PriceRangeFilter(r, { min: 0, max: 9 }).style('log')];\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = (s) => FeatureFilter(s).style('grid');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown featureFilterStyle token 'grid' for .style()");
+    let output = check("export const x = () => FilterTriggerButton(1).size('xl');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown filterTriggerSize token 'xl' for .size()");
+    let output = check("export const x = (r) => PriceRangeFilter(r, {}).tint('accent');\n");
+    assert_eq!(output.diagnostics[0].message, "PriceRangeFilter has no modifier .tint()");
+}

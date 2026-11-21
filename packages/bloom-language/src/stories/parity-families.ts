@@ -75,6 +75,7 @@ import { CHAT_CASES } from '../../parity/chat.cases';
 import { LISTINGS_MEDIA_CASES } from '../../parity/listings-media.cases';
 import { CARD_FORM_CASES } from '../../parity/card-form.cases';
 import { CHECKOUT_SHEET_CASES } from '../../parity/checkout-sheet.cases';
+import { STAY_FILTER_CASES } from '../../parity/stay-filters.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -155,6 +156,7 @@ export const FAMILIES = {
   listingsMedia: LISTINGS_MEDIA_CASES,
   cardForm: CARD_FORM_CASES,
   checkoutSheet: CHECKOUT_SHEET_CASES,
+  stayFilter: STAY_FILTER_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';
