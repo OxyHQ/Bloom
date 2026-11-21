@@ -1715,3 +1715,16 @@ fn listings_and_media_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_card_form_is_checked() {
+    let imports =
+        "import { CardForm, CardFormCountry, CardFormPostcode, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (c, s, l) => VStack(CardForm(c).disabled(), CardFormCountry(s, l).disabled(false), CardFormPostcode(s));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = (c) => CardForm(c).size('sm');\n");
+    assert_eq!(output.diagnostics[0].message, "CardForm has no modifier .size()");
+}

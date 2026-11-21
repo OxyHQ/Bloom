@@ -73,6 +73,7 @@ import { MEDIA_CONTROL_CASES } from '../../parity/media-controls.cases';
 import { AGENT_CASES } from '../../parity/agents.cases';
 import { CHAT_CASES } from '../../parity/chat.cases';
 import { LISTINGS_MEDIA_CASES } from '../../parity/listings-media.cases';
+import { CARD_FORM_CASES } from '../../parity/card-form.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -151,6 +152,7 @@ export const FAMILIES = {
   agent: AGENT_CASES,
   chat: CHAT_CASES,
   listingsMedia: LISTINGS_MEDIA_CASES,
+  cardForm: CARD_FORM_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';
