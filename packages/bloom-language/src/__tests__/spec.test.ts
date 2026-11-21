@@ -221,6 +221,7 @@ import type {
   CardFormPostcodeView,
   CardFormHostedFieldView,
 } from '../controls/card-form';
+import type { CheckoutSheetView } from '../controls/checkout-sheet';
 import type {
   DatePickerView,
   DateRangePickerView,
@@ -739,7 +740,9 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<CardFormCountryView>, Of<'cardFormCountry'>>,
       Same<MethodsOf<CardFormPostcodeView>, Of<'cardFormPostcode'>>,
       Same<MethodsOf<CardFormHostedFieldView>, Of<'cardFormHostedField'>>,
+      Same<MethodsOf<CheckoutSheetView>, Of<'checkoutSheet'>>,
     ] = [
+      true,
       true,
       true,
       true,

@@ -101,6 +101,7 @@ import type { DatePickerKind } from './controls/date-picker';
 import type { HourFormat, WeekStart } from '@oxy.so/bloom/date-picker';
 
 import type { AgentAvatarKind } from './controls/agent-avatar';
+import type { CheckoutSheetKind } from './controls/checkout-sheet';
 import type { CardFormKind } from './controls/card-form';
 import type { MediaKind } from './controls/media';
 import type { ListingKind } from './controls/listings';
@@ -1399,7 +1400,8 @@ export type NodeKind =
   | ChatKind
   | ListingKind
   | MediaKind
-  | CardFormKind;
+  | CardFormKind
+  | CheckoutSheetKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
