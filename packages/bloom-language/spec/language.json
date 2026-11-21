@@ -857,7 +857,8 @@
     "preload": ["value?"],
     "bar": ["value?"],
     "sidebar": ["value?"],
-    "sidebarAfter": ["value"]
+    "sidebarAfter": ["value"],
+    "accessory": ["value"]
   },
   "universal": [
     "padding",
@@ -1400,6 +1401,17 @@
         "onPress",
         "onLongPress"
       ]
+    },
+    "toolbarView": {
+      "constructors": ["Toolbar"],
+      "universal": false,
+      "modifiers": ["trailing", "accessory", "size", "testID"],
+      "size": "controlSize"
+    },
+    "stickySection": {
+      "constructors": ["StickySection"],
+      "universal": false,
+      "modifiers": ["testID"]
     },
     "pageFooter": {
       "constructors": ["PageFooter"],
