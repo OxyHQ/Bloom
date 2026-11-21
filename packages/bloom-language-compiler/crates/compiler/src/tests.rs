@@ -1131,3 +1131,21 @@ fn fact_strips_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn photo_grids_are_checked() {
+    let imports = "import { SortablePhotoGrid } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (photos, f) => SortablePhotoGrid(photos).onRemove(f).onRetry(f).onAdd(f).max(6).addHint('Up to 6').columns(4).imageVariant('thumb').disabled().labels({});\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("SortablePhotoGrid(t).onAdd()", ".onAdd() takes 1 argument(s), not 0"),
+        ("SortablePhotoGrid(t).placeholder('x')", "SortablePhotoGrid has no modifier .placeholder()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (t) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

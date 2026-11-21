@@ -114,3 +114,4 @@ export const DropZones: Story = { args: { family: 'dropZone' } };
 export const MediaInsetBorders: Story = { args: { family: 'mediaInsetBorder' } };
 export const ImageAspectRatios: Story = { args: { family: 'imageAspectRatio' } };
 export const FactStrips: Story = { args: { family: 'factStrip' } };
+export const PhotoGrids: Story = { args: { family: 'sortableMedia' } };

@@ -547,6 +547,10 @@ export type { CollapsibleView } from './controls/collapsible';
 export { DropZone } from './controls/drop-zone';
 export type { DropZoneView } from './controls/drop-zone';
 
+// Photo grids (controls/sortable-media.tsx)
+export { SortablePhotoGrid } from './controls/sortable-media';
+export type { SortablePhotoGridView } from './controls/sortable-media';
+
 // Animated checks (controls/animated-check.tsx)
 export { AnimatedCheck } from './controls/animated-check';
 export type { AnimatedCheckView } from './controls/animated-check';
