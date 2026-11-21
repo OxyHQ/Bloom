@@ -7,6 +7,7 @@ import {
 import { Node, type ViewModifiers } from '../node';
 import { type AgentMood, type AvatarSizeToken, resolveAvatarSize } from '../tokens';
 import type { ControlRenderer } from './draw';
+import { product } from './product';
 
 /** Agent avatars: the vector character an agent is drawn as. */
 export type AgentAvatarKind = 'agentAvatar';
@@ -60,20 +61,16 @@ export function AgentAvatar(
 }
 
 export const AGENT_AVATARS: Record<AgentAvatarKind, ControlRenderer> = {
-  agentAvatar: (d) => {
-    const { character, options } = d.node.props as AgentAvatarNodeProps;
-    const size = d.own('size')?.value as AvatarSizeToken | undefined;
-    return d.pressAround((props) =>
-      d.component(BloomAgentAvatar, {
-        ...props,
-        ...options,
-        character,
+  agentAvatar: product(BloomAgentAvatar, {
+    own: (d) => {
+      const size = d.own('size')?.value as AvatarSizeToken | undefined;
+      return {
         size: size === undefined ? undefined : resolveAvatarSize(size),
         mood: d.own('mood')?.value,
         paused: d.own('paused')?.value,
         interactive: d.own('interactive')?.value,
         portrait: d.own('portrait')?.value,
-      }),
-    );
-  },
+      };
+    },
+  }),
 };

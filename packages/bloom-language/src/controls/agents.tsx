@@ -43,7 +43,7 @@ import { UsageCard as BloomUsageCard, type UsageCardProps } from '@oxy.so/bloom/
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { AgentThinkingStyle, AgentThinkingTone, SpaceToken } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
-import { length, slot } from './product';
+import { product } from './product';
 
 /** The agent families apps share: limits and usage, thinking, progress, the log, the loader, the sidebar, the questionnaire. */
 export type AgentKind =
@@ -202,58 +202,34 @@ export function Questionnaire(
   return new Node('questionnaire', { questions, options }, []);
 }
 
-interface Props<O> {
-  readonly options: O;
-  readonly [key: string]: unknown;
-}
-const propsOf = <O,>(d: ControlDraw) => d.node.props as Props<O>;
-
-/** A component drawn with its content props, its options, and `extra` (its modifiers and slots). */
-function drawn(
-  host: unknown,
-  extra: (d: ControlDraw) => Record<string, unknown> = () => ({}),
-): ControlRenderer {
-  return (d) => {
-    const { options, ...content } = propsOf<object>(d);
-    const children = d.node.children[0];
-    return d.pressAround((props) =>
-      d.component(
-        host,
-        { ...props, ...options, ...content, ...extra(d) },
-        ...(children === undefined ? [] : [d.render(children)]),
-      ),
-    );
-  };
-}
-
 /** A component whose text is its only child (Bloom takes it as `children`). */
-function text(host: unknown, extra: (d: ControlDraw) => Record<string, unknown> = () => ({})) {
+function text(host: unknown, own: (d: ControlDraw) => Record<string, unknown> = () => ({})) {
   return (d: ControlDraw) => {
     const { text: content, options } = d.node.props as { text: string; options?: object };
     return d.pressAround((props) =>
-      d.component(host, { ...props, ...options, ...extra(d) }, content),
+      d.component(host, { ...props, ...options, ...own(d) }, content),
     );
   };
 }
 
 export const AGENTS: Record<AgentKind, ControlRenderer> = {
-  agentLimitsCard: drawn(BloomAgentLimitsCard),
-  usageCard: drawn(BloomUsageCard, (d) => {
-    const { options } = propsOf<UsageCardOptions>(d);
-    return { fallback: slot(d, options.fallback), footer: slot(d, options.footer) };
+  agentLimitsCard: product(BloomAgentLimitsCard),
+  usageCard: product(BloomUsageCard, { slots: ['fallback', 'footer'] }),
+  agentThinking: product(BloomAgentThinking, {
+    own: (d) => ({ variant: d.own('style')?.value, tone: d.own('tint')?.value }),
   }),
-  agentThinking: drawn(BloomAgentThinking, (d) => ({
-    variant: d.own('style')?.value,
-    tone: d.own('tint')?.value,
-  })),
-  agentProgress: drawn(BloomAgentProgress),
+  agentProgress: product(BloomAgentProgress),
   agentProgressLoadingText: text(BloomAgentProgressLoadingText, (d) => ({
     numberOfLines: d.own('lines')?.value,
   })),
-  agentLogRow: drawn(BloomAgentLogRow),
+  agentLogRow: product(BloomAgentLogRow),
   agentLogShimmerText: text(BloomAgentLogShimmerText),
   agentLogToolCall: (d) => {
-    const { name, status, options } = propsOf<AgentLogToolCallOptions>(d);
+    const { name, status, options } = d.node.props as {
+      name: string;
+      status: AgentLogToolCallStatus;
+      options: AgentLogToolCallOptions;
+    };
     const { content, ...rest } = options;
     return d.component(
       BloomAgentLogToolCall,
@@ -261,18 +237,9 @@ export const AGENTS: Record<AgentKind, ControlRenderer> = {
       ...(content === undefined ? [] : [d.render(content)]),
     );
   },
-  agentLogToolCalls: drawn(BloomAgentLogToolCalls),
-  agentLogWorkingRow: drawn(BloomAgentLogWorkingRow),
-  composerLoader: drawn(BloomComposerLoader, (d) => {
-    const { options } = propsOf<ComposerLoaderOptions>(d);
-    return {
-      radius: length(options.radius),
-      line: length(options.line),
-      offset: length(options.offset),
-    };
-  }),
-  conversationSidebar: drawn(BloomConversationSidebar, (d) => ({
-    after: slot(d, propsOf<ConversationSidebarOptions>(d).options.after),
-  })),
-  questionnaire: drawn(BloomQuestionnaire),
+  agentLogToolCalls: product(BloomAgentLogToolCalls),
+  agentLogWorkingRow: product(BloomAgentLogWorkingRow),
+  composerLoader: product(BloomComposerLoader, { lengths: ['radius', 'line', 'offset'] }),
+  conversationSidebar: product(BloomConversationSidebar, { slots: ['after'] }),
+  questionnaire: product(BloomQuestionnaire),
 };

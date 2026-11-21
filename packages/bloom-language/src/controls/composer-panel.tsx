@@ -9,8 +9,8 @@ import {
 
 import type { Binding } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { ControlDraw, ControlRenderer } from './draw';
-import { slot } from './product';
+import type { ControlRenderer } from './draw';
+import { product } from './product';
 
 /** The agent composer: the two-row panel, the pill and the status tab above it. */
 export type ComposerPanelKind = 'composerPanel' | 'composerPill' | 'composerPanelStatusTab';
@@ -56,14 +56,14 @@ export function ComposerPanel(
   prompt: Binding<string>,
   options: ComposerPanelOptions = {},
 ): ComposerPanelView {
-  return new Node('composerPanel', { prompt, options }, []);
+  return new Node('composerPanel', { binding: prompt, options }, []);
 }
 /** Bloom `ComposerPill`, writing the prompt the binding holds. */
 export function ComposerPill(
   prompt: Binding<string>,
   options: ComposerPillOptions = {},
 ): ComposerPillView {
-  return new Node('composerPill', { prompt, options }, []);
+  return new Node('composerPill', { binding: prompt, options }, []);
 }
 export function ComposerPanelStatusTab(
   options: ComposerPanelStatusTabOptions = {},
@@ -71,41 +71,19 @@ export function ComposerPanelStatusTab(
   return new Node('composerPanelStatusTab', { options }, []);
 }
 
-interface ComposerProps {
-  readonly prompt: Binding<string>;
-  readonly options: ComposerPanelOptions & ComposerPillOptions;
-}
-
-/** A composer's own props: its prompt and its slots drawn. */
-function composer(d: ControlDraw): Record<string, unknown> {
-  const { prompt, options } = d.node.props as ComposerProps;
-  const [value, onValueChange] = prompt;
-  return {
-    ...options,
-    value,
-    onValueChange,
-    disabled: d.own('disabled')?.value,
-    question: slot(d, options.question),
-    status: slot(d, options.status),
-    emptyAction: slot(d, options.emptyAction),
-  };
-}
+const composer = {
+  binding: ['value', 'onValueChange'],
+  slots: ['question', 'status', 'emptyAction'],
+} as const;
 
 export const COMPOSER_PANELS: Record<ComposerPanelKind, ControlRenderer> = {
-  composerPanel: (d) =>
-    d.pressAround((props) => d.component(BloomComposerPanel, { ...props, ...composer(d) })),
-  composerPill: (d) =>
-    d.pressAround((props) =>
-      d.component(BloomComposerPill, {
-        ...props,
-        ...composer(d),
-        surface: d.own('surface')?.value,
-      }),
-    ),
-  composerPanelStatusTab: (d) => {
-    const { options } = d.node.props as { options: ComposerPanelStatusTabOptions };
-    return d.pressAround((props) =>
-      d.component(BloomComposerPanelStatusTab, { ...props, ...options }),
-    );
-  },
+  composerPanel: product(BloomComposerPanel, {
+    ...composer,
+    own: (d) => ({ disabled: d.own('disabled')?.value }),
+  }),
+  composerPill: product(BloomComposerPill, {
+    ...composer,
+    own: (d) => ({ disabled: d.own('disabled')?.value, surface: d.own('surface')?.value }),
+  }),
+  composerPanelStatusTab: product(BloomComposerPanelStatusTab),
 };

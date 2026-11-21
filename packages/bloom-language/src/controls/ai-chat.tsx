@@ -22,8 +22,8 @@ import type { SidebarProps } from '@oxy.so/bloom/sidebar';
 
 import { type Child, Node, type ViewModifiers } from '../node';
 import { type AiChatLineTone, type LengthToken, resolveLength, type SpaceToken } from '../tokens';
-import type { ControlDraw, ControlRenderer } from './draw';
-import { length, slot } from './product';
+import type { ControlRenderer } from './draw';
+import { product } from './product';
 
 /** The AI chat workspace: its shell and container, the thread, its turns and panels. */
 export type AiChatKind =
@@ -168,55 +168,36 @@ export function AiChatGalleryPanel(
   return new Node('aiChatGalleryPanel', { generations, options }, []);
 }
 
-const optionsOf = <O,>(d: ControlDraw) => (d.node.props as { options: O }).options;
 const width = (token: LengthToken | undefined) =>
   token === undefined ? undefined : resolveLength(token);
 
-/**
- * A component drawn around the node's content, with its options as props. A
- * list of content (a reply's lines, a thread's turns) is its children as
- * Bloom takes them: one child each, keyed by `.id()`.
- */
-function around(host: unknown, own: (d: ControlDraw) => Record<string, unknown>): ControlRenderer {
-  return (d) =>
-    d.pressAround((props) =>
-      d.component(host, { ...props, ...own(d) }, d.render(d.node.children[0])),
-    );
-}
-
 export const AI_CHATS: Record<AiChatKind, ControlRenderer> = {
-  aiChatShell: around(BloomAiChatShell, (d) => {
-    const options = optionsOf<AiChatShellOptions>(d);
-    const { sidebar, panel } = options;
-    return {
-      ...options,
-      sidebar:
-        typeof sidebar === 'function'
-          ? (props: SidebarProps) => d.render(sidebar(props))
-          : d.render(sidebar),
-      mobileSidebar: slot(d, options.mobileSidebar),
-      panel: panel === undefined ? undefined : (w: number | '100%') => d.render(panel(w)),
-      background: slot(d, options.background),
-      sidebarWidth: length(options.sidebarWidth),
-      collapsedSidebarWidth: length(options.collapsedSidebarWidth),
-      defaultPanelWidth: length(options.defaultPanelWidth),
-      minPanelWidth: length(options.minPanelWidth),
-      maxPanelWidth: length(options.maxPanelWidth),
-    };
+  aiChatShell: product(BloomAiChatShell, {
+    slots: ['mobileSidebar', 'background'],
+    lengths: [
+      'sidebarWidth',
+      'collapsedSidebarWidth',
+      'defaultPanelWidth',
+      'minPanelWidth',
+      'maxPanelWidth',
+    ],
+    own: (d) => {
+      const { sidebar, panel } = (d.node.props as { options: AiChatShellOptions }).options;
+      return {
+        sidebar:
+          typeof sidebar === 'function'
+            ? (props: SidebarProps) => d.render(sidebar(props))
+            : d.render(sidebar),
+        panel: panel === undefined ? undefined : (w: number | '100%') => d.render(panel(w)),
+      };
+    },
   }),
-  aiChatContainer: around(BloomAiChatContainer, (d) => {
-    const options = optionsOf<AiChatContainerOptions>(d);
-    return {
-      ...options,
-      actions: slot(d, options.actions),
-      header: slot(d, options.header),
-      composer: slot(d, options.composer),
-      background: slot(d, options.background),
-    };
+  aiChatContainer: product(BloomAiChatContainer, {
+    slots: ['actions', 'header', 'composer', 'background'],
   }),
-  aiChatThread: around(BloomAiChatThread, optionsOf),
-  aiChatUserMessage: around(BloomAiChatUserMessage, optionsOf),
-  aiChatAssistantMessage: around(BloomAiChatAssistantMessage, optionsOf),
+  aiChatThread: product(BloomAiChatThread),
+  aiChatUserMessage: product(BloomAiChatUserMessage),
+  aiChatAssistantMessage: product(BloomAiChatAssistantMessage),
   aiChatMessageLine: (d) => {
     const { text } = d.node.props as { text: string | undefined };
     const own = { tone: d.own('tint')?.value, selectable: d.own('selectable')?.value };
@@ -230,39 +211,18 @@ export const AI_CHATS: Record<AiChatKind, ControlRenderer> = {
         : d.component(BloomAiChatMessageLine, { ...props, ...own }, text),
     );
   },
-  aiChatHeader: around(BloomAiChatHeader, () => ({})),
-  aiChatMobileHeader: (d) =>
-    d.pressAround((props) =>
-      d.component(BloomAiChatMobileHeader, {
-        ...props,
-        title: (d.node.props as { title: string }).title,
-      }),
-    ),
-  aiChatCodePanel: (d) => {
-    const { code, options } = d.node.props as { code: string; options: AiChatCodePanelOptions };
-    return d.pressAround((props) =>
-      d.component(BloomAiChatCodePanel, {
-        ...props,
-        ...options,
-        code,
-        browser: slot(d, options.browser),
-        width: width(options.width),
-      }),
-    );
-  },
-  aiChatGalleryPanel: (d) => {
-    const { generations, options } = d.node.props as {
-      generations: readonly AiChatGeneration[];
-      options: AiChatGalleryPanelOptions;
-    };
-    return d.pressAround((props) =>
-      d.component(BloomAiChatGalleryPanel, {
-        ...props,
-        ...options,
-        generations,
-        stylePresets: slot(d, options.stylePresets),
-        width: width(options.width),
-      }),
-    );
-  },
+  aiChatHeader: product(BloomAiChatHeader),
+  aiChatMobileHeader: product(BloomAiChatMobileHeader),
+  aiChatCodePanel: product(BloomAiChatCodePanel, {
+    slots: ['browser'],
+    own: (d) => ({
+      width: width((d.node.props as { options: AiChatCodePanelOptions }).options.width),
+    }),
+  }),
+  aiChatGalleryPanel: product(BloomAiChatGalleryPanel, {
+    slots: ['stylePresets'],
+    own: (d) => ({
+      width: width((d.node.props as { options: AiChatGalleryPanelOptions }).options.width),
+    }),
+  }),
 };
