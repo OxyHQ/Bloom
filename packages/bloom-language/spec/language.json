@@ -1272,7 +1272,10 @@
     "fillTint": ["color"],
     "thumbTint": ["color"],
     "onCommit": ["value"],
-    "valueFormat": ["value"]
+    "valueFormat": ["value"],
+    "allowsMultiple": [],
+    "revealMotion": ["value"],
+    "indicator": ["value"]
   },
   "universal": [
     "padding",
@@ -2557,7 +2560,15 @@
       ],
       "size": "controlSize",
       "tint": "tone"
-    }
+    },
+    "accordion": {
+      "constructors": ["Accordion"],
+      "modifiers": ["size", "allowsMultiple", "revealMotion"],
+      "size": "controlSize"
+    },
+    "accordionItem": { "constructors": ["AccordionItem"], "modifiers": ["disabled"] },
+    "accordionTrigger": { "constructors": ["AccordionTrigger"], "modifiers": ["indicator"] },
+    "accordionContent": { "constructors": ["AccordionContent"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
