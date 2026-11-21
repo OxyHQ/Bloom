@@ -20,6 +20,7 @@ import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/blo
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 
 import type { AgentAvatarKind } from './controls/agent-avatar';
+import type { ChatKind } from './controls/chat';
 import type { AgentKind } from './controls/agents';
 import type { MediaControlKind } from './controls/media-controls';
 import type { StatCardKind } from './controls/stat-cards';
@@ -71,6 +72,13 @@ import {
   type BadgeStyle,
   type LoadingStyle,
   type AgentMood,
+  type VideoMessageStyle,
+  type MessageTone,
+  type FileMessageStyle,
+  type ChatStatusTone,
+  type ChatInfoPanelStyle,
+  type ChatDateHeaderStyle,
+  type ChatBackgroundStyle,
   type AgentThinkingTone,
   type AgentThinkingStyle,
   type PlaybackTimes,
@@ -285,6 +293,11 @@ export interface ValueModifiers {
 
   // Chart cards (controls/chart-cards.tsx)
   activeTint: ColorToken;
+
+  // Chat (controls/chat.tsx)
+  bubbleTint: ColorToken;
+  contentTint: ColorToken;
+  placeholderTint: ColorToken;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -451,7 +464,12 @@ export type Modifier =
         | StatCardsVariant
         | PlayButtonStyle
         | PlaybackTimes
-        | AgentThinkingStyle;
+        | AgentThinkingStyle
+        | ChatBackgroundStyle
+        | ChatDateHeaderStyle
+        | ChatInfoPanelStyle
+        | FileMessageStyle
+        | VideoMessageStyle;
     }
   | {
       readonly kind: 'shape';
@@ -470,7 +488,9 @@ export type Modifier =
         | ComposerButtonTone
         | SparklineTone
         | AiChatLineTone
-        | AgentThinkingTone;
+        | AgentThinkingTone
+        | ChatStatusTone
+        | MessageTone;
     }
   | { readonly kind: 'count'; readonly key: string; readonly value: number | null | undefined }
   | { readonly kind: 'active'; readonly key: string; readonly value: boolean | undefined }
@@ -613,7 +633,8 @@ export type NodeKind =
   | AiChatKind
   | StatCardKind
   | MediaControlKind
-  | AgentKind;
+  | AgentKind
+  | ChatKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -940,7 +961,12 @@ export class Node {
       | StatCardsVariant
       | PlayButtonStyle
       | PlaybackTimes
-      | AgentThinkingStyle,
+      | AgentThinkingStyle
+      | ChatBackgroundStyle
+      | ChatDateHeaderStyle
+      | ChatInfoPanelStyle
+      | FileMessageStyle
+      | VideoMessageStyle,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
@@ -957,7 +983,9 @@ export class Node {
       | ComposerButtonTone
       | SparklineTone
       | AiChatLineTone
-      | AgentThinkingTone,
+      | AgentThinkingTone
+      | ChatStatusTone
+      | MessageTone,
   ): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
   }
@@ -1309,6 +1337,17 @@ export class Node {
   // Chart cards (controls/chart-cards.tsx)
   activeTint(value: ColorToken): Node {
     return this.set('activeTint', value);
+  }
+
+  // Chat (controls/chat.tsx)
+  bubbleTint(value: ColorToken): Node {
+    return this.set('bubbleTint', value);
+  }
+  contentTint(value: ColorToken): Node {
+    return this.set('contentTint', value);
+  }
+  placeholderTint(value: ColorToken): Node {
+    return this.set('placeholderTint', value);
   }
 }
 

@@ -43,3 +43,5 @@ export const Text = 'SkeletonText';
 export const Circle = 'SkeletonCircle';
 export const Pill = 'SkeletonPill';
 export const Box = 'SkeletonBox';
+export const StoryRing = 'StoryRing';
+export const TypingDots = 'TypingDots';

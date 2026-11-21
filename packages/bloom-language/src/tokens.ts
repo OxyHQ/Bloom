@@ -164,6 +164,13 @@ export type BadgePlacement = (typeof ENUMS.badgePlacement)[number];
 export type LoadingStyle = (typeof ENUMS.loadingStyle)[number];
 /** How an agent's character feels: Bloom `AgentAvatar`'s moods. */
 export type AgentMood = (typeof ENUMS.agentMood)[number];
+export type ChatBackgroundStyle = (typeof ENUMS.chatBackgroundStyle)[number];
+export type ChatDateHeaderStyle = (typeof ENUMS.chatDateHeaderStyle)[number];
+export type ChatInfoPanelStyle = (typeof ENUMS.chatInfoPanelStyle)[number];
+export type ChatStatusTone = (typeof ENUMS.chatStatusTone)[number];
+export type MessageTone = (typeof ENUMS.messageTone)[number];
+export type FileMessageStyle = (typeof ENUMS.fileMessageStyle)[number];
+export type VideoMessageStyle = (typeof ENUMS.videoMessageStyle)[number];
 export type AgentThinkingStyle = (typeof ENUMS.agentThinkingStyle)[number];
 export type AgentThinkingTone = (typeof ENUMS.agentThinkingTone)[number];
 export type PlayButtonSize = (typeof ENUMS.playButtonSize)[number];

@@ -668,3 +668,27 @@ fn the_agent_families_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_chat_families_are_checked() {
+    let imports = "import { ChatBackground, ChatDateHeader, ChatHeader, ChatInfoPanel, FileMessage, ImageMessage, SharedMediaGrid, TypingDots, VideoMessage, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (s) => VStack(ChatBackground().style('gradient').tint('primary/half'), ChatDateHeader('Today').style('inline'), ChatHeader('Ana').tint('accent'), ChatInfoPanel().style('screen'), FileMessage('a').style('compact').tint('outgoing').bubbleTint('primary').contentTint('onPrimary'), ImageMessage(s).placeholderTint('mutedFill'), SharedMediaGrid(s).columns(3).spacing('2xs'), TypingDots().tint('muted'), VideoMessage(s).style('videoNote'));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("ChatBackground().style('photo')", "Unknown chatBackgroundStyle token 'photo' for .style()"),
+        ("ChatDateHeader('a').style('sticky')", "Unknown chatDateHeaderStyle token 'sticky' for .style()"),
+        ("ChatHeader('a').tint('primary')", "Unknown chatStatusTone token 'primary' for .tint()"),
+        ("ChatInfoPanel().style('sheet')", "Unknown chatInfoPanelStyle token 'sheet' for .style()"),
+        ("FileMessage('a').tint('left')", "Unknown messageTone token 'left' for .tint()"),
+        ("FileMessage('a').style('card')", "Unknown fileMessageStyle token 'card' for .style()"),
+        ("VideoMessage(s).style('round')", "Unknown videoMessageStyle token 'round' for .style()"),
+        ("ImageMessage(s).bubbleTint('blue')", "Unknown color token 'blue' for .bubbleTint()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (s) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
