@@ -223,7 +223,53 @@
     "cornerExtra": ["concentric"],
     "cornerCurve": ["round", "smooth"],
     "dividerStyle": ["single", "double", "fill"],
-    "gridFlow": ["rows", "columns"]
+    "gridFlow": ["rows", "columns"],
+    "shapeName": [
+      "circle",
+      "squircle",
+      "square",
+      "slanted",
+      "arch",
+      "semicircle",
+      "oval",
+      "pill",
+      "triangle",
+      "arrow",
+      "fan",
+      "diamond",
+      "clamshell",
+      "pentagon",
+      "gem",
+      "very-sunny",
+      "sunny",
+      "4-sided-cookie",
+      "6-sided-cookie",
+      "7-sided-cookie",
+      "9-sided-cookie",
+      "12-sided-cookie",
+      "4-leaf-clover",
+      "8-leaf-clover",
+      "burst",
+      "soft-burst",
+      "boom",
+      "soft-boom",
+      "flower",
+      "puffy",
+      "puffy-diamond",
+      "ghost-ish",
+      "pixel-circle",
+      "pixel-triangle",
+      "bun",
+      "heart"
+    ],
+    "avatarColor": ["neutral", "blue", "lime", "pink"],
+    "presence": ["online", "idle", "busy", "offline"],
+    "avatarLayout": ["stack", "row", "cluster", "conversation"],
+    "avatarOverflow": ["count", "truncate"],
+    "badgeStyle": ["solid", "subtle", "outlined", "onMedia"],
+    "badgeSize": ["xs", "sm", "md", "lg", "label-small", "label-medium"],
+    "badgePlacement": ["top-right", "top-left", "bottom-right", "bottom-left"],
+    "loadingStyle": ["spinner", "top", "inline"]
   },
   "glass": {
     "$comment": [
@@ -297,8 +343,8 @@
     "onLoad": ["value"],
     "onError": ["value"],
     "size": ["size"],
-    "style": ["appearance"],
-    "shape": ["buttonShape"],
+    "style": ["style"],
+    "shape": ["shape"],
     "tint": ["tint"],
     "count": ["value"],
     "active": ["value"],
@@ -362,7 +408,22 @@
     "lineStyle": ["dividerStyle"],
     "columns": ["value"],
     "minCellWidth": ["space"],
-    "flow": ["gridFlow"]
+    "flow": ["gridFlow"],
+    "verified": ["value?"],
+    "live": ["value?"],
+    "liveBadge": ["value"],
+    "presence": ["presence"],
+    "dot": [],
+    "max": ["value"],
+    "placement": ["badgePlacement"],
+    "layout": ["avatarLayout"],
+    "total": ["value"],
+    "overflow": ["avatarOverflow"],
+    "initials": [],
+    "onPressItem": ["value"],
+    "hoverCard": ["value?"],
+    "pressScale": [],
+    "hoverHighlight": ["value?"]
   },
   "universal": [
     "padding",
@@ -383,11 +444,13 @@
     "onLongPress",
     "onHover",
     "hoverGroup",
+    "pressScale",
     "label",
     "hint",
     "role",
     "hitSlop",
     "testID",
+    "badge",
     "id",
     "title",
     "titleDisplay",
@@ -403,10 +466,10 @@
     "onReselect"
   ],
   "nodes": {
-    "$comment": "kind: { constructors, own modifiers beyond the universal ones (universal: false takes only its own), the scale size() and tint() read }",
+    "$comment": "kind: { constructors, own modifiers beyond the universal ones (universal: false takes only its own), the token sets its size(), tint(), style() and shape() read }",
     "stack": {
       "constructors": ["HStack", "VStack", "ZStack"],
-      "modifiers": ["spacing", "align"]
+      "modifiers": ["spacing", "align", "hoverHighlight"]
     },
     "spacer": {
       "constructors": ["Spacer"],
@@ -435,8 +498,54 @@
     },
     "avatar": {
       "constructors": ["Avatar"],
+      "modifiers": ["size", "tint", "shape", "verified", "live", "liveBadge", "presence"],
+      "size": "avatarSize",
+      "tint": "avatarColor",
+      "shape": "shapeName"
+    },
+    "avatarGroup": {
+      "constructors": ["AvatarGroup"],
+      "modifiers": [
+        "layout",
+        "size",
+        "shape",
+        "max",
+        "total",
+        "spacing",
+        "overflow",
+        "initials",
+        "onPressItem",
+        "hoverCard"
+      ],
+      "size": "avatarSize",
+      "shape": "shapeName"
+    },
+    "badge": {
+      "constructors": ["Badge"],
+      "modifiers": ["style", "tint", "size", "icon", "dot", "max", "placement"],
+      "style": "badgeStyle",
+      "tint": "tone",
+      "size": "badgeSize"
+    },
+    "iconCircle": {
+      "constructors": ["IconCircle"],
       "modifiers": ["size"],
-      "size": "avatarSize"
+      "size": "iconSize"
+    },
+    "loading": {
+      "constructors": ["Loading"],
+      "modifiers": ["style", "size", "tint"],
+      "style": "loadingStyle",
+      "size": "controlSize",
+      "tint": "tone"
+    },
+    "skeleton": {
+      "constructors": ["Skeleton"],
+      "modifiers": []
+    },
+    "skeletonGroup": {
+      "constructors": ["SkeletonGroup"],
+      "modifiers": []
     },
     "image": {
       "constructors": ["Image"],
@@ -459,13 +568,16 @@
       "constructors": ["Button"],
       "modifiers": ["style", "shape", "size", "tint", "disabled", "loading"],
       "size": "controlSize",
-      "tint": "tone"
+      "tint": "tone",
+      "style": "appearance",
+      "shape": "buttonShape"
     },
     "fab": {
       "constructors": ["FAB"],
       "modifiers": ["style", "size", "tint", "disabled", "collapsed"],
       "size": "controlSize",
-      "tint": "tone"
+      "tint": "tone",
+      "style": "appearance"
     },
     "menu": {
       "constructors": ["Menu"],

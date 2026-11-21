@@ -771,6 +771,13 @@ function renderHost(
     case 'route':
     case 'tabView':
       return null as unknown as ReactElement;
+    case 'avatarGroup':
+    case 'badge':
+    case 'iconCircle':
+    case 'loading':
+    case 'skeleton':
+    case 'skeletonGroup':
+      return null as unknown as ReactElement;
     case 'divider': {
       const tint = ownValue(p, 'tint')?.value as ColorName | undefined;
       const spacing = ownValue(p, 'spacing')?.value;

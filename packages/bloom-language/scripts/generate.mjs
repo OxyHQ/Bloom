@@ -304,13 +304,15 @@ const rust = `//! ${HEADER}
 //! the compiler never resolves a token, it only proves one is valid.
 
 /// A node kind: the constructors that make it, every modifier it takes, and the
-/// token sets its \`size()\` and \`tint()\` read.
+/// token sets its \`size()\`, \`tint()\`, \`style()\` and \`shape()\` read.
 pub struct NodeSpec {
     pub kind: &'static str,
     pub constructors: &'static [&'static str],
     pub modifiers: &'static [&'static str],
     pub size: Option<&'static str>,
     pub tint: Option<&'static str>,
+    pub style: Option<&'static str>,
+    pub shape: Option<&'static str>,
 }
 
 /// Token set name → its token names.
@@ -331,7 +333,7 @@ pub const NODES: &[NodeSpec] = &[
 ${Object.entries(nodes)
   .map(
     ([kind, node]) =>
-      `    NodeSpec { kind: ${rustStr(kind)}, constructors: ${rustList(node.constructors)}, modifiers: ${rustList(nodeModifiers[kind])}, size: ${rustOption(node.size)}, tint: ${rustOption(node.tint)} },`,
+      `    NodeSpec { kind: ${rustStr(kind)}, constructors: ${rustList(node.constructors)}, modifiers: ${rustList(nodeModifiers[kind])}, size: ${rustOption(node.size)}, tint: ${rustOption(node.tint)}, style: ${rustOption(node.style)}, shape: ${rustOption(node.shape)} },`,
   )
   .join('\n')}
 ];

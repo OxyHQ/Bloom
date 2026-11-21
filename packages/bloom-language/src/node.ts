@@ -15,6 +15,8 @@ import type { BottomBarProps } from '@oxy.so/bloom/bottom-bar';
 import type { PageHeaderProps } from '@oxy.so/bloom/page-header';
 import type { AppShellProps } from '@oxy.so/bloom/app-shell';
 import type { AccentTone } from '@oxy.so/bloom/theme';
+import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
+import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 
 import { regular, type GlassValue } from './glass';
 import {
@@ -27,7 +29,17 @@ import {
   type Edge,
   type Role,
   type ShrinkPriority,
+  type AvatarColor,
+  type AvatarLayout,
+  type AvatarOverflow,
   type AvatarSizeName,
+  type AvatarSizeToken,
+  type BadgePlacement,
+  type BadgeSize,
+  type BadgeStyle,
+  type LoadingStyle,
+  type Presence,
+  type ShapeName,
   type BorderWidthName,
   type ColorName,
   type CornerCurve,
@@ -36,6 +48,7 @@ import {
   type GridFlow,
   type FontName,
   type HitSlopName,
+  type IconSizeName,
   type IconSizeToken,
   type LeadingToken,
   type OpacityName,
@@ -138,7 +151,7 @@ export interface ValueModifiers {
   checked: boolean;
   keepOpen: true;
   title: string;
-  badge: number | undefined;
+  badge: number | ViewNode | undefined;
   activeIcon: IconComponent;
   selection: string;
   onSelect: (id: string) => void;
@@ -172,6 +185,21 @@ export interface ValueModifiers {
   strikethrough: true;
   textCase: TextCase;
   lineStyle: DividerStyle;
+  verified: boolean;
+  live: boolean;
+  liveBadge: boolean;
+  presence: Presence;
+  dot: true;
+  max: number;
+  placement: BadgePlacement;
+  layout: AvatarLayout;
+  total: number | undefined;
+  overflow: AvatarOverflow;
+  initials: true;
+  onPressItem: ((item: AvatarGroupItem, index: number) => void) | undefined;
+  hoverCard: boolean;
+  pressScale: true;
+  hoverHighlight: boolean | undefined;
   columns: number;
   minCellWidth: SpaceToken;
   flow: GridFlow;
@@ -235,14 +263,18 @@ export type Modifier =
   | {
       readonly kind: 'size';
       readonly key: string;
-      readonly value: IconSizeToken | AvatarSizeName | BloomSize;
+      readonly value: IconSizeToken | AvatarSizeToken | BloomSize | BadgeSize;
     }
-  | { readonly kind: 'style'; readonly key: string; readonly value: BloomAppearance }
-  | { readonly kind: 'shape'; readonly key: string; readonly value: ButtonShape }
+  | {
+      readonly kind: 'style';
+      readonly key: string;
+      readonly value: BloomAppearance | BadgeStyle | LoadingStyle;
+    }
+  | { readonly kind: 'shape'; readonly key: string; readonly value: ButtonShape | ShapeName }
   | {
       readonly kind: 'tint';
       readonly key: string;
-      readonly value: EngagementTone | BloomTone | ColorName;
+      readonly value: EngagementTone | BloomTone | ColorName | AvatarColor;
     }
   | { readonly kind: 'count'; readonly key: string; readonly value: number | null | undefined }
   | { readonly kind: 'active'; readonly key: string; readonly value: boolean | undefined }
@@ -312,6 +344,12 @@ export type NodeKind =
   | 'menuSubmenu'
   | 'menuSection'
   | 'divider'
+  | 'avatarGroup'
+  | 'badge'
+  | 'iconCircle'
+  | 'loading'
+  | 'skeleton'
+  | 'skeletonGroup'
   | 'fill'
   | 'ratio'
   | 'grid'
@@ -354,7 +392,26 @@ export interface AvatarProps {
 export interface AvatarOptions {
   /** Rendition requested for a bare file id (Bloom `Avatar`'s `variant`). */
   readonly variant?: string;
-  readonly account?: Record<string, unknown>;
+  /** The account it stands for: character, then image, then initials from its name. */
+  readonly account?: AvatarAccount;
+  /** The person's name: the initial and tint of the fallback disc. */
+  readonly name?: string;
+  /** Explicit initials for the fallback disc. */
+  readonly initials?: string;
+  /** An image to show when the source is missing or fails. */
+  readonly fallbackSource?: BloomAvatarProps['fallbackSource'];
+  /** An explicit character; `null` draws the image even for a bot. */
+  readonly character?: BloomAvatarProps['character'];
+}
+export interface AvatarGroupProps {
+  readonly items: readonly AvatarGroupItem[];
+}
+export interface BadgeProps {
+  readonly content: string | number | undefined;
+}
+export type SkeletonShape = 'text' | 'circle' | 'pill' | 'box';
+export interface SkeletonProps {
+  readonly shape: SkeletonShape;
 }
 export interface ImageProps {
   readonly source: BloomImageSource | null | undefined;
@@ -533,16 +590,16 @@ export class Node {
   onError(value: ImageErrorHandler | undefined): Node {
     return this.with({ kind: 'onError', key: 'onError', value });
   }
-  size(value: IconSizeToken | AvatarSizeName | BloomSize): Node {
+  size(value: IconSizeToken | AvatarSizeToken | BloomSize | BadgeSize): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
-  style(value: BloomAppearance): Node {
+  style(value: BloomAppearance | BadgeStyle | LoadingStyle): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
-  shape(value: ButtonShape): Node {
+  shape(value: ButtonShape | ShapeName): Node {
     return this.with({ kind: 'shape', key: `shape:${value}`, value });
   }
-  tint(value: EngagementTone | BloomTone | ColorName): Node {
+  tint(value: EngagementTone | BloomTone | ColorName | AvatarColor): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
   }
   count(value: number | null | undefined): Node {
@@ -626,7 +683,7 @@ export class Node {
   title(value: string): Node {
     return this.set('title', value);
   }
-  badge(value: number | undefined): Node {
+  badge(value: number | ViewNode | undefined): Node {
     return this.set('badge', value);
   }
   activeIcon(value: IconComponent): Node {
@@ -740,6 +797,51 @@ export class Node {
   flow(value: GridFlow): Node {
     return this.set('flow', value);
   }
+  verified(value = true): Node {
+    return this.set('verified', value);
+  }
+  live(value = true): Node {
+    return this.set('live', value);
+  }
+  liveBadge(value: boolean): Node {
+    return this.set('liveBadge', value);
+  }
+  presence(value: Presence): Node {
+    return this.set('presence', value);
+  }
+  dot(): Node {
+    return this.set('dot', true);
+  }
+  max(value: number): Node {
+    return this.set('max', value);
+  }
+  placement(value: BadgePlacement): Node {
+    return this.set('placement', value);
+  }
+  layout(value: AvatarLayout): Node {
+    return this.set('layout', value);
+  }
+  total(value: number | undefined): Node {
+    return this.set('total', value);
+  }
+  overflow(value: AvatarOverflow): Node {
+    return this.set('overflow', value);
+  }
+  initials(): Node {
+    return this.set('initials', true);
+  }
+  onPressItem(value: ((item: AvatarGroupItem, index: number) => void) | undefined): Node {
+    return this.set('onPressItem', value);
+  }
+  hoverCard(value = true): Node {
+    return this.set('hoverCard', value);
+  }
+  pressScale(): Node {
+    return this.set('pressScale', true);
+  }
+  hoverHighlight(value?: boolean): Node {
+    return this.set('hoverHighlight', value);
+  }
 }
 
 const FRAME_KEYS = ['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight'] as const;
@@ -783,11 +885,15 @@ export interface ViewModifiers<Self> extends ViewNode {
    * answer (Bloom `SubtleHover`). Native has no hover group; it does nothing.
    */
   hoverGroup(): Self;
+  /** A pressable view shrinks slightly under the finger (Bloom `PressableScale`). */
+  pressScale(): Self;
   label(value: string | undefined): Self;
   hint(value: string | undefined): Self;
   role(value: Role): Self;
   hitSlop(value: HitSlopName): Self;
   testID(value: string): Self;
+  /** A Bloom `Badge` attached to the view, at the badge's `placement` (the top right by default). */
+  badge(value: BadgeView): Self;
   id(value: string | number): Self;
   // The screen's chrome: read from the root of a router `screen()` body, nothing elsewhere.
   /** The screen's title: the navigation bar's on iOS, the page header's elsewhere. */
@@ -822,6 +928,11 @@ export interface ViewModifiers<Self> extends ViewNode {
 export interface StackView extends ViewModifiers<StackView> {
   spacing(value: SpaceToken | 'between'): StackView;
   align(value: Alignment): StackView;
+  /**
+   * Bloom's hover wash behind the stack (`SubtleHover`): under the pointer, on
+   * the web; or while `active` (a coordinated highlight), on every platform.
+   */
+  hoverHighlight(active?: boolean): StackView;
 }
 /**
  * Text, drawn by Bloom's `Text` (its type ramp, its families, its desktop
@@ -860,9 +971,72 @@ export interface TextView extends ViewModifiers<TextView> {
 export interface IconView extends ViewModifiers<IconView> {
   size(value: IconSizeToken): IconView;
 }
+/**
+ * Bloom `Avatar`: the image, else the account's character, else initials on a
+ * tinted disc. `.label()` is its `alt`.
+ */
 export interface AvatarView extends ViewModifiers<AvatarView> {
-  size(value: AvatarSizeName): AvatarView;
+  /** A rung (`xs` 20, `sm` 24, `md` 32, `lg` 36) or an app's own diameter; 40 with none. */
+  size(value: AvatarSizeToken): AvatarView;
+  /** The initials disc's tint; derived from the name when not set. */
+  tint(value: AvatarColor): AvatarView;
+  /** One of Bloom's silhouettes; the image and the fallback keep it. */
+  shape(value: ShapeName): AvatarView;
+  /** Bloom's verified mark in the corner. */
+  verified(value?: boolean): AvatarView;
+  /** Live-streaming: the live ring, and the LIVE pill unless `liveBadge(false)`. */
+  live(value?: boolean): AvatarView;
+  liveBadge(value: boolean): AvatarView;
+  /** A presence dot on its edge (Bloom `AvatarPresence`), sized from the avatar. */
+  presence(value: Presence): AvatarView;
 }
+/** Bloom `AvatarGroup`: a facepile, a row, a cluster or a conversation of avatars. */
+export interface AvatarGroupView extends ViewModifiers<AvatarGroupView> {
+  layout(value: AvatarLayout): AvatarGroupView;
+  /** Each avatar's diameter (a cluster's whole box); Bloom's default with none. */
+  size(value: AvatarSizeToken): AvatarGroupView;
+  shape(value: ShapeName): AvatarGroupView;
+  /** The most avatars before the `+N` chip. */
+  max(value: number): AvatarGroupView;
+  /** The real number of members, when more exist than the items given. */
+  total(value: number | undefined): AvatarGroupView;
+  /** The gap between avatars of a `row`. */
+  spacing(value: SpaceToken): AvatarGroupView;
+  overflow(value: AvatarOverflow): AvatarGroupView;
+  /** A member without an image shows its tinted initial, not the neutral placeholder. */
+  initials(): AvatarGroupView;
+  onPressItem(value: ((item: AvatarGroupItem, index: number) => void) | undefined): AvatarGroupView;
+  /** Web: hovering an avatar shows the member's card. */
+  hoverCard(value?: boolean): AvatarGroupView;
+}
+/** Bloom `Badge`: a count, a dot or a label; attached to a view with `.badge(Badge(…))`. */
+export interface BadgeView extends ViewModifiers<BadgeView> {
+  style(value: BadgeStyle): BadgeView;
+  tint(value: BloomTone): BadgeView;
+  size(value: BadgeSize): BadgeView;
+  /** A glyph before the label, at the rung's size, in the label's ink. */
+  icon(value: IconComponent): BadgeView;
+  /** A dot without content: a status dot alone, a marker when attached. */
+  dot(): BadgeView;
+  /** Counts above it read `{max}+`. */
+  max(value: number): BadgeView;
+  /** Where an attached badge sits on its view. */
+  placement(value: BadgePlacement): BadgeView;
+}
+/** Bloom `IconCircle`: an icon on a tinted disc. */
+export interface IconCircleView extends ViewModifiers<IconCircleView> {
+  size(value: IconSizeName): IconCircleView;
+}
+/** Bloom `Loading`: a spinner, the top bar, or an inline line beside its `Text`. */
+export interface LoadingView extends ViewModifiers<LoadingView> {
+  style(value: LoadingStyle): LoadingView;
+  size(value: BloomSize): LoadingView;
+  tint(value: BloomTone): LoadingView;
+}
+/** A Bloom skeleton shape: `text`, `circle`, `pill` or `box`, sized by its frame (a text's by its font). */
+export type SkeletonView = ViewModifiers<SkeletonView>;
+/** Bloom `Skeleton.Region`: what is loading, named once for assistive technology (`.label()`). */
+export type SkeletonGroupView = ViewModifiers<SkeletonGroupView>;
 /**
  * A raster image. It is sized like any view (`frame`, or one side and
  * `aspectRatio`) and clipped by `corner`; it has no intrinsic size until it loads.
