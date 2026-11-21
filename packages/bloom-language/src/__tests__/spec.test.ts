@@ -115,10 +115,14 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
 
   it('each colour role names the theme colour Bloom builds from its CSS variable', () => {
     // build-theme.ts: `textSecondary: g('muted-foreground')`: the ThemeColors key
-    // and the canonical variable the web reads are one pair.
+    // and the canonical variable the web reads are one pair. A fixed colour
+    // (`white: '#ffffff'`) is the same literal on both sides.
     const theme = read('theme/build-theme.ts');
-    for (const { paint, css } of Object.values(COLORS)) {
-      expect(theme).toMatch(new RegExp(`\\n\\s+${paint}: g\\('${css}'\\),`));
+    for (const { paint, web } of Object.values(COLORS)) {
+      const variable = /^var\(--([\w-]+)\)$/.exec(web)?.[1];
+      expect(theme).toMatch(
+        new RegExp(`\\n\\s+${paint}: ${variable ? `g\\('${variable}'\\)` : `'${web}'`},`),
+      );
     }
   });
 

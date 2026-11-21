@@ -353,6 +353,43 @@ const named: ParityCase[] = [
       bloom: () => <RN.View style={{ width: value, height: value, marginTop: -value }} />,
     },
   ]),
+  // A fill and a border at a named opacity (`bg-primary/10`, `border-border/60`).
+  {
+    name: 'a fill and a border at a named opacity',
+    language: () => toElement(L.VStack().background('primary/faint').border('border/dim', 'thin')),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RN.View
+            style={
+              RN.Platform.OS === 'web'
+                ? {
+                    backgroundColor: 'color-mix(in oklab, var(--primary) 10%, transparent)',
+                    borderWidth: 1,
+                    borderColor: 'color-mix(in oklab, var(--border) 60%, transparent)',
+                  }
+                : {
+                    backgroundColor: withAlpha(c.primary, 0.1),
+                    borderWidth: 1,
+                    borderColor: withAlpha(c.border, 0.6),
+                  }
+            }
+          />
+        )}
+      </Themed>
+    ),
+  },
+  ...(
+    [
+      ['pale', 0.2],
+      ['hazy', 0.4],
+      ['dim', 0.6],
+    ] as const
+  ).map(([name, value]) => ({
+    name: `opacity ${name}`,
+    language: () => toElement(L.VStack().opacity(name)),
+    bloom: () => <RN.View style={{ opacity: value }} />,
+  })),
   {
     name: 'corner xs-sm (rounded-md)',
     language: () => toElement(L.VStack().corner('xs-sm')),

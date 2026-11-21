@@ -42,6 +42,7 @@ import {
   type ShapeName,
   type BorderWidthName,
   type ColorName,
+  type ColorToken,
   type CornerCurve,
   type CornerName,
   type DividerStyle,
@@ -232,11 +233,11 @@ export type Modifier =
   | { readonly kind: 'frame'; readonly key: string; readonly value: FrameSpec }
   | { readonly kind: 'grow'; readonly key: string }
   | { readonly kind: 'shrink'; readonly key: string; readonly value: ShrinkPriority }
-  | { readonly kind: 'background'; readonly key: string; readonly value: ColorName }
+  | { readonly kind: 'background'; readonly key: string; readonly value: ColorToken }
   | {
       readonly kind: 'border';
       readonly key: string;
-      readonly value: ColorName;
+      readonly value: ColorToken;
       readonly width: BorderWidthName;
       readonly edge: BorderEdge;
     }
@@ -245,7 +246,7 @@ export type Modifier =
   | { readonly kind: 'opacity'; readonly key: string; readonly value: OpacityName }
   | { readonly kind: 'glass'; readonly key: string; readonly value: GlassValue }
   | { readonly kind: 'blur'; readonly key: string }
-  | { readonly kind: 'foreground'; readonly key: string; readonly value: ColorName }
+  | { readonly kind: 'foreground'; readonly key: string; readonly value: ColorToken }
   | { readonly kind: 'font'; readonly key: string; readonly value: FontName }
   | { readonly kind: 'weight'; readonly key: string; readonly value: WeightName }
   | { readonly kind: 'leading'; readonly key: string; readonly value: LeadingToken }
@@ -535,10 +536,10 @@ export class Node {
   shrink(value: ShrinkPriority): Node {
     return this.with({ kind: 'shrink', key: `shrink:${value}`, value });
   }
-  background(value: ColorName): Node {
+  background(value: ColorToken): Node {
     return this.with({ kind: 'background', key: `bg:${value}`, value });
   }
-  border(value: ColorName, width: BorderWidthName = 'hairline', edge: BorderEdge = 'all'): Node {
+  border(value: ColorToken, width: BorderWidthName = 'hairline', edge: BorderEdge = 'all'): Node {
     return this.with({ kind: 'border', key: `b:${value}:${width}:${edge}`, value, width, edge });
   }
   corner(value: CornerName): Node {
@@ -556,7 +557,7 @@ export class Node {
   blur(): Node {
     return this.with({ kind: 'blur', key: 'blur' });
   }
-  foreground(value: ColorName): Node {
+  foreground(value: ColorToken): Node {
     return this.with({ kind: 'foreground', key: `fg:${value}`, value });
   }
   font(value: FontName): Node {
@@ -864,8 +865,9 @@ export interface ViewModifiers<Self> extends ViewNode {
   /** Takes the free space along its parent's axis. */
   grow(): Self;
   shrink(value: ShrinkPriority): Self;
-  background(value: ColorName): Self;
-  border(value: ColorName, width?: BorderWidthName, edge?: BorderEdge): Self;
+  /** A fill: a colour role, or a role at a named opacity (`'primary/faint'`). */
+  background(value: ColorToken): Self;
+  border(value: ColorToken, width?: BorderWidthName, edge?: BorderEdge): Self;
   /**
    * Rounds the box: a radius rung, `full`, or `concentric` (the radius of the
    * shape it sits in, less the inset between them: a glass's, another
@@ -886,8 +888,8 @@ export interface ViewModifiers<Self> extends ViewNode {
    * `corner` names its radius.
    */
   blur(): Self;
-  /** Text and icon colour for this view and everything inside it. */
-  foreground(value: ColorName): Self;
+  /** Text and icon colour for this view and everything inside it; a role, or a role at a named opacity (`'muted/faded'`). */
+  foreground(value: ColorToken): Self;
   font(value: FontName): Self;
   weight(value: WeightName): Self;
   leading(value: LeadingToken): Self;

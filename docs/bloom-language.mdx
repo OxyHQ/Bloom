@@ -199,6 +199,21 @@ families (Inter, the display face for titles), its desktop scale under a
 
 ## Modifiers
 
+**Colours.** A role is a theme colour on native and its canonical CSS
+variable on the web. `mutedFill` is `--muted` (the subtle fill of `bg-muted`;
+`muted` stays the quiet ink, `--muted-foreground`), `card` is `--card`,
+`destructive` is `--destructive` (Bloom's `ThemeColors.destructive`, which
+the engine's error role fills; `error` is the policy's status colour),
+`primaryText` is `--primary-text`, and `white` and `black` are Tailwind's
+fixed `#ffffff` and `#000000` (Bloom's `ThemeColors.white` and `black`, the
+same in every theme). A role at an opacity is one token, `'role/opacity'`,
+with an `opacity` rung for the amount: `text-muted-foreground/70` is
+`.foreground('muted/faded')`, `bg-primary/10` `.background('primary/faint')`.
+Native paints the role's colour at that alpha; the web writes the mix
+Tailwind writes for the class (`color-mix(in oklab, var(--muted-foreground)
+70%, transparent)`), inline, as no class exists for each pair; an icon's fill
+is painted at that alpha from the theme.
+
 **Steps between rungs.** Where apps render a value between two of Bloom's
 rungs today (Tailwind's `p-1.5`, `text-base`, `rounded-md`), the step is a
 rung named by both neighbours: `xs-sm` is 6, between `xs` 4 and `sm` 8. Bloom
@@ -222,10 +237,10 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `font(f)` | a Bloom type-ramp step (`body`, `headline`, `caption-1`…: size, line height and tracking, as `Text variant`) or a size rung (`2xs-xs` 11, `sm` 13, `md` 15, `md-lg` 16, `lg-xl` 18…) |
 | `weight(w)` | `light` `regular` `medium` `semibold` `bold` `extrabold` |
 | `leading(l)` | Bloom line heights `tight` 1.15, `close` 1.25, `snug` 1.3, `easy` 1.375, `normal` 1.5, `open` (28 on 18), `relaxed` 1.625 |
-| `foreground(c)`, `background(c)` | colour roles: `foreground` `muted` `primary` `surface` `border` `error` `success`… |
-| `border(c, width?, edge?)` | colour role; `hairline` (the platform hairline) or `thin` |
+| `foreground(c)`, `background(c)` | colour roles: `foreground` `muted` `primary` `surface` `card` `mutedFill` `border` `error` `destructive` `primaryText` `white` `black`…, or a role at a named opacity (`'muted/faded'`) |
+| `border(c, width?, edge?)` | colour role (or a role at an opacity); `hairline` (the platform hairline), `thin` or `thick` |
 | `corner(r)`, `cornerCurve(c)` | radius rungs (`xs-sm` 6 among them), `full`, `concentric`; `round` `smooth` (see [Material](#material)) |
-| `opacity(o)` | `transparent` `disabled` `opaque` |
+| `opacity(o)` | `transparent` 0, `faint` 0.1, `pale` 0.2, `sheer` 0.3, `hazy` 0.4, `disabled` 0.5, `dim` 0.6, `faded` 0.7, `soft` 0.8, `opaque` 1 |
 | `size(s)` | icon rungs, avatar rungs, or Bloom sizes, by node |
 | `style(a)` / `shape(s)` / `tint(t)` | Bloom appearance / `circle` `pill` / Bloom tone |
 | `glass(material?)` | `regular`, `clear`, `.tint(role, 'subtle' \| 'medium' \| 'strong'?)` |
@@ -814,10 +829,10 @@ the owner's decision, or an app's `defineTokens`) before a codemod moves it.
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 542 | 38889 | 72.4% |
+| Maps to a modifier and a token | 629 | 40689 | 75.7% |
 | Expressed by the view’s structure | 35 | 3445 | 6.4% |
 | Redundant in the language | 16 | 436 | 0.8% |
-| Needs a named token (raw value) | 580 | 4542 | 8.5% |
+| Needs a named token (raw value) | 493 | 2742 | 5.1% |
 | Needs a modifier the language lacks | 266 | 4574 | 8.5% |
 | An app’s own class | 481 | 1834 | 3.4% |
 
@@ -826,12 +841,12 @@ with no rung, by scale (the owner names each as a token or keeps it out):
 
 | Scale | Uses | Raw values with no rung (uses) |
 | --- | ---: | --- |
-| color | 1644 | --muted (338), --card (276), --destructive (254), white (201), --primary-text (106), black (77), transparent (63), --surface-foreground (36), --accent (33), --error-text (25), --primary-subtle (20), --warning-text (19) |
 | space | 1189 | 1px (91), 28px (86), 44px (85), 56px (68), 96px (63), 224px (59), 160px (55), 192px (43), 384px (34), 288px (31), 1200px (29), 80px (28) |
-| opacity | 669 | --muted-foreground at 70% (178), --primary at 10% (95), --destructive at 10% (32), --border at 60% (30), 0.6 (30), --muted at 40% (28), --muted at 50% (19), --primary at 20% (19), --primary at 30% (17), 0.9 (16), --muted at 30% (15), --border at 50% (11) |
 | font | 482 | 11px / 14px (104), 20px / 28px (92), 24px / 32px (90), 14px (64), 15px / 22px (27), 30px / 36px (22), 36px / 40px (12), 24px (12), 10.5px (8), 28px (7), 12.5px (5), 23px (5) |
+| color | 392 | transparent (63), --surface-foreground (36), --accent (33), --error-text (25), --primary-subtle (20), --warning-text (19), --sidebar-foreground (14), green-500 (12), --sidebar-border (12), red-500 (10), --sidebar-accent (9), red-400 (9) |
 | leading | 321 | 20px (93), 24px (70), 16px (44), 18px (28), 28px (18), 1 (15), 22px (14), 14px (6), 29px (6), 17px (5), 40px (3), 32px (3) |
 | tracking | 150 | 0.05em (61), 0.025em (50), -0.025em (17), -0.02em (5), 0.1em (4), -0.01em (3), -0.5px (2), 0.04em (2), 0.5px (2), -0.2px (1), -0.4px (1), 1.5px (1) |
+| opacity | 121 | 0.9 (16), --foreground at 5% (7), black at [0.04]% (7), white at [0.06]% (6), --primary at 5% (5), --warning-text at 40% (5), white at 90% (4), white at 15% (4), white at 25% (4), --background at 90% (3), black at 25% (3), --primary at 15% (3) |
 | corner | 80 | 22px (14), 14px (12), 10px (9), 18px (9), 15px (8), 23px (6), 5px (4), 13px (3), 27px (3), 25px (2), 26px (2), 3px (2) |
 | borderWidth | 6 | 4px (6) |
 | weight | 1 | 900 (1) |

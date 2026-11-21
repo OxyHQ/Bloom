@@ -13,7 +13,7 @@ import type { ColorName } from './tokens';
  */
 export interface Paint {
   readonly style: object | undefined;
-  readonly styleRoles: readonly (readonly [string, ColorName])[];
+  readonly styleRoles: readonly (readonly [string, ColorName, number?])[];
   readonly propRoles: readonly (readonly [string, ColorName, number?])[];
 }
 
@@ -42,7 +42,10 @@ function paintProps(colors: ThemeColors, paint: Paint): Record<string, unknown> 
     props = {};
     if (paint.styleRoles.length > 0) {
       const style: Record<string, unknown> = { ...paint.style };
-      for (const [key, role] of paint.styleRoles) style[key] = colors[COLORS[role].paint];
+      for (const [key, role, opacity] of paint.styleRoles) {
+        const color = colors[COLORS[role].paint];
+        style[key] = opacity === undefined ? color : atOpacity(color, opacity);
+      }
       props.style = Object.freeze(style);
     } else if (paint.style !== undefined) {
       props.style = paint.style;

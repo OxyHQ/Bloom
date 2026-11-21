@@ -184,10 +184,8 @@
   "bg-muted": {
    "count": 331,
    "apps": 17,
-   "status": "token",
-   "scale": "color",
-   "value": "--muted",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('mutedFill')"
   },
   "font-bold": {
    "count": 314,
@@ -234,10 +232,8 @@
   "bg-card": {
    "count": 264,
    "apps": 17,
-   "status": "token",
-   "scale": "color",
-   "value": "--card",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('card')"
   },
   "text-[13px]": {
    "count": 258,
@@ -260,10 +256,8 @@
   "text-destructive": {
    "count": 239,
    "apps": 15,
-   "status": "token",
-   "scale": "color",
-   "value": "--destructive",
-   "language": ".foreground(…)"
+   "status": "mapped",
+   "language": ".foreground('destructive')"
   },
   "text-shop-caption": {
    "count": 228,
@@ -340,10 +334,8 @@
   "text-muted-foreground/70": {
    "count": 178,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--muted-foreground at 70%",
-   "language": ".foreground('muted')"
+   "status": "mapped",
+   "language": ".foreground('muted/faded')"
   },
   "items-start": {
    "count": 177,
@@ -504,10 +496,8 @@
   "text-primary-text": {
    "count": 106,
    "apps": 3,
-   "status": "token",
-   "scale": "color",
-   "value": "--primary-text",
-   "language": ".foreground(…)"
+   "status": "mapped",
+   "language": ".foreground('primaryText')"
   },
   "mb-1": {
    "count": 103,
@@ -554,10 +544,8 @@
   "bg-primary/10": {
    "count": 95,
    "apps": 12,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--primary at 10%",
-   "language": ".background('primary')"
+   "status": "mapped",
+   "language": ".background('primary/faint')"
   },
   "mx-auto": {
    "count": 95,
@@ -604,10 +592,8 @@
   "text-white": {
    "count": 89,
    "apps": 13,
-   "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".foreground(…)"
+   "status": "mapped",
+   "language": ".foreground('white')"
   },
   "py-16": {
    "count": 88,
@@ -948,10 +934,8 @@
   "bg-white": {
    "count": 44,
    "apps": 8,
-   "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('white')"
   },
   "mb-8": {
    "count": 44,
@@ -1226,10 +1210,8 @@
   "bg-destructive/10": {
    "count": 32,
    "apps": 8,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--destructive at 10%",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('destructive/faint')"
   },
   "mb-1.5": {
    "count": 32,
@@ -1302,10 +1284,8 @@
   "border-border/60": {
    "count": 30,
    "apps": 2,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--border at 60%",
-   "language": ".border('border')"
+   "status": "mapped",
+   "language": ".border('border/dim')"
   },
   "ml-3": {
    "count": 30,
@@ -1316,10 +1296,8 @@
   "opacity-60": {
    "count": 30,
    "apps": 9,
-   "status": "token",
-   "scale": "opacity",
-   "value": "0.6",
-   "language": ".opacity(…)"
+   "status": "mapped",
+   "language": ".opacity('dim')"
   },
   "w-8": {
    "count": 30,
@@ -1362,10 +1340,8 @@
   "bg-muted/40": {
    "count": 28,
    "apps": 5,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--muted at 40%",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('mutedFill/hazy')"
   },
   "bg-willo-surface": {
    "count": 28,
@@ -1718,10 +1694,8 @@
   "bg-muted/50": {
    "count": 19,
    "apps": 5,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--muted at 50%",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('mutedFill/disabled')"
   },
   "inset-x-0": {
    "count": 19,
@@ -1766,18 +1740,14 @@
   "bg-black/60": {
    "count": 18,
    "apps": 5,
-   "status": "token",
-   "scale": "color",
-   "value": "black",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('black/dim')"
   },
   "bg-primary/20": {
    "count": 18,
    "apps": 5,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--primary at 20%",
-   "language": ".background('primary')"
+   "status": "mapped",
+   "language": ".background('primary/pale')"
   },
   "flex-shrink": {
    "count": 18,
@@ -1806,10 +1776,8 @@
   "border-primary/30": {
    "count": 17,
    "apps": 3,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--primary at 30%",
-   "language": ".border('primary')"
+   "status": "mapped",
+   "language": ".border('primary/sheer')"
   },
   "h-1.5": {
    "count": 17,
@@ -1980,18 +1948,14 @@
   "bg-muted/30": {
    "count": 15,
    "apps": 4,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--muted at 30%",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('mutedFill/sheer')"
   },
   "border-destructive": {
    "count": 15,
    "apps": 6,
-   "status": "token",
-   "scale": "color",
-   "value": "--destructive",
-   "language": ".border(…)"
+   "status": "mapped",
+   "language": ".border('destructive')"
   },
   "font-normal": {
    "count": 15,
@@ -2406,10 +2370,8 @@
   "border-border/50": {
    "count": 11,
    "apps": 2,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--border at 50%",
-   "language": ".border('border')"
+   "status": "mapped",
+   "language": ".border('border/disabled')"
   },
   "border-l": {
    "count": 11,
@@ -2574,10 +2536,8 @@
   "bg-fill": {
    "count": 10,
    "apps": 2,
-   "status": "token",
-   "scale": "color",
-   "value": "--card",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('card')"
   },
   "bg-sidebar-border": {
    "count": 10,
@@ -2590,18 +2550,14 @@
   "bg-white/10": {
    "count": 10,
    "apps": 4,
-   "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('white/faint')"
   },
   "border-destructive/50": {
    "count": 10,
    "apps": 2,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--destructive at 50%",
-   "language": ".border(…)"
+   "status": "mapped",
+   "language": ".border('destructive/disabled')"
   },
   "break-all": {
    "count": 10,
@@ -2726,10 +2682,8 @@
   "bg-input/30": {
    "count": 9,
    "apps": 3,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--input at 30%",
-   "language": ".background('input')"
+   "status": "mapped",
+   "language": ".background('input/sheer')"
   },
   "bg-sidebar-accent": {
    "count": 9,
@@ -2742,10 +2696,8 @@
   "border-border/40": {
    "count": 9,
    "apps": 2,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--border at 40%",
-   "language": ".border('border')"
+   "status": "mapped",
+   "language": ".border('border/hazy')"
   },
   "duration-200": {
    "count": 9,
@@ -2972,10 +2924,8 @@
   "bg-black": {
    "count": 8,
    "apps": 8,
-   "status": "token",
-   "scale": "color",
-   "value": "black",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('black')"
   },
   "bg-sidebar": {
    "count": 8,
@@ -2994,10 +2944,8 @@
   "border-destructive/40": {
    "count": 8,
    "apps": 3,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--destructive at 40%",
-   "language": ".border(…)"
+   "status": "mapped",
+   "language": ".border('destructive/hazy')"
   },
   "border-ring": {
    "count": 8,
@@ -3072,10 +3020,8 @@
   "opacity-40": {
    "count": 8,
    "apps": 5,
-   "status": "token",
-   "scale": "opacity",
-   "value": "0.4",
-   "language": ".opacity(…)"
+   "status": "mapped",
+   "language": ".opacity('hazy')"
   },
   "p-space-20": {
    "count": 8,
@@ -3270,18 +3216,14 @@
   "bg-background/80": {
    "count": 7,
    "apps": 5,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--background at 80%",
-   "language": ".background('background')"
+   "status": "mapped",
+   "language": ".background('background/soft')"
   },
   "bg-black/50": {
    "count": 7,
    "apps": 7,
-   "status": "token",
-   "scale": "color",
-   "value": "black",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('black/disabled')"
   },
   "bg-foreground/5": {
    "count": 7,
@@ -3289,7 +3231,7 @@
    "status": "token",
    "scale": "opacity",
    "value": "--foreground at 5%",
-   "language": ".background('foreground')"
+   "language": ".background('foreground/…')"
   },
   "border-l-2": {
    "count": 7,
@@ -3539,9 +3481,9 @@
    "count": 6,
    "apps": 1,
    "status": "token",
-   "scale": "color",
-   "value": "black",
-   "language": ".background(…)"
+   "scale": "opacity",
+   "value": "black at [0.04]%",
+   "language": ".background('black/…')"
   },
   "bg-error-subtle": {
    "count": 6,
@@ -3554,18 +3496,14 @@
   "bg-input/50": {
    "count": 6,
    "apps": 2,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--input at 50%",
-   "language": ".background('input')"
+   "status": "mapped",
+   "language": ".background('input/disabled')"
   },
   "bg-input/80": {
    "count": 6,
    "apps": 2,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--input at 80%",
-   "language": ".background('input')"
+   "status": "mapped",
+   "language": ".background('input/soft')"
   },
   "border-[1.5px]": {
    "count": 6,
@@ -3850,18 +3788,14 @@
   "text-black": {
    "count": 6,
    "apps": 2,
-   "status": "token",
-   "scale": "color",
-   "value": "black",
-   "language": ".foreground(…)"
+   "status": "mapped",
+   "language": ".foreground('black')"
   },
   "text-foreground/80": {
    "count": 6,
    "apps": 3,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--foreground at 80%",
-   "language": ".foreground('foreground')"
+   "status": "mapped",
+   "language": ".foreground('foreground/soft')"
   },
   "text-info-text": {
    "count": 6,
@@ -3916,34 +3850,26 @@
   "bg-card/50": {
    "count": 5,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--card at 50%",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('card/disabled')"
   },
   "bg-fill-secondary": {
    "count": 5,
    "apps": 2,
-   "status": "token",
-   "scale": "color",
-   "value": "--muted",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('mutedFill')"
   },
   "bg-foreground/10": {
    "count": 5,
    "apps": 3,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--foreground at 10%",
-   "language": ".background('foreground')"
+   "status": "mapped",
+   "language": ".background('foreground/faint')"
   },
   "bg-muted/60": {
    "count": 5,
    "apps": 3,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--muted at 60%",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('mutedFill/dim')"
   },
   "bg-primary/5": {
    "count": 5,
@@ -3951,15 +3877,15 @@
    "status": "token",
    "scale": "opacity",
    "value": "--primary at 5%",
-   "language": ".background('primary')"
+   "language": ".background('primary/…')"
   },
   "bg-white/[0.06]": {
    "count": 5,
    "apps": 1,
    "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".background(…)"
+   "scale": "opacity",
+   "value": "white at [0.06]%",
+   "language": ".background('white/…')"
   },
   "border-[var(--vscode-panel-border)]": {
    "count": 5,
@@ -4326,10 +4252,8 @@
   "text-destructive/80": {
    "count": 5,
    "apps": 2,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--destructive at 80%",
-   "language": ".foreground(…)"
+   "status": "mapped",
+   "language": ".foreground('destructive/soft')"
   },
   "text-popover-foreground": {
    "count": 5,
@@ -4362,10 +4286,8 @@
   "text-white/70": {
    "count": 5,
    "apps": 3,
-   "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".foreground(…)"
+   "status": "mapped",
+   "language": ".foreground('white/faded')"
   },
   "text-willo-on-peach": {
    "count": 5,
@@ -4474,10 +4396,8 @@
   "bg-black/30": {
    "count": 4,
    "apps": 3,
-   "status": "token",
-   "scale": "color",
-   "value": "black",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('black/sheer')"
   },
   "bg-warning-subtle": {
    "count": 4,
@@ -4490,10 +4410,8 @@
   "bg-white/20": {
    "count": 4,
    "apps": 2,
-   "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('white/pale')"
   },
   "border-4": {
    "count": 4,
@@ -4506,10 +4424,8 @@
   "border-black/10": {
    "count": 4,
    "apps": 1,
-   "status": "token",
-   "scale": "color",
-   "value": "black",
-   "language": ".border(…)"
+   "status": "mapped",
+   "language": ".border('black/faint')"
   },
   "border-surface": {
    "count": 4,
@@ -4923,9 +4839,9 @@
    "count": 4,
    "apps": 3,
    "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".foreground(…)"
+   "scale": "opacity",
+   "value": "white at 90%",
+   "language": ".foreground('white/…')"
   },
   "tracking-widest": {
    "count": 4,
@@ -5083,39 +4999,33 @@
    "status": "token",
    "scale": "opacity",
    "value": "--background at 90%",
-   "language": ".background('background')"
+   "language": ".background('background/…')"
   },
   "bg-black/10": {
    "count": 3,
    "apps": 1,
-   "status": "token",
-   "scale": "color",
-   "value": "black",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('black/faint')"
   },
   "bg-black/25": {
    "count": 3,
    "apps": 1,
    "status": "token",
-   "scale": "color",
-   "value": "black",
-   "language": ".background(…)"
+   "scale": "opacity",
+   "value": "black at 25%",
+   "language": ".background('black/…')"
   },
   "bg-black/70": {
    "count": 3,
    "apps": 1,
-   "status": "token",
-   "scale": "color",
-   "value": "black",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('black/faded')"
   },
   "bg-card/60": {
    "count": 3,
    "apps": 2,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--card at 60%",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('card/dim')"
   },
   "bg-error": {
    "count": 3,
@@ -5138,10 +5048,8 @@
   "bg-muted/20": {
    "count": 3,
    "apps": 2,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--muted at 20%",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('mutedFill/pale')"
   },
   "bg-primary-foreground": {
    "count": 3,
@@ -5155,7 +5063,7 @@
    "status": "token",
    "scale": "opacity",
    "value": "--primary at 15%",
-   "language": ".background('primary')"
+   "language": ".background('primary/…')"
   },
   "bg-surface/25": {
    "count": 3,
@@ -5163,7 +5071,7 @@
    "status": "token",
    "scale": "opacity",
    "value": "--surface at 25%",
-   "language": ".background('surface')"
+   "language": ".background('surface/…')"
   },
   "bg-willo-faint": {
    "count": 3,
@@ -5199,25 +5107,23 @@
    "count": 3,
    "apps": 1,
    "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".border(…)"
+   "scale": "opacity",
+   "value": "white at 15%",
+   "language": ".border('white/…')"
   },
   "border-white/25": {
    "count": 3,
    "apps": 1,
    "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".border(…)"
+   "scale": "opacity",
+   "value": "white at 25%",
+   "language": ".border('white/…')"
   },
   "border-white/30": {
    "count": 3,
    "apps": 1,
-   "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".border(…)"
+   "status": "mapped",
+   "language": ".border('white/sheer')"
   },
   "border-y": {
    "count": 3,
@@ -5954,10 +5860,8 @@
   "text-foreground/60": {
    "count": 3,
    "apps": 2,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--foreground at 60%",
-   "language": ".foreground('foreground')"
+   "status": "mapped",
+   "language": ".foreground('foreground/dim')"
   },
   "text-tertiary-text": {
    "count": 3,
@@ -5971,17 +5875,17 @@
    "count": 3,
    "apps": 2,
    "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".foreground(…)"
+   "scale": "opacity",
+   "value": "white at 75%",
+   "language": ".foreground('white/…')"
   },
   "text-white/85": {
    "count": 3,
    "apps": 3,
    "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".foreground(…)"
+   "scale": "opacity",
+   "value": "white at 85%",
+   "language": ".foreground('white/…')"
   },
   "text-willo-on-blue": {
    "count": 3,
@@ -6236,10 +6140,8 @@
   "bg-background/50": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--background at 50%",
-   "language": ".background('background')"
+   "status": "mapped",
+   "language": ".background('background/disabled')"
   },
   "bg-background/85": {
    "count": 2,
@@ -6247,7 +6149,7 @@
    "status": "token",
    "scale": "opacity",
    "value": "--background at 85%",
-   "language": ".background('background')"
+   "language": ".background('background/…')"
   },
   "bg-bad/12": {
    "count": 2,
@@ -6270,26 +6172,24 @@
   "bg-black/40": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "color",
-   "value": "black",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('black/hazy')"
   },
   "bg-black/[0.025]": {
    "count": 2,
    "apps": 1,
    "status": "token",
-   "scale": "color",
-   "value": "black",
-   "language": ".background(…)"
+   "scale": "opacity",
+   "value": "black at [0.025]%",
+   "language": ".background('black/…')"
   },
   "bg-black/[0.07]": {
    "count": 2,
    "apps": 2,
    "status": "token",
-   "scale": "color",
-   "value": "black",
-   "language": ".background(…)"
+   "scale": "opacity",
+   "value": "black at [0.07]%",
+   "language": ".background('black/…')"
   },
   "bg-card/90": {
    "count": 2,
@@ -6297,7 +6197,7 @@
    "status": "token",
    "scale": "opacity",
    "value": "--card at 90%",
-   "language": ".background(…)"
+   "language": ".background('card/…')"
   },
   "bg-clip-padding": {
    "count": 2,
@@ -6330,10 +6230,8 @@
   "bg-primary/60": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--primary at 60%",
-   "language": ".background('primary')"
+   "status": "mapped",
+   "language": ".background('primary/dim')"
   },
   "bg-surface-secondary": {
    "count": 2,
@@ -6364,34 +6262,32 @@
   "bg-white/30": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('white/sheer')"
   },
   "bg-white/5": {
    "count": 2,
    "apps": 2,
    "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".background(…)"
+   "scale": "opacity",
+   "value": "white at 5%",
+   "language": ".background('white/…')"
   },
   "bg-white/[0.02]": {
    "count": 2,
    "apps": 1,
    "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".background(…)"
+   "scale": "opacity",
+   "value": "white at [0.02]%",
+   "language": ".background('white/…')"
   },
   "bg-white/[0.07]": {
    "count": 2,
    "apps": 1,
    "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".background(…)"
+   "scale": "opacity",
+   "value": "white at [0.07]%",
+   "language": ".background('white/…')"
   },
   "bg-willo-peach-strong": {
    "count": 2,
@@ -6478,10 +6374,8 @@
   "border-border/30": {
    "count": 2,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--border at 30%",
-   "language": ".border('border')"
+   "status": "mapped",
+   "language": ".border('border/sheer')"
   },
   "border-l-0": {
    "count": 2,
@@ -6506,10 +6400,8 @@
   "border-muted": {
    "count": 2,
    "apps": 1,
-   "status": "token",
-   "scale": "color",
-   "value": "--muted",
-   "language": ".border(…)"
+   "status": "mapped",
+   "language": ".border('mutedFill')"
   },
   "border-sidebar-border": {
    "count": 2,
@@ -6534,18 +6426,14 @@
   "border-white/10": {
    "count": 2,
    "apps": 1,
-   "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".border(…)"
+   "status": "mapped",
+   "language": ".border('white/faint')"
   },
   "border-white/60": {
    "count": 2,
    "apps": 1,
-   "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".border(…)"
+   "status": "mapped",
+   "language": ".border('white/dim')"
   },
   "bottom-1": {
    "count": 2,
@@ -7258,10 +7146,8 @@
   "opacity-30": {
    "count": 2,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "0.3",
-   "language": ".opacity(…)"
+   "status": "mapped",
+   "language": ".opacity('sheer')"
   },
   "opacity-45": {
    "count": 2,
@@ -7773,17 +7659,15 @@
    "count": 2,
    "apps": 1,
    "status": "token",
-   "scale": "color",
-   "value": "black",
-   "language": ".foreground(…)"
+   "scale": "opacity",
+   "value": "black at 75%",
+   "language": ".foreground('black/…')"
   },
   "text-card": {
    "count": 2,
    "apps": 1,
-   "status": "token",
-   "scale": "color",
-   "value": "--card",
-   "language": ".foreground(…)"
+   "status": "mapped",
+   "language": ".foreground('card')"
   },
   "text-foreground/45": {
    "count": 2,
@@ -7791,7 +7675,7 @@
    "status": "token",
    "scale": "opacity",
    "value": "--foreground at 45%",
-   "language": ".foreground('foreground')"
+   "language": ".foreground('foreground/…')"
   },
   "text-foreground/90": {
    "count": 2,
@@ -7799,7 +7683,7 @@
    "status": "token",
    "scale": "opacity",
    "value": "--foreground at 90%",
-   "language": ".foreground('foreground')"
+   "language": ".foreground('foreground/…')"
   },
   "text-good": {
    "count": 2,
@@ -7818,10 +7702,8 @@
   "text-muted-foreground/60": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--muted-foreground at 60%",
-   "language": ".foreground('muted')"
+   "status": "mapped",
+   "language": ".foreground('muted/dim')"
   },
   "text-negative": {
    "count": 2,
@@ -7866,10 +7748,8 @@
   "text-white/80": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".foreground(…)"
+   "status": "mapped",
+   "language": ".foreground('white/soft')"
   },
   "text-yellow-400/80": {
    "count": 2,
@@ -8444,10 +8324,8 @@
   "bg-background/70": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--background at 70%",
-   "language": ".background('background')"
+   "status": "mapped",
+   "language": ".background('background/faded')"
   },
   "bg-bad/[0.06]": {
    "count": 1,
@@ -8470,42 +8348,40 @@
   "bg-black/20": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "color",
-   "value": "black",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('black/pale')"
   },
   "bg-black/35": {
    "count": 1,
    "apps": 1,
    "status": "token",
-   "scale": "color",
-   "value": "black",
-   "language": ".background(…)"
+   "scale": "opacity",
+   "value": "black at 35%",
+   "language": ".background('black/…')"
   },
   "bg-black/75": {
    "count": 1,
    "apps": 1,
    "status": "token",
-   "scale": "color",
-   "value": "black",
-   "language": ".background(…)"
+   "scale": "opacity",
+   "value": "black at 75%",
+   "language": ".background('black/…')"
   },
   "bg-black/[0.03]": {
    "count": 1,
    "apps": 1,
    "status": "token",
-   "scale": "color",
-   "value": "black",
-   "language": ".background(…)"
+   "scale": "opacity",
+   "value": "black at [0.03]%",
+   "language": ".background('black/…')"
   },
   "bg-black/[0.06]": {
    "count": 1,
    "apps": 1,
    "status": "token",
-   "scale": "color",
-   "value": "black",
-   "language": ".background(…)"
+   "scale": "opacity",
+   "value": "black at [0.06]%",
+   "language": ".background('black/…')"
   },
   "bg-blend-color": {
    "count": 1,
@@ -8532,10 +8408,8 @@
   "bg-card/80": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--card at 80%",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('card/soft')"
   },
   "bg-card/95": {
    "count": 1,
@@ -8543,15 +8417,13 @@
    "status": "token",
    "scale": "opacity",
    "value": "--card at 95%",
-   "language": ".background(…)"
+   "language": ".background('card/…')"
   },
   "bg-error/10": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--error at 10%",
-   "language": ".background('error')"
+   "status": "mapped",
+   "language": ".background('error/faint')"
   },
   "bg-fill-brand": {
    "count": 1,
@@ -8565,23 +8437,19 @@
    "status": "token",
    "scale": "opacity",
    "value": "--foreground at 15%",
-   "language": ".background('foreground')"
+   "language": ".background('foreground/…')"
   },
   "bg-foreground/60": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--foreground at 60%",
-   "language": ".background('foreground')"
+   "status": "mapped",
+   "language": ".background('foreground/dim')"
   },
   "bg-foreground/80": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--foreground at 80%",
-   "language": ".background('foreground')"
+   "status": "mapped",
+   "language": ".background('foreground/soft')"
   },
   "bg-good/12": {
    "count": 1,
@@ -8600,26 +8468,20 @@
   "bg-muted-foreground/20": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--muted-foreground at 20%",
-   "language": ".background('muted')"
+   "status": "mapped",
+   "language": ".background('muted/pale')"
   },
   "bg-muted/70": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--muted at 70%",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('mutedFill/faded')"
   },
   "bg-muted/80": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--muted at 80%",
-   "language": ".background(…)"
+   "status": "mapped",
+   "language": ".background('mutedFill/soft')"
   },
   "bg-orange-100": {
    "count": 1,
@@ -8643,23 +8505,19 @@
    "status": "token",
    "scale": "opacity",
    "value": "--popover at 95%",
-   "language": ".background('popover')"
+   "language": ".background('popover/…')"
   },
   "bg-primary/40": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--primary at 40%",
-   "language": ".background('primary')"
+   "status": "mapped",
+   "language": ".background('primary/hazy')"
   },
   "bg-primary/50": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--primary at 50%",
-   "language": ".background('primary')"
+   "status": "mapped",
+   "language": ".background('primary/disabled')"
   },
   "bg-purple-100": {
    "count": 1,
@@ -8718,34 +8576,32 @@
   "bg-warning/20": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--warning at 20%",
-   "language": ".background('warning')"
+   "status": "mapped",
+   "language": ".background('warning/pale')"
   },
   "bg-white/15": {
    "count": 1,
    "apps": 1,
    "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".background(…)"
+   "scale": "opacity",
+   "value": "white at 15%",
+   "language": ".background('white/…')"
   },
   "bg-white/25": {
    "count": 1,
    "apps": 1,
    "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".background(…)"
+   "scale": "opacity",
+   "value": "white at 25%",
+   "language": ".background('white/…')"
   },
   "bg-white/[0.03]": {
    "count": 1,
    "apps": 1,
    "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".background(…)"
+   "scale": "opacity",
+   "value": "white at [0.03]%",
+   "language": ".background('white/…')"
   },
   "bg-willo-blue": {
    "count": 1,
@@ -8799,17 +8655,17 @@
    "count": 1,
    "apps": 1,
    "status": "token",
-   "scale": "color",
-   "value": "black",
-   "language": ".border(…)"
+   "scale": "opacity",
+   "value": "black at [0.04]%",
+   "language": ".border('black/…')"
   },
   "border-black/[0.06]": {
    "count": 1,
    "apps": 1,
    "status": "token",
-   "scale": "color",
-   "value": "black",
-   "language": ".border(…)"
+   "scale": "opacity",
+   "value": "black at [0.06]%",
+   "language": ".border('black/…')"
   },
   "border-border-input-active": {
    "count": 1,
@@ -8846,18 +8702,14 @@
   "border-foreground/30": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--foreground at 30%",
-   "language": ".border('foreground')"
+   "status": "mapped",
+   "language": ".border('foreground/sheer')"
   },
   "border-primary/20": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--primary at 20%",
-   "language": ".border('primary')"
+   "status": "mapped",
+   "language": ".border('primary/pale')"
   },
   "border-primary/25": {
    "count": 1,
@@ -8865,23 +8717,19 @@
    "status": "token",
    "scale": "opacity",
    "value": "--primary at 25%",
-   "language": ".border('primary')"
+   "language": ".border('primary/…')"
   },
   "border-primary/40": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--primary at 40%",
-   "language": ".border('primary')"
+   "status": "mapped",
+   "language": ".border('primary/hazy')"
   },
   "border-primary/50": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--primary at 50%",
-   "language": ".border('primary')"
+   "status": "mapped",
+   "language": ".border('primary/disabled')"
   },
   "border-r-2": {
    "count": 1,
@@ -8922,42 +8770,34 @@
   "border-white": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".border(…)"
+   "status": "mapped",
+   "language": ".border('white')"
   },
   "border-white/20": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".border(…)"
+   "status": "mapped",
+   "language": ".border('white/pale')"
   },
   "border-white/70": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".border(…)"
+   "status": "mapped",
+   "language": ".border('white/faded')"
   },
   "border-white/80": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".border(…)"
+   "status": "mapped",
+   "language": ".border('white/soft')"
   },
   "border-white/[0.06]": {
    "count": 1,
    "apps": 1,
    "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".border(…)"
+   "scale": "opacity",
+   "value": "white at [0.06]%",
+   "language": ".border('white/…')"
   },
   "border-willo-outline": {
    "count": 1,
@@ -10880,18 +10720,14 @@
   "opacity-10": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "0.1",
-   "language": ".opacity(…)"
+   "status": "mapped",
+   "language": ".opacity('faint')"
   },
   "opacity-20": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "0.2",
-   "language": ".opacity(…)"
+   "status": "mapped",
+   "language": ".opacity('pale')"
   },
   "opacity-55": {
    "count": 1,
@@ -12130,18 +11966,14 @@
   "text-foreground/30": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--foreground at 30%",
-   "language": ".foreground('foreground')"
+   "status": "mapped",
+   "language": ".foreground('foreground/sheer')"
   },
   "text-foreground/50": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--foreground at 50%",
-   "language": ".foreground('foreground')"
+   "status": "mapped",
+   "language": ".foreground('foreground/disabled')"
   },
   "text-headerBold": {
    "count": 1,
@@ -12176,10 +12008,8 @@
   "text-primary-text/80": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--primary-text at 80%",
-   "language": ".foreground(…)"
+   "status": "mapped",
+   "language": ".foreground('primaryText/soft')"
   },
   "text-purple-500": {
    "count": 1,
@@ -12244,26 +12074,22 @@
   "text-white/50": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".foreground(…)"
+   "status": "mapped",
+   "language": ".foreground('white/disabled')"
   },
   "text-white/55": {
    "count": 1,
    "apps": 1,
    "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".foreground(…)"
+   "scale": "opacity",
+   "value": "white at 55%",
+   "language": ".foreground('white/…')"
   },
   "text-white/60": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "color",
-   "value": "white",
-   "language": ".foreground(…)"
+   "status": "mapped",
+   "language": ".foreground('white/dim')"
   },
   "thread": {
    "count": 1,
