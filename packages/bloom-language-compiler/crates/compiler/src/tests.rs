@@ -872,3 +872,22 @@ fn markdown_is_checked() {
     let output = check("export const x = (s) => Markdown(s).size('xl');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown markdownSize token 'xl' for .size()");
 }
+
+#[test]
+fn sliders_are_checked() {
+    let imports = "import { Slider, RangeSlider } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (v, r, f) => [Slider(v, 'Volume').size('sm').tint('accent').bounds(0, 100).step(5).keyboardStep(10).disabled().thickness('6').thumbSize('xl').fillTint('success').trackTint('muted/20').thumbTint('white').showsValue(false).onCommit(f).valueFormat(f), RangeSlider(r).labels({ lower: 'From', upper: 'To' })];\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("Slider(v).tint('primary')", "Unknown tone token 'primary' for .tint()"),
+        ("Slider(v).thumbTint('gold')", "Unknown color token 'gold' for .thumbTint()"),
+        ("Slider(v).labels({})", "Slider has no modifier .labels()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (v) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

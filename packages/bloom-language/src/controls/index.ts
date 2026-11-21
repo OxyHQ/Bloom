@@ -6,6 +6,7 @@ import { CONTAINERS } from './containers';
 import { SETTINGS } from './settings';
 import { DATE_PICKERS } from './date-picker';
 import { RATINGS } from './rating';
+import { SLIDERS } from './slider';
 import { STAT_BARS } from './stat-bar';
 import { TABLES } from './table';
 import { LISTS } from './list';
@@ -29,4 +30,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...LISTS,
   ...CAROUSELS,
   ...MARKDOWN,
+  ...SLIDERS,
 };

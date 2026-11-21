@@ -95,3 +95,4 @@ export const Tables: Story = { args: { family: 'table' } };
 export const RowsAndLists: Story = { args: { family: 'list' } };
 export const Carousels: Story = { args: { family: 'carousel' } };
 export const Markdown: Story = { args: { family: 'markdown' } };
+export const Sliders: Story = { args: { family: 'slider' } };
