@@ -1,30 +1,3 @@
---- a/content/GlassMenuContent.kt
-+++ b/content/GlassMenuContent.kt
-@@ -74,6 +74,8 @@
-   var height = 0f
-     private set
-   var dark = true
-+  // The theme's row ink (null channels keep the built-in colours).
-+  var ink: so.oxy.bloom.glassmenu.records.GlassMenuConfigRecord? = null
-   // Alpha of the whole content: the submenu navigation fades the level in (RowsRevealSpring).
-   var contentAlpha = 1f
- 
-@@ -234,11 +236,11 @@
-   // (the submenu header) is drawn by the same code wherever it is. `chevronRotation` turns the trailing chevron
-   // around its own centre.
-   fun drawRow(canvas: Canvas, row: GlassRow, chevronRotation: Float) {
--    val foreground = if (dark) Color.argb(245, 255, 255, 255) else Color.argb(235, 0, 0, 0)
--    val muted = if (dark) Color.argb(153, 235, 235, 245) else Color.argb(153, 60, 60, 67)
--    val destructive = if (dark) Color.rgb(255, 82, 84) else Color.rgb(220, 30, 48)
-+    val foreground = ink?.textColor?.toArgb() ?: if (dark) Color.argb(245, 255, 255, 255) else Color.argb(235, 0, 0, 0)
-+    val muted = ink?.mutedColor?.toArgb() ?: if (dark) Color.argb(153, 235, 235, 245) else Color.argb(153, 60, 60, 67)
-+    val destructive = ink?.destructiveColor?.toArgb() ?: if (dark) Color.rgb(255, 82, 84) else Color.rgb(220, 30, 48)
-     if (row.isSeparator) {
--      fillPaint.color = if (dark) Color.argb(17, 255, 255, 255) else Color.argb(26, 0, 0, 0)
-+      fillPaint.color = ink?.separatorColor?.toArgb() ?: if (dark) Color.argb(17, 255, 255, 255) else Color.argb(26, 0, 0, 0)
-       val y = row.rect.centerY()
-       val half = density / 2f
-       canvas.drawRect(Metrics.SeparatorInset * density, y - half, width - Metrics.SeparatorInset * density, y + half, fillPaint)
 --- a/GlassMenuAndroidModule.kt
 +++ b/GlassMenuAndroidModule.kt
 @@ -8,15 +8,15 @@
@@ -346,6 +319,65 @@
 +    const val RestGuard = 24f
    }
  }
+--- a/records/GlassMenuConfigRecord.kt
++++ b/records/GlassMenuConfigRecord.kt
+@@ -9,6 +9,11 @@
+   @Field val morphBlur: Float = 1f
+   @Field val tintColor: Color? = null
+   @Field val tintOpacity: Float? = null
++  // Row ink; null keeps the built-in light/dark colours.
++  @Field val textColor: Color? = null
++  @Field val mutedColor: Color? = null
++  @Field val destructiveColor: Color? = null
++  @Field val separatorColor: Color? = null
+   @Field val saturation: Float = 1f
+   @Field val refraction: Float = 1f
+   @Field val rim: Float = 1f
+--- a/content/GlassMenuContent.kt
++++ b/content/GlassMenuContent.kt
+@@ -74,6 +74,8 @@
+   var height = 0f
+     private set
+   var dark = true
++  // The theme's row ink (null channels keep the built-in colours).
++  var ink: so.oxy.bloom.glassmenu.records.GlassMenuConfigRecord? = null
+   // Alpha of the whole content: the submenu navigation fades the level in (RowsRevealSpring).
+   var contentAlpha = 1f
+ 
+@@ -234,11 +236,11 @@
+   // (the submenu header) is drawn by the same code wherever it is. `chevronRotation` turns the trailing chevron
+   // around its own centre.
+   fun drawRow(canvas: Canvas, row: GlassRow, chevronRotation: Float) {
+-    val foreground = if (dark) Color.argb(245, 255, 255, 255) else Color.argb(235, 0, 0, 0)
+-    val muted = if (dark) Color.argb(153, 235, 235, 245) else Color.argb(153, 60, 60, 67)
+-    val destructive = if (dark) Color.rgb(255, 82, 84) else Color.rgb(220, 30, 48)
++    val foreground = ink?.textColor?.toArgb() ?: if (dark) Color.argb(245, 255, 255, 255) else Color.argb(235, 0, 0, 0)
++    val muted = ink?.mutedColor?.toArgb() ?: if (dark) Color.argb(153, 235, 235, 245) else Color.argb(153, 60, 60, 67)
++    val destructive = ink?.destructiveColor?.toArgb() ?: if (dark) Color.rgb(255, 82, 84) else Color.rgb(220, 30, 48)
+     if (row.isSeparator) {
+-      fillPaint.color = if (dark) Color.argb(17, 255, 255, 255) else Color.argb(26, 0, 0, 0)
++      fillPaint.color = ink?.separatorColor?.toArgb() ?: if (dark) Color.argb(17, 255, 255, 255) else Color.argb(26, 0, 0, 0)
+       val y = row.rect.centerY()
+       val half = density / 2f
+       canvas.drawRect(Metrics.SeparatorInset * density, y - half, width - Metrics.SeparatorInset * density, y + half, fillPaint)
+--- a/overlay/GlassMenuSession.kt
++++ b/overlay/GlassMenuSession.kt
+@@ -99,6 +99,7 @@
+     val margin = 16f * density
+     availableWidth = windowWidth - margin * 2f
+     content.dark = anchor.isDark()
++    content.ink = anchor.config
+     levelItems = null
+     nav.reset(1f)
+     parentDim.reset(0f)
+@@ -557,6 +558,7 @@
+       anchor, density,
+       GlassMenuContent(overlay.context, density) { slot -> anchor.iconView(slot) }.also {
+         it.dark = content.dark
++        it.ink = content.ink
+         it.forceCheckColumn = content.reservesCheckColumn
+       },
+       if (supportsGlass) RenderNode("GlassMenu.submenu.rows") else null,
 --- a/overlay/GlassMenuOverlay.kt
 +++ b/overlay/GlassMenuOverlay.kt
 @@ -110,7 +110,7 @@
@@ -378,35 +410,46 @@
      }
      val active = session
      if (active != null) {
---- a/overlay/GlassMenuSession.kt
-+++ b/overlay/GlassMenuSession.kt
-@@ -99,6 +99,7 @@
-     val margin = 16f * density
-     availableWidth = windowWidth - margin * 2f
-     content.dark = anchor.isDark()
-+    content.ink = anchor.config
-     levelItems = null
-     nav.reset(1f)
-     parentDim.reset(0f)
-@@ -557,6 +558,7 @@
-       anchor, density,
-       GlassMenuContent(overlay.context, density) { slot -> anchor.iconView(slot) }.also {
-         it.dark = content.dark
-+        it.ink = content.ink
-         it.forceCheckColumn = content.reservesCheckColumn
-       },
-       if (supportsGlass) RenderNode("GlassMenu.submenu.rows") else null,
---- a/records/GlassMenuConfigRecord.kt
-+++ b/records/GlassMenuConfigRecord.kt
-@@ -9,6 +9,11 @@
-   @Field val morphBlur: Float = 1f
-   @Field val tintColor: Color? = null
-   @Field val tintOpacity: Float? = null
-+  // Row ink; null keeps the built-in light/dark colours.
-+  @Field val textColor: Color? = null
-+  @Field val mutedColor: Color? = null
-+  @Field val destructiveColor: Color? = null
-+  @Field val separatorColor: Color? = null
-   @Field val saturation: Float = 1f
-   @Field val refraction: Float = 1f
-   @Field val rim: Float = 1f
+--- a/render/GlassRenderer.kt
++++ b/render/GlassRenderer.kt
+@@ -12,6 +12,7 @@
+ import android.graphics.Shader
+ import android.os.Build
+ import androidx.annotation.RequiresApi
++import java.util.concurrent.atomic.AtomicBoolean
+ import so.oxy.bloom.glassmenu.field.GlassFieldTexture
+ import so.oxy.bloom.glassmenu.field.GlassGaussianField
+ import kotlin.math.ceil
+@@ -35,10 +36,11 @@
+   private val texture = GlassFieldTexture()
+   private val nodeRect = Rect()
+   private val union = RectF()
+-  private var warmed = false
+ 
+   init {
+-    warmField()
++    // The warm-ups prime what every renderer shares (the field code, the GPU pipelines), so they run once per
++    // process: a lens per feed row would otherwise start a thread and draw the warm-up for every row.
++    if (fieldWarmed.compareAndSet(false, true)) warmField()
+   }
+ 
+   private fun warmField() {
+@@ -59,8 +61,7 @@
+   }
+ 
+   fun warmPipelines(canvas: Canvas): Boolean {
+-    if (warmed) return false
+-    warmed = true
++    if (!pipelinesWarmed.compareAndSet(false, true)) return false
+     texture.preallocate()
+     texture.bindPrepared(material)
+     texture.bindPrepared(portal)
+@@ -241,6 +242,8 @@
+   }
+ 
+   private companion object {
++    val fieldWarmed = AtomicBoolean(false)
++    val pipelinesWarmed = AtomicBoolean(false)
+     const val MorphBlur = 1.2f
+     const val BlurReach = 2f
+     const val PortalReach = 28f
