@@ -98,6 +98,7 @@ import { RailHost } from './chrome/rail-host';
 import { PageFooterHost } from './chrome/page-footer-host';
 import { CommandHost } from './chrome/command-host';
 import { SettingsHost } from './chrome/settings-host';
+import { StickySectionHost, ToolbarHost } from './chrome/layout-hosts';
 import {
   PLACE_KINDS,
   STACK_KINDS,
@@ -2018,6 +2019,28 @@ function renderHost(
         render: (child: Child) => renderChild(child, ctx, undefined),
         press: (value: Press | undefined) => pressOf(value, ctx.env),
       });
+    case 'toolbarView':
+      return draw(
+        ToolbarHost,
+        {
+          key,
+          node,
+          render: (child: Child) => renderChild(child, ctx, undefined),
+          press: (value: Press | undefined) => pressOf(value, ctx.env),
+        },
+        ...renderChildren(node.children, ctx),
+      );
+    case 'stickySection':
+      return draw(
+        StickySectionHost,
+        {
+          key,
+          node,
+          render: (child: Child) => renderChild(child, ctx, undefined),
+          press: (value: Press | undefined) => pressOf(value, ctx.env),
+        },
+        ...renderChildren(node.children, ctx),
+      );
     case 'settings':
       return draw(SettingsHost, {
         key,

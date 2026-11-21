@@ -23,6 +23,8 @@ import {
   type ButtonGroupView,
   type ScrollViewNode,
   type BottomSheetView,
+  type StickySectionView,
+  type ToolbarView,
   type CommandGroupView,
   type CommandItemView,
   type CommandView,
@@ -430,6 +432,16 @@ export function SettingsGroup(label: string, ...items: Rows<SettingsItemView>): 
 /** A row of the settings' navigation: its label and glyph. */
 export function SettingsItem(label: string, icon: IconComponent): SettingsItemView {
   return new Node('settingsItem', { label, icon }, NO_CHILDREN);
+}
+
+/** A row of tools (Bloom `Toolbar`); `.trailing(...)` keeps actions in reach at its end. */
+export function Toolbar(...tools: Child[]): ToolbarView {
+  return new Node('toolbarView', null, tools);
+}
+
+/** A section that docks under the header as the page scrolls past it (Bloom `StickySection`). */
+export function StickySection(...children: Child[]): StickySectionView {
+  return new Node('stickySection', null, children);
 }
 
 /** A page's foot (Bloom `PageFooter`): its content, then its actions (`.toolbar`), on a scrim. */
