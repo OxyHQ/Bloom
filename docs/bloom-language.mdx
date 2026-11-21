@@ -53,7 +53,7 @@ Differences from the first draft, each forced by the real components:
 - `Icon` and `Action` take the icon component (`ReplyIcon`), not a name. A
   name would need a registry that imports every icon, and Metro cannot tree-shake it.
 - The colour roles are Bloom's: `error`, not `red`; `muted` is `text-muted-foreground`.
-- Avatar sizes are Bloom's avatar rungs (`xs` 20, `sm` 24, `md` 32, `lg` 36).
+- Avatar sizes are Bloom's avatar rungs (`xs` 20, `sm` 24, `md` 32, `lg` 36), or an app token.
 - `count && Text(count)` is a type error: with a count of 0 it would put a bare
   `0` in a view. Write `count ? Text(count) : null`.
 - Glass takes SwiftUI's materials: `.glass()`, `.glass(clear)`,
@@ -134,7 +134,10 @@ be preserved"), so keep the controller in a custom hook (`usePostRowModel`).
 | `Spacer` | `View` with `flex: 1` |
 | `Text` | Bloom `Text` (or the typography component its `textStyle` names), its ramp font as `variant`. A nested `Text` is a React Native span inside it. |
 | `Icon` | the Bloom icon component, at a size rung, filled with the foreground |
-| `Avatar` | Bloom `Avatar` |
+| `Avatar` | Bloom `Avatar` (with a presence, `AvatarPresence`) |
+| `AvatarGroup` / `Badge` / `IconCircle` / `Loading` | Bloom `AvatarGroup` / `Badge` / `IconCircle` / `Loading` |
+| `Skeleton` / `SkeletonGroup` | Bloom's skeleton shapes / `Skeleton.Region` |
+| `.pressScale()` / `.hoverHighlight()` | Bloom `PressableScale` as the pressable host / `SubtleHover` as the stack's first child |
 | `Image` | Bloom `BloomImage` (`@oxy.so/bloom/image`), sized and clipped by its own box (see [Image](#image)) |
 | `Button` | Bloom `Button` (`style` is its appearance, `tint` its tone, `shape` is icon-only) |
 | `ActionBar` / `Action` / `ActionGroup` | Bloom `EngagementBar` / `EngagementAction` / `EngagementGroup` |
@@ -359,6 +362,60 @@ Not built: a silhouette of its own (Bloom's `shapes` `Fill`, `Image` and
 Bloom's `BlurIsland` (the floating capsule with its shadow): `blur/` is
 internal to Bloom on purpose (`family-layout.test.ts`), and publishing it is
 the owner's decision. Blur itself is the glass.
+
+## Avatars
+
+```ts
+Avatar(user.avatar, { name: user.name, variant: 'thumb' }).size('lg').presence('online')
+Avatar(null, { name: 'Ana Lima' }).tint('lime').shape('squircle')
+Avatar(user.avatar).badge(Badge(unread).tint('danger'))
+AvatarGroup(members).layout('row').max(4).total(count).initials()
+```
+
+`Avatar(source, options?)` is Bloom's `Avatar`: the image, else the account's
+character, else initials on a tinted disc. The options are its data: `name`,
+`initials`, `account`, `character`, `fallbackSource` and `variant` (the
+rendition of a file id).
+
+- `.size()` is an avatar rung or an app token (`defineTokens({ avatarSize: {
+  feed: 48 } })`); with none, Bloom's 40.
+- `.tint('neutral' | 'blue' | 'lime' | 'pink')` the initials disc;
+  `.shape(name)` one of Bloom's silhouettes (`circle`, `squircle` and the 34
+  named shapes); the image and the fallback keep it.
+- Badges: `.verified()` (Bloom's mark), `.live()` (the ring and the LIVE pill,
+  `.liveBadge(false)` for the ring alone), and any `Badge` attached with
+  `.badge(Badge(…))`.
+- Presence: `.presence('online' | 'idle' | 'busy' | 'offline')` is Bloom's
+  `AvatarPresence`, the dot sized from the avatar.
+- `.label(name)` is its `alt`; `.onPress` its own press.
+
+`AvatarGroup(items)` takes Bloom's `AvatarGroupItem`s: `.layout('stack' |
+'row' | 'cluster' | 'conversation')`, `.size()`, `.shape()`, `.max(n)`,
+`.total(n)`, `.spacing(space)` (a row's gap), `.overflow('count' |
+'truncate')`, `.initials()` (tinted initials instead of the neutral
+placeholder), `.onPressItem(fn)`, `.hoverCard()`, and `.label()` to name it.
+
+## Small pieces
+
+- **`Badge(content?)`**: `.style('solid' | 'subtle' | 'outlined' | 'onMedia')`,
+  `.tint(tone)`, `.size()` (the counters `xs`…`lg`, the labels `label-small`
+  and `label-medium`), `.icon(X)`, `.dot()`, `.max(n)`, and `.placement()` when
+  attached. `view.badge(Badge(…))` attaches it to any view.
+- **`IconCircle(icon)`**: an icon on Bloom's tinted disc; `.size()` an icon rung.
+- **`Loading(Text(…)?)`**: `.style('spinner' | 'top' | 'inline')`, `.size()`,
+  `.tint(tone)`; the `Text` is what it says, `.label()` names it as a progress bar.
+- **`Skeleton(shape)`**: `text`, `circle`, `pill` or `box`. Its frame is its
+  size (a circle's and a pill's height, a box's width and height), a box's
+  corner its radius, a text line's height its font's. It takes nothing else
+  of a chain. `SkeletonGroup(...)` is `Skeleton.Region`, named with `.label()`.
+- **`.pressScale()`**: a pressable view shrinks under the finger: its host is
+  Bloom's `PressableScale`.
+- **`.hoverHighlight(active?)`** on a stack: Bloom's `SubtleHover` wash behind
+  it. With no argument it answers the pointer (the web; the stack becomes its
+  hover group); with `active`, it is a coordinated highlight on every platform.
+
+A pressable host is focusable by default, so the language writes `focusable`
+only for a press modifier with no handler (`focusable={false}`).
 
 ## Glass
 

@@ -221,3 +221,29 @@ fn text_styles_truncation_and_links_are_checked() {
     let arity = compiled("export const x = () => Text('x').underline('double');\n");
     assert_eq!(arity.diagnostics[0].message, ".underline() takes 0 argument(s), not 1");
 }
+
+#[test]
+fn material_avatar_and_small_piece_modifiers_are_checked() {
+    let imports = "import { Avatar, AvatarGroup, Badge, Divider, Grid, Loading, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (src, items) => VStack(Divider().lineStyle('double').tint('border'), Grid().flow('columns').columns(3), Avatar(src).size('lg').tint('lime').shape('squircle').presence('busy').badge(Badge(3).style('onMedia').size('label-small').placement('bottom-left')), AvatarGroup(items).layout('cluster').shape('heart'), Loading().style('inline').size('sm').tint('accent')).corner('concentric').cornerCurve('smooth');\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("Divider().lineStyle('dashed')", "Unknown dividerStyle token 'dashed' for .lineStyle()"),
+        ("VStack().corner('concentrik')", "Unknown corner token 'concentrik' for .corner()"),
+        ("VStack().cornerCurve('squircle')", "Unknown cornerCurve token 'squircle' for .cornerCurve()"),
+        ("Avatar(null).tint('primary')", "Unknown avatarColor token 'primary' for .tint()"),
+        ("Avatar(null).shape('pill-ish')", "Unknown shapeName token 'pill-ish' for .shape()"),
+        ("Avatar(null).presence('away')", "Unknown presence token 'away' for .presence()"),
+        ("Badge(1).style('outline')", "Unknown badgeStyle token 'outline' for .style()"),
+        ("Badge(1).size('label-large')", "Unknown badgeSize token 'label-large' for .size()"),
+        ("Loading().style('bar')", "Unknown loadingStyle token 'bar' for .style()"),
+        ("Grid().flow('masonry')", "Unknown gridFlow token 'masonry' for .flow()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = () => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

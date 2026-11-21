@@ -107,7 +107,6 @@ describe('the menu is the lens menu', () => {
     const r = mount(toElement(node));
     expect(hosts(r, 'BloomLensMenu')).toHaveLength(0);
     expect(only(r, 'Pressable').props).toMatchObject({
-      focusable: true,
       // The menu's name is its trigger's.
       accessibilityLabel: 'Post options',
     });

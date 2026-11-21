@@ -181,7 +181,8 @@ describe('rendering through React Native hosts', () => {
     const handler = jest.fn();
     const r = mount(toElement(VStack(Text('a')).onPress(handler).label('Post')));
     const [pressable] = hosts(r, 'Pressable');
-    expect(pressable?.props.focusable).toBe(true);
+    // Pressable is focusable by default; only an inert one says otherwise.
+    expect(pressable?.props.focusable).toBeUndefined();
     expect(pressable?.props.accessibilityLabel).toBe('Post');
     act(() => pressable?.props.onPress());
     expect(handler).toHaveBeenCalledTimes(1);
@@ -414,7 +415,8 @@ describe('interop', () => {
     const onPress = jest.fn();
     const r = mount(toElement(Image('a.jpg').frame({ height: 'xl' }).grow().onPress(onPress)));
     const [press] = hosts(r, 'Pressable');
-    expect(press?.props).toMatchObject({ onPress, focusable: true, style: { flex: 1 } });
+    expect(press?.props).toMatchObject({ onPress, style: { flex: 1 } });
+    expect(press?.props.focusable).toBeUndefined();
     expect(press?.findByType('BloomImage' as never).props.style).toEqual({
       height: tokens.space.xl,
     });

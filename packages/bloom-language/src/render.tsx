@@ -15,6 +15,14 @@ import {
 } from 'react-native';
 import { styled } from 'react-native-css';
 import { Avatar as BloomAvatar } from '@oxy.so/bloom/avatar';
+import { AvatarGroup as BloomAvatarGroup } from '@oxy.so/bloom/avatar-group';
+import { Badge as BloomBadge } from '@oxy.so/bloom/badge';
+import { AvatarPresence } from '@oxy.so/bloom/chat-indicators';
+import { IconCircle as BloomIconCircle } from '@oxy.so/bloom/icon-circle';
+import { Loading as BloomLoading } from '@oxy.so/bloom/loading';
+import { PressableScale } from '@oxy.so/bloom/pressable-scale';
+import * as BloomSkeleton from '@oxy.so/bloom/skeleton';
+import { SubtleHover } from '@oxy.so/bloom/subtle-hover';
 import { Button as BloomButton } from '@oxy.so/bloom/button';
 import { EngagementAction, EngagementBar, EngagementGroup } from '@oxy.so/bloom/engagement-bar';
 import { BloomImage } from '@oxy.so/bloom/image';
@@ -49,7 +57,11 @@ import {
   Navigation,
   type Node,
   type ActionProps,
+  type AvatarGroupProps,
   type AvatarProps,
+  type BadgeProps as BadgeNodeProps,
+  type FrameSpec,
+  type SkeletonProps,
   type Child,
   type EmbedProps,
   type IconProps,
@@ -89,10 +101,14 @@ import {
   DURATION,
   HIT_SLOP,
   resolveAvatarSize,
+  resolveCorner,
+  resolveFont,
   resolveSpace,
+  type AvatarSizeToken,
+  type CornerName,
+  type SpaceToken,
   resolveIconSize,
   tokenKey,
-  type AvatarSizeName,
   type ColorName,
   type IconSizeToken,
   type Role,
@@ -252,6 +268,9 @@ function plan(node: Node): Plan {
         result.own.set(modifier.kind, modifier);
     }
   }
+  // A wash that answers the pointer needs the hover group it lights up in.
+  if (result.own.has('hoverHighlight') && ownValue(result, 'hoverHighlight')?.value === undefined)
+    result.hoverGroup = true;
   if ((node.kind === 'button' || node.kind === 'fab') && result.layers.some((l) => l.glass)) {
     result.control = { tint: controlTint(node.kind, result) };
   }
@@ -308,8 +327,9 @@ function behaviourProps(p: Plan): Record<string, unknown> | undefined {
   if (p.testID !== undefined) props.testID = p.testID;
   if (p.hitSlop !== undefined) props.hitSlop = p.hitSlop;
   if (p.pressable) {
-    // A view whose press handler is absent stays the same host, out of the tab order.
-    props.focusable = p.onPress !== undefined || p.onLongPress !== undefined;
+    // A view whose press handler is absent stays the same host, out of the tab order
+    // (a pressable is focusable by default).
+    if (p.onPress === undefined && p.onLongPress === undefined) props.focusable = false;
     if (p.onPress) props.onPress = p.onPress;
     if (p.onLongPress) props.onLongPress = p.onLongPress;
   }
@@ -399,6 +419,7 @@ function drawNode(node: Node, ctx: Context, key: string | number | undefined): R
   const inner: Context =
     env === ctx.env && !ctx.inRow ? ctx : { env, provided: ctx.provided, inText: ctx.inText };
   const reactKey = p.id ?? key;
+  if (node.kind === 'skeleton') return drawSkeleton(node, p, inner, reactKey);
   const layers = p.layers;
   // A glass layer is a Surface, which the host cannot be; so the host takes
   // the innermost layer only when that layer is plain.
@@ -437,6 +458,11 @@ function drawNode(node: Node, ctx: Context, key: string | number | undefined): R
       outermost && !hostBehaves ? behaviour : undefined,
       outermost ? reactKey : undefined,
     );
+  }
+  const badge = ownValue(p, 'badge')?.value;
+  if (isNode(badge) && badge.kind === 'badge') {
+    // An attached badge is Bloom's Badge around the view, at its placement.
+    return draw(BloomBadge, { ...badgeProps(badge, plan(badge)), key: reactKey }, element);
   }
   return element;
 }
@@ -556,6 +582,7 @@ function propPaint(
 
 /** The outermost box's host: pressable when the view takes presses or hovers, a hover group's class host on the web. */
 function hostFor(p: Plan): Host {
+  if (p.pressable && p.own.has('pressScale')) return PressableScale;
   if (p.pressable) return IS_WEB && p.hoverGroup ? HoverGroupPressable : Pressable;
   return IS_WEB && p.hoverGroup ? HoverGroupView : View;
 }
@@ -611,6 +638,13 @@ function renderHost(
         axis === 'depth'
           ? renderDepthChildren(node.children, ctx)
           : renderChildren(node.children, row);
+      const wash = ownValue(p, 'hoverHighlight');
+      if (wash !== undefined) {
+        // A coordinated highlight (`active` given) shows on every platform; the pointer's only on the web.
+        children.unshift(
+          draw(SubtleHover, wash.value === undefined ? {} : { active: wash.value, native: true }),
+        );
+      }
       const host = behaviour ? hostFor(p) : View;
       return drawHost(host, out, hostProps(behaviour, key), ...children);
     }
@@ -640,18 +674,99 @@ function renderHost(
     }
     case 'avatar': {
       const { source, options } = node.props as AvatarProps;
-      const size = ownValue(p, 'size')?.value as AvatarSizeName | undefined;
+      const size = ownValue(p, 'size')?.value as AvatarSizeToken | undefined;
+      const presence = ownValue(p, 'presence')?.value;
       const props = hostProps(behaviour, key);
       delete props.focusable;
+      // An avatar's name is its `alt`, as Bloom's Avatar takes it.
+      if (props.accessibilityLabel !== undefined) {
+        props.alt = props.accessibilityLabel;
+        delete props.accessibilityLabel;
+      }
       Object.assign(props, {
         source,
         variant: options.variant,
         account: options.account,
+        name: options.name,
+        initials: options.initials,
+        fallbackSource: options.fallbackSource,
+        character: options.character,
         size: size === undefined ? undefined : resolveAvatarSize(size),
+        color: ownValue(p, 'tint')?.value,
+        shape: ownValue(p, 'shape')?.value,
+        verified: ownValue(p, 'verified')?.value,
+        live: ownValue(p, 'live')?.value,
+        hideLiveBadge: ownValue(p, 'liveBadge')?.value === false ? true : undefined,
+        status: presence,
       });
-      if (!boxed) return draw(BloomAvatar, props);
-      return drawHost(BloomAvatar, box('component', 'A'), props);
+      const host = presence === undefined ? BloomAvatar : AvatarPresence;
+      if (!boxed) return draw(host, props);
+      return drawHost(host, box('component', 'A'), props);
     }
+    case 'avatarGroup': {
+      const size = ownValue(p, 'size')?.value as AvatarSizeToken | undefined;
+      const spacing = ownValue(p, 'spacing')?.value;
+      const props = hostProps(behaviour, key);
+      delete props.focusable;
+      Object.assign(props, {
+        items: (node.props as AvatarGroupProps).items,
+        layout: ownValue(p, 'layout')?.value,
+        size: size === undefined ? undefined : resolveAvatarSize(size),
+        shape: ownValue(p, 'shape')?.value,
+        max: ownValue(p, 'max')?.value,
+        total: ownValue(p, 'total')?.value,
+        spacing: spacing === undefined || spacing === 'between' ? undefined : resolveSpace(spacing),
+        overflow: ownValue(p, 'overflow')?.value,
+        showInitials: ownValue(p, 'initials') === undefined ? undefined : true,
+        onPressItem: ownValue(p, 'onPressItem')?.value,
+        hoverCard: ownValue(p, 'hoverCard')?.value,
+      });
+      if (!boxed) return draw(BloomAvatarGroup, props);
+      return drawHost(BloomAvatarGroup, box('component', 'AG'), props);
+    }
+    case 'badge': {
+      const props = { ...hostProps(behaviour, key), ...badgeProps(node, p) };
+      delete props.focusable;
+      if (!boxed) return draw(BloomBadge, props);
+      return drawHost(BloomBadge, box('component', 'BD'), props);
+    }
+    case 'iconCircle': {
+      const props: Record<string, unknown> = {
+        ...hostProps(behaviour, key),
+        icon: (node.props as IconProps).icon,
+      };
+      delete props.focusable;
+      props.size = ownValue(p, 'size')?.value;
+      if (!boxed) return draw(BloomIconCircle, props);
+      return drawHost(BloomIconCircle, box('component', 'IC'), props);
+    }
+    case 'loading': {
+      const props = hostProps(behaviour, key);
+      delete props.focusable;
+      const { label } = buttonContent(node.children);
+      Object.assign(props, {
+        variant: ownValue(p, 'style')?.value,
+        size: ownValue(p, 'size')?.value,
+        tone: ownValue(p, 'tint')?.value,
+        text: label,
+      });
+      if (!boxed) return draw(BloomLoading, props);
+      return drawHost(BloomLoading, box('component', 'LD'), props);
+    }
+    case 'skeleton':
+      // Drawn in drawNode: a skeleton takes its frame and corner as its size.
+      return null as unknown as ReactElement;
+    case 'skeletonGroup':
+      return drawContainer(
+        BloomSkeleton.Region,
+        { label: p.label },
+        node,
+        p,
+        ctx,
+        box('component', 'SR'),
+        behaviour === undefined ? undefined : withoutLabel(behaviour),
+        key,
+      );
     case 'image': {
       // BloomImage takes the box itself, so the frame sizes the image and the
       // corner clips it. It cannot take presses: a pressable image (or a hover
@@ -770,13 +885,6 @@ function renderHost(
     case 'navStack':
     case 'route':
     case 'tabView':
-      return null as unknown as ReactElement;
-    case 'avatarGroup':
-    case 'badge':
-    case 'iconCircle':
-    case 'loading':
-    case 'skeleton':
-    case 'skeletonGroup':
       return null as unknown as ReactElement;
     case 'divider': {
       const tint = ownValue(p, 'tint')?.value as ColorName | undefined;
@@ -954,6 +1062,73 @@ function drawContainer(
   const props: Record<string, unknown> = { ...own, testID, key: outer ? undefined : key };
   const element = drawHost(component, out, props, ...renderChildren(node.children, ctx));
   return outer ? draw(hostFor(p), { ...rest, key }, element) : element;
+}
+
+/** A Badge node's props for Bloom's Badge, standalone or attached. */
+function badgeProps(node: Node, p: Plan): Record<string, unknown> {
+  return {
+    content: (node.props as BadgeNodeProps).content,
+    variant: ownValue(p, 'style')?.value,
+    tone: ownValue(p, 'tint')?.value,
+    size: ownValue(p, 'size')?.value,
+    icon: ownValue(p, 'icon')?.value,
+    dot: ownValue(p, 'dot') === undefined ? undefined : true,
+    max: ownValue(p, 'max')?.value,
+    placement: ownValue(p, 'placement')?.value,
+    testID: p.testID,
+  };
+}
+
+const SKELETON_SHAPES = {
+  text: BloomSkeleton.Text,
+  circle: BloomSkeleton.Circle,
+  pill: BloomSkeleton.Pill,
+  box: BloomSkeleton.Box,
+} as const;
+
+/**
+ * A skeleton shape: its frame is its size (a circle's and a pill's height, a
+ * box's width and height), a box's corner its radius, a text line's height
+ * the one its font sets. It draws nothing else of a chain.
+ */
+function drawSkeleton(
+  node: Node,
+  p: Plan,
+  ctx: Context,
+  key: string | number | undefined,
+): ReactElement {
+  const { shape } = node.props as SkeletonProps;
+  let frame: FrameSpec = {};
+  let corner: CornerName | undefined;
+  for (const modifier of node.modifiers) {
+    if (modifier.kind === 'frame') frame = { ...frame, ...modifier.value };
+    if (modifier.kind === 'corner') corner = modifier.value;
+  }
+  const length = (token: SpaceToken | undefined) =>
+    token === undefined ? undefined : resolveSpace(token);
+  const props: Record<string, unknown> = { key };
+  if (shape === 'text') {
+    const { lineHeight } = resolveFont(
+      ctx.env.text.font,
+      ctx.env.text.weight,
+      ctx.env.text.leading,
+    );
+    const width = length(frame.width);
+    if (lineHeight !== undefined || width !== undefined) props.style = { lineHeight, width };
+  } else if (shape === 'box') {
+    props.width = length(frame.width);
+    props.height = length(frame.height);
+    if (corner !== undefined && corner !== 'concentric') props.borderRadius = resolveCorner(corner);
+  } else {
+    props.size = length(frame.height ?? frame.width);
+  }
+  if (p.testID !== undefined) props.testID = p.testID;
+  return draw(SKELETON_SHAPES[shape], props);
+}
+
+function withoutLabel(behaviour: Record<string, unknown>): Record<string, unknown> {
+  const { accessibilityLabel: _label, ...rest } = behaviour;
+  return rest;
 }
 
 /**

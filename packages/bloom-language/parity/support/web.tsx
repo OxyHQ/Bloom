@@ -131,7 +131,8 @@ function resolve(text: string, scope: Record<string, string>): string {
 function computed(list: Declarations, scope: Record<string, string>): Record<string, string> {
   const probe = document.createElement('div');
   for (const [name, text] of list) {
-    if (name.startsWith('--')) continue;
+    // A shimmer's delay syncs it to the clock when it mounted: a time, not a look.
+    if (name.startsWith('--') || name === 'animation-delay') continue;
     probe.style.setProperty(FOLDED[name] ?? name, resolve(text, scope));
   }
   const out: Record<string, string> = {};
@@ -157,7 +158,7 @@ function walk(element: Element, rules: CSSStyleRule[], inherited: Record<string,
     a.name < b.name ? -1 : 1,
   )) {
     if (attribute.name === 'class' || attribute.name === 'style') continue;
-    attributes[attribute.name] = attribute.value;
+    attributes[attribute.name] = reactIds(attribute.value);
   }
   const children: (DomTree | string)[] = [];
   for (const child of Array.from(element.childNodes)) {
@@ -176,6 +177,20 @@ function ancestorScope(element: Element, rules: CSSStyleRule[]): Record<string, 
   return scope;
 }
 
+/** React's `useId` counts across roots; an id is compared by its order in the tree, not its count. */
+const REACT_ID = /(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
+let ids: Map<string, string> = new Map();
+function reactIds(text: string): string {
+  return text.replace(REACT_ID, (id) => {
+    let seen = ids.get(id);
+    if (seen === undefined) {
+      seen = `id${ids.size}`;
+      ids.set(id, seen);
+    }
+    return seen;
+  });
+}
+
 const MARK = 'data-parity-subject';
 
 /** What `element` draws in the document, under Bloom's provider in `scheme`. */
@@ -192,6 +207,7 @@ export function webTree(element: ReactNode, scheme: Scheme = 'light'): unknown {
   });
   const subject = container.querySelector(`[${MARK}]`) as Element;
   const rules = styleRules();
+  ids = new Map();
   const scope = ancestorScope(subject, rules);
   const tree = Array.from(subject.children).map((child) => walk(child, rules, scope));
   act(() => root.unmount());
