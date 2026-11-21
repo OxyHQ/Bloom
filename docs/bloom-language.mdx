@@ -1655,6 +1655,19 @@ clamps) with a control to read the rest, drawn only when something is hidden.
 is open. Its type and colour are the text environment's (`.font()`,
 `.weight()`, `.foreground()`, set on it or above it), as a `Text`'s are: a
 control is handed that environment (`ControlDraw.text`).
+### Category bars
+
+```ts
+CategoryBar('Property type', categories, [type, setType]).trailing(filtersButton).backdrop('surface')
+```
+
+Bloom's `CategoryBar`: a scrolling strip of icon-over-label categories.
+`CategoryBar(label, items, binding)`: the label names the tablist, each item is
+Bloom's `{ key, label, icon }`, the binding holds the selected key (`undefined`
+selects none; a press sets it, the selected one's included). It takes
+`.trailing(view)` (pinned after the strip, never scrolling), `.spacing()`
+(`3xl` by default), `.backdrop(color)` (the surface the web edge fades
+blend into) and `.labels({ previous, next })` (the web arrows' names).
 
 ## Interop
 
@@ -2048,10 +2061,9 @@ and `@oxy.so/bloom-data` beside it.
   fact strips,
   photo grids,
   choice lists,
-  video playback.
-  hover cards.
-  image aspect ratios (Bloom's cache, through `.aspectRatio()` and `.onLoad()`),
-  fact strips,
+  category bars,
+  video playback,
+  hover cards,
   expandable text.
 
 **Not built**

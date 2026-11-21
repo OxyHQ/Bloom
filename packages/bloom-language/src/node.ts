@@ -24,6 +24,7 @@ import type { HoverCardKind } from './controls/hover-card';
 import type { ContextMenuAnchor } from '@oxy.so/bloom/context-menu';
 import type { FileUploadKind } from './controls/file-upload';
 import type { VideoViewKind } from './controls/video-view';
+import type { CategoryBarKind } from './controls/category-bar';
 import type { SortableMediaKind } from './controls/sortable-media';
 import type { VideoPlaybackKind } from './controls/video-playback';
 import type { ExpandableTextKind } from './controls/expandable-text';
@@ -868,6 +869,7 @@ export type NodeKind =
   | TagFieldKind
   | FileUploadKind
   | VideoViewKind
+  | CategoryBarKind
   | ChoiceListKind
   | VideoPlaybackKind
   | ColorSwatchPickerKind

@@ -331,6 +331,10 @@ export type { ChoiceListView, ChoiceOptionBox } from './controls/choice-list';
 export { SortablePhotoGrid } from './controls/sortable-media';
 export type { SortablePhotoGridView } from './controls/sortable-media';
 
+// Category bars (controls/category-bar.tsx)
+export { CategoryBar } from './controls/category-bar';
+export type { CategoryBarLabels, CategoryBarView } from './controls/category-bar';
+
 // Inputs (controls/inputs.tsx)
 export {
   Checkbox,

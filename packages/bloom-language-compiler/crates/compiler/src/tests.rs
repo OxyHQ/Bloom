@@ -1027,3 +1027,21 @@ fn expandable_text_is_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn category_bars_are_checked() {
+    let imports = "import { CategoryBar, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (items, type) => CategoryBar('Categories', items, type).trailing(Text('Filters')).spacing('2xl').backdrop('surface').labels({});\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("CategoryBar('C', [], t).backdrop('paper')", "Unknown color token 'paper' for .backdrop()"),
+        ("CategoryBar('C', [], t).disabled()", "CategoryBar has no modifier .disabled()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (t) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
