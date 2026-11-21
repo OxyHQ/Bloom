@@ -27,7 +27,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("tracking", &["tight", "close", "snug", "wide", "wider", "widest"]),
     ("color", &["foreground", "muted", "primary", "onPrimary", "secondary", "onSecondary", "tertiary", "onTertiary", "background", "surface", "popover", "border", "input", "success", "warning", "error", "info", "mutedFill", "card", "destructive", "primaryText", "white", "black"]),
     ("borderWidth", &["hairline", "thin", "thick"]),
-    ("opacity", &["transparent", "faint", "pale", "sheer", "hazy", "disabled", "dim", "faded", "soft", "opaque"]),
+    ("opacity", &["transparent", "faint", "pale", "sheer", "hazy", "half", "dim", "faded", "soft", "soft-opaque", "opaque"]),
     ("hitSlop", &["sm", "md", "lg"]),
     ("shrink", &["never", "normal", "first"]),
     ("alignment", &["start", "center", "end", "stretch", "baseline"]),
