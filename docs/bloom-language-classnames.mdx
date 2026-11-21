@@ -24,10 +24,10 @@ Alia `841e8843a`, Allo `ba28b38`, Astro `8ae8386`, Atlas `037990e`, Authenticato
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 637 | 41294 | 76.9% |
+| Maps to a modifier and a token | 642 | 41321 | 76.9% |
 | Expressed by the view’s structure | 35 | 3445 | 6.4% |
 | Redundant in the language | 16 | 436 | 0.8% |
-| Needs a named token (raw value) | 486 | 2602 | 4.8% |
+| Needs a named token (raw value) | 481 | 2575 | 4.8% |
 | Needs a modifier the language lacks | 265 | 4109 | 7.6% |
 | An app’s own class | 481 | 1834 | 3.4% |
 
@@ -42,7 +42,7 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | font | 482 | 11px / 14px (104), 20px / 28px (92), 24px / 32px (90), 14px (64), 15px / 22px (27), 30px / 36px (22), 36px / 40px (12), 24px (12), 10.5px (8), 28px (7), 12.5px (5), 23px (5) |
 | color | 392 | transparent (63), --surface-foreground (36), --accent (33), --error-text (25), --primary-subtle (20), --warning-text (19), --sidebar-foreground (14), green-500 (12), --sidebar-border (12), red-500 (10), --sidebar-accent (9), red-400 (9) |
 | leading | 321 | 20px (93), 24px (70), 16px (44), 18px (28), 28px (18), 1 (15), 22px (14), 14px (6), 29px (6), 17px (5), 40px (3), 32px (3) |
-| opacity | 121 | 0.9 (16), --foreground at 5% (7), black at [0.04]% (7), white at [0.06]% (6), --primary at 5% (5), --warning-text at 40% (5), white at 90% (4), white at 15% (4), white at 25% (4), --background at 90% (3), black at 25% (3), --primary at 15% (3) |
+| opacity | 94 | --foreground at 5% (7), black at [0.04]% (7), white at [0.06]% (6), --primary at 5% (5), --warning-text at 40% (5), white at 15% (4), white at 25% (4), black at 25% (3), --primary at 15% (3), --surface at 25% (3), white at 75% (3), white at 85% (3) |
 | corner | 80 | 22px (14), 14px (12), 10px (9), 18px (9), 15px (8), 23px (6), 5px (4), 13px (3), 27px (3), 25px (2), 26px (2), 3px (2) |
 | tracking | 10 | -0.5px (2), 0.04em (2), 0.5px (2), -0.2px (1), -0.4px (1), 1.5px (1), 2px (1) |
 | borderWidth | 6 | 4px (6) |
@@ -168,7 +168,7 @@ when the fill is a role's colour.
 | `pt-4` | .padding('top', 'lg') | 56 | 17 |
 | `pb-3` | .padding('bottom', 'md') | 55 | 15 |
 | `text-[10px]` | .font('2xs') | 55 | 10 |
-| `opacity-50` | .opacity('disabled') | 54 | 8 |
+| `opacity-50` | .opacity('half') | 54 | 8 |
 | `py-6` | .padding('vertical', '2xl') | 54 | 11 |
 | `gap-2.5` | .spacing('sm-md') | 53 | 13 |
 | `p-space-16` | .padding('all', 'lg') | 53 | 3 |
@@ -247,7 +247,7 @@ when the fill is a role's colour.
 | `my-2` | .padding('vertical', 'sm') (outside the fill) | 20 | 4 |
 | `p-3.5` | .padding('all', 'md-lg') | 20 | 3 |
 | `pr-3` | .padding('trailing', 'md') | 20 | 6 |
-| `bg-muted/50` | .background('mutedFill/disabled') | 19 | 5 |
+| `bg-muted/50` | .background('mutedFill/half') | 19 | 5 |
 | `p-1.5` | .padding('all', 'xs-sm') | 19 | 8 |
 | `pt-8` | .padding('top', '3xl') | 19 | 8 |
 | `px-3.5` | .padding('horizontal', 'md-lg') | 19 | 8 |
@@ -268,6 +268,7 @@ when the fill is a role's colour.
 | `text-left` | .textAlign('start') | 17 | 8 |
 | `h-2.5` | .frame({ height: 'sm-md' }) | 16 | 10 |
 | `items-baseline` | .align('baseline') | 16 | 12 |
+| `opacity-90` | .opacity('soft-opaque') | 16 | 5 |
 | `rounded-[28px]` | .corner('3xl') | 16 | 5 |
 | `bg-muted/30` | .background('mutedFill/sheer') | 15 | 4 |
 | `border-destructive` | .border('destructive') | 15 | 6 |
@@ -298,7 +299,7 @@ when the fill is a role's colour.
 | `opacity-0` | .opacity('transparent') | 12 | 5 |
 | `pt-space-8` | .padding('top', 'sm') | 12 | 3 |
 | `text-text-primary` | .foreground('foreground') | 12 | 2 |
-| `border-border/50` | .border('border/disabled') | 11 | 2 |
+| `border-border/50` | .border('border/half') | 11 | 2 |
 | `border-l` | .border(role, 'thin', 'leading') | 11 | 6 |
 | `leading-relaxed` | .leading('relaxed') | 11 | 5 |
 | `mb-10` | .padding('bottom', '4xl') (outside the fill) | 11 | 4 |
@@ -312,7 +313,7 @@ when the fill is a role's colour.
 | `rounded-radius-20` | .corner('xl') | 11 | 2 |
 | `bg-fill` | .background('card') | 10 | 2 |
 | `bg-white/10` | .background('white/faint') | 10 | 4 |
-| `border-destructive/50` | .border('destructive/disabled') | 10 | 2 |
+| `border-destructive/50` | .border('destructive/half') | 10 | 2 |
 | `leading-tight` | .leading('close') | 10 | 3 |
 | `rounded-[8px]` | .corner('sm') | 10 | 4 |
 | `space-y-6` | .spacing('2xl') | 10 | 2 |
@@ -346,7 +347,7 @@ when the fill is a role's colour.
 | `px-space-4` | .padding('horizontal', 'xs') | 8 | 2 |
 | `text-[18px]` | .font('lg-xl') | 8 | 4 |
 | `bg-background/80` | .background('background/soft') | 7 | 5 |
-| `bg-black/50` | .background('black/disabled') | 7 | 7 |
+| `bg-black/50` | .background('black/half') | 7 | 7 |
 | `border-l-2` | .border(role, 'thick', 'leading') | 7 | 5 |
 | `gap-space-20` | .spacing('xl') | 7 | 3 |
 | `line-through` | .strikethrough() | 7 | 3 |
@@ -356,7 +357,7 @@ when the fill is a role's colour.
 | `py-space-2` | .padding('vertical', '2xs') | 7 | 3 |
 | `size-3` | .frame({ width: 'md', height: 'md' }) | 7 | 2 |
 | `text-background` | .foreground('background') | 7 | 5 |
-| `bg-input/50` | .background('input/disabled') | 6 | 2 |
+| `bg-input/50` | .background('input/half') | 6 | 2 |
 | `bg-input/80` | .background('input/soft') | 6 | 2 |
 | `font-extrabold` | .weight('extrabold') | 6 | 3 |
 | `gap-[2px]` | .spacing('2xs') | 6 | 2 |
@@ -415,6 +416,7 @@ when the fill is a role's colour.
 | `py-space-32` | .padding('vertical', '3xl') | 4 | 2 |
 | `size-12` | .frame({ width: '4xl-5xl', height: '4xl-5xl' }) | 4 | 2 |
 | `space-y-1.5` | .spacing('xs-sm') | 4 | 2 |
+| `text-white/90` | .foreground('white/soft-opaque') | 4 | 3 |
 | `tracking-widest` | .tracking('widest') | 4 | 4 |
 | `w-0.5` | .frame({ width: '2xs' }) | 4 | 4 |
 | `w-1.5` | .frame({ width: 'xs-sm' }) | 4 | 3 |
@@ -422,6 +424,7 @@ when the fill is a role's colour.
 | `-ml-1` | .padding('leading', '-xs') (outside the fill) | 3 | 2 |
 | `-ml-3` | .padding('leading', '-md') (outside the fill) | 3 | 2 |
 | `-mx-4` | .padding('horizontal', '-lg') (outside the fill) | 3 | 2 |
+| `bg-background/90` | .background('background/soft-opaque') | 3 | 3 |
 | `bg-card/60` | .background('card/dim') | 3 | 2 |
 | `bg-error` | .background('error') | 3 | 2 |
 | `bg-muted-foreground` | .background('muted') | 3 | 3 |
@@ -443,7 +446,7 @@ when the fill is a role's colour.
 | `size-6` | .frame({ width: '2xl', height: '2xl' }) | 3 | 3 |
 | `text-foreground/60` | .foreground('foreground/dim') | 3 | 2 |
 | `w-3.5` | .frame({ width: 'md-lg' }) | 3 | 3 |
-| `bg-background/50` | .background('background/disabled') | 2 | 2 |
+| `bg-background/50` | .background('background/half') | 2 | 2 |
 | `bg-black/40` | .background('black/hazy') | 2 | 2 |
 | `bg-input` | .background('input') | 2 | 2 |
 | `bg-primary/60` | .background('primary/dim') | 2 | 2 |
@@ -552,7 +555,6 @@ when the fill is a role's colour.
 | `max-w-md` | 448px | .frame({ maxWidth: … }) | 17 | 9 |
 | `w-14` | 56px | .frame({ width: … }) | 17 | 7 |
 | `max-w-3xl` | 768px | .frame({ maxWidth: … }) | 16 | 6 |
-| `opacity-90` | 0.9 | .opacity(…) | 16 | 5 |
 | `leading-none` | 1 | .leading(…) | 15 | 7 |
 | `w-7` | 28px | .frame({ width: … }) | 15 | 9 |
 | `leading-7` | 28px | .leading(…) | 14 | 5 |
@@ -641,11 +643,9 @@ when the fill is a role's colour.
 | `text-[34px]` | 34px | .font(…) | 4 | 3 |
 | `text-[9px]` | 9px | .font(…) | 4 | 2 |
 | `text-card-foreground` | --card-foreground | .foreground(…) | 4 | 3 |
-| `text-white/90` | white at 90% | .foreground('white/…') | 4 | 3 |
 | `w-28` | 112px | .frame({ width: … }) | 4 | 4 |
 | `w-44` | 176px | .frame({ width: … }) | 4 | 4 |
 | `w-[260px]` | 260px | .frame({ width: … }) | 4 | 4 |
-| `bg-background/90` | --background at 90% | .background('background/…') | 3 | 3 |
 | `bg-primary/15` | --primary at 15% | .background('primary/…') | 3 | 3 |
 | `h-32` | 128px | .frame({ height: … }) | 3 | 2 |
 | `h-[18px]` | 18px | .frame({ height: … }) | 3 | 2 |
