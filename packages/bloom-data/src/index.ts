@@ -21,7 +21,7 @@ export {
   list,
   type RefTarget,
 } from './entity';
-export { environment } from './environment';
+export { type EnvironmentEvent, environment } from './environment';
 export { type Model, type ModelOptions, type ModelRecord, model } from './model';
 export {
   type Action,
