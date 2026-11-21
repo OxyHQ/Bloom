@@ -1599,6 +1599,14 @@ export const ENUMS = {
   "resizeHandleStyle": [
     "grip",
     "pill"
+  ],
+  "modePresentation": [
+    "segmented",
+    "toggle"
+  ],
+  "teamPlacement": [
+    "header",
+    "footer"
   ]
 } as const;
 
@@ -2633,6 +2641,42 @@ export const MODIFIERS = {
   ],
   "onNudge": [
     "value"
+  ],
+  "mode": [
+    "value"
+  ],
+  "onModeChange": [
+    "value"
+  ],
+  "modePresentation": [
+    "modePresentation"
+  ],
+  "modesLabel": [
+    "value"
+  ],
+  "team": [
+    "value"
+  ],
+  "teamPlacement": [
+    "teamPlacement"
+  ],
+  "plan": [
+    "value"
+  ],
+  "onboarding": [
+    "value"
+  ],
+  "onDrop": [
+    "value"
+  ],
+  "draggable": [
+    "value?"
+  ],
+  "droppable": [
+    "value?"
+  ],
+  "dropBeside": [
+    "value?"
   ]
 } as const;
 
@@ -7294,7 +7338,17 @@ export const NODE_MODIFIERS = {
     "logo",
     "account",
     "label",
-    "testID"
+    "testID",
+    "mode",
+    "onModeChange",
+    "modePresentation",
+    "modesLabel",
+    "team",
+    "teamPlacement",
+    "plan",
+    "onboarding",
+    "query",
+    "onDrop"
   ],
   "navItem": [
     "id",
@@ -7314,7 +7368,8 @@ export const NODE_MODIFIERS = {
     "onExpandedChange",
     "loading",
     "error",
-    "emptyLabel"
+    "emptyLabel",
+    "droppable"
   ],
   "treeFolder": [
     "id",
@@ -7334,7 +7389,10 @@ export const NODE_MODIFIERS = {
     "onExpandedChange",
     "emptyLabel",
     "onPress",
-    "onLongPress"
+    "onLongPress",
+    "draggable",
+    "droppable",
+    "dropBeside"
   ],
   "rail": [
     "selection",
@@ -7628,6 +7686,10 @@ export const NODE_MODIFIERS = {
     "onNudge",
     "label",
     "testID"
+  ],
+  "sidebarMode": [
+    "id",
+    "shortcut"
   ]
 } as const;
 
@@ -7734,5 +7796,6 @@ export const CONSTRUCTORS = {
   "ScrollArea": "scrollArea",
   "ScrollSurface": "scrollSurface",
   "AutoHideBar": "autoHideBar",
-  "ResizeHandle": "resizeHandle"
+  "ResizeHandle": "resizeHandle",
+  "SidebarMode": "sidebarMode"
 } as const;
