@@ -56,17 +56,20 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
   internal var items: List<GlassMenuItemRecord> = emptyList()
     set(value) {
       field = value
+      // Emptied, a view that opens with its rows opens again with the next ones.
+      if (value.isEmpty()) openedWithItems = false
       overlay?.menuSession?.takeIf { it.anchor === this }?.refreshItems()
       openWhenReady()
     }
-  // The owner mounts this view with its menu already open (rows that arrive only as the menu opens): it opens
-  // itself, once, as soon as it is attached and laid out, since nothing can call `open` on it before it is mounted.
-  internal var openOnMount = false
+  // The owner gives this view its rows only as its menu opens (rows built by the press that opens it, or a view
+  // mounted with its menu open): it opens itself as soon as it has rows and is laid out, since nothing can call
+  // `open` with rows it does not have yet. Its rows emptied once the menu has closed, the next ones open it again.
+  internal var openWithItems = false
     set(value) {
       field = value
       openWhenReady()
     }
-  private var openedOnMount = false
+  private var openedWithItems = false
   internal var glass = true
     set(value) {
       field = value
@@ -120,8 +123,8 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
   }
 
   private fun openWhenReady() {
-    if (!openOnMount || openedOnMount || overlay == null || items.isEmpty() || width == 0 || height == 0) return
-    openedOnMount = true
+    if (!openWithItems || openedWithItems || overlay == null || items.isEmpty() || width == 0 || height == 0) return
+    openedWithItems = true
     // After the rest of this layout pass, so the anchor is measured where it ends up.
     post { open(null, null, null, null) }
   }
