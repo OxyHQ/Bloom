@@ -68,3 +68,13 @@ export function PageFooter(props: Record<string, unknown>) {
 }
 export const Command = 'Command';
 export const SettingsModal = 'SettingsModal';
+export function Toolbar(props: Record<string, unknown>) {
+  return createElement(
+    'Toolbar',
+    props,
+    props.children as never,
+    props.actions as never,
+    props.accessory as never,
+  );
+}
+export const StickySection = 'StickySection';

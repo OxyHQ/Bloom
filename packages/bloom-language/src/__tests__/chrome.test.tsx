@@ -17,7 +17,9 @@ import {
   SettingsItem,
   SettingsModal,
   Sidebar,
+  StickySection,
   Text,
+  Toolbar,
   TreeFolder,
   TreeItem,
   TreeSection,
@@ -198,5 +200,33 @@ describe('Command and SettingsModal', () => {
     expect(profile).toHaveBeenCalledTimes(1);
     props.onClose();
     expect(change).toHaveBeenCalledWith(false);
+  });
+});
+
+describe('the layout family', () => {
+  it('a toolbar’s tools come before its actions and accessory', () => {
+    const r = mount(
+      toElement(
+        Toolbar(Text('bold'), Text('italic'))
+          .trailing(Text('share'))
+          .accessory(Text('fonts'))
+          .size('sm')
+          .testID('tools'),
+      ),
+    );
+    expect(only(r, 'Toolbar').props).toMatchObject({ size: 'sm', testID: 'tools' });
+    expect(hosts(r, 'Text').map((t) => t.props.children)).toEqual([
+      'bold',
+      'italic',
+      'share',
+      'fonts',
+    ]);
+    expect('size' in only(mount(toElement(Toolbar())), 'Toolbar').props).toBe(false);
+  });
+
+  it('a sticky section holds its children', () => {
+    const r = mount(toElement(StickySection(Text('Today')).testID('day')));
+    expect(only(r, 'StickySection').props.testID).toBe('day');
+    expect(hosts(r, 'Text')).toHaveLength(1);
   });
 });

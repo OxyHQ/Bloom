@@ -1469,6 +1469,17 @@ nor the test renderer does: the parity suite proves the shell's frame and
 semantic layout there, the panels' definitions are unit tests, and Chrome
 (`verify-parity-web.mjs`) compares the laid-out panels.
 
+### Toolbar and StickySection
+
+`Toolbar(...tools)` is Bloom's `Toolbar` (`@oxy.so/bloom/layout`): its tools
+scroll across when they do not fit, `.trailing(...)` are its `actions` (kept in
+reach at its end), `.accessory(view)` its second row, `.size` its controls'
+size. `StickySection(...children)` is Bloom's `StickySection`, docked under the
+header as the page scrolls past it (inside the app's `HeaderDockProvider`, as
+Bloom's is). The rest of the layout family (`ScrollArea`, `ScrollSurface`,
+`AutoHideBar`, `ResizeHandle`, the edge and scroll-metric providers) is not in
+the language: apps use it in a handful of places, through `Embed`.
+
 ## Image
 
 `Image(source, alt?)` is Bloom's `BloomImage`: expo-image on a device,
@@ -2008,6 +2019,14 @@ and `@oxy.so/bloom-data` beside it.
   `Admonition`, `Tabs`/`TabItem`/`TabContent` (the selection a binding,
   reordering), `SelectionCard`, `Kbd` and `ErrorBoundary` (a box, a fallback
   that is a function of the error).
+- App chrome (see [App chrome](#app-chrome)), each Bloom's own component with
+  parity on native and web: `ScrollView` and the rest of `screen()`'s
+  `Screen` (kind, scroll owner, document scroll, header placement and scroll
+  edge, underlay, floating action, clearance, navigation scope); a `.sheet()`'s
+  `BottomSheet` (iOS: the system sheet, not verified); `Sidebar` with its
+  destinations and tree, `Rail`, `PageFooter`; `Command`; `SettingsModal`;
+  `AppLayout`'s semantic layout, panels, deck and inspector, and its
+  destinations (Bloom's pager provider); `Toolbar` and `StickySection`.
 
 **Not built**
 
@@ -2037,6 +2056,15 @@ and `@oxy.so/bloom-data` beside it.
   `.overlay(view, alignment)` is the aligned form.
 - Compiler distribution: prebuilt addons per platform from CI, and a WASI
   fallback.
+- App chrome: the iPad's system sidebar; a screen's colour (`colorPreset`,
+  `seed`) and `active`; the sidebar's modes, team, plan, onboarding, search
+  query and tree drag and drop; the settings pages' own rows
+  (`SettingsSection`, `SettingsSelect`, the text and date fields); Bloom's
+  sheet detents (it has none); the rest of the layout family (`ScrollArea`,
+  `ScrollSurface`, `AutoHideBar`, `ResizeHandle`). The settings modal's
+  native parity draws nothing in Bloom's test environment, and the shell's
+  panels render only once it has measured itself, so both are compared in
+  Chrome.
 - Replacing `className`: the codemods read the className table; what it
   flags needs a modifier or a named token first.
 - Parity: a field that takes the focus as it appears and a toast are
