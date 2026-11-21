@@ -28,3 +28,7 @@ export const CarouselItem = 'CarouselItem';
 export const Markdown = 'Markdown';
 export const Slider = 'Slider';
 export const RangeSlider = 'RangeSlider';
+export const Accordion = 'Accordion';
+export const AccordionItem = 'AccordionItem';
+export const AccordionTrigger = 'AccordionTrigger';
+export const AccordionContent = 'AccordionContent';

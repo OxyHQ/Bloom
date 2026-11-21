@@ -6,12 +6,13 @@ import { CONTAINERS } from './containers';
 import { SETTINGS } from './settings';
 import { DATE_PICKERS } from './date-picker';
 import { RATINGS } from './rating';
-import { SLIDERS } from './slider';
 import { STAT_BARS } from './stat-bar';
 import { TABLES } from './table';
 import { LISTS } from './list';
 import { CAROUSELS } from './carousel';
 import { MARKDOWN } from './markdown';
+import { SLIDERS } from './slider';
+import { ACCORDIONS } from './accordion';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -31,4 +32,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...CAROUSELS,
   ...MARKDOWN,
   ...SLIDERS,
+  ...ACCORDIONS,
 };
