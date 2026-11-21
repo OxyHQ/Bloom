@@ -3,6 +3,7 @@ import { CAROUSELS } from './carousel';
 import { DATE_PICKERS } from './date-picker';
 import type { ControlRenderer } from './draw';
 import { LISTS } from './list';
+import { MARKDOWN } from './markdown';
 import { RATINGS } from './rating';
 import { STAT_BARS } from './stat-bar';
 import { TABLES } from './table';
@@ -18,4 +19,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...TABLES,
   ...LISTS,
   ...CAROUSELS,
+  ...MARKDOWN,
 };

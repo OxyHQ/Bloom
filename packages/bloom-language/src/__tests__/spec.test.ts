@@ -110,6 +110,7 @@ import type {
   ListSelectionBarView,
 } from '../controls/list';
 import type { CarouselView, CarouselItemView, CarouselDotsView } from '../controls/carousel';
+import type { MarkdownView } from '../controls/markdown';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -333,7 +334,9 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<CarouselView>, Of<'carousel'>>,
       Same<MethodsOf<CarouselItemView>, Of<'carouselItem'>>,
       Same<MethodsOf<CarouselDotsView>, Of<'carouselDots'>>,
+      Same<MethodsOf<MarkdownView>, Of<'markdown'>>,
     ] = [
+      true,
       true,
       true,
       true,

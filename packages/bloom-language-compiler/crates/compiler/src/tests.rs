@@ -664,3 +664,15 @@ fn carousels_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn markdown_is_checked() {
+    let imports = "import { Markdown, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (s, open) => Markdown(s).streaming().size('lg').onLinkPress(open).codeBlock((code) => Text(code));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = (s) => Markdown(s).size('xl');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown markdownSize token 'xl' for .size()");
+}
