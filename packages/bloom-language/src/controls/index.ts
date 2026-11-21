@@ -7,6 +7,7 @@ import { CODES } from './code';
 import { CONTAINERS } from './containers';
 import { CONTEXT_MENUS } from './context-menu';
 import { HOVER_CARDS } from './hover-card';
+import { MENUBARS } from './menubar';
 import { DATE_PICKERS } from './date-picker';
 import { FILE_UPLOADS } from './file-upload';
 import type { ControlRenderer } from './draw';
@@ -75,4 +76,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...SORTABLE_MEDIA,
   ...HOVER_CARDS,
   ...EXPANDABLE_TEXTS,
+  ...MENUBARS,
 };

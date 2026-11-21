@@ -413,3 +413,7 @@ export type {
   ExpandableTextStyle,
   ExpandableTextView,
 } from './controls/expandable-text';
+
+// Menubars (controls/menubar.tsx)
+export { Menubar, MenubarMenu } from './controls/menubar';
+export type { MenubarMenuView, MenubarView } from './controls/menubar';

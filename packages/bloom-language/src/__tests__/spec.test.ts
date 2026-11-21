@@ -144,6 +144,7 @@ import type { DropZoneView } from '../controls/drop-zone';
 import type { MediaInsetBorderView } from '../controls/media-inset-border';
 import type { SortablePhotoGridView } from '../controls/sortable-media';
 import type { HoverCardView } from '../controls/hover-card';
+import type { MenubarMenuView, MenubarView } from '../controls/menubar';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -404,7 +405,11 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<SortablePhotoGridView>, Of<'sortablePhotoGrid'>>,
       Same<MethodsOf<HoverCardView>, Of<'hoverCard'>>,
       Same<MethodsOf<ExpandableTextView>, Of<'expandableText'>>,
+      Same<MethodsOf<MenubarView>, Of<'menubar'>>,
+      Same<MethodsOf<MenubarMenuView>, Of<'menubarMenu'>>,
     ] = [
+      true,
+      true,
       true,
       true,
       true,

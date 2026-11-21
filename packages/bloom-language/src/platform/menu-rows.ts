@@ -30,6 +30,8 @@ export interface MenuItemRow {
   /** A toggle's state; `undefined` for an action. */
   checked: boolean | undefined;
   keepOpen: boolean;
+  /** The key chord that runs it from a menubar (`Mod+N`). */
+  shortcut: string | undefined;
   /** What choosing the row runs: its own handler, or its tag's action through `choose`. */
   onPress: (() => void) | undefined;
   testID: string | undefined;
@@ -103,6 +105,7 @@ export function readMenuRows(
           disabled: values.disabled === true,
           checked: values.checked as boolean | undefined,
           keepOpen: values.keepOpen === true,
+          shortcut: values.shortcut as string | undefined,
           onPress:
             tag !== undefined && choose
               ? () => choose(tag)
