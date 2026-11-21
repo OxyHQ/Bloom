@@ -140,7 +140,7 @@ export const TABLES: Record<TableKind, ControlRenderer> = {
     const props = layout(d, d.props());
     const sort = d.own('sort')?.value;
     if (sort !== undefined) [props.sortDirection, props.onSort] = sort;
-    const prefix = d.own('prefix')?.value;
+    const prefix = d.own('prefix')?.value as Child | undefined;
     if (prefix !== undefined) props.leading = d.render(prefix);
     return d.component(
       BloomTableColumn,

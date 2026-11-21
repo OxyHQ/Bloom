@@ -258,7 +258,7 @@ export const LISTS: Record<ListKind, ControlRenderer> = {
     Object.assign(props, {
       supporting: text(d, d.own('supporting')?.value),
       supportingLines: d.own('supportingLines')?.value,
-      leading: slot(d, d.own('prefix')?.value),
+      leading: slot(d, d.own('prefix')?.value as Child | undefined),
       trailing: trailing === undefined ? undefined : d.render(trailing[0]),
       content: slot(d, d.own('content')?.value),
       footer: slot(d, d.own('footnote')?.value),

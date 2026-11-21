@@ -2154,6 +2154,10 @@ function renderHost(
           );
           return component(host, paint === undefined ? out : painted(out, paint), props, children);
         },
+        around: (element) =>
+          boxed
+            ? drawHost(View, boxOf('host', node.kind), hostProps(undefined, key), element)
+            : element,
         pressAround: (drawn) => pressAround(p, behaviour, key, drawn),
         render: (child) => renderChild(child, ctx, undefined),
         children: (children) => renderChildren(children, ctx),

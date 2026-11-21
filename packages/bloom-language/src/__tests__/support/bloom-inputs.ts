@@ -1,0 +1,24 @@
+/** Bloom's inputs as named stand-ins: what reaches them is the prop contract under test. */
+export const TextField = 'TextField';
+export const TextFieldInput = 'TextFieldInput';
+export const TextFieldIcon = 'TextFieldIcon';
+export const TextFieldPrefix = 'TextFieldPrefix';
+export const TextFieldSuffix = 'TextFieldSuffix';
+export const Textarea = 'Textarea';
+export const Field = 'Field';
+export const Label = 'Label';
+export const Switch = 'Switch';
+export const Checkbox = 'Checkbox';
+export const RadioGroup = 'RadioGroup';
+export const SegmentedControl = 'SegmentedControl';
+export const SegmentedControlItem = 'SegmentedControlItem';
+export const SegmentedControlItemText = 'SegmentedControlItemText';
+export const Select = 'Select';
+export const SelectTrigger = 'SelectTrigger';
+export const SelectValue = 'SelectValue';
+export const SelectIcon = 'SelectIcon';
+export const SelectContent = 'SelectContent';
+export const SelectItem = 'SelectItem';
+export const SelectItemIndicator = 'SelectItemIndicator';
+export const SelectItemText = 'SelectItemText';
+export const Search = 'Search';

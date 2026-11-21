@@ -13,6 +13,7 @@ import { CODE_CASES } from '../../parity/code.cases';
 import { DATE_PICKER_CASES } from '../../parity/date-picker.cases';
 import { FILE_UPLOAD_CASES } from '../../parity/file-upload.cases';
 import { ICON_CASES, ICON_CASES_EVERY } from '../../parity/icon.cases';
+import { INPUT_CASES } from '../../parity/inputs.cases';
 import { LAYOUT_CASES } from '../../parity/layout.cases';
 import { LIST_CASES } from '../../parity/list.cases';
 import { MARKDOWN_CASES } from '../../parity/markdown.cases';
@@ -101,3 +102,4 @@ export const ActivityHeatmaps: Story = { args: { cases: ACTIVITY_HEATMAP_CASES }
 export const TagFields: Story = { args: { cases: TAG_FIELD_CASES } };
 export const FileUploads: Story = { args: { cases: FILE_UPLOAD_CASES } };
 export const Videos: Story = { args: { cases: VIDEO_CASES } };
+export const Inputs: Story = { args: { cases: INPUT_CASES } };

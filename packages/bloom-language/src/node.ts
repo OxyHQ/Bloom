@@ -46,8 +46,20 @@ import type { DatePickerKind } from './controls/date-picker';
 import type { HourFormat, WeekStart } from '@oxy.so/bloom/date-picker';
 import type { Binding } from './binding';
 
+import type { SearchToken } from '@oxy.so/bloom/search';
+
 import type { ContainerKind } from './controls/containers';
-import type { InputKind } from './controls/inputs';
+import type {
+  Autocapitalize,
+  ContentType,
+  InputKind,
+  Keyboard,
+  RadioStyle,
+  SearchCollapse,
+  SegmentedStyle,
+  SubmitLabel,
+  TextareaResize,
+} from './controls/inputs';
 import type { OverlayKind } from './controls/overlays';
 import { OBJECTS } from './generated/spec.generated';
 import { regular, type GlassValue } from './glass';
@@ -333,7 +345,7 @@ export interface ValueModifiers {
   share: number;
   minWidth: SpaceToken;
   sort: readonly [direction: TableSort, action: () => void];
-  prefix: Child;
+  prefix: string | Child;
   emptyState: string | number | Child;
   selected: boolean;
 
@@ -443,6 +455,28 @@ export interface ValueModifiers {
   allowsPictureInPicture: boolean;
 
   // Inputs (controls/inputs.tsx)
+  required: boolean;
+  floatingLabel: true;
+  revealable: true;
+  suffix: string;
+  keyboard: Keyboard;
+  autocapitalize: Autocapitalize;
+  autocorrect: boolean;
+  contentType: ContentType;
+  submitLabel: SubmitLabel;
+  onSubmit: () => void;
+  autoFocus: true;
+  maxLength: number;
+  description: string;
+  error: string | null | undefined;
+  readOnly: true;
+  rows: number;
+  autoResize: number | undefined;
+  resize: TextareaResize;
+  showCount: true;
+  tabs: true;
+  collapsible: SearchCollapse | undefined;
+  tokens: Binding<readonly SearchToken[]>;
 
   // Overlays and feedback (controls/overlays.tsx)
 
@@ -602,7 +636,9 @@ export type Modifier =
         | LoadingStyle
         | RatingStyle
         | DotsStyle
-        | StepperStyle;
+        | StepperStyle
+        | RadioStyle
+        | SegmentedStyle;
     }
   | {
       readonly kind: 'shape';
@@ -1076,7 +1112,15 @@ export class Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
   style(
-    value: BloomAppearance | BadgeStyle | LoadingStyle | RatingStyle | DotsStyle | StepperStyle,
+    value:
+      | BloomAppearance
+      | BadgeStyle
+      | LoadingStyle
+      | RatingStyle
+      | DotsStyle
+      | StepperStyle
+      | RadioStyle
+      | SegmentedStyle,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
@@ -1530,7 +1574,7 @@ export class Node {
   sort(direction: TableSort, action: () => void): Node {
     return this.set('sort', [direction, action]);
   }
-  prefix(value: Child): Node {
+  prefix(value: string | Child): Node {
     return this.set('prefix', value);
   }
   emptyState(value: string | number | Child): Node {
@@ -1820,6 +1864,72 @@ export class Node {
   }
 
   // Inputs (controls/inputs.tsx)
+  required(value = true): Node {
+    return this.set('required', value);
+  }
+  floatingLabel(): Node {
+    return this.set('floatingLabel', true);
+  }
+  revealable(): Node {
+    return this.set('revealable', true);
+  }
+  suffix(value: string): Node {
+    return this.set('suffix', value);
+  }
+  keyboard(value: Keyboard): Node {
+    return this.set('keyboard', value);
+  }
+  autocapitalize(value: Autocapitalize): Node {
+    return this.set('autocapitalize', value);
+  }
+  autocorrect(value: boolean): Node {
+    return this.set('autocorrect', value);
+  }
+  contentType(value: ContentType): Node {
+    return this.set('contentType', value);
+  }
+  submitLabel(value: SubmitLabel): Node {
+    return this.set('submitLabel', value);
+  }
+  onSubmit(value: () => void): Node {
+    return this.set('onSubmit', value);
+  }
+  autoFocus(): Node {
+    return this.set('autoFocus', true);
+  }
+  maxLength(value: number): Node {
+    return this.set('maxLength', value);
+  }
+  description(value: string): Node {
+    return this.set('description', value);
+  }
+  error(value: string | null | undefined): Node {
+    return this.set('error', value);
+  }
+  readOnly(): Node {
+    return this.set('readOnly', true);
+  }
+  rows(value: number): Node {
+    return this.set('rows', value);
+  }
+  autoResize(maxRows?: number): Node {
+    return this.set('autoResize', maxRows);
+  }
+  resize(value: TextareaResize): Node {
+    return this.set('resize', value);
+  }
+  showCount(): Node {
+    return this.set('showCount', true);
+  }
+  tabs(): Node {
+    return this.set('tabs', true);
+  }
+  collapsible(value?: SearchCollapse): Node {
+    return this.set('collapsible', value);
+  }
+  tokens(value: Binding<readonly SearchToken[]>): Node {
+    return this.set('tokens', value);
+  }
 
   // Overlays and feedback (controls/overlays.tsx)
 
