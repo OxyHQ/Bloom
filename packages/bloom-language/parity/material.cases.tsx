@@ -328,12 +328,15 @@ const named: ParityCase[] = [
   // The steps between Bloom's rungs, at the values apps render today (Tailwind's scale).
   ...(
     [
+      ['none-2xs', 1],
       ['xs-sm', 6],
       ['sm-md', 10],
       ['md-lg', 14],
+      ['2xl-3xl', 28],
       ['3xl-4xl', 36],
       ['4xl-5xl', 48],
       ['6xl', 64],
+      ['7xl', 96],
     ] as const
   ).flatMap(([rung, value]) => [
     {
@@ -384,17 +387,26 @@ const named: ParityCase[] = [
       ['pale', 0.2],
       ['hazy', 0.4],
       ['dim', 0.6],
+      ['soft-opaque', 0.9],
     ] as const
   ).map(([name, value]) => ({
     name: `opacity ${name}`,
     language: () => toElement(L.VStack().opacity(name)),
     bloom: () => <RN.View style={{ opacity: value }} />,
   })),
-  {
-    name: 'corner xs-sm (rounded-md)',
-    language: () => toElement(L.VStack().corner('xs-sm')),
-    bloom: () => <RN.View style={{ borderRadius: 6, overflow: 'hidden' }} />,
-  },
+  ...(
+    [
+      ['xs-sm', 6],
+      ['sm-md', 10],
+      ['md-lg', 14],
+      ['lg-xl', 18],
+      ['xl-2xl', 22],
+    ] as const
+  ).map(([rung, value]) => ({
+    name: `corner ${rung}`,
+    language: () => toElement(L.VStack().corner(rung)),
+    bloom: () => <RN.View style={{ borderRadius: value, overflow: 'hidden' }} />,
+  })),
 ];
 
 /** `.blur()`: Bloom's floating island, a capsule unless a corner names its radius. */

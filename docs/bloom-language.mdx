@@ -204,9 +204,10 @@ variable on the web. `mutedFill` is `--muted` (the subtle fill of `bg-muted`;
 `muted` stays the quiet ink, `--muted-foreground`), `card` is `--card`,
 `destructive` is `--destructive` (Bloom's `ThemeColors.destructive`, which
 the engine's error role fills; `error` is the policy's status colour),
-`primaryText` is `--primary-text`, and `white` and `black` are Tailwind's
-fixed `#ffffff` and `#000000` (Bloom's `ThemeColors.white` and `black`, the
-same in every theme). A role at an opacity is one token, `'role/opacity'`,
+`primaryText` is `--primary-text`, `errorText` `--error-text`, `onSurface`
+`--surface-foreground`, `accent` `--accent`, and `white`, `black` and
+`transparent` are Tailwind's fixed colours (Bloom's `ThemeColors.white`,
+`black` and `transparent`, the same in every theme). A role at an opacity is one token, `'role/opacity'`,
 with an `opacity` rung for the amount: `text-muted-foreground/70` is
 `.foreground('muted/faded')`, `bg-primary/10` `.background('primary/faint')`.
 Native paints the role's colour at that alpha; the web writes the mix
@@ -222,14 +223,18 @@ of its class vocabulary (`SPACING_STEPS`, `RADIUS_STEPS` in
 `design-tokens/scales.ts`): apps already write `py-space-6`, which matches no
 rule and renders nothing today. Tailwind's `text-base` is
 `.font('md-lg').leading('normal')` (16/24), `text-lg`
-`.font('lg-xl').leading('open')` (18/28).
+`.font('lg-xl').leading('open')` (18/28), `text-xl`
+`.font('xl').leading('easy-normal')` (20/28), `text-2xl`
+`.font('2xl-3xl').leading('snug-easy')` (24/32), and Bloom's `text-caption`
+`.font('2xs-xs').leading('close-snug')` (11/14). Past the ends of a scale the
+names go on (`6xl` 64, `7xl` 96); 1px is `none-2xs`.
 
 The vocabulary is closed. Every value is a name from the spec, whose every rung
 `spec.test.ts` holds equal to Bloom's own table, so a rung cannot drift from Bloom.
 
 | Modifier | Values |
 | --- | --- |
-| `padding(edge?, v)` | space: `none` `2xs` `xs` `sm` `md` `lg` `xl` `2xl`…`6xl`, and the steps between rungs (`xs-sm` 6, `sm-md` 10, `md-lg` 14, `3xl-4xl` 36, `4xl-5xl` 48); `-lg` and the like pull outward (a margin) |
+| `padding(edge?, v)` | space: `none` `2xs` `xs` `sm` `md` `lg` `xl` `2xl`…`6xl`, and the steps between rungs (`none-2xs` 1, `xs-sm` 6, `sm-md` 10, `md-lg` 14, `2xl-3xl` 28, `3xl-4xl` 36, `4xl-5xl` 48, `7xl` 96); `-lg` and the like pull outward (a margin) |
 | `spacing(v)` | space, or `between` |
 | `frame({ width, height, min…, max… })` | space |
 | `grow()`, `shrink(p)` | `never` `normal` `first` |
@@ -240,7 +245,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `leading(l)` | Bloom line heights `tight` 1.15, `close` 1.25, `snug` 1.3, `easy` 1.375, `normal` 1.5, `open` (28 on 18), `relaxed` 1.625 |
 | `foreground(c)`, `background(c)` | colour roles: `foreground` `muted` `primary` `surface` `card` `mutedFill` `border` `error` `destructive` `primaryText` `white` `black`…, or a role at a named opacity (`'muted/faded'`) |
 | `border(c, width?, edge?)` | colour role (or a role at an opacity); `hairline` (the platform hairline), `thin` or `thick` |
-| `corner(r)`, `cornerCurve(c)` | radius rungs (`xs-sm` 6 among them), `full`, `concentric`; `round` `smooth` (see [Material](#material)) |
+| `corner(r)`, `cornerCurve(c)` | radius rungs (the steps `xs-sm` 6, `sm-md` 10, `md-lg` 14, `lg-xl` 18, `xl-2xl` 22 among them), `full`, `concentric`; `round` `smooth` (see [Material](#material)) |
 | `opacity(o)` | `transparent` 0, `faint` 0.1, `pale` 0.2, `sheer` 0.3, `hazy` 0.4, `half` 0.5, `dim` 0.6, `faded` 0.7, `soft` 0.8, `soft-opaque` 0.9, `opaque` 1 |
 | `size(s)` | icon rungs, avatar rungs, or Bloom sizes, by node |
 | `style(a)` / `shape(s)` / `tint(t)` | Bloom appearance / `circle` `pill` / Bloom tone |
@@ -401,7 +406,7 @@ VStack(
   every platform (the island composites its tint for what sits on it). It
   sits in the fill's layer, as `.glass()` does: `.padding('sm').blur()` is
   one island, `.blur().padding('sm')` pads outside it. A `Button` inside
-  keeps its own material; an island of shared controls is not built yet.
+  keeps its own material (see [Not built yet](#not-built-yet)).
 
   ```ts
   HStack(Icon(RiFilterLine), Text('Filters')).spacing('xs').padding('sm').blur()
@@ -839,10 +844,10 @@ the owner's decision, or an app's `defineTokens`) before a codemod moves it.
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 642 | 41321 | 76.9% |
+| Maps to a modifier and a token | 696 | 42129 | 78.4% |
 | Expressed by the view’s structure | 35 | 3445 | 6.4% |
 | Redundant in the language | 27 | 465 | 0.9% |
-| Needs a named token (raw value) | 481 | 2575 | 4.8% |
+| Needs a named token (raw value) | 427 | 1767 | 3.3% |
 | Needs a modifier the language lacks | 265 | 4109 | 7.6% |
 | An app’s own class | 470 | 1805 | 3.4% |
 
@@ -851,12 +856,12 @@ with no rung, by scale (the owner names each as a token or keeps it out):
 
 | Scale | Uses | Raw values with no rung (uses) |
 | --- | ---: | --- |
-| space | 1189 | 1px (91), 28px (86), 44px (85), 56px (68), 96px (63), 224px (59), 160px (55), 192px (43), 384px (34), 288px (31), 1200px (29), 80px (28) |
-| font | 482 | 11px / 14px (104), 20px / 28px (92), 24px / 32px (90), 14px (64), 15px / 22px (27), 30px / 36px (22), 36px / 40px (12), 24px (12), 10.5px (8), 28px (7), 12.5px (5), 23px (5) |
-| color | 392 | transparent (63), --surface-foreground (36), --accent (33), --error-text (25), --primary-subtle (20), --warning-text (19), --sidebar-foreground (14), green-500 (12), --sidebar-border (12), red-500 (10), --sidebar-accent (9), red-400 (9) |
+| space | 949 | 44px (85), 56px (68), 224px (59), 160px (55), 192px (43), 384px (34), 288px (31), 1200px (29), 80px (28), 256px (25), 320px (24), 72px (24) |
 | leading | 321 | 20px (93), 24px (70), 16px (44), 18px (28), 28px (18), 1 (15), 22px (14), 14px (6), 29px (6), 17px (5), 40px (3), 32px (3) |
-| opacity | 94 | --foreground at 5% (7), black at [0.04]% (7), white at [0.06]% (6), --primary at 5% (5), --warning-text at 40% (5), white at 15% (4), white at 25% (4), black at 25% (3), --primary at 15% (3), --surface at 25% (3), white at 75% (3), white at 85% (3) |
-| corner | 80 | 22px (14), 14px (12), 10px (9), 18px (9), 15px (8), 23px (6), 5px (4), 13px (3), 27px (3), 25px (2), 26px (2), 3px (2) |
+| color | 235 | --primary-subtle (20), --warning-text (19), --sidebar-foreground (14), green-500 (12), --sidebar-border (12), red-500 (10), --sidebar-accent (9), red-400 (9), --sidebar-accent-foreground (9), --ring (9), --sidebar (8), --accent-foreground (8) |
+| font | 120 | 15px / 22px (27), 30px / 36px (22), 36px / 40px (12), 10.5px (8), 28px (7), 12.5px (5), 23px (5), 34px (4), 9px (4), 48px / 48px (2), 11.5px (2), 13.5px (2) |
+| opacity | 89 | --foreground at 5% (7), black at [0.04]% (7), white at [0.06]% (6), --primary at 5% (5), --warning-text at 40% (5), white at 15% (4), white at 25% (4), black at 25% (3), --primary at 15% (3), --surface at 25% (3), white at 75% (3), white at 85% (3) |
+| corner | 36 | 15px (8), 23px (6), 5px (4), 13px (3), 27px (3), 25px (2), 26px (2), 3px (2), 9px (2), 19px (1), 30px (1), 35px (1) |
 | tracking | 10 | -0.5px (2), 0.04em (2), 0.5px (2), -0.2px (1), -0.4px (1), 1.5px (1), 2px (1) |
 | borderWidth | 6 | 4px (6) |
 | weight | 1 | 900 (1) |
@@ -949,6 +954,8 @@ a theme switch; each fixture also pins how many chains the compiler hoists.
 
 - No native or CSS renderer: everything renders through React Native and
   react-native-web.
+- An island of shared controls: a `Button` inside `.blur()` draws its own
+  material rather than Bloom's `material="shared"` on the island's.
 - `ZStack` is basic: the first child sets the size and the rest cover it. There
   is no alignment inside it yet.
 - iOS is written and typechecked against `expo-glass-effect`, `@expo/ui` and

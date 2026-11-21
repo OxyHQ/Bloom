@@ -337,6 +337,27 @@ const named: ParityCase[] = [
     language: () => L.Text('Large').font('lg-xl').leading('open'),
     bloom: () => <Text style={{ fontSize: 18, lineHeight: 28 }}>Large</Text>,
   },
+  // Bloom's `text-caption` (11/14), Tailwind's `text-xl` (20/28), `text-2xl` (24/32) and `text-[14px]`.
+  {
+    name: 'text-caption: size 2xs-xs, leading close-snug',
+    language: () => L.Text('Caption').font('2xs-xs').leading('close-snug'),
+    bloom: () => <Text style={{ fontSize: 11, lineHeight: 14 }}>Caption</Text>,
+  },
+  {
+    name: 'text-xl: size xl, leading easy-normal',
+    language: () => L.Text('Title').font('xl').leading('easy-normal'),
+    bloom: () => <Text style={{ fontSize: 20, lineHeight: 28 }}>Title</Text>,
+  },
+  {
+    name: 'text-2xl: size 2xl-3xl, leading snug-easy',
+    language: () => L.Text('Head').font('2xl-3xl').leading('snug-easy'),
+    bloom: () => <Text style={{ fontSize: 24, lineHeight: 32 }}>Head</Text>,
+  },
+  {
+    name: 'text-[14px]: size sm-md',
+    language: () => L.Text('Body').font('sm-md'),
+    bloom: () => <Text style={{ fontSize: 14 }}>Body</Text>,
+  },
   {
     name: 'text-[11px]: size 2xs-xs',
     language: () => L.Text('Small').font('2xs-xs'),
