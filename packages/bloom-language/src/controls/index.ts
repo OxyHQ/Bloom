@@ -36,6 +36,7 @@ import { SORTABLE_MEDIA } from './sortable-media';
 import { HOVER_CARDS } from './hover-card';
 import { EXPANDABLE_TEXTS } from './expandable-text';
 import { MENUBARS } from './menubar';
+import { COMPOSITION_BARS } from './composition-bar';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -79,4 +80,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...HOVER_CARDS,
   ...EXPANDABLE_TEXTS,
   ...MENUBARS,
+  ...COMPOSITION_BARS,
 };
