@@ -1704,6 +1704,10 @@ export const ENUMS = {
   "tooltipSize": [
     "sm",
     "md"
+  ],
+  "otpCharacters": [
+    "numeric",
+    "alphanumeric"
   ]
 } as const;
 
@@ -3114,6 +3118,15 @@ export const MODIFIERS = {
     "value"
   ],
   "allowsPictureInPicture": [
+    "value"
+  ],
+  "length": [
+    "value"
+  ],
+  "characters": [
+    "otpCharacters"
+  ],
+  "onComplete": [
     "value"
   ]
 } as const;
@@ -12231,6 +12244,92 @@ export const NODE_MODIFIERS = {
     "contentFit",
     "nativeControls",
     "allowsPictureInPicture"
+  ],
+  "inputOtp": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "alert",
+    "dialog",
+    "popover",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
+    "length",
+    "characters",
+    "onComplete",
+    "invalid",
+    "disabled",
+    "groupSize",
+    "autoFocus"
   ]
 } as const;
 
@@ -12396,5 +12495,6 @@ export const CONSTRUCTORS = {
   "ActivityHeatmap": "activityHeatmap",
   "TagField": "tagField",
   "FileUpload": "fileUpload",
-  "Video": "video"
+  "Video": "video",
+  "InputOtp": "inputOtp"
 } as const;
