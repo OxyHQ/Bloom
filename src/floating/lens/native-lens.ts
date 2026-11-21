@@ -51,14 +51,23 @@ export interface LensNativeProps {
   ref?: Ref<LensNativeHandle>;
   items: LensNativeItem[];
   lens?: boolean;
+  /** A trigger without lens: the menu still grows out of its shape (the engine's default). */
+  morph?: boolean;
   cornerRadius?: number;
   colorScheme?: 'light' | 'dark' | 'auto';
   config?: LensNativeConfig;
   triggerConfig?: LensNativeTriggerConfig;
+  /** The panel's width in dp; omitted, the rows' own width. */
   menuWidth?: number;
-  alignment?: string;
-  /** The view mounts with its menu already open: it opens itself once laid out. */
-  openOnMount?: boolean;
+  /** The rows' face, a family the app registered; omitted, the engine's bundled Inter. */
+  fontFamily?: string;
+  /** Which edge of the trigger the panel hangs from; `auto` follows the side of the screen it is on. */
+  alignment?: 'auto' | 'start' | 'center' | 'end';
+  /**
+   * The rows arrive only as the menu opens: the view opens itself once it has them, and again
+   * each time they arrive after being emptied.
+   */
+  openWithItems?: boolean;
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;
   onItemSelect?: (event: { nativeEvent: { id: string; index: number } }) => void;

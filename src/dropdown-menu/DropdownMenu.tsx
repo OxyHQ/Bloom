@@ -123,7 +123,11 @@ export function DropdownMenu({
     }),
     [intent, setMenuOpen],
   );
-  const { lens, contentProvider } = useLensMenu({
+  const {
+    lens,
+    host: lensHost,
+    contentProvider,
+  } = useLensMenu({
     children,
     content: DropdownMenuContent,
     parse: (props) => parseLensMenu(props.children as ReactNode, rows),
@@ -140,6 +144,7 @@ export function DropdownMenu({
       ...(activation === 'hover' ? { hover } : null),
       onPrimaryOpenChange,
       lens,
+      lensHost,
       lensContent: contentProvider,
     }),
     [
@@ -150,6 +155,7 @@ export function DropdownMenu({
       hover,
       onPrimaryOpenChange,
       lens,
+      lensHost,
       contentProvider,
     ],
   );
@@ -234,10 +240,10 @@ export function DropdownMenuTrigger({
       {children}
     </TriggerSlot>
   );
-  if (!menu.lens || !getNativeLens()) return trigger;
+  if (!menu.lensHost || !getNativeLens()) return trigger;
   return (
     <LensTrigger
-      lens={menu.lens}
+      lens={menu.lensHost}
       triggerLens={lensTrigger || lensTone === 'primary' || lensTint != null}
       tone={lensTone}
       tint={lensTint}

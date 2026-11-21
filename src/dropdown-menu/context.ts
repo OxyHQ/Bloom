@@ -16,6 +16,8 @@ export type DropdownMenuLens = MenuLens;
 export interface DropdownMenuContextValue extends OverlayShellContextValue {
   /** Set when the native lens menu presents this menu; the sheet is then not used. */
   lens?: DropdownMenuLens;
+  /** The native lens view around the trigger: `lens`, or the view waiting for rows that arrive as the menu opens. */
+  lensHost?: DropdownMenuLens;
   /** Set when a `Content` the root cannot see (rendered by a component of the owner's) may hand it its rows. */
   lensContent?: LensContentProvider;
   activation?: 'click' | 'hover';
