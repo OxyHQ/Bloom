@@ -100,6 +100,10 @@ describe('the tabs are the system tab bar', () => {
     expect(only(r, 'AppShell').props.bottomBar).toBeNull();
     expect(hosts(r, 'BottomBar')).toHaveLength(0);
   });
+
+  it('the shell draws no safe-area frame: the system bars reach behind the status bar', () => {
+    expect(only(mount(createElement(App)), 'AppShell').props.safeArea).toBe(false);
+  });
 });
 
 describe('stacks are the native stack', () => {
