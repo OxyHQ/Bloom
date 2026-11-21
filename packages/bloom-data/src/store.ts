@@ -248,11 +248,16 @@ export class Store {
     if (this.closed) return undefined;
     const id = definition.idOf(record);
     if (!id) return undefined;
+    let stored = record;
     let normalised = this.normalise(definition, record, options);
     const slot = this.slot(definition, id, true);
-    if (definition.accept && slot.value) {
-      const held = this.read(definition, id);
-      if (held && !definition.accept(record, held)) return id;
+    if (definition.combine && slot.base) {
+      const held = this.readServer(slot);
+      if (held) {
+        stored = definition.combine(record, held);
+        if (stored === held) return id;
+        if (stored !== record) normalised = this.normalise(definition, stored, options);
+      }
     }
     if (options.anonymous && slot.base) {
       for (const field of definition.viewerFields) {
@@ -268,7 +273,7 @@ export class Store {
         records = [];
         this.stored.set(definition, records);
       }
-      records.push(record);
+      records.push(stored);
       if (this.batchDepth === 0) this.flushStored();
     }
     return id;
@@ -445,6 +450,22 @@ export class Store {
   /** The record with its refs resolved, as a plain object. Cached until a dependency changes. */
   read(definition: EntityDefinition, id: string): Plain | undefined {
     return this.readSlot(this.slot(definition, id), new Set());
+  }
+
+  /**
+   * The server's copy of a record (no optimistic layer), refs resolved: what
+   * an incoming record is combined with, so a layer never reaches the base.
+   */
+  private readServer(slot: Slot): Plain | undefined {
+    if (!slot.layers?.length) return this.readSlot(slot, new Set());
+    let out = slot.base;
+    if (!out) return undefined;
+    for (const ref of slot.definition.refs()) {
+      const refId = readPath(out, ref.path);
+      if (typeof refId !== 'string') continue;
+      out = writePath(out, ref.path, this.readSlot(this.slot(ref.target, refId), new Set()));
+    }
+    return out;
   }
 
   private readSlot(slot: Slot | undefined, visiting: Set<Slot>): Plain | undefined {

@@ -12,8 +12,8 @@ export interface EntityDefinition {
   /** Ref paths, resolved on first use so an entity can refer to itself. */
   refs(): readonly RefDefinition[];
   readonly viewerFields: readonly string[];
-  /** Whether an incoming record may replace the held one (both with refs resolved). */
-  readonly accept: ((incoming: Plain, held: Plain) => boolean) | undefined;
+  /** How an incoming record joins the held one (refs resolved); `held` refuses it. */
+  readonly combine: ((incoming: Plain, held: Plain) => Plain) | undefined;
   /** Told, once per batch, about every record of this type a write stored. */
   readonly onStore: ((records: readonly Plain[]) => void) | undefined;
   /** The persisted schema version, or `null` when the type is memory only. */

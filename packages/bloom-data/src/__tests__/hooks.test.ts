@@ -7,12 +7,12 @@ interface Boost {
   original?: { id: string } | null;
 }
 
-describe('entity accept and onStore', () => {
+describe('entity combine and onStore', () => {
   const stored: string[][] = [];
   const Item = entity<Boost>('accept-item', {
     id: (item) => item.id,
     // A boost that lost its original never replaces one that has it.
-    accept: (incoming, held) => Boolean(incoming.original) || !held.original,
+    combine: (incoming, held) => (incoming.original || !held.original ? incoming : held),
     onStore: (records) => stored.push(records.map((record) => record.id)),
   });
 

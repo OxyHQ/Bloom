@@ -5,8 +5,8 @@ description: The data and state layer of the Bloom language. Records by id in me
 
 # Bloom data
 
-`packages/bloom-data` (`@oxy.so/bloom-data`, a working name, private and not
-published) is the data and state layer of the [Bloom language](./bloom-language.mdx).
+`packages/bloom-data` (`@oxy.so/bloom-data`, public, released like the other
+packages here when its version changes on `main`) is the data and state layer of the [Bloom language](./bloom-language.mdx).
 It replaces an app's separate caches (a SQLite table, query pages and snapshot
 maps) with one model, the way SwiftUI pairs `@Observable` with SwiftData. It
 adds no dependency: React is its only peer, and the SQLite copy uses the
@@ -104,8 +104,10 @@ an equal answer from the server changes nothing and wakes nobody.
   own entity and the field keeps its id. On read, it resolves again. One copy
   serves every record that embeds it, and `referencing(target, id)` finds the
   records that embed one.
-- `accept(incoming, held)` can refuse a payload that is worse than what is
-  held, such as one that lost an embedded record.
+- `combine(incoming, held)` decides how an incoming record joins the one held
+  (the server's copy, never an optimistic layer). Returning `held` refuses a
+  payload that is worse than what is held, such as one that lost an embedded
+  record; returning a merge keeps what a sparse payload does not carry.
 - `onStore(records)` is told about every record a write stored, whichever path
   wrote it.
 - A page can carry `related` records: stored, not listed (slice posts, say).
@@ -267,9 +269,9 @@ those in its tree whatever it does itself. The move is its own step:
    each person serves every post, notification and profile. That retires
    Mention's `lib/actorCache.ts` and `stores/identityUpdates.ts`.
    - One guard comes first. A degraded user (the "unresolved author" placeholder
-     an Oxy outage returns) must not replace a resolved one. That is the
-     entity's `accept` rule, and the reason Mention does not normalise
-     `post.user` yet.
+     an Oxy outage returns) must not replace a resolved one, and a sparse
+     author must not strip the counts and relationship a profile read stored.
+     That is the entity's `combine` rule.
 3. **Sessions open stores.** The SDK's session epoch drives
    `createAccounts().open(account)`, in place of each app's account-switch
    boundary. A store per account replaces the SDK's own cache wipes.

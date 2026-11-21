@@ -34,11 +34,12 @@ export interface EntityOptions<T> {
    */
   persist?: boolean | { version: number };
   /**
-   * Whether an incoming record may replace the one held (both with refs
-   * resolved). Default: always. For a payload known to be worse than what is
-   * held, such as one that lost an embedded record.
+   * How an incoming record joins the one held (with its refs resolved).
+   * Default: it replaces it. Return `held` to refuse a payload known to be
+   * worse than what is held (one that lost an embedded record), or a merge of
+   * the two to keep what a sparse payload does not carry.
    */
-  accept?: (incoming: T, held: T) => boolean;
+  combine?: (incoming: T, held: T) => T;
   /**
    * Told, once per batch, about every record of this type a write stored,
    * whichever path wrote it (a source page, a `put`, a record embedded in
@@ -101,7 +102,7 @@ export function entity<T extends object>(type: string, options: EntityOptions<T>
       return refs;
     },
     viewerFields: options.viewerFields ?? [],
-    accept: options.accept as EntityDefinition['accept'],
+    combine: options.combine as EntityDefinition['combine'],
     onStore: options.onStore as EntityDefinition['onStore'],
     persistVersion,
   };
