@@ -47,6 +47,9 @@ function bloom(props: Omit<BottomSheetProps, 'open' | 'onDismiss' | 'children'>)
   );
 }
 
+/** A presented sheet draws into the page's portal root: each side has a page of its own in Chrome. */
+const presented = (c: ParityCase): ParityCase => ({ ...c, isolated: true });
+
 export const SHEET_CASES: ParityCase[] = [
   {
     name: 'a bottom sheet',
@@ -87,4 +90,4 @@ export const SHEET_CASES: ParityCase[] = [
     language: () => presenting(L.BottomSheet(L.Text('b')).footer(L.Text('apply'), { behavior })),
     bloom: () => bloom({ footer: <Text>apply</Text>, footerBehavior: behavior }),
   })),
-];
+].map(presented);

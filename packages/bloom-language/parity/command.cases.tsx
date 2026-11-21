@@ -13,6 +13,8 @@ const change = (_open: boolean) => {};
 const commands: ParityCase[] = [
   {
     name: 'an open palette: a command, then a group',
+    // Presented: it draws into the page's portal root, so each side has a page of its own.
+    isolated: true,
     language: () =>
       toElement(
         L.Command(
@@ -74,6 +76,8 @@ const commands: ParityCase[] = [
 const settings: ParityCase[] = [
   {
     name: 'open settings on a page',
+    // Presented: it draws into the page's portal root, so each side has a page of its own.
+    isolated: true,
     language: () =>
       toElement(
         L.SettingsModal(
@@ -115,6 +119,8 @@ const settings: ParityCase[] = [
   },
   {
     name: 'floating header, a full-bleed page titled its own way',
+    // Presented: it draws into the page's portal root, so each side has a page of its own.
+    isolated: true,
     language: () =>
       toElement(
         L.SettingsModal(

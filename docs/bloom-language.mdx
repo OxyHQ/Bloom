@@ -1972,6 +1972,10 @@ and dark (`bun run test:parity`; `bun run test` runs it too).
 - **In a browser:** the `Language/Parity` stories put each case's two sides in
   a row, and `scripts/verify-parity-web.mjs` compares every pair in Chrome:
   tags, attributes, text, every computed style property and the laid-out size.
+  A case that presents an overlay (a sheet, a palette, the settings modal) or
+  pins to the document is `isolated`: each side is drawn alone in a page of
+  the same viewport (`Language/Parity frame`) and compared at rest, with what
+  it presents into Bloom's portal root.
 
 The cases are one list per family (`parity/<family>.cases.tsx`), which the
 three read. A case that cannot be equal is a decision, never a tolerance. A
