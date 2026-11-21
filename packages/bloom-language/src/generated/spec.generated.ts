@@ -2448,6 +2448,9 @@ export const MODIFIERS = {
   ],
   "padded": [
     "value"
+  ],
+  "colorScale": [
+    "value"
   ]
 } as const;
 
@@ -7152,7 +7155,8 @@ export const NODE_MODIFIERS = {
     "spacing",
     "weekStart",
     "labels",
-    "onPressDay"
+    "onPressDay",
+    "colorScale"
   ],
   "tagField": [
     "padding",
