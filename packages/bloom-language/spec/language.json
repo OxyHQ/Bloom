@@ -322,7 +322,9 @@
     "edge": ["all", "horizontal", "vertical", "top", "bottom", "leading", "trailing"],
     "borderEdge": ["all", "top", "bottom", "leading", "trailing"],
     "role": ["button", "link", "header", "image", "text", "none"],
-    "buttonShape": ["circle", "pill"],
+    "buttonShape": ["circle", "pill", "fit"],
+    "linkTone": ["primary", "secondary", "text"],
+    "density": ["default", "compact"],
     "appearance": ["solid", "subtle", "outline", "plain"],
     "tone": [
       "neutral",
@@ -662,7 +664,13 @@
     "pressScale": [],
     "hoverHighlight": ["value?"],
     "pressed": ["value"],
-    "when": ["condition", "variant"]
+    "when": ["condition", "variant"],
+    "colors": ["color", "color"],
+    "linkTone": ["linkTone"],
+    "inverted": ["value?"],
+    "density": ["density"],
+    "dividers": ["value?"],
+    "separated": ["value?"]
   },
   "universal": [
     "padding",
@@ -826,12 +834,21 @@
         "pressed",
         "link",
         "lines",
-        "underline"
+        "underline",
+        "colors",
+        "linkTone",
+        "inverted",
+        "density"
       ],
       "size": "controlSize",
       "tint": "tone",
       "style": "appearance",
       "shape": "buttonShape"
+    },
+    "buttonGroup": {
+      "constructors": ["ButtonGroup"],
+      "modifiers": ["axis", "size", "dividers", "separated"],
+      "size": "controlSize"
     },
     "fab": {
       "constructors": ["FAB"],

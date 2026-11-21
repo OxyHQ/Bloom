@@ -754,6 +754,58 @@ function wrapLayer(
   return drawHost(behaviour ? hostFor(p) : View, out, { ...behaviour, key }, ...children);
 }
 
+/**
+ * Bloom's Button with its `colors` pair as two props, so a `Painted` leaf can
+ * paint each from its role. One pair object per colour pair, so the button's
+ * props compare equal across renders.
+ */
+const pairs = new Map<string, { background: string; foreground: string }>();
+function PairedButton({
+  background,
+  foreground,
+  ...props
+}: Record<string, unknown> & { background: string; foreground: string }): ReactElement {
+  const id = `${background}|${foreground}`;
+  let colors = pairs.get(id);
+  if (colors === undefined) {
+    colors = Object.freeze({ background, foreground });
+    pairs.set(id, colors);
+  }
+  return draw(BloomButton, { ...props, colors });
+}
+
+/** A paired button's paint: its style, and its fill and label from their roles. */
+function pairPaint(
+  styleKey: string,
+  out: StyleOut,
+  [background, foreground]: readonly [ColorToken, ColorToken],
+): Paint {
+  const id = `${styleKey}|pair|${background}|${foreground}`;
+  let paint = propPaints.get(id);
+  if (paint === undefined) {
+    const base = out.paint ?? {
+      style: out.style as object | undefined,
+      styleRoles: [],
+      propRoles: [],
+    };
+    const [fill, ink] = [role(background), role(foreground)];
+    paint = {
+      style: base.style,
+      styleRoles: base.styleRoles,
+      propRoles: [
+        fill.opacity === undefined
+          ? ['background', fill.role]
+          : ['background', fill.role, fill.opacity],
+        ink.opacity === undefined
+          ? ['foreground', ink.role]
+          : ['foreground', ink.role, ink.opacity],
+      ],
+    };
+    propPaints.set(id, paint);
+  }
+  return paint;
+}
+
 const propPaints = new Map<string, Paint>();
 
 /**
@@ -1047,7 +1099,8 @@ function renderHost(
       delete props.focusable;
       const { icon, glyph, label, trailing } = buttonContent(node.children);
       const shape = ownValue(p, 'shape')?.value;
-      const iconOnly = icon !== undefined && label === undefined && shape !== undefined;
+      const iconOnly =
+        icon !== undefined && label === undefined && shape !== undefined && shape !== 'fit';
       // A glyph in an ink of its own (`Icon(X).foreground(role)`) is drawn as
       // it is; otherwise the button tints its icon with its tone.
       const inked = glyph?.modifiers.some((modifier) => modifier.kind === 'foreground');
@@ -1058,9 +1111,14 @@ function renderHost(
         leadingIcon: inked ? undefined : icon,
         icon: inked && glyph ? renderNode(glyph, ctx, undefined) : undefined,
         trailingIcon: trailing,
-        // A circle is Bloom's square icon button; a pill, its wide one.
+        // A circle is Bloom's square icon button; a pill, its wide one; fit
+        // grows with its content, never narrower than it is tall.
         iconOnly: iconOnly ? true : undefined,
         wide: iconOnly && shape === 'pill' ? true : undefined,
+        grow: shape === 'fit' ? true : undefined,
+        linkTone: ownValue(p, 'linkTone')?.value,
+        inverted: ownValue(p, 'inverted')?.value,
+        density: ownValue(p, 'density')?.value,
         children: label,
         disabled: ownValue(p, 'disabled')?.value,
         loading: ownValue(p, 'loading')?.value,
@@ -1070,8 +1128,32 @@ function renderHost(
         underline: ownValue(p, 'underline') === undefined ? undefined : 'rest',
         material: p.control ? 'shared' : undefined,
       });
+      const colors = ownValue(p, 'colors')?.value;
+      if (colors !== undefined) {
+        // A paired fill and label, painted from their roles: Bloom's `colors`.
+        const out = box('component', 'B');
+        return draw(Painted, {
+          ...props,
+          host: PairedButton,
+          paint: pairPaint(`B|${layerKey}|${flex}`, out, colors),
+        });
+      }
       if (!boxed) return draw(BloomButton, props);
       return drawHost(BloomButton, box('component', 'B'), props);
+    }
+    case 'buttonGroup': {
+      const props = hostProps(behaviour, key);
+      delete props.focusable;
+      if (props.accessibilityLabel === undefined) delete props.accessibilityLabel;
+      Object.assign(props, {
+        orientation: ownValue(p, 'axis')?.value,
+        size: ownValue(p, 'size')?.value,
+        dividers: ownValue(p, 'dividers')?.value,
+        separated: ownValue(p, 'separated')?.value,
+      });
+      const children = renderChildren(node.children, ctx);
+      if (!boxed) return draw(BloomButton.Group, props, ...children);
+      return drawHost(BloomButton.Group, box('component', 'BG'), props, ...children);
     }
     case 'fab': {
       const props = hostProps(behaviour, key);

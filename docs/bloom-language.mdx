@@ -139,7 +139,8 @@ be preserved"), so keep the controller in a custom hook (`usePostRowModel`).
 | `Skeleton` / `SkeletonGroup` | Bloom's skeleton shapes / `Skeleton.Region` |
 | `.pressScale()` / `.hoverHighlight()` | Bloom `PressableScale` as the pressable host / `SubtleHover` as the stack's first child |
 | `Image` | Bloom `BloomImage` (`@oxy.so/bloom/image`), sized and clipped by its own box (see [Image](#image)) |
-| `Button` | Bloom `Button` (`style` is its appearance, `tint` its tone, `shape` is icon-only: `circle` square, `pill` wide; see [Button](#button)) |
+| `Button` | Bloom `Button` (`style` is its appearance, `tint` its tone, `shape` is icon-only: `circle` square, `pill` wide, `fit` grows; see [Button](#button)) |
+| `ButtonGroup` | Bloom `Button.Group` |
 | `ActionBar` / `Action` / `ActionGroup` | Bloom `EngagementBar` / `EngagementAction` / `EngagementGroup` |
 | `.glass()` | Bloom `Surface` (see [Glass](#glass)) |
 | `.blur()` | Bloom `BlurIsland` (`@oxy.so/bloom/blur`; see [Material](#material)) |
@@ -553,6 +554,9 @@ Button(Text('Next'), Icon(RiArrowRightLine)).style('outline')
 Button(Icon(RiMoreFill)).style('subtle').shape('circle').label('More')
 Button(Text('Bold')).style('subtle').pressed(bold).onPress(toggleBold)
 Button(Text('Docs')).style('plain').link('https://oxy.so/docs').underline()
+Button(Text('Continue with Oxy')).colors('primary', 'onPrimary')
+Button(Text('Terms')).style('plain').linkTone('text')
+ButtonGroup(Button(Text('Day')), Button(Text('Week'))).separated().size('sm')
 ```
 
 - **Content.** An `Icon` before the `Text` is the leading glyph, one after it
@@ -561,16 +565,25 @@ Button(Text('Docs')).style('plain').link('https://oxy.so/docs').underline()
 - **Look.** `.style('solid' | 'subtle' | 'outline' | 'plain')`, `.tint(tone)`
   (Bloom's tones, `vivid` included), `.size('xs'…'lg')`; `.shape('circle')`
   is the square icon-only button, `.shape('pill')` the wide one.
+- **Paired colours.** `.colors(fill, label)` is Bloom's `colors` from two
+  colour roles (or roles at an opacity), painted from the theme; the geometry
+  stays the button's. `.inverted()` swaps the theme's background and
+  foreground; `.linkTone('primary' | 'secondary' | 'text')` is a plain link's
+  ink; `.density('default' | 'compact')` its geometry over the nearest scope's.
+  `.shape('fit')` is Bloom's `grow`: an icon button that grows with its
+  content, never narrower than it is tall.
+- **Groups.** `ButtonGroup(...buttons)` is Bloom's `Button.Group`:
+  `.axis('vertical')` stacks them, `.size()` sizes every one, `.dividers(false)`
+  drops the hairlines, `.separated()` gaps the segments, `.label()` names it.
 - **State.** `.loading()`, `.disabled()`, `.pressed(on)` (a toggle,
   announced as pressed), `.link(href)` (an anchor on the web, opened on
   native), `.lines(n)`, `.underline()` (at rest).
 - **On glass** it keeps its own press, ink and name; the glass draws its fill
   (see [Glass](#glass)).
 
-Not in the language: a raw brand fill (`colors={{ background, foreground }}`,
-28 call sites) and the state colours over artwork (`color`, `hoverColor`…),
-which are raw values with no token; `linkTone` (15 call sites), `inverted`,
-`density`, `grow` and Bloom's `Button.Group`.
+Not in the language: a brand fill that is no colour role (a raw hex in
+`colors`), the state colours over artwork (`color`, `hoverColor`…), which are
+raw values with no token, and a group's `material="lens"`.
 
 ## Avatars
 

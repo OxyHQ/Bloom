@@ -109,6 +109,10 @@ export type Edge = (typeof ENUMS.edge)[number];
 export type BorderEdge = (typeof ENUMS.borderEdge)[number];
 export type Role = (typeof ENUMS.role)[number];
 export type ButtonShape = (typeof ENUMS.buttonShape)[number];
+/** A plain link button's ink (Bloom `Button`'s `linkTone`). */
+export type ButtonLinkTone = (typeof ENUMS.linkTone)[number];
+/** A control's geometry (Bloom's `BloomControlDensity`). */
+export type ControlDensity = (typeof ENUMS.density)[number];
 /** How an image fills its box: `BloomImage`'s `contentFit` vocabulary. */
 export type ContentFit = (typeof ENUMS.contentFit)[number];
 export type TitleDisplay = (typeof ENUMS.titleDisplay)[number];

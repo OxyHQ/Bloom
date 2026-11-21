@@ -320,3 +320,18 @@ fn a_variant_is_checked_against_what_a_variant_changes() {
     let output = compiled("export const x = () => Text('a').when('md', (v) => v.justify('center'));\n");
     assert_eq!(output.diagnostics[0].message, "A variant cannot change .justify()");
 }
+
+#[test]
+fn the_button_leftovers_are_checked() {
+    let check = |body: &str| {
+        compile(&format!("import {{ Button, Text }} from '@oxy.so/bloom-language';\n{body}"), "row.tsx")
+    };
+    let ok = check(
+        "export const x = () => Button(Text('a')).colors('primary', 'onPrimary/70').linkTone('text').inverted().density('compact').shape('fit');\n",
+    );
+    assert!(ok.diagnostics.is_empty());
+    let output = check("export const x = () => Button(Text('a')).linkTone('accent');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown linkTone token 'accent' for .linkTone()");
+    let output = check("export const x = () => Button(Text('a')).colors('#1877f2', 'white');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown color token '#1877f2' for .colors()");
+}
