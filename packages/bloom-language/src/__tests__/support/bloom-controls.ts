@@ -100,3 +100,4 @@ export const InputGroup = 'InputGroup';
 export const InputGroupAddon = 'InputGroupAddon';
 export const Notification = 'Notification';
 export const LinkPreviewCard = 'LinkPreviewCard';
+export const SocialButton = 'SocialButton';

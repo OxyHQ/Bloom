@@ -43,6 +43,7 @@ import { MENUBARS } from './menubar';
 import { COMPOSITION_BARS } from './composition-bar';
 import { NOTIFICATIONS } from './notification';
 import { LINK_PREVIEWS } from './link-preview';
+import { SOCIAL_BUTTONS } from './social-button';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -93,4 +94,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...COMPOSITION_BARS,
   ...NOTIFICATIONS,
   ...LINK_PREVIEWS,
+  ...SOCIAL_BUTTONS,
 };
