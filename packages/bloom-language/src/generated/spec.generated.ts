@@ -2,57 +2,84 @@
 /* eslint-disable */
 
 export const SPACE = {
+  "1": 1,
+  "3": 3,
+  "6": 6,
+  "10": 10,
+  "14": 14,
+  "28": 28,
+  "30": 30,
+  "36": 36,
+  "44": 44,
+  "48": 48,
+  "56": 56,
+  "64": 64,
+  "72": 72,
+  "80": 80,
+  "96": 96,
+  "120": 120,
+  "128": 128,
+  "140": 140,
+  "160": 160,
+  "192": 192,
+  "200": 200,
+  "224": 224,
+  "256": 256,
+  "260": 260,
+  "280": 280,
+  "288": 288,
+  "320": 320,
+  "360": 360,
+  "384": 384,
+  "448": 448,
+  "640": 640,
+  "672": 672,
+  "768": 768,
+  "1200": 1200,
   "none": 0,
-  "none-2xs": 1,
   "2xs": 2,
   "xs": 4,
-  "xs-sm": 6,
   "sm": 8,
-  "sm-md": 10,
   "md": 12,
-  "md-lg": 14,
   "lg": 16,
   "xl": 20,
   "2xl": 24,
-  "2xl-3xl": 28,
   "3xl": 32,
-  "3xl-4xl": 36,
   "4xl": 40,
-  "4xl-5xl": 48,
-  "5xl": 60,
-  "6xl": 64,
-  "7xl": 96
+  "5xl": 60
 } as const;
 export const CORNER = {
+  "6": 6,
+  "10": 10,
+  "14": 14,
+  "18": 18,
+  "22": 22,
   "none": 0,
   "2xs": 2,
   "xs": 4,
-  "xs-sm": 6,
   "sm": 8,
-  "sm-md": 10,
   "md": 12,
-  "md-lg": 14,
   "lg": 16,
-  "lg-xl": 18,
   "xl": 20,
-  "xl-2xl": 22,
   "2xl": 24,
   "3xl": 28,
   "full": 9999
 } as const;
 export const FONT_SIZE = {
+  "11": 11,
+  "14": 14,
+  "16": 16,
+  "18": 18,
+  "24": 24,
+  "30": 30,
+  "36": 36,
   "2xs": 10,
-  "2xs-xs": 11,
   "xs": 12,
   "sm": 13,
-  "sm-md": 14,
   "md": 15,
-  "md-lg": 16,
   "lg": 17,
-  "lg-xl": 18,
   "xl": 20,
   "2xl": 22,
-  "2xl-3xl": 24,
   "3xl": 26,
   "4xl": 32,
   "5xl": 40
@@ -60,22 +87,41 @@ export const FONT_SIZE = {
 export const LEADING = {
   "tight": 1.15,
   "close": 1.25,
-  "close-snug": 1.2727272727272727,
   "snug": 1.3,
-  "snug-easy": 1.3333333333333333,
   "easy": 1.375,
-  "easy-normal": 1.4,
   "normal": 1.5,
-  "open": 1.5555555555555556,
   "relaxed": 1.625
+} as const;
+/** Line heights carried over from apps, in px. */
+export const LEADING_PX = {
+  "14px": 14,
+  "16px": 16,
+  "18px": 18,
+  "20px": 20,
+  "22px": 22,
+  "24px": 24,
+  "28px": 28,
+  "32px": 32,
+  "36px": 36,
+  "40px": 40
 } as const;
 export const TRACKING = {
   "tight": -0.025,
-  "close": -0.02,
-  "snug": -0.01,
   "wide": 0.025,
   "wider": 0.05,
-  "widest": 0.1
+  "widest": 0.1,
+  "-0.02em": -0.02,
+  "-0.01em": -0.01,
+  "0.04em": 0.04
+} as const;
+/** Letter spacing carried over from apps, in px. */
+export const TRACKING_PX = {
+  "-0.5px": -0.5,
+  "-0.4px": -0.4,
+  "-0.2px": -0.2,
+  "0.5px": 0.5,
+  "1.5px": 1.5,
+  "2px": 2
 } as const;
 export const WEIGHT = {
   "light": "300",
@@ -103,16 +149,16 @@ export const AVATAR_SIZE = {
   "xl": 40
 } as const;
 export const OPACITY = {
+  "10": 0.1,
+  "20": 0.2,
+  "30": 0.3,
+  "40": 0.4,
+  "60": 0.6,
+  "70": 0.7,
+  "80": 0.8,
+  "90": 0.9,
   "transparent": 0,
-  "faint": 0.1,
-  "pale": 0.2,
-  "sheer": 0.3,
-  "hazy": 0.4,
   "half": 0.5,
-  "dim": 0.6,
-  "faded": 0.7,
-  "soft": 0.8,
-  "soft-opaque": 0.9,
   "opaque": 1
 } as const;
 export const BORDER_WIDTH = {
