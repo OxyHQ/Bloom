@@ -7,7 +7,7 @@ import TestRenderer, {
 
 import { DARK, LIGHT, PaintContext } from './support/bloom-theme';
 import { windowTier } from './support/bloom-hooks';
-import { Avatar, HStack, Icon, Text, VStack } from '../primitives';
+import { Avatar, Badge, HStack, Icon, Text, VStack } from '../primitives';
 import { both } from '../variants';
 import { toElement } from '../render';
 import type { Child } from '../node';
@@ -230,5 +230,31 @@ describe('when(): a variant overrides what the chain set before it', () => {
     expect(inside?.props.style).toMatchObject({ paddingTop: 16, paddingEnd: 16 });
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('varies only its padding'));
     warn.mockRestore();
+  });
+});
+
+describe('a Bloom component with no press of its own takes it on a host around it', () => {
+  it('a pressable Badge: the press and its state on the host, the variant in the badge’s own style', () => {
+    const onPress = jest.fn();
+    const r = mount(
+      Badge(3)
+        .onPress(onPress)
+        .when('pressed', (v) => v.opacity('70')),
+    );
+    const host = r.root.find((node) => (node.type as unknown) === 'Pressable');
+    const badge = (): ReactTestInstance =>
+      r.root.find((node) => (node.type as unknown) === 'Badge');
+    expect(host.props.onPress).toBe(onPress);
+    expect(badge().props.onPress).toBeUndefined();
+    act(() => host.props.onPressIn());
+    expect(badge().props.style).toEqual({ opacity: 0.7 });
+    act(() => host.props.onPressOut());
+    expect(badge().props.style).toBeUndefined();
+  });
+
+  it('a Badge that is no control keeps its props, with no host around it', () => {
+    const r = mount(Badge(3).testID('b'));
+    expect(r.root.findAll((node) => (node.type as unknown) === 'Pressable')).toHaveLength(0);
+    expect(r.root.find((node) => (node.type as unknown) === 'Badge').props.testID).toBe('b');
   });
 });

@@ -297,6 +297,12 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   reactionKey,
   workingKey,
   onPress,
+  onPressIn,
+  onPressOut,
+  onHoverIn,
+  onHoverOut,
+  onFocus,
+  onBlur,
   live = false,
   hideLiveBadge = false,
   liveLabel: liveLabelProp,
@@ -473,11 +479,17 @@ const AvatarComponent: React.FC<AvatarProps> = ({
     </View>
   );
 
-  if (onPress) {
+  if (onPress || onPressIn || onPressOut || onHoverIn || onHoverOut || onFocus || onBlur) {
     return (
       <Pressable
         onPress={onPress}
-        accessibilityRole="button"
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        onHoverIn={onHoverIn}
+        onHoverOut={onHoverOut}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        accessibilityRole={onPress ? 'button' : undefined}
         accessibilityLabel={alt ?? (hasName ? name : undefined)}
         style={avatarPressStyle}
       >

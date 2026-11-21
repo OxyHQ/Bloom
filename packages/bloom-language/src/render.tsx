@@ -1586,52 +1586,49 @@ function renderHost(
     case 'avatarGroup': {
       const size = ownValue(p, 'size')?.value as AvatarSizeToken | undefined;
       const spacing = ownValue(p, 'spacing')?.value;
-      const props = hostProps(behaviour, key);
-      delete props.focusable;
-      Object.assign(props, {
-        items: (node.props as AvatarGroupProps).items,
-        layout: ownValue(p, 'layout')?.value,
-        size: size === undefined ? undefined : resolveAvatarSize(size),
-        shape: ownValue(p, 'shape')?.value,
-        max: ownValue(p, 'max')?.value,
-        total: ownValue(p, 'total')?.value,
-        spacing: spacing === undefined ? undefined : resolveSpace(spacing),
-        overflow: ownValue(p, 'overflow')?.value,
-        showInitials: ownValue(p, 'initials') === undefined ? undefined : true,
-        onPressItem: ownValue(p, 'onPressItem')?.value,
-        hoverCard: ownValue(p, 'hoverCard')?.value,
+      return pressAround(p, behaviour, key, (props) => {
+        Object.assign(props, {
+          items: (node.props as AvatarGroupProps).items,
+          layout: ownValue(p, 'layout')?.value,
+          size: size === undefined ? undefined : resolveAvatarSize(size),
+          shape: ownValue(p, 'shape')?.value,
+          max: ownValue(p, 'max')?.value,
+          total: ownValue(p, 'total')?.value,
+          spacing: spacing === undefined ? undefined : resolveSpace(spacing),
+          overflow: ownValue(p, 'overflow')?.value,
+          showInitials: ownValue(p, 'initials') === undefined ? undefined : true,
+          onPressItem: ownValue(p, 'onPressItem')?.value,
+          hoverCard: ownValue(p, 'hoverCard')?.value,
+        });
+        if (!boxed) return draw(BloomAvatarGroup, props);
+        return drawHost(BloomAvatarGroup, boxOf('component', 'AG'), props);
       });
-      if (!boxed) return draw(BloomAvatarGroup, props);
-      return drawHost(BloomAvatarGroup, boxOf('component', 'AG'), props);
     }
-    case 'badge': {
-      const props = { ...hostProps(behaviour, key), ...badgeProps(node, p) };
-      delete props.focusable;
-      if (!boxed) return draw(BloomBadge, props);
-      return drawHost(BloomBadge, boxOf('component', 'BD'), props);
-    }
-    case 'iconCircle': {
-      const props: Record<string, unknown> = {
-        ...hostProps(behaviour, key),
-        icon: (node.props as IconProps).icon,
-      };
-      delete props.focusable;
-      props.size = ownValue(p, 'size')?.value;
-      if (!boxed) return draw(BloomIconCircle, props);
-      return drawHost(BloomIconCircle, boxOf('component', 'IC'), props);
-    }
+    case 'badge':
+      return pressAround(p, behaviour, key, (own) => {
+        const props = { ...own, ...badgeProps(node, p) };
+        if (!boxed) return draw(BloomBadge, props);
+        return drawHost(BloomBadge, boxOf('component', 'BD'), props);
+      });
+    case 'iconCircle':
+      return pressAround(p, behaviour, key, (props) => {
+        props.icon = (node.props as IconProps).icon;
+        props.size = ownValue(p, 'size')?.value;
+        if (!boxed) return draw(BloomIconCircle, props);
+        return drawHost(BloomIconCircle, boxOf('component', 'IC'), props);
+      });
     case 'loading': {
-      const props = hostProps(behaviour, key);
-      delete props.focusable;
       const { label } = buttonContent(node.children);
-      Object.assign(props, {
-        variant: ownValue(p, 'style')?.value,
-        size: ownValue(p, 'size')?.value,
-        tone: ownValue(p, 'tint')?.value,
-        text: label,
+      return pressAround(p, behaviour, key, (props) => {
+        Object.assign(props, {
+          variant: ownValue(p, 'style')?.value,
+          size: ownValue(p, 'size')?.value,
+          tone: ownValue(p, 'tint')?.value,
+          text: label,
+        });
+        if (!boxed) return draw(BloomLoading, props);
+        return drawHost(BloomLoading, boxOf('component', 'LD'), props);
       });
-      if (!boxed) return draw(BloomLoading, props);
-      return drawHost(BloomLoading, boxOf('component', 'LD'), props);
     }
     case 'skeleton':
       // Drawn in drawNode: a skeleton takes its frame and corner as its size.
@@ -1745,19 +1742,19 @@ function renderHost(
       return drawHost(host, boxOf('host', 'SH'), hostProps(behaviour, key), drawn);
     }
     case 'buttonGroup': {
-      const props = hostProps(behaviour, key);
-      delete props.focusable;
-      if (props.accessibilityLabel === undefined) delete props.accessibilityLabel;
-      Object.assign(props, {
-        orientation: ownValue(p, 'axis')?.value,
-        size: ownValue(p, 'size')?.value,
-        dividers: ownValue(p, 'dividers')?.value,
-        separated: ownValue(p, 'separated')?.value,
-        material: groupMaterial(ownValue(p, 'glass')?.value),
-      });
       const children = renderChildren(node.children, ctx);
-      if (!boxed) return draw(BloomButton.Group, props, ...children);
-      return drawHost(BloomButton.Group, boxOf('component', 'BG'), props, ...children);
+      return pressAround(p, behaviour, key, (props) => {
+        if (props.accessibilityLabel === undefined) delete props.accessibilityLabel;
+        Object.assign(props, {
+          orientation: ownValue(p, 'axis')?.value,
+          size: ownValue(p, 'size')?.value,
+          dividers: ownValue(p, 'dividers')?.value,
+          separated: ownValue(p, 'separated')?.value,
+          material: groupMaterial(ownValue(p, 'glass')?.value),
+        });
+        if (!boxed) return draw(BloomButton.Group, props, ...children);
+        return drawHost(BloomButton.Group, boxOf('component', 'BG'), props, ...children);
+      });
     }
     case 'fab': {
       const props = hostProps(behaviour, key);
@@ -1821,23 +1818,24 @@ function renderHost(
       const tint = ownValue(p, 'tint')?.value as ColorName | undefined;
       const spacing = ownValue(p, 'spacing')?.value;
       const [label] = node.children;
-      const props = hostProps(behaviour, key);
-      Object.assign(props, {
-        variant: ownValue(p, 'lineStyle')?.value,
-        align: ownValue(p, 'align')?.value,
-        vertical: inRow || undefined,
-        spacing: spacing === undefined ? undefined : resolveSpace(spacing),
-      });
       const content = dividerLabel(label, ctx);
       const out = boxOf('component', 'DV');
-      return drawHost(
-        BloomDivider,
-        tint === undefined
-          ? out
-          : painted(out, propPaint(`DV|${layerKey}|${flex}`, out, 'color', tint)),
-        props,
-        content,
-      );
+      return pressAround(p, behaviour, key, (props) => {
+        Object.assign(props, {
+          variant: ownValue(p, 'lineStyle')?.value,
+          align: ownValue(p, 'align')?.value,
+          vertical: inRow || undefined,
+          spacing: spacing === undefined ? undefined : resolveSpace(spacing),
+        });
+        return drawHost(
+          BloomDivider,
+          tint === undefined
+            ? out
+            : painted(out, propPaint(`DV|${layerKey}|${flex}`, out, 'color', tint)),
+          props,
+          content,
+        );
+      });
     }
     case 'fill':
       return drawContainer(BloomFill, {}, node, p, ctx, boxOf('component', 'FL'), behaviour, key);
@@ -2000,6 +1998,32 @@ function namedTrigger(trigger: Child, label: string | undefined): Child {
  * Presses and the rest of the view's behaviour go on a host around it, since
  * these components take none.
  */
+/**
+ * A Bloom component's press, hover and focus when it takes none of its own
+ * (a Badge, an IconCircle, a Loading, a Divider, an AvatarGroup, a button
+ * group): a language host around it takes them, and its box tracks the
+ * states in JavaScript on every platform, so the variants in the component's
+ * own style (a `Conditioned` leaf) answer them.
+ */
+const AROUND: StyleOut = Object.freeze({ style: undefined, paint: undefined, object: true });
+
+/** `drawn` with its press on a host around it when the view is pressable; its props otherwise, as before. */
+function pressAround(
+  p: Plan,
+  behaviour: Record<string, unknown> | undefined,
+  key: string | number | undefined,
+  drawn: (props: Record<string, unknown>) => ReactElement,
+): ReactElement {
+  if (!p.pressable || behaviour === undefined) {
+    const props = hostProps(behaviour, key);
+    delete props.focusable;
+    return drawn(props);
+  }
+  const { testID, ...rest } = behaviour;
+  const element = drawn(testID === undefined ? {} : { testID });
+  return drawHost(hostFor(p), AROUND, { ...rest, key }, element);
+}
+
 function drawContainer(
   component: Host,
   own: Record<string, unknown>,
@@ -2014,7 +2038,7 @@ function drawContainer(
   const outer = Object.keys(rest).length > 0;
   const props: Record<string, unknown> = { ...own, testID, key: outer ? undefined : key };
   const element = drawHost(component, out, props, ...renderChildren(node.children, ctx));
-  return outer ? drawHost(hostFor(p), NO_OUT, { ...rest, key }, element) : element;
+  return outer ? drawHost(hostFor(p), AROUND, { ...rest, key }, element) : element;
 }
 
 /** A Badge node's props for Bloom's Badge, standalone or attached. */

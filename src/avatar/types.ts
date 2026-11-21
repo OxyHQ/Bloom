@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { PressableProps, StyleProp, ViewStyle } from 'react-native';
 // Referenced by the `variant` prop docs below.
 import type { ImageResolver } from '../image-resolver/context';
 
@@ -146,6 +146,17 @@ export interface AvatarProps {
   workingKey?: number;
   /** Press handler — wraps the avatar in a `Pressable` when provided. */
   onPress?: () => void;
+  /**
+   * The pressable's own press, hover and focus, as a consumer that answers
+   * them (the Bloom language's state variants) reads them. Each wraps the
+   * avatar in its `Pressable`, as `onPress` does.
+   */
+  onPressIn?: PressableProps['onPressIn'];
+  onPressOut?: PressableProps['onPressOut'];
+  onHoverIn?: PressableProps['onHoverIn'];
+  onHoverOut?: PressableProps['onHoverOut'];
+  onFocus?: PressableProps['onFocus'];
+  onBlur?: PressableProps['onBlur'];
   /**
    * When true, marks the user as live-streaming: draws a solid red ring that
    * overlays the avatar edge and, unless `hideLiveBadge` is set, a small red
