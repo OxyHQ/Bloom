@@ -107,7 +107,7 @@ export function readMenuRows(
         });
         break;
       }
-      case 'menuDivider':
+      case 'divider':
         rows.push({ kind: 'divider', id });
         break;
       case 'menuSection':

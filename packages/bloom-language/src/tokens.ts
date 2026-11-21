@@ -32,7 +32,14 @@ import {
 export type SpaceName = keyof typeof SPACE;
 /** A space rung pulled outward. On padding it is SwiftUI's negative padding: the frame grows past its box. */
 export type NegativeSpaceName = `-${SpaceName}`;
-export type CornerName = keyof typeof CORNER;
+/** A corner rung, or `concentric`: the radius of the shape it sits in, less the inset between them (Bloom `ConcentricView`). */
+export type CornerName = keyof typeof CORNER | (typeof ENUMS.cornerExtra)[number];
+/** A corner's curve, as Bloom's shapes draw it: `smooth` is the platform's continuous corner. */
+export type CornerCurve = (typeof ENUMS.cornerCurve)[number];
+/** Bloom `Divider`'s treatments: one hairline, two framing hairlines, a soft strip. */
+export type DividerStyle = (typeof ENUMS.dividerStyle)[number];
+/** How a grid places its cells once it has more than one column (Bloom `ResponsiveGrid`'s `flow`). */
+export type GridFlow = (typeof ENUMS.gridFlow)[number];
 /** Bloom's `fontSize` rungs: a size alone, the platform's own line height. */
 export type FontSizeName = keyof typeof FONT_SIZE;
 export type TypeFamily = (typeof TYPE_FAMILIES)[number];
@@ -158,7 +165,8 @@ export function resolveSpace(token: PaddingToken): number {
   return SPACE[token as SpaceName];
 }
 
-export function resolveCorner(token: CornerName): number {
+/** A rung's radius; `concentric` has none of its own (its shape's radius, drawn by Bloom). */
+export function resolveCorner(token: Exclude<CornerName, 'concentric'>): number {
   return CORNER[token];
 }
 

@@ -723,7 +723,10 @@ function renderHost(
     case 'menuItem':
     case 'menuSubmenu':
     case 'menuSection':
-    case 'menuDivider':
+    case 'divider':
+    case 'fill':
+    case 'ratio':
+    case 'grid':
     case 'menuContent':
     case 'menuActions':
     case 'tab':

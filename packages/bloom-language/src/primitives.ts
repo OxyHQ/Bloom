@@ -19,7 +19,10 @@ import {
   type MenuActionTable,
   type MenuActionsView,
   type MenuContentView,
-  type MenuDividerView,
+  type AspectRatioView,
+  type DividerView,
+  type FillView,
+  type GridView,
   type MenuItemView,
   type MenuSectionView,
   type MenuSubmenuView,
@@ -167,9 +170,30 @@ export function Section(...rows: MenuChild[]): MenuSectionView {
   return new Node('menuSection', null, rows as Child[]);
 }
 
-/** A line between rows. */
-export function Divider(): MenuDividerView {
-  return new Node('menuDivider', null, NO_CHILDREN);
+/**
+ * Bloom `Divider`: a line across its stack (vertical in an `HStack`), with an
+ * optional label on it. In a menu, the line between rows.
+ */
+export function Divider(label?: Child): DividerView {
+  return new Node('divider', null, label === undefined ? NO_CHILDREN : [label]);
+}
+
+/** Bloom `Fill`: its children cover the whole of the view it is in. */
+export function Fill(...children: Child[]): FillView {
+  return new Node('fill', null, children);
+}
+
+/**
+ * Bloom `AspectRatio`: the width of its parent and the height `ratio` (width
+ * over height) gives it, so a media well keeps its size before it loads.
+ */
+export function AspectRatio(ratio: number, ...children: Child[]): AspectRatioView {
+  return new Node('ratio', { ratio }, children);
+}
+
+/** Bloom `ResponsiveGrid`: its cells in as many equal columns as fit. */
+export function Grid(...cells: Child[]): GridView {
+  return new Node('grid', null, cells);
 }
 
 /** A tab of a `BottomBar`: its label and glyph. Its `.id()` is what the bar selects. */
