@@ -866,3 +866,18 @@ fn the_message_bubbles_are_checked() {
         assert_eq!(output.diagnostics.first().map(|d| d.message.as_str()), Some(message), "{call}");
     }
 }
+
+#[test]
+fn the_map_chrome_is_checked() {
+    let imports = "import { MapScaleBar, MapControls, LocationPuck } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (s, o) => [MapScaleBar(s).style('inline'), MapControls(o).axis('horizontal').align('start'), \
+         LocationPuck(o).style('navigating')];\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = (s) => MapScaleBar(s).style('floating');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown mapAttributionStyle token 'floating' for .style()");
+    let output = check("export const x = (o) => LocationPuck(o).size('sm');\n");
+    assert_eq!(output.diagnostics[0].message, "LocationPuck has no modifier .size()");
+}

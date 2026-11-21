@@ -133,3 +133,7 @@ export const NewGroupForm = 'NewGroupForm';
 export const MessageBubble = 'MessageBubble';
 export const TypingBubble = 'TypingBubble';
 export const MessageList = 'MessageList';
+export const MapScaleBar = 'MapScaleBar';
+export const MapControls = 'MapControls';
+export const LocationPuck = 'LocationPuck';
+export const NavigationBanner = 'NavigationBanner';

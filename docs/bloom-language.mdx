@@ -1520,6 +1520,29 @@ token. `TypingBubble(options?)` is named with `.label()`.
 - The typing dots pulse and a highlighted bubble flashes on the JS thread:
   those cases are compared by Jest as they mount, not in Chrome.
 
+### Map chrome
+
+```ts
+MapScaleBar([{ width: 72, label: '500 m' }]).style('inline')
+MapControls({ onLocate: locate, following, heading, onResetNorth: north, onZoomIn, onZoomOut, islands: Layers() }).align('start')
+LocationPuck({ state: 'located', heading, accuracyRadius }).style('compass')
+NavigationBanner('right', 'Carrer del Roure', { distance: '400 m', extras: Lanes() })
+```
+
+What a map draws over its tiles, each Bloom's own: `MapScaleBar(scales,
+options?)` (`.style('island' | 'inline')`), `MapControls(options?)` (each
+control drawn when its handler is given; `.axis()` lays the groups in a row or
+a column, `.align('start' | 'end')` picks the edge; its `islands`, a layer
+picker or one of the app's, are language children), `LocationPuck(options?)`
+(its state and heading are data; `.style('following' | 'compass' |
+'navigating')` is what the map does; its `coneLength` a space token, its
+`accuracyRadius` the app's projection, in pixels) and
+`NavigationBanner(maneuver, instruction, options?)` (its `extras`, lanes or a
+speed limit, are language children).
+
+- A locating puck pulses on the UI thread: its cases are compared by Jest as
+  it mounts, not in Chrome.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a

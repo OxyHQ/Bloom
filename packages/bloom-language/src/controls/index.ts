@@ -24,6 +24,7 @@ import { CONTAINERS } from './containers';
 import type { ControlRenderer } from './draw';
 import { INPUTS } from './inputs';
 import { OVERLAYS } from './overlays';
+import { MAP_CHROME } from './map-chrome';
 
 /**
  * The renderer of each control kind: the Bloom components apps compose most
@@ -54,4 +55,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...CALL_UIS,
   ...CHAT_PEOPLE,
   ...MESSAGE_BUBBLES,
+  ...MAP_CHROME,
 };

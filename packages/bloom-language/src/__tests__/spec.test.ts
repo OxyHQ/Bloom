@@ -243,6 +243,12 @@ import type {
   MessageListView,
   TypingBubbleView,
 } from '../controls/message-bubble';
+import type {
+  MapScaleBarView,
+  MapControlsView,
+  LocationPuckView,
+  NavigationBannerView,
+} from '../controls/map-chrome';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -577,7 +583,15 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<MessageBubbleView>, Of<'messageBubble'>>,
       Same<MethodsOf<TypingBubbleView>, Of<'typingBubble'>>,
       Same<MethodsOf<MessageListView>, Of<'messageList'>>,
+      Same<MethodsOf<MapScaleBarView>, Of<'mapScaleBar'>>,
+      Same<MethodsOf<MapControlsView>, Of<'mapControls'>>,
+      Same<MethodsOf<LocationPuckView>, Of<'locationPuck'>>,
+      Same<MethodsOf<NavigationBannerView>, Of<'navigationBanner'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

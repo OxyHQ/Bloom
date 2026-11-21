@@ -672,3 +672,15 @@ export type {
   TypingBubbleOptions,
   TypingBubbleView,
 } from './controls/message-bubble';
+// Map chrome (controls/map-chrome.tsx)
+export { LocationPuck, MapControls, MapScaleBar, NavigationBanner } from './controls/map-chrome';
+export type {
+  LocationPuckOptions,
+  LocationPuckView,
+  MapControlsOptions,
+  MapControlsView,
+  MapScaleBarOptions,
+  MapScaleBarView,
+  NavigationBannerOptions,
+  NavigationBannerView,
+} from './controls/map-chrome';
