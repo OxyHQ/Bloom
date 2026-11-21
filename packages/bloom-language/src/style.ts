@@ -73,9 +73,11 @@ export interface StyleOut {
  * `host`: a React Native host the language owns (View, Text, Pressable),
  * which takes classes on the web. `component`: a Bloom component the
  * language draws (Avatar, Button, Surface…), which reads its style as an
- * object, so it gets one on every platform.
+ * object, so it gets one on every platform. `material`: a Bloom material that
+ * computes with its fill (`BlurIsland` reads its `backgroundColor`), so its
+ * roles are painted from the theme on every platform, never a CSS variable.
  */
-export type Target = 'host' | 'component';
+export type Target = 'host' | 'component' | 'material';
 
 const NO_STYLE: StyleOut = Object.freeze({ style: undefined, paint: undefined });
 const cache = new Map<string, StyleOut>();
@@ -98,7 +100,8 @@ function isRole(value: number | string | RoleRef): value is RoleRef {
 function serialize(resolved: Resolved, target: Target): StyleOut {
   const keys = Object.keys(resolved);
   if (keys.length === 0) return NO_STYLE;
-  if (IS_WEB) return { style: webStyle(resolved, keys, target), paint: undefined };
+  if (IS_WEB && target !== 'material')
+    return { style: webStyle(resolved, keys, target), paint: undefined };
   const values: Record<string, number | string> = {};
   const roles: [string, ColorName][] = [];
   for (const key of keys) {
@@ -117,7 +120,7 @@ function serialize(resolved: Resolved, target: Target): StyleOut {
  * app token's own number). A Bloom component reads its style as an object,
  * so it gets the inline form, roles as their CSS variables.
  */
-function webStyle(resolved: Resolved, keys: string[], target: Target): unknown {
+function webStyle(resolved: Resolved, keys: string[], target: 'host' | 'component'): unknown {
   let classes: Record<string, string | boolean> | undefined;
   let inline: Record<string, number | string> | undefined;
   for (const key of keys) {
@@ -161,6 +164,8 @@ export interface Layer {
   concentric: boolean;
   /** The layer's `cornerCurve`, which a glass Surface takes as its prop. */
   curve: CornerCurve | undefined;
+  /** A `blur()` layer: Bloom's `BlurIsland` draws it. */
+  blur: boolean;
 }
 
 const EDGE_BITS: Record<Edge, number> = {
@@ -190,6 +195,7 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   const glass = modifier.kind === 'glass' ? modifier.value : undefined;
   const concentric = modifier.kind === 'corner' && modifier.value === 'concentric';
   const curve = modifier.kind === 'cornerCurve' ? modifier.value : undefined;
+  const blur = modifier.kind === 'blur';
   if (current === undefined || rank < current.rank || repeats) {
     layers.push({
       modifiers: [modifier],
@@ -199,6 +205,7 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
       glass,
       concentric,
       curve,
+      blur,
     });
     return;
   }
@@ -209,6 +216,7 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   if (glass) current.glass = glass;
   if (concentric) current.concentric = true;
   if (curve) current.curve = curve;
+  if (blur) current.blur = true;
 }
 
 function paddingStyle(style: Resolved, edge: Edge, value: number): void {
@@ -230,7 +238,7 @@ const BORDER_EDGE_KEY: Record<BorderEdge, string> = {
   trailing: 'borderEnd',
 };
 
-/** One layer's view style. Glass's fill is the Surface's prop, not a style. */
+/** One layer's view style. Glass's fill is the Surface's prop, not a style; a blur draws its own material. */
 export function layerStyle(layer: Layer | undefined): Resolved {
   const style: Resolved = {};
   if (layer === undefined) return style;
@@ -266,6 +274,7 @@ export function layerStyle(layer: Layer | undefined): Resolved {
         style.opacity = OPACITY[modifier.value];
         break;
       case 'glass':
+      case 'blur':
         break;
     }
   }

@@ -244,6 +244,7 @@ export type Modifier =
   | { readonly kind: 'cornerCurve'; readonly key: string; readonly value: CornerCurve }
   | { readonly kind: 'opacity'; readonly key: string; readonly value: OpacityName }
   | { readonly kind: 'glass'; readonly key: string; readonly value: GlassValue }
+  | { readonly kind: 'blur'; readonly key: string }
   | { readonly kind: 'foreground'; readonly key: string; readonly value: ColorName }
   | { readonly kind: 'font'; readonly key: string; readonly value: FontName }
   | { readonly kind: 'weight'; readonly key: string; readonly value: WeightName }
@@ -551,6 +552,9 @@ export class Node {
   }
   glass(value: GlassValue = regular): Node {
     return this.with({ kind: 'glass', key: value.key, value });
+  }
+  blur(): Node {
+    return this.with({ kind: 'blur', key: 'blur' });
   }
   foreground(value: ColorName): Node {
     return this.with({ kind: 'foreground', key: `fg:${value}`, value });
@@ -876,6 +880,12 @@ export interface ViewModifiers<Self> extends ViewNode {
    * optionally `.tint(role, opacity?)`. Drawn by Bloom's `Surface` today.
    */
   glass(value?: GlassValue): Self;
+  /**
+   * The view floats over content as an island: Bloom's `BlurIsland`, the shared
+   * material with its shadow (the lens on Android), a capsule unless a
+   * `corner` names its radius.
+   */
+  blur(): Self;
   /** Text and icon colour for this view and everything inside it. */
   foreground(value: ColorName): Self;
   font(value: FontName): Self;
