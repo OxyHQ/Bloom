@@ -542,7 +542,8 @@
     "outlineNavStyle": ["full", "compact"],
     "choiceListStyle": ["list", "picker"],
     "priceLineTone": ["default", "discount", "muted"],
-    "paymentStatusStyle": ["surface", "plain"]
+    "paymentStatusStyle": ["surface", "plain"],
+    "pipelineLayout": ["auto", "board", "single"]
   },
   "glass": {
     "$comment": [
@@ -1495,6 +1496,15 @@
       "constructors": ["PaymentStatusBlock"],
       "modifiers": ["style"],
       "style": "paymentStatusStyle"
+    },
+    "contactProfileCard": { "constructors": ["ContactProfileCard"], "modifiers": ["density"] },
+    "leadScoreCard": { "constructors": ["LeadScoreCard"], "modifiers": [] },
+    "dealCard": { "constructors": ["DealCard"], "modifiers": [] },
+    "pipelineColumn": { "constructors": ["PipelineColumn"], "modifiers": [] },
+    "pipelineBoard": {
+      "constructors": ["PipelineBoard"],
+      "modifiers": ["style"],
+      "style": "pipelineLayout"
     }
   },
   "sfSymbols": {
