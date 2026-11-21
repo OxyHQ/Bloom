@@ -79,6 +79,11 @@ export interface DragOptions {
   activeOffset?: number | null;
   /** Travel across the axis that hands the touch back (to a scroll). */
   failOffset?: number;
+  /**
+   * The drag takes the touch only once the finger has rested this long, ms
+   * (a long press lifts a row). Give `activeOffset: null` with it.
+   */
+  activateAfterLongPress?: number;
   enabled?: boolean;
   /**
    * Gestures that hold the same touch alongside the drag: a scroll view's
@@ -109,11 +114,21 @@ export interface DragOptions {
   follows?: (travel: number, next: number) => boolean;
   /** JS, once per touch, when it lands. */
   onBegin?: () => void;
+  /** JS, once per touch, when the drag takes it. */
+  onActivate?: () => void;
+  /**
+   * JS, on every move the value follows: the finger's position along the axis
+   * in the window. Only for a drag whose target is found in JS (a tree row's
+   * hit test); it runs JS per frame.
+   */
+  onMove?: (position: number) => void;
   /**
    * JS, once per touch, when it ends (released, cancelled or never taken):
-   * where the value is and the finger's velocity along the axis.
+   * where the value is, the finger's velocity along the axis, and whether the
+   * drag took the touch and was let go (`released`; false when it was never
+   * taken or was cancelled).
    */
-  onEnd?: (end: { value: number; velocity: number }) => void;
+  onEnd?: (end: { value: number; velocity: number; released: boolean }) => void;
   /**
    * Worklet (the UI thread, on native), when a touch the drag took ends:
    * where the value is and the finger's velocity along the axis as the
@@ -151,6 +166,7 @@ export function useDrag(value: MotionValue, options: DragOptions) {
     overdrag = 0,
     activeOffset = 10,
     failOffset,
+    activateAfterLongPress,
     enabled = true,
     simultaneousWith,
     activation,
@@ -160,9 +176,13 @@ export function useDrag(value: MotionValue, options: DragOptions) {
     onRelease,
   } = options;
   const onBegin = useStableCallback(options.onBegin);
+  const onActivate = useStableCallback(options.onActivate);
+  const onMove = useStableCallback(options.onMove);
   const onEnd = useStableCallback(options.onEnd);
   const start = useMotionValue(0);
   const velocity = useMotionValue(0);
+  // Whether the drag took this touch and it was let go, not cancelled.
+  const released = useMotionValue(0);
   // Whether this touch drags the value (`takes`), and where it landed along the axis (`activation`).
   const taken = useMotionValue(1);
   const landed = useMotionValue(0);
@@ -184,17 +204,20 @@ export function useDrag(value: MotionValue, options: DragOptions) {
       activeOffsetY: axis === 'y' ? active : undefined,
       failOffsetX: axis === 'y' ? fail : undefined,
       failOffsetY: axis === 'x' ? fail : undefined,
+      activateAfterLongPress,
       onBegin: () => {
         'worklet';
         if (startOn === 'touch') startDrag();
         setMotionValue(velocity, 0);
+        setMotionValue(released, 0);
         if (onBegin) runOnJS(onBegin)();
       },
       onActivate:
-        startOn === 'activation'
+        startOn === 'activation' || onActivate
           ? () => {
               'worklet';
-              startDrag();
+              if (startOn === 'activation') startDrag();
+              if (onActivate) runOnJS(onActivate)();
             }
           : undefined,
       // A finger that lands measures the travel the activation reads afresh,
@@ -223,6 +246,8 @@ export function useDrag(value: MotionValue, options: DragOptions) {
         translationY: number;
         velocityX: number;
         velocityY: number;
+        absoluteX: number;
+        absoluteY: number;
       }) => {
         'worklet';
         const travel = axis === 'x' ? event.translationX : event.translationY;
@@ -231,21 +256,26 @@ export function useDrag(value: MotionValue, options: DragOptions) {
         const next = getMotionValue(start) + travel;
         if (follows && !follows(travel, next)) return;
         setMotionValue(value, bounded(next, min, max, overdrag));
+        if (onMove) runOnJS(onMove)(axis === 'x' ? event.absoluteX : event.absoluteY);
       },
-      onDeactivate: onRelease
-        ? (event: { velocityX: number; velocityY: number }) => {
-            'worklet';
-            if (getMotionValue(taken) === 0) return;
-            onRelease({
-              value: getMotionValue(value),
-              velocity: axis === 'x' ? event.velocityX : event.velocityY,
-            });
-          }
-        : undefined,
+      onDeactivate: (event: { velocityX: number; velocityY: number; canceled: boolean }) => {
+        'worklet';
+        if (getMotionValue(taken) === 0) return;
+        setMotionValue(released, event.canceled ? 0 : 1);
+        if (onRelease)
+          onRelease({
+            value: getMotionValue(value),
+            velocity: axis === 'x' ? event.velocityX : event.velocityY,
+          });
+      },
       onFinalize: () => {
         'worklet';
         if (onEnd)
-          runOnJS(onEnd)({ value: getMotionValue(value), velocity: getMotionValue(velocity) });
+          runOnJS(onEnd)({
+            value: getMotionValue(value),
+            velocity: getMotionValue(velocity),
+            released: getMotionValue(released) === 1,
+          });
       },
     };
   }, [
@@ -256,6 +286,7 @@ export function useDrag(value: MotionValue, options: DragOptions) {
     overdrag,
     activeOffset,
     failOffset,
+    activateAfterLongPress,
     enabled,
     simultaneousWith,
     activation,
@@ -264,9 +295,12 @@ export function useDrag(value: MotionValue, options: DragOptions) {
     follows,
     onRelease,
     onBegin,
+    onActivate,
+    onMove,
     onEnd,
     start,
     velocity,
+    released,
     taken,
     landed,
   ]);
