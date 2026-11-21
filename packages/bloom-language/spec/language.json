@@ -538,7 +538,8 @@
       "error",
       "info"
     ],
-    "shareSheetSize": ["sm", "md", "lg"]
+    "shareSheetSize": ["sm", "md", "lg"],
+    "outlineNavStyle": ["full", "compact"]
   },
   "glass": {
     "$comment": [
@@ -1446,7 +1447,15 @@
       "constructors": ["ShareSheet"],
       "modifiers": ["size"],
       "size": "shareSheetSize"
-    }
+    },
+    "connectionDots": { "constructors": ["ConnectionDots"], "modifiers": [] },
+    "outlineNav": {
+      "constructors": ["OutlineNav"],
+      "modifiers": ["style"],
+      "style": "outlineNavStyle"
+    },
+    "pagination": { "constructors": ["Pagination"], "modifiers": [] },
+    "progressiveBlur": { "constructors": ["ProgressiveBlur"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
