@@ -175,3 +175,20 @@ export type {
   SpaceToken,
   WeightName,
 } from './tokens';
+export type { Binding } from './binding';
+
+// Date and time pickers (controls/date-picker.tsx)
+export {
+  Calendar,
+  DatePicker,
+  DateRangePicker,
+  RangeCalendar,
+  TimeField,
+} from './controls/date-picker';
+export type {
+  CalendarView,
+  DatePickerView,
+  DateRangePickerView,
+  RangeCalendarView,
+  TimeFieldView,
+} from './controls/date-picker';

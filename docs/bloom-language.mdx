@@ -1067,6 +1067,38 @@ Image(post.cover, 'Cover')
   with `onPress`, `onHover` or `hoverGroup` is drawn inside its pressable host,
   which also takes `grow` and `shrink`.
 
+## Generic components
+
+The Bloom components apps compose beyond the primitives and the controls, each
+drawn as the component itself: a node maps its modifiers onto the props an app
+writes today, so it looks and behaves as that component does (proven by the
+parity suite, family by family). An input takes a `Binding` (`[value, set]`,
+what `useState` returns), so the screen owns the value. The box modifiers
+(`padding`, `frame`, `background`…) reach the component's `style`, `.label()`
+its accessible name and `.testID()` its test id.
+
+### Date and time pickers
+
+```ts
+const [day, setDay] = useState<Date | null>(null);
+DatePicker([day, setDay]).bounds(today, null).placeholder('Check-in').label('Check-in')
+DateRangePicker([range, setRange]).quickSelect(false).presented([open, setOpen])
+Calendar([day, setDay]).weekStart(1).unavailable(isWeekend)
+RangeCalendar([range, setRange]).months(2)
+TimeField([time, setTime]).bounds('09:00', '18:00').step(15).hourFormat('12h').size('sm')
+```
+
+Bloom's `DatePicker`, `DateRangePicker`, `Calendar`, `RangeCalendar` and
+`TimeField`. Every calendar and picker takes `.bounds(min, max?)` (`null`
+leaves an end open), `.unavailable(fn)`, `.weekStart(0…6)`, `.locale(tag)` and
+`.labels({...})` (wording of your own; Bloom already speaks its strings in the
+locale). A picker adds `.placeholder()`, `.disabled()` and
+`.presented([open, setOpen])` (its popup, controlled); a range picker
+`.quickSelect(false)`. A calendar takes `.initialMonth(date)`, a range calendar
+`.months(1 | 2)`. A `TimeField` holds a 24h `"HH:mm"` string: `.bounds()` in
+that form, `.step(minutes)`, `.hourFormat('12h' | '24h')` (what is drawn; the
+value stays 24h), `.size('sm' | 'md')`, `.placeholder()` and `.disabled()`.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -1441,6 +1473,8 @@ and `@oxy.so/bloom-data` beside it.
   same engine.
 - The className table (`docs/bloom-language-classnames.mdx`), which says what
   each utility the apps use becomes.
+- Generic components (see [Generic components](#generic-components)), drawn as
+  Bloom's own: the date and time pickers.
 
 **Not built**
 

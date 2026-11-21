@@ -81,6 +81,13 @@ import type {
   TabView,
   TextView,
 } from '../node';
+import type {
+  DatePickerView,
+  DateRangePickerView,
+  CalendarView,
+  RangeCalendarView,
+  TimeFieldView,
+} from '../controls/date-picker';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -279,7 +286,17 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<NavStackView>, Of<'navStack'>>,
       Same<MethodsOf<RouteView>, Of<'route'>>,
       Same<MethodsOf<TabNavigatorView>, Of<'tabView'>>,
+      Same<MethodsOf<DatePickerView>, Of<'datePicker'>>,
+      Same<MethodsOf<DateRangePickerView>, Of<'dateRangePicker'>>,
+      Same<MethodsOf<CalendarView>, Of<'calendar'>>,
+      Same<MethodsOf<RangeCalendarView>, Of<'rangeCalendar'>>,
+      Same<MethodsOf<TimeFieldView>, Of<'timeField'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

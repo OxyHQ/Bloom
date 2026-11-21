@@ -130,6 +130,7 @@ import {
   type VariantStyles,
 } from './style';
 import { StateHost } from './state-host';
+import { CONTROLS } from './controls';
 import {
   STATES,
   both,
@@ -2100,6 +2101,50 @@ function renderHost(
         hostProps(behaviour, key),
         viewElement(node, ctx, undefined),
       );
+    }
+    default: {
+      const control = CONTROLS[node.kind];
+      if (control === undefined) throw new Error(`bloom-language: no renderer for ${node.kind}`);
+      const component = (
+        host: unknown,
+        out: StyleOut,
+        props: Record<string, unknown>,
+        children: ReactNode[],
+      ) => drawHost(host as Host, out, props, ...children);
+      return control({
+        node,
+        own: (kind) => ownValue(p, kind),
+        label: p.label,
+        hint: p.hint,
+        testID: p.testID,
+        props: () => {
+          const props = hostProps(behaviour, key);
+          delete props.focusable;
+          return props;
+        },
+        component: (host, props, ...children) =>
+          boxed
+            ? component(host, boxOf('component', node.kind), props, children)
+            : draw(host as Host, props, ...children),
+        painted: (host, props, colors, ...children) => {
+          const roles: [string, ColorName, number?][] = [];
+          for (const [prop, token] of Object.entries(colors)) {
+            if (token !== undefined)
+              roles.push(propRole(prop, token) as [string, ColorName, number?]);
+          }
+          const out = boxed ? boxOf('component', node.kind) : NO_STYLE_OUT;
+          const paint = variedPaint(
+            `C|${node.kind}|${boxed ? `${layerKey}|${flex}` : ''}|${roles.map((r) => r.join(':')).join(',')}`,
+            out,
+            roles,
+            NO_VARIANTS,
+          );
+          return component(host, paint === undefined ? out : painted(out, paint), props, children);
+        },
+        pressAround: (drawn) => pressAround(p, behaviour, key, drawn),
+        render: (child) => renderChild(child, ctx, undefined),
+        children: (children) => renderChildren(children, ctx),
+      });
     }
   }
 }

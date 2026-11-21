@@ -1,0 +1,11 @@
+import type { NodeKind } from '../node';
+import { DATE_PICKERS } from './date-picker';
+import type { ControlRenderer } from './draw';
+
+/**
+ * The renderer of each control kind: the Bloom components the language draws
+ * as they are (pickers, meters, tables, lists…), each family in its own file.
+ */
+export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
+  ...DATE_PICKERS,
+};
