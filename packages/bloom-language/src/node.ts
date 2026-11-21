@@ -101,6 +101,7 @@ import type { DatePickerKind } from './controls/date-picker';
 import type { HourFormat, WeekStart } from '@oxy.so/bloom/date-picker';
 
 import type { AgentAvatarKind } from './controls/agent-avatar';
+import type { ChatComposerKind } from './controls/chat-composer';
 import type { DialogAction, DialogHeaderConfig, DialogScreenFrame } from '@oxy.so/bloom/dialog';
 import type { SearchToken } from '@oxy.so/bloom/search';
 
@@ -198,6 +199,9 @@ import {
   type TooltipSide,
   type RatingStyle,
   type AgentMood,
+  type ReactionPickerSize,
+  type ComposerButtonTone,
+  type AttachmentLayout,
   type Presence,
   type ShapeName,
   type BorderWidthName,
@@ -892,6 +896,10 @@ export interface ValueModifiers {
   mood: AgentMood;
   interactive: boolean;
   portrait: boolean;
+
+  // Chat composer (controls/chat-composer.tsx)
+  iconSize: IconSizeToken;
+  surface: boolean;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1043,7 +1051,8 @@ export type Modifier =
         | BadgeSize
         | SpaceToken
         | ContainerSize
-        | SidebarSize;
+        | SidebarSize
+        | ReactionPickerSize;
     }
   | {
       readonly kind: 'style';
@@ -1063,7 +1072,8 @@ export type Modifier =
         | DotsStyle
         | StepperStyle
         | GalleryStyle
-        | DataTableStyle;
+        | DataTableStyle
+        | AttachmentLayout;
     }
   | {
       readonly kind: 'shape';
@@ -1073,7 +1083,13 @@ export type Modifier =
   | {
       readonly kind: 'tint';
       readonly key: string;
-      readonly value: BloomTone | ColorName | AvatarColor | AccentTone;
+      readonly value:
+        | BloomTone
+        | ColorName
+        | AvatarColor
+        | AccentTone
+          | ColorToken
+        | ComposerButtonTone;
     }
   | {
       readonly kind: 'count';
@@ -1307,7 +1323,8 @@ export type NodeKind =
   | NotificationKind
   | LinkPreviewKind
   | SocialButtonKind
-  | AgentAvatarKind;
+  | AgentAvatarKind
+  | ChatComposerKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1619,7 +1636,8 @@ export class Node {
       | BadgeSize
       | SpaceToken
       | ContainerSize
-      | SidebarSize,
+      | SidebarSize
+      | ReactionPickerSize,
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
@@ -1639,14 +1657,23 @@ export class Node {
       | DotsStyle
       | StepperStyle
       | GalleryStyle
-      | DataTableStyle,
+      | DataTableStyle
+      | AttachmentLayout,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
   shape(value: ButtonShape | ShapeName | DotsShape): Node {
     return this.with({ kind: 'shape', key: `shape:${value}`, value });
   }
-  tint(value: BloomTone | ColorName | AvatarColor | AccentTone): Node {
+  tint(
+    value:
+      | BloomTone
+      | ColorName
+      | AvatarColor
+      | AccentTone
+      | ColorToken
+      | ComposerButtonTone,
+  ): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
   }
   count(value: number | string | null | undefined): Node {
@@ -3144,6 +3171,14 @@ export class Node {
   }
   portrait(value = true): Node {
     return this.set('portrait', value);
+  }
+
+  // Chat composer (controls/chat-composer.tsx)
+  iconSize(value: IconSizeToken): Node {
+    return this.set('iconSize', value);
+  }
+  surface(value = true): Node {
+    return this.set('surface', value);
   }
 }
 

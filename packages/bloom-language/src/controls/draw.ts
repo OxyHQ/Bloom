@@ -60,17 +60,6 @@ export interface ControlDraw {
    */
   around(element: ReactElement): ReactElement;
   /**
-   * Draws a Bloom component as `component` does, with the props `colors` names
-   * painted from their colour roles (a role at an opacity included), read from
-   * the theme in the leaf that draws it.
-   */
-  painted(
-    host: unknown,
-    props: Record<string, unknown>,
-    colors: Readonly<Record<string, ColorToken | undefined>>,
-    ...children: ReactNode[]
-  ): ReactElement;
-  /**
    * Draws what `drawn` returns, with the view's press on a host around it when
    * the view is pressable (for a component that takes no press of its own).
    */
