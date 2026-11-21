@@ -29,6 +29,7 @@ import {
   MOTION,
   type NODE_MODIFIERS,
   OPACITY,
+  ROTATION,
   SCALE,
   SHADOW,
   SPACE,
@@ -120,6 +121,7 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
       [Z_INDEX, '', 1],
       [SCALE, '', 100],
       [BORDER_WIDTH as unknown as Record<string, number>, '', 1],
+      [ROTATION, '', 1],
     ];
     let checked = 0;
     for (const [scale, unit, factor] of scales) {

@@ -281,7 +281,24 @@ const TW_SHADOW = {
  * feat/bloom-language-motion): what of Tailwind's transitions and tw-animate's
  * enter and exit it plays, and what it has no equivalent for.
  */
-const MOTION_LAYER = 'feat/bloom-language-motion';
+const MOTION_LAYER = 'the motion layer';
+/**
+ * Tailwind's curves (its default `transition-timing-function` and `ease-*`),
+ * none of them Bloom's: an app that keeps one declares it as its own motion.
+ */
+const TW_EASE = {
+  DEFAULT: [0.4, 0, 0.2, 1],
+  in: [0.4, 0, 1, 1],
+  out: [0, 0, 0.2, 1],
+  'in-out': [0.4, 0, 0.2, 1],
+};
+/** An app motion a Tailwind duration or curve is: `defineTokens({ motion })` with Tailwind's own numbers. */
+const appMotion = (duration, curve) =>
+  appToken(
+    'motion',
+    duration === undefined ? `ease-${curve}` : `${duration}ms`,
+    `.animation(app.motion.<name>): defineTokens({ motion: { <name>: { duration: ${duration ?? 150}, easing: [${TW_EASE[curve].join(', ')}] } } })`,
+  );
 function motionUtility(utility) {
   let m;
   if (utility === 'transition-none') return drop('a view animates only what it says');
@@ -301,16 +318,10 @@ function motionUtility(utility) {
     return modifier(
       'a layout transition (a frame’s width): the motion engine moves views, not frames',
     );
-  if ((m = /^duration-(\d+)$/.exec(utility)))
-    return token(
-      'motion',
-      `${m[1]}ms`,
-      'an app motion (defineTokens({ motion: { duration, easing } })): Tailwind’s curve is none of Bloom’s',
-    );
+  if ((m = /^duration-(\d+)$/.exec(utility))) return appMotion(Number(m[1]), 'DEFAULT');
   if (utility === 'ease-linear')
     return motion(`easing 'linear' in the view’s motion (Bloom’s linear curve; ${MOTION_LAYER})`);
-  if ((m = /^ease-(.+)$/.exec(utility)))
-    return token('motion', `ease-${m[1]}`, 'an app motion’s curve: Tailwind’s is none of Bloom’s');
+  if ((m = /^ease-(in|out|in-out)$/.exec(utility))) return appMotion(undefined, m[1]);
   if (utility === 'animate-in')
     return motion(
       `.transition(…): its insertion, the fade, zoom and slide beside it (${MOTION_LAYER})`,
@@ -650,12 +661,13 @@ function resolve(utility) {
   if ((m = /^list-(disc|decimal)$/.exec(utility)))
     return mapped(`.listMarker('${m[1]}') (a stack)`);
   if (utility === 'list-none') return drop('a stack draws no markers unless it says so');
-  if ((m = /^(-?)rotate-(\d+)$/.exec(utility)))
-    return token(
-      'rotation',
-      `${m[1]}${m[2]}°`,
-      `.rotation(…) (${MOTION_LAYER}: none, quarter, half)`,
-    );
+  if ((m = /^(-?)rotate-(\d+)$/.exec(utility))) {
+    const degrees = Number(`${m[1]}${m[2]}`);
+    const name = rung(scales.rotation, degrees);
+    return name
+      ? mapped(`.rotation('${name}')`)
+      : token('rotation', `${degrees}°`, `.rotation(…) (${MOTION_LAYER})`);
+  }
   if (/^origin-/.test(utility))
     return modifier('a transform origin: a view scales and rotates about its centre');
   if ((m = /^scale-(\d+|\[\d*\.?\d+\])$/.exec(utility))) {
@@ -889,12 +901,11 @@ ${table(byStatus('token'), tokenColumns)}
 
 ## Maps to the motion layer
 
-Bloom's motion engine (\`@oxy.so/bloom/motion\`) and the language's motion
-modifiers (\`.animation()\`, \`.transition()\`, \`.keyframes()\`) are on
-\`${MOTION_LAYER}\`. What it plays is here; its durations and curves are
-motion tokens: Tailwind's default curve (\`cubic-bezier(0.4, 0, 0.2, 1)\`) is
-none of Bloom's, so a \`duration-*\` is an app motion
-(\`defineTokens({ motion: { duration, easing } })\`) unless it is one of Bloom's.
+Bloom's motion engine (\`@oxy.so/bloom/motion\`) plays the language's motion
+modifiers (\`.animation()\`, \`.transition()\`, \`.keyframes()\`). What it plays
+is here. Tailwind's durations and curves are none of Bloom's motion tokens
+(its default curve is \`cubic-bezier(0.4, 0, 0.2, 1)\`), so each is an app's own
+motion, declared with its exact numbers (*An app's own token*).
 What the engine has no equivalent for (a colour transition, a loop, a delay, a
 transform origin) is under *Needs a modifier the language lacks*.
 

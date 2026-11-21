@@ -153,8 +153,10 @@ export const OPACITY = {
   "20": 0.2,
   "30": 0.3,
   "40": 0.4,
+  "45": 0.45,
   "60": 0.6,
   "70": 0.7,
+  "75": 0.75,
   "80": 0.8,
   "90": 0.9,
   "transparent": 0,
@@ -163,6 +165,7 @@ export const OPACITY = {
 } as const;
 export const BORDER_WIDTH = {
   "3": 3,
+  "4": 4,
   "hairline": "hairline",
   "thin": 1,
   "thick": 2
@@ -208,9 +211,11 @@ export const LENGTH = {
   "fit": "fit-content"
 } as const;
 export const Z_INDEX = {
+  "2": 2,
   "20": 20,
   "30": 30,
   "50": 50,
+  "60": 60,
   "base": 0,
   "raised": 1,
   "floating": 10,
@@ -240,6 +245,7 @@ export const SCALE = {
   "swell": 1.2
 } as const;
 export const ROTATION = {
+  "45": 45,
   "none": 0,
   "quarter": 90,
   "half": 180
