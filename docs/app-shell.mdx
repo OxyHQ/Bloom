@@ -386,8 +386,16 @@ native screen. The frame protects its top and side edges, including landscape
 notches, and keeps reveal navigation inside the same safe frame. Portaled
 navigation drawers ALWAYS use the device's original insets, with or without
 `safeArea`: they render past every Screen, so nothing else clears them (keyed on
-`safeArea`, Allo's drawer ran under the status bar). Web geometry is unchanged;
-`safeArea` defaults to `false` for existing embedded shells.
+`safeArea`, Allo's drawer ran under the status bar). The full-height `reveal`
+drawer clears the top and bottom device edges the frame leaves it, so without
+`safeArea` it still sits below the status bar while the pages reach behind it.
+Web geometry is unchanged; `safeArea` defaults to `false` for existing embedded shells.
+
+Without `safeArea` the pages own the top edge: each route's `PageHeader` pads its
+controls below the inset while its paint and the scrolling content run behind the
+status bar, edge to edge. With it, the frame pads the top and paints the shell
+background there, so nothing reaches behind the status bar. Semantic layouts turn
+it on; an app whose pages should run edge to edge passes `safeArea={false}`.
 
 When bottom chrome is visible, the bottom-bar slot or floating action retains
 ownership of the bottom inset. Otherwise the frame reserves it. There is no
