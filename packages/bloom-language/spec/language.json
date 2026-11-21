@@ -518,7 +518,9 @@
     "markdownSize": ["sm", "md", "lg"],
     "codeLinesSize": ["sm", "md"],
     "stepperSize": ["sm", "md"],
-    "stepperStyle": ["separate", "outline"]
+    "stepperStyle": ["separate", "outline"],
+    "tooltipSide": ["top", "bottom"],
+    "tooltipSize": ["sm", "md"]
   },
   "glass": {
     "$comment": [
@@ -898,7 +900,17 @@
     "diff": ["value", "value"],
     "copyable": ["value"],
     "onCopy": ["value"],
-    "onRemove": ["value"]
+    "onRemove": ["value"],
+    "separatorView": ["value"],
+    "hoverMenu": ["value"],
+    "days": ["value"],
+    "endDate": ["value"],
+    "levels": ["value"],
+    "cellSize": ["space"],
+    "onPressDay": ["value"],
+    "side": ["tooltipSide"],
+    "openDelay": ["value"],
+    "collapses": []
   },
   "universal": [
     "padding",
@@ -1557,6 +1569,35 @@
       ],
       "size": "stepperSize",
       "style": "stepperStyle"
+    },
+    "tooltip": {
+      "constructors": ["Tooltip"],
+      "modifiers": ["presented", "side", "openDelay", "size"],
+      "size": "tooltipSize"
+    },
+    "breadcrumb": {
+      "constructors": ["Breadcrumb"],
+      "modifiers": ["size", "collapses", "separatorView", "labels"],
+      "size": "controlSize"
+    },
+    "breadcrumbItem": {
+      "constructors": ["BreadcrumbItem"],
+      "modifiers": ["size", "icon", "prefix", "link", "active", "disabled", "hoverMenu"],
+      "size": "controlSize"
+    },
+    "activityHeatmap": {
+      "constructors": ["ActivityHeatmap"],
+      "modifiers": [
+        "days",
+        "endDate",
+        "levels",
+        "emptyTint",
+        "cellSize",
+        "spacing",
+        "weekStart",
+        "labels",
+        "onPressDay"
+      ]
     }
   },
   "sfSymbols": {
