@@ -1005,3 +1005,21 @@ fn one_time_codes_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn colour_swatch_pickers_are_checked() {
+    let imports = "import { ColorSwatchPicker } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (color) => ColorSwatchPicker('Brand colour', color, ['#fff']).labels({}).size('3xl').disabled();\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("ColorSwatchPicker('C', t, []).size('huge')", "Unknown space token 'huge' for .size()"),
+        ("ColorSwatchPicker('C', t, []).tint('primary')", "ColorSwatchPicker has no modifier .tint()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (t) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
