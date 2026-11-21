@@ -9,6 +9,7 @@ import { MARKDOWN } from './markdown';
 import { RATINGS } from './rating';
 import { SLIDERS } from './slider';
 import { STAT_BARS } from './stat-bar';
+import { STEPPERS } from './stepper';
 import { TABLES } from './table';
 
 /**
@@ -26,4 +27,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...SLIDERS,
   ...ACCORDIONS,
   ...CODES,
+  ...STEPPERS,
 };

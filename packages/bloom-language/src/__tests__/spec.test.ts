@@ -119,6 +119,7 @@ import type {
   AccordionContentView,
 } from '../controls/accordion';
 import type { CodeView, PreView, CodeLinesView, CodeBlockView } from '../controls/code';
+import type { StepperView, StepperRowView } from '../controls/stepper';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -353,7 +354,11 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<PreView>, Of<'pre'>>,
       Same<MethodsOf<CodeLinesView>, Of<'codeLines'>>,
       Same<MethodsOf<CodeBlockView>, Of<'codeBlock'>>,
+      Same<MethodsOf<StepperView>, Of<'stepper'>>,
+      Same<MethodsOf<StepperRowView>, Of<'stepperRow'>>,
     ] = [
+      true,
+      true,
       true,
       true,
       true,

@@ -733,3 +733,22 @@ fn code_is_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn steppers_are_checked() {
+    let imports = "import { Stepper, StepperRow, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (v, f) => [Stepper(v).bounds(0, 10).step(2).disabled().size('sm').style('outline').valueFormat(f).onRemove(f).labels({}), StepperRow(v, 'Adults').supporting(Text('13+')).dividers()];\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("Stepper(v).size('lg')", "Unknown stepperSize token 'lg' for .size()"),
+        ("Stepper(v).style('solid')", "Unknown stepperStyle token 'solid' for .style()"),
+        ("Stepper(v).dividers()", "Stepper has no modifier .dividers()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (v) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
