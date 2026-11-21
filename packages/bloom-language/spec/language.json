@@ -192,7 +192,17 @@
     "role": ["button", "link", "header", "image", "text", "none"],
     "buttonShape": ["circle", "pill"],
     "appearance": ["solid", "subtle", "outline", "plain"],
-    "tone": ["neutral", "accent", "support", "action", "success", "warning", "danger", "info"],
+    "tone": [
+      "neutral",
+      "accent",
+      "vivid",
+      "support",
+      "action",
+      "success",
+      "warning",
+      "danger",
+      "info"
+    ],
     "engagementTone": ["primary", "secondary", "tertiary", "success", "warning", "error", "info"],
     "controlSize": ["xs", "sm", "md", "lg"],
     "glassMaterial": ["regular", "clear"],
@@ -295,6 +305,7 @@
     "$comment": "The colour role a solid control of each Bloom tone fills with: an untinted glass under a solid Button or FAB takes it as its tint (null: the glass stays neutral).",
     "neutral": null,
     "accent": "primary",
+    "vivid": "primary",
     "support": "secondary",
     "action": "tertiary",
     "success": "success",
@@ -423,7 +434,8 @@
     "onPressItem": ["value"],
     "hoverCard": ["value?"],
     "pressScale": [],
-    "hoverHighlight": ["value?"]
+    "hoverHighlight": ["value?"],
+    "pressed": ["value"]
   },
   "universal": [
     "padding",
@@ -566,7 +578,18 @@
     },
     "button": {
       "constructors": ["Button"],
-      "modifiers": ["style", "shape", "size", "tint", "disabled", "loading"],
+      "modifiers": [
+        "style",
+        "shape",
+        "size",
+        "tint",
+        "disabled",
+        "loading",
+        "pressed",
+        "link",
+        "lines",
+        "underline"
+      ],
       "size": "controlSize",
       "tint": "tone",
       "style": "appearance",

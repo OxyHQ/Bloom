@@ -200,6 +200,7 @@ export interface ValueModifiers {
   hoverCard: boolean;
   pressScale: true;
   hoverHighlight: boolean | undefined;
+  pressed: boolean;
   columns: number;
   minCellWidth: SpaceToken;
   flow: GridFlow;
@@ -842,6 +843,9 @@ export class Node {
   hoverHighlight(value?: boolean): Node {
     return this.set('hoverHighlight', value);
   }
+  pressed(value: boolean): Node {
+    return this.set('pressed', value);
+  }
 }
 
 const FRAME_KEYS = ['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight'] as const;
@@ -1062,6 +1066,14 @@ export interface ButtonView extends ViewModifiers<ButtonView> {
   disabled(value?: boolean): ButtonView;
   /** Busy: the label gives way to Bloom's spinner and presses are ignored. */
   loading(value?: boolean): ButtonView;
+  /** A toggle, on or off: announced as pressed on every platform. */
+  pressed(value: boolean): ButtonView;
+  /** A link: a real anchor on the web, the address opened on native (unless `.onPress` is set). */
+  link(href: string): ButtonView;
+  /** Truncates the label to `n` lines instead of wrapping it. */
+  lines(value: number): ButtonView;
+  /** The label carries its underline at rest (a `plain` action inside running copy). */
+  underline(): ButtonView;
 }
 /**
  * Bloom `Fab`: the prominent action, drawn on the platform's glass (see

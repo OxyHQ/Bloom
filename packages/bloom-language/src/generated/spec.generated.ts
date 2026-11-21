@@ -545,6 +545,7 @@ export const ENUMS = {
   "tone": [
     "neutral",
     "accent",
+    "vivid",
     "support",
     "action",
     "success",
@@ -753,6 +754,7 @@ export const GLASS = {
 export const TONE_ROLE = {
   "neutral": null,
   "accent": "primary",
+  "vivid": "primary",
   "support": "secondary",
   "action": "tertiary",
   "success": "success",
@@ -1085,6 +1087,9 @@ export const MODIFIERS = {
   "pressScale": [],
   "hoverHighlight": [
     "value?"
+  ],
+  "pressed": [
+    "value"
   ]
 } as const;
 
@@ -1787,7 +1792,11 @@ export const NODE_MODIFIERS = {
     "size",
     "tint",
     "disabled",
-    "loading"
+    "loading",
+    "pressed",
+    "link",
+    "lines",
+    "underline"
   ],
   "fab": [
     "padding",
