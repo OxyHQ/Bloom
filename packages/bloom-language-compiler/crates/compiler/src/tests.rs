@@ -1457,3 +1457,15 @@ fn meeting_schedulers_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn inline_markdown_is_checked() {
+    let imports = "import { InlineMarkdown, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (s, f, g, h) => Text(InlineMarkdown(s).streaming().onLinkPress(f).plainRun(g).linkView(h).suffix(Text(' more')));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = (s) => InlineMarkdown(s).codeBlock(s);\n");
+    assert_eq!(output.diagnostics[0].message, "InlineMarkdown has no modifier .codeBlock()");
+}

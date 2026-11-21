@@ -60,6 +60,7 @@ import type { DropZoneKind } from './controls/drop-zone';
 import type { DragAction, DropTargetDragEvent } from '@oxy.so/bloom/drop-zone';
 import type { CollapsibleKind } from './controls/collapsible';
 import type { FactStripKind } from './controls/fact-strip';
+import type { InlineMarkdownLink } from '@oxy.so/bloom/markdown';
 import type { SocialButtonStyle, SocialIntent } from './controls/social-button';
 import type { LiveRole, NotificationStatus } from './controls/notification';
 import type { NotificationAction, NotificationAvatar } from '@oxy.so/bloom/notification';
@@ -545,7 +546,7 @@ export interface ValueModifiers {
   floatingLabel: true;
   revealable: true;
   prefix: string;
-  suffix: string;
+  suffix: string | Child;
   keyboard: Keyboard;
   autocapitalize: Autocapitalize;
   autocorrect: boolean;
@@ -878,6 +879,10 @@ export interface ValueModifiers {
   pageIndicator: GalleryIndicator;
   videoOverlay: (media: GalleryVideo) => Child;
   sourceAnchors: readonly (string | undefined)[];
+
+  // Inline markdown (controls/markdown.tsx)
+  plainRun: (text: string) => Child;
+  linkView: (link: InlineMarkdownLink) => Child | undefined;
 
   // Context menus (controls/context-menu.tsx)
   presentedAt: Binding<ContextMenuAnchor | null>;
@@ -2276,7 +2281,7 @@ export class Node {
   prefix(value: string): Node {
     return this.set('prefix', value);
   }
-  suffix(value: string): Node {
+  suffix(value: string | Child): Node {
     return this.set('suffix', value);
   }
   keyboard(value: Keyboard): Node {
@@ -3140,6 +3145,14 @@ export class Node {
   }
   triggerTitle(value: string): Node {
     return this.set('triggerTitle', value);
+  }
+
+  // Inline markdown (controls/markdown.tsx)
+  plainRun(value: (text: string) => Child): Node {
+    return this.set('plainRun', value);
+  }
+  linkView(value: (link: InlineMarkdownLink) => Child | undefined): Node {
+    return this.set('linkView', value);
   }
 
   // Context menus (controls/context-menu.tsx)
