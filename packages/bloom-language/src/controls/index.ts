@@ -20,6 +20,7 @@ import { TABLES } from './table';
 import { TAG_FIELDS } from './tag-field';
 import { TOOLTIPS } from './tooltip';
 import { VIDEOS } from './video-view';
+import { INPUT_OTPS } from './input-otp';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -47,4 +48,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...TAG_FIELDS,
   ...FILE_UPLOADS,
   ...VIDEOS,
+  ...INPUT_OTPS,
 };

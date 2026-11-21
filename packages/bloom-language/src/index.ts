@@ -308,6 +308,10 @@ export type { FileUploadView } from './controls/file-upload';
 export { Video } from './controls/video-view';
 export type { VideoView } from './controls/video-view';
 
+// One-time codes (controls/input-otp.tsx)
+export { InputOtp } from './controls/input-otp';
+export type { InputOtpView } from './controls/input-otp';
+
 // Inputs (controls/inputs.tsx)
 export {
   Checkbox,

@@ -30,6 +30,7 @@ import { MATERIAL_CASES } from '../../parity/material.cases';
 import { TEXT_CASES } from '../../parity/text.cases';
 import { VARIANT_CASES } from '../../parity/variants.cases';
 import { VIDEO_CASES } from '../../parity/video-view.cases';
+import { INPUT_OTP_CASES } from '../../parity/input-otp.cases';
 
 /**
  * Each language node beside the Bloom element it stands for: the same cases
@@ -103,3 +104,4 @@ export const TagFields: Story = { args: { cases: TAG_FIELD_CASES } };
 export const FileUploads: Story = { args: { cases: FILE_UPLOAD_CASES } };
 export const Videos: Story = { args: { cases: VIDEO_CASES } };
 export const Inputs: Story = { args: { cases: INPUT_CASES } };
+export const OneTimeCodes: Story = { args: { cases: INPUT_OTP_CASES } };

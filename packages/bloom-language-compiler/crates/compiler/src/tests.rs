@@ -791,3 +791,21 @@ fn tag_fields_file_uploads_and_videos_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn one_time_codes_are_checked() {
+    let imports = "import { InputOtp } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (code, f) => InputOtp(code).length(4).characters('alphanumeric').onComplete(f).invalid().disabled().groupSize(3).autoFocus();\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("InputOtp(t).characters('hex')", "Unknown otpCharacters token 'hex' for .characters()"),
+        ("InputOtp(t).placeholder('0')", "InputOtp has no modifier .placeholder()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (t) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

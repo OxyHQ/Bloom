@@ -1451,6 +1451,18 @@ Bloom's `VideoView` (expo-video's, inline and on Android's texture view by
 default): the app's own player, `.contentFit()`, `.nativeControls()` and
 `.allowsPictureInPicture()`.
 
+### One-time codes
+
+```ts
+InputOtp([code, setCode]).length(6).groupSize(3).onComplete(verify).label('Verification code')
+```
+
+Bloom's `InputOtp`: one box per character, the binding's code (cleaned of what
+the boxes do not take). It takes `.length(n)` (6 by default),
+`.characters('numeric' | 'alphanumeric')`, `.groupSize(n)` (a gap after every
+`n` boxes), `.onComplete(code => …)`, `.invalid()`, `.disabled()` and
+`.autoFocus()`; `.label()` names the group.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -1829,7 +1841,8 @@ and `@oxy.so/bloom-data` beside it.
   Bloom's own: the date and time pickers, ratings, meters and progress bars, stickers,
   tables, rows and lists, carousels, markdown, sliders,
   accordions, code, steppers, tooltips, breadcrumbs, activity heatmaps,
-  tag fields, file uploads, videos.
+  tag fields, file uploads, videos,
+  one-time codes.
 
 **Not built**
 
