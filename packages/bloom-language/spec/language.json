@@ -767,7 +767,8 @@
     "shelfLayout": ["row", "grid", "paged"],
     "priceScale": ["linear", "log"],
     "featureFilterStyle": ["chips", "checkboxes"],
-    "filterTriggerSize": ["sm", "md", "lg"]
+    "filterTriggerSize": ["sm", "md", "lg"],
+    "guestPickerSize": ["sm", "md"]
   },
   "glass": {
     "$comment": [
@@ -3390,7 +3391,16 @@
       "modifiers": ["style", "disabled"],
       "style": "featureFilterStyle"
     },
-    "floorFilter": { "constructors": ["FloorFilter"], "modifiers": ["disabled"] }
+    "floorFilter": { "constructors": ["FloorFilter"], "modifiers": ["disabled"] },
+    "staySearchCompact": { "constructors": ["StaySearchCompact"], "modifiers": [] },
+    "staySearchPanel": { "constructors": ["StaySearchPanel"], "modifiers": [] },
+    "staySearchStep": { "constructors": ["StaySearchStep"], "modifiers": [] },
+    "destinationSuggestions": { "constructors": ["DestinationSuggestions"], "modifiers": [] },
+    "guestPicker": {
+      "constructors": ["GuestPicker"],
+      "modifiers": ["size"],
+      "size": "guestPickerSize"
+    }
   },
   "sfSymbols": {
     "$comment": [
