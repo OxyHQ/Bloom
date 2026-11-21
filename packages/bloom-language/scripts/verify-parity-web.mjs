@@ -7,7 +7,8 @@
  * out nor resolves the cascade the way a browser does. Here every pair of
  * elements (Bloom's and the language's, walked in step) is compared on its
  * tag, its attributes other than `class`, `style` and `data-testid`, its text,
- * every computed style property, and its laid-out size, in light and dark.
+ * every computed style property (its `::before` and `::after` included: a
+ * Surface draws its material there), and its laid-out size, in light and dark.
  *
  * Then each press host of a language cell is held: a view whose variants
  * answer its state (the anchor class `blsg`) and every pressable
@@ -85,6 +86,14 @@ function compareInPage() {
     for (let i = 0; i < style.length; i++)
       if (!style[i].startsWith('--') && !(animated && MOVING.has(style[i])))
         css[style[i]] = ids(side, style.getPropertyValue(style[i]));
+    // What a pseudo-element draws (Surface's material is its ::before and ::after).
+    for (const pseudo of ['::before', '::after']) {
+      const drawn = getComputedStyle(element, pseudo);
+      if (drawn.content === 'none' || drawn.content === 'normal') continue;
+      for (let i = 0; i < drawn.length; i++)
+        if (!drawn[i].startsWith('--'))
+          css[`${pseudo} ${drawn[i]}`] = ids(side, drawn.getPropertyValue(drawn[i]));
+    }
     // Layout rounds a fraction of a pixel differently at different places on the page.
     const box = element.getBoundingClientRect();
     const px = (n) => Math.round(n * 100) / 100;
@@ -143,6 +152,13 @@ function describeCellInPage(testid) {
     const css = {};
     for (let i = 0; i < style.length; i++)
       if (!style[i].startsWith('--')) css[style[i]] = style.getPropertyValue(style[i]);
+    for (const pseudo of ['::before', '::after']) {
+      const drawn = getComputedStyle(element, pseudo);
+      if (drawn.content === 'none' || drawn.content === 'normal') continue;
+      for (let i = 0; i < drawn.length; i++)
+        if (!drawn[i].startsWith('--'))
+          css[`${pseudo} ${drawn[i]}`] = drawn.getPropertyValue(drawn[i]);
+    }
     const box = element.getBoundingClientRect();
     const px = (n) => Math.round(n * 100) / 100;
     out.push({ path, tag: element.tagName, css, size: `${px(box.width)}x${px(box.height)}` });
