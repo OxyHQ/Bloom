@@ -1,6 +1,6 @@
 import { ListItem } from '../list';
 import { LIST_ROW_COMPACT_INSET } from '../list/list-style';
-import React, { memo, useCallback, useEffect, useRef, type ComponentRef } from 'react';
+import React, { memo, useCallback, useEffect, useRef, useState, type ComponentRef } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -8,10 +8,9 @@ import {
   type AccessibilityActionEvent,
   type KeyDownEvent,
 } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   Easing,
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -44,6 +43,10 @@ import { dropPositionAt, isExpandable, sectionKey, treeMoves, type TreeMove } fr
 import type { SidebarTree, SidebarTreeDrop, SidebarTreeFolder, SidebarTreeItem } from './types';
 import { useTreeRowDrop } from './use-tree-row-drop';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { useDrag } from '../motion/gestures';
+import { animateMotionValue, useMotionStyle, useMotionValue } from '../motion/motion-value';
+import type { MotionSpec } from '../motion/spec';
+import { EASING } from '../motion/tokens';
 
 const EASE_IN_OUT = Easing.bezier(0.4, 0, 0.2, 1);
 /** One level of nesting: a row's content starts this much further in than its parent's. */
@@ -57,6 +60,10 @@ export const TREE_INSET = LIST_ROW_COMPACT_INSET;
 const TREE_ACTIONS_INSET = 4;
 /** Long enough that a press opens the row and a swipe still scrolls the sidebar. */
 const LIFT_AFTER_MS = 350;
+/** A let-go row back to its place: 120ms on Bloom's form of the default timing curve. */
+const SETTLE: MotionSpec = { duration: 120, easing: EASING.inOutQuad };
+/** Travel short of this is a row let go where it was lifted. */
+const STILL = 4;
 const DRAG_MIME = 'application/x-bloom-sidebar-row';
 
 type TreePress = (item: SidebarTreeItem, folder?: SidebarTreeFolder) => void;
@@ -482,39 +489,42 @@ const TreeRow = memo(function TreeRow({
     if (drop && drag) drag.commit(drop);
   };
 
-  const lift = useSharedValue(0);
-  const lifted = useAnimatedStyle(
-    () => ({ transform: [{ translateY: lift.value }], zIndex: lift.value === 0 ? 0 : 1 }),
-    [lift],
-  );
+  // Touch: a long press lifts the row and it follows the finger, on Bloom's
+  // gesture layer (`useDrag` on the row's lift). The engine hit-tests the
+  // finger in JS (`onMove`); the row is raised over its siblings from the
+  // lift until it settles back in place.
+  const lift = useMotionValue(0);
+  const liftStyle = useMotionStyle({ translateY: lift });
+  const [raised, setRaised] = useState(false);
+  const lower = useCallback(() => setRaised(false), []);
   const onLongPress = item.onLongPress;
-  const begin = useCallback((rowKey: string) => drag?.begin(rowKey), [drag]);
-  const move = useCallback((y: number) => drag?.move(y), [drag]);
-  const end = useCallback(
-    (success: boolean, still: boolean) => {
-      drag?.end(success && !still);
-      // Lifted and let go where it was: the long press the row also offers.
-      if (still) onLongPress?.();
-    },
-    [drag, onLongPress],
-  );
-  // A worklet copies what it reads to the UI runtime: the key, never the row
-  // (its `actions` and `leading` are the app's elements — `worklet-captures.test.ts`).
   const rowKey = item.key;
-  const pan = Gesture.Pan()
-    .enabled(canDrag && !IS_WEB)
-    .activateAfterLongPress(LIFT_AFTER_MS)
-    .onStart(() => {
-      runOnJS(begin)(rowKey);
-    })
-    .onUpdate((event) => {
-      lift.value = event.translationY;
-      runOnJS(move)(event.absoluteY);
-    })
-    .onFinalize((event, success) => {
-      lift.value = withTiming(0, { duration: 120 });
-      runOnJS(end)(success, Math.abs(event.translationY) < 4);
-    });
+  const settle = useCallback(
+    (_end: { value: number; velocity: number }) => {
+      'worklet';
+      animateMotionValue(lift, 0, SETTLE, false, lower);
+    },
+    [lift, lower],
+  );
+  const pan = useDrag(lift, {
+    axis: 'y',
+    enabled: canDrag && !IS_WEB,
+    activeOffset: null,
+    activateAfterLongPress: LIFT_AFTER_MS,
+    startOn: 'activation',
+    onActivate: () => {
+      setRaised(true);
+      drag?.begin(rowKey);
+    },
+    onMove: (position) => drag?.move(position),
+    onRelease: settle,
+    onEnd: ({ value, released }) => {
+      const still = Math.abs(value) < STILL;
+      drag?.end(released && !still);
+      // Lifted and let go where it was: the long press the row also offers.
+      if (released && still) onLongPress?.();
+    },
+  });
 
   const onPress =
     item.onPress || onTreeItemPress
@@ -768,7 +778,9 @@ const TreeRow = memo(function TreeRow({
   const handle =
     canDrag && !IS_WEB ? (
       <GestureDetector gesture={pan} touchAction="pan-y">
-        <Animated.View style={lifted}>{row}</Animated.View>
+        <Animated.View ref={liftStyle.ref} style={[liftStyle.style, { zIndex: raised ? 1 : 0 }]}>
+          {row}
+        </Animated.View>
       </GestureDetector>
     ) : (
       row
