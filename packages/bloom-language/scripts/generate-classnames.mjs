@@ -194,6 +194,9 @@ function fontSize(name) {
   if (step) return mapped(`.font('${step[0].replace(/-regular$/, '')}')`);
   const sizeRung = rung(scales.fontSize, size);
   if (sizeRung && lineHeight === undefined) return mapped(`.font('${sizeRung}')`);
+  // Otherwise a size rung with a leading rung whose ratio gives exactly that line height.
+  const leading = sizeRung && rung(scales.leading, lineHeight / size);
+  if (leading) return mapped(`.font('${sizeRung}').leading('${leading}')`);
   return token(
     'font',
     lineHeight === undefined ? `${size}px` : `${size}px / ${lineHeight}px`,
