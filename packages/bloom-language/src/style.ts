@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 
-import type { FrameSpec, GlassValue, Modifier } from './node';
+import type { FrameSpec, GlassValue, Modifier, OffsetSpec, PositionEdges } from './node';
+import { bloomShadowStyle } from '@oxy.so/bloom/design-tokens';
 import { surfaceStyle } from '@oxy.so/bloom/shapes';
 import { fontFamilyStyle, type TypeScaleVariant } from '@oxy.so/bloom/typography';
 
@@ -11,13 +12,20 @@ import {
   ALIGNMENT,
   OPACITY,
   SHRINK,
+  Z_INDEX,
   resolveBorderWidth,
   resolveCorner,
   rampStep,
   resolveFont,
+  resolveLength,
   resolveSpace,
   type Alignment,
+  type Axis,
   type BorderEdge,
+  type CornerName,
+  type Justify,
+  type OverlayAlignment,
+  type ZIndexName,
   type ColorName,
   type ColorToken,
   type CornerCurve,
@@ -81,8 +89,10 @@ export function webInk(ref: RoleRef): string {
   return `color-mix(in oklab, ${web} ${Number((ref.opacity * 100).toFixed(4))}%, transparent)`;
 }
 
-/** A style as resolved: style properties to numbers, strings or roles. */
-export type Resolved = Record<string, number | string | RoleRef>;
+/** A value a resolved style holds: a number, a string, a role, or a structured value (a shadow's offset, a transform). */
+export type StyleValue = number | string | RoleRef | object;
+/** A style as resolved: style properties to numbers, strings, roles or structured values. */
+export type Resolved = Record<string, StyleValue>;
 
 /**
  * What a host is handed. `style` is final; `paint`, when present, names the
@@ -117,8 +127,8 @@ export function cachedStyle(target: Target, key: string, build: () => Resolved):
   return out;
 }
 
-function isRole(value: number | string | RoleRef): value is RoleRef {
-  return typeof value === 'object';
+function isRole(value: StyleValue): value is RoleRef {
+  return typeof value === 'object' && (value as Partial<RoleRef>).role !== undefined;
 }
 
 function serialize(resolved: Resolved, target: Target): StyleOut {
@@ -126,10 +136,10 @@ function serialize(resolved: Resolved, target: Target): StyleOut {
   if (keys.length === 0) return NO_STYLE;
   if (IS_WEB && target !== 'material')
     return { style: webStyle(resolved, keys, target), paint: undefined };
-  const values: Record<string, number | string> = {};
+  const values: Record<string, StyleValue> = {};
   const roles: (readonly [string, ColorName, number?])[] = [];
   for (const key of keys) {
-    const value = resolved[key] as number | string | RoleRef;
+    const value = resolved[key] as StyleValue;
     if (isRole(value))
       roles.push(
         value.opacity === undefined ? [key, value.role] : [key, value.role, value.opacity],
@@ -149,9 +159,9 @@ function serialize(resolved: Resolved, target: Target): StyleOut {
  */
 function webStyle(resolved: Resolved, keys: string[], target: 'host' | 'component'): unknown {
   let classes: Record<string, string | boolean> | undefined;
-  let inline: Record<string, number | string> | undefined;
+  let inline: Record<string, StyleValue> | undefined;
   for (const key of keys) {
-    const value = resolved[key] as number | string | RoleRef;
+    const value = resolved[key] as StyleValue;
     const name =
       target === 'host'
         ? WEB_CLASS[isRole(value) ? `${key}:@${value.token}` : `${key}:${value}`]
@@ -193,6 +203,14 @@ export interface Layer {
   curve: CornerCurve | undefined;
   /** A `blur()` layer: Bloom's `BlurIsland` draws it. */
   blur: boolean;
+  /** Views drawn over (and, `behind`, under) what the layer holds: \`overlay()\` and \`background(view)\`. */
+  overlays: Extract<Modifier, { kind: 'overlay' }>[];
+  /**
+   * A shadow layer's outline: the corner of the clipped box it is drawn around.
+   * A shadow never shares a view with a corner's clip (iOS clips a view's own
+   * shadow to its bounds), so it is a view of its own with the same radius.
+   */
+  follows: CornerName | undefined;
 }
 
 const EDGE_BITS: Record<Edge, number> = {
@@ -223,16 +241,25 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   const concentric = modifier.kind === 'corner' && modifier.value === 'concentric';
   const curve = modifier.kind === 'cornerCurve' ? modifier.value : undefined;
   const blur = modifier.kind === 'blur';
-  if (current === undefined || rank < current.rank || repeats) {
+  const overlay = modifier.kind === 'overlay' ? modifier : undefined;
+  const clip =
+    modifier.kind === 'shadow'
+      ? current?.modifiers.find((existing) => existing.kind === 'corner')
+      : undefined;
+  // Overlays stack: a second one joins the first, over it (or, behind, under it).
+  const sameKind = repeats && modifier.kind !== 'overlay';
+  if (current === undefined || rank < current.rank || sameKind || clip !== undefined) {
     layers.push({
       modifiers: [modifier],
-      key: modifier.key,
+      key: clip ? `${modifier.key}@${clip.key}` : modifier.key,
       rank,
       edges,
       glass,
       concentric,
       curve,
       blur,
+      overlays: overlay ? [overlay] : [],
+      follows: clip?.kind === 'corner' ? clip.value : undefined,
     });
     return;
   }
@@ -244,6 +271,7 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   if (concentric) current.concentric = true;
   if (curve) current.curve = curve;
   if (blur) current.blur = true;
+  if (overlay) current.overlays.push(overlay);
 }
 
 function paddingStyle(style: Resolved, edge: Edge, value: number): void {
@@ -277,7 +305,7 @@ export function layerStyle(layer: Layer | undefined): Resolved {
       case 'frame':
         for (const name of Object.keys(modifier.value) as (keyof FrameSpec)[]) {
           const token = modifier.value[name];
-          if (token !== undefined) style[name] = resolveSpace(token as SpaceToken);
+          if (token !== undefined) style[name] = resolveLength(token);
         }
         break;
       case 'background':
@@ -300,40 +328,161 @@ export function layerStyle(layer: Layer | undefined): Resolved {
       case 'opacity':
         style.opacity = OPACITY[modifier.value];
         break;
+      case 'ring':
+        ringStyle(style, modifier);
+        break;
+      case 'shadow':
+        // Bloom's elevation: the web's box-shadow, native's shadow and elevation.
+        Object.assign(style, bloomShadowStyle(modifier.value));
+        if (layer.follows !== undefined && layer.follows !== 'concentric')
+          style.borderRadius = resolveCorner(layer.follows);
+        break;
       case 'glass':
       case 'blur':
+      case 'overlay':
         break;
     }
   }
   return style;
 }
 
+/**
+ * A ring is an outline: it draws outside the box and takes no room, as
+ * Bloom's own focus ring does. `none` is the web's `outline: none` (native
+ * draws none to remove).
+ */
+function ringStyle(style: Resolved, ring: Extract<Modifier, { kind: 'ring' }>): void {
+  if (ring.value === 'none') {
+    if (IS_WEB) style.outlineStyle = 'none';
+    return;
+  }
+  style.outlineColor = role(ring.value);
+  style.outlineStyle = 'solid';
+  style.outlineWidth = resolveBorderWidth(ring.width);
+  if (ring.offset !== undefined) style.outlineOffset = resolveSpace(ring.offset);
+}
+
+/** Where an overlay sits in its view: SwiftUI's alignment, as the flex placement of an absolute inset box. */
+const OVERLAY_ROW: Record<string, string> = { top: 'flex-start', bottom: 'flex-end' };
+const OVERLAY_COLUMN: Record<string, string> = { leading: 'flex-start', trailing: 'flex-end' };
+
+/** An overlay's box: the whole of its view, its content placed at `alignment`. */
+export function overlayStyle(alignment: OverlayAlignment): Resolved {
+  const [vertical, horizontal] = alignment.includes('-')
+    ? alignment.split('-')
+    : alignment === 'top' || alignment === 'bottom'
+      ? [alignment, 'center']
+      : ['center', alignment];
+  return {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    justifyContent: OVERLAY_ROW[vertical as string] ?? 'center',
+    alignItems: OVERLAY_COLUMN[horizontal as string] ?? 'center',
+  };
+}
+
 // ── A view's place in its parent ─────────────────────────────────
 
+/** What places a view in its parent: the modifiers its outermost box takes. */
+export interface Placement {
+  grow: boolean;
+  shrink: ShrinkPriority | undefined;
+  alignSelf: Alignment | undefined;
+  position: PositionEdges | undefined;
+  offset: OffsetSpec | undefined;
+  zIndex: ZIndexName | undefined;
+  hidden: boolean | undefined;
+  /** The cache key of everything above, '' when nothing places the view. */
+  key: string;
+}
+
+export function emptyPlacement(): Placement {
+  return {
+    grow: false,
+    shrink: undefined,
+    alignSelf: undefined,
+    position: undefined,
+    offset: undefined,
+    zIndex: undefined,
+    hidden: undefined,
+    key: '',
+  };
+}
+
+const POSITION_EDGE: Record<keyof PositionEdges, string> = {
+  top: 'top',
+  bottom: 'bottom',
+  leading: 'start',
+  trailing: 'end',
+};
+
 /**
- * `grow` and `shrink` place the view in its parent, so they belong to its
- * outermost box. Neither lowers the minimum width; a view that must shrink
- * below its content says so with `.frame({ minWidth: 'none' })`.
+ * `grow`, `shrink`, `alignSelf`, `position`, `offset`, `zIndex` and `hidden`
+ * place the view in its parent, so they belong to its outermost box. Neither
+ * `grow` nor `shrink` lowers the minimum width; a view that must shrink below
+ * its content says so with `.frame({ minWidth: 'none' })`.
  */
-export function flexStyle(grow: boolean, shrink: ShrinkPriority | undefined): Resolved {
+export function placeStyle(place: Placement): Resolved {
   const style: Resolved = {};
-  if (grow) style.flex = 1;
-  if (shrink !== undefined) style.flexShrink = SHRINK[shrink];
+  if (place.grow) style.flex = 1;
+  if (place.shrink !== undefined) style.flexShrink = SHRINK[place.shrink];
+  if (place.alignSelf !== undefined) style.alignSelf = ALIGNMENT[place.alignSelf];
+  if (place.position !== undefined) {
+    style.position = 'absolute';
+    for (const edge of Object.keys(POSITION_EDGE) as (keyof PositionEdges)[]) {
+      const token = place.position[edge];
+      if (token !== undefined) style[POSITION_EDGE[edge]] = resolveSpace(token);
+    }
+  }
+  if (place.offset !== undefined) {
+    const { x, y } = place.offset;
+    style.transform = [
+      ...(x === undefined ? [] : [{ translateX: resolveSpace(x) }]),
+      ...(y === undefined ? [] : [{ translateY: resolveSpace(y) }]),
+    ];
+  }
+  if (place.zIndex !== undefined) style.zIndex = Z_INDEX[place.zIndex];
+  if (place.hidden !== undefined) style.display = place.hidden ? 'none' : 'flex';
   return style;
 }
 
 // ── Stacks ───────────────────────────────────────────────────────
 
+/** A stack's own layout: what its constructor and its stack modifiers say. */
+export interface StackLayout {
+  spacing: SpaceToken | undefined;
+  align: Alignment | undefined;
+  justify: Justify | undefined;
+  wrap: boolean | undefined;
+  /** `.axis()`: the axis over the constructor's. */
+  axis: Axis | undefined;
+}
+
+const JUSTIFY: Record<Justify, string> = {
+  start: 'flex-start',
+  center: 'center',
+  end: 'flex-end',
+  between: 'space-between',
+  around: 'space-around',
+  evenly: 'space-evenly',
+};
+
 export function stackStyle(
   axis: 'horizontal' | 'vertical' | 'depth',
-  spacing: SpaceToken | undefined,
-  align: Alignment | undefined,
+  layout: StackLayout,
 ): Resolved {
   const style: Resolved = {};
-  if (axis === 'horizontal') style.flexDirection = 'row';
+  if (layout.axis !== undefined)
+    style.flexDirection = layout.axis === 'horizontal' ? 'row' : 'column';
+  else if (axis === 'horizontal') style.flexDirection = 'row';
   if (axis === 'depth') style.position = 'relative';
-  if (spacing !== undefined) style.gap = resolveSpace(spacing);
-  if (align !== undefined) style.alignItems = ALIGNMENT[align];
+  if (layout.justify !== undefined) style.justifyContent = JUSTIFY[layout.justify];
+  if (layout.spacing !== undefined) style.gap = resolveSpace(layout.spacing);
+  if (layout.align !== undefined) style.alignItems = ALIGNMENT[layout.align];
+  if (layout.wrap !== undefined) style.flexWrap = layout.wrap ? 'wrap' : 'nowrap';
   return style;
 }
 

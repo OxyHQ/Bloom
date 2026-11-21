@@ -85,15 +85,18 @@ import { BottomBarHost } from './platform/bottom-bar-host';
 import {
   addToLayers,
   cachedStyle,
-  flexStyle,
+  emptyPlacement,
   foregroundOf,
   isLayerModifier,
   layerStyle,
   role,
+  overlayStyle,
+  placeStyle,
   stackStyle,
   textStyle,
   textVariant,
   type Layer,
+  type Placement,
   type Resolved,
   type StyleOut,
   type Target,
@@ -118,7 +121,6 @@ import {
   type ColorToken,
   type IconSizeToken,
   type Role,
-  type ShrinkPriority,
   type TextStyleName,
 } from './tokens';
 import { deriveEnv, EnvContext, type Env } from './env';
@@ -166,8 +168,8 @@ const ENV_KINDS: ReadonlySet<string> = new Set(ENVIRONMENT);
 /** One pass over a node's modifiers: what it draws with, sorted by what it affects. */
 interface Plan {
   layers: Layer[];
-  grow: boolean;
-  shrink: ShrinkPriority | undefined;
+  /** What places the view in its parent (its outermost box). */
+  place: Placement;
   env: Modifier[];
   pressable: boolean;
   onPress: PressHandler | undefined;
@@ -194,8 +196,7 @@ const FAB_GLASS: Modifier = { kind: 'glass', key: regular.key, value: regular };
 function plan(node: Node): Plan {
   const result: Plan = {
     layers: [],
-    grow: false,
-    shrink: undefined,
+    place: emptyPlacement(),
     env: [],
     pressable: false,
     onPress: undefined,
@@ -227,10 +228,20 @@ function plan(node: Node): Plan {
     }
     switch (modifier.kind) {
       case 'grow':
-        result.grow = true;
+        result.place.grow = true;
+        result.place.key += ';grow';
         break;
       case 'shrink':
-        result.shrink = modifier.value;
+        result.place.shrink = modifier.value;
+        result.place.key += `;${modifier.key}`;
+        break;
+      case 'alignSelf':
+      case 'position':
+      case 'offset':
+      case 'zIndex':
+      case 'hidden':
+        (result.place as unknown as Record<string, unknown>)[modifier.kind] = modifier.value;
+        result.place.key += `;${modifier.key}`;
         break;
       case 'onPress':
         result.pressable = true;
@@ -346,9 +357,9 @@ function behaviourProps(p: Plan): Record<string, unknown> | undefined {
   return undefined;
 }
 
-/** The style key of a node's flex placement, '' when it has none. */
+/** The style key of a node's placement in its parent, '' when it has none. */
 function flexKey(p: Plan): string {
-  return p.grow || p.shrink ? `grow:${p.grow ? 1 : 0}:${p.shrink ?? ''}` : '';
+  return p.place.key;
 }
 
 /**
@@ -428,12 +439,14 @@ function drawNode(node: Node, ctx: Context, key: string | number | undefined): R
   if (node.kind === 'skeleton') return drawSkeleton(node, p, inner, reactKey);
   const layers = p.layers;
   // A glass layer is a Surface and a blur layer an island, which the host cannot
-  // be; so the host takes the innermost layer only when that layer is plain.
+  // be, and an overlay layer holds its views beside the host; so the host takes
+  // the innermost layer only when that layer is plain.
   const hostTakesLayer =
     layers.length > 0 &&
     (layers[0] as Layer).glass === undefined &&
     !(layers[0] as Layer).blur &&
-    !(layers[0] as Layer).concentric;
+    !(layers[0] as Layer).concentric &&
+    (layers[0] as Layer).overlays.length === 0;
   const hostLayer = hostTakesLayer ? (layers[0] as Layer) : undefined;
   const wrappers = hostTakesLayer ? layers.slice(1) : layers;
   const outermostIsHost = wrappers.length === 0;
@@ -461,7 +474,7 @@ function drawNode(node: Node, ctx: Context, key: string | number | undefined): R
       layer,
       flexOf,
       p,
-      element,
+      withOverlays(layer, element, inner),
       outermost && !hostBehaves ? behaviour : undefined,
       outermost ? reactKey : undefined,
     );
@@ -476,19 +489,42 @@ function drawNode(node: Node, ctx: Context, key: string | number | undefined): R
 
 function boxStyle(layer: Layer | undefined, flex: string, p: Plan): Resolved {
   const style = layerStyle(layer);
-  return flex ? Object.assign(style, flexStyle(p.grow, p.shrink)) : style;
+  return flex ? Object.assign(style, placeStyle(p.place)) : style;
+}
+
+/**
+ * What an overlay layer's view holds: its view backgrounds, the content as
+ * drawn so far, then its overlays, each a box over the whole of it (SwiftUI's
+ * `background(alignment:)` and `overlay(alignment:)`). Each box lets touches
+ * through to what is under it, outside its own content.
+ */
+function withOverlays(layer: Layer, child: ReactNode, ctx: Context): ReactNode | ReactNode[] {
+  if (layer.overlays.length === 0) return child;
+  const box = (overlay: Layer['overlays'][number]) =>
+    drawHost(
+      View,
+      cachedStyle('host', `OV|${overlay.alignment}`, () => overlayStyle(overlay.alignment)),
+      { pointerEvents: 'box-none' },
+      renderNode(overlay.content as Node, ctx, undefined),
+    );
+  return [
+    ...layer.overlays.filter((overlay) => overlay.behind).map(box),
+    child,
+    ...layer.overlays.filter((overlay) => !overlay.behind).map(box),
+  ];
 }
 
 function wrapLayer(
   layer: Layer,
   flex: string,
   p: Plan,
-  child: ReactNode,
+  content: ReactNode | ReactNode[],
   behaviour: Record<string, unknown> | undefined,
   key: string | number | undefined,
 ): ReactElement {
   const styleKey = `L|${layer.key}|${flex}`;
   const glass = layer.glass;
+  const children = Array.isArray(content) ? (content as ReactNode[]) : [content as ReactNode];
   if (glass !== undefined) {
     // The glass's corner is its radius (it clips itself), not a style of its host.
     const { borderRadius: corner, overflow: _clip, ...resolved } = boxStyle(layer, flex, p);
@@ -510,7 +546,7 @@ function wrapLayer(
         interactive: p.pressable || p.control !== undefined,
         key: ownKey,
       };
-      const drawn = drawHost(PlatformGlass, out, props, child);
+      const drawn = drawHost(PlatformGlass, out, props, ...children);
       return behaviour && p.pressable ? draw(hostFor(p), { ...behaviour, key }, drawn) : drawn;
     }
     const out = cachedStyle('component', styleKey, () => resolved);
@@ -524,7 +560,7 @@ function wrapLayer(
     const fill = glass.fillRole ?? p.control?.tint;
     const surface =
       fill === undefined
-        ? drawHost(Surface, out, props, child)
+        ? drawHost(Surface, out, props, ...children)
         : draw(
             Painted,
             {
@@ -538,7 +574,7 @@ function wrapLayer(
                 glass.fillRole === undefined ? undefined : glass.fillOpacity,
               ),
             },
-            child,
+            ...children,
           );
     return behaviour && p.pressable ? draw(hostFor(p), { ...behaviour, key }, surface) : surface;
   }
@@ -557,7 +593,7 @@ function wrapLayer(
         ...outer,
         key: behaviour && p.pressable ? undefined : key,
       },
-      child,
+      ...children,
     );
     return behaviour && p.pressable ? draw(hostFor(p), { ...behaviour, key }, island) : island;
   }
@@ -569,12 +605,12 @@ function wrapLayer(
       ConcentricView,
       out,
       { ...outer, radius: 'concentric', key: behaviour && p.pressable ? undefined : key },
-      child,
+      ...children,
     );
     return behaviour && p.pressable ? draw(hostFor(p), { ...behaviour, key }, view) : view;
   }
   const out = cachedStyle('host', styleKey, () => boxStyle(layer, flex, p));
-  return drawHost(behaviour ? hostFor(p) : View, out, { ...behaviour, key }, child);
+  return drawHost(behaviour ? hostFor(p) : View, out, { ...behaviour, key }, ...children);
 }
 
 const propPaints = new Map<string, Paint>();
@@ -656,11 +692,16 @@ function renderHost(
   switch (node.kind) {
     case 'stack': {
       const { axis } = node.props as StackProps;
-      const spacing = ownValue(p, 'spacing')?.value;
-      const align = ownValue(p, 'align')?.value;
-      const styleKey = `S|${axis}|${spacing === undefined ? '' : tokenKey(spacing)}|${align ?? ''}|${layerKey}|${flex}`;
+      const layout = {
+        spacing: ownValue(p, 'spacing')?.value,
+        align: ownValue(p, 'align')?.value,
+        justify: ownValue(p, 'justify')?.value,
+        wrap: ownValue(p, 'wrap')?.value,
+        axis: ownValue(p, 'axis')?.value,
+      };
+      const styleKey = `S|${axis}|${layout.spacing === undefined ? '' : tokenKey(layout.spacing)}|${layout.align ?? ''}|${layout.justify ?? ''}|${layout.wrap ?? ''}|${layout.axis ?? ''}|${layerKey}|${flex}`;
       const out = cachedStyle('host', styleKey, () =>
-        Object.assign(stackStyle(axis, spacing, align), boxStyle(layer, flex, p)),
+        Object.assign(stackStyle(axis, layout), boxStyle(layer, flex, p)),
       );
       const row: Context = axis === 'horizontal' ? { ...ctx, inRow: true } : ctx;
       const children =

@@ -58,6 +58,8 @@ const FOLDED: Record<string, string> = {
   'margin-inline-end': 'margin-right',
   'border-inline-start-width': 'border-left-width',
   'border-inline-end-width': 'border-right-width',
+  'inset-inline-start': 'left',
+  'inset-inline-end': 'right',
   'border-inline-start-color': 'border-left-color',
   'border-inline-end-color': 'border-right-color',
 };
