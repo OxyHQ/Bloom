@@ -623,7 +623,8 @@
       "tokens": "length"
     },
     "edges": { "keys": ["top", "bottom", "leading", "trailing"], "tokens": "padding" },
-    "offset": { "keys": ["x", "y"], "tokens": "padding" }
+    "offset": { "keys": ["x", "y"], "tokens": "padding" },
+    "placement": { "keys": ["sm", "md", "lg", "xl"], "tokens": "dialogPlacement" }
   },
   "variants": {
     "$comment": [
@@ -763,7 +764,7 @@
     "defaultAction": ["alertDefault"],
     "dismissible": ["value"],
     "buttons": ["value"],
-    "presentAt": ["dialogPlacement", "dialogPlacement?"],
+    "presentAt": ["dialogPlacement", "placement?"],
     "dismissOnBackdrop": ["value"],
     "scrollable": ["value?"],
     "side": ["floatingSide", "floatingAlign?"],
@@ -916,7 +917,15 @@
     "trailingIcon": ["value"],
     "completion": ["value"],
     "focused": ["value"],
-    "trigger": ["value"]
+    "trigger": ["value"],
+    "page": ["value"],
+    "sideOffset": ["space"],
+    "alignOffset": ["padding"],
+    "offlineMessage": ["value"],
+    "reconnectingMessage": ["value"],
+    "restoredMessage": ["value"],
+    "reconnectingDelay": ["value"],
+    "restoredDuration": ["value"]
   },
   "universal": [
     "padding",
@@ -1181,7 +1190,8 @@
         "hideCancel",
         "defaultAction",
         "dismissible",
-        "testID"
+        "testID",
+        "icon"
       ]
     },
     "dialog": {
@@ -1195,18 +1205,29 @@
         "presentAt",
         "dismissOnBackdrop",
         "scrollable",
-        "testID"
+        "testID",
+        "header",
+        "footer",
+        "page",
+        "frame",
+        "padding"
       ]
     },
     "popover": {
       "constructors": ["Popover"],
       "universal": false,
-      "modifiers": ["label", "side", "testID"]
+      "modifiers": ["label", "side", "testID", "sideOffset", "alignOffset", "frame"]
     },
     "connectionStatus": {
       "constructors": ["ConnectionStatus"],
       "universal": false,
-      "modifiers": []
+      "modifiers": [
+        "offlineMessage",
+        "reconnectingMessage",
+        "restoredMessage",
+        "reconnectingDelay",
+        "restoredDuration"
+      ]
     },
     "menuContent": {
       "constructors": [],

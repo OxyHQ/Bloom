@@ -1464,6 +1464,15 @@ export const OBJECTS = {
       "y"
     ],
     "tokens": "padding"
+  },
+  "placement": {
+    "keys": [
+      "sm",
+      "md",
+      "lg",
+      "xl"
+    ],
+    "tokens": "dialogPlacement"
   }
 } as const;
 
@@ -1646,7 +1655,7 @@ export const MODIFIERS = {
   ],
   "presentAt": [
     "dialogPlacement",
-    "dialogPlacement?"
+    "placement?"
   ],
   "dismissOnBackdrop": [
     "value"
@@ -2087,6 +2096,30 @@ export const MODIFIERS = {
     "value"
   ],
   "trigger": [
+    "value"
+  ],
+  "page": [
+    "value"
+  ],
+  "sideOffset": [
+    "space"
+  ],
+  "alignOffset": [
+    "padding"
+  ],
+  "offlineMessage": [
+    "value"
+  ],
+  "reconnectingMessage": [
+    "value"
+  ],
+  "restoredMessage": [
+    "value"
+  ],
+  "reconnectingDelay": [
+    "value"
+  ],
+  "restoredDuration": [
     "value"
   ]
 } as const;
@@ -3580,7 +3613,8 @@ export const NODE_MODIFIERS = {
     "hideCancel",
     "defaultAction",
     "dismissible",
-    "testID"
+    "testID",
+    "icon"
   ],
   "dialog": [
     "title",
@@ -3590,14 +3624,28 @@ export const NODE_MODIFIERS = {
     "presentAt",
     "dismissOnBackdrop",
     "scrollable",
-    "testID"
+    "testID",
+    "header",
+    "footer",
+    "page",
+    "frame",
+    "padding"
   ],
   "popover": [
     "label",
     "side",
-    "testID"
+    "testID",
+    "sideOffset",
+    "alignOffset",
+    "frame"
   ],
-  "connectionStatus": [],
+  "connectionStatus": [
+    "offlineMessage",
+    "reconnectingMessage",
+    "restoredMessage",
+    "reconnectingDelay",
+    "restoredDuration"
+  ],
   "menuContent": [],
   "menuActions": [],
   "header": [
