@@ -737,7 +737,10 @@
     "galleryStyle": ["overlay", "page"],
     "galleryIndicator": ["dots", "thumbnails"],
     "dataTableStyle": ["table", "inset"],
-    "agentMood": ["neutral", "sad"]
+    "agentMood": ["neutral", "sad"],
+    "composerButtonTone": ["plain", "accent"],
+    "attachmentLayout": ["grid", "list"],
+    "reactionPickerSize": ["sm", "md"]
   },
   "glass": {
     "$comment": [
@@ -1136,7 +1139,7 @@
     "emptyLabel": ["value"],
     "meta": ["value"],
     "variant": ["sidebarVariant"],
-    "surface": ["sidebarSurface"],
+    "surface": ["sidebarSurface", "value?"],
     "onCollapsedChange": ["value"],
     "searchable": ["value?"],
     "themeToggle": ["value?"],
@@ -1377,7 +1380,8 @@
     "root": [],
     "mood": ["agentMood"],
     "interactive": ["value?"],
-    "portrait": ["value?"]
+    "portrait": ["value?"],
+    "iconSize": ["iconSize"]
   },
   "universal": [
     "padding",
@@ -3062,7 +3066,42 @@
       "constructors": ["AgentAvatar"],
       "modifiers": ["size", "mood", "paused", "interactive", "portrait"],
       "size": "avatarSize"
-    }
+    },
+    "chatComposer": { "constructors": ["ChatComposer"], "modifiers": ["disabled"] },
+    "compactComposer": { "constructors": ["CompactComposer"], "modifiers": ["disabled"] },
+    "composerBanner": {
+      "constructors": ["ComposerBanner"],
+      "modifiers": ["tint"],
+      "tint": "color"
+    },
+    "composerIconButton": {
+      "constructors": ["ComposerIconButton"],
+      "modifiers": ["tint", "size", "iconSize", "disabled"],
+      "size": "space",
+      "tint": "composerButtonTone"
+    },
+    "suggestionList": {
+      "constructors": ["SuggestionList"],
+      "modifiers": ["size", "loading"],
+      "size": "controlSize"
+    },
+    "voiceRecorder": { "constructors": ["VoiceRecorder"], "modifiers": [] },
+    "attachmentMenu": {
+      "constructors": ["AttachmentMenu"],
+      "modifiers": ["style", "columns"],
+      "style": "attachmentLayout"
+    },
+    "emojiPicker": {
+      "constructors": ["EmojiPicker"],
+      "modifiers": ["size"],
+      "size": "controlSize"
+    },
+    "reactionPicker": {
+      "constructors": ["ReactionPicker"],
+      "modifiers": ["size", "surface"],
+      "size": "reactionPickerSize"
+    },
+    "messageContextMenu": { "constructors": ["MessageContextMenu"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
