@@ -112,8 +112,8 @@ export interface ListView extends ViewModifiers<ListView> {
   sectionIndex(
     value: NonNullable<import('@oxy.so/bloom/list').ListProps['sectionIndex']>,
   ): ListView;
-  listHeader(value: Child): ListView;
-  listFooter(value: Child): ListView;
+  headerContent(value: Child): ListView;
+  footerContent(value: Child): ListView;
   /** What shows with no rows. */
   emptyState(value: Child): ListView;
   /** Placeholder rows while loading (`count` of them). */
@@ -138,8 +138,8 @@ export interface VirtualListView extends ViewModifiers<VirtualListView> {
   stickyIndices(value: readonly number[]): VirtualListView;
   /** Where its scroll position is kept across visits. */
   restorationKey(value: string): VirtualListView;
-  listHeader(value: Child): VirtualListView;
-  listFooter(value: Child): VirtualListView;
+  headerContent(value: Child): VirtualListView;
+  footerContent(value: Child): VirtualListView;
   emptyState(value: Child): VirtualListView;
   /** The engine's tuning knobs, honoured by the engine that knows them. */
   tuning(value: VirtualListTuning): VirtualListView;
@@ -215,8 +215,8 @@ function rowProps(d: ControlDraw): Record<string, unknown> {
 }
 
 function listSlots(d: ControlDraw, props: Record<string, unknown>): void {
-  const header = d.own('listHeader')?.value;
-  const footer = d.own('listFooter')?.value;
+  const header = d.own('headerContent')?.value;
+  const footer = d.own('footerContent')?.value;
   const empty = d.own('emptyState')?.value as Child | undefined;
   props.header = slot(d, header);
   props.footer = slot(d, footer);
@@ -298,8 +298,8 @@ export const LISTS: Record<ListKind, ControlRenderer> = {
       row: (item: unknown, index: number) => Child;
     };
     const props = d.props();
-    const header = d.own('listHeader')?.value;
-    const footer = d.own('listFooter')?.value;
+    const header = d.own('headerContent')?.value;
+    const footer = d.own('footerContent')?.value;
     const empty = d.own('emptyState')?.value as Child | undefined;
     const end = d.own('onEndReached')?.value;
     const refresh = d.own('refreshable')?.value;
