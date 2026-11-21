@@ -497,7 +497,15 @@
     "badgePlacement": ["top-right", "top-left", "bottom-right", "bottom-left"],
     "loadingStyle": ["spinner", "top", "inline"],
     "contentTransition": ["roll"],
-    "swipeDirection": ["left", "right", "up", "down"]
+    "swipeDirection": ["left", "right", "up", "down"],
+    "screenScroll": ["auto", "content", "none"],
+    "screenKind": ["document", "collection", "table", "canvas", "form"],
+    "chromePlacement": ["inset", "overlay"],
+    "navigationScope": ["inherit", "shared", "isolated"],
+    "actionPlacement": ["start", "center", "end"],
+    "scrollIndicators": ["automatic", "visible", "hidden"],
+    "keyboardDismiss": ["never", "immediately", "interactively"],
+    "keyboardTaps": ["never", "always", "handled"]
   },
   "glass": {
     "$comment": [
@@ -775,7 +783,21 @@
     "contentTransition": ["contentTransition", "value?"],
     "loop": [],
     "paused": ["value"],
-    "fallback": ["value"]
+    "fallback": ["value"],
+    "screenKind": ["screenKind"],
+    "screenScroll": ["screenScroll"],
+    "documentScroll": ["value?"],
+    "headerPlacement": ["chromePlacement"],
+    "underlay": ["value"],
+    "floatingAction": ["value", "value?"],
+    "contentClearance": ["space"],
+    "navigationScope": ["navigationScope"],
+    "contentMargins": ["edge?", "space"],
+    "refreshable": ["value"],
+    "onEndReached": ["value", "value?"],
+    "scrollIndicators": ["scrollIndicators"],
+    "scrollDismissesKeyboard": ["keyboardDismiss"],
+    "keyboardTaps": ["keyboardTaps"]
   },
   "universal": [
     "padding",
@@ -830,6 +852,15 @@
     "footer",
     "sheet",
     "onReselect",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
     "when",
     "rotation",
     "animation",
@@ -1106,6 +1137,18 @@
       "constructors": ["TabView"],
       "universal": false,
       "modifiers": []
+    },
+    "scrollView": {
+      "constructors": ["ScrollView"],
+      "modifiers": [
+        "contentMargins",
+        "spacing",
+        "refreshable",
+        "onEndReached",
+        "scrollIndicators",
+        "scrollDismissesKeyboard",
+        "keyboardTaps"
+      ]
     }
   },
   "sfSymbols": {
