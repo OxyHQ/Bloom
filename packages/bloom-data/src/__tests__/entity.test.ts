@@ -1,4 +1,4 @@
-import { setActiveStore, Store } from '../index';
+import { action, entity, setActiveStore, Store } from '../index';
 import { Feed, Post, post, User } from './fixtures';
 
 let store: Store;
@@ -111,5 +111,61 @@ describe('entity', () => {
     expect(User.has('u-kept')).toBe(true);
     expect(Post.has('listened')).toBe(true);
     expect(Post.has('dropped')).toBe(false);
+  });
+});
+
+describe('combine', () => {
+  interface Person {
+    id: string;
+    name?: string;
+    bio?: string;
+  }
+  const Person = entity<Person>('test-combined-person', {
+    id: (p) => p.id,
+    // A sparse payload keeps what it does not carry; a degraded one is refused.
+    combine: (incoming, held) =>
+      incoming.name === 'Unknown' ? held : { ...held, ...incoming, bio: incoming.bio ?? held.bio },
+  });
+  const Card = entity<{ id: string; person: Person }>('test-combined-card', {
+    id: (c) => c.id,
+    refs: { person: Person },
+  });
+
+  it('merges a sparse record into the held one', () => {
+    Person.put({ id: 'p', name: 'Ada', bio: 'Mathematician' });
+    Person.put({ id: 'p', name: 'Ada L.' });
+    expect(Person.get('p')).toEqual({ id: 'p', name: 'Ada L.', bio: 'Mathematician' });
+  });
+
+  it('refuses a record by returning the held one, and wakes nobody', () => {
+    Person.put({ id: 'p', name: 'Ada' });
+    const before = Person.get('p');
+    const clock = store.clock;
+    Person.put({ id: 'p', name: 'Unknown' });
+    expect(Person.get('p')).toBe(before);
+    expect(store.clock).toBe(clock);
+  });
+
+  it('combines a record embedded through a ref', () => {
+    Person.put({ id: 'p', name: 'Ada', bio: 'Mathematician' });
+    Card.put({ id: 'c', person: { id: 'p', name: 'Unknown' } });
+    expect(Card.get('c')?.person).toEqual({ id: 'p', name: 'Ada', bio: 'Mathematician' });
+    Card.put({ id: 'c', person: { id: 'p', name: 'Ada L.' } });
+    expect(Person.get('p')?.bio).toBe('Mathematician');
+  });
+
+  it('combines with the server copy, never with an optimistic layer', async () => {
+    Person.put({ id: 'p', name: 'Ada', bio: 'Mathematician' });
+    let reject: (error: Error) => void = () => undefined;
+    const rename = action({
+      optimistic: () => Person.merge('p', { bio: 'pending' }),
+      run: () => new Promise<void>((_, fail) => (reject = fail)),
+    });
+    const call = rename();
+    expect(Person.get('p')?.bio).toBe('pending');
+    Person.put({ id: 'p', name: 'Ada L.' });
+    reject(new Error('refused'));
+    await call.catch(() => undefined);
+    expect(Person.get('p')).toEqual({ id: 'p', name: 'Ada L.', bio: 'Mathematician' });
   });
 });
