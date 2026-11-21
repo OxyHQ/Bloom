@@ -136,3 +136,4 @@ export const Viewports: Story = { args: { family: 'viewport' } };
 export const AgentAvatars: Story = { args: { family: 'agentAvatar' } };
 export const ChatComposers: Story = { args: { family: 'chatComposer' } };
 export const ChartCards: Story = { args: { family: 'chartCard' } };
+export const ComposerPanels: Story = { args: { family: 'composerPanel' } };

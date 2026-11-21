@@ -2524,7 +2524,9 @@ is an `Embed`.
 The product families apps share (agents, chat, dashboards, media) are Bloom's
 own components drawn as nodes. A node takes its content first and its data as
 an options object, as the Bloom component takes them: a slot is a language
-child, a handler a function. Its look is modifiers, checked by the spec: a
+child, a handler a function, and the data is Bloom's own type, so Bloom's
+constants and an app's existing data fit as they are (a node inside data, a
+suggestion's `leading`, is a React element: `toElement(view)`). Its look is modifiers, checked by the spec: a
 size, a style or a tone is a token, a colour a role (painted where it is
 drawn), a length a space token. The universal modifiers place, box and name
 it, and `.onPress()` puts a press on a component that takes none of its own.
@@ -2562,8 +2564,8 @@ MessageContextMenu(Bubble({ message }), items, { onSelect, reactions: ['❤️',
 Bloom's `chat-composer` family. A composer writes the text its binding holds
 (`ChatComposer`'s `value`/`onValueChange`, `CompactComposer`'s
 `value`/`onChangeText`); its slots (`notice`, `banner`, `leading`,
-`emojiSlot`, `recorder`; `avatar`, `attachments`) are language children, as is
-a suggestion's `leading`. `.disabled()` disables either.
+`emojiSlot`, `recorder`; `avatar`, `attachments`) are language children.
+`.disabled()` disables either.
 
 - `ComposerBanner(kind, title, options?)`: `reply`, `edit`, `forward` or
   `note`; `.tint(role)` its accent.
@@ -2575,8 +2577,8 @@ a suggestion's `leading`. `.disabled()` disables either.
 - `VoiceRecorder(state, seconds, options?)`: `recording`, `locked` or `preview`.
 - `AttachmentMenu(trigger, options?)`: the trigger is a child (a `Button`);
   `.style('grid' | 'list')`, `.columns(n)`.
-- `EmojiPicker(groups, options?)`: `.size()` a control size; a tab's `content`
-  is a child, its `height` a space token.
+- `EmojiPicker(groups, options?)`: `.size()` a control size; its `height` a
+  space token.
 - `ReactionPicker(emojis?, options?)`: `.size('sm' | 'md')`, `.surface(false)`.
 - `MessageContextMenu(message, items, options?)`: the message is the child it
   opens on.
@@ -2607,6 +2609,21 @@ card cannot be drawn without comes first (`SleepScoreCard(metrics)`,
   card's `height` and a tokens card's `plotHeight`.
 - `ChartCardSurface(options, ...children)`: the card the others are drawn on;
   `.spacing()` its gap, its `height` a space token or `auto`.
+
+### Composer panel
+
+```ts
+ComposerPanel([prompt, setPrompt], { onSubmit: send, providers, model, onModelChange, permissions, addMenu })
+ComposerPill([prompt, setPrompt], { onSubmit: send, models: ['Fast', 'Deep'] }).surface(false)
+ComposerPanelStatusTab({ branch: 'main', project: 'bloom', context: 42 })
+```
+
+Bloom's `composer-panel` family: the agent composer writes the prompt its
+binding holds (`value`/`onValueChange`). The options are its data as Bloom
+takes them (Bloom's `COMPOSER_PANEL_ADD_MENU` and `COMPOSER_PANEL_PERMISSIONS`
+fit as they are); `question`, `status` and `emptyAction` are language
+children. `.disabled()` disables either composer; `.surface(false)` draws the
+pill on a surface of yours.
 
 ## Interop
 
@@ -3075,7 +3092,8 @@ and `@oxy.so/bloom-data` beside it.
   `MessageContextMenu`); the chart cards (`AreaChartCard`, `BarListCard`,
   `ContributionsCard`, `HeatmapChartCard`, `LineChartCard`, `RadarChartCard`,
   `SleepScoreCard`, `StageBarsCard`, `StepsCard`, `TokensChartCard`,
-  `ChartCardSurface`, `ChartHeadline`, `ChartStatTiles`, `Sparkline`).
+  `ChartCardSurface`, `ChartHeadline`, `ChartStatTiles`, `Sparkline`); the
+  composer panel (`ComposerPanel`, `ComposerPill`, `ComposerPanelStatusTab`).
 
 **Not built**
 
