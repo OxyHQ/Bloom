@@ -85,6 +85,7 @@ import { MESSAGE_BUBBLE_CASES } from '../../parity/message-bubble.cases';
 import { MAP_CHROME_CASES } from '../../parity/map-chrome.cases';
 import { PLACE_CASES } from '../../parity/places.cases';
 import { MAIL_CASES } from '../../parity/mail.cases';
+import { BOOKING_CASES } from '../../parity/booking.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -175,6 +176,7 @@ export const FAMILIES = {
   mapChrome: MAP_CHROME_CASES,
   place: PLACE_CASES,
   mail: MAIL_CASES,
+  booking: BOOKING_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';
