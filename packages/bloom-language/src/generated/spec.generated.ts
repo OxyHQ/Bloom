@@ -1367,7 +1367,8 @@ export const ENUMS = {
   "radioStyle": [
     "default",
     "card",
-    "chip"
+    "chip",
+    "swatch"
   ],
   "segmentedStyle": [
     "solid",
@@ -2345,6 +2346,18 @@ export const MODIFIERS = {
     "searchCollapse?"
   ],
   "tokens": [
+    "value"
+  ],
+  "trailingIcon": [
+    "value"
+  ],
+  "completion": [
+    "value"
+  ],
+  "focused": [
+    "value"
+  ],
+  "trigger": [
     "value"
   ]
 } as const;
@@ -7341,7 +7354,10 @@ export const NODE_MODIFIERS = {
     "submitLabel",
     "onSubmit",
     "autoFocus",
-    "maxLength"
+    "maxLength",
+    "trailingIcon",
+    "completion",
+    "focused"
   ],
   "textEditor": [
     "padding",
@@ -7418,7 +7434,8 @@ export const NODE_MODIFIERS = {
     "keyboard",
     "autocapitalize",
     "autocorrect",
-    "autoFocus"
+    "autoFocus",
+    "focused"
   ],
   "field": [
     "padding",
@@ -7884,7 +7901,10 @@ export const NODE_MODIFIERS = {
   "option": [
     "description",
     "disabled",
-    "testID"
+    "testID",
+    "leadingView",
+    "tint",
+    "foreground"
   ],
   "search": [
     "padding",
@@ -7958,8 +7978,12 @@ export const NODE_MODIFIERS = {
     "autocorrect",
     "submitLabel",
     "onSubmit",
-    "autoFocus"
-  ]
+    "autoFocus",
+    "trigger",
+    "trailing",
+    "focused"
+  ],
+  "optionGroup": []
 } as const;
 
 /** The constructor functions, by the node kind they make. */
@@ -8066,5 +8090,6 @@ export const CONSTRUCTORS = {
   "Segmented": "segmented",
   "Picker": "picker",
   "Option": "option",
-  "Search": "search"
+  "Search": "search",
+  "OptionGroup": "optionGroup"
 } as const;

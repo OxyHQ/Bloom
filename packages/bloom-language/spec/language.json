@@ -562,7 +562,7 @@
     "submitLabel": ["done", "go", "next", "search", "send"],
     "textareaResize": ["none", "vertical"],
     "labelSize": ["xs", "sm", "md"],
-    "radioStyle": ["default", "card", "chip"],
+    "radioStyle": ["default", "card", "chip", "swatch"],
     "segmentedStyle": ["solid", "plain"],
     "searchCollapse": ["auto"]
   },
@@ -993,7 +993,11 @@
     "showCount": [],
     "tabs": [],
     "collapsible": ["searchCollapse?"],
-    "tokens": ["value"]
+    "tokens": ["value"],
+    "trailingIcon": ["value"],
+    "completion": ["value"],
+    "focused": ["value"],
+    "trigger": ["value"]
   },
   "universal": [
     "padding",
@@ -1740,7 +1744,10 @@
         "submitLabel",
         "onSubmit",
         "autoFocus",
-        "maxLength"
+        "maxLength",
+        "trailingIcon",
+        "completion",
+        "focused"
       ],
       "size": "controlSize"
     },
@@ -1761,7 +1768,8 @@
         "keyboard",
         "autocapitalize",
         "autocorrect",
-        "autoFocus"
+        "autoFocus",
+        "focused"
       ],
       "size": "controlSize"
     },
@@ -1807,7 +1815,8 @@
     "option": {
       "constructors": ["Option"],
       "universal": false,
-      "modifiers": ["description", "disabled", "testID"]
+      "modifiers": ["description", "disabled", "testID", "leadingView", "tint", "foreground"],
+      "tint": "color"
     },
     "search": {
       "constructors": ["Search"],
@@ -1823,9 +1832,17 @@
         "autocorrect",
         "submitLabel",
         "onSubmit",
-        "autoFocus"
+        "autoFocus",
+        "trigger",
+        "trailing",
+        "focused"
       ],
       "size": "controlSize"
+    },
+    "optionGroup": {
+      "constructors": ["OptionGroup"],
+      "universal": false,
+      "modifiers": []
     }
   },
   "sfSymbols": {
