@@ -130,6 +130,7 @@ import type { CompositionBarView } from '../controls/composition-bar';
 import type { PhoneInputView } from '../controls/phone-input';
 import type { ExpandableTextView } from '../controls/expandable-text';
 import type { CategoryBarView } from '../controls/category-bar';
+import type { MediaFlightLayerView, MediaFlightHostView, MediaSurfaceView, MediaPosterView, EmptyMediaSurfaceView } from '../controls/media-flight';
 import type { FactStripView, FactView } from '../controls/fact-strip';
 import type { ChoiceListView } from '../controls/choice-list';
 import type {
@@ -392,6 +393,11 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<VideoView>, Of<'video'>>,
       Same<MethodsOf<PhoneInputView>, Of<'phoneInput'>>,
       Same<MethodsOf<CategoryBarView>, Of<'categoryBar'>>,
+      Same<MethodsOf<MediaFlightLayerView>, Of<'mediaFlightLayer'>>,
+      Same<MethodsOf<MediaFlightHostView>, Of<'mediaFlightHost'>>,
+      Same<MethodsOf<MediaSurfaceView>, Of<'mediaSurface'>>,
+      Same<MethodsOf<MediaPosterView>, Of<'mediaPoster'>>,
+      Same<MethodsOf<EmptyMediaSurfaceView>, Of<'emptyMediaSurface'>>,
       Same<MethodsOf<ChoiceListView>, Of<'choiceList'>>,
       Same<MethodsOf<VideoPlaybackView>, Of<'videoPlayback'>>,
       Same<MethodsOf<VideoViewabilityView>, Of<'videoViewability'>>,
@@ -412,6 +418,11 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<MenubarMenuView>, Of<'menubarMenu'>>,
       Same<MethodsOf<CompositionBarView>, Of<'compositionBar'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

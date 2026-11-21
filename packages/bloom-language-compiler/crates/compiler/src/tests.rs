@@ -1112,3 +1112,22 @@ fn phone_inputs_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn media_flights_are_checked() {
+    let imports = "import { MediaFlightLayer, MediaFlightHost, MediaSurface, MediaPoster, EmptyMediaSurface, Text, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (c) => VStack(MediaFlightLayer(), MediaFlightHost('a', c).contentFit('contain').nativeControls(true).surfaceType('surfaceView').flightId('a').videoSlot(() => Text('v')), MediaSurface(c).contentFit('cover'), MediaPoster(c).contentFit('contain'), EmptyMediaSurface().padding('md'));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("MediaSurface(t).surfaceType('glView')", "Unknown videoSurface token 'glView' for .surfaceType()"),
+        ("MediaPoster(t).nativeControls(true)", "MediaPoster has no modifier .nativeControls()"),
+        ("MediaFlightLayer().padding('md')", "MediaFlightLayer has no modifier .padding()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (t) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

@@ -1589,6 +1589,26 @@ list's keys on screen: a set derived while rendering, or the store
 `useViewableVisible`, `useVideoPlaybackControl`) are used as they are inside a
 `view()`.
 
+### Media flights
+
+```ts
+MediaFlightLayer()                                   // once, at the root
+MediaFlightHost(post.id, { uri: post.photo }).frame({ width: 'full', height: '200' }).contentFit('cover')
+MediaSurface({ kind: 'video', player }).nativeControls(true).videoSlot(({ player, style }) => Embed(<MyVideo player={player} style={style} />))
+```
+
+Bloom's `media-flight`: media that flies between two places and survives the
+route change. `MediaFlightLayer()` is where flights paint; `MediaFlightHost(id,
+content)` is media a flight leaves from and lands in, known by its id;
+`MediaSurface(content)`, `MediaPoster(content)` and `EmptyMediaSurface()` are
+the surfaces it is drawn with. Content is an image (`{ uri, previewUri? }`) or
+the app's own player (`{ kind: 'video', player, poster? }`). A surface takes
+`.contentFit('contain' | 'cover')`, `.nativeControls()`, `.surfaceType()`
+(Android's `textureView`, the default, or `surfaceView`), `.flightId()` and
+`.videoSlot()` (the video drawn by a view of your own). The flights themselves
+are Bloom's controller, `useMediaFlight()` (`measureAnchor`, `flyTo`,
+`flyBack`, `handOff`, all by id), used as it is inside a `view()`.
+
 ### Media inset borders
 
 ```ts
@@ -2123,7 +2143,9 @@ and `@oxy.so/bloom-data` beside it.
   expandable text,
   menubars,
   composition bars,
-  phone inputs.
+  phone inputs,
+  composition bars,
+  media flights.
 
 **Not built**
 

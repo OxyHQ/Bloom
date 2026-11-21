@@ -2013,6 +2013,7 @@
     },
     "mediaFlightLayer": {
       "constructors": ["MediaFlightLayer"],
+      "universal": false,
       "modifiers": []
     },
     "mediaFlightHost": {
