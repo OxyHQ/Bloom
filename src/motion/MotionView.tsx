@@ -1,4 +1,4 @@
-import { createElement, useRef, type ReactNode, type Ref } from 'react';
+import { createElement, useMemo, useRef, type ReactNode, type Ref } from 'react';
 import type { StyleProp, ViewProps, ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -32,13 +32,16 @@ export interface MotionViewProps extends Omit<ViewProps, 'style'> {
  */
 export function MotionView({ play, transition, style, ref, ...rest }: MotionViewProps): ReactNode {
   const own = useRef<unknown>(null);
+  // One callback for the view's life: a new one each render would detach and
+  // re-attach the animated host's ref on every render.
+  const merged = useMemo(() => mergeRefs([own, ref]), [ref]);
   const played = usePlay(own, play);
   const host =
     rest.entering !== undefined || rest.exiting !== undefined ? Animated.View : MotionWrapper;
   return createElement(host as never, {
     ...rest,
     ...played.props,
-    ref: mergeRefs([own, ref]),
+    ref: merged,
     style: [style, transition ? transitionStyle(transition) : null, played.style],
   });
 }
