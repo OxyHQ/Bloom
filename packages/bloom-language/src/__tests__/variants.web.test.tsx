@@ -149,6 +149,28 @@ describe('on the web, a variant is the same class under its condition’s CSS', 
   });
 });
 
+describe('a Bloom component’s focus variant answers a keyboard’s focus, as a view’s does', () => {
+  it('a focus the browser shows (:focus-visible) holds it; a click’s focus does not', () => {
+    const r = mount(
+      Button(Text('Save'))
+        .onPress(() => {})
+        .when('focused', (v) => v.opacity('70')),
+    );
+    const button = (): ReactTestInstance =>
+      r.root.find((node) => (node.type as unknown) === 'BloomButton');
+    const focus = (visible: boolean) => ({
+      currentTarget: { matches: (selector: string) => selector === ':focus-visible' && visible },
+    });
+    act(() => button().props.onFocus(focus(false)));
+    expect(button().props.style).toBeUndefined();
+    act(() => button().props.onBlur());
+    act(() => button().props.onFocus(focus(true)));
+    expect(button().props.style).toEqual({ opacity: 0.7 });
+    act(() => button().props.onBlur());
+    expect(button().props.style).toBeUndefined();
+  });
+});
+
 describe('a class react-native-web writes as two rules varies as two', () => {
   it('no hit testing reaches the children under its condition too', () => {
     const name = WEB_CLASS['pointerEvents:none'] as string;

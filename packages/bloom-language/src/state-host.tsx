@@ -46,6 +46,18 @@ function WebStateHost(props: StateHostProps): ReactElement {
 
 type Handler = ((event: unknown) => void) | undefined;
 
+/**
+ * Whether a focus is one a variant answers: on the web the browser's
+ * `:focus-visible` (a keyboard's focus, not a click's), as a view's `focused`
+ * selector is; on native every focus (a keyboard's, a remote's).
+ */
+function focusVisible(event: unknown): boolean {
+  if (Platform.OS !== 'web') return true;
+  const { currentTarget, target } = (event ?? {}) as { currentTarget?: unknown; target?: unknown };
+  const node = (currentTarget ?? target) as { matches?: (selector: string) => boolean } | undefined;
+  return typeof node?.matches !== 'function' || node.matches(':focus-visible');
+}
+
 function TrackedStateHost({ host, out, states, ...props }: StateHostProps): ReactElement {
   const [state, setState] = useState<Interaction>(IDLE);
   const set = (key: keyof Interaction, on: boolean) =>
@@ -65,7 +77,10 @@ function TrackedStateHost({ host, out, states, ...props }: StateHostProps): Reac
     handlers.onHoverOut = chain('onHoverOut', 'hovered', false);
   }
   if (states.includes('focused')) {
-    handlers.onFocus = chain('onFocus', 'focused', true);
+    handlers.onFocus = (event: unknown) => {
+      set('focused', focusVisible(event));
+      (props.onFocus as Handler)?.(event);
+    };
     handlers.onBlur = chain('onBlur', 'focused', false);
   }
   const box =
