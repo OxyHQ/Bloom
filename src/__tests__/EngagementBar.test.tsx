@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 import type { ReactTestInstance } from 'react-test-renderer';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -167,6 +167,43 @@ describe('EngagementAction at rest', () => {
       disabled: false,
     });
     expect(pressable(renderer, 'Share').props['aria-pressed']).toBeUndefined();
+    renderer.unmount();
+  });
+});
+
+describe('EngagementAction press, hover and focus', () => {
+  it('hands its pressable the six state handlers and draws a style over its own', () => {
+    const handlers = {
+      onPressIn: jest.fn(),
+      onPressOut: jest.fn(),
+      onHoverIn: jest.fn(),
+      onHoverOut: jest.fn(),
+      onFocus: jest.fn(),
+      onBlur: jest.fn(),
+    };
+    const renderer = mount(
+      <EngagementBar>
+        <EngagementAction
+          icon={Glyph}
+          accessibilityLabel="Like"
+          onPress={() => {}}
+          style={{ opacity: 0.7 }}
+          {...handlers}
+        />
+        <EngagementAction icon={Glyph} accessibilityLabel="Reply" onPress={() => {}} />
+      </EngagementBar>,
+    );
+    const like = pressable(renderer, 'Like');
+    for (const [name, handler] of Object.entries(handlers)) {
+      fireEvent(like, name.slice(2, 3).toLowerCase() + name.slice(3));
+      expect(handler).toHaveBeenCalledTimes(1);
+    }
+    const own = (host: ReactTestInstance, pressed: boolean) => host.props.style({ pressed });
+    expect(own(like, false)).toEqual([expect.anything(), { opacity: 0.7 }]);
+    expect(own(like, true)[1]).toEqual({ opacity: 0.7 });
+    // With no style of its own, the action's style is its own, as before.
+    const reply = pressable(renderer, 'Reply');
+    expect(Array.isArray(own(reply, false))).toBe(false);
     renderer.unmount();
   });
 });

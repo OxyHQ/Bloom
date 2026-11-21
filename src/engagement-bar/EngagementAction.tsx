@@ -42,6 +42,12 @@ function EngagementActionComponent({
   tone = 'primary',
   onPress,
   onLongPress,
+  onPressIn,
+  onPressOut,
+  onHoverIn,
+  onHoverOut,
+  onFocus,
+  onBlur,
   accessibilityActions,
   onAccessibilityAction,
   popOnActivate = false,
@@ -49,6 +55,7 @@ function EngagementActionComponent({
   busy = false,
   disabled = false,
   hitSlop = ENGAGEMENT_HIT_SLOP,
+  style,
   testID,
 }: EngagementActionProps) {
   const bar = useContext(EngagementBarContext);
@@ -146,10 +153,17 @@ function EngagementActionComponent({
             }
           : undefined
       }
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
+      onFocus={onFocus}
+      onBlur={onBlur}
       hitSlop={hitSlop}
-      style={({ pressed }: PressableStateCallbackType) =>
-        pressed && !blocked ? tonePaint.pressed : rest
-      }
+      style={({ pressed }: PressableStateCallbackType) => {
+        const own = pressed && !blocked ? tonePaint.pressed : rest;
+        return style === undefined ? own : [own, style];
+      }}
       testID={testID}
     >
       {/* A lone child, not a one-item list: `Pressable` renders its children beside

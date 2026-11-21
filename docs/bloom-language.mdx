@@ -460,7 +460,7 @@ inside; a stack's layout to its host; a placement to its outermost box.
   variable, as in its inline style). No view is put around it, so its layout
   is the one it has without a variant. Its state is tracked by its box in
   JavaScript on the web too (the component takes `onPressIn`/`onHoverIn`…
-  as Bloom's Button, its FAB and Avatar do; a Badge, an IconCircle, a
+  as Bloom's Button, its FAB, Avatar and EngagementAction do; a Badge, an IconCircle, a
   Loading, a Divider, an AvatarGroup or a button group takes no press of its
   own, so its press, hover and focus are a language host's around it, whose
   box tracks them the same way), and its `focused` is the browser's
@@ -1387,7 +1387,7 @@ and `@oxy.so/bloom-data` beside it.
 - Variants: a scale or an offset under `when()` (geometry is the motion
   layer's, and the web has no transform class to vary); an app colour under
   `when()` (it has no class); a glass's frame, border, corner and fill (only a
-  material's padding varies); `EngagementAction` takes no state variants.
+  material's padding varies).
 - A Bloom pressable inside a pressable stack on the web: the stack's CSS
   answers its nearest anchor, and a Bloom component carries none, so the
   outer stack still answers a hover of the inner component (native leaves

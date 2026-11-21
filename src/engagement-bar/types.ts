@@ -3,6 +3,7 @@ import type {
   AccessibilityActionEvent,
   AccessibilityActionInfo,
   Insets,
+  PressableProps,
   StyleProp,
   ViewStyle,
 } from 'react-native';
@@ -63,6 +64,16 @@ export interface EngagementActionProps {
    */
   onPress?: () => unknown;
   onLongPress?: () => void;
+  /**
+   * The pressable's own press, hover and focus, as a consumer that answers
+   * them (the Bloom language's state variants) reads them.
+   */
+  onPressIn?: PressableProps['onPressIn'];
+  onPressOut?: PressableProps['onPressOut'];
+  onHoverIn?: PressableProps['onHoverIn'];
+  onHoverOut?: PressableProps['onHoverOut'];
+  onFocus?: PressableProps['onFocus'];
+  onBlur?: PressableProps['onBlur'];
   /** Screen-reader actions — the way to reach whatever `onLongPress` does. */
   accessibilityActions?: readonly AccessibilityActionInfo[];
   onAccessibilityAction?: (event: AccessibilityActionEvent) => void;
@@ -75,6 +86,8 @@ export interface EngagementActionProps {
   disabled?: boolean;
   /** Defaults to 8 on every side. */
   hitSlop?: Insets | number;
+  /** Drawn over the action's own style at rest and while held. */
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 }
 

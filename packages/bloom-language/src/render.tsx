@@ -1871,7 +1871,7 @@ function renderHost(
     }
     case 'action': {
       const { icon, label, options } = node.props as ActionProps;
-      return draw(EngagementAction, {
+      const props: Record<string, unknown> = {
         key,
         icon,
         activeIcon: options.activeIcon,
@@ -1889,7 +1889,11 @@ function renderHost(
         accessibilityActions: options.accessibilityActions,
         onAccessibilityAction: options.onAccessibilityAction,
         testID: p.testID,
-      });
+      };
+      // The action's own pressable takes its press, hover and focus, which its box tracks for its state variants.
+      if (behaviour !== undefined && STATEFUL in behaviour) props[STATEFUL] = behaviour[STATEFUL];
+      if (!boxed) return draw(EngagementAction, props);
+      return drawHost(EngagementAction, boxOf('component', 'EA'), props);
     }
     case 'actionBar': {
       const trailing = ownValue(p, 'trailing')?.value;

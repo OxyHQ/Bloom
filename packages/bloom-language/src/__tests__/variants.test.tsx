@@ -7,7 +7,7 @@ import TestRenderer, {
 
 import { DARK, LIGHT, PaintContext } from './support/bloom-theme';
 import { windowTier } from './support/bloom-hooks';
-import { Avatar, Badge, HStack, Icon, Text, VStack } from '../primitives';
+import { Action, ActionBar, Avatar, Badge, HStack, Icon, Text, VStack } from '../primitives';
 import { both } from '../variants';
 import { toElement } from '../render';
 import type { Child } from '../node';
@@ -256,5 +256,29 @@ describe('a Bloom component with no press of its own takes it on a host around i
     const r = mount(Badge(3).testID('b'));
     expect(r.root.findAll((node) => (node.type as unknown) === 'Pressable')).toHaveLength(0);
     expect(r.root.find((node) => (node.type as unknown) === 'Badge').props.testID).toBe('b');
+  });
+});
+
+describe('an action answers its own press, hover and focus', () => {
+  it('its pressable hands the states to its box, and the variant is in the action’s own style', () => {
+    const r = mount(
+      ActionBar(
+        Action(Glyph, 'Like')
+          .onPress(() => {})
+          .padding('xs')
+          .when('pressed', (v) => v.opacity('70')),
+      ),
+    );
+    const action = (): ReactTestInstance => ofType(r, 'EngagementAction')[0] as ReactTestInstance;
+    expect(action().props.style).toEqual({
+      paddingTop: 4,
+      paddingBottom: 4,
+      paddingStart: 4,
+      paddingEnd: 4,
+    });
+    act(() => action().props.onPressIn());
+    expect(action().props.style).toMatchObject({ paddingTop: 4, opacity: 0.7 });
+    act(() => action().props.onPressOut());
+    expect(action().props.style).not.toHaveProperty('opacity');
   });
 });
