@@ -193,6 +193,7 @@ import {
   GestureMotionNode,
   MotionNode,
   PressMotionNode,
+  ThemedMotion,
   type AnimationScope,
   type MotionPlan,
   type Outer,
@@ -292,6 +293,7 @@ const MOTION_KINDS: ReadonlySet<string> = new Set([
   'offset',
   'rotation',
   'animation',
+  'animatesColors',
   'transition',
   'keyframes',
   'repeatForever',
@@ -313,6 +315,7 @@ function motionPlan(node: Node, layers: readonly Layer[]): MotionPlan {
     geometry: NO_GEOMETRY,
     anchor: undefined,
     animation: undefined,
+    colors: false,
     transition: undefined,
     keyframes: undefined,
     loop: undefined,
@@ -376,6 +379,11 @@ function motionPlan(node: Node, layers: readonly Layer[]): MotionPlan {
           gated: modifier.gated,
         };
         break;
+      case 'animatesColors':
+        // Its colours play with the animation in scope: the box is animated from the first render.
+        motion.stable = true;
+        motion.colors = true;
+        break;
       case 'transition':
         motion.stable = true;
         motion.transition = modifier.value;
@@ -438,17 +446,8 @@ function motionPlan(node: Node, layers: readonly Layer[]): MotionPlan {
 const NO_TRANSFORM: Transform = Object.freeze([]);
 const NO_GEOMETRY: Geometry = Object.freeze({});
 
-/** What a change of plays on a view's box under `.animation()`: its colours, opacity and geometry. */
-const ANIMATED_KINDS: ReadonlySet<string> = new Set([
-  'background',
-  'border',
-  'ring',
-  'foreground',
-  'opacity',
-  'scale',
-  'offset',
-  'rotation',
-]);
+/** What a change of plays on a view's box under `.animation()`: its opacity and geometry (colours only with `.animatesColors()`). */
+const ANIMATED_KINDS: ReadonlySet<string> = new Set(['opacity', 'scale', 'offset', 'rotation']);
 
 /** Whether a chain draws something its box animates, at rest or in a variant. */
 function changesBox(modifiers: readonly Modifier[]): boolean {
@@ -938,7 +937,10 @@ function drawMoving(
       : motion.pressScale
         ? PressMotionNode
         : MotionNode;
-  return draw(component, {
+  // Native: a node that animates its colours reads the palette (`ThemedMotion`).
+  const themed = motion.colors && !IS_WEB;
+  return draw(themed ? ThemedMotion : component, {
+    ...(themed ? { node: component } : null),
     key: p.id ?? key,
     motion,
     exit: p.id !== undefined && motion.transition !== undefined,

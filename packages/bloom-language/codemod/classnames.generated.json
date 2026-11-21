@@ -483,7 +483,7 @@
    "count": 116,
    "apps": 7,
    "status": "motion",
-   "language": ".animation(motion): a change of the view’s colours (fill, border, outline, ink) plays with motion (the motion layer)"
+   "language": ".animation(motion).animatesColors(): a change of the view’s colours (fill, border, outline, ink) plays with motion; a theme switch changes them at once (the motion layer)"
   },
   "text-[11px]": {
    "count": 114,
@@ -3309,7 +3309,7 @@
    "count": 7,
    "apps": 4,
    "status": "modifier",
-   "language": "a transition of every property: .animation(motion) plays colours, opacity and geometry, not a frame or a shadow"
+   "language": "a transition of every property: .animation(motion).animatesColors() plays colours, opacity and geometry, not a frame or a shadow"
   },
   "w-3/4": {
    "count": 7,
@@ -3679,7 +3679,7 @@
    "count": 6,
    "apps": 5,
    "status": "motion",
-   "language": ".animation(motion): a change of the view’s colours, opacity and geometry plays with motion; a shadow or a filter changes at once (the motion layer)"
+   "language": ".animation(motion).animatesColors(): a change of the view’s colours, opacity and geometry plays with motion; a shadow or a filter changes at once (the motion layer)"
   },
   "w-4": {
    "count": 6,

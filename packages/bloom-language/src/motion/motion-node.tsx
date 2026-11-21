@@ -1,4 +1,5 @@
 import {
+  createElement,
   useContext,
   useLayoutEffect,
   useMemo,
@@ -10,6 +11,7 @@ import {
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { mergeRefs, usePrefersReducedMotion } from '@oxy.so/bloom/hooks';
 import {
+  COLOR_TRANSITION_PROPS,
   SCALE,
   LeavingContext,
   defineKeyframes,
@@ -30,6 +32,7 @@ import {
   type Transform,
   type TransitionValue,
 } from '@oxy.so/bloom/motion';
+import { useThemePaint } from '@oxy.so/bloom/theme';
 
 import type { DragSpec, SwipeDirection } from '../node';
 import type { Geometry } from '../paint';
@@ -61,6 +64,8 @@ export interface MotionPlan {
   anchor: string | undefined;
   /** The node's own `.animation()`, which also scopes its subtree. */
   animation: AnimationScope | undefined;
+  /** `.animatesColors()`: its box's colour changes play with the animation in scope. */
+  colors: boolean;
   transition: TransitionValue | undefined;
   keyframes: { value: KeyframesValue; trigger: unknown } | undefined;
   /** `.repeatForever()`: keyframes that play again and again while nothing else plays. */
@@ -119,6 +124,11 @@ export interface MotionNodeProps {
    */
   exit: boolean;
   scope: AnimationScope | undefined;
+  /**
+   * Native, a node that animates its colours: the palette it paints with
+   * (`ThemedMotion`), so the render a theme switch makes changes them at once.
+   */
+  theme?: unknown;
   /** Draws the node with `outer` on its outermost box. */
   content: (outer: Outer) => ReactNode;
 }
@@ -148,6 +158,7 @@ interface Committed {
   value: unknown;
   transformKey: string;
   timing: Timing | undefined;
+  theme: unknown;
 }
 
 /** The keyframes a matched view plays to come from `from` to where it is. */
@@ -181,7 +192,7 @@ function measure(node: unknown): Frame | undefined {
  * playing holds its first frame while it waits.
  */
 function useMotion(
-  { motion, scope }: MotionNodeProps,
+  { motion, scope, theme }: MotionNodeProps,
   press: { style: readonly unknown[]; ownsTransform: boolean; bound?: boolean },
 ) {
   const reduced = usePrefersReducedMotion();
@@ -197,6 +208,10 @@ function useMotion(
   const delayed = (of: Timing | undefined) =>
     of === undefined ? undefined : withDelay(of, motion.delay);
   const fill = motion.delay > 0 ? 'backwards' : 'none';
+  // Native: a theme switch re-renders a node that animates its colours with a
+  // new palette; that render changes them at once, and the next plays them again.
+  const switched = last !== undefined && last.theme !== theme;
+  const [, replay] = useState(0);
 
   // A state change of the resting transform, opacity or colours animates with the scope's motion.
   let timing: Timing | undefined;
@@ -300,7 +315,8 @@ function useMotion(
 
   const matched = motion.matched;
   useLayoutEffect(() => {
-    committed.current = { value: own?.value, transformKey: motion.transformKey, timing };
+    committed.current = { value: own?.value, transformKey: motion.transformKey, timing, theme };
+    if (switched) replay((count) => count + 1);
     if (matched === undefined) return;
     const frame = measure(ref.current);
     if (frame === undefined) return;
@@ -317,15 +333,20 @@ function useMotion(
   if (motion.transform.length > 0 && !press.ownsTransform)
     style.push({ transform: motion.transform });
   if (motion.anchor !== undefined) style.push(anchorStyle(motion.anchor));
-  // A change plays on the box: its geometry, opacity and colours. A bound
-  // view's geometry follows its values; `.animation()` does not ease it.
+  // A change plays on the box: its geometry and opacity, and its colours when
+  // it animates them. A bound view's geometry follows its values; `.animation()`
+  // does not ease it.
   if (timing !== undefined && motion.stable && !press.bound)
-    style.push(transitionStyle(timing, true));
+    style.push(transitionStyle(timing, motion.colors && !switched));
   if (matched !== undefined) style.push(ORIGIN_TOP_LEFT);
   style.push(...press.style);
   if (played.style !== undefined) style.push(played.style);
 
-  const props: Record<string, unknown> = { ref, ...played.props };
+  const props: Record<string, unknown> = {
+    ref,
+    ...played.props,
+    ...(motion.colors ? COLOR_TRANSITION_PROPS : undefined),
+  };
   if (matched !== undefined) {
     props.onLayout = () => {
       const frame = measure(ref.current);
@@ -346,6 +367,19 @@ function leaverOnly(motion: MotionPlan, node: ReactNode): ReactNode {
 }
 
 const NO_PRESS = { style: [] as readonly unknown[], ownsTransform: false };
+
+/**
+ * Native, a node that animates its colours: its motion node with the palette
+ * it paints with, so it alone of the moving nodes re-renders on a theme switch.
+ * The web needs none: a switch there is the document's (`applyThemeAtOnce`).
+ */
+export function ThemedMotion({
+  node,
+  ...props
+}: MotionNodeProps & { node: (props: MotionNodeProps) => ReactNode }): ReactNode {
+  return createElement(node, { ...props, theme: useThemePaint() });
+}
+ThemedMotion.displayName = 'BloomThemedMotion';
 
 export function MotionNode(props: MotionNodeProps): ReactNode {
   const { style, props: hostProps, play } = useMotion(props, NO_PRESS);

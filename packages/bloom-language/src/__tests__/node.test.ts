@@ -65,6 +65,8 @@ describe('the typed vocabulary', () => {
     HStack(0 && Text('0'));
     // @ts-expect-error a delay is one of Bloom's durations; no app writes Tailwind's delay-1000
     Text('x').delay('1000');
+    // @ts-expect-error colours opt in by name, with no argument
+    Text('x').animatesColors(true);
     expect(true).toBe(true);
   });
 });

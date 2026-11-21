@@ -1069,7 +1069,8 @@ Tailwind's `animate-pulse` curve `[0.4, 0, 0.6, 1]`).
 | Modifier | Meaning (SwiftUI) |
 | --- | --- |
 | `.scale(s)`, `.offset({ x?, y? })`, `.rotation(r)` | Geometry that moves the view without moving its neighbours: `scale` tokens `dip` `pressed` `full` `swell`; offsets are space tokens (negative ones too); `rotation` `none` `quarter` `half`. Each takes a `MotionValue` in place of a token, and the view follows it. |
-| `.animation(motion, value?)` | `.animation(_:value:)`: changes to this view's geometry, opacity and colours (the fill, border, outline and text colour of its moving box: `transition-colors`), and what animates inside it in the same body (a matched geometry, a content transition, keyframes or a transition without their own motion), play with `motion`. A variant's change plays too (`hover:bg-muted`, `active:scale-95`). With a value, only on a render where the value changed. |
+| `.animation(motion, value?)` | `.animation(_:value:)`: changes to this view's geometry and opacity, and what animates inside it in the same body (a matched geometry, a content transition, keyframes or a transition without their own motion), play with `motion`. A variant's change plays too (`active:scale-95`). With a value, only on a render where the value changed. Colours change at once unless the view says `.animatesColors()`. |
+| `.animatesColors()` | The view's colour changes (the fill, border, outline and text colour of its moving box) play with the `.animation()` in scope, its own or one above it: Tailwind's `transition-colors` (`hover:bg-muted transition-colors` is `.when('hovered', v => v.background('muted')).animation(m).animatesColors()`). The one way colours animate. A theme switch never plays: the switch's colours change at once (see How it runs). |
 | `.transition(t)` | Insertion and removal: `opacity`, `scale('dip')`, `move(edge, distance)`, `t.combined(u)`, `asymmetric(insert, remove)`, `t.animation(motion)`. A half may be keyframes of the app's own. |
 | `.keyframes(k, trigger)` | `keyframeAnimator`: plays `k` each time `trigger` changes to a truthy value (a boolean turning on, or a counter such as a press id). |
 | `.repeatForever(loop)` | `keyframeAnimator(repeating: true)`: plays a loop again and again while the view is on screen: `'spin'` (a turn, 1 s linear: `animate-spin`), `'pulse'` (half opacity at the midpoint, 2 s: `animate-pulse`), frame for frame, or keyframes of the app's own. It plays when nothing else does, after an insertion ends; never under reduced motion. |
@@ -1131,8 +1132,8 @@ A moving node is drawn by one component (`MotionNode`), so nodes without motion
 stay plain elements with no hooks. Its outermost host becomes its animated twin
 (`Animated.View`, `Animated.Text`, an animated `Pressable`) when it rests moved or
 animates its resting state (geometry, opacity, a transition, a matched geometry,
-press feedback, or, under its own `.animation()`, a colour, an opacity or
-geometry it paints or varies), from the first render, because a CSS transition
+press feedback, `.animatesColors()`, or, under its own `.animation()`, an
+opacity or geometry it paints or varies), from the first render, because a CSS transition
 needs its host before the change. A box whose variants answer its state is that
 host itself (its `StateHost` draws the twin), so a pressed or hovered variant's
 change plays where it is drawn. A node with only keyframes or a loop is animated
@@ -1141,10 +1142,18 @@ Surface, an Avatar, a bare glyph) cannot take motion itself, so it moves in one
 box, which takes the view's place in its parent.
 
 **Colours, loops and delays.** The moving box's transition covers its
-`transform`, `opacity` and colours (`backgroundColor`, each border side's
-colour, `outlineColor`, `color`; on the web `color`, `background-color`,
-`border-color` and `outline-color`, and a glyph paints `currentColor`), the one
-transition Reanimated's CSS engine and the browser play. A loop is the
+`transform` and `opacity`, and with `.animatesColors()` its colours too
+(`backgroundColor`, each border side's colour, `outlineColor`, `color`; on the
+web `color`, `background-color`, `border-color` and `outline-color`, and a
+glyph paints `currentColor`), the one transition Reanimated's CSS engine and
+the browser play. A theme switch never plays a colour (docs/motion.mdx, A theme
+switch never plays a colour transition). On native a view that animates its
+colours reads the palette (`ThemedMotion`; no other moving view does): the
+render a switch makes leaves the colours out of its transition, so
+Reanimated's CSS engine sets them at once, and the render after puts them back.
+On the web the provider applies the switch under a document mark that holds
+such a host (`data-bloom-color-transition`) to its transform and opacity while
+the browser computes the new style. A loop is the
 engine's keyframes with an infinite iteration count (a CSS animation on native,
 `element.animate()` with `iterations: Infinity` on the web), the lowest of the
 one playing at a time, so it starts once an insertion ends and gives way to
@@ -1423,7 +1432,8 @@ and `@oxy.so/bloom-data` beside it.
   it); the innermost pressable owns a hover or a press, as react-native-web's
   does.
 - Motion (`@oxy.so/bloom/motion`): motion tokens and curves, `.animation()`
-  (geometry, opacity and colours: `transition-colors`), `.transition()`,
+  (geometry and opacity), `.animatesColors()` (colours, opt-in:
+  `transition-colors`; a theme switch never plays), `.transition()`,
   `.keyframes()`, loops (`.repeatForever('spin' | 'pulse')`, Tailwind's
   `animate-spin` and `animate-pulse`, or an app's keyframes), `.delay()`
   (Bloom's durations), `.anchor()` (a transform origin),
@@ -1458,7 +1468,12 @@ and `@oxy.so/bloom-data` beside it.
   glyph's fill change at once. An `.animation()` scope reaches its own body,
   not the bodies of `view()`s inside it; a removal plays only for a keyed
   list's child. Colour transitions, loops and delays are measured in tests
-  and jsdom, not yet on a device.
+  and jsdom, not yet on a device; that a theme switch plays no colour is
+  measured in Jest (native: the switch's render asks for no colour) and jsdom
+  (the mark), not in a browser's transition events or on a device. On the web
+  a colour or seed scope that repaints its subtree on its own (its variables,
+  not the provider's switch) is not held: its colours play under
+  `.animatesColors()`; native changes any new palette at once.
 - Renderers: everything renders through React Native and react-native-web;
   no SwiftUI, native-view or CSS renderer yet. iOS is typechecked and tested
   against stand-ins, not run on a device. The web stylesheet is not in
