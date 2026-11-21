@@ -36,7 +36,7 @@ describe('glass on the web is Bloom’s frosted Surface', () => {
     const r = mount(toElement(FAB(Icon(Glyph)).glass(clear.tint('primary', 'subtle'))));
     expect(only(r, 'Surface').props).toMatchObject({ sheen: false });
     // Bloom's withAlpha, as an app writes it: Surface computes its material from it.
-    expect(only(r, 'Surface').props.fill).toBe(withAlpha(LIGHT.primary, 0.24));
+    expect(only(r, 'Surface').props.fill).toBe(withAlpha(LIGHT.primary as string, 0.24));
   });
 
   it('a paint that is a CSS variable (Bloom’s prepaint) is mixed by the browser', () => {

@@ -76,7 +76,7 @@ describe('glass is Liquid Glass', () => {
     expect(glass().props.tintColor).toBeUndefined();
     expect(glass().props.style).toEqual([undefined, { borderRadius: 16 }]);
     act(() => only(r, 'Pressable').props.onPressIn());
-    expect(glass().props.tintColor).toBe(withAlpha(LIGHT.primary, 0.4));
+    expect(glass().props.tintColor).toBe(withAlpha(LIGHT.primary as string, 0.4));
     expect(glass().props.style).toEqual([{ width: 40 }, { borderRadius: 20 }]);
   });
 
