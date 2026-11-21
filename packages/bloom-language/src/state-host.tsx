@@ -39,9 +39,13 @@ const ANCHOR = Object.freeze({ $$css: true, blStateAnchor: 'blsg' });
 function WebStateHost(props: StateHostProps): ReactElement {
   // A Bloom component reads its style as an object: no anchor class, its state read in JS.
   if (props.out.object) return createElement(TrackedStateHost, props);
-  const { host, out, states: _, ...rest } = props;
+  const { host, out, states: _, style: motion, ...rest } = props;
   const style = out.style === undefined ? ANCHOR : [out.style, ANCHOR].flat();
-  return createElement(host, { ...rest, style });
+  // A moving box's motion style (`Outer`) comes after its own.
+  return createElement(host, {
+    ...rest,
+    style: motion === undefined ? style : [style, motion].flat(),
+  });
 }
 
 type Handler = ((event: unknown) => void) | undefined;
@@ -83,9 +87,15 @@ function TrackedStateHost({ host, out, states, ...props }: StateHostProps): Reac
     };
     handlers.onBlur = chain('onBlur', 'focused', false);
   }
+  // A moving box's motion style (`Outer`, `props.style`) comes after its own; the leaves merge it the same way.
+  const motion = props.style as readonly unknown[] | undefined;
   const box =
     out.paint === undefined
-      ? createElement(host, { ...props, ...handlers, style: out.style })
+      ? createElement(host, {
+          ...props,
+          ...handlers,
+          style: motion === undefined ? out.style : [out.style, ...motion],
+        })
       : createElement(out.paint.variants ? Conditioned : Painted, {
           ...props,
           ...handlers,

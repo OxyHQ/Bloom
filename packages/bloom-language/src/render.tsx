@@ -92,8 +92,11 @@ import { MenuHost } from './platform/menu-host';
 import { HeaderHost } from './platform/header-host';
 import { BottomBarHost } from './platform/bottom-bar-host';
 import {
+  GEOMETRY_KINDS,
   PLACE_KINDS,
   STACK_KINDS,
+  geometryOf,
+  type GeometryModifier,
   addToLayers,
   addVariantToLayers,
   applyPlacement,
@@ -141,7 +144,15 @@ import {
   type LiveCondition,
   type Planned,
 } from './variants';
-import { Conditioned, Painted, type Paint } from './paint';
+import {
+  Conditioned,
+  GEOMETRY_KEYS,
+  Painted,
+  composeGeometry,
+  type Geometry,
+  type GeometryKey,
+  type Paint,
+} from './paint';
 import {
   DURATION,
   HIT_SLOP,
@@ -187,7 +198,7 @@ import {
   type Outer,
 } from './motion/motion-node';
 import { TextRoll } from './motion/text-roll';
-import { resolveRotation, resolveScale } from './motion/tokens';
+import { resolveAnchor, resolveDelay, resolveRotation, resolveScale } from './motion/tokens';
 
 const IS_WEB = Platform.OS === 'web';
 
@@ -283,22 +294,29 @@ const MOTION_KINDS: ReadonlySet<string> = new Set([
   'animation',
   'transition',
   'keyframes',
+  'repeatForever',
+  'delay',
+  'anchor',
   'matchedGeometry',
   'pressScale',
   'drag',
   'swipe',
 ]);
 
-/** Resting transforms, interned by key so a moving host's style keeps its identity. */
-const transforms = new Map<string, Transform>();
+/** Resting transforms (and the same by component), interned by key so a moving host's style keeps its identity. */
+const transforms = new Map<string, { geometry: Geometry; transform: Transform }>();
 
 function motionPlan(node: Node, layers: readonly Layer[]): MotionPlan {
   const motion: MotionPlan = {
     transform: NO_TRANSFORM,
     transformKey: '',
+    geometry: NO_GEOMETRY,
+    anchor: undefined,
     animation: undefined,
     transition: undefined,
     keyframes: undefined,
+    loop: undefined,
+    delay: 0,
     matched: undefined,
     pressScale: false,
     bound: undefined,
@@ -350,6 +368,8 @@ function motionPlan(node: Node, layers: readonly Layer[]): MotionPlan {
         motion.swipe = { direction: modifier.direction, onSwipe: modifier.onSwipe };
         break;
       case 'animation':
+        // What its box draws changes with the motion: the box is animated from the first render.
+        if (changesBox(node.modifiers)) motion.stable = true;
         motion.animation = {
           motion: modifier.motion,
           value: modifier.value,
@@ -362,6 +382,15 @@ function motionPlan(node: Node, layers: readonly Layer[]): MotionPlan {
         break;
       case 'keyframes':
         motion.keyframes = { value: modifier.value, trigger: modifier.trigger };
+        break;
+      case 'repeatForever':
+        motion.loop = modifier.value;
+        break;
+      case 'delay':
+        motion.delay = resolveDelay(modifier.value);
+        break;
+      case 'anchor':
+        motion.anchor = resolveAnchor(modifier.value);
         break;
       case 'matchedGeometry':
         motion.stable = true;
@@ -386,23 +415,53 @@ function motionPlan(node: Node, layers: readonly Layer[]): MotionPlan {
   }
   const key = `${translateX}|${translateY}|${rotate}|${scale}`;
   if (key !== '0|0|0|1') {
-    let transform = transforms.get(key);
-    if (transform === undefined) {
-      const parts: Record<string, number | string>[] = [];
-      if (translateX !== 0) parts.push({ translateX });
-      if (translateY !== 0) parts.push({ translateY });
-      if (rotate !== 0) parts.push({ rotate: `${rotate}deg` });
-      if (scale !== 1) parts.push({ scale });
-      transform = Object.freeze(parts);
-      transforms.set(key, transform);
+    let resting = transforms.get(key);
+    if (resting === undefined) {
+      const geometry: { -readonly [K in GeometryKey]?: number } = {};
+      if (translateX !== 0) geometry.translateX = translateX;
+      if (translateY !== 0) geometry.translateY = translateY;
+      if (rotate !== 0) geometry.rotate = rotate;
+      if (scale !== 1) geometry.scale = scale;
+      resting = {
+        geometry: Object.freeze(geometry),
+        transform: Object.freeze((composeGeometry(geometry) as { transform: Transform }).transform),
+      };
+      transforms.set(key, resting);
     }
-    motion.transform = transform;
+    motion.transform = resting.transform;
+    motion.geometry = resting.geometry;
     motion.transformKey = key;
   }
   return motion;
 }
 
 const NO_TRANSFORM: Transform = Object.freeze([]);
+const NO_GEOMETRY: Geometry = Object.freeze({});
+
+/** What a change of plays on a view's box under `.animation()`: its colours, opacity and geometry. */
+const ANIMATED_KINDS: ReadonlySet<string> = new Set([
+  'background',
+  'border',
+  'ring',
+  'foreground',
+  'opacity',
+  'scale',
+  'offset',
+  'rotation',
+]);
+
+/** Whether a chain draws something its box animates, at rest or in a variant. */
+function changesBox(modifiers: readonly Modifier[]): boolean {
+  return modifiers.some((modifier) =>
+    modifier.kind === 'when' ? changesBox(modifier.modifiers) : ANIMATED_KINDS.has(modifier.kind),
+  );
+}
+
+/** Whether a geometry modifier follows a `MotionValue` (on any axis). */
+function followsValue(modifier: GeometryModifier): boolean {
+  if (modifier.kind !== 'offset') return isMotionValue(modifier.value);
+  return isMotionValue(modifier.value.x) || isMotionValue(modifier.value.y);
+}
 
 function isAppToken(value: unknown): value is AppToken<'space'> {
   return typeof value === 'object' && value !== null && 'scale' in value;
@@ -526,7 +585,9 @@ function plan(node: Node): Plan {
   if ((node.kind === 'button' || node.kind === 'fab') && result.layers.some((l) => l.glass)) {
     result.control = { tint: controlTint(node.kind, result) };
   }
-  if (moving) result.motion = motionPlan(node, result.layers);
+  // A view whose geometry varies is moving: its box draws the geometry (see `renderNode`).
+  if (moving || result.place.variants.some(([, modifier]) => GEOMETRY_KINDS.has(modifier.kind)))
+    result.motion = motionPlan(node, result.layers);
   return result;
 }
 
@@ -555,6 +616,13 @@ function planVariant(
     }
     if (!varies(modifier)) {
       warnNotVaried(modifier);
+      continue;
+    }
+    if (GEOMETRY_KINDS.has(modifier.kind) && followsValue(modifier as GeometryModifier)) {
+      warnOnce(
+        'value-variant',
+        '[Bloom language] a variant varies geometry by token: a MotionValue inside when() is left out.',
+      );
       continue;
     }
     if (condition !== null && 'value' in modifier && isAppColor(modifier.value)) {
@@ -706,7 +774,9 @@ function drawHost(
     return draw(Conditioned, { ...props, host, paint: out.paint }, ...children);
   if (out.paint !== undefined)
     return draw(Painted, { ...props, host, paint: out.paint }, ...children);
-  if (out.style !== undefined) props.style = out.style;
+  // A moving box's motion style (`Outer`) comes after its own.
+  if (out.style !== undefined)
+    props.style = props.style === undefined ? out.style : [out.style, ...(props.style as [])];
   return draw(host, props, ...children);
 }
 
@@ -728,22 +798,15 @@ function drawOutermost(
   ...children: ReactNode[]
 ): ReactElement {
   const animated = animatedHost(host) as Host | undefined;
-  // A host with no animated twin (a Bloom component) and a box whose variants
-  // answer its state (its `StateHost`'s) move in the box `drawNode` adds.
-  if (box === undefined || animated === undefined || STATEFUL in props)
-    return drawHost(host, out, props, ...children);
+  // A host with no animated twin (a Bloom component) moves in the box `drawNode` adds.
+  if (box === undefined || animated === undefined) return drawHost(host, out, props, ...children);
   box.used = true;
   const { outer } = box;
   if (!outer.active) return drawHost(host, out, { ...props, ...outer.props }, ...children);
-  const moving = { ...props, ...outer.props, style: outer.style };
-  if (out.paint !== undefined)
-    return draw(
-      out.paint.variants === undefined ? Painted : Conditioned,
-      { ...moving, host: animated, paint: out.paint },
-      ...children,
-    );
-  moving.style = out.style === undefined ? outer.style : [out.style, ...outer.style];
-  return draw(animated, moving, ...children);
+  // The animated twin takes the motion's style after its own, through the
+  // leaf that paints it and the `StateHost` whose state its variants answer,
+  // so a variant's change (a press's scale, a hover's fill) plays on it.
+  return drawHost(animated, out, { ...props, ...outer.props, style: outer.style }, ...children);
 }
 
 /** `element` in a box of its own that carries `outer` (`style` first): how what cannot take it moves. */
@@ -780,13 +843,7 @@ function renderNode(node: Node, ctx: Context, key: string | number | undefined):
     return last.element;
   }
   const p = plan(node);
-  if (p.motion !== undefined && ctx.animation === undefined && restsStill(p.motion)) {
-    // Resting geometry with nothing to play it and no `.animation()` above: the
-    // outermost box's own style, as a view moved by hand is drawn.
-    p.place.transform = p.motion.transform;
-    p.place.key += `;t:${p.motion.transformKey}`;
-    p.motion = undefined;
-  }
+  if (p.motion !== undefined) placeGeometry(p, p.motion, ctx.animation === undefined);
   const element =
     p.motion === undefined ? drawNode(node, p, ctx, key, undefined) : drawMoving(node, p, ctx, key);
   node.rendered = {
@@ -801,12 +858,64 @@ function renderNode(node: Node, ctx: Context, key: string | number | undefined):
   return element;
 }
 
+/**
+ * Where a node's token geometry is drawn: by its outermost box, as part of
+ * its placement, when its geometry rests with nothing to play it and no
+ * `.animation()` above (as a view moved by hand is drawn: the node then takes
+ * no motion at all), or when a variant changes it, so the variant overrides
+ * only the components it sets (each component is a style value, and on the
+ * web a custom property: style.ts, `webStyle`); the motion layer then plays
+ * only its changes. Otherwise the motion layer draws it (`MotionNode`).
+ *
+ * A transform the one mapper writes (a `MotionValue`, a gesture, native press
+ * feedback) takes no variant: its variants are left out.
+ */
+function placeGeometry(p: Plan, motion: MotionPlan, unscoped: boolean): void {
+  const varied = new Set<GeometryKey>();
+  for (const [, modifier] of p.place.variants) {
+    if (GEOMETRY_KINDS.has(modifier.kind))
+      for (const key of Object.keys(geometryOf(modifier as GeometryModifier)))
+        varied.add(key as GeometryKey);
+  }
+  const mapped = motion.bound !== undefined || motion.drag !== undefined || motion.pressScale;
+  if (varied.size > 0 && mapped) {
+    warnOnce(
+      'mapped-variant',
+      '[Bloom language] geometry a MotionValue, a gesture or press feedback moves does not vary: its variants are left out.',
+    );
+    p.place.variants = p.place.variants.filter(
+      ([, modifier]) => !GEOMETRY_KINDS.has(modifier.kind),
+    );
+    return;
+  }
+  const still = unscoped && restsStill(motion);
+  if (!still && varied.size === 0) return;
+  // A component a variant sets rests at its identity when the chain sets none.
+  const geometry: { -readonly [K in GeometryKey]?: number } = {};
+  for (const key of GEOMETRY_KEYS) if (varied.has(key)) geometry[key] = key === 'scale' ? 1 : 0;
+  Object.assign(geometry, motion.geometry);
+  p.place.geometry = geometry;
+  p.place.anchor = motion.anchor;
+  p.place.key += `;t:${motion.transformKey}|${[...varied].join(',')}|${motion.anchor ?? ''}`;
+  // A varied geometry changes on the box, which is then animated from the first render.
+  p.motion = still
+    ? undefined
+    : {
+        ...motion,
+        transform: NO_TRANSFORM,
+        geometry: NO_GEOMETRY,
+        anchor: undefined,
+        stable: true,
+      };
+}
+
 /** A node whose motion is its resting geometry alone: tokens, no value, nothing that plays. */
 function restsStill(motion: MotionPlan): boolean {
   return (
     motion.animation === undefined &&
     motion.transition === undefined &&
     motion.keyframes === undefined &&
+    motion.loop === undefined &&
     motion.matched === undefined &&
     !motion.pressScale &&
     motion.bound === undefined &&

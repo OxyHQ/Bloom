@@ -56,9 +56,14 @@ export type CSSKeyframesRule = { keyframes: Record<string, unknown> };
 /** A layout Keyframe as data: its definitions and duration. */
 export class Keyframe {
   durationV: number | undefined;
+  delayV: number | undefined;
   constructor(readonly definitions: Record<string, unknown>) {}
   duration(ms: number): this {
     this.durationV = ms;
+    return this;
+  }
+  delay(ms: number): this {
+    this.delayV = ms;
     return this;
   }
 }

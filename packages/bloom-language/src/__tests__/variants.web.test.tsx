@@ -215,6 +215,51 @@ describe('a variant inside a variant is both conditions’ CSS', () => {
   });
 });
 
+describe('on the web geometry is a custom property per component, composed by one transform', () => {
+  it('a hover’s scale sets only its component; the view’s one transform composes them', () => {
+    const r = mount(
+      HStack(Text('a'))
+        .onPress(() => {})
+        .offset({ y: '-xs' })
+        .when('hovered', (v) => v.scale('105')),
+    );
+    const press = r.root.findByType('Pressable' as never);
+    expect(press.props.style).toEqual([
+      {
+        $$css: true,
+        flexDirection: WEB_CLASS['flexDirection:row'],
+        translateY: WEB_CLASS['translateY:-4'],
+        scale: WEB_CLASS['scale:1'],
+        transform: WEB_CLASS['transform:translateY+scale'],
+        'scale@hovered': `${WEB_CLASS['scale:1.05']}-hovered`,
+      },
+      { $$css: true, blStateAnchor: 'blsg' },
+    ]);
+    const rule = (key: string) =>
+      WEB_SHEET.split('\n').find((line) => line.startsWith(`.${WEB_CLASS[key]}{`));
+    expect(rule('transform:translateY+scale')).toBe(
+      `.${WEB_CLASS['transform:translateY+scale']}{transform:translateY(var(--bl-ty)) scale(var(--bl-s));}`,
+    );
+    expect(rule('translateY:-4')).toBe(`.${WEB_CLASS['translateY:-4']}{--bl-ty:-4px;}`);
+    const scale = WEB_CLASS['scale:1.05'] as string;
+    expect(variantSheet('hovered', [scale])).toBe(
+      `${VARIANT_SELECTORS.hovered.replace('&', `.${scale}-hovered`)}{--bl-s:1.05;}`,
+    );
+  });
+
+  it('resting geometry is the same classes, with no variant', () => {
+    const stack = mount(VStack(Text('a')).rotation('45').anchor('top-leading')).root.findByType(
+      'View' as never,
+    );
+    expect(stack.props.style).toEqual({
+      $$css: true,
+      rotate: WEB_CLASS['rotate:45'],
+      transform: WEB_CLASS['transform:rotate'],
+      transformOrigin: WEB_CLASS['transformOrigin:top left'],
+    });
+  });
+});
+
 describe('on the web an icon’s varied ink is CSS', () => {
   it('the glyph paints currentColor; its colour and the variant’s are classes', () => {
     const Glyph = (props: object) => createElement('Glyph', props);

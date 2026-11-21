@@ -515,6 +515,50 @@ fn a_motion_value_where_a_token_goes_is_an_error() {
 }
 
 #[test]
+fn geometry_varies_by_token_never_by_a_motion_value() {
+    let output = gesture(
+        "export const x = () => Text('t').when('pressed', (v) => v.scale('95').offset({ y: '-xs' }).rotation('45'));\n",
+    );
+    assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics.first().map(|d| &d.message));
+    let output = gesture("export const x = () => Text('t').when('hovered', (v) => v.scale('104'));\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown scale token '104' for .scale()");
+    let output = gesture(
+        "export function Row() {\n  const y = useMotionValue(0);\n  return Text('t').when('pressed', (v) => v.offset({ y }));\n}\n",
+    );
+    assert_eq!(output.diagnostics[0].message, ".offset() inside when() takes tokens, not a MotionValue");
+    let output = gesture(
+        "export function Row() {\n  const s = useMotionValue(1);\n  return Text('t').when('md', (v) => v.scale(s));\n}\n",
+    );
+    assert_eq!(output.diagnostics[0].message, ".scale() inside when() takes tokens, not a MotionValue");
+}
+
+#[test]
+fn loops_delays_and_anchors_are_tokens() {
+    let output = motion(
+        "export const x = () => Text('t').repeatForever('spin').delay('fast').anchor('top-leading');\n",
+    );
+    assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics.first().map(|d| &d.message));
+    let output = motion("export const x = () => Text('t').delay('1000').repeatForever('pulse');\n");
+    assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics.first().map(|d| &d.message));
+    let output = motion("export const x = () => Text('t').repeatForever('spinn');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown loop token 'spinn' for .repeatForever()");
+    assert!(output.diagnostics[0].help.as_deref().unwrap().starts_with("did you mean 'spin'?"));
+    let output = motion("export const x = () => Text('t').delay('150');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown duration token '150' for .delay()");
+    let output = motion("export const x = () => Text('t').anchor('top-left');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown anchor token 'top-left' for .anchor()");
+    // Keyframes of the app's own loop too; a pulse above glass fades it.
+    let output = motion(
+        "const wobble = defineKeyframes([{ at: 0, rotate: 0 }, { at: 1, rotate: 45 }], 'spin');\nexport const x = () => Text('t').repeatForever(wobble);\n",
+    );
+    assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics.first().map(|d| &d.message));
+    let output = motion("export const x = () => VStack(Text('t').glass()).repeatForever('pulse');\n");
+    assert_eq!(output.diagnostics[0].message, ".repeatForever() fades a view that holds glass");
+    let output = motion("export const x = () => VStack(Text('t').glass()).repeatForever('spin');\n");
+    assert!(output.diagnostics.is_empty());
+}
+
+#[test]
 fn a_drag_takes_a_motion_value_and_a_swipe_a_direction() {
     let output = gesture("export const x = () => Text('t').drag(0);\n");
     assert_eq!(output.diagnostics[0].message, ".drag() takes a MotionValue");

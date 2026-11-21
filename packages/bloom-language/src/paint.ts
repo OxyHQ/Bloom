@@ -40,6 +40,38 @@ const IS_WEB = Platform.OS === 'web';
 const resolved = new WeakMap<ThemeColors, WeakMap<Paint, Record<string, unknown>>>();
 
 /**
+ * A view's geometry in a resolved style: one key per transform component
+ * (`translateX`, `translateY` px, `rotate` degrees, `scale`), so a variant
+ * overrides only the component it sets. They apply in this order (Tailwind's
+ * translate, rotate, scale; the motion layer's).
+ */
+export const GEOMETRY_KEYS = ['translateX', 'translateY', 'rotate', 'scale'] as const;
+export type GeometryKey = (typeof GEOMETRY_KEYS)[number];
+export type Geometry = { readonly [K in GeometryKey]?: number };
+
+/**
+ * A style as a host takes it: its geometry components composed into one
+ * `transform` (native, and a Bloom component's style object on the web).
+ * The web's own hosts compose them in CSS instead (style.ts, `webStyle`).
+ */
+export function composeGeometry<T extends object>(style: T): T {
+  const source = style as Record<string, unknown>;
+  let out: Record<string, unknown> | undefined;
+  let transform: Record<string, number | string>[] | undefined;
+  for (const key of GEOMETRY_KEYS) {
+    const value = source[key] as number | undefined;
+    if (value === undefined) continue;
+    out ??= { ...source };
+    delete out[key];
+    transform ??= [];
+    transform.push(key === 'rotate' ? { rotate: `${value}deg` } : { [key]: value });
+  }
+  if (out === undefined) return style;
+  out.transform = transform;
+  return out as T;
+}
+
+/**
  * A colour at an opacity. Native paints parse to RGB; a web paint can be a CSS
  * variable (Bloom's prepaint), which only the browser can mix.
  */
@@ -65,9 +97,9 @@ function paintProps(colors: ThemeColors, paint: Paint): Record<string, unknown> 
         const color = colors[COLORS[role].paint];
         style[key] = opacity === undefined ? color : atOpacity(color, opacity);
       }
-      props.style = Object.freeze(style);
+      props.style = Object.freeze(composeGeometry(style));
     } else if (paint.style !== undefined) {
-      props.style = paint.style;
+      props.style = composeGeometry(paint.style);
     }
     for (const [key, role, opacity] of paint.propRoles) {
       const color = colors[COLORS[role].paint];
@@ -158,12 +190,14 @@ function conditionedProps(
   if (holding === 0) return base;
   let props = byHolding.get(holding);
   if (props === undefined) {
-    const style: Record<string, unknown> = { ...(base.style as object | undefined) };
     const next: Record<string, unknown> = { ...base };
     const paintColor = (role: ColorName, opacity: number | undefined) => {
       const color = colors[COLORS[role].paint];
       return opacity === undefined ? color : atOpacity(color, opacity);
     };
+    // From the paint's own values (geometry by component, so a variant sets only its own), then each holding variant.
+    const style: Record<string, unknown> = { ...paint.style };
+    for (const [key, role, opacity] of paint.styleRoles) style[key] = paintColor(role, opacity);
     (paint.variants ?? []).forEach((variant, index) => {
       if ((holding & (1 << index)) === 0) return;
       Object.assign(style, variant.style);
@@ -173,7 +207,7 @@ function conditionedProps(
     });
     // A paint of props alone (an icon's fill) gains no style.
     if (base.style !== undefined || Object.keys(style).length > 0)
-      next.style = Object.freeze(style);
+      next.style = Object.freeze(composeGeometry(style));
     props = Object.freeze(next);
     byHolding.set(holding, props);
   }
@@ -195,6 +229,11 @@ export function Conditioned({ host, paint, ...props }: PaintedProps): ReactEleme
   (paint.variants ?? []).forEach((variant, index) => {
     if (holds(variant.condition, tier, isDark, state)) holding |= 1 << index;
   });
-  return createElement(host, { ...props, ...conditionedProps(colors, paint, holding) });
+  const picked = conditionedProps(colors, paint, holding);
+  // A moving host's motion style (`Outer`) comes after the picked one, as in `Painted`.
+  if (props.style !== undefined && picked.style !== undefined) {
+    return createElement(host, { ...props, ...picked, style: [picked.style, props.style] });
+  }
+  return createElement(host, { ...props, ...picked });
 }
 Conditioned.displayName = 'BloomConditioned';

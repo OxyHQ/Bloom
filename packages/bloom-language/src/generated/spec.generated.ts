@@ -193,6 +193,10 @@ export const GLASS_OPACITY = {
   "strong": 0.72
 } as const;
 export const DURATION = {
+  "75": 75,
+  "500": 500,
+  "700": 700,
+  "1000": 1000,
   "instant": 100,
   "fast": 150,
   "normal": 200,
@@ -250,6 +254,18 @@ export const ROTATION = {
   "quarter": 90,
   "half": 180
 } as const;
+/** The point a view scales and rotates about: its transform-origin. */
+export const ANCHOR = {
+  "center": "center",
+  "top": "top",
+  "bottom": "bottom",
+  "leading": "left",
+  "trailing": "right",
+  "top-leading": "top left",
+  "top-trailing": "top right",
+  "bottom-leading": "bottom left",
+  "bottom-trailing": "bottom right"
+} as const;
 export const BREAKPOINT = {
   "sm": 640,
   "md": 768,
@@ -285,6 +301,9 @@ export const VARIANT_MODIFIERS = [
   "hidden",
   "basis",
   "allowsHitTesting",
+  "scale",
+  "offset",
+  "rotation",
   "when"
 ] as const;
 export const VARIANT_SELECTORS = {
@@ -336,6 +355,12 @@ export const EASING = {
     0.34,
     1.2,
     0.64,
+    1
+  ],
+  "pulse": [
+    0.4,
+    0,
+    0.6,
     1
   ]
 } as const;
@@ -447,6 +472,57 @@ export const MOTION = {
       0.44,
       1
     ]
+  },
+  "spin": {
+    "duration": 1000,
+    "easing": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "pulse": {
+    "duration": 2000,
+    "easing": [
+      0.4,
+      0,
+      0.6,
+      1
+    ]
+  }
+} as const;
+/** Keyframes that repeat forever: their frames, and the motion that plays one turn. */
+export const LOOPS = {
+  "spin": {
+    "frames": [
+      {
+        "at": 0,
+        "rotate": 0
+      },
+      {
+        "at": 1,
+        "rotate": 360
+      }
+    ],
+    "motion": "spin"
+  },
+  "pulse": {
+    "frames": [
+      {
+        "at": 0,
+        "opacity": 1
+      },
+      {
+        "at": 0.5,
+        "opacity": 0.5
+      },
+      {
+        "at": 1,
+        "opacity": 1
+      }
+    ],
+    "motion": "pulse"
   }
 } as const;
 
@@ -1713,6 +1789,15 @@ export const MODIFIERS = {
     "keyframes",
     "value"
   ],
+  "repeatForever": [
+    "loop"
+  ],
+  "delay": [
+    "duration"
+  ],
+  "anchor": [
+    "anchor"
+  ],
   "matchedGeometry": [
     "value",
     "namespace"
@@ -1798,6 +1883,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe",
@@ -1868,6 +1956,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe"
@@ -1930,6 +2021,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe",
@@ -2006,6 +2100,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe",
@@ -2069,6 +2166,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe",
@@ -2138,6 +2238,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe",
@@ -2210,6 +2313,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe",
@@ -2279,6 +2385,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe",
@@ -2342,6 +2451,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe",
@@ -2407,6 +2519,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe"
@@ -2469,6 +2584,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe"
@@ -2531,6 +2649,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe",
@@ -2599,6 +2720,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe"
@@ -2661,6 +2785,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe"
@@ -2723,6 +2850,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe",
@@ -2789,6 +2919,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe",
@@ -2865,6 +2998,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe",
@@ -2931,6 +3067,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe",
@@ -2997,6 +3136,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe",
@@ -3064,6 +3206,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe",
@@ -3145,6 +3290,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe",
@@ -3241,6 +3389,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe",
@@ -3306,6 +3457,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe",
@@ -3371,6 +3525,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe"
@@ -3433,6 +3590,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe",
@@ -3498,6 +3658,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe"
@@ -3560,6 +3723,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe"

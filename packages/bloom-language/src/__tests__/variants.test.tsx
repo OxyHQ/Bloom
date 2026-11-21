@@ -258,3 +258,92 @@ describe('a Bloom component with no press of its own takes it on a host around i
     expect(r.root.find((node) => (node.type as unknown) === 'Badge').props.testID).toBe('b');
   });
 });
+
+describe('when(): geometry varies by component', () => {
+  const flat = (style: unknown): Record<string, unknown> =>
+    Object.assign({}, ...(Array.isArray(style) ? style.flat(4) : [style]).filter(Boolean));
+
+  it('a pressed scale is the box’s transform while it is pressed; at rest it is the identity', () => {
+    const r = mount(
+      HStack(Text('a'))
+        .onPress(() => {})
+        .when('pressed', (v) => v.scale('95')),
+    );
+    const press = (): ReactTestInstance => ofType(r, 'Pressable')[0] as ReactTestInstance;
+    expect(press().props.style).toEqual({ flexDirection: 'row', transform: [{ scale: 1 }] });
+    act(() => press().props.onPressIn());
+    expect(press().props.style).toEqual({ flexDirection: 'row', transform: [{ scale: 0.95 }] });
+    act(() => press().props.onPressOut());
+    expect(press().props.style).toEqual({ flexDirection: 'row', transform: [{ scale: 1 }] });
+    // Another scale is another style: a variant's style is cached by its token.
+    const other = mount(
+      HStack(Text('a'))
+        .onPress(() => {})
+        .when('pressed', (v) => v.scale('105')),
+    );
+    const host = ofType(other, 'Pressable')[0] as ReactTestInstance;
+    act(() => host.props.onPressIn());
+    expect((ofType(other, 'Pressable')[0] as ReactTestInstance).props.style.transform).toEqual([
+      { scale: 1.05 },
+    ]);
+  });
+
+  it('each variant sets only its components: a breakpoint’s offset and a hover’s scale compose', () => {
+    const node = () =>
+      HStack(Text('a'))
+        .onPress(() => {})
+        .offset({ x: 'xs', y: 'xs' })
+        .when('md', (v) => v.offset({ y: 'sm' }))
+        .when('hovered', (v) => v.scale('105').rotation('45'));
+    const r = mount(node());
+    const press = (): ReactTestInstance => ofType(r, 'Pressable')[0] as ReactTestInstance;
+    expect(press().props.style.transform).toEqual([
+      { translateX: 4 },
+      { translateY: 4 },
+      { rotate: '0deg' },
+      { scale: 1 },
+    ]);
+    windowTier.current = 'lg';
+    remount(r, node());
+    act(() => press().props.onHoverIn());
+    expect(press().props.style.transform).toEqual([
+      { translateX: 4 },
+      { translateY: 8 },
+      { rotate: '45deg' },
+      { scale: 1.05 },
+    ]);
+  });
+
+  it('under .animation() the box is the animated twin, and the variant’s change transitions on it', () => {
+    const r = mount(
+      HStack(Text('a'))
+        .onPress(() => {})
+        .when('pressed', (v) => v.scale('95'))
+        .animation('press'),
+    );
+    const [press] = ofType(r, 'Animated.Pressable');
+    expect(ofType(r, 'Animated.View')).toHaveLength(0);
+    expect(flat(press?.props.style)).toMatchObject({
+      transform: [{ scale: 1 }],
+      transitionDuration: 100,
+    });
+    act(() => press?.props.onPressIn());
+    expect(flat(ofType(r, 'Animated.Pressable')[0]?.props.style)).toMatchObject({
+      transform: [{ scale: 0.95 }],
+      transitionDuration: 100,
+    });
+  });
+
+  it('geometry a MotionValue or press feedback moves takes no variant', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const r = mount(
+      HStack(Text('a'))
+        .onPress(() => {})
+        .pressScale()
+        .when('pressed', (v) => v.scale('95')),
+    );
+    expect(flat(ofType(r, 'Animated.Pressable')[0]?.props.style).transform).toEqual([{ scale: 1 }]);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('does not vary'));
+    warn.mockRestore();
+  });
+});

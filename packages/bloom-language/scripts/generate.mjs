@@ -52,6 +52,7 @@ const glass = withoutComment(spec.glass);
 const sfSymbols = withoutComment(spec.sfSymbols);
 const easing = withoutComment(spec.easing);
 const motion = withoutComment(spec.motion);
+const loops = withoutComment(spec.loops);
 
 /** A motion token with its easing resolved to its curve: a Bloom `MotionSpec`. */
 const motionSpecs = Object.fromEntries(
@@ -121,6 +122,8 @@ export const Z_INDEX = ${ts(scales.zIndex)} as const;
 export const SHADOW = ${ts(scales.shadow)} as const;
 export const SCALE = ${ts(scales.scale)} as const;
 export const ROTATION = ${ts(scales.rotation)} as const;
+/** The point a view scales and rotates about: its transform-origin. */
+export const ANCHOR = ${ts(scales.anchor)} as const;
 export const BREAKPOINT = ${ts(scales.breakpoint)} as const;
 
 /** What a variant (\`when()\`) can change, and the web selector of each scheme and state condition. */
@@ -131,6 +134,8 @@ export const VARIANT_SELECTORS = ${ts(withoutComment(spec.variants.selectors))} 
 export const EASING = ${ts(easing)} as const;
 /** Motion tokens as Bloom \`MotionSpec\`s: a duration and curve, or a spring. */
 export const MOTION = ${ts(motionSpecs)} as const;
+/** Keyframes that repeat forever: their frames, and the motion that plays one turn. */
+export const LOOPS = ${ts(loops)} as const;
 
 /** Bloom's type ramp: \`<family>-<weight>\` → [fontSize, lineHeight, letterSpacing, fontWeight]. */
 export const TYPE_FAMILIES = ${ts(typeFamilies)} as const;
@@ -360,6 +365,38 @@ for (const value of enums.listMarker) valueClass('listStyleType', value);
 valueClass('display', 'list-item');
 valueClass('wordBreak', 'break-all');
 valueClass('overflowWrap', 'break-word');
+// Geometry (style.ts, geometry): one custom property per transform component,
+// composed by one transform of the components a view uses, so a variant class
+// sets only its own component. A transform's anchor is its transform-origin.
+const GEOMETRY_VAR = {
+  translateX: '--bl-tx',
+  translateY: '--bl-ty',
+  rotate: '--bl-r',
+  scale: '--bl-s',
+};
+const GEOMETRY_CSS = {
+  translateX: (value) => `${value}px`,
+  translateY: (value) => `${value}px`,
+  rotate: (value) => `${value}deg`,
+  scale: (value) => String(value),
+};
+const offsets = [...new Set([...spaceValues, ...spaceValues.map((value) => -value)])];
+const geometryValues = {
+  translateX: offsets,
+  translateY: offsets,
+  rotate: numbers(scales.rotation),
+  scale: numbers(scales.scale),
+};
+for (const [component, values] of Object.entries(geometryValues))
+  for (const value of values)
+    addClass(GEOMETRY_VAR[component], GEOMETRY_CSS[component](value), `${component}:${value}`);
+const components = Object.keys(GEOMETRY_VAR);
+for (let mask = 1; mask < 1 << components.length; mask++) {
+  const used = components.filter((_, i) => mask & (1 << i));
+  const value = used.map((part) => `${part}(var(${GEOMETRY_VAR[part]}))`).join(' ');
+  addClass('transform', value, `transform:${used.join('+')}`);
+}
+for (const value of Object.values(scales.anchor)) valueClass('transformOrigin', value);
 
 // react-native-web's precedence (shorthands before longhands), then by name, so
 // the sheet is the same text on every run.
@@ -376,6 +413,9 @@ export const WEB_SHEET = ${JSON.stringify(rules.map((rule) => rule.text).join('\
 
 /** \`property:value\` (a role as \`property:@role\`) → the class that sets it. */
 export const WEB_CLASS: Readonly<Record<string, string>> = ${ts(classes)};
+
+/** The custom property each transform component sets; \`transform:<components>\` composes them. */
+export const GEOMETRY_VAR = ${ts(GEOMETRY_VAR)} as const;
 `;
 
 // ── The compiler's tables ────────────────────────────────────────
@@ -406,6 +446,8 @@ const tokenSets = {
   duration: Object.keys(scales.duration),
   rotation: Object.keys(scales.rotation),
   motion: Object.keys(motion),
+  anchor: Object.keys(scales.anchor),
+  loop: Object.keys(loops),
   ...enums,
 };
 
@@ -439,6 +481,11 @@ ${Object.entries(tokenSets)
 
 /// The modifiers a variant (\`when(condition, v => v…)\`) can change.
 pub const VARIANT_MODIFIERS: &[&str] = ${rustList(spec.variants.modifiers)};
+
+/// The loops (\`.repeatForever(loop)\`) whose frames change opacity: each one fades the view.
+pub const FADING_LOOPS: &[&str] = ${rustList(
+  Object.keys(loops).filter((name) => loops[name].frames.some((frame) => 'opacity' in frame)),
+)};
 
 /// Modifier → its parameter types, in order (\`?\` optional).
 pub const MODIFIERS: &[(&str, &[&str])] = &[
