@@ -23,6 +23,7 @@ import { View } from 'react-native';
 
 import { useTheme } from '../../theme/use-theme';
 import { useMenuPalette } from '../menu-palette';
+import { MENU_FONT_FAMILY } from '../menu-type';
 import {
   LENS_ICON_HOST_ID,
   type LensNativeHandle,
@@ -37,6 +38,11 @@ export interface MenuLens extends ParsedLensMenu {
   nativeRef: RefObject<LensNativeHandle | null>;
   /** Whether the menu was open as these rows arrived: a native view mounted now opens itself. */
   open: boolean;
+  /**
+   * The rows arrive only as the menu opens (a `Content` the owner mounts only while it is open):
+   * the native view, mounted with the trigger, opens itself as they arrive.
+   */
+  deferred: boolean;
   select: (id: string) => void;
   /** The native menu opened or closed itself. */
   openChange: (open: boolean) => void;
@@ -88,6 +94,11 @@ export interface LensMenuState {
   /** The menu as the native lens menu takes it, or `undefined`: the menu keeps its sheet. */
   lens: MenuLens | undefined;
   /**
+   * The native view around the trigger: `lens`, or, while the rows of a `Content` the root cannot
+   * see have not arrived, the same view with no rows yet, waiting for them.
+   */
+  host: MenuLens | undefined;
+  /**
    * Set when the native lens menu is available and the `Content` is not among the root's
    * children: the `Content` provides its props through `useLensContent` once it is mounted.
    */
@@ -99,11 +110,14 @@ export interface LensMenuState {
  * or `undefined` when it cannot: the menu then keeps its sheet. Rows outside the lens menu's
  * vocabulary (see `parseLensMenu`) also keep the sheet.
  *
- * The rows are read from the `Content` among the root's children or, when the `Content` is
- * rendered by a component of the owner's (one that mounts only while the menu is open, so a
- * closed menu does no row work), from the props that `Content` provides as it mounts. The native
- * view then mounts with the menu already open and opens itself; the rows are kept until the
- * native menu has finished closing, so its closing motion is not cut short.
+ * The native view is the trigger, mounted with it: it draws the trigger, sees the press first and
+ * opens natively from where it is, with no remount. The rows are read from the `Content` among
+ * the root's children, before the menu opens, and a press is one call to the engine. When the
+ * `Content` is rendered by a component of the owner's (one that mounts only while the menu is
+ * open, so a closed menu does no row work), its rows arrive from the props that `Content`
+ * provides as it mounts, and the view opens itself with them (`openWithItems`). Either way the
+ * rows are kept until the native menu has finished closing, so its closing motion is not cut
+ * short.
  */
 export function useLensMenu({
   children,
@@ -185,15 +199,34 @@ export function useLensMenu({
     void (open ? nativeRef.current?.open() : nativeRef.current?.close());
   }, [present, open]);
 
-  const lens = useMemo(
+  // A `Content` the root cannot see brings its rows as the menu opens; the view waits for them.
+  const deferred = available && !element;
+  const host = useMemo(
     () =>
-      items && icons
-        ? { items, icons, handlers: handlers.current, nativeRef, open, select, openChange, closed }
+      (items && icons) || deferred
+        ? {
+            items: items ?? NO_ITEMS,
+            icons: icons ?? NO_ICONS,
+            handlers: handlers.current,
+            nativeRef,
+            open,
+            deferred,
+            select,
+            openChange,
+            closed,
+          }
         : undefined,
-    [items, icons, open, select, openChange, closed],
+    [items, icons, deferred, open, select, openChange, closed],
   );
-  return { lens, contentProvider: available && !element ? provider : undefined };
+  return {
+    lens: items ? host : undefined,
+    host,
+    contentProvider: deferred ? provider : undefined,
+  };
 }
+
+const NO_ITEMS: LensNativeItem[] = [];
+const NO_ICONS: ReactNode[] = [];
 
 /**
  * For a family's `Content`: provides its props to the root when the root cannot see it (see
@@ -263,8 +296,8 @@ export function LensTrigger({ lens, triggerLens, tone, tint, children }: LensTri
     [surface, border, text, textSecondary, destructive, dark],
   );
   const [origin, setOrigin] = useState<LensOrigin | null>(null);
-  // Read once: the view that mounts with the menu open opens itself.
-  const [openOnMount] = useState(lens.open);
+  // Read once: a view that mounts with the menu open opens itself.
+  const [openAtMount] = useState(lens.open);
   const triggerConfig = tint
     ? { tintColor: tint, tintOpacity: 0.96 }
     : tone === 'primary'
@@ -278,11 +311,14 @@ export function LensTrigger({ lens, triggerLens, tone, tint, children }: LensTri
       ref={lens.nativeRef}
       items={lens.items}
       lens={triggerLens}
+      morph
       cornerRadius={origin?.radius}
       colorScheme={dark ? 'dark' : 'light'}
+      fontFamily={MENU_FONT_FAMILY.fontFamily}
+      alignment="auto"
       config={config}
       triggerConfig={triggerConfig}
-      openOnMount={openOnMount}
+      openWithItems={lens.deferred || openAtMount}
       style={TRIGGER_STYLE}
       onItemSelect={(event) => lens.select(event.nativeEvent.id)}
       onMenuOpenChange={(event) => lens.openChange(event.nativeEvent.open)}

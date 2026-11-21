@@ -3,7 +3,7 @@
  * data and handed to the native view, which draws them. The native view is a stub here; what is
  * checked is what React tells it, and that a menu outside the vocabulary keeps its sheet.
  */
-import { useState } from 'react';
+import { useEffect, useImperativeHandle, useState } from 'react';
 import type React from 'react';
 import { Text, View } from 'react-native';
 import { Button } from '../button/Button';
@@ -45,9 +45,18 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger } from '../select/Select';
 
 let lastProps: LensNativeProps | undefined;
+/** How many times a native view was mounted: an open must not mount one. */
+let mounts = 0;
+
+/** The engine's handle on the stub: what a press asks of the engine. */
+const handle = { open: jest.fn(async () => {}), close: jest.fn(async () => {}) };
 
 function NativeLensStub(props: LensNativeProps) {
   lastProps = props;
+  useImperativeHandle(props.ref, () => handle);
+  useEffect(() => {
+    mounts += 1;
+  }, []);
   return <View testID="native-lens">{props.children}</View>;
 }
 
@@ -66,6 +75,9 @@ function wrap(ui: React.ReactElement) {
 
 beforeEach(() => {
   lastProps = undefined;
+  mounts = 0;
+  handle.open.mockClear();
+  handle.close.mockClear();
 });
 
 describe('DropdownMenu as the native lens menu', () => {
@@ -117,6 +129,29 @@ describe('DropdownMenu as the native lens menu', () => {
     expect(onShare).toHaveBeenCalledTimes(1);
   });
 
+  it('is mounted with its trigger and opens natively: one call to the engine, no remount', () => {
+    const screen = wrap(
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Text>Open</Text>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem>Share</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+    expect(lastProps).toMatchObject({
+      morph: true,
+      fontFamily: 'Inter',
+      alignment: 'auto',
+      openWithItems: false,
+    });
+    expect(lastProps?.items.map((item) => item.title)).toEqual(['Share']);
+    fireEvent.press(screen.getByText('Open'));
+    expect(handle.open).toHaveBeenCalledTimes(1);
+    expect(mounts).toBe(1);
+  });
+
   it('keeps its sheet when a row leaves the vocabulary', () => {
     wrap(
       <DropdownMenu>
@@ -135,33 +170,40 @@ describe('DropdownMenu as the native lens menu', () => {
 });
 
 describe('a DropdownMenu whose rows a component of its own renders, only while it is open', () => {
-  it('mounts no native view while closed, and opens the native menu with the rows', () => {
+  it('mounts the native view with its trigger, with no rows; the rows open it as they arrive', () => {
     const onDelete = jest.fn();
     const screen = wrap(<Menu onDelete={onDelete} />);
-    expect(screen.queryByTestId('native-lens')).toBeNull();
+    expect(screen.getByTestId('native-lens')).toBeTruthy();
+    expect(lastProps?.items).toEqual([]);
+    expect(lastProps?.openWithItems).toBe(true);
 
     fireEvent.press(screen.getByText('Open'));
-    expect(screen.getByTestId('native-lens')).toBeTruthy();
-    expect(lastProps?.openOnMount).toBe(true);
+    // The same view, given its rows: it opens itself with them.
+    expect(mounts).toBe(1);
+    expect(lastProps?.openWithItems).toBe(true);
     const items = lastProps?.items ?? [];
     expect(items.map((item) => item.title)).toEqual(['Share', '', 'Delete']);
     act(() => lastProps?.onItemSelect?.({ nativeEvent: { id: items[2]?.id ?? '', index: 2 } }));
     expect(onDelete).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps the native view until the native menu has finished closing', () => {
+  it('keeps the rows until the native menu has finished closing, then the view waits for the next', () => {
     const screen = wrap(<Menu onDelete={() => {}} />);
     fireEvent.press(screen.getByText('Open'));
     act(() => lastProps?.onMenuOpenChange?.({ nativeEvent: { open: true } }));
     // The native menu starts closing: the owner unmounts its rows, the motion goes on.
     act(() => lastProps?.onMenuOpenChange?.({ nativeEvent: { open: false } }));
-    expect(screen.getByTestId('native-lens')).toBeTruthy();
+    expect(lastProps?.items).toHaveLength(3);
     act(() => lastProps?.onMenuClosed?.());
-    expect(screen.queryByTestId('native-lens')).toBeNull();
+    expect(lastProps?.items).toEqual([]);
+    // Opened again: the same view, its rows again.
+    fireEvent.press(screen.getByText('Open'));
+    expect(lastProps?.items).toHaveLength(3);
+    expect(mounts).toBe(1);
   });
 
   it('keeps its sheet when those rows leave the vocabulary', () => {
-    const screen = wrap(
+    wrap(
       <DropdownMenu defaultOpen>
         <DropdownMenuTrigger asChild>
           <Text>Open</Text>
@@ -171,7 +213,8 @@ describe('a DropdownMenu whose rows a component of its own renders, only while i
         </OwnContent>
       </DropdownMenu>,
     );
-    expect(screen.queryByTestId('native-lens')).toBeNull();
+    // The view around the trigger is given no rows: the sheet draws them.
+    expect(lastProps?.items).toEqual([]);
   });
 });
 
