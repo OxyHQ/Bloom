@@ -96,3 +96,5 @@ export const MediaPoster = 'MediaPoster';
 export const EmptyMediaSurface = 'EmptyMediaSurface';
 export const AvatarAnchor = 'AvatarAnchor';
 export const AvatarFlightLayer = 'AvatarFlightLayer';
+export const InputGroup = 'InputGroup';
+export const InputGroupAddon = 'InputGroupAddon';

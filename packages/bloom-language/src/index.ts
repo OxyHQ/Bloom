@@ -562,6 +562,14 @@ export type { CategoryBarLabels, CategoryBarView } from './controls/category-bar
 export { PhoneInput } from './controls/phone-input';
 export type { PhoneInputLabels, PhoneInputView } from './controls/phone-input';
 
+// Input groups (controls/input-group.tsx)
+export { InputGroup, InputGroupAddon } from './controls/input-group';
+export type {
+  InputGroupAddonView,
+  InputGroupContent,
+  InputGroupView,
+} from './controls/input-group';
+
 // Animated checks (controls/animated-check.tsx)
 export { AnimatedCheck } from './controls/animated-check';
 export type { AnimatedCheckView } from './controls/animated-check';
