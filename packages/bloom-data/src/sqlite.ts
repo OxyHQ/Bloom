@@ -1,18 +1,30 @@
-import type { PersistBatch, Persister, StoredList, StoredRecord } from './persist';
+import type { OpenOptions, PersistBatch, Persister, StoredList, StoredRecord } from './persist';
+
+type Param = string | number | null;
 
 /**
- * The part of expo-sqlite's asynchronous database this persister uses. Only
- * the async API: every statement runs off the JS thread, so persistence never
- * blocks a frame. Pass `SQLite.openDatabaseAsync(name)`; this package does not
+ * The part of expo-sqlite's database this persister uses. Pass
+ * `SQLite.openDatabaseAsync(name)`, or `SQLite.openDatabaseSync(name)` to also
+ * allow the one synchronous boot read (`list.loadNow`). This package does not
  * import expo-sqlite itself.
  */
 export interface AsyncDatabase {
   execAsync(source: string): Promise<void>;
-  runAsync(source: string, ...params: Array<string | number | null>): Promise<unknown>;
-  getAllAsync<T>(source: string, ...params: Array<string | number | null>): Promise<T[]>;
+  runAsync(source: string, ...params: Param[]): Promise<unknown>;
+  getAllAsync<T>(source: string, ...params: Param[]): Promise<T[]>;
   withTransactionAsync(task: () => Promise<void>): Promise<void>;
   closeAsync(): Promise<void>;
 }
+
+/** A database that also has expo-sqlite's synchronous API (`openDatabaseSync`). */
+export interface SyncDatabase extends AsyncDatabase {
+  execSync(source: string): void;
+  runSync(source: string, ...params: Param[]): unknown;
+  getAllSync<T>(source: string, ...params: Param[]): T[];
+}
+
+const isSync = (database: AsyncDatabase): database is SyncDatabase =>
+  typeof (database as Partial<SyncDatabase>).getAllSync === 'function';
 
 const SCHEMA = `
 PRAGMA journal_mode = WAL;
@@ -43,8 +55,6 @@ CREATE TABLE IF NOT EXISTS bloom_versions (
  */
 const CHUNK = 200;
 
-type Param = string | number | null;
-
 const placeholders = (count: number, width: number) =>
   Array.from(
     { length: count },
@@ -57,101 +67,159 @@ function* chunks<T>(items: readonly T[]): Generator<T[]> {
   }
 }
 
+const VERSIONS = 'SELECT type, version FROM bloom_versions';
+const DROP_TYPE = 'DELETE FROM bloom_records WHERE type = ?';
+const SET_VERSION = 'INSERT OR REPLACE INTO bloom_versions (type, version) VALUES (?, ?)';
+const READ_LIST = `SELECT l.ids AS ids, l.json AS json, r.id AS id, r.json AS record
+  FROM bloom_lists l
+  LEFT JOIN json_each(l.ids) AS j
+  LEFT JOIN bloom_records r ON r.type = ? AND r.id = j.value
+  WHERE l.type = ? AND l.key = ?`;
+const readRecordsSql = (count: number) =>
+  `SELECT id, json FROM bloom_records WHERE type = ? AND id IN (${Array.from({ length: count }, () => '?').join(', ')})`;
+
+interface ListRow {
+  ids: string;
+  json: string;
+  id: string | null;
+  record: string | null;
+}
+
+/** The entity types whose stored version differs from the one asked for. */
+function changedVersions(
+  stored: ReadonlyArray<{ type: string; version: number }>,
+  versions: Readonly<Record<string, number>>,
+): Array<[string, number]> {
+  const known = new Map(stored.map((row) => [row.type, row.version]));
+  return Object.entries(versions).filter(([type, version]) => known.get(type) !== version);
+}
+
+function parseList(rows: readonly ListRow[]): StoredList | null {
+  const [first] = rows;
+  if (!first) return null;
+  let ids: unknown;
+  try {
+    ids = JSON.parse(first.ids);
+  } catch {
+    return null;
+  }
+  if (!Array.isArray(ids)) return null;
+  const records: StoredRecord[] = [];
+  for (const row of rows) {
+    if (row.id !== null && row.record !== null) records.push({ id: row.id, json: row.record });
+  }
+  return {
+    ids: ids.filter((id): id is string => typeof id === 'string'),
+    json: first.json,
+    records,
+  };
+}
+
 /**
  * A durable copy in one SQLite file: records as JSON by type and id, and each
  * list as one row of ordered ids. Open one per account
  * (`openDatabaseAsync(\`app-\${account}.db\`)`), so switching accounts never
  * needs a wipe and one account's rows can never be read as another's.
  *
- * Every call is few statements. Each asynchronous statement costs a turn of
+ * Every call is few statements. Each asynchronous statement costs turns of
  * the JS thread, which is busiest exactly when a screen opens, so opening is
  * one script and one read, a list comes back with its records in one query,
  * and a write sends its rows in multi-row statements.
+ *
+ * Given a database with the synchronous API, it also serves the one
+ * synchronous boot read (`openNow`, `readListNow`, `readRecordsNow`), with the
+ * same statements.
  */
-export function sqlitePersister(open: () => Promise<AsyncDatabase>): Persister {
+export function sqlitePersister(
+  open: () => AsyncDatabase | SyncDatabase | Promise<AsyncDatabase>,
+): Persister {
   let database: Promise<AsyncDatabase> | undefined;
+  let syncDatabase: SyncDatabase | undefined;
   /** Rows older than this go with the first write, so opening stays short. */
   let pruneBefore: number | undefined;
   const db = () => {
-    database ??= open();
+    if (!database) {
+      const opened = open();
+      if (!(opened instanceof Promise) && isSync(opened)) syncDatabase = opened;
+      database = Promise.resolve(opened);
+    }
     return database;
+  };
+  /** The synchronous database, opening it now if the opener gives one; else `undefined`. */
+  const dbNow = (): SyncDatabase | undefined => {
+    if (!database) void db();
+    return syncDatabase;
   };
 
   return {
-    async open({ versions, maxAgeMs }) {
+    async open({ versions, maxAgeMs }: OpenOptions) {
       const handle = await db();
       await handle.execAsync(SCHEMA);
-      const stored = await handle.getAllAsync<{ type: string; version: number }>(
-        'SELECT type, version FROM bloom_versions',
-      );
-      const known = new Map(stored.map((row) => [row.type, row.version]));
-      const changed = Object.entries(versions).filter(
-        ([type, version]) => known.get(type) !== version,
-      );
+      const changed = changedVersions(await handle.getAllAsync(VERSIONS), versions);
       if (changed.length > 0) {
         await handle.withTransactionAsync(async () => {
           for (const [type, version] of changed) {
-            await handle.runAsync('DELETE FROM bloom_records WHERE type = ?', type);
-            await handle.runAsync(
-              'INSERT OR REPLACE INTO bloom_versions (type, version) VALUES (?, ?)',
-              type,
-              version,
-            );
+            await handle.runAsync(DROP_TYPE, type);
+            await handle.runAsync(SET_VERSION, type, version);
           }
         });
       }
       pruneBefore = Date.now() - maxAgeMs;
     },
 
+    openNow({ versions, maxAgeMs }: OpenOptions) {
+      const handle = dbNow();
+      if (!handle) return false;
+      handle.execSync(SCHEMA);
+      const changed = changedVersions(handle.getAllSync(VERSIONS), versions);
+      if (changed.length > 0) {
+        handle.execSync('BEGIN');
+        try {
+          for (const [type, version] of changed) {
+            handle.runSync(DROP_TYPE, type);
+            handle.runSync(SET_VERSION, type, version);
+          }
+          handle.execSync('COMMIT');
+        } catch (error) {
+          handle.execSync('ROLLBACK');
+          throw error;
+        }
+      }
+      pruneBefore = Date.now() - maxAgeMs;
+      return true;
+    },
+
     async readRecords(type, ids) {
       const handle = await db();
       const out: StoredRecord[] = [];
       for (const chunk of chunks(ids)) {
-        const rows = await handle.getAllAsync<StoredRecord>(
-          `SELECT id, json FROM bloom_records WHERE type = ? AND id IN (${chunk.map(() => '?').join(', ')})`,
-          type,
-          ...chunk,
+        out.push(
+          ...(await handle.getAllAsync<StoredRecord>(readRecordsSql(chunk.length), type, ...chunk)),
         );
-        out.push(...rows);
+      }
+      return out;
+    },
+
+    readRecordsNow(type, ids) {
+      const handle = dbNow();
+      if (!handle) return [];
+      const out: StoredRecord[] = [];
+      for (const chunk of chunks(ids)) {
+        out.push(...handle.getAllSync<StoredRecord>(readRecordsSql(chunk.length), type, ...chunk));
       }
       return out;
     },
 
     async readList(type, key, recordType) {
       const handle = await db();
-      const rows = await handle.getAllAsync<{
-        ids: string;
-        json: string;
-        id: string | null;
-        record: string | null;
-      }>(
-        `SELECT l.ids AS ids, l.json AS json, r.id AS id, r.json AS record
-           FROM bloom_lists l
-           LEFT JOIN json_each(l.ids) AS j
-           LEFT JOIN bloom_records r ON r.type = ? AND r.id = j.value
-          WHERE l.type = ? AND l.key = ?`,
-        recordType,
-        type,
-        key,
-      );
-      const [first] = rows;
-      if (!first) return null;
-      let ids: unknown;
-      try {
-        ids = JSON.parse(first.ids);
-      } catch {
-        return null;
-      }
-      if (!Array.isArray(ids)) return null;
-      const records: StoredRecord[] = [];
-      for (const row of rows) {
-        if (row.id !== null && row.record !== null) records.push({ id: row.id, json: row.record });
-      }
-      return {
-        ids: ids.filter((id): id is string => typeof id === 'string'),
-        json: first.json,
-        records,
-      } satisfies StoredList;
+      return parseList(await handle.getAllAsync<ListRow>(READ_LIST, recordType, type, key));
+    },
+
+    readListNow(type, key, recordType) {
+      const handle = dbNow();
+      return handle
+        ? parseList(handle.getAllSync<ListRow>(READ_LIST, recordType, type, key))
+        : null;
     },
 
     async write(batch: PersistBatch) {
@@ -215,6 +283,7 @@ export function sqlitePersister(open: () => Promise<AsyncDatabase>): Persister {
       if (!database) return;
       const handle = await database;
       database = undefined;
+      syncDatabase = undefined;
       await handle.closeAsync();
     },
   };

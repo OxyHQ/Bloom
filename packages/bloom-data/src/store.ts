@@ -7,7 +7,7 @@ import {
   writePath,
 } from './definition';
 import { afterFrame, connectBrowserEnvironment } from './environment';
-import type { PersistBatch, Persister } from './persist';
+import type { PersistBatch, Persister, StoredList } from './persist';
 import { changedPaths, isPlainObject, merge, type Plain, share } from './share';
 
 export type Listener = () => void;
@@ -576,12 +576,22 @@ export class Store {
     definition: EntityDefinition,
     stored: ReadonlyArray<{ id: string; json: string }>,
   ): Promise<void> {
-    const byTarget = new Map<EntityDefinition, Set<string>>();
+    const refs = this.putStored(definition, stored);
+    await Promise.all([...refs].map(([target, refIds]) => this.hydrate(target, [...refIds])));
+  }
+
+  /**
+   * Puts stored records into memory, never over a held one (memory is never
+   * older than the disk copy). Returns the ids their refs name, by entity.
+   */
+  private putStored(
+    definition: EntityDefinition,
+    stored: ReadonlyArray<{ id: string; json: string }>,
+  ): Map<EntityDefinition, Set<string>> {
+    const refs = new Map<EntityDefinition, Set<string>>();
     this.batch(() => {
       for (const { id, json } of stored) {
         const slot = this.slot(definition, id, true);
-        // Memory is never older than the disk copy: a record written since
-        // the screen opened wins.
         if (slot.base) continue;
         let base: Plain;
         try {
@@ -592,10 +602,10 @@ export class Store {
         for (const ref of definition.refs()) {
           const refId = readPath(base, ref.path);
           if (typeof refId !== 'string') continue;
-          let set = byTarget.get(ref.target);
+          let set = refs.get(ref.target);
           if (!set) {
             set = new Set();
-            byTarget.set(ref.target, set);
+            refs.set(ref.target, set);
           }
           set.add(refId);
         }
@@ -604,7 +614,76 @@ export class Store {
         this.recompute(slot);
       }
     });
-    await Promise.all([...byTarget].map(([target, refIds]) => this.hydrate(target, [...refIds])));
+    return refs;
+  }
+
+  /** Sets a list read from disk, keeping only the ids whose records are held. */
+  private setStoredList(definition: ListDefinition, key: string, stored: StoredList): boolean {
+    const slot = this.listSlot(definition, key, true);
+    if (slot.state || this.closed) return false;
+    let rest: Omit<ListState, 'ids' | 'origin'>;
+    try {
+      rest = JSON.parse(stored.json) as Omit<ListState, 'ids' | 'origin'>;
+    } catch {
+      return false;
+    }
+    const ids = stored.ids.filter((id) => this.slot(definition.of, id)?.value);
+    this.batch(() => {
+      slot.state = { ...rest, ids, origin: 'disk' };
+      this.clock += 1;
+      slot.changedAt = this.clock;
+      this.queue(slot.listeners);
+    });
+    return true;
+  }
+
+  /**
+   * The one synchronous read: opens the durable copy now and reads a list,
+   * its records and the records they name, before anything renders. For the
+   * screen an app opens on, at boot, before its tree mounts; never during
+   * render. Returns false (and reads nothing) when the copy has no
+   * synchronous access, the list is held already, or the copy is opening
+   * asynchronously already.
+   */
+  loadListNow(definition: ListDefinition, key: string): boolean {
+    const persister = this.persister;
+    if (!persister?.openNow || !persister.readListNow || !persister.readRecordsNow) return false;
+    if (!definition.persist(key) || this.listSlot(definition, key)?.state || this.opened)
+      return false;
+    try {
+      if (!persister.openNow({ versions: persistedVersions(), maxAgeMs: this.persistMaxAgeMs })) {
+        return false;
+      }
+    } catch (error) {
+      this.persisterFailed = true;
+      this.opened = Promise.resolve();
+      reportError(error);
+      return false;
+    }
+    this.opened = Promise.resolve();
+    const stored = persister.readListNow(definition.type, key, definition.of.type);
+    if (!stored) return false;
+    let refs = this.putStored(definition.of, stored.records);
+    // The records the list's records name (a quoted or boosted post), level
+    // by level; a record already held ends its branch.
+    for (let depth = 0; refs.size > 0 && depth < 4; depth += 1) {
+      const next = new Map<EntityDefinition, Set<string>>();
+      for (const [target, ids] of refs) {
+        if (target.persistVersion === null) continue;
+        const missing = [...ids].filter((id) => !this.slot(target, id)?.base);
+        if (missing.length === 0) continue;
+        for (const [nextTarget, nextIds] of this.putStored(
+          target,
+          persister.readRecordsNow(target.type, missing),
+        )) {
+          const set = next.get(nextTarget) ?? new Set<string>();
+          for (const id of nextIds) set.add(id);
+          next.set(nextTarget, set);
+        }
+      }
+      refs = next;
+    }
+    return this.setStoredList(definition, key, stored);
   }
 
   /**
@@ -634,22 +713,7 @@ export class Store {
     if (!stored || this.closed) return false;
     if (definition.of.persistVersion !== null)
       await this.applyStored(definition.of, stored.records);
-    const slot = this.listSlot(definition, key, true);
-    if (slot.state || this.closed) return false;
-    let rest: Omit<ListState, 'ids' | 'origin'>;
-    try {
-      rest = JSON.parse(stored.json) as Omit<ListState, 'ids' | 'origin'>;
-    } catch {
-      return false;
-    }
-    const ids = stored.ids.filter((id) => this.slot(definition.of, id)?.value);
-    this.batch(() => {
-      slot.state = { ...rest, ids, origin: 'disk' };
-      this.clock += 1;
-      slot.changedAt = this.clock;
-      this.queue(slot.listeners);
-    });
-    return true;
+    return this.setStoredList(definition, key, stored);
   }
 
   // ── Memory ──────────────────────────────────────────────────

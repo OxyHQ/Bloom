@@ -1,4 +1,4 @@
-import type { AsyncDatabase } from '../../sqlite';
+import type { SyncDatabase as ExpoSyncDatabase } from '../../sqlite';
 
 interface SyncStatement {
   all(...params: unknown[]): unknown[];
@@ -10,8 +10,8 @@ interface SyncDatabase {
   close(): void;
 }
 
-/** Node's built-in SQLite behind expo-sqlite's async surface, with every statement logged. */
-export interface TestDatabase extends AsyncDatabase {
+/** Node's built-in SQLite behind expo-sqlite's surface (async and sync), with every statement logged. */
+export interface TestDatabase extends ExpoSyncDatabase {
   readonly log: string[];
   readonly closed: boolean;
   /** Synchronous peek for assertions. */
@@ -75,6 +75,18 @@ export function openTestDatabase(name = ':memory:'): TestDatabase {
       } finally {
         inTransaction = false;
       }
+    },
+    execSync(source) {
+      log.push(`sync:${source.trim().split('\n')[0] ?? ''}`);
+      handle.exec(source);
+    },
+    runSync(source, ...params) {
+      log.push(`sync:${source}`);
+      return handle.prepare(source).run(...params);
+    },
+    getAllSync<T>(source: string, ...params: Array<string | number | null>) {
+      log.push(`sync:${source}`);
+      return plain(handle.prepare(source).all(...params)) as T[];
     },
     async closeAsync() {
       closed = true;

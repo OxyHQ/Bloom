@@ -166,6 +166,13 @@ export interface List<E = unknown> {
    * open first. Resolves whether it was read.
    */
   load(key: string): Promise<boolean>;
+  /**
+   * The one synchronous read: the list and its records from the durable copy,
+   * now. Only at boot, for the screen the app opens on, before its tree
+   * mounts; never during render. Returns whether it was read (it is not when
+   * the copy has no synchronous access or the list is held).
+   */
+  loadNow(key: string): boolean;
 }
 
 export function list<E = unknown>(type: string, options: ListOptions<E>): List<E> {
@@ -199,6 +206,7 @@ export function list<E = unknown>(type: string, options: ListOptions<E>): List<E
     },
     keys: () => currentStore().listKeys(definition),
     load: (key) => currentStore().hydrateList(definition, key),
+    loadNow: (key) => currentStore().loadListNow(definition, key),
   };
   return handle;
 }
