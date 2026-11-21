@@ -849,7 +849,7 @@ BottomBar(Tab('Home', RiHome5Line).id('home'), Tab('Search', RiSearchLine).id('s
 | `Header` | Bloom `PageHeader` (a floating header's controls take the lens) | the navigation bar (expo-router's native `Stack`, `Stack.Toolbar`) | Bloom `PageHeader` |
 | `BottomBar` | Bloom `BottomBar` (its capsule on the lens) | Bloom `BottomBar` (its capsule on the system blur); an app's tabs are the system tab bar (see [Navigation](#navigation)) | Bloom `BottomBar` |
 
-**Menu.** `Menu(trigger, ...rows)`: `Item` (`.icon`, `.destructive`,
+**Menu.** `Menu(trigger, ...rows)`: `Item` (`.icon`, `.subtitle`, `.destructive`,
 `.disabled`, `.checked`, `.keepOpen`, `.onPress`), `Submenu` (one level),
 `Section` (`.title`, set apart from the rows beside it) and `Divider`. A
 row's glyph is a Bloom icon in the menu's quiet ink (the negative ink for a
@@ -876,8 +876,16 @@ Menu(MORE, PostMenu({ post }))
   app gives it: the rows in Bloom's Inter (`fontFamily`), the rows' own width,
   `alignment` `auto` (the panel hangs from the side of the screen the trigger
   is on), and the morph out of the trigger's shape (`morph`, its `.corner()` as
-  `cornerRadius`, a capsule without one). The panel's tint and ink are Bloom's
-  menu palette (the first surface level). Without the engine, Bloom's menu.
+  `cornerRadius`, a capsule without one). Bloom gives the colours: the panel's
+  tint and the rows' ink are its menu palette (the first surface level), a
+  glyph in the quiet ink, and the scheme is the theme's. Every other glass and
+  motion value is the upstream app's: the panel at the engine's own
+  transparency, the engine's frost, refraction, rim, shine, highlight, jelly
+  and springs, a trigger without glass morphing out of untinted glass, and a
+  trigger on glass taking its menu back over 0.48 s (`absorb`). Submenus,
+  scrub, haptics and predictive back are the engine's own. A row's `.subtitle`
+  is drawn only here: the system menu and Bloom's menu show the title alone.
+  Without the engine, Bloom's menu.
 - *iOS:* the system menu takes its rows before it opens and opens itself, so
   a `menu()` content (built only while open) is Bloom's menu there; rows given
   as they are (tagged, or with handlers) are the system's. Each row, submenu

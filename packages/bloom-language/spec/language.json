@@ -999,6 +999,7 @@
       "universal": false,
       "modifiers": [
         "icon",
+        "subtitle",
         "destructive",
         "disabled",
         "checked",

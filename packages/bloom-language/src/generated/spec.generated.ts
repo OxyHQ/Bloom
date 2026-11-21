@@ -3071,6 +3071,7 @@ export const NODE_MODIFIERS = {
   ],
   "menuItem": [
     "icon",
+    "subtitle",
     "destructive",
     "disabled",
     "checked",

@@ -35,6 +35,7 @@ import {
 import type { MenuHostProps } from './host.types';
 import {
   getNativeLens,
+  LENS_GLASS_TRIGGER_ABSORB,
   LENS_ICON_HOST_ID,
   type LensNativeHandle,
   type LensNativeItem,
@@ -74,17 +75,17 @@ function LensMenuHost({
     const surface = resolveSurfaceLevel(theme, 1);
     return {
       tintColor: surface.background,
-      tintOpacity: dark ? PANEL_OPACITY.dark : PANEL_OPACITY.light,
       textColor: surface.text,
       mutedColor: surface.textSecondary,
       destructiveColor: theme.colors.errorSubtleForeground,
       separatorColor: surface.border,
     };
   }, [theme, dark]);
+  // Without glass, the menu morphs out of untinted glass in the trigger's shape.
   const triggerConfig = useSame(
     glass
-      ? glassTriggerConfig(glass, undefined, theme.colors)
-      : { tintColor: theme.colors.backgroundSecondary, tintOpacity: PLAIN_TRIGGER_OPACITY },
+      ? { ...glassTriggerConfig(glass, undefined, theme.colors), absorb: LENS_GLASS_TRIGGER_ABSORB }
+      : undefined,
   );
   const open = deferred ? () => setBuilding(true) : () => void native.current?.open();
   const closed = useCallback(() => setBuilding(false), []);
@@ -159,6 +160,7 @@ function lensItems(rows: readonly MenuRowData[], icons: Child[]): LensNativeItem
       }
       case 'item': {
         const item: LensNativeItem = { id: row.id, title: row.title };
+        if (row.subtitle) item.subtitle = row.subtitle;
         if (row.icon) item.iconSlot = icons.push(glyph(row.icon, row.destructive)) - 1;
         if (row.checked !== undefined) item.checked = row.checked;
         if (row.destructive) item.destructive = true;
@@ -175,10 +177,6 @@ function lensItems(rows: readonly MenuRowData[], icons: Child[]): LensNativeItem
 const NO_ROWS: readonly MenuRowData[] = [];
 /** The rows' face: Bloom's sans (Inter), the family the app registered for every Bloom text. */
 const MENU_FONT_FAMILY = fontFamilyStyle('sans').fontFamily;
-/** The panel's tint over the page, as Bloom's own lens menu draws it. */
-const PANEL_OPACITY = { light: 0.6, dark: 0.72 } as const;
-/** A trigger without glass: the menu morphs out of Bloom's quiet field fill. */
-const PLAIN_TRIGGER_OPACITY = 0.5;
 const TRIGGER_STYLE = { alignSelf: 'flex-start' } as const;
 const ICON_HOST = { position: 'absolute', left: 0, top: 0 } as const;
 const ICON_SLOT = { alignSelf: 'flex-start' } as const;

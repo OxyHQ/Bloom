@@ -1598,6 +1598,8 @@ export interface MenuItemView extends ViewNode {
   checked(value: boolean): MenuItemView;
   /** Choosing the row leaves the menu open. */
   keepOpen(): MenuItemView;
+  /** A second, quieter line under the title (drawn by the lens menu on Android and OxyOS). */
+  subtitle(value: string | undefined): MenuItemView;
   onPress(value: (() => void) | undefined): MenuItemView;
   /** The row's action by name: the menu's `actions()` resolve it when the row is chosen. */
   tag(value: string): MenuItemView;
