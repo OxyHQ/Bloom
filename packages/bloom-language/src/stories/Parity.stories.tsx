@@ -98,3 +98,4 @@ export const Markdown: Story = { args: { family: 'markdown' } };
 export const Sliders: Story = { args: { family: 'slider' } };
 export const Accordions: Story = { args: { family: 'accordion' } };
 export const Code: Story = { args: { family: 'code' } };
+export const Steppers: Story = { args: { family: 'stepper' } };

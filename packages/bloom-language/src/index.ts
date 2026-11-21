@@ -502,3 +502,7 @@ export type {
 // Code (controls/code.tsx)
 export { Code, CodeBlock, CodeLines, Pre } from './controls/code';
 export type { CodeBlockView, CodeLinesView, CodeView, PreView } from './controls/code';
+
+// Steppers (controls/stepper.tsx)
+export { Stepper, StepperRow } from './controls/stepper';
+export type { StepperLabels, StepperRowView, StepperView } from './controls/stepper';
