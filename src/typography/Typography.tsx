@@ -31,8 +31,11 @@ import type { BlockquoteProps, TextProps } from './types';
  * property set by `applyFontFaces` so consumer apps can re-skin Bloom by
  * overriding `--bloom-font-*` at any subtree. On native we use the literal
  * family name registered by `expo-font`'s `useFonts(FONT_ASSETS)`.
+ *
+ * Exported so a text drawn in a family by name (the Bloom language's
+ * `.font('mono')`) sets exactly the family `font-mono` gives Bloom's `Text`.
  */
-function fontFamilyStyle(kind: 'display' | 'sans' | 'mono'): { fontFamily: string } {
+export function fontFamilyStyle(kind: 'display' | 'sans' | 'mono'): { fontFamily: string } {
   if (Platform.OS === 'web') {
     return { fontFamily: `var(--bloom-font-${kind})` };
   }
