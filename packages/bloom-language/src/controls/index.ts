@@ -11,6 +11,7 @@ import { MENUBARS } from './menubar';
 import { DATE_PICKERS } from './date-picker';
 import { FILE_UPLOADS } from './file-upload';
 import type { ControlRenderer } from './draw';
+import { NOTIFICATIONS } from './notification';
 import { COMPOSITION_BARS } from './composition-bar';
 import { SORTABLE_MEDIA } from './sortable-media';
 import { EXPANDABLE_TEXTS } from './expandable-text';
@@ -87,4 +88,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...EXPANDABLE_TEXTS,
   ...MENUBARS,
   ...COMPOSITION_BARS,
+  ...NOTIFICATIONS,
 };

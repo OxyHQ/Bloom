@@ -26,6 +26,7 @@ import type { ContextMenuAnchor } from '@oxy.so/bloom/context-menu';
 import type { FileUploadKind } from './controls/file-upload';
 import type { VideoViewKind } from './controls/video-view';
 import type { InputGroupKind } from './controls/input-group';
+import type { NotificationKind } from './controls/notification';
 import type { CompositionBarKind } from './controls/composition-bar';
 import type { PhoneInputKind } from './controls/phone-input';
 import type { Country } from '@oxy.so/bloom/phone-input';
@@ -41,6 +42,8 @@ import type { DropZoneKind } from './controls/drop-zone';
 import type { DragAction, DropTargetDragEvent } from '@oxy.so/bloom/drop-zone';
 import type { CollapsibleKind } from './controls/collapsible';
 import type { FactStripKind } from './controls/fact-strip';
+import type { LiveRole, NotificationStatus } from './controls/notification';
+import type { NotificationAction, NotificationAvatar } from '@oxy.so/bloom/notification';
 import type { ChoiceListKind } from './controls/choice-list';
 import type { ChoiceOptionBox } from './controls/choice-list';
 import type { ExpandableTextStyle } from './controls/expandable-text';
@@ -535,6 +538,17 @@ export interface ValueModifiers {
   divider: boolean;
   flush: boolean;
 
+  // Notifications (controls/notification.tsx)
+  timestamp: string;
+  status: NotificationStatus;
+  avatar: NotificationAvatar;
+  buttons: readonly NotificationAction[];
+  dismissible: boolean;
+  onDismiss: () => void;
+  autoDismiss: number;
+  introDelay: number;
+  liveRole: LiveRole;
+
   // Inputs (controls/inputs.tsx)
   required: boolean;
   floatingLabel: true;
@@ -922,7 +936,8 @@ export type NodeKind =
   | AnimatedCheckKind
   | FactStripKind
   | ExpandableTextKind
-  | CompositionBarKind;
+  | CompositionBarKind
+  | NotificationKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -2099,6 +2114,35 @@ export class Node {
   }
   flush(value = true): Node {
     return this.set('flush', value);
+  }
+
+  // Notifications (controls/notification.tsx)
+  timestamp(value: string): Node {
+    return this.set('timestamp', value);
+  }
+  status(value: NotificationStatus): Node {
+    return this.set('status', value);
+  }
+  avatar(value: NotificationAvatar): Node {
+    return this.set('avatar', value);
+  }
+  buttons(value: readonly NotificationAction[]): Node {
+    return this.set('buttons', value);
+  }
+  dismissible(value: boolean): Node {
+    return this.set('dismissible', value);
+  }
+  onDismiss(value: () => void): Node {
+    return this.set('onDismiss', value);
+  }
+  autoDismiss(value: number): Node {
+    return this.set('autoDismiss', value);
+  }
+  introDelay(value: number): Node {
+    return this.set('introDelay', value);
+  }
+  liveRole(value: LiveRole): Node {
+    return this.set('liveRole', value);
   }
 
   // Inputs (controls/inputs.tsx)

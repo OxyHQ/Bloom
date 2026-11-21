@@ -127,6 +127,7 @@ import type { TagFieldView } from '../controls/tag-field';
 import type { FileUploadView } from '../controls/file-upload';
 import type { VideoView } from '../controls/video-view';
 import type { InputGroupView, InputGroupAddonView } from '../controls/input-group';
+import type { NotificationView } from '../controls/notification';
 import type { CompositionBarView } from '../controls/composition-bar';
 import type { PhoneInputView } from '../controls/phone-input';
 import type { AvatarAnchorView, AvatarFlightLayerView } from '../controls/avatar-flight';
@@ -429,7 +430,9 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<MenubarView>, Of<'menubar'>>,
       Same<MethodsOf<MenubarMenuView>, Of<'menubarMenu'>>,
       Same<MethodsOf<CompositionBarView>, Of<'compositionBar'>>,
+      Same<MethodsOf<NotificationView>, Of<'notification'>>,
     ] = [
+      true,
       true,
       true,
       true,

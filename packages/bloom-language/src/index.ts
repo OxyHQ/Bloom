@@ -454,3 +454,11 @@ export type {
 // Avatar flights (controls/avatar-flight.tsx)
 export { AvatarAnchor, AvatarFlightLayer } from './controls/avatar-flight';
 export type { AvatarAnchorView, AvatarFlightLayerView } from './controls/avatar-flight';
+// Notifications (controls/notification.tsx)
+export { Notification } from './controls/notification';
+export type {
+  LiveRole,
+  NotificationLabels,
+  NotificationStatus,
+  NotificationView,
+} from './controls/notification';
