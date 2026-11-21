@@ -38,6 +38,9 @@ import { toElement } from '../src/render';
 import type { ColorName, FontSizeName, TextStyleName, TypeFamily, WeightName } from '../src/tokens';
 import { type ParityCase, Themed } from './support/cases';
 
+/** Web CSS react-native-web passes through, which React Native's style types do not name. */
+const webCss = (style: Record<string, string>) => style as RN.TextStyle;
+
 const paint = (role: ColorName) => COLORS[role].paint;
 
 /** Every step of Bloom's type ramp, as `.font(family).weight(weight)`. */
@@ -235,7 +238,7 @@ const behaviour: ParityCase[] = [
     language: () => toElement(L.Text('0x7f3a9c2e1b').wordBreak('all')),
     // Tailwind's break-all is web CSS: React Native has no word breaking to set.
     bloom: () => (
-      <Text style={RN.Platform.OS === 'web' ? { wordBreak: 'break-all' } : undefined}>
+      <Text style={RN.Platform.OS === 'web' ? webCss({ wordBreak: 'break-all' }) : undefined}>
         0x7f3a9c2e1b
       </Text>
     ),
@@ -244,7 +247,7 @@ const behaviour: ParityCase[] = [
     name: 'a web line that breaks a long word',
     language: () => toElement(L.Text('https://oxy.so/a/very/long/path').wordBreak('words')),
     bloom: () => (
-      <Text style={RN.Platform.OS === 'web' ? { overflowWrap: 'break-word' } : undefined}>
+      <Text style={RN.Platform.OS === 'web' ? webCss({ overflowWrap: 'break-word' }) : undefined}>
         https://oxy.so/a/very/long/path
       </Text>
     ),
@@ -268,7 +271,9 @@ const behaviour: ParityCase[] = [
           marginEnd: -1,
           overflow: 'hidden',
           borderWidth: 0,
-          ...(RN.Platform.OS === 'web' ? { clipPath: 'inset(50%)', whiteSpace: 'nowrap' } : null),
+          ...(RN.Platform.OS === 'web'
+            ? webCss({ clipPath: 'inset(50%)', whiteSpace: 'nowrap' })
+            : null),
         }}
       >
         3 results

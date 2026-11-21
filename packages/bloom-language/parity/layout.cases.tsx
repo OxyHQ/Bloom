@@ -202,6 +202,9 @@ const elevation: ParityCase[] = [
   },
 ];
 
+/** Web CSS react-native-web passes through, which React Native's style types do not name. */
+const webCss = (style: Record<string, string>) => style as RN.ViewStyle;
+
 /** Tailwind's own shadows (theme.css), each a token named by its exact box-shadow. */
 const TAILWIND_SHADOWS = [
   '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
@@ -348,11 +351,14 @@ const small: ParityCase[] = [
     // Tailwind's list-disc is web CSS on a list and its items; native draws no marker.
     bloom: () =>
       RN.Platform.OS === 'web' ? (
-        <RN.View role="list" style={{ listStyleType: marker, paddingStart: space.xl }}>
-          <RN.View role="listitem" style={{ display: 'list-item' }}>
+        <RN.View
+          role="list"
+          style={[webCss({ listStyleType: marker }), { paddingStart: space.xl }]}
+        >
+          <RN.View role="listitem" style={webCss({ display: 'list-item' })}>
             <Text>one</Text>
           </RN.View>
-          <RN.View role="listitem" style={{ display: 'list-item' }}>
+          <RN.View role="listitem" style={webCss({ display: 'list-item' })}>
             <Text>two</Text>
           </RN.View>
         </RN.View>
