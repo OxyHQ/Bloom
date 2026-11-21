@@ -1161,7 +1161,13 @@
     "onDrop": ["value"],
     "draggable": ["value?"],
     "droppable": ["value?"],
-    "dropBeside": ["value?"]
+    "dropBeside": ["value?"],
+    "muted": ["value?"],
+    "compact": ["value?"],
+    "savedToast": ["value?"],
+    "minDate": ["value"],
+    "maxDate": ["value"],
+    "dateFormat": ["value"]
   },
   "universal": [
     "padding",
@@ -2167,6 +2173,37 @@
       "constructors": ["SidebarMode"],
       "universal": false,
       "modifiers": ["id", "shortcut"]
+    },
+    "settingsSection": {
+      "constructors": ["SettingsSection"],
+      "modifiers": ["description", "trailing", "inset"]
+    },
+    "settingsValue": {
+      "constructors": ["SettingsValue"],
+      "modifiers": ["icon", "muted"]
+    },
+    "settingsSelect": {
+      "constructors": ["SettingsSelect"],
+      "modifiers": ["compact", "size", "disabled", "width"],
+      "size": "controlSize"
+    },
+    "settingsTextField": {
+      "constructors": ["SettingsTextField"],
+      "universal": false,
+      "modifiers": [
+        "icon",
+        "placeholder",
+        "keyboard",
+        "contentType",
+        "disabled",
+        "savedToast",
+        "testID"
+      ]
+    },
+    "settingsDateField": {
+      "constructors": ["SettingsDateField"],
+      "universal": false,
+      "modifiers": ["minDate", "maxDate", "dateFormat", "savedToast", "testID"]
     }
   },
   "sfSymbols": {
