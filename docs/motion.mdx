@@ -89,13 +89,24 @@ writes it from its own callbacks; a view follows it through the one mapper.
   view's for its life.
 - **`useDerivedMotionValue(inputs, f)`**: a value computed from others by a pure
   worklet of their numbers (the tab underline's travel toward its neighbour).
-- **`animateMotionValue(value, target, motion)`** eases it from where it is,
-  with a motion name, a spec (a spring keeps its physics on native) or a timing
-  (`sampledTiming(duration, easing)` for a curve no cubic-bezier draws, such as
-  an elastic settle). Native: `withSpring`/`withTiming` on the UI thread. Web: a
-  CSS transition of the bound properties, so the browser plays it with no JS per
-  frame and retargets it from where it is. A write (`setMotionValue`) is never
-  eased.
+- **`animateMotionValue(value, target, motion, reducedMotion?, onEnd?, velocity?)`**
+  eases it from where it is, with a motion name, a spec (a spring keeps its
+  physics on native) or a timing (`sampledTiming(duration, easing)` for a curve
+  no cubic-bezier draws, such as an elastic settle). A spring starts at
+  `velocity` (units per second: a released finger's). Native:
+  `withSpring`/`withTiming` on the UI thread. Web: a CSS transition of the bound
+  properties, so the browser plays it with no JS per frame and retargets it from
+  where it is (a spring from rest). A write (`setMotionValue`) is never eased.
+  `springSpecOf({ mass, stiffness, damping })` is a spring written as physics as
+  a spec: the same oscillator, so the same motion and the same rest.
+- **`useMotionValueOf(shared)`**: a motion value over a Reanimated shared value
+  that something else also writes or reads in its frames (a keyboard tracker's
+  height; the sheet's translate, which its backdrop and its owner's
+  `animatedProgress` follow). Native: the shared value is the motion value's
+  own. Web: writes and animations go to the shared value and play in
+  Reanimated's frames, not by a CSS transition, so its other readers see every
+  frame's number; each change restyles the bound views as a write does. A CSS
+  transition cannot serve those readers: only its end is a real number.
 - **`useDrag(value, { axis, min, max, onEnd })`** and **`useSwipe(direction,
   onSwipe, options)`** are Gesture Handler 3's hooks (`usePanGesture`,
   `useTapGesture`, `useCompetingGestures`) writing values. Hand the result to a
@@ -103,6 +114,23 @@ writes it from its own callbacks; a view follows it through the one mapper.
   until the touch ends (`onEnd`, once). A swipe follows the finger toward its
   direction, meets resistance against it, and on release flies out (`away`) and
   calls `onSwipe`, or comes back (`back`).
+- **A drag that shares a scroll view's touches** (the bottom sheet's). `useDrag`
+  also takes: `simultaneousWith` (a scroll view's own gesture,
+  `useScrollGesture()`, around the scroll view in its own `GestureDetector`, or
+  another drag; Gesture Handler makes it mutual); `activation(travel)`, a
+  worklet that takes the touch by hand (`'activate'`, `'fail'` or `'wait'`, from
+  the finger's travel since it landed, asked on every move: manual activation
+  through `GestureStateManager`, the offsets then unused); `activeOffset: null`
+  (the pan's own slop, in any direction); `startOn: 'activation'` (start from
+  where the value is when the drag takes the touch, not when it lands);
+  `takes()`, a worklet read at the start (a touch it refuses moves nothing and
+  releases nothing); `follows(travel, next)`, a worklet per move (a refused
+  move holds the value); `overdrag` (the share of the travel past `min`/`max`
+  the value still follows); and `onRelease({ value, velocity })`, a worklet
+  when a touch the drag took ends, with the velocity the gesture reports, so
+  the spring home (`animateMotionValue` with that velocity) starts in the same
+  UI frame. Worklet options are read by the gesture's own callbacks: keep each
+  the same function (module scope or `useCallback`), or the gesture is rebuilt.
 - **A hook's config is one literal.** The worklets Babel plugin workletizes a
   Gesture Handler 3 hook's config object and throws on a spread in it, which
   fails the app's release bundle and nothing in Bloom's own build would see
@@ -114,6 +142,20 @@ neighbour `begin()` fixed, on the UI thread; `release()` folds a commit or
 springs home. Its slides and fades are CSS transitions on the web. The toast's
 swipe-to-dismiss is `useSwipe`, its elastic settle and fly-out the curves it
 always had, sampled.
+
+The bottom sheet's drags are `useDrag` on its translate (`useMotionValueOf`
+over the shared value its backdrop fade and `animatedProgress` read). The body
+drag shares the scroll view's gesture and takes a touch past the pan's own slop,
+dragging only if the content was within 8 of the top then and holding while a
+pull down meets content scrolled further; with `manualActivation` it takes a
+touch by hand (`sheetPanIntent`: at the top, down past 8) and a handle drag
+(past 8 either way) is simultaneous with it. Above its rest a detached sheet
+follows at 0.3, a flush one holds. Every release is one worklet
+(`shouldClosePan`): a close crosses to JS for the owner's veto; anything else
+springs home on the sheet's spring (mass 0.8, stiffness 300, damping 25, as
+`springSpecOf`) from the finger's velocity. Its transform and a `viewport`
+footer's offset follow through the one mapper (`useDerivedMotionValue` for the
+scale, the keyboard's lift and `sheetFooterOffset`).
 
 ## Rolling text
 
