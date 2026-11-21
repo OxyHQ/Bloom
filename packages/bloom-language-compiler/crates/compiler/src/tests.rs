@@ -554,7 +554,7 @@ fn wave_two_controls_are_checked() {
 }
 
 /// The app chrome's constructors, imported as a screen file imports them.
-const CHROME: &str = "import { StickySection, Toolbar, AppLayout, Destination, Panel, Stack, BottomSheet, Command, CommandGroup, CommandItem, NavItem, SettingsGroup, SettingsItem, SettingsModal, PageFooter, Rail, RailItem, ScrollView, Sidebar, Text, TreeFolder, TreeItem, TreeSection } from '@oxy.so/bloom-language';\n";
+const CHROME: &str = "import { AutoHideBar, ResizeHandle, ScrollArea, ScrollSurface, StickySection, Toolbar, AppLayout, Destination, Panel, Stack, BottomSheet, Command, CommandGroup, CommandItem, NavItem, SettingsGroup, SettingsItem, SettingsModal, PageFooter, Rail, RailItem, ScrollView, Sidebar, Text, TreeFolder, TreeItem, TreeSection } from '@oxy.so/bloom-language';\n";
 
 fn chrome(body: &str) -> crate::Output {
     compile(&format!("{CHROME}{body}"), "chrome.tsx")
@@ -665,4 +665,23 @@ fn a_screen_s_colour_activity_and_starting_heights_are_checked_against_the_spec(
     assert_eq!(first_message(&preset), Some("Unknown colorPreset token 'magenta' for .colorPreset()"));
     let height = chrome("export const S = () => Text('a').initialHeaderHeight('65');\n");
     assert_eq!(first_message(&height), Some("Unknown space token '65' for .initialHeaderHeight()"));
+}
+
+#[test]
+fn the_rest_of_the_layout_family_is_checked_against_the_spec() {
+    let fine = chrome(
+        "export const L = (reveal, resize) => [ScrollArea(Text('a')).contentMargins('horizontal', 'lg').spacing('sm').axis('horizontal').scrollbar('hover').scrollbarSide('start').size('md').keyboardTaps('handled').frame({ height: '48' }), ScrollSurface(Text('b')).stickyHeader(Text('h')).stickyFooter(Text('f')).fadeHeight('lg').fadeBottom(false).matchSurfacePaint().style('secondary').label('Messages'), AutoHideBar(Text('bar'), Text('body')).summary('oxy.so').collapsed().onReveal(reveal).peek(false).barHeight('44').collapsedHeight('xl').label('Show').testID('c'), ResizeHandle(resize).axis('horizontal').style('pill').thickness('14').onResizeStart(reveal).onResizeEnd(reveal).onNudge(resize).label('Resize').testID('r')];\n",
+    );
+    assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
+    let bar = chrome("export const L = () => ScrollArea(Text('a')).scrollbar('auto');\n");
+    assert_eq!(first_message(&bar), Some("Unknown scrollbarVisibility token 'auto' for .scrollbar()"));
+    let size = chrome("export const L = () => ScrollArea(Text('a')).size('lg');\n");
+    assert_eq!(first_message(&size), Some("Unknown scrollbarSize token 'lg' for .size()"));
+    let surface = chrome("export const L = () => ScrollSurface(Text('a')).style('tertiary');\n");
+    assert_eq!(first_message(&surface), Some("Unknown scrollSurfaceStyle token 'tertiary' for .style()"));
+    let handle = chrome("export const L = (r) => ResizeHandle(r).style('bar');\n");
+    assert_eq!(first_message(&handle), Some("Unknown resizeHandleStyle token 'bar' for .style()"));
+    // A bar and a handle take only their own modifiers.
+    let boxed = chrome("export const L = (r) => ResizeHandle(r).padding('md');\n");
+    assert!(first_message(&boxed).is_some_and(|m| m.contains(".padding()")), "{:?}", first_message(&boxed));
 }
