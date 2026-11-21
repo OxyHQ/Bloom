@@ -49,6 +49,7 @@ import { CHOICE_LIST_CASES } from '../../parity/choice-list.cases';
 import { VIDEO_PLAYBACK_CASES } from '../../parity/video-playback.cases';
 import { HOVER_CARD_CASES } from '../../parity/hover-card.cases';
 import { EXPANDABLE_TEXT_CASES } from '../../parity/expandable-text.cases';
+import { CATEGORY_BAR_CASES } from '../../parity/category-bar.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -103,6 +104,7 @@ export const FAMILIES = {
   videoPlayback: VIDEO_PLAYBACK_CASES,
   hoverCard: HOVER_CARD_CASES,
   expandableText: EXPANDABLE_TEXT_CASES,
+  categoryBar: CATEGORY_BAR_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';
