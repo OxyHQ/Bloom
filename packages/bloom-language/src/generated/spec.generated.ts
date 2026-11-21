@@ -4986,7 +4986,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "loop",
     "paused",
-    "fallback"
+    "fallback",
+    "decorative"
   ],
   "card": [
     "padding",

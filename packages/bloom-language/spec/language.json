@@ -1579,7 +1579,7 @@
     },
     "lottie": {
       "constructors": ["Lottie"],
-      "modifiers": ["loop", "paused", "fallback"]
+      "modifiers": ["loop", "paused", "fallback", "decorative"]
     },
     "card": {
       "constructors": ["Card"],
