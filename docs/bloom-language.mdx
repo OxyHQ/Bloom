@@ -2199,6 +2199,35 @@ view's box is its style; it hides while its avatar is in the air) and
 used as they are inside a `view()`: `useAvatarFlights()` (`launch`, `cancel`,
 by anchor key), `useAvatarJoin()` and `centeredLanding`.
 
+### Media galleries
+
+```ts
+const [viewing, setViewing] = useState(false);
+const [page, setPage] = useState(0);
+HStack(...post.media.map((media, i) =>
+  MediaFlightHost(`${post.id}-${i}`, media).frame({ width: '120', height: '120' }).onPress(() => {
+    setPage(i);
+    setViewing(true);
+  }),
+)).fullScreenCover(
+  [viewing, setViewing],
+  Gallery(post.media).page([page, setPage]).sourceAnchors(post.media.map((_, i) => `${post.id}-${i}`)),
+)
+```
+
+Bloom's `ZoomableMediaGallery`, presented by a binding as SwiftUI's
+`.fullScreenCover(isPresented:)` presents: any view's
+`.fullScreenCover([isPresented, set], Gallery(items))` draws the gallery beside
+it. Setting the binding opens it at its page; clearing it closes it as its
+backdrop does; the gallery closing itself clears it. `Gallery(items)` (images
+and the app's own videos) is content, never placed in a stack. It takes
+`.page([index, set])` (where it opens, and what swiping sets), `.style('overlay'
+| 'page')`, `.pageIndicator('dots' | 'thumbnails')`, `.mediaCorner()` (`full` is
+a circle at every size, as an avatar is), `.nativeControls()`,
+`.videoOverlay(media => view)`, `.labels()` and `.sourceAnchors(ids)`: the
+`MediaFlightHost` ids its items open from and fly back to, so no ref reaches
+the screen (an item without one fades in and out at the centre).
+
 ### Media inset borders
 
 ```ts

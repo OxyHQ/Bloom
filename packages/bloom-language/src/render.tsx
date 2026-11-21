@@ -999,11 +999,14 @@ function drawNode(
   const alert = ownValue(p, 'alert')?.value;
   const dialog = ownValue(p, 'dialog')?.value;
   const popover = ownValue(p, 'popover')?.value;
-  if (alert === undefined && dialog === undefined && popover === undefined) return element;
-  // What the view presents: an anchored popover around it, an alert or a dialog beside it.
+  const cover = ownValue(p, 'fullScreenCover')?.value;
+  if (alert === undefined && dialog === undefined && popover === undefined && cover === undefined)
+    return element;
+  // What the view presents: an anchored popover around it; an alert, a dialog
+  // or a full-screen cover beside it.
   return presentAround(
     element as ReactElement,
-    { alert, dialog, popover },
+    { alert, dialog, popover, cover },
     (children) => renderChildren(children, inner),
     reactKey,
   );
@@ -2307,7 +2310,12 @@ function renderHost(
             roles,
             NO_VARIANTS,
           );
-          return drawHost(host, paint === undefined ? out : painted(out, paint), props, ...children);
+          return drawHost(
+            host,
+            paint === undefined ? out : painted(out, paint),
+            props,
+            ...children,
+          );
         },
         around: (element) =>
           boxed

@@ -1,7 +1,7 @@
 import { ExpandableText as BloomExpandableText } from '@oxy.so/bloom/expandable-text';
 
 import type { Binding } from '../binding';
-import { ENUMS } from '../generated/spec.generated';
+import type { ENUMS } from '../generated/spec.generated';
 import { Node, type ViewModifiers } from '../node';
 import { isAppColor, textVariant } from '../style';
 import type { ColorToken } from '../tokens';

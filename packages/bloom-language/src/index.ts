@@ -647,3 +647,11 @@ export type { LinkPreviewData, LinkPreviewView } from './controls/link-preview';
 // Social buttons (controls/social-button.tsx)
 export { SocialButton } from './controls/social-button';
 export type { SocialButtonStyle, SocialButtonView, SocialIntent } from './controls/social-button';
+
+// Media galleries (controls/zoomable-media-gallery.tsx)
+export { Gallery } from './controls/zoomable-media-gallery';
+export type {
+  GalleryIndicator,
+  GalleryStyle,
+  GalleryView,
+} from './controls/zoomable-media-gallery';

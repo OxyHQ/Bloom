@@ -25,6 +25,7 @@ import {
 import { type PaddingToken, resolveSpace, type SpaceToken } from '../tokens';
 import { lastOf } from './draw';
 import type { ControlRenderer } from './draw';
+import { type Cover, drawCover } from './zoomable-media-gallery';
 
 /** Overlays and feedback: dialogs, alerts, popovers, toasts. */
 export type OverlayKind = 'alert' | 'dialog' | 'popover' | 'connectionStatus';
@@ -235,6 +236,7 @@ export interface Presentations {
   readonly alert: Presentation | undefined;
   readonly dialog: Presentation | undefined;
   readonly popover: Presentation | undefined;
+  readonly cover: Cover | undefined;
 }
 
 /**
@@ -244,18 +246,19 @@ export interface Presentations {
  */
 export function presentAround(
   element: ReactElement,
-  { alert, dialog, popover }: Presentations,
+  { alert, dialog, popover, cover }: Presentations,
   render: (children: readonly Child[]) => ReactNode[],
   key: string | number | undefined,
 ): ReactElement {
   const anchored = popover === undefined ? element : drawPopover(element, popover, render, key);
-  if (alert === undefined && dialog === undefined) return anchored;
+  if (alert === undefined && dialog === undefined && cover === undefined) return anchored;
   return createElement(
     Fragment,
     { key },
     anchored,
     alert === undefined ? null : drawAlert(alert, render),
     dialog === undefined ? null : drawDialog(dialog, render),
+    cover === undefined ? null : drawCover(cover, (child) => render([child])),
   );
 }
 
