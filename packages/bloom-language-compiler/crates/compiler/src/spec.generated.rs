@@ -451,6 +451,8 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("imageVariant", &["value"]),
     ("optionBox", &["value"]),
     ("autoplay", &["value"]),
+    ("closeDelay", &["value"]),
+    ("padded", &["value"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -564,6 +566,7 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "videoPlayback", constructors: &["VideoPlayback"], modifiers: &["autoplay"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "videoViewability", constructors: &["VideoViewability"], modifiers: &[], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "videoViewabilityScope", constructors: &["VideoViewabilityScope"], modifiers: &[], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "hoverCard", constructors: &["HoverCard"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "presented", "openDelay", "closeDelay", "side", "align", "padded", "disabled"], size: None, tint: None, style: None, shape: None },
 ];
 
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,

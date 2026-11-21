@@ -1024,7 +1024,9 @@
     "optionBox": ["value"],
     "imageVariant": ["value"],
     "mediaCorner": ["corner"],
-    "autoplay": ["value"]
+    "autoplay": ["value"],
+    "closeDelay": ["value"],
+    "padded": ["value"]
   },
   "universal": [
     "padding",
@@ -1956,6 +1958,10 @@
       "constructors": ["VideoViewabilityScope"],
       "universal": false,
       "modifiers": []
+    },
+    "hoverCard": {
+      "constructors": ["HoverCard"],
+      "modifiers": ["presented", "openDelay", "closeDelay", "side", "align", "padded", "disabled"]
     }
   },
   "sfSymbols": {
