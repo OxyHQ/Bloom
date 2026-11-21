@@ -32,6 +32,16 @@ export function rhythm(d: ControlDraw): 'comfortable' | 'compact' | undefined {
   return density === undefined ? undefined : density === 'compact' ? 'compact' : 'comfortable';
 }
 
+/**
+ * A product family's density (`comfortable` or `compact`) from the node's
+ * `.density()`: `compact` is Bloom's compact, `default` the family's
+ * comfortable one, and with none the prop is absent, so Bloom's default stays.
+ */
+export function rowDensity(d: ControlDraw): 'comfortable' | 'compact' | undefined {
+  const value = d.own('density')?.value;
+  return value === undefined ? undefined : value === 'compact' ? 'compact' : 'comfortable';
+}
+
 /** A corner a product component takes as a radius: a corner rung. */
 export type CornerToken = Exclude<CornerName, 'concentric'>;
 
