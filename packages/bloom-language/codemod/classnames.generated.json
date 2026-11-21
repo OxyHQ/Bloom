@@ -845,7 +845,7 @@
    "count": 54,
    "apps": 8,
    "status": "mapped",
-   "language": ".opacity('disabled')"
+   "language": ".opacity('half')"
   },
   "py-6": {
    "count": 54,
@@ -1695,7 +1695,7 @@
    "count": 19,
    "apps": 5,
    "status": "mapped",
-   "language": ".background('mutedFill/disabled')"
+   "language": ".background('mutedFill/half')"
   },
   "inset-x-0": {
    "count": 19,
@@ -1892,10 +1892,8 @@
   "opacity-90": {
    "count": 16,
    "apps": 5,
-   "status": "token",
-   "scale": "opacity",
-   "value": "0.9",
-   "language": ".opacity(…)"
+   "status": "mapped",
+   "language": ".opacity('soft-opaque')"
   },
   "outline-hidden": {
    "count": 16,
@@ -2369,7 +2367,7 @@
    "count": 11,
    "apps": 2,
    "status": "mapped",
-   "language": ".border('border/disabled')"
+   "language": ".border('border/half')"
   },
   "border-l": {
    "count": 11,
@@ -2555,7 +2553,7 @@
    "count": 10,
    "apps": 2,
    "status": "mapped",
-   "language": ".border('destructive/disabled')"
+   "language": ".border('destructive/half')"
   },
   "break-all": {
    "count": 10,
@@ -3221,7 +3219,7 @@
    "count": 7,
    "apps": 7,
    "status": "mapped",
-   "language": ".background('black/disabled')"
+   "language": ".background('black/half')"
   },
   "bg-foreground/5": {
    "count": 7,
@@ -3495,7 +3493,7 @@
    "count": 6,
    "apps": 2,
    "status": "mapped",
-   "language": ".background('input/disabled')"
+   "language": ".background('input/half')"
   },
   "bg-input/80": {
    "count": 6,
@@ -3849,7 +3847,7 @@
    "count": 5,
    "apps": 1,
    "status": "mapped",
-   "language": ".background('card/disabled')"
+   "language": ".background('card/half')"
   },
   "bg-fill-secondary": {
    "count": 5,
@@ -4834,10 +4832,8 @@
   "text-white/90": {
    "count": 4,
    "apps": 3,
-   "status": "token",
-   "scale": "opacity",
-   "value": "white at 90%",
-   "language": ".foreground('white/…')"
+   "status": "mapped",
+   "language": ".foreground('white/soft-opaque')"
   },
   "tracking-widest": {
    "count": 4,
@@ -4990,10 +4986,8 @@
   "bg-background/90": {
    "count": 3,
    "apps": 3,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--background at 90%",
-   "language": ".background('background/…')"
+   "status": "mapped",
+   "language": ".background('background/soft-opaque')"
   },
   "bg-black/10": {
    "count": 3,
@@ -6131,7 +6125,7 @@
    "count": 2,
    "apps": 2,
    "status": "mapped",
-   "language": ".background('background/disabled')"
+   "language": ".background('background/half')"
   },
   "bg-background/85": {
    "count": 2,
@@ -6184,10 +6178,8 @@
   "bg-card/90": {
    "count": 2,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--card at 90%",
-   "language": ".background('card/…')"
+   "status": "mapped",
+   "language": ".background('card/soft-opaque')"
   },
   "bg-clip-padding": {
    "count": 2,
@@ -7670,10 +7662,8 @@
   "text-foreground/90": {
    "count": 2,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--foreground at 90%",
-   "language": ".foreground('foreground/…')"
+   "status": "mapped",
+   "language": ".foreground('foreground/soft-opaque')"
   },
   "text-good": {
    "count": 2,
@@ -8507,7 +8497,7 @@
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".background('primary/disabled')"
+   "language": ".background('primary/half')"
   },
   "bg-purple-100": {
    "count": 1,
@@ -8719,7 +8709,7 @@
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".border('primary/disabled')"
+   "language": ".border('primary/half')"
   },
   "border-r-2": {
    "count": 1,
@@ -11963,7 +11953,7 @@
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".foreground('foreground/disabled')"
+   "language": ".foreground('foreground/half')"
   },
   "text-headerBold": {
    "count": 1,
@@ -12065,7 +12055,7 @@
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".foreground('white/disabled')"
+   "language": ".foreground('white/half')"
   },
   "text-white/55": {
    "count": 1,

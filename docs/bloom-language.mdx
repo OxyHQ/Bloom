@@ -241,7 +241,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `foreground(c)`, `background(c)` | colour roles: `foreground` `muted` `primary` `surface` `card` `mutedFill` `border` `error` `destructive` `primaryText` `white` `black`…, or a role at a named opacity (`'muted/faded'`) |
 | `border(c, width?, edge?)` | colour role (or a role at an opacity); `hairline` (the platform hairline), `thin` or `thick` |
 | `corner(r)`, `cornerCurve(c)` | radius rungs (`xs-sm` 6 among them), `full`, `concentric`; `round` `smooth` (see [Material](#material)) |
-| `opacity(o)` | `transparent` 0, `faint` 0.1, `pale` 0.2, `sheer` 0.3, `hazy` 0.4, `disabled` 0.5, `dim` 0.6, `faded` 0.7, `soft` 0.8, `opaque` 1 |
+| `opacity(o)` | `transparent` 0, `faint` 0.1, `pale` 0.2, `sheer` 0.3, `hazy` 0.4, `half` 0.5, `dim` 0.6, `faded` 0.7, `soft` 0.8, `soft-opaque` 0.9, `opaque` 1 |
 | `size(s)` | icon rungs, avatar rungs, or Bloom sizes, by node |
 | `style(a)` / `shape(s)` / `tint(t)` | Bloom appearance / `circle` `pill` / Bloom tone |
 | `glass(material?)` | `regular`, `clear`, `.tint(role, 'subtle' \| 'medium' \| 'strong'?)` |
@@ -838,10 +838,10 @@ the owner's decision, or an app's `defineTokens`) before a codemod moves it.
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 637 | 41294 | 76.9% |
+| Maps to a modifier and a token | 642 | 41321 | 76.9% |
 | Expressed by the view’s structure | 35 | 3445 | 6.4% |
 | Redundant in the language | 16 | 436 | 0.8% |
-| Needs a named token (raw value) | 486 | 2602 | 4.8% |
+| Needs a named token (raw value) | 481 | 2575 | 4.8% |
 | Needs a modifier the language lacks | 265 | 4109 | 7.6% |
 | An app’s own class | 481 | 1834 | 3.4% |
 
@@ -854,7 +854,7 @@ with no rung, by scale (the owner names each as a token or keeps it out):
 | font | 482 | 11px / 14px (104), 20px / 28px (92), 24px / 32px (90), 14px (64), 15px / 22px (27), 30px / 36px (22), 36px / 40px (12), 24px (12), 10.5px (8), 28px (7), 12.5px (5), 23px (5) |
 | color | 392 | transparent (63), --surface-foreground (36), --accent (33), --error-text (25), --primary-subtle (20), --warning-text (19), --sidebar-foreground (14), green-500 (12), --sidebar-border (12), red-500 (10), --sidebar-accent (9), red-400 (9) |
 | leading | 321 | 20px (93), 24px (70), 16px (44), 18px (28), 28px (18), 1 (15), 22px (14), 14px (6), 29px (6), 17px (5), 40px (3), 32px (3) |
-| opacity | 121 | 0.9 (16), --foreground at 5% (7), black at [0.04]% (7), white at [0.06]% (6), --primary at 5% (5), --warning-text at 40% (5), white at 90% (4), white at 15% (4), white at 25% (4), --background at 90% (3), black at 25% (3), --primary at 15% (3) |
+| opacity | 94 | --foreground at 5% (7), black at [0.04]% (7), white at [0.06]% (6), --primary at 5% (5), --warning-text at 40% (5), white at 15% (4), white at 25% (4), black at 25% (3), --primary at 15% (3), --surface at 25% (3), white at 75% (3), white at 85% (3) |
 | corner | 80 | 22px (14), 14px (12), 10px (9), 18px (9), 15px (8), 23px (6), 5px (4), 13px (3), 27px (3), 25px (2), 26px (2), 3px (2) |
 | tracking | 10 | -0.5px (2), 0.04em (2), 0.5px (2), -0.2px (1), -0.4px (1), 1.5px (1), 2px (1) |
 | borderWidth | 6 | 4px (6) |

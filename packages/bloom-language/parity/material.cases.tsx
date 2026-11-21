@@ -246,7 +246,7 @@ const boxes: ParityCase[] = [
   },
   {
     name: 'Fill with a scrim',
-    language: () => toElement(L.Fill().background('background').opacity('disabled')),
+    language: () => toElement(L.Fill().background('background').opacity('half')),
     bloom: () => (
       <Themed>
         {(c) => (
