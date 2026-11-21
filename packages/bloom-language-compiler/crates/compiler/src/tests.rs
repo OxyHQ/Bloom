@@ -1198,3 +1198,22 @@ fn link_previews_are_checked() {
     let output = check("export const x = (p) => LinkPreview(p).streaming();\n");
     assert_eq!(output.diagnostics[0].message, "LinkPreview has no modifier .streaming()");
 }
+
+#[test]
+fn social_buttons_are_checked() {
+    let imports = "import { SocialButton } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (f) => SocialButton('google', 'Use Google').size('sm').style('white').iconOnly().fullWidth().intent('signUp').link('/oauth').disabled().onPress(f);\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("SocialButton('oxy').style('solid')", "Unknown socialButtonStyle token 'solid' for .style()"),
+        ("SocialButton('oxy').size('lg')", "Unknown socialButtonSize token 'lg' for .size()"),
+        ("SocialButton('oxy').intent('login')", "Unknown socialIntent token 'login' for .intent()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = () => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

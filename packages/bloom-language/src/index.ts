@@ -466,3 +466,7 @@ export type {
 // Link previews (controls/link-preview.tsx)
 export { LinkPreview } from './controls/link-preview';
 export type { LinkPreviewData, LinkPreviewView } from './controls/link-preview';
+
+// Social buttons (controls/social-button.tsx)
+export { SocialButton } from './controls/social-button';
+export type { SocialButtonStyle, SocialButtonView, SocialIntent } from './controls/social-button';

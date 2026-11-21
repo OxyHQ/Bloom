@@ -1815,6 +1815,22 @@ the same image at several widths), `siteName` and `author`). A press opens the
 url unless `.onPress()` replaces it; `.coverFill()` lets the cover fill the
 height the card is given (a fixed-height row), the text a footer under it.
 
+### Social buttons
+
+```ts
+SocialButton('google').style('white').intent('signIn').link(oauthStart('google'))
+SocialButton({ icon: <RiKey2Line />, label: 'Acme SSO', color: '#0f766e' }).fullWidth()
+```
+
+Bloom's `SocialButton`: a built-in provider's logo, colour and title together,
+or a brand of your own (Bloom's brand config: its icon, name and colour).
+`SocialButton(brand, title?)`: the title replaces the default ("Continue with
+Google", in the app's language). It takes `.size('md' | 'sm')`,
+`.style('colorful' | 'black' | 'white')`, `.iconOnly()`, `.fullWidth()`,
+`.intent('continue' | 'signIn' | 'signUp')` (the verb of its title),
+`.link(href)` (an OAuth start is a navigation), `.onPress()` and
+`.disabled()`.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2218,7 +2234,8 @@ and `@oxy.so/bloom-data` beside it.
   avatar flights,
   input groups,
   notifications,
-  link previews.
+  link previews,
+  social buttons.
 
 **Not built**
 

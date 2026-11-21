@@ -25,6 +25,7 @@ import type { MenubarKind } from './controls/menubar';
 import type { ContextMenuAnchor } from '@oxy.so/bloom/context-menu';
 import type { FileUploadKind } from './controls/file-upload';
 import type { VideoViewKind } from './controls/video-view';
+import type { SocialButtonKind } from './controls/social-button';
 import type { LinkPreviewKind } from './controls/link-preview';
 import type { InputGroupKind } from './controls/input-group';
 import type { NotificationKind } from './controls/notification';
@@ -43,6 +44,7 @@ import type { DropZoneKind } from './controls/drop-zone';
 import type { DragAction, DropTargetDragEvent } from '@oxy.so/bloom/drop-zone';
 import type { CollapsibleKind } from './controls/collapsible';
 import type { FactStripKind } from './controls/fact-strip';
+import type { SocialButtonStyle, SocialIntent } from './controls/social-button';
 import type { LiveRole, NotificationStatus } from './controls/notification';
 import type { NotificationAction, NotificationAvatar } from '@oxy.so/bloom/notification';
 import type { ChoiceListKind } from './controls/choice-list';
@@ -553,6 +555,11 @@ export interface ValueModifiers {
   // Link previews (controls/link-preview.tsx)
   coverFill: boolean;
 
+  // Social buttons (controls/social-button.tsx)
+  intent: SocialIntent;
+  iconOnly: true;
+  fullWidth: true;
+
   // Inputs (controls/inputs.tsx)
   required: boolean;
   floatingLabel: true;
@@ -748,6 +755,7 @@ export type Modifier =
       readonly value:
         | BloomAppearance
         | ExpandableTextStyle
+        | SocialButtonStyle
         | BadgeStyle
         | LoadingStyle
         | RatingStyle
@@ -942,7 +950,8 @@ export type NodeKind =
   | ExpandableTextKind
   | CompositionBarKind
   | NotificationKind
-  | LinkPreviewKind;
+  | LinkPreviewKind
+  | SocialButtonKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1253,6 +1262,7 @@ export class Node {
     value:
       | BloomAppearance
       | ExpandableTextStyle
+      | SocialButtonStyle
       | BadgeStyle
       | LoadingStyle
       | RatingStyle
@@ -2153,6 +2163,17 @@ export class Node {
   // Link previews (controls/link-preview.tsx)
   coverFill(value = true): Node {
     return this.set('coverFill', value);
+  }
+
+  // Social buttons (controls/social-button.tsx)
+  iconOnly(): Node {
+    return this.set('iconOnly', true);
+  }
+  fullWidth(): Node {
+    return this.set('fullWidth', true);
+  }
+  intent(value: SocialIntent): Node {
+    return this.set('intent', value);
   }
 
   // Inputs (controls/inputs.tsx)
