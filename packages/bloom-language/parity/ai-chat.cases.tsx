@@ -150,32 +150,6 @@ const chrome: ParityCase[] = [
     ),
   },
   {
-    name: 'AiChatContainer working, no surface, a header',
-    language: () =>
-      toElement(
-        L.AiChatContainer(L.AiChatMessageLine('Hello'), {
-          working: true,
-          surface: false,
-          header: L.AiChatHeader(L.Text('Header')),
-          onShare: press,
-        }),
-      ),
-    bloom: () => (
-      <AiChatContainer
-        working
-        surface={false}
-        header={
-          <AiChatHeader>
-            <Text>Header</Text>
-          </AiChatHeader>
-        }
-        onShare={press}
-      >
-        <AiChatMessageLine>Hello</AiChatMessageLine>
-      </AiChatContainer>
-    ),
-  },
-  {
     name: 'AiChatMobileHeader',
     language: () => toElement(L.AiChatMobileHeader('Trip')),
     bloom: () => <AiChatMobileHeader title="Trip" />,
@@ -248,3 +222,37 @@ const shells: ParityCase[] = [
 ];
 
 export const AI_CHAT_CASES: ParityCase[] = [...lines, ...turns, ...chrome, ...shells];
+
+/**
+ * A working container counts the seconds it has worked: two side by side
+ * (the story's pairs) are read a moment apart. Compared by the Jest suites,
+ * as they mount, and left out of the story.
+ */
+export const AI_CHAT_CASES_MOVING: ParityCase[] = [
+  {
+    name: 'AiChatContainer working, no surface, a header',
+    language: () =>
+      toElement(
+        L.AiChatContainer(L.AiChatMessageLine('Hello'), {
+          working: true,
+          surface: false,
+          header: L.AiChatHeader(L.Text('Header')),
+          onShare: press,
+        }),
+      ),
+    bloom: () => (
+      <AiChatContainer
+        working
+        surface={false}
+        header={
+          <AiChatHeader>
+            <Text>Header</Text>
+          </AiChatHeader>
+        }
+        onShare={press}
+      >
+        <AiChatMessageLine>Hello</AiChatMessageLine>
+      </AiChatContainer>
+    ),
+  },
+];
