@@ -13,9 +13,11 @@ import {
   GLASS_OPACITY,
   HIT_SLOP,
   ICON_SIZE,
+  LENGTH,
   LEADING,
   LEADING_PX,
   OPACITY,
+  SHADOW,
   SHRINK,
   SPACE,
   TRACKING,
@@ -23,6 +25,7 @@ import {
   type TYPE_FAMILIES,
   TYPE_RAMP,
   WEIGHT,
+  Z_INDEX,
 } from './generated/spec.generated';
 
 /**
@@ -81,6 +84,17 @@ export type BorderWidthName = keyof typeof BORDER_WIDTH;
 export type HitSlopName = keyof typeof HIT_SLOP;
 export type ShrinkPriority = keyof typeof SHRINK;
 export type Alignment = keyof typeof ALIGNMENT;
+/** A frame's length relative to its parent: `full`, or a fraction (`1/2`, `1/3`…). */
+export type LengthName = keyof typeof LENGTH;
+/** Bloom's stacking levels (`Z_INDEX`): `base`, `raised`, `floating`, `dropdown`. */
+export type ZIndexName = keyof typeof Z_INDEX;
+/** Bloom's elevation roles: `s` (cards, chips), `m` (menus, dialogs), `floating` (a translucent pane). */
+export type ShadowName = keyof typeof SHADOW;
+/** How a stack spreads its children along its axis. */
+export type Justify = (typeof ENUMS.justify)[number];
+export type Axis = (typeof ENUMS.axis)[number];
+/** Where an overlay or a view background sits in its view: SwiftUI's `Alignment`. */
+export type OverlayAlignment = (typeof ENUMS.overlayAlignment)[number];
 /** How much of a glass tint shows: a named transparency, never a number. */
 export type GlassOpacityName = keyof typeof GLASS_OPACITY;
 /** Bloom's motion durations (`animation.duration`): an image's cross-fade, by name. */
@@ -117,7 +131,18 @@ export type BadgePlacement = (typeof ENUMS.badgePlacement)[number];
 /** Bloom `Loading`'s presentations: a spinner, the bar at the top, a line beside its text. */
 export type LoadingStyle = (typeof ENUMS.loadingStyle)[number];
 
-export { COLORS, DURATION, GLASS_OPACITY, HIT_SLOP, OPACITY, SHRINK, ALIGNMENT };
+export {
+  COLORS,
+  DURATION,
+  GLASS_OPACITY,
+  HIT_SLOP,
+  LENGTH,
+  OPACITY,
+  SHADOW,
+  SHRINK,
+  ALIGNMENT,
+  Z_INDEX,
+};
 
 /** `hairline` is the platform's hairline (`StyleSheet.hairlineWidth`), the width a row separator uses. */
 export function resolveBorderWidth(width: BorderWidthName): number {
@@ -181,6 +206,8 @@ export function defineTokens<T extends { [S in AppTokenScale]?: Record<string, n
 }
 
 export type SpaceToken = SpaceName | AppToken<'space'>;
+/** A frame's length: a space rung or an app's own, or a length relative to the parent. */
+export type LengthToken = SpaceToken | LengthName;
 export type PaddingToken = SpaceName | NegativeSpaceName | AppToken<'space'>;
 export type IconSizeToken = IconSizeName | AppToken<'iconSize'>;
 /** An avatar rung, or an app's own diameter (Bloom's avatar takes any; it is 40 with none). */
@@ -197,6 +224,12 @@ export function resolveSpace(token: PaddingToken): number {
   if (typeof token !== 'string') return token.value;
   if (token.startsWith('-')) return -SPACE[token.slice(1) as SpaceName];
   return SPACE[token as SpaceName];
+}
+
+/** A frame length: a relative length is its percentage; anything else a space. */
+export function resolveLength(token: LengthToken): number | string {
+  if (typeof token === 'string' && token in LENGTH) return LENGTH[token as LengthName];
+  return resolveSpace(token as SpaceToken);
 }
 
 /** A rung's radius; `concentric` has none of its own (its shape's radius, drawn by Bloom). */

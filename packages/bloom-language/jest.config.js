@@ -32,6 +32,7 @@ module.exports = {
     '^@oxy.so/bloom/avatar$': `${support}/bloom-avatar.ts`,
     '^@oxy.so/bloom/hooks$': `${support}/bloom-hooks.ts`,
     '^@oxy.so/bloom/shapes$': `${support}/bloom-shapes.ts`,
+    '^@oxy.so/bloom/design-tokens$': `${support}/bloom-design-tokens.ts`,
     '^@oxy.so/bloom/theme$': `${support}/bloom-theme.ts`,
     '^@oxy.so/bloom/app-shell/hooks$': `${support}/bloom-app-shell-hooks.ts`,
     '^@oxy.so/bloom/(blur|button|engagement-bar|image|surface|fab|page-header|bottom-bar|dropdown-menu|aspect-ratio|concentric|divider|fill|grid|avatar-group|badge|chat-indicators|icon-circle|loading|pressable-scale|skeleton|subtle-hover)$': `${support}/bloom-components.ts`,
