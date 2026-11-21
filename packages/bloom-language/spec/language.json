@@ -1062,7 +1062,10 @@
     "fullScreenCover": ["value", "value"],
     "pageIndicator": ["galleryIndicator"],
     "videoOverlay": ["value"],
-    "sourceAnchors": ["value"]
+    "sourceAnchors": ["value"],
+    "timeSlots": ["value"],
+    "onTimezonePress": ["value"],
+    "triggerTitle": ["value"]
   },
   "universal": [
     "padding",
@@ -2103,6 +2106,22 @@
         "labels"
       ],
       "style": "galleryStyle"
+    },
+    "meetingScheduler": {
+      "constructors": ["MeetingScheduler"],
+      "modifiers": [
+        "bounds",
+        "unavailable",
+        "weekStart",
+        "locale",
+        "labels",
+        "timeSlots",
+        "hourFormat",
+        "onTimezonePress",
+        "triggerTitle",
+        "disabled",
+        "presented"
+      ]
     }
   },
   "sfSymbols": {
