@@ -61,6 +61,7 @@ import { LISTINGS } from './listings';
 import { MEDIA } from './media';
 import { CARD_FORMS } from './card-form';
 import { CHECKOUT_SHEETS } from './checkout-sheet';
+import { STAY_FILTERS } from './stay-filters';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -129,4 +130,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...MEDIA,
   ...CARD_FORMS,
   ...CHECKOUT_SHEETS,
+  ...STAY_FILTERS,
 };
