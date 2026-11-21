@@ -744,7 +744,8 @@
     "areaVariant": ["stacked", "overlap", "percent"],
     "chartShape": ["curved", "sharp"],
     "radarVariant": ["filled", "dots", "lines", "score"],
-    "sparklineTone": ["accent", "positive", "negative", "neutral"]
+    "sparklineTone": ["accent", "positive", "negative", "neutral"],
+    "aiChatLineTone": ["primary", "secondary"]
   },
   "glass": {
     "$comment": [
@@ -3153,7 +3154,21 @@
     },
     "composerPanel": { "constructors": ["ComposerPanel"], "modifiers": ["disabled"] },
     "composerPill": { "constructors": ["ComposerPill"], "modifiers": ["disabled", "surface"] },
-    "composerPanelStatusTab": { "constructors": ["ComposerPanelStatusTab"], "modifiers": [] }
+    "composerPanelStatusTab": { "constructors": ["ComposerPanelStatusTab"], "modifiers": [] },
+    "aiChatShell": { "constructors": ["AiChatShell"], "modifiers": [] },
+    "aiChatContainer": { "constructors": ["AiChatContainer"], "modifiers": [] },
+    "aiChatThread": { "constructors": ["AiChatThread"], "modifiers": [] },
+    "aiChatUserMessage": { "constructors": ["AiChatUserMessage"], "modifiers": [] },
+    "aiChatAssistantMessage": { "constructors": ["AiChatAssistantMessage"], "modifiers": [] },
+    "aiChatMessageLine": {
+      "constructors": ["AiChatMessageLine"],
+      "modifiers": ["tint", "selectable"],
+      "tint": "aiChatLineTone"
+    },
+    "aiChatHeader": { "constructors": ["AiChatHeader"], "modifiers": [] },
+    "aiChatMobileHeader": { "constructors": ["AiChatMobileHeader"], "modifiers": [] },
+    "aiChatCodePanel": { "constructors": ["AiChatCodePanel"], "modifiers": [] },
+    "aiChatGalleryPanel": { "constructors": ["AiChatGalleryPanel"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
