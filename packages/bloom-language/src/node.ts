@@ -101,6 +101,7 @@ import type { DatePickerKind } from './controls/date-picker';
 import type { HourFormat, WeekStart } from '@oxy.so/bloom/date-picker';
 
 import type { AgentAvatarKind } from './controls/agent-avatar';
+import type { ChartCardKind } from './controls/chart-cards';
 import type { ChatComposerKind } from './controls/chat-composer';
 import type { DialogAction, DialogHeaderConfig, DialogScreenFrame } from '@oxy.so/bloom/dialog';
 import type { SearchToken } from '@oxy.so/bloom/search';
@@ -199,6 +200,10 @@ import {
   type TooltipSide,
   type RatingStyle,
   type AgentMood,
+  type SparklineTone,
+  type RadarVariant,
+  type ChartShape,
+  type AreaVariant,
   type ReactionPickerSize,
   type ComposerButtonTone,
   type AttachmentLayout,
@@ -900,6 +905,9 @@ export interface ValueModifiers {
   // Chat composer (controls/chat-composer.tsx)
   iconSize: IconSizeToken;
   surface: boolean;
+
+  // Chart cards (controls/chart-cards.tsx)
+  activeTint: ColorToken;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1073,12 +1081,14 @@ export type Modifier =
         | StepperStyle
         | GalleryStyle
         | DataTableStyle
-        | AttachmentLayout;
+        | AttachmentLayout
+        | AreaVariant
+        | RadarVariant;
     }
   | {
       readonly kind: 'shape';
       readonly key: string;
-      readonly value: ButtonShape | ShapeName | DotsShape;
+      readonly value: ButtonShape | ShapeName | DotsShape | ChartShape;
     }
   | {
       readonly kind: 'tint';
@@ -1088,8 +1098,9 @@ export type Modifier =
         | ColorName
         | AvatarColor
         | AccentTone
-          | ColorToken
-        | ComposerButtonTone;
+        | ColorToken
+        | ComposerButtonTone
+        | SparklineTone;
     }
   | {
       readonly kind: 'count';
@@ -1324,7 +1335,8 @@ export type NodeKind =
   | LinkPreviewKind
   | SocialButtonKind
   | AgentAvatarKind
-  | ChatComposerKind;
+  | ChatComposerKind
+  | ChartCardKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1658,11 +1670,13 @@ export class Node {
       | StepperStyle
       | GalleryStyle
       | DataTableStyle
-      | AttachmentLayout,
+      | AttachmentLayout
+      | AreaVariant
+      | RadarVariant,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
-  shape(value: ButtonShape | ShapeName | DotsShape): Node {
+  shape(value: ButtonShape | ShapeName | DotsShape | ChartShape): Node {
     return this.with({ kind: 'shape', key: `shape:${value}`, value });
   }
   tint(
@@ -1672,7 +1686,8 @@ export class Node {
       | AvatarColor
       | AccentTone
       | ColorToken
-      | ComposerButtonTone,
+      | ComposerButtonTone
+      | SparklineTone,
   ): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
   }
@@ -3179,6 +3194,11 @@ export class Node {
   }
   surface(value = true): Node {
     return this.set('surface', value);
+  }
+
+  // Chart cards (controls/chart-cards.tsx)
+  activeTint(value: ColorToken): Node {
+    return this.set('activeTint', value);
   }
 }
 
