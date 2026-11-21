@@ -449,6 +449,10 @@
       "bottom-trailing"
     ],
     "dividerStyle": ["single", "double", "fill"],
+    "dialogPlacement": ["center", "left", "right", "start", "end", "bottom"],
+    "alertDefault": ["confirm", "cancel"],
+    "floatingSide": ["top", "bottom", "left", "right"],
+    "floatingAlign": ["start", "center", "end"],
     "gridFlow": ["rows", "columns"],
     "shapeName": [
       "circle",
@@ -748,6 +752,21 @@
     "active": ["value"],
     "trailing": ["children"],
     "countFormat": ["value"],
+    "alert": ["value", "value"],
+    "dialog": ["value", "value"],
+    "popover": ["value", "value"],
+    "confirmLabel": ["value"],
+    "cancelLabel": ["value"],
+    "onConfirm": ["value"],
+    "onCancel": ["value"],
+    "hideCancel": [],
+    "defaultAction": ["alertDefault"],
+    "dismissible": ["value"],
+    "buttons": ["value"],
+    "presentAt": ["dialogPlacement", "dialogPlacement?"],
+    "dismissOnBackdrop": ["value"],
+    "scrollable": ["value?"],
+    "side": ["floatingSide", "floatingAlign?"],
     "onPress": ["value"],
     "onLongPress": ["value"],
     "onHover": ["value", "value"],
@@ -947,6 +966,9 @@
     "headingLevel",
     "footer",
     "sheet",
+    "alert",
+    "dialog",
+    "popover",
     "onReselect",
     "when",
     "rotation",
@@ -1141,6 +1163,46 @@
       "constructors": ["Divider"],
       "modifiers": ["lineStyle", "align", "spacing", "tint"],
       "tint": "color"
+    },
+    "alert": {
+      "constructors": ["Alert"],
+      "universal": false,
+      "modifiers": [
+        "message",
+        "confirmLabel",
+        "cancelLabel",
+        "onConfirm",
+        "onCancel",
+        "destructive",
+        "hideCancel",
+        "defaultAction",
+        "dismissible",
+        "testID"
+      ]
+    },
+    "dialog": {
+      "constructors": ["Dialog"],
+      "universal": false,
+      "modifiers": [
+        "title",
+        "message",
+        "label",
+        "buttons",
+        "presentAt",
+        "dismissOnBackdrop",
+        "scrollable",
+        "testID"
+      ]
+    },
+    "popover": {
+      "constructors": ["Popover"],
+      "universal": false,
+      "modifiers": ["label", "side", "testID"]
+    },
+    "connectionStatus": {
+      "constructors": ["ConnectionStatus"],
+      "universal": false,
+      "modifiers": []
     },
     "menuContent": {
       "constructors": [],
