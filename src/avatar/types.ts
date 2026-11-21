@@ -44,9 +44,9 @@ export interface AvatarRingConfig {
 
 /**
  * Size rungs: `xs` 20 (breadcrumb marks), `sm` 24 (table rows), `md` 32
- * (sidebar / team card), `lg` 36 (people cards).
+ * (sidebar / team card), `lg` 36 (people cards), `xl` 40 (Avatar's default size).
  */
-export type AvatarSizeToken = 'xs' | 'sm' | 'md' | 'lg';
+export type AvatarSizeToken = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 /**
  * Initials tints. `neutral` is the quiet grey disc; the three hues are

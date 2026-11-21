@@ -35,7 +35,7 @@ function captureTheme(mode: 'light' | 'dark'): Theme {
 
 describe('Avatar — size rungs and initials', () => {
   it('maps the rungs to pixels', () => {
-    expect(AVATAR_SIZES).toEqual({ xs: 20, sm: 24, md: 32, lg: 36 });
+    expect(AVATAR_SIZES).toEqual({ xs: 20, sm: 24, md: 32, lg: 36, xl: 40 });
   });
 
   it('sets the initials type per rung', () => {
