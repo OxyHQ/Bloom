@@ -1321,7 +1321,10 @@
     "onAdd": ["value"],
     "addHint": ["value"],
     "imageVariant": ["value"],
-    "optionBox": ["value"]
+    "optionBox": ["value"],
+    "imageVariant": ["value"],
+    "mediaCorner": ["corner"],
+    "autoplay": ["value"]
   },
   "universal": [
     "padding",
@@ -2808,6 +2811,21 @@
     "choiceList": {
       "constructors": ["ChoiceList"],
       "modifiers": ["axis", "spacing", "optionBox", "disabled"]
+    },
+    "videoPlayback": {
+      "constructors": ["VideoPlayback"],
+      "universal": false,
+      "modifiers": ["autoplay"]
+    },
+    "videoViewability": {
+      "constructors": ["VideoViewability"],
+      "universal": false,
+      "modifiers": []
+    },
+    "videoViewabilityScope": {
+      "constructors": ["VideoViewabilityScope"],
+      "universal": false,
+      "modifiers": []
     }
   },
   "sfSymbols": {
