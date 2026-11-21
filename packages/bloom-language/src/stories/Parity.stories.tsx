@@ -112,3 +112,4 @@ export const ContextMenus: Story = { args: { family: 'contextMenu' } };
 export const Collapsibles: Story = { args: { family: 'collapsible' } };
 export const DropZones: Story = { args: { family: 'dropZone' } };
 export const MediaInsetBorders: Story = { args: { family: 'mediaInsetBorder' } };
+export const ImageAspectRatios: Story = { args: { family: 'imageAspectRatio' } };
