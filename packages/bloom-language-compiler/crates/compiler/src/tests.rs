@@ -844,3 +844,21 @@ fn animated_checks_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn context_menus_are_checked() {
+    let imports = "import { ContextMenu, Item, Divider, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (at, acts, f) => ContextMenu(Text('Hold'), Item('Copy').onPress(f), Divider(), Item('Delete').tag('remove')).actions(acts).presentedAt(at).disabled(false).label('Options').padding('md');\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("ContextMenu(Text('a')).presentedAt()", ".presentedAt() takes 1 argument(s), not 0"),
+        ("ContextMenu(Text('a')).side('top')", "ContextMenu has no modifier .side()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (t) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

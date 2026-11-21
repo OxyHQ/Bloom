@@ -19,6 +19,8 @@ import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 import type { TagFieldKind } from './controls/tag-field';
+import type { ContextMenuKind } from './controls/context-menu';
+import type { ContextMenuAnchor } from '@oxy.so/bloom/context-menu';
 import type { FileUploadKind } from './controls/file-upload';
 import type { VideoViewKind } from './controls/video-view';
 import type { ColorSwatchPickerKind } from './controls/color-swatch-picker';
@@ -492,6 +494,9 @@ export interface ValueModifiers {
   trigger: ViewNode;
   leadingView: readonly Child[];
 
+  // Context menus (controls/context-menu.tsx)
+  presentedAt: Binding<ContextMenuAnchor | null>;
+
   // Overlays and feedback (controls/overlays.tsx)
 
   // Containers (controls/containers.tsx)
@@ -818,6 +823,7 @@ export type NodeKind =
   | VideoViewKind
   | ColorSwatchPickerKind
   | InputOtpKind
+  | ContextMenuKind
   | InputKind
   | OverlayKind
   | ContainerKind
@@ -1972,6 +1978,11 @@ export class Node {
   }
   leadingView(...value: Child[]): Node {
     return this.set('leadingView', value);
+  }
+
+  // Context menus (controls/context-menu.tsx)
+  presentedAt(value: Binding<ContextMenuAnchor | null>): Node {
+    return this.set('presentedAt', value);
   }
 
   // Overlays and feedback (controls/overlays.tsx)

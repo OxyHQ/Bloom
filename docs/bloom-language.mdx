@@ -1486,6 +1486,27 @@ appears, and again whenever its trigger (`AnimatedCheck(trigger)`) changes, as
 an app plays it through its ref. It takes `.size(space)` (`2xl` by default) and
 `.tint(colour)` (`success` by default); its box is a view around it.
 
+### Context menus
+
+```ts
+ContextMenu(
+  Text(message.body).padding('md'),
+  Item('Copy').icon(RiFileCopyLine).tag('copy'),
+  Divider(),
+  Item('Delete').icon(RiDeleteBinLine).destructive().tag('remove'),
+).actions(MessageActions({ message })).label('Message options')
+```
+
+Bloom's `ContextMenu` on a view: a long press opens it on native (on Android
+and OxyOS, the lens menu of Bloom's lens engine, morphing out of the press),
+the secondary button on the web. Its rows are a `Menu`'s (`Item`, `Submenu`,
+`Section`, `Divider`, one `menu()` content) and `.actions()` resolves its
+tagged rows. The view's box and `.label()` are the area's; `.disabled()` keeps
+it shut, and `.presentedAt([anchor, setAnchor])` holds where it is open (a
+point or a box, `null` while closed) when the screen owns it. Its rows are read
+with the view, a `menu()` content's too: the lens menu takes them before the
+press.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -1867,7 +1888,7 @@ and `@oxy.so/bloom-data` beside it.
   tag fields, file uploads, videos,
   one-time codes,
   colour swatch pickers,
-  animated checks.
+  animated checks, context menus.
 
 **Not built**
 

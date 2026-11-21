@@ -5,6 +5,7 @@ import { BREADCRUMBS } from './breadcrumb';
 import { CAROUSELS } from './carousel';
 import { CODES } from './code';
 import { CONTAINERS } from './containers';
+import { CONTEXT_MENUS } from './context-menu';
 import { DATE_PICKERS } from './date-picker';
 import { FILE_UPLOADS } from './file-upload';
 import type { ControlRenderer } from './draw';
@@ -53,4 +54,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...COLOR_SWATCH_PICKERS,
   ...INPUT_OTPS,
   ...ANIMATED_CHECKS,
+  ...CONTEXT_MENUS,
 };
