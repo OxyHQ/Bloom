@@ -471,3 +471,12 @@ export type {
   VirtualListTuning,
   VirtualListView,
 } from './controls/list';
+
+// Carousels (controls/carousel.tsx)
+export { Carousel, CarouselDots, CarouselItem } from './controls/carousel';
+export type {
+  CarouselDotsView,
+  CarouselItemView,
+  CarouselLabels,
+  CarouselView,
+} from './controls/carousel';
