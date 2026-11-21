@@ -123,6 +123,9 @@ interface IMenuTrigger {
   openWithItems?: boolean;
   // Bloom: the menu has finished closing (its motion ended).
   onMenuClosed?: () => void;
+  // Bloom: the colour the trigger sits on. Set, the trigger draws its glass at rest in its place in the view hierarchy
+  // (a trigger in a scroll, under the bars) against that colour; the overlay draws it only while the menu is open.
+  restBackdrop?: string;
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;

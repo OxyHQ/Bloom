@@ -110,7 +110,7 @@ internal class GlassMenuOverlay private constructor(
   private fun anchorsMoved(): Boolean {
     var moved = false
     for (anchor in anchors) {
-      if (!anchor.drawsGlass && session?.anchor !== anchor) continue
+      if ((!anchor.drawsGlass || anchor.inPlace) && session?.anchor !== anchor) continue
       anchorRect(anchor, probe)
       val alpha = if (anchor.isShown) anchor.effectiveAlpha() else 0f
       if (probe != anchor.placement || alpha != anchor.placementAlpha) {
@@ -137,7 +137,8 @@ internal class GlassMenuOverlay private constructor(
     val node = backdropProvider?.node ?: return
 
     for (anchor in anchors) {
-      if (anchor !== active?.anchor && anchor.drawsGlass) drawRestingAnchor(canvas, node, anchor)
+      // A trigger that draws its lens in place (restBackdrop) is drawn here only while its menu is open.
+      if (anchor !== active?.anchor && anchor.drawsGlass && !anchor.inPlace) drawRestingAnchor(canvas, node, anchor)
     }
     active?.draw(canvas, node, limits)
   }
@@ -265,8 +266,10 @@ internal class GlassMenuOverlay private constructor(
     lastFrameNanos = frameTimeNanos
     var running = false
     for (anchor in anchors) {
+      val wasSettled = anchor.jelly.isSettled
       anchor.jelly.advance(seconds * anchor.config.speed)
       if (!anchor.jelly.isSettled) running = true
+      if (!wasSettled || !anchor.jelly.isSettled) anchor.jellyFrame()
     }
     val active = session
     if (active != null) {
