@@ -120,6 +120,9 @@ import type {
 } from '../controls/accordion';
 import type { CodeView, PreView, CodeLinesView, CodeBlockView } from '../controls/code';
 import type { StepperView, StepperRowView } from '../controls/stepper';
+import type { TooltipView } from '../controls/tooltip';
+import type { BreadcrumbView, BreadcrumbItemView } from '../controls/breadcrumb';
+import type { ActivityHeatmapView } from '../controls/activity-heatmap';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -356,7 +359,15 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<CodeBlockView>, Of<'codeBlock'>>,
       Same<MethodsOf<StepperView>, Of<'stepper'>>,
       Same<MethodsOf<StepperRowView>, Of<'stepperRow'>>,
+      Same<MethodsOf<TooltipView>, Of<'tooltip'>>,
+      Same<MethodsOf<BreadcrumbView>, Of<'breadcrumb'>>,
+      Same<MethodsOf<BreadcrumbItemView>, Of<'breadcrumbItem'>>,
+      Same<MethodsOf<ActivityHeatmapView>, Of<'activityHeatmap'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

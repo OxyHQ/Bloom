@@ -18,6 +18,11 @@ import type { AppShellProps } from '@oxy.so/bloom/app-shell';
 import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
+import type { TooltipKind } from './controls/tooltip';
+import type { BreadcrumbKind } from './controls/breadcrumb';
+import type { ActivityHeatmapKind } from './controls/activity-heatmap';
+import type { BreadcrumbHoverMenu } from '@oxy.so/bloom/breadcrumb';
+import type { ActivityHeatmapDay } from '@oxy.so/bloom/activity-heatmap';
 import type { StepperKind } from './controls/stepper';
 import type { CodeKind } from './controls/code';
 import type { AccordionKind } from './controls/accordion';
@@ -86,6 +91,7 @@ import {
   type DotsShape,
   type DotsStyle,
   type StepperStyle,
+  type TooltipSide,
   type RatingStyle,
   type Presence,
   type ShapeName,
@@ -396,6 +402,18 @@ export interface ValueModifiers {
 
   // Steppers (controls/stepper.tsx)
   onRemove: () => void;
+
+  // Tooltips, breadcrumbs and activity heatmaps (controls/tooltip.tsx, controls/breadcrumb.tsx, controls/activity-heatmap.tsx)
+  side: TooltipSide;
+  openDelay: number;
+  collapses: true;
+  separatorView: Child;
+  hoverMenu: BreadcrumbHoverMenu;
+  days: number;
+  endDate: string;
+  levels: number[];
+  cellSize: SpaceToken;
+  onPressDay: (day: ActivityHeatmapDay) => void;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -708,7 +726,10 @@ export type NodeKind =
   | SliderKind
   | AccordionKind
   | CodeKind
-  | StepperKind;
+  | StepperKind
+  | TooltipKind
+  | BreadcrumbKind
+  | ActivityHeatmapKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1672,6 +1693,38 @@ export class Node {
   // Steppers (controls/stepper.tsx)
   onRemove(value: () => void): Node {
     return this.set('onRemove', value);
+  }
+
+  // Tooltips, breadcrumbs and activity heatmaps (controls/tooltip.tsx, controls/breadcrumb.tsx, controls/activity-heatmap.tsx)
+  side(value: TooltipSide): Node {
+    return this.set('side', value);
+  }
+  openDelay(value: number): Node {
+    return this.set('openDelay', value);
+  }
+  collapses(): Node {
+    return this.set('collapses', true);
+  }
+  separatorView(value: Child): Node {
+    return this.set('separatorView', value);
+  }
+  hoverMenu(value: BreadcrumbHoverMenu): Node {
+    return this.set('hoverMenu', value);
+  }
+  days(value: number): Node {
+    return this.set('days', value);
+  }
+  endDate(value: string): Node {
+    return this.set('endDate', value);
+  }
+  levels(value: number[]): Node {
+    return this.set('levels', value);
+  }
+  cellSize(value: SpaceToken): Node {
+    return this.set('cellSize', value);
+  }
+  onPressDay(value: (day: ActivityHeatmapDay) => void): Node {
+    return this.set('onPressDay', value);
   }
 }
 

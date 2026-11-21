@@ -180,6 +180,8 @@ export type MarkdownSize = (typeof ENUMS.markdownSize)[number];
 export type CodeLinesSize = (typeof ENUMS.codeLinesSize)[number];
 export type StepperSize = (typeof ENUMS.stepperSize)[number];
 export type StepperStyle = (typeof ENUMS.stepperStyle)[number];
+export type TooltipSide = (typeof ENUMS.tooltipSide)[number];
+export type TooltipSize = (typeof ENUMS.tooltipSize)[number];
 /** A table column's width: a space rung, or `fit` to hug its content. */
 export type ColumnWidthToken = SpaceToken | (typeof ENUMS.columnWidthExtra)[number];
 
