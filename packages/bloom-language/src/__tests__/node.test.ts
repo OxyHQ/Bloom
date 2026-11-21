@@ -63,6 +63,8 @@ describe('the typed vocabulary', () => {
     HStack('loose text');
     // @ts-expect-error `count && Text(count)` leaves 0 in the tree; write `count ? Text(count) : null`
     HStack(0 && Text('0'));
+    // @ts-expect-error a delay is one of Bloom's durations; no app writes Tailwind's delay-1000
+    Text('x').delay('1000');
     expect(true).toBe(true);
   });
 });

@@ -256,15 +256,11 @@
       "2xl": 1536
     },
     "duration": {
-      "$comment": "Milliseconds: Bloom's own durations (tokens.animation.duration), then Tailwind's other delays (delay-75, delay-500, delay-700, delay-1000), each named by its milliseconds. An image's cross-fade and a motion's delay take them.",
+      "$comment": "Milliseconds: Bloom's own durations (tokens.animation.duration). An image's cross-fade and a motion's delay take them; no app writes another delay (codemod/classname-usage.json has no delay-*).",
       "instant": 100,
       "fast": 150,
       "normal": 200,
-      "slow": 300,
-      "75": 75,
-      "500": 500,
-      "700": 700,
-      "1000": 1000
+      "slow": 300
     },
     "anchor": {
       "$comment": "The point a view scales and rotates about (SwiftUI's UnitPoint as an anchor, Tailwind's origin-*): its transform-origin, the point Tailwind's origin-* of the same name computes. Leading and trailing are left and right, as an offset's x is: a transform never mirrors.",
