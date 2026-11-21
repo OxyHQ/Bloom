@@ -128,6 +128,7 @@ import type { FileUploadView } from '../controls/file-upload';
 import type { VideoView } from '../controls/video-view';
 import type { SocialButtonView } from '../controls/social-button';
 import type { LinkPreviewView } from '../controls/link-preview';
+import type { GalleryView } from '../controls/zoomable-media-gallery';
 import type { InputGroupView, InputGroupAddonView } from '../controls/input-group';
 import type { NotificationView } from '../controls/notification';
 import type { CompositionBarView } from '../controls/composition-bar';
@@ -402,6 +403,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<TagFieldView>, Of<'tagField'>>,
       Same<MethodsOf<FileUploadView>, Of<'fileUpload'>>,
       Same<MethodsOf<VideoView>, Of<'video'>>,
+      Same<MethodsOf<GalleryView>, Of<'gallery'>>,
       Same<MethodsOf<InputGroupView>, Of<'inputGroup'>>,
       Same<MethodsOf<InputGroupAddonView>, Of<'inputGroupAddon'>>,
       Same<MethodsOf<PhoneInputView>, Of<'phoneInput'>>,
@@ -436,6 +438,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<LinkPreviewView>, Of<'linkPreview'>>,
       Same<MethodsOf<SocialButtonView>, Of<'socialButton'>>,
     ] = [
+      true,
       true,
       true,
       true,

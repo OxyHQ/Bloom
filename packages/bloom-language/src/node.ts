@@ -27,6 +27,14 @@ import type { FileUploadKind } from './controls/file-upload';
 import type { VideoViewKind } from './controls/video-view';
 import type { SocialButtonKind } from './controls/social-button';
 import type { LinkPreviewKind } from './controls/link-preview';
+import type {
+  Cover,
+  GalleryIndicator,
+  GalleryStyle,
+  GalleryView,
+} from './controls/zoomable-media-gallery';
+import type { GalleryVideo } from '@oxy.so/bloom/zoomable-media-gallery';
+import type { GalleryKind } from './controls/zoomable-media-gallery';
 import type { InputGroupKind } from './controls/input-group';
 import type { NotificationKind } from './controls/notification';
 import type { CompositionBarKind } from './controls/composition-bar';
@@ -560,6 +568,12 @@ export interface ValueModifiers {
   iconOnly: true;
   fullWidth: true;
 
+  // Media galleries (controls/zoomable-media-gallery.tsx)
+  fullScreenCover: Cover;
+  pageIndicator: GalleryIndicator;
+  videoOverlay: (media: GalleryVideo) => Child;
+  sourceAnchors: readonly (string | undefined)[];
+
   // Inputs (controls/inputs.tsx)
   required: boolean;
   floatingLabel: true;
@@ -762,7 +776,8 @@ export type Modifier =
         | DotsStyle
         | StepperStyle
         | RadioStyle
-        | SegmentedStyle;
+        | SegmentedStyle
+        | GalleryStyle;
     }
   | {
       readonly kind: 'shape';
@@ -926,6 +941,7 @@ export type NodeKind =
   | TagFieldKind
   | FileUploadKind
   | VideoViewKind
+  | GalleryKind
   | InputGroupKind
   | PhoneInputKind
   | AvatarFlightKind
@@ -1269,7 +1285,8 @@ export class Node {
       | DotsStyle
       | StepperStyle
       | RadioStyle
-      | SegmentedStyle,
+      | SegmentedStyle
+      | GalleryStyle,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
@@ -2176,6 +2193,20 @@ export class Node {
     return this.set('intent', value);
   }
 
+  // Media galleries (controls/zoomable-media-gallery.tsx)
+  fullScreenCover(isPresented: Binding<boolean>, content: GalleryView): Node {
+    return this.set('fullScreenCover', [isPresented, content]);
+  }
+  pageIndicator(value: GalleryIndicator): Node {
+    return this.set('pageIndicator', value);
+  }
+  videoOverlay(value: (media: GalleryVideo) => Child): Node {
+    return this.set('videoOverlay', value);
+  }
+  sourceAnchors(value: readonly (string | undefined)[]): Node {
+    return this.set('sourceAnchors', value);
+  }
+
   // Inputs (controls/inputs.tsx)
   required(value = true): Node {
     return this.set('required', value);
@@ -2397,6 +2428,8 @@ export interface ViewModifiers<Self> extends ViewNode {
   testID(value: string): Self;
   /** A Bloom `Badge` attached to the view, at the badge's `placement` (the top right by default). */
   badge(value: BadgeView): Self;
+  /** What the binding presents over the screen while it is true (a `Gallery`); dismissing it clears the binding. */
+  fullScreenCover(isPresented: Binding<boolean>, content: GalleryView): Self;
   id(value: string | number): Self;
   // The screen's chrome: read from the root of a router `screen()` body, nothing elsewhere.
   /** The screen's title: the navigation bar's on iOS, the page header's elsewhere. */

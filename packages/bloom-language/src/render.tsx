@@ -132,6 +132,7 @@ import {
 } from './style';
 import { StateHost } from './state-host';
 import { CONTROLS } from './controls';
+import { presentCover } from './controls/zoomable-media-gallery';
 import {
   STATES,
   both,
@@ -967,9 +968,17 @@ function drawNode(
   const badge = ownValue(p, 'badge')?.value;
   if (isNode(badge) && badge.kind === 'badge') {
     // An attached badge is Bloom's Badge around the view, at its placement.
-    return draw(BloomBadge, { ...badgeProps(badge, plan(badge)), key: reactKey }, element);
+    element = draw(BloomBadge, { ...badgeProps(badge, plan(badge)), key: reactKey }, element);
   }
-  return element;
+  const cover = ownValue(p, 'fullScreenCover')?.value;
+  if (cover === undefined) return element;
+  // What the view presents over the screen, beside it.
+  return presentCover(
+    element as ReactElement,
+    cover,
+    (child) => renderChild(child, inner, undefined),
+    reactKey,
+  );
 }
 
 function boxStyle(layer: Layer | undefined, flex: string, p: Plan): Resolved {

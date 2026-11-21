@@ -1217,3 +1217,23 @@ fn social_buttons_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn media_galleries_are_checked() {
+    let imports = "import { Gallery, Image, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (open, page, items, f) => Image('a').fullScreenCover(open, Gallery(items).page(page).style('page').pageIndicator('thumbnails').mediaCorner('full').nativeControls(true).videoOverlay(() => Text('v')).sourceAnchors(['a']).labels({}));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("Gallery(t).style('sheet')", "Unknown galleryStyle token 'sheet' for .style()"),
+        ("Gallery(t).pageIndicator('bars')", "Unknown galleryIndicator token 'bars' for .pageIndicator()"),
+        ("Gallery(t).padding('md')", "Gallery has no modifier .padding()"),
+        ("Text('a').fullScreenCover(t)", ".fullScreenCover() takes 2 argument(s), not 1"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (t) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
