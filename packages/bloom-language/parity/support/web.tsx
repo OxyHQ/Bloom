@@ -202,7 +202,7 @@ function ancestorScope(element: Element, rules: CSSStyleRule[]): Record<string, 
  * the tree, not its count.
  */
 const REACT_ID = /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
-const BLOOM_ID = /\bbloom-[a-z]+(?:-[a-z]+)*-?\d+(?![\w-])/g;
+const BLOOM_ID = /\bbloom(?:-[a-z]{2,})+-?\d+(?![\w-])/g;
 let ids: Map<string, string> = new Map();
 function byOrder(id: string): string {
   let seen = ids.get(id);
@@ -212,9 +212,9 @@ function byOrder(id: string): string {
   }
   return seen;
 }
-/** React's ids first: an id Bloom names with a React id inside it is then one id. */
+/** Bloom's counted ids first (their words are two letters or more), then React's. */
 function reactIds(text: string): string {
-  return text.replace(REACT_ID, byOrder).replace(BLOOM_ID, byOrder);
+  return text.replace(BLOOM_ID, byOrder).replace(REACT_ID, byOrder);
 }
 
 const MARK = 'data-parity-subject';
