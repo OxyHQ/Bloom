@@ -3150,7 +3150,10 @@
       "constructors": ["TokensChartCard"],
       "modifiers": ["tint", "activeTint"],
       "tint": "color"
-    }
+    },
+    "composerPanel": { "constructors": ["ComposerPanel"], "modifiers": ["disabled"] },
+    "composerPill": { "constructors": ["ComposerPill"], "modifiers": ["disabled", "surface"] },
+    "composerPanelStatusTab": { "constructors": ["ComposerPanelStatusTab"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
