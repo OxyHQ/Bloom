@@ -1313,7 +1313,6 @@
     "onDragEnter": ["value"],
     "onDragOver": ["value"],
     "onDragLeave": ["value"],
-    "onComplete": ["value"],
     "opaque": ["value?"],
     "mediaCorner": ["corner"],
     "caption": ["value"],
@@ -1321,7 +1320,8 @@
     "onRetry": ["value"],
     "onAdd": ["value"],
     "addHint": ["value"],
-    "imageVariant": ["value"]
+    "imageVariant": ["value"],
+    "optionBox": ["value"]
   },
   "universal": [
     "padding",
@@ -2804,6 +2804,10 @@
         "disabled",
         "labels"
       ]
+    },
+    "choiceList": {
+      "constructors": ["ChoiceList"],
+      "modifiers": ["axis", "spacing", "optionBox", "disabled"]
     }
   },
   "sfSymbols": {
