@@ -1988,6 +1988,42 @@ Bloom's `ActivityHeatmap`: `.days(n)`, `.endDate()`, `.levels([...])`,
 `.emptyTint(role)`, `.cellSize()`, `.spacing()`, `.weekStart(0 | 1)`,
 `.labels({ months, weekdays })` and `.onPressDay()`. Its steps are the accent's.
 
+### Tag fields
+
+```ts
+TagField([topics, setTopics], 'Topics').suggestions(known, 5).max(10).placeholder('Add a topic')
+```
+
+Bloom's `TagField`: the binding's tags; a title is its visible label and name.
+It takes `.placeholder()`, `.suggestions(list, max?)`, `.allowsCreate(false)`,
+`.max(n)` and `.onMaxReached()`, `.normalize(fn)`, `.query([text, set])` (the
+typed text, when the screen owns it), `.tint(accentTone)`, `.size()`,
+`.disabled()`, `.invalid()` and `.labels()`. (Bloom's chips throw on the
+`secondary` and `tertiary` tones, which its type allows; the language takes
+them as Bloom does.)
+
+### File uploads
+
+```ts
+FileUpload().allowedExtensions(['pdf']).maxBytes(5_000_000).onFileSelected(upload)
+  .file(current).uploadProgress(progress)
+```
+
+Bloom's `FileUpload`: `.file()` and `.uploadProgress(0…100)` (the screen's
+upload), `.onFileSelected()`, `.onUploadComplete()`, `.onReject()`,
+`.picker(fn)`, `.allowedExtensions()`, `.maxBytes()`, `.fileIcon(file =>
+view)`, `.disabled()` and `.labels()`.
+
+### Videos
+
+```ts
+Video(player).contentFit('cover').frame({ width: 'full', height: '200' })
+```
+
+Bloom's `VideoView` (expo-video's, inline and on Android's texture view by
+default): the app's own player, `.contentFit()`, `.nativeControls()` and
+`.allowsPictureInPicture()`.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2416,7 +2452,8 @@ and `@oxy.so/bloom-data` beside it.
 - Generic components (see [Generic components](#generic-components)), drawn as
   Bloom's own: the date and time pickers, ratings, meters and progress bars, stickers,
   tables, rows and lists, carousels, markdown, sliders,
-  accordions, code, steppers, tooltips, breadcrumbs, activity heatmaps.
+  accordions, code, steppers, tooltips, breadcrumbs, activity heatmaps,
+  tag fields, file uploads, videos.
 
 **Not built**
 

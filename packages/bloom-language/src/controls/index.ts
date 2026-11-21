@@ -18,6 +18,9 @@ import { STEPPERS } from './stepper';
 import { TOOLTIPS } from './tooltip';
 import { BREADCRUMBS } from './breadcrumb';
 import { ACTIVITY_HEATMAPS } from './activity-heatmap';
+import { TAG_FIELDS } from './tag-field';
+import { FILE_UPLOADS } from './file-upload';
+import { VIDEOS } from './video-view';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -43,4 +46,7 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...TOOLTIPS,
   ...BREADCRUMBS,
   ...ACTIVITY_HEATMAPS,
+  ...TAG_FIELDS,
+  ...FILE_UPLOADS,
+  ...VIDEOS,
 };

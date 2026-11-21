@@ -32,6 +32,9 @@ import { STEPPER_CASES } from '../../parity/stepper.cases';
 import { TOOLTIP_CASES } from '../../parity/tooltip.cases';
 import { BREADCRUMB_CASES } from '../../parity/breadcrumb.cases';
 import { ACTIVITY_HEATMAP_CASES } from '../../parity/activity-heatmap.cases';
+import { TAG_FIELD_CASES } from '../../parity/tag-field.cases';
+import { FILE_UPLOAD_CASES } from '../../parity/file-upload.cases';
+import { VIDEO_CASES } from '../../parity/video-view.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -69,6 +72,9 @@ export const FAMILIES = {
   tooltip: TOOLTIP_CASES,
   breadcrumb: BREADCRUMB_CASES,
   activityHeatmap: ACTIVITY_HEATMAP_CASES,
+  tagField: TAG_FIELD_CASES,
+  fileUpload: FILE_UPLOAD_CASES,
+  video: VIDEO_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';

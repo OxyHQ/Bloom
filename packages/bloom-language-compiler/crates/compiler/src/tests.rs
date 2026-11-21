@@ -968,3 +968,22 @@ fn tooltips_breadcrumbs_and_heatmaps_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn tag_fields_file_uploads_and_videos_are_checked() {
+    let imports = "import { TagField, FileUpload, Video, Text, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (tags, q, f, file, player) => VStack(TagField(tags, 'Topics').placeholder('Add').suggestions([], 3).allowsCreate(false).max(3).onMaxReached(f).normalize(f).query(q).tint('vivid').size('sm').disabled().invalid().labels({}), FileUpload().file(file).uploadProgress(40).onFileSelected(f).onUploadComplete(f).onReject(f).picker(f).allowedExtensions(['pdf']).maxBytes(5).fileIcon(() => Text('f')).disabled().labels({}), Video(player).contentFit('contain').nativeControls(true).allowsPictureInPicture(false));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("TagField(t).tint('danger')", "Unknown accentTone token 'danger' for .tint()"),
+        ("Video(t).contentFit('stretch')", "Unknown contentFit token 'stretch' for .contentFit()"),
+        ("FileUpload().nativeControls(true)", "FileUpload has no modifier .nativeControls()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (t) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
