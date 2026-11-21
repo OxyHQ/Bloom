@@ -5,6 +5,7 @@ export const DatePicker = 'DatePicker';
 export const DateRangePicker = 'DateRangePicker';
 export const RangeCalendar = 'RangeCalendar';
 export const TimeField = 'TimeField';
+export const MeetingScheduler = 'MeetingScheduler';
 export const Rating = 'Rating';
 export const RatingBar = 'RatingBar';
 export const RatingInput = 'RatingInput';

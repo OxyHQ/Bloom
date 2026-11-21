@@ -2,6 +2,7 @@ import {
   Calendar as BloomCalendar,
   DatePicker as BloomDatePicker,
   DateRangePicker as BloomDateRangePicker,
+  MeetingScheduler as BloomMeetingScheduler,
   RangeCalendar as BloomRangeCalendar,
   TimeField as BloomTimeField,
   type DatePickerLabels,
@@ -9,6 +10,10 @@ import {
   type DateRangePickerLabels,
   type CalendarLabels,
   type HourFormat,
+  type MeetingSchedulerDetails,
+  type MeetingSchedulerHost,
+  type MeetingSchedulerLabels,
+  type MeetingSchedulerValue,
   type WeekStart,
 } from '@oxy.so/bloom/date-picker';
 
@@ -22,7 +27,8 @@ export type DatePickerKind =
   | 'dateRangePicker'
   | 'calendar'
   | 'rangeCalendar'
-  | 'timeField';
+  | 'timeField'
+  | 'meetingScheduler';
 
 export interface SelectionProps<T> {
   readonly selection: Binding<T>;
@@ -94,6 +100,24 @@ export interface TimeFieldView extends ViewModifiers<TimeFieldView> {
   disabled(value?: boolean): TimeFieldView;
 }
 
+/** Bloom `MeetingScheduler`: a trigger that opens a host's card, a month and the day's time slots. */
+export interface MeetingSchedulerView
+  extends ViewModifiers<MeetingSchedulerView>,
+    DateConstraints<MeetingSchedulerView> {
+  /** The bookable times, 24h `"HH:mm"` (every half hour 09:00 to 18:30 by default). */
+  timeSlots(value: readonly string[]): MeetingSchedulerView;
+  /** How its times are drawn at first: `24h` (default) or `12h`; the reader can switch. */
+  hourFormat(value: HourFormat): MeetingSchedulerView;
+  /** Makes the timezone row a button. */
+  onTimezonePress(value: () => void): MeetingSchedulerView;
+  /** The trigger's text (Bloom's `Schedule a meeting` by default). */
+  triggerTitle(value: string): MeetingSchedulerView;
+  disabled(value?: boolean): MeetingSchedulerView;
+  /** Whether its popup is open, and what opening and closing it set. */
+  presented(value: Binding<boolean>): MeetingSchedulerView;
+  labels(value: MeetingSchedulerLabels): MeetingSchedulerView;
+}
+
 /** Bloom `DatePicker`: the day the binding holds (`null` for none), set on Apply. */
 export function DatePicker(selection: Binding<Date | null>): DatePickerView {
   return new Node('datePicker', { selection } satisfies SelectionProps<Date | null>, []);
@@ -113,6 +137,20 @@ export function RangeCalendar(selection: Binding<DateRange | null>): RangeCalend
 /** Bloom `TimeField`: the `"HH:mm"` time the binding holds (`null` while empty), set when committed. */
 export function TimeField(selection: Binding<string | null>): TimeFieldView {
   return new Node('timeField', { selection }, []);
+}
+
+/**
+ * Bloom `MeetingScheduler`: the booking the binding holds (a day and a time,
+ * or `null`), set by its "Send meeting"; `host` and `meeting` are its card,
+ * `timezone` its timezone row.
+ */
+export function MeetingScheduler(
+  booking: Binding<MeetingSchedulerValue | null>,
+  host: MeetingSchedulerHost,
+  meeting: MeetingSchedulerDetails,
+  timezone: string,
+): MeetingSchedulerView {
+  return new Node('meetingScheduler', { selection: booking, host, meeting, timezone }, []);
 }
 
 function selected(d: ControlDraw): Record<string, unknown> {
@@ -182,5 +220,27 @@ export const DATE_PICKERS: Record<DatePickerKind, ControlRenderer> = {
     props.placeholder = d.own('placeholder')?.value;
     props.disabled = d.own('disabled')?.value;
     return d.component(BloomTimeField, props);
+  },
+  meetingScheduler: (d) => {
+    const { host, meeting, timezone } = d.node.props as {
+      host: MeetingSchedulerHost;
+      meeting: MeetingSchedulerDetails;
+      timezone: string;
+    };
+    const props = constrained(d);
+    Object.assign(props, {
+      host,
+      meeting,
+      timezone,
+      timeSlots: d.own('timeSlots')?.value,
+      defaultHourFormat: d.own('hourFormat')?.value,
+      onTimezonePress: d.own('onTimezonePress')?.value,
+      triggerLabel: d.own('triggerTitle')?.value,
+      disabled: d.own('disabled')?.value,
+      testID: d.testID,
+    });
+    const presented = d.own('presented')?.value;
+    if (presented !== undefined) [props.open, props.onOpenChange] = presented;
+    return d.component(BloomMeetingScheduler, props);
   },
 };

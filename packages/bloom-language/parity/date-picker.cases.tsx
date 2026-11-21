@@ -2,6 +2,7 @@ import {
   Calendar,
   DatePicker,
   DateRangePicker,
+  MeetingScheduler,
   RangeCalendar,
   TimeField,
 } from '@oxy.so/bloom/date-picker';
@@ -212,4 +213,94 @@ const times: ParityCase[] = [
   },
 ];
 
-export const DATE_PICKER_CASES: readonly ParityCase[] = [...pickers, ...calendars, ...times];
+const HOST = { name: 'Maya Collins', email: 'hi@example.com', avatarInitial: 'M' };
+const MEETING = {
+  title: '30 min intro meeting',
+  description: 'How we can work together',
+  durationMinutes: 30,
+  language: 'English',
+  conferencing: 'Video call',
+};
+const BOOKING = { date: DAY, time: '10:30' };
+const SLOTS = ['09:00', '09:30', '10:00', '10:30', '11:00'];
+
+const meetings: ParityCase[] = [
+  {
+    name: 'MeetingScheduler',
+    language: () =>
+      toElement(L.MeetingScheduler([null, set], HOST, MEETING, 'Amsterdam').testID('meeting')),
+    bloom: () => (
+      <MeetingScheduler
+        host={HOST}
+        meeting={MEETING}
+        timezone="Amsterdam"
+        value={null}
+        onChange={set}
+        testID="meeting"
+      />
+    ),
+  },
+  {
+    name: 'MeetingScheduler open, booked, its own slots and words, 12h, bounded',
+    language: () =>
+      toElement(
+        L.MeetingScheduler([BOOKING, set], HOST, MEETING, 'Amsterdam')
+          .presented([true, set])
+          .timeSlots(SLOTS)
+          .hourFormat('12h')
+          .bounds(MIN, MAX)
+          .weekStart(1)
+          .onTimezonePress(set)
+          .labels({ send: 'Book' })
+          .label('Book a call'),
+      ),
+    bloom: () => (
+      <MeetingScheduler
+        host={HOST}
+        meeting={MEETING}
+        timezone="Amsterdam"
+        value={BOOKING}
+        onChange={set}
+        open
+        onOpenChange={set}
+        timeSlots={SLOTS}
+        defaultHourFormat="12h"
+        minDate={MIN}
+        maxDate={MAX}
+        weekStartsOn={1}
+        onTimezonePress={set}
+        labels={{ send: 'Book' }}
+        accessibilityLabel="Book a call"
+      />
+    ),
+  },
+  {
+    name: 'MeetingScheduler with a trigger of its own words, disabled, padded',
+    language: () =>
+      toElement(
+        L.MeetingScheduler([null, set], HOST, MEETING, 'Lisbon')
+          .triggerTitle('Book a call')
+          .disabled()
+          .padding('sm'),
+      ),
+    bloom: () => (
+      <MeetingScheduler
+        host={HOST}
+        meeting={MEETING}
+        timezone="Lisbon"
+        value={null}
+        onChange={set}
+        triggerLabel="Book a call"
+        disabled
+        style={{ paddingTop: 8, paddingBottom: 8, paddingStart: 8, paddingEnd: 8 }}
+      />
+    ),
+  },
+];
+
+export const DATE_PICKER_CASES: readonly ParityCase[] = [
+  ...pickers,
+  ...calendars,
+  ...times,
+  ...meetings,
+];

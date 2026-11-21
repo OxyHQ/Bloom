@@ -112,6 +112,7 @@ import type {
   CalendarView,
   RangeCalendarView,
   TimeFieldView,
+  MeetingSchedulerView,
 } from '../controls/date-picker';
   RatingView,
   RatingInputView,
@@ -428,6 +429,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<CalendarView>, Of<'calendar'>>,
       Same<MethodsOf<RangeCalendarView>, Of<'rangeCalendar'>>,
       Same<MethodsOf<TimeFieldView>, Of<'timeField'>>,
+      Same<MethodsOf<MeetingSchedulerView>, Of<'meetingScheduler'>>,
       Same<MethodsOf<RatingView>, Of<'rating'>>,
       Same<MethodsOf<RatingInputView>, Of<'ratingInput'>>,
       Same<MethodsOf<RatingBarView>, Of<'ratingBar'>>,
@@ -503,6 +505,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<LinkPreviewView>, Of<'linkPreview'>>,
       Same<MethodsOf<SocialButtonView>, Of<'socialButton'>>,
     ] = [
+      true,
       true,
       true,
       true,

@@ -868,6 +868,11 @@ export interface ValueModifiers {
   iconOnly: true;
   fullWidth: true;
 
+  // Meeting schedulers (controls/date-picker.tsx)
+  timeSlots: readonly string[];
+  onTimezonePress: () => void;
+  triggerTitle: string;
+
   // Media galleries (controls/zoomable-media-gallery.tsx)
   fullScreenCover: Cover;
   pageIndicator: GalleryIndicator;
@@ -3124,6 +3129,17 @@ export class Node {
   }
   sourceAnchors(value: readonly (string | undefined)[]): Node {
     return this.set('sourceAnchors', value);
+  }
+
+  // Meeting schedulers (controls/date-picker.tsx)
+  timeSlots(value: readonly string[]): Node {
+    return this.set('timeSlots', value);
+  }
+  onTimezonePress(value: () => void): Node {
+    return this.set('onTimezonePress', value);
+  }
+  triggerTitle(value: string): Node {
+    return this.set('triggerTitle', value);
   }
 
   // Context menus (controls/context-menu.tsx)
