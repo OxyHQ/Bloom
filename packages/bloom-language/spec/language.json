@@ -567,7 +567,8 @@
     "searchCollapse": ["auto"],
     "otpCharacters": ["numeric", "alphanumeric"],
     "dragAction": ["copy", "move", "link"],
-    "expandableTextStyle": ["below", "inline"]
+    "expandableTextStyle": ["below", "inline"],
+    "videoSurface": ["textureView", "surfaceView"]
   },
   "glass": {
     "$comment": [
@@ -1032,7 +1033,10 @@
     "readoutFormat": ["value"],
     "country": ["value"],
     "countries": ["value"],
-    "showsInfo": []
+    "showsInfo": [],
+    "surfaceType": ["videoSurface"],
+    "flightId": ["value"],
+    "videoSlot": ["value"]
   },
   "universal": [
     "padding",
@@ -2006,7 +2010,21 @@
         "labels"
       ],
       "size": "controlSize"
-    }
+    },
+    "mediaFlightLayer": {
+      "constructors": ["MediaFlightLayer"],
+      "modifiers": []
+    },
+    "mediaFlightHost": {
+      "constructors": ["MediaFlightHost"],
+      "modifiers": ["contentFit", "nativeControls", "surfaceType", "flightId", "videoSlot"]
+    },
+    "mediaSurface": {
+      "constructors": ["MediaSurface"],
+      "modifiers": ["contentFit", "nativeControls", "surfaceType", "flightId", "videoSlot"]
+    },
+    "mediaPoster": { "constructors": ["MediaPoster"], "modifiers": ["contentFit"] },
+    "emptyMediaSurface": { "constructors": ["EmptyMediaSurface"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
