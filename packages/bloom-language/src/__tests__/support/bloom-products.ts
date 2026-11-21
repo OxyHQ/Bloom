@@ -24,3 +24,6 @@ export const Sparkline = 'Sparkline';
 export const StageBarsCard = 'StageBarsCard';
 export const StepsCard = 'StepsCard';
 export const TokensChartCard = 'TokensChartCard';
+export const ComposerPanel = 'ComposerPanel';
+export const ComposerPanelStatusTab = 'ComposerPanelStatusTab';
+export const ComposerPill = 'ComposerPill';

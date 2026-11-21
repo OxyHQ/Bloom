@@ -110,6 +110,11 @@ import type {
   StepsCardView,
   TokensChartCardView,
 } from '../controls/chart-cards';
+import type {
+  ComposerPanelView,
+  ComposerPillView,
+  ComposerPanelStatusTabView,
+} from '../controls/composer-panel';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -333,7 +338,13 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<StageBarsCardView>, Of<'stageBarsCard'>>,
       Same<MethodsOf<StepsCardView>, Of<'stepsCard'>>,
       Same<MethodsOf<TokensChartCardView>, Of<'tokensChartCard'>>,
+      Same<MethodsOf<ComposerPanelView>, Of<'composerPanel'>>,
+      Same<MethodsOf<ComposerPillView>, Of<'composerPill'>>,
+      Same<MethodsOf<ComposerPanelStatusTabView>, Of<'composerPanelStatusTab'>>,
     ] = [
+      true,
+      true,
+      true,
       true,
       true,
       true,

@@ -217,7 +217,6 @@ export type {
   MessageContextMenuView,
   ReactionPickerOptions,
   ReactionPickerView,
-  Suggestion,
   SuggestionListOptions,
   SuggestionListView,
   VoiceRecorderOptions,
@@ -271,3 +270,14 @@ export type {
   TokensChartCardOptions,
   TokensChartCardView,
 } from './controls/chart-cards';
+
+// Composer panel (controls/composer-panel.tsx)
+export { ComposerPanel, ComposerPanelStatusTab, ComposerPill } from './controls/composer-panel';
+export type {
+  ComposerPanelOptions,
+  ComposerPanelStatusTabOptions,
+  ComposerPanelStatusTabView,
+  ComposerPanelView,
+  ComposerPillOptions,
+  ComposerPillView,
+} from './controls/composer-panel';

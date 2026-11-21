@@ -590,3 +590,22 @@ fn chart_cards_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_composer_panel_is_checked() {
+    let imports = "import { ComposerPanel, ComposerPanelStatusTab, ComposerPill, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (p) => VStack(ComposerPanel(p, { busy: true }).disabled(), ComposerPill(p).surface(false).disabled(), ComposerPanelStatusTab({ branch: 'main' }));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("ComposerPanel(p).surface(false)", "ComposerPanel has no modifier .surface()"),
+        ("ComposerPill(p).size('sm')", "ComposerPill has no modifier .size()"),
+        ("ComposerPanelStatusTab().disabled()", "ComposerPanelStatusTab has no modifier .disabled()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (p) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

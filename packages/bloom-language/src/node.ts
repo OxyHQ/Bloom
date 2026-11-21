@@ -20,6 +20,7 @@ import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/blo
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 
 import type { AgentAvatarKind } from './controls/agent-avatar';
+import type { ComposerPanelKind } from './controls/composer-panel';
 import type { ChartCardKind } from './controls/chart-cards';
 import type { ChatComposerKind } from './controls/chat-composer';
 import type { ContainerKind } from './controls/containers';
@@ -589,7 +590,8 @@ export type NodeKind =
   | ContainerKind
   | AgentAvatarKind
   | ChatComposerKind
-  | ChartCardKind;
+  | ChartCardKind
+  | ComposerPanelKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
