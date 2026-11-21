@@ -166,6 +166,7 @@ export type RatingSize = (typeof ENUMS.ratingSize)[number];
 export type RatingStyle = (typeof ENUMS.ratingStyle)[number];
 export type RatingCountStyle = (typeof ENUMS.ratingCountStyle)[number];
 export type RatingInputSize = (typeof ENUMS.ratingInputSize)[number];
+export type MeterCap = (typeof ENUMS.meterCap)[number];
 
 export {
   COLORS,
