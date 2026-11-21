@@ -749,7 +749,9 @@
     "statCardsVariant": ["plain", "footer"],
     "playButtonSize": ["sm", "md", "lg"],
     "playButtonStyle": ["accent", "inverse", "plain"],
-    "playbackTimes": ["inline", "below"]
+    "playbackTimes": ["inline", "below"],
+    "agentThinkingStyle": ["wave", "spin", "stars", "infinity"],
+    "agentThinkingTone": ["subtle", "default", "primary", "accent"]
   },
   "glass": {
     "$comment": [
@@ -3193,7 +3195,28 @@
       "constructors": ["PlaybackProgress"],
       "modifiers": ["style", "disabled"],
       "style": "playbackTimes"
-    }
+    },
+    "agentLimitsCard": { "constructors": ["AgentLimitsCard"], "modifiers": [] },
+    "usageCard": { "constructors": ["UsageCard"], "modifiers": [] },
+    "agentThinking": {
+      "constructors": ["AgentThinking"],
+      "modifiers": ["style", "tint"],
+      "style": "agentThinkingStyle",
+      "tint": "agentThinkingTone"
+    },
+    "agentProgress": { "constructors": ["AgentProgress"], "modifiers": [] },
+    "agentProgressLoadingText": {
+      "constructors": ["AgentProgressLoadingText"],
+      "modifiers": ["lines"]
+    },
+    "agentLogRow": { "constructors": ["AgentLogRow"], "modifiers": [] },
+    "agentLogShimmerText": { "constructors": ["AgentLogShimmerText"], "modifiers": [] },
+    "agentLogToolCall": { "constructors": ["AgentLogToolCall"], "modifiers": [] },
+    "agentLogToolCalls": { "constructors": ["AgentLogToolCalls"], "modifiers": [] },
+    "agentLogWorkingRow": { "constructors": ["AgentLogWorkingRow"], "modifiers": [] },
+    "composerLoader": { "constructors": ["ComposerLoader"], "modifiers": [] },
+    "conversationSidebar": { "constructors": ["ConversationSidebar"], "modifiers": [] },
+    "questionnaire": { "constructors": ["Questionnaire"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
