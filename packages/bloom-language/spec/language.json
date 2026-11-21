@@ -726,7 +726,8 @@
     "tooltipSide": ["top", "bottom"],
     "tooltipSize": ["sm", "md"],
     "otpCharacters": ["numeric", "alphanumeric"],
-    "dragAction": ["copy", "move", "link"]
+    "dragAction": ["copy", "move", "link"],
+    "expandableTextStyle": ["below", "inline"]
   },
   "glass": {
     "$comment": [
@@ -2832,6 +2833,11 @@
     "hoverCard": {
       "constructors": ["HoverCard"],
       "modifiers": ["presented", "openDelay", "closeDelay", "side", "align", "padded", "disabled"]
+    },
+    "expandableText": {
+      "constructors": ["ExpandableText"],
+      "modifiers": ["lines", "style", "labels"],
+      "style": "expandableTextStyle"
     }
   },
   "sfSymbols": {
