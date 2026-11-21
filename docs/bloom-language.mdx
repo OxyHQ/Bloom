@@ -1261,6 +1261,60 @@ modal's native parity compares nothing: in Bloom's own test environment its
 portal resolves to the web's DOM portal, which draws nothing there, so it is
 proven on the web (jsdom and Chrome) only.
 
+### Panels, deck, inspector and destinations
+
+```ts
+export default layout(function App() {
+  const [details, setDetails] = useState(false);
+  return AppLayout(Stack('(tabs)', Sheet('compose')))
+    .destinations(
+      Destination('index', '/').label(t('home')).icon(RiHome5Line).activeIcon(RiHome5Fill).bar(),
+      Destination('notifications', '/notifications').label(t('alerts')).icon(RiNotification3Line).bar(),
+      Destination('write', '/write').page(),
+    )
+    .shellLayout('workspace')
+    .panels(
+      Panel('main'),
+      Panel('details', Details()).panelRole('inspector').label(t('details')).presented(details).onPresentedChange(setDetails),
+    )
+    .primaryAction(RiQuillPenLine, t('compose'), 'write');
+});
+```
+
+`AppLayout` says the rest of Bloom's `AppShell` in the language, over what
+`.shell(navigator => options)` gives (which stays for the options the
+language does not name):
+
+| Modifier | Bloom |
+| --- | --- |
+| `.shellLayout('workspace' \| 'collection-detail' \| 'feed' \| 'deck' \| 'catalog' \| 'map-browser')` | `AppShell`'s `layout` (a deck: columns side by side that scroll across) |
+| `.shellPresentation('continuous' \| 'framed' \| 'floating')` | `presentation` |
+| `.panels(...panels)` | `panelLayout.panels`, over the options' own `panelLayout` |
+| `.destinations(...destinations)`, `.onReselect(name => …)` | a `TabPagerProvider` above the shell, with these `destinations` and its `onReselect` |
+
+A `Panel(id, content?)` is an `AppShellPanelDefinition`: without content it
+holds the layout's navigator, with it that view beside it. `.panelRole` is its
+`role` (`main`, `collection`, `detail`, `inspector`, `context`, `canvas`,
+each with Bloom's widths), and `.label`, `.width`, `.minWidth`, `.maxWidth`,
+`.resizable`, `.hidden` (`visible={false}`), `.keepMounted` and `.testID` its
+own. An **inspector** is a panel with the `inspector` role and
+`.presented(open)`/`.onPresentedChange(fn)` (Bloom's `open`/`onOpenChange`,
+and it needs a `.label`): a column at the end from `lg`, a floating sheet from
+the end below it, as Bloom draws it.
+
+A `Destination(name, href)` is Bloom's `AppDestination`: `.label`, `.icon`,
+`.activeIcon`, `.badge`, `.bar()` (a tab of the bottom bar and a page),
+`.page()` (a page without a tab), `.preload()`, `.sidebar(false)`,
+`.sidebarAfter(name)`, `.onPress`, `.onLongPress`. With destinations the
+layout draws Bloom's pager provider above the shell, so the app no longer
+mounts one by hand; the router's `TabView()` is the pager itself (see
+[Navigation](#navigation)).
+
+The shell lays its panels out once it has measured itself, which neither jsdom
+nor the test renderer does: the parity suite proves the shell's frame and
+semantic layout there, the panels' definitions are unit tests, and Chrome
+(`verify-parity-web.mjs`) compares the laid-out panels.
+
 ## Image
 
 `Image(source, alt?)` is Bloom's `BloomImage`: expo-image on a device,

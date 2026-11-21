@@ -99,6 +99,9 @@ import {
   type SidebarSize,
   type FooterPinning,
   type SettingsView,
+  type ShellLayout,
+  type ShellPresentation,
+  type PanelRole,
   type TextAlignment,
   type TextCase,
   type TextStyleName,
@@ -145,6 +148,9 @@ export type {
   SidebarSize,
   FooterPinning,
   SettingsView,
+  ShellLayout,
+  ShellPresentation,
+  PanelRole,
 };
 export type { GlassValue };
 export type EngagementTone = Exclude<AccentTone, 'default'>;
@@ -250,7 +256,8 @@ export interface ValueModifiers {
   header: ScreenHeader;
   headingLevel: HeadingLevel;
   backLabel: string | undefined;
-  onReselect: (() => void) | undefined;
+  /** A screen's (no argument) or an app layout's (the reselected destination's name). */
+  onReselect: ((name: string) => void) | undefined;
   screenKind: ScreenKind;
   screenScroll: ScreenScroll;
   documentScroll: boolean;
@@ -296,6 +303,20 @@ export interface ValueModifiers {
   content: () => Child;
   fullBleed: boolean;
   initialView: SettingsView;
+  shellLayout: ShellLayout;
+  shellPresentation: ShellPresentation;
+  panels: readonly Child[];
+  destinations: readonly Child[];
+  panelRole: PanelRole;
+  minWidth: SpaceToken;
+  maxWidth: SpaceToken;
+  resizable: boolean;
+  keepMounted: boolean;
+  page: boolean;
+  preload: boolean;
+  bar: boolean;
+  sidebar: boolean;
+  sidebarAfter: string;
   bottomBar: boolean;
   shell: ShellOptions;
   tag: string;
@@ -673,6 +694,8 @@ export type NodeKind =
   | 'settings'
   | 'settingsGroup'
   | 'settingsItem'
+  | 'panel'
+  | 'destination'
   | 'lottie';
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
@@ -1132,7 +1155,7 @@ export class Node {
   sheet(open: boolean, content: () => Child, options?: SheetOptions): Node {
     return this.with({ kind: 'sheet', key: 'sheet', open, content, options });
   }
-  onReselect(value: (() => void) | undefined): Node {
+  onReselect(value: ((name: string) => void) | undefined): Node {
     return this.set('onReselect', value);
   }
   footer(content: Child, options?: ScreenFooter | SheetFooter): Node {
@@ -1291,6 +1314,48 @@ export class Node {
   }
   initialView(value: SettingsView): Node {
     return this.set('initialView', value);
+  }
+  shellLayout(value: ShellLayout): Node {
+    return this.set('shellLayout', value);
+  }
+  shellPresentation(value: ShellPresentation): Node {
+    return this.set('shellPresentation', value);
+  }
+  panels(...value: Child[]): Node {
+    return this.set('panels', value);
+  }
+  destinations(...value: Child[]): Node {
+    return this.set('destinations', value);
+  }
+  panelRole(value: PanelRole): Node {
+    return this.set('panelRole', value);
+  }
+  minWidth(value: SpaceToken): Node {
+    return this.set('minWidth', value);
+  }
+  maxWidth(value: SpaceToken): Node {
+    return this.set('maxWidth', value);
+  }
+  resizable(value = true): Node {
+    return this.set('resizable', value);
+  }
+  keepMounted(value = true): Node {
+    return this.set('keepMounted', value);
+  }
+  page(value = true): Node {
+    return this.set('page', value);
+  }
+  preload(value = true): Node {
+    return this.set('preload', value);
+  }
+  bar(value = true): Node {
+    return this.set('bar', value);
+  }
+  sidebar(value = true): Node {
+    return this.set('sidebar', value);
+  }
+  sidebarAfter(value: string): Node {
+    return this.set('sidebarAfter', value);
   }
   primaryAction(icon: IconComponent, label: string, destination: string): Node {
     return this.with({ kind: 'primaryAction', key: 'primaryAction', icon, label, destination });
@@ -2303,6 +2368,55 @@ export interface AppLayoutView extends ViewNode {
   /** The shell's own options (panels, layout mode, error boundaries); `navigator` is where the stack goes. */
   shell(value: ShellOptions): AppLayoutView;
   testID(value: string): AppLayoutView;
+  /** The shell's semantic layout: `workspace`, `collection-detail`, `feed`, `deck`, `catalog` or `map-browser`. */
+  shellLayout(value: ShellLayout): AppLayoutView;
+  /** How the shell frames its content: `continuous`, `framed` or `floating`. */
+  shellPresentation(value: ShellPresentation): AppLayoutView;
+  /** The shell's panels, in order; a `Panel` without content holds the navigator. */
+  panels(...value: PanelView[]): AppLayoutView;
+  /** The app's destinations (Bloom's `TabPagerProvider`): the pager's pages, the bar's tabs, the sidebar's rows. */
+  destinations(...value: DestinationView[]): AppLayoutView;
+  /** Pressing the destination in front again, by its name (Bloom's scroll to the top, then reload, by default). */
+  onReselect(value: ((name: string) => void) | undefined): AppLayoutView;
+}
+/** A panel of the app's shell: the navigator, or a view beside it (a detail, an inspector). */
+export interface PanelView extends ViewNode {
+  /** What the panel is: `main`, `collection`, `detail`, `inspector`, `context` or `canvas` (each with Bloom's widths). */
+  panelRole(value: PanelRole): PanelView;
+  /** Its name; an inspector's must have one. */
+  label(value: string | undefined): PanelView;
+  width(value: SpaceToken): PanelView;
+  minWidth(value: SpaceToken): PanelView;
+  maxWidth(value: SpaceToken): PanelView;
+  /** The reader can drag its edge. */
+  resizable(value?: boolean): PanelView;
+  /** Not shown (Bloom's `visible={false}`). */
+  hidden(value?: boolean): PanelView;
+  /** Kept mounted while hidden. */
+  keepMounted(value?: boolean): PanelView;
+  /** An inspector's open state: a column from `lg`, a sheet from the end below it. */
+  presented(value: boolean): PanelView;
+  onPresentedChange(value: (presented: boolean) => void): PanelView;
+  testID(value: string): PanelView;
+}
+/** A destination of the app: a route the pager, the bar and the sidebar know by its name. */
+export interface DestinationView extends ViewNode {
+  label(value: string | undefined): DestinationView;
+  icon(value: IconComponent): DestinationView;
+  activeIcon(value: IconComponent): DestinationView;
+  badge(value: number | undefined): DestinationView;
+  /** A page of the pager, without a tab of the bar. */
+  page(value?: boolean): DestinationView;
+  /** Mounted before it is first shown. */
+  preload(value?: boolean): DestinationView;
+  /** A tab of the bottom bar (and so a page of the pager). */
+  bar(value?: boolean): DestinationView;
+  /** A row of the sidebar (shown when it has a label and an icon, by default). */
+  sidebar(value?: boolean): DestinationView;
+  /** Its sidebar row goes after this destination's. */
+  sidebarAfter(value: string): DestinationView;
+  onPress(value: (() => void) | undefined): DestinationView;
+  onLongPress(value: (() => void) | undefined): DestinationView;
 }
 /** A stack of routes: the system's on iOS, the predictive-back stack on Android, the document on the web. */
 export type NavStackView = ViewNode;
