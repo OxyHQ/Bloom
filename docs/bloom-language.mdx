@@ -1107,7 +1107,30 @@ and timings. The tab indicator follows the pager's drag, so it stays on shared
 values, timed by the engine's table. Mention's language row draws Bloom's
 `EngagementAction`, so its like gets the engine through Bloom.
 
-MOTION_RESULTS
+Measured on a Pixel 8a, release builds of Mention with the published Bloom
+(old) and this branch's Bloom (new), interleaved, each run a cold start into a
+local fixture screen (not in the app) and then 30 triggers (8 toasts); medians
+of 3 to 4 runs. Ticks are 10 ms of CPU over exactly the triggers.
+
+| | JS ticks old → new | UI thread | Janky frames old → new |
+| --- | --- | --- | --- |
+| Like pop and count roll (30 likes) | 193.5 → 186.5 | 790 → 717.5 | 8 → 7.5 of ~1,480 |
+| Toast enter and exit (8 toasts) | 93.5 → 100 | 486 → 501 | 4 → 3 of ~500 |
+| Press scale (30 presses) | 39 → 38 | 515 → 516 | 4 → 4 of ~770 |
+| Tab underline (30 switches, mechanism unchanged) | 133 → 136 | 586 → 594 | 1 → 2 of ~750 |
+
+The toast still spends about 7% more JS than the old one: its dismissed row
+stays mounted for its exit (Reanimated's `exiting` played a native snapshot
+with no JS), and the engine diffs the row's animation on each of its renders.
+Frames are at parity or better on all four.
+
+On the web (headless Chromium, the web export, a phone viewport), the pop dips
+to 0.7, swells to 1.2 at 120 ms and settles by 300 ms in both; the toast rises
+the same distances at the same times, and its material and content now fade with
+the rise's curve (the old web fade ran two frames late on the material's own
+curve); no ancestor of a material ever has an opacity below 1. Script time over
+the triggers (medians): like 79 → 38 ms, toast 103 → 46 ms. iOS cannot be built
+here: the native path is type-checked, not run.
 
 ## Mention's feed row
 
