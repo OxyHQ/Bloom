@@ -1,6 +1,8 @@
 import type { ComponentType, RefObject } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Animated, {
+  Easing,
+  Keyframe,
   css,
   cubicBezier,
   linear,
@@ -140,4 +142,43 @@ export function usePressScale(
       if (enabled) animateWithSpec(scale, 1, MOTION.press);
     },
   };
+}
+
+const exits = new WeakMap<KeyframesValue, Map<Timing, unknown>>();
+
+/**
+ * A removal on native: the frames as a Reanimated layout `Keyframe`, which
+ * Reanimated plays on a native snapshot of the view after it unmounts, so the
+ * view is gone at once and no JS runs for its exit (a `MotionView`'s `exit`).
+ * A frame's curve covers the stretch after it, so it is the easing that
+ * reaches the next keyframe. A spring's curve has no layout-animation form;
+ * its stretches run linearly.
+ */
+export function exitingOf(keyframes: KeyframesValue, timing: Timing): unknown {
+  let byTiming = exits.get(keyframes);
+  if (byTiming === undefined) {
+    byTiming = new Map();
+    exits.set(keyframes, byTiming);
+  }
+  let exiting = byTiming.get(timing);
+  if (exiting === undefined) {
+    const easing = (curve: Curve) =>
+      curve.kind === 'bezier'
+        ? Easing.bezier(curve.points[0], curve.points[1], curve.points[2], curve.points[3])
+        : Easing.linear;
+    // A Keyframe rewrites the definitions it is given, so each one gets its own.
+    const definitions: Record<number, Record<string, unknown>> = {};
+    keyframes.frames.forEach((frame, i) => {
+      const block: Record<string, unknown> = {};
+      if (frame.opacity !== undefined) block.opacity = frame.opacity;
+      if (frame.transform.length > 0)
+        block.transform = frame.transform.map((part) => ({ ...part }));
+      const before = keyframes.frames[i - 1];
+      if (before !== undefined) block.easing = easing(before.curve ?? timing.curve);
+      definitions[Math.round(frame.at * 100)] = block;
+    });
+    exiting = new Keyframe(definitions as never).duration(timing.duration);
+    byTiming.set(timing, exiting);
+  }
+  return exiting;
 }

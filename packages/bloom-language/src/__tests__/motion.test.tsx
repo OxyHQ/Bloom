@@ -57,7 +57,8 @@ function update(renderer: ReactTestRenderer, node: Child): void {
 }
 const all = (renderer: ReactTestRenderer, type: string): ReactTestInstance[] =>
   renderer.root.findAll((instance) => instance.type === type);
-const flat = (style: unknown): Record<string, unknown> =>
+// biome-ignore lint/suspicious/noExplicitAny: resolved styles are read loosely in assertions
+const flat = (style: unknown): Record<string, any> =>
   Object.assign({}, ...(Array.isArray(style) ? style.flat(4) : [style]).filter(Boolean));
 
 describe('geometry and .animation()', () => {
@@ -126,18 +127,17 @@ describe('.transition() in a keyed list', () => {
     });
   });
 
-  it('a removed child stays, playing its removal, until it ends', () => {
+  it('native: a removed child goes at once; its removal is a layout Keyframe Reanimated plays after', () => {
     const r = mount(list(['a', 'b']));
-    update(r, list(['b']));
-    const texts = all(r, 'Animated.Text');
-    expect(texts.map((text) => text.props.children)).toEqual(['a', 'b']);
-    const leaving = texts[0] as ReactTestInstance;
-    expect(flat(leaving.props.style)).toMatchObject({
-      animationName: { keyframes: { '0%': { opacity: 1 }, '100%': { opacity: 0 } } },
-      animationDuration: 180,
-      animationFillMode: 'forwards',
+    const [a] = all(r, 'Animated.Text');
+    expect(a?.props.exiting).toMatchObject({
+      definitions: {
+        0: { opacity: 1 },
+        100: { opacity: 0, easing: { bezier: [0, 0, 1, 1] } },
+      },
+      durationV: 180,
     });
-    act(() => leaving.props.onCSSAnimationEnd());
+    update(r, list(['b']));
     expect(all(r, 'Animated.Text').map((text) => text.props.children)).toEqual(['b']);
   });
 

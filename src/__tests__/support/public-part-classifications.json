@@ -1307,6 +1307,7 @@
       "src/motion/MotionView.tsx#MotionView",
       "src/motion/RollingText.tsx#RollingText",
       "src/motion/ScreenTransition.tsx#ScreenTransition",
+      "src/motion/leaving.ts#LeavingContext",
       "src/motion/motion-host.ts#MotionWrapper",
       "src/motion/presence.tsx#Presence",
       "src/multi-agent-chat/MultiAgentChat.tsx#MultiAgentChat",
@@ -1650,6 +1651,8 @@
       "node_modules/expo-router/build/link/elements.d.ts#LinkMenuAction",
       "node_modules/expo-router/build/link/elements.d.ts#LinkPreview",
       "node_modules/expo-router/build/link/elements.d.ts#LinkTrigger",
+      "node_modules/@types/react/index.d.ts#React.Context.Consumer",
+      "node_modules/@types/react/index.d.ts#React.Context.Provider",
       "node_modules/expo-router/build/link/Link.d.ts#Link.Menu",
       "node_modules/expo-router/build/link/zoom/link-apple-zoom-target.d.ts#LinkAppleZoomTarget",
       "node_modules/expo-router/build/link/zoom/link-apple-zoom.d.ts#LinkAppleZoom"

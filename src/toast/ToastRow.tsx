@@ -48,9 +48,7 @@ import Animated, {
 import { easeOutQuartFn, useToastMotion } from './animations';
 import { IS_WEB } from '../styles/platform';
 import { MotionView } from '../motion/MotionView';
-import type { KeyframesValue } from '../motion/keyframes';
 import type { Play } from '../motion/play';
-import type { Leaving } from '../motion/presence';
 import {
   CLOSE_BUTTON_HIT_AREA,
   STACKING_ANIMATION_DURATION,
@@ -447,8 +445,9 @@ export const ToastRow = React.memo(
     // stackTransformStyle on that node loses the departing row's offset/scale.
     // Keeping the stack transform inside also preserves it in the web exit clone.
     return (
-      <ToastAnchor
-        exit={motion.exit}
+      <MotionView
+        exit={motion.exit ? { keyframes: motion.exit, material: true } : null}
+        pointerEvents="box-none"
         exiting={motion.exiting}
         style={[styles.anchor, anchorFor(position), { zIndex: stackZIndex }]}
       >
@@ -524,57 +523,10 @@ export const ToastRow = React.memo(
             </Animated.View>
           </ToastSwipeHandler>
         </Animated.View>
-      </ToastAnchor>
+      </MotionView>
     );
   }),
 );
-
-/**
- * What the toaster's `Presence` hands a dismissed row: the row's entry provides
- * it, and only its anchor reads it, so a dismissal re-renders one box, not the
- * row (the row is memoized and its props do not change as it leaves).
- */
-export const ToastLeavingContext = React.createContext<Leaving | undefined>(undefined);
-
-/**
- * The row's anchor, and where its exit plays: while the row leaves, the exit's
- * keyframes hold their last frame until they end, then the row goes. With no
- * exit of Bloom's (reduced motion, or a consumer's builder, which plays on
- * unmount through `exiting`) it goes at once.
- */
-function ToastAnchor({
-  exit,
-  exiting,
-  style,
-  children,
-}: {
-  exit: KeyframesValue | undefined;
-  exiting: unknown;
-  style: React.ComponentProps<typeof MotionView>['style'];
-  children: React.ReactNode;
-}) {
-  const leaving = React.useContext(ToastLeavingContext);
-  const leavesAtOnce = leaving !== undefined && exit === undefined;
-  React.useLayoutEffect(() => {
-    if (leavesAtOnce) leaving?.onLeft();
-  }, [leavesAtOnce, leaving]);
-  const play: Play | undefined =
-    leaving !== undefined && exit !== undefined
-      ? {
-          id: 1,
-          keyframes: exit,
-          timing: exit.timing(undefined) as Play['timing'],
-          fill: 'forwards',
-          material: true,
-          onEnd: leaving.onLeft,
-        }
-      : undefined;
-  return (
-    <MotionView exiting={exiting} play={play} pointerEvents="box-none" style={style}>
-      {children}
-    </MotionView>
-  );
-}
 
 const styles = StyleSheet.create({
   anchor: {

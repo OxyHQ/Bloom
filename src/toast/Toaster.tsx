@@ -20,8 +20,9 @@ import { DynamicToastContext, ToastContext } from './context';
 import { getOrderedToastIds } from './row-geometry';
 import { Positioner } from './Positioner';
 import { ToastHost } from './ToastHost';
-import { ToastLeavingContext, ToastRow } from './ToastRow';
-import { Presence, type PresenceChildProps } from '../motion/presence';
+import { ToastRow } from './ToastRow';
+import { Presence } from '../motion/presence';
+import type { PresenceChildProps } from '../motion/leaving';
 import { toastStore } from './toast-store';
 import type {
   DynamicToastContextType,
@@ -252,14 +253,10 @@ type ToastEntryProps = React.ComponentProps<typeof ToastRow> &
 /**
  * One row of a position's stack, in the consumer's `ToastWrapper` when there
  * is one. Its own element in the `Presence`, so a dismissed row (wrapped or
- * not) stays for its exit; it hands the row's anchor `leaving` through context,
- * so the memoized row itself does not re-render as it leaves.
+ * not) stays for its exit on the web; only the row's anchor reads that it is
+ * leaving, so the memoized row itself does not re-render.
  */
-function ToastEntry({ wrapper: Wrapper, rowRef, exit: _exit, leaving, ...row }: ToastEntryProps) {
+function ToastEntry({ wrapper: Wrapper, rowRef, exit: _exit, ...row }: ToastEntryProps) {
   const element = <ToastRow {...row} ref={rowRef} />;
-  return (
-    <ToastLeavingContext.Provider value={leaving}>
-      {Wrapper ? <Wrapper toastId={row.id}>{element}</Wrapper> : element}
-    </ToastLeavingContext.Provider>
-  );
+  return Wrapper ? <Wrapper toastId={row.id}>{element}</Wrapper> : element;
 }

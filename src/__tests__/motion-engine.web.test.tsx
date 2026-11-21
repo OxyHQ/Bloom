@@ -131,3 +131,39 @@ it('a box that holds a material only moves; the material’s layers and the cont
     { offset: 1, easing: QUART, opacity: 1 },
   ]);
 });
+
+describe('Presence on the web', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { Presence } = require('../motion/presence.web') as typeof import('../motion/presence.web');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { LeavingContext } = require('../motion/leaving') as typeof import('../motion/leaving');
+  let renders = 0;
+  const Row = React.memo(function Row({ label }: { label: string; exit?: boolean }) {
+    renders += 1;
+    return <Leave label={label} />;
+  });
+  const left: Array<() => void> = [];
+  function Leave({ label }: { label: string }) {
+    const leaving = React.useContext(LeavingContext);
+    if (leaving) left.push(leaving.onLeft);
+    return React.createElement('Text', null, leaving ? `${label} (leaving)` : label);
+  }
+  const list = (ids: string[]) => (
+    <Presence items={ids.map((id) => <Row key={id} exit label={id} />)} />
+  );
+
+  it('keeps a child that left until it says so; only what reads the leaving re-renders', () => {
+    let r!: TestRenderer.ReactTestRenderer;
+    act(() => {
+      r = TestRenderer.create(list(['a', 'b']));
+    });
+    const before = renders;
+    act(() => r.update(list(['b'])));
+    const texts = () => r.root.findAllByType('Text' as never).map((node) => node.props.children);
+    expect(texts()).toEqual(['a (leaving)', 'b']);
+    // Neither memoized row re-renders: only the reader of the leaving does.
+    expect(renders - before).toBe(0);
+    act(() => left[left.length - 1]?.());
+    expect(texts()).toEqual(['b']);
+  });
+});

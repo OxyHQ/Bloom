@@ -25,9 +25,20 @@ export const withTiming = (target: number, config: object) => ({ withTiming: tar
 export const withSpring = (target: number, config: object) => ({ withSpring: target, config });
 export const Easing = {
   bezier: (...points: number[]) => ({ bezier: points }),
+  linear: 'linear',
   inOut: (easing: unknown) => easing,
   quad: 'quad',
 };
 export const ReduceMotion = { System: 'system' };
 export const css = { keyframes: (blocks: Record<string, unknown>) => ({ keyframes: blocks }) };
 export type CSSKeyframesRule = { keyframes: Record<string, unknown> };
+
+/** A layout Keyframe as data: its definitions and duration. */
+export class Keyframe {
+  durationV: number | undefined;
+  constructor(readonly definitions: Record<string, unknown>) {}
+  duration(ms: number): this {
+    this.durationV = ms;
+    return this;
+  }
+}
