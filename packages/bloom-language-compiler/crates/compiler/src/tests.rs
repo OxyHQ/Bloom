@@ -648,3 +648,23 @@ fn stat_cards_and_media_controls_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_agent_families_are_checked() {
+    let imports = "import { AgentLogToolCall, AgentProgressLoadingText, AgentThinking, ComposerLoader, Questionnaire, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (c, q) => VStack(AgentThinking(c).style('stars').tint('accent'), AgentProgressLoadingText('a').lines(1), AgentLogToolCall('read', 'done'), ComposerLoader(c, { phase: 'streaming' }), Questionnaire(q));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("AgentThinking(c).style('dots')", "Unknown agentThinkingStyle token 'dots' for .style()"),
+        ("AgentThinking(c).tint('success')", "Unknown agentThinkingTone token 'success' for .tint()"),
+        ("ComposerLoader(c).tint('primary')", "ComposerLoader has no modifier .tint()"),
+        ("AgentProgressLoadingText('a').size('sm')", "AgentProgressLoadingText has no modifier .size()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (c) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

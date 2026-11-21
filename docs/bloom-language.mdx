@@ -1232,6 +1232,35 @@ duration, options?)` (`buffered`, `onSeek`, `onSeekPreview`, `showTimes`,
 `showRemaining`, `keyboardStep`, `formatValueText`): `.style('inline' |
 'below')` places its times, `.disabled()`.
 
+### Agents
+
+```ts
+AgentThinking(Text(reasoning), { thinking, durationMs }).style('stars').tint('accent')
+AgentLogToolCalls(calls.map((call) => AgentLogToolCall(call.name, call.status, { detail: call.detail }).id(call.id)))
+ComposerLoader(ComposerPill([prompt, setPrompt]), { phase })
+UsageCard({ usage, plan, limits, footer: Button(Text('Upgrade')) })
+```
+
+The agent families two or more apps share, each Bloom's own:
+`AgentLimitsCard(options)`, `UsageCard(options)` (its `fallback` and
+`footer` children), `AgentThinking(reasoning?, options?)` (`.style('wave' |
+'spin' | 'stars' | 'infinity')`, `.tint('subtle' | 'default' | 'primary' |
+'accent')`), `AgentProgress(options)`, `AgentProgressLoadingText(text,
+options?)` (`.lines(n)`; its `variant` a step of Bloom's ramp),
+`AgentLogRow(content, { first, last })`, `AgentLogShimmerText(text)`,
+`AgentLogToolCall(name, status, options?)` (`running`, `done` or `error`;
+its `content` what it shows expanded), `AgentLogToolCalls(calls)`,
+`AgentLogWorkingRow(label)`, `ComposerLoader(content, options?)` (round the
+composer; its `radius`, `line` and `offset` space tokens),
+`ConversationSidebar(conversations, options)` (its `after` a child) and
+`Questionnaire(questions, options?)`.
+
+- A composer loader's own colours are Bloom's: the tuple of four is not
+  taken (a role per colour has no prop to paint).
+- The thinking marks and the working row move on the JS thread while the
+  agent works; their cases are compared by Jest as they mount, not in Chrome,
+  where two side by side are read at different frames.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -1618,7 +1647,10 @@ and `@oxy.so/bloom-data` beside it.
   the AI chat (`AiChatShell`, `AiChatContainer`, `AiChatThread`,
   `AiChatUserMessage`, `AiChatAssistantMessage`, `AiChatMessageLine`,
   `AiChatHeader`, `AiChatMobileHeader`, `AiChatCodePanel`, `AiChatGalleryPanel`);
-  `StatCard`, `StatCards`; `PlayButton`, `PlaybackProgress`.
+  `StatCard`, `StatCards`; `PlayButton`, `PlaybackProgress`; the agent
+  families (`AgentLimitsCard`, `UsageCard`, `AgentThinking`, `AgentProgress`,
+  `AgentProgressLoadingText`, the agent log's five, `ComposerLoader`,
+  `ConversationSidebar`, `Questionnaire`).
 
 **Not built**
 

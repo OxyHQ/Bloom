@@ -129,6 +129,21 @@ import type {
 } from '../controls/ai-chat';
 import type { StatCardView, StatCardsView } from '../controls/stat-cards';
 import type { PlayButtonView, PlaybackProgressView } from '../controls/media-controls';
+import type {
+  AgentLimitsCardView,
+  UsageCardView,
+  AgentThinkingView,
+  AgentProgressView,
+  AgentProgressLoadingTextView,
+  AgentLogRowView,
+  AgentLogShimmerTextView,
+  AgentLogToolCallView,
+  AgentLogToolCallsView,
+  AgentLogWorkingRowView,
+  ComposerLoaderView,
+  ConversationSidebarView,
+  QuestionnaireView,
+} from '../controls/agents';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -369,7 +384,33 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<StatCardsView>, Of<'statCards'>>,
       Same<MethodsOf<PlayButtonView>, Of<'playButton'>>,
       Same<MethodsOf<PlaybackProgressView>, Of<'playbackProgress'>>,
+      Same<MethodsOf<AgentLimitsCardView>, Of<'agentLimitsCard'>>,
+      Same<MethodsOf<UsageCardView>, Of<'usageCard'>>,
+      Same<MethodsOf<AgentThinkingView>, Of<'agentThinking'>>,
+      Same<MethodsOf<AgentProgressView>, Of<'agentProgress'>>,
+      Same<MethodsOf<AgentProgressLoadingTextView>, Of<'agentProgressLoadingText'>>,
+      Same<MethodsOf<AgentLogRowView>, Of<'agentLogRow'>>,
+      Same<MethodsOf<AgentLogShimmerTextView>, Of<'agentLogShimmerText'>>,
+      Same<MethodsOf<AgentLogToolCallView>, Of<'agentLogToolCall'>>,
+      Same<MethodsOf<AgentLogToolCallsView>, Of<'agentLogToolCalls'>>,
+      Same<MethodsOf<AgentLogWorkingRowView>, Of<'agentLogWorkingRow'>>,
+      Same<MethodsOf<ComposerLoaderView>, Of<'composerLoader'>>,
+      Same<MethodsOf<ConversationSidebarView>, Of<'conversationSidebar'>>,
+      Same<MethodsOf<QuestionnaireView>, Of<'questionnaire'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,
