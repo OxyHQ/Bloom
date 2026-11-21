@@ -50,7 +50,6 @@ export type { Leaving, PresenceChildProps } from './leaving';
 export {
   MotionWrapper,
   animatedHost,
-  exitingOf,
   transitionStyle,
   usePlay,
   usePressScale,

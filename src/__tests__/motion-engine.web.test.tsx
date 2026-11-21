@@ -134,7 +134,7 @@ it('a box that holds a material only moves; the material’s layers and the cont
 
 describe('Presence on the web', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { Presence } = require('../motion/presence.web') as typeof import('../motion/presence.web');
+  const { Presence } = require('../motion/presence') as typeof import('../motion/presence');
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { LeavingContext } = require('../motion/leaving') as typeof import('../motion/leaving');
   let renders = 0;

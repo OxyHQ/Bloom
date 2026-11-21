@@ -13,7 +13,6 @@ import {
   SCALE,
   LeavingContext,
   defineKeyframes,
-  exitingOf,
   timingOf,
   transitionStyle,
   useDrag,
@@ -186,8 +185,7 @@ function useMotion(
   press: { style: readonly unknown[]; ownsTransform: boolean; bound?: boolean },
 ) {
   const reduced = usePrefersReducedMotion();
-  // Web: set while a list's Presence keeps this node after it left. Native
-  // never sets it: there the removal is a layout animation, after the unmount.
+  // Set while a list's Presence keeps this node after it left.
   // Only a node with a transition is the leaver; one inside it plays nothing
   // and must not let the child go.
   const context = useContext(LeavingContext);
@@ -328,13 +326,6 @@ function useMotion(
   if (played.style !== undefined) style.push(played.style);
 
   const props: Record<string, unknown> = { ref, ...played.props };
-  // Native: the transition's removal, played by Reanimated after the unmount.
-  const removal = motion.transition?.remove;
-  const removalTiming = removal && !reduced ? delayed(removal.timing(own?.motion)) : undefined;
-  if (removal && removalTiming !== undefined) {
-    const exiting = exitingOf(removal, removalTiming);
-    if (exiting !== undefined) props.exiting = exiting;
-  }
   if (matched !== undefined) {
     props.onLayout = () => {
       const frame = measure(ref.current);

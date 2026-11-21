@@ -13,7 +13,7 @@ import Animated from 'react-native-reanimated';
 import { mergeRefs } from '../hooks/merge-refs';
 import type { KeyframesValue } from './keyframes';
 import { LeavingContext } from './leaving';
-import { MotionWrapper, exitingOf, transitionStyle, usePlay } from './motion-host';
+import { MotionWrapper, transitionStyle, usePlay } from './motion-host';
 import type { Play } from './play';
 import type { Timing } from './timing';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
@@ -36,9 +36,8 @@ export interface MotionViewProps extends Omit<ViewProps, 'style'> {
   /**
    * How the view leaves when its `Presence` child is removed: keyframes and
    * whether the view holds a material host (see `Play.material`), or `null`
-   * for no motion. Native plays them after the unmount, as a Reanimated layout
-   * animation on a native snapshot (no JS); the web plays them while the
-   * `Presence` keeps the view, then lets it go.
+   * for no motion. They play while the `Presence` keeps the view, which then
+   * lets it go.
    */
   exit?: { keyframes: KeyframesValue; material: boolean } | null;
 }
@@ -64,10 +63,10 @@ export function MotionView({
   const reduced = usePrefersReducedMotion();
   const exitTiming = exit && !reduced ? exit.keyframes.timing() : undefined;
 
-  // Web: the removal plays while the Presence keeps the view; with none to
-  // play (`exit: null`, reduced motion), the view goes at once. Only a view
-  // with an `exit` is the leaver: one inside it without plays nothing and
-  // must not let the child go. (Native never sets a leaving.)
+  // The removal plays while the Presence keeps the view; with none to play
+  // (`exit: null`, reduced motion), the view goes at once. Only a view with an
+  // `exit` is the leaver: one inside it without plays nothing and must not let
+  // the child go.
   const context = useContext(LeavingContext);
   const leaving = exit === undefined ? undefined : context;
   const leavesAtOnce = leaving !== undefined && exitTiming === undefined;
@@ -87,13 +86,10 @@ export function MotionView({
       : undefined;
   const played = usePlay(own, leavingPlay ?? play);
 
-  // Native: the removal is a layout animation, played after the unmount.
-  const exiting =
-    exit && exitTiming !== undefined ? exitingOf(exit.keyframes, exitTiming) : rest.exiting;
-  const host = rest.entering !== undefined || exiting !== undefined ? Animated.View : MotionWrapper;
+  const host =
+    rest.entering !== undefined || rest.exiting !== undefined ? Animated.View : MotionWrapper;
   const element = createElement(host as never, {
     ...rest,
-    exiting,
     ...played.props,
     ref: merged,
     style: [style, transition ? transitionStyle(transition) : null, played.style],

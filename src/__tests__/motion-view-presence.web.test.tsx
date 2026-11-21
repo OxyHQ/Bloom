@@ -12,7 +12,7 @@ import { defineKeyframes } from '../motion/keyframes';
  */
 jest.mock('../motion/motion-host', () => jest.requireActual('../motion/motion-host.web'));
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { Presence } = require('../motion/presence.web') as typeof import('../motion/presence.web');
+const { Presence } = require('../motion/presence') as typeof import('../motion/presence');
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { MotionView } = require('../motion/MotionView') as typeof import('../motion/MotionView');
 
