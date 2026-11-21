@@ -1323,8 +1323,6 @@
     "addHint": ["value"],
     "imageVariant": ["value"],
     "optionBox": ["value"],
-    "imageVariant": ["value"],
-    "mediaCorner": ["corner"],
     "autoplay": ["value"],
     "closeDelay": ["value"],
     "padded": ["value"]
