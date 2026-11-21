@@ -1870,6 +1870,20 @@ sets `.width(space)`. `CarouselDots(count, [index, set])` takes
 `.shape('pill' | 'dot')`, `.style('default' | 'onMedia')`, `.max(n)` and
 `.labels({ dot })`.
 
+### Markdown
+
+```ts
+Markdown(reply.text).streaming(!reply.done).size('sm')
+Markdown(notes).onLinkPress(openLink).codeBlock((code, language) => CodeBlock(code, language))
+```
+
+Bloom's `Markdown`: headings, lists, task lists, quotes, tables, links, rules
+and code, in Bloom's type ramp. `.streaming()` draws text that is still
+arriving (an open span or block as it will close), `.size('sm' | 'md' | 'lg')`
+sets its ramp, `.onLinkPress(fn)` replaces opening a link, and
+`.codeBlock((code, language) => view)` draws a code block of your own. Inline
+markdown inside a line is written as nested `Text` spans (see [Text](#text)).
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2297,7 +2311,7 @@ and `@oxy.so/bloom-data` beside it.
   does the node.
 - Generic components (see [Generic components](#generic-components)), drawn as
   Bloom's own: the date and time pickers, ratings, meters and progress bars, stickers,
-  tables, rows and lists, carousels.
+  tables, rows and lists, carousels, markdown.
 
 **Not built**
 

@@ -26,6 +26,7 @@ import type { CommandItem as BloomCommandItem } from '@oxy.so/bloom/command';
 import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
+import type { MarkdownKind } from './controls/markdown';
 import type { CarouselKind } from './controls/carousel';
 import type { ListKind, VirtualListTuning } from './controls/list';
 import type { ListAction, ListProps } from '@oxy.so/bloom/list';
@@ -670,6 +671,11 @@ export interface ValueModifiers {
   dots: boolean;
   contentInset: SpaceToken;
   page: Binding<number>;
+
+  // Markdown (controls/markdown.tsx)
+  streaming: boolean;
+  onLinkPress: (url: string) => void;
+  codeBlock: (code: string, language: string | undefined) => Child;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1047,7 +1053,8 @@ export type NodeKind =
   | StatBarKind
   | TableKind
   | ListKind
-  | CarouselKind;
+  | CarouselKind
+  | MarkdownKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -2530,6 +2537,17 @@ export class Node {
   }
   page(value: Binding<number>): Node {
     return this.set('page', value);
+  }
+
+  // Markdown (controls/markdown.tsx)
+  streaming(value = true): Node {
+    return this.set('streaming', value);
+  }
+  onLinkPress(value: (url: string) => void): Node {
+    return this.set('onLinkPress', value);
+  }
+  codeBlock(value: (code: string, language: string | undefined) => Child): Node {
+    return this.set('codeBlock', value);
   }
 }
 

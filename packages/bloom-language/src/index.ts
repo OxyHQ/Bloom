@@ -480,3 +480,7 @@ export type {
   CarouselLabels,
   CarouselView,
 } from './controls/carousel';
+
+// Markdown (controls/markdown.tsx)
+export { Markdown } from './controls/markdown';
+export type { MarkdownView } from './controls/markdown';
