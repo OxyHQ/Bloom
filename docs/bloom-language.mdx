@@ -2749,6 +2749,31 @@ indicators (`StoryRing`, `TypingDots`) and the media in a bubble
   list of roles has no prop to paint). The typing dots pulse on the JS
   thread: compared by Jest, not in Chrome.
 
+### Listings, maps and media
+
+```ts
+ListingHeader(home.title, { rating, location, actions: ListingHeaderAction('Save', { icon: HeartIcon }).onPress(save) }).size('medium')
+MapPriceMarker(home.price).style(selected ? 'active' : 'default').onPress(select)
+Shelf('New releases', releases.map((r) => Release(r).id(r.id)), { onShowAll }).style('grid').spacing('md')
+FollowButton([following, setFollowing]).size('sm')
+SubscriptionPlans([plan, setPlan], { productName: 'Oxy', plans, selectorLabel: 'Plan' })
+```
+
+The listing details (`AmenityList`, `HostCard`, `ListingHeader`
+`.size('large' | 'medium')`, `ListingHeaderAction`, `ListingPhotoGrid`
+`.style('auto' | 'grid' | 'carousel')`, `ReviewCard` `.lines(n)`), the map
+markers (`MapClusterMarker` and `MapPriceMarker` `.style('default' | 'active' |
+'visited')`, a price marker `.size('default' | 'compact')`,
+`MapSearchAreaButton` a button or a toggle, `.disabled()`), `FollowButton`
+(its binding whether one follows; `.style()` and `.tint()` a button's,
+`.size('sm' | 'md' | 'lg')`, `.loading()`), `Shelf(title, items, options?)`
+and `ShelfSkeleton` (`.style('row' | 'grid' | 'paged')`, `.spacing()`),
+`SubscriptionPlans(plan, options)` (its binding the chosen plan; its hero,
+controls, terms, footer and fallback children), `SubscriptionPrice(price)`
+and `UserHoverCard(displayName, options?)` (its action, badge and footer
+children). The markers, the header action and the follow button take
+`.onPress()` themselves.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -3225,7 +3250,9 @@ and `@oxy.so/bloom-data` beside it.
   families (`AgentLimitsCard`, `UsageCard`, `AgentThinking`, `AgentProgress`,
   `AgentProgressLoadingText`, the agent log's five, `ComposerLoader`,
   `ConversationSidebar`, `Questionnaire`); the chat families (the chat
-  screen's, chat list's, indicators' and message media's 24).
+  screen's, chat list's, indicators' and message media's 24); the listing
+  details, map markers, follow button, shelves, subscription plans and user
+  hover card.
 
 **Not built**
 

@@ -101,6 +101,8 @@ import type { DatePickerKind } from './controls/date-picker';
 import type { HourFormat, WeekStart } from '@oxy.so/bloom/date-picker';
 
 import type { AgentAvatarKind } from './controls/agent-avatar';
+import type { MediaKind } from './controls/media';
+import type { ListingKind } from './controls/listings';
 import type { ChatKind } from './controls/chat';
 import type { AgentKind } from './controls/agents';
 import type { MediaControlKind } from './controls/media-controls';
@@ -206,6 +208,12 @@ import {
   type TooltipSide,
   type RatingStyle,
   type AgentMood,
+  type ShelfLayout,
+  type FollowButtonSize,
+  type MapPriceMarkerSize,
+  type MapMarkerState,
+  type ListingPhotoLayout,
+  type ListingHeaderSize,
   type VideoMessageStyle,
   type MessageTone,
   type FileMessageStyle,
@@ -1086,7 +1094,10 @@ export type Modifier =
         | ContainerSize
         | SidebarSize
         | ReactionPickerSize
-        | PlayButtonSize;
+        | PlayButtonSize
+        | ListingHeaderSize
+        | MapPriceMarkerSize
+        | FollowButtonSize;
     }
   | {
       readonly kind: 'style';
@@ -1118,7 +1129,10 @@ export type Modifier =
         | ChatDateHeaderStyle
         | ChatInfoPanelStyle
         | FileMessageStyle
-        | VideoMessageStyle;
+        | VideoMessageStyle
+        | ListingPhotoLayout
+        | MapMarkerState
+        | ShelfLayout;
     }
   | {
       readonly kind: 'shape';
@@ -1381,7 +1395,9 @@ export type NodeKind =
   | StatCardKind
   | MediaControlKind
   | AgentKind
-  | ChatKind;
+  | ChatKind
+  | ListingKind
+  | MediaKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1695,7 +1711,10 @@ export class Node {
       | ContainerSize
       | SidebarSize
       | ReactionPickerSize
-      | PlayButtonSize,
+      | PlayButtonSize
+      | ListingHeaderSize
+      | MapPriceMarkerSize
+      | FollowButtonSize,
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
@@ -1727,7 +1746,10 @@ export class Node {
       | ChatDateHeaderStyle
       | ChatInfoPanelStyle
       | FileMessageStyle
-      | VideoMessageStyle,
+      | VideoMessageStyle
+      | ListingPhotoLayout
+      | MapMarkerState
+      | ShelfLayout,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }

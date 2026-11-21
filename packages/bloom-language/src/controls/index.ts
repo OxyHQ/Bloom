@@ -57,6 +57,8 @@ import { STAT_CARDS } from './stat-cards';
 import { MEDIA_CONTROLS } from './media-controls';
 import { AGENTS } from './agents';
 import { CHATS } from './chat';
+import { LISTINGS } from './listings';
+import { MEDIA } from './media';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -121,4 +123,6 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...MEDIA_CONTROLS,
   ...AGENTS,
   ...CHATS,
+  ...LISTINGS,
+  ...MEDIA,
 };

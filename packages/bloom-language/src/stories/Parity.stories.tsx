@@ -142,3 +142,4 @@ export const StatCards: Story = { args: { family: 'statCard' } };
 export const MediaControls: Story = { args: { family: 'mediaControl' } };
 export const Agents: Story = { args: { family: 'agent' } };
 export const Chat: Story = { args: { family: 'chat' } };
+export const ListingsAndMedia: Story = { args: { family: 'listingsMedia' } };
