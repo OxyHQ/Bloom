@@ -78,3 +78,23 @@ export function Toolbar(props: Record<string, unknown>) {
   );
 }
 export const StickySection = 'StickySection';
+export const ScrollArea = 'ScrollArea';
+export function ScrollSurface(props: Record<string, unknown>) {
+  return createElement(
+    'ScrollSurface',
+    props,
+    props.stickyHeader as never,
+    props.children as never,
+    props.stickyFooter as never,
+  );
+}
+export function AutoHideBar(props: Record<string, unknown>) {
+  return createElement(
+    'AutoHideBar',
+    props,
+    props.bar as never,
+    typeof props.summary === 'string' ? null : (props.summary as never),
+    props.children as never,
+  );
+}
+export const ResizeHandle = 'ResizeHandle';

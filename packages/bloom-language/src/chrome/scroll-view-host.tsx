@@ -26,16 +26,20 @@ const EDGE_PADDING: Record<Edge, keyof ViewStyle> = {
 };
 
 /** SwiftUI's keyboard dismissal, as React Native's `keyboardDismissMode`. */
-const DISMISS_MODE = {
+export const DISMISS_MODE = {
   never: 'none',
   immediately: 'on-drag',
   interactively: 'interactive',
 } as const satisfies Record<KeyboardDismiss, string>;
 
-/** One frozen content container style per set of margins and gap: a re-render hands the same object. */
+/**
+ * One frozen content container style per set of margins and gap: a re-render
+ * hands the same object. Every scroll of the language's (`ScrollView`,
+ * `ScrollArea`, `ScrollSurface`) takes its margins and gap from here.
+ */
 const containerStyles = new Map<string, ViewStyle>();
 
-function containerStyle(node: Node, spacing: SpaceToken | undefined): ViewStyle | undefined {
+export function containerStyle(node: Node, spacing: SpaceToken | undefined): ViewStyle | undefined {
   let key = spacing === undefined ? '' : `g:${tokenKey(spacing)}`;
   const margins: Extract<Modifier, { kind: 'contentMargins' }>[] = [];
   for (const modifier of node.modifiers) {

@@ -24,6 +24,10 @@ import {
   type ScrollViewNode,
   type BottomSheetView,
   type StickySectionView,
+  type ScrollAreaView,
+  type ScrollSurfaceView,
+  type AutoHideBarView,
+  type ResizeHandleView,
   type ToolbarView,
   type CommandGroupView,
   type CommandItemView,
@@ -437,6 +441,29 @@ export function SettingsItem(label: string, icon: IconComponent): SettingsItemVi
 /** A row of tools (Bloom `Toolbar`); `.trailing(...)` keeps actions in reach at its end. */
 export function Toolbar(...tools: Child[]): ToolbarView {
   return new Node('toolbarView', null, tools);
+}
+
+/** A scroll of its own with Bloom's bar (Bloom `ScrollArea`); its children are its content. */
+export function ScrollArea(...children: Child[]): ScrollAreaView {
+  return new Node('scrollArea', null, children);
+}
+
+/** A scroll on a surface, its ends fading into it (Bloom `ScrollSurface`). */
+export function ScrollSurface(...children: Child[]): ScrollSurfaceView {
+  return new Node('scrollSurface', null, children);
+}
+
+/** A bar that steps aside to a strip while collapsed (Bloom `AutoHideBar`): `bar`, then its body. */
+export function AutoHideBar(bar: Child, ...body: Child[]): AutoHideBarView {
+  return new Node('autoHideBar', { bar }, body);
+}
+
+/**
+ * The separator between two panes that resizes them (Bloom `ResizeHandle`):
+ * `onResize` is told the distance along the resize axis from where the drag started.
+ */
+export function ResizeHandle(onResize: (distance: number) => void): ResizeHandleView {
+  return new Node('resizeHandle', { onResize }, NO_CHILDREN);
 }
 
 /** A section that docks under the header as the page scrolls past it (Bloom `StickySection`). */

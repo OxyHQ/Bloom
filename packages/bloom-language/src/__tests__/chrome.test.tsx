@@ -20,6 +20,10 @@ import {
   StickySection,
   Text,
   Toolbar,
+  ScrollArea,
+  ScrollSurface,
+  AutoHideBar,
+  ResizeHandle,
   TreeFolder,
   TreeItem,
   TreeSection,
@@ -228,5 +232,112 @@ describe('the layout family', () => {
     const r = mount(toElement(StickySection(Text('Today')).testID('day')));
     expect(only(r, 'StickySection').props.testID).toBe('day');
     expect(hosts(r, 'Text')).toHaveLength(1);
+  });
+
+  it('a scroll area is Bloom’s ScrollArea: its margins, gap, axis, bar and keyboard', () => {
+    const r = mount(
+      toElement(
+        ScrollArea(Text('a'), Text('b'))
+          .contentMargins('horizontal', 'lg')
+          .spacing('sm')
+          .axis('horizontal')
+          .scrollbar('hover')
+          .scrollbarSide('start')
+          .size('md')
+          .scrollDismissesKeyboard('interactively')
+          .keyboardTaps('always')
+          .testID('area'),
+      ),
+    );
+    expect(only(r, 'ScrollArea').props).toMatchObject({
+      contentContainerStyle: { paddingHorizontal: 16, gap: 8 },
+      horizontal: true,
+      scrollbar: 'hover',
+      scrollbarSide: 'start',
+      size: 'md',
+      keyboardDismissMode: 'interactive',
+      keyboardShouldPersistTaps: 'always',
+      testID: 'area',
+    });
+    expect(hosts(r, 'Text')).toHaveLength(2);
+    // What the chain leaves out is not there: Bloom's defaults hold.
+    const bare = only(mount(toElement(ScrollArea())), 'ScrollArea').props;
+    expect(Object.keys(bare).filter((name) => name !== 'children')).toEqual([]);
+  });
+
+  it('a scroll surface keeps its sticky chrome, fade and surface', () => {
+    const r = mount(
+      toElement(
+        ScrollSurface(Text('body'))
+          .stickyHeader(Text('head'))
+          .stickyFooter(Text('foot'))
+          .fadeHeight('lg')
+          .fadeBottom(false)
+          .matchSurfacePaint()
+          .style('secondary')
+          .label('Messages'),
+      ),
+    );
+    expect(only(r, 'ScrollSurface').props).toMatchObject({
+      fadeHeight: 16,
+      fadeBottom: false,
+      matchSurfacePaint: true,
+      surface: 'secondary',
+      label: 'Messages',
+    });
+    expect(hosts(r, 'Text').map((t) => t.props.children)).toEqual(['head', 'body', 'foot']);
+  });
+
+  it('an auto-hiding bar draws its bar over its body, collapsed as its owner says', () => {
+    const reveal = jest.fn();
+    const r = mount(
+      toElement(
+        AutoHideBar(Text('bar'), Text('body'))
+          .summary('oxy.so')
+          .collapsed()
+          .onReveal(reveal)
+          .peek(false)
+          .barHeight('44')
+          .collapsedHeight('xl')
+          .label('Show the toolbar')
+          .testID('chrome'),
+      ),
+    );
+    expect(only(r, 'AutoHideBar').props).toMatchObject({
+      summary: 'oxy.so',
+      collapsed: true,
+      onReveal: reveal,
+      peek: false,
+      height: 44,
+      collapsedHeight: 20,
+      revealLabel: 'Show the toolbar',
+      testID: 'chrome',
+    });
+    expect(hosts(r, 'Text').map((t) => t.props.children)).toEqual(['bar', 'body']);
+    expect(only(mount(toElement(AutoHideBar(Text('bar')))), 'AutoHideBar').props.collapsed).toBe(
+      false,
+    );
+  });
+
+  it('a resize handle reports its drag', () => {
+    const resize = jest.fn();
+    const r = mount(
+      toElement(
+        ResizeHandle(resize)
+          .axis('horizontal')
+          .style('pill')
+          .thickness('14')
+          .label('Resize the list')
+          .testID('edge'),
+      ),
+    );
+    expect(only(r, 'ResizeHandle').props).toMatchObject({
+      onResize: resize,
+      orientation: 'horizontal',
+      variant: 'pill',
+      thickness: 14,
+      label: 'Resize the list',
+      testID: 'edge',
+    });
   });
 });
