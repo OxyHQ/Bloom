@@ -15,6 +15,7 @@ import { SHEET_CASES } from '../../parity/sheet.cases';
 import { MATERIAL_CASES } from '../../parity/material.cases';
 import { NAVIGATION_CASES } from '../../parity/navigation.cases';
 import { TEXT_CASES } from '../../parity/text.cases';
+import { TOOLBAR_CASES } from '../../parity/toolbar.cases';
 import { VARIANT_CASES } from '../../parity/variants.cases';
 
 /**
@@ -75,3 +76,4 @@ export const BottomSheetPresented: Story = { args: { cases: SHEET_CASES } };
 export const SidebarRailAndPageFooter: Story = { args: { cases: NAVIGATION_CASES } };
 export const CommandAndSettings: Story = { args: { cases: OVERLAY_CASES } };
 export const ShellPanelsAndInspector: Story = { args: { cases: SHELL_CASES } };
+export const ToolbarAndStickySection: Story = { args: { cases: TOOLBAR_CASES } };

@@ -523,7 +523,7 @@ fn a_drag_takes_a_motion_value_and_a_swipe_a_direction() {
 }
 
 /// The app chrome's constructors, imported as a screen file imports them.
-const CHROME: &str = "import { AppLayout, Destination, Panel, Stack, BottomSheet, Command, CommandGroup, CommandItem, NavItem, SettingsGroup, SettingsItem, SettingsModal, PageFooter, Rail, RailItem, ScrollView, Sidebar, Text, TreeFolder, TreeItem, TreeSection } from '@oxy.so/bloom-language';\n";
+const CHROME: &str = "import { StickySection, Toolbar, AppLayout, Destination, Panel, Stack, BottomSheet, Command, CommandGroup, CommandItem, NavItem, SettingsGroup, SettingsItem, SettingsModal, PageFooter, Rail, RailItem, ScrollView, Sidebar, Text, TreeFolder, TreeItem, TreeSection } from '@oxy.so/bloom-language';\n";
 
 fn chrome(body: &str) -> crate::Output {
     compile(&format!("{CHROME}{body}"), "chrome.tsx")
@@ -612,4 +612,14 @@ fn the_app_layout_panels_and_destinations_are_checked_against_the_spec() {
     assert_eq!(first_message(&layout), Some("Unknown shellLayout token 'grid' for .shellLayout()"));
     let role = chrome("export const P = () => Panel('a').panelRole('sidebar');\n");
     assert_eq!(first_message(&role), Some("Unknown panelRole token 'sidebar' for .panelRole()"));
+}
+
+#[test]
+fn the_toolbar_and_the_sticky_section_are_checked_against_the_spec() {
+    let fine = chrome(
+        "export const T = () => [Toolbar(Text('a')).trailing(Text('b')).accessory(Text('c')).size('sm').testID('t'), StickySection(Text('d')).testID('s')];\n",
+    );
+    assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
+    let size = chrome("export const T = () => Toolbar().size('xl');\n");
+    assert_eq!(first_message(&size), Some("Unknown controlSize token 'xl' for .size()"));
 }

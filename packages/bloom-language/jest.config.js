@@ -35,7 +35,7 @@ module.exports = {
     '^@oxy.so/bloom/design-tokens$': `${support}/bloom-design-tokens.ts`,
     '^@oxy.so/bloom/theme$': `${support}/bloom-theme.ts`,
     '^@oxy.so/bloom/app-shell/hooks$': `${support}/bloom-app-shell-hooks.ts`,
-    '^@oxy.so/bloom/(blur|button|engagement-bar|image|surface|fab|page-header|bottom-bar|dropdown-menu|aspect-ratio|concentric|divider|fill|grid|avatar-group|badge|chat-indicators|icon-circle|loading|skeleton|subtle-hover|sidebar|rail|page-footer|command|settings-modal)$': `${support}/bloom-components.ts`,
+    '^@oxy.so/bloom/(blur|button|engagement-bar|image|surface|fab|page-header|bottom-bar|dropdown-menu|aspect-ratio|concentric|divider|fill|grid|avatar-group|badge|chat-indicators|icon-circle|loading|skeleton|subtle-hover|sidebar|rail|page-footer|command|settings-modal|layout)$': `${support}/bloom-components.ts`,
     '^@oxy.so/bloom/(app-shell|screen|dialog|bottom-sheet|tab-pager|tab-pager/expo-router|panel-routing/expo-router)$': `${support}/bloom-router.ts`,
     // Optional native modules: absent unless a test mocks one in.
     '^(expo|expo-blur|expo-glass-effect|expo-router|@expo/ui/swift-ui/modifiers)$': `${support}/absent/$1.ts`,

@@ -317,6 +317,7 @@ export interface ValueModifiers {
   bar: boolean;
   sidebar: boolean;
   sidebarAfter: string;
+  accessory: Child;
   bottomBar: boolean;
   shell: ShellOptions;
   tag: string;
@@ -696,6 +697,8 @@ export type NodeKind =
   | 'settingsItem'
   | 'panel'
   | 'destination'
+  | 'toolbarView'
+  | 'stickySection'
   | 'lottie';
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
@@ -1356,6 +1359,9 @@ export class Node {
   }
   sidebarAfter(value: string): Node {
     return this.set('sidebarAfter', value);
+  }
+  accessory(value: Child): Node {
+    return this.set('accessory', value);
   }
   primaryAction(icon: IconComponent, label: string, destination: string): Node {
     return this.with({ kind: 'primaryAction', key: 'primaryAction', icon, label, destination });
@@ -2353,6 +2359,24 @@ export interface SettingsItemView extends ViewNode {
   fullBleed(value?: boolean): SettingsItemView;
   disabled(value?: boolean): SettingsItemView;
   onPress(value: Press | undefined): SettingsItemView;
+}
+
+/**
+ * Bloom `Toolbar`: a row of tools that scrolls across when it does not fit,
+ * its actions kept in reach at its end, an accessory row under it.
+ */
+export interface ToolbarView extends ViewNode {
+  /** Controls kept in reach at its end (Bloom's `actions`). */
+  trailing(...value: Child[]): ToolbarView;
+  /** A second row under the tools. */
+  accessory(value: Child): ToolbarView;
+  /** Its controls' size; the nearest Bloom scope's by default. */
+  size(value: BloomSize): ToolbarView;
+  testID(value: string): ToolbarView;
+}
+/** Bloom `StickySection`: a section that docks under the header as the page scrolls past it. */
+export interface StickySectionView extends ViewNode {
+  testID(value: string): StickySectionView;
 }
 
 /** The app's root layout: its navigator in the shell, the primary action, the bottom bar. */
