@@ -2025,7 +2025,13 @@
       "modifiers": ["contentFit", "nativeControls", "surfaceType", "flightId", "videoSlot"]
     },
     "mediaPoster": { "constructors": ["MediaPoster"], "modifiers": ["contentFit"] },
-    "emptyMediaSurface": { "constructors": ["EmptyMediaSurface"], "modifiers": [] }
+    "emptyMediaSurface": { "constructors": ["EmptyMediaSurface"], "modifiers": [] },
+    "avatarAnchor": { "constructors": ["AvatarAnchor"], "modifiers": [] },
+    "avatarFlightLayer": {
+      "constructors": ["AvatarFlightLayer"],
+      "universal": false,
+      "modifiers": []
+    }
   },
   "sfSymbols": {
     "$comment": [
