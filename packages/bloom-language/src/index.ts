@@ -257,6 +257,23 @@ export type {
   WeightName,
 } from './tokens';
 export type { Binding } from './binding';
+export {
+  SettingsDateField,
+  SettingsSection,
+  SettingsSelect,
+  SettingsTextField,
+  SettingsValue,
+} from './controls/settings';
+export type {
+  SettingsAutofill,
+  SettingsChoice,
+  SettingsDateFieldView,
+  SettingsKeyboard,
+  SettingsSectionView,
+  SettingsSelectView,
+  SettingsTextFieldView,
+  SettingsValueView,
+} from './controls/settings';
 
 // Inputs (controls/inputs.tsx)
 

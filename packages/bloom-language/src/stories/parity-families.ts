@@ -7,6 +7,7 @@ import { OVERLAY_CASES } from '../../parity/overlays.cases';
 import { PIECES_CASES } from '../../parity/pieces.cases';
 import { SCREEN_CASES } from '../../parity/screen.cases';
 import { SHELL_CASES } from '../../parity/shell.cases';
+import { SETTINGS_CASES } from '../../parity/settings.cases';
 import { SHEET_CASES } from '../../parity/sheet.cases';
 import { MATERIAL_CASES } from '../../parity/material.cases';
 import { NAVIGATION_CASES } from '../../parity/navigation.cases';
@@ -29,6 +30,7 @@ export const FAMILIES = {
   sheet: SHEET_CASES,
   navigation: NAVIGATION_CASES,
   overlays: OVERLAY_CASES,
+  settings: SETTINGS_CASES,
   shell: SHELL_CASES,
   toolbar: TOOLBAR_CASES,
 } satisfies Record<string, readonly ParityCase[]>;

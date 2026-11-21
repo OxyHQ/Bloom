@@ -523,7 +523,7 @@ fn a_drag_takes_a_motion_value_and_a_swipe_a_direction() {
 }
 
 /// The app chrome's constructors, imported as a screen file imports them.
-const CHROME: &str = "import { SidebarMode, AutoHideBar, ResizeHandle, ScrollArea, ScrollSurface, StickySection, Toolbar, AppLayout, Destination, Panel, Stack, BottomSheet, Command, CommandGroup, CommandItem, NavItem, SettingsGroup, SettingsItem, SettingsModal, PageFooter, Rail, RailItem, ScrollView, Sidebar, Text, TreeFolder, TreeItem, TreeSection } from '@oxy.so/bloom-language';\n";
+const CHROME: &str = "import { SettingsSection, SettingsValue, SettingsSelect, SettingsTextField, SettingsDateField, SidebarMode, AutoHideBar, ResizeHandle, ScrollArea, ScrollSurface, StickySection, Toolbar, AppLayout, Destination, Panel, Stack, BottomSheet, Command, CommandGroup, CommandItem, NavItem, SettingsGroup, SettingsItem, SettingsModal, PageFooter, Rail, RailItem, ScrollView, Sidebar, Text, TreeFolder, TreeItem, TreeSection } from '@oxy.so/bloom-language';\n";
 
 fn chrome(body: &str) -> crate::Output {
     compile(&format!("{CHROME}{body}"), "chrome.tsx")
@@ -670,4 +670,19 @@ fn the_sidebar_s_modes_identities_search_and_drops_are_checked_against_the_spec(
     assert_eq!(first_message(&placement), Some("Unknown teamPlacement token 'top' for .teamPlacement()"));
     let mode = chrome("export const S = (G) => SidebarMode('Search', G).badge(3);\n");
     assert!(first_message(&mode).is_some_and(|m| m.contains(".badge()")), "{:?}", first_message(&mode));
+}
+
+#[test]
+fn the_settings_pages_rows_are_checked_against_the_spec() {
+    let fine = chrome(
+        "export const S = (Glyph, choice, text, date, items, low, high, format) => SettingsSection('Account', SettingsValue('Ana').icon(Glyph).muted(), SettingsSelect('Autoplay', choice, items).compact(false).size('sm').disabled().width('200').frame({ maxWidth: '160' }), SettingsTextField('Email', text).icon(Glyph).placeholder('you').keyboard('email-address').contentType('email').disabled().savedToast(false).testID('e'), SettingsDateField('Birthday', date).minDate(low).maxDate(high).dateFormat(format).savedToast(false).testID('b')).description('Yours').trailing(Text('Manage')).inset('sm').padding('md');\n",
+    );
+    assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
+    let keyboard = chrome("export const S = (t) => SettingsTextField('Email', t).keyboard('email');\n");
+    assert_eq!(first_message(&keyboard), Some("Unknown keyboard token 'email' for .keyboard()"));
+    let size = chrome("export const S = (c, i) => SettingsSelect('A', c, i).size('xl');\n");
+    assert_eq!(first_message(&size), Some("Unknown controlSize token 'xl' for .size()"));
+    // A field takes only its own modifiers: it has no box (Bloom's takes no style).
+    let boxed = chrome("export const S = (d) => SettingsDateField('B', d).padding('md');\n");
+    assert!(first_message(&boxed).is_some_and(|m| m.contains(".padding()")), "{:?}", first_message(&boxed));
 }
