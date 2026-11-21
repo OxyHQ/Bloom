@@ -765,6 +765,58 @@ placeholder), `.onPressItem(fn)`, `.hoverCard()`, and `.label()` to name it.
 A pressable host is focusable by default, so the language writes `focusable`
 only for a press modifier with no handler (`focusable={false}`).
 
+## Inputs
+
+```ts
+const [name, setName] = useState('');
+const [notify, setNotify] = useState(true);
+// password, email, bio, terms, plan, range, country, query and filters are bindings too.
+VStack(
+  Field('Name', TextField([name, setName], 'Name').placeholder('Ada Lovelace')).required(),
+  SecureField(password, 'Password').revealable().contentType('current-password'),
+  TextField(email, 'Email').keyboard('email-address').autocapitalize('none').submitLabel('next'),
+  TextEditor(bio, 'Bio').description('Shown on your profile').maxLength(280).showCount(),
+  HStack(Text('Notifications'), Spacer(), Toggle([notify, setNotify]).label('Notifications')),
+  Checkbox(terms, 'I accept the terms').description('You can read them any time.'),
+  RadioGroup(plan, Option('free', 'Free'), Option('pro', 'Pro').description('For creators')).label('Plan'),
+  Segmented(range, Option('day', 'Day'), Option('week', 'Week')).label('Range'),
+  Picker(country, countries.map((c) => Option(c.code, c.name))).placeholder('Country').label('Country'),
+  Search(query).placeholder('Search posts').tokens(filters),
+)
+```
+
+**Bindings.** An input takes a `Binding<T>`: a value and the function that
+changes it, `readonly [value, setValue]`, which is what `useState` returns, so
+`Toggle(useState(false))` works and `TextField([draft.title, setTitle], 'Title')`
+binds a store's value. The screen owns the value; the control reads it and
+writes it. It is the one mechanism for every input (SwiftUI's `$value`); a
+`Picker` takes a selection that may be `undefined` until something is chosen.
+
+| Node | Bloom | Modifiers |
+| --- | --- | --- |
+| `TextField(text, label)`, `SecureField(text, label)` | `TextFieldInput` in its `TextField` shell (`TextFieldIcon`, `TextFieldPrefix`, `TextFieldSuffix`) | `.placeholder`, `.size`, `.disabled`, `.invalid`, `.floatingLabel()`, `.revealable()` (secure), `.icon(X)`, `.prefix(text)`, `.suffix(text)`, `.keyboard`, `.autocapitalize`, `.autocorrect`, `.contentType` (autofill), `.submitLabel`, `.onSubmit`, `.autoFocus()`, `.maxLength` |
+| `TextEditor(text, label?)` | `Textarea` | `.placeholder`, `.description` (its hint), `.size`, `.disabled`, `.invalid`, `.required`, `.rows`, `.autoResize(maxRows?)`, `.resize`, `.maxLength`, `.showCount()`, the keyboard modifiers |
+| `Field(label, ...content)` | `Field` | `.description`, `.error`, `.required`, `.disabled`: the label names its control, the error marks it invalid |
+| `Label(text)` | `Label` | `.size('xs' \| 'sm' \| 'md')`, `.required`, `.disabled` |
+| `Toggle(isOn)` | `Switch` | `.size`, `.tint(tone)`, `.disabled`; `.label()` names it (a switch draws no words) |
+| `Checkbox(isOn, label?)` | `Checkbox` | `.description`, `.size`, `.tint`, `.disabled`, `.readOnly()`, `.indeterminate()` |
+| `RadioGroup(selection, ...options)` | `RadioGroup` | `.style('default' \| 'card' \| 'chip')`, `.size`, `.tint`, `.disabled`; `.label()` names the group |
+| `Segmented(selection, ...options)` | `SegmentedControl` with its `Item` and `ItemText` | `.style('solid' \| 'plain')`, `.size`, `.disabled`, `.tabs()` (a tab list, not a choice) |
+| `Picker(selection, ...options)` | `Select`: its trigger (`SelectValue`, `SelectIcon`) and its list (`SelectItem` with its indicator and text) | `.placeholder`, `.size`, `.disabled`; `.label()` names it |
+| `Option(value, label)` | an option of the three above | `.description` (a radio's), `.disabled`, `.testID` |
+| `Search(text)` | `Search` | `.placeholder`, `.size`, `.disabled`, `.collapsible('auto'?)` (a button that opens the field), `.presented(isOpen)`, `.tokens(tokens)` (removing a token writes the binding), `.submitLabel`, `.onSubmit`, the keyboard modifiers |
+
+- **The box.** A field's box modifiers (`frame`, `padding`…) are its shell's
+  style, as an app writes `<TextField style>`; a picker's are its trigger's;
+  a `Search`'s box is a view around it.
+- **Names.** `.label()` is the control's accessible name (a `TextField`'s
+  is its constructor's `label`). Inside a `Field` the field's label names it.
+
+Not in the language: a trailing `TextFieldIcon`, `TextFieldGhost`, the
+swatch radio (it takes a raw colour), a picker's groups and custom rows, a
+search's custom trigger and trailing content, and focus as a binding
+(`onFocus`, `onBlur`, an input's ref).
+
 ## Glass
 
 SwiftUI's `glassEffect` materials, drawn by each platform's own glass (below),
