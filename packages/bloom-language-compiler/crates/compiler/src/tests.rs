@@ -717,3 +717,23 @@ fn the_settings_pages_rows_are_checked_against_the_spec() {
     let boxed = chrome("export const S = (d) => SettingsDateField('B', d).padding('md');\n");
     assert!(first_message(&boxed).is_some_and(|m| m.contains(".padding()")), "{:?}", first_message(&boxed));
 }
+
+#[test]
+fn date_and_time_pickers_are_checked() {
+    let imports = "import { DatePicker, DateRangePicker, Calendar, RangeCalendar, TimeField, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (day, range, time, set) => VStack(DatePicker([day, set]).bounds(day, null).weekStart(1).locale('fr').placeholder('Day').presented([true, set]).labels({}), DateRangePicker([range, set]).quickSelect(false).disabled(), Calendar([day, set]).initialMonth(day).unavailable(() => false), RangeCalendar([range, set]).months(2), TimeField([time, set]).bounds('09:00', '18:00').step(15).hourFormat('12h').size('sm'));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("TimeField([t, s]).hourFormat('am')", "Unknown hourFormat token 'am' for .hourFormat()"),
+        ("TimeField([t, s]).size('lg')", "Unknown timeFieldSize token 'lg' for .size()"),
+        ("Calendar([t, s]).quickSelect(false)", "Calendar has no modifier .quickSelect()"),
+        ("DatePicker([t, s]).months(2)", "DatePicker has no modifier .months()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (t, s) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

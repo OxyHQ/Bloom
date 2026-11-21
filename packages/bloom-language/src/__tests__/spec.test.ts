@@ -107,6 +107,12 @@ import type {
   TabView,
   TextView,
 } from '../node';
+  DatePickerView,
+  DateRangePickerView,
+  CalendarView,
+  RangeCalendarView,
+  TimeFieldView,
+} from '../controls/date-picker';
 import type { ColorPreset, ContentFit } from '../tokens';
 import type {
   SettingsDateFieldView,
@@ -349,7 +355,17 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<SidebarView>, Of<'sidebar'>>,
       Same<MethodsOf<BottomSheetView>, Of<'bottomSheet'>>,
       Same<MethodsOf<ScrollViewNode>, Of<'scrollView'>>,
+      Same<MethodsOf<DatePickerView>, Of<'datePicker'>>,
+      Same<MethodsOf<DateRangePickerView>, Of<'dateRangePicker'>>,
+      Same<MethodsOf<CalendarView>, Of<'calendar'>>,
+      Same<MethodsOf<RangeCalendarView>, Of<'rangeCalendar'>>,
+      Same<MethodsOf<TimeFieldView>, Of<'timeField'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,
