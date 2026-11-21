@@ -1,7 +1,6 @@
 {
   "name": "@oxy.so/bloom-data",
   "version": "0.1.0",
-  "private": true,
   "description": "Bloom's data layer: records by id held in memory, read with field-level subscriptions, filled by sources, changed by optimistic actions and realtime events, and copied to SQLite in the background.",
   "license": "SEE LICENSE IN LICENSE",
   "repository": {
@@ -84,6 +83,9 @@
         }
       ]
     ]
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "packageManager": "bun@1.4.3"
 }
