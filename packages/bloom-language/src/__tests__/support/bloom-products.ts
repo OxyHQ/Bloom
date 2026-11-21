@@ -91,3 +91,7 @@ export const ShelfSkeleton = 'ShelfSkeleton';
 export const SubscriptionPlans = 'SubscriptionPlans';
 export const SubscriptionPrice = 'SubscriptionPrice';
 export const UserHoverCard = 'UserHoverCard';
+export const CardForm = 'CardForm';
+export const CardFormCountry = 'CardFormCountry';
+export const CardFormPostcode = 'CardFormPostcode';
+export const CardFormHostedField = 'CardFormHostedField';
