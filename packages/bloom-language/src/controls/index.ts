@@ -9,6 +9,7 @@ import { CONTEXT_MENUS } from './context-menu';
 import { DATE_PICKERS } from './date-picker';
 import { FILE_UPLOADS } from './file-upload';
 import type { ControlRenderer } from './draw';
+import { DROP_ZONES } from './drop-zone';
 import { COLLAPSIBLES } from './collapsible';
 import { ANIMATED_CHECKS } from './animated-check';
 import { INPUTS } from './inputs';
@@ -57,4 +58,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...ANIMATED_CHECKS,
   ...CONTEXT_MENUS,
   ...COLLAPSIBLES,
+  ...DROP_ZONES,
 };

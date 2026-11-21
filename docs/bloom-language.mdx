@@ -1519,6 +1519,21 @@ takes `.revealMotion({ duration, easing })` (300ms ease-in-out by default),
 `.revealsOnAppear()` (mounted open, it opens from nothing) and
 `.keepsMounted(false)` (the content unmounts once shut).
 
+### Drop zones
+
+```ts
+DropZone(['files'], (event) => upload(event.data.files), Text('Drop photos here'))
+  .fileTypes(['image/*']).dragActions(['copy', 'move'], 'copy').onDragEnter(highlight)
+```
+
+Bloom's `DropZone`: its views take a drop of the kinds named (`files`, `text`,
+`url`, `html` or a media type) from another application or this one, and the
+handler receives what was dropped. It takes `.fileTypes([...])` (the media
+types of files it takes), `.dragActions(actions, preferred?)` (`copy`, `move`,
+`link`), `.folder()` (where a native platform puts dropped files),
+`.disabled()`, and `.onDragEnter()`, `.onDragOver()` and `.onDragLeave()`.
+Where the platform has no drop target, it is a view that takes nothing.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -1900,7 +1915,7 @@ and `@oxy.so/bloom-data` beside it.
   tag fields, file uploads, videos,
   one-time codes,
   colour swatch pickers,
-  animated checks, context menus, collapsibles.
+  animated checks, context menus, collapsibles, drop zones.
 
 **Not built**
 
