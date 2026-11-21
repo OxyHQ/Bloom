@@ -150,6 +150,9 @@ export type ActionPlacement = (typeof ENUMS.actionPlacement)[number];
 export type ScrollIndicators = (typeof ENUMS.scrollIndicators)[number];
 export type KeyboardDismiss = (typeof ENUMS.keyboardDismiss)[number];
 export type KeyboardTaps = (typeof ENUMS.keyboardTaps)[number];
+export type DragIndicator = (typeof ENUMS.dragIndicator)[number];
+export type SheetMaterial = (typeof ENUMS.sheetMaterial)[number];
+export type SheetSizing = (typeof ENUMS.sheetSizing)[number];
 /** Bloom's typography components, as a text's style: `h1` is Bloom `H1`, `lead` is `Lead`… */
 export type TextStyleName = (typeof ENUMS.textStyle)[number];
 /** Where a text that does not fit its lines is cut (React Native's `ellipsizeMode`). */

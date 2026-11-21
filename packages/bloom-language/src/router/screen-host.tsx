@@ -2,11 +2,11 @@
  * A `screen()` body drawn as a Bloom `Screen`: the body's root view is its
  * content, and the root's screen modifiers are its chrome. The header is
  * Bloom's PageHeader (on iOS, inside a native stack, the system navigation
- * bar), a header node of the screen's own, or none; each `.sheet()` is Bloom's
- * Dialog, from the bottom and centred from `md` (Mention's responsive sheet).
+ * bar), a header node of the screen's own, or none; each `.sheet()` is a
+ * sheet over it (see sheet-bloom.tsx: Bloom's Dialog or BottomSheet, the system
+ * sheet on iOS).
  */
-import { useRef, type ReactNode } from 'react';
-import { Dialog } from '@oxy.so/bloom/dialog';
+import type { ReactNode } from 'react';
 import { Screen } from '@oxy.so/bloom/screen';
 
 import { Header } from '../primitives';
@@ -16,8 +16,8 @@ import {
   type Child,
   type HeadingLevel,
   type Modifier,
+  type ScreenFooter,
   type ScreenHeader,
-  type SheetOptions,
 } from '../node';
 import { valuesOf } from '../platform/values';
 import { toElement } from '../render';
@@ -32,8 +32,7 @@ import {
   type TitleDisplay,
 } from '../tokens';
 import { useSystemBar } from './screen-header';
-
-const SHEET_PLACEMENT = { base: 'bottom', md: 'center' } as const;
+import { SheetHost } from './sheet-host';
 
 interface ScreenChrome {
   header: Node | null;
@@ -111,6 +110,7 @@ export function ScreenHost({ root }: { root: Child }) {
   const system = useSystemBar() && chrome.header !== null && !chrome.custom;
   const header = chrome.header ? toElement(chrome.header) : undefined;
   const footer = chrome.footer;
+  const footerOptions = footer?.options as ScreenFooter | undefined;
   const action = chrome.action;
   const values = chrome.values;
   const clearance = values.contentClearance as SpaceToken | undefined;
@@ -131,8 +131,8 @@ export function ScreenHost({ root }: { root: Child }) {
         navigationScope={values.navigationScope as NavigationScope | undefined}
         reselect={chrome.onReselect ? { refresh: chrome.onReselect } : undefined}
         bottomBar={footer ? toElement(footer.content) : undefined}
-        bottomBarPlacement={footer?.options?.placement}
-        bottomBarKeyboardBehavior={footer?.options?.keyboard}
+        bottomBarPlacement={footerOptions?.placement}
+        bottomBarKeyboardBehavior={footerOptions?.keyboard}
       >
         {toElement(chrome.content)}
       </Screen>
@@ -148,7 +148,7 @@ function sheetsOf(sheets: readonly Extract<Modifier, { kind: 'sheet' }>[]): Reac
   for (let i = 0; i < sheets.length; i++) {
     const sheet = sheets[i] as Extract<Modifier, { kind: 'sheet' }>;
     out.push(
-      <ScreenSheet
+      <SheetHost
         key={`sheet${i}`}
         open={sheet.open}
         content={sheet.content}
@@ -157,28 +157,4 @@ function sheetsOf(sheets: readonly Extract<Modifier, { kind: 'sheet' }>[]): Reac
     );
   }
   return out;
-}
-
-/** One `.sheet()`: its content is built while it is open, and stays as it was while it closes. */
-function ScreenSheet({
-  open,
-  content,
-  options,
-}: {
-  open: boolean;
-  content: () => Child;
-  options: SheetOptions | undefined;
-}) {
-  const shown = useRef<ReactNode>(null);
-  if (open) shown.current = toElement(content());
-  return (
-    <Dialog
-      open={open}
-      onClose={options?.onDismiss}
-      title={options?.title}
-      placement={SHEET_PLACEMENT}
-    >
-      {shown.current}
-    </Dialog>
-  );
 }

@@ -1261,6 +1261,55 @@ the keyboard and keeps the focused field above it) and the scroll view's
 Not in the language yet: a screen's colour (`colorPreset`, `seed`), `active`
 and the initial chrome heights (`headerHeight`, `bottomBarHeight`).
 
+### Bottom sheet
+
+```ts
+screen(function Saved() {
+  const [filters, setFilters] = useState(false);
+  return SavedList()
+    .title(t('saved.title'))
+    .sheet(filters, () => BottomSheet(Filters()).detached().footer(Apply(), { behavior: 'viewport' }), {
+      onDismiss: () => setFilters(false),
+    });
+});
+```
+
+A `.sheet(open, content, options)` whose content is a `BottomSheet(...)` node
+presents Bloom's `BottomSheet`; any other content keeps Bloom's `Dialog` (from
+the bottom, centred from `md`). The node is the sheet's own options, as
+SwiftUI's presentation modifiers are; placed anywhere else it draws nothing.
+
+| Modifier | Bloom `BottomSheet` |
+| --- | --- |
+| `.detached()` | `detached` |
+| `.dragIndicator('visible' \| 'hidden')` | `showHandle` |
+| `.material('surface' \| 'flat')` | `material` |
+| `.scrollable(false)`, `.sizing('content' \| 'fill')` | `scrollable`, `sizing` (a body that owns its list) |
+| `.interactiveDismissDisabled()` | `enablePanDownToClose={false}` |
+| `.onDismissAttempt(fn)` | `onDismissAttempt` (a veto of back, the backdrop, Escape and a drag) |
+| `.manualActivation()` | `manualActivation` |
+| `.footer(view, { behavior })` | `footer`, `footerBehavior` |
+| `.progress(value)`, `.label(text)` | `animatedProgress`, `accessibilityLabel` |
+
+The sheet is held open by `open` as Bloom's own Dialog holds it: it mounts with
+its open state, presents and dismisses as `open` changes, keeps its content
+while it leaves, and a close the sheet made itself (a drag, the backdrop, back)
+calls `onDismiss`, since the host's state still says open. Its drags are Bloom's
+gesture layer (`useDrag` on the sheet's translate; docs/motion.mdx), on the
+sheet's own springs.
+
+| | Android, OxyOS | iOS (not verified) | Web |
+| --- | --- | --- | --- |
+| `.sheet()` | Bloom `Dialog`; a `BottomSheet` content Bloom's `BottomSheet` (on the lens window where Bloom has the native lens) | the system sheet (`@expo/ui`'s `BottomSheet`), the content a React view in it | Bloom `Dialog` or `BottomSheet` |
+
+On iOS a `BottomSheet` node's options are the presentation's:
+`dragIndicator` the drag indicator, `interactiveDismissDisabled` the same,
+`sizing('fill')` the large detent, otherwise the sheet fits its content, and
+its footer follows its body. The system sheet has no title bar, so a
+`.sheet()`'s `title` names it for assistive technology only. Without
+`@expo/ui`, Bloom's sheet. Bloom's sheet has no detents; neither does the
+node.
+
 ## Image
 
 `Image(source, alt?)` is Bloom's `BloomImage`: expo-image on a device,

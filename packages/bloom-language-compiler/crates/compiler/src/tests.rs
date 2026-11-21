@@ -554,7 +554,7 @@ fn wave_two_controls_are_checked() {
 }
 
 /// The app chrome's constructors, imported as a screen file imports them.
-const CHROME: &str = "import { ScrollView, Text } from '@oxy.so/bloom-language';\n";
+const CHROME: &str = "import { BottomSheet, ScrollView, Text } from '@oxy.so/bloom-language';\n";
 
 fn chrome(body: &str) -> crate::Output {
     compile(&format!("{CHROME}{body}"), "chrome.tsx")
@@ -582,4 +582,17 @@ fn the_screen_and_its_scroll_view_are_checked_against_the_spec() {
     // A scroll view's own modifiers stay on it.
     let stack = chrome("export const S = () => Text('a').keyboardTaps('handled');\n");
     assert_eq!(first_message(&stack), Some("Text has no modifier .keyboardTaps()"));
+}
+
+#[test]
+fn a_bottom_sheet_is_checked_against_the_spec() {
+    let fine = chrome(
+        "export const S = (open, keep, apply) => Text('a').sheet(open, () => BottomSheet(Text('b')).detached().dragIndicator('hidden').material('flat').scrollable(false).sizing('fill').interactiveDismissDisabled().onDismissAttempt(keep).manualActivation().footer(apply, { behavior: 'viewport' }).label('Filters'));\n",
+    );
+    assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
+    let sizing = chrome("export const S = () => BottomSheet(Text('b')).sizing('half');\n");
+    assert_eq!(first_message(&sizing), Some("Unknown sheetSizing token 'half' for .sizing()"));
+    // A sheet is not a view: it takes no box modifier.
+    let padded = chrome("export const S = () => BottomSheet(Text('b')).padding('md');\n");
+    assert_eq!(first_message(&padded), Some("BottomSheet has no modifier .padding()"));
 }
