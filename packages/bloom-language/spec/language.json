@@ -623,7 +623,8 @@
     "sidebarVariant": ["panel", "rail"],
     "sidebarSurface": ["card", "plain", "docked"],
     "sidebarSize": ["sm", "md", "lg"],
-    "footerPinning": ["absolute", "document", "inline", "sticky"]
+    "footerPinning": ["absolute", "document", "inline", "sticky"],
+    "settingsView": ["navigation", "page"]
   },
   "glass": {
     "$comment": [
@@ -1031,7 +1032,16 @@
     "account": ["value"],
     "width": ["space"],
     "pinning": ["footerPinning"],
-    "ignoresSafeArea": ["value?"]
+    "ignoresSafeArea": ["value?"],
+    "presented": ["value"],
+    "onPresentedChange": ["value"],
+    "placeholder": ["value"],
+    "query": ["value", "value"],
+    "filter": ["value"],
+    "keywords": ["children"],
+    "content": ["value"],
+    "fullBleed": ["value?"],
+    "initialView": ["settingsView"]
   },
   "universal": [
     "padding",
@@ -1843,6 +1853,52 @@
       "constructors": ["RailItem"],
       "universal": false,
       "modifiers": ["id", "activeIcon"]
+    },
+    "command": {
+      "constructors": ["Command"],
+      "universal": false,
+      "modifiers": [
+        "presented",
+        "onPresentedChange",
+        "placeholder",
+        "emptyLabel",
+        "query",
+        "filter",
+        "testID"
+      ]
+    },
+    "commandItem": {
+      "constructors": ["CommandItem"],
+      "universal": false,
+      "modifiers": ["id", "icon", "subtitle", "keywords", "shortcut", "disabled", "onPress"]
+    },
+    "commandGroup": {
+      "constructors": ["CommandGroup"],
+      "universal": false,
+      "modifiers": []
+    },
+    "settings": {
+      "constructors": ["SettingsModal"],
+      "universal": false,
+      "modifiers": [
+        "presented",
+        "onPresentedChange",
+        "selection",
+        "onSelect",
+        "initialView",
+        "presentation",
+        "testID"
+      ]
+    },
+    "settingsGroup": {
+      "constructors": ["SettingsGroup"],
+      "universal": false,
+      "modifiers": ["id"]
+    },
+    "settingsItem": {
+      "constructors": ["SettingsItem"],
+      "universal": false,
+      "modifiers": ["id", "content", "title", "fullBleed", "disabled", "onPress"]
     },
     "pageFooter": {
       "constructors": ["PageFooter"],

@@ -127,6 +127,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("sidebarSurface", &["card", "plain", "docked"]),
     ("sidebarSize", &["sm", "md", "lg"]),
     ("footerPinning", &["absolute", "document", "inline", "sticky"]),
+    ("settingsView", &["navigation", "page"]),
 ];
 
 /// The modifiers a variant (`when(condition, v => v…)`) can change.
@@ -409,6 +410,15 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("width", &["space"]),
     ("pinning", &["footerPinning"]),
     ("ignoresSafeArea", &["value?"]),
+    ("presented", &["value"]),
+    ("onPresentedChange", &["value"]),
+    ("placeholder", &["value"]),
+    ("query", &["value", "value"]),
+    ("filter", &["value"]),
+    ("keywords", &["children"]),
+    ("content", &["value"]),
+    ("fullBleed", &["value?"]),
+    ("initialView", &["settingsView"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -499,6 +509,12 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "treeItem", constructors: &["TreeItem"], modifiers: &["id", "icon", "subtitle", "meta", "link", "trailing", "disabled", "expanded", "onExpandedChange", "emptyLabel", "onPress", "onLongPress"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "rail", constructors: &["Rail"], modifiers: &["selection", "onSelect", "header", "footer", "width", "testID"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "railItem", constructors: &["RailItem"], modifiers: &["id", "activeIcon"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "command", constructors: &["Command"], modifiers: &["presented", "onPresentedChange", "placeholder", "emptyLabel", "query", "filter", "testID"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "commandItem", constructors: &["CommandItem"], modifiers: &["id", "icon", "subtitle", "keywords", "shortcut", "disabled", "onPress"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "commandGroup", constructors: &["CommandGroup"], modifiers: &[], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "settings", constructors: &["SettingsModal"], modifiers: &["presented", "onPresentedChange", "selection", "onSelect", "initialView", "presentation", "testID"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "settingsGroup", constructors: &["SettingsGroup"], modifiers: &["id"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "settingsItem", constructors: &["SettingsItem"], modifiers: &["id", "content", "title", "fullBleed", "disabled", "onPress"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "pageFooter", constructors: &["PageFooter"], modifiers: &["toolbar", "pinning", "scrollEdge", "ignoresSafeArea", "testID"], size: None, tint: None, style: None, shape: None },
 ];
 
