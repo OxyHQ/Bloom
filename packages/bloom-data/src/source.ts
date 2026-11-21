@@ -269,7 +269,8 @@ export function source(
           const itemId = store.put(definition.of, item as Plain, listOptions.put);
           if (itemId !== undefined) ids.push(itemId);
         }
-        const current = mode === 'next' ? slot.state : undefined;
+        // Pages build on the list's own state, never on a layer over it.
+        const current = mode === 'next' ? slot.base : undefined;
         const visited = mode === 'next' && current?.next ? [...current.visited, current.next] : [];
         const next = page.next ?? undefined;
         const repeats = next !== undefined && visited.includes(next);
