@@ -76,6 +76,13 @@ export interface ZoomableMediaGalleryHandle {
    * tapped thumbnail's measured screen rect (when provided).
    */
   open: (items: GalleryMedia[], index: number, rect?: MeasuredRect) => void;
+  /**
+   * Close the open gallery as a press on its backdrop does: flying back to the
+   * current item's thumbnail when `measureThumb` finds it, fading out otherwise.
+   * Does nothing while closed. Optional so a wrapper that forwards only `open`
+   * (a lazily loaded gallery) is still a handle.
+   */
+  close?: () => void;
 }
 
 /** Every name the viewer announces. Localised via `BloomProvider locale`; pass any to override. */

@@ -382,6 +382,28 @@ describe('ZoomableMediaGallery', () => {
     }
   });
 
+  it('closes from outside as a backdrop press does, and only while open', () => {
+    jest.useFakeTimers();
+    try {
+      const onOpenChange = jest.fn();
+      const api = renderGallery({ onOpenChange });
+      act(() => api.ref.current?.close?.());
+      expect(onOpenChange).not.toHaveBeenCalled();
+      act(() => api.ref.current?.open(IMAGES, 0));
+      act(() => jest.advanceTimersByTime(1000));
+      act(() => {
+        api.ref.current?.close?.();
+        api.ref.current?.close?.();
+      });
+      expect(onOpenChange.mock.calls).toEqual([[true]]);
+      act(() => jest.advanceTimersByTime(1000));
+      expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
+      expect(hostNodes(api.toJSON()).filter((node) => node.type === 'ExpoImage')).toHaveLength(0);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('uses the current callback when a deferred close completes, then permits reopening', () => {
     jest.useFakeTimers();
     try {
