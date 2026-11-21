@@ -2640,10 +2640,8 @@
   "max-w-[720px]": {
    "count": 9,
    "apps": 3,
-   "status": "token",
-   "scale": "space",
-   "value": "720px",
-   "language": ".frame({ maxWidth: … })"
+   "status": "mapped",
+   "language": ".frame({ maxWidth: '720' })"
   },
   "mb-": {
    "count": 9,
@@ -3460,10 +3458,8 @@
   "max-w-[420px]": {
    "count": 6,
    "apps": 4,
-   "status": "token",
-   "scale": "space",
-   "value": "420px",
-   "language": ".frame({ maxWidth: … })"
+   "status": "mapped",
+   "language": ".frame({ maxWidth: '420' })"
   },
   "max-w-[520px]": {
    "count": 6,
@@ -4384,10 +4380,8 @@
   "max-w-[380px]": {
    "count": 4,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "380px",
-   "language": ".frame({ maxWidth: … })"
+   "status": "mapped",
+   "language": ".frame({ maxWidth: '380' })"
   },
   "max-w-[600px]": {
    "count": 4,
@@ -4406,10 +4400,8 @@
   "max-w-lg": {
    "count": 4,
    "apps": 3,
-   "status": "token",
-   "scale": "space",
-   "value": "512px",
-   "language": ".frame({ maxWidth: … })"
+   "status": "mapped",
+   "language": ".frame({ maxWidth: '512' })"
   },
   "mb-[12px]": {
    "count": 4,
@@ -5208,18 +5200,14 @@
   "max-w-[480px]": {
    "count": 3,
    "apps": 3,
-   "status": "token",
-   "scale": "space",
-   "value": "480px",
-   "language": ".frame({ maxWidth: … })"
+   "status": "mapped",
+   "language": ".frame({ maxWidth: '480' })"
   },
   "max-w-[560px]": {
    "count": 3,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "560px",
-   "language": ".frame({ maxWidth: … })"
+   "status": "mapped",
+   "language": ".frame({ maxWidth: '560' })"
   },
   "max-w-[880px]": {
    "count": 3,
@@ -5276,10 +5264,8 @@
   "min-h-[480px]": {
    "count": 3,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "480px",
-   "language": ".frame({ minHeight: … })"
+   "status": "mapped",
+   "language": ".frame({ minHeight: '480' })"
   },
   "min-h-[64px]": {
    "count": 3,
@@ -6538,10 +6524,8 @@
   "max-h-[300px]": {
    "count": 2,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "300px",
-   "language": ".frame({ maxHeight: … })"
+   "status": "mapped",
+   "language": ".frame({ maxHeight: '300' })"
   },
   "max-w-(--skeleton-width)": {
    "count": 2,
@@ -6596,10 +6580,8 @@
   "max-w-[300px]": {
    "count": 2,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "300px",
-   "language": ".frame({ maxWidth: … })"
+   "status": "mapped",
+   "language": ".frame({ maxWidth: '300' })"
   },
   "max-w-[384px]": {
    "count": 2,
@@ -6610,18 +6592,14 @@
   "max-w-[400px]": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "400px",
-   "language": ".frame({ maxWidth: … })"
+   "status": "mapped",
+   "language": ".frame({ maxWidth: '400' })"
   },
   "max-w-[440px]": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "440px",
-   "language": ".frame({ maxWidth: … })"
+   "status": "mapped",
+   "language": ".frame({ maxWidth: '440' })"
   },
   "max-w-[448px]": {
    "count": 2,
@@ -6680,10 +6658,8 @@
   "min-h-[560px]": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "560px",
-   "language": ".frame({ minHeight: … })"
+   "status": "mapped",
+   "language": ".frame({ minHeight: '560' })"
   },
   "min-h-[56px]": {
    "count": 2,
@@ -7568,10 +7544,8 @@
   "w-60": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "240px",
-   "language": ".frame({ width: … })"
+   "status": "mapped",
+   "language": ".frame({ width: '240' })"
   },
   "w-[110px]": {
    "count": 2,
@@ -7606,10 +7580,8 @@
   "w-[240px]": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "240px",
-   "language": ".frame({ width: … })"
+   "status": "mapped",
+   "language": ".frame({ width: '240' })"
   },
   "w-[296px]": {
    "count": 2,
@@ -9194,10 +9166,8 @@
   "h-[400px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "400px",
-   "language": ".frame({ height: … })"
+   "status": "mapped",
+   "language": ".frame({ height: '400' })"
   },
   "h-[48px]": {
    "count": 1,
@@ -9634,10 +9604,8 @@
   "max-h-[420px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "420px",
-   "language": ".frame({ maxHeight: … })"
+   "status": "mapped",
+   "language": ".frame({ maxHeight: '420' })"
   },
   "max-h-[48px]": {
    "count": 1,
@@ -9686,10 +9654,8 @@
   "max-w-60": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "240px",
-   "language": ".frame({ maxWidth: … })"
+   "status": "mapped",
+   "language": ".frame({ maxWidth: '240' })"
   },
   "max-w-7xl": {
    "count": 1,
@@ -9754,10 +9720,8 @@
   "max-w-[240px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "240px",
-   "language": ".frame({ maxWidth: … })"
+   "status": "mapped",
+   "language": ".frame({ maxWidth: '240' })"
   },
   "max-w-[280px]": {
    "count": 1,
@@ -10004,10 +9968,8 @@
   "min-h-[240px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "240px",
-   "language": ".frame({ minHeight: … })"
+   "status": "mapped",
+   "language": ".frame({ minHeight: '240' })"
   },
   "min-h-[3.25rem]": {
    "count": 1,
@@ -10018,10 +9980,8 @@
   "min-h-[300px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "300px",
-   "language": ".frame({ minHeight: … })"
+   "status": "mapped",
+   "language": ".frame({ minHeight: '300' })"
   },
   "min-h-[324px]": {
    "count": 1,
@@ -12020,18 +11980,14 @@
   "w-[380px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "380px",
-   "language": ".frame({ width: … })"
+   "status": "mapped",
+   "language": ".frame({ width: '380' })"
   },
   "w-[420px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "420px",
-   "language": ".frame({ width: … })"
+   "status": "mapped",
+   "language": ".frame({ width: '420' })"
   },
   "w-[43%]": {
    "count": 1,
