@@ -557,3 +557,7 @@ export type { ContextMenuView } from './controls/context-menu';
 // Media inset borders (controls/media-inset-border.tsx)
 export { MediaInsetBorder } from './controls/media-inset-border';
 export type { MediaInsetBorderView } from './controls/media-inset-border';
+
+// Fact strips (controls/fact-strip.tsx)
+export { Fact, FactStrip } from './controls/fact-strip';
+export type { FactStripView, FactText, FactView } from './controls/fact-strip';

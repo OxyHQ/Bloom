@@ -147,6 +147,7 @@ import type { ActivityHeatmapView } from '../controls/activity-heatmap';
 import type { TagFieldView } from '../controls/tag-field';
 import type { FileUploadView } from '../controls/file-upload';
 import type { VideoView } from '../controls/video-view';
+import type { FactStripView, FactView } from '../controls/fact-strip';
 import type { ColorSwatchPickerView } from '../controls/color-swatch-picker';
 import type { InputOtpView } from '../controls/input-otp';
 import type { AnimatedCheckView } from '../controls/animated-check';
@@ -448,7 +449,11 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<CollapsibleView>, Of<'collapsible'>>,
       Same<MethodsOf<DropZoneView>, Of<'dropZone'>>,
       Same<MethodsOf<MediaInsetBorderView>, Of<'mediaInsetBorder'>>,
+      Same<MethodsOf<FactStripView>, Of<'factStrip'>>,
+      Same<MethodsOf<FactView>, Of<'fact'>>,
     ] = [
+      true,
+      true,
       true,
       true,
       true,

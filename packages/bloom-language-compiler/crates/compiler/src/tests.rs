@@ -1112,3 +1112,22 @@ fn media_inset_borders_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn fact_strips_are_checked() {
+    let imports = "import { FactStrip, Fact, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (f) => FactStrip(Fact('Ratings', '4.7').caption(Text('x')).onPress(f).label('a').id('r')).minItemWidth('96').contentInset('lg').padding('md');\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("FactStrip().minItemWidth('wide')", "Unknown space token 'wide' for .minItemWidth()"),
+        ("Fact('a', 'b').padding('md')", "Fact has no modifier .padding()"),
+        ("FactStrip().caption('x')", "FactStrip has no modifier .caption()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = () => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

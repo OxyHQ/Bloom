@@ -28,6 +28,7 @@ import { CONTEXT_MENUS } from './context-menu';
 import { COLLAPSIBLES } from './collapsible';
 import { DROP_ZONES } from './drop-zone';
 import { MEDIA_INSET_BORDERS } from './media-inset-border';
+import { FACT_STRIPS } from './fact-strip';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -63,4 +64,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...COLLAPSIBLES,
   ...DROP_ZONES,
   ...MEDIA_INSET_BORDERS,
+  ...FACT_STRIPS,
 };
