@@ -2477,6 +2477,9 @@ export const MODIFIERS = {
   ],
   "sidebarAfter": [
     "value"
+  ],
+  "accessory": [
+    "value"
   ]
 } as const;
 
@@ -6992,6 +6995,15 @@ export const NODE_MODIFIERS = {
     "onPress",
     "onLongPress"
   ],
+  "toolbarView": [
+    "trailing",
+    "accessory",
+    "size",
+    "testID"
+  ],
+  "stickySection": [
+    "testID"
+  ],
   "pageFooter": [
     "toolbar",
     "pinning",
@@ -7098,5 +7110,7 @@ export const CONSTRUCTORS = {
   "SettingsItem": "settingsItem",
   "Panel": "panel",
   "Destination": "destination",
+  "Toolbar": "toolbarView",
+  "StickySection": "stickySection",
   "PageFooter": "pageFooter"
 } as const;

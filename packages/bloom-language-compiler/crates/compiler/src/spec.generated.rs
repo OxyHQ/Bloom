@@ -431,6 +431,7 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("bar", &["value?"]),
     ("sidebar", &["value?"]),
     ("sidebarAfter", &["value"]),
+    ("accessory", &["value"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -529,6 +530,8 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "settingsItem", constructors: &["SettingsItem"], modifiers: &["id", "content", "title", "fullBleed", "disabled", "onPress"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "panel", constructors: &["Panel"], modifiers: &["panelRole", "label", "width", "minWidth", "maxWidth", "resizable", "hidden", "keepMounted", "presented", "onPresentedChange", "testID"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "destination", constructors: &["Destination"], modifiers: &["label", "icon", "activeIcon", "badge", "page", "preload", "bar", "sidebar", "sidebarAfter", "onPress", "onLongPress"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "toolbarView", constructors: &["Toolbar"], modifiers: &["trailing", "accessory", "size", "testID"], size: Some("controlSize"), tint: None, style: None, shape: None },
+    NodeSpec { kind: "stickySection", constructors: &["StickySection"], modifiers: &["testID"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "pageFooter", constructors: &["PageFooter"], modifiers: &["toolbar", "pinning", "scrollEdge", "ignoresSafeArea", "testID"], size: None, tint: None, style: None, shape: None },
 ];
 
