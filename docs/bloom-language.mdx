@@ -2198,6 +2198,19 @@ drag on the web or a move button writes the new order. It takes
 resolver's variant each photo is drawn at), `.disabled()` and `.labels()`;
 `.label()` names the grid.
 
+### Hover cards
+
+```ts
+HoverCard(Text(`@${user.handle}`), UserCard(user)).align('start').label(user.name)
+```
+
+Bloom's `HoverCard`: the card a resting pointer or focus opens on the web,
+and a long press on native. `HoverCard(trigger, content)`: the trigger carries
+the view's box, `.label()` names the card. It takes `.presented([open, set])`
+(when the screen owns it), `.openDelay(ms)`, `.closeDelay(ms)`, `.side('top' |
+'bottom')`, `.align('start' | 'center' | 'end')`, `.padded(false)` (a card
+whose content paints its own surface) and `.disabled()`.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2642,6 +2655,7 @@ and `@oxy.so/bloom-data` beside it.
   photo grids,
   choice lists,
   video playback.
+  hover cards.
 
 **Not built**
 

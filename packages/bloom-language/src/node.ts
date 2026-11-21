@@ -28,6 +28,7 @@ import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/blo
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 import type { TagFieldKind } from './controls/tag-field';
 import type { ContextMenuKind } from './controls/context-menu';
+import type { HoverCardKind } from './controls/hover-card';
 import type { ContextMenuAnchor } from '@oxy.so/bloom/context-menu';
 import type { FileUploadKind } from './controls/file-upload';
 import type { VideoViewKind } from './controls/video-view';
@@ -807,6 +808,10 @@ export interface ValueModifiers {
   // Context menus (controls/context-menu.tsx)
   presentedAt: Binding<ContextMenuAnchor | null>;
 
+  // Hover cards (controls/hover-card.tsx)
+  closeDelay: number;
+  padded: boolean;
+
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1206,6 +1211,7 @@ export type NodeKind =
   | DropZoneKind
   | MediaInsetBorderKind
   | SortableMediaKind
+  | HoverCardKind
   | AnimatedCheckKind
   | FactStripKind;
 
@@ -2932,6 +2938,14 @@ export class Node {
   // Context menus (controls/context-menu.tsx)
   presentedAt(value: Binding<ContextMenuAnchor | null>): Node {
     return this.set('presentedAt', value);
+  }
+
+  // Hover cards (controls/hover-card.tsx)
+  closeDelay(value: number): Node {
+    return this.set('closeDelay', value);
+  }
+  padded(value: boolean): Node {
+    return this.set('padded', value);
   }
 
 }
