@@ -476,6 +476,11 @@ export function createPanelLayoutView(
     const [stickyHeight, setStickyHeight] = useState(0);
     const document = documentFlow && !track.floating;
     const documentFrame = document && (!vertical || alone);
+    // Under the bottom bar a side-by-side or lone panel reaches it: its content
+    // clears the bar and drives it (the shell's navigation motion), and a group
+    // inside it lays out under the bar as the shell's own group does. A stacked
+    // one sits above the group viewport's own clearance.
+    const underBar = !documentFrame && !!region?.underBottomBar && (!vertical || alone);
     const floatingOpen = !!track.floating && !!panel.floating?.open && panel.visible !== false;
     const sticky = !!panel.sticky && documentFrame;
     const parent = React.useContext(ScreenContext);
@@ -812,10 +817,6 @@ export function createPanelLayoutView(
       [panel.id, floatingOpen, active, visibilityReady],
     );
     const renderPanel = (content: React.ReactNode, navigation?: PanelNavigationController) => {
-      // Under the bottom bar a side-by-side panel reaches it: its content clears
-      // the bar and drives it (the shell's navigation motion); a stacked one sits
-      // above the group viewport's own clearance.
-      const underBar = !documentFrame && !!region?.underBottomBar;
       const body = panel.group ? (
         <ScreenHostContext.Provider value={{ ...ancestorHost, active }}>
           {content}
@@ -1072,6 +1073,7 @@ export function createPanelLayoutView(
             }
             shellWidth={shellWidth}
             gap={gap}
+            underBottomBar={underBar}
             testID={testID ? `${testID}-group` : undefined}
           />
         </PanelDocumentRestorationContext.Provider>,
@@ -1110,7 +1112,12 @@ export function createPanelLayoutView(
     gap,
     testID,
     groupActions,
-  }: PanelLayoutViewProps & { groupActions?: React.ReactNode }) {
+    underBottomBar,
+  }: PanelLayoutViewProps & {
+    groupActions?: React.ReactNode;
+    /** The panel holding this group reaches under the shell's bottom bar. */
+    underBottomBar: boolean;
+  }) {
     const region = useAppShellRegion();
     const parentScope = useContext(PanelCssContext);
     const inheritedResponsiveScope = useContext(PanelResponsiveScopeContext);
@@ -1201,10 +1208,10 @@ export function createPanelLayoutView(
               ...region,
               flow: document ? ('document' as const) : ('bounded' as const),
               bottomReserve: document ? region.bottomReserve : 0,
-              underBottomBar: false,
+              underBottomBar: !document && underBottomBar,
             }
           : null,
-      [region, document],
+      [region, document, underBottomBar],
     );
     return (
       <View
@@ -1226,7 +1233,7 @@ export function createPanelLayoutView(
         <PanelCssContext.Provider value={parentScope ? scope : null}>
           <PanelResponsiveScopeContext.Provider value={inheritedResponsiveScope ?? parentScope}>
             <AppShellRegionContext.Provider value={nestedRegion}>
-              <BottomEdgeProvider inherit={document}>
+              <BottomEdgeProvider inherit={document || underBottomBar}>
                 <ContentPanelNestingContext.Provider value={false}>
                   <PanelLayoutView
                     layout={layout}
@@ -1672,7 +1679,11 @@ export function createPanelLayoutView(
         }}
         enabled={deck && !documentHorizontal}
         document={document}
-        bottomInset={vertical && !document && region?.underBottomBar ? bottomEdge : undefined}
+        bottomInset={
+          vertical && visible.length > 1 && !document && region?.underBottomBar
+            ? bottomEdge
+            : undefined
+        }
         testID={testID ? `${testID}-scroll` : undefined}
       >
         {row}
