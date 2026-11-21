@@ -1,5 +1,5 @@
 import { useBloomAppearance } from '../appearance';
-import { normalizeTagTone } from './shared';
+import { bloomToneOf } from '../appearance/colors';
 import React, { forwardRef, memo, useMemo, type ComponentRef } from 'react';
 import {
   View,
@@ -181,7 +181,7 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
       size: ['xs', 'sm', 'md', 'lg'].includes(sizeProp ?? '')
         ? (sizeProp as import('../appearance').BloomSize)
         : undefined,
-      tone: toneProp ?? (color ? normalizeTagTone(color) : undefined),
+      tone: toneProp ?? (color ? bloomToneOf(color) : undefined),
     },
     { size: 'md', tone: 'neutral' },
   );

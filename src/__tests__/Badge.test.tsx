@@ -12,6 +12,7 @@ import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Badge, BADGE_GEOMETRY, resolveBadgePaint } from '../badge';
+import { resolveAccentColors } from '../theme/accent-colors';
 import { resolveButtonRamps } from '../button/shared';
 import { RiKey2Line } from '../icons/remix/RiKey2Line';
 import { useTheme } from '../theme/use-theme';
@@ -270,6 +271,30 @@ describe('Badge', () => {
     expect(lum(dark.background)).toBeGreaterThan(lum(dark.foreground));
     expect(Math.abs(lum(dark.background) - lum(light.background))).toBeLessThan(10);
   });
+
+  // `secondary` and `tertiary` are accent tones `color` takes; the tone mapping once had no
+  // Bloom tone for either, so painting one threw.
+  it.each(['secondary', 'tertiary'] as const)(
+    'paints the %s tone from its own palette',
+    (color) => {
+      let paint: ReturnType<typeof resolveBadgePaint> | null = null;
+      let colors: ReturnType<typeof useTheme>['colors'] | null = null;
+      function Probe() {
+        const theme = useTheme();
+        colors = theme.colors;
+        paint = resolveBadgePaint(theme, color, 'subtle');
+        return null;
+      }
+      render(
+        <BloomThemeProvider mode="light" colorPreset="oxy">
+          <Probe />
+        </BloomThemeProvider>,
+      );
+      const { shadow, ...pair } = paint!;
+      expect(shadow).toBeNull();
+      expect(pair).toEqual(resolveAccentColors(colors!, color, 'subtle'));
+    },
+  );
 
   it('onMedia reads the neutral ramp rather than a hand-written colour', () => {
     let ramp: ReturnType<typeof resolveButtonRamps> | null = null;

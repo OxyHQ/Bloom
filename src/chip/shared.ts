@@ -1,4 +1,4 @@
-import { resolveBloomColors } from '../appearance/colors';
+import { bloomToneOf, resolveBloomColors } from '../appearance/colors';
 import type { BloomAppearance, BloomTone } from '../appearance';
 import { TYPE_SCALE, type TypeScaleVariant } from '../typography/scale';
 import { resolveAccentColors, type AccentTone } from '../theme/accent-colors';
@@ -124,7 +124,7 @@ export function resolveChipPaint(
     !hue || selected
       ? resolveBloomColors(
           theme.colors,
-          selected ? 'accent' : normalizeTagTone(tone),
+          selected ? 'accent' : bloomToneOf(tone),
           variant === 'outlined' ? 'outline' : variant,
         )
       : { ...resolveChipHueColors(theme, hue, surface), border: 'transparent' };
@@ -170,14 +170,4 @@ export function chipRowOverflow({ x, viewport, content }: ChipRowScroll): {
 } {
   if (viewport <= 0 || content <= viewport + 1) return { previous: false, next: false };
   return { previous: x > 1, next: x < content - viewport - 1 };
-}
-
-export function normalizeTagTone(tone: AccentTone | BloomTone): BloomTone {
-  return tone === 'primary'
-    ? 'accent'
-    : tone === 'error'
-      ? 'danger'
-      : tone === 'default'
-        ? 'neutral'
-        : (tone as BloomTone);
 }

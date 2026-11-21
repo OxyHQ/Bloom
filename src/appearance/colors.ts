@@ -14,6 +14,21 @@ const PALETTE: Record<BloomTone, AccentTone> = {
   info: 'info',
 };
 
+const TONE_OF_ACCENT = Object.fromEntries(
+  Object.entries(PALETTE).map(([tone, accent]) => [accent, tone]),
+) as Record<AccentTone, BloomTone>;
+
+/**
+ * The Bloom tone an accent tone or a Bloom tone paints in: `PALETTE` read
+ * backwards, so every `AccentTone` a chip or badge takes (`secondary` and
+ * `tertiary` included) reaches the palette `resolveBloomColors` reads.
+ */
+export function bloomToneOf(tone: AccentTone | BloomTone): BloomTone {
+  return Object.hasOwn(TONE_OF_ACCENT, tone)
+    ? TONE_OF_ACCENT[tone as AccentTone]
+    : (tone as BloomTone);
+}
+
 /** Uses paired semantic colors; never manufactures alpha from a token. */
 export function resolveBloomColors(
   colors: ThemeColors,
