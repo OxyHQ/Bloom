@@ -601,7 +601,8 @@
     ],
     "buttonMaterial": ["surface", "flat", "shared", "lens"],
     "radarLegend": ["bottom", "top", "overlay"],
-    "methodTitleAlign": ["left", "center"]
+    "methodTitleAlign": ["left", "center"],
+    "voiceSize": ["sm", "md", "lg"]
   },
   "glass": {
     "$comment": [
@@ -1814,7 +1815,14 @@
     "ambientPhoto": { "constructors": ["AmbientPhoto"], "modifiers": [] },
     "calendarView": { "constructors": ["CalendarView"], "modifiers": ["density"] },
     "calendarViewHeader": { "constructors": ["CalendarViewHeader"], "modifiers": [] },
-    "calendarViewMonthGrid": { "constructors": ["CalendarViewMonthGrid"], "modifiers": ["density"] }
+    "calendarViewMonthGrid": { "constructors": ["CalendarViewMonthGrid"], "modifiers": ["density"] },
+    "taskList": { "constructors": ["TaskList"], "modifiers": [] },
+    "webSearch": { "constructors": ["WebSearch"], "modifiers": [] },
+    "voiceControls": {
+      "constructors": ["VoiceControls"],
+      "modifiers": ["size", "disabled"],
+      "size": "voiceSize"
+    }
   },
   "sfSymbols": {
     "$comment": [
