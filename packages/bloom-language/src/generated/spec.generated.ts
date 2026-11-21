@@ -1304,6 +1304,17 @@ export const ENUMS = {
   "tooltipSize": [
     "sm",
     "md"
+  ],
+  "accentTone": [
+    "default",
+    "primary",
+    "vivid",
+    "secondary",
+    "tertiary",
+    "success",
+    "warning",
+    "error",
+    "info"
   ]
 } as const;
 
@@ -2169,7 +2180,59 @@ export const MODIFIERS = {
   "openDelay": [
     "value"
   ],
-  "collapses": []
+  "collapses": [],
+  "suggestions": [
+    "value",
+    "value?"
+  ],
+  "allowsCreate": [
+    "value"
+  ],
+  "onMaxReached": [
+    "value"
+  ],
+  "normalize": [
+    "value"
+  ],
+  "query": [
+    "value"
+  ],
+  "invalid": [
+    "value?"
+  ],
+  "file": [
+    "value"
+  ],
+  "uploadProgress": [
+    "value"
+  ],
+  "onFileSelected": [
+    "value"
+  ],
+  "onUploadComplete": [
+    "value"
+  ],
+  "onReject": [
+    "value"
+  ],
+  "picker": [
+    "value"
+  ],
+  "allowedExtensions": [
+    "value"
+  ],
+  "maxBytes": [
+    "value"
+  ],
+  "fileIcon": [
+    "value"
+  ],
+  "nativeControls": [
+    "value"
+  ],
+  "allowsPictureInPicture": [
+    "value"
+  ]
 } as const;
 
 /** The modifiers each node kind takes. */
@@ -6874,6 +6937,218 @@ export const NODE_MODIFIERS = {
     "weekStart",
     "labels",
     "onPressDay"
+  ],
+  "tagField": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "placeholder",
+    "suggestions",
+    "allowsCreate",
+    "max",
+    "onMaxReached",
+    "normalize",
+    "query",
+    "tint",
+    "size",
+    "disabled",
+    "invalid",
+    "labels"
+  ],
+  "fileUpload": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "file",
+    "uploadProgress",
+    "onFileSelected",
+    "onUploadComplete",
+    "onReject",
+    "picker",
+    "allowedExtensions",
+    "maxBytes",
+    "fileIcon",
+    "disabled",
+    "labels"
+  ],
+  "video": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "contentFit",
+    "nativeControls",
+    "allowsPictureInPicture"
   ]
 } as const;
 
@@ -6966,5 +7241,8 @@ export const CONSTRUCTORS = {
   "Tooltip": "tooltip",
   "Breadcrumb": "breadcrumb",
   "BreadcrumbItem": "breadcrumbItem",
-  "ActivityHeatmap": "activityHeatmap"
+  "ActivityHeatmap": "activityHeatmap",
+  "TagField": "tagField",
+  "FileUpload": "fileUpload",
+  "Video": "video"
 } as const;

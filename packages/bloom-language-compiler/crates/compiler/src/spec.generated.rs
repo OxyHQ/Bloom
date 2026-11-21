@@ -108,6 +108,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("stepperStyle", &["separate", "outline"]),
     ("tooltipSide", &["top", "bottom"]),
     ("tooltipSize", &["sm", "md"]),
+    ("accentTone", &["default", "primary", "vivid", "secondary", "tertiary", "success", "warning", "error", "info"]),
 ];
 
 /// The modifiers a variant (`when(condition, v => v…)`) can change.
@@ -373,6 +374,23 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("side", &["tooltipSide"]),
     ("openDelay", &["value"]),
     ("collapses", &[]),
+    ("suggestions", &["value", "value?"]),
+    ("allowsCreate", &["value"]),
+    ("onMaxReached", &["value"]),
+    ("normalize", &["value"]),
+    ("query", &["value"]),
+    ("invalid", &["value?"]),
+    ("file", &["value"]),
+    ("uploadProgress", &["value"]),
+    ("onFileSelected", &["value"]),
+    ("onUploadComplete", &["value"]),
+    ("onReject", &["value"]),
+    ("picker", &["value"]),
+    ("allowedExtensions", &["value"]),
+    ("maxBytes", &["value"]),
+    ("fileIcon", &["value"]),
+    ("nativeControls", &["value"]),
+    ("allowsPictureInPicture", &["value"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -457,6 +475,9 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "breadcrumb", constructors: &["Breadcrumb"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "size", "collapses", "separatorView", "labels"], size: Some("controlSize"), tint: None, style: None, shape: None },
     NodeSpec { kind: "breadcrumbItem", constructors: &["BreadcrumbItem"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "size", "icon", "prefix", "link", "active", "disabled", "hoverMenu"], size: Some("controlSize"), tint: None, style: None, shape: None },
     NodeSpec { kind: "activityHeatmap", constructors: &["ActivityHeatmap"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "days", "endDate", "levels", "emptyTint", "cellSize", "spacing", "weekStart", "labels", "onPressDay"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "tagField", constructors: &["TagField"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "placeholder", "suggestions", "allowsCreate", "max", "onMaxReached", "normalize", "query", "tint", "size", "disabled", "invalid", "labels"], size: Some("controlSize"), tint: Some("accentTone"), style: None, shape: None },
+    NodeSpec { kind: "fileUpload", constructors: &["FileUpload"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "file", "uploadProgress", "onFileSelected", "onUploadComplete", "onReject", "picker", "allowedExtensions", "maxBytes", "fileIcon", "disabled", "labels"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "video", constructors: &["Video"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "contentFit", "nativeControls", "allowsPictureInPicture"], size: None, tint: None, style: None, shape: None },
 ];
 
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,
