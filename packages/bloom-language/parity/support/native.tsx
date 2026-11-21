@@ -28,7 +28,7 @@ export interface HostTree {
  * the tree, not its count.
  */
 const REACT_ID = /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
-const BLOOM_ID = /\bbloom-[a-z]+(?:-[a-z]+)*-?\d+(?![\w-])/g;
+const BLOOM_ID = /\bbloom(?:-[a-z]{2,})+-?\d+(?![\w-])/g;
 let ids: Map<string, string> = new Map();
 
 function byOrder(id: string): string {
@@ -42,8 +42,8 @@ function byOrder(id: string): string {
 
 function value(input: unknown): unknown {
   if (typeof input === 'function') return '[function]';
-  // React's first: an id Bloom names with a React id inside it is then one id.
-  if (typeof input === 'string') return input.replace(REACT_ID, byOrder).replace(BLOOM_ID, byOrder);
+  // Bloom's counted ids first (their words are two letters or more), then React's.
+  if (typeof input === 'string') return input.replace(BLOOM_ID, byOrder).replace(REACT_ID, byOrder);
   if (Array.isArray(input)) return input.map(value);
   // An element handed to a host as a prop (a scroll view's refresh control) is
   // what it draws: its type and props, not who created it.
