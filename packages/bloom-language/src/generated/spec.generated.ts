@@ -2432,6 +2432,9 @@ export const MODIFIERS = {
   ],
   "imageVariant": [
     "value"
+  ],
+  "optionBox": [
+    "value"
   ]
 } as const;
 
@@ -8658,6 +8661,72 @@ export const NODE_MODIFIERS = {
     "imageVariant",
     "disabled",
     "labels"
+  ],
+  "choiceList": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "axis",
+    "spacing",
+    "optionBox",
+    "disabled"
   ]
 } as const;
 
@@ -8776,5 +8845,6 @@ export const CONSTRUCTORS = {
   "MediaInsetBorder": "mediaInsetBorder",
   "FactStrip": "factStrip",
   "Fact": "fact",
-  "SortablePhotoGrid": "sortablePhotoGrid"
+  "SortablePhotoGrid": "sortablePhotoGrid",
+  "ChoiceList": "choiceList"
 } as const;
