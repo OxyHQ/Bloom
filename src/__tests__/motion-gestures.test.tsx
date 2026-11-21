@@ -3,7 +3,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 
-import { useDrag, useSwipe } from '../motion/gestures';
+import { useDrag, useScrollGesture, useSwipe, type DragOptions } from '../motion/gestures';
 import {
   getMotionValue,
   setMotionValue,
@@ -114,6 +114,122 @@ describe('useDrag', () => {
     expect(getMotionValue(value)).toBe(100);
     act(() => gesture.__handlers.onFinalize?.({}));
     expect(ends).toEqual([{ value: 100, velocity: 900 }]);
+  });
+});
+
+describe('useDrag, shared with a scroll view or taken by hand', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { GestureStateManager } = require('react-native-gesture-handler') as {
+    GestureStateManager: { __calls: Array<{ action: string; handlerTag: number }> };
+  };
+
+  function mountDrag(initial: number, options: Omit<DragOptions, 'axis'>) {
+    let value!: MotionValue;
+    function Box() {
+      value = useMotionValue(initial);
+      const gesture = useDrag(value, { axis: 'y', ...options });
+      return (
+        <GestureDetector gesture={gesture as never}>
+          <View />
+        </GestureDetector>
+      );
+    }
+    const { UNSAFE_root } = render(<Box />);
+    const gesture = UNSAFE_root.findAll((node) => node.props.gesture !== undefined)[0]?.props
+      .gesture as Recorded;
+    return { gesture, value: () => getMotionValue(value) };
+  }
+
+  it('keeps its defaults: offsets on the axis, no relation, no hand activation', () => {
+    const drag = mountDrag(0, {});
+    expect(drag.gesture.__config).toMatchObject({
+      activeOffsetY: [-10, 10],
+      manualActivation: false,
+      simultaneousWith: undefined,
+    });
+    expect(drag.gesture.__handlers.onTouchesMove).toBeUndefined();
+    expect(drag.gesture.__handlers.onDeactivate).toBeUndefined();
+  });
+
+  it('follows past its bounds at the overdrag share, from where the value was when it took the touch', () => {
+    const drag = mountDrag(0, { min: 0, overdrag: 0.3, activeOffset: null, startOn: 'activation' });
+    expect(drag.gesture.__config.activeOffsetY).toBeUndefined();
+    act(() => {
+      drag.gesture.__handlers.onBegin?.({});
+      drag.gesture.__handlers.onActivate?.({});
+      drag.gesture.__handlers.onUpdate?.({ translationY: -50, velocityY: 0 });
+    });
+    expect(drag.value()).toBeCloseTo(-15);
+    act(() => drag.gesture.__handlers.onUpdate?.({ translationY: 40, velocityY: 0 }));
+    expect(drag.value()).toBe(40);
+  });
+
+  it('shares its touches with a scroll view’s own gesture', () => {
+    let scroll!: unknown;
+    let gesture!: Recorded;
+    function Box() {
+      const value = useMotionValue(0);
+      scroll = useScrollGesture();
+      gesture = useDrag(value, { axis: 'y', simultaneousWith: scroll as never }) as never;
+      return null;
+    }
+    render(<Box />);
+    expect(gesture.__config.simultaneousWith).toBe(scroll);
+  });
+
+  it('a refused touch moves nothing and releases nothing; a refused move holds the value', () => {
+    const released: Array<{ value: number; velocity: number }> = [];
+    let allowed = false;
+    const drag = mountDrag(10, {
+      takes: () => allowed,
+      follows: (travel) => travel < 100,
+      onRelease: (end) => released.push(end),
+    });
+    act(() => {
+      drag.gesture.__handlers.onBegin?.({});
+      drag.gesture.__handlers.onUpdate?.({ translationY: 30, velocityY: 0 });
+      drag.gesture.__handlers.onDeactivate?.({ velocityY: 800 });
+    });
+    expect(drag.value()).toBe(10);
+    expect(released).toEqual([]);
+    allowed = true;
+    act(() => {
+      drag.gesture.__handlers.onBegin?.({});
+      drag.gesture.__handlers.onUpdate?.({ translationY: 30, velocityY: 0 });
+      drag.gesture.__handlers.onUpdate?.({ translationY: 150, velocityY: 0 });
+      drag.gesture.__handlers.onDeactivate?.({ velocityY: 800 });
+    });
+    expect(drag.value()).toBe(40);
+    // The release reads the velocity the gesture reports at its end.
+    expect(released).toEqual([{ value: 40, velocity: 800 }]);
+  });
+
+  it('takes a touch by hand from the travel since it landed, and drops its own offsets', () => {
+    const asked: number[] = [];
+    const drag = mountDrag(0, {
+      activation: (travel) => {
+        asked.push(travel);
+        return travel > 8 ? 'activate' : travel < -4 ? 'fail' : 'wait';
+      },
+    });
+    expect(drag.gesture.__config).toMatchObject({ manualActivation: true });
+    expect(drag.gesture.__config.activeOffsetY).toBeUndefined();
+    GestureStateManager.__calls.length = 0;
+    const touch = (absoluteY: number) => ({
+      handlerTag: 7,
+      changedTouches: [{ absoluteX: 0, absoluteY }],
+    });
+    act(() => {
+      drag.gesture.__handlers.onTouchesDown?.(touch(300));
+      drag.gesture.__handlers.onTouchesMove?.(touch(303));
+      drag.gesture.__handlers.onTouchesMove?.(touch(312));
+      drag.gesture.__handlers.onTouchesMove?.(touch(290));
+    });
+    expect(asked).toEqual([3, 12, -10]);
+    expect(GestureStateManager.__calls).toEqual([
+      { action: 'activate', handlerTag: 7 },
+      { action: 'fail', handlerTag: 7 },
+    ]);
   });
 });
 

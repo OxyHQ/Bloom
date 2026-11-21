@@ -68,6 +68,7 @@ export {
   useDerivedMotionValue,
   useMotionStyle,
   useMotionValue,
+  useMotionValueOf,
 } from './motion-value.web';
 export type {
   MotionBinding,
@@ -76,5 +77,12 @@ export type {
   MotionTarget,
   MotionValue,
 } from './motion-value.web';
-export { elasticResistance, useDrag, useSwipe } from './gestures';
-export type { Axis, DragOptions, SwipeDirection, SwipeOptions } from './gestures';
+export { elasticResistance, useDrag, useScrollGesture, useSwipe } from './gestures';
+export type {
+  Axis,
+  DragActivation,
+  DragOptions,
+  GestureRelation,
+  SwipeDirection,
+  SwipeOptions,
+} from './gestures';
