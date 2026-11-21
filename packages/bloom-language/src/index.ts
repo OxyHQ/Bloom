@@ -539,6 +539,10 @@ export type { InputOtpView } from './controls/input-otp';
 export { ColorSwatchPicker } from './controls/color-swatch-picker';
 export type { ColorSwatchPickerView } from './controls/color-swatch-picker';
 
+// Collapsibles (controls/collapsible.tsx)
+export { Collapsible } from './controls/collapsible';
+export type { CollapsibleView } from './controls/collapsible';
+
 // Animated checks (controls/animated-check.tsx)
 export { AnimatedCheck } from './controls/animated-check';
 export type { AnimatedCheckView } from './controls/animated-check';
