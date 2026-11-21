@@ -149,6 +149,7 @@ import type { FileUploadView } from '../controls/file-upload';
 import type { VideoView } from '../controls/video-view';
 import type { ColorSwatchPickerView } from '../controls/color-swatch-picker';
 import type { InputOtpView } from '../controls/input-otp';
+import type { AnimatedCheckView } from '../controls/animated-check';
 import type { ColorPreset, ContentFit } from '../tokens';
 import type {
   SettingsDateFieldView,
@@ -438,7 +439,9 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<VideoView>, Of<'video'>>,
       Same<MethodsOf<ColorSwatchPickerView>, Of<'colorSwatchPicker'>>,
       Same<MethodsOf<InputOtpView>, Of<'inputOtp'>>,
+      Same<MethodsOf<AnimatedCheckView>, Of<'animatedCheck'>>,
     ] = [
+      true,
       true,
       true,
       true,
