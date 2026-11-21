@@ -25,3 +25,4 @@ export const VirtualList = 'VirtualList';
 export const Carousel = 'Carousel';
 export const CarouselDots = 'CarouselDots';
 export const CarouselItem = 'CarouselItem';
+export const Markdown = 'Markdown';
