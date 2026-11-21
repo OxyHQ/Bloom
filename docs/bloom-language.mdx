@@ -1173,6 +1173,39 @@ fit as they are); `question`, `status` and `emptyAction` are language
 children. `.disabled()` disables either composer; `.surface(false)` draws the
 pill on a surface of yours.
 
+### AI chat
+
+```ts
+AiChatShell(
+  AiChatContainer(
+    AiChatThread(turns.map((turn) =>
+      turn.mine
+        ? AiChatUserMessage(AiChatMessageLine(turn.text)).id(turn.id)
+        : AiChatAssistantMessage(turn.lines.map((line, i) => AiChatMessageLine(line).id(i)), { feedback: true }).id(turn.id),
+    )),
+    { title: chat.title, composer: ComposerPill([prompt, setPrompt], { onSubmit: send }) },
+  ),
+  { sidebar: Conversations(), panel: (width) => AiChatCodePanel(code, { changedFiles }) },
+)
+```
+
+Bloom's `ai-chat` family. A container takes its content first and its data as
+options: `AiChatShell` (its `sidebar`, `mobileSidebar`, `background` children,
+its `panel` a function of the panel's width returning one, its widths space
+tokens), `AiChatContainer` (`actions`, `header`, `composer`, `background`),
+`AiChatThread` (its turns), `AiChatUserMessage` and `AiChatAssistantMessage`
+(their lines; `actions`, `feedback`, `feedbackProps`, `animate`). A list of
+content is the component's children as Bloom takes them, one each, keyed by
+`.id()`.
+
+- `AiChatMessageLine(content)`: a string is the line's text; a view is a
+  block of the reply (Bloom's `block`). `.tint('primary' | 'secondary')`,
+  `.selectable(false)`.
+- `AiChatHeader(content)`, `AiChatMobileHeader(title)`.
+- `AiChatCodePanel(code, options?)` (its `browser` a child) and
+  `AiChatGalleryPanel(generations, options?)` (its `stylePresets` a child);
+  their `width` is a length (a space token or a fraction of the parent).
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -1555,7 +1588,10 @@ and `@oxy.so/bloom-data` beside it.
   `ContributionsCard`, `HeatmapChartCard`, `LineChartCard`, `RadarChartCard`,
   `SleepScoreCard`, `StageBarsCard`, `StepsCard`, `TokensChartCard`,
   `ChartCardSurface`, `ChartHeadline`, `ChartStatTiles`, `Sparkline`); the
-  composer panel (`ComposerPanel`, `ComposerPill`, `ComposerPanelStatusTab`).
+  composer panel (`ComposerPanel`, `ComposerPill`, `ComposerPanelStatusTab`);
+  the AI chat (`AiChatShell`, `AiChatContainer`, `AiChatThread`,
+  `AiChatUserMessage`, `AiChatAssistantMessage`, `AiChatMessageLine`,
+  `AiChatHeader`, `AiChatMobileHeader`, `AiChatCodePanel`, `AiChatGalleryPanel`).
 
 **Not built**
 

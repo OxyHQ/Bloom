@@ -115,6 +115,18 @@ import type {
   ComposerPillView,
   ComposerPanelStatusTabView,
 } from '../controls/composer-panel';
+import type {
+  AiChatShellView,
+  AiChatContainerView,
+  AiChatThreadView,
+  AiChatUserMessageView,
+  AiChatAssistantMessageView,
+  AiChatMessageLineView,
+  AiChatHeaderView,
+  AiChatMobileHeaderView,
+  AiChatCodePanelView,
+  AiChatGalleryPanelView,
+} from '../controls/ai-chat';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -341,7 +353,27 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<ComposerPanelView>, Of<'composerPanel'>>,
       Same<MethodsOf<ComposerPillView>, Of<'composerPill'>>,
       Same<MethodsOf<ComposerPanelStatusTabView>, Of<'composerPanelStatusTab'>>,
+      Same<MethodsOf<AiChatShellView>, Of<'aiChatShell'>>,
+      Same<MethodsOf<AiChatContainerView>, Of<'aiChatContainer'>>,
+      Same<MethodsOf<AiChatThreadView>, Of<'aiChatThread'>>,
+      Same<MethodsOf<AiChatUserMessageView>, Of<'aiChatUserMessage'>>,
+      Same<MethodsOf<AiChatAssistantMessageView>, Of<'aiChatAssistantMessage'>>,
+      Same<MethodsOf<AiChatMessageLineView>, Of<'aiChatMessageLine'>>,
+      Same<MethodsOf<AiChatHeaderView>, Of<'aiChatHeader'>>,
+      Same<MethodsOf<AiChatMobileHeaderView>, Of<'aiChatMobileHeader'>>,
+      Same<MethodsOf<AiChatCodePanelView>, Of<'aiChatCodePanel'>>,
+      Same<MethodsOf<AiChatGalleryPanelView>, Of<'aiChatGalleryPanel'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

@@ -281,3 +281,36 @@ export type {
   ComposerPillOptions,
   ComposerPillView,
 } from './controls/composer-panel';
+
+// AI chat (controls/ai-chat.tsx)
+export {
+  AiChatAssistantMessage,
+  AiChatCodePanel,
+  AiChatContainer,
+  AiChatGalleryPanel,
+  AiChatHeader,
+  AiChatMessageLine,
+  AiChatMobileHeader,
+  AiChatShell,
+  AiChatThread,
+  AiChatUserMessage,
+} from './controls/ai-chat';
+export type {
+  AiChatAssistantMessageOptions,
+  AiChatAssistantMessageView,
+  AiChatCodePanelOptions,
+  AiChatCodePanelView,
+  AiChatContainerOptions,
+  AiChatContainerView,
+  AiChatGalleryPanelOptions,
+  AiChatGalleryPanelView,
+  AiChatHeaderView,
+  AiChatMessageLineView,
+  AiChatMobileHeaderView,
+  AiChatShellOptions,
+  AiChatShellView,
+  AiChatThreadOptions,
+  AiChatThreadView,
+  AiChatUserMessageOptions,
+  AiChatUserMessageView,
+} from './controls/ai-chat';

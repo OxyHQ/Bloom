@@ -609,3 +609,21 @@ fn the_composer_panel_is_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_ai_chat_is_checked() {
+    let imports = "import { AiChatAssistantMessage, AiChatContainer, AiChatMessageLine, AiChatThread, AiChatUserMessage } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (t) => AiChatContainer(AiChatThread([AiChatUserMessage(AiChatMessageLine(t)).id('u'), AiChatAssistantMessage(AiChatMessageLine(t).tint('secondary').selectable(false)).id('a')]), { title: 'Trip' });\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("AiChatMessageLine(t).tint('muted')", "Unknown aiChatLineTone token 'muted' for .tint()"),
+        ("AiChatUserMessage(t).tint('primary')", "AiChatUserMessage has no modifier .tint()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (t) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

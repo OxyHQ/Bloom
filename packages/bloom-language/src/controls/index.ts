@@ -1,5 +1,6 @@
 import type { NodeKind } from '../node';
 import { AGENT_AVATARS } from './agent-avatar';
+import { AI_CHATS } from './ai-chat';
 import { COMPOSER_PANELS } from './composer-panel';
 import { CHART_CARDS } from './chart-cards';
 import { CHAT_COMPOSERS } from './chat-composer';
@@ -20,4 +21,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...CHAT_COMPOSERS,
   ...CHART_CARDS,
   ...COMPOSER_PANELS,
+  ...AI_CHATS,
 };
