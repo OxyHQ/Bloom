@@ -309,6 +309,10 @@ export interface ValueModifiers {
   collapsible: SearchCollapse | undefined;
   presented: Binding<boolean>;
   tokens: Binding<readonly SearchToken[]>;
+  trailingIcon: IconComponent;
+  completion: string;
+  focused: Binding<boolean>;
+  trigger: ViewNode;
 
   // Overlays and feedback (controls/overlays.tsx)
   alert: Presentation;
@@ -1377,6 +1381,18 @@ export class Node {
   }
   tokens(value: Binding<readonly SearchToken[]>): Node {
     return this.set('tokens', value);
+  }
+  trailingIcon(value: IconComponent): Node {
+    return this.set('trailingIcon', value);
+  }
+  completion(value: string): Node {
+    return this.set('completion', value);
+  }
+  focused(value: Binding<boolean>): Node {
+    return this.set('focused', value);
+  }
+  trigger(value: ViewNode): Node {
+    return this.set('trigger', value);
   }
 
   // Overlays and feedback (controls/overlays.tsx)

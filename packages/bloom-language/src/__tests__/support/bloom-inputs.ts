@@ -22,3 +22,6 @@ export const SelectItem = 'SelectItem';
 export const SelectItemIndicator = 'SelectItemIndicator';
 export const SelectItemText = 'SelectItemText';
 export const Search = 'Search';
+export const TextFieldGhost = 'TextFieldGhost';
+export const SelectGroup = 'SelectGroup';
+export const SelectLabel = 'SelectLabel';
