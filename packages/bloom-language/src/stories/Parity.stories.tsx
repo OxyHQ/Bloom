@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { Text } from '@oxy.so/bloom/typography';
 
 import type { ParityCase } from '../../parity/support/cases';
+import { ICON_CASES, ICON_CASES_EVERY } from '../../parity/icon.cases';
 import { TEXT_CASES } from '../../parity/text.cases';
 
 /**
@@ -50,3 +51,5 @@ export default meta;
 type Story = StoryObj<typeof ParityTable>;
 
 export const TextAndTypography: Story = { args: { cases: TEXT_CASES } };
+export const Icons: Story = { args: { cases: ICON_CASES } };
+export const EveryIcon: Story = { args: { cases: ICON_CASES_EVERY } };

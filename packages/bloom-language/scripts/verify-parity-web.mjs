@@ -50,7 +50,10 @@ function compareInPage() {
   const differences = [];
   const describe = (element) => {
     const attributes = {};
-    for (const { name, value } of element.attributes) if (!SKIP.has(name)) attributes[name] = value;
+    for (const { name, value } of [...element.attributes].sort((a, b) =>
+      a.name < b.name ? -1 : 1,
+    ))
+      if (!SKIP.has(name)) attributes[name] = value;
     const style = getComputedStyle(element);
     const css = {};
     for (let i = 0; i < style.length; i++) css[style[i]] = style.getPropertyValue(style[i]);
@@ -90,7 +93,12 @@ function compareInPage() {
     const index = bloom.dataset.testid.slice('bloom-'.length);
     const language = document.querySelector(`[data-testid="language-${index}"]`);
     const name = bloom.previousElementSibling?.textContent ?? index;
-    walk(bloom, language, '', `[${name}]`);
+    // The two cells are the table's; what each case draws is inside them.
+    const left = [...bloom.children];
+    const right = [...language.children];
+    if (left.length !== right.length)
+      differences.push(`[${name}]: ${left.length} roots vs ${right.length}`);
+    else left.forEach((child, at) => walk(child, right[at], `/${at}`, `[${name}]`));
   }
   return { pairs: rows.length, differences };
 }

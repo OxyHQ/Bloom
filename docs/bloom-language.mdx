@@ -284,6 +284,27 @@ Not in the language yet: Bloom's monospaced family (Bloom picks it only from a
 `font-mono` class today, and exports no style for it) and tracking (Bloom has no
 tracking scale; see [className](#classname)).
 
+## Icons
+
+`Icon(X)` draws any Bloom icon component (`@oxy.so/bloom/icons`: Remix, the
+Simple Icons brand marks and Bloom's own set, 588 today), as `<X size fill />`
+draws it.
+
+```ts
+Icon(RiHeart3Line).size('sm').foreground('error')
+HStack(Icon(RiRepeat2Line), Text('Reposted')).foreground('muted')
+```
+
+- **Size** is a rung of Bloom's icon scale (`2xs` 8, `xs` 12, `sm` 16, `md` 20,
+  the default, `lg` 24, `xl` 28, `2xl` 32, `3xl` 48) or an app token
+  (`defineTokens({ iconSize: { context: 13 } })`).
+- **Colour** is the foreground: the icon's own `.foreground()`, else the
+  environment's, else `foreground`. A bare Bloom icon element paints
+  `primary` when given no fill; a language icon follows the text around it,
+  as SwiftUI's does, so `Icon(X)` alone is `<X fill={colors.text} />`.
+- **A box** (padding, a fill, a corner, a name) is one `View` around the glyph.
+- Bloom's icon `gradient` prop has no modifier: no app passes one.
+
 ## Glass
 
 SwiftUI's `glassEffect` materials, drawn by each platform's own glass (below),
