@@ -44,29 +44,6 @@ export const SPACING = {
   'screen-margin': 20,
 } as const;
 
-/**
- * Spacing rungs the t-shirt view (`styles/tokens.ts` `space`) names and the
- * class vocabulary does NOT: the values apps render today from Tailwind's own
- * scale (`p-1.5` is 6px, `p-2.5` 10px, `p-3.5` 14px, `p-9` 36px, `p-12` 48px,
- * `p-16` 64px), named so the Bloom language can say them.
- *
- * Kept out of `SPACING` on purpose: the Tailwind preset publishes every key of
- * `SPACING` as a utility, and apps already write `py-space-6`, `gap-space-6` and
- * `pb-space-64`, which match no rule today and render nothing. Publishing the
- * rung would start painting them.
- */
-export const SPACING_STEPS = {
-  'space-1': 1,
-  'space-6': 6,
-  'space-10': 10,
-  'space-14': 14,
-  'space-28': 28,
-  'space-36': 36,
-  'space-48': 48,
-  'space-64': 64,
-  'space-96': 96,
-} as const;
-
 /* -------------------------------------------------------------------------- */
 /*  Radius                                                                     */
 /* -------------------------------------------------------------------------- */
@@ -96,20 +73,6 @@ export const RADIUS = {
   'radius-24': 24,
   'radius-28': 28,
   'radius-max': 9999,
-} as const;
-
-/**
- * Radii the t-shirt view (`styles/tokens.ts` `borderRadius`) names and the
- * class vocabulary does not: Tailwind's `rounded-md` (6px) and the 10, 14, 18
- * and 22px corners apps write, as they render today. Out of `RADIUS` for the
- * reason `SPACING_STEPS` is out of `SPACING`.
- */
-export const RADIUS_STEPS = {
-  'radius-6': 6,
-  'radius-10': 10,
-  'radius-14': 14,
-  'radius-18': 18,
-  'radius-22': 22,
 } as const;
 
 /* -------------------------------------------------------------------------- */

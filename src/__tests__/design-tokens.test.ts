@@ -20,7 +20,6 @@ import {
   SHADOW_BOX,
   bloomShadowStyle,
 } from '../design-tokens';
-import { RADIUS_STEPS, SPACING_STEPS } from '../design-tokens/scales';
 import { borderRadius, space } from '../styles/tokens';
 import { APP_COLOR_PRESETS } from '../theme/color-presets';
 import { buildScopeVars } from '../theme/color-scope/style-builder';
@@ -101,13 +100,8 @@ describe('design-tokens numeric scales', () => {
     const values = (o: Record<string, number>): number[] =>
       [...new Set(Object.values(o))].sort((a, b) => a - b);
 
-    // The view also names the steps the class vocabulary leaves out on purpose
-    // (`SPACING_STEPS`, `RADIUS_STEPS`: publishing them would paint classes apps
-    // write today that match no rule); they are still written down once.
-    expect(values(space)).toEqual(values({ ...SPACING, ...SPACING_STEPS }));
-    expect(values(borderRadius)).toEqual(values({ ...RADIUS, ...RADIUS_STEPS }));
-    for (const key of Object.keys(SPACING_STEPS)) expect(SPACING).not.toHaveProperty(key);
-    for (const key of Object.keys(RADIUS_STEPS)) expect(RADIUS).not.toHaveProperty(key);
+    expect(values(space)).toEqual(values(SPACING));
+    expect(values(borderRadius)).toEqual(values(RADIUS));
 
     // Vacuity floor: two empty scales also compare equal.
     expect(values(SPACING).length).toBeGreaterThanOrEqual(10);
