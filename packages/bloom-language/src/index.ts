@@ -1003,3 +1003,21 @@ export type {
   UserHoverCardOptions,
   UserHoverCardView,
 } from './controls/media';
+
+// Card form (controls/card-form.tsx)
+export {
+  CardForm,
+  CardFormCountry,
+  CardFormHostedField,
+  CardFormPostcode,
+} from './controls/card-form';
+export type {
+  CardFormCountryOptions,
+  CardFormCountryView,
+  CardFormHostedFieldOptions,
+  CardFormHostedFieldView,
+  CardFormOptions,
+  CardFormPostcodeOptions,
+  CardFormPostcodeView,
+  CardFormView,
+} from './controls/card-form';

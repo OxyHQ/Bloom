@@ -216,6 +216,12 @@ import type {
   UserHoverCardView,
 } from '../controls/media';
 import type {
+  CardFormView,
+  CardFormCountryView,
+  CardFormPostcodeView,
+  CardFormHostedFieldView,
+} from '../controls/card-form';
+import type {
   DatePickerView,
   DateRangePickerView,
   CalendarView,
@@ -729,7 +735,15 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<SubscriptionPlansView>, Of<'subscriptionPlans'>>,
       Same<MethodsOf<SubscriptionPriceView>, Of<'subscriptionPrice'>>,
       Same<MethodsOf<UserHoverCardView>, Of<'userHoverCard'>>,
+      Same<MethodsOf<CardFormView>, Of<'cardForm'>>,
+      Same<MethodsOf<CardFormCountryView>, Of<'cardFormCountry'>>,
+      Same<MethodsOf<CardFormPostcodeView>, Of<'cardFormPostcode'>>,
+      Same<MethodsOf<CardFormHostedFieldView>, Of<'cardFormHostedField'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,
