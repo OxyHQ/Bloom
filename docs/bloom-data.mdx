@@ -309,24 +309,46 @@ edit carries the old picture as a real value, and nothing in a post's author
 says which copy is newer, so `combine` cannot refuse it. Retiring the overlay
 needs a freshness mark on every embedded user (its `updatedAt`).
 
-What step 4 needs here first, each found moving Services' reads:
+What step 4 needed from this package is built: `useRecord(source, skip)`,
+records found by a secondary key (`entity({ index })`, a source with
+`index`), `model()` and `useModel`, `useAction` and `useActionStatus` (an
+offline action waits as `paused`), the IndexedDB copy on the web, and
+`createAccounts().forget` (sign-out deletes the account's copy).
 
-- `useRecord(source, skip)`, as `useList` has: most SDK reads wait for the
-  signed-in account (`enabled`).
-- A record read by another key than its id (a profile by username), without a
-  one-item list.
-- `model()`: settings, plans, security activity and the like are one value per
-  account, not records by id.
-- An action's pending state for a screen (`isPending`, `error`) and for the
-  "Syncing" indicator (`useMutationStatus` counts mutations in flight).
-- A durable copy on web (today the SDK's caches live in `localStorage`), and a
-  way to delete an account's file at sign-out (the SDK deletes the signed-out
-  account's cache today).
+Not built, and needed by three apps below: a durable outbox. React Query
+persisted a paused mutation and replayed it after a restart
+(`accountQueries.mutationKeys` with `setMutationDefaults`); an action waits
+for the network only while the app runs.
 
-Step 5 also removes `OxyProvider`'s `queryClient` and `accountQueries`: Alia,
-Homiio, Inbox, Gemies, Atlas, Syra, Clarity and Nilo persist their own React
-Query data through them, so each moves its data first or mounts its own
-client.
+### Each app's move (step 5)
+
+Services 15 drops `OxyProvider`'s `queryClient` and `accountQueries` and
+React Query itself. Each app below persisted its per-account data through
+`accountQueries`, so it moves that data to bloom-data before taking Services
+15: each declared root becomes entities and lists (records by id) or a
+`model()` (one value per account), read through sources in the account store
+the SDK opens, and its writes become actions. A root that was memory-only
+becomes an entity or source with no `persist`. Every app also removes
+`queryClient={...}` from `OxyProvider`, its own `QueryClientProvider` if it
+only existed for the SDK, and the persister and AsyncStorage dependencies
+once nothing else uses them.
+
+| App | Declaration | Roots it persisted | Memory-only roots | Offline writes replayed after restart |
+|---|---|---|---|---|
+| Alia | `packages/app/src/shared/api/query-keys.ts` `ALIA_ACCOUNT_QUERIES` | `conversations`, `conversation`, `alia-agent-profile`, `skills`, `conversation-collections`; `dataVersion` | none | email alerts (`EMAIL_ALERTS_MUTATION_KEY`): needs the outbox |
+| Gemies | same module as Alia (`ALIA_ACCOUNT_QUERIES`) | as Alia | none | as Alia |
+| Homiio | inline in `packages/frontend/app/_layout.tsx` | none | `savedSearches` | none |
+| Inbox | `packages/frontend/hooks/queries/queryClient.ts` `INBOX_ACCOUNT_QUERIES` | `PERSISTED_QUERY_ROOTS` (mail lists, threads) | `MEMORY_ONLY_QUERY_ROOTS` | star, read, archive, delete, pin (`setMutationDefaults`): needs the outbox |
+| Atlas | `packages/frontend/lib/queryClient.ts` `ATLAS_ACCOUNT_QUERIES` | none | `store-own-review` | review write and delete: needs the outbox |
+| Syra | `packages/frontend/lib/queryClient.ts` `SYRA_ACCOUNT_QUERIES`; studio inline | every query (`'all'`) | `search` | none |
+| Clarity | `packages/frontend/lib/account-query-ownership.ts` | none | `notifications`, `subscription`, `subscription-poll` | none |
+| Nilo | `apps/app/lib/offline-cache.ts` `ACCOUNT_QUERIES` | every query (`'all'`), kept for `SHELL_MAX_AGE_MS` with `offlineFirst` | `MEMORY_ONLY_ROOTS` (AI, previews, file URLs, search) | none |
+
+Mention moved first (posts and feeds; `feat/sdk-bloom-data`), and its
+identity overlay retires on `User` (`feat/sdk-user-entity`). Every other app
+on Services only adds `@oxy.so/bloom-data` and `expo-sqlite`, and moves the
+Services hooks it calls to their new return shapes (Services' 15.0.0
+changelog lists them).
 
 ## Gates
 
