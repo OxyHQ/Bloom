@@ -294,6 +294,12 @@ import type {
   NavigationBannerView,
 } from '../controls/map-chrome';
 import type {
+  TripCardView,
+  BookingCardView,
+  BookingBarView,
+  PriceBreakdownView,
+} from '../controls/booking';
+import type {
   DatePickerView,
   DateRangePickerView,
   CalendarView,
@@ -867,7 +873,15 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<MailThreadView>, Of<'mailThread'>>,
       Same<MethodsOf<MailQuoteToggleView>, Of<'mailQuoteToggle'>>,
       Same<MethodsOf<NoteEditorToolbarView>, Of<'noteEditorToolbar'>>,
+      Same<MethodsOf<TripCardView>, Of<'tripCard'>>,
+      Same<MethodsOf<BookingCardView>, Of<'bookingCard'>>,
+      Same<MethodsOf<BookingBarView>, Of<'bookingBar'>>,
+      Same<MethodsOf<PriceBreakdownView>, Of<'priceBreakdown'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,
