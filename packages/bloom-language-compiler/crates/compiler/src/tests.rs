@@ -2225,3 +2225,23 @@ fn the_agent_chats_are_checked() {
     let output = check("export const x = (t) => AgentChatHistory(t).titleAlign('start');\n");
     assert_eq!(output.diagnostics[0].message, "AgentChatHistory has no modifier .titleAlign()");
 }
+
+#[test]
+fn route_stops_note_cards_and_the_share_sheet_are_checked() {
+    let imports = "import { NoteCard, NoteCardSkeleton, RouteStops, ShareSheet, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (s) => VStack(RouteStops(s).density('compact'), NoteCard('a').style('row').tint('warning').loading(), NoteCardSkeleton().style('grid').lines(2), ShareSheet().size('lg'));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("NoteCard('a').style('list')", "Unknown noteCardLayout token 'list' for .style()"),
+        ("NoteCard('a').tint('rose')", "Unknown accentTone token 'rose' for .tint()"),
+        ("ShareSheet().size('xl')", "Unknown shareSheetSize token 'xl' for .size()"),
+        ("RouteStops(b).size('sm')", "RouteStops has no modifier .size()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (b) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

@@ -93,6 +93,9 @@ import { AGENT_REPLIES } from './agent-reply';
 import { AI_PROFILE_CARDS } from './ai-profile-card';
 import { MULTI_AGENT_CHATS } from './multi-agent-chat';
 import { AGENT_CHATS } from './agent-chat';
+import { ROUTE_STOPS } from './route-stops';
+import { NOTE_CARDS } from './note-card';
+import { SHARE_SHEETS } from './share-sheet';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -193,4 +196,7 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...AI_PROFILE_CARDS,
   ...MULTI_AGENT_CHATS,
   ...AGENT_CHATS,
+  ...ROUTE_STOPS,
+  ...NOTE_CARDS,
+  ...SHARE_SHEETS,
 };

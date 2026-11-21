@@ -172,3 +172,4 @@ export const WebSearches: Story = { args: { family: 'webSearch' } };
 export const VoiceControls: Story = { args: { family: 'voice' } };
 export const AgentEditor: Story = { args: { family: 'agentEditor' } };
 export const AgentChats: Story = { args: { family: 'agentChat' } };
+export const RouteStopsNotesAndSharing: Story = { args: { family: 'routeNoteShare' } };

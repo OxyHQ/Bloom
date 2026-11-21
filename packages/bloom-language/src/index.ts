@@ -1436,3 +1436,25 @@ export type {
   AgentChatOptions,
   AgentChatView,
 } from './controls/agent-chat';
+
+// Route stops (controls/route-stops.tsx)
+export { RouteStops } from './controls/route-stops';
+export type {
+  RouteStopsOptions,
+  RouteStopsView,
+} from './controls/route-stops';
+
+// Note card (controls/note-card.tsx)
+export { NoteCard, NoteCardSkeleton } from './controls/note-card';
+export type {
+  NoteCardOptions,
+  NoteCardSkeletonView,
+  NoteCardView,
+} from './controls/note-card';
+
+// Share sheet (controls/share-sheet.tsx)
+export { ShareSheet } from './controls/share-sheet';
+export type {
+  ShareSheetOptions,
+  ShareSheetView,
+} from './controls/share-sheet';
