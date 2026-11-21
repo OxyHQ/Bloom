@@ -53,6 +53,7 @@ export {
   skip,
   useAction,
   useActionStatus,
+  useEntities,
   useEntity,
   useList,
   useListState,

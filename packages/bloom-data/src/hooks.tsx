@@ -459,3 +459,53 @@ export function useActionStatus(): ActionStatus {
   const getSnapshot = () => actionStatus(store);
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
+
+/** Keeps the last answer, so an unchanged set reads as the same array. */
+class EntitiesReader {
+  readonly tracker: Tracker;
+  readonly subscribe = (listener: Listener) => this.tracker.subscribe(listener);
+  private key: string | undefined;
+  private last: readonly unknown[] = [];
+
+  constructor(readonly store: Store) {
+    this.tracker = new Tracker(store);
+  }
+
+  snapshot(definition: EntityDefinition, ids: readonly string[]): readonly unknown[] {
+    const key = `${definition.type}\u0000${ids.join('\u0000')}`;
+    if (key !== this.key) {
+      this.tracker.reset();
+      this.key = key;
+    }
+    const next = ids.map((id) => {
+      const slot = this.store.slot(definition, id, true);
+      this.tracker.watch(slot);
+      for (const dependency of slot.value ? this.store.dependencies(slot) : []) {
+        this.tracker.watch(dependency);
+      }
+      return this.store.read(definition, id);
+    });
+    const last = this.last;
+    if (last.length === next.length && last.every((record, index) => record === next[index])) {
+      return last;
+    }
+    this.last = next;
+    return next;
+  }
+}
+
+/**
+ * Several records of one entity, in the order of `ids` (`undefined` for one
+ * not held), as plain objects with their refs resolved. Re-renders when any
+ * of them (or a record it refers to) changes, and returns the same array
+ * while none did.
+ */
+export function useEntities<T>(
+  entity: Entity<T>,
+  ids: readonly string[],
+): readonly (T | undefined)[] {
+  const store = useStore();
+  const reader = useMemo(() => new EntitiesReader(store), [store]);
+  const getSnapshot = () => reader.snapshot(entity.definition, ids) as readonly (T | undefined)[];
+  return useSyncExternalStore(reader.subscribe, getSnapshot, getSnapshot);
+}
