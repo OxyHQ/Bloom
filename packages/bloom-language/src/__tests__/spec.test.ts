@@ -134,6 +134,7 @@ import type { ContextMenuView } from '../controls/context-menu';
 import type { CollapsibleView } from '../controls/collapsible';
 import type { DropZoneView } from '../controls/drop-zone';
 import type { MediaInsetBorderView } from '../controls/media-inset-border';
+import type { SortablePhotoGridView } from '../controls/sortable-media';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -386,7 +387,9 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<MediaInsetBorderView>, Of<'mediaInsetBorder'>>,
       Same<MethodsOf<FactStripView>, Of<'factStrip'>>,
       Same<MethodsOf<FactView>, Of<'fact'>>,
+      Same<MethodsOf<SortablePhotoGridView>, Of<'sortablePhotoGrid'>>,
     ] = [
+      true,
       true,
       true,
       true,

@@ -23,6 +23,7 @@ import type { ContextMenuKind } from './controls/context-menu';
 import type { ContextMenuAnchor } from '@oxy.so/bloom/context-menu';
 import type { FileUploadKind } from './controls/file-upload';
 import type { VideoViewKind } from './controls/video-view';
+import type { SortableMediaKind } from './controls/sortable-media';
 import type { DropZoneKind } from './controls/drop-zone';
 import type { DragAction, DropTargetDragEvent } from '@oxy.so/bloom/drop-zone';
 import type { CollapsibleKind } from './controls/collapsible';
@@ -432,7 +433,7 @@ export interface ValueModifiers {
   onCopy: (code: string) => void | Promise<void>;
 
   // Steppers (controls/stepper.tsx)
-  onRemove: () => void;
+  onRemove: (() => void) | ((id: string) => void);
 
   // Tooltips, breadcrumbs and activity heatmaps (controls/tooltip.tsx, controls/breadcrumb.tsx, controls/activity-heatmap.tsx)
   side: TooltipSide;
@@ -488,6 +489,12 @@ export interface ValueModifiers {
   // Fact strips (controls/fact-strip.tsx)
   caption: string | Child;
   minItemWidth: SpaceToken;
+
+  // Photo grids (controls/sortable-media.tsx)
+  onRetry: (id: string) => void;
+  onAdd: () => void;
+  addHint: string;
+  imageVariant: string;
 
   // Inputs (controls/inputs.tsx)
   required: boolean;
@@ -851,6 +858,7 @@ export type NodeKind =
   | CollapsibleKind
   | DropZoneKind
   | MediaInsetBorderKind
+  | SortableMediaKind
   | InputKind
   | OverlayKind
   | ContainerKind
@@ -1825,7 +1833,7 @@ export class Node {
   }
 
   // Steppers (controls/stepper.tsx)
-  onRemove(value: () => void): Node {
+  onRemove(value: (() => void) | ((id: string) => void)): Node {
     return this.set('onRemove', value);
   }
 
@@ -1967,6 +1975,20 @@ export class Node {
   }
   minItemWidth(value: SpaceToken): Node {
     return this.set('minItemWidth', value);
+  }
+
+  // Photo grids (controls/sortable-media.tsx)
+  onRetry(value: (id: string) => void): Node {
+    return this.set('onRetry', value);
+  }
+  onAdd(value: () => void): Node {
+    return this.set('onAdd', value);
+  }
+  addHint(value: string): Node {
+    return this.set('addHint', value);
+  }
+  imageVariant(value: string): Node {
+    return this.set('imageVariant', value);
   }
 
   // Inputs (controls/inputs.tsx)
