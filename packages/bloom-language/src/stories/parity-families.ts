@@ -55,6 +55,7 @@ import { COMPOSITION_BAR_CASES } from '../../parity/composition-bar.cases';
 import { PHONE_INPUT_CASES } from '../../parity/phone-input.cases';
 import { MEDIA_FLIGHT_CASES } from '../../parity/media-flight.cases';
 import { AVATAR_FLIGHT_CASES } from '../../parity/avatar-flight.cases';
+import { INPUT_GROUP_CASES } from '../../parity/input-group.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -115,6 +116,7 @@ export const FAMILIES = {
   phoneInput: PHONE_INPUT_CASES,
   mediaFlight: MEDIA_FLIGHT_CASES,
   avatarFlight: AVATAR_FLIGHT_CASES,
+  inputGroup: INPUT_GROUP_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';
