@@ -167,3 +167,8 @@ export function usePressScale(
     onPressOut: undefined,
   };
 }
+
+/** Web removals play while a `Presence` keeps the view (`MotionView`'s `exit`), not on unmount. */
+export function exitingOf(_keyframes: KeyframesValue, _timing: Timing): unknown {
+  return undefined;
+}

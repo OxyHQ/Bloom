@@ -1,14 +1,22 @@
-import { useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import {
+  useContext,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 import { usePrefersReducedMotion } from '@oxy.so/bloom/hooks';
 import {
   SCALE,
+  LeavingContext,
   defineKeyframes,
+  exitingOf,
   timingOf,
   transitionStyle,
   usePlay,
   usePressScale,
   type KeyframesValue,
-  type Leaving,
   type Play,
   type Timing,
   type Transform,
@@ -75,7 +83,6 @@ export interface MotionNodeProps {
    */
   exit: boolean;
   scope: AnimationScope | undefined;
-  leaving: Leaving | undefined;
   /** Draws the node with `outer` on its outermost box. */
   content: (outer: Outer) => ReactNode;
 }
@@ -124,10 +131,13 @@ function measure(node: unknown): Frame | undefined {
  * matched move, then the insertion.
  */
 function useMotion(
-  { motion, scope, leaving }: MotionNodeProps,
+  { motion, scope }: MotionNodeProps,
   press: { style: readonly unknown[]; ownsTransform: boolean },
 ) {
   const reduced = usePrefersReducedMotion();
+  // Web: set while a list's Presence keeps this node after it left. Native
+  // never sets it: there the removal is a layout animation, after the unmount.
+  const leaving = useContext(LeavingContext);
   const ref = useRef<unknown>(null);
   const own = motion.animation ?? scope;
   const committed = useRef<Committed | undefined>(undefined);
@@ -239,6 +249,13 @@ function useMotion(
   if (played.style !== undefined) style.push(played.style);
 
   const props: Record<string, unknown> = { ref, ...played.props };
+  // Native: the transition's removal, played by Reanimated after the unmount.
+  const removal = motion.transition?.remove;
+  const removalTiming = removal && !reduced ? removal.timing(own?.motion) : undefined;
+  if (removal && removalTiming !== undefined) {
+    const exiting = exitingOf(removal, removalTiming);
+    if (exiting !== undefined) props.exiting = exiting;
+  }
   if (matched !== undefined) {
     props.onLayout = () => {
       const frame = measure(ref.current);

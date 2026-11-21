@@ -1,3 +1,4 @@
+import { Keyframe } from 'react-native-reanimated';
 import type React from 'react';
 import * as ReactNative from 'react-native';
 import { AppState, Text } from 'react-native';
@@ -337,15 +338,15 @@ describe('ToastOutlet', () => {
     });
     expect(viewCountOf(rendered)).toBeGreaterThan(idleViews);
 
-    act(() => {
+    // Native: the row's anchor carries its exit as a Reanimated layout Keyframe,
+    // which plays on a native snapshot after the row unmounts (no JS).
+    expect(
+      rendered.UNSAFE_root.findAll((node) => node.props.exiting instanceof Keyframe).length,
+    ).toBeGreaterThan(0);
+    show(() => {
       toast.dismiss(id);
     });
-    // The row stays while its exit plays (keyframes that hold their last frame)…
-    expect(rendered.queryByText('Bye')).toBeTruthy();
-    const [exit] = exitsOf(rendered.UNSAFE_root);
-    expect(exit).toBeDefined();
-    // …and leaves when the exit ends, the host still up for its grace period.
-    act(() => exit?.props.onCSSAnimationEnd());
+    // Row gone at once, host still up for its grace period.
     expect(rendered.queryByText('Bye')).toBeNull();
     expect(viewCountOf(rendered)).toBeGreaterThan(idleViews);
 

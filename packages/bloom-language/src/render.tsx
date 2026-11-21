@@ -451,7 +451,6 @@ function drawMoving(
     motion,
     exit: p.id !== undefined && motion.transition !== undefined,
     scope: ctx.animation,
-    leaving: undefined,
     content: (outer: Outer) => drawNode(node, p, ctx, undefined, outer),
   });
 }

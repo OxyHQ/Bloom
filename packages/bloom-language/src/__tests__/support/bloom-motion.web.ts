@@ -7,7 +7,8 @@ export * from '../../../../../src/motion/tokens';
 export * from '../../../../../src/motion/timing';
 export * from '../../../../../src/motion/keyframes';
 export * from '../../../../../src/motion/transition';
-export * from '../../../../../src/motion/presence';
+export * from '../../../../../src/motion/leaving';
+export * from '../../../../../src/motion/presence.web';
 export * from '../../../../../src/motion/motion-host.web';
 export {
   animateWithSpec,

@@ -45,10 +45,12 @@ export type { Play, Transform } from './play';
 export { MotionView } from './MotionView';
 export type { MotionViewProps } from './MotionView';
 export { Presence } from './presence';
-export type { Leaving, PresenceChildProps } from './presence';
+export { LeavingContext } from './leaving';
+export type { Leaving, PresenceChildProps } from './leaving';
 export {
   MotionWrapper,
   animatedHost,
+  exitingOf,
   transitionStyle,
   usePlay,
   usePressScale,
