@@ -1012,7 +1012,10 @@
     "folder": ["value"],
     "onDragEnter": ["value"],
     "onDragOver": ["value"],
-    "onDragLeave": ["value"]
+    "onDragLeave": ["value"],
+    "onComplete": ["value"],
+    "opaque": ["value?"],
+    "mediaCorner": ["corner"]
   },
   "universal": [
     "padding",
@@ -1901,6 +1904,10 @@
         "onDragOver",
         "onDragLeave"
       ]
+    },
+    "mediaInsetBorder": {
+      "constructors": ["MediaInsetBorder"],
+      "modifiers": ["opaque", "mediaCorner"]
     }
   },
   "sfSymbols": {
