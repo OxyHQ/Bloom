@@ -989,7 +989,10 @@ The `bottomBar` slot publishes its measured footprint through the shared bottom-
 For fullscreen video or a child scroller that accounts for the occupied bottom edge itself,
 set `reserveBottomBarSpace={false}`. The visible bar still publishes its measured height
 through the shared edge registry; document/container content receives no duplicate bar padding.
-Native panels then reach under the bar and leave clearance to their scrollers.
+Native panels then reach under the bar and leave clearance to their scrollers. A panel
+that holds a `group` passes this on: the group's side-by-side panels, or its lone one,
+reach under the bar and clear it as the shell's own do. Panels stacked in a vertical group
+sit above the group's single clearance instead, so no screen clears the bar twice.
 
 ProOfferCard retains its animated complementary host and decorative artwork, with shared SurfacePaint beneath it and contextual backing published for descendant controls. Explicit background overrides remain supported.
 
