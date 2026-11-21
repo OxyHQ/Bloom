@@ -20,6 +20,11 @@ import { EngagementAction, EngagementBar, EngagementGroup } from '@oxy.so/bloom/
 import { BloomImage } from '@oxy.so/bloom/image';
 import { Fab as BloomFab } from '@oxy.so/bloom/fab';
 import { Surface } from '@oxy.so/bloom/surface';
+import { AspectRatio as BloomAspectRatio } from '@oxy.so/bloom/aspect-ratio';
+import { ConcentricView } from '@oxy.so/bloom/concentric';
+import { Divider as BloomDivider } from '@oxy.so/bloom/divider';
+import { Fill as BloomFill } from '@oxy.so/bloom/fill';
+import { ResponsiveGrid } from '@oxy.so/bloom/grid';
 import { openExternal } from '@oxy.so/bloom/hooks';
 import {
   Blockquote,
@@ -84,6 +89,7 @@ import {
   DURATION,
   HIT_SLOP,
   resolveAvatarSize,
+  resolveSpace,
   resolveIconSize,
   tokenKey,
   type AvatarSizeName,
@@ -329,6 +335,8 @@ interface Context {
   provided: Env;
   /** Inside a text: a `Text` here is an inline span of it. */
   inText?: boolean;
+  /** A child of an `HStack`: a `Divider` here runs top to bottom. */
+  inRow?: boolean;
 }
 
 /**
@@ -361,12 +369,20 @@ function renderNode(node: Node, ctx: Context, key: string | number | undefined):
     last.env === ctx.env &&
     last.provided === ctx.provided &&
     last.key === key &&
-    last.inText === ctx.inText
+    last.inText === ctx.inText &&
+    last.inRow === ctx.inRow
   ) {
     return last.element;
   }
   const element = drawNode(node, ctx, key);
-  node.rendered = { env: ctx.env, provided: ctx.provided, key, inText: ctx.inText, element };
+  node.rendered = {
+    env: ctx.env,
+    provided: ctx.provided,
+    key,
+    inText: ctx.inText,
+    inRow: ctx.inRow,
+    element,
+  };
   return element;
 }
 
@@ -379,13 +395,17 @@ function drawNode(node: Node, ctx: Context, key: string | number | undefined): R
   const p = plan(node);
   const env = p.env.length > 0 ? deriveEnv(ctx.env, p.env) : ctx.env;
   if (p.navigation !== undefined) p.onPress = navigationPress(env, p.navigation);
+  // What the node's children render in: its environment, and no row (a stack sets its own).
   const inner: Context =
-    env === ctx.env ? ctx : { env, provided: ctx.provided, inText: ctx.inText };
+    env === ctx.env && !ctx.inRow ? ctx : { env, provided: ctx.provided, inText: ctx.inText };
   const reactKey = p.id ?? key;
   const layers = p.layers;
   // A glass layer is a Surface, which the host cannot be; so the host takes
   // the innermost layer only when that layer is plain.
-  const hostTakesLayer = layers.length > 0 && (layers[0] as Layer).glass === undefined;
+  const hostTakesLayer =
+    layers.length > 0 &&
+    (layers[0] as Layer).glass === undefined &&
+    !(layers[0] as Layer).concentric;
   const hostLayer = hostTakesLayer ? (layers[0] as Layer) : undefined;
   const wrappers = hostTakesLayer ? layers.slice(1) : layers;
   const outermostIsHost = wrappers.length === 0;
@@ -402,6 +422,7 @@ function drawNode(node: Node, ctx: Context, key: string | number | undefined): R
     outermostIsHost ? flex : '',
     hostBehaves ? behaviour : undefined,
     outermostIsHost ? reactKey : undefined,
+    ctx.inRow === true,
   );
 
   for (let i = 0; i < wrappers.length; i++) {
@@ -436,9 +457,10 @@ function wrapLayer(
   const styleKey = `L|${layer.key}|${flex}`;
   const glass = layer.glass;
   if (glass !== undefined) {
-    const resolved = boxStyle(layer, flex, p);
-    const corner = resolved.borderRadius;
+    // The glass's corner is its radius (it clips itself), not a style of its host.
+    const { borderRadius: corner, overflow: _clip, ...resolved } = boxStyle(layer, flex, p);
     const radius = typeof corner === 'number' ? corner : undefined;
+    const surfaceRadius = layer.concentric ? 'concentric' : radius;
     const outer = behaviour && !p.pressable ? behaviour : null;
     const ownKey = behaviour && p.pressable ? undefined : key;
     const PlatformGlass = getPlatformGlass();
@@ -460,7 +482,8 @@ function wrapLayer(
     }
     const out = cachedStyle('component', styleKey, () => resolved);
     const props: Record<string, unknown> = {
-      radius,
+      radius: surfaceRadius,
+      ...(layer.curve ? { cornerCurve: layer.curve } : null),
       ...(glass.sheen ? null : { sheen: false }),
       ...outer,
       key: ownKey,
@@ -485,6 +508,18 @@ function wrapLayer(
             child,
           );
     return behaviour && p.pressable ? draw(hostFor(p), { ...behaviour, key }, surface) : surface;
+  }
+  if (layer.concentric) {
+    // Bloom's concentric geometry: the radius of the shape it sits in, less the inset.
+    const out = cachedStyle('component', styleKey, () => boxStyle(layer, flex, p));
+    const outer = behaviour && !p.pressable ? behaviour : null;
+    const view = drawHost(
+      ConcentricView,
+      out,
+      { ...outer, radius: 'concentric', key: behaviour && p.pressable ? undefined : key },
+      child,
+    );
+    return behaviour && p.pressable ? draw(hostFor(p), { ...behaviour, key }, view) : view;
   }
   const out = cachedStyle('host', styleKey, () => boxStyle(layer, flex, p));
   return drawHost(behaviour ? hostFor(p) : View, out, { ...behaviour, key }, child);
@@ -554,6 +589,8 @@ function renderHost(
   flex: string,
   behaviour: Record<string, unknown> | undefined,
   key: string | number | undefined,
+  /** Placed in an `HStack` (the context the node is in, not the one its children are). */
+  inRow: boolean,
 ): ReactElement {
   const layerKey = layer?.key ?? '';
   const box = (target: Target, prefix: string): StyleOut =>
@@ -569,10 +606,11 @@ function renderHost(
       const out = cachedStyle('host', styleKey, () =>
         Object.assign(stackStyle(axis, spacing, align), boxStyle(layer, flex, p)),
       );
+      const row: Context = axis === 'horizontal' ? { ...ctx, inRow: true } : ctx;
       const children =
         axis === 'depth'
           ? renderDepthChildren(node.children, ctx)
-          : renderChildren(node.children, ctx);
+          : renderChildren(node.children, row);
       const host = behaviour ? hostFor(p) : View;
       return drawHost(host, out, hostProps(behaviour, key), ...children);
     }
@@ -723,10 +761,6 @@ function renderHost(
     case 'menuItem':
     case 'menuSubmenu':
     case 'menuSection':
-    case 'divider':
-    case 'fill':
-    case 'ratio':
-    case 'grid':
     case 'menuContent':
     case 'menuActions':
     case 'tab':
@@ -737,6 +771,62 @@ function renderHost(
     case 'route':
     case 'tabView':
       return null as unknown as ReactElement;
+    case 'divider': {
+      const tint = ownValue(p, 'tint')?.value as ColorName | undefined;
+      const spacing = ownValue(p, 'spacing')?.value;
+      const [label] = node.children;
+      const props = hostProps(behaviour, key);
+      Object.assign(props, {
+        variant: ownValue(p, 'lineStyle')?.value,
+        align: ownValue(p, 'align')?.value,
+        vertical: inRow || undefined,
+        spacing: spacing === undefined || spacing === 'between' ? undefined : resolveSpace(spacing),
+      });
+      const content = dividerLabel(label, ctx);
+      const out = box('component', 'DV');
+      if (tint === undefined) return drawHost(BloomDivider, out, props, content);
+      return draw(
+        Painted,
+        {
+          ...props,
+          host: BloomDivider,
+          paint: propPaint(`DV|${layerKey}|${flex}`, out, 'color', tint),
+        },
+        content,
+      );
+    }
+    case 'fill':
+      return drawContainer(BloomFill, {}, node, p, ctx, box('component', 'FL'), behaviour, key);
+    case 'ratio':
+      return drawContainer(
+        BloomAspectRatio,
+        { ratio: (node.props as { ratio: number }).ratio },
+        node,
+        p,
+        ctx,
+        box('component', 'AR'),
+        behaviour,
+        key,
+      );
+    case 'grid': {
+      const gap = ownValue(p, 'spacing')?.value;
+      const minWidth = ownValue(p, 'minCellWidth')?.value;
+      return drawContainer(
+        ResponsiveGrid,
+        {
+          maxColumns: ownValue(p, 'columns')?.value,
+          minItemWidth: minWidth === undefined ? undefined : resolveSpace(minWidth),
+          gap: gap === undefined || gap === 'between' ? undefined : resolveSpace(gap),
+          flow: ownValue(p, 'flow')?.value,
+        },
+        node,
+        p,
+        ctx,
+        box('component', 'G'),
+        behaviour,
+        key,
+      );
+    }
     case 'action': {
       const { icon, label, options } = node.props as ActionProps;
       return draw(EngagementAction, {
@@ -832,6 +922,45 @@ function namedTrigger(trigger: Child, label: string | undefined): Child {
   return trigger.modifiers.some((modifier) => modifier.kind === 'label')
     ? trigger
     : trigger.label(label);
+}
+
+// ── Containers ───────────────────────────────────────────────────
+
+/**
+ * A Bloom container (Fill, AspectRatio, ResponsiveGrid): its own
+ * props, the innermost layer as its style, its `testID`, and the children.
+ * Presses and the rest of the view's behaviour go on a host around it, since
+ * these components take none.
+ */
+function drawContainer(
+  component: Host,
+  own: Record<string, unknown>,
+  node: Node,
+  p: Plan,
+  ctx: Context,
+  out: StyleOut,
+  behaviour: Record<string, unknown> | undefined,
+  key: string | number | undefined,
+): ReactElement {
+  const { testID, ...rest } = behaviour ?? {};
+  const outer = Object.keys(rest).length > 0;
+  const props: Record<string, unknown> = { ...own, testID, key: outer ? undefined : key };
+  const element = drawHost(component, out, props, ...renderChildren(node.children, ctx));
+  return outer ? draw(hostFor(p), { ...rest, key }, element) : element;
+}
+
+/**
+ * A divider's label: a `Text` with nothing of its own is Bloom's divider
+ * label (its type and ink), any other view is drawn as it is.
+ */
+function dividerLabel(label: Child, ctx: Context): ReactNode {
+  if (!isNode(label)) return undefined;
+  if (label.kind === 'text' && label.modifiers.length === 0) {
+    const runs = (label.props as TextProps).runs;
+    if (runs.every((run) => typeof run === 'string' || typeof run === 'number'))
+      return runs.join('');
+  }
+  return renderNode(label, ctx, undefined);
 }
 
 // ── Text ─────────────────────────────────────────────────────────

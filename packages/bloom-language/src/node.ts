@@ -429,6 +429,8 @@ export interface Rendered {
   readonly key: string | number | undefined;
   /** Drawn inside a text, as an inline span. */
   readonly inText: boolean | undefined;
+  /** Drawn as a child of an `HStack`. */
+  readonly inRow: boolean | undefined;
   readonly element: ReactNode;
 }
 

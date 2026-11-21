@@ -139,6 +139,9 @@ be preserved"), so keep the controller in a custom hook (`usePostRowModel`).
 | `Button` | Bloom `Button` (`style` is its appearance, `tint` its tone, `shape` is icon-only) |
 | `ActionBar` / `Action` / `ActionGroup` | Bloom `EngagementBar` / `EngagementAction` / `EngagementGroup` |
 | `.glass()` | Bloom `Surface` (see [Glass](#glass)) |
+| `.corner('concentric')` | Bloom `ConcentricView` (a glass: `Surface radius="concentric"`) |
+| `Divider` | Bloom `Divider` (in a menu, the line between rows) |
+| `Fill` / `AspectRatio` / `Grid` | Bloom `Fill` / `AspectRatio` / `ResponsiveGrid` |
 | `Embed` | the React element as given |
 
 **Styles are theme-free.** A style resolves once per modifier key into numbers
@@ -207,7 +210,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `leading(l)` | Bloom line heights `tight` `snug` `normal` `relaxed` |
 | `foreground(c)`, `background(c)` | colour roles: `foreground` `muted` `primary` `surface` `border` `error` `success`… |
 | `border(c, width?, edge?)` | colour role; `hairline` (the platform hairline) or `thin` |
-| `corner(r)` | radius rungs, `full` |
+| `corner(r)`, `cornerCurve(c)` | radius rungs, `full`, `concentric`; `round` `smooth` (see [Material](#material)) |
 | `opacity(o)` | `transparent` `disabled` `opaque` |
 | `size(s)` | icon rungs, avatar rungs, or Bloom sizes, by node |
 | `style(a)` / `shape(s)` / `tint(t)` | Bloom appearance / `circle` `pill` / Bloom tone |
@@ -304,6 +307,58 @@ HStack(Icon(RiRepeat2Line), Text('Reposted')).foreground('muted')
   as SwiftUI's does, so `Icon(X)` alone is `<X fill={colors.text} />`.
 - **A box** (padding, a fill, a corner, a name) is one `View` around the glyph.
 - Bloom's icon `gradient` prop has no modifier: no app passes one.
+
+## Material
+
+Bloom's material is the glass: the platform's own (the lens, Liquid Glass) or
+Bloom's `Surface` and its blur where the platform has none (see
+[Glass](#glass)). The rest of the material family are modifiers on any view
+and three nodes.
+
+```ts
+VStack(
+  Text('Storage').font('headline'),
+  Divider(),
+  Grid(...usage.map((item) => UsageCard({ item }))).columns(3).spacing('md'),
+  VStack(AspectRatio(16 / 9, Image(cover))).corner('concentric'),
+)
+  .padding('md')
+  .glass()
+  .corner('2xl')
+  .cornerCurve('smooth')
+```
+
+- **Concentric corners.** `.corner('concentric')` is Bloom's concentric
+  geometry: the radius of the shape the box sits in, less the inset between
+  them (a glass, a Bloom card or panel, another concentric box), drawn by
+  `ConcentricView` (on a glass, `Surface radius="concentric"`). It clips, as
+  every corner does.
+- **Smooth corners.** `.cornerCurve('smooth')` is Bloom's platform-adaptive
+  corner (`shapes`' `surfaceStyle`): continuous on iOS, a squircle on the web,
+  round on Android; on a glass, Surface's `cornerCurve`. It sits in the
+  corner's layer.
+- **A glass's corner is its radius.** Surface clips itself, so the corner of a
+  glass is Surface's `radius`, not a style of its host.
+- **`Divider(label?)`** is Bloom's Divider, in its stack's direction:
+  vertical in an `HStack`, as SwiftUI's is. `.lineStyle('single' | 'double' |
+  'fill')`, `.align('start' | 'center' | 'end')` (the label's place),
+  `.spacing(space)` (the room on each side), `.tint(role)` (the line). A label
+  `Text` with nothing of its own is Bloom's divider label (its type and ink);
+  any other view is drawn as it is. In a `Menu` it is the line between rows.
+- **`Fill(...)`** covers the whole of the view it is in (a scrim, an overlay).
+- **`AspectRatio(ratio, ...)`** is its parent's width and the height `ratio`
+  (width over height) gives; a ratio that is not one yet (`0 / 0` before an
+  image loads) is a square, as Bloom's is.
+- **`Grid(...cells)`** is Bloom's `ResponsiveGrid`: `.columns(n)` the most
+  columns, `.minCellWidth(space)` a cell's narrowest width (an app token for
+  the widths apps use, 128 to 300), `.spacing(space)`, `.flow('rows' |
+  'columns')`.
+
+Not built: a silhouette of its own (Bloom's `shapes` `Fill`, `Image` and
+`Border` at a fixed size; apps reach silhouettes through `Avatar`'s shape), and
+Bloom's `BlurIsland` (the floating capsule with its shadow): `blur/` is
+internal to Bloom on purpose (`family-layout.test.ts`), and publishing it is
+the owner's decision. Blur itself is the glass.
 
 ## Glass
 
