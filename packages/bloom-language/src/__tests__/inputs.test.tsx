@@ -11,6 +11,7 @@ import {
   type LabelView,
   Option,
   OptionGroup,
+  type OptionGroupView,
   type OptionView,
   Picker,
   type PickerView,
@@ -68,8 +69,9 @@ describe('inputs', () => {
       Same<MethodsOf<SegmentedView>, Of<'segmented'>>,
       Same<MethodsOf<PickerView>, Of<'picker'>>,
       Same<MethodsOf<OptionView>, Of<'option'>>,
+      Same<MethodsOf<OptionGroupView>, Of<'optionGroup'>>,
       Same<MethodsOf<SearchView>, Of<'search'>>,
-    ] = [true, true, true, true, true, true, true, true, true, true, true];
+    ] = [true, true, true, true, true, true, true, true, true, true, true, true];
     expect(checks.every(Boolean)).toBe(true);
   });
 

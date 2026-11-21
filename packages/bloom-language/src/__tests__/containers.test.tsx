@@ -6,13 +6,18 @@ import {
   CardTitle,
   Chip,
   EmptyState,
+  ErrorBoundary,
   GroupedSection,
   GroupedSectionItem,
   Row,
+  SelectionCard,
   TabItem,
   Tabs,
 } from '../controls/containers';
-import { Button, Icon, Text } from '../primitives';
+import { Button, Icon, Text, VStack } from '../primitives';
+import { EnvContext, navigatorEnv } from '../env';
+import { navigate as navigateTo } from '../router/nodes';
+import { createElement } from 'react';
 import { toElement } from '../render';
 import { RiAddLine } from '@oxy.so/bloom/icons/RiAddLine';
 import { hosts, mount, only, quietRenderer } from './support/mount';
@@ -107,5 +112,66 @@ describe('containers', () => {
     const renderer = mount(toElement(Admonition(Text('Saved.')).style('tip')));
     expect(only(renderer, 'AdmonitionRoot').props.type).toBe('tip');
     expect(only(renderer, 'AdmonitionText').props.children).toBe('Saved.');
+  });
+
+  it('an empty state’s actions and suggestions take a navigate() through the screen’s navigator', () => {
+    const navigate = jest.fn();
+    const renderer = mount(
+      createElement(
+        EnvContext.Provider,
+        { value: navigatorEnv(navigate) },
+        toElement(
+          EmptyState('No posts', Text('Follow someone to fill it.'))
+            .action(Button(Text('Explore')).onPress(navigateTo('/explore')))
+            .suggestions(
+              Button(Icon(RiAddLine), Text('Invite')).id('invite').onPress(navigateTo('/invite')),
+            )
+            .illustration(Text('Art'))
+            .caption(Text('Or wait')),
+        ),
+      ),
+    );
+    const state = only(renderer, 'EmptyState');
+    act(() => state.props.action.onPress());
+    expect(navigate).toHaveBeenCalledWith('/explore', undefined);
+    expect(state.props.suggestions).toMatchObject([
+      { id: 'invite', label: 'Invite', icon: RiAddLine },
+    ]);
+    act(() => state.props.suggestions[0].onPress());
+    expect(navigate).toHaveBeenLastCalledWith('/invite', undefined);
+    expect(state.props.illustration).toBeDefined();
+    expect(state.props.footer).toBeDefined();
+    expect(state.props.children).toBeDefined();
+  });
+
+  it('a chip takes its role and the inverted look; a selection card toggles through its binding', () => {
+    const set = jest.fn();
+    const renderer = mount(
+      toElement(
+        VStack(
+          Chip(Text('Mine')).role('checkbox').style('inverted').label('Mine'),
+          SelectionCard('Pro', Text('For creators')).toggle([false, set]).indicator('check'),
+        ),
+      ),
+    );
+    expect(only(renderer, 'Chip').props).toMatchObject({ role: 'checkbox', variant: 'inverted' });
+    expect(only(renderer, 'Chip').props.accessibilityRole).toBeUndefined();
+    const card = only(renderer, 'SelectionCard');
+    expect(card.props).toMatchObject({ selection: 'multiple', selected: false, title: 'Pro' });
+    act(() => card.props.onPress());
+    expect(set).toHaveBeenCalledWith(true);
+  });
+
+  it('an error boundary’s fallback can be a view of what it caught', () => {
+    const renderer = mount(
+      toElement(
+        ErrorBoundary(Text('Feed'))
+          .fallback(({ error }) => Text(error.message))
+          .padding('md'),
+      ),
+    );
+    const boundary = only(renderer, 'ErrorBoundary');
+    expect(typeof boundary.props.fallback).toBe('function');
+    expect(boundary.props.style).toBeDefined();
   });
 });

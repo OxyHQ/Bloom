@@ -134,7 +134,9 @@ export type ButtonShape = (typeof ENUMS.buttonShape)[number];
 /** A plain link button's ink (Bloom `Button`'s `linkTone`). */
 export type ButtonLinkTone = (typeof ENUMS.linkTone)[number];
 /** A control's geometry (Bloom's `BloomControlDensity`). */
-export type ControlDensity = (typeof ENUMS.density)[number];
+export type ControlDensity = Exclude<(typeof ENUMS.density)[number], 'comfortable'>;
+/** A list's row rhythm (Bloom's `BloomContentDensity`): the touch list, or a desktop form's. */
+export type ContentDensity = Exclude<(typeof ENUMS.density)[number], 'default'>;
 /** How an image fills its box: `BloomImage`'s `contentFit` vocabulary. */
 export type ContentFit = (typeof ENUMS.contentFit)[number];
 export type TitleDisplay = (typeof ENUMS.titleDisplay)[number];

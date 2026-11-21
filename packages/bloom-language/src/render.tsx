@@ -252,6 +252,12 @@ const ROLE: Record<Role, string | undefined> = {
   image: 'image',
   text: 'text',
   none: 'none',
+  checkbox: 'checkbox',
+  radio: 'radio',
+  tab: 'tab',
+  radiogroup: 'radiogroup',
+  tablist: 'tablist',
+  list: 'list',
 };
 
 const ENV_KINDS: ReadonlySet<string> = new Set(ENVIRONMENT);
@@ -2142,6 +2148,7 @@ function renderHost(
         render: (child) => renderChild(child, ctx, undefined),
         children: (children) => renderChildren(children, ctx),
         press: (value) => pressOf(value, ctx.env),
+        role: p.role,
       });
     }
   }

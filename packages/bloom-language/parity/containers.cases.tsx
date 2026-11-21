@@ -16,20 +16,30 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  SelectionCard,
 } from '@oxy.so/bloom/card';
-import { Chip } from '@oxy.so/bloom/chip';
+import { CappedChipRow, Chip, ChipRow } from '@oxy.so/bloom/chip';
 import { EmptyState } from '@oxy.so/bloom/empty-state';
 import { ErrorBoundary } from '@oxy.so/bloom/error-boundary';
-import { GroupedSection, GroupedSectionItem } from '@oxy.so/bloom/grouped-section';
+import {
+  GroupedSection,
+  GroupedSectionCollapse,
+  GroupedSectionDivider,
+  GroupedSectionIcon,
+  GroupedSectionItem,
+} from '@oxy.so/bloom/grouped-section';
 import { RiArrowRightLine, RiHeart3Line, RiInbox2Line, RiSettings3Line } from '@oxy.so/bloom/icons';
 import { Item } from '@oxy.so/bloom/item';
 import { Kbd } from '@oxy.so/bloom/kbd';
-import { Tabs, TabsTrigger } from '@oxy.so/bloom/tabs';
+import { tokens } from '@oxy.so/bloom/styles';
+import { Tabs, TabsContent, TabsTrigger } from '@oxy.so/bloom/tabs';
+import { Text } from '@oxy.so/bloom/typography';
 
 import * as C from '../src/controls/containers';
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
+import { navigate } from '../src/router/nodes';
 import type { ParityCase } from './support/cases';
 
 const onPress = () => {};
@@ -611,6 +621,353 @@ const boundaries: ParityCase[] = [
   },
 ];
 
+// ── Wave 2's remaining containers ────────────────────────────────
+
+const { space } = tokens;
+/** Padding on every edge, as the language writes it (logical longhands). */
+const padded = (value: number) => ({
+  paddingTop: value,
+  paddingBottom: value,
+  paddingStart: value,
+  paddingEnd: value,
+});
+const setOrder = (_from: string, _to: string) => {};
+
+const more: ParityCase[] = [
+  ...(['checkbox', 'radio', 'tab'] as const).map((role) => ({
+    name: `Chip role ${role}`,
+    language: () => toElement(C.Chip(L.Text('Mine')).toggle([true, setOn]).role(role)),
+    bloom: () => (
+      <Chip checked onCheckedChange={setOn} role={role}>
+        Mine
+      </Chip>
+    ),
+  })),
+  {
+    name: 'Chip inverted, chosen',
+    language: () => toElement(C.Chip(L.Text('Mine')).style('inverted').selected()),
+    bloom: () => (
+      <Chip variant="inverted" selected>
+        Mine
+      </Chip>
+    ),
+  },
+  {
+    name: 'ChipRow',
+    language: () =>
+      toElement(
+        C.ChipRow(C.Chip(L.Text('All')), C.Chip(L.Text('Unread')))
+          .spacing('xs')
+          .label('Filters'),
+      ),
+    bloom: () => (
+      <ChipRow gap={space.xs} accessibilityLabel="Filters">
+        <Chip>All</Chip>
+        <Chip>Unread</Chip>
+      </ChipRow>
+    ),
+  },
+  {
+    name: 'ChipRow a radio group, inset and disabled',
+    language: () =>
+      toElement(
+        C.ChipRow(
+          C.Chip(L.Text('Day')).toggle([true, setOn]).role('radio'),
+          C.Chip(L.Text('Week')).toggle([false, setOn]).role('radio'),
+        )
+          .role('radiogroup')
+          .contentInset('lg')
+          .disabled()
+          .testID('range'),
+      ),
+    bloom: () => (
+      <ChipRow role="radiogroup" contentInset={space.lg} disabled testID="range">
+        <Chip checked onCheckedChange={setOn} role="radio">
+          Day
+        </Chip>
+        <Chip checked={false} onCheckedChange={setOn} role="radio">
+          Week
+        </Chip>
+      </ChipRow>
+    ),
+  },
+  {
+    name: 'CappedChipRow',
+    language: () =>
+      toElement(
+        C.CappedChipRow(C.Chip(L.Text('Design')), C.Chip(L.Text('Code')))
+          .lines(1)
+          .spacing('sm')
+          .role('list')
+          .label('Topics'),
+      ),
+    bloom: () => (
+      <CappedChipRow maxLines={1} gap={space.sm} role="list" accessibilityLabel="Topics">
+        <Chip>Design</Chip>
+        <Chip>Code</Chip>
+      </CappedChipRow>
+    ),
+  },
+  ...(['comfortable', 'compact'] as const).map((density) => ({
+    name: `Row density ${density}`,
+    language: () => toElement(C.Row('Ana Lima').subtitle('Online').density(density)),
+    bloom: () => <Item title="Ana Lima" subtitle="Online" contentDensity={density} />,
+  })),
+  {
+    name: 'GroupedSection compact',
+    language: () =>
+      toElement(
+        C.GroupedSection(C.GroupedSectionItem('Wi-Fi'), C.GroupedSectionItem('Bluetooth'))
+          .title('Network')
+          .density('compact'),
+      ),
+    bloom: () => (
+      <GroupedSection title="Network" density="compact">
+        <GroupedSectionItem title="Wi-Fi" />
+        <GroupedSectionItem title="Bluetooth" />
+      </GroupedSection>
+    ),
+  },
+  {
+    name: 'GroupedSectionItem with a box',
+    language: () =>
+      toElement(C.GroupedSectionItem('Wi-Fi').padding('md').frame({ minHeight: '56' })),
+    bloom: () => (
+      <GroupedSectionItem title="Wi-Fi" style={{ ...padded(space.md), minHeight: 56 }} />
+    ),
+  },
+  {
+    name: 'GroupedSectionItem pressable, with a box',
+    language: () =>
+      toElement(C.GroupedSectionItem('Wi-Fi').onPress(onPress).padding('xs').testID('wifi')),
+    bloom: () => (
+      <GroupedSectionItem title="Wi-Fi" onPress={onPress} testID="wifi" style={padded(space.xs)} />
+    ),
+  },
+  ...([true, false] as const).map((open) => ({
+    name: `GroupedSection with icons, a divider and a collapse ${open ? 'open' : 'closed'}`,
+    language: () =>
+      toElement(
+        C.GroupedSection(
+          C.GroupedSectionItem('Wi-Fi').leadingView(
+            C.GroupedSectionIcon(RiSettings3Line).tint('success').testID('icon'),
+          ),
+          C.GroupedSectionDivider().inset('lg'),
+          C.GroupedSectionItem('Bluetooth').leadingView(C.GroupedSectionIcon(RiInbox2Line)),
+          C.GroupedSectionCollapse(open, C.GroupedSectionItem('Advanced')).testID('more'),
+        ),
+      ),
+    bloom: () => (
+      <GroupedSection>
+        <GroupedSectionItem
+          title="Wi-Fi"
+          icon={
+            <GroupedSectionIcon tone="success" testID="icon">
+              {({ color, size }) => <RiSettings3Line width={size} height={size} fill={color} />}
+            </GroupedSectionIcon>
+          }
+        />
+        <GroupedSectionDivider inset={space.lg} />
+        <GroupedSectionItem
+          title="Bluetooth"
+          icon={
+            <GroupedSectionIcon>
+              {({ color, size }) => <RiInbox2Line width={size} height={size} fill={color} />}
+            </GroupedSectionIcon>
+          }
+        />
+        <GroupedSectionCollapse open={open} testID="more">
+          <GroupedSectionItem title="Advanced" />
+        </GroupedSectionCollapse>
+      </GroupedSection>
+    ),
+  })),
+  {
+    name: 'EmptyState with an illustration, content, suggestions and a caption',
+    language: () =>
+      toElement(
+        C.EmptyState('No posts', L.Badge('New'))
+          .description('Follow someone to fill your feed.')
+          .illustration(L.Badge(3))
+          .suggestions(
+            L.Button(L.Icon(RiHeart3Line), L.Text('Popular')).id('popular').onPress(onPress),
+            L.Button(L.Text('Nearby')).id('nearby').onPress(onPress),
+          )
+          .suggestionsLabel('Try')
+          .caption(L.Badge('Or wait')),
+      ),
+    bloom: () => (
+      <EmptyState
+        title="No posts"
+        description="Follow someone to fill your feed."
+        illustration={<Badge content={3} />}
+        suggestions={[
+          { id: 'popular', label: 'Popular', icon: RiHeart3Line, onPress },
+          { id: 'nearby', label: 'Nearby', onPress },
+        ]}
+        suggestionsLabel="Try"
+        footer={<Badge content="Or wait" />}
+      >
+        <Badge content="New" />
+      </EmptyState>
+    ),
+  },
+  {
+    name: 'EmptyState whose action navigates, holding a band open',
+    language: () =>
+      toElement(
+        C.EmptyState('Nothing here')
+          .action(L.Button(L.Text('Explore')).onPress(navigate('/explore')))
+          .frame({ minHeight: '200' }),
+      ),
+    bloom: () => (
+      <EmptyState title="Nothing here" action={{ label: 'Explore', onPress }} minHeight={200} />
+    ),
+  },
+  {
+    name: 'Tabs reorderable, an icon-only tab, a trailing control and a long press',
+    language: () =>
+      toElement(
+        C.Tabs(
+          ['inbox', setTab],
+          C.TabItem('inbox', 'Inbox').reorderable(),
+          C.TabItem('starred', 'Starred').icon(RiHeart3Line).iconOnly().reorderable(),
+          C.TabItem('later', 'Later').trailing(L.Badge(2)).onLongPress(onPress),
+        ).onReorder(setOrder),
+      ),
+    bloom: () => (
+      <Tabs value="inbox" onValueChange={setTab} onReorder={setOrder}>
+        <TabsTrigger value="inbox" label="Inbox" reorderable />
+        <TabsTrigger
+          value="starred"
+          label="Starred"
+          leadingIcon={RiHeart3Line}
+          iconOnly
+          reorderable
+        />
+        <TabsTrigger
+          value="later"
+          label="Later"
+          trailing={<Badge content={2} />}
+          onLongPress={onPress}
+        />
+      </Tabs>
+    ),
+  },
+  {
+    name: 'Tabs with their content',
+    language: () =>
+      toElement(
+        C.Tabs(
+          ['posts', setTab],
+          C.TabItem('posts', 'Posts'),
+          C.TabItem('replies', 'Replies'),
+          C.TabContent('posts', L.Text('Your posts')).padding('md'),
+          C.TabContent('replies', L.Text('Your replies')),
+        ),
+      ),
+    bloom: () => (
+      <Tabs value="posts" onValueChange={setTab}>
+        <TabsTrigger value="posts" label="Posts" />
+        <TabsTrigger value="replies" label="Replies" />
+        <TabsContent value="posts" style={padded(space.md)}>
+          <Text>Your posts</Text>
+        </TabsContent>
+        <TabsContent value="replies">
+          <Text>Your replies</Text>
+        </TabsContent>
+      </Tabs>
+    ),
+  },
+  ...([true, false] as const).map((selected) => ({
+    name: `SelectionCard, one of a set, ${selected ? 'chosen' : 'not chosen'}`,
+    language: () =>
+      toElement(
+        C.SelectionCard('Pro').description('For creators').selected(selected).onPress(onPress),
+      ),
+    bloom: () => (
+      <SelectionCard
+        selection="single"
+        selected={selected}
+        onPress={onPress}
+        title="Pro"
+        description="For creators"
+      />
+    ),
+  })),
+  {
+    name: 'SelectionCard toggled, compact, with an icon, a mark, an illustration and a body',
+    language: () =>
+      toElement(
+        C.SelectionCard('Backups', L.Badge('Daily'))
+          .toggle([true, setOn])
+          .icon(RiSettings3Line)
+          .indicator('check')
+          .illustration(L.Badge(1))
+          .density('compact')
+          .invalid()
+          .testID('backups'),
+      ),
+    bloom: () => (
+      <SelectionCard
+        selection="multiple"
+        selected
+        onPress={onPress}
+        title="Backups"
+        icon={RiSettings3Line}
+        indicator="check"
+        media={<Badge content={1} />}
+        compact
+        invalid
+        testID="backups"
+      >
+        <Badge content="Daily" />
+      </SelectionCard>
+    ),
+  },
+  {
+    name: 'SelectionCard disabled, with padding',
+    language: () =>
+      toElement(C.SelectionCard('Team').selected(false).onPress(onPress).disabled().padding('sm')),
+    bloom: () => (
+      <SelectionCard
+        selection="single"
+        selected={false}
+        onPress={onPress}
+        title="Team"
+        disabled
+        style={padded(space.sm)}
+      />
+    ),
+  },
+  {
+    name: 'ErrorBoundary with a box, around working content',
+    language: () => toElement(C.ErrorBoundary(L.Badge(1)).padding('md').frame({ minHeight: '56' })),
+    bloom: () => (
+      <ErrorBoundary style={{ ...padded(space.md), minHeight: 56 }}>
+        <Badge content={1} />
+      </ErrorBoundary>
+    ),
+  },
+  {
+    name: 'ErrorBoundary that caught, its fallback a view of the error, in its box',
+    language: () =>
+      toElement(
+        C.ErrorBoundary(L.Embed(<Broken />))
+          .fallback(({ error }) => L.Badge(error.message))
+          .padding('sm'),
+      ),
+    bloom: () => (
+      <ErrorBoundary
+        fallback={({ error }) => <Badge content={error.message} />}
+        style={padded(space.sm)}
+      >
+        <Broken />
+      </ErrorBoundary>
+    ),
+  },
+];
+
 export const CONTAINER_CASES: ParityCase[] = [
   ...cards,
   ...rows,
@@ -621,4 +978,5 @@ export const CONTAINER_CASES: ParityCase[] = [
   ...tabs,
   ...keys,
   ...boundaries,
+  ...more,
 ];

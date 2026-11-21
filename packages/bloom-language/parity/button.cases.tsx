@@ -182,7 +182,7 @@ const leftovers: ParityCase[] = [
       </Button>
     ),
   },
-  ...ENUMS.density.map((density) => ({
+  ...(['default', 'compact'] as const).map((density) => ({
     name: `density ${density}`,
     language: () => toElement(L.Button(L.Text('Edit')).density(density)),
     bloom: () => <Button density={density}>Edit</Button>,
