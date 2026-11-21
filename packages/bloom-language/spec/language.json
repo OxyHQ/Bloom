@@ -730,7 +730,10 @@
     "expandableTextStyle": ["below", "inline"],
     "videoSurface": ["textureView", "surfaceView"],
     "notificationStatus": ["neutral", "information", "success", "warning", "error"],
-    "liveRole": ["alert", "status"]
+    "liveRole": ["alert", "status"],
+    "socialButtonSize": ["md", "sm"],
+    "socialButtonStyle": ["colorful", "black", "white"],
+    "socialIntent": ["continue", "signIn", "signUp"]
   },
   "glass": {
     "$comment": [
@@ -1350,7 +1353,10 @@
     "autoDismiss": ["value"],
     "introDelay": ["value"],
     "liveRole": ["liveRole"],
-    "coverFill": ["value?"]
+    "coverFill": ["value?"],
+    "iconOnly": [],
+    "fullWidth": [],
+    "intent": ["socialIntent"]
   },
   "universal": [
     "padding",
@@ -2939,7 +2945,13 @@
         "labels"
       ]
     },
-    "linkPreview": { "constructors": ["LinkPreview"], "modifiers": ["coverFill"] }
+    "linkPreview": { "constructors": ["LinkPreview"], "modifiers": ["coverFill"] },
+    "socialButton": {
+      "constructors": ["SocialButton"],
+      "modifiers": ["size", "style", "iconOnly", "fullWidth", "intent", "link", "disabled"],
+      "size": "socialButtonSize",
+      "style": "socialButtonStyle"
+    }
   },
   "sfSymbols": {
     "$comment": [
