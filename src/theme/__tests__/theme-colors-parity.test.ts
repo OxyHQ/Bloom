@@ -93,10 +93,24 @@ describe.each(APP_COLOR_NAMES)('engine-backed theme.colors (%s)', (preset: AppCo
         ['errorForeground', '--error-foreground'],
         ['warningForeground', '--warning-foreground'],
         ['infoForeground', '--info-foreground'],
+        // The fills apps paint today by class: `bg-muted`, `bg-card`, `bg-destructive`
+        // and `text-primary-text` read these variables, and the Bloom language paints
+        // the same colours on native from these keys.
+        ['contrast50', '--muted'],
+        ['primarySubtleForeground', '--primary-text'],
+        ['destructive', '--destructive'],
       ];
       for (const [colorKey, tokenKey] of field) {
         expect(colors[colorKey]).toBe(t[tokenKey]);
       }
+    }
+  });
+
+  it('white and black are Tailwind’s fixed white and black, in both modes', () => {
+    for (const mode of ['light', 'dark'] as const) {
+      const { colors } = buildTheme(preset, mode);
+      expect(colors.white).toBe('#ffffff');
+      expect(colors.black).toBe('#000000');
     }
   });
 });

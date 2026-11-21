@@ -47,6 +47,7 @@ const COLOR_FIELDS = {
   'info-text': ['infoSubtleForeground'],
   muted: ['contrast50'],
   card: ['card'],
+  destructive: ['destructive'],
 } satisfies Partial<Record<CanonicalToken, readonly (keyof ThemeColors)[]>>;
 
 /** Preserve unspecified roles; rebuild the full CSS alias layer after exact overrides. */

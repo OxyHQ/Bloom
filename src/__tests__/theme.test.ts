@@ -197,5 +197,8 @@ function createMockColors(): ThemeColors {
     card: '#f5f5f5',
     shadow: 'rgba(0,0,0,0.1)',
     overlay: 'rgba(0,0,0,0.5)',
+    destructive: '#B91C1C',
+    white: '#ffffff',
+    black: '#000000',
   };
 }
