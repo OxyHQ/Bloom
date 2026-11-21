@@ -139,6 +139,7 @@ import type { SliderView, RangeSliderView } from '../controls/slider';
   AccordionTriggerView,
   AccordionContentView,
 } from '../controls/accordion';
+import type { CodeView, PreView, CodeLinesView, CodeBlockView } from '../controls/code';
 import type { ColorPreset, ContentFit } from '../tokens';
 import type {
   SettingsDateFieldView,
@@ -413,7 +414,15 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<AccordionItemView>, Of<'accordionItem'>>,
       Same<MethodsOf<AccordionTriggerView>, Of<'accordionTrigger'>>,
       Same<MethodsOf<AccordionContentView>, Of<'accordionContent'>>,
+      Same<MethodsOf<CodeView>, Of<'code'>>,
+      Same<MethodsOf<PreView>, Of<'pre'>>,
+      Same<MethodsOf<CodeLinesView>, Of<'codeLines'>>,
+      Same<MethodsOf<CodeBlockView>, Of<'codeBlock'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

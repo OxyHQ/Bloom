@@ -40,7 +40,7 @@ module.exports = {
     '^@oxy.so/bloom/(card|item|grouped-section|chip|empty-state|admonition|tabs|kbd|error-boundary)$': `${support}/bloom-containers.ts`,
     '^@oxy.so/bloom/(app-shell|screen|dialog|tab-pager|tab-pager/expo-router|panel-routing/expo-router|bottom-sheet)$': `${support}/bloom-router.ts`,
     '^@oxy.so/bloom/(alert-dialog|connection-status|popover|toast)$': `${support}/bloom-overlays.ts`,
-    '^@oxy.so/bloom/(date-picker|rating|stat-bar|table|list|carousel|markdown|slider|accordion)$': `${support}/bloom-controls.ts`,
+    '^@oxy.so/bloom/(date-picker|rating|stat-bar|table|list|carousel|markdown|slider|accordion|code)$': `${support}/bloom-controls.ts`,
     // Optional native modules: absent unless a test mocks one in.
     '^(expo|expo-blur|expo-glass-effect|expo-router|@expo/ui/swift-ui/modifiers)$': `${support}/absent/$1.ts`,
     '^@expo/ui/swift-ui$': `${support}/absent/@expo/ui/swift-ui/index.ts`,

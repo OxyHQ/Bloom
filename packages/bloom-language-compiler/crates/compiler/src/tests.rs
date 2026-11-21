@@ -910,3 +910,22 @@ fn accordions_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn code_is_checked() {
+    let imports = "import { Code, Pre, CodeLines, CodeBlock, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (s, copy) => [Code(s), Pre(s).language('ts').lineNumbers(), CodeLines(s).highlight(['+2']).wrap().size('sm'), CodeBlock(s).languageLabel('TS').filename('a.ts').diff(3, 1).copyable(false).onCopy(copy).headerContent(Text('v2')).labels({})];\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("CodeLines(s).size('lg')", "Unknown codeLinesSize token 'lg' for .size()"),
+        ("CodeBlock(s).diff(3)", ".diff() takes 2 argument(s), not 1"),
+        ("Pre(s).highlight([])", "Pre has no modifier .highlight()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (s) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

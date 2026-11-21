@@ -27,6 +27,7 @@ import { CAROUSEL_CASES } from '../../parity/carousel.cases';
 import { MARKDOWN_CASES } from '../../parity/markdown.cases';
 import { SLIDER_CASES } from '../../parity/slider.cases';
 import { ACCORDION_CASES } from '../../parity/accordion.cases';
+import { CODE_CASES } from '../../parity/code.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -59,6 +60,7 @@ export const FAMILIES = {
   markdown: MARKDOWN_CASES,
   slider: SLIDER_CASES,
   accordion: ACCORDION_CASES,
+  code: CODE_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';

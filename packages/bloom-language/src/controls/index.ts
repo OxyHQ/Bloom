@@ -13,6 +13,7 @@ import { CAROUSELS } from './carousel';
 import { MARKDOWN } from './markdown';
 import { SLIDERS } from './slider';
 import { ACCORDIONS } from './accordion';
+import { CODES } from './code';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -33,4 +34,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...MARKDOWN,
   ...SLIDERS,
   ...ACCORDIONS,
+  ...CODES,
 };

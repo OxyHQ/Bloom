@@ -498,3 +498,7 @@ export type {
   AccordionTriggerView,
   AccordionView,
 } from './controls/accordion';
+
+// Code (controls/code.tsx)
+export { Code, CodeBlock, CodeLines, Pre } from './controls/code';
+export type { CodeBlockView, CodeLinesView, CodeView, PreView } from './controls/code';
