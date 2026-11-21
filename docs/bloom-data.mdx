@@ -200,12 +200,23 @@ writes to a held list, and `prepend(key, ids)` is `insert(key, ids, 0)`.
 (`useList`, `useListState`, `List.get`) see the layered list; the durable
 copy keeps only the list's own state.
 
-A `key` makes the action exclusive: a second call with the same key, while the
-first is in flight, resolves to `undefined` at once. Keys are shared by every
-action, so a like and its undo can use one key.
+A `key` names the target of a call. Keys are shared by every action, so a
+like and its undo can use one key.
+
+- While a call with the key is running, a second one resolves to `undefined`
+  at once without running.
+- While a call with the key is still waiting (offline, or for its turn behind
+  other durable calls), a second one replaces it: the waiting call's layer and
+  outbox entry go, its caller gets `undefined`, and the second call goes
+  through. Unstar right after star, offline, leaves one call,
+  `setStarred(id, false)`.
 
 Offline, the optimistic change shows at once and `run` waits for the network;
 `useActionStatus` counts the call as `paused`.
+
+`onRejected(error, ...args)` is told when the server refuses a call (`run`
+threw), after the rollback. It is where the app shows its own error toast:
+a live call's caller also gets the error, but a replayed call has no caller.
 
 ### Durable actions: offline writes survive a restart
 
@@ -219,8 +230,19 @@ export const setStarred = action({
 });
 ```
 
-- A durable action has a `name`, unique per app (registering two with one
-  name throws), and JSON-serialisable arguments.
+- A durable action has a `name`, unique per app, and JSON-serialisable
+  arguments.
+- Its arguments state the target, never a toggle: `setStarred(id, true)`, not
+  `toggleStar(id)`. A call can reach the server twice (an answer lost to a
+  restart leaves it in the outbox), and a waiting call is replaced by the
+  newer call with its key; both are safe only when the arguments say the
+  state the server should end in. This is a rule of the API, not checked: the
+  only check (applying `optimistic` twice and comparing) would run app code
+  twice and re-render twice in development.
+- Defining an action again under its name replaces the earlier definition,
+  so a module re-run by Fast Refresh re-registers its actions. Two modules
+  using one name cannot be told from that re-run, so the last definition
+  wins: prefix names by feature (`inbox.star`).
 - Each call is written to the store's outbox before `run`: its id, name,
   arguments, time and optimistic layer, as plain data. The outbox is one
   record of the account's durable copy (`bloom-outbox`) that never ages out.
@@ -236,15 +258,12 @@ export const setStarred = action({
   its name. The entry's layer goes back at once, over the records and lists
   it changed (read from disk for it), so the reader sees the pending change
   after a restart; the call then runs when online, under the same settle,
-  rollback and key rules. A replayed call has no caller: a refusal is its
-  rollback.
+  rollback and key rules. A replayed call has no caller: a refusal rolls back
+  and goes to `onRejected`.
 - An entry whose action is no longer registered (an app update removed it) is
   dropped. Each account's outbox is in its own copy, so an account's calls are
   never replayed in another; a call still queued when its account is left
   stays in that account's outbox, and `forget` deletes it with the copy.
-- A call can reach the server twice: an answer lost to a restart leaves the
-  call in the outbox. Make the arguments state the target
-  (`setStarred(id, true)`), not a toggle.
 
 ## Realtime
 
@@ -392,7 +411,7 @@ once nothing else uses them.
 
 | App | Declaration | Roots it persisted | Memory-only roots | Offline writes replayed after restart (actions marked `durable`) |
 |---|---|---|---|---|
-| Alia | `packages/app/src/shared/api/query-keys.ts` `ALIA_ACCOUNT_QUERIES` | `conversations`, `conversation`, `alia-agent-profile`, `skills`, `conversation-collections`; `dataVersion` | none | email alerts (`EMAIL_ALERTS_MUTATION_KEY`) |
+| Alia | `packages/app/src/shared/api/query-keys.ts` `ALIA_ACCOUNT_QUERIES` | its own: `alia-agent-profile`, `skills`; `dataVersion`. `conversations`, `conversation` and `conversation-collections` belong to `@gemies/sdk`, which moves them itself | none | email alerts (`EMAIL_ALERTS_MUTATION_KEY`) |
 | Gemies | same module as Alia (`ALIA_ACCOUNT_QUERIES`) | as Alia | none | as Alia |
 | Homiio | inline in `packages/frontend/app/_layout.tsx` | none | `savedSearches` | none |
 | Inbox | `packages/frontend/hooks/queries/queryClient.ts` `INBOX_ACCOUNT_QUERIES` (roots in `queryKeys.ts`) | `messages`, `message`, `thread`, `mailboxes`, `labels`, `settings`, `quota`, `bundles`, `filters`, `templates`, `contacts`, `reminders`, `subscriptions`, `saved-searches`, `daily-brief` | `attachment-url`, `contactSuggestions`, `inbox-ai`, `search`, `smartReplies`, `threadSummary` | star, read, archive, delete, pin (`setMutationDefaults`) |
@@ -401,11 +420,24 @@ once nothing else uses them.
 | Clarity | `packages/frontend/lib/account-query-ownership.ts` | none | `notifications`, `subscription`, `subscription-poll` | none |
 | Nilo | `apps/app/lib/offline-cache.ts` `ACCOUNT_QUERIES` | every query (`'all'`); `SHELL_ROOTS` kept for `SHELL_MAX_AGE_MS`, `offlineFirst` | `MEMORY_ONLY_ROOTS`: pages' blocks, comments, databases, forms, AI, search, share links and the rest listed there | none |
 
+`@gemies/sdk` 10.0.0 (Gemies `feat/gemies-sdk-services-15`) moves its own
+conversations and collections onto bloom-data, so the Alia and Gemies apps
+only move their own roots.
+
 Mention moved first (posts and feeds; `feat/sdk-bloom-data`), and its
 identity overlay retires on `User` (`feat/sdk-user-entity`). Every other app
 on Services only adds `@oxy.so/bloom-data` and `expo-sqlite`, and moves the
 Services hooks it calls to their new return shapes (Services' 15.0.0
 changelog lists them).
+
+### Release order
+
+1. `@oxy.so/bloom-data`.
+2. `@gemies/sdk` 10.0.0.
+3. Services 15.
+4. Mention: `feat/bloom-data-posts`, then `feat/sdk-bloom-data`, then
+   `feat/sdk-user-entity`.
+5. The other apps, one at a time.
 
 ## Gates
 
