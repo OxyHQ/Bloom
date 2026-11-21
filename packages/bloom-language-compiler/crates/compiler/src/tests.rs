@@ -1009,3 +1009,21 @@ fn hover_cards_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn expandable_text_is_checked() {
+    let imports = "import { ExpandableText } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (open) => ExpandableText('Long', open).lines(2).style('inline').labels({}).font('caption-1').foreground('muted');\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("ExpandableText('a').style('outline')", "Unknown expandableTextStyle token 'outline' for .style()"),
+        ("ExpandableText('a').placeholder('b')", "ExpandableText has no modifier .placeholder()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = () => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

@@ -11,6 +11,7 @@ import { DATE_PICKERS } from './date-picker';
 import { FILE_UPLOADS } from './file-upload';
 import type { ControlRenderer } from './draw';
 import { SORTABLE_MEDIA } from './sortable-media';
+import { EXPANDABLE_TEXTS } from './expandable-text';
 import { DROP_ZONES } from './drop-zone';
 import { COLLAPSIBLES } from './collapsible';
 import { FACT_STRIPS } from './fact-strip';
@@ -71,4 +72,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...FACT_STRIPS,
   ...SORTABLE_MEDIA,
   ...HOVER_CARDS,
+  ...EXPANDABLE_TEXTS,
 };

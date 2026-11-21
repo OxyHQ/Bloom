@@ -2129,6 +2129,7 @@ function renderHost(
         label: p.label,
         hint: p.hint,
         testID: p.testID,
+        text: ctx.env.text,
         key,
         props: () => {
           const props = hostProps(behaviour, key);

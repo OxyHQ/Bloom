@@ -402,3 +402,10 @@ export type {
 // Hover cards (controls/hover-card.tsx)
 export { HoverCard } from './controls/hover-card';
 export type { HoverCardView } from './controls/hover-card';
+// Expandable text (controls/expandable-text.tsx)
+export { ExpandableText } from './controls/expandable-text';
+export type {
+  ExpandableTextLabels,
+  ExpandableTextStyle,
+  ExpandableTextView,
+} from './controls/expandable-text';
