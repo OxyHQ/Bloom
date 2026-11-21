@@ -65,6 +65,7 @@ import { useSystemAccessibility } from './system-accessibility';
 import { usePlatformAppearanceState } from '../platform-surface/use-platform-appearance';
 import { useDesktopPlatform } from '../platform-surface/use-desktop-platform';
 import { TypographyPlatformDefault } from '../typography/TypographyScope';
+import { applyThemeAtOnce } from '../motion/theme-switch';
 import type { SurfaceTint } from './color-policy';
 
 const DEFAULT_PRESET: AppColorName = 'oxy';
@@ -650,12 +651,16 @@ export function BloomThemeProvider({
     // hydration snapshot. The next client snapshot publishes the real theme.
     if (serverPaint) return;
     setColorSchemeSafe(effectiveMode);
-    if (prepaint) applyPrepaintMode(resolved, prepaintTheme?.persistKey ? colorPreset : undefined);
-    applyDarkClass(resolved);
-    applyVarsToDocument(themeVars);
-    if (prepaint) applyVarsToDocument(themePaintVars(themeColors.colors));
-    const background = themeVars['--background'];
-    if (background) applyDocumentTheme(resolved, background);
+    // A switch plays no colour transition (motion/theme-switch.ts).
+    applyThemeAtOnce(() => {
+      if (prepaint)
+        applyPrepaintMode(resolved, prepaintTheme?.persistKey ? colorPreset : undefined);
+      applyDarkClass(resolved);
+      applyVarsToDocument(themeVars);
+      if (prepaint) applyVarsToDocument(themePaintVars(themeColors.colors));
+      const background = themeVars['--background'];
+      if (background) applyDocumentTheme(resolved, background);
+    });
   }, [
     effectiveMode,
     resolved,
