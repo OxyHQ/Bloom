@@ -53,7 +53,11 @@ export const fontSize = {
  */
 export const lineHeight = {
   tight: 1.15,
+  /** 1.25: the line height apps set with Tailwind's `leading-tight`. */
+  close: 1.25,
   snug: 1.3,
+  /** 1.375: the line height apps set with Tailwind's `leading-snug`. */
+  easy: 1.375,
   normal: 1.5,
   relaxed: 1.625,
 } as const;

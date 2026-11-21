@@ -40,15 +40,19 @@ export const FONT_SIZE = {
 } as const;
 export const LEADING = {
   "tight": 1.15,
+  "close": 1.25,
   "snug": 1.3,
+  "easy": 1.375,
   "normal": 1.5,
   "relaxed": 1.625
 } as const;
 export const WEIGHT = {
+  "light": "300",
   "regular": "400",
   "medium": "500",
   "semibold": "600",
-  "bold": "700"
+  "bold": "700",
+  "extrabold": "800"
 } as const;
 export const ICON_SIZE = {
   "2xs": 8,
@@ -64,16 +68,20 @@ export const AVATAR_SIZE = {
   "xs": 20,
   "sm": 24,
   "md": 32,
-  "lg": 36
+  "lg": 36,
+  "xl": 40
 } as const;
 export const OPACITY = {
   "transparent": 0,
   "disabled": 0.5,
+  "faded": 0.7,
+  "soft": 0.8,
   "opaque": 1
 } as const;
 export const BORDER_WIDTH = {
   "hairline": "hairline",
-  "thin": 1
+  "thin": 1,
+  "thick": 2
 } as const;
 export const HIT_SLOP = {
   "sm": 6,

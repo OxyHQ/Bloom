@@ -47,6 +47,7 @@ export const AVATAR_SIZES: Record<AvatarSizeToken, number> = {
   sm: 24,
   md: 32,
   lg: 36,
+  xl: 40,
 };
 
 /** @deprecated Compatibility value only; visible characters now animate at every size. */
