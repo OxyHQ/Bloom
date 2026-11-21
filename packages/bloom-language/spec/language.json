@@ -1303,7 +1303,9 @@
     "length": ["value"],
     "characters": ["otpCharacters"],
     "onComplete": ["value"],
-    "presentedAt": ["value"]
+    "presentedAt": ["value"],
+    "revealsOnAppear": ["value?"],
+    "keepsMounted": ["value"]
   },
   "universal": [
     "padding",
@@ -2746,6 +2748,10 @@
     "contextMenu": {
       "constructors": ["ContextMenu"],
       "modifiers": ["actions", "presentedAt", "disabled"]
+    },
+    "collapsible": {
+      "constructors": ["Collapsible"],
+      "modifiers": ["revealMotion", "revealsOnAppear", "keepsMounted"]
     }
   },
   "sfSymbols": {
