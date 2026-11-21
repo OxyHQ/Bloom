@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import type { BloomImageContentFit } from '@oxy.so/bloom/image';
+import type { AppColorName } from '@oxy.so/bloom/theme';
 import { tokens } from '@oxy.so/bloom/styles';
 import { TYPE_SCALE } from '@oxy.so/bloom/typography';
 import {
@@ -101,7 +102,7 @@ import type {
   TabView,
   TextView,
 } from '../node';
-import type { ContentFit } from '../tokens';
+import type { ColorPreset, ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
 const PACKAGE = join(__dirname, '../..');
@@ -162,6 +163,13 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
     type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
     // A type error here means spec/language.json and BloomImage's contentFit disagree.
     const same: Same<ContentFit, BloomImageContentFit> = true;
+    expect(same).toBe(true);
+  });
+
+  it('a screen’s colour presets are Bloom’s AppColorName, name for name', () => {
+    type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
+    // A type error here means spec/language.json and Bloom's colour presets disagree.
+    const same: Same<ColorPreset, AppColorName> = true;
     expect(same).toBe(true);
   });
 
