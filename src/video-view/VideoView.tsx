@@ -18,7 +18,7 @@
  * On Android the video is drawn on a `textureView` by default, as `MediaSurface`'s is. expo-video's
  * own default, a `surfaceView`, is composited outside the app's view hierarchy, so Bloom's lens
  * (the bottom bar, a header's controls) cannot see it: on a Pixel 8a the bar over a feed video
- * lost its glass wherever the video was under it. A caller may pass `surfaceType="surfaceView"`
+ * lost its lens wherever the video was under it. A caller may pass `surfaceType="surfaceView"`
  * for a full-screen player with nothing over it; expo-video reads the prop once.
  *
  * The module is loaded through the optional-peer boundary, never imported: an
