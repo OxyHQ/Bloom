@@ -737,3 +737,26 @@ fn date_and_time_pickers_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn ratings_are_checked() {
+    let imports =
+        "import { Rating, RatingInput, RatingBar, RatingSummary, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (r, set) => VStack(Rating(4.5).count('1.2k').countStyle('reviews').size('sm').style('stars').showsValue(false).starSize('xl').tint('white').starTint('warning').countTint('muted/half').emptyTint('border').fillValue(4.5).labels({}), RatingInput([r, set]).max(10).size('lg').disabled().starLabel(String), RatingBar('Value', 3).max(1).valueLabel('72%').labelWidth('56').reveal({ visible: true }), RatingSummary(4.4, 128, {}).labels({}));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("Rating(4).style('row')", "Unknown ratingStyle token 'row' for .style()"),
+        ("Rating(4).size('lg')", "Unknown ratingSize token 'lg' for .size()"),
+        ("Rating(4).countStyle('brackets')", "Unknown ratingCountStyle token 'brackets' for .countStyle()"),
+        ("Rating(4).starTint('gold')", "Unknown color token 'gold' for .starTint()"),
+        ("RatingInput([1, s]).size('xl')", "Unknown ratingInputSize token 'xl' for .size()"),
+        ("RatingBar('a', 1).labelWidth('wide')", "Unknown space token 'wide' for .labelWidth()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (s) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

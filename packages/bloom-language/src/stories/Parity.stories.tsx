@@ -88,3 +88,4 @@ export const ShellPanelsAndInspector: Story = { args: { family: 'shell' } };
 export const LayoutFamily: Story = { args: { family: 'toolbar' } };
 export const SettingsRows: Story = { args: { family: 'settings' } };
 export const DateAndTimePickers: Story = { args: { family: 'datePicker' } };
+export const Ratings: Story = { args: { family: 'rating' } };
