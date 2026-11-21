@@ -3,7 +3,7 @@ import { adoptStyleSheet } from '@oxy.so/bloom/styles';
 
 import { BREAKPOINT, VARIANT_SELECTORS } from './generated/spec.generated';
 import { WEB_SHEET } from './generated/web-sheet.generated';
-import { LIVE_ORDER } from './variants';
+import { LIVE_ORDER, type LiveCondition } from './variants';
 
 /**
  * Puts the language's generated stylesheet on the page, through Bloom's
@@ -22,44 +22,47 @@ export function adoptLanguageSheet(): void {
 }
 
 /**
- * The variant sheet: every class of the generated sheet again, once per live
- * condition, as `<class>-<condition>` under that condition's CSS: a breakpoint
- * is a min-width media query, the scheme and the states the spec's selectors
- * (`.dark &`, `.blsg:hover &`…). Composed from the generated sheet once per
- * document, the first time a variant renders, and adopted after it.
- *
- * Order and specificity do the overriding: a breakpoint's rule has the base
- * rule's specificity and comes after it (a wider breakpoint after a narrower);
- * the scheme's selector is one class stronger, a state's two (a press after a
- * hover). Within each condition, rules keep react-native-web's precedence.
+ * A variant sheet: every class of the generated sheet again under one live
+ * condition, as `<class>-<condition>`: a breakpoint is a min-width media query,
+ * the scheme and the states the spec's selectors (`.dark &`, `.blsg:hover &`…).
+ * Composed from the generated sheet the first time a variant of that condition
+ * renders.
  */
-export function variantSheet(): string {
+export function variantSheet(condition: LiveCondition): string {
   const rules = WEB_SHEET.split('\n').map((rule) => {
     const open = rule.indexOf('{');
     return [rule.slice(1, open), rule.slice(open)] as const;
   });
-  const blocks: string[] = [];
-  for (const condition of LIVE_ORDER) {
-    const width = (BREAKPOINT as Record<string, number | undefined>)[condition];
-    if (width !== undefined) {
-      const body = rules.map(([name, declarations]) => `.${name}-${condition}${declarations}`);
-      blocks.push(`@media (min-width: ${width}px){${body.join('')}}`);
-      continue;
-    }
-    const selector = VARIANT_SELECTORS[condition as keyof typeof VARIANT_SELECTORS];
-    for (const [name, declarations] of rules) {
-      blocks.push(`${selector.replaceAll('&', `.${name}-${condition}`)}${declarations}`);
-    }
+  const width = (BREAKPOINT as Record<string, number | undefined>)[condition];
+  if (width !== undefined) {
+    const body = rules.map(([name, declarations]) => `.${name}-${condition}${declarations}`);
+    return `@media (min-width: ${width}px){${body.join('')}}`;
   }
-  return blocks.join('\n');
+  const selector = VARIANT_SELECTORS[condition as keyof typeof VARIANT_SELECTORS];
+  return rules
+    .map(
+      ([name, declarations]) =>
+        `${selector.replaceAll('&', `.${name}-${condition}`)}${declarations}`,
+    )
+    .join('\n');
 }
 
-let variants: string | undefined;
+const composed = new Map<LiveCondition, string>();
 
-/** Adopts the variant sheet, once per document, after the language's own. */
-export function adoptLanguageVariants(): void {
+/**
+ * Adopts the variant sheets after the language's own: one per live condition,
+ * placed in the order they override (`LIVE_ORDER`) and empty until a variant of
+ * that condition renders, so a page pays only for the conditions it uses.
+ *
+ * Order and specificity do the overriding: a breakpoint's rule has the base
+ * rule's specificity and comes after it (a wider breakpoint after a narrower);
+ * the scheme's selector is one class stronger, a state's two (a press after a
+ * hover). Within each sheet, rules keep react-native-web's precedence.
+ */
+export function adoptLanguageVariants(condition: LiveCondition): void {
   if (Platform.OS !== 'web') return;
   adoptLanguageSheet();
-  variants ??= variantSheet();
-  adoptStyleSheet('bloom-language-variants', variants);
+  if (!composed.has(condition)) composed.set(condition, variantSheet(condition));
+  for (const live of LIVE_ORDER)
+    adoptStyleSheet(`bloom-language-${live}`, composed.get(live) ?? '');
 }

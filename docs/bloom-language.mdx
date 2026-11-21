@@ -379,10 +379,12 @@ inside; a stack's layout to its host; a placement to its outermost box.
   on the web, by the leaf that draws each host on native (`Conditioned`, a
   `Painted` leaf that also reads the breakpoint, the scheme and the state),
   which builds its props once per palette and set of holding variants.
-- **The variant sheet** is every class of the generated sheet again under
-  each live condition (`<class>-md`, `<class>-hovered`…), composed once per
-  document from the generated sheet the first time a variant renders, and
-  adopted after it. A breakpoint's rule has the base's specificity and comes
+- **The variant sheets** are every class of the generated sheet again under
+  each live condition (`<class>-md`, `<class>-hovered`…): one constructed
+  sheet per condition, placed after the language's own in the order they
+  override and composed from the generated sheet the first time a variant of
+  that condition renders, so a page pays only for the conditions it uses
+  (about 1,660 rules, 60 to 140 KB of CSS, each). A breakpoint's rule has the base's specificity and comes
   after it (a wider breakpoint after a narrower); the scheme's selector is one
   class stronger and a state's two, so a state beats the scheme and a press
   beats a hover. A value with no class (an app token, an offset) cannot vary
