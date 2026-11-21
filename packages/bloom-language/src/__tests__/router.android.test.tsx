@@ -111,6 +111,23 @@ describe('AppLayout on Android', () => {
     expect(shell.props.panelLayout.panels[0].content).toBeTruthy();
   });
 
+  it('the app runs edge to edge: the shell draws no safe-area frame, whatever layout it names', () => {
+    // A semantic layout frames the top by default, which painted a band behind
+    // the status bar (Mention, Pixel 8a); the pages own their edges instead.
+    expect(only(mount(createElement(app())), 'AppShell').props.safeArea).toBe(false);
+    const Feed = layout(function feed() {
+      return AppLayout(Stack()).shell(() => ({ layout: 'feed' }));
+    });
+    expect(only(mount(createElement(Feed)), 'AppShell').props.safeArea).toBe(false);
+  });
+
+  it('an app that wants the safe-area frame asks for it', () => {
+    const Framed = layout(function framed() {
+      return AppLayout(Stack()).shell(() => ({ layout: 'feed', safeArea: true }));
+    });
+    expect(only(mount(createElement(Framed)), 'AppShell').props.safeArea).toBe(true);
+  });
+
   it('a stack in a page of the pager is the page in place: the pager’s pages are not fragments', () => {
     const Page = layout(() => Stack());
     const r = mount(createElement(TabPagerContextProbe, null, createElement(Page)));
