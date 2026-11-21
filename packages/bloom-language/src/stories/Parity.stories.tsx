@@ -102,3 +102,6 @@ export const Steppers: Story = { args: { family: 'stepper' } };
 export const Tooltips: Story = { args: { family: 'tooltip' } };
 export const Breadcrumbs: Story = { args: { family: 'breadcrumb' } };
 export const ActivityHeatmaps: Story = { args: { family: 'activityHeatmap' } };
+export const TagFields: Story = { args: { family: 'tagField' } };
+export const FileUploads: Story = { args: { family: 'fileUpload' } };
+export const Videos: Story = { args: { family: 'video' } };

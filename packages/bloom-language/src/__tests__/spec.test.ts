@@ -144,6 +144,9 @@ import type { StepperView, StepperRowView } from '../controls/stepper';
 import type { TooltipView } from '../controls/tooltip';
 import type { BreadcrumbView, BreadcrumbItemView } from '../controls/breadcrumb';
 import type { ActivityHeatmapView } from '../controls/activity-heatmap';
+import type { TagFieldView } from '../controls/tag-field';
+import type { FileUploadView } from '../controls/file-upload';
+import type { VideoView } from '../controls/video-view';
 import type { ColorPreset, ContentFit } from '../tokens';
 import type {
   SettingsDateFieldView,
@@ -428,7 +431,13 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<BreadcrumbView>, Of<'breadcrumb'>>,
       Same<MethodsOf<BreadcrumbItemView>, Of<'breadcrumbItem'>>,
       Same<MethodsOf<ActivityHeatmapView>, Of<'activityHeatmap'>>,
+      Same<MethodsOf<TagFieldView>, Of<'tagField'>>,
+      Same<MethodsOf<FileUploadView>, Of<'fileUpload'>>,
+      Same<MethodsOf<VideoView>, Of<'video'>>,
     ] = [
+      true,
+      true,
+      true,
       true,
       true,
       true,
