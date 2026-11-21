@@ -1073,7 +1073,7 @@ Tailwind's `animate-pulse` curve `[0.4, 0, 0.6, 1]`).
 | `.transition(t)` | Insertion and removal: `opacity`, `scale('dip')`, `move(edge, distance)`, `t.combined(u)`, `asymmetric(insert, remove)`, `t.animation(motion)`. A half may be keyframes of the app's own. |
 | `.keyframes(k, trigger)` | `keyframeAnimator`: plays `k` each time `trigger` changes to a truthy value (a boolean turning on, or a counter such as a press id). |
 | `.repeatForever(loop)` | `keyframeAnimator(repeating: true)`: plays a loop again and again while the view is on screen: `'spin'` (a turn, 1 s linear: `animate-spin`), `'pulse'` (half opacity at the midpoint, 2 s: `animate-pulse`), frame for frame, or keyframes of the app's own. It plays when nothing else does, after an insertion ends; never under reduced motion. |
-| `.delay(d)` | What the view plays waits `d` first (its `.animation()` changes, its insertion and removal, its keyframes, its loop): Bloom's durations `instant` 100, `fast` 150, `normal` 200, `slow` 300, or Tailwind's other delays `'75'` `'500'` `'700'` `'1000'` (ms). A delayed playing holds its first frame while it waits. |
+| `.delay(d)` | What the view plays waits `d` first (its `.animation()` changes, its insertion and removal, its keyframes, its loop): one of Bloom's durations `instant` 100, `fast` 150, `normal` 200, `slow` 300 (ms). No app writes another delay (the className scan has no `delay-*`), so the scale has no other. A delayed playing holds its first frame while it waits. |
 | `.anchor(a)` | The point its scale and rotation (and its keyframes' and transition's) turn about; see [Modifiers](#modifiers). |
 | `.matchedGeometry(id, ns)` | `matchedGeometryEffect`: the view that takes `id` moves from where the last view with it was. `const ns = useNamespace()`. |
 | `.contentTransition('roll', direction?)` | `Text` only; `.contentTransition(.numericText(value:))`: a change of the text inside an animation rolls the old text out and the new one in (Bloom's `rollKeyframes`, as `RollingText` rolls), up when `direction` rose and down when it fell. |
@@ -1425,7 +1425,7 @@ and `@oxy.so/bloom-data` beside it.
   (geometry, opacity and colours: `transition-colors`), `.transition()`,
   `.keyframes()`, loops (`.repeatForever('spin' | 'pulse')`, Tailwind's
   `animate-spin` and `animate-pulse`, or an app's keyframes), `.delay()`
-  (Bloom's durations and Tailwind's delays), `.anchor()` (a transform origin),
+  (Bloom's durations), `.anchor()` (a transform origin),
   `.matchedGeometry()`, `.contentTransition('roll')`, `.pressScale()`, geometry
   (`.scale()`, `.offset()`, `.rotation()`) as tokens or bound to a
   `MotionValue`, `.drag()` and `.swipe()` on Gesture Handler 3. Resting

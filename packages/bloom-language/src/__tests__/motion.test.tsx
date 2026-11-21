@@ -197,18 +197,20 @@ describe('colours, loops, a delay and an anchor', () => {
       ],
       'pop',
     );
-    const k = mount(VStack().keyframes(pop, 0).delay('1000'));
-    update(k, VStack().keyframes(pop, 1).delay('1000'));
+    const k = mount(VStack().keyframes(pop, 0).delay('slow'));
+    update(k, VStack().keyframes(pop, 1).delay('slow'));
     expect(flat(all(k, 'Animated.View')[0]?.props.style)).toMatchObject({
-      animationDelay: 1000,
+      animationDelay: 300,
       animationFillMode: 'backwards',
     });
     const leaving = (ids: string[]) =>
-      VStack(ids.map((id) => Text(id).transition(opacity.animation('exit')).delay('75').id(id)));
+      VStack(
+        ids.map((id) => Text(id).transition(opacity.animation('exit')).delay('instant').id(id)),
+      );
     const leave = mount(leaving(['a']));
     update(leave, leaving([]));
     expect(flat(all(leave, 'Animated.View')[0]?.props.style)).toMatchObject({
-      animationDelay: 75,
+      animationDelay: 100,
       animationFillMode: 'forwards',
     });
   });

@@ -213,10 +213,10 @@ describe('on the web, motion is CSS and the Web Animations API', () => {
   it('a delay waits before what the view plays; a delayed insertion holds its first frame', () => {
     mount(VStack([Text('a').testID('a').transition(rise).delay('normal').id('a')]));
     expect(played[0]?.options).toEqual({ duration: 300, fill: 'backwards', delay: 200 });
-    const r = mount(VStack().scale('dip').animation('slide').delay('75'));
+    const r = mount(VStack().scale('dip').animation('slide').delay('instant'));
     expect(flat(all(r, 'View')[0]?.props.style)).toMatchObject({
       transitionDuration: '200ms',
-      transitionDelay: '75ms',
+      transitionDelay: '100ms',
     });
   });
 

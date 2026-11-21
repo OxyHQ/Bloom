@@ -538,8 +538,11 @@ fn loops_delays_and_anchors_are_tokens() {
         "export const x = () => Text('t').repeatForever('spin').delay('fast').anchor('top-leading');\n",
     );
     assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics.first().map(|d| &d.message));
-    let output = motion("export const x = () => Text('t').delay('1000').repeatForever('pulse');\n");
+    let output = motion("export const x = () => Text('t').delay('slow').repeatForever('pulse');\n");
     assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics.first().map(|d| &d.message));
+    // A delay is one of Bloom's durations: no app writes Tailwind's others (delay-75 … delay-1000).
+    let output = motion("export const x = () => Text('t').delay('1000');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown duration token '1000' for .delay()");
     let output = motion("export const x = () => Text('t').repeatForever('spinn');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown loop token 'spinn' for .repeatForever()");
     assert!(output.diagnostics[0].help.as_deref().unwrap().starts_with("did you mean 'spin'?"));

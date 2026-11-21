@@ -38,7 +38,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("iconSize", &["2xs", "xs", "sm", "md", "lg", "xl", "2xl", "3xl"]),
     ("avatarSize", &["xs", "sm", "md", "lg", "xl"]),
     ("glassOpacity", &["subtle", "medium", "strong"]),
-    ("duration", &["75", "500", "700", "1000", "instant", "fast", "normal", "slow"]),
+    ("duration", &["instant", "fast", "normal", "slow"]),
     ("rotation", &["45", "none", "quarter", "half"]),
     ("motion", &["press", "select", "expand", "present", "dismiss", "fade", "slide", "thumb", "pop", "roll", "enter", "exit", "restack", "spin", "pulse"]),
     ("anchor", &["center", "top", "bottom", "leading", "trailing", "top-leading", "top-trailing", "bottom-leading", "bottom-trailing"]),

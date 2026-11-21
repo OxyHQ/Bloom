@@ -60,7 +60,7 @@ export function resolveAnchor(token: AnchorName): string {
   return ANCHORS[token];
 }
 
-/** A delay in milliseconds: Bloom's durations (`fast` 150…) and Tailwind's other delays (`'75'`…). */
+/** A delay in milliseconds: one of Bloom's durations (`fast` 150…). */
 export function resolveDelay(token: DurationName): number {
   return DURATION[token];
 }
