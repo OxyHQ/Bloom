@@ -137,6 +137,8 @@ export function sqlitePersister(
   let syncDatabase: SyncDatabase | undefined;
   /** Rows older than this go with the first write, so opening stays short. */
   let pruneBefore: number | undefined;
+  /** The types the prune spares, as a JSON array. */
+  let keep = '[]';
   const db = () => {
     if (!database) {
       const opened = open();
@@ -152,7 +154,7 @@ export function sqlitePersister(
   };
 
   return {
-    async open({ versions, maxAgeMs }: OpenOptions) {
+    async open({ versions, maxAgeMs, keep: kept }: OpenOptions) {
       const handle = await db();
       await handle.execAsync(SCHEMA);
       const changed = changedVersions(await handle.getAllAsync(VERSIONS), versions);
@@ -165,9 +167,10 @@ export function sqlitePersister(
         });
       }
       pruneBefore = Date.now() - maxAgeMs;
+      keep = JSON.stringify(kept);
     },
 
-    openNow({ versions, maxAgeMs }: OpenOptions) {
+    openNow({ versions, maxAgeMs, keep: kept }: OpenOptions) {
       const handle = dbNow();
       if (!handle) return false;
       handle.execSync(SCHEMA);
@@ -186,6 +189,7 @@ export function sqlitePersister(
         }
       }
       pruneBefore = Date.now() - maxAgeMs;
+      keep = JSON.stringify(kept);
       return true;
     },
 
@@ -238,7 +242,11 @@ export function sqlitePersister(
       await handle.withTransactionAsync(async () => {
         if (cutoff !== undefined) {
           pruneBefore = undefined;
-          await handle.runAsync('DELETE FROM bloom_records WHERE updated_at < ?', cutoff);
+          await handle.runAsync(
+            'DELETE FROM bloom_records WHERE updated_at < ? AND type NOT IN (SELECT value FROM json_each(?))',
+            cutoff,
+            keep,
+          );
           await handle.runAsync('DELETE FROM bloom_lists WHERE updated_at < ?', cutoff);
         }
         for (const chunk of chunks(upserts)) {

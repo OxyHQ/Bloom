@@ -33,6 +33,8 @@ export interface EntityOptions<T> {
    * type's stored rows when the store opens.
    */
   persist?: boolean | { version: number };
+  /** Whether stored rows not written for `persistMaxAgeMs` are dropped. Default true. */
+  expires?: boolean;
   /**
    * How an incoming record joins the one held (with its refs resolved).
    * Default: it replaces it. Return `held` to refuse a payload known to be
@@ -114,6 +116,7 @@ export function entity<T extends object>(type: string, options: EntityOptions<T>
     combine: options.combine as EntityDefinition['combine'],
     onStore: options.onStore as EntityDefinition['onStore'],
     persistVersion,
+    expires: options.expires ?? true,
     indexes: Object.entries(options.index ?? {}).map(([name, keyOf]) => [
       name,
       (record: Plain) => {

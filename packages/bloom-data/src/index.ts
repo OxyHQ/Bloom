@@ -22,6 +22,7 @@ export {
   type RefTarget,
 } from './entity';
 export { environment } from './environment';
+export { type Model, type ModelOptions, type ModelRecord, model } from './model';
 export { type Action, type ActionOptions, action } from './action';
 export { type EventSocket, type RealtimeHandlers, realtime } from './realtime';
 export {
@@ -45,6 +46,7 @@ export {
   useEntity,
   useList,
   useListState,
+  useModel,
   useRecord,
   useStore,
 } from './hooks';

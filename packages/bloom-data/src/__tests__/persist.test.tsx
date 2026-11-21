@@ -202,7 +202,7 @@ describe('durable copy', () => {
     Post.put(post('1'));
     await store.flush();
     const persister = sqlitePersister(async () => openTestDatabase('a.db'));
-    await persister.open({ versions: { 'test-post': 2, 'test-user': 1 }, maxAgeMs: 1e9 });
+    await persister.open({ versions: { 'test-post': 2, 'test-user': 1 }, maxAgeMs: 1e9, keep: [] });
     expect(db().rows("SELECT id FROM bloom_records WHERE type = 'test-post'")).toEqual([]);
     expect(db().rows("SELECT id FROM bloom_records WHERE type = 'test-user'")).toHaveLength(1);
   });

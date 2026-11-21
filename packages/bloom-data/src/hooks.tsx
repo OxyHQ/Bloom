@@ -10,6 +10,7 @@ import {
 
 import type { EntityDefinition, ListState } from './definition';
 import type { Entity, List } from './entity';
+import { MODEL_ID, type Model } from './model';
 import { currentStore, withStore } from './root';
 import { IDLE_STATE, type ListSource, type RecordSource, type SourceState } from './source';
 import type { Listener, Store } from './store';
@@ -104,12 +105,18 @@ export function useEntity<T, S>(
   select?: (record: T | undefined) => S,
   isEqual: (a: S, b: S) => boolean = Object.is,
 ): T | S | undefined {
-  const store = useStore();
+  return useEntityIn(useStore(), entity, id, select, isEqual);
+}
+
+/** `useEntity` against a given store. */
+function useEntityIn<T, S>(
+  store: Store,
+  entity: Entity<T>,
+  id: string | null | undefined,
+  select?: (record: T | undefined) => S,
+  isEqual: (a: S, b: S) => boolean = Object.is,
+): T | S | undefined {
   const reader = useMemo(() => new EntityReader(store), [store]);
-  const subscribe = useCallback(
-    (listener: Listener) => reader.tracker.subscribe(listener),
-    [reader],
-  );
   const getSnapshot = () =>
     reader.snapshot(
       entity.definition,
@@ -353,4 +360,34 @@ export function useRecord<A extends unknown[], T>(
       (!skipped && value === undefined && state.status === 'idle'),
     refresh,
   };
+}
+
+/**
+ * A model's value in the store of the tree (or `store`, for a model that lives
+ * in another one, such as a device's). Reads the disk copy on mount when
+ * memory holds none, and re-renders when the value (or `select`'s answer)
+ * changes.
+ */
+export function useModel<T>(model: Model<T>, store?: Store): T | undefined;
+export function useModel<T, S>(
+  model: Model<T>,
+  select: (value: T | undefined) => S,
+  store?: Store,
+): S;
+export function useModel<T, S>(
+  model: Model<T>,
+  selectOrStore?: ((value: T | undefined) => S) | Store,
+  explicitStore?: Store,
+): T | S | undefined {
+  const select = typeof selectOrStore === 'function' ? selectOrStore : undefined;
+  const tree = useStore();
+  const store = (typeof selectOrStore === 'function' ? explicitStore : selectOrStore) ?? tree;
+  const read = useCallback(
+    (record: { value: T } | undefined) => (select ? select(record?.value) : record?.value),
+    [select],
+  );
+  useEffect(() => {
+    void withStore(store, () => model.load());
+  }, [model, store]);
+  return useEntityIn(store, model.entity, MODEL_ID, read) as T | S | undefined;
 }

@@ -1,5 +1,6 @@
 import {
   type EntityDefinition,
+  persistedKeep,
   persistedVersions,
   type ListDefinition,
   type ListState,
@@ -140,7 +141,11 @@ export class Store {
     const persister = this.persister;
     if (!persister) return Promise.resolve();
     this.opened ??= persister
-      .open({ versions: persistedVersions(), maxAgeMs: this.persistMaxAgeMs })
+      .open({
+        versions: persistedVersions(),
+        maxAgeMs: this.persistMaxAgeMs,
+        keep: persistedKeep(),
+      })
       .catch((error) => {
         this.persisterFailed = true;
         reportError(error);
@@ -724,7 +729,13 @@ export class Store {
     if (!definition.persist(key) || this.listSlot(definition, key)?.state || this.opened)
       return false;
     try {
-      if (!persister.openNow({ versions: persistedVersions(), maxAgeMs: this.persistMaxAgeMs })) {
+      if (
+        !persister.openNow({
+          versions: persistedVersions(),
+          maxAgeMs: this.persistMaxAgeMs,
+          keep: persistedKeep(),
+        })
+      ) {
         return false;
       }
     } catch (error) {
