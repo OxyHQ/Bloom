@@ -175,3 +175,10 @@ export type {
   SpaceToken,
   WeightName,
 } from './tokens';
+export type { Binding } from './binding';
+
+// Inputs (controls/inputs.tsx)
+
+// Overlays and feedback (controls/overlays.tsx)
+
+// Containers (controls/containers.tsx)
