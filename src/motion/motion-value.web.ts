@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { SharedValue } from 'react-native-reanimated';
 
 import { useSameItems } from './same-items';
 
 import type { MotionLike } from './keyframes';
+import { animateShared } from './shared-motion';
 import type { MotionSpec } from './spec';
 import { cssCurve, timingOf, type Timing } from './timing';
 import { MOTION } from './tokens';
@@ -13,6 +15,11 @@ import { MOTION } from './tokens';
  * of their style to where the value lands, so the browser plays it with no JS
  * per frame and retargets it from wherever it is when a newer write comes.
  * A drag writes once per pointer event, which is all the JS a drag needs.
+ *
+ * A value over a Reanimated shared value (`useMotionValueOf`) is the
+ * exception: the shared value holds the number and plays its animations in
+ * Reanimated's frames, so its other readers (a backdrop, an owner's progress)
+ * see every frame; each frame restyles the bound views as a write does.
  */
 export interface MotionValue {
   readonly kind: 'motion-value';
@@ -29,6 +36,8 @@ export interface WebValue {
   current: number;
   readonly listeners: Set<Listener>;
   timer: ReturnType<typeof setTimeout> | undefined;
+  /** The shared value that holds the number (`useMotionValueOf`). */
+  readonly shared?: SharedValue<number>;
 }
 
 function createValue(initial: number): MotionValue {
@@ -52,6 +61,37 @@ export function isMotionValue(value: unknown): value is MotionValue {
 
 export function useMotionValue(initial: number): MotionValue {
   return useState(() => createValue(initial))[0];
+}
+
+/**
+ * Listener ids on a shared value: negative, so they never meet Reanimated's
+ * own (its mappers count up from 10000) on the same value.
+ */
+let nextListenerId = -1;
+
+/**
+ * A motion value over a Reanimated shared value: writes and animations go to
+ * the shared value, and each of its changes (a write, an animation's frame)
+ * restyles the bound views, with no transition.
+ */
+export function useMotionValueOf(shared: SharedValue<number>): MotionValue {
+  const value = useMemo<MotionValue>(
+    () => ({
+      kind: 'motion-value',
+      web: { current: shared.value, listeners: new Set(), timer: undefined, shared },
+    }),
+    [shared],
+  );
+  useEffect(() => {
+    const id = nextListenerId--;
+    value.web.current = shared.value;
+    shared.addListener(id, (next) => {
+      value.web.current = next;
+      emit(value.web, undefined);
+    });
+    return () => shared.removeListener(id);
+  }, [shared, value]);
+  return value;
 }
 
 /** A value computed from others by a pure function of their numbers; it follows them. */
@@ -83,6 +123,10 @@ export function useDerivedMotionValue(
 
 export function setMotionValue(value: MotionValue, next: number): void {
   const web = value.web;
+  if (web.shared) {
+    web.shared.value = next;
+    return;
+  }
   if (web.timer !== undefined) {
     clearTimeout(web.timer);
     web.timer = undefined;
@@ -92,7 +136,7 @@ export function setMotionValue(value: MotionValue, next: number): void {
 }
 
 export function getMotionValue(value: MotionValue): number {
-  return value.web.current;
+  return value.web.shared ? value.web.shared.value : value.web.current;
 }
 
 function timingFor(motion: MotionTarget): Timing {
@@ -103,7 +147,8 @@ function timingFor(motion: MotionTarget): Timing {
 
 /**
  * Moves the value to `target` with a motion: the bound views transition there
- * (a spring as its `linear()` curve). Under reduced motion it lands at once. `onEnd` runs when the motion's time is up.
+ * (a spring as its `linear()` curve, from rest). Under reduced motion it lands at once. `onEnd` runs when the motion's time is up.
+ * A value over a shared value plays it on the shared value, a spring from `velocity`.
  */
 export function animateMotionValue(
   value: MotionValue,
@@ -111,8 +156,13 @@ export function animateMotionValue(
   motion: MotionTarget,
   reducedMotion = false,
   onEnd?: () => void,
+  velocity = 0,
 ): void {
   const web = value.web;
+  if (web.shared) {
+    animateShared(web.shared, target, motion, reducedMotion, onEnd, velocity);
+    return;
+  }
   if (web.timer !== undefined) {
     clearTimeout(web.timer);
     web.timer = undefined;

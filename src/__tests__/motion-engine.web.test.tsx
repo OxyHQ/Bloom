@@ -233,4 +233,50 @@ describe('motion values on the web', () => {
     expect(box.node.style.transition).toBe('');
     expect(ended).toHaveBeenCalledTimes(1);
   });
+
+  // A value over a Reanimated shared value moves in Reanimated's frames, so
+  // the shared value's other readers (a sheet's backdrop, its owner's
+  // progress) see each frame's number; every change is a write, never a
+  // CSS transition.
+  it('over a shared value: writes and animations go to it, and each change restyles the view', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const reanimated =
+      require('react-native-reanimated') as typeof import('react-native-reanimated');
+    const spring = jest.spyOn(reanimated, 'withSpring');
+    const node = { style: {} as Record<string, string> };
+    let shared!: import('react-native-reanimated').SharedValue<number>;
+    let value!: Value;
+    function Box() {
+      shared = reanimated.useSharedValue(40);
+      value = web.useMotionValueOf(shared);
+      const doubled = web.useDerivedMotionValue([value], (n) => n * 2);
+      const motion = web.useMotionStyle({ translateY: value, scale: doubled });
+      React.useLayoutEffect(() => motion.ref?.(node), [motion]);
+      return null;
+    }
+    act(() => {
+      TestRenderer.create(<Box />);
+    });
+    expect(web.getMotionValue(value)).toBe(40);
+    web.setMotionValue(value, 12);
+    expect(shared.value).toBe(12);
+    expect(node.style.transform).toBe('translateY(12px) scale(24)');
+    // Reanimated (or anything else) writing the shared value restyles the view too.
+    shared.value = 30;
+    expect(web.getMotionValue(value)).toBe(30);
+    expect(node.style.transform).toBe('translateY(30px) scale(60)');
+    // A spring plays on the shared value, from the finger's velocity.
+    const ended = jest.fn();
+    web.animateMotionValue(value, 0, { response: 0.3, dampingRatio: 0.8 }, false, ended, 900);
+    expect(spring).toHaveBeenLastCalledWith(
+      0,
+      expect.objectContaining({ velocity: 900 }),
+      expect.any(Function),
+    );
+    expect(shared.value).toBe(0);
+    expect(node.style.transform).toBe('translateY(0px) scale(0)');
+    expect(node.style.transition).toBe('');
+    expect(ended).toHaveBeenCalledTimes(1);
+    spring.mockRestore();
+  });
 });

@@ -63,6 +63,23 @@ export function springPhysics(spec: SpringSpec): SpringPhysics {
 }
 
 /**
+ * The spec of a spring given as physics (a mass, a stiffness, a damping): the
+ * same oscillator, so it plays the same motion. Only the ratios to the mass
+ * move it (Reanimated's rest test, an energy ratio, scales with them too).
+ */
+export function springSpecOf(physics: {
+  mass: number;
+  stiffness: number;
+  damping: number;
+}): SpringSpec {
+  const omega = Math.sqrt(physics.stiffness / physics.mass);
+  return {
+    response: (2 * Math.PI) / omega,
+    dampingRatio: physics.damping / (2 * Math.sqrt(physics.stiffness * physics.mass)),
+  };
+}
+
+/**
  * Where a spring released at 0 toward 1 is after `seconds`, with an initial
  * `velocity` in travels per second. The closed form of the same oscillator
  * Reanimated integrates, so tests and CSS read the native motion exactly.
@@ -186,7 +203,8 @@ export function motionCss(spec: MotionSpec, reducedMotion = false): MotionCss {
 
 /**
  * Retarget a shared value with a spec, from where it is now. A spring keeps
- * its physics (and its overshoot); reduced motion lands at once.
+ * its physics (and its overshoot) and starts at `velocity` (units per second:
+ * a released finger's); reduced motion lands at once.
  */
 export function animateWithSpec(
   value: SharedValue<number>,
@@ -194,6 +212,7 @@ export function animateWithSpec(
   spec: MotionSpec,
   reducedMotion = false,
   onSettled?: (finished: boolean | undefined) => void,
+  velocity = 0,
 ): void {
   'worklet';
   if (reducedMotion) {
@@ -216,6 +235,7 @@ export function animateWithSpec(
         mass: 1,
         stiffness: omega * omega,
         damping: 2 * zeta * omega,
+        velocity,
         reduceMotion: ReduceMotion.System,
       },
       onSettled,
