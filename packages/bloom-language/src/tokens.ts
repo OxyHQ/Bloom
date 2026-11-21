@@ -215,6 +215,8 @@ export type TooltipSize = (typeof ENUMS.tooltipSize)[number];
 export type OtpCharacters = (typeof ENUMS.otpCharacters)[number];
 /** A table column's width: a space rung, or `fit` to hug its content. */
 export type ColumnWidthToken = SpaceToken | (typeof ENUMS.columnWidthExtra)[number];
+/** How an agent's character feels: Bloom `AgentAvatar`'s moods. */
+export type AgentMood = (typeof ENUMS.agentMood)[number];
 
 export {
   COLORS,

@@ -48,6 +48,7 @@ import { SOCIAL_BUTTONS } from './social-button';
 import { DATA_TABLES } from './data-table';
 import { SORTABLE_CHIP_ROWS } from './sortable-chip-row';
 import { VIEWPORTS } from './viewport';
+import { AGENT_AVATARS } from './agent-avatar';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -103,4 +104,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...DATA_TABLES,
   ...SORTABLE_CHIP_ROWS,
   ...VIEWPORTS,
+  ...AGENT_AVATARS,
 };

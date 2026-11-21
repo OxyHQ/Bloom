@@ -680,3 +680,7 @@ export type {
   GalleryStyle,
   GalleryView,
 } from './controls/zoomable-media-gallery';
+
+// Agent avatars (controls/agent-avatar.tsx)
+export { AgentAvatar } from './controls/agent-avatar';
+export type { AgentAvatarOptions, AgentAvatarView } from './controls/agent-avatar';

@@ -100,6 +100,7 @@ import type { MeterReveal } from '@oxy.so/bloom/stat-bar';
 import type { DatePickerKind } from './controls/date-picker';
 import type { HourFormat, WeekStart } from '@oxy.so/bloom/date-picker';
 
+import type { AgentAvatarKind } from './controls/agent-avatar';
 import type { DialogAction, DialogHeaderConfig, DialogScreenFrame } from '@oxy.so/bloom/dialog';
 import type { SearchToken } from '@oxy.so/bloom/search';
 
@@ -196,6 +197,7 @@ import {
   type StepperStyle,
   type TooltipSide,
   type RatingStyle,
+  type AgentMood,
   type Presence,
   type ShapeName,
   type BorderWidthName,
@@ -885,6 +887,11 @@ export interface ValueModifiers {
 
   // Menubars (controls/menubar.tsx)
   openMenu: Binding<string | undefined>;
+
+  // Agent avatars (controls/agent-avatar.tsx)
+  mood: AgentMood;
+  interactive: boolean;
+  portrait: boolean;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1299,7 +1306,8 @@ export type NodeKind =
   | CompositionBarKind
   | NotificationKind
   | LinkPreviewKind
-  | SocialButtonKind;
+  | SocialButtonKind
+  | AgentAvatarKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -3125,6 +3133,17 @@ export class Node {
   // Menubars (controls/menubar.tsx)
   openMenu(value: Binding<string | undefined>): Node {
     return this.set('openMenu', value);
+  }
+
+  // Agent avatars (controls/agent-avatar.tsx)
+  mood(value: AgentMood): Node {
+    return this.set('mood', value);
+  }
+  interactive(value = true): Node {
+    return this.set('interactive', value);
+  }
+  portrait(value = true): Node {
+    return this.set('portrait', value);
   }
 }
 

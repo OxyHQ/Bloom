@@ -2519,6 +2519,36 @@ target) are used as they are inside a `view()`: they hand the props a native
 host takes (its ref and its layout and scroll callbacks), so the host they go on
 is an `Embed`.
 
+## Product components
+
+The product families apps share (agents, chat, dashboards, media) are Bloom's
+own components drawn as nodes. A node takes its content first and its data as
+an options object, as the Bloom component takes them: a slot is a language
+child, a handler a function. Its look is modifiers, checked by the spec: a
+size, a style or a tone is a token, a colour a role (painted where it is
+drawn), a length a space token. The universal modifiers place, box and name
+it, and `.onPress()` puts a press on a component that takes none of its own.
+
+### Agent avatar
+
+```ts
+AgentAvatar({ preset: 'blue_beret' }).size('xl').mood('sad').label('Ana')
+AgentAvatar(agent.character, { workingKey, entranceKey }).interactive()
+```
+
+`AgentAvatar(character, options?)` is Bloom's `AgentAvatar`: the vector
+character, drawn by Bloom's renderer on every platform (the native one
+included, under the same props). The options are its triggers and reports:
+`reactionKey`, `idleKey`, `entranceKey`, `workingKey` and `workingCycles`
+play a motion when they change; `onReady`, `onLoadingChange`, `catalog` and
+`locale`.
+
+- `.size()` is an avatar rung or an app token; with none, Bloom's 64.
+- `.mood('neutral' | 'sad')`, `.paused(true)`, `.interactive()` (its gaze
+  follows the pointer and touches), `.portrait()` (a cached still, for a
+  picker's thumbnails).
+- `AgentAvatarProvider` stays the app's: it is where the vector catalog comes from.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2979,6 +3009,8 @@ and `@oxy.so/bloom-data` beside it.
   data tables,
   sortable chip rows,
   viewports.
+- Product components (wave 5), each Bloom's own with parity on native,
+  web and Chrome: `AgentAvatar`.
 
 **Not built**
 

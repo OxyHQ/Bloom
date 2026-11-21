@@ -133,3 +133,4 @@ export const MediaGalleries: Story = { args: { family: 'gallery' } };
 export const DataTables: Story = { args: { family: 'dataTable' } };
 export const SortableChipRows: Story = { args: { family: 'sortableChipRow' } };
 export const Viewports: Story = { args: { family: 'viewport' } };
+export const AgentAvatars: Story = { args: { family: 'agentAvatar' } };
