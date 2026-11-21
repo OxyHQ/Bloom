@@ -158,6 +158,9 @@ export type SidebarSurface = (typeof ENUMS.sidebarSurface)[number];
 export type SidebarSize = (typeof ENUMS.sidebarSize)[number];
 export type FooterPinning = (typeof ENUMS.footerPinning)[number];
 export type SettingsView = (typeof ENUMS.settingsView)[number];
+export type ShellLayout = (typeof ENUMS.shellLayout)[number];
+export type ShellPresentation = (typeof ENUMS.shellPresentation)[number];
+export type PanelRole = (typeof ENUMS.panelRole)[number];
 /** Bloom's typography components, as a text's style: `h1` is Bloom `H1`, `lead` is `Lead`… */
 export type TextStyleName = (typeof ENUMS.textStyle)[number];
 /** Where a text that does not fit its lines is cut (React Native's `ellipsizeMode`). */

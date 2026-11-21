@@ -2007,6 +2007,9 @@ function renderHost(
     case 'commandGroup':
     case 'settingsGroup':
     case 'settingsItem':
+    // An app layout's panels and destinations are read by the layout.
+    case 'panel':
+    case 'destination':
       return null as unknown as ReactElement;
     case 'command':
       return draw(CommandHost, {

@@ -20,7 +20,17 @@ import {
   Text,
   VStack,
 } from '../primitives';
-import { AppLayout, layout, navigate, screen, Sheet, Stack, TabView } from '../router';
+import {
+  AppLayout,
+  Destination,
+  layout,
+  navigate,
+  Panel,
+  screen,
+  Sheet,
+  Stack,
+  TabView,
+} from '../router';
 import { InPagerContext } from '../router/pager';
 
 jest.mock('expo-router', () => {
@@ -139,6 +149,65 @@ describe('AppLayout on Android', () => {
       return AppLayout(Stack()).shell(() => ({ layout: 'feed', safeArea: true }));
     });
     expect(only(mount(createElement(Framed)), 'AppShell').props.safeArea).toBe(true);
+  });
+
+  it('the shell’s semantic layout and panels: a panel without content holds the navigator', () => {
+    const open = jest.fn();
+    const Root = layout(() =>
+      AppLayout(Stack())
+        .shellLayout('deck')
+        .shellPresentation('floating')
+        .panels(
+          Panel('main').panelRole('main'),
+          Panel('details', Text('details'))
+            .panelRole('inspector')
+            .label('Details')
+            .presented(true)
+            .onPresentedChange(open)
+            .width('320')
+            .minWidth('280')
+            .resizable(),
+          Panel('later', Text('later')).hidden(),
+        ),
+    );
+    const r = mount(createElement(Root));
+    const shell = only(r, 'AppShell');
+    expect(shell.props).toMatchObject({ layout: 'deck', presentation: 'floating' });
+    const panels = shell.props.panelLayout.panels;
+    expect(panels.map((panel: { id: string }) => panel.id)).toEqual(['main', 'details', 'later']);
+    expect(panels[0].content).toBeTruthy();
+    expect(panels[1]).toMatchObject({
+      role: 'inspector',
+      label: 'Details',
+      open: true,
+      onOpenChange: open,
+      width: 320,
+      minWidth: 280,
+      resizable: true,
+    });
+    expect(panels[2].visible).toBe(false);
+    // The navigator is the main panel's content, not the shell's child.
+    expect(hosts(r, 'ExperimentalStack')).toHaveLength(0);
+  });
+
+  it('destinations put Bloom’s pager above the shell', () => {
+    const reselect = jest.fn();
+    const Root = layout(() =>
+      AppLayout(TabView())
+        .destinations(
+          Destination('index', '/').label('Home').icon(Glyph).activeIcon(OtherGlyph).bar(),
+          Destination('write', '/write').page().sidebar(false),
+        )
+        .onReselect(reselect),
+    );
+    const r = mount(createElement(Root));
+    const provider = only(r, 'TabPagerProvider');
+    expect(provider.props.destinations).toEqual([
+      { name: 'index', href: '/', label: 'Home', icon: Glyph, activeIcon: OtherGlyph, bar: true },
+      { name: 'write', href: '/write', page: true, sidebar: false },
+    ]);
+    expect(provider.props.onReselect).toBe(reselect);
+    expect(provider.findAll((i) => (i.type as unknown) === 'AppShell')).toHaveLength(1);
   });
 
   it('a stack in a page of the pager is the page in place: the pager’s pages are not fragments', () => {

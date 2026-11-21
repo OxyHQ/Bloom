@@ -13,6 +13,8 @@ import {
   Node,
   type AppLayoutView,
   type Child,
+  type DestinationView,
+  type PanelView,
   type NavStackView,
   type RouteView,
   type TabNavigatorView,
@@ -83,4 +85,27 @@ export function navigate(
   params?: Readonly<Record<string, string | number>>,
 ): Navigation {
   return new Navigation(href as string, params);
+}
+
+/**
+ * A panel of the app's shell. Without content it holds the layout's
+ * navigator; with it, that view beside the navigator (a detail, an inspector).
+ *
+ * ```ts
+ * AppLayout(Stack()).panels(
+ *   Panel('main'),
+ *   Panel('details', Details()).panelRole('inspector').presented(open).onPresentedChange(setOpen).label('Details'),
+ * )
+ * ```
+ */
+export function Panel(id: string, content?: Child): PanelView {
+  return new Node('panel', { id, content }, NO_CHILDREN);
+}
+
+/**
+ * One of the app's destinations, by its route's name and its address: what
+ * the pager, the bottom bar and the sidebar read (Bloom's `AppDestination`).
+ */
+export function Destination(name: string, href: Href): DestinationView {
+  return new Node('destination', { name, href: href as string }, NO_CHILDREN);
 }
