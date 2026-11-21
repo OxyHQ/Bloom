@@ -95,6 +95,10 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("dragIndicator", &["visible", "hidden"]),
     ("sheetMaterial", &["surface", "flat"]),
     ("sheetSizing", &["content", "fill"]),
+    ("sidebarVariant", &["panel", "rail"]),
+    ("sidebarSurface", &["card", "plain", "docked"]),
+    ("sidebarSize", &["sm", "md", "lg"]),
+    ("footerPinning", &["absolute", "document", "inline", "sticky"]),
 ];
 
 /// The modifiers a variant (`when(condition, v => v…)`) can change.
@@ -270,6 +274,24 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("interactiveDismissDisabled", &["value?"]),
     ("onDismissAttempt", &["value"]),
     ("manualActivation", &["value?"]),
+    ("secondary", &[]),
+    ("shortcut", &["value"]),
+    ("expanded", &["value"]),
+    ("onExpandedChange", &["value"]),
+    ("collapsible", &["value?"]),
+    ("emptyLabel", &["value"]),
+    ("error", &["value"]),
+    ("meta", &["value"]),
+    ("variant", &["sidebarVariant"]),
+    ("surface", &["sidebarSurface"]),
+    ("onCollapsedChange", &["value"]),
+    ("searchable", &["value?"]),
+    ("themeToggle", &["value?"]),
+    ("logo", &["value"]),
+    ("account", &["value"]),
+    ("width", &["space"]),
+    ("pinning", &["footerPinning"]),
+    ("ignoresSafeArea", &["value?"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -314,6 +336,14 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "tabView", constructors: &["TabView"], modifiers: &[], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "scrollView", constructors: &["ScrollView"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "contentMargins", "spacing", "refreshable", "onEndReached", "scrollIndicators", "scrollDismissesKeyboard", "keyboardTaps"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "bottomSheet", constructors: &["BottomSheet"], modifiers: &["detached", "dragIndicator", "material", "scrollable", "sizing", "interactiveDismissDisabled", "onDismissAttempt", "manualActivation", "footer", "progress", "label"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "sidebar", constructors: &["Sidebar"], modifiers: &["selection", "onSelect", "header", "toolbar", "footer", "variant", "surface", "size", "collapsed", "onCollapsedChange", "searchable", "themeToggle", "logo", "account", "label", "testID"], size: Some("sidebarSize"), tint: None, style: None, shape: None },
+    NodeSpec { kind: "navItem", constructors: &["NavItem"], modifiers: &["id", "activeIcon", "badge", "link", "shortcut", "secondary", "onPress", "onLongPress"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "treeSection", constructors: &["TreeSection"], modifiers: &["id", "trailing", "collapsible", "expanded", "onExpandedChange", "loading", "error", "emptyLabel"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "treeFolder", constructors: &["TreeFolder"], modifiers: &["id", "trailing", "expanded", "onExpandedChange"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "treeItem", constructors: &["TreeItem"], modifiers: &["id", "icon", "subtitle", "meta", "link", "trailing", "disabled", "expanded", "onExpandedChange", "emptyLabel", "onPress", "onLongPress"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "rail", constructors: &["Rail"], modifiers: &["selection", "onSelect", "header", "footer", "width", "testID"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "railItem", constructors: &["RailItem"], modifiers: &["id", "activeIcon"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "pageFooter", constructors: &["PageFooter"], modifiers: &["toolbar", "pinning", "scrollEdge", "ignoresSafeArea", "testID"], size: None, tint: None, style: None, shape: None },
 ];
 
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,
