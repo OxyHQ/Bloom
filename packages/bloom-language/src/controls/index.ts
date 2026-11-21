@@ -26,6 +26,7 @@ import { INPUT_OTPS } from './input-otp';
 import { ANIMATED_CHECKS } from './animated-check';
 import { CONTEXT_MENUS } from './context-menu';
 import { COLLAPSIBLES } from './collapsible';
+import { DROP_ZONES } from './drop-zone';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -59,4 +60,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...ANIMATED_CHECKS,
   ...CONTEXT_MENUS,
   ...COLLAPSIBLES,
+  ...DROP_ZONES,
 };

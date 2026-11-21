@@ -31,6 +31,8 @@ import type { ContextMenuKind } from './controls/context-menu';
 import type { ContextMenuAnchor } from '@oxy.so/bloom/context-menu';
 import type { FileUploadKind } from './controls/file-upload';
 import type { VideoViewKind } from './controls/video-view';
+import type { DropZoneKind } from './controls/drop-zone';
+import type { DragAction, DropTargetDragEvent } from '@oxy.so/bloom/drop-zone';
 import type { CollapsibleKind } from './controls/collapsible';
 import type { ColorSwatchPickerKind } from './controls/color-swatch-picker';
 import type { InputOtpKind } from './controls/input-otp';
@@ -769,6 +771,14 @@ export interface ValueModifiers {
   revealsOnAppear: boolean;
   keepsMounted: boolean;
 
+  // Drop zones (controls/drop-zone.tsx)
+  fileTypes: readonly string[];
+  dragActions: readonly [actions: readonly DragAction[], preferred: DragAction | undefined];
+  folder: string;
+  onDragEnter: (event: DropTargetDragEvent) => void;
+  onDragOver: (event: DropTargetDragEvent) => void;
+  onDragLeave: () => void;
+
   // Context menus (controls/context-menu.tsx)
   presentedAt: Binding<ContextMenuAnchor | null>;
 
@@ -1166,6 +1176,7 @@ export type NodeKind =
   | ColorSwatchPickerKind
   | ContextMenuKind
   | CollapsibleKind
+  | DropZoneKind
   | AnimatedCheckKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
@@ -2826,6 +2837,26 @@ export class Node {
   }
   keepsMounted(value: boolean): Node {
     return this.set('keepsMounted', value);
+  }
+
+  // Drop zones (controls/drop-zone.tsx)
+  fileTypes(value: readonly string[]): Node {
+    return this.set('fileTypes', value);
+  }
+  dragActions(actions: readonly DragAction[], preferred?: DragAction): Node {
+    return this.set('dragActions', [actions, preferred]);
+  }
+  folder(value: string): Node {
+    return this.set('folder', value);
+  }
+  onDragEnter(value: (event: DropTargetDragEvent) => void): Node {
+    return this.set('onDragEnter', value);
+  }
+  onDragOver(value: (event: DropTargetDragEvent) => void): Node {
+    return this.set('onDragOver', value);
+  }
+  onDragLeave(value: () => void): Node {
+    return this.set('onDragLeave', value);
   }
 
   // Context menus (controls/context-menu.tsx)

@@ -110,3 +110,4 @@ export const ColorSwatchPickers: Story = { args: { family: 'colorSwatchPicker' }
 export const AnimatedChecks: Story = { args: { family: 'animatedCheck' } };
 export const ContextMenus: Story = { args: { family: 'contextMenu' } };
 export const Collapsibles: Story = { args: { family: 'collapsible' } };
+export const DropZones: Story = { args: { family: 'dropZone' } };
