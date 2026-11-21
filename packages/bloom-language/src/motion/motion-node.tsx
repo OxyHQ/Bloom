@@ -22,6 +22,7 @@ import {
   usePlay,
   usePressScale,
   useSwipe,
+  withDelay,
   type KeyframesValue,
   type MotionBinding,
   type MotionValue,
@@ -32,6 +33,7 @@ import {
 } from '@oxy.so/bloom/motion';
 
 import type { DragSpec, SwipeDirection } from '../node';
+import type { Geometry } from '../paint';
 import type { Frame, Namespace } from './namespace';
 import { resolveMotion, type MotionToken } from './tokens';
 
@@ -48,13 +50,24 @@ export interface AnimationScope {
 
 /** What a node's motion modifiers ask for, collected once by the renderer's plan. */
 export interface MotionPlan {
-  /** The resting transform (scale, offset, rotation tokens), interned by `transformKey`. */
+  /**
+   * The resting transform (scale, offset, rotation tokens), interned by
+   * `transformKey`, and the same by component. Empty when the node's box
+   * draws it instead (render.tsx, `placeGeometry`).
+   */
   transform: Transform;
   transformKey: string;
+  geometry: Geometry;
+  /** The point it scales and rotates about (`.anchor()`), as a transform-origin. */
+  anchor: string | undefined;
   /** The node's own `.animation()`, which also scopes its subtree. */
   animation: AnimationScope | undefined;
   transition: TransitionValue | undefined;
   keyframes: { value: KeyframesValue; trigger: unknown } | undefined;
+  /** `.repeatForever()`: keyframes that play again and again while nothing else plays. */
+  loop: KeyframesValue | undefined;
+  /** `.delay()`, in ms: what this node plays waits that long. */
+  delay: number;
   matched: { id: string; namespace: Namespace } | undefined;
   pressScale: boolean;
   /**
@@ -112,6 +125,18 @@ export interface MotionNodeProps {
 }
 
 const ORIGIN_TOP_LEFT = { transformOrigin: 'left top' };
+/** A loop's playing: one id of its own, so it starts over after any other. */
+const LOOP_ID = -2;
+
+const anchors = new Map<string, object>();
+function anchorStyle(origin: string): object {
+  let style = anchors.get(origin);
+  if (style === undefined) {
+    style = Object.freeze({ transformOrigin: origin });
+    anchors.set(origin, style);
+  }
+  return style;
+}
 
 /** Whether a scope animates this render, given the value the last commit saw. */
 function animates(scope: AnimationScope | undefined, last: { value: unknown } | undefined) {
@@ -152,7 +177,9 @@ function measure(node: unknown): Frame | undefined {
  * nodes without motion stay plain elements with no hooks.
  *
  * At most one playing at a time, by priority: leaving, then keyframes, then a
- * matched move, then the insertion.
+ * matched move, then the insertion, then a loop (which starts once the
+ * insertion ends). Everything it plays waits the node's `.delay()`; a delayed
+ * playing holds its first frame while it waits.
  */
 function useMotion(
   { motion, scope }: MotionNodeProps,
@@ -169,11 +196,14 @@ function useMotion(
   const own = motion.animation ?? scope;
   const committed = useRef<Committed | undefined>(undefined);
   const last = committed.current;
+  const delayed = (of: Timing | undefined) =>
+    of === undefined ? undefined : withDelay(of, motion.delay);
+  const fill = motion.delay > 0 ? 'backwards' : 'none';
 
-  // A state change of the resting transform or opacity animates with the scope's motion.
+  // A state change of the resting transform, opacity or colours animates with the scope's motion.
   let timing: Timing | undefined;
   if (!reduced && own !== undefined) {
-    if (animates(own, last)) timing = timingOf(resolveMotion(own.motion));
+    if (animates(own, last)) timing = delayed(timingOf(resolveMotion(own.motion)));
     else if (own.gated && last !== undefined && last.transformKey === motion.transformKey) {
       timing = last.timing;
     }
@@ -193,11 +223,14 @@ function useMotion(
 
   // A matched move, found after layout (see the effect below).
   const [moved, setMoved] = useState<{ id: number; frames: KeyframesValue } | undefined>();
+  // A loop waits for the insertion to end.
+  const [inserted, setInserted] = useState(false);
+  const loop = motion.loop;
 
   let play: Play | undefined;
   if (leaving !== undefined && motion.transition !== undefined) {
     const remove = motion.transition.remove;
-    const removeTiming = remove.timing(own?.motion);
+    const removeTiming = delayed(remove.timing(own?.motion));
     if (removeTiming !== undefined && !reduced) {
       play = {
         id: -1,
@@ -209,13 +242,13 @@ function useMotion(
       };
     }
   } else if (keyframes.on && motion.keyframes !== undefined) {
-    const kfTiming = motion.keyframes.value.timing(own?.motion);
+    const kfTiming = delayed(motion.keyframes.value.timing(own?.motion));
     if (kfTiming !== undefined) {
       play = {
         id: keyframes.id,
         keyframes: motion.keyframes.value,
         timing: kfTiming,
-        fill: 'none',
+        fill,
         material: motion.glass,
         onEnd: () =>
           setKeyframes((state) => (state.id === keyframes.id ? { ...state, on: false } : state)),
@@ -225,20 +258,35 @@ function useMotion(
     play = {
       id: moved.id,
       keyframes: moved.frames,
-      timing: timingOf(resolveMotion(own.motion)),
-      fill: 'none',
+      timing: withDelay(timingOf(resolveMotion(own.motion)), motion.delay),
+      fill,
       material: motion.glass,
       onEnd: undefined,
     };
-  } else if (motion.transition !== undefined && !reduced) {
+  } else if (motion.transition !== undefined && !reduced && !(loop !== undefined && inserted)) {
     const insert = motion.transition.insert;
-    const insertTiming = insert.timing(own?.motion);
+    const insertTiming = delayed(insert.timing(own?.motion));
     if (insertTiming !== undefined) {
       play = {
         id: 0,
         keyframes: insert,
         timing: insertTiming,
-        fill: 'none',
+        fill,
+        material: motion.glass,
+        onEnd: loop === undefined ? undefined : () => setInserted(true),
+      };
+    }
+  }
+  if (play === undefined && loop !== undefined && leaving === undefined && !reduced) {
+    // Its own motion (a loop token's), else the scope's: a loop with neither plays nothing.
+    const loopTiming = delayed(loop.timing(own?.motion));
+    if (loopTiming !== undefined) {
+      play = {
+        id: LOOP_ID,
+        keyframes: loop,
+        timing: loopTiming,
+        fill,
+        repeat: true,
         material: motion.glass,
         onEnd: undefined,
       };
@@ -270,8 +318,11 @@ function useMotion(
   const style: unknown[] = [];
   if (motion.transform.length > 0 && !press.ownsTransform)
     style.push({ transform: motion.transform });
-  // A bound view's geometry follows its values; `.animation()` does not ease it.
-  if (timing !== undefined && motion.stable && !press.bound) style.push(transitionStyle(timing));
+  if (motion.anchor !== undefined) style.push(anchorStyle(motion.anchor));
+  // A change plays on the box: its geometry, opacity and colours. A bound
+  // view's geometry follows its values; `.animation()` does not ease it.
+  if (timing !== undefined && motion.stable && !press.bound)
+    style.push(transitionStyle(timing, true));
   if (matched !== undefined) style.push(ORIGIN_TOP_LEFT);
   style.push(...press.style);
   if (played.style !== undefined) style.push(played.style);
@@ -279,7 +330,7 @@ function useMotion(
   const props: Record<string, unknown> = { ref, ...played.props };
   // Native: the transition's removal, played by Reanimated after the unmount.
   const removal = motion.transition?.remove;
-  const removalTiming = removal && !reduced ? removal.timing(own?.motion) : undefined;
+  const removalTiming = removal && !reduced ? delayed(removal.timing(own?.motion)) : undefined;
   if (removal && removalTiming !== undefined) {
     const exiting = exitingOf(removal, removalTiming);
     if (exiting !== undefined) props.exiting = exiting;

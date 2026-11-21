@@ -1,7 +1,8 @@
 import { defineKeyframes as defineBloomKeyframes, type KeyframesValue } from '@oxy.so/bloom/motion';
 
+import { LOOPS } from '../generated/spec.generated';
 import { resolveSpace, type PaddingToken } from '../tokens';
-import type { EasingName, MotionToken } from './tokens';
+import type { EasingName, LoopName, MotionToken } from './tokens';
 
 export type { KeyframesValue };
 
@@ -50,4 +51,17 @@ export function defineKeyframes(frames: readonly Frame[], motion?: MotionToken):
     })),
     motion,
   );
+}
+
+const loops = new Map<LoopName, KeyframesValue>();
+
+/** A loop token's keyframes (the spec's `loops`), played by the motion of its name: built once. */
+export function loopKeyframes(name: LoopName): KeyframesValue {
+  let value = loops.get(name);
+  if (value === undefined) {
+    const loop = LOOPS[name];
+    value = defineKeyframes(loop.frames, loop.motion);
+    loops.set(name, value);
+  }
+  return value;
 }

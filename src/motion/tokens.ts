@@ -6,7 +6,8 @@ import type { MotionSpec } from './spec';
  * (its spec.test holds them equal).
  *
  * Curves are cubic-beziers. `inOutQuad` is the cubic form of Reanimated's
- * default `withTiming` curve (`Easing.inOut(Easing.quad)`).
+ * default `withTiming` curve (`Easing.inOut(Easing.quad)`); `pulse` is
+ * Tailwind's `animate-pulse` curve.
  */
 export const EASING = {
   linear: [0, 0, 1, 1],
@@ -16,6 +17,7 @@ export const EASING = {
   outQuart: [0.165, 0.84, 0.44, 1],
   outExpo: [0.16, 1, 0.3, 1],
   backOut: [0.34, 1.2, 0.64, 1],
+  pulse: [0.4, 0, 0.6, 1],
 } as const satisfies Record<string, readonly [number, number, number, number]>;
 
 export type EasingName = keyof typeof EASING;
@@ -28,6 +30,8 @@ export type EasingName = keyof typeof EASING;
  * - `pop`, `roll`: the engagement bar's glyph pop and count roll.
  * - `enter`, `exit`, `restack`: the toast.
  * - `select`, `expand`: springs in SwiftUI's terms (`response`, `dampingRatio`).
+ * - `spin`, `pulse`: one turn of a loop, Tailwind's `animate-spin` (1s linear)
+ *   and `animate-pulse` (2s on its own curve).
  */
 export const MOTION = {
   press: { duration: 100, easing: EASING.inOutQuad },
@@ -43,6 +47,8 @@ export const MOTION = {
   enter: { duration: 300, easing: EASING.outQuart },
   exit: { duration: 180, easing: EASING.linear },
   restack: { duration: 600, easing: EASING.outQuart },
+  spin: { duration: 1000, easing: EASING.linear },
+  pulse: { duration: 2000, easing: EASING.pulse },
 } as const satisfies Record<string, MotionSpec>;
 
 export type MotionName = keyof typeof MOTION;

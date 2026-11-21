@@ -214,9 +214,9 @@ import type { QueuePanelKind } from './controls/queue-panel';
 import type { TrackListKind } from './controls/track-list';
 import { OBJECTS } from './generated/spec.generated';
 import { regular, type GlassValue } from './glass';
-import type { KeyframesValue } from './motion/keyframes';
+import { loopKeyframes, type KeyframesValue } from './motion/keyframes';
 import type { Namespace } from './motion/namespace';
-import type { MotionToken, RotationName } from './motion/tokens';
+import type { AnchorName, LoopName, MotionToken, RotationName } from './motion/tokens';
 import { motionKey } from './motion/tokens';
 import type { TransitionValue } from './motion/transition';
 import {
@@ -1511,6 +1511,9 @@ export type Modifier =
       readonly value: KeyframesValue;
       readonly trigger: unknown;
     }
+  | { readonly kind: 'repeatForever'; readonly key: string; readonly value: KeyframesValue }
+  | { readonly kind: 'delay'; readonly key: string; readonly value: DurationName }
+  | { readonly kind: 'anchor'; readonly key: string; readonly value: AnchorName }
   | {
       readonly kind: 'matchedGeometry';
       readonly key: string;
@@ -1893,7 +1896,11 @@ export class Node {
     return this.with({ kind: 'position', key: `pos:${objectKey(value, EDGE_KEYS)}`, value });
   }
   offset(value: OffsetSpec): Node {
-    return this.with({ kind: 'offset', key: 'offset', value });
+    return this.with({
+      kind: 'offset',
+      key: `offset:${geometryKey(value.x)},${geometryKey(value.y)}`,
+      value,
+    });
   }
   zIndex(value: ZIndexName): Node {
     return this.with({ kind: 'zIndex', key: `z:${value}`, value });
@@ -1905,7 +1912,7 @@ export class Node {
     return this.with({ kind: 'basis', key: `basis:${tokenKey(value)}`, value });
   }
   scale(value: ScaleName | MotionValue): Node {
-    return this.with({ kind: 'scale', key: 'scale', value });
+    return this.with({ kind: 'scale', key: `scale:${geometryKey(value)}`, value });
   }
   allowsHitTesting(value: boolean): Node {
     return this.with({ kind: 'allowsHitTesting', key: `hit:${value}`, value });
@@ -2859,7 +2866,7 @@ export class Node {
     return this.with({ kind: 'image', key: 'image', source, alt });
   }
   rotation(value: RotationName | MotionValue): Node {
-    return this.with({ kind: 'rotation', key: 'rotation', value });
+    return this.with({ kind: 'rotation', key: `rotation:${geometryKey(value)}`, value });
   }
   animation(motion: MotionToken, ...value: [unknown?]): Node {
     return this.with({
@@ -2875,6 +2882,19 @@ export class Node {
   }
   keyframes(value: KeyframesValue, trigger: unknown): Node {
     return this.with({ kind: 'keyframes', key: 'keyframes', value, trigger });
+  }
+  repeatForever(value: LoopName | KeyframesValue): Node {
+    return this.with({
+      kind: 'repeatForever',
+      key: 'repeatForever',
+      value: typeof value === 'string' ? loopKeyframes(value) : value,
+    });
+  }
+  delay(value: DurationName): Node {
+    return this.with({ kind: 'delay', key: `delay:${value}`, value });
+  }
+  anchor(value: AnchorName): Node {
+    return this.with({ kind: 'anchor', key: `anchor:${value}`, value });
   }
   matchedGeometry(id: string, namespace: Namespace): Node {
     return this.with({ kind: 'matchedGeometry', key: 'matchedGeometry', id, namespace });
@@ -3929,6 +3949,15 @@ function objectKey<T extends object>(value: T, keys: readonly string[]): string 
   return parts.join(',');
 }
 
+/**
+ * A geometry value's part of its modifier's key: its token (a variant's style
+ * is cached by it), or `@` for a `MotionValue`, whose number is no part of a style.
+ */
+function geometryKey(value: string | AppToken | MotionValue | undefined): string {
+  if (value === undefined || typeof value === 'string') return value ?? '';
+  return 'kind' in value && value.kind === 'motion-value' ? '@' : (value as AppToken).key;
+}
+
 // ── The typed surface: which modifiers each kind accepts ─────────
 
 /** Modifiers every view takes. `Self` is the view's own type, so a chain keeps its kind. */
@@ -4121,6 +4150,25 @@ export interface ViewModifiers<Self> extends ViewNode {
   transition(value: TransitionValue): Self;
   /** Plays `keyframes` each time `trigger` changes to a truthy value. */
   keyframes(value: KeyframesValue, trigger: unknown): Self;
+  /**
+   * SwiftUI's `keyframeAnimator(repeating: true)`: plays a loop again and
+   * again while the view is on screen (`'spin'`, `'pulse'`, Tailwind's
+   * `animate-spin` and `animate-pulse`, or keyframes of the app's own). Not
+   * under reduced motion.
+   */
+  repeatForever(value: LoopName | KeyframesValue): Self;
+  /**
+   * How long what this view plays waits before it starts: a change under its
+   * `.animation()`, its transition's insertion and removal, its keyframes and
+   * its loop (Bloom's durations, or Tailwind's other delays `'75'` … `'1000'`).
+   */
+  delay(value: DurationName): Self;
+  /**
+   * The point the view scales and rotates about (SwiftUI's `anchor:`,
+   * Tailwind's `origin-*`), the centre by default. Leading and trailing are
+   * left and right: a transform never mirrors.
+   */
+  anchor(value: AnchorName): Self;
   /** SwiftUI's `matchedGeometryEffect`: moves from where the view with this id last was. */
   matchedGeometry(id: string, namespace: Namespace): Self;
   /**

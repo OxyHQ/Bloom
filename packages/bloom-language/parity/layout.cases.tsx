@@ -322,6 +322,15 @@ const small: ParityCase[] = [
     ),
   },
   {
+    name: 'a scale about the top-leading corner (origin-top-left)',
+    language: () => toElement(L.VStack(L.Text('a')).scale('105').anchor('top-leading')),
+    bloom: () => (
+      <RN.View style={{ transform: [{ scale: 1.05 }], transformOrigin: 'top left' }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
     name: 'hit testing again, a basis of the parent',
     language: () => toElement(L.VStack(L.Text('a')).basis('1/2').allowsHitTesting(true)),
     bloom: () =>
