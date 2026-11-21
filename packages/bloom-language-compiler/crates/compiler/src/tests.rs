@@ -1187,3 +1187,21 @@ fn video_playback_is_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn hover_cards_are_checked() {
+    let imports = "import { HoverCard, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (open) => HoverCard(Text('@nate'), Text('Card')).presented(open).openDelay(0).closeDelay(300).side('top').align('end').padded(false).disabled().label('Nate').padding('xs');\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("HoverCard(Text('a'), Text('b')).side('left')", "Unknown tooltipSide token 'left' for .side()"),
+        ("HoverCard(Text('a'), Text('b')).actions(t)", "HoverCard has no modifier .actions()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (t) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

@@ -162,6 +162,7 @@ import type { CollapsibleView } from '../controls/collapsible';
 import type { DropZoneView } from '../controls/drop-zone';
 import type { MediaInsetBorderView } from '../controls/media-inset-border';
 import type { SortablePhotoGridView } from '../controls/sortable-media';
+import type { HoverCardView } from '../controls/hover-card';
 import type { ColorPreset, ContentFit } from '../tokens';
 import type {
   SettingsDateFieldView,
@@ -463,7 +464,9 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<FactStripView>, Of<'factStrip'>>,
       Same<MethodsOf<FactView>, Of<'fact'>>,
       Same<MethodsOf<SortablePhotoGridView>, Of<'sortablePhotoGrid'>>,
+      Same<MethodsOf<HoverCardView>, Of<'hoverCard'>>,
     ] = [
+      true,
       true,
       true,
       true,
