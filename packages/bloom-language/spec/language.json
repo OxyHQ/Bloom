@@ -2730,6 +2730,11 @@
         "groupSize",
         "autoFocus"
       ]
+    },
+    "colorSwatchPicker": {
+      "constructors": ["ColorSwatchPicker"],
+      "modifiers": ["labels", "size", "disabled"],
+      "size": "space"
     }
   },
   "sfSymbols": {
