@@ -111,7 +111,7 @@ import type {
   ListSelectionBarView,
 } from '../controls/list';
 import type { CarouselView, CarouselItemView, CarouselDotsView } from '../controls/carousel';
-import type { MarkdownView } from '../controls/markdown';
+import type { InlineMarkdownView, MarkdownView } from '../controls/markdown';
 import type { SliderView, RangeSliderView } from '../controls/slider';
 import type {
   AccordionView,
@@ -386,6 +386,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<CarouselItemView>, Of<'carouselItem'>>,
       Same<MethodsOf<CarouselDotsView>, Of<'carouselDots'>>,
       Same<MethodsOf<MarkdownView>, Of<'markdown'>>,
+      Same<MethodsOf<InlineMarkdownView>, Of<'inlineMarkdown'>>,
       Same<MethodsOf<SliderView>, Of<'slider'>>,
       Same<MethodsOf<RangeSliderView>, Of<'rangeSlider'>>,
       Same<MethodsOf<AccordionView>, Of<'accordion'>>,
@@ -440,6 +441,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<LinkPreviewView>, Of<'linkPreview'>>,
       Same<MethodsOf<SocialButtonView>, Of<'socialButton'>>,
     ] = [
+      true,
       true,
       true,
       true,

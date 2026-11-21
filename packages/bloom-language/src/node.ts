@@ -52,6 +52,7 @@ import type { DropZoneKind } from './controls/drop-zone';
 import type { DragAction, DropTargetDragEvent } from '@oxy.so/bloom/drop-zone';
 import type { CollapsibleKind } from './controls/collapsible';
 import type { FactStripKind } from './controls/fact-strip';
+import type { InlineMarkdownLink } from '@oxy.so/bloom/markdown';
 import type { SocialButtonStyle, SocialIntent } from './controls/social-button';
 import type { LiveRole, NotificationStatus } from './controls/notification';
 import type { NotificationAction, NotificationAvatar } from '@oxy.so/bloom/notification';
@@ -579,11 +580,15 @@ export interface ValueModifiers {
   videoOverlay: (media: GalleryVideo) => Child;
   sourceAnchors: readonly (string | undefined)[];
 
+  // Inline markdown (controls/markdown.tsx)
+  plainRun: (text: string) => Child;
+  linkView: (link: InlineMarkdownLink) => Child | undefined;
+
   // Inputs (controls/inputs.tsx)
   required: boolean;
   floatingLabel: true;
   revealable: true;
-  suffix: string;
+  suffix: string | Child;
   keyboard: Keyboard;
   autocapitalize: Autocapitalize;
   autocorrect: boolean;
@@ -2223,6 +2228,14 @@ export class Node {
     return this.set('triggerTitle', value);
   }
 
+  // Inline markdown (controls/markdown.tsx)
+  plainRun(value: (text: string) => Child): Node {
+    return this.set('plainRun', value);
+  }
+  linkView(value: (link: InlineMarkdownLink) => Child | undefined): Node {
+    return this.set('linkView', value);
+  }
+
   // Inputs (controls/inputs.tsx)
   required(value = true): Node {
     return this.set('required', value);
@@ -2233,7 +2246,7 @@ export class Node {
   revealable(): Node {
     return this.set('revealable', true);
   }
-  suffix(value: string): Node {
+  suffix(value: string | Child): Node {
     return this.set('suffix', value);
   }
   keyboard(value: Keyboard): Node {
