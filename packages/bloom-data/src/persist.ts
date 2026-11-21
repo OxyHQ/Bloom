@@ -2,7 +2,8 @@
  * The durable copy, as the store sees it: asynchronous only. It is written in
  * the background after changes settle and read when a screen opens or the app
  * boots, never while React renders. `sqlitePersister` (`@oxy.so/bloom-data/sqlite`)
- * implements it over expo-sqlite; web keeps no durable copy for now.
+ * implements it over expo-sqlite, `indexedDbPersister` (`@oxy.so/bloom-data/indexeddb`)
+ * over IndexedDB on the web.
  */
 export interface Persister {
   /**
@@ -30,6 +31,8 @@ export interface Persister {
   /** One transaction: records and lists to upsert, or (`json: null`) delete. */
   write(batch: PersistBatch): Promise<void>;
   close(): Promise<void>;
+  /** Closes the copy and deletes it, every row of it (an account signed out of). */
+  destroy(): Promise<void>;
 }
 
 export interface OpenOptions {
