@@ -488,3 +488,13 @@ export type { MarkdownView } from './controls/markdown';
 // Sliders (controls/slider.tsx)
 export { RangeSlider, Slider } from './controls/slider';
 export type { RangeSliderView, SliderView } from './controls/slider';
+
+// Accordions (controls/accordion.tsx)
+export { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './controls/accordion';
+export type {
+  AccordionContentView,
+  AccordionItemView,
+  AccordionSelection,
+  AccordionTriggerView,
+  AccordionView,
+} from './controls/accordion';

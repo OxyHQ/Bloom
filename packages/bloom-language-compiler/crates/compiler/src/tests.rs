@@ -891,3 +891,22 @@ fn sliders_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn accordions_are_checked() {
+    let imports = "import { Accordion, AccordionItem, AccordionTrigger, AccordionContent, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (open) => Accordion(open, AccordionItem('a', AccordionTrigger('A').indicator(Text('+')), AccordionContent(Text('more'))).disabled()).size('sm').allowsMultiple().revealMotion('spring');\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("Accordion(o).size('xl')", "Unknown controlSize token 'xl' for .size()"),
+        ("Accordion(o).allowsMultiple(true)", ".allowsMultiple() takes 0 argument(s), not 1"),
+        ("AccordionContent().indicator(o)", "AccordionContent has no modifier .indicator()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (o) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

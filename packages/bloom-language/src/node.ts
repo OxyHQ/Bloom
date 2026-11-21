@@ -26,6 +26,8 @@ import type { CommandItem as BloomCommandItem } from '@oxy.so/bloom/command';
 import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
+import type { AccordionKind } from './controls/accordion';
+import type { AccordionTransition } from '@oxy.so/bloom/accordion';
 import type { SliderKind } from './controls/slider';
 import type { MarkdownKind } from './controls/markdown';
 import type { CarouselKind } from './controls/carousel';
@@ -688,6 +690,11 @@ export interface ValueModifiers {
   thumbTint: ColorToken;
   onCommit: (value: never) => void;
   valueFormat: (value: number, index: number) => string;
+
+  // Accordions (controls/accordion.tsx)
+  allowsMultiple: true;
+  revealMotion: AccordionTransition;
+  indicator: Child;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1067,7 +1074,8 @@ export type NodeKind =
   | ListKind
   | CarouselKind
   | MarkdownKind
-  | SliderKind;
+  | SliderKind
+  | AccordionKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -2581,6 +2589,17 @@ export class Node {
   }
   valueFormat(value: (value: number, index: number) => string): Node {
     return this.set('valueFormat', value);
+  }
+
+  // Accordions (controls/accordion.tsx)
+  allowsMultiple(): Node {
+    return this.set('allowsMultiple', true);
+  }
+  revealMotion(value: AccordionTransition): Node {
+    return this.set('revealMotion', value);
+  }
+  indicator(value: Child): Node {
+    return this.set('indicator', value);
   }
 }
 

@@ -134,6 +134,11 @@ import type { MeterView, MeterRingView, StatBarView } from '../controls/stat-bar
 import type { CarouselView, CarouselItemView, CarouselDotsView } from '../controls/carousel';
 import type { MarkdownView } from '../controls/markdown';
 import type { SliderView, RangeSliderView } from '../controls/slider';
+  AccordionView,
+  AccordionItemView,
+  AccordionTriggerView,
+  AccordionContentView,
+} from '../controls/accordion';
 import type { ColorPreset, ContentFit } from '../tokens';
 import type {
   SettingsDateFieldView,
@@ -404,7 +409,15 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<MarkdownView>, Of<'markdown'>>,
       Same<MethodsOf<SliderView>, Of<'slider'>>,
       Same<MethodsOf<RangeSliderView>, Of<'rangeSlider'>>,
+      Same<MethodsOf<AccordionView>, Of<'accordion'>>,
+      Same<MethodsOf<AccordionItemView>, Of<'accordionItem'>>,
+      Same<MethodsOf<AccordionTriggerView>, Of<'accordionTrigger'>>,
+      Same<MethodsOf<AccordionContentView>, Of<'accordionContent'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,
