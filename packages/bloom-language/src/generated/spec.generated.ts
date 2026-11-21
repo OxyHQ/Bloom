@@ -162,6 +162,7 @@ export const OPACITY = {
   "opaque": 1
 } as const;
 export const BORDER_WIDTH = {
+  "3": 3,
   "hairline": "hairline",
   "thin": 1,
   "thick": 2
@@ -203,9 +204,13 @@ export const LENGTH = {
   "3/4": "75%",
   "1/5": "20%",
   "2/5": "40%",
-  "3/5": "60%"
+  "3/5": "60%",
+  "fit": "fit-content"
 } as const;
 export const Z_INDEX = {
+  "20": 20,
+  "30": 30,
+  "50": 50,
   "base": 0,
   "raised": 1,
   "floating": 10,
@@ -214,7 +219,25 @@ export const Z_INDEX = {
 export const SHADOW = {
   "s": "0 1px 2px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.10)",
   "m": "0 4px 12px rgb(0 0 0 / 0.08), 0 2px 6px rgb(0 0 0 / 0.12)",
-  "floating": "0 0 1px 0 rgb(0 0 0 / 0.12), 0 4px 8px 0 rgb(0 0 0 / 0.12)"
+  "floating": "0 0 1px 0 rgb(0 0 0 / 0.12), 0 4px 8px 0 rgb(0 0 0 / 0.12)",
+  "0 1px rgb(0 0 0 / 0.05)": "0 1px rgb(0 0 0 / 0.05)",
+  "0 1px 2px 0 rgb(0 0 0 / 0.05)": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+  "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+  "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)": "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+  "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+  "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)": "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+  "0 25px 50px -12px rgb(0 0 0 / 0.25)": "0 25px 50px -12px rgb(0 0 0 / 0.25)"
+} as const;
+export const SCALE = {
+  "95": 0.95,
+  "99": 0.99,
+  "103": 1.03,
+  "105": 1.05,
+  "110": 1.1,
+  "dip": 0.7,
+  "pressed": 0.98,
+  "full": 1,
+  "swell": 1.2
 } as const;
 export const BREAKPOINT = {
   "sm": 640,
@@ -248,7 +271,9 @@ export const VARIANT_MODIFIERS = [
   "alignSelf",
   "position",
   "zIndex",
-  "hidden"
+  "hidden",
+  "basis",
+  "allowsHitTesting"
 ] as const;
 export const VARIANT_SELECTORS = {
   "dark": ".dark &",
@@ -871,6 +896,14 @@ export const ENUMS = {
     "lowercase",
     "capitalize"
   ],
+  "wordBreak": [
+    "all",
+    "words"
+  ],
+  "listMarker": [
+    "disc",
+    "decimal"
+  ],
   "fontFamily": [
     "mono"
   ],
@@ -880,6 +913,17 @@ export const ENUMS = {
   "cornerCurve": [
     "round",
     "smooth"
+  ],
+  "cornerSide": [
+    "all",
+    "top",
+    "bottom",
+    "leading",
+    "trailing",
+    "top-leading",
+    "top-trailing",
+    "bottom-leading",
+    "bottom-trailing"
   ],
   "dividerStyle": [
     "single",
@@ -1110,6 +1154,16 @@ export const MODIFIERS = {
   "hidden": [
     "value?"
   ],
+  "basis": [
+    "length"
+  ],
+  "scale": [
+    "scale"
+  ],
+  "allowsHitTesting": [
+    "value"
+  ],
+  "accessibilityOnly": [],
   "alignSelf": [
     "alignment"
   ],
@@ -1119,7 +1173,8 @@ export const MODIFIERS = {
     "borderEdge?"
   ],
   "corner": [
-    "corner"
+    "corner",
+    "cornerSide?"
   ],
   "opacity": [
     "opacity"
@@ -1357,6 +1412,13 @@ export const MODIFIERS = {
   "textCase": [
     "textCase"
   ],
+  "monospacedDigit": [],
+  "wordBreak": [
+    "wordBreak"
+  ],
+  "listMarker": [
+    "listMarker"
+  ],
   "cornerCurve": [
     "cornerCurve"
   ],
@@ -1462,6 +1524,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -1508,7 +1574,8 @@ export const NODE_MODIFIERS = {
     "wrap",
     "axis",
     "disabled",
-    "hoverHighlight"
+    "hoverHighlight",
+    "listMarker"
   ],
   "spacer": [
     "padding",
@@ -1520,6 +1587,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -1571,6 +1642,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -1621,7 +1696,9 @@ export const NODE_MODIFIERS = {
     "italic",
     "underline",
     "strikethrough",
-    "textCase"
+    "textCase",
+    "monospacedDigit",
+    "wordBreak"
   ],
   "icon": [
     "padding",
@@ -1633,6 +1710,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -1685,6 +1766,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -1743,6 +1828,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -1804,6 +1893,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -1862,6 +1955,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -1914,6 +2011,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -1968,6 +2069,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -2019,6 +2124,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -2070,6 +2179,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -2127,6 +2240,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -2178,6 +2295,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -2229,6 +2350,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -2284,6 +2409,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -2349,6 +2478,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -2404,6 +2537,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -2459,6 +2596,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -2515,6 +2656,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -2585,6 +2730,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -2670,6 +2819,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -2724,6 +2877,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -2778,6 +2935,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -2829,6 +2990,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",
@@ -2880,6 +3045,10 @@ export const NODE_MODIFIERS = {
     "offset",
     "zIndex",
     "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
     "background",
     "overlay",
     "border",

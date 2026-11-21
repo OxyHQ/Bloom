@@ -17,6 +17,7 @@ import {
   LEADING,
   LEADING_PX,
   OPACITY,
+  SCALE,
   SHADOW,
   SHRINK,
   SPACE,
@@ -86,10 +87,28 @@ export type ShrinkPriority = keyof typeof SHRINK;
 export type Alignment = keyof typeof ALIGNMENT;
 /** A frame's length relative to its parent: `full`, or a fraction (`1/2`, `1/3`…). */
 export type LengthName = keyof typeof LENGTH;
-/** Bloom's stacking levels (`Z_INDEX`): `base`, `raised`, `floating`, `dropdown`. */
+/**
+ * Bloom's stacking levels (`Z_INDEX`): `base`, `raised`, `floating`, `dropdown`;
+ * or Tailwind's own `'20'`, `'30'`, `'50'`, each its value.
+ */
 export type ZIndexName = keyof typeof Z_INDEX;
-/** Bloom's elevation roles: `s` (cards, chips), `m` (menus, dialogs), `floating` (a translucent pane). */
+/**
+ * Bloom's elevation roles: `s` (cards, chips), `m` (menus, dialogs), `floating`
+ * (a translucent pane); or one of Tailwind's own shadows, named by its exact
+ * box-shadow (`'0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'` is `shadow-sm`).
+ */
 export type ShadowName = keyof typeof SHADOW;
+/**
+ * How much a view is scaled: Bloom's `dip` 0.7, `pressed` 0.98, `full` 1,
+ * `swell` 1.2; or an exact factor from apps, in percent (`'105'` is 1.05).
+ */
+export type ScaleName = keyof typeof SCALE;
+/** The corners a `corner()` rounds: all, a side's two, or one (`top-leading`…); leading and trailing follow the reading direction. */
+export type CornerSide = (typeof ENUMS.cornerSide)[number];
+/** Where a web line may break inside a word: `all` anywhere (`word-break: break-all`), `words` only a word too long for its line (`overflow-wrap: break-word`). */
+export type WordBreak = (typeof ENUMS.wordBreak)[number];
+/** The marker a web list draws before each of its rows: `disc` (Tailwind's `list-disc`) or `decimal`. */
+export type ListMarker = (typeof ENUMS.listMarker)[number];
 /** How a stack spreads its children along its axis. */
 export type Justify = (typeof ENUMS.justify)[number];
 export type Axis = (typeof ENUMS.axis)[number];
@@ -148,6 +167,7 @@ export {
   HIT_SLOP,
   LENGTH,
   OPACITY,
+  SCALE,
   SHADOW,
   SHRINK,
   ALIGNMENT,

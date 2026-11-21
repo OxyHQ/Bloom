@@ -200,6 +200,31 @@ fn elevation_rings_and_overlays_are_checked() {
 }
 
 #[test]
+fn the_small_modifiers_and_numeric_tokens_are_checked() {
+    let ok = compiled(
+        "export const x = () => VStack(Text('1').monospacedDigit().wordBreak('all')).corner('3xl', 'top').corner('sm', 'bottom-trailing').basis('none').scale('105').allowsHitTesting(false).accessibilityOnly().zIndex('50').shadow('0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)').ring('primary', '3').frame({ width: 'fit' }).listMarker('disc');\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = () => HStack().corner('lg', 'top-left');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown cornerSide token 'top-left' for .corner()");
+    let output = compiled("export const x = () => HStack().scale('1.05');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown scale token '1.05' for .scale()");
+    let output = compiled("export const x = () => HStack().shadow('0 1px 3px 0 rgb(0 0 0 / 0.2)');\n");
+    assert_eq!(
+        output.diagnostics[0].message,
+        "Unknown shadow token '0 1px 3px 0 rgb(0 0 0 / 0.2)' for .shadow()"
+    );
+    let output = compiled("export const x = () => HStack().zIndex('60');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown zIndex token '60' for .zIndex()");
+    let output = compiled("export const x = () => HStack().monospacedDigit();\n");
+    assert_eq!(output.diagnostics[0].message, "HStack has no modifier .monospacedDigit()");
+    let output = compiled("export const x = () => Text('a').wordBreak('anywhere');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown wordBreak token 'anywhere' for .wordBreak()");
+    let output = compiled("export const x = () => Text('a').listMarker('disc');\n");
+    assert_eq!(output.diagnostics[0].message, "Text has no modifier .listMarker()");
+}
+
+#[test]
 fn files_without_the_language_are_untouched() {
     let source = "import { View } from 'react-native';\nexport const x = 1;\n";
     let output = compile(source, "plain.ts");
