@@ -1758,6 +1758,10 @@ export const ENUMS = {
   "dataTableStyle": [
     "table",
     "inset"
+  ],
+  "agentMood": [
+    "neutral",
+    "sad"
   ]
 } as const;
 
@@ -3357,7 +3361,16 @@ export const MODIFIERS = {
   "onDragChange": [
     "value"
   ],
-  "root": []
+  "root": [],
+  "mood": [
+    "agentMood"
+  ],
+  "interactive": [
+    "value?"
+  ],
+  "portrait": [
+    "value?"
+  ]
 } as const;
 
 /** The modifiers each node kind takes. */
@@ -15405,6 +15418,91 @@ export const NODE_MODIFIERS = {
   "sortableChip": [],
   "viewport": [
     "root"
+  ],
+  "agentAvatar": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "alert",
+    "dialog",
+    "popover",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
+    "fullScreenCover",
+    "size",
+    "mood",
+    "paused",
+    "interactive",
+    "portrait"
   ]
 } as const;
 
@@ -15614,5 +15712,6 @@ export const CONSTRUCTORS = {
   "DataTableSelect": "dataTableSelect",
   "SortableChipRow": "sortableChipRow",
   "SortableChip": "sortableChip",
-  "Viewport": "viewport"
+  "Viewport": "viewport",
+  "AgentAvatar": "agentAvatar"
 } as const;

@@ -176,6 +176,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("galleryStyle", &["overlay", "page"]),
     ("galleryIndicator", &["dots", "thumbnails"]),
     ("dataTableStyle", &["table", "inset"]),
+    ("agentMood", &["neutral", "sad"]),
 ];
 
 /// The modifiers a variant (`when(condition, v => v…)`) can change.
@@ -687,6 +688,9 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("bordered", &["value"]),
     ("onDragChange", &["value"]),
     ("root", &[]),
+    ("mood", &["agentMood"]),
+    ("interactive", &["value?"]),
+    ("portrait", &["value?"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -887,6 +891,7 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "sortableChipRow", constructors: &["SortableChipRow"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "alert", "dialog", "popover", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "colorPreset", "seed", "screenActive", "initialHeaderHeight", "initialFooterHeight", "fullScreenCover", "onReorder", "onDragChange", "trailing", "disabled"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "sortableChip", constructors: &["SortableChip"], modifiers: &[], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "viewport", constructors: &["Viewport"], modifiers: &["root"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "agentAvatar", constructors: &["AgentAvatar"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "alert", "dialog", "popover", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "colorPreset", "seed", "screenActive", "initialHeaderHeight", "initialFooterHeight", "fullScreenCover", "size", "mood", "paused", "interactive", "portrait"], size: Some("avatarSize"), tint: None, style: None, shape: None },
 ];
 
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,
