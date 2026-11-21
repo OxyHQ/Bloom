@@ -1,4 +1,5 @@
 import { ActivityHeatmap } from '@oxy.so/bloom/activity-heatmap';
+import { withAlpha } from '@oxy.so/bloom/theme';
 
 import * as L from '../src/index';
 import { toElement } from '../src/render';
@@ -49,6 +50,59 @@ export const ACTIVITY_HEATMAP_CASES: readonly ParityCase[] = [
             onPressDay={press}
             emptyColor={c.contrast50}
             testID="activity"
+          />
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'a heatmap in a colour scale of its own',
+    language: () =>
+      toElement(
+        L.ActivityHeatmap(DATA)
+          .endDate('2026-11-21')
+          .days(28)
+          .colorScale(['success/20', 'success/40', 'success/70', 'success']),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <ActivityHeatmap
+            data={DATA}
+            endDate="2026-11-21"
+            numDays={28}
+            colorScale={[
+              withAlpha(c.success, 0.2),
+              withAlpha(c.success, 0.4),
+              withAlpha(c.success, 0.7),
+              c.success,
+            ]}
+          />
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'a heatmap in roles of a scale, its empty days tinted',
+    language: () =>
+      toElement(
+        L.ActivityHeatmap(DATA)
+          .endDate('2026-11-21')
+          .days(28)
+          .levels([2, 5])
+          .colorScale(['info', 'warning', 'error'])
+          .emptyTint('surface'),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <ActivityHeatmap
+            data={DATA}
+            endDate="2026-11-21"
+            numDays={28}
+            levels={[2, 5]}
+            colorScale={[c.info, c.warning, c.error]}
+            emptyColor={c.backgroundSecondary}
           />
         )}
       </Themed>

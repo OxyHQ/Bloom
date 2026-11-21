@@ -35,6 +35,11 @@ export interface ActivityHeatmapView extends ViewModifiers<ActivityHeatmapView> 
   labels(value: ActivityHeatmapLabels): ActivityHeatmapView;
   /** What pressing a day does. */
   onPressDay(value: (day: ActivityHeatmapDay) => void): ActivityHeatmapView;
+  /**
+   * Its steps' colours, faintest to strongest (`.levels()` + 1 of them); four
+   * opacity steps of `primary` by default.
+   */
+  colorScale(value: readonly ColorToken[]): ActivityHeatmapView;
 }
 
 /** Bloom `ActivityHeatmap`: its days (`{ date, count }`). */
@@ -61,6 +66,9 @@ export const ACTIVITY_HEATMAPS: Record<ActivityHeatmapKind, ControlRenderer> = {
       weekdayLabels: labels?.weekdays,
       onPressDay: d.own('onPressDay')?.value,
     });
-    return d.painted(BloomActivityHeatmap, props, { emptyColor: d.own('emptyTint')?.value });
+    return d.painted(BloomActivityHeatmap, props, {
+      emptyColor: d.own('emptyTint')?.value,
+      colorScale: d.own('colorScale')?.value,
+    });
   },
 };

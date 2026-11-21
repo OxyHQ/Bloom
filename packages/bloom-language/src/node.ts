@@ -508,6 +508,9 @@ export interface ValueModifiers {
   // Video playback (controls/video-playback.tsx)
   autoplay: boolean;
 
+  // Activity heatmaps (controls/activity-heatmap.tsx)
+  colorScale: readonly ColorToken[];
+
   // Inputs (controls/inputs.tsx)
   required: boolean;
   floatingLabel: true;
@@ -2022,6 +2025,11 @@ export class Node {
   // Video playback (controls/video-playback.tsx)
   autoplay(value: boolean): Node {
     return this.set('autoplay', value);
+  }
+
+  // Activity heatmaps (controls/activity-heatmap.tsx)
+  colorScale(value: readonly ColorToken[]): Node {
+    return this.set('colorScale', value);
   }
 
   // Inputs (controls/inputs.tsx)
