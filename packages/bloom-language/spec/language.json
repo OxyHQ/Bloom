@@ -501,7 +501,11 @@
     "agentMood": ["neutral", "sad"],
     "composerButtonTone": ["plain", "accent"],
     "attachmentLayout": ["grid", "list"],
-    "reactionPickerSize": ["sm", "md"]
+    "reactionPickerSize": ["sm", "md"],
+    "areaVariant": ["stacked", "overlap", "percent"],
+    "chartShape": ["curved", "sharp"],
+    "radarVariant": ["filled", "dots", "lines", "score"],
+    "sparklineTone": ["accent", "positive", "negative", "neutral"]
   },
   "glass": {
     "$comment": [
@@ -784,7 +788,8 @@
     "interactive": ["value?"],
     "portrait": ["value?"],
     "iconSize": ["iconSize"],
-    "surface": ["value?"]
+    "surface": ["value?"],
+    "activeTint": ["color"]
   },
   "universal": [
     "padding",
@@ -1155,7 +1160,51 @@
       "modifiers": ["size", "surface"],
       "size": "reactionPickerSize"
     },
-    "messageContextMenu": { "constructors": ["MessageContextMenu"], "modifiers": [] }
+    "messageContextMenu": { "constructors": ["MessageContextMenu"], "modifiers": [] },
+    "areaChartCard": {
+      "constructors": ["AreaChartCard"],
+      "modifiers": ["style", "shape"],
+      "style": "areaVariant",
+      "shape": "chartShape"
+    },
+    "barListCard": { "constructors": ["BarListCard"], "modifiers": ["tint"], "tint": "color" },
+    "chartCardSurface": { "constructors": ["ChartCardSurface"], "modifiers": ["spacing"] },
+    "chartHeadline": { "constructors": ["ChartHeadline"], "modifiers": [] },
+    "chartStatTiles": { "constructors": ["ChartStatTiles"], "modifiers": [] },
+    "contributionsCard": {
+      "constructors": ["ContributionsCard"],
+      "modifiers": ["tint"],
+      "tint": "color"
+    },
+    "heatmapChartCard": {
+      "constructors": ["HeatmapChartCard"],
+      "modifiers": ["tint", "activeTint"],
+      "tint": "color"
+    },
+    "lineChartCard": {
+      "constructors": ["LineChartCard"],
+      "modifiers": ["shape", "tint", "activeTint"],
+      "tint": "color",
+      "shape": "chartShape"
+    },
+    "radarChartCard": {
+      "constructors": ["RadarChartCard"],
+      "modifiers": ["style"],
+      "style": "radarVariant"
+    },
+    "sleepScoreCard": { "constructors": ["SleepScoreCard"], "modifiers": [] },
+    "sparkline": { "constructors": ["Sparkline"], "modifiers": ["tint"], "tint": "sparklineTone" },
+    "stageBarsCard": { "constructors": ["StageBarsCard"], "modifiers": [] },
+    "stepsCard": {
+      "constructors": ["StepsCard"],
+      "modifiers": ["tint", "activeTint"],
+      "tint": "color"
+    },
+    "tokensChartCard": {
+      "constructors": ["TokensChartCard"],
+      "modifiers": ["tint", "activeTint"],
+      "tint": "color"
+    }
   },
   "sfSymbols": {
     "$comment": [
