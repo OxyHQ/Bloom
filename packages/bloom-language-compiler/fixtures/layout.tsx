@@ -22,7 +22,7 @@ function Layers() {
     Text('unclipped').corner('lg').background('surface'),
     Text('edges').padding('leading', 'md').padding('trailing', 'lg').padding('leading', '-xs'),
     Text('framed').frame({ height: 'xl', minWidth: 'none' }).padding('md'),
-    Text('rule').border('border', 'hairline', 'bottom').opacity('disabled'),
+    Text('rule').border('border', 'hairline', 'bottom').opacity('half'),
   );
 }
 
