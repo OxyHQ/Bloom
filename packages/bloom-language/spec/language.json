@@ -42,16 +42,26 @@
       "192": 192,
       "200": 200,
       "224": 224,
+      "240": 240,
       "256": 256,
       "260": 260,
       "280": 280,
       "288": 288,
+      "300": 300,
       "320": 320,
       "360": 360,
+      "380": 380,
       "384": 384,
+      "400": 400,
+      "420": 420,
+      "440": 440,
       "448": 448,
+      "480": 480,
+      "512": 512,
+      "560": 560,
       "640": 640,
       "672": 672,
+      "720": 720,
       "768": 768,
       "1200": 1200
     },
@@ -598,7 +608,8 @@
       "error",
       "info"
     ],
-    "selectionIndicator": ["check", "radio"]
+    "selectionIndicator": ["check", "radio"],
+    "keyboardTaps": ["always", "never", "handled"]
   },
   "glass": {
     "$comment": [
@@ -962,7 +973,13 @@
     "iconOnly": [],
     "dragTranslation": ["motionValue"],
     "indicator": ["selectionIndicator"],
-    "fade": ["color"]
+    "fade": ["color"],
+    "ringInset": ["space"],
+    "keyboardTaps": ["keyboardTaps"],
+    "nativeID": ["value"],
+    "describedBy": ["value"],
+    "sideGutter": ["space"],
+    "maxHeightRatio": ["value"]
   },
   "universal": [
     "padding",
@@ -1247,7 +1264,9 @@
         "footer",
         "page",
         "frame",
-        "padding"
+        "padding",
+        "sideGutter",
+        "maxHeightRatio"
       ]
     },
     "popover": {
@@ -1572,7 +1591,7 @@
     },
     "picker": {
       "constructors": ["Picker"],
-      "modifiers": ["placeholder", "size", "disabled"],
+      "modifiers": ["placeholder", "size", "disabled", "presented"],
       "size": "controlSize"
     },
     "option": {
@@ -1609,7 +1628,7 @@
     },
     "chipRow": {
       "constructors": ["ChipRow"],
-      "modifiers": ["spacing", "contentInset", "disabled", "fade"]
+      "modifiers": ["spacing", "contentInset", "disabled", "fade", "ringInset", "keyboardTaps"]
     },
     "cappedChipRow": {
       "constructors": ["CappedChipRow"],
@@ -1646,7 +1665,9 @@
         "illustration",
         "density",
         "disabled",
-        "invalid"
+        "invalid",
+        "nativeID",
+        "describedBy"
       ]
     }
   },

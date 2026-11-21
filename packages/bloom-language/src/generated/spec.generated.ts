@@ -24,16 +24,26 @@ export const SPACE = {
   "192": 192,
   "200": 200,
   "224": 224,
+  "240": 240,
   "256": 256,
   "260": 260,
   "280": 280,
   "288": 288,
+  "300": 300,
   "320": 320,
   "360": 360,
+  "380": 380,
   "384": 384,
+  "400": 400,
+  "420": 420,
+  "440": 440,
   "448": 448,
+  "480": 480,
+  "512": 512,
+  "560": 560,
   "640": 640,
   "672": 672,
+  "720": 720,
   "768": 768,
   "1200": 1200,
   "none": 0,
@@ -1401,6 +1411,11 @@ export const ENUMS = {
   "selectionIndicator": [
     "check",
     "radio"
+  ],
+  "keyboardTaps": [
+    "always",
+    "never",
+    "handled"
   ]
 } as const;
 
@@ -2181,6 +2196,24 @@ export const MODIFIERS = {
   ],
   "fade": [
     "color"
+  ],
+  "ringInset": [
+    "space"
+  ],
+  "keyboardTaps": [
+    "keyboardTaps"
+  ],
+  "nativeID": [
+    "value"
+  ],
+  "describedBy": [
+    "value"
+  ],
+  "sideGutter": [
+    "space"
+  ],
+  "maxHeightRatio": [
+    "value"
   ]
 } as const;
 
@@ -3689,7 +3722,9 @@ export const NODE_MODIFIERS = {
     "footer",
     "page",
     "frame",
-    "padding"
+    "padding",
+    "sideGutter",
+    "maxHeightRatio"
   ],
   "popover": [
     "label",
@@ -5611,7 +5646,8 @@ export const NODE_MODIFIERS = {
     "swipe",
     "placeholder",
     "size",
-    "disabled"
+    "disabled",
+    "presented"
   ],
   "option": [
     "description",
@@ -5769,7 +5805,9 @@ export const NODE_MODIFIERS = {
     "spacing",
     "contentInset",
     "disabled",
-    "fade"
+    "fade",
+    "ringInset",
+    "keyboardTaps"
   ],
   "cappedChipRow": [
     "padding",
@@ -5985,7 +6023,9 @@ export const NODE_MODIFIERS = {
     "illustration",
     "density",
     "disabled",
-    "invalid"
+    "invalid",
+    "nativeID",
+    "describedBy"
   ]
 } as const;
 
