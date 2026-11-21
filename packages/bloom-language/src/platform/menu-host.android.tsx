@@ -3,31 +3,40 @@
  * its motion natively; React gives it the rows as data and their glyphs as
  * views. Where the engine cannot run, Bloom's own menu.
  *
- * A closed menu is only its trigger: no native view and no row work. A press
- * mounts the lens view around the trigger with the menu already open
- * (`openOnMount`); the view stays until the engine says the menu has finished
- * closing, so the closing motion is never cut short.
+ * The lens view is the trigger, as in the engine's own demo. It is mounted
+ * with the trigger and stays: it draws the trigger (its glass too, when the
+ * trigger is on glass), sees the press first (the glass springs under the
+ * finger) and opens natively from where it is, with no remount. Rows given as
+ * they are (tagged, or with their own handlers) are data the view holds
+ * before it opens, so a press is one call to the engine. A `menu()` content
+ * builds its rows on the press that opens it: the view opens itself as they
+ * arrive (`openWithItems`) and lets them go once the engine says the menu has
+ * finished closing, so the closing motion is never cut short.
  */
-import { useMemo, useState, type ComponentType } from 'react';
+import { useCallback, useMemo, useRef, useState, type ComponentType } from 'react';
 import { View } from 'react-native';
 import { resolveSurfaceLevel } from '@oxy.so/bloom/styles';
 import { useTheme } from '@oxy.so/bloom/theme';
+import { fontFamilyStyle } from '@oxy.so/bloom/typography';
 
 import { glassTriggerConfig } from './lens-glass';
 import { useMenuChoice } from './menu-actions';
 import { glyph, DropdownMenuHost } from './menu-dropdown';
 import {
+  builtOnOpen,
   menuHandlers,
   pressableTrigger,
   readMenuRows,
   setApart,
   splitTriggerGlass,
+  triggerCorner,
   type MenuRowData,
 } from './menu-rows';
 import type { MenuHostProps } from './host.types';
 import {
   getNativeLens,
   LENS_ICON_HOST_ID,
+  type LensNativeHandle,
   type LensNativeItem,
   type LensNativeProps,
 } from './lens';
@@ -40,50 +49,24 @@ export function MenuHost(props: MenuHostProps) {
 }
 
 function LensMenuHost({
-  trigger,
-  NativeLens,
-  ...props
-}: MenuHostProps & { NativeLens: ComponentType<LensNativeProps> }) {
-  const [open, setOpen] = useState(false);
-  // The choice outlives the open menu: the engine closes the menu as a row is chosen.
-  const { choose, running } = useMenuChoice(props.actions);
-  return (
-    <>
-      {open ? (
-        <OpenLensMenu
-          {...props}
-          trigger={trigger}
-          choose={choose}
-          NativeLens={NativeLens}
-          onClosed={() => setOpen(false)}
-        />
-      ) : (
-        props.render(pressableTrigger(trigger, () => setOpen(true)))
-      )}
-      {running}
-    </>
-  );
-}
-
-/** The menu the engine presents for one opening: it reads the rows, and the theme for their ink. */
-function OpenLensMenu({
   trigger: given,
   rows: nodes,
+  actions,
   testID,
   render,
-  choose,
   NativeLens,
-  onClosed,
-}: MenuHostProps & {
-  choose: ((tag: string) => void) | undefined;
-  NativeLens: ComponentType<LensNativeProps>;
-  onClosed: () => void;
-}) {
+}: MenuHostProps & { NativeLens: ComponentType<LensNativeProps> }) {
   const theme = useTheme();
-  const rows = readMenuRows(nodes, choose);
+  const native = useRef<LensNativeHandle | null>(null);
+  // The choice outlives the open menu: the engine closes the menu as a row is chosen.
+  const { choose, running } = useMenuChoice(actions);
+  // A `menu()` content is read only from the press that opens it until the menu has closed.
+  const deferred = builtOnOpen(nodes);
+  const [building, setBuilding] = useState(false);
+  const rows = deferred && !building ? NO_ROWS : readMenuRows(nodes, choose);
   const handlers = menuHandlers(rows);
   const icons: Child[] = [];
-  const items = lensItems(rows, icons);
+  const items = useSame(lensItems(rows, icons));
   // A trigger on glass gives the menu that glass: the menu draws it, and morphs out of it.
   const { trigger, glass } = splitTriggerGlass(given);
   const dark = theme.isDark;
@@ -98,32 +81,56 @@ function OpenLensMenu({
       separatorColor: surface.border,
     };
   }, [theme, dark]);
-  const triggerConfig = glass
-    ? glassTriggerConfig(glass, undefined, theme.colors)
-    : { tintColor: theme.colors.backgroundSecondary, tintOpacity: PLAIN_TRIGGER_OPACITY };
-  return (
-    <NativeLens
-      items={items}
-      lens={glass !== undefined}
-      colorScheme={dark ? 'dark' : 'light'}
-      config={config}
-      triggerConfig={triggerConfig}
-      openOnMount
-      style={TRIGGER_STYLE}
-      onItemSelect={(event) => handlers[event.nativeEvent.id]?.()}
-      onMenuClosed={onClosed}
-    >
-      <View testID={testID}>{render(trigger)}</View>
-      <View nativeID={LENS_ICON_HOST_ID} collapsable={false} pointerEvents="none" style={ICON_HOST}>
-        {icons.map((icon, slot) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: the slot index is the identity the engine uses
-          <View key={slot} collapsable={false} style={ICON_SLOT}>
-            {render(icon)}
-          </View>
-        ))}
-      </View>
-    </NativeLens>
+  const triggerConfig = useSame(
+    glass
+      ? glassTriggerConfig(glass, undefined, theme.colors)
+      : { tintColor: theme.colors.backgroundSecondary, tintOpacity: PLAIN_TRIGGER_OPACITY },
   );
+  const open = deferred ? () => setBuilding(true) : () => void native.current?.open();
+  const closed = useCallback(() => setBuilding(false), []);
+  return (
+    <>
+      <NativeLens
+        ref={native}
+        items={items}
+        lens={glass !== undefined}
+        morph
+        cornerRadius={triggerCorner(given)}
+        colorScheme={dark ? 'dark' : 'light'}
+        fontFamily={MENU_FONT_FAMILY}
+        alignment="auto"
+        config={config}
+        triggerConfig={triggerConfig}
+        openWithItems={deferred}
+        style={TRIGGER_STYLE}
+        onItemSelect={(event) => handlers[event.nativeEvent.id]?.()}
+        onMenuClosed={deferred ? closed : undefined}
+      >
+        <View testID={testID}>{render(pressableTrigger(trigger, open))}</View>
+        <View
+          nativeID={LENS_ICON_HOST_ID}
+          collapsable={false}
+          pointerEvents="none"
+          style={ICON_HOST}
+        >
+          {icons.map((icon, slot) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: the slot index is the identity the engine uses
+            <View key={slot} collapsable={false} style={ICON_SLOT}>
+              {render(icon)}
+            </View>
+          ))}
+        </View>
+      </NativeLens>
+      {running}
+    </>
+  );
+}
+
+/** The same content keeps the same value, so a render that changes nothing sends the engine nothing. */
+function useSame<T>(value: T): T {
+  const key = JSON.stringify(value);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the key is the value's content
+  return useMemo(() => value, [key]);
 }
 
 /** The rows as the engine takes them, collecting each glyph into its slot. */
@@ -165,6 +172,9 @@ function lensItems(rows: readonly MenuRowData[], icons: Child[]): LensNativeItem
   return items;
 }
 
+const NO_ROWS: readonly MenuRowData[] = [];
+/** The rows' face: Bloom's sans (Inter), the family the app registered for every Bloom text. */
+const MENU_FONT_FAMILY = fontFamilyStyle('sans').fontFamily;
 /** The panel's tint over the page, as Bloom's own lens menu draws it. */
 const PANEL_OPACITY = { light: 0.6, dark: 0.72 } as const;
 /** A trigger without glass: the menu morphs out of Bloom's quiet field fill. */

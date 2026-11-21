@@ -15,6 +15,7 @@ import {
   type MenuContentProps,
   type Modifier,
 } from '../node';
+import { resolveCorner } from '../tokens';
 import { valuesOf } from './values';
 
 export interface MenuItemRow {
@@ -194,4 +195,19 @@ export function splitTriggerGlass(trigger: Child): {
     trigger: new Node(trigger.kind, trigger.props, trigger.children, modifiers),
     glass,
   };
+}
+
+/**
+ * The trigger's corner radius in points, as its glass would draw it: its last
+ * corner of all sides; `undefined` (a capsule) without one, or with a
+ * concentric one, which has no radius of its own.
+ */
+export function triggerCorner(trigger: Child): number | undefined {
+  if (!isNode(trigger)) return undefined;
+  for (let i = trigger.modifiers.length - 1; i >= 0; i--) {
+    const modifier = trigger.modifiers[i] as Modifier;
+    if (modifier.kind !== 'corner' || modifier.side !== 'all') continue;
+    return modifier.value === 'concentric' ? undefined : resolveCorner(modifier.value);
+  }
+  return undefined;
 }

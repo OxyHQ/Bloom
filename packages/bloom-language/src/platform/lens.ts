@@ -49,7 +49,7 @@ export interface LensNativeTriggerConfig {
 }
 
 export interface LensNativeHandle {
-  open: () => Promise<void>;
+  open: (x?: number, y?: number, width?: number, height?: number) => Promise<void>;
   close: () => Promise<void>;
 }
 
@@ -58,12 +58,24 @@ export interface LensNativeProps {
   items: LensNativeItem[];
   /** Draw the view's own glass. */
   lens?: boolean;
+  /** A trigger without glass: the menu still grows out of its shape (the engine's default). */
+  morph?: boolean;
+  /** The view's corner radius in points; `undefined` is a capsule. */
   cornerRadius?: number;
   colorScheme?: 'light' | 'dark' | 'auto';
+  /** The panel's width in points; `undefined` is the rows' own width. */
+  menuWidth?: number;
+  /** The rows' face, a family the app registered; `undefined` is the engine's bundled Inter. */
+  fontFamily?: string;
+  /** Which edge of the trigger the panel hangs from; `auto` follows the side of the screen it is on. */
+  alignment?: 'auto' | 'start' | 'center' | 'end';
   config?: LensNativeConfig;
   triggerConfig?: LensNativeTriggerConfig;
-  /** The view mounts with its menu already open: it opens itself once laid out. */
-  openOnMount?: boolean;
+  /**
+   * The rows arrive only as the menu opens (a `menu()` content): the view opens
+   * itself once it has them, and again each time they arrive after being emptied.
+   */
+  openWithItems?: boolean;
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;
   onItemSelect?: (event: { nativeEvent: { id: string } }) => void;
