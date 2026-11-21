@@ -44,3 +44,6 @@ export const TooltipContent = 'TooltipContent';
 export const Breadcrumb = 'Breadcrumb';
 export const BreadcrumbItem = 'BreadcrumbItem';
 export const ActivityHeatmap = 'ActivityHeatmap';
+export const TagField = 'TagField';
+export const FileUpload = 'FileUpload';
+export const VideoView = 'VideoView';

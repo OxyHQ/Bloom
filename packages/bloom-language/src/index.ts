@@ -295,3 +295,15 @@ export type { BreadcrumbItemView, BreadcrumbView } from './controls/breadcrumb';
 // Activity heatmaps (controls/activity-heatmap.tsx)
 export { ActivityHeatmap } from './controls/activity-heatmap';
 export type { ActivityHeatmapLabels, ActivityHeatmapView } from './controls/activity-heatmap';
+
+// Tag fields (controls/tag-field.tsx)
+export { TagField } from './controls/tag-field';
+export type { TagFieldView } from './controls/tag-field';
+
+// File uploads (controls/file-upload.tsx)
+export { FileUpload } from './controls/file-upload';
+export type { FileUploadView } from './controls/file-upload';
+
+// Videos (controls/video-view.tsx)
+export { Video } from './controls/video-view';
+export type { VideoView } from './controls/video-view';

@@ -11,6 +11,7 @@ import { BUTTON_CASES } from '../../parity/button.cases';
 import { CAROUSEL_CASES } from '../../parity/carousel.cases';
 import { CODE_CASES } from '../../parity/code.cases';
 import { DATE_PICKER_CASES } from '../../parity/date-picker.cases';
+import { FILE_UPLOAD_CASES } from '../../parity/file-upload.cases';
 import { ICON_CASES, ICON_CASES_EVERY } from '../../parity/icon.cases';
 import { LAYOUT_CASES } from '../../parity/layout.cases';
 import { LIST_CASES } from '../../parity/list.cases';
@@ -22,10 +23,12 @@ import { STAT_BAR_CASES } from '../../parity/stat-bar.cases';
 import { STEPPER_CASES } from '../../parity/stepper.cases';
 import { STICKER_CASES } from '../../parity/sticker.cases';
 import { TABLE_CASES } from '../../parity/table.cases';
+import { TAG_FIELD_CASES } from '../../parity/tag-field.cases';
 import { TOOLTIP_CASES } from '../../parity/tooltip.cases';
 import { MATERIAL_CASES } from '../../parity/material.cases';
 import { TEXT_CASES } from '../../parity/text.cases';
 import { VARIANT_CASES } from '../../parity/variants.cases';
+import { VIDEO_CASES } from '../../parity/video-view.cases';
 
 /**
  * Each language node beside the Bloom element it stands for: the same cases
@@ -95,3 +98,6 @@ export const Steppers: Story = { args: { cases: STEPPER_CASES } };
 export const Tooltips: Story = { args: { cases: TOOLTIP_CASES } };
 export const Breadcrumbs: Story = { args: { cases: BREADCRUMB_CASES } };
 export const ActivityHeatmaps: Story = { args: { cases: ACTIVITY_HEATMAP_CASES } };
+export const TagFields: Story = { args: { cases: TAG_FIELD_CASES } };
+export const FileUploads: Story = { args: { cases: FILE_UPLOAD_CASES } };
+export const Videos: Story = { args: { cases: VIDEO_CASES } };

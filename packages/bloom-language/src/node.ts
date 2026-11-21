@@ -18,6 +18,11 @@ import type { AppShellProps } from '@oxy.so/bloom/app-shell';
 import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
+import type { TagFieldKind } from './controls/tag-field';
+import type { FileUploadKind } from './controls/file-upload';
+import type { VideoViewKind } from './controls/video-view';
+import type { TagSuggestion } from '@oxy.so/bloom/tag-field';
+import type { FileUploadFile, FileUploadProps } from '@oxy.so/bloom/file-upload';
 import type { TooltipKind } from './controls/tooltip';
 import type { BreadcrumbKind } from './controls/breadcrumb';
 import type { ActivityHeatmapKind } from './controls/activity-heatmap';
@@ -414,6 +419,25 @@ export interface ValueModifiers {
   levels: number[];
   cellSize: SpaceToken;
   onPressDay: (day: ActivityHeatmapDay) => void;
+
+  // Tag fields, file uploads and videos (controls/tag-field.tsx, controls/file-upload.tsx, controls/video-view.tsx)
+  suggestions: readonly [list: ReadonlyArray<string | TagSuggestion>, max: number | undefined];
+  allowsCreate: boolean;
+  onMaxReached: () => void;
+  normalize: (raw: string) => string;
+  query: Binding<string>;
+  invalid: boolean;
+  file: FileUploadFile | null;
+  uploadProgress: number;
+  onFileSelected: (file: FileUploadFile) => void;
+  onUploadComplete: (file: FileUploadFile) => void;
+  onReject: (message: string, file: FileUploadFile) => void;
+  picker: NonNullable<FileUploadProps['onPickFiles']>;
+  allowedExtensions: readonly string[];
+  maxBytes: number;
+  fileIcon: (file: FileUploadFile) => Child;
+  nativeControls: boolean;
+  allowsPictureInPicture: boolean;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -579,7 +603,7 @@ export type Modifier =
   | {
       readonly kind: 'tint';
       readonly key: string;
-      readonly value: EngagementTone | BloomTone | ColorName | AvatarColor;
+      readonly value: AccentTone | BloomTone | ColorName | AvatarColor;
     }
   | {
       readonly kind: 'count';
@@ -729,7 +753,10 @@ export type NodeKind =
   | StepperKind
   | TooltipKind
   | BreadcrumbKind
-  | ActivityHeatmapKind;
+  | ActivityHeatmapKind
+  | TagFieldKind
+  | FileUploadKind
+  | VideoViewKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1044,7 +1071,7 @@ export class Node {
   shape(value: ButtonShape | ShapeName | DotsShape): Node {
     return this.with({ kind: 'shape', key: `shape:${value}`, value });
   }
-  tint(value: EngagementTone | BloomTone | ColorName | AvatarColor): Node {
+  tint(value: AccentTone | BloomTone | ColorName | AvatarColor): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
   }
   count(value: number | string | null | undefined): Node {
@@ -1725,6 +1752,59 @@ export class Node {
   }
   onPressDay(value: (day: ActivityHeatmapDay) => void): Node {
     return this.set('onPressDay', value);
+  }
+
+  // Tag fields, file uploads and videos (controls/tag-field.tsx, controls/file-upload.tsx, controls/video-view.tsx)
+  suggestions(list: ReadonlyArray<string | TagSuggestion>, max?: number): Node {
+    return this.set('suggestions', [list, max]);
+  }
+  allowsCreate(value: boolean): Node {
+    return this.set('allowsCreate', value);
+  }
+  onMaxReached(value: () => void): Node {
+    return this.set('onMaxReached', value);
+  }
+  normalize(value: (raw: string) => string): Node {
+    return this.set('normalize', value);
+  }
+  query(value: Binding<string>): Node {
+    return this.set('query', value);
+  }
+  invalid(value = true): Node {
+    return this.set('invalid', value);
+  }
+  file(value: FileUploadFile | null): Node {
+    return this.set('file', value);
+  }
+  uploadProgress(value: number): Node {
+    return this.set('uploadProgress', value);
+  }
+  onFileSelected(value: (file: FileUploadFile) => void): Node {
+    return this.set('onFileSelected', value);
+  }
+  onUploadComplete(value: (file: FileUploadFile) => void): Node {
+    return this.set('onUploadComplete', value);
+  }
+  onReject(value: (message: string, file: FileUploadFile) => void): Node {
+    return this.set('onReject', value);
+  }
+  picker(value: NonNullable<FileUploadProps['onPickFiles']>): Node {
+    return this.set('picker', value);
+  }
+  allowedExtensions(value: readonly string[]): Node {
+    return this.set('allowedExtensions', value);
+  }
+  maxBytes(value: number): Node {
+    return this.set('maxBytes', value);
+  }
+  fileIcon(value: (file: FileUploadFile) => Child): Node {
+    return this.set('fileIcon', value);
+  }
+  nativeControls(value: boolean): Node {
+    return this.set('nativeControls', value);
+  }
+  allowsPictureInPicture(value: boolean): Node {
+    return this.set('allowsPictureInPicture', value);
   }
 }
 
