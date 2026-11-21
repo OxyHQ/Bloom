@@ -218,6 +218,21 @@ export type {
 } from './controls/inputs';
 
 // Overlays and feedback (controls/overlays.tsx)
+export { Alert, ConnectionStatus, Dialog, Popover } from './controls/overlays';
+export type {
+  AlertDefault,
+  AlertView,
+  ConnectionStatusView,
+  DialogPlacement,
+  DialogView,
+  FloatingAlign,
+  FloatingSide,
+  PopoverView,
+  Presentation,
+  PresentedNode,
+} from './controls/overlays';
+export { toast } from './toast';
+export type { ToastContent } from './toast';
 
 // Containers (controls/containers.tsx)
 export {

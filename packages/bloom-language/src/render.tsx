@@ -133,6 +133,7 @@ import {
 import { StateHost } from './state-host';
 import { CONTROLS } from './controls';
 import type { ControlRenderer } from './controls/draw';
+import { presentAround } from './controls/overlays';
 import {
   STATES,
   both,
@@ -968,9 +969,19 @@ function drawNode(
   const badge = ownValue(p, 'badge')?.value;
   if (isNode(badge) && badge.kind === 'badge') {
     // An attached badge is Bloom's Badge around the view, at its placement.
-    return draw(BloomBadge, { ...badgeProps(badge, plan(badge)), key: reactKey }, element);
+    element = draw(BloomBadge, { ...badgeProps(badge, plan(badge)), key: reactKey }, element);
   }
-  return element;
+  const alert = ownValue(p, 'alert')?.value;
+  const dialog = ownValue(p, 'dialog')?.value;
+  const popover = ownValue(p, 'popover')?.value;
+  if (alert === undefined && dialog === undefined && popover === undefined) return element;
+  // What the view presents: an anchored popover around it, an alert or a dialog beside it.
+  return presentAround(
+    element as ReactElement,
+    { alert, dialog, popover },
+    (children) => renderChildren(children, inner),
+    reactKey,
+  );
 }
 
 function boxStyle(layer: Layer | undefined, flex: string, p: Plan): Resolved {
