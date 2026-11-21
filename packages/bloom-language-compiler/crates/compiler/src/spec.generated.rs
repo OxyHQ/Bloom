@@ -167,6 +167,8 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("dragAction", &["copy", "move", "link"]),
     ("expandableTextStyle", &["below", "inline"]),
     ("videoSurface", &["textureView", "surfaceView"]),
+    ("notificationStatus", &["neutral", "information", "success", "warning", "error"]),
+    ("liveRole", &["alert", "status"]),
 ];
 
 /// The modifiers a variant (`when(condition, v => v…)`) can change.
@@ -649,6 +651,15 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("videoSlot", &["value"]),
     ("divider", &["value?"]),
     ("flush", &["value?"]),
+    ("timestamp", &["value"]),
+    ("status", &["notificationStatus"]),
+    ("avatar", &["value"]),
+    ("buttons", &["value"]),
+    ("dismissible", &["value"]),
+    ("onDismiss", &["value"]),
+    ("autoDismiss", &["value"]),
+    ("introDelay", &["value"]),
+    ("liveRole", &["liveRole"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -835,6 +846,7 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "avatarFlightLayer", constructors: &["AvatarFlightLayer"], modifiers: &[], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "inputGroup", constructors: &["InputGroup"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "size", "invalid", "disabled"], size: Some("controlSize"), tint: None, style: None, shape: None },
     NodeSpec { kind: "inputGroupAddon", constructors: &["InputGroupAddon"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "divider", "flush"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "notification", constructors: &["Notification"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "description", "timestamp", "status", "icon", "avatar", "buttons", "dismissible", "onDismiss", "autoDismiss", "introDelay", "liveRole", "labels"], size: None, tint: None, style: None, shape: None },
 ];
 
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,

@@ -1721,6 +1721,17 @@ export const ENUMS = {
   "videoSurface": [
     "textureView",
     "surfaceView"
+  ],
+  "notificationStatus": [
+    "neutral",
+    "information",
+    "success",
+    "warning",
+    "error"
+  ],
+  "liveRole": [
+    "alert",
+    "status"
   ]
 } as const;
 
@@ -3233,6 +3244,33 @@ export const MODIFIERS = {
   ],
   "flush": [
     "value?"
+  ],
+  "timestamp": [
+    "value"
+  ],
+  "status": [
+    "notificationStatus"
+  ],
+  "avatar": [
+    "value"
+  ],
+  "buttons": [
+    "value"
+  ],
+  "dismissible": [
+    "value"
+  ],
+  "onDismiss": [
+    "value"
+  ],
+  "autoDismiss": [
+    "value"
+  ],
+  "introDelay": [
+    "value"
+  ],
+  "liveRole": [
+    "liveRole"
   ]
 } as const;
 
@@ -14238,6 +14276,80 @@ export const NODE_MODIFIERS = {
     "swipe",
     "divider",
     "flush"
+  ],
+  "notification": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "description",
+    "timestamp",
+    "status",
+    "icon",
+    "avatar",
+    "buttons",
+    "dismissible",
+    "onDismiss",
+    "autoDismiss",
+    "introDelay",
+    "liveRole",
+    "labels"
   ]
 } as const;
 
@@ -14433,5 +14545,6 @@ export const CONSTRUCTORS = {
   "AvatarAnchor": "avatarAnchor",
   "AvatarFlightLayer": "avatarFlightLayer",
   "InputGroup": "inputGroup",
-  "InputGroupAddon": "inputGroupAddon"
+  "InputGroupAddon": "inputGroupAddon",
+  "Notification": "notification"
 } as const;
