@@ -151,6 +151,7 @@ BloomThemeProvider sets preset/mode, dark class + full-color CSS vars via applyC
 ## Scroll-edge paint
 
 - Header/footer smooth scrims must remain opaque across measured chrome (including subtitle/accessories/safe area), then fade only in the external tail. A full-box curve let scrolled record text overlap the detail subtitle on Android. EdgeScrim defaults remain full-box for artwork/overflow fades; explicit linear/onImage headers retain that contract. Protect both native gradient and SVG paths, fractional stop precision, dynamic heights: EdgeScrim.test.tsx, PageHeader.test.tsx, PageFooter.test.tsx; scripts/verify-edge-scrim-chrome.mjs.
+- Overflowing chrome needs a non-clipping native parent on Android. Fabric hoists children of a view that is not a stacking context into the nearest one; under react-native-screens that is a Screen that clips each child to its own bounds, so the header slot cut the scrim tail off at alpha ~0.35 (Mention Videos, Pixel 8a; earlier misread as react-native-svg sizing). `Screen`'s root is `collapsable={false}`; the far stop is alpha 0 for every falloff: Screen.test.tsx, EdgeScrim.test.tsx.
 
 ## Material (surface/)
 
