@@ -214,8 +214,13 @@ fn the_small_modifiers_and_numeric_tokens_are_checked() {
         output.diagnostics[0].message,
         "Unknown shadow token '0 1px 3px 0 rgb(0 0 0 / 0.2)' for .shadow()"
     );
-    let output = compiled("export const x = () => HStack().zIndex('60');\n");
-    assert_eq!(output.diagnostics[0].message, "Unknown zIndex token '60' for .zIndex()");
+    // The leftovers apps write in two or more places are numeric tokens; a level no app uses is not.
+    let ok = compiled(
+        "export const x = () => HStack().zIndex('60').border('border', '4').opacity('45').rotation('45');\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = () => HStack().zIndex('61');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown zIndex token '61' for .zIndex()");
     let output = compiled("export const x = () => HStack().monospacedDigit();\n");
     assert_eq!(output.diagnostics[0].message, "HStack has no modifier .monospacedDigit()");
     let output = compiled("export const x = () => Text('a').wordBreak('anywhere');\n");

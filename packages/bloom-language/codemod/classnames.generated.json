@@ -1873,7 +1873,7 @@
    "count": 16,
    "apps": 3,
    "status": "motion",
-   "language": ".animation(motion): a change of the view’s offset, scale or rotation plays with motion (feat/bloom-language-motion)"
+   "language": ".animation(motion): a change of the view’s offset, scale or rotation plays with motion (the motion layer)"
   },
   "aspect-square": {
    "count": 15,
@@ -1959,7 +1959,7 @@
    "count": 14,
    "apps": 3,
    "status": "motion",
-   "language": ".transition(…): its insertion, the fade, zoom and slide beside it (feat/bloom-language-motion)"
+   "language": ".transition(…): its insertion, the fade, zoom and slide beside it (the motion layer)"
   },
   "bg-foreground": {
    "count": 14,
@@ -1983,7 +1983,7 @@
    "count": 14,
    "apps": 3,
    "status": "motion",
-   "language": "opacity, the insertion of .transition(…) (feat/bloom-language-motion)"
+   "language": "opacity, the insertion of .transition(…) (the motion layer)"
   },
   "leading-7": {
    "count": 14,
@@ -2057,7 +2057,7 @@
    "count": 13,
    "apps": 2,
    "status": "motion",
-   "language": ".transition(asymmetric(insert, remove)): its removal (feat/bloom-language-motion)"
+   "language": ".transition(asymmetric(insert, remove)): its removal (the motion layer)"
   },
   "capitalize": {
    "count": 13,
@@ -2075,7 +2075,7 @@
    "count": 13,
    "apps": 2,
    "status": "motion",
-   "language": "opacity, the removal of .transition(…) (feat/bloom-language-motion)"
+   "language": "opacity, the removal of .transition(…) (the motion layer)"
   },
   "font-display": {
    "count": 13,
@@ -2290,10 +2290,10 @@
   "duration-150": {
    "count": 11,
    "apps": 3,
-   "status": "token",
+   "status": "appToken",
    "scale": "motion",
    "value": "150ms",
-   "language": "an app motion (defineTokens({ motion: { duration, easing } })): Tailwind’s curve is none of Bloom’s"
+   "language": ".animation(app.motion.<name>): defineTokens({ motion: { <name>: { duration: 150, easing: [0.4, 0, 0.2, 1] } } })"
   },
   "gap-y-2": {
    "count": 11,
@@ -2470,10 +2470,10 @@
   "duration-100": {
    "count": 10,
    "apps": 2,
-   "status": "token",
+   "status": "appToken",
    "scale": "motion",
    "value": "100ms",
-   "language": "an app motion (defineTokens({ motion: { duration, easing } })): Tailwind’s curve is none of Bloom’s"
+   "language": ".animation(app.motion.<name>): defineTokens({ motion: { <name>: { duration: 100, easing: [0.4, 0, 0.2, 1] } } })"
   },
   "font-caption": {
    "count": 10,
@@ -2571,7 +2571,7 @@
    "count": 10,
    "apps": 3,
    "status": "motion",
-   "language": "scale('95'), the insertion of .transition(…) (feat/bloom-language-motion)"
+   "language": "scale('95'), the insertion of .transition(…) (the motion layer)"
   },
   "bg-input/30": {
    "count": 9,
@@ -2596,10 +2596,10 @@
   "duration-200": {
    "count": 9,
    "apps": 3,
-   "status": "token",
+   "status": "appToken",
    "scale": "motion",
    "value": "200ms",
-   "language": "an app motion (defineTokens({ motion: { duration, easing } })): Tailwind’s curve is none of Bloom’s"
+   "language": ".animation(app.motion.<name>): defineTokens({ motion: { <name>: { duration: 200, easing: [0.4, 0, 0.2, 1] } } })"
   },
   "grid-cols-4": {
    "count": 9,
@@ -2809,7 +2809,7 @@
    "count": 9,
    "apps": 2,
    "status": "motion",
-   "language": "scale('95'), the removal of .transition(…) (feat/bloom-language-motion)"
+   "language": "scale('95'), the removal of .transition(…) (the motion layer)"
   },
   "bg-black": {
    "count": 8,
@@ -2849,7 +2849,7 @@
    "count": 8,
    "apps": 2,
    "status": "motion",
-   "language": "easing 'linear' in the view’s motion (Bloom’s linear curve; feat/bloom-language-motion)"
+   "language": "easing 'linear' in the view’s motion (Bloom’s linear curve; the motion layer)"
   },
   "gap-x-3": {
    "count": 8,
@@ -3053,7 +3053,7 @@
    "count": 8,
    "apps": 3,
    "status": "motion",
-   "language": ".animation(motion): a change of the view’s opacity plays with motion (feat/bloom-language-motion)"
+   "language": ".animation(motion): a change of the view’s opacity plays with motion (the motion layer)"
   },
   "w-(--sidebar-width)": {
    "count": 8,
@@ -4032,10 +4032,8 @@
   "rotate-45": {
    "count": 5,
    "apps": 5,
-   "status": "token",
-   "scale": "rotation",
-   "value": "45°",
-   "language": ".rotation(…) (feat/bloom-language-motion: none, quarter, half)"
+   "status": "mapped",
+   "language": ".rotation('45')"
   },
   "rounded-[16px]": {
    "count": 5,
@@ -4256,10 +4254,8 @@
   "border-4": {
    "count": 4,
    "apps": 1,
-   "status": "token",
-   "scale": "borderWidth",
-   "value": "4px",
-   "language": ".border(role, …)"
+   "status": "mapped",
+   "language": ".border(role, '4')"
   },
   "border-black/10": {
    "count": 4,
@@ -4294,10 +4290,10 @@
   "duration-300": {
    "count": 4,
    "apps": 1,
-   "status": "token",
+   "status": "appToken",
    "scale": "motion",
    "value": "300ms",
-   "language": "an app motion (defineTokens({ motion: { duration, easing } })): Tailwind’s curve is none of Bloom’s"
+   "language": ".animation(app.motion.<name>): defineTokens({ motion: { <name>: { duration: 300, easing: [0.4, 0, 0.2, 1] } } })"
   },
   "flex-col-reverse": {
    "count": 4,
@@ -4742,10 +4738,8 @@
   "z-[60]": {
    "count": 4,
    "apps": 2,
-   "status": "token",
-   "scale": "zIndex",
-   "value": "60",
-   "language": ".zIndex(…)"
+   "status": "mapped",
+   "language": ".zIndex('60')"
   },
   "z-auto": {
    "count": 4,
@@ -5656,10 +5650,8 @@
   "text-white/75": {
    "count": 3,
    "apps": 2,
-   "status": "token",
-   "scale": "opacity",
-   "value": "white at 75%",
-   "language": ".foreground('white/…')"
+   "status": "mapped",
+   "language": ".foreground('white/75')"
   },
   "text-white/85": {
    "count": 3,
@@ -6162,10 +6154,8 @@
   "border-l-4": {
    "count": 2,
    "apps": 1,
-   "status": "token",
-   "scale": "borderWidth",
-   "value": "4px",
-   "language": ".border(role, …, 'leading')"
+   "status": "mapped",
+   "language": ".border(role, '4', 'leading')"
   },
   "border-l-transparent": {
    "count": 2,
@@ -6298,18 +6288,18 @@
   "ease-in-out": {
    "count": 2,
    "apps": 2,
-   "status": "token",
+   "status": "appToken",
    "scale": "motion",
    "value": "ease-in-out",
-   "language": "an app motion’s curve: Tailwind’s is none of Bloom’s"
+   "language": ".animation(app.motion.<name>): defineTokens({ motion: { <name>: { duration: 150, easing: [0.4, 0, 0.2, 1] } } })"
   },
   "ease-out": {
    "count": 2,
    "apps": 1,
-   "status": "token",
+   "status": "appToken",
    "scale": "motion",
    "value": "ease-out",
-   "language": "an app motion’s curve: Tailwind’s is none of Bloom’s"
+   "language": ".animation(app.motion.<name>): defineTokens({ motion: { <name>: { duration: 150, easing: [0, 0, 0.2, 1] } } })"
   },
   "edit": {
    "count": 2,
@@ -6902,18 +6892,14 @@
   "opacity-45": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "opacity",
-   "value": "0.45",
-   "language": ".opacity(…)"
+   "status": "mapped",
+   "language": ".opacity('45')"
   },
   "opacity-75": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "opacity",
-   "value": "0.75",
-   "language": ".opacity(…)"
+   "status": "mapped",
+   "language": ".opacity('75')"
   },
   "outline": {
    "count": 2,
@@ -7402,10 +7388,8 @@
   "text-black/75": {
    "count": 2,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "black at 75%",
-   "language": ".foreground('black/…')"
+   "status": "mapped",
+   "language": ".foreground('black/75')"
   },
   "text-card": {
    "count": 2,
@@ -7416,10 +7400,8 @@
   "text-foreground/45": {
    "count": 2,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--foreground at 45%",
-   "language": ".foreground('foreground/…')"
+   "status": "mapped",
+   "language": ".foreground('foreground/45')"
   },
   "text-foreground/90": {
    "count": 2,
@@ -7678,10 +7660,8 @@
   "z-[2]": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "zIndex",
-   "value": "2",
-   "language": ".zIndex(…)"
+   "status": "mapped",
+   "language": ".zIndex('2')"
   },
   ")": {
    "count": 1,
@@ -7787,7 +7767,7 @@
    "status": "token",
    "scale": "rotation",
    "value": "-12°",
-   "language": ".rotation(…) (feat/bloom-language-motion: none, quarter, half)"
+   "language": ".rotation(…) (the motion layer)"
   },
   "-space-x-2": {
    "count": 1,
@@ -8120,10 +8100,8 @@
   "bg-black/75": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "black at 75%",
-   "language": ".background('black/…')"
+   "status": "mapped",
+   "language": ".background('black/75')"
   },
   "bg-black/[0.03]": {
    "count": 1,
@@ -8818,18 +8796,18 @@
   "duration-500": {
    "count": 1,
    "apps": 1,
-   "status": "token",
+   "status": "appToken",
    "scale": "motion",
    "value": "500ms",
-   "language": "an app motion (defineTokens({ motion: { duration, easing } })): Tailwind’s curve is none of Bloom’s"
+   "language": ".animation(app.motion.<name>): defineTokens({ motion: { <name>: { duration: 500, easing: [0.4, 0, 0.2, 1] } } })"
   },
   "duration-700": {
    "count": 1,
    "apps": 1,
-   "status": "token",
+   "status": "appToken",
    "scale": "motion",
    "value": "700ms",
-   "language": "an app motion (defineTokens({ motion: { duration, easing } })): Tailwind’s curve is none of Bloom’s"
+   "language": ".animation(app.motion.<name>): defineTokens({ motion: { <name>: { duration: 700, easing: [0.4, 0, 0.2, 1] } } })"
   },
   "embed": {
    "count": 1,

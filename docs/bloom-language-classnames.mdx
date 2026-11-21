@@ -24,11 +24,11 @@ Alia `841e8843a`, Allo `ba28b38`, Astro `8ae8386`, Atlas `037990e`, Authenticato
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 1005 | 46880 | 87.3% |
+| Maps to a modifier and a token | 1016 | 46909 | 87.3% |
 | Expressed by the view’s structure | 53 | 3445 | 6.4% |
 | Redundant in the language | 32 | 513 | 1.0% |
-| Needs a named token (raw value) | 319 | 794 | 1.5% |
-| An app’s own token (a brand colour) | 22 | 36 | 0.1% |
+| Needs a named token (raw value) | 300 | 725 | 1.3% |
+| An app’s own token (a brand colour) | 30 | 76 | 0.1% |
 | Maps to the motion layer | 9 | 105 | 0.2% |
 | Needs a modifier the language lacks | 30 | 194 | 0.4% |
 | An app’s own class | 450 | 1753 | 3.3% |
@@ -43,15 +43,13 @@ condition: `web:` 365 (`when('web')`), `active:` 332 (`when('pressed')`), `md:` 
 | --- | ---: | --- |
 | space | 257 | 720px (9), 18px (9), 420px (8), 600px (8), 144px (8), 520px (7), 100px (7), 220px (7), 240px (7), 565px (6), 52px (6), 112px (6) |
 | color | 219 | --primary-subtle (20), --ring (18), --sidebar-foreground (14), green-500 (12), --sidebar-border (12), red-500 (10), --sidebar-accent (9), red-400 (9), --sidebar-accent-foreground (9), --sidebar (8), --sidebar-ring (8), --accent-foreground (8) |
-| opacity | 100 | --ring at 50% (16), --foreground at 5% (7), black at [0.04]% (7), white at [0.06]% (6), --primary at 5% (5), white at 15% (4), white at 25% (4), black at 25% (3), --primary at 15% (3), --surface at 25% (3), white at 75% (3), white at 85% (3) |
+| opacity | 88 | --ring at 50% (16), --foreground at 5% (7), black at [0.04]% (7), white at [0.06]% (6), --primary at 5% (5), white at 15% (4), white at 25% (4), black at 25% (3), --primary at 15% (3), --surface at 25% (3), white at 85% (3), --background at 85% (2) |
 | font | 55 | 10.5px (8), 28px (7), 12.5px (5), 23px (5), 34px (4), 9px (4), 48px / 48px (2), 11.5px (2), 13.5px (2), 15.5px (2), 21px (2), 29px (2) |
 | leading | 42 | 1 (15), 29px (6), 17px (5), 15px (2), 41px (2), 12px (1), 13px (1), 19px (1), 21px (1), 23px (1), 26px (1), 27px (1) |
-| motion | 40 | 150ms (11), 100ms (10), 200ms (9), 300ms (4), ease-in-out (2), ease-out (2), 500ms (1), 700ms (1) |
 | corner | 38 | 15px (8), 23px (6), 5px (5), 13px (3), 27px (3), 25px (2), 26px (2), 3px (2), 9px (2), 19px (1), 30px (1), 35px (1) |
 | shadow | 16 | shadow-shop-s (10), shadow-shop-m (2), shadow-dropdown (1), shadow-foreground/10 (1), shadow-foreground/20 (1), shadow-l (1) |
-| zIndex | 13 | 60 (4), 2 (2), 10000 (1), 1000 (1), 2000 (1), 2001 (1), 3 (1), 80 (1), 9998 (1) |
-| rotation | 6 | 45° (5), -12° (1) |
-| borderWidth | 6 | 4px (6) |
+| zIndex | 7 | 10000 (1), 1000 (1), 2000 (1), 2001 (1), 3 (1), 80 (1), 9998 (1) |
+| rotation | 1 | -12° (1) |
 | weight | 1 | 900 (1) |
 | scale | 1 | 1.01 (1) |
 
@@ -539,6 +537,7 @@ when the fill is a role's colour.
 | `py-20` | .padding('vertical', '80') | 5 | 2 |
 | `py-5` | .padding('vertical', 'xl') | 5 | 4 |
 | `ring-offset-2` | .ring(role, width, 'sm') | 5 | 3 |
+| `rotate-45` | .rotation('45') | 5 | 5 |
 | `rounded-[16px]` | .corner('lg') | 5 | 3 |
 | `rounded-[2px]` | .corner('2xs') | 5 | 3 |
 | `shadow-md` | .shadow('0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)') | 5 | 3 |
@@ -580,6 +579,7 @@ when the fill is a role's colour.
 | `w-1.5` | .frame({ width: '6' }) | 4 | 3 |
 | `w-[260px]` | .frame({ width: '260' }) | 4 | 4 |
 | `w-[2px]` | .frame({ width: '2xs' }) | 4 | 4 |
+| `z-[60]` | .zIndex('60') | 4 | 2 |
 | `-ml-1` | .padding('leading', '-xs') (outside the fill) | 3 | 2 |
 | `-ml-3` | .padding('leading', '-md') (outside the fill) | 3 | 2 |
 | `-mx-4` | .padding('horizontal', '-lg') (outside the fill) | 3 | 2 |
@@ -623,6 +623,7 @@ when the fill is a role's colour.
 | `size-16` | .frame({ width: '64', height: '64' }) | 3 | 2 |
 | `size-6` | .frame({ width: '2xl', height: '2xl' }) | 3 | 3 |
 | `text-foreground/60` | .foreground('foreground/60') | 3 | 2 |
+| `text-white/75` | .foreground('white/75') | 3 | 2 |
 | `top-1` | .position({ top: 'xs' }) | 3 | 3 |
 | `top-1.5` | .position({ top: '6' }) | 3 | 2 |
 | `w-2/3` | .frame({ width: '2/3' }) | 3 | 2 |
@@ -666,6 +667,8 @@ when the fill is a role's colour.
 | `my-3` | .padding('vertical', 'md') (outside the fill) | 2 | 2 |
 | `my-6` | .padding('vertical', '2xl') (outside the fill) | 2 | 2 |
 | `my-8` | .padding('vertical', '3xl') (outside the fill) | 2 | 2 |
+| `opacity-45` | .opacity('45') | 2 | 2 |
+| `opacity-75` | .opacity('75') | 2 | 2 |
 | `outline` | .ring(role, 'thin') | 2 | 2 |
 | `pr-6` | .padding('trailing', '2xl') | 2 | 2 |
 | `pt-10` | .padding('top', '4xl') | 2 | 2 |
@@ -684,6 +687,7 @@ when the fill is a role's colour.
 | `w-1` | .frame({ width: 'xs' }) | 2 | 2 |
 | `w-[120px]` | .frame({ width: '120' }) | 2 | 2 |
 | `w-[60px]` | .frame({ width: '5xl' }) | 2 | 2 |
+| `z-[2]` | .zIndex('2') | 2 | 2 |
 
 ## Expressed by the view's structure
 
@@ -747,12 +751,9 @@ when the fill is a role's colour.
 | `ring-ring/50` | --ring at 50% | .ring(…) | 16 | 3 |
 | `leading-none` | 1 | .leading(…) | 15 | 7 |
 | `text-sidebar-foreground` | --sidebar-foreground | .foreground(…) | 14 | 2 |
-| `duration-150` | 150ms | an app motion (defineTokens({ motion: { duration, easing } })): Tailwind’s curve is none of Bloom’s | 11 | 3 |
 | `text-green-500` | green-500 | .foreground(…) | 11 | 2 |
 | `bg-sidebar-border` | --sidebar-border | .background(…) | 10 | 3 |
-| `duration-100` | 100ms | an app motion (defineTokens({ motion: { duration, easing } })): Tailwind’s curve is none of Bloom’s | 10 | 2 |
 | `bg-sidebar-accent` | --sidebar-accent | .background(…) | 9 | 2 |
-| `duration-200` | 200ms | an app motion (defineTokens({ motion: { duration, easing } })): Tailwind’s curve is none of Bloom’s | 9 | 3 |
 | `max-w-[720px]` | 720px | .frame({ maxWidth: … }) | 9 | 3 |
 | `text-red-400` | red-400 | .foreground(…) | 9 | 3 |
 | `text-sidebar-accent-foreground` | --sidebar-accent-foreground | .foreground(…) | 9 | 2 |
@@ -774,7 +775,6 @@ when the fill is a role's colour.
 | `leading-[17px]` | 17px | .leading(…) | 5 | 2 |
 | `max-w-xl` | 576px | .frame({ maxWidth: … }) | 5 | 4 |
 | `min-h-[52px]` | 52px | .frame({ minHeight: … }) | 5 | 4 |
-| `rotate-45` | 45° | .rotation(…) (feat/bloom-language-motion: none, quarter, half) | 5 | 5 |
 | `text-[12.5px]` | 12.5px | .font(…) | 5 | 2 |
 | `text-popover-foreground` | --popover-foreground | .foreground(…) | 5 | 2 |
 | `text-yellow-500` | yellow-500 | .foreground(…) | 5 | 4 |
@@ -789,7 +789,6 @@ when the fill is a role's colour.
 | `text-card-foreground` | --card-foreground | .foreground(…) | 4 | 3 |
 | `w-28` | 112px | .frame({ width: … }) | 4 | 4 |
 | `w-44` | 176px | .frame({ width: … }) | 4 | 4 |
-| `z-[60]` | 60 | .zIndex(…) | 4 | 2 |
 | `bg-primary/15` | --primary at 15% | .background('primary/…') | 3 | 3 |
 | `h-[18px]` | 18px | .frame({ height: … }) | 3 | 2 |
 | `h-[34px]` | 34px | .frame({ height: … }) | 3 | 2 |
@@ -806,7 +805,6 @@ when the fill is a role's colour.
 | `min-w-[180px]` | 180px | .frame({ minWidth: … }) | 3 | 2 |
 | `rounded-[13px]` | 13px | .corner(…) | 3 | 3 |
 | `text-blue-500` | blue-500 | .foreground(…) | 3 | 2 |
-| `text-white/75` | white at 75% | .foreground('white/…') | 3 | 2 |
 | `text-white/85` | white at 85% | .foreground('white/…') | 3 | 3 |
 | `text-yellow-400` | yellow-400 | .foreground(…) | 3 | 3 |
 | `w-[7px]` | 7px | .frame({ width: … }) | 3 | 2 |
@@ -816,7 +814,6 @@ when the fill is a role's colour.
 | `bg-white/5` | white at 5% | .background('white/…') | 2 | 2 |
 | `bg-yellow-400/10` | yellow-400 | .background(…) | 2 | 2 |
 | `border-sidebar-border` | --sidebar-border | .border(…) | 2 | 2 |
-| `ease-in-out` | ease-in-out | an app motion’s curve: Tailwind’s is none of Bloom’s | 2 | 2 |
 | `h-[199px]` | 199px | .frame({ height: … }) | 2 | 2 |
 | `h-[22px]` | 22px | .frame({ height: … }) | 2 | 2 |
 | `h-[46px]` | 46px | .frame({ height: … }) | 2 | 2 |
@@ -826,8 +823,6 @@ when the fill is a role's colour.
 | `max-w-[440px]` | 440px | .frame({ maxWidth: … }) | 2 | 2 |
 | `min-h-[180px]` | 180px | .frame({ minHeight: … }) | 2 | 2 |
 | `min-h-[560px]` | 560px | .frame({ minHeight: … }) | 2 | 2 |
-| `opacity-45` | 0.45 | .opacity(…) | 2 | 2 |
-| `opacity-75` | 0.75 | .opacity(…) | 2 | 2 |
 | `p-[18px]` | 18px | .padding('all', …) | 2 | 2 |
 | `rounded-[26px]` | 26px | .corner(…) | 2 | 2 |
 | `text-5xl` | 48px / 48px | .font(…) | 2 | 2 |
@@ -841,30 +836,28 @@ when the fill is a role's colour.
 | `w-[21px]` | 21px | .frame({ width: … }) | 2 | 2 |
 | `w-[220px]` | 220px | .frame({ width: … }) | 2 | 2 |
 | `w-[240px]` | 240px | .frame({ width: … }) | 2 | 2 |
-| `z-[2]` | 2 | .zIndex(…) | 2 | 2 |
 
 ## Maps to the motion layer
 
-Bloom's motion engine (`@oxy.so/bloom/motion`) and the language's motion
-modifiers (`.animation()`, `.transition()`, `.keyframes()`) are on
-`feat/bloom-language-motion`. What it plays is here; its durations and curves are
-motion tokens: Tailwind's default curve (`cubic-bezier(0.4, 0, 0.2, 1)`) is
-none of Bloom's, so a `duration-*` is an app motion
-(`defineTokens({ motion: { duration, easing } })`) unless it is one of Bloom's.
+Bloom's motion engine (`@oxy.so/bloom/motion`) plays the language's motion
+modifiers (`.animation()`, `.transition()`, `.keyframes()`). What it plays
+is here. Tailwind's durations and curves are none of Bloom's motion tokens
+(its default curve is `cubic-bezier(0.4, 0, 0.2, 1)`), so each is an app's own
+motion, declared with its exact numbers (*An app's own token*).
 What the engine has no equivalent for (a colour transition, a loop, a delay, a
 transform origin) is under *Needs a modifier the language lacks*.
 
 | Utility | Language | Uses | Apps |
 | --- | --- | ---: | ---: |
-| `transition-transform` | .animation(motion): a change of the view’s offset, scale or rotation plays with motion (feat/bloom-language-motion) | 16 | 3 |
-| `animate-in` | .transition(…): its insertion, the fade, zoom and slide beside it (feat/bloom-language-motion) | 14 | 3 |
-| `fade-in-0` | opacity, the insertion of .transition(…) (feat/bloom-language-motion) | 14 | 3 |
-| `animate-out` | .transition(asymmetric(insert, remove)): its removal (feat/bloom-language-motion) | 13 | 2 |
-| `fade-out-0` | opacity, the removal of .transition(…) (feat/bloom-language-motion) | 13 | 2 |
-| `zoom-in-95` | scale('95'), the insertion of .transition(…) (feat/bloom-language-motion) | 10 | 3 |
-| `zoom-out-95` | scale('95'), the removal of .transition(…) (feat/bloom-language-motion) | 9 | 2 |
-| `ease-linear` | easing 'linear' in the view’s motion (Bloom’s linear curve; feat/bloom-language-motion) | 8 | 2 |
-| `transition-opacity` | .animation(motion): a change of the view’s opacity plays with motion (feat/bloom-language-motion) | 8 | 3 |
+| `transition-transform` | .animation(motion): a change of the view’s offset, scale or rotation plays with motion (the motion layer) | 16 | 3 |
+| `animate-in` | .transition(…): its insertion, the fade, zoom and slide beside it (the motion layer) | 14 | 3 |
+| `fade-in-0` | opacity, the insertion of .transition(…) (the motion layer) | 14 | 3 |
+| `animate-out` | .transition(asymmetric(insert, remove)): its removal (the motion layer) | 13 | 2 |
+| `fade-out-0` | opacity, the removal of .transition(…) (the motion layer) | 13 | 2 |
+| `zoom-in-95` | scale('95'), the insertion of .transition(…) (the motion layer) | 10 | 3 |
+| `zoom-out-95` | scale('95'), the removal of .transition(…) (the motion layer) | 9 | 2 |
+| `ease-linear` | easing 'linear' in the view’s motion (Bloom’s linear curve; the motion layer) | 8 | 2 |
+| `transition-opacity` | .animation(motion): a change of the view’s opacity plays with motion (the motion layer) | 8 | 3 |
 
 ## Needs a modifier the language lacks
 
@@ -896,12 +889,18 @@ a Bloom role: it becomes the app's own token, declared once with
 
 | Utility | Raw value | Becomes | Uses | Apps |
 | --- | --- | --- | ---: | ---: |
+| `duration-150` | 150ms | .animation(app.motion.<name>): defineTokens({ motion: { <name>: { duration: 150, easing: [0.4, 0, 0.2, 1] } } }) | 11 | 3 |
+| `duration-100` | 100ms | .animation(app.motion.<name>): defineTokens({ motion: { <name>: { duration: 100, easing: [0.4, 0, 0.2, 1] } } }) | 10 | 2 |
+| `duration-200` | 200ms | .animation(app.motion.<name>): defineTokens({ motion: { <name>: { duration: 200, easing: [0.4, 0, 0.2, 1] } } }) | 9 | 3 |
 | `bg-[#0d0d0d]` | #0d0d0d | .background(app.color.<name>) | 6 | 1 |
+| `duration-300` | 300ms | .animation(app.motion.<name>): defineTokens({ motion: { <name>: { duration: 300, easing: [0.4, 0, 0.2, 1] } } }) | 4 | 1 |
 | `text-[#5b6573]` | #5b6573 | .foreground(app.color.<name>) | 4 | 1 |
 | `text-[#1d2530]` | #1d2530 | .foreground(app.color.<name>) | 3 | 1 |
 | `bg-[#121212]` | #121212 | .background(app.color.<name>) | 2 | 1 |
 | `bg-[#7bdd17]` | #7bdd17 | .background(app.color.<name>) | 2 | 1 |
 | `border-[#183b4e0f]` | #183b4e0f | .border(app.color.<name>) | 2 | 1 |
+| `ease-in-out` | ease-in-out | .animation(app.motion.<name>): defineTokens({ motion: { <name>: { duration: 150, easing: [0.4, 0, 0.2, 1] } } }) | 2 | 2 |
+| `ease-out` | ease-out | .animation(app.motion.<name>): defineTokens({ motion: { <name>: { duration: 150, easing: [0, 0, 0.2, 1] } } }) | 2 | 1 |
 | `text-[#3a4452]` | #3a4452 | .foreground(app.color.<name>) | 2 | 1 |
 | `bg-[#0b0e14]/55` | #0b0e14 at 55% | .background(app.color.<name>) | 1 | 1 |
 | `bg-[#111111]` | #111111 | .background(app.color.<name>) | 1 | 1 |
@@ -913,6 +912,8 @@ a Bloom role: it becomes the app's own token, declared once with
 | `bg-[#eef3f8]` | #eef3f8 | .background(app.color.<name>) | 1 | 1 |
 | `bg-[#f2f4f5]` | #f2f4f5 | .background(app.color.<name>) | 1 | 1 |
 | `bg-[#f7f9fc]` | #f7f9fc | .background(app.color.<name>) | 1 | 1 |
+| `duration-500` | 500ms | .animation(app.motion.<name>): defineTokens({ motion: { <name>: { duration: 500, easing: [0.4, 0, 0.2, 1] } } }) | 1 | 1 |
+| `duration-700` | 700ms | .animation(app.motion.<name>): defineTokens({ motion: { <name>: { duration: 700, easing: [0.4, 0, 0.2, 1] } } }) | 1 | 1 |
 | `text-[#0006]` | #0006 | .foreground(app.color.<name>) | 1 | 1 |
 | `text-[#26313d]` | #26313d | .foreground(app.color.<name>) | 1 | 1 |
 | `text-[#526672]` | #526672 | .foreground(app.color.<name>) | 1 | 1 |

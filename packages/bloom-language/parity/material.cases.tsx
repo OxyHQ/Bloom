@@ -346,6 +346,18 @@ const boxes: ParityCase[] = [
 
 const named: ParityCase[] = [
   {
+    // The exact values apps write in two or more places: Tailwind's border-4, z-[60], opacity-45.
+    name: 'a 4px border, a 60 stacking level, 45% opaque',
+    language: () => toElement(L.VStack().border('border', '4').zIndex('60').opacity('45')),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RN.View style={{ borderWidth: 4, borderColor: c.border, opacity: 0.45, zIndex: 60 }} />
+        )}
+      </Themed>
+    ),
+  },
+  {
     name: 'a 70% opaque, thick-bordered box',
     language: () => toElement(L.VStack().border('border', 'thick').opacity('70')),
     bloom: () => (

@@ -159,9 +159,11 @@
       "20": 0.2,
       "30": 0.3,
       "40": 0.4,
+      "45": 0.45,
       "half": 0.5,
       "60": 0.6,
       "70": 0.7,
+      "75": 0.75,
       "80": 0.8,
       "90": 0.9,
       "opaque": 1
@@ -170,7 +172,8 @@
       "hairline": "hairline",
       "thin": 1,
       "thick": 2,
-      "3": 3
+      "3": 3,
+      "4": 4
     },
     "hitSlop": {
       "sm": 6,
@@ -208,14 +211,16 @@
       "fit": "fit-content"
     },
     "zIndex": {
-      "$comment": "Bloom's Z_INDEX (styles/z-index.ts): the stacking levels its own components use; the numeric ones are Tailwind's own z-20, z-30 and z-50, each its value.",
+      "$comment": "Bloom's Z_INDEX (styles/z-index.ts): the stacking levels its own components use; the numeric ones are Tailwind's own z-20, z-30 and z-50 and the exact levels apps write in two or more places (z-[2], z-[60]), each its value.",
       "base": 0,
       "raised": 1,
       "floating": 10,
       "dropdown": 40,
+      "2": 2,
       "20": 20,
       "30": 30,
-      "50": 50
+      "50": 50,
+      "60": 60
     },
     "shadow": {
       "$comment": "Bloom's elevation roles (design-tokens/shadows.ts): the web box-shadow of each; native draws bloomShadowStyle(role). The rest are Tailwind's own shadows (shadow-2xs … shadow-2xl), each named by its exact box-shadow, drawn as that box-shadow on every platform.",
@@ -257,7 +262,9 @@
       "slow": 300
     },
     "rotation": {
+      "$comment": "Degrees: Bloom's own turns, then the exact angle apps write in two or more places, named by its degrees (Tailwind's rotate-45 is '45').",
       "none": 0,
+      "45": 45,
       "quarter": 90,
       "half": 180
     }
