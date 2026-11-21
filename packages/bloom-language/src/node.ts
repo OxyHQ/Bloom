@@ -114,6 +114,9 @@ import type { MultiAgentChatKind } from './controls/multi-agent-chat';
 import type { AgentChatKind } from './controls/agent-chat';
 import type { WebSearchKind } from './controls/web-search';
 import type { TaskListKind } from './controls/task-list';
+import type { ShareSheetKind } from './controls/share-sheet';
+import type { NoteCardKind } from './controls/note-card';
+import type { RouteStopsKind } from './controls/route-stops';
 import type { CheckoutSheetKind } from './controls/checkout-sheet';
 import type { StayFilterKind } from './controls/stay-filters';
 import type { StaySearchKind } from './controls/stay-search';
@@ -246,6 +249,8 @@ import {
   type OfferingBadgeStyle,
   type ListingCardLayout,
   type MortgageLayout,
+  type NoteCardLayout,
+  type ShareSheetSize,
   type ShelfLayout,
   type PriceScale,
   type FeatureFilterStyle,
@@ -1237,7 +1242,8 @@ export type Modifier =
         | NoteToolbarSize
         | OfferingBadgeSize
         | LockupSize
-        | SidebarSize;
+        | SidebarSize
+        | ShareSheetSize;
     }
   | {
       readonly kind: 'style';
@@ -1290,7 +1296,8 @@ export type Modifier =
         | OfferingBadgeStyle
         | ActivityFeedGrouping
         | OrderStatusBarStyle
-        | SidebarVariant;
+        | SidebarVariant
+        | NoteCardLayout;
     }
   | {
       readonly kind: 'shape';
@@ -1592,7 +1599,10 @@ export type NodeKind =
   | AgentReplyKind
   | AiProfileCardKind
   | MultiAgentChatKind
-  | AgentChatKind;
+  | AgentChatKind
+  | RouteStopsKind
+  | NoteCardKind
+  | ShareSheetKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1917,6 +1927,7 @@ export class Node {
       | OfferingBadgeSize
       | LockupSize
       | SidebarSize,
+      | ShareSheetSize,
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
@@ -1970,6 +1981,7 @@ export class Node {
       | ActivityFeedGrouping
       | OrderStatusBarStyle
       | SidebarVariant,
+      | NoteCardLayout,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
@@ -1992,6 +2004,7 @@ export class Node {
       | RentOutstandingTone
       | AccentTone
       | EngagementBarTone,
+      | AccentTone,
   ): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
   }
