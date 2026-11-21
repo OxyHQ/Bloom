@@ -1271,3 +1271,21 @@ fn menubars_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn composition_bars_are_checked() {
+    let imports = "import { CompositionBar } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (segments, chosen, f) => CompositionBar(segments, chosen, 'Tap a segment').readoutFormat(f).padding('lg');\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("CompositionBar(s, c, 'h').valueFormat(f)", "CompositionBar has no modifier .valueFormat()"),
+        ("CompositionBar(s, c, 'h').readoutFormat()", ".readoutFormat() takes 1 argument(s), not 0"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (s, c, f) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
