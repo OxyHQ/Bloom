@@ -20,6 +20,9 @@ import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/blo
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 
 import type { AgentAvatarKind } from './controls/agent-avatar';
+import type { ShareSheetKind } from './controls/share-sheet';
+import type { NoteCardKind } from './controls/note-card';
+import type { RouteStopsKind } from './controls/route-stops';
 import type { CheckoutSheetKind } from './controls/checkout-sheet';
 import type { CardFormKind } from './controls/card-form';
 import type { MediaKind } from './controls/media';
@@ -76,6 +79,8 @@ import {
   type BadgeStyle,
   type LoadingStyle,
   type AgentMood,
+  type NoteCardLayout,
+  type ShareSheetSize,
   type ShelfLayout,
   type FollowButtonSize,
   type MapPriceMarkerSize,
@@ -462,7 +467,8 @@ export type Modifier =
         | PlayButtonSize
         | ListingHeaderSize
         | MapPriceMarkerSize
-        | FollowButtonSize;
+        | FollowButtonSize
+        | ShareSheetSize;
     }
   | {
       readonly kind: 'style';
@@ -485,7 +491,8 @@ export type Modifier =
         | VideoMessageStyle
         | ListingPhotoLayout
         | MapMarkerState
-        | ShelfLayout;
+        | ShelfLayout
+        | NoteCardLayout;
     }
   | {
       readonly kind: 'shape';
@@ -506,7 +513,8 @@ export type Modifier =
         | AiChatLineTone
         | AgentThinkingTone
         | ChatStatusTone
-        | MessageTone;
+        | MessageTone
+        | AccentTone;
     }
   | { readonly kind: 'count'; readonly key: string; readonly value: number | null | undefined }
   | { readonly kind: 'active'; readonly key: string; readonly value: boolean | undefined }
@@ -654,7 +662,10 @@ export type NodeKind =
   | ListingKind
   | MediaKind
   | CardFormKind
-  | CheckoutSheetKind;
+  | CheckoutSheetKind
+  | RouteStopsKind
+  | NoteCardKind
+  | ShareSheetKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -969,7 +980,8 @@ export class Node {
       | PlayButtonSize
       | ListingHeaderSize
       | MapPriceMarkerSize
-      | FollowButtonSize,
+      | FollowButtonSize
+      | ShareSheetSize,
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
@@ -992,7 +1004,8 @@ export class Node {
       | VideoMessageStyle
       | ListingPhotoLayout
       | MapMarkerState
-      | ShelfLayout,
+      | ShelfLayout
+      | NoteCardLayout,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
@@ -1011,7 +1024,8 @@ export class Node {
       | AiChatLineTone
       | AgentThinkingTone
       | ChatStatusTone
-      | MessageTone,
+      | MessageTone
+      | AccentTone,
   ): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
   }

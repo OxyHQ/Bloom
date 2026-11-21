@@ -196,6 +196,9 @@ import type {
   CardFormHostedFieldView,
 } from '../controls/card-form';
 import type { CheckoutSheetView } from '../controls/checkout-sheet';
+import type { RouteStopsView } from '../controls/route-stops';
+import type { NoteCardView, NoteCardSkeletonView } from '../controls/note-card';
+import type { ShareSheetView } from '../controls/share-sheet';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -493,7 +496,15 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<CardFormPostcodeView>, Of<'cardFormPostcode'>>,
       Same<MethodsOf<CardFormHostedFieldView>, Of<'cardFormHostedField'>>,
       Same<MethodsOf<CheckoutSheetView>, Of<'checkoutSheet'>>,
+      Same<MethodsOf<RouteStopsView>, Of<'routeStops'>>,
+      Same<MethodsOf<NoteCardView>, Of<'noteCard'>>,
+      Same<MethodsOf<NoteCardSkeletonView>, Of<'noteCardSkeleton'>>,
+      Same<MethodsOf<ShareSheetView>, Of<'shareSheet'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

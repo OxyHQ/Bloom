@@ -13,6 +13,9 @@ import { COMPOSER_PANELS } from './composer-panel';
 import { CHART_CARDS } from './chart-cards';
 import { CHAT_COMPOSERS } from './chat-composer';
 import { CONTAINERS } from './containers';
+import { ROUTE_STOPS } from './route-stops';
+import { NOTE_CARDS } from './note-card';
+import { SHARE_SHEETS } from './share-sheet';
 import type { ControlRenderer } from './draw';
 import { INPUTS } from './inputs';
 import { OVERLAYS } from './overlays';
@@ -38,4 +41,7 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...MEDIA,
   ...CARD_FORMS,
   ...CHECKOUT_SHEETS,
+  ...ROUTE_STOPS,
+  ...NOTE_CARDS,
+  ...SHARE_SHEETS,
 };

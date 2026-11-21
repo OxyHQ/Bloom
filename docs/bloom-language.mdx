@@ -1349,6 +1349,28 @@ amounts); `methodContent`, `footer`, `resultIllustration`, `cardEntry` and
 `notice` are language children. Its open sheet is compared by Jest; in
 Chrome it is presented outside the parity table's cells.
 
+### Route stops, note cards and the share sheet
+
+```ts
+RouteStops(trip.stops, { onPressStop: edit, onAddStop: add, onRemoveStop: remove }).density('compact')
+NoteCard(note.title, { excerpt: note.preview, tags: note.tags, meta }).style('row').tint('warning').onPress(open)
+ShareSheet({ title: 'Send to', search, people, onPersonPress: send, targets }).size('lg')
+```
+
+Bloom's `route-stops`, `note-card` and `share-sheet`. `RouteStops(stops,
+options?)` takes Bloom's stops (a stop's `badge` and `action` are React
+elements, as they are data) and its handlers; `.density('default' |
+'compact')`, `default` being its comfortable one; `.label()` names the list.
+`NoteCard(title, options?)`: `.style('grid' | 'row')` its arrangement (Bloom's
+`density`), `.tint()` an accent tone (its wash), `.loading()` its skeleton;
+`.onPress()` and `.onLongPress()` are its own, and its selection
+(`selectable`, `selected`, `onSelectedChange`) is data. `NoteCardSkeleton()`
+takes `.style()` and `.lines(n)`. `ShareSheet(options?)`: `.size('sm' | 'md'
+| 'lg')`; `peopleEmpty` is a language child.
+
+`mail-list` exports no component, only its helpers, constants and types,
+so it has no node.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a

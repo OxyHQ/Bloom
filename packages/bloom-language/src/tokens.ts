@@ -170,6 +170,11 @@ export type ListingHeaderSize = (typeof ENUMS.listingHeaderSize)[number];
 export type ListingPhotoLayout = (typeof ENUMS.listingPhotoLayout)[number];
 export type MapMarkerState = (typeof ENUMS.mapMarkerState)[number];
 export type MapPriceMarkerSize = (typeof ENUMS.mapPriceMarkerSize)[number];
+/** A note card's arrangement (Bloom `NoteCard`'s `density`): a board's `grid` or a list's `row`. */
+export type NoteCardLayout = (typeof ENUMS.noteCardLayout)[number];
+/** Bloom's accent tones (`AccentTone`): a note's wash. */
+export type AccentTone = (typeof ENUMS.accentTone)[number];
+export type ShareSheetSize = (typeof ENUMS.shareSheetSize)[number];
 export type ChatBackgroundStyle = (typeof ENUMS.chatBackgroundStyle)[number];
 export type ChatDateHeaderStyle = (typeof ENUMS.chatDateHeaderStyle)[number];
 export type ChatInfoPanelStyle = (typeof ENUMS.chatInfoPanelStyle)[number];

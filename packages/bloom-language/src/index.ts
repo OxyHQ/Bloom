@@ -527,3 +527,25 @@ export type {
 // Checkout sheet (controls/checkout-sheet.tsx)
 export { CheckoutSheet } from './controls/checkout-sheet';
 export type { CheckoutSheetOptions, CheckoutSheetView } from './controls/checkout-sheet';
+
+// Route stops (controls/route-stops.tsx)
+export { RouteStops } from './controls/route-stops';
+export type {
+  RouteStopsOptions,
+  RouteStopsView,
+} from './controls/route-stops';
+
+// Note card (controls/note-card.tsx)
+export { NoteCard, NoteCardSkeleton } from './controls/note-card';
+export type {
+  NoteCardOptions,
+  NoteCardSkeletonView,
+  NoteCardView,
+} from './controls/note-card';
+
+// Share sheet (controls/share-sheet.tsx)
+export { ShareSheet } from './controls/share-sheet';
+export type {
+  ShareSheetOptions,
+  ShareSheetView,
+} from './controls/share-sheet';
