@@ -11,6 +11,7 @@ import { INPUT_CASES } from '../../parity/inputs.cases';
 import { LAYOUT_CASES } from '../../parity/layout.cases';
 import { PIECES_CASES } from '../../parity/pieces.cases';
 import { MATERIAL_CASES } from '../../parity/material.cases';
+import { OVERLAY_CASES } from '../../parity/overlays.cases';
 import { TEXT_CASES } from '../../parity/text.cases';
 import { VARIANT_CASES } from '../../parity/variants.cases';
 
@@ -69,3 +70,4 @@ export const Layout: Story = { args: { cases: LAYOUT_CASES } };
 export const Variants: Story = { args: { cases: VARIANT_CASES } };
 export const Inputs: Story = { args: { cases: INPUT_CASES } };
 export const Containers: Story = { args: { cases: CONTAINER_CASES } };
+export const OverlaysAndFeedback: Story = { args: { cases: OVERLAY_CASES } };

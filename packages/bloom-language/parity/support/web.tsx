@@ -212,7 +212,10 @@ function reactIds(text: string): string {
 
 const MARK = 'data-parity-subject';
 
-/** What `element` draws in the document, under Bloom's provider in `scheme`. */
+/**
+ * What `element` draws in the document, under Bloom's provider in `scheme`: its
+ * own elements, then what it portals into the document's body.
+ */
 export function webTree(element: ReactNode, scheme: Scheme = 'light'): unknown {
   const container = document.createElement('div');
   document.body.appendChild(container);
@@ -229,6 +232,10 @@ export function webTree(element: ReactNode, scheme: Scheme = 'light'): unknown {
   ids = new Map();
   const scope = ancestorScope(subject, rules);
   const tree = Array.from(subject.children).map((child) => walk(child, rules, scope));
+  // What it portals into the document (a dialog, an alert, a popover) is drawn there, beside the root.
+  for (const portal of Array.from(document.body.children)) {
+    if (portal !== container) tree.push(walk(portal, rules, ancestorScope(portal, rules)));
+  }
   act(() => root.unmount());
   container.remove();
   return tree;

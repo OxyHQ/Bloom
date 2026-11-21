@@ -19,6 +19,7 @@ import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 
+import type { DialogAction } from '@oxy.so/bloom/dialog';
 import type { SearchToken } from '@oxy.so/bloom/search';
 
 import type { Binding } from './binding';
@@ -45,7 +46,18 @@ import type {
   SubmitLabel,
   TextareaResize,
 } from './controls/inputs';
-import type { OverlayKind } from './controls/overlays';
+import type {
+  AlertDefault,
+  AlertView,
+  DialogPlacement,
+  DialogView,
+  FloatingAlign,
+  FloatingSide,
+  OverlayKind,
+  PopoverView,
+  Presentation,
+  PresentedNode,
+} from './controls/overlays';
 import { OBJECTS } from './generated/spec.generated';
 import { regular, type GlassValue } from './glass';
 import type { KeyframesValue } from './motion/keyframes';
@@ -299,6 +311,22 @@ export interface ValueModifiers {
   tokens: Binding<readonly SearchToken[]>;
 
   // Overlays and feedback (controls/overlays.tsx)
+  alert: Presentation;
+  dialog: Presentation;
+  popover: Presentation;
+  message: string;
+  confirmLabel: string;
+  cancelLabel: string;
+  onConfirm: (() => void) | undefined;
+  onCancel: (() => void) | undefined;
+  hideCancel: true;
+  defaultAction: AlertDefault;
+  dismissible: boolean;
+  buttons: readonly DialogAction[];
+  presentAt: { readonly base: DialogPlacement; readonly md: DialogPlacement | undefined };
+  dismissOnBackdrop: boolean;
+  scrollable: boolean;
+  side: { readonly side: FloatingSide; readonly align: FloatingAlign | undefined };
 
   // Containers (controls/containers.tsx)
   radius: CardRadius;
@@ -317,7 +345,6 @@ export interface ValueModifiers {
   hue: ChipHue;
   media: EmptyStateMedia;
   secondaryAction: ViewNode;
-  message: string;
   retryLabel: string;
   resetKey: string | number | undefined;
   fullWidth: boolean;
@@ -1353,6 +1380,54 @@ export class Node {
   }
 
   // Overlays and feedback (controls/overlays.tsx)
+  alert(isPresented: Binding<boolean>, content: PresentedNode): Node {
+    return this.set('alert', { isPresented, content });
+  }
+  dialog(isPresented: Binding<boolean>, content: PresentedNode): Node {
+    return this.set('dialog', { isPresented, content });
+  }
+  popover(isPresented: Binding<boolean>, content: PresentedNode): Node {
+    return this.set('popover', { isPresented, content });
+  }
+  message(value: string): Node {
+    return this.set('message', value);
+  }
+  confirmLabel(value: string): Node {
+    return this.set('confirmLabel', value);
+  }
+  cancelLabel(value: string): Node {
+    return this.set('cancelLabel', value);
+  }
+  onConfirm(value: (() => void) | undefined): Node {
+    return this.set('onConfirm', value);
+  }
+  onCancel(value: (() => void) | undefined): Node {
+    return this.set('onCancel', value);
+  }
+  hideCancel(): Node {
+    return this.set('hideCancel', true);
+  }
+  defaultAction(value: AlertDefault): Node {
+    return this.set('defaultAction', value);
+  }
+  dismissible(value: boolean): Node {
+    return this.set('dismissible', value);
+  }
+  buttons(value: readonly DialogAction[]): Node {
+    return this.set('buttons', value);
+  }
+  presentAt(base: DialogPlacement, md?: DialogPlacement): Node {
+    return this.set('presentAt', { base, md });
+  }
+  dismissOnBackdrop(value: boolean): Node {
+    return this.set('dismissOnBackdrop', value);
+  }
+  scrollable(value = true): Node {
+    return this.set('scrollable', value);
+  }
+  side(side: FloatingSide, align?: FloatingAlign): Node {
+    return this.set('side', { side, align });
+  }
 
   // Containers (controls/containers.tsx)
   radius(value: CardRadius): Node {
@@ -1402,9 +1477,6 @@ export class Node {
   }
   secondaryAction(value: ViewNode): Node {
     return this.set('secondaryAction', value);
-  }
-  message(value: string): Node {
-    return this.set('message', value);
   }
   retryLabel(value: string): Node {
     return this.set('retryLabel', value);
@@ -1556,6 +1628,12 @@ export interface ViewModifiers<Self> extends ViewNode {
   footer(content: Child, options?: ScreenFooter): Self;
   /** A sheet over the screen while `open`: Bloom's Dialog, from the bottom and centred from `md`. */
   sheet(open: boolean, content: () => Child, options?: SheetOptions): Self;
+  /** An alert while `isPresented` holds (Bloom's `AlertDialog`); dismissing it sets it false. */
+  alert(isPresented: Binding<boolean>, alert: AlertView): Self;
+  /** A dialog while `isPresented` holds (Bloom's `Dialog`); dismissing it sets it false. */
+  dialog(isPresented: Binding<boolean>, dialog: DialogView): Self;
+  /** A popover anchored on this view while `isPresented` holds (Bloom's `Popover`); pressing the view opens it. */
+  popover(isPresented: Binding<boolean>, popover: PopoverView): Self;
   /** Pressing the screen's destination while it is in front (after it scrolled back to the top). */
   onReselect(value: (() => void) | undefined): Self;
   rotation(value: RotationName | MotionValue): Self;

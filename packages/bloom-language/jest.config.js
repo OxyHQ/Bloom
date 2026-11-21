@@ -39,6 +39,7 @@ module.exports = {
     '^@oxy.so/bloom/(text-field|textarea|field|label|switch|checkbox|radio|segmented-control|select|search)$': `${support}/bloom-inputs.ts`,
     '^@oxy.so/bloom/(card|item|grouped-section|chip|empty-state|admonition|tabs|kbd|error-boundary)$': `${support}/bloom-containers.ts`,
     '^@oxy.so/bloom/(app-shell|screen|dialog|tab-pager|tab-pager/expo-router|panel-routing/expo-router)$': `${support}/bloom-router.ts`,
+    '^@oxy.so/bloom/(alert-dialog|connection-status|popover|toast)$': `${support}/bloom-overlays.ts`,
     // Optional native modules: absent unless a test mocks one in.
     '^(expo|expo-blur|expo-glass-effect|expo-router|@expo/ui/swift-ui/modifiers)$': `${support}/absent/$1.ts`,
     '^@expo/ui/swift-ui$': `${support}/absent/@expo/ui/swift-ui/index.ts`,
