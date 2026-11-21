@@ -214,9 +214,11 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function Toast
           onEnd: leaving.onLeft,
         }
       : undefined;
-  // The enter plays once, from the row's first frame.
+  // The enter plays once, from the row's first frame, and lets go when it ends,
+  // so the row's later renders carry no animation for the engine to diff.
+  const [entered, setEntered] = React.useState(false);
   const enterPlay: Play | undefined =
-    motion.enter === undefined
+    motion.enter === undefined || entered
       ? undefined
       : {
           id: 0,
@@ -224,7 +226,7 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function Toast
           timing: motion.enter.timing(undefined) as Play['timing'],
           fill: 'none',
           material: true,
-          onEnd: undefined,
+          onEnd: () => setEntered(true),
         };
 
   const yPosition = useToastPosition({
