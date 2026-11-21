@@ -29,6 +29,9 @@ import { SLIDER_CASES } from '../../parity/slider.cases';
 import { ACCORDION_CASES } from '../../parity/accordion.cases';
 import { CODE_CASES } from '../../parity/code.cases';
 import { STEPPER_CASES } from '../../parity/stepper.cases';
+import { TOOLTIP_CASES } from '../../parity/tooltip.cases';
+import { BREADCRUMB_CASES } from '../../parity/breadcrumb.cases';
+import { ACTIVITY_HEATMAP_CASES } from '../../parity/activity-heatmap.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -63,6 +66,9 @@ export const FAMILIES = {
   accordion: ACCORDION_CASES,
   code: CODE_CASES,
   stepper: STEPPER_CASES,
+  tooltip: TOOLTIP_CASES,
+  breadcrumb: BREADCRUMB_CASES,
+  activityHeatmap: ACTIVITY_HEATMAP_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';

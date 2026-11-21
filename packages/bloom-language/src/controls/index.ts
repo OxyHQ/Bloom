@@ -7,7 +7,6 @@ import { SETTINGS } from './settings';
 import { DATE_PICKERS } from './date-picker';
 import { RATINGS } from './rating';
 import { STAT_BARS } from './stat-bar';
-import { STEPPERS } from './stepper';
 import { TABLES } from './table';
 import { LISTS } from './list';
 import { CAROUSELS } from './carousel';
@@ -15,6 +14,10 @@ import { MARKDOWN } from './markdown';
 import { SLIDERS } from './slider';
 import { ACCORDIONS } from './accordion';
 import { CODES } from './code';
+import { STEPPERS } from './stepper';
+import { TOOLTIPS } from './tooltip';
+import { BREADCRUMBS } from './breadcrumb';
+import { ACTIVITY_HEATMAPS } from './activity-heatmap';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -37,4 +40,7 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...ACCORDIONS,
   ...CODES,
   ...STEPPERS,
+  ...TOOLTIPS,
+  ...BREADCRUMBS,
+  ...ACTIVITY_HEATMAPS,
 };

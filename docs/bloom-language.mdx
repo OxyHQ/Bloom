@@ -1949,6 +1949,45 @@ max)`, `.step()`, `.disabled()`, `.size('sm' | 'md')`, `.style('separate' |
 remove) and `.labels({ decrement, increment, remove })`. A row's title is a
 string or a view; it takes `.supporting()` and `.dividers()`.
 
+### Tooltips
+
+```ts
+Tooltip(Button(Icon(RiInformationLine)).shape('circle').label('About'), 'About this page')
+  .presented([hinting, setHinting]).side('top')
+```
+
+Bloom's `Tooltip`, controlled, because what opens it differs by platform (a
+resting pointer, a long press). `Tooltip(trigger, content)`: the content is a
+string (also its accessible text) or a view named with `.label()`. It takes
+`.presented([visible, set])`, `.side('top' | 'bottom')`, `.openDelay(ms)` and
+`.size('sm' | 'md')`; the trigger carries its own box.
+
+### Breadcrumbs
+
+```ts
+Breadcrumb(
+  BreadcrumbItem('Home').link('/'),
+  BreadcrumbItem('Projects').onPress(openProjects),
+  BreadcrumbItem(project.name).active(true),
+).collapses().label('Breadcrumb')
+```
+
+Bloom's `Breadcrumb` and `BreadcrumbItem`. A trail takes `.size()`,
+`.collapses()` (its middle folds into a menu; it scrolls by default),
+`.separatorView(view)` and `.labels({ overflow })`. An item's title is a string
+or a view; it takes `.size()`, `.icon()`, `.prefix(view)`, `.link(href)`, its
+press, `.active(true)` (the current page), `.disabled()` and `.hoverMenu()`.
+
+### Activity heatmaps
+
+```ts
+ActivityHeatmap(days).days(182).weekStart(1).onPressDay(showDay)
+```
+
+Bloom's `ActivityHeatmap`: `.days(n)`, `.endDate()`, `.levels([...])`,
+`.emptyTint(role)`, `.cellSize()`, `.spacing()`, `.weekStart(0 | 1)`,
+`.labels({ months, weekdays })` and `.onPressDay()`. Its steps are the accent's.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2377,7 +2416,7 @@ and `@oxy.so/bloom-data` beside it.
 - Generic components (see [Generic components](#generic-components)), drawn as
   Bloom's own: the date and time pickers, ratings, meters and progress bars, stickers,
   tables, rows and lists, carousels, markdown, sliders,
-  accordions, code, steppers.
+  accordions, code, steppers, tooltips, breadcrumbs, activity heatmaps.
 
 **Not built**
 

@@ -506,3 +506,15 @@ export type { CodeBlockView, CodeLinesView, CodeView, PreView } from './controls
 // Steppers (controls/stepper.tsx)
 export { Stepper, StepperRow } from './controls/stepper';
 export type { StepperLabels, StepperRowView, StepperView } from './controls/stepper';
+
+// Tooltips (controls/tooltip.tsx)
+export { Tooltip } from './controls/tooltip';
+export type { TooltipView } from './controls/tooltip';
+
+// Breadcrumbs (controls/breadcrumb.tsx)
+export { Breadcrumb, BreadcrumbItem } from './controls/breadcrumb';
+export type { BreadcrumbItemView, BreadcrumbView } from './controls/breadcrumb';
+
+// Activity heatmaps (controls/activity-heatmap.tsx)
+export { ActivityHeatmap } from './controls/activity-heatmap';
+export type { ActivityHeatmapLabels, ActivityHeatmapView } from './controls/activity-heatmap';
