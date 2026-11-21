@@ -540,7 +540,9 @@
     "messagePosition": ["single", "first", "middle", "last"],
     "messageMediaFit": ["bleed", "inset", "bare"],
     "mapAttributionStyle": ["island", "inline"],
-    "locationPuckMode": ["following", "compass", "navigating"]
+    "locationPuckMode": ["following", "compass", "navigating"],
+    "placeCardStyle": ["row", "detail"],
+    "directionsDensity": ["comfortable", "compact"]
   },
   "glass": {
     "$comment": [
@@ -1548,7 +1550,27 @@
       "modifiers": ["style"],
       "style": "locationPuckMode"
     },
-    "navigationBanner": { "constructors": ["NavigationBanner"], "modifiers": [] }
+    "navigationBanner": { "constructors": ["NavigationBanner"], "modifiers": [] },
+    "placeCard": {
+      "constructors": ["PlaceCard"],
+      "modifiers": ["style", "loading"],
+      "style": "placeCardStyle"
+    },
+    "placeHours": { "constructors": ["PlaceHours"], "modifiers": [] },
+    "placeInfoList": { "constructors": ["PlaceInfoList"], "modifiers": [] },
+    "placeTransit": { "constructors": ["PlaceTransit"], "modifiers": [] },
+    "placeListCard": { "constructors": ["PlaceListCard"], "modifiers": ["tint"], "tint": "color" },
+    "placeList": { "constructors": ["PlaceList"], "modifiers": ["disabled"] },
+    "directionsSteps": {
+      "constructors": ["DirectionsSteps"],
+      "modifiers": ["size"],
+      "size": "directionsDensity"
+    },
+    "placePicker": {
+      "constructors": ["PlacePicker"],
+      "modifiers": ["size", "disabled"],
+      "size": "controlSize"
+    }
   },
   "sfSymbols": {
     "$comment": [
