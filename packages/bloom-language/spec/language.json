@@ -877,7 +877,13 @@
     "page": ["value"],
     "streaming": ["value?"],
     "onLinkPress": ["value"],
-    "codeBlock": ["value"]
+    "codeBlock": ["value"],
+    "keyboardStep": ["value"],
+    "thumbSize": ["space"],
+    "fillTint": ["color"],
+    "thumbTint": ["color"],
+    "onCommit": ["value"],
+    "valueFormat": ["value"]
   },
   "universal": [
     "padding",
@@ -1430,6 +1436,49 @@
       "constructors": ["Markdown"],
       "modifiers": ["streaming", "size", "onLinkPress", "codeBlock"],
       "size": "markdownSize"
+    },
+    "slider": {
+      "constructors": ["Slider"],
+      "modifiers": [
+        "size",
+        "tint",
+        "bounds",
+        "step",
+        "keyboardStep",
+        "disabled",
+        "thickness",
+        "thumbSize",
+        "fillTint",
+        "trackTint",
+        "thumbTint",
+        "showsValue",
+        "onCommit",
+        "valueFormat"
+      ],
+      "size": "controlSize",
+      "tint": "tone"
+    },
+    "rangeSlider": {
+      "constructors": ["RangeSlider"],
+      "modifiers": [
+        "size",
+        "tint",
+        "bounds",
+        "step",
+        "keyboardStep",
+        "disabled",
+        "thickness",
+        "thumbSize",
+        "fillTint",
+        "trackTint",
+        "thumbTint",
+        "showsValue",
+        "onCommit",
+        "valueFormat",
+        "labels"
+      ],
+      "size": "controlSize",
+      "tint": "tone"
     }
   },
   "sfSymbols": {
