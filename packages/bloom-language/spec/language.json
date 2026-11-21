@@ -362,11 +362,12 @@
     ["opacity"]
   ],
   "environment": {
-    "$comment": "The text and icon traits a view hands everything inside it, and what each is when nothing sets it.",
+    "$comment": "The text and icon traits a view hands everything inside it, and what each is when nothing sets it. fontSize is the size of a Bloom Text with no variant, which a leading or a tracking measures from when no font is set.",
     "traits": ["foreground", "font", "weight", "leading", "tracking"],
     "defaults": {
       "foreground": "foreground",
-      "rampWeight": "regular"
+      "rampWeight": "regular",
+      "fontSize": 13
     }
   },
   "modifiers": {

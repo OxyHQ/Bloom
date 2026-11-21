@@ -846,7 +846,8 @@ export const ENVIRONMENT = [
 ] as const;
 export const ENVIRONMENT_DEFAULTS = {
   "foreground": "foreground",
-  "rampWeight": "regular"
+  "rampWeight": "regular",
+  "fontSize": 13
 } as const;
 
 /** Each modifier's parameter types, in order. */
