@@ -74,6 +74,11 @@ type LensMenuComponent = ComponentType<{
     openWithItems?: boolean;
     /** The menu has finished closing. */
     onMenuClosed?: () => void;
+    /**
+     * The colour the trigger sits on: the trigger draws its lens at rest in its own place in the
+     * view hierarchy, against it (a trigger in a scroll); the overlay draws it only while open.
+     */
+    restBackdrop?: string;
     accessibilityLabel?: string;
     style?: StyleProp<ViewStyle>;
     children?: ReactNode;

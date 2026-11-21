@@ -165,26 +165,20 @@ describe('the menu is the lens menu', () => {
     Submenu('Share', Item('Link')),
   ).label('Post options');
 
-  it('closed, a plain trigger sits on a base the app draws, holding the rows and their glyphs', () => {
+  it('closed, the trigger is the upstream glass trigger, its lens drawn in place on the surface it sits on', () => {
     const r = mount(toElement(node));
     const lens = only(r, 'BloomLensMenu');
-    const panel = lens.props.config.tintColor;
     expect(lens.props).toMatchObject({
-      // No lens in a scroll: the engine would draw it over the fixed layer.
-      lens: false,
-      morph: true,
+      // The base is the trigger's own lens, and it is what becomes the menu.
+      lens: true,
       colorScheme: 'light',
       fontFamily: 'Inter',
       openWithItems: false,
-      // The menu morphs out of the base, in its colour, and goes back as the upstream trigger's does.
-      triggerConfig: { tintColor: panel, tintOpacity: 1, absorb: { duration: 0.48 } },
+      // In a scroll: drawn in its place, against the surface's fill, not over the window.
+      restBackdrop: LIGHT.background,
+      // The upstream app's glass trigger config.
+      triggerConfig: { absorb: { duration: 0.48 } },
     });
-    // The base: a capsule in the panel's colour around the trigger.
-    const base = r.root.find(
-      (instance) =>
-        (instance.type as string) === 'View' && instance.props.style?.backgroundColor === panel,
-    );
-    expect(base.props.style.borderRadius).toBeGreaterThan(100);
     // The upstream defaults: at its rows' width, from the side the trigger is on; a capsule
     // shape; the panel at the engine's own transparency.
     expect(lens.props.alignment).toBeUndefined();
@@ -271,6 +265,8 @@ describe('the menu is the lens menu', () => {
       triggerConfig: { tintColor: LIGHT.primary, absorb: { duration: 0.48 } },
       items: [{ id: 'r0', title: 'a' }],
     });
+    // The fixed layer's glass: drawn by the window, as upstream.
+    expect(lens.props.restBackdrop).toBeUndefined();
     expect(only(r, 'BloomButton').props.material).toBeUndefined();
     act(() => only(r, 'Pressable').props.onPress());
     expect(mockLensHandle.open).toHaveBeenCalledTimes(1);

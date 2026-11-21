@@ -1,3 +1,6 @@
+import { useContext } from 'react';
+
+import { PaintContext } from './bloom-theme';
 export * as tokens from '../../../../../src/styles/tokens';
 export { adoptStyleSheet } from '../../../../../src/styles/adopt-style-sheet';
 export { PRESS_HOST_CLASS, PRESS_HOST_STYLE } from '../../../../../src/styles/press-host';
@@ -9,4 +12,8 @@ export function resolveSurfaceLevel(theme: { colors: Record<string, string> }, _
     text: theme.colors.text,
     textSecondary: theme.colors.textSecondary,
   };
+}
+/** The fill of the surface around: the stand-in theme's page. */
+export function useSurfaceFill(): string {
+  return useContext(PaintContext).background ?? '';
 }

@@ -43,6 +43,9 @@ class GlassMenuAndroidModule : Module() {
       Prop("openWithItems") { view: GlassMenuAndroidView, open: Boolean? ->
         view.openWithItems = open ?: false
       }
+      Prop("restBackdrop") { view: GlassMenuAndroidView, color: android.graphics.Color? ->
+        view.restBackdrop = color?.toArgb()
+      }
       Prop("alignment") { view: GlassMenuAndroidView, alignment: String? ->
         view.alignment = alignment ?: "auto"
       }

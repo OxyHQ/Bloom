@@ -867,16 +867,18 @@ Menu(MORE, PostMenu({ post }))
 - *Android:* the lens menu is the upstream app's menu component itself
   (`@oxy.so/bloom-lens`: its `Menu`, `Menu.Trigger` and `Menu.Content`,
   copied verbatim by `sync-from-upstream.sh`), and this host only adapts the
-  `Menu` to it. Every trigger has a base, drawn at rest, which the menu grows
-  out of and goes back into (`absorb` over 0.48 s, the upstream app's trigger
-  config), as the upstream app's buttons do. A trigger on `.glass()` (the fixed
-  layer: a header's, a bar's) is its glass trigger: the lens is the base, with
-  the glass's tint and frost. Any other (a feed row's ⋯) is its plain trigger
-  on a capsule the app draws in the menu panel's colour, and the menu morphs
-  out of it in that colour: a lens in a scroll would be drawn over the fixed
-  layer (the engine draws every lens above the window) and cost a draw per
-  frame. The trigger's `.corner()` is the base's radius (a capsule without
-  one). The trigger's press layer opens the menu
+  `Menu` to it. Every trigger is the upstream app's glass trigger: its lens is
+  the trigger's base, and that base itself becomes the menu (it squishes under
+  the press, flows into the panel and takes it back, with the upstream app's
+  trigger config, `absorb` over 0.48 s). A trigger on `.glass()` (the fixed
+  layer: a header's, a bar's) is drawn as upstream, by the window, with the
+  glass's tint and frost. Any other (a feed row's ⋯) draws its lens at rest in
+  its own place in the page (`restBackdrop`, the engine's Bloom patch), against
+  the fill of the surface it sits on: it scrolls, clips and stacks with the
+  page, under the bars, and a layer keeps it, so a scroll redraws no lens. The
+  window draws it only while its menu is open, from that same base. The
+  trigger's `.corner()` is the base's radius (a capsule without one). The
+  trigger's press layer opens the menu
   natively (a trigger's own press is left out); press-and-drag across the open
   panel, submenus, haptics and predictive back are the component's own. Rows
   given as they are (tagged, or with handlers) become its `Menu.Item`,
