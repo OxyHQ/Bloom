@@ -9,6 +9,7 @@ import { RATINGS } from './rating';
 import { STAT_BARS } from './stat-bar';
 import { TABLES } from './table';
 import { LISTS } from './list';
+import { CAROUSELS } from './carousel';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -25,4 +26,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...STAT_BARS,
   ...TABLES,
   ...LISTS,
+  ...CAROUSELS,
 };

@@ -93,3 +93,4 @@ export const MetersAndProgress: Story = { args: { family: 'statBar' } };
 export const Stickers: Story = { args: { family: 'sticker' } };
 export const Tables: Story = { args: { family: 'table' } };
 export const RowsAndLists: Story = { args: { family: 'list' } };
+export const Carousels: Story = { args: { family: 'carousel' } };
