@@ -35,7 +35,7 @@ export type { MotionCss, MotionSpec, SpringPhysics, SpringSpec } from './spec';
 // the web (docs/motion.mdx). The Bloom language's motion modifiers draw on it.
 export { EASING, MOTION, SCALE } from './tokens';
 export type { EasingName, MotionName, ScaleName } from './tokens';
-export { cssCurve, easingCurve, sampledTiming, timingOf } from './timing';
+export { cssCurve, easingCurve, sampledTiming, timingOf, withDelay } from './timing';
 export type { Curve, Timing } from './timing';
 export { defineKeyframes, KeyframesValue, rollKeyframes } from './keyframes';
 export type { Keyframe, MotionLike, ResolvedFrame, TransformPart } from './keyframes';
