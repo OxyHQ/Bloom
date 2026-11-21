@@ -119,6 +119,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("segmentedStyle", &["solid", "plain"]),
     ("searchCollapse", &["auto"]),
     ("otpCharacters", &["numeric", "alphanumeric"]),
+    ("dragAction", &["copy", "move", "link"]),
 ];
 
 /// The modifiers a variant (`when(condition, v => v…)`) can change.
@@ -434,6 +435,12 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("presentedAt", &["value"]),
     ("revealsOnAppear", &["value?"]),
     ("keepsMounted", &["value"]),
+    ("fileTypes", &["value"]),
+    ("dragActions", &["value", "dragAction?"]),
+    ("folder", &["value"]),
+    ("onDragEnter", &["value"]),
+    ("onDragOver", &["value"]),
+    ("onDragLeave", &["value"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -538,6 +545,7 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "animatedCheck", constructors: &["AnimatedCheck"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "size", "tint"], size: Some("space"), tint: Some("color"), style: None, shape: None },
     NodeSpec { kind: "contextMenu", constructors: &["ContextMenu"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "actions", "presentedAt", "disabled"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "collapsible", constructors: &["Collapsible"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "revealMotion", "revealsOnAppear", "keepsMounted"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "dropZone", constructors: &["DropZone"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "fileTypes", "dragActions", "folder", "disabled", "onDragEnter", "onDragOver", "onDragLeave"], size: None, tint: None, style: None, shape: None },
 ];
 
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,

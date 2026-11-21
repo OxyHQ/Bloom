@@ -565,7 +565,8 @@
     "radioStyle": ["default", "card", "chip", "swatch"],
     "segmentedStyle": ["solid", "plain"],
     "searchCollapse": ["auto"],
-    "otpCharacters": ["numeric", "alphanumeric"]
+    "otpCharacters": ["numeric", "alphanumeric"],
+    "dragAction": ["copy", "move", "link"]
   },
   "glass": {
     "$comment": [
@@ -1005,7 +1006,13 @@
     "onComplete": ["value"],
     "presentedAt": ["value"],
     "revealsOnAppear": ["value?"],
-    "keepsMounted": ["value"]
+    "keepsMounted": ["value"],
+    "fileTypes": ["value"],
+    "dragActions": ["value", "dragAction?"],
+    "folder": ["value"],
+    "onDragEnter": ["value"],
+    "onDragOver": ["value"],
+    "onDragLeave": ["value"]
   },
   "universal": [
     "padding",
@@ -1882,6 +1889,18 @@
     "collapsible": {
       "constructors": ["Collapsible"],
       "modifiers": ["revealMotion", "revealsOnAppear", "keepsMounted"]
+    },
+    "dropZone": {
+      "constructors": ["DropZone"],
+      "modifiers": [
+        "fileTypes",
+        "dragActions",
+        "folder",
+        "disabled",
+        "onDragEnter",
+        "onDragOver",
+        "onDragLeave"
+      ]
     }
   },
   "sfSymbols": {
