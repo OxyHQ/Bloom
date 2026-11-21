@@ -14,9 +14,11 @@ const PALETTE: Record<BloomTone, AccentTone> = {
   info: 'info',
 };
 
-const TONE_OF_ACCENT = Object.fromEntries(
-  Object.entries(PALETTE).map(([tone, accent]) => [accent, tone]),
-) as Record<AccentTone, BloomTone>;
+/** Every Bloom tone as itself, and every accent tone as the Bloom tone `PALETTE` maps onto it. */
+const BLOOM_TONE = Object.fromEntries([
+  ...Object.keys(PALETTE).map((tone) => [tone, tone]),
+  ...Object.entries(PALETTE).map(([tone, accent]) => [accent, tone]),
+]) as Record<AccentTone | BloomTone, BloomTone>;
 
 /**
  * The Bloom tone an accent tone or a Bloom tone paints in: `PALETTE` read
@@ -24,9 +26,7 @@ const TONE_OF_ACCENT = Object.fromEntries(
  * `tertiary` included) reaches the palette `resolveBloomColors` reads.
  */
 export function bloomToneOf(tone: AccentTone | BloomTone): BloomTone {
-  return Object.hasOwn(TONE_OF_ACCENT, tone)
-    ? TONE_OF_ACCENT[tone as AccentTone]
-    : (tone as BloomTone);
+  return BLOOM_TONE[tone];
 }
 
 /** Uses paired semantic colors; never manufactures alpha from a token. */
