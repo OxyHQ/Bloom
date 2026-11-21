@@ -513,7 +513,10 @@
     "sidebarSurface": ["card", "plain", "docked"],
     "sidebarSize": ["sm", "md", "lg"],
     "footerPinning": ["absolute", "document", "inline", "sticky"],
-    "settingsView": ["navigation", "page"]
+    "settingsView": ["navigation", "page"],
+    "shellLayout": ["workspace", "collection-detail", "feed", "deck", "catalog", "map-browser"],
+    "shellPresentation": ["continuous", "framed", "floating"],
+    "panelRole": ["main", "collection", "detail", "inspector", "context", "canvas"]
   },
   "glass": {
     "$comment": [
@@ -840,7 +843,21 @@
     "keywords": ["children"],
     "content": ["value"],
     "fullBleed": ["value?"],
-    "initialView": ["settingsView"]
+    "initialView": ["settingsView"],
+    "shellLayout": ["shellLayout"],
+    "shellPresentation": ["shellPresentation"],
+    "panels": ["children"],
+    "destinations": ["children"],
+    "panelRole": ["panelRole"],
+    "minWidth": ["space"],
+    "maxWidth": ["space"],
+    "resizable": ["value?"],
+    "keepMounted": ["value?"],
+    "page": ["value?"],
+    "preload": ["value?"],
+    "bar": ["value?"],
+    "sidebar": ["value?"],
+    "sidebarAfter": ["value"]
   },
   "universal": [
     "padding",
@@ -1164,7 +1181,17 @@
     "appLayout": {
       "constructors": ["AppLayout"],
       "universal": false,
-      "modifiers": ["primaryAction", "bottomBar", "shell", "testID"]
+      "modifiers": [
+        "primaryAction",
+        "bottomBar",
+        "shell",
+        "testID",
+        "shellLayout",
+        "shellPresentation",
+        "panels",
+        "destinations",
+        "onReselect"
+      ]
     },
     "navStack": {
       "constructors": ["Stack"],
@@ -1339,6 +1366,40 @@
       "constructors": ["SettingsItem"],
       "universal": false,
       "modifiers": ["id", "content", "title", "fullBleed", "disabled", "onPress"]
+    },
+    "panel": {
+      "constructors": ["Panel"],
+      "universal": false,
+      "modifiers": [
+        "panelRole",
+        "label",
+        "width",
+        "minWidth",
+        "maxWidth",
+        "resizable",
+        "hidden",
+        "keepMounted",
+        "presented",
+        "onPresentedChange",
+        "testID"
+      ]
+    },
+    "destination": {
+      "constructors": ["Destination"],
+      "universal": false,
+      "modifiers": [
+        "label",
+        "icon",
+        "activeIcon",
+        "badge",
+        "page",
+        "preload",
+        "bar",
+        "sidebar",
+        "sidebarAfter",
+        "onPress",
+        "onLongPress"
+      ]
     },
     "pageFooter": {
       "constructors": ["PageFooter"],

@@ -100,6 +100,9 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("sidebarSize", &["sm", "md", "lg"]),
     ("footerPinning", &["absolute", "document", "inline", "sticky"]),
     ("settingsView", &["navigation", "page"]),
+    ("shellLayout", &["workspace", "collection-detail", "feed", "deck", "catalog", "map-browser"]),
+    ("shellPresentation", &["continuous", "framed", "floating"]),
+    ("panelRole", &["main", "collection", "detail", "inspector", "context", "canvas"]),
 ];
 
 /// The modifiers a variant (`when(condition, v => v…)`) can change.
@@ -302,6 +305,20 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("content", &["value"]),
     ("fullBleed", &["value?"]),
     ("initialView", &["settingsView"]),
+    ("shellLayout", &["shellLayout"]),
+    ("shellPresentation", &["shellPresentation"]),
+    ("panels", &["children"]),
+    ("destinations", &["children"]),
+    ("panelRole", &["panelRole"]),
+    ("minWidth", &["space"]),
+    ("maxWidth", &["space"]),
+    ("resizable", &["value?"]),
+    ("keepMounted", &["value?"]),
+    ("page", &["value?"]),
+    ("preload", &["value?"]),
+    ("bar", &["value?"]),
+    ("sidebar", &["value?"]),
+    ("sidebarAfter", &["value"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -340,7 +357,7 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "lottie", constructors: &["Lottie"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "loop", "paused", "fallback"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "embed", constructors: &["Embed"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "view", constructors: &[], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe"], size: None, tint: None, style: None, shape: None },
-    NodeSpec { kind: "appLayout", constructors: &["AppLayout"], modifiers: &["primaryAction", "bottomBar", "shell", "testID"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "appLayout", constructors: &["AppLayout"], modifiers: &["primaryAction", "bottomBar", "shell", "testID", "shellLayout", "shellPresentation", "panels", "destinations", "onReselect"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "navStack", constructors: &["Stack"], modifiers: &[], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "route", constructors: &["Sheet"], modifiers: &[], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "tabView", constructors: &["TabView"], modifiers: &[], size: None, tint: None, style: None, shape: None },
@@ -359,6 +376,8 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "settings", constructors: &["SettingsModal"], modifiers: &["presented", "onPresentedChange", "selection", "onSelect", "initialView", "presentation", "testID"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "settingsGroup", constructors: &["SettingsGroup"], modifiers: &["id"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "settingsItem", constructors: &["SettingsItem"], modifiers: &["id", "content", "title", "fullBleed", "disabled", "onPress"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "panel", constructors: &["Panel"], modifiers: &["panelRole", "label", "width", "minWidth", "maxWidth", "resizable", "hidden", "keepMounted", "presented", "onPresentedChange", "testID"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "destination", constructors: &["Destination"], modifiers: &["label", "icon", "activeIcon", "badge", "page", "preload", "bar", "sidebar", "sidebarAfter", "onPress", "onLongPress"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "pageFooter", constructors: &["PageFooter"], modifiers: &["toolbar", "pinning", "scrollEdge", "ignoresSafeArea", "testID"], size: None, tint: None, style: None, shape: None },
 ];
 
