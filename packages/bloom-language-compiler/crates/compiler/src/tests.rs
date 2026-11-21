@@ -162,7 +162,41 @@ fn frame_keys_and_values_are_checked() {
     let output = compiled("export const x = () => HStack().frame({ hieght: 'md' });\n");
     assert_eq!(output.diagnostics[0].message, ".frame() has no 'hieght'");
     let output = compiled("export const x = () => HStack().frame({ height: 'mdd' });\n");
-    assert_eq!(output.diagnostics[0].message, "Unknown space token 'mdd' for .frame()");
+    assert_eq!(output.diagnostics[0].message, "Unknown length token 'mdd' for .frame()");
+    let output = compiled("export const x = () => HStack().frame({ width: 'full', maxWidth: '1/2' });\n");
+    assert!(output.diagnostics.is_empty());
+}
+
+#[test]
+fn placement_keys_and_tokens_are_checked() {
+    let output = compiled("export const x = () => HStack().position({ top: 'none', trailing: '-sm' });\n");
+    assert!(output.diagnostics.is_empty());
+    let output = compiled("export const x = () => HStack().position({ right: 'sm' });\n");
+    assert_eq!(output.diagnostics[0].message, ".position() has no 'right'");
+    let output = compiled("export const x = () => HStack().offset({ x: '2xs', y: 'big' });\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown padding token 'big' for .offset()");
+    let output = compiled("export const x = () => HStack().zIndex(10);\n");
+    assert!(output.diagnostics.is_empty(), "a number is the runtime's to reject");
+    let output = compiled("export const x = () => HStack().zIndex('top');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown zIndex token 'top' for .zIndex()");
+    let output = compiled("export const x = () => HStack().justify('middle');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown justify token 'middle' for .justify()");
+    let output = compiled("export const x = () => Text('a').justify('center');\n");
+    assert_eq!(output.diagnostics[0].message, "Text has no modifier .justify()");
+}
+
+#[test]
+fn elevation_rings_and_overlays_are_checked() {
+    let ok = compiled(
+        "export const x = () => HStack().shadow('m').ring('primary', 'thick', '2xs').overlay(Text('x'), 'top-trailing').background(Text('y'), 'bottom');\n",
+    );
+    assert!(ok.diagnostics.is_empty());
+    let output = compiled("export const x = () => HStack().shadow('lg');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown shadow token 'lg' for .shadow()");
+    let output = compiled("export const x = () => HStack().ring('none');\n");
+    assert!(output.diagnostics.is_empty());
+    let output = compiled("export const x = () => HStack().overlay(Text('x'), 'top-right');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown overlayAlignment token 'top-right' for .overlay()");
 }
 
 #[test]

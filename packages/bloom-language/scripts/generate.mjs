@@ -39,7 +39,11 @@ const check = process.argv.includes('--check');
 const withoutComment = (table) =>
   Object.fromEntries(Object.entries(table).filter(([key]) => key !== '$comment'));
 
-const { scales, enums } = spec;
+const { enums } = spec;
+const scales = Object.fromEntries(
+  Object.entries(spec.scales).map(([name, table]) => [name, withoutComment(table)]),
+);
+const objects = withoutComment(spec.objects);
 const typeRamp = withoutComment(spec.typeRamp);
 const colors = withoutComment(spec.colors);
 const modifiers = withoutComment(spec.modifiers);
@@ -100,6 +104,9 @@ export const SHRINK = ${ts(scales.shrink)} as const;
 export const ALIGNMENT = ${ts(scales.alignment)} as const;
 export const GLASS_OPACITY = ${ts(scales.glassOpacity)} as const;
 export const DURATION = ${ts(scales.duration)} as const;
+export const LENGTH = ${ts(scales.length)} as const;
+export const Z_INDEX = ${ts(scales.zIndex)} as const;
+export const SHADOW = ${ts(scales.shadow)} as const;
 
 /** Bloom's type ramp: \`<family>-<weight>\` → [fontSize, lineHeight, letterSpacing, fontWeight]. */
 export const TYPE_FAMILIES = ${ts(typeFamilies)} as const;
@@ -126,6 +133,9 @@ export const LAYER_RANK = ${ts(layerRank)} as const;
 /** The traits a view hands everything inside it. */
 export const ENVIRONMENT = ${ts(spec.environment.traits)} as const;
 export const ENVIRONMENT_DEFAULTS = ${ts(spec.environment.defaults)} as const;
+
+/** The object parameters (\`frame\`, \`position\`'s edges, \`offset\`): their keys and the token set of each value. */
+export const OBJECTS = ${ts(objects)} as const;
 
 /** Each modifier's parameter types, in order. */
 export const MODIFIERS = ${ts(modifiers)} as const;
@@ -163,6 +173,8 @@ const LOGICAL = {
   borderEndWidth: 'border-inline-end-width',
   borderStartColor: 'border-inline-start-color',
   borderEndColor: 'border-inline-end-color',
+  start: 'inset-inline-start',
+  end: 'inset-inline-end',
 };
 /** react-native-web's precedence group for logical longhands. */
 const LOGICAL_ORDER = 2.2;
@@ -220,6 +232,8 @@ for (const property of [
 ]) {
   for (const value of spaceValues) valueClass(property, value);
 }
+for (const property of objects.frame.keys)
+  for (const value of Object.values(scales.length)) valueClass(property, value);
 for (const value of numbers(scales.corner)) valueClass('borderRadius', value);
 valueClass('overflow', 'hidden');
 for (const value of numbers(scales.opacity)) valueClass('opacity', value);
@@ -231,14 +245,42 @@ for (const edge of ['', 'Top', 'Bottom', 'Start', 'End']) {
 for (const role of Object.keys(colors)) {
   roleClass('color', role);
   roleClass('backgroundColor', role);
+  roleClass('outlineColor', role);
 }
+// Elevation and rings (style.ts, layers): Bloom's shadow roles, an outline at each border width.
+for (const value of Object.values(scales.shadow)) valueClass('boxShadow', value);
+for (const value of ['solid', 'none']) valueClass('outlineStyle', value);
+for (const value of numbers(scales.borderWidth)) valueClass('outlineWidth', value);
+for (const value of spaceValues) valueClass('outlineOffset', value);
 // Stacks and placement.
 valueClass('flexDirection', 'row');
 valueClass('position', 'relative');
 valueClass('position', 'absolute');
 for (const side of ['top', 'right', 'bottom', 'left']) valueClass(side, 0);
-valueClass('justifyContent', 'space-between');
-for (const value of Object.values(scales.alignment)) valueClass('alignItems', value);
+// A pinned view's edges (style.ts, placement): every space rung, inward and outward.
+for (const side of ['top', 'bottom', 'start', 'end']) {
+  for (const value of spaceValues) {
+    valueClass(side, value);
+    if (value > 0) valueClass(side, -value);
+  }
+}
+for (const value of numbers(scales.zIndex)) valueClass('zIndex', value);
+for (const value of ['none', 'flex']) valueClass('display', value);
+valueClass('flexDirection', 'column');
+for (const value of ['wrap', 'nowrap']) valueClass('flexWrap', value);
+for (const value of [
+  'flex-start',
+  'center',
+  'flex-end',
+  'space-between',
+  'space-around',
+  'space-evenly',
+])
+  valueClass('justifyContent', value);
+for (const value of Object.values(scales.alignment)) {
+  valueClass('alignItems', value);
+  valueClass('alignSelf', value);
+}
 valueClass('flex', 1);
 for (const value of numbers(scales.shrink)) valueClass('flexShrink', value);
 // Type: sizes, ramp line heights, every size at every leading and every tracking, weights.
@@ -290,7 +332,10 @@ const negative = Object.keys(scales.space).map((name) => `-${name}`);
 const tokenSets = {
   space: Object.keys(scales.space),
   padding: [...Object.keys(scales.space), ...negative],
-  spacing: [...Object.keys(scales.space), ...enums.spacingExtra],
+  length: [...Object.keys(scales.space), ...Object.keys(scales.length)],
+  zIndex: Object.keys(scales.zIndex),
+  shadow: Object.keys(scales.shadow),
+  ring: [...Object.keys(colors), ...enums.ringExtra],
   corner: [...Object.keys(scales.corner), ...enums.cornerExtra],
   font: [...typeFamilies, ...Object.keys(scales.fontSize), ...enums.fontFamily],
   weight: Object.keys(scales.weight),
@@ -353,8 +398,15 @@ ${Object.entries(nodes)
   .join('\n')}
 ];
 
-/// The keys \`frame({ … })\` takes; each value is a space token.
-pub const FRAME_KEYS: &[&str] = &["width", "height", "minWidth", "minHeight", "maxWidth", "maxHeight"];
+/// An object parameter (\`frame({ … })\`, \`position({ … })\`…): its type, the keys it takes,
+/// and the token set every value is in.
+pub const OBJECTS: &[(&str, &[&str], &str)] = &[
+${Object.entries(objects)
+  .map(
+    ([name, { keys, tokens }]) => `    (${rustStr(name)}, ${rustList(keys)}, ${rustStr(tokens)}),`,
+  )
+  .join('\n')}
+];
 `;
 
 // ── The SF Symbols table ─────────────────────────────────────────

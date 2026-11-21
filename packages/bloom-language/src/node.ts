@@ -18,11 +18,19 @@ import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 
+import { OBJECTS } from './generated/spec.generated';
 import { regular, type GlassValue } from './glass';
 import {
   tokenKey,
+  type AppToken,
   type Alignment,
+  type Axis,
   type BorderEdge,
+  type Justify,
+  type LengthToken,
+  type OverlayAlignment,
+  type ShadowName,
+  type ZIndexName,
   type ButtonShape,
   type ContentFit,
   type DurationName,
@@ -70,7 +78,10 @@ import {
 
 export type {
   Alignment,
+  Axis,
   BorderEdge,
+  Justify,
+  OverlayAlignment,
   ButtonShape,
   ContentFit,
   Edge,
@@ -215,13 +226,28 @@ export type ValueModifier = {
   };
 }[keyof ValueModifiers];
 
+/** A frame's lengths: space rungs, app tokens, or lengths relative to the parent (`full`, `1/2`…). */
 export interface FrameSpec {
-  width?: SpaceToken;
-  height?: SpaceToken;
-  minWidth?: SpaceToken;
-  minHeight?: SpaceToken;
-  maxWidth?: SpaceToken;
-  maxHeight?: SpaceToken;
+  width?: LengthToken;
+  height?: LengthToken;
+  minWidth?: LengthToken;
+  minHeight?: LengthToken;
+  maxWidth?: LengthToken;
+  maxHeight?: LengthToken;
+}
+
+/** A pinned view's distance from each edge of its parent (`none` touches it; `-sm` pulls past it). */
+export interface PositionEdges {
+  top?: PaddingToken;
+  bottom?: PaddingToken;
+  leading?: PaddingToken;
+  trailing?: PaddingToken;
+}
+
+/** How far a view is drawn from where it is laid out: `x` to the right, `y` down. */
+export interface OffsetSpec {
+  x?: PaddingToken;
+  y?: PaddingToken;
 }
 
 export type Modifier =
@@ -233,6 +259,27 @@ export type Modifier =
     }
   | { readonly kind: 'frame'; readonly key: string; readonly value: FrameSpec }
   | { readonly kind: 'grow'; readonly key: string }
+  | { readonly kind: 'alignSelf'; readonly key: string; readonly value: Alignment }
+  | { readonly kind: 'position'; readonly key: string; readonly value: PositionEdges }
+  | { readonly kind: 'offset'; readonly key: string; readonly value: OffsetSpec }
+  | { readonly kind: 'zIndex'; readonly key: string; readonly value: ZIndexName }
+  | { readonly kind: 'hidden'; readonly key: string; readonly value: boolean }
+  | {
+      readonly kind: 'overlay';
+      readonly key: string;
+      readonly content: ViewNode;
+      readonly alignment: OverlayAlignment;
+      /** A view background (\`.background(view)\`): drawn behind the content, not over it. */
+      readonly behind: boolean;
+    }
+  | { readonly kind: 'shadow'; readonly key: string; readonly value: ShadowName }
+  | {
+      readonly kind: 'ring';
+      readonly key: string;
+      readonly value: ColorToken | 'none';
+      readonly width: BorderWidthName;
+      readonly offset: SpaceToken | undefined;
+    }
   | { readonly kind: 'shrink'; readonly key: string; readonly value: ShrinkPriority }
   | { readonly kind: 'background'; readonly key: string; readonly value: ColorToken }
   | {
@@ -252,8 +299,11 @@ export type Modifier =
   | { readonly kind: 'weight'; readonly key: string; readonly value: WeightName }
   | { readonly kind: 'leading'; readonly key: string; readonly value: LeadingToken }
   | { readonly kind: 'tracking'; readonly key: string; readonly value: TrackingName }
-  | { readonly kind: 'spacing'; readonly key: string; readonly value: SpaceToken | 'between' }
+  | { readonly kind: 'spacing'; readonly key: string; readonly value: SpaceToken }
   | { readonly kind: 'align'; readonly key: string; readonly value: Alignment }
+  | { readonly kind: 'justify'; readonly key: string; readonly value: Justify }
+  | { readonly kind: 'wrap'; readonly key: string; readonly value: boolean }
+  | { readonly kind: 'axis'; readonly key: string; readonly value: Axis }
   | { readonly kind: 'lines'; readonly key: string; readonly value: number }
   | { readonly kind: 'noWrap'; readonly key: string }
   | { readonly kind: 'contentFit'; readonly key: string; readonly value: ContentFit }
@@ -525,20 +575,50 @@ export class Node {
     return this.with({ kind: 'padding', key: `p:${edge}:${tokenKey(token)}`, edge, value: token });
   }
   frame(value: FrameSpec): Node {
-    const parts: string[] = [];
-    for (const name of FRAME_KEYS) {
-      const token = value[name];
-      if (token !== undefined) parts.push(`${name}=${tokenKey(token)}`);
-    }
-    return this.with({ kind: 'frame', key: `f:${parts.join(',')}`, value });
+    return this.with({ kind: 'frame', key: `f:${objectKey(value, FRAME_KEYS)}`, value });
   }
   grow(): Node {
     return this.with({ kind: 'grow', key: 'grow' });
   }
+  alignSelf(value: Alignment): Node {
+    return this.with({ kind: 'alignSelf', key: `self:${value}`, value });
+  }
+  position(value: PositionEdges): Node {
+    return this.with({ kind: 'position', key: `pos:${objectKey(value, EDGE_KEYS)}`, value });
+  }
+  offset(value: OffsetSpec): Node {
+    return this.with({ kind: 'offset', key: `off:${objectKey(value, OFFSET_KEYS)}`, value });
+  }
+  zIndex(value: ZIndexName): Node {
+    return this.with({ kind: 'zIndex', key: `z:${value}`, value });
+  }
+  hidden(value = true): Node {
+    return this.with({ kind: 'hidden', key: `hidden:${value}`, value });
+  }
+  overlay(content: ViewNode, alignment: OverlayAlignment = 'center'): Node {
+    return this.with({ kind: 'overlay', key: 'overlay', content, alignment, behind: false });
+  }
+  shadow(value: ShadowName): Node {
+    return this.with({ kind: 'shadow', key: `sh:${value}`, value });
+  }
+  ring(value: ColorToken | 'none', width: BorderWidthName = 'thin', offset?: SpaceToken): Node {
+    const key = `ring:${value}:${width}:${offset === undefined ? '' : tokenKey(offset)}`;
+    return this.with({ kind: 'ring', key, value, width, offset });
+  }
   shrink(value: ShrinkPriority): Node {
     return this.with({ kind: 'shrink', key: `shrink:${value}`, value });
   }
-  background(value: ColorToken): Node {
+  /** A colour role behind the view, or a view behind it (at an alignment, SwiftUI's `background(alignment:)`). */
+  background(value: ColorToken | ViewNode, alignment: OverlayAlignment = 'center'): Node {
+    if (typeof value !== 'string') {
+      return this.with({
+        kind: 'overlay',
+        key: 'overlay',
+        content: value,
+        alignment,
+        behind: true,
+      });
+    }
     return this.with({ kind: 'background', key: `bg:${value}`, value });
   }
   border(value: ColorToken, width: BorderWidthName = 'hairline', edge: BorderEdge = 'all'): Node {
@@ -574,11 +654,20 @@ export class Node {
   tracking(value: TrackingName): Node {
     return this.with({ kind: 'tracking', key: `ls:${value}`, value });
   }
-  spacing(value: SpaceToken | 'between'): Node {
+  spacing(value: SpaceToken): Node {
     return this.with({ kind: 'spacing', key: `gap:${tokenKey(value)}`, value });
   }
   align(value: Alignment): Node {
     return this.with({ kind: 'align', key: `align:${value}`, value });
+  }
+  justify(value: Justify): Node {
+    return this.with({ kind: 'justify', key: `justify:${value}`, value });
+  }
+  wrap(value = true): Node {
+    return this.with({ kind: 'wrap', key: `wrap:${value}`, value });
+  }
+  axis(value: Axis): Node {
+    return this.with({ kind: 'axis', key: `axis:${value}`, value });
   }
   lines(value: number): Node {
     return this.with({ kind: 'lines', key: `lines:${value}`, value });
@@ -858,7 +947,19 @@ export class Node {
   }
 }
 
-const FRAME_KEYS = ['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight'] as const;
+const FRAME_KEYS = OBJECTS.frame.keys;
+const EDGE_KEYS = OBJECTS.edges.keys;
+const OFFSET_KEYS = OBJECTS.offset.keys;
+
+/** An object parameter's cache key: its set keys, in the spec's order, with their tokens. */
+function objectKey<T extends object>(value: T, keys: readonly string[]): string {
+  const parts: string[] = [];
+  for (const name of keys) {
+    const token = (value as Record<string, string | AppToken | undefined>)[name];
+    if (token !== undefined) parts.push(`${name}=${tokenKey(token)}`);
+  }
+  return parts.join(',');
+}
 
 // ── The typed surface: which modifiers each kind accepts ─────────
 
@@ -870,9 +971,30 @@ export interface ViewModifiers<Self> extends ViewNode {
   /** Takes the free space along its parent's axis. */
   grow(): Self;
   shrink(value: ShrinkPriority): Self;
-  /** A fill: a colour role, or a role at a named opacity (`'primary/10'`). */
+  /** Its own place across its parent's axis, over the parent's `align`. */
+  alignSelf(value: Alignment): Self;
+  /**
+   * Pinned to its parent's edges, out of the stack's flow (absolute): each edge
+   * given is a distance from that edge of the parent. An overlay
+   * (`.overlay(view, alignment)`) is the way to lay one view over another.
+   */
+  position(value: PositionEdges): Self;
+  /** Drawn shifted from where it is laid out (`x` right, `y` down); its siblings keep their places. */
+  offset(value: OffsetSpec): Self;
+  /** Its stacking level among its siblings: Bloom's `base`, `raised`, `floating`, `dropdown`. */
+  zIndex(value: ZIndexName): Self;
+  /** Leaves the layout (`display: none`) while staying mounted; `hidden(false)` puts it back, as a variant does. */
+  hidden(value?: boolean): Self;
+  /** A fill: a colour role, or a role at a named opacity (`'primary/10'`); or a view behind it, placed at `alignment` (centred by default). */
   background(value: ColorToken): Self;
+  background(value: ViewNode, alignment?: OverlayAlignment): Self;
+  /** A view over this one, the size of this one as drawn so far, placed at `alignment` (centred by default). */
+  overlay(content: ViewNode, alignment?: OverlayAlignment): Self;
   border(value: ColorToken, width?: BorderWidthName, edge?: BorderEdge): Self;
+  /** A ring outside the box (an outline, which takes no room): a role, `thin` by default, `offset` from the edge; `none` removes one. */
+  ring(value: ColorToken | 'none', width?: BorderWidthName, offset?: SpaceToken): Self;
+  /** Bloom's elevation under the box: `s`, `m` or `floating`. */
+  shadow(value: ShadowName): Self;
   /**
    * Rounds the box: a radius rung, `full`, or `concentric` (the radius of the
    * shape it sits in, less the inset between them: a glass's, another
@@ -950,8 +1072,16 @@ export interface ViewModifiers<Self> extends ViewNode {
 }
 
 export interface StackView extends ViewModifiers<StackView> {
-  spacing(value: SpaceToken | 'between'): StackView;
+  /** The gap between children. */
+  spacing(value: SpaceToken): StackView;
+  /** The children's place across the axis. */
   align(value: Alignment): StackView;
+  /** How the children spread along the axis: packed at `start`, `center` or `end`, or the free space `between`, `around` or `evenly` around them. */
+  justify(value: Justify): StackView;
+  /** Children that do not fit flow onto further lines. */
+  wrap(value?: boolean): StackView;
+  /** Lays the children out along `horizontal` or `vertical`, over the constructor's own (a breakpoint variant's row). */
+  axis(value: Axis): StackView;
   /**
    * Bloom's hover wash behind the stack (`SubtleHover`): under the pointer, on
    * the web; or while `active` (a coordinated highlight), on every platform.

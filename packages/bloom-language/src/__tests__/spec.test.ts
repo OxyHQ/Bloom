@@ -21,11 +21,14 @@ import {
   LEADING_PX,
   type NODE_MODIFIERS,
   OPACITY,
+  SHADOW,
   SPACE,
   TYPE_RAMP,
   TRACKING,
   TRACKING_PX,
+  Z_INDEX,
 } from '../generated/spec.generated';
+import { SHADOW_BOX } from './support/bloom-design-tokens';
 import { WEB_CLASS, WEB_SHEET } from '../generated/web-sheet.generated';
 import type {
   ActionBarView,
@@ -168,6 +171,14 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
         `DEFAULT_TEXT_TYPOGRAPHY: TextStyle = \\{\\n\\s+fontSize: ${ENVIRONMENT_DEFAULTS.fontSize},`,
       ),
     );
+  });
+
+  it('shadows are Bloom’s elevation roles; stacking levels are Bloom’s Z_INDEX', () => {
+    expect(SHADOW).toEqual(SHADOW_BOX);
+    const levels = read('styles/z-index.ts');
+    for (const [name, level] of Object.entries(Z_INDEX)) {
+      expect(levels).toMatch(new RegExp(`\\n\\s+${name}: ${level},`));
+    }
   });
 
   it('the strongest glass tint is the opacity Surface already gives an opaque fill on the web', () => {

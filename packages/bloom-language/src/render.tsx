@@ -106,8 +106,10 @@ import {
   resolveAvatarSize,
   resolveCorner,
   resolveFont,
+  resolveLength,
   resolveSpace,
   type AvatarSizeToken,
+  type LengthToken,
   type CornerName,
   type SpaceToken,
   resolveIconSize,
@@ -742,7 +744,7 @@ function renderHost(
         shape: ownValue(p, 'shape')?.value,
         max: ownValue(p, 'max')?.value,
         total: ownValue(p, 'total')?.value,
-        spacing: spacing === undefined || spacing === 'between' ? undefined : resolveSpace(spacing),
+        spacing: spacing === undefined ? undefined : resolveSpace(spacing),
         overflow: ownValue(p, 'overflow')?.value,
         showInitials: ownValue(p, 'initials') === undefined ? undefined : true,
         onPressItem: ownValue(p, 'onPressItem')?.value,
@@ -929,7 +931,7 @@ function renderHost(
         variant: ownValue(p, 'lineStyle')?.value,
         align: ownValue(p, 'align')?.value,
         vertical: inRow || undefined,
-        spacing: spacing === undefined || spacing === 'between' ? undefined : resolveSpace(spacing),
+        spacing: spacing === undefined ? undefined : resolveSpace(spacing),
       });
       const content = dividerLabel(label, ctx);
       const out = box('component', 'DV');
@@ -965,7 +967,7 @@ function renderHost(
         {
           maxColumns: ownValue(p, 'columns')?.value,
           minItemWidth: minWidth === undefined ? undefined : resolveSpace(minWidth),
-          gap: gap === undefined || gap === 'between' ? undefined : resolveSpace(gap),
+          gap: gap === undefined ? undefined : resolveSpace(gap),
           flow: ownValue(p, 'flow')?.value,
         },
         node,
@@ -1138,8 +1140,8 @@ function drawSkeleton(
     if (modifier.kind === 'frame') frame = { ...frame, ...modifier.value };
     if (modifier.kind === 'corner') corner = modifier.value;
   }
-  const length = (token: SpaceToken | undefined) =>
-    token === undefined ? undefined : resolveSpace(token);
+  const length = (token: LengthToken | undefined) =>
+    token === undefined ? undefined : resolveLength(token);
   const props: Record<string, unknown> = { key };
   if (shape === 'text') {
     const { lineHeight } = resolveFont(

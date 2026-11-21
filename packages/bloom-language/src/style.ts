@@ -326,14 +326,13 @@ export function flexStyle(grow: boolean, shrink: ShrinkPriority | undefined): Re
 
 export function stackStyle(
   axis: 'horizontal' | 'vertical' | 'depth',
-  spacing: SpaceToken | 'between' | undefined,
+  spacing: SpaceToken | undefined,
   align: Alignment | undefined,
 ): Resolved {
   const style: Resolved = {};
   if (axis === 'horizontal') style.flexDirection = 'row';
   if (axis === 'depth') style.position = 'relative';
-  if (spacing === 'between') style.justifyContent = 'space-between';
-  else if (spacing !== undefined) style.gap = resolveSpace(spacing);
+  if (spacing !== undefined) style.gap = resolveSpace(spacing);
   if (align !== undefined) style.alignItems = ALIGNMENT[align];
   return style;
 }

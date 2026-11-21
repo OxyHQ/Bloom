@@ -193,6 +193,31 @@
       "medium": 0.48,
       "strong": 0.72
     },
+    "length": {
+      "$comment": "A frame's length relative to its parent (Tailwind's w-full, w-1/2…): the parent's width or height times the fraction.",
+      "full": "100%",
+      "1/2": "50%",
+      "1/3": "33.333333%",
+      "2/3": "66.666667%",
+      "1/4": "25%",
+      "3/4": "75%",
+      "1/5": "20%",
+      "2/5": "40%",
+      "3/5": "60%"
+    },
+    "zIndex": {
+      "$comment": "Bloom's Z_INDEX (styles/z-index.ts): the stacking levels its own components use.",
+      "base": 0,
+      "raised": 1,
+      "floating": 10,
+      "dropdown": 40
+    },
+    "shadow": {
+      "$comment": "Bloom's elevation roles (design-tokens/shadows.ts): the web box-shadow of each; native draws bloomShadowStyle(role).",
+      "s": "0 1px 2px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.10)",
+      "m": "0 4px 12px rgb(0 0 0 / 0.08), 0 2px 6px rgb(0 0 0 / 0.12)",
+      "floating": "0 0 1px 0 rgb(0 0 0 / 0.12), 0 4px 8px 0 rgb(0 0 0 / 0.12)"
+    },
     "duration": {
       "instant": 100,
       "fast": 150,
@@ -306,7 +331,20 @@
     "controlSize": ["xs", "sm", "md", "lg"],
     "glassMaterial": ["regular", "clear"],
     "contentFit": ["cover", "contain", "fill", "none", "scale-down"],
-    "spacingExtra": ["between"],
+    "justify": ["start", "center", "end", "between", "around", "evenly"],
+    "axis": ["horizontal", "vertical"],
+    "ringExtra": ["none"],
+    "overlayAlignment": [
+      "center",
+      "top",
+      "bottom",
+      "leading",
+      "trailing",
+      "top-leading",
+      "top-trailing",
+      "bottom-leading",
+      "bottom-trailing"
+    ],
     "headerPresentation": ["floating", "bar", "navigation"],
     "titleDisplay": ["large", "inline"],
     "scrollEdge": ["auto", "always", "none"],
@@ -416,11 +454,22 @@
   "layers": [
     ["padding"],
     ["frame"],
+    ["overlay"],
     ["background", "glass", "blur"],
-    ["border"],
+    ["border", "ring"],
     ["corner", "cornerCurve"],
-    ["opacity"]
+    ["opacity"],
+    ["shadow"]
   ],
+  "objects": {
+    "$comment": "The object parameters: the keys each takes, and the token set of every value.",
+    "frame": {
+      "keys": ["width", "height", "minWidth", "minHeight", "maxWidth", "maxHeight"],
+      "tokens": "length"
+    },
+    "edges": { "keys": ["top", "bottom", "leading", "trailing"], "tokens": "padding" },
+    "offset": { "keys": ["x", "y"], "tokens": "padding" }
+  },
   "environment": {
     "$comment": "The text and icon traits a view hands everything inside it, and what each is when nothing sets it. fontSize is the size of a Bloom Text with no variant, which a leading or a tracking measures from when no font is set.",
     "traits": ["foreground", "font", "weight", "leading", "tracking"],
@@ -436,7 +485,15 @@
     "frame": ["frame"],
     "grow": [],
     "shrink": ["shrink"],
-    "background": ["color"],
+    "background": ["color", "overlayAlignment?"],
+    "overlay": ["value", "overlayAlignment?"],
+    "shadow": ["shadow"],
+    "ring": ["ring", "borderWidth?", "space?"],
+    "position": ["edges"],
+    "offset": ["offset"],
+    "zIndex": ["zIndex"],
+    "hidden": ["value?"],
+    "alignSelf": ["alignment"],
     "border": ["color", "borderWidth?", "borderEdge?"],
     "corner": ["corner"],
     "opacity": ["opacity"],
@@ -447,8 +504,11 @@
     "weight": ["weight"],
     "leading": ["leading"],
     "tracking": ["tracking"],
-    "spacing": ["spacing"],
+    "spacing": ["space"],
     "align": ["alignment"],
+    "justify": ["justify"],
+    "wrap": ["value?"],
+    "axis": ["axis"],
     "lines": ["value"],
     "noWrap": [],
     "contentFit": ["contentFit"],
@@ -545,11 +605,19 @@
     "frame",
     "grow",
     "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
     "background",
+    "overlay",
     "border",
+    "ring",
     "corner",
     "cornerCurve",
     "opacity",
+    "shadow",
     "glass",
     "blur",
     "foreground",
@@ -586,7 +654,7 @@
     "$comment": "kind: { constructors, own modifiers beyond the universal ones (universal: false takes only its own), the token sets its size(), tint(), style() and shape() read }",
     "stack": {
       "constructors": ["HStack", "VStack", "ZStack"],
-      "modifiers": ["spacing", "align", "hoverHighlight"]
+      "modifiers": ["spacing", "align", "justify", "wrap", "axis", "hoverHighlight"]
     },
     "spacer": {
       "constructors": ["Spacer"],

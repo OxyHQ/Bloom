@@ -10,7 +10,7 @@ use oxc_span::{GetSpan, Span};
 
 use crate::diagnostics::suggest;
 use crate::module::{Binding, Module};
-use crate::spec::{FRAME_KEYS, MODIFIERS, NODES, NodeSpec, TOKEN_SETS};
+use crate::spec::{MODIFIERS, NODES, NodeSpec, OBJECTS, TOKEN_SETS};
 
 pub struct Problem {
     pub span: Span,
@@ -149,7 +149,8 @@ fn check_value(
 ) -> Result<(), Problem> {
     match param {
         "value" | "children" => Ok(()),
-        "frame" => {
+        param if OBJECTS.iter().any(|(name, _, _)| *name == param) => {
+            let &(_, keys, set) = OBJECTS.iter().find(|(name, _, _)| *name == param).expect("matched above");
             let Expression::ObjectExpression(object) = value.without_parentheses() else { return Ok(()) };
             for property in &object.properties {
                 let ObjectPropertyKind::ObjectProperty(property) = property else { continue };
@@ -158,17 +159,17 @@ fn check_value(
                     PropertyKey::StringLiteral(s) => s.value.as_str().unwrap_or_default(),
                     _ => continue,
                 };
-                if !FRAME_KEYS.contains(&key) {
+                if !keys.contains(&key) {
                     return Err(Problem {
                         span: property.key.span(),
-                        message: format!(".frame() has no '{key}'"),
+                        message: format!(".{modifier}() has no '{key}'"),
                         help: Some(with_suggestion(
-                            suggest(key, FRAME_KEYS),
-                            format!("frame keys: {}", FRAME_KEYS.join(", ")),
+                            suggest(key, keys),
+                            format!("{modifier} keys: {}", keys.join(", ")),
                         )),
                     });
                 }
-                check_token(modifier, "space", &property.value)?;
+                check_token(modifier, set, &property.value)?;
             }
             Ok(())
         }
