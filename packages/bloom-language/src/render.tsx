@@ -83,7 +83,7 @@ import {
   type ViewNodeProps,
 } from './node';
 import { ENVIRONMENT, TONE_ROLE } from './generated/spec.generated';
-import { regular } from './glass';
+import { regular, type GlassValue } from './glass';
 import { getPlatformGlass } from './platform/glass-host';
 import { MenuHost } from './platform/menu-host';
 import { HeaderHost } from './platform/header-host';
@@ -115,6 +115,8 @@ import {
   type PlaceModifier,
   type Placement,
   type Resolved,
+  type StyleValue,
+  SIDE_RADII,
   type StackModifier,
   type StyleOut,
   type Target,
@@ -276,6 +278,11 @@ function plan(node: Node): Plan {
   let disabled = false;
   for (const modifier of modifiers) if (modifier.kind === 'disabled') disabled = modifier.value;
   for (const modifier of modifiers) {
+    // A button group's glass is its own material (Bloom's `material="lens"`), not a layer around it.
+    if (node.kind === 'buttonGroup' && modifier.kind === 'glass') {
+      result.own.set('glass', modifier);
+      continue;
+    }
     if (isLayerModifier(modifier)) {
       addToLayers(result.layers, modifier);
       continue;
@@ -297,6 +304,10 @@ function plan(node: Node): Plan {
       case 'offset':
       case 'zIndex':
       case 'hidden':
+      case 'basis':
+      case 'scale':
+      case 'allowsHitTesting':
+      case 'accessibilityOnly':
         applyPlacement(result.place, modifier);
         break;
       case 'onPress':
@@ -555,10 +566,14 @@ function drawNode(node: Node, ctx: Context, key: string | number | undefined): R
   if (node.kind === 'skeleton') return drawSkeleton(node, p, inner, reactKey);
   const layers = p.layers;
   // A Bloom component cannot vary its style, so a varied box (or a varied
-  // place) of one is a view of its own around it.
+  // place) of one is a view of its own around it. So is its hit testing on
+  // the web, where react-native-web drops an inline `pointerEvents`.
   const variedBox =
     !DRAWN_BY_HOSTS.has(node.kind) &&
-    ((layers[0]?.variants.length ?? 0) > 0 || p.place.variants.length > 0 || p.states.length > 0);
+    ((layers[0]?.variants.length ?? 0) > 0 ||
+      p.place.variants.length > 0 ||
+      p.states.length > 0 ||
+      (IS_WEB && p.place.allowsHitTesting !== undefined));
   if (variedBox && layers.length === 0) addVariantToLayers(layers, null, EMPTY_PADDING);
   // A glass layer is a Surface and a blur layer an island, which the host cannot
   // be, and an overlay layer holds its views beside the host; so the host takes
@@ -663,7 +678,7 @@ function wrapLayer(
   const children = Array.isArray(content) ? (content as ReactNode[]) : [content as ReactNode];
   if (glass !== undefined) {
     // The glass's corner is its radius (it clips itself), not a style of its host.
-    const { borderRadius: corner, overflow: _clip, ...resolved } = boxStyle(layer, flex, p);
+    const { corner, resolved } = materialRadius(boxStyle(layer, flex, p));
     const radius = typeof corner === 'number' ? corner : undefined;
     const surfaceRadius = layer.concentric ? 'concentric' : radius;
     const outer = behaviour && !p.pressable ? behaviour : null;
@@ -721,7 +736,7 @@ function wrapLayer(
   if (layer.blur) {
     // Bloom's floating island: its material, its shadow and its clip; a capsule
     // unless the layer's corner names the radius.
-    const { borderRadius: corner, overflow: _clip, ...resolved } = boxStyle(layer, flex, p);
+    const { corner, resolved } = materialRadius(boxStyle(layer, flex, p));
     const out = cachedStyle('material', styleKey, () => resolved);
     const outer = behaviour && !p.pressable ? behaviour : null;
     const island = drawHost(
@@ -760,6 +775,61 @@ function wrapLayer(
     () => boxVariants(layer, flex, p),
   );
   return drawHost(behaviour ? hostFor(p) : View, out, { ...behaviour, key }, ...children);
+}
+
+/** A web list's row: a list item around the child, which draws the list's marker before it. */
+function listItem(child: ReactNode): ReactNode {
+  if (child === null || child === undefined || typeof child === 'boolean') return child;
+  const { key } = child as ReactElement;
+  return drawHost(
+    View,
+    cachedStyle('host', 'LI', () => ({ display: 'list-item' })),
+    {
+      role: 'listitem',
+      key: key ?? undefined,
+    },
+    child,
+  );
+}
+
+/**
+ * A button group's glass is Bloom's lens group: the platform's lens where the
+ * device has one, its shared Surface elsewhere. The group's material has no
+ * tint and no clear variant, so those are left out, said once in development.
+ */
+function groupMaterial(glass: GlassValue | undefined): 'lens' | undefined {
+  if (glass === undefined) return undefined;
+  if (glass.key !== regular.key)
+    warnOnce(
+      'group-glass',
+      '[Bloom language] a ButtonGroup’s glass is its lens material: .glass() alone; a clear or tinted glass is drawn as .glass().',
+    );
+  return 'lens';
+}
+
+/**
+ * A material's radius: a glass and an island clip themselves to one radius,
+ * so the layer's corner is that radius, not a style of their host. A corner of
+ * some sides only has no such radius: it is left out, said once in development.
+ */
+function materialRadius(style: Resolved): { corner: StyleValue | undefined; resolved: Resolved } {
+  const { borderRadius: corner, overflow: _clip, ...resolved } = style;
+  for (const key of SIDE_RADII) {
+    if (!(key in resolved)) continue;
+    delete resolved[key];
+    warnOnce(
+      'side-radius',
+      '[Bloom language] a glass or an island takes one radius: a corner of some sides only (.corner(r, side)) is left out on it.',
+    );
+  }
+  return { corner, resolved };
+}
+
+const warned = new Set<string>();
+function warnOnce(id: string, message: string): void {
+  if (process.env.NODE_ENV === 'production' || warned.has(id)) return;
+  warned.add(id);
+  console.warn(message);
 }
 
 /** A shape's side with no `size()`: 40, Bloom's avatar default. */
@@ -959,7 +1029,9 @@ function renderHost(
         wrap: ownValue(p, 'wrap')?.value,
         axis: ownValue(p, 'axis')?.value,
       };
-      const styleKey = `S|${axis}|${layout.spacing === undefined ? '' : tokenKey(layout.spacing)}|${layout.align ?? ''}|${layout.justify ?? ''}|${layout.wrap ?? ''}|${layout.axis ?? ''}|${hostVariantKey(p)}|${layerKey}|${flex}`;
+      // Web: an HTML list, each child a row behind the marker. Native has no markers.
+      const marker = IS_WEB ? ownValue(p, 'listMarker')?.value : undefined;
+      const styleKey = `S|${axis}|${layout.spacing === undefined ? '' : tokenKey(layout.spacing)}|${layout.align ?? ''}|${layout.justify ?? ''}|${layout.wrap ?? ''}|${layout.axis ?? ''}|${marker ?? ''}|${hostVariantKey(p)}|${layerKey}|${flex}`;
       const out = cachedStyle(
         'host',
         styleKey,
@@ -968,15 +1040,21 @@ function renderHost(
           for (const [condition, modifier] of p.hostVariants) {
             if (condition === null) Object.assign(layout, layoutOf([modifier]));
           }
-          return Object.assign(stackStyle(axis, layout), boxStyle(layer, flex, p));
+          const style = Object.assign(stackStyle(axis, layout), boxStyle(layer, flex, p));
+          if (marker !== undefined) style.listStyleType = marker;
+          return style;
         },
         () => joinVariants(hostVariants(p), boxVariants(layer, flex, p)),
       );
       const row: Context = axis === 'horizontal' ? { ...ctx, inRow: true } : ctx;
-      const children =
+      let children =
         axis === 'depth'
           ? renderDepthChildren(node.children, ctx)
           : renderChildren(node.children, row);
+      if (marker !== undefined)
+        children = children.map((child) =>
+          Array.isArray(child) ? child.map(listItem) : listItem(child),
+        );
       const wash = ownValue(p, 'hoverHighlight');
       if (wash !== undefined) {
         // A coordinated highlight (`active` given) shows on every platform; the pointer's only on the web.
@@ -985,7 +1063,9 @@ function renderHost(
         );
       }
       const host = behaviour ? hostFor(p) : View;
-      return drawHost(host, out, hostProps(behaviour, key), ...children);
+      const props = hostProps(behaviour, key);
+      if (marker !== undefined) props.role = 'list';
+      return drawHost(host, out, props, ...children);
     }
     case 'spacer': {
       const out = cachedStyle(
@@ -1223,6 +1303,7 @@ function renderHost(
         size: ownValue(p, 'size')?.value,
         dividers: ownValue(p, 'dividers')?.value,
         separated: ownValue(p, 'separated')?.value,
+        material: groupMaterial(ownValue(p, 'glass')?.value),
       });
       const children = renderChildren(node.children, ctx);
       if (!boxed) return draw(BloomButton.Group, props, ...children);
@@ -1622,9 +1703,11 @@ function drawText(
     strikethrough: ownValue(p, 'strikethrough') !== undefined,
     textCase: ownValue(p, 'textCase')?.value,
     link: link !== undefined,
+    tabular: ownValue(p, 'monospacedDigit') !== undefined,
+    wordBreak: ownValue(p, 'wordBreak')?.value,
   };
   const textStyleName = span === undefined ? ownValue(p, 'textStyle')?.value : undefined;
-  const lookKey = `${look.noWrap ? 'nw' : ''}|${look.align ?? ''}|${look.italic ? 'i' : ''}|${look.underline ? 'u' : ''}|${look.strikethrough ? 's' : ''}|${look.textCase ?? ''}|${look.link ? 'a' : ''}`;
+  const lookKey = `${look.noWrap ? 'nw' : ''}|${look.align ?? ''}|${look.italic ? 'i' : ''}|${look.underline ? 'u' : ''}|${look.strikethrough ? 's' : ''}|${look.textCase ?? ''}|${look.link ? 'a' : ''}|${look.tabular ? 'tn' : ''}|${look.wordBreak ?? ''}`;
   const spanKey = span === undefined ? '' : [...span].sort().join(',');
   const blockquote = textStyleName === 'blockquote';
   const props = hostProps(behaviour, key);

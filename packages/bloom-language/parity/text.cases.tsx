@@ -225,6 +225,56 @@ const behaviour: ParityCase[] = [
       </Text>
     ),
   },
+  {
+    name: 'digits of one width',
+    language: () => toElement(L.Text('1,024').monospacedDigit()),
+    bloom: () => <Text style={{ fontVariant: ['tabular-nums'] }}>1,024</Text>,
+  },
+  {
+    name: 'a web line that breaks anywhere',
+    language: () => toElement(L.Text('0x7f3a9c2e1b').wordBreak('all')),
+    // Tailwind's break-all is web CSS: React Native has no word breaking to set.
+    bloom: () => (
+      <Text style={RN.Platform.OS === 'web' ? { wordBreak: 'break-all' } : undefined}>
+        0x7f3a9c2e1b
+      </Text>
+    ),
+  },
+  {
+    name: 'a web line that breaks a long word',
+    language: () => toElement(L.Text('https://oxy.so/a/very/long/path').wordBreak('words')),
+    bloom: () => (
+      <Text style={RN.Platform.OS === 'web' ? { overflowWrap: 'break-word' } : undefined}>
+        https://oxy.so/a/very/long/path
+      </Text>
+    ),
+  },
+  {
+    name: 'text only a screen reader reads',
+    language: () => toElement(L.Text('3 results').accessibilityOnly()),
+    bloom: () => (
+      <Text
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          paddingTop: 0,
+          paddingBottom: 0,
+          paddingStart: 0,
+          paddingEnd: 0,
+          marginTop: -1,
+          marginBottom: -1,
+          marginStart: -1,
+          marginEnd: -1,
+          overflow: 'hidden',
+          borderWidth: 0,
+          ...(RN.Platform.OS === 'web' ? { clipPath: 'inset(50%)', whiteSpace: 'nowrap' } : null),
+        }}
+      >
+        3 results
+      </Text>
+    ),
+  },
   ...(['lowercase', 'capitalize'] as const).map((textCase) => ({
     name: `textCase ${textCase}`,
     language: () => toElement(L.Text('Cased').textCase(textCase)),

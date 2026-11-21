@@ -47,6 +47,9 @@ function Placed() {
     HStack(Text('a'), Text('b')).justify('between').wrap().spacing('sm'),
     Text('pinned').position({ top: 'none', trailing: 'sm' }).zIndex('floating'),
     Text('centred').alignSelf('center').frame({ width: 'full', maxWidth: '1/2' }),
+    Text('1,024').monospacedDigit().wordBreak('all').basis('none').scale('105'),
+    Text('read aloud').accessibilityOnly(),
+    VStack(Text('a'), Text('b')).listMarker('disc').corner('3xl', 'top').allowsHitTesting(false),
   )
     .overlay(Text('badge'), 'top-trailing')
     .corner('lg')

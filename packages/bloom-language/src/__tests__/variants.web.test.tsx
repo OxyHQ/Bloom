@@ -73,3 +73,16 @@ describe('on the web, a variant is the same class under its condition’s CSS', 
     );
   });
 });
+
+describe('a class react-native-web writes as two rules varies as two', () => {
+  it('no hit testing reaches the children under its condition too', () => {
+    const name = WEB_CLASS['pointerEvents:none'] as string;
+    const sheet = variantSheet('hovered');
+    const own = `.blsg:hover .${name}-hovered, .blsg:hover.${name}-hovered`;
+    expect(sheet).toContain(`${own}{pointer-events:none!important;}`);
+    expect(sheet).toContain(
+      `.blsg:hover .${name}-hovered>*, .blsg:hover.${name}-hovered>*{pointer-events:none;}`,
+    );
+    expect(variantSheet('md')).toContain(`.${name}-md>*{pointer-events:none;}`);
+  });
+});
