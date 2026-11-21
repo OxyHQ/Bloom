@@ -14,7 +14,9 @@ import {
   FAB,
   Header,
   Icon,
+  NavItem,
   ScrollView,
+  Sidebar,
   Text,
   VStack,
 } from '../primitives';
@@ -32,6 +34,7 @@ jest.mock('../router/stack', () => jest.requireActual('../router/stack.tsx'));
 jest.mock('../router/tabs', () => jest.requireActual('../router/tabs.tsx'));
 jest.mock('../router/bar', () => jest.requireActual('../router/bar.tsx'));
 jest.mock('../router/screen-header', () => jest.requireActual('../router/screen-header.tsx'));
+jest.mock('../router/sheet-host', () => jest.requireActual('../router/sheet-host.tsx'));
 jest.mock('../platform/header-host', () => jest.requireActual('../platform/header-host.tsx'));
 
 quietRenderer();
@@ -388,6 +391,16 @@ describe('screen() on Android', () => {
       'footer',
     ])
       expect(props[name]).toBeUndefined();
+  });
+
+  it('a sidebar row’s navigate() goes through the screen’s navigator', () => {
+    const Nav = screen(() =>
+      Sidebar(NavItem('Post', Glyph).onPress(navigate('/p/[id]', { id: '7' }))).header(false),
+    );
+    const r = mount(createElement(Nav));
+    only(r, 'Sidebar').props.items[0].onPress();
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/p/[id]', params: { id: '7' } });
+    expect(only(r, 'Sidebar').props.header).toBe(false);
   });
 
   it('navigate() pushes through the screen’s navigator', () => {

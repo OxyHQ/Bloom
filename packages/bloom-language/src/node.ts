@@ -15,6 +15,7 @@ import type {
 import type { BottomBarProps } from '@oxy.so/bloom/bottom-bar';
 import type { PageHeaderProps } from '@oxy.so/bloom/page-header';
 import type { AppShellProps } from '@oxy.so/bloom/app-shell';
+import type { SidebarAccount, SidebarLogo } from '@oxy.so/bloom/sidebar';
 import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
@@ -136,6 +137,10 @@ import {
   type DragIndicator,
   type SheetMaterial,
   type SheetSizing,
+  type SidebarVariant,
+  type SidebarSurface,
+  type SidebarSize,
+  type FooterPinning,
   type TextAlignment,
   type TextCase,
   type TextStyleName,
@@ -177,6 +182,10 @@ export type {
   DragIndicator,
   SheetMaterial,
   SheetSizing,
+  SidebarVariant,
+  SidebarSurface,
+  SidebarSize,
+  FooterPinning,
 };
 export type { GlassValue };
 export type EngagementTone = Exclude<AccentTone, 'default'>;
@@ -263,8 +272,8 @@ export interface ValueModifiers {
   checked: boolean;
   keepOpen: true;
   title: string;
-  badge: number | ViewNode | undefined;
-  activeIcon: IconComponent;
+  badge: string | number | ViewNode | undefined;
+  activeIcon: IconComponent | ViewNode;
   selection: string;
   onSelect: (id: string) => void;
   action: Child;
@@ -302,6 +311,24 @@ export interface ValueModifiers {
   interactiveDismissDisabled: boolean;
   onDismissAttempt: () => boolean;
   manualActivation: boolean;
+  secondary: true;
+  shortcut: string;
+  expanded: boolean;
+  onExpandedChange: (expanded: boolean) => void;
+  collapsible: boolean;
+  emptyLabel: string;
+  error: string | undefined;
+  meta: string | undefined;
+  variant: SidebarVariant;
+  surface: SidebarSurface;
+  onCollapsedChange: (collapsed: boolean) => void;
+  searchable: boolean;
+  themeToggle: boolean;
+  logo: SidebarLogo;
+  account: SidebarAccount;
+  width: SpaceToken;
+  pinning: FooterPinning;
+  ignoresSafeArea: boolean;
   bottomBar: boolean;
   shell: ShellOptions;
   tag: string;
@@ -591,7 +618,8 @@ export type Modifier =
         | BloomSize
         | BadgeSize
         | SpaceToken
-        | ContainerSize;
+        | ContainerSize
+        | SidebarSize;
     }
   | {
       readonly kind: 'style';
@@ -769,7 +797,15 @@ export type NodeKind =
   | OverlayKind
   | ContainerKind
   | 'scrollView'
-  | 'bottomSheet';
+  | 'bottomSheet'
+  | 'sidebar'
+  | 'navItem'
+  | 'treeSection'
+  | 'treeFolder'
+  | 'treeItem'
+  | 'rail'
+  | 'railItem'
+  | 'pageFooter';
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1074,7 +1110,14 @@ export class Node {
     return this.with({ kind: 'onError', key: 'onError', value });
   }
   size(
-    value: IconSizeToken | AvatarSizeToken | BloomSize | BadgeSize | SpaceToken | ContainerSize,
+    value:
+      | IconSizeToken
+      | AvatarSizeToken
+      | BloomSize
+      | BadgeSize
+      | SpaceToken
+      | ContainerSize
+      | SidebarSize,
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
@@ -1176,10 +1219,10 @@ export class Node {
   title(value: string): Node {
     return this.set('title', value);
   }
-  badge(value: number | ViewNode | undefined): Node {
+  badge(value: string | number | ViewNode | undefined): Node {
     return this.set('badge', value);
   }
-  activeIcon(value: IconComponent): Node {
+  activeIcon(value: IconComponent | ViewNode): Node {
     return this.set('activeIcon', value);
   }
   selection(value: string): Node {
@@ -1314,6 +1357,60 @@ export class Node {
   }
   manualActivation(value = true): Node {
     return this.set('manualActivation', value);
+  }
+  secondary(): Node {
+    return this.set('secondary', true);
+  }
+  shortcut(value: string): Node {
+    return this.set('shortcut', value);
+  }
+  expanded(value: boolean): Node {
+    return this.set('expanded', value);
+  }
+  onExpandedChange(value: (expanded: boolean) => void): Node {
+    return this.set('onExpandedChange', value);
+  }
+  collapsible(value = true): Node {
+    return this.set('collapsible', value);
+  }
+  emptyLabel(value: string): Node {
+    return this.set('emptyLabel', value);
+  }
+  error(value: string | undefined): Node {
+    return this.set('error', value);
+  }
+  meta(value: string | undefined): Node {
+    return this.set('meta', value);
+  }
+  variant(value: SidebarVariant): Node {
+    return this.set('variant', value);
+  }
+  surface(value: SidebarSurface): Node {
+    return this.set('surface', value);
+  }
+  onCollapsedChange(value: (collapsed: boolean) => void): Node {
+    return this.set('onCollapsedChange', value);
+  }
+  searchable(value = true): Node {
+    return this.set('searchable', value);
+  }
+  themeToggle(value = true): Node {
+    return this.set('themeToggle', value);
+  }
+  logo(value: SidebarLogo): Node {
+    return this.set('logo', value);
+  }
+  account(value: SidebarAccount): Node {
+    return this.set('account', value);
+  }
+  width(value: SpaceToken): Node {
+    return this.set('width', value);
+  }
+  pinning(value: FooterPinning): Node {
+    return this.set('pinning', value);
+  }
+  ignoresSafeArea(value = true): Node {
+    return this.set('ignoresSafeArea', value);
   }
   primaryAction(icon: IconComponent, label: string, destination: string): Node {
     return this.with({ kind: 'primaryAction', key: 'primaryAction', icon, label, destination });
@@ -2401,6 +2498,132 @@ export interface BottomSheetView extends ViewNode {
   progress(value: Progress | undefined): BottomSheetView;
   /** The sheet's accessible name. */
   label(value: string | undefined): BottomSheetView;
+}
+
+/**
+ * Bloom `Sidebar`: the app's navigation column. Its rows are `NavItem`s (its
+ * destinations; `.secondary()` ones pinned at its foot) and `TreeSection`s
+ * (Bloom's tree: `TreeFolder`s and `TreeItem`s, nested).
+ */
+export interface SidebarView extends ViewNode {
+  /** The id of the selected row: a destination or a tree row. */
+  selection(value: string | undefined): SidebarView;
+  /**
+   * Told the id of a pressed tree row, and of a destination that links (Bloom's
+   * `onNavigate`, which then takes over the link's own push).
+   */
+  onSelect(value: (id: string) => void): SidebarView;
+  /** Replaces the logo and account row; `false` draws none. */
+  header(value: ViewNode | false): SidebarView;
+  /** A row of controls under the header, kept in view. */
+  toolbar(...value: Child[]): SidebarView;
+  /** What stays at its foot, under the rows. */
+  footer(content: Child): SidebarView;
+  /** `panel` (default) or the narrow `rail`. */
+  variant(value: SidebarVariant): SidebarView;
+  /** `card` (default), `plain` or `docked`. */
+  surface(value: SidebarSurface): SidebarView;
+  /** Its width and rows: `sm`, `md` (default) or `lg`. */
+  size(value: SidebarSize): SidebarView;
+  /** Folded to its icons. */
+  collapsed(value?: boolean): SidebarView;
+  onCollapsedChange(value: (collapsed: boolean) => void): SidebarView;
+  /** Its search field (shown by default). */
+  searchable(value?: boolean): SidebarView;
+  /** Its theme toggle (shown by default). */
+  themeToggle(value?: boolean): SidebarView;
+  logo(value: SidebarLogo): SidebarView;
+  account(value: SidebarAccount): SidebarView;
+  /** Its accessible name. */
+  label(value: string | undefined): SidebarView;
+  testID(value: string): SidebarView;
+}
+/** A destination in a `Sidebar`. */
+export interface NavItemView extends ViewNode {
+  /** Its identity: what `selection` speaks; its label by default. */
+  id(value: string): NavItemView;
+  activeIcon(value: IconComponent): NavItemView;
+  /** A count or a word at its end. */
+  badge(value: string | number | undefined): NavItemView;
+  /** Where it goes (Bloom's router opens it). */
+  link(href: string): NavItemView;
+  /** Its keyboard shortcut, drawn at its end and bound on the web (`⌘1`). */
+  shortcut(value: string): NavItemView;
+  /** Pinned at the sidebar's foot, under its other rows. */
+  secondary(): NavItemView;
+  onPress(value: Press | undefined): NavItemView;
+  onLongPress(value: (() => void) | undefined): NavItemView;
+}
+/** A section of a `Sidebar`'s tree: its folders and rows under a heading. */
+export interface TreeSectionView extends ViewNode {
+  id(value: string): TreeSectionView;
+  /** Controls at the heading's end (an add button). */
+  trailing(...value: Child[]): TreeSectionView;
+  /** Its heading folds it. */
+  collapsible(value?: boolean): TreeSectionView;
+  /** Open (controlled); open at first otherwise. */
+  expanded(value: boolean): TreeSectionView;
+  onExpandedChange(value: (expanded: boolean) => void): TreeSectionView;
+  loading(value?: boolean): TreeSectionView;
+  error(value: string | undefined): TreeSectionView;
+  /** What it says when it has no rows. */
+  emptyLabel(value: string): TreeSectionView;
+}
+/** A folder of a tree section: rows under a disclosure. */
+export interface TreeFolderView extends ViewNode {
+  id(value: string): TreeFolderView;
+  trailing(...value: Child[]): TreeFolderView;
+  expanded(value: boolean): TreeFolderView;
+  onExpandedChange(value: (expanded: boolean) => void): TreeFolderView;
+}
+/** A row of a sidebar's tree; its `TreeItem` children are nested under it. */
+export interface TreeItemView extends ViewNode {
+  id(value: string): TreeItemView;
+  icon(value: IconComponent): TreeItemView;
+  /** A second line (Bloom's `description`). */
+  subtitle(value: string | undefined): TreeItemView;
+  /** A quiet word at its end (a count, a time). */
+  meta(value: string | undefined): TreeItemView;
+  link(href: string): TreeItemView;
+  /** Controls at its end. */
+  trailing(...value: Child[]): TreeItemView;
+  disabled(value?: boolean): TreeItemView;
+  expanded(value: boolean): TreeItemView;
+  onExpandedChange(value: (expanded: boolean) => void): TreeItemView;
+  emptyLabel(value: string): TreeItemView;
+  onPress(value: Press | undefined): TreeItemView;
+  onLongPress(value: (() => void) | undefined): TreeItemView;
+}
+/** Bloom `Rail`: a narrow column of destinations, each a `RailItem`. */
+export interface RailView extends ViewNode {
+  /** The id of the active item. */
+  selection(value: string | undefined): RailView;
+  onSelect(value: (id: string) => void): RailView;
+  /** Pinned above the items (a brand mark). */
+  header(value: ViewNode): RailView;
+  /** Pinned below the items (an account control). */
+  footer(content: Child): RailView;
+  /** Its width; Bloom's 80 by default. */
+  width(value: SpaceToken): RailView;
+  testID(value: string): RailView;
+}
+/** A destination of a `Rail`: its label and glyph views, as the app draws them. */
+export interface RailItemView extends ViewNode {
+  id(value: string): RailItemView;
+  /** The glyph while it is active. */
+  activeIcon(value: ViewNode): RailItemView;
+}
+/** Bloom `PageFooter`: a page's foot, its actions on a scrim over the content. */
+export interface PageFooterView extends ViewNode {
+  /** The controls row. */
+  toolbar(...value: Child[]): PageFooterView;
+  /** `absolute` (default) over the page, `sticky` or `document` in the web's flow, or `inline`. */
+  pinning(value: FooterPinning): PageFooterView;
+  /** The gradient behind it: `always` (default), `auto` as the page scrolls, or `none`. */
+  scrollEdge(value: ScrollEdge): PageFooterView;
+  /** No bottom safe-area padding (native pads it by default). */
+  ignoresSafeArea(value?: boolean): PageFooterView;
+  testID(value: string): PageFooterView;
 }
 
 /** The app's root layout: its navigator in the shell, the primary action, the bottom bar. */

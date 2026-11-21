@@ -23,6 +23,15 @@ import {
   type ButtonGroupView,
   type ScrollViewNode,
   type BottomSheetView,
+  type NavItemView,
+  type PageFooterView,
+  type RailItemView,
+  type RailView,
+  type SidebarView,
+  type TreeFolderView,
+  type TreeItemView,
+  type TreeSectionView,
+  type ViewNode,
   type ShapeProps,
   type ShapeView,
   type ButtonView,
@@ -298,6 +307,76 @@ export function ScrollView(...children: Child[]): ScrollViewNode {
  */
 export function BottomSheet(...children: Child[]): BottomSheetView {
   return new Node('bottomSheet', null, children);
+}
+
+/** A sidebar row: a `NavItem`, a `TreeSection`, or a list of them. */
+export type SidebarRow =
+  | NavItemView
+  | TreeSectionView
+  | false
+  | null
+  | undefined
+  | readonly SidebarRow[];
+/** A tree's row: a `TreeFolder` or a `TreeItem` (a folder only directly in a section). */
+export type TreeRow = TreeFolderView | TreeItemView | false | null | undefined | readonly TreeRow[];
+
+/**
+ * The app's navigation column (Bloom `Sidebar`): its destinations and its
+ * tree, in order.
+ *
+ * ```ts
+ * Sidebar(
+ *   NavItem('Home', RiHome5Line).id('home').link('/'),
+ *   NavItem('Settings', RiSettings3Line).id('settings').secondary(),
+ *   TreeSection('Projects', TreeItem('Roadmap').id('roadmap').icon(RiFileLine)),
+ * ).selection(current)
+ * ```
+ */
+export function Sidebar(...rows: SidebarRow[]): SidebarView {
+  return new Node('sidebar', null, rows as Child[]);
+}
+
+/** A sidebar destination: its label and glyph. */
+export function NavItem(label: string, icon: IconComponent): NavItemView {
+  return new Node('navItem', { label, icon }, NO_CHILDREN);
+}
+
+/** A section of the sidebar's tree, under its heading. */
+export function TreeSection(label: string, ...rows: TreeRow[]): TreeSectionView {
+  return new Node('treeSection', { label }, rows as Child[]);
+}
+
+/** A folder of a tree section: rows under a disclosure. */
+export function TreeFolder(
+  label: string,
+  ...items: (TreeItemView | false | null | undefined | readonly TreeItemView[])[]
+): TreeFolderView {
+  return new Node('treeFolder', { label }, items as Child[]);
+}
+
+/** A row of the tree; its children are rows nested under it. */
+export function TreeItem(
+  label: string,
+  ...items: (TreeItemView | false | null | undefined | readonly TreeItemView[])[]
+): TreeItemView {
+  return new Node('treeItem', { label }, items as Child[]);
+}
+
+/** A narrow column of destinations (Bloom `Rail`). */
+export function Rail(
+  ...items: (RailItemView | false | null | undefined | readonly RailItemView[])[]
+): RailView {
+  return new Node('rail', null, items as Child[]);
+}
+
+/** A destination of a rail: its label and its glyph, a view the app draws (an `Icon` in its ink). */
+export function RailItem(label: string, icon: ViewNode): RailItemView {
+  return new Node('railItem', { label, icon }, NO_CHILDREN);
+}
+
+/** A page's foot (Bloom `PageFooter`): its content, then its actions (`.toolbar`), on a scrim. */
+export function PageFooter(...children: Child[]): PageFooterView {
+  return new Node('pageFooter', null, children);
 }
 
 /**

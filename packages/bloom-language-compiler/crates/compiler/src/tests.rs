@@ -554,7 +554,7 @@ fn wave_two_controls_are_checked() {
 }
 
 /// The app chrome's constructors, imported as a screen file imports them.
-const CHROME: &str = "import { BottomSheet, ScrollView, Text } from '@oxy.so/bloom-language';\n";
+const CHROME: &str = "import { BottomSheet, NavItem, PageFooter, Rail, RailItem, ScrollView, Sidebar, Text, TreeFolder, TreeItem, TreeSection } from '@oxy.so/bloom-language';\n";
 
 fn chrome(body: &str) -> crate::Output {
     compile(&format!("{CHROME}{body}"), "chrome.tsx")
@@ -595,4 +595,28 @@ fn a_bottom_sheet_is_checked_against_the_spec() {
     // A sheet is not a view: it takes no box modifier.
     let padded = chrome("export const S = () => BottomSheet(Text('b')).padding('md');\n");
     assert_eq!(first_message(&padded), Some("BottomSheet has no modifier .padding()"));
+}
+
+#[test]
+fn the_sidebar_rail_and_page_footer_are_checked_against_the_spec() {
+    let fine = chrome(
+        "export const S = (Home, select) => Sidebar(NavItem('Home', Home).id('home').link('/').badge(3).shortcut('⌘1').secondary(), TreeSection('Projects', TreeFolder('Archive', TreeItem('Old')).expanded(true), TreeItem('Roadmap').subtitle('Q1').meta('3').disabled()).collapsible().loading().emptyLabel('None')).selection('home').onSelect(select).variant('rail').surface('docked').size('lg').collapsed().searchable(false).themeToggle(false).label('Navigation');\n",
+    );
+    assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
+    let rail = chrome(
+        "export const R = (icon) => Rail(RailItem('Home', icon).id('home').activeIcon(icon)).selection('home').width('96');\n",
+    );
+    assert!(rail.diagnostics.is_empty(), "{:?}", first_message(&rail));
+    let footer = chrome(
+        "export const F = () => PageFooter(Text('a')).toolbar(Text('b')).pinning('sticky').scrollEdge('auto').ignoresSafeArea();\n",
+    );
+    assert!(footer.diagnostics.is_empty(), "{:?}", first_message(&footer));
+    let size = chrome("export const S = () => Sidebar().size('xl');\n");
+    assert_eq!(first_message(&size), Some("Unknown sidebarSize token 'xl' for .size()"));
+    let surface = chrome("export const S = () => Sidebar().surface('glass');\n");
+    assert_eq!(first_message(&surface), Some("Unknown sidebarSurface token 'glass' for .surface()"));
+    let pinning = chrome("export const F = () => PageFooter().pinning('fixed');\n");
+    assert_eq!(first_message(&pinning), Some("Unknown footerPinning token 'fixed' for .pinning()"));
+    let row = chrome("export const S = () => TreeItem('a').padding('md');\n");
+    assert_eq!(first_message(&row), Some("TreeItem has no modifier .padding()"));
 }
