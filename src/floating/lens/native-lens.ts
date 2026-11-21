@@ -45,7 +45,12 @@ export interface LensNativeConfig {
 export interface LensNativeTriggerConfig {
   tintColor?: string;
   tintOpacity?: number;
+  /** How the trigger takes its menu back as it closes, in seconds and a damping ratio. */
+  absorb?: { duration?: number; damping?: number };
 }
+
+/** A lens trigger takes its menu back over 0.48 s, as the engine's upstream app's does. */
+export const LENS_TRIGGER_ABSORB = { duration: 0.48 } as const;
 
 export interface LensNativeProps {
   ref?: Ref<LensNativeHandle>;

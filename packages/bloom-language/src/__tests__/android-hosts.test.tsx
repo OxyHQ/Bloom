@@ -162,6 +162,10 @@ describe('the menu is the lens menu', () => {
     });
     expect(lens.props.cornerRadius).toBeUndefined();
     expect(lens.props.menuWidth).toBeUndefined();
+    // Bloom's colours, the engine's own glass: the panel at its transparency, a plain trigger
+    // morphing out of untinted glass.
+    expect(lens.props.config.tintOpacity).toBeUndefined();
+    expect(lens.props.triggerConfig).toBeUndefined();
     expect(lens.props.items).toEqual([
       { id: 'r0', title: 'Copy', iconSlot: 0 },
       { id: 'r1-', title: '', separator: true },
@@ -219,6 +223,13 @@ describe('the menu is the lens menu', () => {
     expect(only(r, 'BloomLensMenu').props.items).toEqual([]);
   });
 
+  it('a row’s subtitle is its second line', () => {
+    const r = mount(toElement(Menu(Icon(Glyph), Item('Quiet').subtitle('No sound for an hour'))));
+    expect(only(r, 'BloomLensMenu').props.items).toEqual([
+      { id: 'r0', title: 'Quiet', subtitle: 'No sound for an hour' },
+    ]);
+  });
+
   it('a trigger with a name of its own keeps it', () => {
     const r = mount(toElement(Menu(Icon(Glyph).label('More'), Item('a')).label('Post options')));
     expect(only(r, 'Pressable').props.accessibilityLabel).toBe('More');
@@ -233,7 +244,7 @@ describe('the menu is the lens menu', () => {
     expect(lens.props).toMatchObject({
       lens: true,
       cornerRadius: resolveCorner('lg'),
-      triggerConfig: { tintColor: LIGHT.primary },
+      triggerConfig: { tintColor: LIGHT.primary, absorb: { duration: 0.48 } },
       items: [{ id: 'r0', title: 'a' }],
     });
     expect(only(r, 'BloomButton').props.material).toBeUndefined();

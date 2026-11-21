@@ -19,6 +19,7 @@ import { Platform, type StyleProp, type ViewStyle } from 'react-native';
 export interface LensNativeItem {
   id: string;
   title: string;
+  subtitle?: string;
   iconSlot?: number;
   checked?: boolean;
   destructive?: boolean;
@@ -46,7 +47,12 @@ export interface LensNativeTriggerConfig {
   tintOpacity?: number;
   /** The engine's frost, a multiplier of its own. */
   blur?: number;
+  /** How the trigger takes its menu back as it closes, in seconds and a damping ratio. */
+  absorb?: { duration?: number; damping?: number };
 }
+
+/** A trigger on glass takes its menu back over 0.48 s, as the engine's upstream app's does. */
+export const LENS_GLASS_TRIGGER_ABSORB = { duration: 0.48 } as const;
 
 export interface LensNativeHandle {
   open: (x?: number, y?: number, width?: number, height?: number) => Promise<void>;

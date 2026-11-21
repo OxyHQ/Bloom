@@ -22,6 +22,8 @@ export interface MenuItemRow {
   kind: 'item';
   id: string;
   title: string;
+  /** A second line under the title, where the platform's menu draws one. */
+  subtitle: string | undefined;
   icon: IconComponent | undefined;
   destructive: boolean;
   disabled: boolean;
@@ -95,6 +97,7 @@ export function readMenuRows(
           kind: 'item',
           id,
           title: (node.props as { title: string }).title,
+          subtitle: values.subtitle as string | undefined,
           icon: values.icon as IconComponent | undefined,
           destructive: values.destructive === true,
           disabled: values.disabled === true,

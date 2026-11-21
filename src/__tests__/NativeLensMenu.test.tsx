@@ -146,6 +146,10 @@ describe('DropdownMenu as the native lens menu', () => {
       alignment: 'auto',
       openWithItems: false,
     });
+    // Bloom's colours, the engine's own glass: the panel at its transparency, a plain trigger
+    // morphing out of untinted glass.
+    expect(lastProps?.config?.tintOpacity).toBeUndefined();
+    expect(lastProps?.triggerConfig).toBeUndefined();
     expect(lastProps?.items.map((item) => item.title)).toEqual(['Share']);
     fireEvent.press(screen.getByText('Open'));
     expect(handle.open).toHaveBeenCalledTimes(1);
@@ -166,6 +170,26 @@ describe('DropdownMenu as the native lens menu', () => {
       </DropdownMenu>,
     );
     expect(lastProps).toBeUndefined();
+  });
+});
+
+describe('a lens trigger', () => {
+  it('morphs out of its tone and takes its menu back as a glass trigger does', () => {
+    wrap(
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild lensTone="primary">
+          <Text>Open</Text>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem>Share</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+    expect(lastProps?.lens).toBe(true);
+    expect(lastProps?.triggerConfig).toMatchObject({
+      tintOpacity: 0.96,
+      absorb: { duration: 0.48 },
+    });
   });
 });
 

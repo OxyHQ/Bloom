@@ -25,6 +25,7 @@ import { useTheme } from '../../theme/use-theme';
 import { useMenuPalette } from '../menu-palette';
 import { MENU_FONT_FAMILY } from '../menu-type';
 import {
+  LENS_TRIGGER_ABSORB,
   LENS_ICON_HOST_ID,
   type LensNativeHandle,
   type LensNativeItem,
@@ -282,29 +283,36 @@ export function LensTrigger({ lens, triggerLens, tone, tint, children }: LensTri
   const NativeLens = getNativeLens();
   const dark = useTheme().isDark;
   const primary = useLensTint().color;
-  const { surface, border, text, textSecondary, destructive, trigger } = useMenuPalette();
-  // Bloom's menu palette colours the lens: its surface tints the panel, its ink draws the rows.
+  const { surface, border, text, textSecondary, destructive } = useMenuPalette();
+  // Bloom's menu palette colours the lens: its surface tints the panel (at the engine's own
+  // transparency, as its upstream app draws it), its ink draws the rows.
   const config = useMemo(
     () => ({
       tintColor: surface,
-      tintOpacity: dark ? 0.72 : 0.6,
       textColor: text,
       mutedColor: textSecondary,
       destructiveColor: destructive,
       separatorColor: border,
     }),
-    [surface, border, text, textSecondary, destructive, dark],
+    [surface, border, text, textSecondary, destructive],
   );
   const [origin, setOrigin] = useState<LensOrigin | null>(null);
   // Read once: a view that mounts with the menu open opens itself.
   const [openAtMount] = useState(lens.open);
-  const triggerConfig = tint
-    ? { tintColor: tint, tintOpacity: 0.96 }
-    : tone === 'primary'
-      ? { tintColor: primary, tintOpacity: 0.96 }
-      : origin
-        ? { tintColor: origin.tint, tintOpacity: 0.96 }
-        : { tintColor: trigger.background, tintOpacity: 0.5 };
+  // A coloured trigger (a tint, the primary tone, a filled Button) morphs out of its own colour;
+  // any other out of the untinted lens, as the engine's upstream app does. A lens trigger takes
+  // its menu back as the upstream app's lens trigger does.
+  const fill = tint ?? (tone === 'primary' ? primary : origin?.tint);
+  const triggerConfig = useMemo(
+    () =>
+      fill || triggerLens
+        ? {
+            ...(fill ? { tintColor: fill, tintOpacity: 0.96 } : null),
+            ...(triggerLens ? { absorb: LENS_TRIGGER_ABSORB } : null),
+          }
+        : undefined,
+    [fill, triggerLens],
+  );
   if (!NativeLens) return <>{children}</>;
   return (
     <NativeLens

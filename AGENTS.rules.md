@@ -125,6 +125,11 @@ Two surfaces; CenteredDialog/ResponsiveSheet removed without shims. API/migratio
 - Native tooltip cannot position inside sheets (docs/tooltip.mdx)
 - Desktop windows (macOS/Windows/native ≥`md`): `center` + non-`anchored` `SheetShell` (Select) → session-held dialog/CenteredCard; menus/popovers pass `anchored`, never centred cards. No macOS checks in families. Yoga ignores auto margins on absolute `left`+`right` views (sheets sat bottom-LEFT): centre by insets. docs/dialog.mdx
 
+## Lens menu (floating/lens, bloom-language platform/menu-host.android)
+
+- Engine = upstream app + `packages/bloom-lens/patches/bloom.patch` only; `sync-from-upstream.sh` must reproduce the tree (diff zero). The view IS the trigger: mounted with it, never on press. A press is one `ref.open()`; rows that exist only once open arrive as items and the view opens itself (`openWithItems`, re-armed when emptied after `onMenuClosed`). Mount-on-press gave a late open, a morph from a fresh view, no press jelly, and on glass swapped the trigger's own lens view. android-hosts.test.tsx, NativeLensMenu.test.tsx (one call, same view)
+- Bloom gives colours only (menu palette, theme scheme, quiet glyph ink, a coloured trigger's own fill); every other glass/motion value is the engine's default as the upstream app uses it (panel tint opacity unset, plain trigger untinted, glass trigger `absorb` 0.48 s). Items/config memoized by content: a re-render sends the engine nothing
+
 ## Theme/tokens
 
 - `BloomThemeHead` is explicit prepaint head exception: shared generated token CSS + preference script, authorized by host nonce/hashes. Runtime styles use adopted sheets; SSR recipes use `ServerStyleSheet` under `ssrStyles`. `useThemePaint` is final style output; `useTheme` stays concrete for color arithmetic/native
