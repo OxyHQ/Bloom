@@ -848,8 +848,8 @@
     "scrollHeight": ["space"],
     "stickyHeaders": ["value?"],
     "sectionIndex": ["value"],
-    "listHeader": ["value"],
-    "listFooter": ["value"],
+    "headerContent": ["value"],
+    "footerContent": ["value"],
     "loadingRows": ["value"],
     "itemKey": ["value"],
     "itemType": ["value"],
@@ -1355,8 +1355,8 @@
         "scrollHeight",
         "stickyHeaders",
         "sectionIndex",
-        "listHeader",
-        "listFooter",
+        "headerContent",
+        "footerContent",
         "emptyState",
         "loading",
         "loadingRows"
@@ -1373,8 +1373,8 @@
         "refreshable",
         "stickyIndices",
         "restorationKey",
-        "listHeader",
-        "listFooter",
+        "headerContent",
+        "footerContent",
         "emptyState",
         "tuning"
       ]

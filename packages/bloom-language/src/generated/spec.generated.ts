@@ -1971,10 +1971,10 @@ export const MODIFIERS = {
   "sectionIndex": [
     "value"
   ],
-  "listHeader": [
+  "headerContent": [
     "value"
   ],
-  "listFooter": [
+  "footerContent": [
     "value"
   ],
   "loadingRows": [
@@ -5213,8 +5213,8 @@ export const NODE_MODIFIERS = {
     "scrollHeight",
     "stickyHeaders",
     "sectionIndex",
-    "listHeader",
-    "listFooter",
+    "headerContent",
+    "footerContent",
     "emptyState",
     "loading",
     "loadingRows"
@@ -5288,8 +5288,8 @@ export const NODE_MODIFIERS = {
     "refreshable",
     "stickyIndices",
     "restorationKey",
-    "listHeader",
-    "listFooter",
+    "headerContent",
+    "footerContent",
     "emptyState",
     "tuning"
   ],
