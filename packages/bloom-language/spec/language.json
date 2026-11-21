@@ -670,7 +670,10 @@
     "inverted": ["value?"],
     "density": ["density"],
     "dividers": ["value?"],
-    "separated": ["value?"]
+    "separated": ["value?"],
+    "fill": ["color"],
+    "stroke": ["color", "borderWidth?"],
+    "image": ["value", "value?"]
   },
   "universal": [
     "padding",
@@ -844,6 +847,11 @@
       "tint": "tone",
       "style": "appearance",
       "shape": "buttonShape"
+    },
+    "shape": {
+      "constructors": ["Shape"],
+      "modifiers": ["size", "fill", "stroke", "image"],
+      "size": "space"
     },
     "buttonGroup": {
       "constructors": ["ButtonGroup"],

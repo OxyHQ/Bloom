@@ -33,6 +33,11 @@ import { AspectRatio as BloomAspectRatio } from '@oxy.so/bloom/aspect-ratio';
 import { ConcentricView } from '@oxy.so/bloom/concentric';
 import { Divider as BloomDivider } from '@oxy.so/bloom/divider';
 import { Fill as BloomFill } from '@oxy.so/bloom/fill';
+import {
+  Border as ShapeBorder,
+  Fill as ShapeFill,
+  Image as ShapeImage,
+} from '@oxy.so/bloom/shapes';
 import { ResponsiveGrid } from '@oxy.so/bloom/grid';
 import { openExternal } from '@oxy.so/bloom/hooks';
 import {
@@ -71,6 +76,7 @@ import {
   type Modifier,
   type Press,
   type PressHandler,
+  type ShapeProps,
   type StackProps,
   type TextProps,
   type TextRun,
@@ -131,8 +137,10 @@ import {
   resolveAvatarSize,
   resolveCorner,
   resolveFont,
+  resolveBorderWidth,
   resolveLength,
   resolveSpace,
+  type ShapeName,
   type AvatarSizeToken,
   type LengthToken,
   type CornerName,
@@ -754,6 +762,60 @@ function wrapLayer(
   return drawHost(behaviour ? hostFor(p) : View, out, { ...behaviour, key }, ...children);
 }
 
+/** A shape's side with no `size()`: 40, Bloom's avatar default. */
+const SHAPE_SIDE: SpaceToken = '4xl';
+
+/** A shape's paint: what the last of `fill`, `stroke` and `image` in its chain says (a fill in the foreground by default). */
+function shapeElement(
+  node: Node,
+  name: ShapeName,
+  size: number,
+  key: string | number | undefined,
+): ReactElement {
+  let last: Extract<Modifier, { kind: 'fill' | 'stroke' | 'image' }> | undefined;
+  for (const modifier of node.modifiers) {
+    if (modifier.kind === 'fill' || modifier.kind === 'stroke' || modifier.kind === 'image')
+      last = modifier;
+  }
+  if (last?.kind === 'image')
+    return draw(ShapeImage, { key, shape: name, size, source: last.source, alt: last.alt });
+  if (last?.kind === 'stroke') {
+    return draw(Painted, {
+      key,
+      host: ShapeBorder,
+      shape: name,
+      size,
+      width: resolveBorderWidth(last.width),
+      paint: tokenPaint('colors', last.value),
+    });
+  }
+  return draw(Painted, {
+    key,
+    host: ShapeFill,
+    shape: name,
+    size,
+    paint: tokenPaint('color', last?.value ?? 'foreground'),
+  });
+}
+
+const tokenPaints = new Map<string, Paint>();
+
+/** One prop painted from a colour token (a role at an opacity included), on a host with no style. */
+function tokenPaint(prop: string, token: ColorToken): Paint {
+  const id = `${prop}|${token}`;
+  let paint = tokenPaints.get(id);
+  if (paint === undefined) {
+    const ref = role(token);
+    paint = {
+      style: undefined,
+      styleRoles: [],
+      propRoles: [ref.opacity === undefined ? [prop, ref.role] : [prop, ref.role, ref.opacity]],
+    };
+    tokenPaints.set(id, paint);
+  }
+  return paint;
+}
+
 /**
  * Bloom's Button with its `colors` pair as two props, so a `Painted` leaf can
  * paint each from its role. One pair object per colour pair, so the button's
@@ -1140,6 +1202,17 @@ function renderHost(
       }
       if (!boxed) return draw(BloomButton, props);
       return drawHost(BloomButton, box('component', 'B'), props);
+    }
+    case 'shape': {
+      // A silhouette at a fixed side takes no style: its box is a view around it.
+      const { name } = node.props as ShapeProps;
+      const size = resolveSpace(
+        (ownValue(p, 'size')?.value as SpaceToken | undefined) ?? SHAPE_SIDE,
+      );
+      const drawn = shapeElement(node, name, size, behaviour || boxed ? undefined : key);
+      if (!boxed && !behaviour) return drawn;
+      const host = behaviour ? hostFor(p) : View;
+      return drawHost(host, box('host', 'SH'), hostProps(behaviour, key), drawn);
     }
     case 'buttonGroup': {
       const props = hostProps(behaviour, key);

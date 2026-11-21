@@ -48,6 +48,7 @@ import type {
   BottomBarView,
   ButtonGroupView,
   ButtonView,
+  ShapeView,
   ComposedView,
   EmbedView,
   FabView,
@@ -218,6 +219,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<ImageView>, Of<'image'>>,
       Same<MethodsOf<ButtonView>, Of<'button'>>,
       Same<MethodsOf<ButtonGroupView>, Of<'buttonGroup'>>,
+      Same<MethodsOf<ShapeView>, Of<'shape'>>,
       Same<MethodsOf<ActionView>, Of<'action'>>,
       Same<MethodsOf<ActionBarView>, Of<'actionBar'>>,
       Same<MethodsOf<ActionGroupView>, Of<'actionGroup'>>,
@@ -242,6 +244,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<RouteView>, Of<'route'>>,
       Same<MethodsOf<TabNavigatorView>, Of<'tabView'>>,
     ] = [
+      true,
       true,
       true,
       true,

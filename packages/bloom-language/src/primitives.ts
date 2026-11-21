@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 import type { BloomImageSource } from '@oxy.so/bloom/image';
 
+import type { ShapeName } from './tokens';
+
 import {
   Node,
   type ActionBarView,
@@ -19,6 +21,8 @@ import {
   type SkeletonView,
   type BottomBarView,
   type ButtonGroupView,
+  type ShapeProps,
+  type ShapeView,
   type ButtonView,
   type Child,
   type EmbedView,
@@ -130,6 +134,11 @@ export function Image(source: BloomImageSource | null | undefined, alt?: string)
 /** Bloom `Button`. An `Icon` child is its glyph; `Text` children are its label. */
 export function Button(...children: Child[]): ButtonView {
   return new Node('button', null, children);
+}
+
+/** One of Bloom's silhouettes (`circle`, `squircle`, `heart`…), filled, stroked or holding an image. */
+export function Shape(name: ShapeName): ShapeView {
+  return new Node('shape', { name } satisfies ShapeProps, []);
 }
 
 /** Bloom `Button.Group`: its `Button`s joined on one material. */

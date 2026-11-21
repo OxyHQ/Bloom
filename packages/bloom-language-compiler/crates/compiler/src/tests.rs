@@ -335,3 +335,18 @@ fn the_button_leftovers_are_checked() {
     let output = check("export const x = () => Button(Text('a')).colors('#1877f2', 'white');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown color token '#1877f2' for .colors()");
 }
+
+#[test]
+fn a_shape_is_checked() {
+    let check = |body: &str| {
+        compile(&format!("import {{ Shape }} from '@oxy.so/bloom-language';\n{body}"), "row.tsx")
+    };
+    let ok = check(
+        "export const x = () => Shape('heart').size('4xl').stroke('primary', 'thick').fill('muted/70');\n",
+    );
+    assert!(ok.diagnostics.is_empty());
+    let output = check("export const x = () => Shape('heart').size('huge');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown space token 'huge' for .size()");
+    let output = check("export const x = () => Shape('heart').tint('primary');\n");
+    assert_eq!(output.diagnostics[0].message, "Shape has no modifier .tint()");
+}
