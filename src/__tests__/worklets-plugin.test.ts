@@ -15,7 +15,9 @@ import { transformSync } from '@babel/core';
  * "'SpreadElement' as to-be workletized argument is not supported for object
  * hooks" and fails the app's release bundle. Nothing in Bloom runs that plugin
  * over its own source otherwise — not the build, not tsc, not jest's mocks — so
- * the motion gesture layer's first device build was the first to see it.
+ * the motion gesture layer's first device build was the first to see it. The
+ * layer now builds builder gestures (`Gesture.Pan()…`), whose callback chains
+ * the plugin compiles too.
  */
 const SRC = join(__dirname, '..');
 const ENGINES = /from 'react-native-(reanimated|gesture-handler|worklets)'/;

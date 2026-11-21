@@ -1116,9 +1116,10 @@ spec (a spring keeps its physics). A bound view's geometry follows its values:
 ### How it runs
 
 Gestures and bound geometry are Bloom's gesture layer (docs/motion.mdx, Motion
-values and gestures): Gesture Handler 3's hooks writing the values from their
-own callbacks (worklets on the UI thread on native) and the one mapper Bloom
-writes; the web restyles the bound views directly and eases with CSS
+values and gestures): Gesture Handler's builder gestures (`Gesture.Pan()`,
+`Gesture.Tap()`, `Gesture.Race()`) writing the values from their own callbacks
+(worklets on the UI thread on native, so a move runs no JS) and the one mapper
+Bloom writes; the web restyles the bound views directly and eases with CSS
 transitions. The engine plays everything else (docs/motion.mdx, The motion engine): native on
 Reanimated 4's CSS engine (CSS animations and transitions on an `Animated`
 host, no worklet, no JS per frame), the web with CSS transitions and the Web
@@ -1428,7 +1429,7 @@ and `@oxy.so/bloom-data` beside it.
   (Bloom's durations and Tailwind's delays), `.anchor()` (a transform origin),
   `.matchedGeometry()`, `.contentTransition('roll')`, `.pressScale()`, geometry
   (`.scale()`, `.offset()`, `.rotation()`) as tokens or bound to a
-  `MotionValue`, `.drag()` and `.swipe()` on Gesture Handler 3. Resting
+  `MotionValue`, `.drag()` and `.swipe()` on Gesture Handler's builder. Resting
   geometry that nothing plays is the box's own style. Bloom's pop, roll, toast
   and press feedback play on the same engine; the bottom sheet's drags are the
   same gesture layer's (docs/motion.mdx, Motion values and gestures).
@@ -1457,9 +1458,7 @@ and `@oxy.so/bloom-data` beside it.
   glyph's fill change at once. An `.animation()` scope reaches its own body,
   not the bodies of `view()`s inside it; a removal plays only for a keyed
   list's child. Colour transitions, loops and delays are measured in tests
-  and jsdom, not yet on a device. A drag or swipe on the gesture layer costs
-  the JS thread a dispatch per move event (Gesture Handler 3's hook path on
-  Reanimated 4.7; docs/motion.mdx), which the builder API did not.
+  and jsdom, not yet on a device.
 - Renderers: everything renders through React Native and react-native-web;
   no SwiftUI, native-view or CSS renderer yet. iOS is typechecked and tested
   against stand-ins, not run on a device. The web stylesheet is not in

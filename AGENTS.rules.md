@@ -29,7 +29,7 @@ Web loaders: RNW Animated JS-frame renders can starve Suspense retries. Use CSS;
 
 Worklet styles write every key every run (value or `UNSET`): native drops `undefined`/missing keys, keeping the old value. Gate `animated-style-resets.test.ts`; docs/motion.mdx
 
-The worklets Babel plugin workletizes a Gesture Handler 3 hook's config object (`usePanGesture({ … })`) and throws on a spread in it, failing the app's release bundle; nothing in Bloom's own build runs the plugin. Write the config as one literal. Gate `worklets-plugin.test.ts`; docs/motion.mdx (Motion values and gestures)
+The worklets Babel plugin workletizes a Gesture Handler 3 hook's config object (`usePanGesture({ … })`) and throws on a spread in it, failing the app's release bundle; nothing in Bloom's own build runs the plugin. Write the config as one literal (Bloom's gesture layer builds builder gestures, whose chains the plugin also compiles). Gate `worklets-plugin.test.ts`; docs/motion.mdx (Motion values and gestures)
 
 ## Web fork CSS
 
