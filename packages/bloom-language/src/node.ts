@@ -32,6 +32,7 @@ import type { VideoViewKind } from './controls/video-view';
 import type { ColorSwatchPickerKind } from './controls/color-swatch-picker';
 import type { InputOtpKind } from './controls/input-otp';
 import type { OtpCharacters } from './tokens';
+import type { AnimatedCheckKind } from './controls/animated-check';
 import type { TagSuggestion } from '@oxy.so/bloom/tag-field';
 import type { FileUploadFile, FileUploadProps } from '@oxy.so/bloom/file-upload';
 import type { TooltipKind } from './controls/tooltip';
@@ -1152,7 +1153,8 @@ export type NodeKind =
   | FileUploadKind
   | VideoViewKind
   | InputOtpKind
-  | ColorSwatchPickerKind;
+  | ColorSwatchPickerKind
+  | AnimatedCheckKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {

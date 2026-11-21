@@ -107,3 +107,4 @@ export const FileUploads: Story = { args: { family: 'fileUpload' } };
 export const Videos: Story = { args: { family: 'video' } };
 export const OneTimeCodes: Story = { args: { family: 'inputOtp' } };
 export const ColorSwatchPickers: Story = { args: { family: 'colorSwatchPicker' } };
+export const AnimatedChecks: Story = { args: { family: 'animatedCheck' } };

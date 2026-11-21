@@ -538,3 +538,7 @@ export type { InputOtpView } from './controls/input-otp';
 // Colour swatch pickers (controls/color-swatch-picker.tsx)
 export { ColorSwatchPicker } from './controls/color-swatch-picker';
 export type { ColorSwatchPickerView } from './controls/color-swatch-picker';
+
+// Animated checks (controls/animated-check.tsx)
+export { AnimatedCheck } from './controls/animated-check';
+export type { AnimatedCheckView } from './controls/animated-check';
