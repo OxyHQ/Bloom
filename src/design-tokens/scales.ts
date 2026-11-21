@@ -56,12 +56,15 @@ export const SPACING = {
  * rung would start painting them.
  */
 export const SPACING_STEPS = {
+  'space-1': 1,
   'space-6': 6,
   'space-10': 10,
   'space-14': 14,
+  'space-28': 28,
   'space-36': 36,
   'space-48': 48,
   'space-64': 64,
+  'space-96': 96,
 } as const;
 
 /* -------------------------------------------------------------------------- */
@@ -96,12 +99,17 @@ export const RADIUS = {
 } as const;
 
 /**
- * A radius the t-shirt view (`styles/tokens.ts` `borderRadius`) names and the
- * class vocabulary does not: Tailwind's `rounded-md` (6px), as apps render it
- * today. Out of `RADIUS` for the reason `SPACING_STEPS` is out of `SPACING`.
+ * Radii the t-shirt view (`styles/tokens.ts` `borderRadius`) names and the
+ * class vocabulary does not: Tailwind's `rounded-md` (6px) and the 10, 14, 18
+ * and 22px corners apps write, as they render today. Out of `RADIUS` for the
+ * reason `SPACING_STEPS` is out of `SPACING`.
  */
 export const RADIUS_STEPS = {
   'radius-6': 6,
+  'radius-10': 10,
+  'radius-14': 14,
+  'radius-18': 18,
+  'radius-22': 22,
 } as const;
 
 /* -------------------------------------------------------------------------- */
