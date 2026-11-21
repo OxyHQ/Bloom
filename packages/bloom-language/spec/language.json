@@ -1359,7 +1359,9 @@
     "sourceAnchors": ["value"],
     "timeSlots": ["value"],
     "onTimezonePress": ["value"],
-    "triggerTitle": ["value"]
+    "triggerTitle": ["value"],
+    "plainRun": ["value"],
+    "linkView": ["value"]
   },
   "universal": [
     "padding",
@@ -2986,6 +2988,10 @@
         "disabled",
         "presented"
       ]
+    },
+    "inlineMarkdown": {
+      "constructors": ["InlineMarkdown"],
+      "modifiers": ["streaming", "onLinkPress", "plainRun", "linkView", "suffix"]
     }
   },
   "sfSymbols": {
