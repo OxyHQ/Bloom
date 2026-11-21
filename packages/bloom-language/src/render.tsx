@@ -63,6 +63,7 @@ import {
   isNode,
   Navigation,
   type Node,
+  type NodeKind,
   type ActionProps,
   type AvatarGroupProps,
   type AvatarProps,
@@ -144,6 +145,8 @@ import {
   type VariantStyles,
 } from './style';
 import { StateHost } from './state-host';
+import { CONTROLS } from './controls';
+import type { ControlRenderer } from './controls/draw';
 import {
   STATES,
   both,
@@ -2233,6 +2236,30 @@ function renderHost(
         hostProps(behaviour, key),
         viewElement(node, ctx, undefined),
       );
+    }
+    default: {
+      const control: ControlRenderer | undefined = CONTROLS[node.kind as NodeKind];
+      if (control === undefined) throw new Error(`bloom-language: no renderer for ${node.kind}`);
+      return control({
+        node,
+        own: (kind) => ownValue(p, kind),
+        label: p.label,
+        hint: p.hint,
+        testID: p.testID,
+        key,
+        props: () => {
+          const props = hostProps(behaviour, key);
+          delete props.focusable;
+          return props;
+        },
+        component: (host, props, ...children) =>
+          boxed
+            ? drawHost(host, boxOf('component', node.kind), props, ...children)
+            : draw(host, props, ...children),
+        pressAround: (drawn) => pressAround(p, behaviour, key, drawn),
+        render: (child) => renderChild(child, ctx, undefined),
+        children: (children) => renderChildren(children, ctx),
+      });
     }
   }
 }

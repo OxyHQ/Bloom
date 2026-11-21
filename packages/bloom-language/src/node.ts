@@ -27,6 +27,9 @@ import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 
+import type { ContainerKind } from './controls/containers';
+import type { InputKind } from './controls/inputs';
+import type { OverlayKind } from './controls/overlays';
 import { OBJECTS } from './generated/spec.generated';
 import { regular, type GlassValue } from './glass';
 import type { KeyframesValue } from './motion/keyframes';
@@ -415,6 +418,12 @@ export interface ValueModifiers {
   columns: number;
   minCellWidth: SpaceToken;
   flow: GridFlow;
+
+  // Inputs (controls/inputs.tsx)
+
+  // Overlays and feedback (controls/overlays.tsx)
+
+  // Containers (controls/containers.tsx)
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -764,7 +773,10 @@ export type NodeKind =
   | 'scrollSurface'
   | 'autoHideBar'
   | 'resizeHandle'
-  | 'lottie';
+  | 'lottie'
+  | InputKind
+  | OverlayKind
+  | ContainerKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1701,6 +1713,12 @@ export class Node {
   fallback(value: Child): Node {
     return this.with({ kind: 'fallback', key: 'fallback', value });
   }
+
+  // Inputs (controls/inputs.tsx)
+
+  // Overlays and feedback (controls/overlays.tsx)
+
+  // Containers (controls/containers.tsx)
 }
 
 const FRAME_KEYS = OBJECTS.frame.keys;
