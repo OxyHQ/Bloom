@@ -707,7 +707,8 @@
     "ratingSize": ["sm", "md"],
     "ratingStyle": ["compact", "stars"],
     "ratingCountStyle": ["parenthesis", "reviews"],
-    "ratingInputSize": ["sm", "md", "lg"]
+    "ratingInputSize": ["sm", "md", "lg"],
+    "meterCap": ["round", "butt"]
   },
   "glass": {
     "$comment": [
@@ -1193,7 +1194,19 @@
     "starLabel": ["value"],
     "valueLabel": ["value"],
     "labelWidth": ["space"],
-    "reveal": ["value"]
+    "reveal": ["value"],
+    "valueText": ["value"],
+    "indeterminate": ["value?"],
+    "decorative": [],
+    "trackTint": ["color"],
+    "thickness": ["space"],
+    "fillDuration": ["duration"],
+    "barCorner": ["corner"],
+    "backdrop": ["color"],
+    "cap": ["meterCap"],
+    "content": ["value"],
+    "onStop": ["value", "value"],
+    "rangeLabels": ["value", "value?"]
   },
   "universal": [
     "padding",
@@ -2291,7 +2304,47 @@
       "constructors": ["RatingBar"],
       "modifiers": ["max", "valueLabel", "labelWidth", "reveal"]
     },
-    "ratingSummary": { "constructors": ["RatingSummary"], "modifiers": ["labels"] }
+    "ratingSummary": { "constructors": ["RatingSummary"], "modifiers": ["labels"] },
+    "meter": {
+      "constructors": ["Meter", "ProgressBar"],
+      "modifiers": [
+        "valueText",
+        "indeterminate",
+        "decorative",
+        "tint",
+        "trackTint",
+        "thickness",
+        "fillDuration",
+        "barCorner",
+        "reveal"
+      ],
+      "tint": "color"
+    },
+    "meterRing": {
+      "constructors": ["MeterRing", "ProgressRing"],
+      "modifiers": [
+        "valueText",
+        "indeterminate",
+        "decorative",
+        "tint",
+        "trackTint",
+        "thickness",
+        "fillDuration",
+        "size",
+        "backdrop",
+        "cap",
+        "content",
+        "onStop",
+        "progress"
+      ],
+      "tint": "color",
+      "size": "space"
+    },
+    "statBar": {
+      "constructors": ["StatBar", "SplitBar"],
+      "modifiers": ["tint", "trackTint", "thickness", "trailing", "rangeLabels"],
+      "tint": "color"
+    }
   },
   "sfSymbols": {
     "$comment": [
