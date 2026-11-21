@@ -9,8 +9,15 @@
  * tag, its attributes other than `class`, `style` and `data-testid`, its text,
  * every computed style property, and its laid-out size, in light and dark.
  *
+ * Then each press host of a language cell (a view whose variants answer its
+ * state carries the anchor class `blsg`) is held: the pointer over it (at a
+ * point no inner host covers), then pressed, at the same place in both cells,
+ * and the two cells are compared again on every computed style and size. So a
+ * state variant draws what Bloom's own pressed or hovered style draws, and a
+ * press host inside another answers only its own state.
+ *
  * Usage: start Storybook (`bun run storybook`), then
- *   node packages/bloom-language/scripts/verify-parity-web.mjs [--url http://localhost:6006]
+ *   node packages/bloom-language/scripts/verify-parity-web.mjs [--url http://localhost:6006] [--width 1200]
  * Chrome is puppeteer's download (`~/.cache/puppeteer`) unless CHROME_PATH names one.
  */
 import { readdirSync } from 'node:fs';
@@ -42,6 +49,9 @@ function findChrome() {
 
 const argUrl = process.argv.indexOf('--url');
 const BASE = argUrl !== -1 ? process.argv[argUrl + 1] : 'http://localhost:6006';
+const argWidth = process.argv.indexOf('--width');
+/** The window's width: a breakpoint variant is compared at the tier it gives. */
+const WIDTH = argWidth !== -1 ? Number(process.argv[argWidth + 1]) : 1200;
 const STORIES = process.argv.filter((arg) => arg.startsWith('language-parity--'));
 
 /** Every pair of a story, compared in the page; returns the differences. */
@@ -122,13 +132,114 @@ function compareInPage() {
   return { pairs: rows.length, differences };
 }
 
+/** What a cell draws, element by element: every computed style and the laid-out size. */
+function describeCellInPage(testid) {
+  const cell = document.querySelector(`[data-testid="${testid}"]`);
+  const out = [];
+  const walk = (element, path) => {
+    const style = getComputedStyle(element);
+    const css = {};
+    for (let i = 0; i < style.length; i++)
+      if (!style[i].startsWith('--')) css[style[i]] = style.getPropertyValue(style[i]);
+    const box = element.getBoundingClientRect();
+    const px = (n) => Math.round(n * 100) / 100;
+    out.push({ path, tag: element.tagName, css, size: `${px(box.width)}x${px(box.height)}` });
+    [...element.children].forEach((child, index) => walk(child, `${path}/${index}`));
+  };
+  [...cell.children].forEach((child, index) => walk(child, `/${index}`));
+  return out;
+}
+
+/**
+ * The press hosts of a language cell, by path, each with a point (relative to
+ * its box) where the pointer is over it and no press host inside it.
+ */
+function pressHostsInPage(index) {
+  const cell = document.querySelector(`[data-testid="language-${index}"]`);
+  const hosts = [];
+  const walk = (element, path) => {
+    if (element.classList.contains('blsg')) {
+      const box = element.getBoundingClientRect();
+      let point = null;
+      for (let y = 1; y < box.height && !point; y += 2)
+        for (let x = 1; x < box.width && !point; x += 2) {
+          const hit = document.elementFromPoint(box.x + x, box.y + y);
+          if (hit && hit.closest('.blsg') === element) point = { x, y };
+        }
+      if (point) hosts.push({ path, point });
+    }
+    [...element.children].forEach((child, at) => walk(child, `${path}/${at}`));
+  };
+  [...cell.children].forEach((child, at) => walk(child, `/${at}`));
+  return hosts;
+}
+
+function elementAtPathInPage(testid, path) {
+  let element = document.querySelector(`[data-testid="${testid}"]`);
+  for (const index of path.split('/').slice(1)) element = element?.children[Number(index)];
+  if (!element) return null;
+  const box = element.getBoundingClientRect();
+  return { x: box.x, y: box.y };
+}
+
+/** Holds each press host of each case, hovered then pressed, in both cells; returns the differences. */
+async function compareHeldStates(page) {
+  const differences = [];
+  const count = await page.evaluate(
+    () => document.querySelectorAll('[data-testid^="bloom-"]').length,
+  );
+  for (let index = 0; index < count; index++) {
+    const hosts = await page.evaluate(pressHostsInPage, index);
+    for (const { path, point } of hosts) {
+      for (const state of ['hovered', 'pressed']) {
+        const drawn = [];
+        for (const side of ['bloom', 'language']) {
+          const origin = await page.evaluate(elementAtPathInPage, `${side}-${index}`, path);
+          if (!origin) {
+            differences.push(`[case ${index}] ${state} ${path}: no ${side} element`);
+            continue;
+          }
+          await page.mouse.move(origin.x + point.x, origin.y + point.y);
+          if (state === 'pressed') await page.mouse.down();
+          // Bloom's Pressable draws its state on React's next render.
+          await page.evaluate(() => new Promise((done) => setTimeout(done, 50)));
+          drawn.push(await page.evaluate(describeCellInPage, `${side}-${index}`));
+          if (state === 'pressed') await page.mouse.up();
+          await page.mouse.move(0, 0);
+        }
+        if (drawn.length !== 2) continue;
+        const [left, right] = drawn;
+        if (left.length !== right.length) {
+          differences.push(
+            `[case ${index}] ${state} ${path}: ${left.length} vs ${right.length} elements`,
+          );
+          continue;
+        }
+        left.forEach((a, at) => {
+          const b = right[at];
+          for (const property of new Set([...Object.keys(a.css), ...Object.keys(b.css)]))
+            if (a.css[property] !== b.css[property])
+              differences.push(
+                `[case ${index}] ${state} ${path} at ${a.path}: ${property} ${a.css[property]} vs ${b.css[property]}`,
+              );
+          if (a.size !== b.size)
+            differences.push(
+              `[case ${index}] ${state} ${path} at ${a.path}: size ${a.size} vs ${b.size}`,
+            );
+        });
+      }
+    }
+  }
+  return differences;
+}
+
 const puppeteer = loadPuppeteer();
 const browser = await puppeteer.launch({ executablePath: findChrome(), args: ['--no-sandbox'] });
 let failed = 0;
 try {
   const page = await browser.newPage();
   page.on('pageerror', (error) => console.log(`     page error: ${error.message}`));
-  await page.setViewport({ width: 1200, height: 900 });
+  await page.setViewport({ width: WIDTH, height: 900 });
   const index = await (await fetch(`${BASE}/index.json`)).json();
   const ids = STORIES.length
     ? STORIES
@@ -139,6 +250,7 @@ try {
       await page.waitForSelector('[data-testid="language-0"]', { timeout: 60000 });
       await page.evaluate(() => document.fonts.ready);
       const { pairs, differences } = await page.evaluate(compareInPage);
+      differences.push(...(await compareHeldStates(page)));
       if (differences.length > 0) failed += 1;
       console.log(`${differences.length ? 'FAIL' : 'ok  '} ${id} ${theme}: ${pairs} pairs`);
       for (const difference of differences.slice(0, 40)) console.log(`     ${difference}`);

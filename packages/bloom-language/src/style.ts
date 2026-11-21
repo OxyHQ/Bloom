@@ -9,7 +9,7 @@ import { COLORS, ENVIRONMENT_DEFAULTS, FONT_SIZE, LAYER_RANK } from './generated
 import { WEB_CLASS } from './generated/web-sheet.generated';
 import type { Paint, PaintVariant } from './paint';
 import { compareLive, warnNoClass, type LiveCondition, type Planned } from './variants';
-import { adoptLanguageVariants, variantSuffix } from './web-sheet';
+import { adoptVariantClasses, variantSuffix } from './web-sheet';
 import {
   ALIGNMENT,
   OPACITY,
@@ -126,19 +126,27 @@ export function joinVariants(...lists: (VariantStyles | undefined)[]): VariantSt
 export interface StyleOut {
   readonly style: unknown;
   readonly paint: Paint | undefined;
+  /** The web: the host reads its style as an object (a Bloom component), so it takes no class and tracks its state in JS. */
+  readonly object?: true;
 }
 
 /**
  * `host`: a React Native host the language owns (View, Text, Pressable),
  * which takes classes on the web. `component`: a Bloom component the
  * language draws (Avatar, Button, Surface…), which reads its style as an
- * object, so it gets one on every platform. `material`: a Bloom material that
+ * object, so it gets one on every platform (with live variants, a
+ * `Conditioned` leaf picks it, on the web too). `material`: a Bloom material that
  * computes with its fill (`BlurIsland` reads its `backgroundColor`), so its
  * roles are painted from the theme on every platform, never a CSS variable.
  */
 export type Target = 'host' | 'component' | 'material';
 
 const NO_STYLE: StyleOut = Object.freeze({ style: undefined, paint: undefined });
+const NO_OBJECT_STYLE: StyleOut = Object.freeze({
+  style: undefined,
+  paint: undefined,
+  object: true,
+});
 const cache = new Map<string, StyleOut>();
 
 /**
@@ -184,23 +192,45 @@ function split(resolved: Resolved): {
 
 function serialize(resolved: Resolved, target: Target, variants: VariantStyles): StyleOut {
   const keys = Object.keys(resolved);
+  if (IS_WEB && target === 'component') {
+    // A Bloom component reads its style as an object, which CSS cannot vary:
+    // its live variants are picked by a `Conditioned` leaf, as native's are,
+    // each role its CSS variable as in the component's inline style.
+    if (keys.length === 0 && variants.length === 0) return NO_OBJECT_STYLE;
+    const out =
+      variants.length === 0
+        ? { style: Object.freeze(inked(resolved)), paint: undefined }
+        : paintOut(
+            inked(resolved),
+            variants.map(([condition, styled]) => [condition, inked(styled)] as const),
+          );
+    return { ...out, object: true };
+  }
   if (keys.length === 0 && variants.length === 0) return NO_STYLE;
-  if (target !== 'host' && variants.length > 0) {
-    // A Bloom component takes its style as an object, so nothing can vary it
-    // on the web; the renderer puts a varied layer on a view of its own.
-    variants = [];
+  if (IS_WEB && target !== 'material')
+    return { style: webStyle(resolved, keys, variants), paint: undefined };
+  return paintOut(resolved, variants);
+}
+
+/** A resolved style with each role as its web paint (its CSS variable). */
+function inked(resolved: Resolved): Resolved {
+  const out: Resolved = {};
+  for (const key of Object.keys(resolved)) {
+    const value = resolved[key] as StyleValue;
+    out[key] = isRole(value) ? webInk(value) : value;
   }
-  if (IS_WEB && target !== 'material') {
-    if (keys.length === 0 && variants.length === 0) return NO_STYLE;
-    return { style: webStyle(resolved, keys, target, variants), paint: undefined };
-  }
+  return out;
+}
+
+/** The native form (and a web component's with variants): values, the roles a `Painted` leaf paints, the variants a `Conditioned` one picks. */
+function paintOut(resolved: Resolved, variants: VariantStyles): StyleOut {
   const { style, styleRoles } = split(resolved);
   if (variants.length > 0) {
     const varied: PaintVariant[] = variants.map(([condition, styled]) => ({
       condition,
       ...split(styled),
     }));
-    const base = keys.length > 0 ? style : undefined;
+    const base = Object.keys(resolved).length > 0 ? style : undefined;
     return {
       style: undefined,
       paint: { style: base, styleRoles, propRoles: [], variants: varied },
@@ -213,23 +243,18 @@ function serialize(resolved: Resolved, target: Target, variants: VariantStyles):
 /**
  * The web form: react-native-web `$$css` class objects for every value the
  * generated sheet has a class for, and an inline object for the rest (an
- * app token's own number). A Bloom component reads its style as an object,
- * so it gets the inline form, roles as their CSS variables.
+ * app token's own number). A Bloom component's style is an object
+ * (`serialize`).
  */
 const classOf = (key: string, value: StyleValue): string | undefined =>
   WEB_CLASS[isRole(value) ? `${key}:@${value.token}` : `${key}:${String(value)}`];
 
-function webStyle(
-  resolved: Resolved,
-  keys: string[],
-  target: 'host' | 'component',
-  variants: VariantStyles,
-): unknown {
+function webStyle(resolved: Resolved, keys: string[], variants: VariantStyles): unknown {
   let classes: Record<string, string | boolean> | undefined;
   let inline: Record<string, StyleValue> | undefined;
   for (const key of keys) {
     const value = resolved[key] as StyleValue;
-    const name = target === 'host' ? classOf(key, value) : undefined;
+    const name = classOf(key, value);
     if (name !== undefined) {
       classes ??= { $$css: true };
       classes[key] = name;
@@ -238,19 +263,21 @@ function webStyle(
       inline[key] = isRole(value) ? webInk(value) : value;
     }
   }
-  // A variant is the same class under its condition's CSS (web-sheet.ts), keyed
-  // apart from the base so styleq keeps both.
+  // A variant is the same class under its condition's CSS, keyed apart from the
+  // base so styleq keeps both; its rule reaches the page with it (web-sheet.ts).
   for (const [condition, styled] of variants) {
-    adoptLanguageVariants(condition);
+    const names: string[] = [];
     for (const key of Object.keys(styled)) {
       const name = classOf(key, styled[key] as StyleValue);
       if (name === undefined) {
         warnNoClass(key);
         continue;
       }
+      names.push(name);
       classes ??= { $$css: true };
       classes[`${key}@${condition}`] = `${name}-${variantSuffix(condition)}`;
     }
+    adoptVariantClasses(condition, names);
   }
   const parts = [classes, inline].filter((part) => part !== undefined).map(Object.freeze);
   return parts.length === 1 ? parts[0] : Object.freeze(parts);
