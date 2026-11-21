@@ -1066,9 +1066,6 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
            "type": "Animated.View",
            "props": {
             "collapsable": false,
-            "ref": {
-             "current": null
-            },
             "style": [
              {
               "position": "absolute",
@@ -1989,9 +1986,6 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
            "type": "Animated.View",
            "props": {
             "collapsable": false,
-            "ref": {
-             "current": null
-            },
             "style": [
              {
               "position": "absolute",
@@ -3363,9 +3357,6 @@ exports[`Menubar without the menu-bar capability (native) draws in the window as
            "type": "Animated.View",
            "props": {
             "collapsable": false,
-            "ref": {
-             "current": null
-            },
             "style": [
              {
               "position": "absolute",
