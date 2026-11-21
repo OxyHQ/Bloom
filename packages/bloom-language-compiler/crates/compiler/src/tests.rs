@@ -827,3 +827,20 @@ fn colour_swatch_pickers_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn animated_checks_are_checked() {
+    let imports = "import { AnimatedCheck } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check("export const x = (t) => AnimatedCheck(t).size('64').tint('success').padding('md');\n");
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("AnimatedCheck().size('huge')", "Unknown space token 'huge' for .size()"),
+        ("AnimatedCheck().tint('red')", "Unknown color token 'red' for .tint()"),
+        ("AnimatedCheck().placeholder('x')", "AnimatedCheck has no modifier .placeholder()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = () => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

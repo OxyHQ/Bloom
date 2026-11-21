@@ -8,6 +8,7 @@ import { CONTAINERS } from './containers';
 import { DATE_PICKERS } from './date-picker';
 import { FILE_UPLOADS } from './file-upload';
 import type { ControlRenderer } from './draw';
+import { ANIMATED_CHECKS } from './animated-check';
 import { INPUTS } from './inputs';
 import { LISTS } from './list';
 import { MARKDOWN } from './markdown';
@@ -51,4 +52,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...VIDEOS,
   ...COLOR_SWATCH_PICKERS,
   ...INPUT_OTPS,
+  ...ANIMATED_CHECKS,
 };

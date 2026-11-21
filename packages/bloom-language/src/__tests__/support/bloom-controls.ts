@@ -49,3 +49,4 @@ export const FileUpload = 'FileUpload';
 export const VideoView = 'VideoView';
 export const InputOtp = 'InputOtp';
 export const ColorSwatchPicker = 'ColorSwatchPicker';
+export const AnimatedCheck = 'AnimatedCheck';

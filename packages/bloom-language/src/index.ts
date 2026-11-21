@@ -361,3 +361,7 @@ export type {
 // Overlays and feedback (controls/overlays.tsx)
 
 // Containers (controls/containers.tsx)
+
+// Animated checks (controls/animated-check.tsx)
+export { AnimatedCheck } from './controls/animated-check';
+export type { AnimatedCheckView } from './controls/animated-check';
