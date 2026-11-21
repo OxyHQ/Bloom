@@ -1679,6 +1679,11 @@ export const ENUMS = {
   "dotsStyle": [
     "default",
     "onMedia"
+  ],
+  "markdownSize": [
+    "sm",
+    "md",
+    "lg"
   ]
 } as const;
 
@@ -2965,6 +2970,15 @@ export const MODIFIERS = {
   "hidesUnavailableArrows": [],
   "dots": [
     "value?"
+  ],
+  "streaming": [
+    "value?"
+  ],
+  "onLinkPress": [
+    "value"
+  ],
+  "codeBlock": [
+    "value"
   ]
 } as const;
 
@@ -10377,6 +10391,89 @@ export const NODE_MODIFIERS = {
     "style",
     "max",
     "labels"
+  ],
+  "markdown": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "alert",
+    "dialog",
+    "popover",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
+    "streaming",
+    "size",
+    "onLinkPress",
+    "codeBlock"
   ]
 } as const;
 
@@ -10522,5 +10619,6 @@ export const CONSTRUCTORS = {
   "ListSelectionBar": "listSelectionBar",
   "Carousel": "carousel",
   "CarouselItem": "carouselItem",
-  "CarouselDots": "carouselDots"
+  "CarouselDots": "carouselDots",
+  "Markdown": "markdown"
 } as const;

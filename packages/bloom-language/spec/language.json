@@ -718,7 +718,8 @@
     "arrowsVisibility": ["always", "hover"],
     "carouselAlign": ["start", "center"],
     "dotsShape": ["pill", "dot"],
-    "dotsStyle": ["default", "onMedia"]
+    "dotsStyle": ["default", "onMedia"],
+    "markdownSize": ["sm", "md", "lg"]
   },
   "glass": {
     "$comment": [
@@ -1262,7 +1263,10 @@
     "hidesUnavailableArrows": [],
     "dots": ["value?"],
     "contentInset": ["space"],
-    "page": ["value"]
+    "page": ["value"],
+    "streaming": ["value?"],
+    "onLinkPress": ["value"],
+    "codeBlock": ["value"]
   },
   "universal": [
     "padding",
@@ -2499,6 +2503,11 @@
       "modifiers": ["shape", "style", "max", "labels"],
       "shape": "dotsShape",
       "style": "dotsStyle"
+    },
+    "markdown": {
+      "constructors": ["Markdown"],
+      "modifiers": ["streaming", "size", "onLinkPress", "codeBlock"],
+      "size": "markdownSize"
     }
   },
   "sfSymbols": {
