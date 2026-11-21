@@ -293,6 +293,34 @@ Each step ships on its own, with the SDK's gates and a consumer check in an
 app. During each one, the old and new paths coexist only for the flows being
 moved.
 
+Where it stands: steps 2, 3 (Services writes every person it reads into
+`User`) and 6 (the session opens the stores, `OxyProvider`'s `dataPersister`)
+are on oxy `feat/services-bloom-data`, and Mention runs on the session's store
+(Mention `feat/sdk-bloom-data`). Mention's identity overlay
+(`stores/identityUpdates.ts`) stays: a feed answer hydrated before a profile
+edit carries the old picture as a real value, and nothing in a post's author
+says which copy is newer, so `combine` cannot refuse it. Retiring the overlay
+needs a freshness mark on every embedded user (its `updatedAt`).
+
+What step 4 needs here first, each found moving Services' reads:
+
+- `useRecord(source, skip)`, as `useList` has: most SDK reads wait for the
+  signed-in account (`enabled`).
+- A record read by another key than its id (a profile by username), without a
+  one-item list.
+- `model()`: settings, plans, security activity and the like are one value per
+  account, not records by id.
+- An action's pending state for a screen (`isPending`, `error`) and for the
+  "Syncing" indicator (`useMutationStatus` counts mutations in flight).
+- A durable copy on web (today the SDK's caches live in `localStorage`), and a
+  way to delete an account's file at sign-out (the SDK deletes the signed-out
+  account's cache today).
+
+Step 5 also removes `OxyProvider`'s `queryClient` and `accountQueries`: Alia,
+Homiio, Inbox, Gemies, Atlas, Syra, Clarity and Nilo persist their own React
+Query data through them, so each moves its data first or mounts its own
+client.
+
 ## Gates
 
 `bun run build`, `bun run typescript` and `bun run test` in
