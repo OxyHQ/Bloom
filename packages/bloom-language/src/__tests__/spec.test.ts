@@ -229,6 +229,13 @@ describe('the spec drives the rules', () => {
     }
   });
 
+  it('the className table is current with the spec and the apps’ usage', () => {
+    const script = join(PACKAGE, 'scripts/generate-classnames.mjs');
+    expect(() =>
+      execFileSync(process.execPath, [script, '--check'], { stdio: 'pipe' }),
+    ).not.toThrow();
+  });
+
   it('the generated outputs are current with the spec', () => {
     const script = join(PACKAGE, 'scripts/generate.mjs');
     expect(() =>
