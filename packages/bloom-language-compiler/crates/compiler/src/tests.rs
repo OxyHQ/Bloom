@@ -1149,3 +1149,22 @@ fn photo_grids_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn choice_lists_are_checked() {
+    let imports = "import { ChoiceList, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (choice, options) => ChoiceList('Accounts', choice, options, (o) => Text(o.label)).axis('vertical').spacing('28').optionBox({ corner: 'md' }).disabled();\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("ChoiceList('A', t, [], f).axis('depth')", "Unknown axis token 'depth' for .axis()"),
+        ("ChoiceList('A', t, [], f).spacing('huge')", "Unknown space token 'huge' for .spacing()"),
+        ("ChoiceList('A', t, [], f).size('sm')", "ChoiceList has no modifier .size()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (t, f) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
