@@ -5,11 +5,17 @@
  */
 import { Glyph, hosts, mount, only, OtherGlyph, quietRenderer } from './support/mount';
 import {
+  Command,
+  CommandGroup,
+  CommandItem,
   Icon,
   NavItem,
   PageFooter,
   Rail,
   RailItem,
+  SettingsGroup,
+  SettingsItem,
+  SettingsModal,
   Sidebar,
   Text,
   TreeFolder,
@@ -95,5 +101,102 @@ describe('Rail and PageFooter', () => {
     const footer = only(r, 'PageFooter');
     expect(footer.props).toMatchObject({ position: 'sticky', scrim: 'auto', safeArea: false });
     expect(hosts(r, 'Text').map((t) => t.props.children)).toEqual(['2 selected', 'Delete']);
+  });
+});
+
+describe('Command and SettingsModal', () => {
+  it('a palette’s items are its rows, ungrouped first, each group’s under its title', () => {
+    const compose = jest.fn();
+    const change = jest.fn();
+    const query = jest.fn();
+    const r = mount(
+      toElement(
+        Command(
+          CommandItem('New post')
+            .icon(Glyph)
+            .shortcut('⌘N')
+            .keywords('write', 'compose')
+            .onPress(compose),
+          CommandGroup('Go to', CommandItem('Settings').id('settings').subtitle('Preferences')),
+        )
+          .presented(true)
+          .onPresentedChange(change)
+          .placeholder('Search')
+          .emptyLabel('Nothing')
+          .query('ne', query),
+      ),
+    );
+    const props = only(r, 'Command').props;
+    expect(props).toMatchObject({
+      open: true,
+      onOpenChange: change,
+      placeholder: 'Search',
+      emptyText: 'Nothing',
+      query: 'ne',
+      onQueryChange: query,
+    });
+    expect(props.items).toEqual([
+      {
+        id: 'New post',
+        label: 'New post',
+        icon: Glyph,
+        keywords: ['write', 'compose'],
+        shortcut: '⌘N',
+        onSelect: expect.any(Function),
+      },
+      {
+        id: 'settings',
+        label: 'Settings',
+        description: 'Preferences',
+        group: 'Go to',
+        onSelect: expect.any(Function),
+      },
+    ]);
+    props.items[0].onSelect();
+    expect(compose).toHaveBeenCalledTimes(1);
+  });
+
+  it('settings: groups of rows, a row with content opens its page, built only when shown', () => {
+    const profile = jest.fn(() => Text('profile'));
+    const signOut = jest.fn();
+    const change = jest.fn();
+    const r = mount(
+      toElement(
+        SettingsModal(
+          SettingsGroup(
+            'Account',
+            SettingsItem('Profile', Glyph).id('profile').content(profile).fullBleed(),
+            SettingsItem('Sign out', OtherGlyph).onPress(signOut),
+          ),
+        )
+          .presented(true)
+          .onPresentedChange(change)
+          .selection('profile')
+          .initialView('page')
+          .presentation('floating'),
+      ),
+    );
+    const props = only(r, 'SettingsModal').props;
+    expect(props.groups).toEqual([
+      {
+        label: 'Account',
+        items: [
+          { key: 'profile', label: 'Profile', icon: Glyph, page: 'profile' },
+          { key: 'Sign out', label: 'Sign out', icon: OtherGlyph, onPress: expect.any(Function) },
+        ],
+      },
+    ]);
+    expect(props).toMatchObject({
+      open: true,
+      page: 'profile',
+      initialView: 'page',
+      headerPresentation: 'floating',
+    });
+    expect(props.pages.profile).toMatchObject({ title: 'Profile', fullBleed: true });
+    expect(profile).not.toHaveBeenCalled();
+    props.pages.profile.content();
+    expect(profile).toHaveBeenCalledTimes(1);
+    props.onClose();
+    expect(change).toHaveBeenCalledWith(false);
   });
 });

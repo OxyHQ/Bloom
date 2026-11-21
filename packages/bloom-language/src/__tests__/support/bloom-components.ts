@@ -66,3 +66,5 @@ export function Rail(props: Record<string, unknown>) {
 export function PageFooter(props: Record<string, unknown>) {
   return createElement('PageFooter', props, props.children as never, props.actions as never);
 }
+export const Command = 'Command';
+export const SettingsModal = 'SettingsModal';
