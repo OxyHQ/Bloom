@@ -45,6 +45,7 @@ export type { Play, Transform } from './play';
 export { MotionView } from './MotionView';
 export type { MotionViewProps } from './MotionView';
 export { Presence } from './presence';
+export { COLOR_TRANSITION_PROPS, applyThemeAtOnce } from './theme-switch';
 export { LeavingContext } from './leaving';
 export type { Leaving, PresenceChildProps } from './leaving';
 export {

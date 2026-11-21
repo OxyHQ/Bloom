@@ -50,6 +50,24 @@ Bloom's state-driven animations play on one engine (`@oxy.so/bloom/motion`):
   transitions the box's fill, border (each side), outline and text colour
   (the web's `currentColor` glyph follows the text colour). Without it the
   style is the transform and opacity transition Bloom's own motion views take.
+  Colours are opt-in: only a caller that asks for them passes `true` (the Bloom
+  language's `.animatesColors()`).
+- **A theme switch never plays a colour transition** (`theme-switch.ts`). On the
+  web the theme's colours are CSS variables the provider writes on the
+  document, so a switch reaches no render of the views that paint with them: a
+  host that transitions its colours carries `COLOR_TRANSITION_PROPS`
+  (`data-bloom-color-transition`), and `BloomThemeProvider` applies a switch
+  (the scheme, the preset, the accents: its `dark` class and variables) through
+  `applyThemeAtOnce`, which marks the document, applies, reads the root's
+  layout (the browser computes the new style while marked: such a host
+  transitions only its transform and opacity, so its colours take their new
+  values at once) and unmarks; no colour changed after, so none plays. On
+  native colours are props a render changes, and the caller leaves them out
+  of the transition on the render a new palette makes (the language's
+  `ThemedMotion`: any palette the view paints with, the app's or a colour or
+  seed scope's). Not covered on the web: a colour or seed scope that repaints
+  its subtree on its own (its own variables, not the provider's switch), whose
+  colours play as any colour change does.
 - **Keyframes and transitions are data.** `defineKeyframes(frames, motion)`
   writes what a CSS `@keyframes` block is: a frame's `easing` curves the stretch
   from it to the next, else the motion's curve does, per stretch.
