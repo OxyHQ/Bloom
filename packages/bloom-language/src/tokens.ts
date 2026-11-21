@@ -244,7 +244,10 @@ export function defineTokens<T extends { [S in AppTokenScale]?: Record<string, A
         named[name] = Object.freeze({ ...(entries[name] as MotionSpec) }) as unknown as AppToken;
         continue;
       }
-      if (scale === 'color' && !/^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(String(entries[name])))
+      if (
+        scale === 'color' &&
+        !/^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(String(entries[name]))
+      )
         throw new Error(`[Bloom language] defineTokens: color.${name} is not a hex colour`);
       nextAppToken += 1;
       named[name] = Object.freeze({
