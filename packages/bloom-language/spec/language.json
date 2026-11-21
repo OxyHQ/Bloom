@@ -1315,7 +1315,9 @@
     "onDragLeave": ["value"],
     "onComplete": ["value"],
     "opaque": ["value?"],
-    "mediaCorner": ["corner"]
+    "mediaCorner": ["corner"],
+    "caption": ["value"],
+    "minItemWidth": ["space"]
   },
   "universal": [
     "padding",
@@ -2778,6 +2780,12 @@
     "mediaInsetBorder": {
       "constructors": ["MediaInsetBorder"],
       "modifiers": ["opaque", "mediaCorner"]
+    },
+    "factStrip": { "constructors": ["FactStrip"], "modifiers": ["minItemWidth", "contentInset"] },
+    "fact": {
+      "constructors": ["Fact"],
+      "universal": false,
+      "modifiers": ["caption", "onPress", "label", "id"]
     }
   },
   "sfSymbols": {
