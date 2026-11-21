@@ -1349,7 +1349,8 @@
     "onDismiss": ["value"],
     "autoDismiss": ["value"],
     "introDelay": ["value"],
-    "liveRole": ["liveRole"]
+    "liveRole": ["liveRole"],
+    "coverFill": ["value?"]
   },
   "universal": [
     "padding",
@@ -2937,7 +2938,8 @@
         "liveRole",
         "labels"
       ]
-    }
+    },
+    "linkPreview": { "constructors": ["LinkPreview"], "modifiers": ["coverFill"] }
   },
   "sfSymbols": {
     "$comment": [
