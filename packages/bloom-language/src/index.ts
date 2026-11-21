@@ -426,3 +426,14 @@ export type {
   RatingSummaryView,
   RatingView,
 } from './controls/rating';
+
+// Meters and progress bars (controls/stat-bar.tsx)
+export {
+  Meter,
+  MeterRing,
+  ProgressBar,
+  ProgressRing,
+  SplitBar,
+  StatBar,
+} from './controls/stat-bar';
+export type { MeterRingView, MeterView, StatBarView } from './controls/stat-bar';

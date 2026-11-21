@@ -19,6 +19,7 @@ import { TOOLBAR_CASES } from '../../parity/toolbar.cases';
 import { SETTINGS_CASES } from '../../parity/settings.cases';
 import { DATE_PICKER_CASES } from '../../parity/date-picker.cases';
 import { RATING_CASES } from '../../parity/rating.cases';
+import { STAT_BAR_CASES } from '../../parity/stat-bar.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -43,6 +44,7 @@ export const FAMILIES = {
   settings: SETTINGS_CASES,
   datePicker: DATE_PICKER_CASES,
   rating: RATING_CASES,
+  statBar: STAT_BAR_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';

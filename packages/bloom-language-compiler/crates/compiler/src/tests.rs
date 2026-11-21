@@ -760,3 +760,25 @@ fn ratings_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn meters_and_progress_bars_are_checked() {
+    let imports = "import { Meter, ProgressBar, MeterRing, ProgressRing, StatBar, SplitBar, Text, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (stop, share) => VStack(Meter(3, 5).valueText('3 of 5').tint('success').trackTint('muted/20').thickness('10').barCorner('2xs').fillDuration('slow').reveal({ visible: true }), ProgressBar(0).indeterminate().decorative(), MeterRing(0.9).size('80').cap('butt').backdrop('black/half').content(Text('9')), ProgressRing(0.3).onStop(stop, 'Stop').progress(share), StatBar('Level', 40, 100).rangeLabels('0', '100').trailing(Text('!')), SplitBar('Wins', 30, '3', '7').tint('info'));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("MeterRing(1).cap('square')", "Unknown meterCap token 'square' for .cap()"),
+        ("Meter(1).fillDuration('slower')", "Unknown duration token 'slower' for .fillDuration()"),
+        ("Meter(1).thickness('thick')", "Unknown space token 'thick' for .thickness()"),
+        ("MeterRing(1).backdrop('scrim')", "Unknown color token 'scrim' for .backdrop()"),
+        ("Meter(1).onStop(s, 'Stop')", "Meter has no modifier .onStop()"),
+        ("StatBar('a', 1, 2).barCorner('xs')", "StatBar has no modifier .barCorner()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (s) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

@@ -9,3 +9,6 @@ export const Rating = 'Rating';
 export const RatingBar = 'RatingBar';
 export const RatingInput = 'RatingInput';
 export const RatingSummary = 'RatingSummary';
+export const Meter = 'Meter';
+export const MeterRing = 'MeterRing';
+export const StatBar = 'StatBar';
