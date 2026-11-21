@@ -483,7 +483,7 @@
    "count": 116,
    "apps": 7,
    "status": "modifier",
-   "language": "motion (the motion runtime)"
+   "language": "a colour transition: the motion engine animates geometry and opacity, not colour"
   },
   "text-[11px]": {
    "count": 114,
@@ -1064,8 +1064,8 @@
   "tabular-nums": {
    "count": 37,
    "apps": 4,
-   "status": "modifier",
-   "language": "`tabular` (no modifier)"
+   "status": "mapped",
+   "language": ".monospacedDigit()"
   },
   "h-11": {
    "count": 36,
@@ -1166,8 +1166,8 @@
   "pointer-events-none": {
    "count": 33,
    "apps": 6,
-   "status": "modifier",
-   "language": "`pointer` (no modifier)"
+   "status": "mapped",
+   "language": ".allowsHitTesting(false)"
   },
   "rounded-radius-16": {
    "count": 33,
@@ -1514,10 +1514,8 @@
   "z-50": {
    "count": 22,
    "apps": 5,
-   "status": "token",
-   "scale": "zIndex",
-   "value": "50",
-   "language": ".zIndex(…)"
+   "status": "mapped",
+   "language": ".zIndex('50')"
   },
   "fixed": {
    "count": 21,
@@ -1626,10 +1624,8 @@
   "shadow-sm": {
    "count": 20,
    "apps": 5,
-   "status": "token",
-   "scale": "shadow",
-   "value": "shadow-sm",
-   "language": ".shadow(…)"
+   "status": "mapped",
+   "language": ".shadow('0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)')"
   },
   "sticky": {
    "count": 20,
@@ -1846,10 +1842,8 @@
   "ring-[3px]": {
    "count": 16,
    "apps": 3,
-   "status": "token",
-   "scale": "borderWidth",
-   "value": "3px",
-   "language": ".ring(role, …)"
+   "status": "mapped",
+   "language": ".ring(role, '3')"
   },
   "ring-ring/50": {
    "count": 16,
@@ -1880,8 +1874,8 @@
   "transition-transform": {
    "count": 16,
    "apps": 3,
-   "status": "modifier",
-   "language": "motion (the motion runtime)"
+   "status": "motion",
+   "language": ".animation(motion): a change of the view’s offset, scale or rotation plays with motion (feat/bloom-language-motion)"
   },
   "aspect-square": {
    "count": 15,
@@ -1966,8 +1960,8 @@
   "animate-in": {
    "count": 14,
    "apps": 3,
-   "status": "modifier",
-   "language": "motion (the motion runtime)"
+   "status": "motion",
+   "language": ".transition(…): its insertion, the fade, zoom and slide beside it (feat/bloom-language-motion)"
   },
   "bg-foreground": {
    "count": 14,
@@ -1990,8 +1984,8 @@
   "fade-in-0": {
    "count": 14,
    "apps": 3,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "motion",
+   "language": "opacity, the insertion of .transition(…) (feat/bloom-language-motion)"
   },
   "leading-7": {
    "count": 14,
@@ -2058,14 +2052,14 @@
   "transition-none": {
    "count": 14,
    "apps": 1,
-   "status": "modifier",
-   "language": "motion (the motion runtime)"
+   "status": "drop",
+   "language": "a view animates only what it says"
   },
   "animate-out": {
    "count": 13,
    "apps": 2,
-   "status": "modifier",
-   "language": "motion (the motion runtime)"
+   "status": "motion",
+   "language": ".transition(asymmetric(insert, remove)): its removal (feat/bloom-language-motion)"
   },
   "capitalize": {
    "count": 13,
@@ -2082,8 +2076,8 @@
   "fade-out-0": {
    "count": 13,
    "apps": 2,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "motion",
+   "language": "opacity, the removal of .transition(…) (feat/bloom-language-motion)"
   },
   "font-display": {
    "count": 13,
@@ -2298,8 +2292,10 @@
   "duration-150": {
    "count": 11,
    "apps": 3,
-   "status": "modifier",
-   "language": "motion (the motion runtime)"
+   "status": "token",
+   "scale": "motion",
+   "value": "150ms",
+   "language": "an app motion (defineTokens({ motion: { duration, easing } })): Tailwind’s curve is none of Bloom’s"
   },
   "gap-y-2": {
    "count": 11,
@@ -2418,8 +2414,8 @@
   "sr-only": {
    "count": 11,
    "apps": 4,
-   "status": "modifier",
-   "language": "`sr` (no modifier)"
+   "status": "mapped",
+   "language": ".accessibilityOnly()"
   },
   "text-green-500": {
    "count": 11,
@@ -2470,14 +2466,16 @@
   "break-all": {
    "count": 10,
    "apps": 2,
-   "status": "modifier",
-   "language": "`break` (no modifier)"
+   "status": "mapped",
+   "language": ".wordBreak('all')"
   },
   "duration-100": {
    "count": 10,
    "apps": 2,
-   "status": "modifier",
-   "language": "motion (the motion runtime)"
+   "status": "token",
+   "scale": "motion",
+   "value": "100ms",
+   "language": "an app motion (defineTokens({ motion: { duration, easing } })): Tailwind’s curve is none of Bloom’s"
   },
   "font-caption": {
    "count": 10,
@@ -2568,14 +2566,14 @@
   "w-fit": {
    "count": 10,
    "apps": 3,
-   "status": "modifier",
-   "language": "an intrinsic size (w-fit): fit-content and its kin"
+   "status": "mapped",
+   "language": ".frame({ width: 'fit' })"
   },
   "zoom-in-95": {
    "count": 10,
    "apps": 3,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "motion",
+   "language": "scale('95'), the insertion of .transition(…) (feat/bloom-language-motion)"
   },
   "bg-input/30": {
    "count": 9,
@@ -2600,8 +2598,10 @@
   "duration-200": {
    "count": 9,
    "apps": 3,
-   "status": "modifier",
-   "language": "motion (the motion runtime)"
+   "status": "token",
+   "scale": "motion",
+   "value": "200ms",
+   "language": "an app motion (defineTokens({ motion: { duration, easing } })): Tailwind’s curve is none of Bloom’s"
   },
   "grid-cols-4": {
    "count": 9,
@@ -2636,8 +2636,8 @@
   "list-disc": {
    "count": 9,
    "apps": 2,
-   "status": "modifier",
-   "language": "`list` (no modifier)"
+   "status": "mapped",
+   "language": ".listMarker('disc') (a stack)"
   },
   "max-w-[720px]": {
    "count": 9,
@@ -2810,8 +2810,8 @@
   "zoom-out-95": {
    "count": 9,
    "apps": 2,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "motion",
+   "language": "scale('95'), the removal of .transition(…) (feat/bloom-language-motion)"
   },
   "bg-black": {
    "count": 8,
@@ -2850,8 +2850,8 @@
   "ease-linear": {
    "count": 8,
    "apps": 2,
-   "status": "modifier",
-   "language": "motion (the motion runtime)"
+   "status": "motion",
+   "language": "easing 'linear' in the view’s motion (Bloom’s linear curve; feat/bloom-language-motion)"
   },
   "gap-x-3": {
    "count": 8,
@@ -2994,10 +2994,8 @@
   "shadow-lg": {
    "count": 8,
    "apps": 6,
-   "status": "token",
-   "scale": "shadow",
-   "value": "shadow-lg",
-   "language": ".shadow(…)"
+   "status": "mapped",
+   "language": ".shadow('0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)')"
   },
   "text-[10.5px]": {
    "count": 8,
@@ -3058,8 +3056,8 @@
   "transition-opacity": {
    "count": 8,
    "apps": 3,
-   "status": "modifier",
-   "language": "motion (the motion runtime)"
+   "status": "motion",
+   "language": ".animation(motion): a change of the view’s opacity plays with motion (feat/bloom-language-motion)"
   },
   "w-(--sidebar-width)": {
    "count": 8,
@@ -3094,10 +3092,8 @@
   "z-20": {
    "count": 8,
    "apps": 5,
-   "status": "token",
-   "scale": "zIndex",
-   "value": "20",
-   "language": ".zIndex(…)"
+   "status": "mapped",
+   "language": ".zIndex('20')"
   },
   "-translate-x-1/2": {
    "count": 7,
@@ -3317,7 +3313,7 @@
    "count": 7,
    "apps": 4,
    "status": "modifier",
-   "language": "motion (the motion runtime)"
+   "language": "a transition of every property: .animation(motion) plays geometry and opacity, not colours or shadows"
   },
   "w-3/4": {
    "count": 7,
@@ -3335,19 +3331,21 @@
    "count": 6,
    "apps": 3,
    "status": "modifier",
-   "language": "motion (the motion runtime)"
+   "language": "a looping animation (animate-pulse): the motion engine plays keyframes on a trigger, never in a loop"
   },
   "basis-96": {
    "count": 6,
    "apps": 1,
-   "status": "modifier",
-   "language": "`basis` (no modifier)"
+   "status": "mapped",
+   "language": ".basis('384')"
   },
   "bg-[#0d0d0d]": {
    "count": 6,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#0d0d0d",
+   "language": ".background(app.color.<name>)"
   },
   "bg-background-tertiary-default": {
    "count": 6,
@@ -3687,7 +3685,7 @@
    "count": 6,
    "apps": 5,
    "status": "modifier",
-   "language": "motion (the motion runtime)"
+   "language": "a transition of every property: .animation(motion) plays geometry and opacity, not colours or shadows"
   },
   "w-4": {
    "count": 6,
@@ -3800,8 +3798,8 @@
   "break-words": {
    "count": 5,
    "apps": 2,
-   "status": "modifier",
-   "language": "`break` (no modifier)"
+   "status": "mapped",
+   "language": ".wordBreak('words')"
   },
   "card-payment__error": {
    "count": 5,
@@ -4042,8 +4040,10 @@
   "rotate-45": {
    "count": 5,
    "apps": 5,
-   "status": "modifier",
-   "language": "`rotate` (no modifier)"
+   "status": "token",
+   "scale": "rotation",
+   "value": "45°",
+   "language": ".rotation(…) (feat/bloom-language-motion: none, quarter, half)"
   },
   "rounded-[16px]": {
    "count": 5,
@@ -4066,10 +4066,8 @@
   "shadow-md": {
    "count": 5,
    "apps": 3,
-   "status": "token",
-   "scale": "shadow",
-   "value": "shadow-md",
-   "language": ".shadow(…)"
+   "status": "mapped",
+   "language": ".shadow('0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)')"
   },
   "space-y-5": {
    "count": 5,
@@ -4304,8 +4302,10 @@
   "duration-300": {
    "count": 4,
    "apps": 1,
-   "status": "modifier",
-   "language": "motion (the motion runtime)"
+   "status": "token",
+   "scale": "motion",
+   "value": "300ms",
+   "language": "an app motion (defineTokens({ motion: { duration, easing } })): Tailwind’s curve is none of Bloom’s"
   },
   "flex-col-reverse": {
    "count": 4,
@@ -4526,8 +4526,8 @@
   "pointer-events-auto": {
    "count": 4,
    "apps": 1,
-   "status": "modifier",
-   "language": "`pointer` (no modifier)"
+   "status": "mapped",
+   "language": ".allowsHitTesting(true)"
   },
   "portal__section": {
    "count": 4,
@@ -4588,16 +4588,14 @@
   "scale-105": {
    "count": 4,
    "apps": 1,
-   "status": "modifier",
-   "language": "`scale` (no modifier)"
+   "status": "mapped",
+   "language": ".scale('105')"
   },
   "shadow": {
    "count": 4,
    "apps": 1,
-   "status": "token",
-   "scale": "shadow",
-   "value": "shadow",
-   "language": ".shadow(…)"
+   "status": "mapped",
+   "language": ".shadow('0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)')"
   },
   "size-12": {
    "count": 4,
@@ -4626,8 +4624,10 @@
   "text-[#5b6573]": {
    "count": 4,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#5b6573",
+   "language": ".foreground(app.color.<name>)"
   },
   "text-[34px]": {
    "count": 4,
@@ -4744,10 +4744,8 @@
   "z-30": {
    "count": 4,
    "apps": 1,
-   "status": "token",
-   "scale": "zIndex",
-   "value": "30",
-   "language": ".zIndex(…)"
+   "status": "mapped",
+   "language": ".zIndex('30')"
   },
   "z-[60]": {
    "count": 4,
@@ -4803,7 +4801,7 @@
    "count": 3,
    "apps": 3,
    "status": "modifier",
-   "language": "motion (the motion runtime)"
+   "language": "a looping animation (animate-spin): the motion engine plays keyframes on a trigger, never in a loop"
   },
   "astro-desktop": {
    "count": 3,
@@ -4820,8 +4818,8 @@
   "basis-0": {
    "count": 3,
    "apps": 2,
-   "status": "modifier",
-   "language": "`basis` (no modifier)"
+   "status": "mapped",
+   "language": ".basis('none')"
   },
   "bg-background/90": {
    "count": 3,
@@ -5168,8 +5166,8 @@
   "list-decimal": {
    "count": 3,
    "apps": 1,
-   "status": "modifier",
-   "language": "`list` (no modifier)"
+   "status": "mapped",
+   "language": ".listMarker('decimal') (a stack)"
   },
   "max-h-[340px]": {
    "count": 3,
@@ -5403,13 +5401,13 @@
    "count": 3,
    "apps": 2,
    "status": "modifier",
-   "language": "`origin` (no modifier)"
+   "language": "a transform origin: a view scales and rotates about its centre"
   },
   "origin-(--radix-tooltip-content-transform-origin)": {
    "count": 3,
    "apps": 3,
    "status": "modifier",
-   "language": "`origin` (no modifier)"
+   "language": "a transform origin: a view scales and rotates about its centre"
   },
   "outline-1": {
    "count": 3,
@@ -5564,8 +5562,8 @@
   "rounded-b-xl": {
    "count": 3,
    "apps": 1,
-   "status": "modifier",
-   "language": "a corner per side"
+   "status": "mapped",
+   "language": ".corner('md', 'bottom')"
   },
   "rounded-radius-md": {
    "count": 3,
@@ -5576,14 +5574,14 @@
   "scale-110": {
    "count": 3,
    "apps": 1,
-   "status": "modifier",
-   "language": "`scale` (no modifier)"
+   "status": "mapped",
+   "language": ".scale('110')"
   },
   "scale-[1.03]": {
    "count": 3,
    "apps": 1,
-   "status": "modifier",
-   "language": "`scale` (no modifier)"
+   "status": "mapped",
+   "language": ".scale('103')"
   },
   "self-end": {
    "count": 3,
@@ -5624,8 +5622,10 @@
   "text-[#1d2530]": {
    "count": 3,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#1d2530",
+   "language": ".foreground(app.color.<name>)"
   },
   "text-[1.7rem]": {
    "count": 3,
@@ -5870,20 +5870,24 @@
   "basis-[260px]": {
    "count": 2,
    "apps": 1,
-   "status": "modifier",
-   "language": "`basis` (no modifier)"
+   "status": "mapped",
+   "language": ".basis('260')"
   },
   "bg-[#121212]": {
    "count": 2,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#121212",
+   "language": ".background(app.color.<name>)"
   },
   "bg-[#7bdd17]": {
    "count": 2,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#7bdd17",
+   "language": ".background(app.color.<name>)"
   },
   "bg-[var(--vscode-editor-background)]": {
    "count": 2,
@@ -6122,14 +6126,16 @@
   "border-[#183b4e0f]": {
    "count": 2,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#183b4e0f",
+   "language": ".border(app.color.<name>)"
   },
   "border-[3px]": {
    "count": 2,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "mapped",
+   "language": ".border(role, '3')"
   },
   "border-b-2": {
    "count": 2,
@@ -6300,14 +6306,18 @@
   "ease-in-out": {
    "count": 2,
    "apps": 2,
-   "status": "modifier",
-   "language": "motion (the motion runtime)"
+   "status": "token",
+   "scale": "motion",
+   "value": "ease-in-out",
+   "language": "an app motion’s curve: Tailwind’s is none of Bloom’s"
   },
   "ease-out": {
    "count": 2,
    "apps": 1,
-   "status": "modifier",
-   "language": "motion (the motion runtime)"
+   "status": "token",
+   "scale": "motion",
+   "value": "ease-out",
+   "language": "an app motion’s curve: Tailwind’s is none of Bloom’s"
   },
   "edit": {
    "count": 2,
@@ -7184,26 +7194,26 @@
   "rounded-t": {
    "count": 2,
    "apps": 1,
-   "status": "modifier",
-   "language": "a corner per side"
+   "status": "mapped",
+   "language": ".corner('xs', 'top')"
   },
   "rounded-t-3xl": {
    "count": 2,
    "apps": 2,
-   "status": "modifier",
-   "language": "a corner per side"
+   "status": "mapped",
+   "language": ".corner('2xl', 'top')"
   },
   "rounded-t-[28px]": {
    "count": 2,
    "apps": 1,
-   "status": "modifier",
-   "language": "a corner per side"
+   "status": "mapped",
+   "language": ".corner('3xl', 'top')"
   },
   "rounded-tr-md": {
    "count": 2,
    "apps": 1,
-   "status": "modifier",
-   "language": "a corner per side"
+   "status": "mapped",
+   "language": ".corner('6', 'top-trailing')"
   },
   "row-span-2": {
    "count": 2,
@@ -7214,20 +7224,20 @@
   "scale-100": {
    "count": 2,
    "apps": 1,
-   "status": "modifier",
-   "language": "`scale` (no modifier)"
+   "status": "mapped",
+   "language": ".scale('full')"
   },
   "scale-[0.98]": {
    "count": 2,
    "apps": 1,
-   "status": "modifier",
-   "language": "`scale` (no modifier)"
+   "status": "mapped",
+   "language": ".scale('pressed')"
   },
   "scale-[0.99]": {
    "count": 2,
    "apps": 1,
-   "status": "modifier",
-   "language": "`scale` (no modifier)"
+   "status": "mapped",
+   "language": ".scale('99')"
   },
   "shadow-shop-m": {
    "count": 2,
@@ -7240,10 +7250,8 @@
   "shadow-xl": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "shadow",
-   "value": "shadow-xl",
-   "language": ".shadow(…)"
+   "status": "mapped",
+   "language": ".shadow('0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)')"
   },
   "shop-option": {
    "count": 2,
@@ -7328,8 +7336,10 @@
   "text-[#3a4452]": {
    "count": 2,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#3a4452",
+   "language": ".foreground(app.color.<name>)"
   },
   "text-[0.95rem]": {
    "count": 2,
@@ -7555,7 +7565,7 @@
    "count": 2,
    "apps": 2,
    "status": "modifier",
-   "language": "motion (the motion runtime)"
+   "language": "a layout transition (a frame’s width): the motion engine moves views, not frames"
   },
   "translate-x-px": {
    "count": 2,
@@ -7782,8 +7792,10 @@
   "-rotate-12": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "token",
+   "scale": "rotation",
+   "value": "-12°",
+   "language": ".rotation(…) (feat/bloom-language-motion: none, quarter, half)"
   },
   "-space-x-2": {
    "count": 1,
@@ -7962,8 +7974,8 @@
   "basis-72": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "`basis` (no modifier)"
+   "status": "mapped",
+   "language": ".basis('288')"
   },
   "beast": {
    "count": 1,
@@ -7980,62 +7992,82 @@
   "bg-[#0b0e14]/55": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#0b0e14 at 55%",
+   "language": ".background(app.color.<name>)"
   },
   "bg-[#111111]": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#111111",
+   "language": ".background(app.color.<name>)"
   },
   "bg-[#18334a]/10": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#18334a at 10%",
+   "language": ".background(app.color.<name>)"
   },
   "bg-[#294ab4]": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#294ab4",
+   "language": ".background(app.color.<name>)"
   },
   "bg-[#2a2a2a]": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#2a2a2a",
+   "language": ".background(app.color.<name>)"
   },
   "bg-[#72e329]": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#72e329",
+   "language": ".background(app.color.<name>)"
   },
   "bg-[#d0e5f3]": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#d0e5f3",
+   "language": ".background(app.color.<name>)"
   },
   "bg-[#eef3f8]": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#eef3f8",
+   "language": ".background(app.color.<name>)"
   },
   "bg-[#f2f4f5]": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#f2f4f5",
+   "language": ".background(app.color.<name>)"
   },
   "bg-[#f7f9fc]": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#f7f9fc",
+   "language": ".background(app.color.<name>)"
   },
   "bg-[var(--grid)]": {
    "count": 1,
@@ -8794,14 +8826,18 @@
   "duration-500": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "motion (the motion runtime)"
+   "status": "token",
+   "scale": "motion",
+   "value": "500ms",
+   "language": "an app motion (defineTokens({ motion: { duration, easing } })): Tailwind’s curve is none of Bloom’s"
   },
   "duration-700": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "motion (the motion runtime)"
+   "status": "token",
+   "scale": "motion",
+   "value": "700ms",
+   "language": "an app motion (defineTokens({ motion: { duration, easing } })): Tailwind’s curve is none of Bloom’s"
   },
   "embed": {
    "count": 1,
@@ -10437,13 +10473,13 @@
    "count": 1,
    "apps": 1,
    "status": "modifier",
-   "language": "`origin` (no modifier)"
+   "language": "a transform origin: a view scales and rotates about its centre"
   },
   "origin-(--transform-origin)": {
    "count": 1,
    "apps": 1,
    "status": "modifier",
-   "language": "`origin` (no modifier)"
+   "language": "a transform origin: a view scales and rotates about its centre"
   },
   "outline-offset-4": {
    "count": 1,
@@ -11090,86 +11126,90 @@
   "rounded-b-[28px]": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "a corner per side"
+   "status": "mapped",
+   "language": ".corner('3xl', 'bottom')"
   },
   "rounded-b-md": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "a corner per side"
+   "status": "mapped",
+   "language": ".corner('6', 'bottom')"
   },
   "rounded-bl-lg": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "a corner per side"
+   "status": "mapped",
+   "language": ".corner('sm', 'bottom-leading')"
   },
   "rounded-br-[5px]": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "a corner per side"
+   "status": "token",
+   "scale": "corner",
+   "value": "5px",
+   "language": ".corner(…, 'bottom-trailing')"
   },
   "rounded-br-lg": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "a corner per side"
+   "status": "mapped",
+   "language": ".corner('sm', 'bottom-trailing')"
   },
   "rounded-l-full": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "a corner per side"
+   "status": "mapped",
+   "language": ".corner('full', 'leading')"
   },
   "rounded-r-full": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "a corner per side"
+   "status": "mapped",
+   "language": ".corner('full', 'trailing')"
   },
   "rounded-r-md": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "a corner per side"
+   "status": "mapped",
+   "language": ".corner('6', 'trailing')"
   },
   "rounded-t-2xl": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "a corner per side"
+   "status": "mapped",
+   "language": ".corner('lg', 'top')"
   },
   "rounded-t-[32px]": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "a corner per side"
+   "status": "token",
+   "scale": "corner",
+   "value": "32px",
+   "language": ".corner(…, 'top')"
   },
   "rounded-t-md": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "a corner per side"
+   "status": "mapped",
+   "language": ".corner('6', 'top')"
   },
   "rounded-t-xl": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "a corner per side"
+   "status": "mapped",
+   "language": ".corner('md', 'top')"
   },
   "rounded-tl-lg": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "a corner per side"
+   "status": "mapped",
+   "language": ".corner('sm', 'top-leading')"
   },
   "rounded-tr-lg": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "a corner per side"
+   "status": "mapped",
+   "language": ".corner('sm', 'top-trailing')"
   },
   "rounded-xs": {
    "count": 1,
@@ -11198,8 +11238,10 @@
   "scale-[1.01]": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "`scale` (no modifier)"
+   "status": "token",
+   "scale": "scale",
+   "value": "1.01",
+   "language": ".scale(…)"
   },
   "scroll-my-1": {
    "count": 1,
@@ -11266,10 +11308,8 @@
   "shadow-xs": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "shadow",
-   "value": "shadow-xs",
-   "language": ".shadow(…)"
+   "status": "mapped",
+   "language": ".shadow('0 1px 2px 0 rgb(0 0 0 / 0.05)')"
   },
   "shop-option-more": {
    "count": 1,
@@ -11498,32 +11538,42 @@
   "text-[#0006]": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#0006",
+   "language": ".foreground(app.color.<name>)"
   },
   "text-[#26313d]": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#26313d",
+   "language": ".foreground(app.color.<name>)"
   },
   "text-[#526672]": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#526672",
+   "language": ".foreground(app.color.<name>)"
   },
   "text-[#657683]": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#657683",
+   "language": ".foreground(app.color.<name>)"
   },
   "text-[#fff6]": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "appToken",
+   "scale": "color",
+   "value": "#fff6",
+   "language": ".foreground(app.color.<name>)"
   },
   "text-[0.9rem]": {
    "count": 1,

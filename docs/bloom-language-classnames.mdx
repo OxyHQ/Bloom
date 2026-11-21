@@ -24,12 +24,14 @@ Alia `841e8843a`, Allo `ba28b38`, Astro `8ae8386`, Atlas `037990e`, Authenticato
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 954 | 46577 | 86.7% |
+| Maps to a modifier and a token | 1001 | 46842 | 87.2% |
 | Expressed by the view’s structure | 53 | 3445 | 6.4% |
-| Redundant in the language | 31 | 499 | 0.9% |
-| Needs a named token (raw value) | 320 | 873 | 1.6% |
-| Needs a modifier the language lacks | 84 | 488 | 0.9% |
-| An app’s own class | 478 | 1838 | 3.4% |
+| Redundant in the language | 32 | 513 | 1.0% |
+| Needs a named token (raw value) | 323 | 832 | 1.5% |
+| An app’s own token (a brand colour) | 22 | 36 | 0.1% |
+| Maps to the motion layer | 9 | 105 | 0.2% |
+| Needs a modifier the language lacks | 30 | 194 | 0.4% |
+| An app’s own class | 450 | 1753 | 3.3% |
 
 53720 uses of 1920 utilities. Variant prefixes are `when(condition, …)`
 over the utility they prefix; 1739 of their 2061 uses (84.4%) have a
@@ -42,13 +44,16 @@ condition: `web:` 365 (`when('web')`), `active:` 332 (`when('pressed')`), `md:` 
 | space | 257 | 720px (9), 18px (9), 420px (8), 600px (8), 144px (8), 520px (7), 100px (7), 220px (7), 240px (7), 565px (6), 52px (6), 112px (6) |
 | color | 252 | --primary-subtle (20), --warning-text (19), --ring (18), --sidebar-foreground (14), green-500 (12), --sidebar-border (12), red-500 (10), --sidebar-accent (9), red-400 (9), --sidebar-accent-foreground (9), --sidebar (8), --sidebar-ring (8) |
 | opacity | 105 | --ring at 50% (16), --foreground at 5% (7), black at [0.04]% (7), white at [0.06]% (6), --primary at 5% (5), --warning-text at 40% (5), white at 15% (4), white at 25% (4), black at 25% (3), --primary at 15% (3), --surface at 25% (3), white at 75% (3) |
-| shadow | 56 | shadow-sm (20), shadow-shop-s (10), shadow-lg (8), shadow-md (5), shadow (4), shadow-shop-m (2), shadow-xl (2), shadow-dropdown (1), shadow-foreground/10 (1), shadow-foreground/20 (1), shadow-l (1), shadow-xs (1) |
 | font | 55 | 10.5px (8), 28px (7), 12.5px (5), 23px (5), 34px (4), 9px (4), 48px / 48px (2), 11.5px (2), 13.5px (2), 15.5px (2), 21px (2), 29px (2) |
-| zIndex | 47 | 50 (22), 20 (8), 30 (4), 60 (4), 2 (2), 10000 (1), 1000 (1), 2000 (1), 2001 (1), 3 (1), 80 (1), 9998 (1) |
 | leading | 42 | 1 (15), 29px (6), 17px (5), 15px (2), 41px (2), 12px (1), 13px (1), 19px (1), 21px (1), 23px (1), 26px (1), 27px (1) |
-| corner | 36 | 15px (8), 23px (6), 5px (4), 13px (3), 27px (3), 25px (2), 26px (2), 3px (2), 9px (2), 19px (1), 30px (1), 35px (1) |
-| borderWidth | 22 | 3px (16), 4px (6) |
+| motion | 40 | 150ms (11), 100ms (10), 200ms (9), 300ms (4), ease-in-out (2), ease-out (2), 500ms (1), 700ms (1) |
+| corner | 38 | 15px (8), 23px (6), 5px (5), 13px (3), 27px (3), 25px (2), 26px (2), 3px (2), 9px (2), 19px (1), 30px (1), 35px (1) |
+| shadow | 16 | shadow-shop-s (10), shadow-shop-m (2), shadow-dropdown (1), shadow-foreground/10 (1), shadow-foreground/20 (1), shadow-l (1) |
+| zIndex | 13 | 60 (4), 2 (2), 10000 (1), 1000 (1), 2000 (1), 2001 (1), 3 (1), 80 (1), 9998 (1) |
+| rotation | 6 | 45° (5), -12° (1) |
+| borderWidth | 6 | 4px (6) |
 | weight | 1 | 900 (1) |
+| scale | 1 | 1.01 (1) |
 
 ## Classes that render nothing
 
@@ -227,6 +232,7 @@ when the fill is a role's colour.
 | `px-2.5` | .padding('horizontal', '10') | 37 | 12 |
 | `px-space-12` | .padding('horizontal', 'md') | 37 | 3 |
 | `py-8` | .padding('vertical', '3xl') | 37 | 9 |
+| `tabular-nums` | .monospacedDigit() | 37 | 4 |
 | `h-11` | .frame({ height: '44' }) | 36 | 10 |
 | `h-7` | .frame({ height: '28' }) | 36 | 13 |
 | `h-[1px]` | .frame({ height: '1' }) | 36 | 3 |
@@ -241,6 +247,7 @@ when the fill is a role's colour.
 | `bg-accent` | .background('accent') | 33 | 8 |
 | `bottom-0` | .position({ bottom: 'none' }) | 33 | 13 |
 | `mb-0.5` | .padding('bottom', '2xs') (outside the fill) | 33 | 5 |
+| `pointer-events-none` | .allowsHitTesting(false) | 33 | 6 |
 | `rounded-radius-16` | .corner('lg') | 33 | 2 |
 | `bg-destructive/10` | .background('destructive/10') | 32 | 8 |
 | `mb-1.5` | .padding('bottom', '6') (outside the fill) | 32 | 8 |
@@ -287,6 +294,7 @@ when the fill is a role's colour.
 | `ring-2` | .ring(role, 'thick') | 22 | 4 |
 | `rounded-[4px]` | .corner('xs') | 22 | 3 |
 | `text-3xl` | .font('30').leading('36px') | 22 | 12 |
+| `z-50` | .zIndex('50') | 22 | 5 |
 | `gap-space-2` | .spacing('2xs') | 21 | 3 |
 | `gap-space-24` | .spacing('2xl') | 21 | 3 |
 | `h-6` | .frame({ height: '2xl' }) | 21 | 12 |
@@ -298,6 +306,7 @@ when the fill is a role's colour.
 | `my-2` | .padding('vertical', 'sm') (outside the fill) | 20 | 4 |
 | `p-3.5` | .padding('all', '14') | 20 | 3 |
 | `pr-3` | .padding('trailing', 'md') | 20 | 6 |
+| `shadow-sm` | .shadow('0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)') | 20 | 5 |
 | `bg-muted/50` | .background('mutedFill/half') | 19 | 5 |
 | `min-w-40` | .frame({ minWidth: '160' }) | 19 | 2 |
 | `p-1.5` | .padding('all', '6') | 19 | 8 |
@@ -326,6 +335,7 @@ when the fill is a role's colour.
 | `max-w-3xl` | .frame({ maxWidth: '768' }) | 16 | 6 |
 | `opacity-90` | .opacity('90') | 16 | 5 |
 | `outline-hidden` | .ring('none') | 16 | 3 |
+| `ring-[3px]` | .ring(role, '3') | 16 | 3 |
 | `rounded-[28px]` | .corner('3xl') | 16 | 5 |
 | `shadow-m` | .shadow('m') | 16 | 2 |
 | `bg-muted/30` | .background('mutedFill/30') | 15 | 4 |
@@ -390,10 +400,12 @@ when the fill is a role's colour.
 | `px-0` | .padding('horizontal', 'none') | 11 | 2 |
 | `right-3` | .position({ trailing: 'md' }) | 11 | 6 |
 | `rounded-radius-20` | .corner('xl') | 11 | 2 |
+| `sr-only` | .accessibilityOnly() | 11 | 4 |
 | `w-1/2` | .frame({ width: '1/2' }) | 11 | 2 |
 | `bg-fill` | .background('card') | 10 | 2 |
 | `bg-white/10` | .background('white/10') | 10 | 4 |
 | `border-destructive/50` | .border('destructive/half') | 10 | 2 |
+| `break-all` | .wordBreak('all') | 10 | 2 |
 | `h-18` | .frame({ height: '72' }) | 10 | 2 |
 | `leading-tight` | .leading('close') | 10 | 3 |
 | `min-w-72` | .frame({ minWidth: '288' }) | 10 | 2 |
@@ -405,11 +417,13 @@ when the fill is a role's colour.
 | `w-18` | .frame({ width: '72' }) | 10 | 2 |
 | `w-20` | .frame({ width: '80' }) | 10 | 5 |
 | `w-72` | .frame({ width: '288' }) | 10 | 6 |
+| `w-fit` | .frame({ width: 'fit' }) | 10 | 3 |
 | `bg-input/30` | .background('input/30') | 9 | 3 |
 | `border-border/40` | .border('border/40') | 9 | 2 |
 | `grow` | .grow() | 9 | 5 |
 | `h-0.5` | .frame({ height: '2xs' }) | 9 | 6 |
 | `h-1` | .frame({ height: 'xs' }) | 9 | 4 |
+| `list-disc` | .listMarker('disc') (a stack) | 9 | 2 |
 | `mb-2.5` | .padding('bottom', '10') (outside the fill) | 9 | 2 |
 | `mb-space-24` | .padding('bottom', '2xl') (outside the fill) | 9 | 2 |
 | `min-w-64` | .frame({ minWidth: '256' }) | 9 | 2 |
@@ -442,11 +456,13 @@ when the fill is a role's colour.
 | `px-space-4` | .padding('horizontal', 'xs') | 8 | 2 |
 | `right-4` | .position({ trailing: 'lg' }) | 8 | 4 |
 | `ring-foreground/10` | .ring('foreground/10') | 8 | 2 |
+| `shadow-lg` | .shadow('0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)') | 8 | 6 |
 | `text-[18px]` | .font('18') | 8 | 4 |
 | `w-1/3` | .frame({ width: '1/3' }) | 8 | 3 |
 | `w-48` | .frame({ width: '192' }) | 8 | 4 |
 | `w-64` | .frame({ width: '256' }) | 8 | 7 |
 | `w-[280px]` | .frame({ width: '280' }) | 8 | 3 |
+| `z-20` | .zIndex('20') | 8 | 5 |
 | `bg-background/80` | .background('background/80') | 7 | 5 |
 | `bg-black/50` | .background('black/half') | 7 | 7 |
 | `border-l-2` | .border(role, 'thick', 'leading') | 7 | 5 |
@@ -503,6 +519,7 @@ when the fill is a role's colour.
 | `border-foreground` | .border('foreground') | 5 | 3 |
 | `border-transparent` | .border('transparent') | 5 | 4 |
 | `bottom-4` | .position({ bottom: 'lg' }) | 5 | 3 |
+| `break-words` | .wordBreak('words') | 5 | 2 |
 | `h-20` | .frame({ height: '80' }) | 5 | 3 |
 | `h-64` | .frame({ height: '256' }) | 5 | 4 |
 | `max-w-full` | .frame({ maxWidth: 'full' }) | 5 | 5 |
@@ -522,6 +539,7 @@ when the fill is a role's colour.
 | `ring-offset-2` | .ring(role, width, 'sm') | 5 | 3 |
 | `rounded-[16px]` | .corner('lg') | 5 | 3 |
 | `rounded-[2px]` | .corner('2xs') | 5 | 3 |
+| `shadow-md` | .shadow('0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)') | 5 | 3 |
 | `text-[32px]` | .font('4xl') | 5 | 3 |
 | `text-destructive/80` | .foreground('destructive/80') | 5 | 2 |
 | `text-white/70` | .foreground('white/70') | 5 | 3 |
@@ -563,6 +581,7 @@ when the fill is a role's colour.
 | `-ml-1` | .padding('leading', '-xs') (outside the fill) | 3 | 2 |
 | `-ml-3` | .padding('leading', '-md') (outside the fill) | 3 | 2 |
 | `-mx-4` | .padding('horizontal', '-lg') (outside the fill) | 3 | 2 |
+| `basis-0` | .basis('none') | 3 | 2 |
 | `bg-background/90` | .background('background/90') | 3 | 3 |
 | `bg-card/60` | .background('card/60') | 3 | 2 |
 | `bg-error` | .background('error') | 3 | 2 |
@@ -653,6 +672,8 @@ when the fill is a role's colour.
 | `px-7` | .padding('horizontal', '28') | 2 | 2 |
 | `px-[14px]` | .padding('horizontal', '14') | 2 | 2 |
 | `right-6` | .position({ trailing: '2xl' }) | 2 | 2 |
+| `rounded-t-3xl` | .corner('2xl', 'top') | 2 | 2 |
+| `shadow-xl` | .shadow('0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)') | 2 | 2 |
 | `size-5` | .frame({ width: 'xl', height: 'xl' }) | 2 | 2 |
 | `text-muted-foreground/60` | .foreground('muted/60') | 2 | 2 |
 | `text-white/80` | .foreground('white/80') | 2 | 2 |
@@ -720,17 +741,17 @@ when the fill is a role's colour.
 
 | Utility | Raw value | Becomes | Uses | Apps |
 | --- | --- | --- | ---: | ---: |
-| `z-50` | 50 | .zIndex(…) | 22 | 5 |
 | `bg-primary-subtle` | --primary-subtle | .background(…) | 20 | 3 |
-| `shadow-sm` | shadow-sm | .shadow(…) | 20 | 5 |
 | `text-warning-text` | --warning-text | .foreground(…) | 19 | 3 |
-| `ring-[3px]` | 3px | .ring(role, …) | 16 | 3 |
 | `ring-ring/50` | --ring at 50% | .ring(…) | 16 | 3 |
 | `leading-none` | 1 | .leading(…) | 15 | 7 |
 | `text-sidebar-foreground` | --sidebar-foreground | .foreground(…) | 14 | 2 |
+| `duration-150` | 150ms | an app motion (defineTokens({ motion: { duration, easing } })): Tailwind’s curve is none of Bloom’s | 11 | 3 |
 | `text-green-500` | green-500 | .foreground(…) | 11 | 2 |
 | `bg-sidebar-border` | --sidebar-border | .background(…) | 10 | 3 |
+| `duration-100` | 100ms | an app motion (defineTokens({ motion: { duration, easing } })): Tailwind’s curve is none of Bloom’s | 10 | 2 |
 | `bg-sidebar-accent` | --sidebar-accent | .background(…) | 9 | 2 |
+| `duration-200` | 200ms | an app motion (defineTokens({ motion: { duration, easing } })): Tailwind’s curve is none of Bloom’s | 9 | 3 |
 | `max-w-[720px]` | 720px | .frame({ maxWidth: … }) | 9 | 3 |
 | `text-red-400` | red-400 | .foreground(…) | 9 | 3 |
 | `text-sidebar-accent-foreground` | --sidebar-accent-foreground | .foreground(…) | 9 | 2 |
@@ -739,12 +760,10 @@ when the fill is a role's colour.
 | `ring-ring` | --ring | .ring(…) | 8 | 4 |
 | `ring-sidebar-ring` | --sidebar-ring | .ring(…) | 8 | 2 |
 | `rounded-[15px]` | 15px | .corner(…) | 8 | 4 |
-| `shadow-lg` | shadow-lg | .shadow(…) | 8 | 6 |
 | `text-[10.5px]` | 10.5px | .font(…) | 8 | 3 |
 | `text-accent-foreground` | --accent-foreground | .foreground(…) | 8 | 2 |
 | `text-red-500` | red-500 | .foreground(…) | 8 | 2 |
 | `text-success-text` | --success-text | .foreground(…) | 8 | 4 |
-| `z-20` | 20 | .zIndex(…) | 8 | 5 |
 | `bg-foreground/5` | --foreground at 5% | .background('foreground/…') | 7 | 3 |
 | `text-[28px]` | 28px | .font(…) | 7 | 4 |
 | `bg-error-subtle` | --error-subtle | .background(…) | 6 | 3 |
@@ -755,7 +774,7 @@ when the fill is a role's colour.
 | `leading-[17px]` | 17px | .leading(…) | 5 | 2 |
 | `max-w-xl` | 576px | .frame({ maxWidth: … }) | 5 | 4 |
 | `min-h-[52px]` | 52px | .frame({ minHeight: … }) | 5 | 4 |
-| `shadow-md` | shadow-md | .shadow(…) | 5 | 3 |
+| `rotate-45` | 45° | .rotation(…) (feat/bloom-language-motion: none, quarter, half) | 5 | 5 |
 | `text-[12.5px]` | 12.5px | .font(…) | 5 | 2 |
 | `text-popover-foreground` | --popover-foreground | .foreground(…) | 5 | 2 |
 | `text-yellow-500` | yellow-500 | .foreground(…) | 5 | 4 |
@@ -797,6 +816,7 @@ when the fill is a role's colour.
 | `bg-white/5` | white at 5% | .background('white/…') | 2 | 2 |
 | `bg-yellow-400/10` | yellow-400 | .background(…) | 2 | 2 |
 | `border-sidebar-border` | --sidebar-border | .border(…) | 2 | 2 |
+| `ease-in-out` | ease-in-out | an app motion’s curve: Tailwind’s is none of Bloom’s | 2 | 2 |
 | `h-[199px]` | 199px | .frame({ height: … }) | 2 | 2 |
 | `h-[22px]` | 22px | .frame({ height: … }) | 2 | 2 |
 | `h-[46px]` | 46px | .frame({ height: … }) | 2 | 2 |
@@ -810,7 +830,6 @@ when the fill is a role's colour.
 | `opacity-75` | 0.75 | .opacity(…) | 2 | 2 |
 | `p-[18px]` | 18px | .padding('all', …) | 2 | 2 |
 | `rounded-[26px]` | 26px | .corner(…) | 2 | 2 |
-| `shadow-xl` | shadow-xl | .shadow(…) | 2 | 2 |
 | `text-5xl` | 48px / 48px | .font(…) | 2 | 2 |
 | `text-[13.5px]` | 13.5px | .font(…) | 2 | 2 |
 | `text-[15.5px]` | 15.5px | .font(…) | 2 | 2 |
@@ -824,46 +843,81 @@ when the fill is a role's colour.
 | `w-[240px]` | 240px | .frame({ width: … }) | 2 | 2 |
 | `z-[2]` | 2 | .zIndex(…) | 2 | 2 |
 
+## Maps to the motion layer
+
+Bloom's motion engine (`@oxy.so/bloom/motion`) and the language's motion
+modifiers (`.animation()`, `.transition()`, `.keyframes()`) are on
+`feat/bloom-language-motion`. What it plays is here; its durations and curves are
+motion tokens: Tailwind's default curve (`cubic-bezier(0.4, 0, 0.2, 1)`) is
+none of Bloom's, so a `duration-*` is an app motion
+(`defineTokens({ motion: { duration, easing } })`) unless it is one of Bloom's.
+What the engine has no equivalent for (a colour transition, a loop, a delay, a
+transform origin) is under *Needs a modifier the language lacks*.
+
+| Utility | Language | Uses | Apps |
+| --- | --- | ---: | ---: |
+| `transition-transform` | .animation(motion): a change of the view’s offset, scale or rotation plays with motion (feat/bloom-language-motion) | 16 | 3 |
+| `animate-in` | .transition(…): its insertion, the fade, zoom and slide beside it (feat/bloom-language-motion) | 14 | 3 |
+| `fade-in-0` | opacity, the insertion of .transition(…) (feat/bloom-language-motion) | 14 | 3 |
+| `animate-out` | .transition(asymmetric(insert, remove)): its removal (feat/bloom-language-motion) | 13 | 2 |
+| `fade-out-0` | opacity, the removal of .transition(…) (feat/bloom-language-motion) | 13 | 2 |
+| `zoom-in-95` | scale('95'), the insertion of .transition(…) (feat/bloom-language-motion) | 10 | 3 |
+| `zoom-out-95` | scale('95'), the removal of .transition(…) (feat/bloom-language-motion) | 9 | 2 |
+| `ease-linear` | easing 'linear' in the view’s motion (Bloom’s linear curve; feat/bloom-language-motion) | 8 | 2 |
+| `transition-opacity` | .animation(motion): a change of the view’s opacity plays with motion (feat/bloom-language-motion) | 8 | 3 |
+
 ## Needs a modifier the language lacks
 
 | Utility | Language | Uses | Apps |
 | --- | --- | ---: | ---: |
-| `transition-colors` | motion (the motion runtime) | 116 | 7 |
-| `tabular-nums` | `tabular` (no modifier) | 37 | 4 |
-| `pointer-events-none` | `pointer` (no modifier) | 33 | 6 |
-| `transition-transform` | motion (the motion runtime) | 16 | 3 |
-| `animate-in` | motion (the motion runtime) | 14 | 3 |
-| `animate-out` | motion (the motion runtime) | 13 | 2 |
-| `duration-150` | motion (the motion runtime) | 11 | 3 |
-| `sr-only` | `sr` (no modifier) | 11 | 4 |
-| `break-all` | `break` (no modifier) | 10 | 2 |
-| `duration-100` | motion (the motion runtime) | 10 | 2 |
-| `w-fit` | an intrinsic size (w-fit): fit-content and its kin | 10 | 3 |
-| `duration-200` | motion (the motion runtime) | 9 | 3 |
-| `list-disc` | `list` (no modifier) | 9 | 2 |
-| `ease-linear` | motion (the motion runtime) | 8 | 2 |
-| `transition-opacity` | motion (the motion runtime) | 8 | 3 |
-| `transition-all` | motion (the motion runtime) | 7 | 4 |
-| `animate-pulse` | motion (the motion runtime) | 6 | 3 |
-| `transition` | motion (the motion runtime) | 6 | 5 |
-| `break-words` | `break` (no modifier) | 5 | 2 |
+| `transition-colors` | a colour transition: the motion engine animates geometry and opacity, not colour | 116 | 7 |
+| `transition-all` | a transition of every property: .animation(motion) plays geometry and opacity, not colours or shadows | 7 | 4 |
+| `animate-pulse` | a looping animation (animate-pulse): the motion engine plays keyframes on a trigger, never in a loop | 6 | 3 |
+| `transition` | a transition of every property: .animation(motion) plays geometry and opacity, not colours or shadows | 6 | 5 |
 | `ring-offset-background` | a ring’s gap colour (ring-offset-<colour>) | 5 | 3 |
-| `rotate-45` | `rotate` (no modifier) | 5 | 5 |
 | `align-middle` | `align` (no modifier) | 4 | 2 |
-| `animate-spin` | motion (the motion runtime) | 3 | 3 |
-| `basis-0` | `basis` (no modifier) | 3 | 2 |
+| `animate-spin` | a looping animation (animate-spin): the motion engine plays keyframes on a trigger, never in a loop | 3 | 3 |
 | `border-y` | a border on two sides | 3 | 3 |
 | `content-start` | the alignment of wrapped lines (align-content) | 3 | 2 |
 | `fill-foreground` | `fill` (no modifier) | 3 | 3 |
 | `isolate` | `isolate` (no modifier) | 3 | 2 |
-| `origin-(--radix-dropdown-menu-content-transform-origin)` | `origin` (no modifier) | 3 | 2 |
-| `origin-(--radix-tooltip-content-transform-origin)` | `origin` (no modifier) | 3 | 3 |
+| `origin-(--radix-dropdown-menu-content-transform-origin)` | a transform origin: a view scales and rotates about its centre | 3 | 2 |
+| `origin-(--radix-tooltip-content-transform-origin)` | a transform origin: a view scales and rotates about its centre | 3 | 3 |
 | `backdrop-blur-md` | `backdrop` (no modifier) | 2 | 2 |
-| `ease-in-out` | motion (the motion runtime) | 2 | 2 |
 | `resize-none` | `resize` (no modifier) | 2 | 2 |
-| `rounded-t-3xl` | a corner per side | 2 | 2 |
 | `text-balance` | text wrapping (balance, pretty) | 2 | 2 |
-| `transition-[width]` | motion (the motion runtime) | 2 | 2 |
+| `transition-[width]` | a layout transition (a frame’s width): the motion engine moves views, not frames | 2 | 2 |
+
+## An app's own token
+
+A raw hex (`bg-[#0d0d0d]`, `text-[#5b6573]`) is an app's brand colour, not
+a Bloom role: it becomes the app's own token, declared once with
+`defineTokens`, never a Bloom token. Every one is listed, whatever its count.
+
+| Utility | Raw value | Becomes | Uses | Apps |
+| --- | --- | --- | ---: | ---: |
+| `bg-[#0d0d0d]` | #0d0d0d | .background(app.color.<name>) | 6 | 1 |
+| `text-[#5b6573]` | #5b6573 | .foreground(app.color.<name>) | 4 | 1 |
+| `text-[#1d2530]` | #1d2530 | .foreground(app.color.<name>) | 3 | 1 |
+| `bg-[#121212]` | #121212 | .background(app.color.<name>) | 2 | 1 |
+| `bg-[#7bdd17]` | #7bdd17 | .background(app.color.<name>) | 2 | 1 |
+| `border-[#183b4e0f]` | #183b4e0f | .border(app.color.<name>) | 2 | 1 |
+| `text-[#3a4452]` | #3a4452 | .foreground(app.color.<name>) | 2 | 1 |
+| `bg-[#0b0e14]/55` | #0b0e14 at 55% | .background(app.color.<name>) | 1 | 1 |
+| `bg-[#111111]` | #111111 | .background(app.color.<name>) | 1 | 1 |
+| `bg-[#18334a]/10` | #18334a at 10% | .background(app.color.<name>) | 1 | 1 |
+| `bg-[#294ab4]` | #294ab4 | .background(app.color.<name>) | 1 | 1 |
+| `bg-[#2a2a2a]` | #2a2a2a | .background(app.color.<name>) | 1 | 1 |
+| `bg-[#72e329]` | #72e329 | .background(app.color.<name>) | 1 | 1 |
+| `bg-[#d0e5f3]` | #d0e5f3 | .background(app.color.<name>) | 1 | 1 |
+| `bg-[#eef3f8]` | #eef3f8 | .background(app.color.<name>) | 1 | 1 |
+| `bg-[#f2f4f5]` | #f2f4f5 | .background(app.color.<name>) | 1 | 1 |
+| `bg-[#f7f9fc]` | #f7f9fc | .background(app.color.<name>) | 1 | 1 |
+| `text-[#0006]` | #0006 | .foreground(app.color.<name>) | 1 | 1 |
+| `text-[#26313d]` | #26313d | .foreground(app.color.<name>) | 1 | 1 |
+| `text-[#526672]` | #526672 | .foreground(app.color.<name>) | 1 | 1 |
+| `text-[#657683]` | #657683 | .foreground(app.color.<name>) | 1 | 1 |
+| `text-[#fff6]` | #fff6 | .foreground(app.color.<name>) | 1 | 1 |
 
 ## An app's own class
 
@@ -877,13 +931,9 @@ when the fill is a role's colour.
 | `sticky` | not a Bloom or Tailwind utility (an app’s own class) | 20 | 7 |
 | `inset-x-0` | not a Bloom or Tailwind utility (an app’s own class) | 19 | 8 |
 | `rounded-radius-lg` | not a Bloom or Tailwind utility (an app’s own class) | 16 | 2 |
-| `fade-in-0` | not a Bloom or Tailwind utility (an app’s own class) | 14 | 3 |
-| `fade-out-0` | not a Bloom or Tailwind utility (an app’s own class) | 13 | 2 |
 | `cursor-default` | not a Bloom or Tailwind utility (an app’s own class) | 12 | 4 |
 | `text-error-primary` | not a Bloom or Tailwind utility (an app’s own class) | 12 | 3 |
 | `gap-y-2` | not a Bloom or Tailwind utility (an app’s own class) | 11 | 7 |
-| `zoom-in-95` | not a Bloom or Tailwind utility (an app’s own class) | 10 | 3 |
-| `zoom-out-95` | not a Bloom or Tailwind utility (an app’s own class) | 9 | 2 |
 | `gap-x-3` | not a Bloom or Tailwind utility (an app’s own class) | 8 | 3 |
 | `inset-y-0` | not a Bloom or Tailwind utility (an app’s own class) | 8 | 2 |
 | `w-(--sidebar-width)` | not a Bloom or Tailwind utility (an app’s own class) | 8 | 2 |
@@ -929,3 +979,7 @@ when the fill is a role's colour.
 | `group/sidebar-wrapper` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
 | `line` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
 | `max-h-(--radix-dropdown-menu-content-available-height)` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
+| `max-w-(--skeleton-width)` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
+| `max-w-[90%]` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
+| `pb-safe` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
+| `pb-safe-offset-6` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
