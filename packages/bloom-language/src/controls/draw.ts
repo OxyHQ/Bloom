@@ -9,6 +9,7 @@ import {
 import { type Child, isNode, type Modifier, type Node, type Press } from '../node';
 import type { TextTraits } from '../style';
 import type { ColorToken, Role } from '../tokens';
+import type { ColorToken } from '../tokens';
 
 /**
  * What a control's renderer is handed (see `controls/index.ts`): its node, its
@@ -58,6 +59,17 @@ export interface ControlDraw {
    * one: for a component whose `style` is not its outer box.
    */
   around(element: ReactElement): ReactElement;
+  /**
+   * Draws a Bloom component as `component` does, with the props `colors` names
+   * painted from their colour roles (a role at an opacity included), read from
+   * the theme in the leaf that draws it.
+   */
+  painted(
+    host: unknown,
+    props: Record<string, unknown>,
+    colors: Readonly<Record<string, ColorToken | undefined>>,
+    ...children: ReactNode[]
+  ): ReactElement;
   /**
    * Draws what `drawn` returns, with the view's press on a host around it when
    * the view is pressable (for a component that takes no press of its own).

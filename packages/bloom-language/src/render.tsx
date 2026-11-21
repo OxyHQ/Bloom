@@ -2321,6 +2321,24 @@ function renderHost(
           boxed
             ? drawHost(View, boxOf('host', node.kind), hostProps(undefined, key), element)
             : element,
+        painted: (host, props, colors, ...children) => {
+          const roles: (readonly [string, ColorName, number?])[] = [];
+          for (const [prop, token] of Object.entries(colors))
+            if (token !== undefined) roles.push(propRole(prop, token));
+          const out = boxed ? boxOf('component', node.kind) : NO_STYLE_OUT;
+          const paint = variedPaint(
+            `C|${node.kind}|${boxed ? `${layerKey}|${flex}` : ''}|${roles.map((r) => r.join(':')).join(',')}`,
+            out,
+            roles,
+            NO_VARIANTS,
+          );
+          return drawHost(
+            host,
+            paint === undefined ? out : painted(out, paint),
+            props,
+            ...children,
+          );
+        },
         pressAround: (drawn) => pressAround(p, behaviour, key, drawn),
         render: (child) => renderChild(child, ctx, undefined),
         children: (children) => renderChildren(children, ctx),
