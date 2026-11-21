@@ -57,6 +57,7 @@ import { MEDIA_FLIGHT_CASES } from '../../parity/media-flight.cases';
 import { AVATAR_FLIGHT_CASES } from '../../parity/avatar-flight.cases';
 import { INPUT_GROUP_CASES } from '../../parity/input-group.cases';
 import { NOTIFICATION_CASES } from '../../parity/notification.cases';
+import { LINK_PREVIEW_CASES } from '../../parity/link-preview.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -119,6 +120,7 @@ export const FAMILIES = {
   avatarFlight: AVATAR_FLIGHT_CASES,
   inputGroup: INPUT_GROUP_CASES,
   notification: NOTIFICATION_CASES,
+  linkPreview: LINK_PREVIEW_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';

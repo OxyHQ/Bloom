@@ -42,6 +42,7 @@ import { EXPANDABLE_TEXTS } from './expandable-text';
 import { MENUBARS } from './menubar';
 import { COMPOSITION_BARS } from './composition-bar';
 import { NOTIFICATIONS } from './notification';
+import { LINK_PREVIEWS } from './link-preview';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -91,4 +92,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...MENUBARS,
   ...COMPOSITION_BARS,
   ...NOTIFICATIONS,
+  ...LINK_PREVIEWS,
 };

@@ -147,6 +147,7 @@ import type { ActivityHeatmapView } from '../controls/activity-heatmap';
 import type { TagFieldView } from '../controls/tag-field';
 import type { FileUploadView } from '../controls/file-upload';
 import type { VideoView } from '../controls/video-view';
+import type { LinkPreviewView } from '../controls/link-preview';
 import type { InputGroupView, InputGroupAddonView } from '../controls/input-group';
 import type { NotificationView } from '../controls/notification';
 import type { CompositionBarView } from '../controls/composition-bar';
@@ -496,7 +497,9 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<MenubarMenuView>, Of<'menubarMenu'>>,
       Same<MethodsOf<CompositionBarView>, Of<'compositionBar'>>,
       Same<MethodsOf<NotificationView>, Of<'notification'>>,
+      Same<MethodsOf<LinkPreviewView>, Of<'linkPreview'>>,
     ] = [
+      true,
       true,
       true,
       true,
