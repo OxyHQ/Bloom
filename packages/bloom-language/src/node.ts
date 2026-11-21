@@ -101,6 +101,7 @@ import type { DatePickerKind } from './controls/date-picker';
 import type { HourFormat, WeekStart } from '@oxy.so/bloom/date-picker';
 
 import type { AgentAvatarKind } from './controls/agent-avatar';
+import type { AiChatKind } from './controls/ai-chat';
 import type { ComposerPanelKind } from './controls/composer-panel';
 import type { ChartCardKind } from './controls/chart-cards';
 import type { ChatComposerKind } from './controls/chat-composer';
@@ -201,6 +202,7 @@ import {
   type TooltipSide,
   type RatingStyle,
   type AgentMood,
+  type AiChatLineTone,
   type SparklineTone,
   type RadarVariant,
   type ChartShape,
@@ -1101,7 +1103,8 @@ export type Modifier =
         | AccentTone
         | ColorToken
         | ComposerButtonTone
-        | SparklineTone;
+        | SparklineTone
+        | AiChatLineTone;
     }
   | {
       readonly kind: 'count';
@@ -1338,7 +1341,8 @@ export type NodeKind =
   | AgentAvatarKind
   | ChatComposerKind
   | ChartCardKind
-  | ComposerPanelKind;
+  | ComposerPanelKind
+  | AiChatKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1689,7 +1693,8 @@ export class Node {
       | AccentTone
       | ColorToken
       | ComposerButtonTone
-      | SparklineTone,
+      | SparklineTone
+      | AiChatLineTone,
   ): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
   }
