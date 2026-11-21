@@ -21,8 +21,13 @@ export interface HostTree {
   children: (HostTree | string)[];
 }
 
-/** React's `useId` counts across roots; an id is compared by its order in the tree, not its count. */
-const REACT_ID = /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
+/**
+ * React's `useId` counts across roots, and Bloom counts a few SVG ids itself
+ * (`bloom-stat-tile3`, `bloom-story-ring-2`); an id is compared by its order in
+ * the tree, not its count.
+ */
+const REACT_ID =
+  /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)|\bbloom-[a-z]+(?:-[a-z]+)*-?\d+(?![\w-])/g;
 let ids: Map<string, string> = new Map();
 
 function value(input: unknown): unknown {
