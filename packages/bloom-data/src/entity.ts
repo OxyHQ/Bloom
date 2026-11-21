@@ -3,7 +3,7 @@ import {
   type ListDefinition,
   type ListState,
   type RefDefinition,
-  registerPersisted,
+  registerDefinition,
 } from './definition';
 import { currentStore } from './root';
 import type { DeepPartial, Plain } from './share';
@@ -125,7 +125,7 @@ export function entity<T extends object>(type: string, options: EntityOptions<T>
       },
     ]),
   };
-  registerPersisted(definition);
+  registerDefinition(definition);
 
   return {
     definition,
@@ -174,10 +174,25 @@ export interface ListOptions<E> {
 /** Ordered ids into an entity, per key, with what the source kept beside them. */
 export interface List<E = unknown> {
   readonly definition: ListDefinition;
+  /** The key's list as readers see it: its state with any optimistic layer over it. */
   get(key: string): ListState<E> | undefined;
-  /** Writes a key's list (a local change; a source writes its own pages). */
+  /**
+   * Writes a key's list (a local change; a source writes its own pages).
+   * `next` receives the list's own state, beneath any layer: `set` is never
+   * an action's layer, so inside `optimistic` use `insert`, `remove` and `move`.
+   */
   set(key: string, next: (current: ListState<E> | undefined) => ListState<E> | undefined): void;
-  /** Puts ids at the top of a held list, skipping those already in it. */
+  /**
+   * Puts ids at index `at` (default: the end), skipping those already in the
+   * list. Inside an action's `optimistic` this is the action's layer, like
+   * every list change below; outside it, a local write to a held list.
+   */
+  insert(key: string, ids: readonly string[], at?: number): void;
+  /** Takes ids out of the list (and out of its `extra`, through `dropFromExtra`). */
+  remove(key: string, ids: readonly string[]): void;
+  /** Moves an id of the list to index `to`. */
+  move(key: string, id: string, to: number): void;
+  /** `insert(key, ids, 0)`: puts ids at the top, skipping those already in the list. */
   prepend(key: string, ids: readonly string[]): void;
   /** Every key held in memory. */
   keys(): string[];
@@ -209,22 +224,21 @@ export function list<E = unknown>(type: string, options: ListOptions<E>): List<E
           : () => false,
     dropFromExtra: options.dropFromExtra as ListDefinition['dropFromExtra'],
   };
+  registerDefinition(definition);
   const handle: List<E> = {
     definition,
     get: (key) => currentStore().listSlot(definition, key)?.state as ListState<E> | undefined,
     set(key, next) {
       const store = currentStore();
       const slot = store.listSlot(definition, key, true);
-      store.setList(slot, next(slot.state as ListState<E> | undefined));
+      store.setList(slot, next(slot.base as ListState<E> | undefined));
     },
-    prepend(key, ids) {
-      handle.set(key, (current) => {
-        if (!current) return current;
-        const held = new Set(current.ids);
-        const added = ids.filter((id) => !held.has(id));
-        return added.length === 0 ? current : { ...current, ids: [...added, ...current.ids] };
-      });
-    },
+    insert: (key, ids, at) =>
+      currentStore().changeList(definition, key, { op: 'insert', ids: [...ids], at }),
+    remove: (key, ids) =>
+      currentStore().changeList(definition, key, { op: 'remove', ids: [...ids] }),
+    move: (key, id, to) => currentStore().changeList(definition, key, { op: 'move', id, to }),
+    prepend: (key, ids) => handle.insert(key, ids, 0),
     keys: () => currentStore().listKeys(definition),
     load: (key) => currentStore().hydrateList(definition, key),
     loadNow: (key) => currentStore().loadListNow(definition, key),

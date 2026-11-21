@@ -174,8 +174,10 @@ browser's events.
 
 ## Actions
 
-`optimistic` runs first, and every entity write it makes becomes the call's
-layer: concrete values held over the server's copy, not written into it.
+`optimistic` runs first, and every entity write it makes (`merge`, `patch`,
+`update`) and every list change (`insert`, `remove`, `move`, `prepend`)
+becomes the call's layer: concrete values and list changes held over the
+server's copy, not written into it.
 
 - While the layer stands, server writes to the same fields (a feed refresh, a
   realtime echo) update the copy beneath it without moving what the reader
@@ -185,6 +187,18 @@ layer: concrete values held over the server's copy, not written into it.
   notification.
 - When `run` rejects, the layer goes. That is the rollback: the copy beneath
   is current, including anything realtime brought in the meantime.
+
+Lists follow the same rule. `list.insert(key, ids, at?)` (default: the end;
+ids already in the list are skipped), `list.remove(key, ids)` and
+`list.move(key, id, to)` inside `optimistic` are held over the list's own
+state: a source page or a refresh that lands meanwhile updates the list
+beneath without moving what the reader sees (a removed id stays hidden, an
+inserted one stays shown). On success the changes are written into the
+list's state, on failure they go. Outside `optimistic` they are plain local
+writes to a held list, and `prepend(key, ids)` is `insert(key, ids, 0)`.
+`list.set` always writes the list's own state, never a layer. Readers
+(`useList`, `useListState`, `List.get`) see the layered list; the durable
+copy keeps only the list's own state.
 
 A `key` makes the action exclusive: a second call with the same key, while the
 first is in flight, resolves to `undefined` at once. Keys are shared by every

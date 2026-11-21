@@ -1,9 +1,13 @@
 import {
+  applyListOp,
   type EntityDefinition,
+  entityDefinition,
+  type ListDefinition,
+  type ListOp,
+  type ListState,
+  listDefinition,
   persistedKeep,
   persistedVersions,
-  type ListDefinition,
-  type ListState,
   readPath,
   writePath,
 } from './definition';
@@ -58,7 +62,15 @@ export class IndexSlot {
   listeners: Set<Listener> | undefined = undefined;
 }
 
+/**
+ * One list in memory, like a record's slot: `base` is the list's own state
+ * (the server's pages, or a local write), `layers` the list changes of
+ * actions still in flight, applied over it in order, and `state` the two
+ * together, which is what everyone reads.
+ */
 export class ListSlot {
+  base: ListState | undefined = undefined;
+  layers: Array<{ id: number; ops: ListOp[] }> | undefined = undefined;
   state: ListState | undefined = undefined;
   changedAt = 0;
   listeners: Set<Listener> | undefined = undefined;
@@ -86,9 +98,35 @@ export interface PutOptions {
   anonymous?: boolean;
 }
 
+/** An action call's optimistic layer: the records and lists it changed. */
+export interface Layer {
+  readonly id: number;
+  readonly slots: Set<Slot>;
+  readonly lists: Set<ListSlot>;
+}
+
+/** A layer as plain data, kept in a durable call's outbox entry and re-applied after a restart. */
+export interface StoredLayer {
+  readonly records: ReadonlyArray<{ type: string; id: string; partial: Plain }>;
+  readonly lists: ReadonlyArray<{ type: string; key: string; ops: readonly ListOp[] }>;
+}
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 let nextLayerId = 1;
+
+const newLayer = (): Layer => ({ id: nextLayerId++, slots: new Set(), lists: new Set() });
+
+/** Work for every store opened with a durable copy, after its first frame. */
+const openTasks = new Set<(store: Store) => void>();
+
+/**
+ * Runs `task` for every store opened with a durable copy from now on, after
+ * the store's first frame, so it never delays it. The action outbox's replay.
+ */
+export function onStoreOpen(task: (store: Store) => void): void {
+  openTasks.add(task);
+}
 
 /**
  * The data of one account (or one server request): every entity record and
@@ -117,7 +155,7 @@ export class Store {
   private batchDepth = 0;
   private readonly pending = new Set<Listener>();
   private readonly stored = new Map<EntityDefinition, Plain[]>();
-  private layerScope: { id: number; slots: Set<Slot> } | null = null;
+  private layerScope: Layer | null = null;
   private readonly dirtyRecords = new Set<Slot>();
   private readonly dirtyLists = new Set<ListSlot>();
   private cancelFlush: (() => void) | undefined;
@@ -128,6 +166,13 @@ export class Store {
     this.persister = options.persister;
     this.persistMaxAgeMs = options.persistMaxAgeMs ?? 7 * DAY_MS;
     connectBrowserEnvironment();
+    if (this.persister && openTasks.size > 0) {
+      const cancel = afterFrame(() => {
+        this.cleanups.delete(cancel);
+        for (const task of openTasks) task(this);
+      });
+      this.cleanups.add(cancel);
+    }
   }
 
   private readonly persistMaxAgeMs: number;
@@ -245,7 +290,7 @@ export class Store {
     return slot;
   }
 
-  /** Every key of `definition` with a list in memory. */
+  /** Every key of `definition` with a list in memory (as readers see it). */
   listKeys(definition: ListDefinition): string[] {
     const keys: string[] = [];
     for (const [key, slot] of this.lists.get(definition.type) ?? []) if (slot.state) keys.push(key);
@@ -397,17 +442,11 @@ export class Store {
 
   private dropFromLists(definition: EntityDefinition, ids: ReadonlySet<string>): void {
     for (const [type, lists] of this.lists) {
-      const listDefinition = this.listDefinitions.get(type);
-      if (listDefinition?.of !== definition) continue;
+      const held = this.listDefinitions.get(type);
+      if (held?.of !== definition) continue;
       for (const list of lists.values()) {
-        const state = list.state;
-        if (!state) continue;
-        const kept = state.ids.filter((id) => !ids.has(id));
-        const extra = listDefinition.dropFromExtra
-          ? listDefinition.dropFromExtra(state.extra, ids)
-          : state.extra;
-        if (kept.length === state.ids.length && extra === state.extra) continue;
-        this.setList(list, { ...state, ids: kept, extra: extra as ListState['extra'] });
+        if (list.base)
+          this.setList(list, applyListOp(held, list.base, { op: 'remove', ids: [...ids] }));
       }
     }
   }
@@ -460,9 +499,9 @@ export class Store {
 
   // ── Optimistic layers ───────────────────────────────────────
 
-  /** Runs `fn` with record writes captured as one new layer; returns its id. */
-  layer(fn: () => void): { id: number; slots: Set<Slot> } {
-    const scope = { id: nextLayerId++, slots: new Set<Slot>() };
+  /** Runs `fn` with record and list writes captured as one new layer. */
+  layer(fn: () => void): Layer {
+    const scope = newLayer();
     const outer = this.layerScope;
     this.layerScope = scope;
     try {
@@ -473,32 +512,93 @@ export class Store {
     return scope;
   }
 
-  /** Writes a layer into the server copy of every record it touched, then removes it. */
-  commitLayer(scope: { id: number; slots: Set<Slot> }): void {
+  /** Writes a layer into the server copy of every record and list it touched, then removes it. */
+  commitLayer(layer: Layer): void {
     if (this.closed) return;
     this.batch(() => {
-      for (const slot of scope.slots) {
-        const layer = slot.layers?.find((entry) => entry.id === scope.id);
-        if (!layer || !slot.layers) continue;
-        slot.layers = slot.layers.filter((entry) => entry.id !== scope.id);
-        if (slot.layers.length === 0) slot.layers = undefined;
-        if (slot.base) this.writeBase(slot, merge(slot.base, layer.partial));
+      for (const slot of layer.slots) {
+        const entry = slot.layers?.find((held) => held.id === layer.id);
+        if (!entry) continue;
+        this.unlayer(slot, layer.id);
+        if (slot.base) this.writeBase(slot, merge(slot.base, entry.partial));
         else this.recompute(slot);
+      }
+      for (const slot of layer.lists) {
+        const entry = slot.layers?.find((held) => held.id === layer.id);
+        if (!entry) continue;
+        this.unlayer(slot, layer.id);
+        let base = slot.base;
+        for (const op of entry.ops) if (base) base = applyListOp(slot.definition, base, op);
+        if (base !== slot.base) this.setList(slot, base);
+        else this.recomputeList(slot);
       }
     });
   }
 
-  /** Removes a layer from every record it touched. */
-  dropLayer(scope: { id: number; slots: Set<Slot> }): void {
+  /** Removes a layer from every record and list it touched. */
+  dropLayer(layer: Layer): void {
     if (this.closed) return;
     this.batch(() => {
-      for (const slot of scope.slots) {
-        if (!slot.layers) continue;
-        slot.layers = slot.layers.filter((layer) => layer.id !== scope.id);
-        if (slot.layers.length === 0) slot.layers = undefined;
+      for (const slot of layer.slots) {
+        this.unlayer(slot, layer.id);
         this.recompute(slot);
       }
+      for (const slot of layer.lists) {
+        this.unlayer(slot, layer.id);
+        this.recomputeList(slot);
+      }
     });
+  }
+
+  private unlayer(slot: { layers: Array<{ id: number }> | undefined }, id: number): void {
+    if (!slot.layers) return;
+    slot.layers = slot.layers.filter((entry) => entry.id !== id);
+    if (slot.layers.length === 0) slot.layers = undefined;
+  }
+
+  /** What a layer holds, as plain data. */
+  saveLayer(layer: Layer): StoredLayer {
+    const records: Array<StoredLayer['records'][number]> = [];
+    for (const slot of layer.slots) {
+      const entry = slot.layers?.find((held) => held.id === layer.id);
+      if (entry) records.push({ type: slot.definition.type, id: slot.id, partial: entry.partial });
+    }
+    const lists: Array<StoredLayer['lists'][number]> = [];
+    for (const slot of layer.lists) {
+      const entry = slot.layers?.find((held) => held.id === layer.id);
+      if (entry) lists.push({ type: slot.definition.type, key: slot.key, ops: [...entry.ops] });
+    }
+    return { records, lists };
+  }
+
+  /**
+   * Puts a saved layer back, beneath the layers standing (it is older than
+   * any call made since the store opened), on records and lists whether or
+   * not they are held yet: it shows over each one when it arrives (from
+   * disk or the network). Types no longer defined are skipped.
+   */
+  restoreLayer(stored: StoredLayer): Layer {
+    const layer = newLayer();
+    if (this.closed) return layer;
+    this.batch(() => {
+      for (const { type, id, partial } of stored.records) {
+        const definition = entityDefinition(type);
+        if (!definition) continue;
+        const slot = this.slot(definition, id, true);
+        slot.layers = [{ id: layer.id, partial }, ...(slot.layers ?? [])];
+        layer.slots.add(slot);
+        this.recompute(slot);
+      }
+      for (const { type, key, ops } of stored.lists) {
+        const definition = listDefinition(type);
+        if (!definition) continue;
+        const slot = this.listSlot(definition, key, true);
+        slot.layers = [{ id: layer.id, ops: [...ops] }, ...(slot.layers ?? [])];
+        layer.lists.add(slot);
+        this.recomputeList(slot);
+      }
+    });
+    return layer;
   }
 
   // ── Reads ───────────────────────────────────────────────────
@@ -578,15 +678,47 @@ export class Store {
 
   // ── Lists ───────────────────────────────────────────────────
 
-  setList(slot: ListSlot, state: ListState | undefined): void {
-    if (this.closed || slot.state === state) return;
-    slot.state = state;
-    this.clock += 1;
-    slot.changedAt = this.clock;
+  /** Writes a list's own state (a source's page, a local write); any layer stays over it. */
+  setList(slot: ListSlot, base: ListState | undefined): void {
+    if (this.closed || slot.base === base) return;
+    slot.base = base;
     if (this.persister && slot.definition.persist(slot.key)) {
       this.dirtyLists.add(slot);
       this.scheduleFlush();
     }
+    this.recomputeList(slot);
+  }
+
+  /**
+   * Inserts, removes or moves ids. Inside an action's `optimistic` it becomes
+   * that action's layer, held over the list's state even before the list is
+   * held; otherwise it writes a held list.
+   */
+  changeList(definition: ListDefinition, key: string, op: ListOp): void {
+    if (this.closed) return;
+    const slot = this.listSlot(definition, key, true);
+    const scope = this.layerScope;
+    if (scope) {
+      slot.layers ??= [];
+      const entry = slot.layers.find((held) => held.id === scope.id);
+      if (entry) entry.ops.push(op);
+      else slot.layers.push({ id: scope.id, ops: [op] });
+      scope.lists.add(slot);
+      this.recomputeList(slot);
+      return;
+    }
+    if (slot.base) this.setList(slot, applyListOp(definition, slot.base, op));
+  }
+
+  private recomputeList(slot: ListSlot): void {
+    let state = slot.base;
+    for (const layer of slot.layers ?? []) {
+      for (const op of layer.ops) if (state) state = applyListOp(slot.definition, state, op);
+    }
+    if (state === slot.state) return;
+    slot.state = state;
+    this.clock += 1;
+    slot.changedAt = this.clock;
     this.queue(slot.listeners);
   }
 
@@ -618,7 +750,8 @@ export class Store {
     }
     const lists: Array<PersistBatch['lists'][number]> = [];
     for (const slot of this.dirtyLists) {
-      const state = slot.state;
+      // The list's own state: a layer is never written.
+      const state = slot.base;
       lists.push({
         type: slot.definition.type,
         key: slot.key,
@@ -698,7 +831,7 @@ export class Store {
   /** Sets a list read from disk, keeping only the ids whose records are held. */
   private setStoredList(definition: ListDefinition, key: string, stored: StoredList): boolean {
     const slot = this.listSlot(definition, key, true);
-    if (slot.state || this.closed) return false;
+    if (slot.base || this.closed) return false;
     let rest: Omit<ListState, 'ids' | 'origin'>;
     try {
       rest = JSON.parse(stored.json) as Omit<ListState, 'ids' | 'origin'>;
@@ -706,12 +839,9 @@ export class Store {
       return false;
     }
     const ids = stored.ids.filter((id) => this.slot(definition.of, id)?.value);
-    this.batch(() => {
-      slot.state = { ...rest, ids, origin: 'disk' };
-      this.clock += 1;
-      slot.changedAt = this.clock;
-      this.queue(slot.listeners);
-    });
+    // Read from disk, so not written back.
+    slot.base = { ...rest, ids, origin: 'disk' };
+    this.recomputeList(slot);
     return true;
   }
 
@@ -726,7 +856,7 @@ export class Store {
   loadListNow(definition: ListDefinition, key: string): boolean {
     const persister = this.persister;
     if (!persister?.openNow || !persister.readListNow || !persister.readRecordsNow) return false;
-    if (!definition.persist(key) || this.listSlot(definition, key)?.state || this.opened)
+    if (!definition.persist(key) || this.listSlot(definition, key)?.base || this.opened)
       return false;
     try {
       if (
@@ -790,7 +920,7 @@ export class Store {
   private async readList(definition: ListDefinition, key: string): Promise<boolean> {
     const persister = this.persister;
     if (!persister || !definition.persist(key)) return false;
-    if (this.listSlot(definition, key)?.state) return false;
+    if (this.listSlot(definition, key)?.base) return false;
     await this.ready();
     if (this.persisterFailed || this.closed) return false;
     const stored = await persister.readList(definition.type, key, definition.of.type);
@@ -842,7 +972,8 @@ export class Store {
   evictList(definition: ListDefinition, key: string): void {
     const lists = this.lists.get(definition.type);
     const slot = lists?.get(key);
-    if (!slot || slot.listeners || slot.observed > 0 || this.dirtyLists.has(slot)) return;
+    if (!slot || slot.listeners || slot.layers || slot.observed > 0 || this.dirtyLists.has(slot))
+      return;
     lists?.delete(key);
   }
 
