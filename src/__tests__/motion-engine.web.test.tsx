@@ -167,3 +167,70 @@ describe('Presence on the web', () => {
     expect(texts()).toEqual(['b']);
   });
 });
+
+describe('motion values on the web', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const web = require('../motion/motion-value.web') as typeof import('../motion/motion-value.web');
+  type Value = import('../motion/motion-value.web').MotionValue;
+
+  function mount() {
+    const node = { style: {} as Record<string, string> };
+    let values!: { x: Value; drag: Value; opacity: Value; doubled: Value };
+    let style: Record<string, unknown> = {};
+    function Box() {
+      const x = web.useMotionValue(10);
+      const drag = web.useMotionValue(0);
+      const opacity = web.useMotionValue(1);
+      const doubled = web.useDerivedMotionValue([drag], (d) => d * 2);
+      values = { x, drag, opacity, doubled };
+      const motion = web.useMotionStyle({ translateX: [x, doubled], opacity });
+      style = motion.style as Record<string, unknown>;
+      React.useLayoutEffect(() => motion.ref?.(node), [motion]);
+      return null;
+    }
+    let r!: TestRenderer.ReactTestRenderer;
+    act(() => {
+      r = TestRenderer.create(<Box />);
+    });
+    return { node, values: () => values, style: () => style, r };
+  }
+
+  it('renders the bound style, then writes moves straight to the element with no transition', () => {
+    const box = mount();
+    expect(box.style()).toEqual({ opacity: 1, transform: [{ translateX: 10 }] });
+    web.setMotionValue(box.values().drag, 5);
+    expect(box.node.style.transform).toBe('translateX(20px)');
+    expect(box.node.style.transition).toBe('');
+  });
+
+  it('animates by a CSS transition of the properties it moves, and ends on its time', () => {
+    jest.useFakeTimers();
+    const box = mount();
+    const ended = jest.fn();
+    web.animateMotionValue(box.values().x, 100, MOTION.slide, false, ended);
+    expect(box.node.style.transform).toBe('translateX(100px)');
+    expect(box.node.style.transition).toBe(
+      `transform ${MOTION.slide.duration}ms cubic-bezier(${MOTION.slide.easing?.join(',')})`,
+    );
+    web.animateMotionValue(box.values().opacity, 0, 'fade');
+    expect(box.node.style.transition).toContain('transform');
+    expect(box.node.style.transition).toContain('opacity 160ms');
+    expect(ended).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(MOTION.slide.duration);
+    expect(ended).toHaveBeenCalledTimes(1);
+    // A finger's write is never eased.
+    web.setMotionValue(box.values().drag, 1);
+    expect(box.node.style.transition).toBe(
+      `opacity 160ms cubic-bezier(${MOTION.fade.easing?.join(',')})`,
+    );
+    jest.useRealTimers();
+  });
+
+  it('under reduced motion lands at once and ends at once', () => {
+    const box = mount();
+    const ended = jest.fn();
+    web.animateMotionValue(box.values().x, 50, 'slide', true, ended);
+    expect(box.node.style.transition).toBe('');
+    expect(ended).toHaveBeenCalledTimes(1);
+  });
+});

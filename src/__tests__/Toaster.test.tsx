@@ -204,7 +204,7 @@ const rowBoxesOf = ({ UNSAFE_root }: ReturnType<typeof renderOutlet>) =>
  * reaching inside the component for the policy.
  */
 type MockGesture = {
-  __handlers: { onEnd?: (event: { x: number; y: number }) => void };
+  __handlers: { onDeactivate?: (event: { x: number; y: number; canceled: boolean }) => void };
   __members: MockGesture[];
 };
 
@@ -214,8 +214,8 @@ const isMockGesture = (value: unknown): value is MockGesture =>
 /**
  * Fires the tap gesture of one row at a ROW-RELATIVE x, in render order (so the
  * last one is the front of a bottom-anchored stack — the row a real tap lands on).
- * The pan gesture registers `onBegin`/`onChange`/`onFinalize` and no `onEnd`, so
- * `onEnd` identifies the tap unambiguously.
+ * The swipe's pan registers `onBegin`/`onUpdate`/`onFinalize` and no
+ * `onDeactivate`, so `onDeactivate` identifies the tap unambiguously.
  */
 const tapRow = (
   rendered: ReturnType<typeof renderOutlet>,
@@ -228,13 +228,14 @@ const tapRow = (
     return isMockGesture(gesture) ? [gesture] : [];
   });
   const gesture = row === 'front' ? gestures[gestures.length - 1] : gestures[row];
-  const onEnd = gesture?.__members.find((member) => typeof member.__handlers.onEnd === 'function')
-    ?.__handlers.onEnd;
-  if (!onEnd) {
+  const onTap = gesture?.__members.find(
+    (member) => typeof member.__handlers.onDeactivate === 'function',
+  )?.__handlers.onDeactivate;
+  if (!onTap) {
     throw new Error(`no tap gesture found for row ${String(row)}`);
   }
   act(() => {
-    onEnd({ x, y: 20 });
+    onTap({ x, y: 20, canceled: false });
   });
   endExits();
 };

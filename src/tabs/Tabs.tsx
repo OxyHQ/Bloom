@@ -24,8 +24,15 @@ import {
   type TextStyle,
   type KeyDownEvent,
 } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
-import { animateWithSpec } from '../motion/spec';
+import { MotionWrapper } from '../motion/motion-host';
+import {
+  animateMotionValue,
+  getMotionValue,
+  setMotionValue,
+  useDerivedMotionValue,
+  useMotionStyle,
+  useMotionValue,
+} from '../motion/motion-value';
 import { MOTION } from '../motion/tokens';
 
 import { useTheme } from '../theme/use-theme';
@@ -368,30 +375,70 @@ const TabsContext = createContext<TabsContextValue | null>(null);
  */
 export interface TabsDragController {
   /**
-   * Feed the raw horizontal finger delta (`translationX`).
+   * A touch landed. The strip fixes the neighbours the drag can travel toward
+   * (the tabs either side of the selected one, on screen), so the underline
+   * follows `dragTranslation` from here with no JS per frame.
    *
    * The underline travels OPPOSITE the finger, because that is where the
    * incoming tab is: dragging left reveals the NEXT tab, which sits to the
    * right. Travel is clamped at the neighbour — the underline stops exactly
    * where it would land, so it never promises more than the release delivers —
    * and at the first/last tab it rubber-bands instead.
-   *
-   * Returns the value that releasing NOW would commit, or `null` for "no
-   * commit": either the drag has not passed the threshold, or there is no
-   * neighbour in that direction.
    */
-  drag(translationX: number): string | null;
+  begin(): void;
   /**
-   * End the drag. Pass the value `drag` last returned to keep the underline
-   * where the finger left it while the caller navigates; pass `null` to spring
-   * it home.
+   * The touch ended with the finger `translationX` from where it landed.
+   * Returns the tab releasing there commits, or `null` for "no commit": the
+   * drag has not passed the threshold, or there is no neighbour that way.
    *
-   * On a commit the offset is FOLDED into the underline's base position rather
-   * than zeroed, so the focus change that follows springs from where the finger
-   * actually let go. Zeroing first would snap backwards for a frame and then
-   * animate forwards from the wrong place.
+   * On a commit the travel is FOLDED into the underline's base position, so
+   * the focus change that follows springs from where the finger let go. With
+   * none, the underline springs home. Either way it takes the travel over from
+   * `dragTranslation` and zeroes it for the next touch.
    */
-  release(committed: string | null): void;
+  release(translationX: number): string | null;
+}
+
+/** Where a drag from the selected tab is: the underline's offset and width change, and how far to the neighbour. */
+function dragTravel(
+  translation: number,
+  active: number,
+  nextDistance: number,
+  nextWidth: number,
+  previousDistance: number,
+  previousWidth: number,
+): { offset: number; width: number; progress: number } {
+  'worklet';
+  if (active === 0) return { offset: 0, width: 0, progress: 0 };
+  // Opposite the finger: dragging LEFT reveals the NEXT tab, which is to the
+  // right, so that is where the underline goes.
+  const travel = -translation;
+  const toNext = travel > 0;
+  const distance = toNext ? nextDistance : previousDistance;
+  if (Number.isNaN(distance)) {
+    // First or last tab. Resist, never commit — the rubber-band is the honest
+    // signal that there is nothing in that direction.
+    const damped = Math.min(Math.abs(travel) * EDGE_RUBBER_BAND_DAMPING, EDGE_RUBBER_BAND_MAX);
+    return { offset: Math.sign(travel) * damped, width: 0, progress: 0 };
+  }
+  // Clamped at the neighbour: the underline stops exactly where releasing
+  // would leave it, so it never promises travel the commit cannot deliver.
+  const progress = Math.min(Math.abs(travel) / Math.abs(distance), 1);
+  return {
+    offset: distance * progress,
+    width: (toNext ? nextWidth : previousWidth) * progress,
+    progress,
+  };
+}
+
+function travelOffset(t: number, a: number, nd: number, nw: number, pd: number, pw: number) {
+  'worklet';
+  return dragTravel(t, a, nd, nw, pd, pw).offset;
+}
+
+function travelWidth(t: number, a: number, nd: number, nw: number, pd: number, pw: number) {
+  'worklet';
+  return dragTravel(t, a, nd, nw, pd, pw).width;
 }
 
 function useTabsContext(component: string): TabsContextValue {
@@ -416,6 +463,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
     pressOpenTab = 'report',
     onReorder,
     hasSelection = true,
+    dragTranslation,
     variant = 'underline',
     fullWidth = false,
     label,
@@ -447,15 +495,36 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   // shared values IMPERATIVELY, and `useAnimatedStyle` below only ever READS
   // them. That split is what makes the animation work on web, where returning
   // an animation from inside a mapper silently does nothing.
-  const indicatorX = useSharedValue(0);
-  const indicatorWidth = useSharedValue(0);
+  const indicatorX = useMotionValue(0);
+  const indicatorWidth = useMotionValue(0);
   // Starts hidden: a strip whose active trigger has not been measured yet must
   // not flash an underline at the origin on its first frame.
-  const indicatorOpacity = useSharedValue(0);
-  // Live drag, added to the settled position/width rather than replacing them,
-  // so a release can fold the delta into the base without a visible jump.
-  const dragOffset = useSharedValue(0);
-  const dragWidthDelta = useSharedValue(0);
+  const indicatorOpacity = useMotionValue(0);
+  // A drag's travel, added to the settled position/width rather than replacing
+  // them, so a release can fold it into the base without a visible jump: live
+  // from the finger (`dragX`/`dragWidth`, derived from `dragTranslation` and
+  // the neighbours `begin` fixed), then handed to `settleX`/`settleWidth` to
+  // spring home.
+  const ownTranslation = useMotionValue(0);
+  const translation = dragTranslation ?? ownTranslation;
+  const dragActive = useMotionValue(0);
+  const nextDistance = useMotionValue(Number.NaN);
+  const nextWidth = useMotionValue(0);
+  const previousDistance = useMotionValue(Number.NaN);
+  const previousWidth = useMotionValue(0);
+  const travelInputs = [
+    translation,
+    dragActive,
+    nextDistance,
+    nextWidth,
+    previousDistance,
+    previousWidth,
+  ] as const;
+  const dragX = useDerivedMotionValue(travelInputs, travelOffset);
+  const dragWidth = useDerivedMotionValue(travelInputs, travelWidth);
+  const settleX = useMotionValue(0);
+  const settleWidth = useMotionValue(0);
+  const neighboursRef = useRef<{ next?: string; previous?: string }>({});
 
   const triggerLayoutsRef = useRef<Record<string, TriggerLayout>>({});
   // How to ask each trigger where it is NOW, keyed by value. Registration order
@@ -480,11 +549,11 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   const moveIndicator = useCallback(
     (target: TriggerLayout, animate: boolean) => {
       if (animate && !reducedMotion) {
-        animateWithSpec(indicatorX, target.x, slideTiming);
-        animateWithSpec(indicatorWidth, target.width, slideTiming);
+        animateMotionValue(indicatorX, target.x, slideTiming);
+        animateMotionValue(indicatorWidth, target.width, slideTiming);
       } else {
-        indicatorX.value = target.x;
-        indicatorWidth.value = target.width;
+        setMotionValue(indicatorX, target.x);
+        setMotionValue(indicatorWidth, target.width);
       }
       // Reveal only while something IS selected. Geometry keeps arriving while
       // a non-tab sibling route is showing — the measurement pass below is
@@ -493,7 +562,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
       // than a ref: a ref written in an effect is still stale at this point,
       // because a child's effect runs before its parent's.
       if (!hasSelection) return;
-      animateWithSpec(indicatorOpacity, 1, HIGHLIGHT_FADE, reducedMotion);
+      animateMotionValue(indicatorOpacity, 1, HIGHLIGHT_FADE, reducedMotion);
     },
     [indicatorX, indicatorWidth, indicatorOpacity, hasSelection, reducedMotion, slideTiming],
   );
@@ -695,7 +764,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   // because `indicatorPlacedRef` is left alone here.
   useEffect(() => {
     if (hasSelection) return;
-    animateWithSpec(indicatorOpacity, 0, HIGHLIGHT_FADE, reducedMotion);
+    animateMotionValue(indicatorOpacity, 0, HIGHLIGHT_FADE, reducedMotion);
   }, [hasSelection, indicatorOpacity, reducedMotion]);
 
   // Every render of the strip is a render in which its contents may have MOVED:
@@ -727,57 +796,65 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   useImperativeHandle(
     dragRef,
     (): TabsDragController => ({
-      drag(translationX) {
+      begin() {
         const current = selectedValueRef.current;
-        if (current === undefined) return null;
         // Ordered by measured position, so "the neighbour" means the tab next
         // to it ON SCREEN. Deriving it from child order instead would be wrong
         // the moment a caller reorders or conditionally renders a trigger.
         const ordered = Object.entries(triggerLayoutsRef.current).sort((a, b) => a[1].x - b[1].x);
         const index = ordered.findIndex(([tabValue]) => tabValue === current);
         const from = ordered[index]?.[1];
-        if (from === undefined) return null;
-
-        // Opposite the finger: dragging LEFT reveals the NEXT tab, which is to
-        // the right, so that is where the underline goes.
-        const travel = -translationX;
-        const neighbour = ordered[index + (travel > 0 ? 1 : -1)];
-
-        if (neighbour === undefined) {
-          // First or last tab. Resist, never commit — the rubber-band is the
-          // honest signal that there is nothing in that direction.
-          const damped = Math.min(
-            Math.abs(travel) * EDGE_RUBBER_BAND_DAMPING,
-            EDGE_RUBBER_BAND_MAX,
-          );
-          dragOffset.value = Math.sign(travel) * damped;
-          dragWidthDelta.value = 0;
+        const next = from ? ordered[index + 1] : undefined;
+        const previous = from ? ordered[index - 1] : undefined;
+        neighboursRef.current = { next: next?.[0], previous: previous?.[0] };
+        setMotionValue(nextDistance, from && next ? next[1].x - from.x : Number.NaN);
+        setMotionValue(nextWidth, from && next ? next[1].width - from.width : 0);
+        setMotionValue(previousDistance, from && previous ? previous[1].x - from.x : Number.NaN);
+        setMotionValue(previousWidth, from && previous ? previous[1].width - from.width : 0);
+        setMotionValue(dragActive, from ? 1 : 0);
+      },
+      release(translationX) {
+        const travel = dragTravel(
+          translationX,
+          getMotionValue(dragActive),
+          getMotionValue(nextDistance),
+          getMotionValue(nextWidth),
+          getMotionValue(previousDistance),
+          getMotionValue(previousWidth),
+        );
+        const toward =
+          -translationX > 0 ? neighboursRef.current.next : neighboursRef.current.previous;
+        const committed =
+          toward !== undefined && travel.progress >= COMMIT_THRESHOLD ? toward : null;
+        setMotionValue(dragActive, 0);
+        setMotionValue(translation, 0);
+        if (committed === null) {
+          setMotionValue(settleX, getMotionValue(settleX) + travel.offset);
+          setMotionValue(settleWidth, getMotionValue(settleWidth) + travel.width);
+          animateMotionValue(settleX, 0, slideTiming, reducedMotion);
+          animateMotionValue(settleWidth, 0, slideTiming, reducedMotion);
           return null;
         }
-
-        const [neighbourValue, to] = neighbour;
-        const distance = to.x - from.x;
-        // Clamped at the neighbour: the underline stops exactly where releasing
-        // would leave it, so it never promises travel the commit cannot deliver.
-        const progress = Math.min(Math.abs(travel) / Math.abs(distance), 1);
-        dragOffset.value = distance * progress;
-        dragWidthDelta.value = (to.width - from.width) * progress;
-        return progress >= COMMIT_THRESHOLD ? neighbourValue : null;
-      },
-      release(committed) {
-        if (committed === null) {
-          animateWithSpec(dragOffset, 0, slideTiming, reducedMotion);
-          animateWithSpec(dragWidthDelta, 0, slideTiming, reducedMotion);
-          return;
-        }
         // Fold, do not zero — see `TabsDragController.release`.
-        indicatorX.value += dragOffset.value;
-        indicatorWidth.value += dragWidthDelta.value;
-        dragOffset.value = 0;
-        dragWidthDelta.value = 0;
+        setMotionValue(indicatorX, getMotionValue(indicatorX) + travel.offset);
+        setMotionValue(indicatorWidth, getMotionValue(indicatorWidth) + travel.width);
+        return committed;
       },
     }),
-    [dragOffset, dragWidthDelta, indicatorX, indicatorWidth, reducedMotion, slideTiming],
+    [
+      dragActive,
+      indicatorX,
+      indicatorWidth,
+      nextDistance,
+      nextWidth,
+      previousDistance,
+      previousWidth,
+      reducedMotion,
+      settleX,
+      settleWidth,
+      slideTiming,
+      translation,
+    ],
   );
 
   const draggedValue = useRef<string | null>(null);
@@ -871,16 +948,15 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   // underneath, with no error anywhere. Native (plugin present) auto-tracks and
   // ignores the extras, so listing them is correct on both platforms. Same rule
   // as `TabBarBase` and `BottomSheetBase`. Do NOT strip these.
-  const indicatorStyle = useAnimatedStyle(
-    () => ({
-      // The drag deltas ADD to the settled values rather than replacing them,
-      // which is what lets a release fold them into the base with no jump.
-      width: Math.max(indicatorWidth.value + dragWidthDelta.value, 0),
-      opacity: indicatorOpacity.value,
-      transform: [{ translateX: indicatorX.value + dragOffset.value }],
-    }),
-    [indicatorWidth, dragWidthDelta, indicatorOpacity, indicatorX, dragOffset],
-  );
+  // The one mapper (`useMotionStyle`): the drag's travel ADDS to the settled
+  // values rather than replacing them, which is what lets a release fold it
+  // into the base with no jump. It lists every value it reads, so the web
+  // (no worklets plugin) cannot freeze it at its first frame.
+  const indicatorMotion = useMotionStyle({
+    width: [indicatorWidth, settleWidth, dragWidth],
+    opacity: indicatorOpacity,
+    translateX: [indicatorX, settleX, dragX],
+  });
 
   // The underline is a sibling of the triggers INSIDE the scrollable content,
   // so the two share one coordinate space: a trigger's `onLayout` x is already
@@ -888,7 +964,8 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   // is why nothing here subtracts a scroll offset — an underline parked outside
   // the scroller would have to, and would lag by a frame on every scroll event.
   const indicator = (
-    <Animated.View
+    <MotionWrapper
+      ref={indicatorMotion.ref}
       pointerEvents="none"
       testID={testID ? `${testID}-indicator` : undefined}
       style={[
@@ -908,7 +985,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
               borderRadius: borderRadius.full,
               backgroundColor: paint.thumb,
             },
-        indicatorStyle,
+        indicatorMotion.style,
       ]}
     />
   );
