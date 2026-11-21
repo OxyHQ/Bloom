@@ -96,10 +96,11 @@ export const OPACITY = {
   "pale": 0.2,
   "sheer": 0.3,
   "hazy": 0.4,
-  "disabled": 0.5,
+  "half": 0.5,
   "dim": 0.6,
   "faded": 0.7,
   "soft": 0.8,
+  "soft-opaque": 0.9,
   "opaque": 1
 } as const;
 export const BORDER_WIDTH = {
