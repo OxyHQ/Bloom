@@ -276,12 +276,19 @@ export function createPanelLayoutView(
           {enabled ? <ScrollBar target={handle} horizontal={horizontal} /> : null}
         </View>
       );
+    // React Native draws a horizontal and a vertical ScrollView with different
+    // native views, so switching one for the other remounts everything inside
+    // it. Only a viewport that scrolls vertically is the vertical one: one that
+    // does not scroll stays horizontal whatever its panels' axis, so a group
+    // that turns (a phone's stack, side by side on a reel) keeps its panels and
+    // the app's navigator in them mounted.
+    const scrollsVertically = enabled && !horizontal;
     return (
       <ScrollArea
         ref={(value) => {
           node.current = value;
         }}
-        horizontal={horizontal}
+        horizontal={!scrollsVertically}
         scrollEnabled={enabled}
         testID={testID}
         onScroll={onScroll}
@@ -290,7 +297,7 @@ export function createPanelLayoutView(
           flexGrow: 1,
           alignItems: 'stretch',
           paddingBottom: bottomInset,
-          ...(horizontal && !enabled ? VIEWPORT_WIDTH : null),
+          ...(enabled ? null : VIEWPORT_WIDTH),
         }}
       >
         {children}
