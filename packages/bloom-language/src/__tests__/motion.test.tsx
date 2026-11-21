@@ -5,7 +5,7 @@ import TestRenderer, {
   type ReactTestRenderer,
 } from 'react-test-renderer';
 
-import { LIGHT, PaintContext } from './support/bloom-theme';
+import { DARK, LIGHT, PaintContext } from './support/bloom-theme';
 import { runtime } from './support/bloom-runtime';
 import { HStack, Icon, Image, Lottie, Text, VStack, ZStack } from '../primitives';
 import { toElement } from '../render';
@@ -16,6 +16,13 @@ import { regular } from '../glass';
 import type { Child } from '../node';
 import { getMotionValue, type MotionValue } from './support/bloom-motion';
 import { useMotionValue } from '../motion/values';
+import { transitionStyle } from '@oxy.so/bloom/motion';
+
+// Each transition style a render asks for, in order: a theme switch's render and the next one.
+jest.mock('@oxy.so/bloom/motion', () => {
+  const actual = jest.requireActual('./support/bloom-motion');
+  return { ...actual, transitionStyle: jest.fn(actual.transitionStyle) };
+});
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const consoleError = console.error;
@@ -52,9 +59,9 @@ function mount(node: Child): ReactTestRenderer {
   });
   return renderer;
 }
-function update(renderer: ReactTestRenderer, node: Child): void {
+function update(renderer: ReactTestRenderer, node: Child, colors = LIGHT): void {
   act(() =>
-    renderer.update(createElement(PaintContext.Provider, { value: LIGHT }, toElement(node))),
+    renderer.update(createElement(PaintContext.Provider, { value: colors }, toElement(node))),
   );
 }
 const all = (renderer: ReactTestRenderer, type: string): ReactTestInstance[] =>
@@ -92,8 +99,21 @@ describe('geometry and .animation()', () => {
     });
   });
 
-  it('.animation(motion) transitions transform, opacity and colours with the token’s curve', () => {
-    const r = mount(VStack().scale('dip').animation('slide'));
+  it('.animation(motion) transitions transform and opacity with the token’s curve, not colours', () => {
+    const r = mount(VStack().scale('dip').background('surface').animation('slide'));
+    expect(flat(all(r, 'Animated.View')[0]?.props.style)).toMatchObject({
+      transitionProperty: ['transform', 'opacity'],
+      transitionDuration: 200,
+      transitionTimingFunction: { cubicBezier: [0.25, 0.1, 0.25, 1] },
+    });
+    // A colour alone does not animate the box: it changes at once.
+    expect(all(mount(VStack().background('surface').animation('slide')), 'Animated.View')).toEqual(
+      [],
+    );
+  });
+
+  it('.animatesColors() adds the box’s colours to the transition', () => {
+    const r = mount(VStack().scale('dip').animation('slide').animatesColors());
     expect(flat(all(r, 'Animated.View')[0]?.props.style)).toMatchObject({
       transitionProperty: [
         'transform',
@@ -135,13 +155,14 @@ describe('geometry and .animation()', () => {
 });
 
 describe('colours, loops, a delay and an anchor', () => {
-  it('under .animation() a varied fill is the animated box’s, and its change transitions', () => {
+  it('with .animatesColors() a varied fill is the animated box’s, and its change transitions', () => {
     const r = mount(
       HStack(Text('a'))
         .onPress(() => {})
         .background('surface')
         .when('pressed', (v) => v.background('popover'))
-        .animation('fade'),
+        .animation('fade')
+        .animatesColors(),
     );
     const press = () => all(r, 'Animated.Pressable')[0];
     expect(flat(press()?.props.style)).toMatchObject({
@@ -151,6 +172,19 @@ describe('colours, loops, a delay and an anchor', () => {
     });
     act(() => press()?.props.onPressIn());
     expect(flat(press()?.props.style).backgroundColor).toBe(LIGHT.backgroundTertiary);
+  });
+
+  it('a theme switch changes the colours at once; the next render plays them again', () => {
+    const chain = VStack(Text('a')).background('surface').animation('fade').animatesColors();
+    const r = mount(chain);
+    const asked = transitionStyle as jest.Mock;
+    asked.mockClear();
+    update(r, chain, DARK);
+    // The switch's render leaves the colours out; the render after puts them back.
+    expect(asked.mock.calls.map(([, colors]) => colors)).toEqual([false, true]);
+    expect(flat(all(r, 'Animated.View')[0]?.props.style).transitionProperty).toContain(
+      'backgroundColor',
+    );
   });
 
   it('a loop is a CSS animation that repeats forever, on its own motion; reduced motion stops it', () => {

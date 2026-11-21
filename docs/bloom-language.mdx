@@ -4211,8 +4211,9 @@ after **Not built**, what is not; nothing is listed twice.
   shared controls (a `Button` inside `.blur()` draws its own material rather
   than Bloom's `material="shared"` on the island's).
 - **Motion** (`@oxy.so/bloom/motion`). Motion tokens and curves,
-  `.animation()` (geometry, opacity and colours: `transition-colors`),
-  `.transition()`, `.keyframes()`, loops (`.repeatForever('spin' | 'pulse')`,
+  `.animation()` (geometry and opacity), `.animatesColors()` (colours,
+  opt-in: `transition-colors`; a theme switch never plays), `.transition()`,
+  `.keyframes()`, loops (`.repeatForever('spin' | 'pulse')`,
   Tailwind's `animate-spin` and `animate-pulse`, or an app's keyframes),
   `.delay()` (Bloom's durations), `.anchor()` (a
   transform origin), `.matchedGeometry()`, `.contentTransition('roll')`,
