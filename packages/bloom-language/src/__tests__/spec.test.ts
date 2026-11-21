@@ -103,6 +103,12 @@ import type {
   TableRowView,
   TableCellView,
 } from '../controls/table';
+import type {
+  ListItemView,
+  ListView,
+  VirtualListView,
+  ListSelectionBarView,
+} from '../controls/list';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -319,7 +325,15 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<TableBodyView>, Of<'tableBody'>>,
       Same<MethodsOf<TableRowView>, Of<'tableRow'>>,
       Same<MethodsOf<TableCellView>, Of<'tableCell'>>,
+      Same<MethodsOf<ListItemView>, Of<'listItem'>>,
+      Same<MethodsOf<ListView>, Of<'list'>>,
+      Same<MethodsOf<VirtualListView>, Of<'virtualList'>>,
+      Same<MethodsOf<ListSelectionBarView>, Of<'listSelectionBar'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

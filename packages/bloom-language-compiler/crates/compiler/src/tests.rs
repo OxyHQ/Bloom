@@ -619,3 +619,24 @@ fn tables_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn rows_and_lists_are_checked() {
+    let imports = "import { ListItem, PersonRow, List, SectionedList, VirtualList, ListSelectionBar, Text, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (p, items, sections, data, row, set, actions) => VStack(ListItem('Ana').supporting('Design').supportingLines(2).prefix(Text('A')).trailing(Text('>')).footnote(Text('f')).attachments(Text('a')).density('compact').compactPadding('xs').active(true).disabled().link('/a').onPrefetch(set).checkable([true, set]).selecting(true).selectionLabel('Select').rowActions(actions, set).swipeActions({}, undefined).swipeEnabled(false).contextMenu(Text('m')), PersonRow(p), List(items).separator('line').scrollable().scrollHeight('320').stickyHeaders().listHeader(Text('h')).listFooter(Text('f')).emptyState(Text('e')).loading().loadingRows(3), SectionedList(sections).sectionIndex({}), VirtualList(data, row).itemKey(String).itemType(String).estimatedItemSize(56).columns(2).onEndReached(set, 0.5).refreshable(false, set).stickyIndices([0]).restorationKey('k').tuning({}), ListSelectionBar(1, 2).selecting(true).onSelectAll(set).onClear(set).rowActions(actions, set).labels({}));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("List([]).separator('dashed')", "Unknown listSeparator token 'dashed' for .separator()"),
+        ("ListItem('a').compactPadding('tight')", "Unknown space token 'tight' for .compactPadding()"),
+        ("ListItem('a').density('cozy')", "Unknown density token 'cozy' for .density()"),
+        ("ListItem('a').tuning({})", "ListItem has no modifier .tuning()"),
+        ("VirtualList([], s).separator('line')", "VirtualList has no modifier .separator()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (s) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

@@ -1188,6 +1188,45 @@ sort button). A body takes `.emptyState()`, a row `.selected(bool)`. The
 header's columns are read as Bloom's `TableColumn` elements: give them their
 layout with these modifiers, not a box of their own.
 
+### Rows and lists
+
+```ts
+ListItem('Ana Lima').supporting('Design lead').prefix(Avatar(ana.avatar)).onPress(open)
+ConversationRow(chat).active(chat.id === openId).swipeActions({ right: archive })
+List(entries).separator('inset').emptyState(Text('Nobody yet'))
+VirtualList(messages, messageRow).itemKey(byId).estimatedItemSize(72).onEndReached(loadMore)
+ListSelectionBar(selected.length, total).selecting(true).rowActions(bulk, run)
+```
+
+Bloom's `ListItem`, `List`, `VirtualList` and `ListSelectionBar`.
+`ListItem(title?)` is the one row: a title (a string in the row's type, or a
+view), `.supporting()` and `.supportingLines(1 | 2 | 3 | 'adaptive')`, the
+slots `.prefix()` (what leads it), `.trailing()`, `.content()` (a body of its
+own), `.footnote()` (under the text) and `.attachments()`; `.density('compact')`
+and `.compactPadding()`, `.active()`, `.disabled()`, `.link(href)`,
+`.onPrefetch()`, its press and long press, `.label()` (its full name);
+selection with `.checkable([checked, set])`, `.selecting()` and
+`.selectionLabel()`; `.rowActions(actions, onAction)`, `.swipeActions(actions,
+full?)`, `.swipeEnabled()` and `.contextMenu(view)`. `PersonRow`, `CallRow`,
+`ConversationRow` and `MailRow` are its recipes, over Bloom's data.
+
+`List(entries)` and `SectionedList(sections)` take Bloom's `ListEntry` data:
+`.separator('none' | 'line' | 'inset')`, `.scrollable()`, `.scrollHeight()`,
+`.stickyHeaders()`, `.sectionIndex()`, `.listHeader()`, `.listFooter()`,
+`.emptyState()`, `.loading()` and `.loadingRows(n)`.
+
+`VirtualList(data, row)` is Bloom's: FlashList (or FlatList) on native, the
+virtualizer on the web. `row(item, index)` returns the item's view; keep it
+stable (module scope, or a `useCallback`), and the list keeps its `renderItem`,
+so the engine re-renders a row only when its item changes, as with JSX. It takes
+`.itemKey()`, `.itemType()` (FlashList's recycling type),
+`.estimatedItemSize(px)`, `.columns()`, `.onEndReached(action, threshold?)`,
+`.refreshable(refreshing, onRefresh)`, `.stickyIndices()`,
+`.restorationKey()`, `.listHeader()`, `.listFooter()`, `.emptyState()` and
+`.tuning({...})` (the engine's own knobs). `ListSelectionBar(count, total)`
+takes `.selecting()`, `.onSelectAll()`, `.onClear()`, `.rowActions()` and
+`.labels()`.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -1564,7 +1603,7 @@ and `@oxy.so/bloom-data` beside it.
   each utility the apps use becomes.
 - Generic components (see [Generic components](#generic-components)), drawn as
   Bloom's own: the date and time pickers, ratings, meters and progress bars, stickers,
-  tables.
+  tables, rows and lists.
 
 **Not built**
 
