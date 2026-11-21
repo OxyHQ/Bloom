@@ -54,6 +54,9 @@ const SUBPATHS = /** @type {const} */ ([
   ['./provider', 'provider/index.ts'],
   ['./surfaces', 'surfaces/index.ts'],
   ['./surface', 'surface/index.ts'],
+  // The floating island of controls (`BlurIsland`) on the shared material, and the
+  // Android blur target a surface in its own window reads (`BlurTargetProvider`).
+  ['./blur', 'blur/index.ts'],
   ['./concentric', 'concentric/index.ts'],
   ['./image-resolver', 'image-resolver/index.ts'],
   // The host platform's surfaces (`BloomProvider platform={…}`): a popup that

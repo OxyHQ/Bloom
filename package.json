@@ -89,6 +89,20 @@
         "default": "./lib/commonjs/surface/index.js"
       }
     },
+    "./blur": {
+      "react-native": {
+        "types": "./lib/typescript/module/blur/index.d.ts",
+        "default": "./src/blur/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/blur/index.d.ts",
+        "default": "./lib/module/blur/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/blur/index.d.ts",
+        "default": "./lib/commonjs/blur/index.js"
+      }
+    },
     "./concentric": {
       "react-native": {
         "types": "./lib/typescript/module/concentric/index.d.ts",
@@ -4730,6 +4744,9 @@
       ],
       "surface": [
         "./lib/typescript/module/surface/index.d.ts"
+      ],
+      "blur": [
+        "./lib/typescript/module/blur/index.d.ts"
       ],
       "concentric": [
         "./lib/typescript/module/concentric/index.d.ts"
