@@ -794,28 +794,39 @@ writes it. It is the one mechanism for every input (SwiftUI's `$value`); a
 
 | Node | Bloom | Modifiers |
 | --- | --- | --- |
-| `TextField(text, label)`, `SecureField(text, label)` | `TextFieldInput` in its `TextField` shell (`TextFieldIcon`, `TextFieldPrefix`, `TextFieldSuffix`) | `.placeholder`, `.size`, `.disabled`, `.invalid`, `.floatingLabel()`, `.revealable()` (secure), `.icon(X)`, `.prefix(text)`, `.suffix(text)`, `.keyboard`, `.autocapitalize`, `.autocorrect`, `.contentType` (autofill), `.submitLabel`, `.onSubmit`, `.autoFocus()`, `.maxLength` |
-| `TextEditor(text, label?)` | `Textarea` | `.placeholder`, `.description` (its hint), `.size`, `.disabled`, `.invalid`, `.required`, `.rows`, `.autoResize(maxRows?)`, `.resize`, `.maxLength`, `.showCount()`, the keyboard modifiers |
+| `TextField(text, label)`, `SecureField(text, label)` | `TextFieldInput` in its `TextField` shell (`TextFieldIcon`, `TextFieldPrefix`, `TextFieldSuffix`, `TextFieldGhost`) | `.placeholder`, `.size`, `.disabled`, `.invalid`, `.floatingLabel()`, `.revealable()` (secure), `.icon(X)`, `.trailingIcon(X)`, `.prefix(text)`, `.suffix(text)`, `.completion(rest)`, `.focused(binding)`, `.keyboard`, `.autocapitalize`, `.autocorrect`, `.contentType` (autofill), `.submitLabel`, `.onSubmit`, `.autoFocus()`, `.maxLength` |
+| `TextEditor(text, label?)` | `Textarea` | `.placeholder`, `.description` (its hint), `.size`, `.disabled`, `.invalid`, `.required`, `.rows`, `.autoResize(maxRows?)`, `.resize`, `.maxLength`, `.showCount()`, `.focused(binding)`, the keyboard modifiers |
 | `Field(label, ...content)` | `Field` | `.description`, `.error`, `.required`, `.disabled`: the label names its control, the error marks it invalid |
 | `Label(text)` | `Label` | `.size('xs' \| 'sm' \| 'md')`, `.required`, `.disabled` |
 | `Toggle(isOn)` | `Switch` | `.size`, `.tint(tone)`, `.disabled`; `.label()` names it (a switch draws no words) |
 | `Checkbox(isOn, label?)` | `Checkbox` | `.description`, `.size`, `.tint`, `.disabled`, `.readOnly()`, `.indeterminate()` |
-| `RadioGroup(selection, ...options)` | `RadioGroup` | `.style('default' \| 'card' \| 'chip')`, `.size`, `.tint`, `.disabled`; `.label()` names the group |
+| `RadioGroup(selection, ...options)` | `RadioGroup` | `.style('default' \| 'card' \| 'chip' \| 'swatch')`, `.size`, `.tint`, `.disabled`; `.label()` names the group |
 | `Segmented(selection, ...options)` | `SegmentedControl` with its `Item` and `ItemText` | `.style('solid' \| 'plain')`, `.size`, `.disabled`, `.tabs()` (a tab list, not a choice) |
 | `Picker(selection, ...options)` | `Select`: its trigger (`SelectValue`, `SelectIcon`) and its list (`SelectItem` with its indicator and text) | `.placeholder`, `.size`, `.disabled`; `.label()` names it |
-| `Option(value, label)` | an option of the three above | `.description` (a radio's), `.disabled`, `.testID` |
-| `Search(text)` | `Search` | `.placeholder`, `.size`, `.disabled`, `.collapsible('auto'?)` (a button that opens the field), `.presented(isOpen)`, `.tokens(tokens)` (removing a token writes the binding), `.submitLabel`, `.onSubmit`, the keyboard modifiers |
+| `Option(value, label)` | an option of the three above | `.description` (a radio's), `.disabled`, `.testID`, `.leadingView(...)` (a picker row's mark), `.tint(role)` and `.foreground(role)` (a swatch's colour and its chosen dot) |
+| `OptionGroup(label, ...options)` | a picker's `SelectGroup` with its `SelectLabel`, heading its first row | none |
+| `Search(text)` | `Search` | `.placeholder`, `.size`, `.disabled`, `.collapsible('auto'?)` (a button that opens the field), `.presented(isOpen)`, `.tokens(tokens)` (removing a token writes the binding), `.trigger(Button)`, `.trailing(...)`, `.focused(binding)`, `.submitLabel`, `.onSubmit`, the keyboard modifiers |
 
 - **The box.** A field's box modifiers (`frame`, `padding`…) are its shell's
   style, as an app writes `<TextField style>`; a picker's are its trigger's;
-  a `Search`'s box is a view around it.
+  a `Search`'s are its `containerStyle` (its outer view), with no view around it.
 - **Names.** `.label()` is the control's accessible name (a `TextField`'s
   is its constructor's `label`). Inside a `Field` the field's label names it.
-
-Not in the language: a trailing `TextFieldIcon`, `TextFieldGhost`, the
-swatch radio (it takes a raw colour), a picker's groups and custom rows, a
-search's custom trigger and trailing content, and focus as a binding
-(`onFocus`, `onBlur`, an input's ref).
+- **Focus.** `.focused(binding)` is the input's focus as a binding (SwiftUI's
+  `@FocusState`): focusing or leaving the input writes it, and setting it
+  focuses or blurs the input.
+- **Glyphs and completions.** `.icon(X)` sits before the text and
+  `.trailingIcon(X)` after it (after a suffix); `.completion(rest)` draws the
+  rest of a suggested text faintly after what is typed (`TextFieldGhost`).
+- **Swatches.** `RadioGroup(...).style('swatch')` draws a disc per option in
+  its `.tint(role)` (the accent without one); `.foreground(role)` is the chosen
+  disc's dot. The colours are roles, painted from the theme as an app reads them.
+- **Picker rows.** `OptionGroup('Fruit', ...)` heads its first row, as Bloom's
+  grouped select does; an option's `.leadingView(view)` is its row's mark and
+  the trigger's while it is chosen.
+- **Search.** `.trigger(Button(...))` reads the collapsed search's button from a
+  `Button` node: its style, tint, size and test id (Search owns its glyph and
+  name). `.trailing(view)` is an action at the field's end (a voice search).
 
 ## Glass
 
@@ -1105,7 +1116,7 @@ Button(Text('Delete')).onPress(() => setConfirming(true)).alert(
 const sharing = useState(false);
 Button(Text('Share')).onPress(() => sharing[1](true)).dialog(
   sharing,
-  Dialog(ShareSheet({ post })).title('Share').presentAt('bottom', 'center').buttons([{ label: 'Done' }]),
+  Dialog(ShareSheet({ post })).title('Share').presentAt('bottom', { md: 'center' }).buttons([{ label: 'Done' }]),
 )
 // The popover's trigger is the view: pressing it opens the popover.
 Button(Icon(RiInformationLine)).shape('circle').label('Details').popover(
@@ -1129,15 +1140,23 @@ toast.success('Saved')
   `.onConfirm(fn)`, `.onCancel(fn)` (the cancel button, Escape or the
   backdrop), `.destructive()`, `.hideCancel()` (an acknowledgement),
   `.defaultAction('confirm' | 'cancel')` (the initial focus and Enter),
-  `.dismissible(false)`, `.testID()`.
+  `.dismissible(false)`, `.icon(view)` (a view above the title: the
+  application's icon), `.testID()`.
 - **Dialog.** `.title()`, `.message()`, `.label()` (its name without a title),
   `.buttons([...])` (Bloom's `DialogAction`s: `label`, `onPress`, `color`,
-  `disabled`, `loading`…), `.presentAt(base, md?)` (`center` `bottom` `left`
-  `right` `start` `end`; the second from the `md` breakpoint, so
-  `.presentAt('bottom', 'center')` is Bloom's `{ base: 'bottom', md: 'center' }`),
-  `.dismissOnBackdrop(false)`, `.scrollable()`, `.testID()`.
+  `disabled`, `loading`…), `.presentAt(base, tiers?)` (`center` `bottom` `left`
+  `right` `start` `end`; `tiers` from each breakpoint up, so
+  `.presentAt('bottom', { md: 'center', xl: 'end' })` is Bloom's
+  `{ base: 'bottom', md: 'center', xl: 'end' }`), `.header(config)` (Bloom's
+  dialog header: a collapsing title, its slots), `.footer(view)`,
+  `.page(frame)` (Bloom's `frame`: a page of a dialog that navigates, by its
+  key), `.frame({ width, maxWidth })` and `.padding(space)` (its
+  `contentPadding`), `.dismissOnBackdrop(false)`, `.scrollable()`, `.testID()`.
+  A width with no rung is an app token (`defineTokens({ space: { sheet: 560 } })`).
 - **Popover.** `.label()`, `.side(side, align?)` (`top` `bottom` `left`
-  `right`; `start` `center` `end`), `.testID()`. Pressing the view opens it, as
+  `right`; `start` `center` `end`), `.sideOffset(space)` (the gap to the view),
+  `.alignOffset(space)` (a shift along the side, negatives included),
+  `.frame({ minWidth, maxWidth, maxHeight })`, `.testID()`. Pressing the view opens it, as
   Bloom's trigger does, through the binding.
 - **Not views.** `Alert`, `Dialog` and `Popover` are what a view presents; the
   types keep them out of a stack. An alert and a dialog are drawn beside the
@@ -1148,22 +1167,21 @@ toast.success('Saved')
   `.error` `.warning` `.info` `.loading`, `.promise`, `.dismiss` and
   `.wiggle` are Bloom's own calls, made from a press or an effect, and Bloom's
   toaster (mounted by the app's shell) draws them. A title is handed to Bloom
-  as it is; a language view becomes the whole row, as Bloom's custom toast.
-- **ConnectionStatus.** Bloom's offline, reconnecting and restored toasts, with
-  Bloom's words and timings. It draws nothing in place: place it once, near the
+  as it is; a language view becomes the whole row, as Bloom's custom toast,
+  and `toast.custom(view)` is Bloom's `toast.custom`.
+- **ConnectionStatus.** Bloom's offline, reconnecting and restored toasts:
+  Bloom's localized words and timings, or `.offlineMessage()`,
+  `.reconnectingMessage()`, `.restoredMessage()`, `.reconnectingDelay(ms)` and
+  `.restoredDuration(ms)`. It draws nothing in place: place it once, near the
   app's root.
 
 Parity (`parity/overlays.cases.tsx`) covers every alert, dialog placement and
-popover side, open and closed. Native compares the committed trees; the web
-also compares what a case portals into the document's body, so an open
-overlay's DOM and CSS are held equal. The Chrome check compares each cell in
-place: the presenting view (an overlay's portal is outside the cells).
-
-Not in the language: an alert's `icon` (a React node with no token), a dialog's
-`header`, `footer`, `frame`, `width`/`maxWidth` and `contentPadding` (numbers
-with no rung), a placement for `sm`, `lg` or `xl`, a popover's offsets and
-widths, `toast.custom` (a view is the custom toast), and `ConnectionStatus`'s
-own words and delays (Bloom's localized ones stay).
+tier, and popover side, open and closed, and toasts. Native compares the
+committed trees; the web also compares what a case portals into the document's
+body, so an open overlay's DOM and CSS and a toast's row are held equal. The
+Chrome check compares each cell in place: the presenting view (an overlay's
+portal is outside the cells). Toasts are compared by the Jest suites only: a
+page has one toast store, so two toasters side by side would each draw both.
 
 ## Image
 
@@ -1226,10 +1244,13 @@ ErrorBoundary(Feed()).title('The feed failed').resetKey(userId)
 | `Card(...)`, `CardHeader` / `CardBody` / `CardFooter(...)`, `CardTitle` / `CardDescription(text)` | Bloom `Card` and its parts |
 | `Row(title?)` | Bloom `Item` (the list row; `Item` is the menu's row) |
 | `GroupedSection(...rows)`, `GroupedSectionItem(title)` | Bloom `GroupedSection`, `GroupedSectionItem` |
+| `GroupedSectionIcon(icon)`, `GroupedSectionDivider()`, `GroupedSectionCollapse(open, ...rows)` | Bloom `GroupedSectionIcon`, `GroupedSectionDivider`, `GroupedSectionCollapse` |
 | `Chip(...content)` | Bloom `Chip`: the `Text` is its label, an `Icon` before or after it its glyphs |
-| `EmptyState(title?)` | Bloom `EmptyState` |
+| `ChipRow(...chips)`, `CappedChipRow(...chips)` | Bloom `ChipRow` (scrolls sideways), `CappedChipRow` (wraps, the rest behind "+N") |
+| `EmptyState(title?, ...content)` | Bloom `EmptyState` (the content between its explanation and its actions) |
+| `SelectionCard(title, ...body)` | Bloom `SelectionCard` |
 | `Admonition(...content)` | Bloom's `AdmonitionRoot`, row, icon and content: a `Text` is `AdmonitionText`, a `Button` an action |
-| `Tabs(selection, ...TabItem(value, label))` | Bloom `Tabs` and its `TabsTrigger`s (the strip; the page under it is the screen's) |
+| `Tabs(selection, ...TabItem(value, label), ...TabContent(value, ...))` | Bloom `Tabs`, its `TabsTrigger`s and its `TabsContent`s |
 | `Kbd(keys)` | Bloom `Kbd` |
 | `ErrorBoundary(...content)` | Bloom `ErrorBoundary` |
 
@@ -1243,40 +1264,62 @@ ErrorBoundary(Feed()).title('The feed failed').resetKey(userId)
   `style`, as an app writes them.
 - **Row.** `.subtitle()`, `.leadingView(...)` and `.trailing(...)` (its slots,
   as views), `.size()`, `.lines(n)` (the title's), `.disabled()`,
-  `.destructive()`, `.selected()`, `.active()`, `.highlighted()`, and its own
+  `.destructive()`, `.selected()`, `.active()`, `.highlighted()`,
+  `.density('comfortable' | 'compact')` (its `contentDensity`), and its own
   press, hover and name.
 - **Grouped sections.** `.title()`, `.caption()` (Bloom's `footer`: the name
   `footer` is the screen's), `.style('filled' | 'plain')`, `.separator('space'
-  | 'line' | 'none')`, `.radius()`. A row takes `.leadingView()` (its icon),
-  `.description()`, `.value()`, `.trailing()` (a control), `.chevron()`,
-  `.lines(n)`, `.destructive()`, `.disabled()` and its own press and name; it
-  has no box of its own (Bloom's row takes no style).
+  | 'line' | 'none')`, `.radius()`, `.density()` (reaching its rows). A row
+  takes `.leadingView()` (its icon: a `GroupedSectionIcon(X).tint(tone)`, a
+  glyph on a disc in one of Bloom's accent tones), `.description()`,
+  `.value()`, `.trailing()` (a control), `.chevron()`, `.lines(n)`,
+  `.destructive()`, `.disabled()`, its own press and name, and the box
+  modifiers as its own style. `GroupedSectionDivider().inset(space)` is a line
+  between rows; `GroupedSectionCollapse(open, ...rows)` reveals and hides rows
+  in place.
 - **Chip.** `.style()`, `.tint()`, `.size('xs'…'2xl')`, `.hue()`,
   `.toggle(binding)` (a filter chip: checked through its binding),
-  `.selected()`, `.onClose(remove, label?)`, `.disabled()`, `.onPress()`.
+  `.selected()`, `.onClose(remove, label?)`, `.disabled()`, `.onPress()`,
+  `.role('checkbox' | 'radio' | 'tab')` (what it is to assistive technology).
+  `.style('inverted')` is Bloom's inverted chip; its `color` is `.tint()`.
+- **Chip rows.** `ChipRow(...)` takes `.spacing()`, `.contentInset()`,
+  `.role('radiogroup' | 'tablist')`, `.label()`, `.disabled()` and `.fade(role)`
+  (the colour its web edges fade into, painted from the theme);
+  `CappedChipRow(...)` takes `.lines(n)`, `.spacing()`, `.role('list')` and
+  `.label()`.
 - **EmptyState.** `.icon()`, `.description()`, `.media('glyph' | 'circle')`,
   `.style('comfortable' | 'compact')`; `.action(Button(...))` and
   `.secondaryAction(Button(...))` are its buttons, read from the `Button` node:
-  its label, leading glyph, handler (a function; a `navigate()` belongs on a
-  view), `.disabled()`, `.loading()`, `.label()` and `.testID()`.
+  its label, leading glyph, press (a function, or a `navigate()` through the
+  screen's navigator), `.disabled()`, `.loading()`, `.label()` and `.testID()`.
+  `.suggestions(...buttons)` are its chips (each `Button`'s `.id()`, label,
+  glyph and press), `.suggestionsLabel()` their name, `.illustration(view)` a
+  mark in place of the icon, `.caption(view)` the note under the actions, and
+  `.frame({ minHeight })` the floor that holds a band open.
 - **Admonition.** `.style('info' | 'tip' | 'warning' | 'error' |
   'apology')`, `.size()`. One `Text` draws what Bloom's `<Admonition>` draws.
 - **Tabs.** `.style('underline' | 'pill' | 'filled')`, `.fullWidth()`,
   `.label()` (the strip's name); a `TabItem` takes `.icon()`, `.count()`,
-  `.disabled()` and `.testID()`. What each tab shows is a conditional in the
-  screen (`tab === 'posts' ? Posts() : Replies()`).
+  `.disabled()`, `.testID()`, `.iconOnly()`, `.reorderable()`, `.trailing()`
+  (a control in its chrome, not its press) and `.onLongPress()`; the strip's
+  `.onReorder(from, to)` keeps a new order and `.dragTranslation(value)` is a
+  swipe's travel the underline follows. What each tab shows is
+  `TabContent(value, ...)` inside the strip (Bloom's `TabsContent`), or a
+  conditional in the screen (`tab === 'posts' ? Posts() : Replies()`).
+- **SelectionCard.** `.toggle(binding)` makes it a checkbox, one of several;
+  `.selected(on)` with `.onPress()` a radio, the screen choosing. It takes
+  `.description()`, `.icon()`, `.indicator('check' | 'radio')`,
+  `.illustration(view)` (its media), `.density('compact')`, `.disabled()`,
+  `.invalid()`, and its body as content.
 - **Kbd** takes `.size('sm' | 'md')`. **ErrorBoundary** takes `.title()`,
   `.message()`, `.retryLabel()`, `.resetKey()`, `.onError()` and
-  `.fallback(view)`, and no box (Bloom's boundary draws none).
+  `.fallback(view)` or `.fallback(({ error, retry }) => view)`, and the box
+  modifiers: Bloom's boundary then draws one view of that style around its
+  content (and its fallback), and none without one.
 
-Not in the language yet: a chip's `role` (`checkbox`, `radio`, `tab`) and its
-`variant`/`color`, `ChipRow` and `CappedChipRow`, a row's `density` and
-`contentDensity`, a grouped section's `density`, `GroupedSectionIcon`,
-`GroupedSectionDivider` and `GroupedSectionCollapse`, an empty state's
-`suggestions`, `illustration`, `footer`, children and `minHeight`, a tab's
-reordering, drag and `iconOnly`, `TabsContent`, `SelectionCard`, a card's
-`cornerCurve`, and an error boundary's fallback as a function of the error.
-Each is an `Embed` of the Bloom component until it is.
+Not in the language: a card's `cornerCurve`, a `ChipRow`'s ring inset and
+keyboard taps, a selection card's described-by wiring, and the class recipes
+(`className` and its kin), which the className table maps.
 
 ## Interop
 
@@ -1653,20 +1696,28 @@ and `@oxy.so/bloom-data` beside it.
 - The className table (`docs/bloom-language-classnames.mdx`), which says what
   each utility the apps use becomes.
 - Inputs (see [Inputs](#inputs)): `TextField`, `SecureField`, `TextEditor`,
-  `Field`, `Label`, `Toggle`, `Checkbox`, `RadioGroup`, `Segmented`, `Picker`
-  with their `Option`, and `Search`, each value a `Binding` (`[value,
-  setValue]`, what `useState` returns).
+  `Field`, `Label`, `Toggle`, `Checkbox`, `RadioGroup` (swatches included),
+  `Segmented`, `Picker` with their `Option` and `OptionGroup`, and `Search`,
+  each value a `Binding` (`[value, setValue]`, what `useState` returns), focus
+  included (`.focused(binding)`); a trailing field icon, a completion, a
+  picker row's mark, a search's trigger, trailing content and box.
 - Overlays and feedback (see [Overlays and feedback](#overlays-and-feedback)):
   `.alert()`, `.dialog()` and `.popover()` on any view, each shown while its
   binding holds (Bloom's `AlertDialog`, `Dialog` and `Popover`, the view as the
-  popover's trigger); `ConnectionStatus`; `toast` as Bloom's imperative call
-  with a title or a language view. Web parity compares an open overlay's
-  portaled DOM.
+  popover's trigger), with an alert's icon, a dialog's header, footer, page,
+  size, padding and every tier's placement, and a popover's offsets and sizes;
+  `ConnectionStatus` with its own words and timings; `toast` as Bloom's
+  imperative call with a title or a language view, and `toast.custom`. Web
+  parity compares an open overlay's portaled DOM and a toast's row.
 - Containers (see [Containers](#containers)): `Card` and its parts, `Row`
-  (Bloom's `Item`), `GroupedSection` and `GroupedSectionItem`, `Chip` (a filter
-  chip through a binding), `EmptyState` (its actions read from `Button` nodes),
-  `Admonition`, `Tabs`/`TabItem` (the selection a binding), `Kbd` and
-  `ErrorBoundary`.
+  (Bloom's `Item`), `GroupedSection`, `GroupedSectionItem` (with a box of its
+  own), `GroupedSectionIcon`, `GroupedSectionDivider` and
+  `GroupedSectionCollapse`, `Chip` (a filter chip through a binding, its role,
+  the inverted chip), `ChipRow` and `CappedChipRow`, `EmptyState` (its actions
+  and suggestions read from `Button` nodes, a `navigate()` included),
+  `Admonition`, `Tabs`/`TabItem`/`TabContent` (the selection a binding,
+  reordering), `SelectionCard`, `Kbd` and `ErrorBoundary` (a box, a fallback
+  that is a function of the error).
 
 **Not built**
 
@@ -1698,16 +1749,9 @@ and `@oxy.so/bloom-data` beside it.
   fallback.
 - Replacing `className`: the codemods read the className table; what it
   flags needs a modifier or a named token first.
-- Inputs: a trailing `TextFieldIcon`, `TextFieldGhost`, the swatch radio, a
-  picker's groups and custom rows, a search's custom trigger and trailing
-  content, focus as a binding (`onFocus`, `onBlur`, an input's ref). A
-  field that takes the focus as it appears is compared by Jest, not in
-  Chrome (a page has one focus).
-- Overlays: an alert's icon; a dialog's header, footer, frame, widths and
-  content padding, and placements for `sm`, `lg` and `xl`; popover offsets and
-  widths; `toast.custom`; ConnectionStatus's own words and delays. The Chrome
-  check compares an overlay's presenting view, not its portal.
-- Containers: a chip's role and variant, chip rows, a row's density,
-  grouped-section icons, dividers and collapse, an empty state's suggestions
-  and illustration, a tab's reordering, `TabsContent`, `SelectionCard`, and an
-  error boundary's fallback as a function.
+- Parity: a field that takes the focus as it appears and a toast are
+  compared by Jest, not in Chrome (a page has one focus and one toast store);
+  the Chrome check compares an overlay's presenting view, not its portal. A
+  picker is compared closed (Bloom's select has no open prop), so its grouped
+  rows are held by the unit suite.
+- Containers: a card's `cornerCurve`.
