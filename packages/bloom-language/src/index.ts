@@ -895,3 +895,29 @@ export type {
   VehiclePickerOptions,
   VehiclePickerView,
 } from './controls/logistics';
+// Music library (controls/music-library.tsx)
+export {
+  BrowseGrid,
+  LibraryItem,
+  LibraryPanel,
+  RecentSearches,
+  SearchField,
+  SearchResultTabs,
+  TopResultCard,
+} from './controls/music-library';
+export type {
+  BrowseGridOptions,
+  BrowseGridView,
+  LibraryItemOptions,
+  LibraryItemView,
+  LibraryPanelOptions,
+  LibraryPanelView,
+  RecentSearchesOptions,
+  RecentSearchesView,
+  SearchFieldOptions,
+  SearchFieldView,
+  SearchResultTabsOptions,
+  SearchResultTabsView,
+  TopResultCardOptions,
+  TopResultCardView,
+} from './controls/music-library';

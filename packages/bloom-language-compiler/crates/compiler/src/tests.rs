@@ -1002,3 +1002,22 @@ fn row_actions_the_swipe_row_and_the_theme_toggle_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_music_library_is_checked() {
+    let imports =
+        "import { BrowseGrid, LibraryItem, LibraryPanel, SearchField } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (i, e, q) => [LibraryPanel(i), LibraryItem(e).style('rail'), SearchField(q).label('Search'), BrowseGrid(i).spacing('lg')];\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("LibraryItem(e).style('tile')", "Unknown libraryItemStyle token 'tile' for .style()"),
+        ("LibraryPanel(e).style('grid')", "LibraryPanel has no modifier .style()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (e) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

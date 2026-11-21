@@ -36,6 +36,7 @@ import { PIECES_CASES } from '../../parity/pieces.cases';
 import { MATERIAL_CASES } from '../../parity/material.cases';
 import { TEXT_CASES } from '../../parity/text.cases';
 import { VARIANT_CASES } from '../../parity/variants.cases';
+import { MUSIC_LIBRARY_CASES } from '../../parity/music-library.cases';
 
 /**
  * Each language node beside the Bloom element it stands for: the same cases
@@ -117,3 +118,4 @@ export const CheckoutSummaryDeliveryAndOrders: Story = {
 };
 export const MediaPlayer: Story = { args: { cases: MEDIA_PLAYER_CASES } };
 export const Logistics: Story = { args: { cases: LOGISTICS_CASES } };
+export const MusicLibrary: Story = { args: { cases: MUSIC_LIBRARY_CASES } };

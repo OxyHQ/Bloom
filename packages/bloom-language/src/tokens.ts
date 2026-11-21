@@ -212,6 +212,7 @@ export type PriceLineTone = (typeof ENUMS.priceLineTone)[number];
 /** A payment status: `surface`, a strip or block of its own; or `plain`, only its content. */
 export type PaymentStatusStyle = (typeof ENUMS.paymentStatusStyle)[number];
 export type PipelineLayout = (typeof ENUMS.pipelineLayout)[number];
+export type LibraryItemStyle = (typeof ENUMS.libraryItemStyle)[number];
 
 export {
   COLORS,

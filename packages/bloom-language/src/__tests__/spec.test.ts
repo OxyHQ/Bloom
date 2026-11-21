@@ -309,6 +309,15 @@ import type {
   ShipmentOptionsListView,
   ShipmentRequestFormView,
 } from '../controls/logistics';
+import type {
+  LibraryPanelView,
+  LibraryItemView,
+  SearchFieldView,
+  TopResultCardView,
+  SearchResultTabsView,
+  RecentSearchesView,
+  BrowseGridView,
+} from '../controls/music-library';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -703,7 +712,21 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<RowActionButtonView>, Of<'rowActionButton'>>,
       Same<MethodsOf<SwipeRowView>, Of<'swipeRow'>>,
       Same<MethodsOf<ThemeToggleView>, Of<'themeToggle'>>,
+      Same<MethodsOf<LibraryPanelView>, Of<'libraryPanel'>>,
+      Same<MethodsOf<LibraryItemView>, Of<'libraryItem'>>,
+      Same<MethodsOf<SearchFieldView>, Of<'searchField'>>,
+      Same<MethodsOf<TopResultCardView>, Of<'topResultCard'>>,
+      Same<MethodsOf<SearchResultTabsView>, Of<'searchResultTabs'>>,
+      Same<MethodsOf<RecentSearchesView>, Of<'recentSearches'>>,
+      Same<MethodsOf<BrowseGridView>, Of<'browseGrid'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

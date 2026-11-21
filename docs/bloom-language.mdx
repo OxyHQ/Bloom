@@ -1600,6 +1600,30 @@ options?)`, `PatientInfoCard(name, details, options?)` and
 tone and its `iconBackground` stay in the alert); a `height` is a space token
 (`auto` too, for the recent hires).
 
+
+
+### Music library
+
+```ts
+LibraryPanel(library, { selectedId, nowPlayingId, onItemPress: open, renderContextMenu: (item) => Menu(item) })
+LibraryItem(entry, { nowPlaying, paused }).style('grid').onPress(open)
+SearchField([query, setQuery], { onClear: clear, onBrowsePress: browse })
+SearchResultTabs([tab, setTab], tabs)
+BrowseGrid(genres, { title: 'Browse all', onItemPress: openGenre }).spacing('lg')
+```
+
+Bloom's `music-library`: `LibraryPanel(items, options?)` (its filter, sort,
+view, query and rail are controlled when given, with their handlers; its
+`emptyState` a language child, and `renderContextMenu` returns one),
+`LibraryItem(item, options?)` (`.style('compact' | 'list' | 'grid' |
+'rail')`, its `contextMenu` a child, `.onPress()` its own),
+`SearchField(query, options?)` (its binding the query; `.label()` names it),
+`TopResultCard(title, kind, options?)` (`.onPress()` its own),
+`SearchResultTabs(tab, tabs, options?)` (its binding the chosen tab),
+`RecentSearches(items, options?)` and `BrowseGrid(items, options?)` (colour
+tiles, or its own cells as the `children` child; `.spacing()` its gap, its
+`minTileWidth` a space token).
+
 ### Route stops, note cards and the share sheet
 
 ```ts
