@@ -128,6 +128,11 @@ import type { FileUploadView } from '../controls/file-upload';
 import type { VideoView } from '../controls/video-view';
 import type { FactStripView, FactView } from '../controls/fact-strip';
 import type { ChoiceListView } from '../controls/choice-list';
+import type {
+  VideoPlaybackView,
+  VideoViewabilityView,
+  VideoViewabilityScopeView,
+} from '../controls/video-playback';
 import type { ColorSwatchPickerView } from '../controls/color-swatch-picker';
 import type { InputOtpView } from '../controls/input-otp';
 import type { AnimatedCheckView } from '../controls/animated-check';
@@ -380,6 +385,9 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<FileUploadView>, Of<'fileUpload'>>,
       Same<MethodsOf<VideoView>, Of<'video'>>,
       Same<MethodsOf<ChoiceListView>, Of<'choiceList'>>,
+      Same<MethodsOf<VideoPlaybackView>, Of<'videoPlayback'>>,
+      Same<MethodsOf<VideoViewabilityView>, Of<'videoViewability'>>,
+      Same<MethodsOf<VideoViewabilityScopeView>, Of<'videoViewabilityScope'>>,
       Same<MethodsOf<ColorSwatchPickerView>, Of<'colorSwatchPicker'>>,
       Same<MethodsOf<InputOtpView>, Of<'inputOtp'>>,
       Same<MethodsOf<AnimatedCheckView>, Of<'animatedCheck'>>,
@@ -391,6 +399,9 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<FactView>, Of<'fact'>>,
       Same<MethodsOf<SortablePhotoGridView>, Of<'sortablePhotoGrid'>>,
     ] = [
+      true,
+      true,
+      true,
       true,
       true,
       true,

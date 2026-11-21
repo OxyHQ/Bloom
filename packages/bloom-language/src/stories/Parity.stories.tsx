@@ -34,6 +34,7 @@ import { TEXT_CASES } from '../../parity/text.cases';
 import { VARIANT_CASES } from '../../parity/variants.cases';
 import { VIDEO_CASES } from '../../parity/video-view.cases';
 import { SORTABLE_MEDIA_CASES } from '../../parity/sortable-media.cases';
+import { VIDEO_PLAYBACK_CASES } from '../../parity/video-playback.cases';
 import { DROP_ZONE_CASES } from '../../parity/drop-zone.cases';
 import { COLLAPSIBLE_CASES } from '../../parity/collapsible.cases';
 import { CHOICE_LIST_CASES } from '../../parity/choice-list.cases';
@@ -125,3 +126,4 @@ export const ImageAspectRatios: Story = { args: { cases: IMAGE_ASPECT_RATIO_CASE
 export const FactStrips: Story = { args: { cases: FACT_STRIP_CASES } };
 export const PhotoGrids: Story = { args: { cases: SORTABLE_MEDIA_CASES } };
 export const ChoiceLists: Story = { args: { cases: CHOICE_LIST_CASES } };
+export const VideoPlayback: Story = { args: { cases: VIDEO_PLAYBACK_CASES } };
