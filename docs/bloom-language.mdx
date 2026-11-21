@@ -460,7 +460,10 @@ inside; a stack's layout to its host; a placement to its outermost box.
   variable, as in its inline style). No view is put around it, so its layout
   is the one it has without a variant. Its state is tracked by its box in
   JavaScript on the web too (the component takes `onPressIn`/`onHoverIn`…
-  as Bloom's Button does), and its `focused` is the browser's
+  as Bloom's Button, its FAB and Avatar do; a Badge, an IconCircle, a
+  Loading, a Divider, an AvatarGroup or a button group takes no press of its
+  own, so its press, hover and focus are a language host's around it, whose
+  box tracks them the same way), and its `focused` is the browser's
   `:focus-visible`, read when the focus arrives, as a view's selector is: a
   click's focus is not a keyboard's.
 - **States are the view's**, as SwiftUI's: the anchor is the view's
