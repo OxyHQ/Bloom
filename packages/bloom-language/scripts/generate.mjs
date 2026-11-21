@@ -48,7 +48,7 @@ const glass = withoutComment(spec.glass);
 const sfSymbols = withoutComment(spec.sfSymbols);
 
 /** A role's web value: its canonical CSS variable, or, for a colour the same in every theme, the colour. */
-const webColor = (css) => (css.startsWith('#') ? css : `var(--${css})`);
+const webColor = (css) => (css.startsWith('#') || css === 'transparent' ? css : `var(--${css})`);
 
 const typeFamilies = [];
 for (const variant of Object.keys(typeRamp)) {
