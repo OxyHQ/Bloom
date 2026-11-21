@@ -1505,7 +1505,10 @@
       "constructors": ["PipelineBoard"],
       "modifiers": ["style"],
       "style": "pipelineLayout"
-    }
+    },
+    "importantAlertsCard": { "constructors": ["ImportantAlertsCard"], "modifiers": [] },
+    "patientInfoCard": { "constructors": ["PatientInfoCard"], "modifiers": [] },
+    "recentHiresCard": { "constructors": ["RecentHiresCard"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
