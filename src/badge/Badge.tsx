@@ -1,5 +1,5 @@
 import { useBloomAppearance } from '../appearance';
-import { normalizeTagTone } from './shared';
+import { bloomToneOf } from '../appearance/colors';
 import type React from 'react';
 import { memo, useMemo } from 'react';
 import { StyleSheet, View, type ViewStyle, type TextStyle } from 'react-native';
@@ -75,7 +75,7 @@ const BadgeComponent: React.FC<BadgeProps> = ({
       size: ['xs', 'sm', 'md', 'lg'].includes(sizeProp ?? '')
         ? (sizeProp as import('../appearance').BloomSize)
         : undefined,
-      tone: toneProp ?? (color ? normalizeTagTone(color) : undefined),
+      tone: toneProp ?? (color ? bloomToneOf(color) : undefined),
     },
     { size: 'md', tone: 'danger' },
   );
