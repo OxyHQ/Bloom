@@ -539,7 +539,8 @@
       "info"
     ],
     "shareSheetSize": ["sm", "md", "lg"],
-    "outlineNavStyle": ["full", "compact"]
+    "outlineNavStyle": ["full", "compact"],
+    "choiceListStyle": ["list", "picker"]
   },
   "glass": {
     "$comment": [
@@ -1455,7 +1456,28 @@
       "style": "outlineNavStyle"
     },
     "pagination": { "constructors": ["Pagination"], "modifiers": [] },
-    "progressiveBlur": { "constructors": ["ProgressiveBlur"], "modifiers": [] }
+    "progressiveBlur": { "constructors": ["ProgressiveBlur"], "modifiers": [] },
+    "addressRow": {
+      "constructors": ["AddressRow"],
+      "modifiers": ["size", "density", "disabled"],
+      "size": "controlSize"
+    },
+    "addressList": {
+      "constructors": ["AddressList"],
+      "modifiers": ["size", "style", "density", "loading"],
+      "size": "controlSize",
+      "style": "choiceListStyle"
+    },
+    "paymentMethodMark": { "constructors": ["PaymentMethodMark"], "modifiers": ["density"] },
+    "paymentMethodRow": {
+      "constructors": ["PaymentMethodRow"],
+      "modifiers": ["density", "disabled"]
+    },
+    "paymentMethodList": {
+      "constructors": ["PaymentMethodList"],
+      "modifiers": ["style", "density", "disabled", "loading"],
+      "style": "choiceListStyle"
+    }
   },
   "sfSymbols": {
     "$comment": [
