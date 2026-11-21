@@ -489,7 +489,8 @@
     "badgeSize": ["xs", "sm", "md", "lg", "label-small", "label-medium"],
     "badgePlacement": ["top-right", "top-left", "bottom-right", "bottom-left"],
     "loadingStyle": ["spinner", "top", "inline"],
-    "contentTransition": ["roll"]
+    "contentTransition": ["roll"],
+    "swipeDirection": ["left", "right", "up", "down"]
   },
   "glass": {
     "$comment": [
@@ -621,7 +622,7 @@
     }
   },
   "modifiers": {
-    "$comment": "name: parameter types, in order. A trailing ? is optional; padding takes (value) or (edge, value).",
+    "$comment": "name: parameter types, in order. A trailing ? is optional; padding takes (value) or (edge, value). motionValue: a MotionValue (useMotionValue); scale, offset and rotation take one in place of a token.",
     "padding": ["edge?", "padding"],
     "frame": ["frame"],
     "grow": [],
@@ -762,6 +763,8 @@
     "transition": ["transition"],
     "keyframes": ["keyframes", "value"],
     "matchedGeometry": ["value", "namespace"],
+    "drag": ["motionValue", "value?"],
+    "swipe": ["swipeDirection", "value"],
     "contentTransition": ["contentTransition", "value?"],
     "loop": [],
     "paused": ["value"],
@@ -825,7 +828,9 @@
     "animation",
     "transition",
     "keyframes",
-    "matchedGeometry"
+    "matchedGeometry",
+    "drag",
+    "swipe"
   ],
   "nodes": {
     "$comment": "kind: { constructors, own modifiers beyond the universal ones (universal: false takes only its own), the token sets its size(), tint(), style() and shape() read }",

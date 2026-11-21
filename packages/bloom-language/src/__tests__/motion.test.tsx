@@ -14,6 +14,8 @@ import { asymmetric, move, opacity, scale } from '../motion/transition';
 import type { Namespace } from '../motion/namespace';
 import { regular } from '../glass';
 import type { Child } from '../node';
+import { getMotionValue, type MotionValue } from './support/bloom-motion';
+import { useMotionValue } from '../motion/values';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const consoleError = console.error;
@@ -393,5 +395,70 @@ describe('transition values', () => {
       { at: 1, scale: 1 },
     ]);
     expect(() => a.merged(b)).toThrow('same points');
+  });
+});
+
+describe('motion values and gestures', () => {
+  type Gesture = {
+    config: Record<string, (event: Record<string, number>) => void>;
+    members: Gesture[];
+  };
+  const gestureOf = (r: ReactTestRenderer) =>
+    (all(r, 'GestureDetector')[0]?.props.gesture as Gesture).members;
+
+  function Sheet({ onValue }: { onValue: (y: MotionValue) => void }) {
+    const y = useMotionValue(0);
+    onValue(y);
+    return toElement(VStack(Text('t')).offset({ x: 'md', y }).drag(y, { axis: 'y', min: 0 }));
+  }
+  function mountSheet() {
+    let value!: MotionValue;
+    let r!: ReactTestRenderer;
+    act(() => {
+      r = TestRenderer.create(
+        createElement(
+          PaintContext.Provider,
+          { value: LIGHT },
+          createElement(Sheet, { onValue: (y) => (value = y) }),
+        ),
+      );
+    });
+    return { r, value: () => value };
+  }
+
+  it('.offset() follows a MotionValue beside its tokens, through the one mapper', () => {
+    const { r, value } = mountSheet();
+    const [box] = all(r, 'Animated.View');
+    expect(flat(box?.props.style).transform).toEqual([
+      { translateX: 12 },
+      { translateY: 0 },
+      { rotate: '0deg' },
+      { scale: 1 },
+    ]);
+    // `.animation()` never eases a bound view's geometry.
+    expect(flat(box?.props.style).transitionProperty).toBeUndefined();
+    expect(getMotionValue(value())).toBe(0);
+  });
+
+  it('.drag() moves the value with the finger, within its bounds', () => {
+    const { r, value } = mountSheet();
+    const [drag] = gestureOf(r);
+    act(() => {
+      drag?.config.onBegin?.({});
+      drag?.config.onUpdate?.({ translationY: 120, velocityY: 0 });
+    });
+    expect(getMotionValue(value())).toBe(120);
+    act(() => drag?.config.onUpdate?.({ translationY: -80, velocityY: 0 }));
+    expect(getMotionValue(value())).toBe(0);
+  });
+
+  it('.swipe() binds its own offset and calls back past the threshold', () => {
+    const onSwipe = jest.fn();
+    const r = mount(Text('toast').swipe('up', onSwipe));
+    const [, swipe] = gestureOf(r);
+    const pan = swipe?.members.find((member) => member.config.onUpdate) as Gesture;
+    act(() => pan.config.onUpdate?.({ translationY: -40 }));
+    act(() => pan.config.onFinalize?.({}));
+    expect(onSwipe).toHaveBeenCalledTimes(1);
   });
 });

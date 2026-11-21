@@ -244,9 +244,25 @@ fn check_value(
     module: &Module,
     scoping: &Scoping,
 ) -> Result<(), Problem> {
+    let motion_value = module.is_motion_value_ref(value, scoping);
+    if param == "motionValue" {
+        return if motion_value || !is_literal(value) {
+            Ok(())
+        } else {
+            Err(Problem {
+                span: value.span(),
+                message: format!(".{modifier}() takes a MotionValue"),
+                help: Some("const y = useMotionValue(0), from '@oxy.so/bloom-language'".into()),
+            })
+        };
+    }
+    if motion_value && !matches!(param, "scale" | "rotation" | "value" | "children" | "namespace") {
+        return Err(motion_value_for_token(modifier, param, value.span()));
+    }
     match param {
         "value" | "children" | "namespace" => Ok(()),
         "variant" => check_variant(value, spec, module, scoping),
+        "scale" | "rotation" if motion_value => Ok(()),
         "transition" | "keyframes" => match value.without_parentheses() {
             Expression::StringLiteral(literal) => Err(Problem {
                 span: literal.span,
@@ -279,7 +295,10 @@ fn check_value(
                         )),
                     });
                 }
-                check_token(modifier, set, &property.value)?;
+                // An offset's axis may follow a `MotionValue` in place of its token.
+                if !(param == "offset" && module.is_motion_value_ref(&property.value, scoping)) {
+                    check_token(modifier, set, &property.value)?;
+                }
             }
             Ok(())
         }
@@ -373,6 +392,32 @@ fn check_variant(
         check_arguments(modifier, arguments, spec, call_span, module, scoping)?;
     }
     Ok(())
+}
+
+fn is_literal(value: &Expression) -> bool {
+    matches!(
+        value.without_parentheses(),
+        Expression::StringLiteral(_)
+            | Expression::NumericLiteral(_)
+            | Expression::BooleanLiteral(_)
+            | Expression::NullLiteral(_)
+            | Expression::ObjectExpression(_)
+            | Expression::ArrayExpression(_)
+            | Expression::TemplateLiteral(_)
+    )
+}
+
+/// A `MotionValue` where a token goes: only geometry follows a value.
+fn motion_value_for_token(modifier: &str, param: &str, span: Span) -> Problem {
+    Problem {
+        span,
+        message: format!(".{modifier}() takes {param} tokens, not a MotionValue"),
+        help: Some(
+            "a view follows a MotionValue in .offset({ x, y }), .scale() and .rotation(); a token modifier takes a \
+             token"
+                .into(),
+        ),
+    }
 }
 
 /// A string literal must be one of `set`'s tokens; anything else is the runtime's.

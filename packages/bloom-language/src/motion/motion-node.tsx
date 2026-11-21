@@ -1,12 +1,14 @@
 import {
   useContext,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
   type RefObject,
 } from 'react';
-import { usePrefersReducedMotion } from '@oxy.so/bloom/hooks';
+import { GestureDetector, useCompetingGestures } from 'react-native-gesture-handler';
+import { mergeRefs, usePrefersReducedMotion } from '@oxy.so/bloom/hooks';
 import {
   SCALE,
   LeavingContext,
@@ -14,15 +16,22 @@ import {
   exitingOf,
   timingOf,
   transitionStyle,
+  useDrag,
+  useMotionStyle,
+  useMotionValue,
   usePlay,
   usePressScale,
+  useSwipe,
   type KeyframesValue,
+  type MotionBinding,
+  type MotionValue,
   type Play,
   type Timing,
   type Transform,
   type TransitionValue,
 } from '@oxy.so/bloom/motion';
 
+import type { DragSpec, SwipeDirection } from '../node';
 import type { Frame, Namespace } from './namespace';
 import { resolveMotion, type MotionToken } from './tokens';
 
@@ -48,6 +57,21 @@ export interface MotionPlan {
   keyframes: { value: KeyframesValue; trigger: unknown } | undefined;
   matched: { id: string; namespace: Namespace } | undefined;
   pressScale: boolean;
+  /**
+   * Bound geometry (a `MotionValue` in `.offset()`, `.scale()` or
+   * `.rotation()`, or a swipe's own offset): the one mapper writes the whole
+   * transform, the tokens as constants beside the values.
+   */
+  bound:
+    | {
+        translateX: MotionBinding;
+        translateY: MotionBinding;
+        rotate: MotionBinding;
+        scale: MotionBinding;
+      }
+    | undefined;
+  drag: { value: MotionValue; options: DragSpec } | undefined;
+  swipe: { direction: SwipeDirection; onSwipe: () => void } | undefined;
   /** The node is glass: on the web its fades go through the material (see `Play`). */
   glass: boolean;
   /**
@@ -132,7 +156,7 @@ function measure(node: unknown): Frame | undefined {
  */
 function useMotion(
   { motion, scope }: MotionNodeProps,
-  press: { style: readonly unknown[]; ownsTransform: boolean },
+  press: { style: readonly unknown[]; ownsTransform: boolean; bound?: boolean },
 ) {
   const reduced = usePrefersReducedMotion();
   // Web: set while a list's Presence keeps this node after it left. Native
@@ -243,7 +267,8 @@ function useMotion(
   const style: unknown[] = [];
   if (motion.transform.length > 0 && !press.ownsTransform)
     style.push({ transform: motion.transform });
-  if (timing !== undefined && motion.stable) style.push(transitionStyle(timing));
+  // A bound view's geometry follows its values; `.animation()` does not ease it.
+  if (timing !== undefined && motion.stable && !press.bound) style.push(transitionStyle(timing));
   if (matched !== undefined) style.push(ORIGIN_TOP_LEFT);
   style.push(...press.style);
   if (played.style !== undefined) style.push(played.style);
@@ -304,3 +329,54 @@ export function PressMotionNode(props: MotionNodeProps): ReactNode {
   });
 }
 PressMotionNode.displayName = 'BloomPressMotion';
+
+const NO_SWIPE = () => {};
+
+/**
+ * A node with bound geometry or a gesture (`.drag()`, `.swipe()`): Bloom's
+ * gesture layer writes the values from Gesture Handler's callbacks, and the
+ * one mapper (`useMotionStyle`) moves the box. Native: no JS per frame.
+ */
+export function GestureMotionNode(props: MotionNodeProps): ReactNode {
+  const { motion } = props;
+  const reduced = usePrefersReducedMotion();
+  const idle = useMotionValue(0);
+  const drag = motion.drag;
+  const dragGesture = useDrag(drag?.value ?? idle, {
+    axis: drag?.options.axis ?? 'y',
+    min: drag?.options.min,
+    max: drag?.options.max,
+    enabled: drag !== undefined,
+    onEnd: drag?.options.onEnd,
+  });
+  const swipe = useSwipe(motion.swipe?.direction ?? 'up', motion.swipe?.onSwipe ?? NO_SWIPE, {
+    enabled: motion.swipe !== undefined,
+    reducedMotion: reduced,
+  });
+  const gesture = useCompetingGestures(dragGesture, swipe.gesture);
+
+  const bound = motion.bound ?? { translateX: 0, translateY: 0, rotate: 0, scale: 1 };
+  const across = motion.swipe?.direction === 'left' || motion.swipe?.direction === 'right';
+  const withSwipe = (binding: MotionBinding, axis: boolean) =>
+    motion.swipe !== undefined && axis ? [binding, swipe.value].flat() : binding;
+  const mapped = useMotionStyle({
+    translateX: withSwipe(bound.translateX, across),
+    translateY: withSwipe(bound.translateY, !across),
+    rotate: bound.rotate,
+    scale: bound.scale,
+  });
+  const {
+    style,
+    props: hostProps,
+    play,
+  } = useMotion(props, { style: [mapped.style], ownsTransform: true, bound: true });
+  const own = hostProps.ref as RefObject<unknown>;
+  const ref = useMemo(() => mergeRefs([own, mapped.ref]), [own, mapped.ref]);
+  hostProps.ref = ref;
+  return (
+    <GestureDetector gesture={gesture}>
+      {props.content({ ref: own, style, props: hostProps, active: true, playId: play?.id })}
+    </GestureDetector>
+  );
+}
+GestureMotionNode.displayName = 'BloomGestureMotion';

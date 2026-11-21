@@ -168,8 +168,16 @@ import {
 import { deriveEnv, EnvContext, type Env } from './env';
 import type { TextTraits } from './style';
 import { adoptLanguageSheet } from './web-sheet';
-import { MotionWrapper, Presence, animatedHost, type Transform } from '@oxy.so/bloom/motion';
 import {
+  MotionWrapper,
+  Presence,
+  animatedHost,
+  isMotionValue,
+  type MotionValue,
+  type Transform,
+} from '@oxy.so/bloom/motion';
+import {
+  GestureMotionNode,
   MotionNode,
   PressMotionNode,
   type AnimationScope,
@@ -275,6 +283,8 @@ const MOTION_KINDS: ReadonlySet<string> = new Set([
   'keyframes',
   'matchedGeometry',
   'pressScale',
+  'drag',
+  'swipe',
 ]);
 
 /** Resting transforms, interned by key so a moving host's style keeps its identity. */
@@ -289,9 +299,18 @@ function motionPlan(node: Node, layers: readonly Layer[]): MotionPlan {
     keyframes: undefined,
     matched: undefined,
     pressScale: false,
+    bound: undefined,
+    drag: undefined,
+    swipe: undefined,
     glass: layers.some((layer) => layer.glass !== undefined),
     stable: false,
   };
+  const bound: {
+    translateX?: MotionValue;
+    translateY?: MotionValue;
+    rotate?: MotionValue;
+    scale?: MotionValue;
+  } = {};
   let translateX = 0;
   let translateY = 0;
   let rotate = 0;
@@ -303,18 +322,30 @@ function motionPlan(node: Node, layers: readonly Layer[]): MotionPlan {
         break;
       case 'scale':
         motion.stable = true;
-        if (typeof modifier.value === 'string') scale = resolveScale(modifier.value);
+        if (isMotionValue(modifier.value)) bound.scale = modifier.value;
+        else if (typeof modifier.value === 'string') scale = resolveScale(modifier.value);
         break;
-      case 'offset':
+      case 'offset': {
         motion.stable = true;
-        if (typeof modifier.value.x === 'string' || isAppToken(modifier.value.x))
-          translateX = resolveSpace(modifier.value.x);
-        if (typeof modifier.value.y === 'string' || isAppToken(modifier.value.y))
-          translateY = resolveSpace(modifier.value.y);
+        const { x, y } = modifier.value;
+        if (isMotionValue(x)) bound.translateX = x;
+        else if (typeof x === 'string' || isAppToken(x)) translateX = resolveSpace(x);
+        if (isMotionValue(y)) bound.translateY = y;
+        else if (typeof y === 'string' || isAppToken(y)) translateY = resolveSpace(y);
         break;
+      }
       case 'rotation':
         motion.stable = true;
-        if (typeof modifier.value === 'string') rotate = resolveRotation(modifier.value);
+        if (isMotionValue(modifier.value)) bound.rotate = modifier.value;
+        else if (typeof modifier.value === 'string') rotate = resolveRotation(modifier.value);
+        break;
+      case 'drag':
+        motion.stable = true;
+        motion.drag = { value: modifier.value, options: modifier.options };
+        break;
+      case 'swipe':
+        motion.stable = true;
+        motion.swipe = { direction: modifier.direction, onSwipe: modifier.onSwipe };
         break;
       case 'animation':
         motion.animation = {
@@ -339,6 +370,17 @@ function motionPlan(node: Node, layers: readonly Layer[]): MotionPlan {
         motion.pressScale = true;
         break;
     }
+  }
+  if (Object.keys(bound).length > 0 || motion.swipe !== undefined) {
+    // Bound geometry: the one mapper writes the whole transform, the tokens as
+    // constants beside the values.
+    motion.bound = {
+      translateX: bound.translateX ? [translateX, bound.translateX] : [translateX],
+      translateY: bound.translateY ? [translateY, bound.translateY] : [translateY],
+      rotate: bound.rotate ? [rotate, bound.rotate] : [rotate],
+      scale: bound.scale ?? scale,
+    };
+    return motion;
   }
   const key = `${translateX}|${translateY}|${rotate}|${scale}`;
   if (key !== '0|0|0|1') {
@@ -748,7 +790,13 @@ function drawMoving(
   key: string | number | undefined,
 ): ReactElement {
   const motion = p.motion as MotionPlan;
-  return draw(motion.pressScale ? PressMotionNode : MotionNode, {
+  const component =
+    motion.bound !== undefined || motion.drag !== undefined
+      ? GestureMotionNode
+      : motion.pressScale
+        ? PressMotionNode
+        : MotionNode;
+  return draw(component, {
     key: p.id ?? key,
     motion,
     exit: p.id !== undefined && motion.transition !== undefined,

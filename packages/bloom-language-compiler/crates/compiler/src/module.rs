@@ -7,12 +7,14 @@
 //! chain, or a frozen `defineTokens` table). Names are resolved through
 //! `oxc_semantic`, so a local that shadows an import is never mistaken for it.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use oxc_ast::ast::{
     Argument, ArrayExpressionElement, BindingPattern, Declaration, Expression, ImportDeclarationSpecifier,
     ObjectPropertyKind, Program, PropertyKey, Statement, UnaryOperator, VariableDeclarationKind,
+    VariableDeclarator,
 };
+use oxc_ast_visit::{Visit, walk};
 use oxc_semantic::Scoping;
 use oxc_syntax::symbol::SymbolId;
 
@@ -35,6 +37,8 @@ pub enum Binding {
     Fade,
     /// `move`, `scale`, `asymmetric`, `defineKeyframes`: pure builders of motion values.
     MotionBuilder,
+    /// `useMotionValue`: makes a `MotionValue`, a number a gesture drives.
+    UseMotionValue,
     /// Any other import: a binding the importer cannot reassign.
     Import,
     /// A module-scope `const` with a static value, declared at body index `at`.
@@ -50,6 +54,8 @@ pub enum Binding {
 
 pub struct Module {
     pub bindings: HashMap<SymbolId, Binding>,
+    /// Every `const` in any scope that holds a `MotionValue` (`const y = useMotionValue(0)`).
+    pub motion_values: HashSet<SymbolId>,
     /// The body index just after the last import: where an expression with no
     /// module-scope dependency is declared.
     pub after_imports: usize,
@@ -58,7 +64,7 @@ pub struct Module {
 impl Module {
     /// The module's bindings, or `None` when it imports nothing from the language.
     pub fn read(program: &Program, scoping: &Scoping) -> Option<Self> {
-        let mut module = Self { bindings: HashMap::new(), after_imports: 0 };
+        let mut module = Self { bindings: HashMap::new(), motion_values: HashSet::new(), after_imports: 0 };
         let mut language = false;
         for (index, statement) in program.body.iter().enumerate() {
             match statement {
@@ -85,7 +91,24 @@ impl Module {
                 _ => {}
             }
         }
-        language.then_some(module)
+        if !language {
+            return None;
+        }
+        let mut finder = MotionValueFinder { module: &module, scoping, found: Vec::new() };
+        finder.visit_program(program);
+        let found = finder.found;
+        module.motion_values.extend(found);
+        Some(module)
+    }
+
+    /// Whether `expression` names a `MotionValue` (a `const` from `useMotionValue`).
+    pub fn is_motion_value_ref(&self, expression: &Expression, scoping: &Scoping) -> bool {
+        let Expression::Identifier(identifier) = expression.without_parentheses() else { return false };
+        identifier
+            .reference_id
+            .get()
+            .and_then(|reference| scoping.get_reference(reference).symbol_id())
+            .is_some_and(|symbol| self.motion_values.contains(&symbol))
     }
 
     fn declare(&mut self, index: usize, declaration: &oxc_ast::ast::VariableDeclaration, scoping: &Scoping) {
@@ -275,6 +298,7 @@ fn language_export(name: &str) -> Binding {
         "regular" | "clear" => Binding::Glass,
         "opacity" => Binding::Fade,
         "move" | "scale" | "asymmetric" | "defineKeyframes" => Binding::MotionBuilder,
+        "useMotionValue" => Binding::UseMotionValue,
         _ => NODES
             .iter()
             .find_map(|node| {
@@ -284,5 +308,23 @@ fn language_export(name: &str) -> Binding {
                     .map(|constructor| Binding::Constructor { kind: node.kind, name: constructor })
             })
             .unwrap_or(Binding::Import),
+    }
+}
+
+/// Collects the `const`s, in any scope, initialised by `useMotionValue(…)`.
+struct MotionValueFinder<'m, 's> {
+    module: &'m Module,
+    scoping: &'s Scoping,
+    found: Vec<SymbolId>,
+}
+
+impl<'a> Visit<'a> for MotionValueFinder<'_, '_> {
+    fn visit_variable_declarator(&mut self, declarator: &VariableDeclarator<'a>) {
+        if let (BindingPattern::BindingIdentifier(id), Some(init)) = (&declarator.id, &declarator.init)
+            && self.module.callee(init, self.scoping) == Some(Binding::UseMotionValue)
+        {
+            self.found.push(id.symbol_id());
+        }
+        walk::walk_variable_declarator(self, declarator);
     }
 }
