@@ -1325,7 +1325,8 @@
     "optionBox": ["value"],
     "autoplay": ["value"],
     "closeDelay": ["value"],
-    "padded": ["value"]
+    "padded": ["value"],
+    "colorScale": ["value"]
   },
   "universal": [
     "padding",
@@ -2700,7 +2701,8 @@
         "spacing",
         "weekStart",
         "labels",
-        "onPressDay"
+        "onPressDay",
+        "colorScale"
       ]
     },
     "tagField": {
