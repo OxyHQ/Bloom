@@ -1302,7 +1302,8 @@
     "allowsPictureInPicture": ["value"],
     "length": ["value"],
     "characters": ["otpCharacters"],
-    "onComplete": ["value"]
+    "onComplete": ["value"],
+    "presentedAt": ["value"]
   },
   "universal": [
     "padding",
@@ -2741,6 +2742,10 @@
       "modifiers": ["size", "tint"],
       "size": "space",
       "tint": "color"
+    },
+    "contextMenu": {
+      "constructors": ["ContextMenu"],
+      "modifiers": ["actions", "presentedAt", "disabled"]
     }
   },
   "sfSymbols": {
