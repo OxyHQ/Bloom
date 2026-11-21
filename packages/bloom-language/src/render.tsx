@@ -102,6 +102,7 @@ import { Painted, type Paint } from './paint';
 import {
   DURATION,
   HIT_SLOP,
+  isFontFamily,
   resolveAvatarSize,
   resolveCorner,
   resolveFont,
@@ -1219,7 +1220,13 @@ function linkPress(href: string): PressHandler {
 
 /** The env traits a span's own chain sets: all a span writes (see `textStyle`). */
 function spanTraits(p: Plan): ReadonlySet<keyof TextTraits> {
-  return new Set(p.env.map((modifier) => modifier.kind as keyof TextTraits));
+  return new Set(
+    p.env.map((modifier) =>
+      modifier.kind === 'font' && isFontFamily(modifier.value)
+        ? 'family'
+        : (modifier.kind as keyof TextTraits),
+    ),
+  );
 }
 
 /**

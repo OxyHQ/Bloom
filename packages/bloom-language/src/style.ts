@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 
 import type { FrameSpec, GlassValue, Modifier } from './node';
 import { surfaceStyle } from '@oxy.so/bloom/shapes';
-import type { TypeScaleVariant } from '@oxy.so/bloom/typography';
+import { fontFamilyStyle, type TypeScaleVariant } from '@oxy.so/bloom/typography';
 
 import { COLORS, ENVIRONMENT_DEFAULTS, FONT_SIZE, LAYER_RANK } from './generated/spec.generated';
 import { WEB_CLASS } from './generated/web-sheet.generated';
@@ -23,7 +23,9 @@ import {
   type CornerCurve,
   type OpacityName,
   type Edge,
+  type FontFamilyName,
   type FontName,
+  type TrackingName,
   type LeadingToken,
   type ShrinkPriority,
   type SpaceToken,
@@ -340,10 +342,17 @@ export function stackStyle(
 
 export interface TextTraits {
   foreground: ColorToken | undefined;
-  font: FontName | undefined;
+  /** The size: a ramp step or a size rung. */
+  font: Exclude<FontName, FontFamilyName> | undefined;
+  /** The face beside the size (`.font('mono')`); Bloom's own when unset. */
+  family: FontFamilyName | undefined;
   weight: WeightName | undefined;
   leading: LeadingToken | undefined;
+  tracking: TrackingName | undefined;
 }
+
+/** Each family's face, as Bloom's `Text` sets it for `font-mono`. */
+const FAMILY: Record<FontFamilyName, string> = { mono: fontFamilyStyle('mono').fontFamily };
 
 /** The colour role text and icons paint with: the environment's, or the spec's default. */
 export function foregroundOf(traits: TextTraits): ColorToken {
@@ -374,7 +383,7 @@ const TEXT_ALIGN: Record<TextAlignment, string> = {
 const LINK_INK: ColorName = 'primary';
 
 /** A ramp step, by family: the type Bloom's `Text` sets from its `variant`. */
-export function isRampFont(font: FontName | undefined): font is TypeFamily {
+export function isRampFont(font: TextTraits['font']): font is TypeFamily {
   return font !== undefined && !(font in FONT_SIZE);
 }
 
@@ -399,11 +408,13 @@ export function textStyle(
 ): Resolved {
   const style: Resolved = {};
   const sets = (trait: keyof TextTraits) => span === undefined || span.has(trait);
-  if (sets('font') || sets('weight') || sets('leading')) {
-    const font = resolveFont(traits.font, traits.weight, traits.leading);
+  if (sets('font') || sets('weight') || sets('leading') || sets('tracking')) {
+    const font = resolveFont(traits.font, traits.weight, traits.leading, traits.tracking);
     if (span === undefined && isRampFont(traits.font)) {
       if (font.lineHeight !== undefined && traits.leading !== undefined)
         style.lineHeight = font.lineHeight;
+      if (font.letterSpacing !== undefined && traits.tracking !== undefined)
+        style.letterSpacing = font.letterSpacing;
       // A weight the ramp has no step for is written over the regular step.
       if (
         traits.weight !== undefined &&
@@ -412,6 +423,7 @@ export function textStyle(
         style.fontWeight = font.fontWeight as string;
     } else Object.assign(style, font);
   }
+  if (sets('family') && traits.family !== undefined) style.fontFamily = FAMILY[traits.family];
   if (look.link && (span === undefined ? traits.foreground === undefined : !span.has('foreground')))
     style.color = role(LINK_INK);
   else if (sets('foreground') && traits.foreground !== undefined)

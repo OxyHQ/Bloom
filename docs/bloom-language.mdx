@@ -88,7 +88,7 @@ starts a new view around the previous ones:
 - `.corner('lg').background('surface')` is two: a fill after the clip is not clipped.
 - A second padding on the same edge adds to the first, so it wraps.
 
-Text and icon traits (`foreground`, `font`, `weight`, `leading`) are an
+Text and icon traits (`foreground`, `font`, `weight`, `leading`, `tracking`) are an
 **environment**: set on a stack, they reach every `Text` and `Icon` inside it,
 including inside nested views. `grow` and `shrink` place a view in its parent,
 so they always go on its outermost box. Press, hover and accessibility props
@@ -234,8 +234,9 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `frame({ width, height, min…, max… })` | space |
 | `grow()`, `shrink(p)` | `never` `normal` `first` |
 | `align(a)` | `start` `center` `end` `stretch` `baseline` |
-| `font(f)` | a Bloom type-ramp step (`body`, `headline`, `caption-1`…: size, line height and tracking, as `Text variant`) or a size rung (`2xs-xs` 11, `sm` 13, `md` 15, `md-lg` 16, `lg-xl` 18…) |
+| `font(f)` | a Bloom type-ramp step (`body`, `headline`, `caption-1`…: size, line height and tracking, as `Text variant`) or a size rung (`2xs-xs` 11, `sm` 13, `md` 15, `md-lg` 16, `lg-xl` 18…), or `mono` (Bloom's monospaced face, beside the size) |
 | `weight(w)` | `light` `regular` `medium` `semibold` `bold` `extrabold` |
+| `tracking(t)` | `tight` `close` `snug` `wide` `wider` `widest` (em of the size) |
 | `leading(l)` | Bloom line heights `tight` 1.15, `close` 1.25, `snug` 1.3, `easy` 1.375, `normal` 1.5, `open` (28 on 18), `relaxed` 1.625 |
 | `foreground(c)`, `background(c)` | colour roles: `foreground` `muted` `primary` `surface` `card` `mutedFill` `border` `error` `destructive` `primaryText` `white` `black`…, or a role at a named opacity (`'muted/faded'`) |
 | `border(c, width?, edge?)` | colour role (or a role at an opacity); `hairline` (the platform hairline), `thin` or `thick` |
@@ -312,9 +313,17 @@ Text('Read the ', Text('terms').link('https://oxy.so/terms'), '.').font('caption
   an ink, a link) and inherits the rest, so a span of an `h1` keeps the
   heading's size.
 
-Not in the language yet: Bloom's monospaced family (Bloom picks it only from a
-`font-mono` class today, and exports no style for it) and tracking (Bloom has no
-tracking scale; see [className](#classname)).
+- **Mono.** `.font('mono')` is Bloom's monospaced face, the family
+  `font-mono` gives Bloom's `Text` (`fontFamilyStyle('mono')`, exported from
+  `@oxy.so/bloom/typography`). A family sits beside the size: it keeps the
+  ramp step or size rung the text has, and a later size keeps the face, so
+  `.font('body').font('mono')` is body in mono.
+- **Tracking.** `.tracking(t)` is letter spacing in em of the text's size,
+  Tailwind's `tracking-*`: `tight` −0.025, `close` −0.02, `snug` −0.01,
+  `wide` 0.025, `wider` 0.05, `widest` 0.1 (the values apps write). It is a
+  trait of the environment, as `leading` is, and like `leading` it needs a
+  font to measure from: a text with no font keeps Bloom's own spacing. Over a
+  ramp step it replaces the step's own tracking.
 
 ## Icons
 
@@ -829,11 +838,11 @@ the owner's decision, or an app's `defineTokens`) before a codemod moves it.
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 629 | 40689 | 75.7% |
+| Maps to a modifier and a token | 637 | 41294 | 76.9% |
 | Expressed by the view’s structure | 35 | 3445 | 6.4% |
 | Redundant in the language | 16 | 436 | 0.8% |
-| Needs a named token (raw value) | 493 | 2742 | 5.1% |
-| Needs a modifier the language lacks | 266 | 4574 | 8.5% |
+| Needs a named token (raw value) | 486 | 2602 | 4.8% |
+| Needs a modifier the language lacks | 265 | 4109 | 7.6% |
 | An app’s own class | 481 | 1834 | 3.4% |
 
 53720 uses of 1920 utilities across 28 apps. The values
@@ -845,9 +854,9 @@ with no rung, by scale (the owner names each as a token or keeps it out):
 | font | 482 | 11px / 14px (104), 20px / 28px (92), 24px / 32px (90), 14px (64), 15px / 22px (27), 30px / 36px (22), 36px / 40px (12), 24px (12), 10.5px (8), 28px (7), 12.5px (5), 23px (5) |
 | color | 392 | transparent (63), --surface-foreground (36), --accent (33), --error-text (25), --primary-subtle (20), --warning-text (19), --sidebar-foreground (14), green-500 (12), --sidebar-border (12), red-500 (10), --sidebar-accent (9), red-400 (9) |
 | leading | 321 | 20px (93), 24px (70), 16px (44), 18px (28), 28px (18), 1 (15), 22px (14), 14px (6), 29px (6), 17px (5), 40px (3), 32px (3) |
-| tracking | 150 | 0.05em (61), 0.025em (50), -0.025em (17), -0.02em (5), 0.1em (4), -0.01em (3), -0.5px (2), 0.04em (2), 0.5px (2), -0.2px (1), -0.4px (1), 1.5px (1) |
 | opacity | 121 | 0.9 (16), --foreground at 5% (7), black at [0.04]% (7), white at [0.06]% (6), --primary at 5% (5), --warning-text at 40% (5), white at 90% (4), white at 15% (4), white at 25% (4), --background at 90% (3), black at 25% (3), --primary at 15% (3) |
 | corner | 80 | 22px (14), 14px (12), 10px (9), 18px (9), 15px (8), 23px (6), 5px (4), 13px (3), 27px (3), 25px (2), 26px (2), 3px (2) |
+| tracking | 10 | -0.5px (2), 0.04em (2), 0.5px (2), -0.2px (1), -0.4px (1), 1.5px (1), 2px (1) |
 | borderWidth | 6 | 4px (6) |
 | weight | 1 | 900 (1) |
 
