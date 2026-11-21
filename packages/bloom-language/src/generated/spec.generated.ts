@@ -1891,6 +1891,9 @@ export const MODIFIERS = {
   ],
   "placeholderTint": [
     "color"
+  ],
+  "gradient": [
+    "colors"
   ]
 } as const;
 
@@ -7066,7 +7069,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "gradient"
   ],
   "conversationSidebar": [
     "padding",
@@ -7254,7 +7258,8 @@ export const NODE_MODIFIERS = {
     "drag",
     "swipe",
     "style",
-    "tint"
+    "tint",
+    "gradient"
   ],
   "chatDateHeader": [
     "padding",
@@ -7941,7 +7946,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "gradient"
   ],
   "typingDots": [
     "padding",
