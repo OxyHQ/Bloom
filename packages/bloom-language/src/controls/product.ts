@@ -2,7 +2,13 @@ import type { ReactNode } from 'react';
 
 import type { Binding } from '../binding';
 import type { Child } from '../node';
-import { type ColorToken, resolveSpace, type SpaceToken } from '../tokens';
+import {
+  type ColorToken,
+  type CornerName,
+  resolveCorner,
+  resolveSpace,
+  type SpaceToken,
+} from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
 
 /**
@@ -19,6 +25,9 @@ export function length(token: SpaceToken | undefined): number | undefined {
   return token === undefined ? undefined : resolveSpace(token);
 }
 
+/** A corner a product component takes as a radius: a corner rung. */
+export type CornerToken = Exclude<CornerName, 'concentric'>;
+
 /** How a product node maps onto its Bloom component, beyond its data (taken as it is). */
 export interface ProductSpec {
   /**
@@ -30,6 +39,10 @@ export interface ProductSpec {
   readonly slots?: readonly string[];
   /** Options that are space tokens, where Bloom takes a number. */
   readonly lengths?: readonly string[];
+  /** Options that are corner tokens, where Bloom takes a radius. */
+  readonly corners?: readonly string[];
+  /** The component takes `.onPress()` and its name itself, rather than a host around it. */
+  readonly press?: true;
   /** Props from the node's own modifiers (a variant, a size, a tone). */
   readonly own?: (d: ControlDraw) => Record<string, unknown>;
   /** The component's own colours, painted from their roles. */
@@ -40,7 +53,8 @@ export interface ProductSpec {
  * A product node's renderer: its Bloom component with the node's content props
  * and options as Bloom takes them, its binding as the value and its setter, its slots drawn, its lengths resolved and
  * its own modifiers; its content (the node's child, a list keyed by `.id()`)
- * as Bloom's children. A press goes on a host around it.
+ * as Bloom's children. A press goes on a host around it, unless the component
+ * takes it itself (`press`).
  */
 export function product(host: unknown, spec: ProductSpec = {}): ControlRenderer {
   return (d) => {
@@ -56,13 +70,17 @@ export function product(host: unknown, spec: ProductSpec = {}): ControlRenderer 
     for (const key of spec.slots ?? []) props[key] = slot(d, options?.[key] as Child | undefined);
     for (const key of spec.lengths ?? [])
       props[key] = length(options?.[key] as SpaceToken | undefined);
+    for (const key of spec.corners ?? []) {
+      const corner = options?.[key] as CornerToken | undefined;
+      props[key] = corner === undefined ? undefined : resolveCorner(corner);
+    }
     Object.assign(props, spec.own?.(d));
     const child = d.node.children[0];
     const children = child === undefined ? [] : [d.render(child)];
-    return d.pressAround((press) =>
+    const drawn = (press: Record<string, unknown>) =>
       spec.colors === undefined
         ? d.component(host, { ...press, ...props }, ...children)
-        : d.painted(host, { ...press, ...props }, spec.colors(d), ...children),
-    );
+        : d.painted(host, { ...press, ...props }, spec.colors(d), ...children);
+    return spec.press ? drawn(d.props()) : d.pressAround(drawn);
   };
 }
