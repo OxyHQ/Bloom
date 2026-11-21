@@ -497,7 +497,8 @@
     "badgePlacement": ["top-right", "top-left", "bottom-right", "bottom-left"],
     "loadingStyle": ["spinner", "top", "inline"],
     "contentTransition": ["roll"],
-    "swipeDirection": ["left", "right", "up", "down"]
+    "swipeDirection": ["left", "right", "up", "down"],
+    "agentMood": ["neutral", "sad"]
   },
   "glass": {
     "$comment": [
@@ -775,7 +776,10 @@
     "contentTransition": ["contentTransition", "value?"],
     "loop": [],
     "paused": ["value"],
-    "fallback": ["value"]
+    "fallback": ["value"],
+    "mood": ["agentMood"],
+    "interactive": ["value?"],
+    "portrait": ["value?"]
   },
   "universal": [
     "padding",
@@ -1106,6 +1110,11 @@
       "constructors": ["TabView"],
       "universal": false,
       "modifiers": []
+    },
+    "agentAvatar": {
+      "constructors": ["AgentAvatar"],
+      "modifiers": ["size", "mood", "paused", "interactive", "portrait"],
+      "size": "avatarSize"
     }
   },
   "sfSymbols": {

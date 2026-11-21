@@ -1207,6 +1207,10 @@ export const ENUMS = {
     "right",
     "up",
     "down"
+  ],
+  "agentMood": [
+    "neutral",
+    "sad"
   ]
 } as const;
 
@@ -1735,6 +1739,15 @@ export const MODIFIERS = {
   ],
   "fallback": [
     "value"
+  ],
+  "mood": [
+    "agentMood"
+  ],
+  "interactive": [
+    "value?"
+  ],
+  "portrait": [
+    "value?"
   ]
 } as const;
 
@@ -3573,7 +3586,74 @@ export const NODE_MODIFIERS = {
   ],
   "navStack": [],
   "route": [],
-  "tabView": []
+  "tabView": [],
+  "agentAvatar": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "size",
+    "mood",
+    "paused",
+    "interactive",
+    "portrait"
+  ]
 } as const;
 
 /** The constructor functions, by the node kind they make. */
@@ -3615,5 +3695,6 @@ export const CONSTRUCTORS = {
   "AppLayout": "appLayout",
   "Stack": "navStack",
   "Sheet": "route",
-  "TabView": "tabView"
+  "TabView": "tabView",
+  "AgentAvatar": "agentAvatar"
 } as const;

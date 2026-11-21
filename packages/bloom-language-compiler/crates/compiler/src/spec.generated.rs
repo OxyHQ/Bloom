@@ -84,6 +84,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("loadingStyle", &["spinner", "top", "inline"]),
     ("contentTransition", &["roll"]),
     ("swipeDirection", &["left", "right", "up", "down"]),
+    ("agentMood", &["neutral", "sad"]),
 ];
 
 /// The modifiers a variant (`when(condition, v => v…)`) can change.
@@ -237,6 +238,9 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("loop", &[]),
     ("paused", &["value"]),
     ("fallback", &["value"]),
+    ("mood", &["agentMood"]),
+    ("interactive", &["value?"]),
+    ("portrait", &["value?"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -279,6 +283,7 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "navStack", constructors: &["Stack"], modifiers: &[], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "route", constructors: &["Sheet"], modifiers: &[], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "tabView", constructors: &["TabView"], modifiers: &[], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "agentAvatar", constructors: &["AgentAvatar"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "size", "mood", "paused", "interactive", "portrait"], size: Some("avatarSize"), tint: None, style: None, shape: None },
 ];
 
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,
