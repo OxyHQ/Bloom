@@ -4,6 +4,7 @@ import { Text } from '@oxy.so/bloom/typography';
 
 import type { ParityCase } from '../../parity/support/cases';
 import { ICON_CASES, ICON_CASES_EVERY } from '../../parity/icon.cases';
+import { MATERIAL_CASES } from '../../parity/material.cases';
 import { TEXT_CASES } from '../../parity/text.cases';
 
 /**
@@ -53,3 +54,4 @@ type Story = StoryObj<typeof ParityTable>;
 export const TextAndTypography: Story = { args: { cases: TEXT_CASES } };
 export const Icons: Story = { args: { cases: ICON_CASES } };
 export const EveryIcon: Story = { args: { cases: ICON_CASES_EVERY } };
+export const Material: Story = { args: { cases: MATERIAL_CASES } };

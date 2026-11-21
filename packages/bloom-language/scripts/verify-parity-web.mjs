@@ -56,7 +56,9 @@ function compareInPage() {
       if (!SKIP.has(name)) attributes[name] = value;
     const style = getComputedStyle(element);
     const css = {};
-    for (let i = 0; i < style.length; i++) css[style[i]] = style.getPropertyValue(style[i]);
+    // Custom properties are inputs, named per instance (React ids); what they set is compared.
+    for (let i = 0; i < style.length; i++)
+      if (!style[i].startsWith('--')) css[style[i]] = style.getPropertyValue(style[i]);
     const box = element.getBoundingClientRect();
     return { tag: element.tagName, attributes, css, size: `${box.width}x${box.height}` };
   };
@@ -108,6 +110,7 @@ const browser = await puppeteer.launch({ executablePath: findChrome(), args: ['-
 let failed = 0;
 try {
   const page = await browser.newPage();
+  page.on('pageerror', (error) => console.log(`     page error: ${error.message}`));
   await page.setViewport({ width: 1200, height: 900 });
   const index = await (await fetch(`${BASE}/index.json`)).json();
   const ids = STORIES.length
@@ -116,7 +119,7 @@ try {
   for (const id of ids) {
     for (const theme of ['light', 'dark']) {
       await page.goto(`${BASE}/iframe.html?id=${id}&viewMode=story&globals=theme:${theme}`);
-      await page.waitForSelector('[data-testid="language-0"]', { timeout: 120000 });
+      await page.waitForSelector('[data-testid="language-0"]', { timeout: 60000 });
       await page.evaluate(() => document.fonts.ready);
       const { pairs, differences } = await page.evaluate(compareInPage);
       if (differences.length > 0) failed += 1;

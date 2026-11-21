@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 
 import type { FrameSpec, GlassValue, Modifier } from './node';
+import { surfaceStyle } from '@oxy.so/bloom/shapes';
 import type { TypeScaleVariant } from '@oxy.so/bloom/typography';
 
 import { COLORS, ENVIRONMENT_DEFAULTS, FONT_SIZE, LAYER_RANK } from './generated/spec.generated';
@@ -17,6 +18,7 @@ import {
   type Alignment,
   type BorderEdge,
   type ColorName,
+  type CornerCurve,
   type Edge,
   type FontName,
   type LeadingToken,
@@ -154,6 +156,10 @@ export interface Layer {
   rank: number;
   edges: number;
   glass: GlassValue | undefined;
+  /** A `corner('concentric')` layer: Bloom's concentric geometry draws it (`ConcentricView`, or a glass Surface). */
+  concentric: boolean;
+  /** The layer's `cornerCurve`, which a glass Surface takes as its prop. */
+  curve: CornerCurve | undefined;
 }
 
 const EDGE_BITS: Record<Edge, number> = {
@@ -181,8 +187,18 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
       ? (current.edges & edges) !== 0
       : current.modifiers.some((existing) => existing.kind === modifier.kind));
   const glass = modifier.kind === 'glass' ? modifier.value : undefined;
+  const concentric = modifier.kind === 'corner' && modifier.value === 'concentric';
+  const curve = modifier.kind === 'cornerCurve' ? modifier.value : undefined;
   if (current === undefined || rank < current.rank || repeats) {
-    layers.push({ modifiers: [modifier], key: modifier.key, rank, edges, glass });
+    layers.push({
+      modifiers: [modifier],
+      key: modifier.key,
+      rank,
+      edges,
+      glass,
+      concentric,
+      curve,
+    });
     return;
   }
   current.modifiers.push(modifier);
@@ -190,6 +206,8 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   current.rank = rank;
   current.edges |= edges;
   if (glass) current.glass = glass;
+  if (concentric) current.concentric = true;
+  if (curve) current.curve = curve;
 }
 
 function paddingStyle(style: Resolved, edge: Edge, value: number): void {
@@ -240,6 +258,8 @@ export function layerStyle(layer: Layer | undefined): Resolved {
         style.overflow = 'hidden';
         break;
       case 'cornerCurve':
+        // Bloom's platform-adaptive corner (`shapes/surface-style`): the curve alone, on the radius beside it.
+        Object.assign(style, surfaceStyle({ curve: modifier.value }));
         break;
       case 'opacity':
         style.opacity = OPACITY[modifier.value];
