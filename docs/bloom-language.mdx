@@ -1256,10 +1256,8 @@ group, after the ungrouped ones, as Bloom orders them. The palette takes
 `SettingsSection`, `SettingsSelect` and text fields are not language nodes yet
 (an `Embed` carries them).
 
-Both are Bloom's on every platform (on iOS not verified). The settings
-modal's native parity compares nothing: in Bloom's own test environment its
-portal resolves to the web's DOM portal, which draws nothing there, so it is
-proven on the web (jsdom and Chrome) only.
+Both are Bloom's on every platform (on iOS not verified), with parity on
+native (the modal through its native portal), the web and Chrome.
 
 ### Panels, deck, inspector and destinations
 
@@ -1624,9 +1622,11 @@ and the Bloom element an app draws today, under Bloom's real provider, in light
 and dark (`bun run test:parity`; `bun run test` runs it too).
 
 - **Native:** Bloom's own test environment (its React Native and native-module
-  mocks from the repository root), the language's Android files. The two
-  committed host trees must be equal: every host's type, every prop (styles
-  flattened, handlers by presence) and its children.
+  mocks from the repository root), each module resolved as Metro resolves it
+  for Android (its `.android`, then its `.native`, then its default file), with
+  the portal host an app root mounts, so a modal's native portal draws its
+  tree. The two committed host trees must be equal: every host's type, every
+  prop (styles flattened, handlers by presence) and its children.
 - **Web:** react-native-web in jsdom. Each element is compared on its tag, its
   attributes other than `class` and `style`, its text, and the CSS that
   reaches it: every matching rule of every sheet (the language's adopted one
@@ -1637,7 +1637,10 @@ and dark (`bun run test:parity`; `bun run test` runs it too).
   tags, attributes, text, every computed style property and the laid-out size.
 
 The cases are one list per family (`parity/<family>.cases.tsx`), which the
-three read. A case that cannot be equal is a decision, never a tolerance.
+three read. A case that cannot be equal is a decision, never a tolerance. A
+case whose tree is empty fails, since two empty trees prove nothing, unless
+drawing nothing is its claim on that platform (`drawsNothing`: a closed
+palette on the web).
 
 ## One spec
 
@@ -1772,9 +1775,7 @@ and `@oxy.so/bloom-data` beside it.
   query and tree drag and drop; the settings pages' own rows
   (`SettingsSection`, `SettingsSelect`, the text and date fields); Bloom's
   sheet detents (it has none); the rest of the layout family (`ScrollArea`,
-  `ScrollSurface`, `AutoHideBar`, `ResizeHandle`). The settings modal's
-  native parity draws nothing in Bloom's test environment, and the shell's
-  panels render only once it has measured itself, so both are compared in
-  Chrome.
+  `ScrollSurface`, `AutoHideBar`, `ResizeHandle`). The shell's panels
+  render only once it has measured itself, so they are compared in Chrome.
 - Replacing `className`: the codemods read the className table; what it
   flags needs a modifier or a named token first.

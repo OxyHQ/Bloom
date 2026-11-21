@@ -10,6 +10,11 @@ export interface ParityCase {
   language: () => ReactElement;
   /** The Bloom element it stands for. */
   bloom: () => ReactElement;
+  /**
+   * Where the claim is that the case draws nothing (a closed overlay on the
+   * web). Anywhere else an empty tree fails: two empty trees prove nothing.
+   */
+  drawsNothing?: readonly ('native' | 'web')[];
 }
 
 /** Bloom JSX that reads the theme as an app does (`useThemePaint()`), for a colour passed by hand. */

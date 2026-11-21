@@ -247,7 +247,11 @@ export function describeWebParity(title: string, cases: readonly ParityCase[]): 
     for (const scheme of ['light', 'dark'] as const) {
       describe(scheme, () => {
         it.each(cases.map((c) => [c.name, c] as const))('%s', (_name, c) => {
-          expect(webTree(c.language(), scheme)).toEqual(webTree(c.bloom(), scheme));
+          const bloom = webTree(c.bloom(), scheme);
+          // Two empty trees are equal and prove nothing, unless that is the claim.
+          if (c.drawsNothing?.includes('web')) expect(bloom).toEqual([]);
+          else expect(bloom).not.toEqual([]);
+          expect(webTree(c.language(), scheme)).toEqual(bloom);
         });
       });
     }
