@@ -81,7 +81,9 @@ type SelectContextValue = {
   size: NonNullable<SelectProps['size']>;
   /** Native lens (Android 13+): the options as data; the list is then drawn natively. */
   lens?: MenuLens;
-} & Pick<SelectProps, 'value' | 'onValueChange' | 'disabled'>;
+  /** `open` is the caller's: a press on the trigger reports it rather than opening the sheet. */
+  openControlled?: boolean;
+} & Pick<SelectProps, 'value' | 'onValueChange' | 'disabled' | 'onOpenChange'>;
 
 const SelectContext = createContext<SelectContextValue | null>(null);
 SelectContext.displayName = 'SelectContext';
@@ -120,11 +122,13 @@ export function Select(props: SelectProps) {
     onValueChange: onValueChangeProp,
     disabled,
     size: sizeProp,
+    open: openProp,
+    onOpenChange,
   } = props;
   const [value, onValueChange] = useControllableState<string | undefined>({
     value: valueProp,
     defaultValue,
-    controlled: Object.prototype.hasOwnProperty.call(props, 'value'),
+    controlled: Object.hasOwn(props, 'value'),
     onChange: (next) => {
       if (next !== undefined) onValueChangeProp?.(next);
     },
@@ -139,6 +143,9 @@ export function Select(props: SelectProps) {
   useLayoutEffect(() => {
     if (!visible) control.close();
   }, [visible, control]);
+  // A controlled `open` drives the sheet; unset, the trigger and the sheet keep their own.
+  const openControlled = Object.hasOwn(props, 'open');
+
   const valueStoreState = useState<unknown>(undefined);
 
   // The native lens list closes itself; the select has no open state of its own to keep in step.
@@ -150,10 +157,27 @@ export function Select(props: SelectProps) {
     open: false,
     setOpen: ignoreOpen,
   });
+  useLayoutEffect(() => {
+    if (!openControlled) return;
+    // The native lens list closes itself; a sheet closes when `open` turns false.
+    if (openProp) {
+      if (lens) void lens.nativeRef.current?.open();
+      else control.open();
+    } else if (!lens) control.close();
+  }, [openControlled, openProp, control, lens]);
 
   const ctx = useMemo<SelectContextValue>(
-    () => ({ control, value, onValueChange, disabled: disabled || !visible, size, lens }),
-    [control, value, onValueChange, disabled, size, visible, lens],
+    () => ({
+      control,
+      value,
+      onValueChange,
+      disabled: disabled || !visible,
+      size,
+      lens,
+      onOpenChange,
+      openControlled,
+    }),
+    [control, value, onValueChange, disabled, size, visible, lens, onOpenChange, openControlled],
   );
 
   return (
@@ -189,7 +213,14 @@ export function SelectTrigger({
   fieldStyle,
   testID,
 }: SelectTriggerProps) {
-  const { control, size, disabled: rootDisabled, lens } = useSelectContext();
+  const {
+    control,
+    size,
+    disabled: rootDisabled,
+    lens,
+    onOpenChange,
+    openControlled,
+  } = useSelectContext();
   const palette = useMenuPalette();
   const touch = useTouchInput();
   // The trigger IS the select's control, so it takes the enclosing `Field`'s id,
@@ -246,7 +277,12 @@ export function SelectTrigger({
       style={[styles.triggerSlot, style]}
       testID={testID}
       handle={{
-        onPress: () => (lens ? void lens.nativeRef.current?.open() : control.open()),
+        onPress: () => {
+          onOpenChange?.(true);
+          if (openControlled) return;
+          if (lens) void lens.nativeRef.current?.open();
+          else control.open();
+        },
         disabled: isDisabled,
         accessibilityLabel: membership.accessibilityLabel,
         accessibilityRole: 'button',
@@ -404,13 +440,14 @@ export function SelectContent<T>({
         value={context.value}
         onValueChange={context.onValueChange}
         disabled={context.disabled}
+        onOpenChange={context.onOpenChange}
       />
     </BloomScope>
   );
 }
 
 type SelectContentInnerProps<T> = SelectContentProps<T> &
-  Pick<SelectProps, 'value' | 'onValueChange' | 'disabled'> & {
+  Pick<SelectProps, 'value' | 'onValueChange' | 'disabled' | 'onOpenChange'> & {
     control: DialogControlProps;
     size: SelectContextValue['size'];
   };
@@ -422,6 +459,7 @@ function SelectContentInner<T>({
   valueExtractor = defaultItemValueExtractor,
   control,
   size,
+  onOpenChange,
   ...contextValues
 }: SelectContentInnerProps<T>) {
   const theme = useTheme();
@@ -450,6 +488,7 @@ function SelectContentInner<T>({
   return (
     <SheetShell
       control={control}
+      onClose={onOpenChange === undefined ? undefined : () => onOpenChange(false)}
       label={label}
       header={
         <StyledView className="pt-space-24 pb-space-8 px-space-16">

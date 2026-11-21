@@ -18,6 +18,14 @@ export type SelectProps = {
   defaultValue?: string;
   onValueChange?: (value: string) => void;
   disabled?: boolean;
+  /**
+   * Whether the list is open, controlled (opt-in). Unset, the select keeps its
+   * own open state as it always has; set, the list shows while it is true and
+   * `onOpenChange` reports the reader opening or dismissing it.
+   */
+  open?: boolean;
+  /** The reader opened or dismissed the list. */
+  onOpenChange?: (open: boolean) => void;
 };
 
 export type SelectTriggerProps = {
