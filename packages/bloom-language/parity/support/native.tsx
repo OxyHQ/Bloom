@@ -23,12 +23,13 @@ export interface HostTree {
 }
 
 /**
- * React's `useId` counts across roots, and Bloom counts a few SVG ids itself
- * (`bloom-stat-tile3`, `bloom-story-ring-2`); an id is compared by its order in
- * the tree, not its count.
+ * React's `useId` counts across roots, and Bloom counts four SVG ids with a
+ * module counter of its own (`bloom-stat-tile3`, `bloom-story-ring-2`: the
+ * `IdCounter++` in its source); an id is compared by its order in the tree,
+ * not its count.
  */
 const REACT_ID = /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
-const BLOOM_ID = /\bbloom(?:-[a-z]{2,})+-?\d+(?![\w-])/g;
+const BLOOM_ID = /\bbloom-(?:alerts-fade|heading-cone|stat-tile|story-ring-)\d+\b/g;
 let ids: Map<string, string> = new Map();
 
 function byOrder(id: string): string {
@@ -42,7 +43,7 @@ function byOrder(id: string): string {
 
 function value(input: unknown): unknown {
   if (typeof input === 'function') return '[function]';
-  // Bloom's counted ids first (their words are two letters or more), then React's.
+  // Bloom's counted ids first (their prefixes are Bloom's own), then React's.
   if (typeof input === 'string') return input.replace(BLOOM_ID, byOrder).replace(REACT_ID, byOrder);
   if (Array.isArray(input)) return input.map(value);
   // An element handed to a host as a prop (a scroll view's refresh control) is
