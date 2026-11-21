@@ -90,6 +90,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("ratingStyle", &["compact", "stars"]),
     ("ratingCountStyle", &["parenthesis", "reviews"]),
     ("ratingInputSize", &["sm", "md", "lg"]),
+    ("meterCap", &["round", "butt"]),
 ];
 
 /// The modifiers a variant (`when(condition, v => v…)`) can change.
@@ -266,6 +267,18 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("valueLabel", &["value"]),
     ("labelWidth", &["space"]),
     ("reveal", &["value"]),
+    ("valueText", &["value"]),
+    ("indeterminate", &["value?"]),
+    ("decorative", &[]),
+    ("trackTint", &["color"]),
+    ("thickness", &["space"]),
+    ("fillDuration", &["duration"]),
+    ("barCorner", &["corner"]),
+    ("backdrop", &["color"]),
+    ("cap", &["meterCap"]),
+    ("content", &["value"]),
+    ("onStop", &["value", "value"]),
+    ("rangeLabels", &["value", "value?"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -317,6 +330,9 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "ratingInput", constructors: &["RatingInput"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "max", "size", "disabled", "starLabel"], size: Some("ratingInputSize"), tint: None, style: None, shape: None },
     NodeSpec { kind: "ratingBar", constructors: &["RatingBar"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "max", "valueLabel", "labelWidth", "reveal"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "ratingSummary", constructors: &["RatingSummary"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "labels"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "meter", constructors: &["Meter", "ProgressBar"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "valueText", "indeterminate", "decorative", "tint", "trackTint", "thickness", "fillDuration", "barCorner", "reveal"], size: None, tint: Some("color"), style: None, shape: None },
+    NodeSpec { kind: "meterRing", constructors: &["MeterRing", "ProgressRing"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "valueText", "indeterminate", "decorative", "tint", "trackTint", "thickness", "fillDuration", "size", "backdrop", "cap", "content", "onStop", "progress"], size: Some("space"), tint: Some("color"), style: None, shape: None },
+    NodeSpec { kind: "statBar", constructors: &["StatBar", "SplitBar"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "tint", "trackTint", "thickness", "trailing", "rangeLabels"], size: None, tint: Some("color"), style: None, shape: None },
 ];
 
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,
