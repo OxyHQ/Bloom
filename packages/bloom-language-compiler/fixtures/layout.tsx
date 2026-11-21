@@ -2,7 +2,7 @@ import { HStack, Icon, Spacer, Text, VStack, ZStack, toElement } from '@oxy.so/b
 import { Glyph } from './glyphs';
 
 /** Stacks, layers in and against their order, spacing and placement. */
-export const hoisted = 4;
+export const hoisted = 5;
 
 function Card() {
   return VStack(
@@ -42,7 +42,20 @@ function Depth() {
   return ZStack(VStack().frame({ width: '5xl', height: '5xl' }), Text('over')).corner('full');
 }
 
+function Placed() {
+  return VStack(
+    HStack(Text('a'), Text('b')).justify('between').wrap().spacing('sm'),
+    Text('pinned').position({ top: 'none', trailing: 'sm' }).zIndex('floating'),
+    Text('centred').alignSelf('center').frame({ width: 'full', maxWidth: '1/2' }),
+  )
+    .overlay(Text('badge'), 'top-trailing')
+    .corner('lg')
+    .shadow('m')
+    .ring('border');
+}
+
 export const cases = {
+  placed: () => toElement(Placed()),
   card: () => toElement(Card()),
   layers: () => toElement(Layers()),
   toolbarSm: () => toElement(Toolbar('sm')),

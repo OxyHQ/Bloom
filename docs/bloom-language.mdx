@@ -246,10 +246,15 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | Modifier | Values |
 | --- | --- |
 | `padding(edge?, v)` | space: `none` `2xs` `xs` `sm` `md` `lg` `xl` `2xl`…`5xl`, or a numeric token (`'1'` `'6'` `'10'` `'14'` `'28'` `'44'` `'56'` `'96'`…); `-lg`, `-6` and the like pull outward (a margin) |
-| `spacing(v)` | space, or `between` |
-| `frame({ width, height, min…, max… })` | space |
+| `spacing(v)` | space: the gap between a stack's children |
+| `justify(j)`, `wrap()`, `axis(a)` | a stack's distribution: `start` `center` `end` `between` `around` `evenly`; lines that wrap; `horizontal` or `vertical` over its constructor's (see [Layout](#layout)) |
+| `frame({ width, height, min…, max… })` | space, or a length of the parent: `full`, `1/2` `1/3` `2/3` `1/4` `3/4` `1/5` `2/5` `3/5` |
 | `grow()`, `shrink(p)` | `never` `normal` `first` |
-| `align(a)` | `start` `center` `end` `stretch` `baseline` |
+| `align(a)`, `alignSelf(a)` | `start` `center` `end` `stretch` `baseline` (a stack's children; the view's own place) |
+| `position({ top, bottom, leading, trailing })`, `offset({ x, y })` | space, negatives included (see [Layout](#layout)) |
+| `zIndex(z)`, `hidden(on?)` | Bloom's `Z_INDEX`: `base` `raised` `floating` `dropdown`; out of the layout |
+| `overlay(view, alignment?)`, `background(view, alignment?)` | a view over or under this one, at `center` `top` `bottom` `leading` `trailing` `top-leading` … `bottom-trailing` |
+| `shadow(s)`, `ring(c, width?, offset?)` | Bloom's elevation `s` `m` `floating`; a colour role (or a role at an opacity, or `none`) as an outline |
 | `font(f)` | a Bloom type-ramp step (`body`, `headline`, `caption-1`…: size, line height and tracking, as `Text variant`) or a size rung (`sm` 13, `md` 15…), a numeric size (`'11'` `'14'` `'16'` `'18'` `'24'` `'30'` `'36'`), or `mono` (Bloom's monospaced face, beside the size) |
 | `weight(w)` | `light` `regular` `medium` `semibold` `bold` `extrabold` |
 | `tracking(t)` | `tight` `wide` `wider` `widest` (em of the size); or an exact em (`'-0.02em'` `'-0.01em'` `'0.04em'`) or px (`'-0.5px'` … `'2px'`) |
@@ -285,6 +290,59 @@ Icon(RiRepeat2Line).size(row.iconSize.context);
 Mention's row needed seven of them. Two are Bloom rungs now: the 64px body
 gutter is `'64'` and `leading-tight` (1.25) is `close`. The 18px context row,
 the 3px gap before its text and the 13, 14 and 18px glyphs stay app tokens.
+
+## Layout
+
+```ts
+HStack(Avatar(user.avatar), Text(user.name)).justify('between').wrap().spacing('sm')
+VStack(...).frame({ width: 'full', maxWidth: '1/2' }).alignSelf('center')
+Avatar(user.avatar).overlay(Badge(3).tint('danger'), 'top-trailing')
+VStack(...).background(Image(cover).frame({ width: 'full', height: 'full' }))
+Button(Icon(RiCloseLine)).position({ top: 'sm', trailing: 'sm' }).zIndex('floating')
+VStack(...).background('surface').corner('xl').shadow('m')
+```
+
+- **Distribution.** `justify` is the main axis (Compose's arrangement):
+  packed at `start`, `center` or `end`, or the free space `between`, `around` or
+  `evenly` around the children. `spacing` is only the gap. `wrap()` flows
+  children that do not fit onto further lines. `axis()` lays a stack out along
+  the other axis, which is what a breakpoint variant uses (`flex-col
+  md:flex-row`).
+- **Self alignment.** `alignSelf` is the view's own place across its parent's
+  axis, over the parent's `align`. `mx-auto` in a column is `alignSelf('center')`.
+- **Lengths.** A frame takes a length of its parent (`full` is `100%`, `1/2` is
+  `50%`) besides space rungs. `w-full` is `.frame({ width: 'full' })`: the same
+  value, not SwiftUI's `maxWidth: .infinity`, so no rendered size moves.
+- **Overlays.** `.overlay(view, alignment)` draws a view over this one, as
+  SwiftUI's `overlay(alignment:)` does: a box the size of the view as drawn so
+  far (its padding and frame before the overlay included), the view placed at
+  the alignment. `.background(view, alignment)` is the same box under the
+  content. They sit in the layer order between the frame and the fill, so
+  `.padding('md').overlay(x)` covers the padding and `.overlay(x).padding('md')`
+  does not. The box lets touches through outside its own content.
+- **Pinned views.** `.position(edges)` takes the view out of its stack's flow
+  and pins it at those distances from its parent's edges (React Native's
+  absolute position); an overlay is the way to put one view on another, and
+  `position` is for what is truly absolute. `.offset({ x, y })` draws the view
+  shifted (`x` right, `y` down, physical) without moving its siblings.
+- **Stacking.** `zIndex` takes Bloom's own levels (`Z_INDEX`): `base` 0,
+  `raised` 1, `floating` 10, `dropdown` 40. Tailwind's `z-20`, `z-30` and `z-50`
+  have no rung.
+- **Elevation.** `.shadow(role)` is Bloom's `bloomShadowStyle(role)`: the web's
+  box-shadow, native's shadow and elevation (`floating` is a box-shadow on
+  both). It is the outermost layer. A shadow never shares a view with a
+  corner's clip, since iOS clips a view's own shadow: after a `corner` it is a
+  view of its own around the clipped box, with the same radius.
+- **Rings.** `.ring(role, width?, offset?)` is an outline (Bloom's focus ring
+  recipe): it draws outside the box and takes no room. `ring('none')` is the
+  web's `outline: none`. It sits in the border's layer.
+- **Hidden.** `.hidden()` takes the view out of the layout (`display: none`)
+  and keeps it mounted, unlike SwiftUI's `hidden()`, which keeps its room. A
+  child that is not there is a conditional child (`show && view`); `hidden`
+  is for a variant (`.hidden().when('md', (v) => v.hidden(false))`).
+
+Not verified on a device: a ring (React Native's `outline*`, 0.77+) and a
+shadow beside a clip on iOS and Android.
 
 ## Text
 
@@ -968,7 +1026,7 @@ a theme switch; each fixture also pins how many chains the compiler hoists.
 - An island of shared controls: a `Button` inside `.blur()` draws its own
   material rather than Bloom's `material="shared"` on the island's.
 - `ZStack` is basic: the first child sets the size and the rest cover it. There
-  is no alignment inside it yet.
+  is no alignment inside it; `.overlay(view, alignment)` is the aligned form.
 - iOS is written and typechecked against `expo-glass-effect`, `@expo/ui` and
   expo-router (its native `Stack`, `Stack.Toolbar` and `NativeTabs`), and
   tested against stand-ins of each; it is not verified on a device (no Mac
