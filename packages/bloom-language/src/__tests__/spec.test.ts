@@ -241,6 +241,13 @@ import type {
 import type { PriceSummaryView, PriceSummaryLineView } from '../controls/price-breakdown';
 import type { PaymentStatusBarView, PaymentStatusBlockView } from '../controls/payment-status';
 import type {
+  ContactProfileCardView,
+  LeadScoreCardView,
+  DealCardView,
+  PipelineColumnView,
+  PipelineBoardView,
+} from '../controls/crm';
+import type {
   FilterSectionView,
   PriceRangeFilterView,
   CountFilterView,
@@ -1012,7 +1019,17 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<PriceSummaryLineView>, Of<'priceSummaryLine'>>,
       Same<MethodsOf<PaymentStatusBarView>, Of<'paymentStatusBar'>>,
       Same<MethodsOf<PaymentStatusBlockView>, Of<'paymentStatusBlock'>>,
+      Same<MethodsOf<ContactProfileCardView>, Of<'contactProfileCard'>>,
+      Same<MethodsOf<LeadScoreCardView>, Of<'leadScoreCard'>>,
+      Same<MethodsOf<DealCardView>, Of<'dealCard'>>,
+      Same<MethodsOf<PipelineColumnView>, Of<'pipelineColumn'>>,
+      Same<MethodsOf<PipelineBoardView>, Of<'pipelineBoard'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,
