@@ -106,8 +106,8 @@ const placed: ParityCase[] = [
 /** An icon in an ink at a named opacity: its fill at that alpha (on the web, the mix Bloom's paint writes). */
 const translucent: ParityCase[] = [
   {
-    name: 'foreground muted/faded',
-    language: () => toElement(L.HStack(L.Icon(Heart)).foreground('muted/faded')),
+    name: 'foreground muted/70',
+    language: () => toElement(L.HStack(L.Icon(Heart)).foreground('muted/70')),
     bloom: () => (
       <Themed>
         {(c) => (

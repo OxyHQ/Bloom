@@ -870,7 +870,7 @@ export interface ViewModifiers<Self> extends ViewNode {
   /** Takes the free space along its parent's axis. */
   grow(): Self;
   shrink(value: ShrinkPriority): Self;
-  /** A fill: a colour role, or a role at a named opacity (`'primary/faint'`). */
+  /** A fill: a colour role, or a role at a named opacity (`'primary/10'`). */
   background(value: ColorToken): Self;
   border(value: ColorToken, width?: BorderWidthName, edge?: BorderEdge): Self;
   /**
@@ -893,7 +893,7 @@ export interface ViewModifiers<Self> extends ViewNode {
    * `corner` names its radius.
    */
   blur(): Self;
-  /** Text and icon colour for this view and everything inside it; a role, or a role at a named opacity (`'muted/faded'`). */
+  /** Text and icon colour for this view and everything inside it; a role, or a role at an opacity token (`'muted/70'`). */
   foreground(value: ColorToken): Self;
   /** A ramp step or a size rung; or `mono`, Bloom's monospaced face, which keeps the size. */
   font(value: FontName): Self;

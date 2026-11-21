@@ -212,8 +212,10 @@ function fontSize(name) {
   if (step) return mapped(`.font('${step[0].replace(/-regular$/, '')}')`);
   const sizeRung = rung(scales.fontSize, size);
   if (sizeRung && lineHeight === undefined) return mapped(`.font('${sizeRung}')`);
-  // Otherwise a size rung with a leading rung whose ratio gives exactly that line height.
-  const leading = sizeRung && rung(scales.leading, lineHeight / size);
+  // Otherwise a size with a named leading whose ratio gives exactly that line height,
+  // else with the line height's own px token.
+  const leading =
+    sizeRung && (rung(scales.leading, lineHeight / size) ?? rung(scales.leadingPx, lineHeight));
   if (leading) return mapped(`.font('${sizeRung}').leading('${leading}')`);
   return token(
     'font',
@@ -330,8 +332,11 @@ function resolve(utility) {
       '6xl': 1152,
       '7xl': 1280,
     }[value];
-    if (container) return token('space', `${container}px`, `.frame({ ${keys[0]}: … })`);
-    return undefined;
+    if (container === undefined) return undefined;
+    const name = rung(scales.space, container);
+    return name
+      ? mapped(`.frame({ ${keys[0]}: '${name}' })`)
+      : token('space', `${container}px`, `.frame({ ${keys[0]}: … })`);
   }
   // Type.
   if ((m = /^text-(left|center|right|justify|start|end)$/.exec(utility)))
@@ -361,7 +366,9 @@ function resolve(utility) {
     const ratio = TW_LEADING[m[1]];
     if (ratio === undefined) {
       const value = spaceValue(m[1]);
-      return value === undefined ? undefined : token('leading', `${value}px`, '.leading(…)');
+      if (value === undefined) return undefined;
+      const px = rung(scales.leadingPx, value);
+      return px ? mapped(`.leading('${px}')`) : token('leading', `${value}px`, '.leading(…)');
     }
     const name = rung(scales.leading, ratio);
     return name ? mapped(`.leading('${name}')`) : token('leading', `${ratio}`, '.leading(…)');
@@ -369,8 +376,11 @@ function resolve(utility) {
   if ((m = /^tracking-(.+)$/.exec(utility))) {
     const value = TW_TRACKING[m[1]];
     const raw = value === undefined ? m[1].replace(/^\[(.*)\]$/, '$1') : `${value}em`;
-    const em = /^-?\d*\.?\d+em$/.test(raw) ? Number(raw.slice(0, -2)) : undefined;
-    const name = em === undefined ? undefined : rung(scales.tracking, em);
+    const unit = /^(-?\d*\.?\d+)(em|px)$/.exec(raw);
+    const name =
+      unit === null
+        ? undefined
+        : rung(unit[2] === 'em' ? scales.tracking : scales.trackingPx, Number(unit[1]));
     return name ? mapped(`.tracking('${name}')`) : token('tracking', raw, '.tracking(…)');
   }
   if (['uppercase', 'lowercase', 'capitalize'].includes(utility))
