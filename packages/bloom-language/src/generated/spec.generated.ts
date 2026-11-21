@@ -2013,6 +2013,22 @@ export const ENUMS = {
   "engagementBarTone": [
     "default",
     "onImage"
+  ],
+  "titleAlign": [
+    "start",
+    "center"
+  ],
+  "titleLayout": [
+    "inline",
+    "stacked"
+  ],
+  "titleAppearance": [
+    "plain",
+    "capsule"
+  ],
+  "dismissIcon": [
+    "close",
+    "unpin"
   ]
 } as const;
 
@@ -3661,6 +3677,18 @@ export const MODIFIERS = {
   ],
   "showZeroCounts": [
     "value?"
+  ],
+  "titleAlign": [
+    "titleAlign"
+  ],
+  "titleLayout": [
+    "titleLayout"
+  ],
+  "titleAppearance": [
+    "titleAppearance"
+  ],
+  "dismissIcon": [
+    "dismissIcon"
   ]
 } as const;
 
@@ -20489,7 +20517,13 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "tint"
+    "tint",
+    "presentation",
+    "titleAlign",
+    "titleLayout",
+    "titleAppearance",
+    "density",
+    "dividers"
   ],
   "chatInfoPanel": [
     "padding",
@@ -20650,7 +20684,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "dismissIcon"
   ],
   "scrollToBottomButton": [
     "padding",
@@ -20811,7 +20846,8 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "spacing"
+    "spacing",
+    "dividers"
   ],
   "chatSearchField": [
     "padding",
@@ -21377,7 +21413,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "dividers"
   ],
   "fileMessage": [
     "padding",
