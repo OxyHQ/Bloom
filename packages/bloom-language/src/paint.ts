@@ -8,7 +8,13 @@ import {
 } from 'react';
 import { Platform } from 'react-native';
 import { useWindowBreakpoint } from '@oxy.so/bloom/hooks';
-import { useTheme, useThemePaint, withAlpha, type ThemeColors } from '@oxy.so/bloom/theme';
+import {
+  parseRgb,
+  useTheme,
+  useThemePaint,
+  withAlpha,
+  type ThemeColors,
+} from '@oxy.so/bloom/theme';
 
 import { COLORS } from './generated/spec.generated';
 import type { ColorName } from './tokens';
@@ -40,13 +46,15 @@ const IS_WEB = Platform.OS === 'web';
 const resolved = new WeakMap<ThemeColors, WeakMap<Paint, Record<string, unknown>>>();
 
 /**
- * A colour at an opacity. Native paints parse to RGB; a web paint can be a CSS
+ * A colour at an opacity: Bloom's `withAlpha` of a colour it can parse, as an
+ * app writes it (Surface computes its material from its fill, which a
+ * `color-mix()` hides from it: drawn opaque, at 72%). A web paint can be a CSS
  * variable (Bloom's prepaint), which only the browser can mix.
  */
 function atOpacity(color: string, opacity: number): string {
-  return IS_WEB
-    ? `color-mix(in srgb, ${color} ${opacity * 100}%, transparent)`
-    : withAlpha(color, opacity);
+  return !IS_WEB || parseRgb(color) !== null
+    ? withAlpha(color, opacity)
+    : `color-mix(in srgb, ${color} ${opacity * 100}%, transparent)`;
 }
 
 /** The props a paint resolves to under one palette, built once per palette and reused. */

@@ -1,5 +1,5 @@
 /** The web: no glass (Bloom's frosted Surface), Bloom's own menu, Bloom's PageHeader. */
-import { LIGHT } from './support/bloom-theme';
+import { LIGHT, withAlpha } from './support/bloom-theme';
 import { act, Glyph, hosts, mount, only, quietRenderer } from './support/mount';
 import {
   Button,
@@ -35,7 +35,16 @@ describe('glass on the web is Bloom’s frosted Surface', () => {
   it('a FAB: on its Surface, tinted from a role at a named transparency', () => {
     const r = mount(toElement(FAB(Icon(Glyph)).glass(clear.tint('primary', 'subtle'))));
     expect(only(r, 'Surface').props).toMatchObject({ sheen: false });
-    expect(only(r, 'Surface').props.fill).toContain('color-mix');
+    // Bloom's withAlpha, as an app writes it: Surface computes its material from it.
+    expect(only(r, 'Surface').props.fill).toBe(withAlpha(LIGHT.primary, 0.24));
+  });
+
+  it('a paint that is a CSS variable (Bloom’s prepaint) is mixed by the browser', () => {
+    const prepainted = { ...LIGHT, primary: 'var(--bloom-paint-primary)' };
+    const r = mount(toElement(FAB(Icon(Glyph)).glass(clear.tint('primary', 'subtle'))), prepainted);
+    expect(only(r, 'Surface').props.fill).toBe(
+      'color-mix(in srgb, var(--bloom-paint-primary) 24%, transparent)',
+    );
   });
 });
 

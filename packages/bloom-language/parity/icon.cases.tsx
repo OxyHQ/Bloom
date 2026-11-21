@@ -118,7 +118,7 @@ const placed: ParityCase[] = [
 ];
 
 /** Sizes, inks and placement on one glyph; `ICON_CASES_EVERY` draws every icon. */
-/** An icon in an ink at a named opacity: its fill at that alpha (on the web, the mix Bloom's paint writes). */
+/** An icon in an ink at a named opacity: its fill at that alpha, as Bloom's `withAlpha` writes it. */
 const translucent: ParityCase[] = [
   {
     name: 'foreground muted/70',
@@ -127,14 +127,7 @@ const translucent: ParityCase[] = [
       <Themed>
         {(c) => (
           <RN.View style={{ flexDirection: 'row' }}>
-            <Heart
-              size="md"
-              fill={
-                RN.Platform.OS === 'web'
-                  ? `color-mix(in srgb, ${c.textSecondary} 70%, transparent)`
-                  : withAlpha(c.textSecondary, 0.7)
-              }
-            />
+            <Heart size="md" fill={withAlpha(c.textSecondary, 0.7)} />
           </RN.View>
         )}
       </Themed>
