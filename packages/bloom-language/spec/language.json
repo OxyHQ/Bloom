@@ -543,7 +543,9 @@
     "choiceListStyle": ["list", "picker"],
     "priceLineTone": ["default", "discount", "muted"],
     "paymentStatusStyle": ["surface", "plain"],
-    "pipelineLayout": ["auto", "board", "single"]
+    "pipelineLayout": ["auto", "board", "single"],
+    "mediaCardSize": ["large", "medium", "small"],
+    "mediaCardLayout": ["tile", "row"]
   },
   "glass": {
     "$comment": [
@@ -1515,7 +1517,82 @@
     "cartTipPicker": { "constructors": ["CartTipPicker"], "modifiers": ["disabled"] },
     "menuItemRow": { "constructors": ["MenuItemRow"], "modifiers": ["density"] },
     "menuItemOptions": { "constructors": ["MenuItemOptions"], "modifiers": ["disabled"] },
-    "vendorCard": { "constructors": ["VendorCard"], "modifiers": ["density", "loading"] }
+    "vendorCard": { "constructors": ["VendorCard"], "modifiers": ["density", "loading"] },
+    "mediaCard": {
+      "constructors": ["MediaCard"],
+      "modifiers": ["size", "style", "loading"],
+      "size": "mediaCardSize",
+      "style": "mediaCardLayout"
+    },
+    "songCard": {
+      "constructors": ["SongCard"],
+      "modifiers": ["size", "style", "loading"],
+      "size": "mediaCardSize",
+      "style": "mediaCardLayout"
+    },
+    "albumCard": {
+      "constructors": ["AlbumCard"],
+      "modifiers": ["size", "style", "loading"],
+      "size": "mediaCardSize",
+      "style": "mediaCardLayout"
+    },
+    "artistCard": {
+      "constructors": ["ArtistCard"],
+      "modifiers": ["size", "style", "loading"],
+      "size": "mediaCardSize",
+      "style": "mediaCardLayout"
+    },
+    "playlistCard": {
+      "constructors": ["PlaylistCard"],
+      "modifiers": ["size", "style", "loading"],
+      "size": "mediaCardSize",
+      "style": "mediaCardLayout"
+    },
+    "mixCard": {
+      "constructors": ["MixCard"],
+      "modifiers": ["size", "style", "loading"],
+      "size": "mediaCardSize",
+      "style": "mediaCardLayout"
+    },
+    "podcastCard": {
+      "constructors": ["PodcastCard"],
+      "modifiers": ["size", "style", "loading"],
+      "size": "mediaCardSize",
+      "style": "mediaCardLayout"
+    },
+    "episodeCard": {
+      "constructors": ["EpisodeCard"],
+      "modifiers": ["size", "style", "loading"],
+      "size": "mediaCardSize",
+      "style": "mediaCardLayout"
+    },
+    "audiobookCard": {
+      "constructors": ["AudiobookCard"],
+      "modifiers": ["size", "style", "loading"],
+      "size": "mediaCardSize",
+      "style": "mediaCardLayout"
+    },
+    "eventCard": {
+      "constructors": ["EventCard"],
+      "modifiers": ["size", "style", "loading"],
+      "size": "mediaCardSize",
+      "style": "mediaCardLayout"
+    },
+    "profileCard": {
+      "constructors": ["ProfileCard"],
+      "modifiers": ["size", "style", "loading"],
+      "size": "mediaCardSize",
+      "style": "mediaCardLayout"
+    },
+    "genreCard": {
+      "constructors": ["GenreCard"],
+      "modifiers": ["size"],
+      "size": "mediaCardSize"
+    },
+    "friendActivityCard": { "constructors": ["FriendActivityCard"], "modifiers": [] },
+    "quickAccessTile": { "constructors": ["QuickAccessTile"], "modifiers": ["loading"] },
+    "recapCard": { "constructors": ["RecapCard"], "modifiers": [] },
+    "shareCard": { "constructors": ["ShareCard"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
