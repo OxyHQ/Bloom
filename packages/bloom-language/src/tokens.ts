@@ -195,6 +195,12 @@ export function resolveAvatarSize(token: AvatarSizeToken): number {
   return typeof token === 'string' ? AVATAR_SIZE[token] : token.value;
 }
 
+/** The ramp step of a family at a weight: that weight's step, else the regular one. */
+export function rampStep(font: TypeFamily, weight: WeightName | undefined): keyof typeof TYPE_RAMP {
+  const step = `${font}-${weight ?? ENVIRONMENT_DEFAULTS.rampWeight}`;
+  return (step in TYPE_RAMP ? step : `${font}-regular`) as keyof typeof TYPE_RAMP;
+}
+
 export interface FontStyle {
   fontSize?: number;
   lineHeight?: number;
@@ -219,12 +225,14 @@ export function resolveFont(
 ): FontStyle {
   const style: FontStyle = {};
   if (font !== undefined && !isFontSizeName(font)) {
-    const [fontSize, lineHeight, letterSpacing, fontWeight] =
-      TYPE_RAMP[`${font}-${weight ?? ENVIRONMENT_DEFAULTS.rampWeight}`];
+    // A weight the ramp has no step for (`light`, `extrabold`) is the regular step at that weight.
+    const stepped = rampStep(font, weight);
+    const [fontSize, lineHeight, letterSpacing, fontWeight] = TYPE_RAMP[stepped];
     style.fontSize = fontSize;
     style.lineHeight = lineHeight;
     style.letterSpacing = letterSpacing;
-    style.fontWeight = fontWeight;
+    style.fontWeight =
+      weight !== undefined && !stepped.endsWith(`-${weight}`) ? WEIGHT[weight] : fontWeight;
   } else {
     if (font !== undefined) style.fontSize = FONT_SIZE[font];
     if (weight !== undefined) style.fontWeight = WEIGHT[weight];
