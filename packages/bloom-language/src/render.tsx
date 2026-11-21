@@ -188,6 +188,7 @@ import {
 } from './motion/motion-node';
 import { TextRoll } from './motion/text-roll';
 import { resolveRotation, resolveScale } from './motion/tokens';
+import { PRESS_HOST_STYLE } from '@oxy.so/bloom/styles';
 
 const IS_WEB = Platform.OS === 'web';
 
@@ -205,6 +206,30 @@ const HoverGroupView = styled(View as ComponentType<{ style?: unknown }>, {
 
 /** A host or Bloom component, as `draw` takes it. */
 type Host = unknown;
+
+/** The language's own pressable hosts. */
+const PRESSABLE_HOSTS: ReadonlySet<Host> = new Set([Pressable, HoverGroupPressable]);
+const pressHostOuts = new WeakMap<StyleOut, StyleOut>();
+
+/**
+ * A pressable host's style on the web, with Bloom's press host class: a
+ * state's selector reads it to leave a hover or a press inside a pressable to
+ * that pressable, as react-native-web's Pressable does (the spec's
+ * `variants.selectors`). Built once per style.
+ */
+function pressHostOut(host: Host, out: StyleOut): StyleOut {
+  if (PRESS_HOST_STYLE === undefined || !PRESSABLE_HOSTS.has(host)) return out;
+  let marked = pressHostOuts.get(out);
+  if (marked === undefined) {
+    marked = Object.freeze({
+      ...out,
+      style: out.style === undefined ? PRESS_HOST_STYLE : [out.style, PRESS_HOST_STYLE].flat(),
+    });
+    pressHostOuts.set(out, marked);
+    pressHostOuts.set(marked, marked);
+  }
+  return marked;
+}
 
 /**
  * `createElement` over the host and Bloom components with props assembled from
@@ -694,10 +719,11 @@ interface Context {
  */
 function drawHost(
   host: Host,
-  out: StyleOut,
+  style: StyleOut,
   props: Record<string, unknown>,
   ...children: ReactNode[]
 ): ReactElement {
+  const out = pressHostOut(host, style);
   if (STATEFUL in props) {
     const { [STATEFUL]: states, ...rest } = props;
     return draw(StateHost, { ...rest, host, out, states }, ...children);
@@ -723,10 +749,11 @@ interface Outermost {
 function drawOutermost(
   box: Outermost | undefined,
   host: Host,
-  out: StyleOut,
+  style: StyleOut,
   props: Record<string, unknown>,
   ...children: ReactNode[]
 ): ReactElement {
+  const out = pressHostOut(host, style);
   const animated = animatedHost(host) as Host | undefined;
   // A host with no animated twin (a Bloom component) and a box whose variants
   // answer its state (its `StateHost`'s) move in the box `drawNode` adds.

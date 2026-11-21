@@ -12,6 +12,7 @@ import { useMessages } from '../locale/messages';
 import { useImageResolver } from '../image-resolver/context';
 import { isImageUrl } from '../image-resolver/is-image-url';
 import { Z_INDEX } from '../styles/z-index';
+import { PRESS_HOST_STYLE } from '../styles/press-host';
 import { useAvatarPlaceholder } from './context';
 import { AVATAR_MESSAGES } from './messages';
 import { LiveBadge } from './LiveBadge';
@@ -268,8 +269,10 @@ function AvatarImageContent({
   );
 }
 
+/** Pressed, the avatar dims; on the web it also carries the press host class. */
 function avatarPressStyle({ pressed }: PressableStateCallbackType) {
-  return pressed ? styles.pressed : undefined;
+  if (!pressed) return PRESS_HOST_STYLE;
+  return PRESS_HOST_STYLE === undefined ? styles.pressed : [styles.pressed, PRESS_HOST_STYLE];
 }
 
 const AvatarComponent: React.FC<AvatarProps> = ({

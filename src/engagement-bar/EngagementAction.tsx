@@ -5,6 +5,7 @@ import { Pressable, Text, type PressableStateCallbackType, type ViewStyle } from
 import { SpinnerIcon } from '../loading/SpinnerIcon';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import { IS_WEB } from '../styles/platform';
+import { PRESS_HOST_STYLE } from '../styles/press-host';
 import { ENGAGEMENT_HIT_SLOP } from './constants';
 import { EngagementBarContext, type EngagementPress } from './context';
 import { EngagementCountRoll } from './EngagementCountRoll';
@@ -162,7 +163,9 @@ function EngagementActionComponent({
       hitSlop={hitSlop}
       style={({ pressed }: PressableStateCallbackType) => {
         const own = pressed && !blocked ? tonePaint.pressed : rest;
-        return style === undefined ? own : [own, style];
+        const drawn = style === undefined ? own : [own, style];
+        // On the web it carries the press host class (styles/press-host.ts).
+        return PRESS_HOST_STYLE === undefined ? drawn : [drawn, PRESS_HOST_STYLE];
       }}
       testID={testID}
     >

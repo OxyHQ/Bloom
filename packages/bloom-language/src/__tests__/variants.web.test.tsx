@@ -12,7 +12,7 @@ import { toElement } from '../render';
 import type { Child } from '../node';
 import { WEB_CLASS, WEB_SHEET } from '../generated/web-sheet.generated';
 import { adoptVariantClasses, variantSheet } from '../web-sheet';
-import { adoptStyleSheet } from '@oxy.so/bloom/styles';
+import { adoptStyleSheet, PRESS_HOST_CLASS } from '@oxy.so/bloom/styles';
 
 jest.mock('react-native', () => ({
   ...jest.requireActual('react-native'),
@@ -78,8 +78,24 @@ describe('on the web, a variant is the same class under its condition’s CSS', 
         flexDirection: WEB_CLASS['flexDirection:row'],
         'backgroundColor@hovered': `${WEB_CLASS['backgroundColor:@surface']}-hovered`,
       },
+      { $$css: true, bloomPressHost: PRESS_HOST_CLASS },
       { $$css: true, blStateAnchor: 'blsg' },
     ]);
+  });
+
+  it('every pressable host carries Bloom’s press host class, which a state’s selector reads', () => {
+    const r = mount(HStack(Text('a')).onPress(() => {}));
+    const press = r.root.findByType('Pressable' as never);
+    expect(press.props.style).toEqual([
+      { $$css: true, flexDirection: WEB_CLASS['flexDirection:row'] },
+      { $$css: true, bloomPressHost: PRESS_HOST_CLASS },
+    ]);
+    // A plain view is no pressable.
+    const view = mount(HStack(Text('a'))).root.findByType('View' as never);
+    expect(view.props.style).toEqual({
+      $$css: true,
+      flexDirection: WEB_CLASS['flexDirection:row'],
+    });
   });
 
   it('a variant sheet puts each class under its condition’s CSS', () => {
