@@ -63,11 +63,11 @@ describe('on the web, styles are classes from the generated sheet', () => {
   });
 
   it('a value the sheet has no class for (an app token) stays inline beside the classes', () => {
-    const t = defineTokens({ space: { gutter: 72 } });
+    const t = defineTokens({ space: { gutter: 70 } });
     const r = mount(toElement(VStack().padding('top', 'md').padding('leading', t.space.gutter)));
     expect(r.root.findByType('View' as never).props.style).toEqual([
       { $$css: true, paddingTop: WEB_CLASS['paddingTop:12'] },
-      { paddingStart: 72 },
+      { paddingStart: 70 },
     ]);
   });
 

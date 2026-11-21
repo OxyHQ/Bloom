@@ -312,8 +312,8 @@ const boxes: ParityCase[] = [
 
 const named: ParityCase[] = [
   {
-    name: 'a faded, thick-bordered box',
-    language: () => toElement(L.VStack().border('border', 'thick').opacity('faded')),
+    name: 'a 70% opaque, thick-bordered box',
+    language: () => toElement(L.VStack().border('border', 'thick').opacity('70')),
     bloom: () => (
       <Themed>
         {(c) => <RN.View style={{ borderWidth: 2, borderColor: c.border, opacity: 0.7 }} />}
@@ -321,22 +321,26 @@ const named: ParityCase[] = [
     ),
   },
   {
-    name: 'a soft box',
-    language: () => toElement(L.VStack().opacity('soft')),
+    name: 'an 80% opaque box',
+    language: () => toElement(L.VStack().opacity('80')),
     bloom: () => <RN.View style={{ opacity: 0.8 }} />,
   },
-  // The steps between Bloom's rungs, at the values apps render today (Tailwind's scale).
+  // Numeric tokens: exact values carried over from apps (Tailwind's scale and arbitrary values).
   ...(
     [
-      ['none-2xs', 1],
-      ['xs-sm', 6],
-      ['sm-md', 10],
-      ['md-lg', 14],
-      ['2xl-3xl', 28],
-      ['3xl-4xl', 36],
-      ['4xl-5xl', 48],
-      ['6xl', 64],
-      ['7xl', 96],
+      ['1', 1],
+      ['6', 6],
+      ['10', 10],
+      ['14', 14],
+      ['28', 28],
+      ['36', 36],
+      ['44', 44],
+      ['48', 48],
+      ['56', 56],
+      ['64', 64],
+      ['96', 96],
+      ['160', 160],
+      ['1200', 1200],
     ] as const
   ).flatMap(([rung, value]) => [
     {
@@ -359,7 +363,7 @@ const named: ParityCase[] = [
   // A fill and a border at a named opacity (`bg-primary/10`, `border-border/60`).
   {
     name: 'a fill and a border at a named opacity',
-    language: () => toElement(L.VStack().background('primary/faint').border('border/dim', 'thin')),
+    language: () => toElement(L.VStack().background('primary/10').border('border/60', 'thin')),
     bloom: () => (
       <Themed>
         {(c) => (
@@ -384,10 +388,10 @@ const named: ParityCase[] = [
   },
   ...(
     [
-      ['pale', 0.2],
-      ['hazy', 0.4],
-      ['dim', 0.6],
-      ['soft-opaque', 0.9],
+      ['20', 0.2],
+      ['40', 0.4],
+      ['60', 0.6],
+      ['90', 0.9],
     ] as const
   ).map(([name, value]) => ({
     name: `opacity ${name}`,
@@ -396,11 +400,11 @@ const named: ParityCase[] = [
   })),
   ...(
     [
-      ['xs-sm', 6],
-      ['sm-md', 10],
-      ['md-lg', 14],
-      ['lg-xl', 18],
-      ['xl-2xl', 22],
+      ['6', 6],
+      ['10', 10],
+      ['14', 14],
+      ['18', 18],
+      ['22', 22],
     ] as const
   ).map(([rung, value]) => ({
     name: `corner ${rung}`,

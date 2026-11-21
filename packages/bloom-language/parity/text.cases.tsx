@@ -25,7 +25,14 @@ import {
   type TypeScaleVariant,
 } from '@oxy.so/bloom/typography';
 
-import { COLORS, FONT_SIZE, LEADING, TRACKING } from '../src/generated/spec.generated';
+import {
+  COLORS,
+  FONT_SIZE,
+  LEADING,
+  LEADING_PX,
+  TRACKING,
+  TRACKING_PX,
+} from '../src/generated/spec.generated';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import type { ColorName, FontSizeName, TextStyleName, TypeFamily, WeightName } from '../src/tokens';
@@ -328,39 +335,39 @@ const named: ParityCase[] = [
   })),
   // Tailwind's `text-base` (16/24), `text-lg` (18/28) and `text-[11px]`, as apps set them.
   {
-    name: 'text-base: size md-lg, leading normal',
-    language: () => L.Text('Base').font('md-lg').leading('normal'),
+    name: 'text-base: size 16, leading normal',
+    language: () => L.Text('Base').font('16').leading('normal'),
     bloom: () => <Text style={{ fontSize: 16, lineHeight: 24 }}>Base</Text>,
   },
   {
-    name: 'text-lg: size lg-xl, leading open',
-    language: () => L.Text('Large').font('lg-xl').leading('open'),
+    name: 'text-lg: size 18, leading 28px',
+    language: () => L.Text('Large').font('18').leading('28px'),
     bloom: () => <Text style={{ fontSize: 18, lineHeight: 28 }}>Large</Text>,
   },
   // Bloom's `text-caption` (11/14), Tailwind's `text-xl` (20/28), `text-2xl` (24/32) and `text-[14px]`.
   {
-    name: 'text-caption: size 2xs-xs, leading close-snug',
-    language: () => L.Text('Caption').font('2xs-xs').leading('close-snug'),
+    name: 'text-caption: size 11, leading 14px',
+    language: () => L.Text('Caption').font('11').leading('14px'),
     bloom: () => <Text style={{ fontSize: 11, lineHeight: 14 }}>Caption</Text>,
   },
   {
-    name: 'text-xl: size xl, leading easy-normal',
-    language: () => L.Text('Title').font('xl').leading('easy-normal'),
+    name: 'text-xl: size xl, leading 28px',
+    language: () => L.Text('Title').font('xl').leading('28px'),
     bloom: () => <Text style={{ fontSize: 20, lineHeight: 28 }}>Title</Text>,
   },
   {
-    name: 'text-2xl: size 2xl-3xl, leading snug-easy',
-    language: () => L.Text('Head').font('2xl-3xl').leading('snug-easy'),
+    name: 'text-2xl: size 24, leading 32px',
+    language: () => L.Text('Head').font('24').leading('32px'),
     bloom: () => <Text style={{ fontSize: 24, lineHeight: 32 }}>Head</Text>,
   },
   {
-    name: 'text-[14px]: size sm-md',
-    language: () => L.Text('Body').font('sm-md'),
+    name: 'text-[14px]: size 14',
+    language: () => L.Text('Body').font('14'),
     bloom: () => <Text style={{ fontSize: 14 }}>Body</Text>,
   },
   {
-    name: 'text-[11px]: size 2xs-xs',
-    language: () => L.Text('Small').font('2xs-xs'),
+    name: 'text-[11px]: size 11',
+    language: () => L.Text('Small').font('11'),
     bloom: () => <Text style={{ fontSize: 11 }}>Small</Text>,
   },
 ].map((c) => ({ ...c, language: () => toElement(c.language()) }));
@@ -371,9 +378,9 @@ const named: ParityCase[] = [
  */
 const translucent: ParityCase[] = (
   [
-    ['muted/faded', 'textSecondary', 'muted-foreground', 0.7],
-    ['primary/sheer', 'primary', 'primary', 0.3],
-    ['destructive/faint', 'destructive', 'destructive', 0.1],
+    ['muted/70', 'textSecondary', 'muted-foreground', 0.7],
+    ['primary/30', 'primary', 'primary', 0.3],
+    ['destructive/10', 'destructive', 'destructive', 0.1],
   ] as const
 ).map(([token, key, variable, amount]) => ({
   name: `foreground ${token}`,
@@ -404,6 +411,16 @@ const tracked: ParityCase[] = [
     bloom: () => (
       <Text style={{ fontSize: 15, letterSpacing: 15 * TRACKING[tracking] }}>Track</Text>
     ),
+  })),
+  ...(Object.keys(TRACKING_PX) as (keyof typeof TRACKING_PX)[]).map((tracking) => ({
+    name: `size md, tracking ${tracking}`,
+    language: () => toElement(L.Text('Track').font('md').tracking(tracking)),
+    bloom: () => <Text style={{ fontSize: 15, letterSpacing: TRACKING_PX[tracking] }}>Track</Text>,
+  })),
+  ...(Object.keys(LEADING_PX) as (keyof typeof LEADING_PX)[]).map((leading) => ({
+    name: `size md, leading ${leading}`,
+    language: () => toElement(L.Text('Lines').font('md').leading(leading)),
+    bloom: () => <Text style={{ fontSize: 15, lineHeight: LEADING_PX[leading] }}>Lines</Text>,
   })),
   {
     name: 'caption-1, tracking wider (uppercase labels)',

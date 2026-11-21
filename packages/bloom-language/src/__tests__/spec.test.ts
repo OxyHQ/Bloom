@@ -18,10 +18,13 @@ import {
   ICON_SIZE,
   LAYER_RANK,
   LEADING,
+  LEADING_PX,
   type NODE_MODIFIERS,
   OPACITY,
   SPACE,
   TYPE_RAMP,
+  TRACKING,
+  TRACKING_PX,
 } from '../generated/spec.generated';
 import { WEB_CLASS, WEB_SHEET } from '../generated/web-sheet.generated';
 import type {
@@ -68,20 +71,51 @@ const BLOOM_SRC = join(__dirname, '../../../../src');
 const PACKAGE = join(__dirname, '../..');
 const read = (path: string) => readFileSync(join(BLOOM_SRC, path), 'utf8');
 
+/** A numeric token: an exact value carried over from apps (`'44'`, `'28px'`, `'-0.02em'`), not a design rung. */
+const NUMERIC = /^-?\d+(\.\d+)?(px|em)?$/;
+/** A scale's named rungs: the design scale, which Bloom owns. */
+const named = (scale: Record<string, number>) =>
+  Object.fromEntries(Object.entries(scale).filter(([name]) => !NUMERIC.test(name)));
+
 /** `_2xl` → `2xl`: Bloom's JS keys spell a leading digit with an underscore. */
 const unprefixed = (table: Record<string, unknown>) =>
   Object.fromEntries(Object.entries(table).map(([key, value]) => [key.replace(/^_/, ''), value]));
 
 describe('the spec is Bloom’s scales, rung for rung', () => {
   it('space, corner, size, leading and hit slop equal Bloom’s tokens', () => {
-    expect(SPACE).toEqual({ none: 0, ...unprefixed(tokens.space) });
-    expect(CORNER).toEqual(unprefixed(tokens.borderRadius));
-    expect(FONT_SIZE).toEqual(unprefixed(tokens.fontSize));
+    expect(named(SPACE)).toEqual({ none: 0, ...unprefixed(tokens.space) });
+    expect(named(CORNER)).toEqual(unprefixed(tokens.borderRadius));
+    expect(named(FONT_SIZE)).toEqual(unprefixed(tokens.fontSize));
     expect(LEADING).toEqual(tokens.lineHeight);
     expect(HIT_SLOP).toEqual(tokens.hitSlop);
     // The language names Bloom's one disabled fade neutrally: it is any half opacity, not only a disabled control's.
     expect(OPACITY.half).toBe(tokens.DISABLED_OPACITY);
     expect(DURATION).toEqual(tokens.animation.duration);
+  });
+
+  it('a numeric token is its own value, in its scale’s unit: an exact value carried over from apps', () => {
+    const scales: [Record<string, number>, string, number][] = [
+      [SPACE, '', 1],
+      [CORNER, '', 1],
+      [FONT_SIZE, '', 1],
+      [LEADING_PX, 'px', 1],
+      [TRACKING, 'em', 1],
+      [TRACKING_PX, 'px', 1],
+      [OPACITY, '', 100],
+    ];
+    let checked = 0;
+    for (const [scale, unit, factor] of scales) {
+      for (const [name, value] of Object.entries(scale)) {
+        if (!NUMERIC.test(name)) continue;
+        expect(name).toBe(`${Number((value * factor).toFixed(6))}${unit}`);
+        checked += 1;
+      }
+    }
+    // Vacuity floor: a spec with no numeric tokens checks nothing.
+    expect(checked).toBeGreaterThanOrEqual(50);
+    // Every px line height and tracking is numeric; the named ones are ratios and em.
+    expect(Object.keys(LEADING_PX).every((name) => NUMERIC.test(name))).toBe(true);
+    expect(Object.keys(LEADING).some((name) => NUMERIC.test(name))).toBe(false);
   });
 
   it('an image’s content fits are BloomImage’s', () => {

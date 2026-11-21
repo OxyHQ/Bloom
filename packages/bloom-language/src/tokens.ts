@@ -14,10 +14,12 @@ import {
   HIT_SLOP,
   ICON_SIZE,
   LEADING,
+  LEADING_PX,
   OPACITY,
   SHRINK,
   SPACE,
   TRACKING,
+  TRACKING_PX,
   type TYPE_FAMILIES,
   TYPE_RAMP,
   WEIGHT,
@@ -56,9 +58,10 @@ export type FontName = TypeFamily | FontSizeName | FontFamilyName;
  */
 export type FontFamilyName = (typeof ENUMS.fontFamily)[number];
 /** Letter spacing in em of the font size: Tailwind's `tracking-*`. */
-export type TrackingName = keyof typeof TRACKING;
+export type TrackingName = keyof typeof TRACKING | keyof typeof TRACKING_PX;
 export type WeightName = keyof typeof WEIGHT;
-export type LeadingName = keyof typeof LEADING;
+/** A line height: a named ratio of the size (Bloom's), or an exact one in px carried over from apps (`'28px'`). */
+export type LeadingName = keyof typeof LEADING | keyof typeof LEADING_PX;
 export type IconSizeName = keyof typeof ICON_SIZE;
 export type AvatarSizeName = keyof typeof AVATAR_SIZE;
 /**
@@ -69,9 +72,9 @@ export type AvatarSizeName = keyof typeof AVATAR_SIZE;
 export type ColorName = keyof typeof COLORS;
 export type OpacityName = keyof typeof OPACITY;
 /**
- * What a colour modifier takes: a role, or a role at a named opacity
- * (`'muted/faded'` is `muted` at 70%), Tailwind's `/70` with a name for the
- * amount, never a number.
+ * What a colour modifier takes: a role, or a role at an opacity token
+ * (`'muted/70'` is `muted` at 70%): Tailwind's `/70`, from the spec's closed
+ * set, never an arbitrary number.
  */
 export type ColorToken = ColorName | `${ColorName}/${OpacityName}`;
 export type BorderWidthName = keyof typeof BORDER_WIDTH;
@@ -260,9 +263,15 @@ export function resolveFont(
   // Both measure from the size: the font's, else Bloom's `Text` with no variant (its size is not written).
   const size = style.fontSize ?? ENVIRONMENT_DEFAULTS.fontSize;
   if (leading !== undefined) {
-    const ratio = typeof leading === 'string' ? LEADING[leading] : leading.value;
-    style.lineHeight = size * ratio;
+    if (typeof leading !== 'string') style.lineHeight = size * leading.value;
+    else if (leading in LEADING_PX)
+      style.lineHeight = LEADING_PX[leading as keyof typeof LEADING_PX];
+    else style.lineHeight = size * LEADING[leading as keyof typeof LEADING];
   }
-  if (tracking !== undefined) style.letterSpacing = size * TRACKING[tracking];
+  if (tracking !== undefined)
+    style.letterSpacing =
+      tracking in TRACKING_PX
+        ? TRACKING_PX[tracking as keyof typeof TRACKING_PX]
+        : size * TRACKING[tracking as keyof typeof TRACKING];
   return style;
 }
