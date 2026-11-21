@@ -60,6 +60,7 @@ import { CHATS } from './chat';
 import { LISTINGS } from './listings';
 import { MEDIA } from './media';
 import { CARD_FORMS } from './card-form';
+import { CHECKOUT_SHEETS } from './checkout-sheet';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -127,4 +128,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...LISTINGS,
   ...MEDIA,
   ...CARD_FORMS,
+  ...CHECKOUT_SHEETS,
 };

@@ -95,3 +95,4 @@ export const CardForm = 'CardForm';
 export const CardFormCountry = 'CardFormCountry';
 export const CardFormPostcode = 'CardFormPostcode';
 export const CardFormHostedField = 'CardFormHostedField';
+export const CheckoutSheet = 'CheckoutSheet';
