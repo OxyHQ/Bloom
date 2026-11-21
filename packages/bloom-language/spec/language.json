@@ -525,7 +525,20 @@
     "mapMarkerState": ["default", "active", "visited"],
     "mapPriceMarkerSize": ["default", "compact"],
     "followButtonSize": ["sm", "md", "lg"],
-    "shelfLayout": ["row", "grid", "paged"]
+    "shelfLayout": ["row", "grid", "paged"],
+    "noteCardLayout": ["grid", "row"],
+    "accentTone": [
+      "default",
+      "primary",
+      "vivid",
+      "secondary",
+      "tertiary",
+      "success",
+      "warning",
+      "error",
+      "info"
+    ],
+    "shareSheetSize": ["sm", "md", "lg"]
   },
   "glass": {
     "$comment": [
@@ -1416,7 +1429,24 @@
     "cardFormCountry": { "constructors": ["CardFormCountry"], "modifiers": ["disabled"] },
     "cardFormPostcode": { "constructors": ["CardFormPostcode"], "modifiers": ["disabled"] },
     "cardFormHostedField": { "constructors": ["CardFormHostedField"], "modifiers": ["disabled"] },
-    "checkoutSheet": { "constructors": ["CheckoutSheet"], "modifiers": [] }
+    "checkoutSheet": { "constructors": ["CheckoutSheet"], "modifiers": [] },
+    "routeStops": { "constructors": ["RouteStops"], "modifiers": ["density"] },
+    "noteCard": {
+      "constructors": ["NoteCard"],
+      "modifiers": ["style", "tint", "loading"],
+      "style": "noteCardLayout",
+      "tint": "accentTone"
+    },
+    "noteCardSkeleton": {
+      "constructors": ["NoteCardSkeleton"],
+      "modifiers": ["style", "lines"],
+      "style": "noteCardLayout"
+    },
+    "shareSheet": {
+      "constructors": ["ShareSheet"],
+      "modifiers": ["size"],
+      "size": "shareSheetSize"
+    }
   },
   "sfSymbols": {
     "$comment": [
