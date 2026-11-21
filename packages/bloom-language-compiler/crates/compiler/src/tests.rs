@@ -815,3 +815,26 @@ fn the_price_breakdown_and_payment_status_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_crm_families_are_checked() {
+    let imports =
+        "import { ContactProfileCard, DealCard, PipelineBoard, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (s, r) => VStack(ContactProfileCard('a').density('compact'), DealCard('b'), PipelineBoard(s, r).style('single'));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("PipelineBoard(s, r).style('kanban')", "Unknown pipelineLayout token 'kanban' for .style()"),
+        (
+            "ContactProfileCard('a').density('comfortable')",
+            "Unknown density token 'comfortable' for .density()",
+        ),
+        ("DealCard('a').size('sm')", "DealCard has no modifier .size()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (s, r) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

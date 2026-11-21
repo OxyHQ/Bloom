@@ -15,6 +15,7 @@ import { ROUTE_NOTE_SHARE_CASES } from '../../parity/route-note-share.cases';
 import { GENERIC_CASES } from '../../parity/generic.cases';
 import { ADDRESS_PAYMENT_CASES } from '../../parity/address-payment.cases';
 import { PRICE_PAYMENT_STATUS_CASES } from '../../parity/price-payment-status.cases';
+import { CRM_CASES } from '../../parity/crm.cases';
 import { COMPOSER_PANEL_CASES } from '../../parity/composer-panel.cases';
 import { LISTINGS_MEDIA_CASES } from '../../parity/listings-media.cases';
 import { MEDIA_CONTROL_CASES } from '../../parity/media-controls.cases';
@@ -97,3 +98,4 @@ export const RouteStopsNotesAndSharing: Story = { args: { cases: ROUTE_NOTE_SHAR
 export const GenericComponents: Story = { args: { cases: GENERIC_CASES } };
 export const AddressesAndPaymentMethods: Story = { args: { cases: ADDRESS_PAYMENT_CASES } };
 export const PricesAndPaymentStatus: Story = { args: { cases: PRICE_PAYMENT_STATUS_CASES } };
+export const Crm: Story = { args: { cases: CRM_CASES } };

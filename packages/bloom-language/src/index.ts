@@ -599,3 +599,24 @@ export type {
   PaymentStatusBlockOptions,
   PaymentStatusBlockView,
 } from './controls/payment-status';
+
+// CRM (controls/crm.tsx)
+export {
+  ContactProfileCard,
+  DealCard,
+  LeadScoreCard,
+  PipelineBoard,
+  PipelineColumn,
+} from './controls/crm';
+export type {
+  ContactProfileCardOptions,
+  ContactProfileCardView,
+  DealCardOptions,
+  DealCardView,
+  LeadScoreCardOptions,
+  LeadScoreCardView,
+  PipelineBoardOptions,
+  PipelineBoardView,
+  PipelineColumnOptions,
+  PipelineColumnView,
+} from './controls/crm';

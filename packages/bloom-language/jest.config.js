@@ -40,6 +40,7 @@ module.exports = {
     '^@oxy.so/bloom/(route-stops|note-card|share-sheet|connection-dots|outline-nav|pagination|progressive-blur)$': `${support}/bloom-products.ts`,
     // Wave 7: the commerce families.
     '^@oxy.so/bloom/(address|payment-method|price-breakdown|payment-status)$': `${support}/bloom-products.ts`,
+    '^@oxy.so/bloom/(contact-card|lead-score|pipeline)$': `${support}/bloom-products.ts`,
     '^@oxy.so/bloom/(app-shell|screen|dialog|tab-pager|tab-pager/expo-router|panel-routing/expo-router)$': `${support}/bloom-router.ts`,
     // Optional native modules: absent unless a test mocks one in.
     '^(expo|expo-blur|expo-glass-effect|expo-router|@expo/ui/swift-ui/modifiers)$': `${support}/absent/$1.ts`,

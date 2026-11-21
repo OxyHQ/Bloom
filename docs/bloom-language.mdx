@@ -1436,6 +1436,25 @@ options?)` (`activeId`, `onSelect`, `progress`, `hideProgress`, `title`,
 placed and sized by the view's own modifiers. Each is named with `.label()`
 where Bloom takes a name.
 
+### CRM
+
+```ts
+ContactProfileCard(contact.name, { role, company, channels, stats, actions: Button(Text('Open')) }).density('compact').onPress(open)
+LeadScoreCard(lead.score, { factors, trend }).label(`Lead score for ${lead.name}`)
+PipelineBoard(stages, (stage) => PipelineColumn(stage.name, deals(stage), stage)).style('single')
+```
+
+Bloom's CRM families: `ContactProfileCard(name, options?)` (`.density('default'
+| 'compact')`, `default` being Bloom's comfortable; its `actions` a child; it
+takes `.onPress()` itself), `LeadScoreCard(score, options?)` (named with
+`.label()`, which Bloom requires), `DealCard(title, options?)` (its `actions` a
+child; `.onPress()` its own), `PipelineColumn(name, deals, options?)` (a
+stage's data; its deals the content, its `width` a space token) and
+`PipelineBoard(stages, renderStage, options?)` (`renderStage` returns a
+language view; `.style('auto' | 'board' | 'single')` its layout; `columnWidth`
+and `singleMaxWidth` space tokens). A cover's and a last touch's tones are
+Bloom's accent tones, kept in the options as data.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
