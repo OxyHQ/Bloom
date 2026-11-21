@@ -550,7 +550,8 @@
     "mortgageLayout": ["auto", "stacked", "split"],
     "listingCardLayout": ["vertical", "horizontal"],
     "offeringBadgeSize": ["sm", "md"],
-    "offeringBadgeStyle": ["tinted", "onMedia"]
+    "offeringBadgeStyle": ["tinted", "onMedia"],
+    "activityFeedGrouping": ["day", "none"]
   },
   "glass": {
     "$comment": [
@@ -1649,7 +1650,18 @@
       "style": "offeringBadgeStyle"
     },
     "priceEstimate": { "constructors": ["PriceEstimate"], "modifiers": [] },
-    "pricePerAreaComparison": { "constructors": ["PricePerAreaComparison"], "modifiers": [] }
+    "pricePerAreaComparison": { "constructors": ["PricePerAreaComparison"], "modifiers": [] },
+    "projectBoard": {
+      "constructors": ["ProjectBoard", "GroupedProjectBoard", "ProjectBoardTemplate"],
+      "modifiers": []
+    },
+    "projectBoardCardContent": { "constructors": ["ProjectBoardCardContent"], "modifiers": [] },
+    "boardDragHandle": { "constructors": ["BoardDragHandle"], "modifiers": [] },
+    "activityFeed": {
+      "constructors": ["ActivityFeed"],
+      "modifiers": ["style", "density", "lines"],
+      "style": "activityFeedGrouping"
+    }
   },
   "sfSymbols": {
     "$comment": [
