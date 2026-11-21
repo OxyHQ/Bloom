@@ -12,6 +12,7 @@ import android.graphics.RuntimeShader
 import android.graphics.Shader
 import android.os.Build
 import androidx.annotation.RequiresApi
+import java.util.concurrent.atomic.AtomicBoolean
 import so.oxy.bloom.glassmenu.field.GlassFieldTexture
 import so.oxy.bloom.glassmenu.field.GlassGaussianField
 import kotlin.math.ceil
@@ -35,10 +36,11 @@ internal class GlassRenderer(private val density: Float, private val minimumFiel
   private val texture = GlassFieldTexture()
   private val nodeRect = Rect()
   private val union = RectF()
-  private var warmed = false
 
   init {
-    warmField()
+    // The warm-ups prime what every renderer shares (the field code, the GPU pipelines), so they run once per
+    // process: a lens per feed row would otherwise start a thread and draw the warm-up for every row.
+    if (fieldWarmed.compareAndSet(false, true)) warmField()
   }
 
   private fun warmField() {
@@ -59,8 +61,7 @@ internal class GlassRenderer(private val density: Float, private val minimumFiel
   }
 
   fun warmPipelines(canvas: Canvas): Boolean {
-    if (warmed) return false
-    warmed = true
+    if (!pipelinesWarmed.compareAndSet(false, true)) return false
     texture.preallocate()
     texture.bindPrepared(material)
     texture.bindPrepared(portal)
@@ -241,6 +242,8 @@ internal class GlassRenderer(private val density: Float, private val minimumFiel
   }
 
   private companion object {
+    val fieldWarmed = AtomicBoolean(false)
+    val pipelinesWarmed = AtomicBoolean(false)
     const val MorphBlur = 1.2f
     const val BlurReach = 2f
     const val PortalReach = 28f

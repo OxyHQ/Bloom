@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Pulls the glass menu engine from the upstream working tree, renames its package to Bloom's, and
 # reapplies Bloom's own changes (patches/*.patch: themable row ink, the BloomLensMenu module name and Bloom's
-# names for its lens prop and icon host, opening with rows that arrive as the menu opens, and the closed event).
+# names for its lens prop and icon host, opening with rows that arrive as the menu opens, the closed event, and
+# warm-ups that run once per process rather than once per lens).
 # It also takes the menu's JavaScript and the chrome's TypeScript; patches/menu/*.patch carries Bloom's changes to
 # the menu's JavaScript (the same names, and those two props).
 # Usage: sync-from-upstream.sh [upstream-java-dir]
