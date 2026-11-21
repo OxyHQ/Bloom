@@ -4603,10 +4603,10 @@
     "react-dom": ">=18.0.0",
     "react-native": ">=0.73.0",
     "react-native-css": ">=3.1.0-rc.0",
-    "react-native-gesture-handler": ">=2.16.1",
+    "react-native-gesture-handler": ">=3.3.0",
     "react-native-keyboard-controller": ">=1.11.4",
     "react-native-pager-view": ">=6.0.0",
-    "react-native-reanimated": ">=3.13.0",
+    "react-native-reanimated": ">=4.6.0",
     "react-native-safe-area-context": ">=5.0.0",
     "react-native-screens": ">=3.16.0",
     "react-native-svg": ">=13.0.0"
