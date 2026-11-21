@@ -90,3 +90,4 @@ export const SettingsRows: Story = { args: { family: 'settings' } };
 export const DateAndTimePickers: Story = { args: { family: 'datePicker' } };
 export const Ratings: Story = { args: { family: 'rating' } };
 export const MetersAndProgress: Story = { args: { family: 'statBar' } };
+export const Stickers: Story = { args: { family: 'sticker' } };
