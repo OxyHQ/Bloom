@@ -701,7 +701,9 @@
     "scrollSurfaceStyle": ["primary", "secondary", "full"],
     "resizeHandleStyle": ["grip", "pill"],
     "modePresentation": ["segmented", "toggle"],
-    "teamPlacement": ["header", "footer"]
+    "teamPlacement": ["header", "footer"],
+    "hourFormat": ["12h", "24h"],
+    "timeFieldSize": ["sm", "md"]
   },
   "glass": {
     "$comment": [
@@ -1166,7 +1168,17 @@
     "savedToast": ["value?"],
     "minDate": ["value"],
     "maxDate": ["value"],
-    "dateFormat": ["value"]
+    "dateFormat": ["value"],
+    "bounds": ["value", "value?"],
+    "unavailable": ["value"],
+    "weekStart": ["value"],
+    "locale": ["value"],
+    "labels": ["value"],
+    "quickSelect": ["value"],
+    "initialMonth": ["value"],
+    "months": ["value"],
+    "step": ["value"],
+    "hourFormat": ["hourFormat"]
   },
   "universal": [
     "padding",
@@ -2186,6 +2198,54 @@
       "constructors": ["SettingsDateField"],
       "universal": false,
       "modifiers": ["minDate", "maxDate", "dateFormat", "savedToast", "testID"]
+    },
+    "datePicker": {
+      "constructors": ["DatePicker"],
+      "modifiers": [
+        "bounds",
+        "unavailable",
+        "weekStart",
+        "locale",
+        "placeholder",
+        "disabled",
+        "presented",
+        "labels"
+      ]
+    },
+    "dateRangePicker": {
+      "constructors": ["DateRangePicker"],
+      "modifiers": [
+        "bounds",
+        "unavailable",
+        "weekStart",
+        "locale",
+        "placeholder",
+        "disabled",
+        "presented",
+        "labels",
+        "quickSelect"
+      ]
+    },
+    "calendar": {
+      "constructors": ["Calendar"],
+      "modifiers": ["bounds", "unavailable", "weekStart", "locale", "initialMonth", "labels"]
+    },
+    "rangeCalendar": {
+      "constructors": ["RangeCalendar"],
+      "modifiers": [
+        "bounds",
+        "unavailable",
+        "weekStart",
+        "locale",
+        "initialMonth",
+        "months",
+        "labels"
+      ]
+    },
+    "timeField": {
+      "constructors": ["TimeField"],
+      "modifiers": ["bounds", "step", "hourFormat", "size", "placeholder", "disabled"],
+      "size": "timeFieldSize"
     }
   },
   "sfSymbols": {
