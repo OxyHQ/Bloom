@@ -619,7 +619,11 @@
     "keyboardDismiss": ["never", "immediately", "interactively"],
     "dragIndicator": ["visible", "hidden"],
     "sheetMaterial": ["surface", "flat"],
-    "sheetSizing": ["content", "fill"]
+    "sheetSizing": ["content", "fill"],
+    "sidebarVariant": ["panel", "rail"],
+    "sidebarSurface": ["card", "plain", "docked"],
+    "sidebarSize": ["sm", "md", "lg"],
+    "footerPinning": ["absolute", "document", "inline", "sticky"]
   },
   "glass": {
     "$comment": [
@@ -1009,7 +1013,25 @@
     "sizing": ["sheetSizing"],
     "interactiveDismissDisabled": ["value?"],
     "onDismissAttempt": ["value"],
-    "manualActivation": ["value?"]
+    "manualActivation": ["value?"],
+    "secondary": [],
+    "shortcut": ["value"],
+    "expanded": ["value"],
+    "onExpandedChange": ["value"],
+    "collapsible": ["value?"],
+    "emptyLabel": ["value"],
+    "error": ["value"],
+    "meta": ["value"],
+    "variant": ["sidebarVariant"],
+    "surface": ["sidebarSurface"],
+    "onCollapsedChange": ["value"],
+    "searchable": ["value?"],
+    "themeToggle": ["value?"],
+    "logo": ["value"],
+    "account": ["value"],
+    "width": ["space"],
+    "pinning": ["footerPinning"],
+    "ignoresSafeArea": ["value?"]
   },
   "universal": [
     "padding",
@@ -1737,6 +1759,86 @@
         "progress",
         "label"
       ]
+    },
+    "sidebar": {
+      "constructors": ["Sidebar"],
+      "universal": false,
+      "modifiers": [
+        "selection",
+        "onSelect",
+        "header",
+        "toolbar",
+        "footer",
+        "variant",
+        "surface",
+        "size",
+        "collapsed",
+        "onCollapsedChange",
+        "searchable",
+        "themeToggle",
+        "logo",
+        "account",
+        "label",
+        "testID"
+      ],
+      "size": "sidebarSize"
+    },
+    "navItem": {
+      "constructors": ["NavItem"],
+      "universal": false,
+      "modifiers": ["id", "activeIcon", "badge", "link", "shortcut", "secondary", "onPress", "onLongPress"]
+    },
+    "treeSection": {
+      "constructors": ["TreeSection"],
+      "universal": false,
+      "modifiers": [
+        "id",
+        "trailing",
+        "collapsible",
+        "expanded",
+        "onExpandedChange",
+        "loading",
+        "error",
+        "emptyLabel"
+      ]
+    },
+    "treeFolder": {
+      "constructors": ["TreeFolder"],
+      "universal": false,
+      "modifiers": ["id", "trailing", "expanded", "onExpandedChange"]
+    },
+    "treeItem": {
+      "constructors": ["TreeItem"],
+      "universal": false,
+      "modifiers": [
+        "id",
+        "icon",
+        "subtitle",
+        "meta",
+        "link",
+        "trailing",
+        "disabled",
+        "expanded",
+        "onExpandedChange",
+        "emptyLabel",
+        "onPress",
+        "onLongPress"
+      ]
+    },
+    "rail": {
+      "constructors": ["Rail"],
+      "universal": false,
+      "modifiers": ["selection", "onSelect", "header", "footer", "width", "testID"]
+    },
+    "railItem": {
+      "constructors": ["RailItem"],
+      "universal": false,
+      "modifiers": ["id", "activeIcon"]
+    },
+    "pageFooter": {
+      "constructors": ["PageFooter"],
+      "universal": false,
+      "modifiers": ["toolbar", "pinning", "scrollEdge", "ignoresSafeArea", "testID"]
     }
   },
   "sfSymbols": {

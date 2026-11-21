@@ -1464,6 +1464,26 @@ export const ENUMS = {
   "sheetSizing": [
     "content",
     "fill"
+  ],
+  "sidebarVariant": [
+    "panel",
+    "rail"
+  ],
+  "sidebarSurface": [
+    "card",
+    "plain",
+    "docked"
+  ],
+  "sidebarSize": [
+    "sm",
+    "md",
+    "lg"
+  ],
+  "footerPinning": [
+    "absolute",
+    "document",
+    "inline",
+    "sticky"
   ]
 } as const;
 
@@ -2324,6 +2344,58 @@ export const MODIFIERS = {
     "value"
   ],
   "manualActivation": [
+    "value?"
+  ],
+  "secondary": [],
+  "shortcut": [
+    "value"
+  ],
+  "expanded": [
+    "value"
+  ],
+  "onExpandedChange": [
+    "value"
+  ],
+  "collapsible": [
+    "value?"
+  ],
+  "emptyLabel": [
+    "value"
+  ],
+  "error": [
+    "value"
+  ],
+  "meta": [
+    "value"
+  ],
+  "variant": [
+    "sidebarVariant"
+  ],
+  "surface": [
+    "sidebarSurface"
+  ],
+  "onCollapsedChange": [
+    "value"
+  ],
+  "searchable": [
+    "value?"
+  ],
+  "themeToggle": [
+    "value?"
+  ],
+  "logo": [
+    "value"
+  ],
+  "account": [
+    "value"
+  ],
+  "width": [
+    "space"
+  ],
+  "pinning": [
+    "footerPinning"
+  ],
+  "ignoresSafeArea": [
     "value?"
   ]
 } as const;
@@ -6699,6 +6771,83 @@ export const NODE_MODIFIERS = {
     "footer",
     "progress",
     "label"
+  ],
+  "sidebar": [
+    "selection",
+    "onSelect",
+    "header",
+    "toolbar",
+    "footer",
+    "variant",
+    "surface",
+    "size",
+    "collapsed",
+    "onCollapsedChange",
+    "searchable",
+    "themeToggle",
+    "logo",
+    "account",
+    "label",
+    "testID"
+  ],
+  "navItem": [
+    "id",
+    "activeIcon",
+    "badge",
+    "link",
+    "shortcut",
+    "secondary",
+    "onPress",
+    "onLongPress"
+  ],
+  "treeSection": [
+    "id",
+    "trailing",
+    "collapsible",
+    "expanded",
+    "onExpandedChange",
+    "loading",
+    "error",
+    "emptyLabel"
+  ],
+  "treeFolder": [
+    "id",
+    "trailing",
+    "expanded",
+    "onExpandedChange"
+  ],
+  "treeItem": [
+    "id",
+    "icon",
+    "subtitle",
+    "meta",
+    "link",
+    "trailing",
+    "disabled",
+    "expanded",
+    "onExpandedChange",
+    "emptyLabel",
+    "onPress",
+    "onLongPress"
+  ],
+  "rail": [
+    "selection",
+    "onSelect",
+    "header",
+    "footer",
+    "width",
+    "testID"
+  ],
+  "railItem": [
+    "id",
+    "activeIcon"
+  ],
+  "pageFooter": [
+    "toolbar",
+    "pinning",
+    "scrollEdge",
+    "ignoresSafeArea",
+    "testID"
   ]
 } as const;
 
@@ -6783,5 +6932,13 @@ export const CONSTRUCTORS = {
   "TabContent": "tabContent",
   "SelectionCard": "selectionCard",
   "ScrollView": "scrollView",
-  "BottomSheet": "bottomSheet"
+  "BottomSheet": "bottomSheet",
+  "Sidebar": "sidebar",
+  "NavItem": "navItem",
+  "TreeSection": "treeSection",
+  "TreeFolder": "treeFolder",
+  "TreeItem": "treeItem",
+  "Rail": "rail",
+  "RailItem": "railItem",
+  "PageFooter": "pageFooter"
 } as const;
