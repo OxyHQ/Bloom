@@ -91,6 +91,7 @@ import { getPlatformGlass } from './platform/glass-host';
 import { MenuHost } from './platform/menu-host';
 import { HeaderHost } from './platform/header-host';
 import { BottomBarHost } from './platform/bottom-bar-host';
+import { ScrollViewHost } from './chrome/scroll-view-host';
 import {
   PLACE_KINDS,
   STACK_KINDS,
@@ -1941,6 +1942,22 @@ function renderHost(
         render: (child: Child) => renderChild(child, ctx, undefined),
         press: (value: Press | undefined) => pressOf(value, ctx.env),
       });
+    case 'scrollView': {
+      // The content's children keep their places as a stack's do.
+      const scroller = draw(
+        ScrollViewHost,
+        {
+          key: boxed ? undefined : key,
+          node,
+          render: (child: Child) => renderChild(child, ctx, undefined),
+          press: (value: Press | undefined) => pressOf(value, ctx.env),
+        },
+        ...renderChildren(node.children, ctx),
+      );
+      // Box modifiers are a view around the scroller, as SwiftUI's.
+      if (!boxed) return scroller;
+      return drawHost(View, boxOf('host', 'SV'), hostProps(undefined, key), scroller);
+    }
     // Rows and tabs are read by the menu or the bar that holds them; on their own they draw nothing.
     case 'menuItem':
     case 'menuSubmenu':

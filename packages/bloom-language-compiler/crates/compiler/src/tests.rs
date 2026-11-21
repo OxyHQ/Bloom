@@ -521,3 +521,34 @@ fn a_drag_takes_a_motion_value_and_a_swipe_a_direction() {
     let output = gesture("export const x = () => Text('t').swipe('sideways', () => {});\n");
     assert_eq!(output.diagnostics[0].message, "Unknown swipeDirection token 'sideways' for .swipe()");
 }
+
+/// The app chrome's constructors, imported as a screen file imports them.
+const CHROME: &str = "import { ScrollView, Text } from '@oxy.so/bloom-language';\n";
+
+fn chrome(body: &str) -> crate::Output {
+    compile(&format!("{CHROME}{body}"), "chrome.tsx")
+}
+
+fn first_message(output: &crate::Output) -> Option<&str> {
+    output.diagnostics.first().map(|d| d.message.as_str())
+}
+
+#[test]
+fn the_screen_and_its_scroll_view_are_checked_against_the_spec() {
+    let fine = chrome(
+        "export const S = (more, refresh) => ScrollView(Text('a')).contentMargins('horizontal', 'lg').contentMargins('md').spacing('md').keyboardTaps('handled').scrollDismissesKeyboard('interactively').scrollIndicators('hidden').onEndReached(more, 3).refreshable(refresh).padding('sm').title('Feed').scrollEdge('always').screenKind('collection').screenScroll('content').documentScroll().headerPlacement('overlay').contentClearance('2xl').navigationScope('isolated');\n",
+    );
+    assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
+    let indicators = chrome("export const S = () => ScrollView(Text('a')).scrollIndicators('never');\n");
+    assert_eq!(
+        first_message(&indicators),
+        Some("Unknown scrollIndicators token 'never' for .scrollIndicators()")
+    );
+    let scroll = chrome("export const S = () => Text('a').screenScroll('page');\n");
+    assert_eq!(first_message(&scroll), Some("Unknown screenScroll token 'page' for .screenScroll()"));
+    let margin = chrome("export const S = () => ScrollView(Text('a')).contentMargins('sideways', 'md');\n");
+    assert_eq!(first_message(&margin), Some("Unknown edge token 'sideways' for .contentMargins()"));
+    // A scroll view's own modifiers stay on it.
+    let stack = chrome("export const S = () => Text('a').keyboardTaps('handled');\n");
+    assert_eq!(first_message(&stack), Some("Text has no modifier .keyboardTaps()"));
+}

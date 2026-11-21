@@ -81,6 +81,14 @@ import {
   type WeightName,
   type HeaderPresentation,
   type ScrollEdge,
+  type ScreenKind,
+  type ScreenScroll,
+  type ChromePlacement,
+  type NavigationScope,
+  type ActionPlacement,
+  type ScrollIndicators,
+  type KeyboardDismiss,
+  type KeyboardTaps,
   type TextAlignment,
   type TextCase,
   type TextStyleName,
@@ -109,6 +117,16 @@ export type {
   TextStyleName,
   TitleDisplay,
   Truncation,
+};
+export type {
+  ActionPlacement,
+  ChromePlacement,
+  KeyboardDismiss,
+  KeyboardTaps,
+  NavigationScope,
+  ScreenKind,
+  ScreenScroll,
+  ScrollIndicators,
 };
 export type { GlassValue };
 export type EngagementTone = Exclude<AccentTone, 'default'>;
@@ -152,6 +170,17 @@ export interface ScreenFooter {
   /** `follow` rides the keyboard and keeps the focused input above it; `hide` (default) gives way to it. */
   readonly keyboard?: 'hide' | 'visible' | 'follow';
 }
+
+/** Where a screen's own floating action sits, and when it shows: Bloom `Screen`'s `primaryAction`. */
+export interface FloatingActionOptions {
+  /** Its place along the foot, in reading order; `end` by default. */
+  readonly placement?: ActionPlacement;
+  /** `alone` shows it only while the screen's panel is shown alone; `always` by default. */
+  readonly visibility?: 'always' | 'alone';
+}
+
+/** What a scroll view's pull to refresh runs: the spinner shows until a returned promise settles. */
+export type RefreshAction = () => unknown;
 
 /** The title's heading level for assistive technology (the web's `aria-level`); 1 by default. */
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
@@ -199,6 +228,17 @@ export interface ValueModifiers {
   headingLevel: HeadingLevel;
   backLabel: string | undefined;
   onReselect: (() => void) | undefined;
+  screenKind: ScreenKind;
+  screenScroll: ScreenScroll;
+  documentScroll: boolean;
+  headerPlacement: ChromePlacement;
+  underlay: Child;
+  contentClearance: SpaceToken;
+  navigationScope: NavigationScope;
+  refreshable: RefreshAction;
+  scrollIndicators: ScrollIndicators;
+  scrollDismissesKeyboard: KeyboardDismiss;
+  keyboardTaps: KeyboardTaps;
   bottomBar: boolean;
   shell: ShellOptions;
   tag: string;
@@ -435,6 +475,25 @@ export type Modifier =
       readonly options: ScreenFooter | undefined;
     }
   | {
+      readonly kind: 'floatingAction';
+      readonly key: string;
+      readonly content: Child;
+      readonly options: FloatingActionOptions | undefined;
+    }
+  | {
+      readonly kind: 'contentMargins';
+      readonly key: string;
+      readonly edge: Edge;
+      readonly value: SpaceToken;
+    }
+  | {
+      readonly kind: 'onEndReached';
+      readonly key: string;
+      readonly value: () => void;
+      /** How many viewports before the end it is called; Bloom's 2 by default. */
+      readonly threshold: number | undefined;
+    }
+  | {
       readonly kind: 'primaryAction';
       readonly key: string;
       readonly icon: IconComponent;
@@ -528,6 +587,7 @@ export type NodeKind =
   | 'navStack'
   | 'route'
   | 'tabView'
+  | 'scrollView'
   | 'lottie';
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
@@ -991,6 +1051,55 @@ export class Node {
   footer(content: Child, options?: ScreenFooter): Node {
     return this.with({ kind: 'footer', key: 'footer', content, options });
   }
+  screenKind(value: ScreenKind): Node {
+    return this.set('screenKind', value);
+  }
+  screenScroll(value: ScreenScroll): Node {
+    return this.set('screenScroll', value);
+  }
+  documentScroll(value = true): Node {
+    return this.set('documentScroll', value);
+  }
+  headerPlacement(value: ChromePlacement): Node {
+    return this.set('headerPlacement', value);
+  }
+  underlay(value: Child): Node {
+    return this.set('underlay', value);
+  }
+  floatingAction(content: Child, options?: FloatingActionOptions): Node {
+    return this.with({ kind: 'floatingAction', key: 'floatingAction', content, options });
+  }
+  contentClearance(value: SpaceToken): Node {
+    return this.set('contentClearance', value);
+  }
+  navigationScope(value: NavigationScope): Node {
+    return this.set('navigationScope', value);
+  }
+  contentMargins(edgeOrValue: Edge | SpaceToken, value?: SpaceToken): Node {
+    const edge: Edge = value === undefined ? 'all' : (edgeOrValue as Edge);
+    const token = value === undefined ? (edgeOrValue as SpaceToken) : value;
+    return this.with({
+      kind: 'contentMargins',
+      key: `cm:${edge}:${tokenKey(token)}`,
+      edge,
+      value: token,
+    });
+  }
+  refreshable(value: RefreshAction): Node {
+    return this.set('refreshable', value);
+  }
+  onEndReached(value: () => void, threshold?: number): Node {
+    return this.with({ kind: 'onEndReached', key: 'onEndReached', value, threshold });
+  }
+  scrollIndicators(value: ScrollIndicators): Node {
+    return this.set('scrollIndicators', value);
+  }
+  scrollDismissesKeyboard(value: KeyboardDismiss): Node {
+    return this.set('scrollDismissesKeyboard', value);
+  }
+  keyboardTaps(value: KeyboardTaps): Node {
+    return this.set('keyboardTaps', value);
+  }
   primaryAction(icon: IconComponent, label: string, destination: string): Node {
     return this.with({ kind: 'primaryAction', key: 'primaryAction', icon, label, destination });
   }
@@ -1306,6 +1415,31 @@ export interface ViewModifiers<Self> extends ViewNode {
   sheet(open: boolean, content: () => Child, options?: SheetOptions): Self;
   /** Pressing the screen's destination while it is in front (after it scrolled back to the top). */
   onReselect(value: (() => void) | undefined): Self;
+  /**
+   * What the screen's body is (Bloom `Screen`'s `kind`): `document`, `form`,
+   * `collection`, `table` or `canvas`. A collection or a table scrolls by its
+   * own list (`content`), a canvas does not scroll (`none`).
+   */
+  screenKind(value: ScreenKind): Self;
+  /**
+   * Who scrolls the screen: `auto` (default) its own viewport, `content` the
+   * list in it (a `ScrollView`), `none` a bounded canvas the chrome sits around.
+   */
+  screenScroll(value: ScreenScroll): Self;
+  /** Web: the window scrolls the page, and the chrome stays sticky in its column. */
+  documentScroll(value?: boolean): Self;
+  /** `overlay`: the header paints over the content and reserves no room; `inset` by default. */
+  headerPlacement(value: ChromePlacement): Self;
+  /** How the screen's header meets the content scrolled under it: `auto` fades it in as the page scrolls. */
+  scrollEdge(value: ScrollEdge): Self;
+  /** A layer behind the whole screen, header and footer included, never interactive (a wallpaper). */
+  underlay(value: Child): Self;
+  /** The screen's own floating action (a `FAB`): the content pads its end clear of it, and the shell's steps aside. */
+  floatingAction(content: Child, options?: FloatingActionOptions): Self;
+  /** The room the content keeps above the screen's bottom chrome; Bloom's 16 by default. */
+  contentClearance(value: SpaceToken): Self;
+  /** `isolated` keeps the shell's collapse and navigation motion out of a modal screen; `inherit` by default. */
+  navigationScope(value: NavigationScope): Self;
   rotation(value: RotationName | MotionValue): Self;
   /**
    * SwiftUI's `.animation(_:value:)`: changes to this view's scale, offset,
@@ -1715,6 +1849,29 @@ export type SpacerView = ViewModifiers<SpacerView>;
 export type EmbedView = ViewModifiers<EmbedView>;
 /** A `view()` component placed in a tree. Its modifiers apply around its body. */
 export type ComposedView = ViewModifiers<ComposedView>;
+
+/**
+ * Bloom `ScreenScrollView`: the screen's scroller, bound to its header's fade,
+ * the bottom bar's fold, its reselect and its keyboard. Its children are its
+ * content, laid out in a column.
+ */
+export interface ScrollViewNode extends ViewModifiers<ScrollViewNode> {
+  /** Room around the content, inside the scroll (the content container's padding). */
+  contentMargins(value: SpaceToken): ScrollViewNode;
+  contentMargins(edge: Edge, value: SpaceToken): ScrollViewNode;
+  /** The gap between the content's children. */
+  spacing(value: SpaceToken): ScrollViewNode;
+  /** Pull to refresh: runs `action`, and the spinner shows until a promise it returns settles. */
+  refreshable(action: RefreshAction): ScrollViewNode;
+  /** Called once each time the end comes within `threshold` viewports (2 by default). */
+  onEndReached(action: () => void, threshold?: number): ScrollViewNode;
+  /** The scroll indicators: `hidden`, `visible`, or the platform's (`automatic`, the default). */
+  scrollIndicators(value: ScrollIndicators): ScrollViewNode;
+  /** A drag `immediately` dismisses the keyboard, or drags it away `interactively`; `never` by default. */
+  scrollDismissesKeyboard(value: KeyboardDismiss): ScrollViewNode;
+  /** Whether a tap with the keyboard up reaches the content: `handled` by a control, `always`, or `never` (default). */
+  keyboardTaps(value: KeyboardTaps): ScrollViewNode;
+}
 
 /** The app's root layout: its navigator in the shell, the primary action, the bottom bar. */
 export interface AppLayoutView extends ViewNode {
