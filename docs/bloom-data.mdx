@@ -338,11 +338,11 @@ once nothing else uses them.
 | Alia | `packages/app/src/shared/api/query-keys.ts` `ALIA_ACCOUNT_QUERIES` | `conversations`, `conversation`, `alia-agent-profile`, `skills`, `conversation-collections`; `dataVersion` | none | email alerts (`EMAIL_ALERTS_MUTATION_KEY`): needs the outbox |
 | Gemies | same module as Alia (`ALIA_ACCOUNT_QUERIES`) | as Alia | none | as Alia |
 | Homiio | inline in `packages/frontend/app/_layout.tsx` | none | `savedSearches` | none |
-| Inbox | `packages/frontend/hooks/queries/queryClient.ts` `INBOX_ACCOUNT_QUERIES` | `PERSISTED_QUERY_ROOTS` (mail lists, threads) | `MEMORY_ONLY_QUERY_ROOTS` | star, read, archive, delete, pin (`setMutationDefaults`): needs the outbox |
+| Inbox | `packages/frontend/hooks/queries/queryClient.ts` `INBOX_ACCOUNT_QUERIES` (roots in `queryKeys.ts`) | `messages`, `message`, `thread`, `mailboxes`, `labels`, `settings`, `quota`, `bundles`, `filters`, `templates`, `contacts`, `reminders`, `subscriptions`, `saved-searches`, `daily-brief` | `attachment-url`, `contactSuggestions`, `inbox-ai`, `search`, `smartReplies`, `threadSummary` | star, read, archive, delete, pin (`setMutationDefaults`): needs the outbox |
 | Atlas | `packages/frontend/lib/queryClient.ts` `ATLAS_ACCOUNT_QUERIES` | none | `store-own-review` | review write and delete: needs the outbox |
 | Syra | `packages/frontend/lib/queryClient.ts` `SYRA_ACCOUNT_QUERIES`; studio inline | every query (`'all'`) | `search` | none |
 | Clarity | `packages/frontend/lib/account-query-ownership.ts` | none | `notifications`, `subscription`, `subscription-poll` | none |
-| Nilo | `apps/app/lib/offline-cache.ts` `ACCOUNT_QUERIES` | every query (`'all'`), kept for `SHELL_MAX_AGE_MS` with `offlineFirst` | `MEMORY_ONLY_ROOTS` (AI, previews, file URLs, search) | none |
+| Nilo | `apps/app/lib/offline-cache.ts` `ACCOUNT_QUERIES` | every query (`'all'`); `SHELL_ROOTS` kept for `SHELL_MAX_AGE_MS`, `offlineFirst` | `MEMORY_ONLY_ROOTS`: pages' blocks, comments, databases, forms, AI, search, share links and the rest listed there | none |
 
 Mention moved first (posts and feeds; `feat/sdk-bloom-data`), and its
 identity overlay retires on `User` (`feat/sdk-user-entity`). Every other app
