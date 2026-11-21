@@ -30,15 +30,11 @@ export const TAG_FIELD_CASES: readonly ParityCase[] = [
       />
     ),
   })),
-  // `secondary` and `tertiary` are AccentTones TagField's type takes, but Bloom's chip paint
-  // throws on them (`resolveAccentColors` has no palette for either): no app can draw them.
-  ...ENUMS.accentTone
-    .filter((tone) => tone !== 'secondary' && tone !== 'tertiary')
-    .map((tone) => ({
-      name: `${tone} chips`,
-      language: () => toElement(L.TagField([TAGS, set], 'Topics').tint(tone)),
-      bloom: () => <TagField value={TAGS} onChange={set} label="Topics" tone={tone} />,
-    })),
+  ...ENUMS.accentTone.map((tone) => ({
+    name: `${tone} chips`,
+    language: () => toElement(L.TagField([TAGS, set], 'Topics').tint(tone)),
+    bloom: () => <TagField value={TAGS} onChange={set} label="Topics" tone={tone} />,
+  })),
   {
     name: 'suggestions, a ceiling, a query of its own, invalid',
     language: () =>
