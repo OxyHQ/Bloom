@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import * as RN from 'react-native';
 import { Avatar } from '@oxy.so/bloom/avatar';
 import { Button } from '@oxy.so/bloom/button';
+import { EngagementAction, EngagementBar } from '@oxy.so/bloom/engagement-bar';
 import { useWindowBreakpoint } from '@oxy.so/bloom/hooks';
 import { tokens } from '@oxy.so/bloom/styles';
 import { useTheme } from '@oxy.so/bloom/theme';
@@ -47,6 +48,28 @@ function stated(fill: string, opacity: number) {
     flexDirection: 'row' as const,
     ...(hovered ? { backgroundColor: fill } : null),
     ...(pressed ? { opacity } : null),
+  });
+}
+
+interface Held {
+  pressed: boolean;
+  hovered: boolean;
+}
+
+/** Bloom JSX that tracks a component's own press and hover as an app does, to style it by them. */
+function Tracked({
+  children,
+}: {
+  children: (held: Held, handlers: Record<string, () => void>) => ReactNode;
+}) {
+  const [held, setHeld] = useState<Held>({ pressed: false, hovered: false });
+  const set = (key: keyof Held, on: boolean) => () =>
+    setHeld((current) => (current[key] === on ? current : { ...current, [key]: on }));
+  return children(held, {
+    onPressIn: set('pressed', true),
+    onPressOut: set('pressed', false),
+    onHoverIn: set('hovered', true),
+    onHoverOut: set('hovered', false),
   });
 }
 
@@ -297,6 +320,47 @@ export const VARIANT_CASES: ParityCase[] = [
           </Themed>
         </RN.Pressable>
       ),
+  },
+  {
+    name: 'an action’s pressed and hovered variants, in its own style',
+    language: () =>
+      toElement(
+        L.ActionBar(
+          L.Action(RiHeart3Line, 'Like')
+            .onPress(onPress)
+            .when('pressed', (v) => v.opacity('70'))
+            .when('hovered', (v) => v.background('surface')),
+        ),
+      ),
+    // The action's own pressable hands its press and hover to its box, which tracks them.
+    bloom: () => (
+      <EngagementBar>
+        <Themed>
+          {(colors) => (
+            <Tracked>
+              {(held, handlers) => (
+                <EngagementAction
+                  icon={RiHeart3Line}
+                  accessibilityLabel="Like"
+                  onPress={onPress}
+                  {...handlers}
+                  style={
+                    held.pressed || held.hovered
+                      ? {
+                          ...(held.hovered
+                            ? { backgroundColor: colors.backgroundSecondary }
+                            : null),
+                          ...(held.pressed ? { opacity: 0.7 } : null),
+                        }
+                      : undefined
+                  }
+                />
+              )}
+            </Tracked>
+          )}
+        </Themed>
+      </EngagementBar>
+    ),
   },
   {
     name: 'a platform variant',
