@@ -217,6 +217,8 @@ export type OtpCharacters = (typeof ENUMS.otpCharacters)[number];
 export type ColumnWidthToken = SpaceToken | (typeof ENUMS.columnWidthExtra)[number];
 /** How an agent's character feels: Bloom `AgentAvatar`'s moods. */
 export type AgentMood = (typeof ENUMS.agentMood)[number];
+export type AgentThinkingStyle = (typeof ENUMS.agentThinkingStyle)[number];
+export type AgentThinkingTone = (typeof ENUMS.agentThinkingTone)[number];
 export type PlayButtonSize = (typeof ENUMS.playButtonSize)[number];
 export type PlayButtonStyle = (typeof ENUMS.playButtonStyle)[number];
 export type PlaybackTimes = (typeof ENUMS.playbackTimes)[number];
