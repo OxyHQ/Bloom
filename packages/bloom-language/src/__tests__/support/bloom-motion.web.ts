@@ -8,6 +8,8 @@ export * from '../../../../../src/motion/timing';
 export * from '../../../../../src/motion/keyframes';
 export * from '../../../../../src/motion/transition';
 export * from '../../../../../src/motion/leaving';
+export * from '../../../../../src/motion/motion-value.web';
+export * from '../../../../../src/motion/gestures';
 export * from '../../../../../src/motion/presence.web';
 export * from '../../../../../src/motion/motion-host.web';
 export {

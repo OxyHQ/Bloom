@@ -1195,6 +1195,12 @@ export const ENUMS = {
   ],
   "contentTransition": [
     "roll"
+  ],
+  "swipeDirection": [
+    "left",
+    "right",
+    "up",
+    "down"
   ]
 } as const;
 
@@ -1705,6 +1711,14 @@ export const MODIFIERS = {
     "value",
     "namespace"
   ],
+  "drag": [
+    "motionValue",
+    "value?"
+  ],
+  "swipe": [
+    "swipeDirection",
+    "value"
+  ],
   "contentTransition": [
     "contentTransition",
     "value?"
@@ -1779,6 +1793,8 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
+    "drag",
+    "swipe",
     "spacing",
     "align",
     "justify",
@@ -1846,7 +1862,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
-    "matchedGeometry"
+    "matchedGeometry",
+    "drag",
+    "swipe"
   ],
   "text": [
     "padding",
@@ -1907,6 +1925,8 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
+    "drag",
+    "swipe",
     "lines",
     "noWrap",
     "truncation",
@@ -1981,6 +2001,8 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
+    "drag",
+    "swipe",
     "size"
   ],
   "avatar": [
@@ -2042,6 +2064,8 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
+    "drag",
+    "swipe",
     "size",
     "tint",
     "shape",
@@ -2109,6 +2133,8 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
+    "drag",
+    "swipe",
     "layout",
     "size",
     "shape",
@@ -2179,6 +2205,8 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
+    "drag",
+    "swipe",
     "style",
     "tint",
     "size",
@@ -2246,6 +2274,8 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
+    "drag",
+    "swipe",
     "size"
   ],
   "loading": [
@@ -2307,6 +2337,8 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
+    "drag",
+    "swipe",
     "style",
     "size",
     "tint"
@@ -2369,7 +2401,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
-    "matchedGeometry"
+    "matchedGeometry",
+    "drag",
+    "swipe"
   ],
   "skeletonGroup": [
     "padding",
@@ -2429,7 +2463,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
-    "matchedGeometry"
+    "matchedGeometry",
+    "drag",
+    "swipe"
   ],
   "image": [
     "padding",
@@ -2490,6 +2526,8 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
+    "drag",
+    "swipe",
     "contentFit",
     "aspectRatio",
     "tint",
@@ -2555,7 +2593,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
-    "matchedGeometry"
+    "matchedGeometry",
+    "drag",
+    "swipe"
   ],
   "ratio": [
     "padding",
@@ -2615,7 +2655,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
-    "matchedGeometry"
+    "matchedGeometry",
+    "drag",
+    "swipe"
   ],
   "grid": [
     "padding",
@@ -2676,6 +2718,8 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
+    "drag",
+    "swipe",
     "columns",
     "minCellWidth",
     "spacing",
@@ -2740,6 +2784,8 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
+    "drag",
+    "swipe",
     "style",
     "shape",
     "size",
@@ -2814,6 +2860,8 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
+    "drag",
+    "swipe",
     "size",
     "fill",
     "stroke",
@@ -2878,6 +2926,8 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
+    "drag",
+    "swipe",
     "axis",
     "size",
     "dividers",
@@ -2942,6 +2992,8 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
+    "drag",
+    "swipe",
     "style",
     "size",
     "tint",
@@ -3007,6 +3059,8 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
+    "drag",
+    "swipe",
     "actions"
   ],
   "menuItem": [
@@ -3086,6 +3140,8 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
+    "drag",
+    "swipe",
     "lineStyle",
     "align",
     "spacing",
@@ -3180,6 +3236,8 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
+    "drag",
+    "swipe",
     "count",
     "active",
     "tint"
@@ -3243,6 +3301,8 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
+    "drag",
+    "swipe",
     "trailing",
     "countFormat",
     "size"
@@ -3305,7 +3365,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
-    "matchedGeometry"
+    "matchedGeometry",
+    "drag",
+    "swipe"
   ],
   "lottie": [
     "padding",
@@ -3366,6 +3428,8 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
+    "drag",
+    "swipe",
     "loop",
     "paused",
     "fallback"
@@ -3428,7 +3492,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
-    "matchedGeometry"
+    "matchedGeometry",
+    "drag",
+    "swipe"
   ],
   "view": [
     "padding",
@@ -3488,7 +3554,9 @@ export const NODE_MODIFIERS = {
     "animation",
     "transition",
     "keyframes",
-    "matchedGeometry"
+    "matchedGeometry",
+    "drag",
+    "swipe"
   ],
   "appLayout": [
     "primaryAction",

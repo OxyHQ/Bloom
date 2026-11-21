@@ -1,3 +1,4 @@
+import type { MotionValue } from '@oxy.so/bloom/motion';
 import type { ComponentType, ReactNode } from 'react';
 import type {
   AccessibilityActionEvent,
@@ -267,10 +268,24 @@ export interface PositionEdges {
 }
 
 /** How far a view is drawn from where it is laid out: `x` to the right, `y` down. */
+/** A move along each axis: a space token, or a `MotionValue` the view follows. */
 export interface OffsetSpec {
-  x?: PaddingToken;
-  y?: PaddingToken;
+  x?: PaddingToken | MotionValue;
+  y?: PaddingToken | MotionValue;
 }
+
+/** What `.drag()` takes besides its value. */
+export interface DragSpec {
+  /** The axis the finger moves the value along. Default `'y'`. */
+  axis?: 'x' | 'y';
+  /** Bounds of the value while dragging. */
+  min?: number;
+  max?: number;
+  /** Once per touch, when it ends: where the value is and the finger's velocity. */
+  onEnd?: (end: { value: number; velocity: number }) => void;
+}
+
+export type SwipeDirection = 'left' | 'right' | 'up' | 'down';
 
 export type Modifier =
   | {
@@ -287,7 +302,7 @@ export type Modifier =
   | { readonly kind: 'zIndex'; readonly key: string; readonly value: ZIndexName }
   | { readonly kind: 'hidden'; readonly key: string; readonly value: boolean }
   | { readonly kind: 'basis'; readonly key: string; readonly value: LengthToken }
-  | { readonly kind: 'scale'; readonly key: string; readonly value: ScaleName }
+  | { readonly kind: 'scale'; readonly key: string; readonly value: ScaleName | MotionValue }
   | { readonly kind: 'allowsHitTesting'; readonly key: string; readonly value: boolean }
   | { readonly kind: 'accessibilityOnly'; readonly key: string }
   | {
@@ -425,7 +440,19 @@ export type Modifier =
       readonly label: string;
       readonly destination: string;
     }
-  | { readonly kind: 'rotation'; readonly key: string; readonly value: RotationName }
+  | { readonly kind: 'rotation'; readonly key: string; readonly value: RotationName | MotionValue }
+  | {
+      readonly kind: 'drag';
+      readonly key: string;
+      readonly value: MotionValue;
+      readonly options: DragSpec;
+    }
+  | {
+      readonly kind: 'swipe';
+      readonly key: string;
+      readonly direction: SwipeDirection;
+      readonly onSwipe: () => void;
+    }
   | {
       readonly kind: 'animation';
       readonly key: string;
@@ -676,7 +703,7 @@ export class Node {
     return this.with({ kind: 'position', key: `pos:${objectKey(value, EDGE_KEYS)}`, value });
   }
   offset(value: OffsetSpec): Node {
-    return this.with({ kind: 'offset', key: `off:${objectKey(value, OFFSET_KEYS)}`, value });
+    return this.with({ kind: 'offset', key: 'offset', value });
   }
   zIndex(value: ZIndexName): Node {
     return this.with({ kind: 'zIndex', key: `z:${value}`, value });
@@ -687,8 +714,8 @@ export class Node {
   basis(value: LengthToken): Node {
     return this.with({ kind: 'basis', key: `basis:${tokenKey(value)}`, value });
   }
-  scale(value: ScaleName): Node {
-    return this.with({ kind: 'scale', key: `scale:${value}`, value });
+  scale(value: ScaleName | MotionValue): Node {
+    return this.with({ kind: 'scale', key: 'scale', value });
   }
   allowsHitTesting(value: boolean): Node {
     return this.with({ kind: 'allowsHitTesting', key: `hit:${value}`, value });
@@ -1089,7 +1116,7 @@ export class Node {
   image(source: ShapeImageSource, alt?: string): Node {
     return this.with({ kind: 'image', key: 'image', source, alt });
   }
-  rotation(value: RotationName): Node {
+  rotation(value: RotationName | MotionValue): Node {
     return this.with({ kind: 'rotation', key: 'rotation', value });
   }
   animation(motion: MotionToken, ...value: [unknown?]): Node {
@@ -1109,6 +1136,12 @@ export class Node {
   }
   matchedGeometry(id: string, namespace: Namespace): Node {
     return this.with({ kind: 'matchedGeometry', key: 'matchedGeometry', id, namespace });
+  }
+  drag(value: MotionValue, options: DragSpec = {}): Node {
+    return this.with({ kind: 'drag', key: 'drag', value, options });
+  }
+  swipe(direction: SwipeDirection, onSwipe: () => void): Node {
+    return this.with({ kind: 'swipe', key: 'swipe', direction, onSwipe });
   }
   contentTransition(value: 'roll', direction?: number): Node {
     return this.with({ kind: 'contentTransition', key: 'contentTransition', value, direction });
@@ -1165,7 +1198,7 @@ export interface ViewModifiers<Self> extends ViewNode {
   /** Its length along its parent's axis before free space is shared (`flex-basis`): a space rung, a length of the parent, or `fit`. */
   basis(value: LengthToken): Self;
   /** Drawn scaled about its centre, where it is laid out; its siblings keep their places. */
-  scale(value: ScaleName): Self;
+  scale(value: ScaleName | MotionValue): Self;
   /** `false`: touches and the pointer pass through the view and everything inside it, to what is under it. */
   allowsHitTesting(value: boolean): Self;
   /**
@@ -1265,7 +1298,7 @@ export interface ViewModifiers<Self> extends ViewNode {
   sheet(open: boolean, content: () => Child, options?: SheetOptions): Self;
   /** Pressing the screen's destination while it is in front (after it scrolled back to the top). */
   onReselect(value: (() => void) | undefined): Self;
-  rotation(value: RotationName): Self;
+  rotation(value: RotationName | MotionValue): Self;
   /**
    * SwiftUI's `.animation(_:value:)`: changes to this view's scale, offset,
    * rotation and opacity, and to what animates inside it (a matched geometry, a
@@ -1279,6 +1312,19 @@ export interface ViewModifiers<Self> extends ViewNode {
   keyframes(value: KeyframesValue, trigger: unknown): Self;
   /** SwiftUI's `matchedGeometryEffect`: moves from where the view with this id last was. */
   matchedGeometry(id: string, namespace: Namespace): Self;
+  /**
+   * The finger moves `value` along `options.axis` (default `y`), from where it
+   * was, within `min`/`max`. Bind the value to see it (`.offset({ y })`);
+   * `options.onEnd` decides where it goes on release (`animate()`). Native: the
+   * drag runs on the UI thread, with no JS per frame.
+   */
+  drag(value: MotionValue, options?: DragSpec): Self;
+  /**
+   * The view follows a swipe toward `direction` and, released past a quarter
+   * of the window across (or a tap's slop up or down), flies out and calls
+   * `onSwipe`; short of it, it comes back.
+   */
+  swipe(direction: SwipeDirection, onSwipe: () => void): Self;
 }
 
 export interface StackView extends ViewModifiers<StackView> {

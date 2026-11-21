@@ -45,6 +45,8 @@ export type { KeyframesValue } from './motion/keyframes';
 export type { Frame as Keyframe } from './motion/keyframes';
 export { asymmetric, move, opacity, scale, TransitionValue } from './motion/transition';
 export { useNamespace } from './motion/namespace';
+export { animate, useMotionValue } from './motion/values';
+export type { MotionValue } from './motion/values';
 export type { Namespace } from './motion/namespace';
 export type { EasingName, MotionName, MotionToken, RotationName, ScaleName } from './motion/tokens';
 export { defineTokens } from './tokens';
@@ -75,6 +77,7 @@ export type {
   ComposedView,
   DividerView,
   ContentFit,
+  DragSpec,
   Edge,
   EmbedView,
   EngagementTone,
@@ -125,6 +128,7 @@ export type {
   TabView,
   TextAlignment,
   TextCase,
+  SwipeDirection,
   TextRun,
   TextStyleName,
   TextView,
