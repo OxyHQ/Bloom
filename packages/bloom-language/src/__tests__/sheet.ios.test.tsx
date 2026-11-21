@@ -47,9 +47,9 @@ describe('a sheet on iOS is the system sheet', () => {
     expect(only(r, 'SwiftGroup').props.modifiers).toEqual([{ label: 'Filters' }]);
     expect(hosts(r, 'Dialog')).toHaveLength(0);
     const inside = only(r, 'RNHostView');
-    expect(inside.findAll((i) => (i.type as unknown) === 'Text').map((t) => t.props.children)).toEqual([
-      'filters',
-    ]);
+    expect(
+      inside.findAll((i) => (i.type as unknown) === 'Text').map((t) => t.props.children),
+    ).toEqual(['filters']);
     act(() => sheet.props.onIsPresentedChange(false));
     expect(dismiss).toHaveBeenCalledTimes(1);
     // The host's own close is not news.
@@ -77,10 +77,9 @@ describe('a sheet on iOS is the system sheet', () => {
       { detents: ['large'] },
     ]);
     const inside = only(r, 'RNHostView');
-    expect(inside.findAll((i) => (i.type as unknown) === 'Text').map((t) => t.props.children)).toEqual([
-      'list',
-      'apply',
-    ]);
+    expect(
+      inside.findAll((i) => (i.type as unknown) === 'Text').map((t) => t.props.children),
+    ).toEqual(['list', 'apply']);
     expect(hosts(r, 'BottomSheet')).toHaveLength(0);
   });
 });
