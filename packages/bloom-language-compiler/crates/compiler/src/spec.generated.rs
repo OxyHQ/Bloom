@@ -46,6 +46,10 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("headerPresentation", &["floating", "bar", "navigation"]),
     ("titleDisplay", &["large", "inline"]),
     ("scrollEdge", &["auto", "always", "none"]),
+    ("textStyle", &["title", "subtitle", "h1", "h2", "h3", "h4", "h5", "h6", "paragraph", "lead", "large", "small", "muted", "blockquote"]),
+    ("truncation", &["head", "middle", "tail", "clip"]),
+    ("textAlign", &["start", "center", "end", "justify"]),
+    ("textCase", &["uppercase", "lowercase", "capitalize"]),
 ];
 
 /// Modifier → its parameter types, in order (`?` optional).
@@ -125,12 +129,21 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("footer", &["value", "value?"]),
     ("headingLevel", &["value"]),
     ("backLabel", &["value"]),
+    ("textStyle", &["textStyle"]),
+    ("truncation", &["truncation"]),
+    ("selectable", &["value?"]),
+    ("link", &["value"]),
+    ("textAlign", &["textAlign"]),
+    ("italic", &[]),
+    ("underline", &[]),
+    ("strikethrough", &[]),
+    ("textCase", &["textCase"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "stack", constructors: &["HStack", "VStack", "ZStack"], modifiers: &["padding", "frame", "grow", "shrink", "background", "border", "corner", "opacity", "glass", "foreground", "font", "weight", "leading", "onPress", "onLongPress", "onHover", "hoverGroup", "label", "hint", "role", "hitSlop", "testID", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "spacing", "align"], size: None, tint: None },
     NodeSpec { kind: "spacer", constructors: &["Spacer"], modifiers: &["padding", "frame", "grow", "shrink", "background", "border", "corner", "opacity", "glass", "foreground", "font", "weight", "leading", "onPress", "onLongPress", "onHover", "hoverGroup", "label", "hint", "role", "hitSlop", "testID", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect"], size: None, tint: None },
-    NodeSpec { kind: "text", constructors: &["Text"], modifiers: &["padding", "frame", "grow", "shrink", "background", "border", "corner", "opacity", "glass", "foreground", "font", "weight", "leading", "onPress", "onLongPress", "onHover", "hoverGroup", "label", "hint", "role", "hitSlop", "testID", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "lines", "noWrap"], size: None, tint: None },
+    NodeSpec { kind: "text", constructors: &["Text"], modifiers: &["padding", "frame", "grow", "shrink", "background", "border", "corner", "opacity", "glass", "foreground", "font", "weight", "leading", "onPress", "onLongPress", "onHover", "hoverGroup", "label", "hint", "role", "hitSlop", "testID", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "lines", "noWrap", "truncation", "selectable", "textStyle", "link", "textAlign", "italic", "underline", "strikethrough", "textCase"], size: None, tint: None },
     NodeSpec { kind: "icon", constructors: &["Icon"], modifiers: &["padding", "frame", "grow", "shrink", "background", "border", "corner", "opacity", "glass", "foreground", "font", "weight", "leading", "onPress", "onLongPress", "onHover", "hoverGroup", "label", "hint", "role", "hitSlop", "testID", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "size"], size: Some("iconSize"), tint: None },
     NodeSpec { kind: "avatar", constructors: &["Avatar"], modifiers: &["padding", "frame", "grow", "shrink", "background", "border", "corner", "opacity", "glass", "foreground", "font", "weight", "leading", "onPress", "onLongPress", "onHover", "hoverGroup", "label", "hint", "role", "hitSlop", "testID", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "size"], size: Some("avatarSize"), tint: None },
     NodeSpec { kind: "image", constructors: &["Image"], modifiers: &["padding", "frame", "grow", "shrink", "background", "border", "corner", "opacity", "glass", "foreground", "font", "weight", "leading", "onPress", "onLongPress", "onHover", "hoverGroup", "label", "hint", "role", "hitSlop", "testID", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "contentFit", "aspectRatio", "tint", "transition", "onLoad", "onError"], size: None, tint: Some("color") },

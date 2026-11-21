@@ -89,9 +89,13 @@ export type {
   SpacerView,
   StackView,
   TabView,
+  TextAlignment,
+  TextCase,
   TextRun,
+  TextStyleName,
   TextView,
   TitleDisplay,
+  Truncation,
   ViewModifiers,
   ViewNode,
 } from './node';

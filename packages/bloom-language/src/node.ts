@@ -41,7 +41,11 @@ import {
   type WeightName,
   type HeaderPresentation,
   type ScrollEdge,
+  type TextAlignment,
+  type TextCase,
+  type TextStyleName,
   type TitleDisplay,
+  type Truncation,
 } from './tokens';
 
 // ── Modifiers: immutable data, applied in order ──────────────────
@@ -56,7 +60,11 @@ export type {
   Role,
   ScrollEdge,
   ShrinkPriority,
+  TextAlignment,
+  TextCase,
+  TextStyleName,
   TitleDisplay,
+  Truncation,
 };
 export type { GlassValue };
 export type EngagementTone = Exclude<AccentTone, 'default'>;
@@ -151,6 +159,15 @@ export interface ValueModifiers {
   shell: ShellOptions;
   tag: string;
   actions: ViewNode;
+  textStyle: TextStyleName;
+  truncation: Truncation;
+  selectable: boolean;
+  link: string;
+  textAlign: TextAlignment;
+  italic: true;
+  underline: true;
+  strikethrough: true;
+  textCase: TextCase;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -666,6 +683,33 @@ export class Node {
   shell(value: ShellOptions): Node {
     return this.set('shell', value);
   }
+  textStyle(value: TextStyleName): Node {
+    return this.set('textStyle', value);
+  }
+  truncation(value: Truncation): Node {
+    return this.set('truncation', value);
+  }
+  selectable(value = true): Node {
+    return this.set('selectable', value);
+  }
+  link(value: string): Node {
+    return this.set('link', value);
+  }
+  textAlign(value: TextAlignment): Node {
+    return this.set('textAlign', value);
+  }
+  italic(): Node {
+    return this.set('italic', true);
+  }
+  underline(): Node {
+    return this.set('underline', true);
+  }
+  strikethrough(): Node {
+    return this.set('strikethrough', true);
+  }
+  textCase(value: TextCase): Node {
+    return this.set('textCase', value);
+  }
 }
 
 const FRAME_KEYS = ['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight'] as const;
@@ -742,10 +786,39 @@ export interface StackView extends ViewModifiers<StackView> {
   spacing(value: SpaceToken | 'between'): StackView;
   align(value: Alignment): StackView;
 }
+/**
+ * Text, drawn by Bloom's `Text` (its type ramp, its families, its desktop
+ * scale). A nested `Text` is an inline span: it sets only what its own chain
+ * names and inherits the rest from the text it is in.
+ */
 export interface TextView extends ViewModifiers<TextView> {
+  /** At most `n` lines; what does not fit is cut where `truncation` says (the tail by default). */
   lines(value: number): TextView;
   /** Web: never wraps (`white-space: nowrap`); native text in a row already keeps its width. */
   noWrap(): TextView;
+  /** Where a text cut by `lines` loses its characters: `head`, `middle`, `tail` or `clip`. */
+  truncation(value: Truncation): TextView;
+  /** The reader can select and copy the text. */
+  selectable(value?: boolean): TextView;
+  /**
+   * One of Bloom's typography components: `title`, `subtitle`, `h1`…`h6`,
+   * `paragraph`, `lead`, `large`, `small`, `muted`, `blockquote`. Its role,
+   * rule and spacing come with it, as the component draws them.
+   */
+  textStyle(value: TextStyleName): TextView;
+  /**
+   * A link to `href`, drawn as Bloom's inline link (the primary ink, underlined,
+   * announced as a link): an anchor on the web, opened outside the app on
+   * native. Its own `.foreground()` replaces the ink; `.onPress()` replaces the opening.
+   */
+  link(href: string): TextView;
+  /** How its lines align: `start` and `end` follow the reading direction. */
+  textAlign(value: TextAlignment): TextView;
+  italic(): TextView;
+  underline(): TextView;
+  strikethrough(): TextView;
+  /** Draws the text in upper case, lower case, or with each word capitalised. */
+  textCase(value: TextCase): TextView;
 }
 export interface IconView extends ViewModifiers<IconView> {
   size(value: IconSizeToken): IconView;

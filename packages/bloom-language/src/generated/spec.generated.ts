@@ -594,6 +594,39 @@ export const ENUMS = {
     "auto",
     "always",
     "none"
+  ],
+  "textStyle": [
+    "title",
+    "subtitle",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "paragraph",
+    "lead",
+    "large",
+    "small",
+    "muted",
+    "blockquote"
+  ],
+  "truncation": [
+    "head",
+    "middle",
+    "tail",
+    "clip"
+  ],
+  "textAlign": [
+    "start",
+    "center",
+    "end",
+    "justify"
+  ],
+  "textCase": [
+    "uppercase",
+    "lowercase",
+    "capitalize"
   ]
 } as const;
 
@@ -875,6 +908,27 @@ export const MODIFIERS = {
   ],
   "backLabel": [
     "value"
+  ],
+  "textStyle": [
+    "textStyle"
+  ],
+  "truncation": [
+    "truncation"
+  ],
+  "selectable": [
+    "value?"
+  ],
+  "link": [
+    "value"
+  ],
+  "textAlign": [
+    "textAlign"
+  ],
+  "italic": [],
+  "underline": [],
+  "strikethrough": [],
+  "textCase": [
+    "textCase"
   ]
 } as const;
 
@@ -993,7 +1047,16 @@ export const NODE_MODIFIERS = {
     "sheet",
     "onReselect",
     "lines",
-    "noWrap"
+    "noWrap",
+    "truncation",
+    "selectable",
+    "textStyle",
+    "link",
+    "textAlign",
+    "italic",
+    "underline",
+    "strikethrough",
+    "textCase"
   ],
   "icon": [
     "padding",
