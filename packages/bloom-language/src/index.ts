@@ -178,6 +178,44 @@ export type {
 export type { Binding } from './binding';
 
 // Inputs (controls/inputs.tsx)
+export {
+  Checkbox,
+  Field,
+  Label,
+  Option,
+  Picker,
+  RadioGroup,
+  Search,
+  SecureField,
+  Segmented,
+  TextEditor,
+  TextField,
+  Toggle,
+} from './controls/inputs';
+export type {
+  Autocapitalize,
+  CheckboxView,
+  ContentType,
+  FieldView,
+  Keyboard,
+  LabelSize,
+  LabelView,
+  OptionChild,
+  OptionView,
+  PickerView,
+  RadioGroupView,
+  RadioStyle,
+  SearchCollapse,
+  SearchView,
+  SegmentedStyle,
+  SegmentedView,
+  Selection,
+  SubmitLabel,
+  TextareaResize,
+  TextEditorView,
+  TextFieldView,
+  ToggleView,
+} from './controls/inputs';
 
 // Overlays and feedback (controls/overlays.tsx)
 

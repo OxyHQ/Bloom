@@ -2123,6 +2123,8 @@ function renderHost(
           boxed
             ? drawHost(host, boxOf('component', node.kind), props, ...children)
             : draw(host, props, ...children),
+        around: (element) =>
+          boxed ? drawHost(View, boxOf('host', node.kind), hostProps(undefined, key), element) : element,
         pressAround: (drawn) => pressAround(p, behaviour, key, drawn),
         render: (child) => renderChild(child, ctx, undefined),
         children: (children) => renderChildren(children, ctx),
