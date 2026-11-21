@@ -246,6 +246,12 @@ for (const value of new Set([
   valueClass('fontWeight', value);
 }
 valueClass('whiteSpace', 'nowrap');
+// Text: slant, decoration and case (style.ts, textStyle). Alignment stays inline:
+// react-native-web writes it per direction, which one class cannot.
+valueClass('fontStyle', 'italic');
+for (const value of ['underline', 'line-through', 'underline line-through'])
+  valueClass('textDecorationLine', value);
+for (const value of enums.textCase) valueClass('textTransform', value);
 
 // react-native-web's precedence (shorthands before longhands), then by name, so
 // the sheet is the same text on every run.

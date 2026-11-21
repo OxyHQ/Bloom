@@ -200,7 +200,26 @@
     "spacingExtra": ["between"],
     "headerPresentation": ["floating", "bar", "navigation"],
     "titleDisplay": ["large", "inline"],
-    "scrollEdge": ["auto", "always", "none"]
+    "scrollEdge": ["auto", "always", "none"],
+    "textStyle": [
+      "title",
+      "subtitle",
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "h6",
+      "paragraph",
+      "lead",
+      "large",
+      "small",
+      "muted",
+      "blockquote"
+    ],
+    "truncation": ["head", "middle", "tail", "clip"],
+    "textAlign": ["start", "center", "end", "justify"],
+    "textCase": ["uppercase", "lowercase", "capitalize"]
   },
   "glass": {
     "$comment": [
@@ -318,7 +337,16 @@
     "actions": ["value"],
     "footer": ["value", "value?"],
     "headingLevel": ["value"],
-    "backLabel": ["value"]
+    "backLabel": ["value"],
+    "textStyle": ["textStyle"],
+    "truncation": ["truncation"],
+    "selectable": ["value?"],
+    "link": ["value"],
+    "textAlign": ["textAlign"],
+    "italic": [],
+    "underline": [],
+    "strikethrough": [],
+    "textCase": ["textCase"]
   },
   "universal": [
     "padding",
@@ -369,7 +397,19 @@
     },
     "text": {
       "constructors": ["Text"],
-      "modifiers": ["lines", "noWrap"]
+      "modifiers": [
+        "lines",
+        "noWrap",
+        "truncation",
+        "selectable",
+        "textStyle",
+        "link",
+        "textAlign",
+        "italic",
+        "underline",
+        "strikethrough",
+        "textCase"
+      ]
     },
     "icon": {
       "constructors": ["Icon"],

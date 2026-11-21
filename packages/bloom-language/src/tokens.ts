@@ -70,6 +70,13 @@ export type ContentFit = (typeof ENUMS.contentFit)[number];
 export type TitleDisplay = (typeof ENUMS.titleDisplay)[number];
 export type ScrollEdge = (typeof ENUMS.scrollEdge)[number];
 export type HeaderPresentation = (typeof ENUMS.headerPresentation)[number];
+/** Bloom's typography components, as a text's style: `h1` is Bloom `H1`, `lead` is `Lead`… */
+export type TextStyleName = (typeof ENUMS.textStyle)[number];
+/** Where a text that does not fit its lines is cut (React Native's `ellipsizeMode`). */
+export type Truncation = (typeof ENUMS.truncation)[number];
+/** How a text's lines align: `start` and `end` follow the reading direction. */
+export type TextAlignment = (typeof ENUMS.textAlign)[number];
+export type TextCase = (typeof ENUMS.textCase)[number];
 
 export { COLORS, DURATION, GLASS_OPACITY, HIT_SLOP, OPACITY, SHRINK, ALIGNMENT };
 
