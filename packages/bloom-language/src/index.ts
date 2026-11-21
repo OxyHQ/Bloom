@@ -182,3 +182,7 @@ export type { Binding } from './binding';
 // Overlays and feedback (controls/overlays.tsx)
 
 // Containers (controls/containers.tsx)
+
+// Agent avatars (controls/agent-avatar.tsx)
+export { AgentAvatar } from './controls/agent-avatar';
+export type { AgentAvatarOptions, AgentAvatarView } from './controls/agent-avatar';

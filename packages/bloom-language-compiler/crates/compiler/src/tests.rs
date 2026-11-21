@@ -521,3 +521,22 @@ fn a_drag_takes_a_motion_value_and_a_swipe_a_direction() {
     let output = gesture("export const x = () => Text('t').swipe('sideways', () => {});\n");
     assert_eq!(output.diagnostics[0].message, "Unknown swipeDirection token 'sideways' for .swipe()");
 }
+
+#[test]
+fn agent_avatars_are_checked() {
+    let imports = "import { AgentAvatar } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (c) => AgentAvatar(c, { reactionKey: 1 }).size('xl').mood('sad').paused(true).interactive().portrait(false).label('Ana');\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("AgentAvatar(c).mood('happy')", "Unknown agentMood token 'happy' for .mood()"),
+        ("AgentAvatar(c).size('huge')", "Unknown avatarSize token 'huge' for .size()"),
+        ("AgentAvatar(c).tint('lime')", "AgentAvatar has no modifier .tint()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (c) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

@@ -162,6 +162,8 @@ export type BadgeSize = (typeof ENUMS.badgeSize)[number];
 export type BadgePlacement = (typeof ENUMS.badgePlacement)[number];
 /** Bloom `Loading`'s presentations: a spinner, the bar at the top, a line beside its text. */
 export type LoadingStyle = (typeof ENUMS.loadingStyle)[number];
+/** How an agent's character feels: Bloom `AgentAvatar`'s moods. */
+export type AgentMood = (typeof ENUMS.agentMood)[number];
 
 export {
   COLORS,

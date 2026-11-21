@@ -19,6 +19,7 @@ import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 
+import type { AgentAvatarKind } from './controls/agent-avatar';
 import type { ContainerKind } from './controls/containers';
 import type { InputKind } from './controls/inputs';
 import type { OverlayKind } from './controls/overlays';
@@ -62,6 +63,7 @@ import {
   type BadgeSize,
   type BadgeStyle,
   type LoadingStyle,
+  type AgentMood,
   type Presence,
   type ShapeName,
   type BorderWidthName,
@@ -250,6 +252,11 @@ export interface ValueModifiers {
   // Overlays and feedback (controls/overlays.tsx)
 
   // Containers (controls/containers.tsx)
+
+  // Agent avatars (controls/agent-avatar.tsx)
+  mood: AgentMood;
+  interactive: boolean;
+  portrait: boolean;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -540,7 +547,8 @@ export type NodeKind =
   | 'lottie'
   | InputKind
   | OverlayKind
-  | ContainerKind;
+  | ContainerKind
+  | AgentAvatarKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1181,6 +1189,17 @@ export class Node {
   // Overlays and feedback (controls/overlays.tsx)
 
   // Containers (controls/containers.tsx)
+
+  // Agent avatars (controls/agent-avatar.tsx)
+  mood(value: AgentMood): Node {
+    return this.set('mood', value);
+  }
+  interactive(value = true): Node {
+    return this.set('interactive', value);
+  }
+  portrait(value = true): Node {
+    return this.set('portrait', value);
+  }
 }
 
 const FRAME_KEYS = OBJECTS.frame.keys;

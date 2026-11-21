@@ -81,6 +81,7 @@ import type {
   TabView,
   TextView,
 } from '../node';
+import type { AgentAvatarView } from '../controls/agent-avatar';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -279,7 +280,9 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<NavStackView>, Of<'navStack'>>,
       Same<MethodsOf<RouteView>, Of<'route'>>,
       Same<MethodsOf<TabNavigatorView>, Of<'tabView'>>,
+      Same<MethodsOf<AgentAvatarView>, Of<'agentAvatar'>>,
     ] = [
+      true,
       true,
       true,
       true,
