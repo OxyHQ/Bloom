@@ -23,6 +23,7 @@ import type { ContextMenuKind } from './controls/context-menu';
 import type { ContextMenuAnchor } from '@oxy.so/bloom/context-menu';
 import type { FileUploadKind } from './controls/file-upload';
 import type { VideoViewKind } from './controls/video-view';
+import type { CollapsibleKind } from './controls/collapsible';
 import type { ColorSwatchPickerKind } from './controls/color-swatch-picker';
 import type { InputOtpKind } from './controls/input-otp';
 import type { OtpCharacters } from './tokens';
@@ -465,6 +466,10 @@ export interface ValueModifiers {
   characters: OtpCharacters;
   onComplete: (code: string) => void;
 
+  // Collapsibles (controls/collapsible.tsx)
+  revealsOnAppear: boolean;
+  keepsMounted: boolean;
+
   // Inputs (controls/inputs.tsx)
   required: boolean;
   floatingLabel: true;
@@ -824,6 +829,7 @@ export type NodeKind =
   | ColorSwatchPickerKind
   | InputOtpKind
   | ContextMenuKind
+  | CollapsibleKind
   | InputKind
   | OverlayKind
   | ContainerKind
@@ -1895,6 +1901,14 @@ export class Node {
   }
   onComplete(value: (code: string) => void): Node {
     return this.set('onComplete', value);
+  }
+
+  // Collapsibles (controls/collapsible.tsx)
+  revealsOnAppear(value = true): Node {
+    return this.set('revealsOnAppear', value);
+  }
+  keepsMounted(value: boolean): Node {
+    return this.set('keepsMounted', value);
   }
 
   // Inputs (controls/inputs.tsx)

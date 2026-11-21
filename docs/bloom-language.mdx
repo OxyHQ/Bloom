@@ -1507,6 +1507,18 @@ point or a box, `null` while closed) when the screen owns it. Its rows are read
 with the view, a `menu()` content's too: the lens menu takes them before the
 press.
 
+### Collapsibles
+
+```ts
+Collapsible(expanded, Text(order.notes)).revealMotion({ duration: 180 }).keepsMounted(false)
+```
+
+Bloom's `Collapsible`: a measured reveal of its children while `open` is true,
+with no trigger of its own (the screen's row or button flips the value). It
+takes `.revealMotion({ duration, easing })` (300ms ease-in-out by default),
+`.revealsOnAppear()` (mounted open, it opens from nothing) and
+`.keepsMounted(false)` (the content unmounts once shut).
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -1888,7 +1900,7 @@ and `@oxy.so/bloom-data` beside it.
   tag fields, file uploads, videos,
   one-time codes,
   colour swatch pickers,
-  animated checks, context menus.
+  animated checks, context menus, collapsibles.
 
 **Not built**
 

@@ -32,6 +32,7 @@ import { MATERIAL_CASES } from '../../parity/material.cases';
 import { TEXT_CASES } from '../../parity/text.cases';
 import { VARIANT_CASES } from '../../parity/variants.cases';
 import { VIDEO_CASES } from '../../parity/video-view.cases';
+import { COLLAPSIBLE_CASES } from '../../parity/collapsible.cases';
 import { COLOR_SWATCH_PICKER_CASES } from '../../parity/color-swatch-picker.cases';
 import { INPUT_OTP_CASES } from '../../parity/input-otp.cases';
 
@@ -111,3 +112,4 @@ export const OneTimeCodes: Story = { args: { cases: INPUT_OTP_CASES } };
 export const ColorSwatchPickers: Story = { args: { cases: COLOR_SWATCH_PICKER_CASES } };
 export const AnimatedChecks: Story = { args: { cases: ANIMATED_CHECK_CASES } };
 export const ContextMenus: Story = { args: { cases: CONTEXT_MENU_CASES } };
+export const Collapsibles: Story = { args: { cases: COLLAPSIBLE_CASES } };
