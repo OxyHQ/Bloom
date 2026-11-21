@@ -86,3 +86,4 @@ export const SidebarRailAndPageFooter: Story = { args: { family: 'navigation' } 
 export const CommandAndSettings: Story = { args: { family: 'command' } };
 export const ShellPanelsAndInspector: Story = { args: { family: 'shell' } };
 export const LayoutFamily: Story = { args: { family: 'toolbar' } };
+export const SettingsRows: Story = { args: { family: 'settings' } };

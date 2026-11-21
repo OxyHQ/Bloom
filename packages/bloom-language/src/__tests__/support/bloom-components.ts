@@ -98,3 +98,8 @@ export function AutoHideBar(props: Record<string, unknown>) {
   );
 }
 export const ResizeHandle = 'ResizeHandle';
+export const SettingsSection = 'SettingsSection';
+export const SettingsValueField = 'SettingsValueField';
+export const SettingsSelect = 'SettingsSelect';
+export const SettingsTextField = 'SettingsTextField';
+export const SettingsDateField = 'SettingsDateField';

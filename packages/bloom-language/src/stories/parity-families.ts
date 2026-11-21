@@ -16,6 +16,7 @@ import { NAVIGATION_CASES } from '../../parity/navigation.cases';
 import { COMMAND_CASES } from '../../parity/command.cases';
 import { SHELL_CASES } from '../../parity/shell.cases';
 import { TOOLBAR_CASES } from '../../parity/toolbar.cases';
+import { SETTINGS_CASES } from '../../parity/settings.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -37,6 +38,7 @@ export const FAMILIES = {
   command: COMMAND_CASES,
   shell: SHELL_CASES,
   toolbar: TOOLBAR_CASES,
+  settings: SETTINGS_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';
