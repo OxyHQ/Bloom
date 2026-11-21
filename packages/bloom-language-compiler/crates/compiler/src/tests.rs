@@ -554,7 +554,7 @@ fn wave_two_controls_are_checked() {
 }
 
 /// The app chrome's constructors, imported as a screen file imports them.
-const CHROME: &str = "import { AutoHideBar, ResizeHandle, ScrollArea, ScrollSurface, StickySection, Toolbar, AppLayout, Destination, Panel, Stack, BottomSheet, Command, CommandGroup, CommandItem, NavItem, SettingsGroup, SettingsItem, SettingsModal, PageFooter, Rail, RailItem, ScrollView, Sidebar, Text, TreeFolder, TreeItem, TreeSection } from '@oxy.so/bloom-language';\n";
+const CHROME: &str = "import { SidebarMode, AutoHideBar, ResizeHandle, ScrollArea, ScrollSurface, StickySection, Toolbar, AppLayout, Destination, Panel, Stack, BottomSheet, Command, CommandGroup, CommandItem, NavItem, SettingsGroup, SettingsItem, SettingsModal, PageFooter, Rail, RailItem, ScrollView, Sidebar, Text, TreeFolder, TreeItem, TreeSection } from '@oxy.so/bloom-language';\n";
 
 fn chrome(body: &str) -> crate::Output {
     compile(&format!("{CHROME}{body}"), "chrome.tsx")
@@ -684,4 +684,21 @@ fn the_rest_of_the_layout_family_is_checked_against_the_spec() {
     // A bar and a handle take only their own modifiers.
     let boxed = chrome("export const L = (r) => ResizeHandle(r).padding('md');\n");
     assert!(first_message(&boxed).is_some_and(|m| m.contains(".padding()")), "{:?}", first_message(&boxed));
+}
+
+#[test]
+fn the_sidebar_s_modes_identities_search_and_drops_are_checked_against_the_spec() {
+    let fine = chrome(
+        "export const S = (Glyph, choose, team, plan, typed, dropped) => Sidebar(SidebarMode('Search', Glyph).id('search').shortcut('k'), TreeSection('Private', TreeItem('Notes').draggable().droppable(false).dropBeside(false)).droppable(false)).mode('search').onModeChange(choose).modePresentation('toggle').modesLabel('Mode').team(team).teamPlacement('header').plan(plan).onboarding({ title: 'Start', steps: [] }).query('ho', typed).onDrop(dropped);\n",
+    );
+    assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
+    let presentation = chrome("export const S = () => Sidebar().modePresentation('tabs');\n");
+    assert_eq!(
+        first_message(&presentation),
+        Some("Unknown modePresentation token 'tabs' for .modePresentation()")
+    );
+    let placement = chrome("export const S = () => Sidebar().teamPlacement('top');\n");
+    assert_eq!(first_message(&placement), Some("Unknown teamPlacement token 'top' for .teamPlacement()"));
+    let mode = chrome("export const S = (G) => SidebarMode('Search', G).badge(3);\n");
+    assert!(first_message(&mode).is_some_and(|m| m.contains(".badge()")), "{:?}", first_message(&mode));
 }
