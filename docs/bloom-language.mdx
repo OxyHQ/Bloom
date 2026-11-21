@@ -1220,6 +1220,47 @@ The iPad's system sidebar (SwiftUI's `NavigationSplitView`) is not something
 sidebar column, its width, collapse and drawer are Bloom's `AppShell`. The
 sidebar stays Bloom's on iPad until that is decided.
 
+### Command and SettingsModal
+
+```ts
+Command(
+  CommandItem(t('compose')).icon(RiQuillPenLine).shortcut('⌘N').keywords('write').onPress(compose),
+  CommandGroup(t('goTo'), CommandItem(t('settings')).onPress(navigate('/settings'))),
+).presented(paletteOpen).onPresentedChange(setPaletteOpen)
+
+SettingsModal(
+  SettingsGroup(t('account'),
+    SettingsItem(t('profile'), RiUserLine).id('profile').content(() => ProfilePage()),
+    SettingsItem(t('signOut'), RiLogoutBoxRLine).onPress(signOut),
+  ),
+).presented(settingsOpen).onPresentedChange(setSettingsOpen).selection(page).onSelect(setPage)
+```
+
+`Command(...rows)` is Bloom's `Command` palette. Each `CommandItem(label)` is
+a `CommandItem` (`.id`, its label by default; `.icon`, `.subtitle` its
+description, `.keywords(...)`, `.shortcut`, `.disabled`, `.onPress` its
+`onSelect`); a `CommandGroup(title, ...items)` puts its items under that
+group, after the ungrouped ones, as Bloom orders them. The palette takes
+`.presented(open)`, `.onPresentedChange(fn)` (Bloom's `open` and
+`onOpenChange`), `.placeholder`, `.emptyLabel`, `.query(value, onChange)` and
+`.filter(fn)`.
+
+`SettingsModal(...groups)` is Bloom's `SettingsModal`. Each
+`SettingsGroup(label, ...items)` is a navigation group; each
+`SettingsItem(label, icon)` a row that opens its page when it has
+`.content(() => view)` (built only while the page is shown; `.title` and
+`.fullBleed` are the page's) or runs its `.onPress`. The modal takes
+`.presented`, `.onPresentedChange` (its `onClose` is `onPresentedChange(false)`),
+`.selection` and `.onSelect` (the page), `.initialView` and
+`.presentation('bar' \| 'floating')`. A page's rows are the app's views; Bloom's
+`SettingsSection`, `SettingsSelect` and text fields are not language nodes yet
+(an `Embed` carries them).
+
+Both are Bloom's on every platform (on iOS not verified). The settings
+modal's native parity compares nothing: in Bloom's own test environment its
+portal resolves to the web's DOM portal, which draws nothing there, so it is
+proven on the web (jsdom and Chrome) only.
+
 ## Image
 
 `Image(source, alt?)` is Bloom's `BloomImage`: expo-image on a device,

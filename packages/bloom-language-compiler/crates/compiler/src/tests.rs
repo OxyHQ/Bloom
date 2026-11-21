@@ -523,7 +523,7 @@ fn a_drag_takes_a_motion_value_and_a_swipe_a_direction() {
 }
 
 /// The app chrome's constructors, imported as a screen file imports them.
-const CHROME: &str = "import { BottomSheet, NavItem, PageFooter, Rail, RailItem, ScrollView, Sidebar, Text, TreeFolder, TreeItem, TreeSection } from '@oxy.so/bloom-language';\n";
+const CHROME: &str = "import { BottomSheet, Command, CommandGroup, CommandItem, NavItem, SettingsGroup, SettingsItem, SettingsModal, PageFooter, Rail, RailItem, ScrollView, Sidebar, Text, TreeFolder, TreeItem, TreeSection } from '@oxy.so/bloom-language';\n";
 
 fn chrome(body: &str) -> crate::Output {
     compile(&format!("{CHROME}{body}"), "chrome.tsx")
@@ -588,4 +588,16 @@ fn the_sidebar_rail_and_page_footer_are_checked_against_the_spec() {
     assert_eq!(first_message(&pinning), Some("Unknown footerPinning token 'fixed' for .pinning()"));
     let row = chrome("export const S = () => TreeItem('a').padding('md');\n");
     assert_eq!(first_message(&row), Some("TreeItem has no modifier .padding()"));
+}
+
+#[test]
+fn the_command_palette_and_the_settings_are_checked_against_the_spec() {
+    let fine = chrome(
+        "export const C = (open, set, q, onQ, run, Icon, page) => [Command(CommandItem('New').icon(Icon).subtitle('a').keywords('x', 'y').shortcut('⌘N').disabled().onPress(run), CommandGroup('Go', CommandItem('B'))).presented(open).onPresentedChange(set).placeholder('Search').emptyLabel('None').query(q, onQ).testID('c'), SettingsModal(SettingsGroup('Account', SettingsItem('Profile', Icon).id('p').content(page).title('You').fullBleed(), SettingsItem('Out', Icon).onPress(run)).id('a')).presented(open).onPresentedChange(set).selection('p').initialView('page').presentation('floating')];\n",
+    );
+    assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
+    let view = chrome("export const S = () => SettingsModal().initialView('list');\n");
+    assert_eq!(first_message(&view), Some("Unknown settingsView token 'list' for .initialView()"));
+    let group = chrome("export const C = () => CommandGroup('Go').title('x');\n");
+    assert_eq!(first_message(&group), Some("CommandGroup has no modifier .title()"));
 }

@@ -16,6 +16,7 @@ import type { BottomBarProps } from '@oxy.so/bloom/bottom-bar';
 import type { PageHeaderProps } from '@oxy.so/bloom/page-header';
 import type { AppShellProps } from '@oxy.so/bloom/app-shell';
 import type { SidebarAccount, SidebarLogo } from '@oxy.so/bloom/sidebar';
+import type { CommandItem as BloomCommandItem } from '@oxy.so/bloom/command';
 import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
@@ -97,6 +98,7 @@ import {
   type SidebarSurface,
   type SidebarSize,
   type FooterPinning,
+  type SettingsView,
   type TextAlignment,
   type TextCase,
   type TextStyleName,
@@ -142,6 +144,7 @@ export type {
   SidebarSurface,
   SidebarSize,
   FooterPinning,
+  SettingsView,
 };
 export type { GlassValue };
 export type EngagementTone = Exclude<AccentTone, 'default'>;
@@ -285,6 +288,14 @@ export interface ValueModifiers {
   width: SpaceToken;
   pinning: FooterPinning;
   ignoresSafeArea: boolean;
+  presented: boolean;
+  onPresentedChange: (presented: boolean) => void;
+  placeholder: string;
+  filter: (item: BloomCommandItem, query: string) => boolean;
+  keywords: readonly string[];
+  content: () => Child;
+  fullBleed: boolean;
+  initialView: SettingsView;
   bottomBar: boolean;
   shell: ShellOptions;
   tag: string;
@@ -547,6 +558,12 @@ export type Modifier =
       readonly threshold: number | undefined;
     }
   | {
+      readonly kind: 'query';
+      readonly key: string;
+      readonly value: string;
+      readonly onChange: (query: string) => void;
+    }
+  | {
       readonly kind: 'primaryAction';
       readonly key: string;
       readonly icon: IconComponent;
@@ -650,6 +667,12 @@ export type NodeKind =
   | 'rail'
   | 'railItem'
   | 'pageFooter'
+  | 'command'
+  | 'commandItem'
+  | 'commandGroup'
+  | 'settings'
+  | 'settingsGroup'
+  | 'settingsItem'
   | 'lottie';
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
@@ -1241,6 +1264,33 @@ export class Node {
   }
   ignoresSafeArea(value = true): Node {
     return this.set('ignoresSafeArea', value);
+  }
+  presented(value: boolean): Node {
+    return this.set('presented', value);
+  }
+  onPresentedChange(value: (presented: boolean) => void): Node {
+    return this.set('onPresentedChange', value);
+  }
+  placeholder(value: string): Node {
+    return this.set('placeholder', value);
+  }
+  query(value: string, onChange: (query: string) => void): Node {
+    return this.with({ kind: 'query', key: 'query', value, onChange });
+  }
+  filter(value: (item: BloomCommandItem, query: string) => boolean): Node {
+    return this.set('filter', value);
+  }
+  keywords(...value: string[]): Node {
+    return this.set('keywords', value);
+  }
+  content(value: () => Child): Node {
+    return this.set('content', value);
+  }
+  fullBleed(value = true): Node {
+    return this.set('fullBleed', value);
+  }
+  initialView(value: SettingsView): Node {
+    return this.set('initialView', value);
   }
   primaryAction(icon: IconComponent, label: string, destination: string): Node {
     return this.with({ kind: 'primaryAction', key: 'primaryAction', icon, label, destination });
@@ -2169,6 +2219,75 @@ export interface PageFooterView extends ViewNode {
   /** No bottom safe-area padding (native pads it by default). */
   ignoresSafeArea(value?: boolean): PageFooterView;
   testID(value: string): PageFooterView;
+}
+
+/**
+ * Bloom `Command`: the command palette, over the app while `presented`. Its
+ * rows are `CommandItem`s, ungrouped first, then each `CommandGroup`'s under
+ * its title.
+ */
+export interface CommandView extends ViewNode {
+  presented(value: boolean): CommandView;
+  /** Told `false` when the reader closes it (Escape, the backdrop, a choice). */
+  onPresentedChange(value: (presented: boolean) => void): CommandView;
+  placeholder(value: string): CommandView;
+  /** What it says when nothing matches. */
+  emptyLabel(value: string): CommandView;
+  /** The query, held by the app. */
+  query(value: string, onChange: (query: string) => void): CommandView;
+  /** Which items a query matches; a substring of the label, subtitle or keywords by default. */
+  filter(value: (item: BloomCommandItem, query: string) => boolean): CommandView;
+  testID(value: string): CommandView;
+}
+/** A command: its label, and what choosing it does (the palette then closes). */
+export interface CommandItemView extends ViewNode {
+  /** Its identity; its label by default. */
+  id(value: string): CommandItemView;
+  icon(value: IconComponent): CommandItemView;
+  subtitle(value: string | undefined): CommandItemView;
+  /** Words a query also matches, not shown. */
+  keywords(...value: string[]): CommandItemView;
+  /** Its shortcut, drawn at its end (`⌘K`). */
+  shortcut(value: string): CommandItemView;
+  disabled(value?: boolean): CommandItemView;
+  onPress(value: Press | undefined): CommandItemView;
+}
+/** Commands under a title. */
+export type CommandGroupView = ViewNode;
+/**
+ * Bloom `SettingsModal`: the settings, over the app while `presented`; its
+ * navigation is its `SettingsGroup`s of `SettingsItem`s, each item's
+ * `.content` its page.
+ */
+export interface SettingsModalView extends ViewNode {
+  presented(value: boolean): SettingsModalView;
+  /** Told `false` when the reader closes it. */
+  onPresentedChange(value: (presented: boolean) => void): SettingsModalView;
+  /** The id of the page shown, held by the app. */
+  selection(value: string | undefined): SettingsModalView;
+  onSelect(value: (id: string) => void): SettingsModalView;
+  /** Where a narrow screen starts: the `navigation` list (default) or the `page`. */
+  initialView(value: SettingsView): SettingsModalView;
+  /** Its header: a `bar` (default) or the `floating` capsule. */
+  presentation(value: 'bar' | 'floating'): SettingsModalView;
+  testID(value: string): SettingsModalView;
+}
+/** A group of the settings' navigation, under its label. */
+export interface SettingsGroupView extends ViewNode {
+  id(value: string): SettingsGroupView;
+}
+/** A row of the settings' navigation: it opens its page (`.content`), or runs its press. */
+export interface SettingsItemView extends ViewNode {
+  /** Its identity, the page's key; its label by default. */
+  id(value: string): SettingsItemView;
+  /** Its page's body, built while the page is shown. */
+  content(value: () => Child): SettingsItemView;
+  /** Its page's title; its label by default. */
+  title(value: string): SettingsItemView;
+  /** Its page reaches the edges. */
+  fullBleed(value?: boolean): SettingsItemView;
+  disabled(value?: boolean): SettingsItemView;
+  onPress(value: Press | undefined): SettingsItemView;
 }
 
 /** The app's root layout: its navigator in the shell, the primary action, the bottom bar. */

@@ -95,6 +95,8 @@ import { ScrollViewHost } from './chrome/scroll-view-host';
 import { SidebarHost } from './chrome/sidebar-host';
 import { RailHost } from './chrome/rail-host';
 import { PageFooterHost } from './chrome/page-footer-host';
+import { CommandHost } from './chrome/command-host';
+import { SettingsHost } from './chrome/settings-host';
 import {
   PLACE_KINDS,
   STACK_KINDS,
@@ -1976,7 +1978,25 @@ function renderHost(
     case 'treeFolder':
     case 'treeItem':
     case 'railItem':
+    case 'commandItem':
+    case 'commandGroup':
+    case 'settingsGroup':
+    case 'settingsItem':
       return null as unknown as ReactElement;
+    case 'command':
+      return draw(CommandHost, {
+        key,
+        node,
+        render: (child: Child) => renderChild(child, ctx, undefined),
+        press: (value: Press | undefined) => pressOf(value, ctx.env),
+      });
+    case 'settings':
+      return draw(SettingsHost, {
+        key,
+        node,
+        render: (child: Child) => renderChild(child, ctx, undefined),
+        press: (value: Press | undefined) => pressOf(value, ctx.env),
+      });
     case 'sidebar':
       return draw(SidebarHost, {
         key,
