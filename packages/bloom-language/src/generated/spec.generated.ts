@@ -2414,6 +2414,12 @@ export const MODIFIERS = {
   ],
   "mediaCorner": [
     "corner"
+  ],
+  "caption": [
+    "value"
+  ],
+  "minItemWidth": [
+    "space"
   ]
 } as const;
 
@@ -8499,6 +8505,76 @@ export const NODE_MODIFIERS = {
     "swipe",
     "opaque",
     "mediaCorner"
+  ],
+  "factStrip": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "minItemWidth",
+    "contentInset"
+  ],
+  "fact": [
+    "caption",
+    "onPress",
+    "label",
+    "id"
   ]
 } as const;
 
@@ -8614,5 +8690,7 @@ export const CONSTRUCTORS = {
   "ContextMenu": "contextMenu",
   "Collapsible": "collapsible",
   "DropZone": "dropZone",
-  "MediaInsetBorder": "mediaInsetBorder"
+  "MediaInsetBorder": "mediaInsetBorder",
+  "FactStrip": "factStrip",
+  "Fact": "fact"
 } as const;
