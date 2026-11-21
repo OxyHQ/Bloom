@@ -15,6 +15,12 @@ export interface ParityCase {
    * web). Anywhere else an empty tree fails: two empty trees prove nothing.
    */
   drawsNothing?: readonly ('native' | 'web')[];
+  /**
+   * In Chrome, each side is drawn alone in a frame of the same size (a case
+   * that pins to the document lands where its frame puts it, not where its
+   * table cell sits).
+   */
+  isolated?: true;
 }
 
 /** Bloom JSX that reads the theme as an app does (`useThemePaint()`), for a colour passed by hand. */

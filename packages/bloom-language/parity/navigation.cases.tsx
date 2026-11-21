@@ -259,6 +259,8 @@ const footers: ParityCase[] = [
   },
   ...ENUMS.footerPinning.map((pinning) => ({
     name: `pinned ${pinning}`,
+    // A document footer is fixed where its anchor measures, in the window.
+    ...(pinning === 'document' ? { isolated: true as const } : {}),
     language: () => toElement(L.PageFooter().toolbar(L.Text('Save')).pinning(pinning)),
     bloom: () => <PageFooter actions={<Text>Save</Text>} position={pinning} />,
   })),
