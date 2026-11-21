@@ -232,6 +232,7 @@
     "glassMaterial": ["regular", "clear"],
     "contentFit": ["cover", "contain", "fill", "none", "scale-down"],
     "contentTransition": ["roll"],
+    "swipeDirection": ["left", "right", "up", "down"],
     "spacingExtra": ["between"]
   },
   "glass": {
@@ -283,7 +284,7 @@
     }
   },
   "modifiers": {
-    "$comment": "name: parameter types, in order. A trailing ? is optional; padding takes (value) or (edge, value).",
+    "$comment": "name: parameter types, in order. A trailing ? is optional; padding takes (value) or (edge, value). motionValue: a MotionValue (useMotionValue); scale, offset and rotation take one in place of a token.",
     "padding": ["edge?", "padding"],
     "frame": ["frame"],
     "grow": [],
@@ -332,6 +333,8 @@
     "keyframes": ["keyframes", "value"],
     "matchedGeometry": ["value", "namespace"],
     "pressScale": [],
+    "drag": ["motionValue", "value?"],
+    "swipe": ["swipeDirection", "value"],
     "contentTransition": ["contentTransition", "value?"],
     "loop": [],
     "paused": ["value"],
@@ -368,7 +371,9 @@
     "transition",
     "keyframes",
     "matchedGeometry",
-    "pressScale"
+    "pressScale",
+    "drag",
+    "swipe"
   ],
   "nodes": {
     "$comment": "kind: { constructors, own modifiers beyond the universal ones, the scale size() and tint() read }",

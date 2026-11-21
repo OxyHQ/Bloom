@@ -344,13 +344,15 @@ gives Bloom `MotionSpec`s. Curves are named too (`ease`, `inOutQuad`,
 
 | Modifier | Meaning (SwiftUI) |
 | --- | --- |
-| `.scale(s)`, `.offset({ x?, y? })`, `.rotation(r)` | Geometry that moves the view without moving its neighbours: `scale` tokens `dip` `pressed` `full` `swell`; offsets are space tokens (negative ones too); `rotation` `none` `quarter` `half`. |
+| `.scale(s)`, `.offset({ x?, y? })`, `.rotation(r)` | Geometry that moves the view without moving its neighbours: `scale` tokens `dip` `pressed` `full` `swell`; offsets are space tokens (negative ones too); `rotation` `none` `quarter` `half`. Each takes a `MotionValue` in place of a token, and the view follows it. |
 | `.animation(motion, value?)` | `.animation(_:value:)`: changes to this view's geometry and opacity, and what animates inside it in the same body (a matched geometry, a content transition, keyframes or a transition without their own motion), play with `motion`. With a value, only on a render where the value changed. |
 | `.transition(t)` | Insertion and removal: `opacity`, `scale('dip')`, `move(edge, distance)`, `t.combined(u)`, `asymmetric(insert, remove)`, `t.animation(motion)`. A half may be keyframes of the app's own. |
 | `.keyframes(k, trigger)` | `keyframeAnimator`: plays `k` each time `trigger` changes to a truthy value (a boolean turning on, or a counter such as a press id). |
 | `.matchedGeometry(id, ns)` | `matchedGeometryEffect`: the view that takes `id` moves from where the last view with it was. `const ns = useNamespace()`. |
 | `.contentTransition('roll', direction?)` | `Text` only; `.contentTransition(.numericText(value:))`: a change of the text inside an animation rolls the old text out and the new one in (Bloom's `rollKeyframes`, as `RollingText` rolls), up when `direction` rose and down when it fell. |
 | `.pressScale()` | Press feedback (`PressableScale`): eases to `pressed` while a finger holds the view. Off for a mouse on the web and under reduced motion. |
+| `.drag(value, { axis?, min?, max?, onEnd? })` | `DragGesture`: the finger moves `value` along `axis` (default `y`) from where it was, within the bounds. Bind the value to see it; `onEnd` (once per touch: the value and the finger's velocity) decides where it goes, with `animate()`. |
+| `.swipe(direction, onSwipe)` | The view follows a swipe toward `direction` (`left` `right` `up` `down`) and, released past a quarter of the window across (or a tap's slop up or down), flies out and calls `onSwipe`; short of it, it comes back. |
 | `Lottie(url)` | A node: `.loop()`, `.paused(bool)`, `.fallback(Image(still, label))`, `.frame({ width })`. Bloom's `Sticker` draws it (lottie-react-native on native, dotLottie on the web, both lazy), paused while its screen is not in front (`useScreenVisible`). |
 
 Keyframes are frames, as CSS writes them:
@@ -370,9 +372,27 @@ stretch takes the motion's curve, as a CSS animation applies its timing function
 per stretch. Values are Bloom-internal numbers (a scale factor, an opacity, px or
 a space token, degrees), as `defineTokens` allows.
 
+A `MotionValue` is the one way to tie a gesture to geometry, and apps never
+write a worklet:
+
+```ts
+const y = useMotionValue(screenHeight);
+VStack(Grabber(), content)
+  .offset({ y })
+  .drag(y, { axis: 'y', min: 0, onEnd: ({ value }) => animate(y, value > 120 ? screenHeight : 0, 'expand') });
+```
+
+`animate(value, target, motion)` eases it from where it is, with a token or a
+spec (a spring keeps its physics). A bound view's geometry follows its values:
+`.animation()` does not ease it, `animate()` does.
+
 ### How it runs
 
-The engine plays everything (docs/motion.mdx, The motion engine): native on
+Gestures and bound geometry are Bloom's gesture layer (docs/motion.mdx, Motion
+values and gestures): Gesture Handler 3's hooks writing the values from their
+own callbacks (worklets on the UI thread on native) and the one mapper Bloom
+writes; the web restyles the bound views directly and eases with CSS
+transitions. The engine plays everything else (docs/motion.mdx, The motion engine): native on
 Reanimated 4's CSS engine (CSS animations and transitions on an `Animated`
 host, no worklet, no JS per frame), the web with CSS transitions and the Web
 Animations API (no Reanimated). Press feedback is the one shared value on
@@ -406,7 +426,11 @@ own.
 
 **Compiler.** `motion`, `scale`, `rotation` and `contentTransition` values are
 token sets it checks; `.offset()` keys and values are checked like `.frame()`'s;
-a string where a transition or keyframes value belongs is an error.
+a string where a transition or keyframes value belongs is an error. A `const`
+from `useMotionValue` is a `MotionValue` in any scope: it may go in `.offset()`,
+`.scale()`, `.rotation()` and as `.drag()`'s value; anywhere a token goes it is
+an error, and so is a literal as `.drag()`'s value. `.swipe()`'s direction is a
+checked token.
 `opacity`, `move`, `scale`, `asymmetric` and `defineKeyframes` are pure, so a
 chain that names them (`.transition(asymmetric(move('top', 'xl'), opacity))`)
 hoists like any other static chain, and a module constant holding one is static.

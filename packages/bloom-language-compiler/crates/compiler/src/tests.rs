@@ -251,3 +251,38 @@ fn fading_a_view_that_holds_glass_is_an_error() {
         motion("export const x = (id) => VStack(Text('t').glass()).transition(move('top', 'xl')).id(id);\n");
     assert!(output.diagnostics.is_empty());
 }
+
+const GESTURE_IMPORTS: &str = "import { Text, VStack, useMotionValue } from '@oxy.so/bloom-language';
+";
+
+fn gesture(body: &str) -> crate::Output {
+    compile(&format!("{GESTURE_IMPORTS}{body}"), "gesture.tsx")
+}
+
+#[test]
+fn geometry_follows_a_motion_value_and_gestures_take_one() {
+    let output = gesture(
+        "export function Sheet() {\n  const y = useMotionValue(0);\n  const r = useMotionValue(0);\n  return VStack(Text('t')).offset({ x: 'md', y }).rotation(r).scale(y).drag(y, { axis: 'y', min: 0 }).swipe('down', () => {});\n}\n",
+    );
+    assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics.first().map(|d| &d.message));
+}
+
+#[test]
+fn a_motion_value_where_a_token_goes_is_an_error() {
+    let output = gesture(
+        "export function Row() {\n  const y = useMotionValue(0);\n  return Text('t').padding(y);\n}\n",
+    );
+    assert_eq!(output.diagnostics[0].message, ".padding() takes padding tokens, not a MotionValue");
+    let output = gesture(
+        "export function Row() {\n  const y = useMotionValue(0);\n  return Text('t').opacity(y);\n}\n",
+    );
+    assert_eq!(output.diagnostics[0].message, ".opacity() takes opacity tokens, not a MotionValue");
+}
+
+#[test]
+fn a_drag_takes_a_motion_value_and_a_swipe_a_direction() {
+    let output = gesture("export const x = () => Text('t').drag(0);\n");
+    assert_eq!(output.diagnostics[0].message, ".drag() takes a MotionValue");
+    let output = gesture("export const x = () => Text('t').swipe('sideways', () => {});\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown swipeDirection token 'sideways' for .swipe()");
+}

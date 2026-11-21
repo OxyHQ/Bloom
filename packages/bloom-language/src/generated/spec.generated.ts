@@ -798,6 +798,12 @@ export const ENUMS = {
   "contentTransition": [
     "roll"
   ],
+  "swipeDirection": [
+    "left",
+    "right",
+    "up",
+    "down"
+  ],
   "spacingExtra": [
     "between"
   ]
@@ -985,6 +991,14 @@ export const MODIFIERS = {
     "namespace"
   ],
   "pressScale": [],
+  "drag": [
+    "motionValue",
+    "value?"
+  ],
+  "swipe": [
+    "swipeDirection",
+    "value"
+  ],
   "contentTransition": [
     "contentTransition",
     "value?"
@@ -1032,6 +1046,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "pressScale",
+    "drag",
+    "swipe",
     "spacing",
     "align"
   ],
@@ -1066,7 +1082,9 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
-    "pressScale"
+    "pressScale",
+    "drag",
+    "swipe"
   ],
   "text": [
     "padding",
@@ -1100,6 +1118,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "pressScale",
+    "drag",
+    "swipe",
     "lines",
     "noWrap",
     "contentTransition"
@@ -1136,6 +1156,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "pressScale",
+    "drag",
+    "swipe",
     "size"
   ],
   "avatar": [
@@ -1170,6 +1192,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "pressScale",
+    "drag",
+    "swipe",
     "size"
   ],
   "image": [
@@ -1204,6 +1228,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "pressScale",
+    "drag",
+    "swipe",
     "contentFit",
     "aspectRatio",
     "tint",
@@ -1243,6 +1269,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "pressScale",
+    "drag",
+    "swipe",
     "style",
     "shape",
     "size",
@@ -1280,6 +1308,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "pressScale",
+    "drag",
+    "swipe",
     "count",
     "active",
     "tint"
@@ -1316,6 +1346,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "pressScale",
+    "drag",
+    "swipe",
     "trailing",
     "countFormat",
     "size"
@@ -1351,7 +1383,9 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
-    "pressScale"
+    "pressScale",
+    "drag",
+    "swipe"
   ],
   "lottie": [
     "padding",
@@ -1385,6 +1419,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "pressScale",
+    "drag",
+    "swipe",
     "loop",
     "paused",
     "fallback"
@@ -1420,7 +1456,9 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
-    "pressScale"
+    "pressScale",
+    "drag",
+    "swipe"
   ],
   "view": [
     "padding",
@@ -1453,7 +1491,9 @@ export const NODE_MODIFIERS = {
     "transition",
     "keyframes",
     "matchedGeometry",
-    "pressScale"
+    "pressScale",
+    "drag",
+    "swipe"
   ]
 } as const;
 

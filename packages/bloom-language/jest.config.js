@@ -34,6 +34,7 @@ module.exports = {
     '^@oxy.so/bloom/motion$': `${support}/bloom-motion.ts`,
     '^@oxy.so/bloom/(hooks|screen|sticker)$': `${support}/bloom-runtime.ts`,
     '^react-native-reanimated$': `${support}/react-native-reanimated.ts`,
+    '^react-native-gesture-handler$': `${support}/react-native-gesture-handler.ts`,
     '^react$': require.resolve('react'),
     '^react/(.*)$': `${require('node:path').dirname(require.resolve('react/package.json'))}/$1`,
   },
