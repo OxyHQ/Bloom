@@ -273,7 +273,8 @@ export const VARIANT_MODIFIERS = [
   "zIndex",
   "hidden",
   "basis",
-  "allowsHitTesting"
+  "allowsHitTesting",
+  "when"
 ] as const;
 export const VARIANT_SELECTORS = {
   "dark": ".dark &",
