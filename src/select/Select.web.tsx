@@ -194,11 +194,13 @@ export function Select(props: SelectProps) {
     onValueChange: onValueChangeProp,
     disabled,
     size: sizeProp,
+    open: openProp,
+    onOpenChange,
   } = props;
   const [value, onValueChange] = useControllableState<string | undefined>({
     value: valueProp,
     defaultValue,
-    controlled: Object.prototype.hasOwnProperty.call(props, 'value'),
+    controlled: Object.hasOwn(props, 'value'),
     onChange: (next) => {
       if (next !== undefined) onValueChangeProp?.(next);
     },
@@ -208,7 +210,13 @@ export function Select(props: SelectProps) {
     { size: 'md', tone: 'neutral' },
   );
   const size = inheritedSize;
-  const [requestedOpen, setIsOpen] = useState(false);
+  // Its own open state, or the caller's when `open` is given (controlled).
+  const [requestedOpen, setIsOpen] = useControllableState<boolean>({
+    value: openProp ?? false,
+    defaultValue: false,
+    controlled: Object.hasOwn(props, 'open'),
+    onChange: (next) => onOpenChange?.(next),
+  });
   const visible = useCollapsibleVisibility();
   const isOpen = visible && requestedOpen;
   useLayoutEffect(() => {
