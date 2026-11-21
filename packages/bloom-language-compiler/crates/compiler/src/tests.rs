@@ -554,7 +554,7 @@ fn wave_two_controls_are_checked() {
 }
 
 /// The app chrome's constructors, imported as a screen file imports them.
-const CHROME: &str = "import { BottomSheet, Command, CommandGroup, CommandItem, NavItem, SettingsGroup, SettingsItem, SettingsModal, PageFooter, Rail, RailItem, ScrollView, Sidebar, Text, TreeFolder, TreeItem, TreeSection } from '@oxy.so/bloom-language';\n";
+const CHROME: &str = "import { AppLayout, Destination, Panel, Stack, BottomSheet, Command, CommandGroup, CommandItem, NavItem, SettingsGroup, SettingsItem, SettingsModal, PageFooter, Rail, RailItem, ScrollView, Sidebar, Text, TreeFolder, TreeItem, TreeSection } from '@oxy.so/bloom-language';\n";
 
 fn chrome(body: &str) -> crate::Output {
     compile(&format!("{CHROME}{body}"), "chrome.tsx")
@@ -631,4 +631,16 @@ fn the_command_palette_and_the_settings_are_checked_against_the_spec() {
     assert_eq!(first_message(&view), Some("Unknown settingsView token 'list' for .initialView()"));
     let group = chrome("export const C = () => CommandGroup('Go').title('x');\n");
     assert_eq!(first_message(&group), Some("CommandGroup has no modifier .title()"));
+}
+
+#[test]
+fn the_app_layout_panels_and_destinations_are_checked_against_the_spec() {
+    let fine = chrome(
+        "export const A = (open, set, Icon, again) => AppLayout(Stack()).shellLayout('deck').shellPresentation('floating').panels(Panel('main').panelRole('main'), Panel('details', Text('d')).panelRole('inspector').label('Details').presented(open).onPresentedChange(set).width('320').minWidth('280').maxWidth('448').resizable().hidden().keepMounted()).destinations(Destination('index', '/').label('Home').icon(Icon).activeIcon(Icon).badge(2).bar().page().preload().sidebar(false).sidebarAfter('x')).onReselect(again);\n",
+    );
+    assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
+    let layout = chrome("export const A = () => AppLayout(Stack()).shellLayout('grid');\n");
+    assert_eq!(first_message(&layout), Some("Unknown shellLayout token 'grid' for .shellLayout()"));
+    let role = chrome("export const P = () => Panel('a').panelRole('sidebar');\n");
+    assert_eq!(first_message(&role), Some("Unknown panelRole token 'sidebar' for .panelRole()"));
 }

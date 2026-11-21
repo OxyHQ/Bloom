@@ -19,6 +19,7 @@ export const ScreenScrollView = 'ScreenScrollView';
 export const Dialog = slotted('Dialog', ['children']);
 export const BottomSheet = slotted('BottomSheet', ['children', 'footer']);
 export const TabPagerLayout = 'TabPagerLayout';
+export const TabPagerProvider = slotted('TabPagerProvider', ['children']);
 export const Slot = 'Slot';
 
 export function stackSceneLayout({ children }: { children: ReactNode }) {
