@@ -1966,6 +1966,10 @@
       "constructors": ["ExpandableText"],
       "modifiers": ["lines", "style", "labels"],
       "style": "expandableTextStyle"
+    },
+    "categoryBar": {
+      "constructors": ["CategoryBar"],
+      "modifiers": ["trailing", "spacing", "backdrop", "labels"]
     }
   },
   "sfSymbols": {
