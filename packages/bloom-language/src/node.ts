@@ -29,6 +29,8 @@ import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 import type { TagFieldKind } from './controls/tag-field';
 import type { FileUploadKind } from './controls/file-upload';
 import type { VideoViewKind } from './controls/video-view';
+import type { InputOtpKind } from './controls/input-otp';
+import type { OtpCharacters } from './tokens';
 import type { TagSuggestion } from '@oxy.so/bloom/tag-field';
 import type { FileUploadFile, FileUploadProps } from '@oxy.so/bloom/file-upload';
 import type { TooltipKind } from './controls/tooltip';
@@ -753,6 +755,11 @@ export interface ValueModifiers {
   fileIcon: (file: FileUploadFile) => Child;
   nativeControls: boolean;
   allowsPictureInPicture: boolean;
+
+  // One-time codes (controls/input-otp.tsx)
+  length: number;
+  characters: OtpCharacters;
+  onComplete: (code: string) => void;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1142,7 +1149,8 @@ export type NodeKind =
   | ActivityHeatmapKind
   | TagFieldKind
   | FileUploadKind
-  | VideoViewKind;
+  | VideoViewKind
+  | InputOtpKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -2784,6 +2792,17 @@ export class Node {
   }
   allowsPictureInPicture(value: boolean): Node {
     return this.set('allowsPictureInPicture', value);
+  }
+
+  // One-time codes (controls/input-otp.tsx)
+  length(value: number): Node {
+    return this.set('length', value);
+  }
+  characters(value: OtpCharacters): Node {
+    return this.set('characters', value);
+  }
+  onComplete(value: (code: string) => void): Node {
+    return this.set('onComplete', value);
   }
 }
 

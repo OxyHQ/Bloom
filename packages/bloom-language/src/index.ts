@@ -530,3 +530,7 @@ export type { FileUploadView } from './controls/file-upload';
 // Videos (controls/video-view.tsx)
 export { Video } from './controls/video-view';
 export type { VideoView } from './controls/video-view';
+
+// One-time codes (controls/input-otp.tsx)
+export { InputOtp } from './controls/input-otp';
+export type { InputOtpView } from './controls/input-otp';

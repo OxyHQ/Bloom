@@ -21,6 +21,7 @@ import { ACTIVITY_HEATMAPS } from './activity-heatmap';
 import { TAG_FIELDS } from './tag-field';
 import { FILE_UPLOADS } from './file-upload';
 import { VIDEOS } from './video-view';
+import { INPUT_OTPS } from './input-otp';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -49,4 +50,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...TAG_FIELDS,
   ...FILE_UPLOADS,
   ...VIDEOS,
+  ...INPUT_OTPS,
 };
