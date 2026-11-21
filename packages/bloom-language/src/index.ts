@@ -684,3 +684,41 @@ export type {
 // Agent avatars (controls/agent-avatar.tsx)
 export { AgentAvatar } from './controls/agent-avatar';
 export type { AgentAvatarOptions, AgentAvatarView } from './controls/agent-avatar';
+
+// Chat composer (controls/chat-composer.tsx)
+export {
+  AttachmentMenu,
+  ChatComposer,
+  CompactComposer,
+  ComposerBanner,
+  ComposerIconButton,
+  EmojiPicker,
+  MessageContextMenu,
+  ReactionPicker,
+  SuggestionList,
+  VoiceRecorder,
+} from './controls/chat-composer';
+export type {
+  AttachmentItem,
+  AttachmentMenuOptions,
+  AttachmentMenuView,
+  ChatComposerOptions,
+  ChatComposerView,
+  CompactComposerOptions,
+  CompactComposerView,
+  ComposerBannerOptions,
+  ComposerBannerView,
+  ComposerIconButtonOptions,
+  ComposerIconButtonView,
+  EmojiPickerOptions,
+  EmojiPickerView,
+  MessageContextMenuOptions,
+  MessageContextMenuView,
+  ReactionPickerOptions,
+  ReactionPickerView,
+  Suggestion,
+  SuggestionListOptions,
+  SuggestionListView,
+  VoiceRecorderOptions,
+  VoiceRecorderView,
+} from './controls/chat-composer';
