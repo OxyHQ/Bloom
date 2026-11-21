@@ -3361,7 +3361,8 @@
     "cardForm": { "constructors": ["CardForm"], "modifiers": ["disabled"] },
     "cardFormCountry": { "constructors": ["CardFormCountry"], "modifiers": ["disabled"] },
     "cardFormPostcode": { "constructors": ["CardFormPostcode"], "modifiers": ["disabled"] },
-    "cardFormHostedField": { "constructors": ["CardFormHostedField"], "modifiers": ["disabled"] }
+    "cardFormHostedField": { "constructors": ["CardFormHostedField"], "modifiers": ["disabled"] },
+    "checkoutSheet": { "constructors": ["CheckoutSheet"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
