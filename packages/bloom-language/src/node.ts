@@ -37,6 +37,9 @@ import type { CompositionBarKind } from './controls/composition-bar';
 import type { PhoneInputKind } from './controls/phone-input';
 import type { Country } from '@oxy.so/bloom/phone-input';
 import type { CategoryBarKind } from './controls/category-bar';
+import type { VideoSlot } from './controls/media-flight';
+import type { VideoSurfaceType } from '@oxy.so/bloom/media-flight';
+import type { MediaFlightKind } from './controls/media-flight';
 import type { SortableMediaKind } from './controls/sortable-media';
 import type { VideoPlaybackKind } from './controls/video-playback';
 import type { ExpandableTextKind } from './controls/expandable-text';
@@ -822,6 +825,11 @@ export interface ValueModifiers {
   // Composition bars (controls/composition-bar.tsx)
   readoutFormat: (amount: number, percent: number) => string;
 
+  // Media flights (controls/media-flight.tsx)
+  surfaceType: VideoSurfaceType;
+  flightId: string;
+  videoSlot: VideoSlot;
+
   // Context menus (controls/context-menu.tsx)
   presentedAt: Binding<ContextMenuAnchor | null>;
 
@@ -1226,6 +1234,7 @@ export type NodeKind =
   | VideoViewKind
   | PhoneInputKind
   | CategoryBarKind
+  | MediaFlightKind
   | ChoiceListKind
   | VideoPlaybackKind
   | InputOtpKind
@@ -2982,6 +2991,17 @@ export class Node {
   }
   showsInfo(): Node {
     return this.set('showsInfo', true);
+  }
+
+  // Media flights (controls/media-flight.tsx)
+  surfaceType(value: VideoSurfaceType): Node {
+    return this.set('surfaceType', value);
+  }
+  flightId(value: string): Node {
+    return this.set('flightId', value);
+  }
+  videoSlot(value: VideoSlot): Node {
+    return this.set('videoSlot', value);
   }
 
   // Context menus (controls/context-menu.tsx)
