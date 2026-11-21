@@ -499,7 +499,11 @@
     "contentTransition": ["roll"],
     "swipeDirection": ["left", "right", "up", "down"],
     "hourFormat": ["12h", "24h"],
-    "timeFieldSize": ["sm", "md"]
+    "timeFieldSize": ["sm", "md"],
+    "ratingSize": ["sm", "md"],
+    "ratingStyle": ["compact", "stars"],
+    "ratingCountStyle": ["parenthesis", "reviews"],
+    "ratingInputSize": ["sm", "md", "lg"]
   },
   "glass": {
     "$comment": [
@@ -789,7 +793,18 @@
     "initialMonth": ["value"],
     "months": ["value"],
     "step": ["value"],
-    "hourFormat": ["hourFormat"]
+    "hourFormat": ["hourFormat"],
+    "countStyle": ["ratingCountStyle"],
+    "showsValue": ["value"],
+    "starSize": ["space"],
+    "starTint": ["color"],
+    "countTint": ["color"],
+    "emptyTint": ["color"],
+    "fillValue": ["value"],
+    "starLabel": ["value"],
+    "valueLabel": ["value"],
+    "labelWidth": ["space"],
+    "reveal": ["value"]
   },
   "universal": [
     "padding",
@@ -1168,7 +1183,37 @@
       "constructors": ["TimeField"],
       "modifiers": ["bounds", "step", "hourFormat", "size", "placeholder", "disabled"],
       "size": "timeFieldSize"
-    }
+    },
+    "rating": {
+      "constructors": ["Rating"],
+      "modifiers": [
+        "count",
+        "countStyle",
+        "size",
+        "style",
+        "showsValue",
+        "starSize",
+        "tint",
+        "starTint",
+        "countTint",
+        "emptyTint",
+        "fillValue",
+        "labels"
+      ],
+      "size": "ratingSize",
+      "style": "ratingStyle",
+      "tint": "color"
+    },
+    "ratingInput": {
+      "constructors": ["RatingInput"],
+      "modifiers": ["max", "size", "disabled", "starLabel"],
+      "size": "ratingInputSize"
+    },
+    "ratingBar": {
+      "constructors": ["RatingBar"],
+      "modifiers": ["max", "valueLabel", "labelWidth", "reveal"]
+    },
+    "ratingSummary": { "constructors": ["RatingSummary"], "modifiers": ["labels"] }
   },
   "sfSymbols": {
     "$comment": [

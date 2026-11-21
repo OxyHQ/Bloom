@@ -86,6 +86,10 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("swipeDirection", &["left", "right", "up", "down"]),
     ("hourFormat", &["12h", "24h"]),
     ("timeFieldSize", &["sm", "md"]),
+    ("ratingSize", &["sm", "md"]),
+    ("ratingStyle", &["compact", "stars"]),
+    ("ratingCountStyle", &["parenthesis", "reviews"]),
+    ("ratingInputSize", &["sm", "md", "lg"]),
 ];
 
 /// The modifiers a variant (`when(condition, v => v…)`) can change.
@@ -251,6 +255,17 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("months", &["value"]),
     ("step", &["value"]),
     ("hourFormat", &["hourFormat"]),
+    ("countStyle", &["ratingCountStyle"]),
+    ("showsValue", &["value"]),
+    ("starSize", &["space"]),
+    ("starTint", &["color"]),
+    ("countTint", &["color"]),
+    ("emptyTint", &["color"]),
+    ("fillValue", &["value"]),
+    ("starLabel", &["value"]),
+    ("valueLabel", &["value"]),
+    ("labelWidth", &["space"]),
+    ("reveal", &["value"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -298,6 +313,10 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "calendar", constructors: &["Calendar"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "bounds", "unavailable", "weekStart", "locale", "initialMonth", "labels"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "rangeCalendar", constructors: &["RangeCalendar"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "bounds", "unavailable", "weekStart", "locale", "initialMonth", "months", "labels"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "timeField", constructors: &["TimeField"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "bounds", "step", "hourFormat", "size", "placeholder", "disabled"], size: Some("timeFieldSize"), tint: None, style: None, shape: None },
+    NodeSpec { kind: "rating", constructors: &["Rating"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "count", "countStyle", "size", "style", "showsValue", "starSize", "tint", "starTint", "countTint", "emptyTint", "fillValue", "labels"], size: Some("ratingSize"), tint: Some("color"), style: Some("ratingStyle"), shape: None },
+    NodeSpec { kind: "ratingInput", constructors: &["RatingInput"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "max", "size", "disabled", "starLabel"], size: Some("ratingInputSize"), tint: None, style: None, shape: None },
+    NodeSpec { kind: "ratingBar", constructors: &["RatingBar"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "max", "valueLabel", "labelWidth", "reveal"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "ratingSummary", constructors: &["RatingSummary"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "labels"], size: None, tint: None, style: None, shape: None },
 ];
 
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,
