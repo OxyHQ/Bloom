@@ -40,8 +40,8 @@ class GlassMenuAndroidModule : Module() {
       Prop("triggerConfig") { view: GlassMenuAndroidView, config: GlassTriggerConfigRecord? ->
         view.triggerConfig = config ?: GlassTriggerConfigRecord()
       }
-      Prop("openOnMount") { view: GlassMenuAndroidView, open: Boolean? ->
-        view.openOnMount = open ?: false
+      Prop("openWithItems") { view: GlassMenuAndroidView, open: Boolean? ->
+        view.openWithItems = open ?: false
       }
       Prop("alignment") { view: GlassMenuAndroidView, alignment: String? ->
         view.alignment = alignment ?: "auto"

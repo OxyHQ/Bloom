@@ -23,8 +23,8 @@
        Prop("triggerConfig") { view: GlassMenuAndroidView, config: GlassTriggerConfigRecord? ->
          view.triggerConfig = config ?: GlassTriggerConfigRecord()
        }
-+      Prop("openOnMount") { view: GlassMenuAndroidView, open: Boolean? ->
-+        view.openOnMount = open ?: false
++      Prop("openWithItems") { view: GlassMenuAndroidView, open: Boolean? ->
++        view.openWithItems = open ?: false
 +      }
        Prop("alignment") { view: GlassMenuAndroidView, alignment: String? ->
          view.alignment = alignment ?: "auto"
@@ -39,24 +39,28 @@
  
    private var overlay: GlassMenuOverlay? = null
    private var glassRenderer: Any? = null
-@@ -56,7 +57,16 @@
+@@ -55,8 +56,20 @@
+   internal var items: List<GlassMenuItemRecord> = emptyList()
      set(value) {
        field = value
++      // Emptied, a view that opens with its rows opens again with the next ones.
++      if (value.isEmpty()) openedWithItems = false
        overlay?.menuSession?.takeIf { it.anchor === this }?.refreshItems()
 +      openWhenReady()
      }
-+  // The owner mounts this view with its menu already open (rows that arrive only as the menu opens): it opens
-+  // itself, once, as soon as it is attached and laid out, since nothing can call `open` on it before it is mounted.
-+  internal var openOnMount = false
++  // The owner gives this view its rows only as its menu opens (rows built by the press that opens it, or a view
++  // mounted with its menu open): it opens itself as soon as it has rows and is laid out, since nothing can call
++  // `open` with rows it does not have yet. Its rows emptied once the menu has closed, the next ones open it again.
++  internal var openWithItems = false
 +    set(value) {
 +      field = value
 +      openWhenReady()
 +    }
-+  private var openedOnMount = false
++  private var openedWithItems = false
    internal var glass = true
      set(value) {
        field = value
-@@ -101,6 +111,19 @@
+@@ -101,6 +114,19 @@
      overlay = GlassMenuOverlay.obtain(root).also { it.register(this) }
      if (drawsGlass) GlassDevGuard.warnIfInOverscrollScroll(this)
      refreshDrawing()
@@ -69,14 +73,14 @@
 +  }
 +
 +  private fun openWhenReady() {
-+    if (!openOnMount || openedOnMount || overlay == null || items.isEmpty() || width == 0 || height == 0) return
-+    openedOnMount = true
++    if (!openWithItems || openedWithItems || overlay == null || items.isEmpty() || width == 0 || height == 0) return
++    openedWithItems = true
 +    // After the rest of this layout pass, so the anchor is measured where it ends up.
 +    post { open(null, null, null, null) }
    }
  
    override fun onDetachedFromWindow() {
-@@ -275,11 +298,12 @@
+@@ -275,11 +301,12 @@
    internal fun onSessionFinished() {
      menuActive = false
      invalidate()
