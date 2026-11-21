@@ -46,6 +46,7 @@ import type {
   NavStackView,
   RouteView,
   TabNavigatorView,
+  BottomSheetView,
   ScrollViewNode,
   ActionGroupView,
   ActionView,
@@ -280,8 +281,10 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<NavStackView>, Of<'navStack'>>,
       Same<MethodsOf<RouteView>, Of<'route'>>,
       Same<MethodsOf<TabNavigatorView>, Of<'tabView'>>,
+      Same<MethodsOf<BottomSheetView>, Of<'bottomSheet'>>,
       Same<MethodsOf<ScrollViewNode>, Of<'scrollView'>>,
     ] = [
+      true,
       true,
       true,
       true,

@@ -133,6 +133,9 @@ import {
   type ScrollIndicators,
   type KeyboardDismiss,
   type KeyboardTaps,
+  type DragIndicator,
+  type SheetMaterial,
+  type SheetSizing,
   type TextAlignment,
   type TextCase,
   type TextStyleName,
@@ -171,6 +174,9 @@ export type {
   ScreenKind,
   ScreenScroll,
   ScrollIndicators,
+  DragIndicator,
+  SheetMaterial,
+  SheetSizing,
 };
 export type { GlassValue };
 export type EngagementTone = Exclude<AccentTone, 'default'>;
@@ -213,6 +219,11 @@ export interface ScreenFooter {
   readonly placement?: 'inset' | 'overlay';
   /** `follow` rides the keyboard and keeps the focused input above it; `hide` (default) gives way to it. */
   readonly keyboard?: 'hide' | 'visible' | 'follow';
+}
+
+/** A bottom sheet's footer: `viewport` keeps it at the screen's edge while the sheet is dragged down. */
+export interface SheetFooter {
+  readonly behavior?: 'sheet' | 'viewport';
 }
 
 /** Where a screen's own floating action sits, and when it shows: Bloom `Screen`'s `primaryAction`. */
@@ -283,6 +294,14 @@ export interface ValueModifiers {
   scrollIndicators: ScrollIndicators;
   scrollDismissesKeyboard: KeyboardDismiss;
   keyboardTaps: KeyboardTaps;
+  detached: boolean;
+  dragIndicator: DragIndicator;
+  material: SheetMaterial;
+  scrollable: boolean;
+  sizing: SheetSizing;
+  interactiveDismissDisabled: boolean;
+  onDismissAttempt: () => boolean;
+  manualActivation: boolean;
   bottomBar: boolean;
   shell: ShellOptions;
   tag: string;
@@ -625,7 +644,8 @@ export type Modifier =
       readonly kind: 'footer';
       readonly key: string;
       readonly content: Child;
-      readonly options: ScreenFooter | undefined;
+      /** A screen's footer options, or a bottom sheet's. */
+      readonly options: ScreenFooter | SheetFooter | undefined;
     }
   | {
       readonly kind: 'floatingAction';
@@ -748,7 +768,8 @@ export type NodeKind =
   | InputKind
   | OverlayKind
   | ContainerKind
-  | 'scrollView';
+  | 'scrollView'
+  | 'bottomSheet';
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1218,7 +1239,7 @@ export class Node {
   onReselect(value: (() => void) | undefined): Node {
     return this.set('onReselect', value);
   }
-  footer(content: Child, options?: ScreenFooter): Node {
+  footer(content: Child, options?: ScreenFooter | SheetFooter): Node {
     return this.with({ kind: 'footer', key: 'footer', content, options });
   }
   screenKind(value: ScreenKind): Node {
@@ -1269,6 +1290,30 @@ export class Node {
   }
   keyboardTaps(value: KeyboardTaps): Node {
     return this.set('keyboardTaps', value);
+  }
+  detached(value = true): Node {
+    return this.set('detached', value);
+  }
+  dragIndicator(value: DragIndicator): Node {
+    return this.set('dragIndicator', value);
+  }
+  material(value: SheetMaterial): Node {
+    return this.set('material', value);
+  }
+  scrollable(value = true): Node {
+    return this.set('scrollable', value);
+  }
+  sizing(value: SheetSizing): Node {
+    return this.set('sizing', value);
+  }
+  interactiveDismissDisabled(value = true): Node {
+    return this.set('interactiveDismissDisabled', value);
+  }
+  onDismissAttempt(value: () => boolean): Node {
+    return this.set('onDismissAttempt', value);
+  }
+  manualActivation(value = true): Node {
+    return this.set('manualActivation', value);
   }
   primaryAction(icon: IconComponent, label: string, destination: string): Node {
     return this.with({ kind: 'primaryAction', key: 'primaryAction', icon, label, destination });
@@ -2326,6 +2371,36 @@ export interface ScrollViewNode extends ViewModifiers<ScrollViewNode> {
   scrollDismissesKeyboard(value: KeyboardDismiss): ScrollViewNode;
   /** Whether a tap with the keyboard up reaches the content: `handled` by a control, `always`, or `never` (default). */
   keyboardTaps(value: KeyboardTaps): ScrollViewNode;
+}
+
+/**
+ * Bloom `BottomSheet`, as a `.sheet()`'s content: the sheet the content is
+ * presented in, from the bottom (the system sheet on iOS). Its children are
+ * its body, which scrolls inside it unless `.scrollable(false)`.
+ */
+export interface BottomSheetView extends ViewNode {
+  /** Inset from the screen's edges with every corner rounded; full width with a rounded top by default. */
+  detached(value?: boolean): BottomSheetView;
+  /** The drag handle at its top: `visible` (default) or `hidden`. */
+  dragIndicator(value: DragIndicator): BottomSheetView;
+  /** Bloom's optical `surface` (default) or the plain backing fill (`flat`). */
+  material(value: SheetMaterial): BottomSheetView;
+  /** The body scrolls inside the sheet (default); `false` when the body owns its own list. */
+  scrollable(value?: boolean): BottomSheetView;
+  /** `content` (default) fits the body's height; `fill` gives a list a bounded viewport. */
+  sizing(value: SheetSizing): BottomSheetView;
+  /** A drag down does not dismiss it. */
+  interactiveDismissDisabled(value?: boolean): BottomSheetView;
+  /** Asked before the reader's dismissal (back, the backdrop, Escape, a drag); `false` keeps it open. */
+  onDismissAttempt(value: () => boolean): BottomSheetView;
+  /** The body's drag starts only at the top of its scroll and past 8 down (for scrolling content on Android). */
+  manualActivation(value?: boolean): BottomSheetView;
+  /** A bar under the body, its height reserved; `viewport` keeps it at the screen's edge while dragged. */
+  footer(content: Child, options?: SheetFooter): BottomSheetView;
+  /** The sheet's presence, 0 (closed) to 1 (presented), on the UI thread. */
+  progress(value: Progress | undefined): BottomSheetView;
+  /** The sheet's accessible name. */
+  label(value: string | undefined): BottomSheetView;
 }
 
 /** The app's root layout: its navigator in the shell, the primary action, the bottom bar. */

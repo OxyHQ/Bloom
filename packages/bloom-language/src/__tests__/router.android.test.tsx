@@ -3,11 +3,21 @@
  * ExperimentalStack; the shell's bottom bar is the language BottomBar with its
  * FAB. Against stand-ins (support/bloom-router.ts, an ExperimentalStack mock).
  */
-import { createElement, type ReactNode } from 'react';
+import { createElement, useState, type ReactNode } from 'react';
 
 import { act, Glyph, hosts, mount, only, OtherGlyph, quietRenderer } from './support/mount';
 import { pager, router } from './support/bloom-router';
-import { Button, Embed, FAB, Header, Icon, ScrollView, Text, VStack } from '../primitives';
+import {
+  BottomSheet,
+  Button,
+  Embed,
+  FAB,
+  Header,
+  Icon,
+  ScrollView,
+  Text,
+  VStack,
+} from '../primitives';
 import { AppLayout, layout, navigate, screen, Sheet, Stack, TabView } from '../router';
 import { InPagerContext } from '../router/pager';
 
@@ -306,6 +316,78 @@ describe('screen() on Android', () => {
     expect(built).toHaveBeenCalledTimes(1);
     expect(only(r, 'Dialog').props.onClose).toBe(dismiss);
     expect(hosts(r, 'Text').some((t) => t.props.children === 'filters')).toBe(true);
+  });
+
+  it('a BottomSheet content is Bloom’s BottomSheet with its options, held open by open', () => {
+    const dismiss = jest.fn();
+    const attempt = () => false;
+    const sheetOf = (open: boolean) =>
+      Text('a').sheet(
+        open,
+        () =>
+          BottomSheet(Text('filters'))
+            .detached()
+            .dragIndicator('hidden')
+            .material('flat')
+            .scrollable(false)
+            .sizing('fill')
+            .interactiveDismissDisabled()
+            .onDismissAttempt(attempt)
+            .manualActivation()
+            .footer(Text('apply'), { behavior: 'viewport' })
+            .label('Filters'),
+        { onDismiss: dismiss },
+      );
+    let setOpen!: (open: boolean) => void;
+    const Filters = screen(function filters() {
+      const [open, set] = useState(true);
+      setOpen = set;
+      return sheetOf(open);
+    });
+    const r = mount(createElement(Filters));
+    const sheet = only(r, 'BottomSheet');
+    expect(hosts(r, 'Dialog')).toHaveLength(0);
+    expect(sheet.props).toMatchObject({
+      open: true,
+      detached: true,
+      showHandle: false,
+      material: 'flat',
+      scrollable: false,
+      sizing: 'fill',
+      enablePanDownToClose: false,
+      onDismissAttempt: attempt,
+      manualActivation: true,
+      footerBehavior: 'viewport',
+      accessibilityLabel: 'Filters',
+    });
+    expect(hosts(r, 'Text').map((t) => t.props.children)).toEqual(['a', 'filters', 'apply']);
+    // A close the sheet made itself, while the host still says open, tells the host.
+    act(() => sheet.props.onDismiss());
+    expect(dismiss).toHaveBeenCalledTimes(1);
+    // The host closes it: the sheet keeps its content while it leaves, and its own close is not news.
+    act(() => setOpen(false));
+    expect(only(r, 'BottomSheet').props.open).toBe(false);
+    expect(hosts(r, 'Text').some((t) => t.props.children === 'filters')).toBe(true);
+    act(() => only(r, 'BottomSheet').props.onDismiss());
+    expect(dismiss).toHaveBeenCalledTimes(1);
+  });
+
+  it('a BottomSheet with no options hands Bloom none, so its defaults hold', () => {
+    const r = mount(
+      createElement(screen(() => Text('a').sheet(true, () => BottomSheet(Text('b'))))),
+    );
+    const props = only(r, 'BottomSheet').props;
+    for (const name of [
+      'detached',
+      'showHandle',
+      'material',
+      'scrollable',
+      'sizing',
+      'enablePanDownToClose',
+      'manualActivation',
+      'footer',
+    ])
+      expect(props[name]).toBeUndefined();
   });
 
   it('navigate() pushes through the screen’s navigator', () => {

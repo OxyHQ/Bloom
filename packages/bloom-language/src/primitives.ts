@@ -22,6 +22,7 @@ import {
   type BottomBarView,
   type ButtonGroupView,
   type ScrollViewNode,
+  type BottomSheetView,
   type ShapeProps,
   type ShapeView,
   type ButtonView,
@@ -285,6 +286,18 @@ export function Header(title?: string): HeaderView {
  */
 export function ScrollView(...children: Child[]): ScrollViewNode {
   return new Node('scrollView', null, children);
+}
+
+/**
+ * A sheet from the bottom (Bloom `BottomSheet`), as a `.sheet()`'s content:
+ * its children are its body. Placed anywhere else it draws nothing.
+ *
+ * ```ts
+ * Text('a').sheet(open, () => BottomSheet(Filters()).detached(), { onDismiss: close })
+ * ```
+ */
+export function BottomSheet(...children: Child[]): BottomSheetView {
+  return new Node('bottomSheet', null, children);
 }
 
 /**
