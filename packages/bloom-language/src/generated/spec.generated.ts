@@ -3170,6 +3170,18 @@ export const MODIFIERS = {
   ],
   "minItemWidth": [
     "space"
+  ],
+  "onRetry": [
+    "value"
+  ],
+  "onAdd": [
+    "value"
+  ],
+  "addHint": [
+    "value"
+  ],
+  "imageVariant": [
+    "value"
   ]
 } as const;
 
@@ -12953,6 +12965,77 @@ export const NODE_MODIFIERS = {
     "onPress",
     "label",
     "id"
+  ],
+  "sortablePhotoGrid": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "onRemove",
+    "onRetry",
+    "onAdd",
+    "max",
+    "addHint",
+    "columns",
+    "imageVariant",
+    "disabled",
+    "labels"
   ]
 } as const;
 
@@ -13127,5 +13210,6 @@ export const CONSTRUCTORS = {
   "DropZone": "dropZone",
   "MediaInsetBorder": "mediaInsetBorder",
   "FactStrip": "factStrip",
-  "Fact": "fact"
+  "Fact": "fact",
+  "SortablePhotoGrid": "sortablePhotoGrid"
 } as const;
