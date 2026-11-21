@@ -182,6 +182,7 @@ export {
   Calendar,
   DatePicker,
   DateRangePicker,
+  MeetingScheduler,
   RangeCalendar,
   TimeField,
 } from './controls/date-picker';
@@ -189,6 +190,7 @@ export type {
   CalendarView,
   DatePickerView,
   DateRangePickerView,
+  MeetingSchedulerView,
   RangeCalendarView,
   TimeFieldView,
 } from './controls/date-picker';

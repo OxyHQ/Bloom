@@ -1237,3 +1237,27 @@ fn media_galleries_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn meeting_schedulers_are_checked() {
+    let imports = "import { MeetingScheduler } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (b, host, meeting, f, open) => MeetingScheduler(b, host, meeting, 'Amsterdam').bounds(null).unavailable(f).weekStart(1).locale('en').labels({}).timeSlots(['09:00']).hourFormat('12h').onTimezonePress(f).triggerTitle('Book').disabled().presented(open);\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        (
+            "MeetingScheduler(b, h, m, 'A').hourFormat('am')",
+            "Unknown hourFormat token 'am' for .hourFormat()",
+        ),
+        (
+            "MeetingScheduler(b, h, m, 'A').placeholder('x')",
+            "MeetingScheduler has no modifier .placeholder()",
+        ),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (b, h, m) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
