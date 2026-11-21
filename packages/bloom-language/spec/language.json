@@ -1028,7 +1028,8 @@
     "padded": ["value"],
     "colorScale": ["value"],
     "openMenu": ["value"],
-    "shortcut": ["value"]
+    "shortcut": ["value"],
+    "readoutFormat": ["value"]
   },
   "universal": [
     "padding",
@@ -1984,7 +1985,8 @@
       "constructors": ["MenubarMenu"],
       "universal": false,
       "modifiers": ["id", "disabled", "testID"]
-    }
+    },
+    "compositionBar": { "constructors": ["CompositionBar"], "modifiers": ["readoutFormat"] }
   },
   "sfSymbols": {
     "$comment": [
