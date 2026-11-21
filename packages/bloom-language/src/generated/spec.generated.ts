@@ -1746,6 +1746,14 @@ export const ENUMS = {
     "continue",
     "signIn",
     "signUp"
+  ],
+  "galleryStyle": [
+    "overlay",
+    "page"
+  ],
+  "galleryIndicator": [
+    "dots",
+    "thumbnails"
   ]
 } as const;
 
@@ -2313,9 +2321,7 @@ export const MODIFIERS = {
   "resetKey": [
     "value"
   ],
-  "fullWidth": [
-    "value?"
-  ],
+  "fullWidth": [],
   "pressed": [
     "value"
   ],
@@ -3268,12 +3274,6 @@ export const MODIFIERS = {
   "avatar": [
     "value"
   ],
-  "buttons": [
-    "value"
-  ],
-  "dismissible": [
-    "value"
-  ],
   "onDismiss": [
     "value"
   ],
@@ -3289,10 +3289,21 @@ export const MODIFIERS = {
   "coverFill": [
     "value?"
   ],
-  "iconOnly": [],
-  "fullWidth": [],
   "intent": [
     "socialIntent"
+  ],
+  "fullScreenCover": [
+    "value",
+    "value"
+  ],
+  "pageIndicator": [
+    "galleryIndicator"
+  ],
+  "videoOverlay": [
+    "value"
+  ],
+  "sourceAnchors": [
+    "value"
   ]
 } as const;
 
@@ -3376,6 +3387,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "spacing",
     "align",
     "justify",
@@ -3462,7 +3474,8 @@ export const NODE_MODIFIERS = {
     "seed",
     "screenActive",
     "initialHeaderHeight",
-    "initialFooterHeight"
+    "initialFooterHeight",
+    "fullScreenCover"
   ],
   "text": [
     "padding",
@@ -3542,6 +3555,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "lines",
     "noWrap",
     "truncation",
@@ -3635,6 +3649,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "size"
   ],
   "avatar": [
@@ -3715,6 +3730,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "size",
     "tint",
     "shape",
@@ -3801,6 +3817,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "layout",
     "size",
     "shape",
@@ -3890,6 +3907,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "style",
     "tint",
     "size",
@@ -3976,6 +3994,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "size"
   ],
   "loading": [
@@ -4056,6 +4075,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "style",
     "size",
     "tint"
@@ -4137,7 +4157,8 @@ export const NODE_MODIFIERS = {
     "seed",
     "screenActive",
     "initialHeaderHeight",
-    "initialFooterHeight"
+    "initialFooterHeight",
+    "fullScreenCover"
   ],
   "skeletonGroup": [
     "padding",
@@ -4216,7 +4237,8 @@ export const NODE_MODIFIERS = {
     "seed",
     "screenActive",
     "initialHeaderHeight",
-    "initialFooterHeight"
+    "initialFooterHeight",
+    "fullScreenCover"
   ],
   "image": [
     "padding",
@@ -4296,6 +4318,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "contentFit",
     "aspectRatio",
     "tint",
@@ -4380,7 +4403,8 @@ export const NODE_MODIFIERS = {
     "seed",
     "screenActive",
     "initialHeaderHeight",
-    "initialFooterHeight"
+    "initialFooterHeight",
+    "fullScreenCover"
   ],
   "ratio": [
     "padding",
@@ -4459,7 +4483,8 @@ export const NODE_MODIFIERS = {
     "seed",
     "screenActive",
     "initialHeaderHeight",
-    "initialFooterHeight"
+    "initialFooterHeight",
+    "fullScreenCover"
   ],
   "grid": [
     "padding",
@@ -4539,6 +4564,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "columns",
     "minCellWidth",
     "spacing",
@@ -4622,6 +4648,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "style",
     "shape",
     "size",
@@ -4715,6 +4742,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "size",
     "fill",
     "stroke",
@@ -4798,6 +4826,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "axis",
     "size",
     "dividers",
@@ -4881,6 +4910,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "style",
     "size",
     "tint",
@@ -4965,6 +4995,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "actions"
   ],
   "menuItem": [
@@ -5065,6 +5096,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "lineStyle",
     "align",
     "spacing",
@@ -5223,6 +5255,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "count",
     "active",
     "tint"
@@ -5305,6 +5338,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "trailing",
     "countFormat",
     "size"
@@ -5386,7 +5420,8 @@ export const NODE_MODIFIERS = {
     "seed",
     "screenActive",
     "initialHeaderHeight",
-    "initialFooterHeight"
+    "initialFooterHeight",
+    "fullScreenCover"
   ],
   "lottie": [
     "padding",
@@ -5466,6 +5501,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "loop",
     "paused",
     "fallback",
@@ -5549,6 +5585,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "style",
     "tint",
     "radius",
@@ -5634,7 +5671,8 @@ export const NODE_MODIFIERS = {
     "seed",
     "screenActive",
     "initialHeaderHeight",
-    "initialFooterHeight"
+    "initialFooterHeight",
+    "fullScreenCover"
   ],
   "cardBody": [
     "padding",
@@ -5713,7 +5751,8 @@ export const NODE_MODIFIERS = {
     "seed",
     "screenActive",
     "initialHeaderHeight",
-    "initialFooterHeight"
+    "initialFooterHeight",
+    "fullScreenCover"
   ],
   "cardFooter": [
     "padding",
@@ -5792,7 +5831,8 @@ export const NODE_MODIFIERS = {
     "seed",
     "screenActive",
     "initialHeaderHeight",
-    "initialFooterHeight"
+    "initialFooterHeight",
+    "fullScreenCover"
   ],
   "cardTitle": [
     "lines"
@@ -5878,6 +5918,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "size",
     "subtitle",
     "leadingView",
@@ -5968,6 +6009,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "title",
     "caption",
     "style",
@@ -6076,6 +6118,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "style",
     "tint",
     "size",
@@ -6163,6 +6206,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "icon",
     "description",
     "media",
@@ -6252,6 +6296,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "style",
     "size"
   ],
@@ -6333,6 +6378,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "style",
     "fullWidth",
     "onReorder",
@@ -6426,6 +6472,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "size"
   ],
   "errorBoundary": [
@@ -6523,7 +6570,8 @@ export const NODE_MODIFIERS = {
     "seed",
     "screenActive",
     "initialHeaderHeight",
-    "initialFooterHeight"
+    "initialFooterHeight",
+    "fullScreenCover"
   ],
   "view": [
     "padding",
@@ -6602,7 +6650,8 @@ export const NODE_MODIFIERS = {
     "seed",
     "screenActive",
     "initialHeaderHeight",
-    "initialFooterHeight"
+    "initialFooterHeight",
+    "fullScreenCover"
   ],
   "appLayout": [
     "primaryAction",
@@ -6696,6 +6745,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "placeholder",
     "size",
     "disabled",
@@ -6795,6 +6845,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "placeholder",
     "description",
     "size",
@@ -6890,6 +6941,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "description",
     "error",
     "required",
@@ -6973,6 +7025,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "size",
     "required",
     "disabled"
@@ -7055,6 +7108,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "size",
     "tint",
     "disabled"
@@ -7137,6 +7191,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "description",
     "size",
     "tint",
@@ -7222,6 +7277,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "style",
     "size",
     "tint",
@@ -7305,6 +7361,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "style",
     "size",
     "disabled",
@@ -7388,6 +7445,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "placeholder",
     "size",
     "disabled",
@@ -7479,6 +7537,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "placeholder",
     "size",
     "disabled",
@@ -7574,6 +7633,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "spacing",
     "contentInset",
     "disabled",
@@ -7659,6 +7719,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "spacing",
     "lines"
   ],
@@ -7749,7 +7810,8 @@ export const NODE_MODIFIERS = {
     "seed",
     "screenActive",
     "initialHeaderHeight",
-    "initialFooterHeight"
+    "initialFooterHeight",
+    "fullScreenCover"
   ],
   "selectionCard": [
     "padding",
@@ -7829,6 +7891,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "toggle",
     "selected",
     "description",
@@ -7919,6 +7982,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "contentMargins",
     "spacing",
     "refreshable",
@@ -8180,6 +8244,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "contentMargins",
     "spacing",
     "axis",
@@ -8267,6 +8332,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "contentMargins",
     "spacing",
     "axis",
@@ -8384,6 +8450,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "description",
     "trailing",
     "inset"
@@ -8466,6 +8533,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "icon",
     "muted"
   ],
@@ -8547,6 +8615,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "compact",
     "size",
     "disabled",
@@ -8646,6 +8715,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "bounds",
     "unavailable",
     "weekStart",
@@ -8733,6 +8803,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "bounds",
     "unavailable",
     "weekStart",
@@ -8821,6 +8892,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "bounds",
     "unavailable",
     "weekStart",
@@ -8906,6 +8978,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "bounds",
     "unavailable",
     "weekStart",
@@ -8992,6 +9065,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "bounds",
     "step",
     "hourFormat",
@@ -9077,6 +9151,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "count",
     "countStyle",
     "size",
@@ -9168,6 +9243,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "max",
     "size",
     "disabled",
@@ -9251,6 +9327,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "max",
     "valueLabel",
     "labelWidth",
@@ -9334,6 +9411,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "labels"
   ],
   "meter": [
@@ -9414,6 +9492,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "valueText",
     "indeterminate",
     "decorative",
@@ -9502,6 +9581,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "valueText",
     "indeterminate",
     "decorative",
@@ -9594,6 +9674,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "tint",
     "trackTint",
     "thickness",
@@ -9678,6 +9759,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "size",
     "minWidth"
   ],
@@ -9758,7 +9840,8 @@ export const NODE_MODIFIERS = {
     "seed",
     "screenActive",
     "initialHeaderHeight",
-    "initialFooterHeight"
+    "initialFooterHeight",
+    "fullScreenCover"
   ],
   "tableColumn": [
     "padding",
@@ -9838,6 +9921,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "width",
     "share",
     "minWidth",
@@ -9923,6 +10007,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "emptyState"
   ],
   "tableRow": [
@@ -10003,6 +10088,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "selected"
   ],
   "tableCell": [
@@ -10083,6 +10169,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "width",
     "share",
     "minWidth",
@@ -10166,6 +10253,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "supporting",
     "supportingLines",
     "prefix",
@@ -10265,6 +10353,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "separator",
     "scrollable",
     "scrollHeight",
@@ -10354,6 +10443,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "itemKey",
     "itemType",
     "estimatedItemSize",
@@ -10445,6 +10535,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "selecting",
     "onSelectAll",
     "onClear",
@@ -10529,6 +10620,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "headerContent",
     "footerContent",
     "loop",
@@ -10622,6 +10714,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "width"
   ],
   "carouselDots": [
@@ -10702,6 +10795,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "shape",
     "style",
     "max",
@@ -10785,6 +10879,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "streaming",
     "size",
     "onLinkPress",
@@ -10868,6 +10963,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "size",
     "tint",
     "bounds",
@@ -10961,6 +11057,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "size",
     "tint",
     "bounds",
@@ -11055,6 +11152,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "size",
     "allowsMultiple",
     "revealMotion"
@@ -11137,6 +11235,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "disabled"
   ],
   "accordionTrigger": [
@@ -11217,6 +11316,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "indicator"
   ],
   "accordionContent": [
@@ -11296,7 +11396,8 @@ export const NODE_MODIFIERS = {
     "seed",
     "screenActive",
     "initialHeaderHeight",
-    "initialFooterHeight"
+    "initialFooterHeight",
+    "fullScreenCover"
   ],
   "code": [
     "padding",
@@ -11375,7 +11476,8 @@ export const NODE_MODIFIERS = {
     "seed",
     "screenActive",
     "initialHeaderHeight",
-    "initialFooterHeight"
+    "initialFooterHeight",
+    "fullScreenCover"
   ],
   "pre": [
     "padding",
@@ -11455,6 +11557,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "language",
     "lineNumbers"
   ],
@@ -11536,6 +11639,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "language",
     "lineNumbers",
     "highlight",
@@ -11620,6 +11724,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "language",
     "lineNumbers",
     "highlight",
@@ -11710,6 +11815,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "bounds",
     "step",
     "disabled",
@@ -11797,6 +11903,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "bounds",
     "step",
     "disabled",
@@ -11886,6 +11993,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "presented",
     "side",
     "openDelay",
@@ -11969,6 +12077,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "size",
     "collapses",
     "separatorView",
@@ -12052,6 +12161,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "size",
     "icon",
     "prefix",
@@ -12138,6 +12248,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "days",
     "endDate",
     "levels",
@@ -12227,6 +12338,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "placeholder",
     "suggestions",
     "allowsCreate",
@@ -12318,6 +12430,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "file",
     "uploadProgress",
     "onFileSelected",
@@ -12408,6 +12521,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "contentFit",
     "nativeControls",
     "allowsPictureInPicture"
@@ -12490,6 +12604,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "length",
     "characters",
     "onComplete",
@@ -12576,6 +12691,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "labels",
     "size",
     "disabled"
@@ -12658,6 +12774,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "size",
     "tint"
   ],
@@ -12739,6 +12856,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "actions",
     "presentedAt",
     "disabled"
@@ -12821,6 +12939,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "revealMotion",
     "revealsOnAppear",
     "keepsMounted"
@@ -12903,6 +13022,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "fileTypes",
     "dragActions",
     "folder",
@@ -12989,6 +13109,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "opaque",
     "mediaCorner"
   ],
@@ -13070,6 +13191,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "minItemWidth",
     "contentInset"
   ],
@@ -13157,6 +13279,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "onRemove",
     "onRetry",
     "onAdd",
@@ -13245,6 +13368,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "axis",
     "spacing",
     "optionBox",
@@ -13333,6 +13457,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "presented",
     "openDelay",
     "closeDelay",
@@ -13419,6 +13544,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "lines",
     "style",
     "labels"
@@ -13501,6 +13627,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "trailing",
     "spacing",
     "backdrop",
@@ -13584,6 +13711,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "openMenu",
     "actions"
   ],
@@ -13670,6 +13798,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "readoutFormat"
   ],
   "phoneInput": [
@@ -13750,6 +13879,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "country",
     "countries",
     "placeholder",
@@ -13841,6 +13971,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "contentFit",
     "nativeControls",
     "surfaceType",
@@ -13925,6 +14056,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "contentFit",
     "nativeControls",
     "surfaceType",
@@ -14009,6 +14141,7 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "fullScreenCover",
     "contentFit"
   ],
   "emptyMediaSurface": [
@@ -14088,7 +14221,8 @@ export const NODE_MODIFIERS = {
     "seed",
     "screenActive",
     "initialHeaderHeight",
-    "initialFooterHeight"
+    "initialFooterHeight",
+    "fullScreenCover"
   ],
   "avatarAnchor": [
     "padding",
@@ -14167,7 +14301,8 @@ export const NODE_MODIFIERS = {
     "seed",
     "screenActive",
     "initialHeaderHeight",
-    "initialFooterHeight"
+    "initialFooterHeight",
+    "fullScreenCover"
   ],
   "avatarFlightLayer": [],
   "inputGroup": [
@@ -14222,6 +14357,9 @@ export const NODE_MODIFIERS = {
     "headingLevel",
     "footer",
     "sheet",
+    "alert",
+    "dialog",
+    "popover",
     "onReselect",
     "when",
     "rotation",
@@ -14231,6 +14369,21 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
+    "fullScreenCover",
     "size",
     "invalid",
     "disabled"
@@ -14287,6 +14440,9 @@ export const NODE_MODIFIERS = {
     "headingLevel",
     "footer",
     "sheet",
+    "alert",
+    "dialog",
+    "popover",
     "onReselect",
     "when",
     "rotation",
@@ -14296,6 +14452,21 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
+    "fullScreenCover",
     "divider",
     "flush"
   ],
@@ -14351,6 +14522,9 @@ export const NODE_MODIFIERS = {
     "headingLevel",
     "footer",
     "sheet",
+    "alert",
+    "dialog",
+    "popover",
     "onReselect",
     "when",
     "rotation",
@@ -14360,6 +14534,21 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
+    "fullScreenCover",
     "description",
     "timestamp",
     "status",
@@ -14425,6 +14614,9 @@ export const NODE_MODIFIERS = {
     "headingLevel",
     "footer",
     "sheet",
+    "alert",
+    "dialog",
+    "popover",
     "onReselect",
     "when",
     "rotation",
@@ -14434,6 +14626,21 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
+    "fullScreenCover",
     "coverFill"
   ],
   "socialButton": [
@@ -14488,6 +14695,9 @@ export const NODE_MODIFIERS = {
     "headingLevel",
     "footer",
     "sheet",
+    "alert",
+    "dialog",
+    "popover",
     "onReselect",
     "when",
     "rotation",
@@ -14497,6 +14707,21 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
+    "fullScreenCover",
     "size",
     "style",
     "iconOnly",
@@ -14504,6 +14729,16 @@ export const NODE_MODIFIERS = {
     "intent",
     "link",
     "disabled"
+  ],
+  "gallery": [
+    "page",
+    "style",
+    "pageIndicator",
+    "mediaCorner",
+    "nativeControls",
+    "videoOverlay",
+    "sourceAnchors",
+    "labels"
   ]
 } as const;
 
@@ -14702,5 +14937,6 @@ export const CONSTRUCTORS = {
   "InputGroupAddon": "inputGroupAddon",
   "Notification": "notification",
   "LinkPreview": "linkPreview",
-  "SocialButton": "socialButton"
+  "SocialButton": "socialButton",
+  "Gallery": "gallery"
 } as const;

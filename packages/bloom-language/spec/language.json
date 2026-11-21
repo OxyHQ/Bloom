@@ -733,7 +733,9 @@
     "liveRole": ["alert", "status"],
     "socialButtonSize": ["md", "sm"],
     "socialButtonStyle": ["colorful", "black", "white"],
-    "socialIntent": ["continue", "signIn", "signUp"]
+    "socialIntent": ["continue", "signIn", "signUp"],
+    "galleryStyle": ["overlay", "page"],
+    "galleryIndicator": ["dots", "thumbnails"]
   },
   "glass": {
     "$comment": [
@@ -1025,7 +1027,7 @@
     "message": ["value"],
     "retryLabel": ["value"],
     "resetKey": ["value"],
-    "fullWidth": ["value?"],
+    "fullWidth": [],
     "pressed": ["value"],
     "when": ["condition", "variant"],
     "colors": ["color", "color"],
@@ -1322,7 +1324,6 @@
     "onDragLeave": ["value"],
     "opaque": ["value?"],
     "mediaCorner": ["corner"],
-    "caption": ["value"],
     "minItemWidth": ["space"],
     "onRetry": ["value"],
     "onAdd": ["value"],
@@ -1334,7 +1335,6 @@
     "padded": ["value"],
     "colorScale": ["value"],
     "openMenu": ["value"],
-    "shortcut": ["value"],
     "readoutFormat": ["value"],
     "country": ["value"],
     "countries": ["value"],
@@ -1347,16 +1347,16 @@
     "timestamp": ["value"],
     "status": ["notificationStatus"],
     "avatar": ["value"],
-    "buttons": ["value"],
-    "dismissible": ["value"],
     "onDismiss": ["value"],
     "autoDismiss": ["value"],
     "introDelay": ["value"],
     "liveRole": ["liveRole"],
     "coverFill": ["value?"],
-    "iconOnly": [],
-    "fullWidth": [],
-    "intent": ["socialIntent"]
+    "intent": ["socialIntent"],
+    "fullScreenCover": ["value", "value"],
+    "pageIndicator": ["galleryIndicator"],
+    "videoOverlay": ["value"],
+    "sourceAnchors": ["value"]
   },
   "universal": [
     "padding",
@@ -1435,7 +1435,8 @@
     "seed",
     "screenActive",
     "initialHeaderHeight",
-    "initialFooterHeight"
+    "initialFooterHeight",
+    "fullScreenCover"
   ],
   "nodes": {
     "$comment": "kind: { constructors, own modifiers beyond the universal ones (universal: false takes only its own), the token sets its size(), tint(), style() and shape() read }",
@@ -2951,6 +2952,21 @@
       "modifiers": ["size", "style", "iconOnly", "fullWidth", "intent", "link", "disabled"],
       "size": "socialButtonSize",
       "style": "socialButtonStyle"
+    },
+    "gallery": {
+      "constructors": ["Gallery"],
+      "universal": false,
+      "modifiers": [
+        "page",
+        "style",
+        "pageIndicator",
+        "mediaCorner",
+        "nativeControls",
+        "videoOverlay",
+        "sourceAnchors",
+        "labels"
+      ],
+      "style": "galleryStyle"
     }
   },
   "sfSymbols": {
