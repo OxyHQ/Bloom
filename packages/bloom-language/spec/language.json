@@ -544,7 +544,8 @@
     "placeCardStyle": ["row", "detail"],
     "directionsDensity": ["comfortable", "compact"],
     "mailComposeStyle": ["sheet", "docked"],
-    "noteToolbarSize": ["md", "sm"]
+    "noteToolbarSize": ["md", "sm"],
+    "tripCardOrientation": ["auto", "horizontal", "vertical"]
   },
   "glass": {
     "$comment": [
@@ -1586,7 +1587,21 @@
       "constructors": ["NoteEditorToolbar"],
       "modifiers": ["size", "disabled"],
       "size": "noteToolbarSize"
-    }
+    },
+    "tripCard": {
+      "constructors": ["TripCard"],
+      "modifiers": ["style"],
+      "style": "tripCardOrientation"
+    },
+    "bookingCard": {
+      "constructors": ["BookingCard"],
+      "modifiers": ["loading", "disabled"]
+    },
+    "bookingBar": {
+      "constructors": ["BookingBar"],
+      "modifiers": ["loading", "disabled"]
+    },
+    "priceBreakdown": { "constructors": ["PriceBreakdown"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
