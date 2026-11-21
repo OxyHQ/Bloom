@@ -80,8 +80,8 @@
   "justify-center": {
    "count": 889,
    "apps": 25,
-   "status": "modifier",
-   "language": "a stack’s distribution (justify, self, wrap)"
+   "status": "mapped",
+   "language": ".justify('center')"
   },
   "border": {
    "count": 857,
@@ -98,8 +98,8 @@
   "flex-wrap": {
    "count": 599,
    "apps": 25,
-   "status": "modifier",
-   "language": "a stack’s distribution (justify, self, wrap)"
+   "status": "mapped",
+   "language": ".wrap()"
   },
   "gap-4": {
    "count": 567,
@@ -134,14 +134,14 @@
   "w-full": {
    "count": 493,
    "apps": 24,
-   "status": "modifier",
-   "language": "a relative size (w-full): `grow` and `align('stretch')` cover the full ones"
+   "status": "mapped",
+   "language": ".frame({ width: 'full' })"
   },
   "justify-between": {
    "count": 490,
    "apps": 25,
    "status": "mapped",
-   "language": ".spacing('between')"
+   "language": ".justify('between')"
   },
   "gap-1": {
    "count": 476,
@@ -206,8 +206,8 @@
   "absolute": {
    "count": 275,
    "apps": 22,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position(…) (the edges it is pinned at)"
   },
   "text-text-secondary": {
    "count": 273,
@@ -458,8 +458,8 @@
   "self-start": {
    "count": 120,
    "apps": 16,
-   "status": "modifier",
-   "language": "a stack’s distribution (justify, self, wrap)"
+   "status": "mapped",
+   "language": ".alignSelf('start')"
   },
   "flex-col": {
    "count": 119,
@@ -471,13 +471,13 @@
    "count": 117,
    "apps": 14,
    "status": "drop",
-   "language": "ZStack(…) is the positioned parent"
+   "language": "a view is the positioned parent of what it pins"
   },
   "justify-end": {
    "count": 116,
    "apps": 18,
-   "status": "modifier",
-   "language": "a stack’s distribution (justify, self, wrap)"
+   "status": "mapped",
+   "language": ".justify('end')"
   },
   "transition-colors": {
    "count": 116,
@@ -554,14 +554,14 @@
   "mx-auto": {
    "count": 95,
    "apps": 13,
-   "status": "modifier",
-   "language": "centring (`mx-auto`): a frame and an alignment"
+   "status": "mapped",
+   "language": ".alignSelf('center') (in a column)"
   },
   "inset-0": {
    "count": 94,
    "apps": 18,
    "status": "structure",
-   "language": "Fill(…) (with `absolute`), or ZStack(…)"
+   "language": "Fill(…), or .overlay(view) on the parent"
   },
   "text-caption": {
    "count": 94,
@@ -668,8 +668,8 @@
   "hidden": {
    "count": 72,
    "apps": 9,
-   "status": "structure",
-   "language": "a conditional child (`show && view`)"
+   "status": "mapped",
+   "language": ".hidden() (or a conditional child, `show && view`)"
   },
   "pb-4": {
    "count": 72,
@@ -686,8 +686,8 @@
   "self-center": {
    "count": 70,
    "apps": 13,
-   "status": "modifier",
-   "language": "a stack’s distribution (justify, self, wrap)"
+   "status": "mapped",
+   "language": ".alignSelf('center')"
   },
   "border-border-secondary": {
    "count": 69,
@@ -806,8 +806,8 @@
   "h-full": {
    "count": 56,
    "apps": 16,
-   "status": "modifier",
-   "language": "a relative size (h-full): `grow` and `align('stretch')` cover the full ones"
+   "status": "mapped",
+   "language": ".frame({ height: 'full' })"
   },
   "pt-4": {
    "count": 56,
@@ -950,8 +950,8 @@
   "left-0": {
    "count": 42,
    "apps": 13,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ leading: 'none' })"
   },
   "mt-8": {
    "count": 42,
@@ -962,8 +962,8 @@
   "right-0": {
    "count": 42,
    "apps": 14,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ trailing: 'none' })"
   },
   "space-y-2": {
    "count": 42,
@@ -986,8 +986,8 @@
   "outline-none": {
    "count": 41,
    "apps": 7,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "mapped",
+   "language": ".ring('none')"
   },
   "pb-1": {
    "count": 40,
@@ -1154,8 +1154,8 @@
   "bottom-0": {
    "count": 33,
    "apps": 13,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ bottom: 'none' })"
   },
   "mb-0.5": {
    "count": 33,
@@ -1232,14 +1232,14 @@
   "top-0": {
    "count": 31,
    "apps": 15,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ top: 'none' })"
   },
   "z-10": {
    "count": 31,
    "apps": 10,
-   "status": "modifier",
-   "language": "`z` (no modifier)"
+   "status": "mapped",
+   "language": ".zIndex('floating')"
   },
   "bg-bg-fill-secondary": {
    "count": 30,
@@ -1490,8 +1490,8 @@
   "ring-2": {
    "count": 22,
    "apps": 4,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "mapped",
+   "language": ".ring(role, 'thick')"
   },
   "rounded-[4px]": {
    "count": 22,
@@ -1514,8 +1514,10 @@
   "z-50": {
    "count": 22,
    "apps": 5,
-   "status": "modifier",
-   "language": "`z` (no modifier)"
+   "status": "token",
+   "scale": "zIndex",
+   "value": "50",
+   "language": ".zIndex(…)"
   },
   "fixed": {
    "count": 21,
@@ -1624,8 +1626,10 @@
   "shadow-sm": {
    "count": 20,
    "apps": 5,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "token",
+   "scale": "shadow",
+   "value": "shadow-sm",
+   "language": ".shadow(…)"
   },
   "sticky": {
    "count": 20,
@@ -1648,8 +1652,8 @@
   "inset-x-0": {
    "count": 19,
    "apps": 8,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "app",
+   "language": "not a Bloom or Tailwind utility (an app’s own class)"
   },
   "min-w-40": {
    "count": 19,
@@ -1788,8 +1792,8 @@
   "shadow-none": {
    "count": 17,
    "apps": 4,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "drop",
+   "language": "a view has no shadow unless it says so"
   },
   "text-error": {
    "count": 17,
@@ -1836,20 +1840,24 @@
   "outline-hidden": {
    "count": 16,
    "apps": 3,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "mapped",
+   "language": ".ring('none')"
   },
   "ring-[3px]": {
    "count": 16,
    "apps": 3,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "token",
+   "scale": "borderWidth",
+   "value": "3px",
+   "language": ".ring(role, …)"
   },
   "ring-ring/50": {
    "count": 16,
    "apps": 3,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "token",
+   "scale": "opacity",
+   "value": "--ring at 50%",
+   "language": ".ring(…)"
   },
   "rounded-[28px]": {
    "count": 16,
@@ -1866,8 +1874,8 @@
   "shadow-m": {
    "count": 16,
    "apps": 2,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "mapped",
+   "language": ".shadow('m')"
   },
   "transition-transform": {
    "count": 16,
@@ -1928,8 +1936,8 @@
   "right-2": {
    "count": 15,
    "apps": 7,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ trailing: 'sm' })"
   },
   "text-shop-sectionTitle": {
    "count": 15,
@@ -2038,8 +2046,8 @@
   "top-2": {
    "count": 14,
    "apps": 8,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ top: 'sm' })"
   },
   "tracking-tight": {
    "count": 14,
@@ -2110,8 +2118,8 @@
   "min-h-screen": {
    "count": 13,
    "apps": 3,
-   "status": "modifier",
-   "language": "a relative size (min-h-screen): `grow` and `align('stretch')` cover the full ones"
+   "status": "structure",
+   "language": "a screen() fills the window"
   },
   "p-8": {
    "count": 13,
@@ -2128,8 +2136,8 @@
   "ring-0": {
    "count": 13,
    "apps": 4,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "mapped",
+   "language": ".ring('none')"
   },
   "rounded-[6px]": {
    "count": 13,
@@ -2368,8 +2376,8 @@
   "ml-auto": {
    "count": 11,
    "apps": 6,
-   "status": "modifier",
-   "language": "centring (`mx-auto`): a frame and an alignment"
+   "status": "structure",
+   "language": "Spacer() on the side the auto margin takes"
   },
   "pb-5": {
    "count": 11,
@@ -2398,8 +2406,8 @@
   "right-3": {
    "count": 11,
    "apps": 6,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ trailing: 'md' })"
   },
   "rounded-radius-20": {
    "count": 11,
@@ -2430,8 +2438,8 @@
   "w-1/2": {
    "count": 11,
    "apps": 2,
-   "status": "modifier",
-   "language": "a relative size (w-1/2): `grow` and `align('stretch')` cover the full ones"
+   "status": "mapped",
+   "language": ".frame({ width: '1/2' })"
   },
   "bg-fill": {
    "count": 10,
@@ -2504,8 +2512,8 @@
   "ring-1": {
    "count": 10,
    "apps": 4,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "mapped",
+   "language": ".ring(role, 'thin')"
   },
   "rounded-[8px]": {
    "count": 10,
@@ -2516,8 +2524,10 @@
   "shadow-shop-s": {
    "count": 10,
    "apps": 1,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "token",
+   "scale": "shadow",
+   "value": "shadow-shop-s",
+   "language": ".shadow(…)"
   },
   "space-y-6": {
    "count": 10,
@@ -2534,8 +2544,8 @@
   "top-3": {
    "count": 10,
    "apps": 6,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ top: 'md' })"
   },
   "w-18": {
    "count": 10,
@@ -2559,7 +2569,7 @@
    "count": 10,
    "apps": 3,
    "status": "modifier",
-   "language": "a relative size (w-fit): `grow` and `align('stretch')` cover the full ones"
+   "language": "an intrinsic size (w-fit): fit-content and its kin"
   },
   "zoom-in-95": {
    "count": 10,
@@ -2742,8 +2752,8 @@
   "size-full": {
    "count": 9,
    "apps": 3,
-   "status": "modifier",
-   "language": "a relative size (size-full): `grow` and `align('stretch')` cover the full ones"
+   "status": "mapped",
+   "language": ".frame({ width: 'full', height: 'full' })"
   },
   "text-[17px]": {
    "count": 9,
@@ -2782,14 +2792,14 @@
   "top-4": {
    "count": 9,
    "apps": 6,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ top: 'lg' })"
   },
   "w-1/4": {
    "count": 9,
    "apps": 2,
-   "status": "modifier",
-   "language": "a relative size (w-1/4): `grow` and `align('stretch')` cover the full ones"
+   "status": "mapped",
+   "language": ".frame({ width: '1/4' })"
   },
   "w-3": {
    "count": 9,
@@ -2852,8 +2862,8 @@
   "inset-y-0": {
    "count": 8,
    "apps": 2,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "app",
+   "language": "not a Bloom or Tailwind utility (an app’s own class)"
   },
   "items-stretch": {
    "count": 8,
@@ -2864,8 +2874,8 @@
   "left-3": {
    "count": 8,
    "apps": 5,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ leading: 'md' })"
   },
   "max-w-[320px]": {
    "count": 8,
@@ -2942,26 +2952,30 @@
   "right-4": {
    "count": 8,
    "apps": 4,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ trailing: 'lg' })"
   },
   "ring-foreground/10": {
    "count": 8,
    "apps": 2,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "mapped",
+   "language": ".ring('foreground/10')"
   },
   "ring-ring": {
    "count": 8,
    "apps": 4,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "token",
+   "scale": "color",
+   "value": "--ring",
+   "language": ".ring(…)"
   },
   "ring-sidebar-ring": {
    "count": 8,
    "apps": 2,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "token",
+   "scale": "color",
+   "value": "--sidebar-ring",
+   "language": ".ring(…)"
   },
   "rounded-[15px]": {
    "count": 8,
@@ -2980,8 +2994,10 @@
   "shadow-lg": {
    "count": 8,
    "apps": 6,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "token",
+   "scale": "shadow",
+   "value": "shadow-lg",
+   "language": ".shadow(…)"
   },
   "text-[10.5px]": {
    "count": 8,
@@ -3054,8 +3070,8 @@
   "w-1/3": {
    "count": 8,
    "apps": 3,
-   "status": "modifier",
-   "language": "a relative size (w-1/3): `grow` and `align('stretch')` cover the full ones"
+   "status": "mapped",
+   "language": ".frame({ width: '1/3' })"
   },
   "w-48": {
    "count": 8,
@@ -3078,14 +3094,16 @@
   "z-20": {
    "count": 8,
    "apps": 5,
-   "status": "modifier",
-   "language": "`z` (no modifier)"
+   "status": "token",
+   "scale": "zIndex",
+   "value": "20",
+   "language": ".zIndex(…)"
   },
   "-translate-x-1/2": {
    "count": 7,
    "apps": 2,
-   "status": "modifier",
-   "language": "`translate` (no modifier)"
+   "status": "structure",
+   "language": "a view centred on its parent: .overlay(view, alignment) on the parent"
   },
   "bg-background/80": {
    "count": 7,
@@ -3146,14 +3164,14 @@
   "h-auto": {
    "count": 7,
    "apps": 4,
-   "status": "modifier",
-   "language": "a relative size (h-auto): `grow` and `align('stretch')` cover the full ones"
+   "status": "drop",
+   "language": "a view’s size is its content’s unless a frame says otherwise"
   },
   "justify-start": {
    "count": 7,
    "apps": 5,
-   "status": "modifier",
-   "language": "a stack’s distribution (justify, self, wrap)"
+   "status": "mapped",
+   "language": ".justify('start')"
   },
   "label-mono": {
    "count": 7,
@@ -3236,20 +3254,20 @@
   "ring-destructive/20": {
    "count": 7,
    "apps": 3,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "mapped",
+   "language": ".ring('destructive/20')"
   },
   "ring-destructive/40": {
    "count": 7,
    "apps": 3,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "mapped",
+   "language": ".ring('destructive/40')"
   },
   "self-stretch": {
    "count": 7,
    "apps": 4,
-   "status": "modifier",
-   "language": "a stack’s distribution (justify, self, wrap)"
+   "status": "mapped",
+   "language": ".alignSelf('stretch')"
   },
   "size-3": {
    "count": 7,
@@ -3304,8 +3322,8 @@
   "w-3/4": {
    "count": 7,
    "apps": 2,
-   "status": "modifier",
-   "language": "a relative size (w-3/4): `grow` and `align('stretch')` cover the full ones"
+   "status": "mapped",
+   "language": ".frame({ width: '3/4' })"
   },
   "-ml-4": {
    "count": 6,
@@ -3436,8 +3454,8 @@
   "left-4": {
    "count": 6,
    "apps": 2,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ leading: 'lg' })"
   },
   "max-h-72": {
    "count": 6,
@@ -3592,8 +3610,8 @@
   "right-1": {
    "count": 6,
    "apps": 4,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ trailing: 'xs' })"
   },
   "rounded-[23px]": {
    "count": 6,
@@ -3618,8 +3636,8 @@
   "shadow-s": {
    "count": 6,
    "apps": 1,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "mapped",
+   "language": ".shadow('s')"
   },
   "size-2.5": {
    "count": 6,
@@ -3680,8 +3698,8 @@
   "w-auto": {
    "count": 6,
    "apps": 3,
-   "status": "modifier",
-   "language": "a relative size (w-auto): `grow` and `align('stretch')` cover the full ones"
+   "status": "drop",
+   "language": "a view’s size is its content’s unless a frame says otherwise"
   },
   "-mt-3": {
    "count": 5,
@@ -3776,8 +3794,8 @@
   "bottom-4": {
    "count": 5,
    "apps": 3,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ bottom: 'lg' })"
   },
   "break-words": {
    "count": 5,
@@ -3866,8 +3884,8 @@
   "h-screen": {
    "count": 5,
    "apps": 3,
-   "status": "modifier",
-   "language": "a relative size (h-screen): `grow` and `align('stretch')` cover the full ones"
+   "status": "structure",
+   "language": "a screen() fills the window"
   },
   "leading-[16px]": {
    "count": 5,
@@ -3886,8 +3904,8 @@
   "max-w-full": {
    "count": 5,
    "apps": 5,
-   "status": "modifier",
-   "language": "a relative size (max-w-full): `grow` and `align('stretch')` cover the full ones"
+   "status": "mapped",
+   "language": ".frame({ maxWidth: 'full' })"
   },
   "max-w-xl": {
    "count": 5,
@@ -3976,8 +3994,8 @@
   "place-items-center": {
    "count": 5,
    "apps": 2,
-   "status": "modifier",
-   "language": "a stack’s distribution (justify, self, wrap)"
+   "status": "mapped",
+   "language": ".align('center')"
   },
   "pr-8": {
    "count": 5,
@@ -4012,14 +4030,14 @@
   "ring-offset-2": {
    "count": 5,
    "apps": 3,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "mapped",
+   "language": ".ring(role, width, 'sm')"
   },
   "ring-offset-background": {
    "count": 5,
    "apps": 3,
    "status": "modifier",
-   "language": "an elevation or focus ring"
+   "language": "a ring’s gap colour (ring-offset-<colour>)"
   },
   "rotate-45": {
    "count": 5,
@@ -4048,8 +4066,10 @@
   "shadow-md": {
    "count": 5,
    "apps": 3,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "token",
+   "scale": "shadow",
+   "value": "shadow-md",
+   "language": ".shadow(…)"
   },
   "space-y-5": {
    "count": 5,
@@ -4160,8 +4180,8 @@
   "translate-y-[calc(-50%_-_2px)]": {
    "count": 5,
    "apps": 3,
-   "status": "modifier",
-   "language": "`translate` (no modifier)"
+   "status": "structure",
+   "language": "a view centred on its parent: .overlay(view, alignment) on the parent"
   },
   "w-[200px]": {
    "count": 5,
@@ -4178,14 +4198,14 @@
   "z-40": {
    "count": 5,
    "apps": 2,
-   "status": "modifier",
-   "language": "`z` (no modifier)"
+   "status": "mapped",
+   "language": ".zIndex('dropdown')"
   },
   "-inset-2": {
    "count": 4,
    "apps": 2,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ top: '-sm', bottom: '-sm', leading: '-sm', trailing: '-sm' })"
   },
   "-mt-1": {
    "count": 4,
@@ -4266,8 +4286,8 @@
   "bottom-2": {
    "count": 4,
    "apps": 3,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ bottom: 'sm' })"
   },
   "checkout-shell": {
    "count": 4,
@@ -4350,8 +4370,8 @@
   "left-2": {
    "count": 4,
    "apps": 3,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ leading: 'sm' })"
   },
   "max-h-40": {
    "count": 4,
@@ -4452,8 +4472,8 @@
   "mt-auto": {
    "count": 4,
    "apps": 4,
-   "status": "modifier",
-   "language": "centring (`mx-auto`): a frame and an alignment"
+   "status": "structure",
+   "language": "Spacer() on the side the auto margin takes"
   },
   "mx-2": {
    "count": 4,
@@ -4574,8 +4594,10 @@
   "shadow": {
    "count": 4,
    "apps": 1,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "token",
+   "scale": "shadow",
+   "value": "shadow",
+   "language": ".shadow(…)"
   },
   "size-12": {
    "count": 4,
@@ -4722,20 +4744,24 @@
   "z-30": {
    "count": 4,
    "apps": 1,
-   "status": "modifier",
-   "language": "`z` (no modifier)"
+   "status": "token",
+   "scale": "zIndex",
+   "value": "30",
+   "language": ".zIndex(…)"
   },
   "z-[60]": {
    "count": 4,
    "apps": 2,
-   "status": "modifier",
-   "language": "`z` (no modifier)"
+   "status": "token",
+   "scale": "zIndex",
+   "value": "60",
+   "language": ".zIndex(…)"
   },
   "z-auto": {
    "count": 4,
    "apps": 2,
-   "status": "modifier",
-   "language": "`z` (no modifier)"
+   "status": "drop",
+   "language": "a view stacks in its order unless it says otherwise"
   },
   "-ml-1": {
    "count": 3,
@@ -4764,8 +4790,8 @@
   "-translate-y-1/2": {
    "count": 3,
    "apps": 2,
-   "status": "modifier",
-   "language": "`translate` (no modifier)"
+   "status": "structure",
+   "language": "a view centred on its parent: .overlay(view, alignment) on the parent"
   },
   ":": {
    "count": 3,
@@ -4942,8 +4968,8 @@
   "bottom-3": {
    "count": 3,
    "apps": 2,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ bottom: 'md' })"
   },
   "card-payment": {
    "count": 3,
@@ -4979,7 +5005,7 @@
    "count": 3,
    "apps": 2,
    "status": "modifier",
-   "language": "a stack’s distribution (justify, self, wrap)"
+   "language": "the alignment of wrapped lines (align-content)"
   },
   "field": {
    "count": 3,
@@ -5124,8 +5150,8 @@
   "left-1/2": {
    "count": 3,
    "apps": 2,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "structure",
+   "language": "a view centred on its parent: .overlay(view, alignment) on the parent"
   },
   "line-clamp-1": {
    "count": 3,
@@ -5308,14 +5334,14 @@
   "min-h-dvh": {
    "count": 3,
    "apps": 1,
-   "status": "modifier",
-   "language": "a relative size (min-h-dvh): `grow` and `align('stretch')` cover the full ones"
+   "status": "structure",
+   "language": "a screen() fills the window"
   },
   "min-h-svh": {
    "count": 3,
    "apps": 2,
-   "status": "modifier",
-   "language": "a relative size (min-h-svh): `grow` and `align('stretch')` cover the full ones"
+   "status": "structure",
+   "language": "a screen() fills the window"
   },
   "min-w-5": {
    "count": 3,
@@ -5388,20 +5414,20 @@
   "outline-1": {
    "count": 3,
    "apps": 2,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "mapped",
+   "language": ".ring(role, 'thin')"
   },
   "outline-2": {
    "count": 3,
    "apps": 3,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "mapped",
+   "language": ".ring(role, 'thick')"
   },
   "outline-primary": {
    "count": 3,
    "apps": 3,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "mapped",
+   "language": ".ring('primary')"
   },
   "p-px": {
    "count": 3,
@@ -5510,8 +5536,8 @@
   "ring-offset-0": {
    "count": 3,
    "apps": 2,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "mapped",
+   "language": ".ring(role, width, 'none')"
   },
   "rounded-[12px]": {
    "count": 3,
@@ -5562,8 +5588,8 @@
   "self-end": {
    "count": 3,
    "apps": 1,
-   "status": "modifier",
-   "language": "a stack’s distribution (justify, self, wrap)"
+   "status": "mapped",
+   "language": ".alignSelf('end')"
   },
   "size-14": {
    "count": 3,
@@ -5668,26 +5694,26 @@
   "top-1": {
    "count": 3,
    "apps": 3,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ top: 'xs' })"
   },
   "top-1.5": {
    "count": 3,
    "apps": 2,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ top: '6' })"
   },
   "top-1/2": {
    "count": 3,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "structure",
+   "language": "a view centred on its parent: .overlay(view, alignment) on the parent"
   },
   "top-8": {
    "count": 3,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ top: '3xl' })"
   },
   "tracking-[-0.01em]": {
    "count": 3,
@@ -5704,14 +5730,14 @@
   "w-1/5": {
    "count": 3,
    "apps": 1,
-   "status": "modifier",
-   "language": "a relative size (w-1/5): `grow` and `align('stretch')` cover the full ones"
+   "status": "mapped",
+   "language": ".frame({ width: '1/5' })"
   },
   "w-2/3": {
    "count": 3,
    "apps": 2,
-   "status": "modifier",
-   "language": "a relative size (w-2/3): `grow` and `align('stretch')` cover the full ones"
+   "status": "mapped",
+   "language": ".frame({ width: '2/3' })"
   },
   "w-3.5": {
    "count": 3,
@@ -5748,14 +5774,14 @@
   "-bottom-0.5": {
    "count": 2,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ bottom: '-2xs' })"
   },
   "-bottom-1": {
    "count": 2,
    "apps": 2,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ bottom: '-xs' })"
   },
   "-mb-4": {
    "count": 2,
@@ -5772,8 +5798,8 @@
   "-translate-x-px": {
    "count": 2,
    "apps": 2,
-   "status": "modifier",
-   "language": "`translate` (no modifier)"
+   "status": "mapped",
+   "language": ".offset({ x: '-1' })"
   },
   "[overflow-wrap:anywhere]": {
    "count": 2,
@@ -6190,20 +6216,20 @@
   "bottom-1": {
    "count": 2,
    "apps": 2,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ bottom: 'xs' })"
   },
   "bottom-6": {
    "count": 2,
    "apps": 2,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ bottom: '2xl' })"
   },
   "bottom-8": {
    "count": 2,
    "apps": 2,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ bottom: '3xl' })"
   },
   "canvas": {
    "count": 2,
@@ -6292,8 +6318,8 @@
   "end-3": {
    "count": 2,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ trailing: 'md' })"
   },
   "field-sizing-content": {
    "count": 2,
@@ -6450,20 +6476,20 @@
   "h-svh": {
    "count": 2,
    "apps": 2,
-   "status": "modifier",
-   "language": "a relative size (h-svh): `grow` and `align('stretch')` cover the full ones"
+   "status": "structure",
+   "language": "a screen() fills the window"
   },
   "justify-items-center": {
    "count": 2,
    "apps": 1,
-   "status": "modifier",
-   "language": "a stack’s distribution (justify, self, wrap)"
+   "status": "structure",
+   "language": "a Grid(…) cell’s placement"
   },
   "justify-self-end": {
    "count": 2,
    "apps": 2,
-   "status": "modifier",
-   "language": "a stack’s distribution (justify, self, wrap)"
+   "status": "structure",
+   "language": "a Grid(…) cell’s placement"
   },
   "leading-8": {
    "count": 2,
@@ -6496,8 +6522,8 @@
   "left-6": {
    "count": 2,
    "apps": 2,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ leading: '2xl' })"
   },
   "line": {
    "count": 2,
@@ -6890,8 +6916,8 @@
   "outline": {
    "count": 2,
    "apps": 2,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "mapped",
+   "language": ".ring(role, 'thin')"
   },
   "overflow-visible": {
    "count": 2,
@@ -7108,14 +7134,14 @@
   "right-6": {
    "count": 2,
    "apps": 2,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ trailing: '2xl' })"
   },
   "ring-background": {
    "count": 2,
    "apps": 1,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "mapped",
+   "language": ".ring('background')"
   },
   "rounded-[25px]": {
    "count": 2,
@@ -7206,14 +7232,18 @@
   "shadow-shop-m": {
    "count": 2,
    "apps": 1,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "token",
+   "scale": "shadow",
+   "value": "shadow-shop-m",
+   "language": ".shadow(…)"
   },
   "shadow-xl": {
    "count": 2,
    "apps": 2,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "token",
+   "scale": "shadow",
+   "value": "shadow-xl",
+   "language": ".shadow(…)"
   },
   "shop-option": {
    "count": 2,
@@ -7272,8 +7302,8 @@
   "start-3": {
    "count": 2,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ leading: 'md' })"
   },
   "static": {
    "count": 2,
@@ -7482,20 +7512,20 @@
   "top-3.5": {
    "count": 2,
    "apps": 2,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ top: '14' })"
   },
   "top-[12px]": {
    "count": 2,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ top: 'md' })"
   },
   "top-auto": {
    "count": 2,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "structure",
+   "language": "a view centred on its parent: .overlay(view, alignment) on the parent"
   },
   "touch-none": {
    "count": 2,
@@ -7530,8 +7560,8 @@
   "translate-x-px": {
    "count": 2,
    "apps": 2,
-   "status": "modifier",
-   "language": "`translate` (no modifier)"
+   "status": "mapped",
+   "language": ".offset({ x: '1' })"
   },
   "up": {
    "count": 2,
@@ -7646,8 +7676,10 @@
   "z-[2]": {
    "count": 2,
    "apps": 2,
-   "status": "modifier",
-   "language": "`z` (no modifier)"
+   "status": "token",
+   "scale": "zIndex",
+   "value": "2",
+   "language": ".zIndex(…)"
   },
   ")": {
    "count": 1,
@@ -7664,32 +7696,34 @@
   "-end-0.5": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ trailing: '-2xs' })"
   },
   "-end-1": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ trailing: '-xs' })"
   },
   "-inset-x-3": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "app",
+   "language": "not a Bloom or Tailwind utility (an app’s own class)"
   },
   "-inset-y-2": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "app",
+   "language": "not a Bloom or Tailwind utility (an app’s own class)"
   },
   "-left-[10000px]": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "token",
+   "scale": "space",
+   "value": "10000px",
+   "language": ".position({ leading: … })"
   },
   "-m-1": {
    "count": 1,
@@ -7736,14 +7770,14 @@
   "-right-0.5": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ trailing: '-2xs' })"
   },
   "-right-1": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ trailing: '-xs' })"
   },
   "-rotate-12": {
    "count": 1,
@@ -7760,26 +7794,26 @@
   "-start-1.5": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ leading: '-6' })"
   },
   "-top-0.5": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ top: '-2xs' })"
   },
   "-top-space-20": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ top: '-xl' })"
   },
   "-translate-y-1": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "`translate` (no modifier)"
+   "status": "mapped",
+   "language": ".offset({ y: '-xs' })"
   },
   "/": {
    "count": 1,
@@ -8520,38 +8554,38 @@
   "bottom-10": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ bottom: '4xl' })"
   },
   "bottom-12": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ bottom: '48' })"
   },
   "bottom-2.5": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ bottom: '10' })"
   },
   "bottom-5": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ bottom: 'xl' })"
   },
   "bottom-[2px]": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ bottom: '2xs' })"
   },
   "bottom-full": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "app",
+   "language": "not a Bloom or Tailwind utility (an app’s own class)"
   },
   "bottom.": {
    "count": 1,
@@ -8784,8 +8818,8 @@
   "end-4": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ trailing: 'lg' })"
   },
   "failed": {
    "count": 1,
@@ -9076,8 +9110,8 @@
   "h-1/2": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "a relative size (h-1/2): `grow` and `align('stretch')` cover the full ones"
+   "status": "mapped",
+   "language": ".frame({ height: '1/2' })"
   },
   "h-28": {
    "count": 1,
@@ -9244,14 +9278,14 @@
   "inset-x-2.5": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "app",
+   "language": "not a Bloom or Tailwind utility (an app’s own class)"
   },
   "inset-y-0.5": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "app",
+   "language": "not a Bloom or Tailwind utility (an app’s own class)"
   },
   "invoice-page": {
    "count": 1,
@@ -9310,8 +9344,8 @@
   "justify-around": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "a stack’s distribution (justify, self, wrap)"
+   "status": "mapped",
+   "language": ".justify('around')"
   },
   "leading-3": {
    "count": 1,
@@ -9418,32 +9452,34 @@
   "left-1": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ leading: 'xs' })"
   },
   "left-10": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ leading: '4xl' })"
   },
   "left-[12px]": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ leading: 'md' })"
   },
   "left-[13px]": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "token",
+   "scale": "space",
+   "value": "13px",
+   "language": ".position({ leading: … })"
   },
   "left-space-16": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ leading: 'lg' })"
   },
   "liked": {
    "count": 1,
@@ -9544,8 +9580,8 @@
   "m-auto": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "centring (`mx-auto`): a frame and an alignment"
+   "status": "structure",
+   "language": "Spacer() on the side the auto margin takes"
   },
   "m-space-8": {
    "count": 1,
@@ -9612,8 +9648,8 @@
   "max-h-screen": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "a relative size (max-h-screen): `grow` and `align('stretch')` cover the full ones"
+   "status": "structure",
+   "language": "a screen() fills the window"
   },
   "max-w-(--available-width)": {
    "count": 1,
@@ -10084,8 +10120,8 @@
   "min-h-full": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "a relative size (min-h-full): `grow` and `align('stretch')` cover the full ones"
+   "status": "mapped",
+   "language": ".frame({ minHeight: 'full' })"
   },
   "min-h-space-40": {
    "count": 1,
@@ -10256,8 +10292,8 @@
   "ms-auto": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "centring (`mx-auto`): a frame and an alignment"
+   "status": "structure",
+   "language": "Spacer() on the side the auto margin takes"
   },
   "ms-space-8": {
    "count": 1,
@@ -10412,20 +10448,22 @@
   "outline-offset-4": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "mapped",
+   "language": ".ring(role, width, 'lg')"
   },
   "outline-ring": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "token",
+   "scale": "color",
+   "value": "--ring",
+   "language": ".ring(…)"
   },
   "outline-solid": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "app",
+   "language": "not a Bloom or Tailwind utility (an app’s own class)"
   },
   "overscroll-contain": {
    "count": 1,
@@ -10978,44 +11016,44 @@
   "right-1.5": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ trailing: '6' })"
   },
   "right-2.5": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ trailing: '10' })"
   },
   "right-5": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ trailing: 'xl' })"
   },
   "right-[12px]": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ trailing: 'md' })"
   },
   "right-[4px]": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ trailing: 'xs' })"
   },
   "right-space-8": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ trailing: 'sm' })"
   },
   "ring-offset-1": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "mapped",
+   "language": ".ring(role, width, 'xs')"
   },
   "rounded-[19px]": {
    "count": 1,
@@ -11196,32 +11234,42 @@
   "shadow-dropdown": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "token",
+   "scale": "shadow",
+   "value": "shadow-dropdown",
+   "language": ".shadow(…)"
   },
   "shadow-foreground/10": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "token",
+   "scale": "shadow",
+   "value": "shadow-foreground/10",
+   "language": ".shadow(…)"
   },
   "shadow-foreground/20": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "token",
+   "scale": "shadow",
+   "value": "shadow-foreground/20",
+   "language": ".shadow(…)"
   },
   "shadow-l": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "token",
+   "scale": "shadow",
+   "value": "shadow-l",
+   "language": ".shadow(…)"
   },
   "shadow-xs": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "an elevation or focus ring"
+   "status": "token",
+   "scale": "shadow",
+   "value": "shadow-xs",
+   "language": ".shadow(…)"
   },
   "shop-option-more": {
    "count": 1,
@@ -11358,32 +11406,32 @@
   "start-1/2": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "structure",
+   "language": "a view centred on its parent: .overlay(view, alignment) on the parent"
   },
   "start-2": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ leading: 'sm' })"
   },
   "start-4": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ leading: 'lg' })"
   },
   "start-space-12": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ leading: 'md' })"
   },
   "start-space-24": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ leading: '2xl' })"
   },
   "status-panel": {
    "count": 1,
@@ -11712,56 +11760,56 @@
   "top-0.5": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ top: '2xs' })"
   },
   "top-14": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ top: '56' })"
   },
   "top-16": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ top: '64' })"
   },
   "top-20": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ top: '80' })"
   },
   "top-[4px]": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ top: 'xs' })"
   },
   "top-[72px]": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ top: '72' })"
   },
   "top-space-12": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ top: 'md' })"
   },
   "top-space-24": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ top: '2xl' })"
   },
   "top-space-8": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "position (absolute placement beyond Fill and ZStack)"
+   "status": "mapped",
+   "language": ".position({ top: 'sm' })"
   },
   "totals": {
    "count": 1,
@@ -11850,14 +11898,14 @@
   "w-2/5": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "a relative size (w-2/5): `grow` and `align('stretch')` cover the full ones"
+   "status": "mapped",
+   "language": ".frame({ width: '2/5' })"
   },
   "w-3/5": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "a relative size (w-3/5): `grow` and `align('stretch')` cover the full ones"
+   "status": "mapped",
+   "language": ".frame({ width: '3/5' })"
   },
   "w-36": {
    "count": 1,
@@ -12058,50 +12106,64 @@
   "z-0": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "`z` (no modifier)"
+   "status": "mapped",
+   "language": ".zIndex('base')"
   },
   "z-[10000]": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "`z` (no modifier)"
+   "status": "token",
+   "scale": "zIndex",
+   "value": "10000",
+   "language": ".zIndex(…)"
   },
   "z-[1000]": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "`z` (no modifier)"
+   "status": "token",
+   "scale": "zIndex",
+   "value": "1000",
+   "language": ".zIndex(…)"
   },
   "z-[2000]": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "`z` (no modifier)"
+   "status": "token",
+   "scale": "zIndex",
+   "value": "2000",
+   "language": ".zIndex(…)"
   },
   "z-[2001]": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "`z` (no modifier)"
+   "status": "token",
+   "scale": "zIndex",
+   "value": "2001",
+   "language": ".zIndex(…)"
   },
   "z-[3]": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "`z` (no modifier)"
+   "status": "token",
+   "scale": "zIndex",
+   "value": "3",
+   "language": ".zIndex(…)"
   },
   "z-[80]": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "`z` (no modifier)"
+   "status": "token",
+   "scale": "zIndex",
+   "value": "80",
+   "language": ".zIndex(…)"
   },
   "z-[9998]": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "`z` (no modifier)"
+   "status": "token",
+   "scale": "zIndex",
+   "value": "9998",
+   "language": ".zIndex(…)"
   }
  }
 }
