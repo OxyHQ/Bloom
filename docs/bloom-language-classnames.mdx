@@ -24,10 +24,10 @@ Alia `841e8843a`, Allo `ba28b38`, Astro `8ae8386`, Atlas `037990e`, Authenticato
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 1001 | 46842 | 87.2% |
+| Maps to a modifier and a token | 1005 | 46880 | 87.3% |
 | Expressed by the view’s structure | 53 | 3445 | 6.4% |
 | Redundant in the language | 32 | 513 | 1.0% |
-| Needs a named token (raw value) | 323 | 832 | 1.5% |
+| Needs a named token (raw value) | 319 | 794 | 1.5% |
 | An app’s own token (a brand colour) | 22 | 36 | 0.1% |
 | Maps to the motion layer | 9 | 105 | 0.2% |
 | Needs a modifier the language lacks | 30 | 194 | 0.4% |
@@ -42,8 +42,8 @@ condition: `web:` 365 (`when('web')`), `active:` 332 (`when('pressed')`), `md:` 
 | Scale | Uses | Raw values with no rung (uses) |
 | --- | ---: | --- |
 | space | 257 | 720px (9), 18px (9), 420px (8), 600px (8), 144px (8), 520px (7), 100px (7), 220px (7), 240px (7), 565px (6), 52px (6), 112px (6) |
-| color | 252 | --primary-subtle (20), --warning-text (19), --ring (18), --sidebar-foreground (14), green-500 (12), --sidebar-border (12), red-500 (10), --sidebar-accent (9), red-400 (9), --sidebar-accent-foreground (9), --sidebar (8), --sidebar-ring (8) |
-| opacity | 105 | --ring at 50% (16), --foreground at 5% (7), black at [0.04]% (7), white at [0.06]% (6), --primary at 5% (5), --warning-text at 40% (5), white at 15% (4), white at 25% (4), black at 25% (3), --primary at 15% (3), --surface at 25% (3), white at 75% (3) |
+| color | 219 | --primary-subtle (20), --ring (18), --sidebar-foreground (14), green-500 (12), --sidebar-border (12), red-500 (10), --sidebar-accent (9), red-400 (9), --sidebar-accent-foreground (9), --sidebar (8), --sidebar-ring (8), --accent-foreground (8) |
+| opacity | 100 | --ring at 50% (16), --foreground at 5% (7), black at [0.04]% (7), white at [0.06]% (6), --primary at 5% (5), white at 15% (4), white at 25% (4), black at 25% (3), --primary at 15% (3), --surface at 25% (3), white at 75% (3), white at 85% (3) |
 | font | 55 | 10.5px (8), 28px (7), 12.5px (5), 23px (5), 34px (4), 9px (4), 48px / 48px (2), 11.5px (2), 13.5px (2), 15.5px (2), 21px (2), 29px (2) |
 | leading | 42 | 1 (15), 29px (6), 17px (5), 15px (2), 41px (2), 12px (1), 13px (1), 19px (1), 21px (1), 23px (1), 26px (1), 27px (1) |
 | motion | 40 | 150ms (11), 100ms (10), 200ms (9), 300ms (4), ease-in-out (2), ease-out (2), 500ms (1), 700ms (1) |
@@ -312,6 +312,7 @@ when the fill is a role's colour.
 | `p-1.5` | .padding('all', '6') | 19 | 8 |
 | `pt-8` | .padding('top', '3xl') | 19 | 8 |
 | `px-3.5` | .padding('horizontal', '14') | 19 | 8 |
+| `text-warning-text` | .foreground('warningText') | 19 | 3 |
 | `bg-black/60` | .background('black/60') | 18 | 5 |
 | `bg-primary/20` | .background('primary/20') | 18 | 5 |
 | `flex-shrink` | .shrink('normal') | 18 | 4 |
@@ -458,6 +459,7 @@ when the fill is a role's colour.
 | `ring-foreground/10` | .ring('foreground/10') | 8 | 2 |
 | `shadow-lg` | .shadow('0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)') | 8 | 6 |
 | `text-[18px]` | .font('18') | 8 | 4 |
+| `text-success-text` | .foreground('successText') | 8 | 4 |
 | `w-1/3` | .frame({ width: '1/3' }) | 8 | 3 |
 | `w-48` | .frame({ width: '192' }) | 8 | 4 |
 | `w-64` | .frame({ width: '256' }) | 8 | 7 |
@@ -742,7 +744,6 @@ when the fill is a role's colour.
 | Utility | Raw value | Becomes | Uses | Apps |
 | --- | --- | --- | ---: | ---: |
 | `bg-primary-subtle` | --primary-subtle | .background(…) | 20 | 3 |
-| `text-warning-text` | --warning-text | .foreground(…) | 19 | 3 |
 | `ring-ring/50` | --ring at 50% | .ring(…) | 16 | 3 |
 | `leading-none` | 1 | .leading(…) | 15 | 7 |
 | `text-sidebar-foreground` | --sidebar-foreground | .foreground(…) | 14 | 2 |
@@ -763,7 +764,6 @@ when the fill is a role's colour.
 | `text-[10.5px]` | 10.5px | .font(…) | 8 | 3 |
 | `text-accent-foreground` | --accent-foreground | .foreground(…) | 8 | 2 |
 | `text-red-500` | red-500 | .foreground(…) | 8 | 2 |
-| `text-success-text` | --success-text | .foreground(…) | 8 | 4 |
 | `bg-foreground/5` | --foreground at 5% | .background('foreground/…') | 7 | 3 |
 | `text-[28px]` | 28px | .font(…) | 7 | 4 |
 | `bg-error-subtle` | --error-subtle | .background(…) | 6 | 3 |

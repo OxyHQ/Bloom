@@ -60,18 +60,36 @@ function update(renderer: ReactTestRenderer, node: Child): void {
 const all = (renderer: ReactTestRenderer, type: string): ReactTestInstance[] =>
   renderer.root.findAll((instance) => instance.type === type);
 // biome-ignore lint/suspicious/noExplicitAny: resolved styles are read loosely in assertions
+/**
+ * The text a moving box holds. Bloom's `Text` (the language's text) has no
+ * animated twin on native, so a moving text moves in a box around it.
+ */
+const textOf = (box: ReactTestInstance): unknown =>
+  box.find((instance) => (instance.type as unknown) === 'Text').props.children;
 const flat = (style: unknown): Record<string, any> =>
   Object.assign({}, ...(Array.isArray(style) ? style.flat(4) : [style]).filter(Boolean));
 
 describe('geometry and .animation()', () => {
-  it('scale and offset tokens are a resting transform on the animated twin of the host', () => {
+  it('scale and offset tokens with nothing to play them are the host’s own resting transform', () => {
     const r = mount(HStack(Text('a')).padding('md').offset({ y: 'md' }).scale('pressed'));
-    const [box] = all(r, 'Animated.View');
+    expect(all(r, 'Animated.View')).toHaveLength(0);
+    const [box] = all(r, 'View');
     expect(flat(box?.props.style)).toMatchObject({
       paddingTop: 12,
       transform: [{ translateY: 12 }, { scale: 0.98 }],
     });
-    expect(all(r, 'View')).toHaveLength(0);
+  });
+
+  it('under an .animation() the resting transform is on the animated twin of the host', () => {
+    const r = mount(
+      VStack(HStack(Text('a')).padding('md').offset({ y: 'md' }).scale('pressed')).animation(
+        'slide',
+      ),
+    );
+    const box = all(r, 'Animated.View').find((view) => flat(view.props.style).paddingTop === 12);
+    expect(flat(box?.props.style)).toMatchObject({
+      transform: [{ translateY: 12 }, { scale: 0.98 }],
+    });
   });
 
   it('.animation(motion) transitions transform and opacity with the token’s curve', () => {
@@ -115,7 +133,7 @@ describe('.transition() in a keyed list', () => {
 
   it('a child arrives with its insertion keyframes, on the CSS engine', () => {
     const r = mount(list(['a']));
-    const [box] = all(r, 'Animated.Text');
+    const [box] = all(r, 'Animated.View');
     expect(flat(box?.props.style)).toMatchObject({
       animationName: {
         keyframes: {
@@ -131,7 +149,7 @@ describe('.transition() in a keyed list', () => {
 
   it('native: a removed child goes at once; its removal is a layout Keyframe Reanimated plays after', () => {
     const r = mount(list(['a', 'b']));
-    const [a] = all(r, 'Animated.Text');
+    const [a] = all(r, 'Animated.View');
     expect(a?.props.exiting).toMatchObject({
       definitions: {
         0: { opacity: 1 },
@@ -140,14 +158,14 @@ describe('.transition() in a keyed list', () => {
       durationV: 180,
     });
     update(r, list(['b']));
-    expect(all(r, 'Animated.Text').map((text) => text.props.children)).toEqual(['b']);
+    expect(all(r, 'Animated.View').map(textOf)).toEqual(['b']);
   });
 
   it('a child that comes back while leaving is the arriving one again', () => {
     const r = mount(list(['a']));
     update(r, list([]));
     update(r, list(['a']));
-    const [box] = all(r, 'Animated.Text');
+    const [box] = all(r, 'Animated.View');
     expect(flat(box?.props.style).animationFillMode).toBe('none');
   });
 
@@ -155,20 +173,20 @@ describe('.transition() in a keyed list', () => {
     const plain = (ids: string[]) => VStack(ids.map((id) => Text(id).transition(rise)));
     const r = mount(plain(['a', 'b']));
     update(r, plain(['b']));
-    expect(all(r, 'Animated.Text')).toHaveLength(1);
+    expect(all(r, 'Animated.View')).toHaveLength(1);
   });
 
   it('under reduced motion a removed child goes at once', () => {
     const r = mount(list(['a', 'b']));
     runtime.reducedMotion = true;
     update(r, list(['b']));
-    expect(all(r, 'Animated.Text').map((text) => text.props.children)).toEqual(['b']);
+    expect(all(r, 'Animated.View').map(textOf)).toEqual(['b']);
   });
 
   it('a list with no transition is passed through untouched', () => {
     const r = mount(VStack(['a', 'b'].map((id) => Text(id).id(id))));
     expect(all(r, 'Text')).toHaveLength(2);
-    expect(all(r, 'Animated.Text')).toHaveLength(0);
+    expect(all(r, 'Animated.View')).toHaveLength(0);
   });
 });
 
@@ -227,10 +245,15 @@ describe('.contentTransition("roll")', () => {
     const r = mount(count(1, 0));
     expect(all(r, 'Text')).toHaveLength(1);
     update(r, count(2, 1));
-    const [incoming, outgoing] = all(r, 'Animated.Text');
-    expect(incoming?.props.children).toBe('2');
-    expect(flat(incoming?.props.style)).toMatchObject({
+    const [incoming, outgoing] = all(r, 'Animated.View');
+    expect(textOf(incoming as ReactTestInstance)).toBe('2');
+    // The text keeps its own style inside the moving box.
+    expect(
+      flat((incoming as ReactTestInstance).find((i) => (i.type as unknown) === 'Text').props.style),
+    ).toMatchObject({
       fontSize: 13,
+    });
+    expect(flat(incoming?.props.style)).toMatchObject({
       animationName: {
         keyframes: {
           '0%': { opacity: 0, transform: [{ translateY: 10 }] },
@@ -240,7 +263,7 @@ describe('.contentTransition("roll")', () => {
       animationDuration: 400,
       animationTimingFunction: { cubicBezier: [0.16, 1, 0.3, 1] },
     });
-    expect(outgoing?.props.children).toBe('1');
+    expect(textOf(outgoing as ReactTestInstance)).toBe('1');
     expect(outgoing?.props['aria-hidden']).toBe(true);
     expect(flat(outgoing?.props.style)).toMatchObject({
       position: 'absolute',
@@ -248,14 +271,14 @@ describe('.contentTransition("roll")', () => {
       animationFillMode: 'forwards',
     });
     act(() => incoming?.props.onCSSAnimationEnd());
-    expect(all(r, 'Animated.Text')).toHaveLength(0);
+    expect(all(r, 'Animated.View')).toHaveLength(0);
     expect(all(r, 'Text').map((text) => text.props.children)).toEqual(['2']);
   });
 
   it('a falling count rolls down', () => {
     const r = mount(count(5, 0));
     update(r, count(4, 1));
-    const [incoming] = all(r, 'Animated.Text');
+    const [incoming] = all(r, 'Animated.View');
     expect(flat(incoming?.props.style).animationName.keyframes).toMatchObject({
       '0%': { transform: [{ translateY: -10 }] },
     });
@@ -264,7 +287,7 @@ describe('.contentTransition("roll")', () => {
   it('a change outside the animation (a refetch) does not roll', () => {
     const r = mount(count(1, 1));
     update(r, count(2, 1));
-    expect(all(r, 'Animated.Text')).toHaveLength(0);
+    expect(all(r, 'Animated.View')).toHaveLength(0);
     expect(all(r, 'Text').map((text) => text.props.children)).toEqual(['2']);
   });
 });

@@ -12,4 +12,4 @@ export function useWindowBreakpoint(): 'base' | 'sm' | 'md' | 'lg' | 'xl' | '2xl
   return windowTier.current;
 }
 
-export { usePrefersReducedMotion } from './bloom-runtime';
+export { mergeRefs, usePrefersReducedMotion } from './bloom-runtime';
