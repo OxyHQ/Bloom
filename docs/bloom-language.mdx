@@ -1835,7 +1835,7 @@ full?)`, `.swipeEnabled()` and `.contextMenu(view)`. `PersonRow`, `CallRow`,
 
 `List(entries)` and `SectionedList(sections)` take Bloom's `ListEntry` data:
 `.separator('none' | 'line' | 'inset')`, `.scrollable()`, `.scrollHeight()`,
-`.stickyHeaders()`, `.sectionIndex()`, `.listHeader()`, `.listFooter()`,
+`.stickyHeaders()`, `.sectionIndex()`, `.headerContent()`, `.footerContent()`,
 `.emptyState()`, `.loading()` and `.loadingRows(n)`.
 
 `VirtualList(data, row)` is Bloom's: FlashList (or FlatList) on native, the
@@ -1845,7 +1845,7 @@ so the engine re-renders a row only when its item changes, as with JSX. It takes
 `.itemKey()`, `.itemType()` (FlashList's recycling type),
 `.estimatedItemSize(px)`, `.columns()`, `.onEndReached(action, threshold?)`,
 `.refreshable(refreshing, onRefresh)`, `.stickyIndices()`,
-`.restorationKey()`, `.listHeader()`, `.listFooter()`, `.emptyState()` and
+`.restorationKey()`, `.headerContent()`, `.footerContent()`, `.emptyState()` and
 `.tuning({...})` (the engine's own knobs). `ListSelectionBar(count, total)`
 takes `.selecting()`, `.onSelectAll()`, `.onClear()`, `.rowActions()` and
 `.labels()`.

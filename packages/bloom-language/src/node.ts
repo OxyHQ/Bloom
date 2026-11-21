@@ -642,8 +642,8 @@ export interface ValueModifiers {
   scrollHeight: SpaceToken;
   stickyHeaders: boolean;
   sectionIndex: NonNullable<ListProps['sectionIndex']>;
-  listHeader: Child;
-  listFooter: Child;
+  headerContent: Child;
+  footerContent: Child;
   loadingRows: number;
   itemKey: (item: never, index: number) => string;
   itemType: (item: never, index: number) => string | number | undefined;
@@ -2444,11 +2444,11 @@ export class Node {
   sectionIndex(value: NonNullable<ListProps['sectionIndex']>): Node {
     return this.set('sectionIndex', value);
   }
-  listHeader(value: Child): Node {
-    return this.set('listHeader', value);
+  headerContent(value: Child): Node {
+    return this.set('headerContent', value);
   }
-  listFooter(value: Child): Node {
-    return this.set('listFooter', value);
+  footerContent(value: Child): Node {
+    return this.set('footerContent', value);
   }
   loadingRows(value: number): Node {
     return this.set('loadingRows', value);

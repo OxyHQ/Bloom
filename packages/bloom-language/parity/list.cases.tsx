@@ -264,8 +264,8 @@ const lists: ParityCase[] = [
           .stickyHeaders()
           .scrollable()
           .scrollHeight('320')
-          .listHeader(L.Text('Header'))
-          .listFooter(L.Text('Footer')),
+          .headerContent(L.Text('Header'))
+          .footerContent(L.Text('Footer')),
       ),
     bloom: () => (
       <List
@@ -310,8 +310,8 @@ const virtual: ParityCase[] = [
           .estimatedItemSize(56)
           .onEndReached(press, 0.5)
           .refreshable(false, press)
-          .listHeader(L.Text('Top'))
-          .listFooter(L.Text('End'))
+          .headerContent(L.Text('Top'))
+          .footerContent(L.Text('End'))
           .tuning({ drawDistance: 500 })
           .testID('names'),
       ),
