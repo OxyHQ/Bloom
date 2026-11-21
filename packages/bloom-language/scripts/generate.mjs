@@ -47,6 +47,9 @@ const nodes = withoutComment(spec.nodes);
 const glass = withoutComment(spec.glass);
 const sfSymbols = withoutComment(spec.sfSymbols);
 
+/** A role's web value: its canonical CSS variable, or, for a colour the same in every theme, the colour. */
+const webColor = (css) => (css.startsWith('#') ? css : `var(--${css})`);
+
 const typeFamilies = [];
 for (const variant of Object.keys(typeRamp)) {
   const family = variant.replace(/-(regular|medium|semibold|bold)$/, '');
@@ -97,9 +100,11 @@ export const DURATION = ${ts(scales.duration)} as const;
 export const TYPE_FAMILIES = ${ts(typeFamilies)} as const;
 export const TYPE_RAMP = ${ts(typeRamp)} as const;
 
-/** Colour roles: the theme colour each paints with on native, the CSS variable on the web. */
+/** Colour roles: the theme colour each paints with on native, and its web value (its CSS variable, or a fixed colour). */
 export const COLORS = ${ts(
-  Object.fromEntries(Object.entries(colors).map(([role, [paint, css]]) => [role, { paint, css }])),
+  Object.fromEntries(
+    Object.entries(colors).map(([role, [paint, css]]) => [role, { paint, web: webColor(css) }]),
+  ),
 )} as const;
 
 export const ENUMS = ${ts(enums)} as const;
@@ -157,8 +162,8 @@ const LOGICAL = {
 /** react-native-web's precedence group for logical longhands. */
 const LOGICAL_ORDER = 2.2;
 
-/** The web value of a role: its canonical CSS variable. */
-const roleValue = (role) => `var(--${colors[role][1]})`;
+/** The web value of a role. */
+const roleValue = (role) => webColor(colors[role][1]);
 
 const rules = [];
 const classes = {};

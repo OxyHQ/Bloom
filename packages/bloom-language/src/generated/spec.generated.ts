@@ -84,7 +84,12 @@ export const AVATAR_SIZE = {
 } as const;
 export const OPACITY = {
   "transparent": 0,
+  "faint": 0.1,
+  "pale": 0.2,
+  "sheer": 0.3,
+  "hazy": 0.4,
   "disabled": 0.5,
+  "dim": 0.6,
   "faded": 0.7,
   "soft": 0.8,
   "opaque": 1
@@ -454,75 +459,99 @@ export const TYPE_RAMP = {
   ]
 } as const;
 
-/** Colour roles: the theme colour each paints with on native, the CSS variable on the web. */
+/** Colour roles: the theme colour each paints with on native, and its web value (its CSS variable, or a fixed colour). */
 export const COLORS = {
   "foreground": {
     "paint": "text",
-    "css": "foreground"
+    "web": "var(--foreground)"
   },
   "muted": {
     "paint": "textSecondary",
-    "css": "muted-foreground"
+    "web": "var(--muted-foreground)"
   },
   "primary": {
     "paint": "primary",
-    "css": "primary"
+    "web": "var(--primary)"
   },
   "onPrimary": {
     "paint": "primaryForeground",
-    "css": "primary-foreground"
+    "web": "var(--primary-foreground)"
   },
   "secondary": {
     "paint": "secondary",
-    "css": "secondary"
+    "web": "var(--secondary)"
   },
   "onSecondary": {
     "paint": "secondaryForeground",
-    "css": "secondary-foreground"
+    "web": "var(--secondary-foreground)"
   },
   "tertiary": {
     "paint": "tertiary",
-    "css": "tertiary"
+    "web": "var(--tertiary)"
   },
   "onTertiary": {
     "paint": "tertiaryForeground",
-    "css": "tertiary-foreground"
+    "web": "var(--tertiary-foreground)"
   },
   "background": {
     "paint": "background",
-    "css": "background"
+    "web": "var(--background)"
   },
   "surface": {
     "paint": "backgroundSecondary",
-    "css": "surface"
+    "web": "var(--surface)"
   },
   "popover": {
     "paint": "backgroundTertiary",
-    "css": "popover"
+    "web": "var(--popover)"
   },
   "border": {
     "paint": "border",
-    "css": "border"
+    "web": "var(--border)"
   },
   "input": {
     "paint": "borderLight",
-    "css": "input"
+    "web": "var(--input)"
   },
   "success": {
     "paint": "success",
-    "css": "success"
+    "web": "var(--success)"
   },
   "warning": {
     "paint": "warning",
-    "css": "warning"
+    "web": "var(--warning)"
   },
   "error": {
     "paint": "error",
-    "css": "error"
+    "web": "var(--error)"
   },
   "info": {
     "paint": "info",
-    "css": "info"
+    "web": "var(--info)"
+  },
+  "mutedFill": {
+    "paint": "contrast50",
+    "web": "var(--muted)"
+  },
+  "card": {
+    "paint": "card",
+    "web": "var(--card)"
+  },
+  "destructive": {
+    "paint": "destructive",
+    "web": "var(--destructive)"
+  },
+  "primaryText": {
+    "paint": "primarySubtleForeground",
+    "web": "var(--primary-text)"
+  },
+  "white": {
+    "paint": "white",
+    "web": "#ffffff"
+  },
+  "black": {
+    "paint": "black",
+    "web": "#000000"
   }
 } as const;
 

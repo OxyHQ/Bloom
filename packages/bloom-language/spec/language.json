@@ -91,7 +91,12 @@
     },
     "opacity": {
       "transparent": 0,
+      "faint": 0.1,
+      "pale": 0.2,
+      "sheer": 0.3,
+      "hazy": 0.4,
       "disabled": 0.5,
+      "dim": 0.6,
       "faded": 0.7,
       "soft": 0.8,
       "opaque": 1
@@ -186,7 +191,7 @@
     "caption-2-bold": [11, 15, 0.2, "700"]
   },
   "colors": {
-    "$comment": "role: [ThemeColors key (native paint), canonical CSS variable without -- (web)]",
+    "$comment": "role: [ThemeColors key (native paint), canonical CSS variable without -- (web)]; a colour the same in every theme (white, black) gives the colour itself for the web.",
     "foreground": ["text", "foreground"],
     "muted": ["textSecondary", "muted-foreground"],
     "primary": ["primary", "primary"],
@@ -203,7 +208,13 @@
     "success": ["success", "success"],
     "warning": ["warning", "warning"],
     "error": ["error", "error"],
-    "info": ["info", "info"]
+    "info": ["info", "info"],
+    "mutedFill": ["contrast50", "muted"],
+    "card": ["card", "card"],
+    "destructive": ["destructive", "destructive"],
+    "primaryText": ["primarySubtleForeground", "primary-text"],
+    "white": ["white", "#ffffff"],
+    "black": ["black", "#000000"]
   },
   "enums": {
     "edge": ["all", "horizontal", "vertical", "top", "bottom", "leading", "trailing"],
