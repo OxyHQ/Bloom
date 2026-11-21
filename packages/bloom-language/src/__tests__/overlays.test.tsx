@@ -54,7 +54,7 @@ describe('presentations', () => {
           Dialog(Text('Inside'))
             .title('Edit')
             .message('Change it.')
-            .presentAt('bottom', 'center')
+            .presentAt('bottom', { md: 'center' })
             .buttons([{ label: 'Save' }])
             .dismissOnBackdrop(false),
         ),
@@ -81,6 +81,54 @@ describe('presentations', () => {
       toElement(VStack().dialog([false, () => {}], Dialog().presentAt('center'))),
     );
     expect(only(renderer, 'Dialog').props.placement).toBe('center');
+  });
+
+  it('a dialog’s size, padding, header, footer, page and every tier reach Bloom’s props', () => {
+    const renderer = mount(
+      toElement(
+        VStack().dialog(
+          [true, () => {}],
+          Dialog(Text('Body'))
+            .frame({ width: '640', maxWidth: '768' })
+            .padding('none')
+            .header({ title: 'Edit', largeTitle: false })
+            .footer(Text('Saved a minute ago'))
+            .page({ key: 'details' })
+            .presentAt('bottom', { sm: 'center', lg: 'end', xl: 'right' }),
+        ),
+      ),
+    );
+    const dialog = only(renderer, 'Dialog');
+    expect(dialog.props).toMatchObject({
+      width: 640,
+      maxWidth: 768,
+      contentPadding: 0,
+      header: { title: 'Edit', largeTitle: false },
+      frame: { key: 'details' },
+      placement: { base: 'bottom', sm: 'center', lg: 'end', xl: 'right' },
+    });
+    expect(dialog.props.footer).toBeDefined();
+  });
+
+  it('a popover’s offsets and sizes are space tokens as Bloom’s numbers', () => {
+    const renderer = mount(
+      toElement(
+        Button(Text('Info')).popover(
+          [true, () => {}],
+          Popover(Text('Details'))
+            .sideOffset('xs')
+            .alignOffset('-sm')
+            .frame({ minWidth: '280', maxWidth: '320', maxHeight: '384' }),
+        ),
+      ),
+    );
+    expect(only(renderer, 'PopoverContent').props).toMatchObject({
+      sideOffset: 4,
+      alignOffset: -8,
+      minWidth: 280,
+      maxWidth: 320,
+      maxHeight: 384,
+    });
   });
 
   it('a popover takes its view as the trigger', () => {
@@ -110,6 +158,32 @@ describe('feedback', () => {
   it('ConnectionStatus is Bloom’s connection toasts', () => {
     const renderer = mount(toElement(ConnectionStatus()));
     expect(only(renderer, 'ConnectionStatusToasts').props).toEqual({});
+    const worded = mount(
+      toElement(
+        ConnectionStatus()
+          .offlineMessage('No network')
+          .reconnectingMessage('Trying again')
+          .restoredMessage('Back')
+          .reconnectingDelay(1000)
+          .restoredDuration(4000),
+      ),
+    );
+    expect(only(worded, 'ConnectionStatusToasts').props).toEqual({
+      offlineMessage: 'No network',
+      reconnectingMessage: 'Trying again',
+      restoredMessage: 'Back',
+      reconnectingDelayMs: 1000,
+      restoredDurationMs: 4000,
+    });
+  });
+
+  it('toast.custom hands Bloom a view as the whole row', () => {
+    toastCalls.length = 0;
+    toast.custom(Text('Uploaded'), { id: 'upload' });
+    const [method, element, options] = toastCalls[0] as [string, { type: unknown }, unknown];
+    expect(method).toBe('custom');
+    expect(typeof element.type).toBe('function');
+    expect(options).toEqual({ id: 'upload' });
   });
 
   it('toast hands Bloom a title as it is, and a view as its element', () => {

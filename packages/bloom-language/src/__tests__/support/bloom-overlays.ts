@@ -22,4 +22,5 @@ export const toast = Object.assign(record('toast'), {
   promise: record('promise'),
   dismiss: record('dismiss'),
   wiggle: record('wiggle'),
+  custom: record('custom'),
 });
