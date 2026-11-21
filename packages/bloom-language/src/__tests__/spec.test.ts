@@ -130,7 +130,9 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
 
   it('a text with no font measures its leading and tracking from Bloom Text’s own size', () => {
     expect(read('typography/Typography.tsx')).toMatch(
-      new RegExp(`DEFAULT_TEXT_TYPOGRAPHY: TextStyle = \\{\\n\\s+fontSize: ${ENVIRONMENT_DEFAULTS.fontSize},`),
+      new RegExp(
+        `DEFAULT_TEXT_TYPOGRAPHY: TextStyle = \\{\\n\\s+fontSize: ${ENVIRONMENT_DEFAULTS.fontSize},`,
+      ),
     );
   });
 
