@@ -200,5 +200,8 @@ function createMockColors(): ThemeColors {
     destructive: '#B91C1C',
     white: '#ffffff',
     black: '#000000',
+    transparent: 'transparent',
+    surfaceForeground: '#000',
+    accent: '#eee',
   };
 }

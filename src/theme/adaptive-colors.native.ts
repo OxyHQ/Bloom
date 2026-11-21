@@ -67,6 +67,9 @@ export type AdaptiveColors = Omit<
   | 'destructive'
   | 'white'
   | 'black'
+  | 'transparent'
+  | 'surfaceForeground'
+  | 'accent'
 >;
 
 const c = (v: unknown): string => v as string;

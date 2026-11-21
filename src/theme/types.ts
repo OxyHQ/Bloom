@@ -94,6 +94,12 @@ export interface ThemeColors {
   white: string;
   /** Black, the same in every theme: what apps paint with Tailwind's `black`. */
   black: string;
+  /** Transparent, the same in every theme: Tailwind's `transparent`. */
+  transparent: string;
+  /** `--surface-foreground`, the ink apps paint with `text-surface-foreground`. */
+  surfaceForeground: string;
+  /** `--accent`, the fill apps paint with `bg-accent` (a hover or selected wash). */
+  accent: string;
 }
 
 /**

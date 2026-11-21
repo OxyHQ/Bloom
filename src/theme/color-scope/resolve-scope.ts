@@ -48,6 +48,8 @@ const COLOR_FIELDS = {
   muted: ['contrast50'],
   card: ['card'],
   destructive: ['destructive'],
+  'surface-foreground': ['surfaceForeground'],
+  accent: ['accent'],
 } satisfies Partial<Record<CanonicalToken, readonly (keyof ThemeColors)[]>>;
 
 /** Preserve unspecified roles; rebuild the full CSS alias layer after exact overrides. */
