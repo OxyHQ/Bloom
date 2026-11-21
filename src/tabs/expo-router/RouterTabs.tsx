@@ -13,10 +13,11 @@
  * itself stays presentational and knows only about measured geometry.
  */
 import { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { runOnJS } from 'react-native-reanimated';
+import { GestureDetector } from 'react-native-gesture-handler';
 import { useRouter, usePathname, type Href } from '../../panel-routing/expo-router';
 
+import { useDrag } from '../../motion/gestures';
+import { useMotionValue } from '../../motion/motion-value';
 import { Tabs, TabsTrigger, type TabsDragController } from '../Tabs';
 import type { TabsIconComponent, TabsProps } from '../types';
 
@@ -134,10 +135,10 @@ export function RouterTabs({
   const pathname = usePathname();
   const activeValue = useMemo(() => matchActiveValue(items, pathname), [items, pathname]);
   const dragRef = useRef<TabsDragController>(null);
-  // What releasing right now would commit. A ref rather than state: it is
-  // written on every frame of the drag and read once, and re-rendering the
-  // strip mid-gesture would fight the animation the gesture is driving.
-  const pendingRef = useRef<string | null>(null);
+  // The finger's horizontal travel. The gesture writes it from its own
+  // callbacks (the UI thread on native) and the underline follows it, so a
+  // drag runs no JS until the release.
+  const translation = useMotionValue(0);
 
   const navigateTo = useCallback(
     (value: string) => {
@@ -161,48 +162,32 @@ export function RouterTabs({
     [activeValue, onReselect, navigateTo],
   );
 
-  const onDrag = useCallback((translationX: number) => {
-    pendingRef.current = dragRef.current?.drag(translationX) ?? null;
-  }, []);
-
-  // `onEnd` does not fire for every terminated gesture, and `onFinalize` fires
-  // for all of them — including after `onEnd`. Guarding on the ref being
-  // non-null is what makes the second call a no-op instead of a double commit.
-  const releasedRef = useRef(true);
-  const onRelease = useCallback(() => {
-    if (releasedRef.current) return;
-    releasedRef.current = true;
-    const committed = pendingRef.current;
-    pendingRef.current = null;
-    // The underline commits first and instantly: it lives in the layout, it
-    // survives the swap, and it is the honest signal the gesture was accepted.
-    // The content area arrives when its chunk does.
-    dragRef.current?.release(committed);
-    if (committed !== null) navigateTo(committed);
-  }, [navigateTo]);
-
   const onBegin = useCallback(() => {
-    releasedRef.current = false;
+    dragRef.current?.begin();
   }, []);
 
-  const panGesture = useMemo(
-    () =>
-      Gesture.Pan()
-        // Horizontal intent only. This is a hint to the gesture system and is
-        // NOT what protects vertical scrolling on web — see `touchAction` below.
-        .activeOffsetX([-12, 12])
-        .failOffsetY([-12, 12])
-        .onBegin(() => {
-          runOnJS(onBegin)();
-        })
-        .onUpdate((event) => {
-          runOnJS(onDrag)(event.translationX);
-        })
-        .onFinalize(() => {
-          runOnJS(onRelease)();
-        }),
-    [onBegin, onDrag, onRelease],
+  // Once per touch, however it ended (released, cancelled or never taken).
+  const onEnd = useCallback(
+    ({ value }: { value: number }) => {
+      // The underline commits first and instantly: it lives in the layout, it
+      // survives the swap, and it is the honest signal the gesture was
+      // accepted. The content area arrives when its chunk does.
+      const committed = dragRef.current?.release(value) ?? null;
+      if (committed !== null) navigateTo(committed);
+    },
+    [navigateTo],
   );
+
+  const panGesture = useDrag(translation, {
+    axis: 'x',
+    // Horizontal intent only. This is a hint to the gesture system and is NOT
+    // what protects vertical scrolling on web — see `touchAction` below.
+    activeOffset: 12,
+    failOffset: 12,
+    enabled: swipeEnabled,
+    onBegin,
+    onEnd,
+  });
 
   // Warm every OTHER tab's async chunk. That fetch is the ~300ms the content
   // area would otherwise spend empty after a commit, and a swipe offers no
@@ -234,7 +219,12 @@ export function RouterTabs({
     // `hasSelection` is what stops the underline asserting a tab while a
     // NON-TAB sibling route is showing — the layout that renders this strip
     // renders those too (a profile's `/followers` beside its tab routes).
-    <Tabs {...tabsProps} ref={dragRef} hasSelection={activeValue !== undefined}>
+    <Tabs
+      {...tabsProps}
+      ref={dragRef}
+      dragTranslation={translation}
+      hasSelection={activeValue !== undefined}
+    >
       {items.map((item) => (
         <TabsTrigger
           key={item.value}
