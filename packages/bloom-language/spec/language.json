@@ -567,11 +567,11 @@
       "allowsHitTesting"
     ],
     "selectors": {
-      "$comment": "The web selector of each scheme and state condition, & standing for the class it styles. A breakpoint is a min-width media query at its breakpoint rung. The anchor class blsg is on the view's outermost box: a state is the state of the view, not of whatever is under the pointer.",
+      "$comment": "The web selector of each scheme and state condition, & standing for the class it styles. A breakpoint is a min-width media query at its breakpoint rung. The anchor class blsg is on the view's outermost box, and a state is that of the element's NEAREST anchor (itself or the closest box around it), as native's leaves read the nearest press host: an outer view's state never reaches an inner view's variants. A state is the innermost anchor's in it, as react-native-web's Pressable takes it (a hover or press inside an inner one is not the outer one's): the state's anchor has no anchor in the same state inside it (:has), and the class is in that anchor with no anchor between. The :where() parts add no specificity: a state's rule stays two classes over the base, the scheme's one.",
       "dark": ".dark &",
-      "hovered": ".blsg:hover &, .blsg:hover&",
-      "focused": ".blsg:focus-visible &, .blsg:focus-visible&",
-      "pressed": ".blsg:active &, .blsg:active&"
+      "hovered": "&:is(.blsg:hover:where(:not(:has(.blsg:hover))), .blsg:hover:where(:not(:has(.blsg:hover))) *):where(:not(.blsg:hover:where(:not(:has(.blsg:hover))) .blsg, .blsg:hover:where(:not(:has(.blsg:hover))) .blsg *))",
+      "focused": "&:is(.blsg:focus-visible, .blsg:focus-visible *):where(:not(.blsg:focus-visible .blsg, .blsg:focus-visible .blsg *))",
+      "pressed": "&:is(.blsg:active:where(:not(:has(.blsg:active))), .blsg:active:where(:not(:has(.blsg:active))) *):where(:not(.blsg:active:where(:not(:has(.blsg:active))) .blsg, .blsg:active:where(:not(:has(.blsg:active))) .blsg *))"
     }
   },
   "environment": {

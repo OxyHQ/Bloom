@@ -1,16 +1,27 @@
 import { createElement } from 'react';
-import TestRenderer, { act, type ReactTestRenderer } from 'react-test-renderer';
+import TestRenderer, {
+  act,
+  type ReactTestInstance,
+  type ReactTestRenderer,
+} from 'react-test-renderer';
 
 import { LIGHT, PaintContext } from './support/bloom-theme';
-import { HStack, Text, VStack } from '../primitives';
+import { Avatar, Button, HStack, Text, VStack } from '../primitives';
+import { COLORS, VARIANT_SELECTORS } from '../generated/spec.generated';
 import { toElement } from '../render';
 import type { Child } from '../node';
-import { WEB_CLASS } from '../generated/web-sheet.generated';
-import { variantSheet } from '../web-sheet';
+import { WEB_CLASS, WEB_SHEET } from '../generated/web-sheet.generated';
+import { adoptVariantClasses, variantSheet } from '../web-sheet';
+import { adoptStyleSheet } from '@oxy.so/bloom/styles';
 
 jest.mock('react-native', () => ({
   ...jest.requireActual('react-native'),
   Platform: { OS: 'web', select: <T,>(spec: { web?: T; default?: T }) => spec.web ?? spec.default },
+}));
+
+jest.mock('@oxy.so/bloom/styles', () => ({
+  ...jest.requireActual('@oxy.so/bloom/styles'),
+  adoptStyleSheet: jest.fn(),
 }));
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -21,6 +32,14 @@ beforeAll(() => {
     consoleError(...args);
   });
 });
+
+/** The text the variant sheet of `condition` was last adopted with. */
+function adoptedText(condition: string): string | undefined {
+  const calls = (adoptStyleSheet as jest.Mock).mock.calls.filter(
+    ([id]) => id === `bloom-language-${condition}`,
+  );
+  return calls[calls.length - 1]?.[1];
+}
 
 function mount(node: Child): ReactTestRenderer {
   let renderer!: ReactTestRenderer;
@@ -65,24 +84,81 @@ describe('on the web, a variant is the same class under its condition’s CSS', 
 
   it('a variant sheet puts each class under its condition’s CSS', () => {
     const name = WEB_CLASS['paddingTop:16'] as string;
-    expect(variantSheet('md')).toMatch(/^@media \(min-width: 768px\)\{/);
-    expect(variantSheet('md')).toContain(`.${name}-md{padding-top:16px;}`);
-    expect(variantSheet('dark')).toContain(`.dark .${name}-dark{padding-top:16px;}`);
-    expect(variantSheet('hovered')).toContain(
-      `.blsg:hover .${name}-hovered, .blsg:hover.${name}-hovered{padding-top:16px;}`,
+    expect(variantSheet('md', [name])).toBe(
+      `@media (min-width: 768px){.${name}-md{padding-top:16px;}}`,
     );
+    expect(variantSheet('dark', [name])).toBe(`.dark .${name}-dark{padding-top:16px;}`);
+    expect(variantSheet('hovered', [name])).toBe(
+      `${VARIANT_SELECTORS.hovered.replaceAll('&', `.${name}-hovered`)}{padding-top:16px;}`,
+    );
+    expect(VARIANT_SELECTORS.hovered).toBe(
+      '&:is(.blsg:hover:where(:not(:has(.blsg:hover))), .blsg:hover:where(:not(:has(.blsg:hover))) *):where(:not(.blsg:hover:where(:not(:has(.blsg:hover))) .blsg, .blsg:hover:where(:not(:has(.blsg:hover))) .blsg *))',
+    );
+  });
+
+  it('a variant sheet holds only the classes it is given, in the generated sheet’s order', () => {
+    const top = WEB_CLASS['paddingTop:16'] as string;
+    const width = WEB_CLASS['borderWidth:1'] as string;
+    const sheet = variantSheet('md', [top, width, top]);
+    expect(sheet.match(/-md\{/g)).toHaveLength(2);
+    // react-native-web's precedence: the shorthand group before a longhand.
+    expect(WEB_SHEET.indexOf(`.${width}{`)).toBeLessThan(WEB_SHEET.indexOf(`.${top}{`));
+    expect(sheet.indexOf(`.${width}-md`)).toBeLessThan(sheet.indexOf(`.${top}-md`));
+    expect(variantSheet('md', [])).toBe('');
+  });
+
+  it('a rendered variant puts exactly its own rules on the page', () => {
+    adoptVariantClasses('lg', []);
+    const before = adoptedText('lg');
+    expect(before).toBe('');
+    mount(
+      VStack(Text('a'))
+        .padding('sm')
+        .when('lg', (v) => v.padding('lg')),
+    );
+    const sheet = adoptedText('lg') ?? '';
+    expect(sheet.match(/-lg\{/g)).toHaveLength(4);
+    for (const edge of ['Top', 'Bottom', 'Start', 'End'])
+      expect(sheet).toContain(`.${WEB_CLASS[`padding${edge}:16`]}-lg{`);
+  });
+
+  it('a Bloom component takes its variants in its own style object, its roles their CSS variables', () => {
+    const r = mount(
+      Avatar('a.png')
+        .background('surface')
+        .when('dark', (v) => v.background('popover')),
+    );
+    const [avatar] = r.root.findAll((node) => (node.type as unknown) === 'BloomAvatar');
+    expect(avatar?.props.style).toEqual({ backgroundColor: COLORS.surface.web });
+    expect(r.root.findAll((node) => (node.type as unknown) === 'View')).toHaveLength(0);
+  });
+
+  it('a Bloom component’s state variant is read in JS from its own press, with no anchor class', () => {
+    const r = mount(
+      Button(Text('Save'))
+        .onPress(() => {})
+        .when('pressed', (v) => v.opacity('70')),
+    );
+    const button = (): ReactTestInstance =>
+      r.root.find((node) => (node.type as unknown) === 'BloomButton');
+    expect(button().props.style).toBeUndefined();
+    act(() => button().props.onPressIn());
+    expect(button().props.style).toEqual({ opacity: 0.7 });
+    act(() => button().props.onPressOut());
+    expect(button().props.style).toBeUndefined();
   });
 });
 
 describe('a class react-native-web writes as two rules varies as two', () => {
   it('no hit testing reaches the children under its condition too', () => {
     const name = WEB_CLASS['pointerEvents:none'] as string;
-    const sheet = variantSheet('hovered');
-    const own = `.blsg:hover .${name}-hovered, .blsg:hover.${name}-hovered`;
-    expect(sheet).toContain(`${own}{pointer-events:none!important;}`);
-    expect(sheet).toContain(
-      `.blsg:hover .${name}-hovered>*, .blsg:hover.${name}-hovered>*{pointer-events:none;}`,
+    const sheet = variantSheet('hovered', [name]);
+    const at = (rest: string) =>
+      VARIANT_SELECTORS.hovered.replaceAll('&', `.${name}-hovered${rest}`);
+    // The children's rule comes first in the generated sheet, so it does here.
+    expect(sheet).toBe(
+      `${at('>*')}{pointer-events:none;}\n${at('')}{pointer-events:none!important;}`,
     );
-    expect(variantSheet('md')).toContain(`.${name}-md>*{pointer-events:none;}`);
+    expect(variantSheet('md', [name])).toContain(`.${name}-md>*{pointer-events:none;}`);
   });
 });

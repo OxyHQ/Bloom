@@ -17,10 +17,13 @@ import type { LiveCondition } from './variants';
  *
  * - Web: the box carries the anchor class (`blsg`) the variant sheet's state
  *   selectors start from, so a state is the CSS of the view's own box, with no
- *   JavaScript: `.blsg:hover .x-hovered`.
- * - Native: the box tracks its press, hover and focus and hands them to the
- *   leaves of the view through `InteractionContext`. A change re-renders this
- *   box and the leaves that vary with it, never a view body.
+ *   JavaScript. A class answers its nearest anchor's state (the spec's
+ *   `variants.selectors`), so a view inside another answers its own.
+ * - Native, and a Bloom component's box on the web (it reads its style as an
+ *   object, which CSS cannot vary): the box tracks its press, hover and focus
+ *   and hands them to the leaves of the view through `InteractionContext`. A
+ *   change re-renders this box and the leaves that vary with it, never a view
+ *   body.
  */
 interface StateHostProps {
   host: ComponentType<Record<string, unknown>> | string;
@@ -33,14 +36,17 @@ interface StateHostProps {
 
 const ANCHOR = Object.freeze({ $$css: true, blStateAnchor: 'blsg' });
 
-function WebStateHost({ host, out, states: _, ...props }: StateHostProps): ReactElement {
+function WebStateHost(props: StateHostProps): ReactElement {
+  // A Bloom component reads its style as an object: no anchor class, its state read in JS.
+  if (props.out.object) return createElement(TrackedStateHost, props);
+  const { host, out, states: _, ...rest } = props;
   const style = out.style === undefined ? ANCHOR : [out.style, ANCHOR].flat();
-  return createElement(host, { ...props, style });
+  return createElement(host, { ...rest, style });
 }
 
 type Handler = ((event: unknown) => void) | undefined;
 
-function NativeStateHost({ host, out, states, ...props }: StateHostProps): ReactElement {
+function TrackedStateHost({ host, out, states, ...props }: StateHostProps): ReactElement {
   const [state, setState] = useState<Interaction>(IDLE);
   const set = (key: keyof Interaction, on: boolean) =>
     setState((current) => (current[key] === on ? current : { ...current, [key]: on }));
@@ -74,4 +80,4 @@ function NativeStateHost({ host, out, states, ...props }: StateHostProps): React
   return createElement(InteractionContext.Provider, { value: state }, box);
 }
 
-export const StateHost = Platform.OS === 'web' ? WebStateHost : NativeStateHost;
+export const StateHost = Platform.OS === 'web' ? WebStateHost : TrackedStateHost;

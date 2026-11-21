@@ -203,7 +203,7 @@ const STATEFUL = '$$stateful';
 /** A style with nothing to draw: for a host that takes only props. */
 const NO_OUT: StyleOut = Object.freeze({ style: undefined, paint: undefined });
 
-/** The nodes drawn by a Bloom component, which takes its style as an object (so cannot vary it on the web). */
+/** The nodes the language draws with React Native's own hosts; every other kind is a Bloom component. */
 const DRAWN_BY_HOSTS: ReadonlySet<string> = new Set([
   'stack',
   'spacer',
@@ -565,21 +565,16 @@ function drawNode(node: Node, ctx: Context, key: string | number | undefined): R
   const reactKey = p.id ?? key;
   if (node.kind === 'skeleton') return drawSkeleton(node, p, inner, reactKey);
   const layers = p.layers;
-  // A Bloom component cannot vary its style, so a varied box (or a varied
-  // place) of one is a view of its own around it. So is its hit testing on
-  // the web, where react-native-web drops an inline `pointerEvents`.
-  const variedBox =
-    !DRAWN_BY_HOSTS.has(node.kind) &&
-    ((layers[0]?.variants.length ?? 0) > 0 ||
-      p.place.variants.length > 0 ||
-      p.states.length > 0 ||
-      (IS_WEB && p.place.allowsHitTesting !== undefined));
-  if (variedBox && layers.length === 0) addVariantToLayers(layers, null, EMPTY_PADDING);
+  // A Bloom component's hit testing on the web is a view of its own around it:
+  // react-native-web drops an inline `pointerEvents`. (Its variants are its own
+  // style: `serialize`.)
+  const ownBox = IS_WEB && !DRAWN_BY_HOSTS.has(node.kind) && p.place.allowsHitTesting !== undefined;
+  if (ownBox && layers.length === 0) addVariantToLayers(layers, null, EMPTY_PADDING);
   // A glass layer is a Surface and a blur layer an island, which the host cannot
   // be, and an overlay layer holds its views beside the host; so the host takes
   // the innermost layer only when that layer is plain.
   const hostTakesLayer =
-    !variedBox &&
+    !ownBox &&
     layers.length > 0 &&
     (layers[0] as Layer).glass === undefined &&
     !(layers[0] as Layer).blur &&
@@ -635,7 +630,7 @@ function boxVariants(layer: Layer | undefined, flex: string, p: Plan): VariantSt
   return joinVariants(layerVariants(layer), flex ? placeVariants(p.place) : undefined);
 }
 
-/** A padding of nothing: what opens the view of its own a varied Bloom component takes. */
+/** A padding of nothing: what opens the view of its own a Bloom component's hit testing takes on the web. */
 const EMPTY_PADDING = Object.freeze({
   kind: 'padding',
   key: 'p:all:none',
@@ -924,6 +919,7 @@ function pairPaint(
     paint = {
       style: base.style,
       styleRoles: base.styleRoles,
+      variants: base.variants,
       propRoles: [
         fill.opacity === undefined
           ? ['background', fill.role]
@@ -939,6 +935,11 @@ function pairPaint(
 }
 
 const propPaints = new Map<string, Paint>();
+
+/** A component's style out drawn with `paint` (its style and the props painted from roles). */
+function painted(out: StyleOut, paint: Paint): StyleOut {
+  return { style: undefined, paint, ...(out.object ? { object: true } : null) };
+}
 
 /**
  * A component's style (painted on native) plus one prop painted from a role:
@@ -961,7 +962,12 @@ function propPaint(
     };
     const propRole: readonly [string, ColorName, number?] =
       opacity === undefined ? [prop, role] : [prop, role, opacity];
-    paint = { style: base.style, styleRoles: base.styleRoles, propRoles: [propRole] };
+    paint = {
+      style: base.style,
+      styleRoles: base.styleRoles,
+      propRoles: [propRole],
+      variants: base.variants,
+    };
     propPaints.set(id, paint);
   }
   return paint;
@@ -1017,7 +1023,8 @@ function renderHost(
       () => boxStyle(layer, flex, p),
       () => boxVariants(layer, flex, p),
     );
-  const boxed = layer !== undefined || flex !== '';
+  // A box whose variants answer its state is drawn by a `StateHost` (drawHost).
+  const boxed = layer !== undefined || flex !== '' || p.states.length > 0;
 
   switch (node.kind) {
     case 'stack': {
@@ -1207,11 +1214,16 @@ function renderHost(
       const imageFlex = interactive ? '' : flex;
       const aspectRatio = ownValue(p, 'aspectRatio')?.value;
       const styleKey = `IM|${aspectRatio ?? ''}|${layerKey}|${imageFlex}`;
-      const out = cachedStyle('component', styleKey, () => {
-        const style = boxStyle(layer, imageFlex, p);
-        if (aspectRatio !== undefined) style.aspectRatio = aspectRatio;
-        return style;
-      });
+      const out = cachedStyle(
+        'component',
+        styleKey,
+        () => {
+          const style = boxStyle(layer, imageFlex, p);
+          if (aspectRatio !== undefined) style.aspectRatio = aspectRatio;
+          return style;
+        },
+        () => boxVariants(layer, imageFlex, p),
+      );
       const { source, alt } = node.props as ImageProps;
       const transition = ownValue(p, 'transition')?.value;
       const props: Record<string, unknown> = interactive ? {} : hostProps(behaviour, key);
@@ -1224,14 +1236,11 @@ function renderHost(
         onError: ownValue(p, 'onError')?.value,
       });
       const tint = ownValue(p, 'tint')?.value as ColorName | undefined;
-      const image =
-        tint === undefined
-          ? drawHost(BloomImage, out, props)
-          : draw(Painted, {
-              ...props,
-              host: BloomImage,
-              paint: propPaint(styleKey, out, 'tintColor', tint),
-            });
+      const image = drawHost(
+        BloomImage,
+        tint === undefined ? out : painted(out, propPaint(styleKey, out, 'tintColor', tint)),
+        props,
+      );
       if (!interactive) return image;
       const placement = cachedStyle('host', `IMP|${flex}`, () => boxStyle(undefined, flex, p));
       return drawHost(hostFor(p), placement, hostProps(behaviour, key), image);
@@ -1274,11 +1283,11 @@ function renderHost(
       if (colors !== undefined) {
         // A paired fill and label, painted from their roles: Bloom's `colors`.
         const out = box('component', 'B');
-        return draw(Painted, {
-          ...props,
-          host: PairedButton,
-          paint: pairPaint(`B|${layerKey}|${flex}`, out, colors),
-        });
+        return drawHost(
+          PairedButton,
+          painted(out, pairPaint(`B|${layerKey}|${flex}`, out, colors)),
+          props,
+        );
       }
       if (!boxed) return draw(BloomButton, props);
       return drawHost(BloomButton, box('component', 'B'), props);
@@ -1380,14 +1389,12 @@ function renderHost(
       });
       const content = dividerLabel(label, ctx);
       const out = box('component', 'DV');
-      if (tint === undefined) return drawHost(BloomDivider, out, props, content);
-      return draw(
-        Painted,
-        {
-          ...props,
-          host: BloomDivider,
-          paint: propPaint(`DV|${layerKey}|${flex}`, out, 'color', tint),
-        },
+      return drawHost(
+        BloomDivider,
+        tint === undefined
+          ? out
+          : painted(out, propPaint(`DV|${layerKey}|${flex}`, out, 'color', tint)),
+        props,
         content,
       );
     }
@@ -1739,7 +1746,7 @@ function drawText(
     }
     return drawHost(
       Blockquote,
-      cachedStyle('component', `Q|${layerKey}|${flex}`, box),
+      cachedStyle('component', `Q|${layerKey}|${flex}`, box, boxVaried),
       props,
       ...runs,
     );
