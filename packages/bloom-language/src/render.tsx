@@ -159,7 +159,7 @@ import {
   type LiveCondition,
   type Planned,
 } from './variants';
-import { Conditioned, Painted, type Paint, type PaintVariant } from './paint';
+import { Conditioned, Painted, type Paint, type PaintVariant, type PropRole } from './paint';
 import {
   DURATION,
   HIT_SLOP,
@@ -2291,10 +2291,14 @@ function renderHost(
             ? drawHost(host, boxOf('component', node.kind), props, ...children)
             : draw(host, props, ...children),
         painted: (host, props, colors, ...children) => {
-          const roles: [string, ColorName, number?][] = [];
+          const roles: PropRole[] = [];
           for (const [prop, token] of Object.entries(colors)) {
-            if (token !== undefined)
-              roles.push(propRole(prop, token) as [string, ColorName, number?]);
+            if (typeof token === 'string') roles.push(propRole(prop, token));
+            else if (token !== undefined)
+              token.forEach((each, index) => {
+                const [, role, opacity] = propRole(prop, each);
+                roles.push([prop, role, opacity, index]);
+              });
           }
           const out = boxed ? boxOf('component', node.kind) : NO_STYLE_OUT;
           const paint = variedPaint(

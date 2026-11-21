@@ -1241,3 +1241,15 @@ fn category_bars_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn a_heatmaps_colour_scale_is_checked() {
+    let imports = "import { ActivityHeatmap } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (days) => ActivityHeatmap(days).levels([2, 5]).colorScale(['info', 'warning', 'error']);\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = (days) => ActivityHeatmap(days).colorScale();\n");
+    assert_eq!(output.diagnostics[0].message, ".colorScale() takes 1 argument(s), not 0");
+}

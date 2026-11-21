@@ -44,13 +44,13 @@ export interface ControlDraw {
   component(host: unknown, props: Record<string, unknown>, ...children: ReactNode[]): ReactElement;
   /**
    * Draws a Bloom component as `component` does, with the props `colors` names
-   * painted from their colour roles (a role at an opacity included), read from
-   * the theme in the leaf that draws it.
+   * painted from their colour roles (a role at an opacity included; a list of
+   * them for a list prop, a scale), read from the theme in the leaf that draws it.
    */
   painted(
     host: unknown,
     props: Record<string, unknown>,
-    colors: Readonly<Record<string, ColorToken | undefined>>,
+    colors: Readonly<Record<string, ColorToken | readonly ColorToken[] | undefined>>,
     ...children: ReactNode[]
   ): ReactElement;
   /**
