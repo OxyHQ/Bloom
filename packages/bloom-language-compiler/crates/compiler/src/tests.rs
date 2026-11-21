@@ -1364,3 +1364,22 @@ fn input_groups_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn notifications_are_checked() {
+    let imports = "import { Notification } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (f, icon, who) => Notification('Saved').description('3 files').timestamp('2m').status('success').icon(icon).avatar(who).buttons([]).dismissible(false).onDismiss(f).autoDismiss(4000).introDelay(0.2).liveRole('alert').labels({});\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("Notification('a').status('danger')", "Unknown notificationStatus token 'danger' for .status()"),
+        ("Notification('a').liveRole('polite')", "Unknown liveRole token 'polite' for .liveRole()"),
+        ("Notification('a').placeholder('b')", "Notification has no modifier .placeholder()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = () => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

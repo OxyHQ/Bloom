@@ -2353,6 +2353,25 @@ addons before the control lead, the rest trail, and the control (a
 subdued label) or views; it takes `.divider()` (a hairline on its inner edge)
 and `.flush()` (no padding of its own, for a control with its own hit area).
 
+### Notifications
+
+```ts
+Notification('Deployed').description('Build 412 is live').timestamp('2m ago')
+  .status('success').buttons([{ label: 'View', onPress: openBuild }]).onDismiss(clear)
+Notification('Ana replied').avatar({ name: 'Ana Ruiz', presence: 'online' }).autoDismiss(5000)
+```
+
+Bloom's `Notification`, the one notification card. Its title is a string or a
+view; it takes `.description()`, `.timestamp()`,
+`.status('neutral' | 'information' | 'success' | 'warning' | 'error')` (its
+disc's colour and glyph), `.icon()`, `.avatar()` (Bloom's avatar and its
+presence, in place of the disc), `.buttons([...])` (Bloom's actions),
+`.dismissible(false)`, `.onDismiss()`, `.autoDismiss(ms)` (with its countdown
+bar), `.introDelay(seconds)`, `.liveRole('alert' | 'status')` and
+`.labels({ close })`. A self-dismissing notification is compared by Jest only:
+in a browser two side by side are caught at different moments of their
+countdowns.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2805,7 +2824,8 @@ and `@oxy.so/bloom-data` beside it.
   phone inputs,
   media flights,
   avatar flights,
-  input groups.
+  input groups,
+  notifications.
 
 **Not built**
 

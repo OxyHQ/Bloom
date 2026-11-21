@@ -126,3 +126,4 @@ export const PhoneInputs: Story = { args: { family: 'phoneInput' } };
 export const MediaFlights: Story = { args: { family: 'mediaFlight' } };
 export const AvatarFlights: Story = { args: { family: 'avatarFlight' } };
 export const InputGroups: Story = { args: { family: 'inputGroup' } };
+export const Notifications: Story = { args: { family: 'notification' } };
