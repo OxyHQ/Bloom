@@ -2262,6 +2262,19 @@ while none is), `.actions()` for its tagged rows, `.label()` and a box. A row's
 title and runs the row from it, open or closed (the other menus draw no
 shortcut). An item's platform action (Undo, Copy…, Settings) and alternates
 are not in the vocabulary yet.
+### Phone inputs
+
+```ts
+PhoneInput([phone, setPhone], 'Phone').country([country, setCountry]).required().description('We text a code to it.')
+```
+
+Bloom's `PhoneInput`: a number field with its country-code select. The binding
+holds the number as typed, without the dial code; a title is its visible label
+and name (`.label()` names it when there is none). It takes
+`.country([iso2, set])` (`US` by default), `.countries(list)` (Bloom's
+`COUNTRIES` by default), `.placeholder()`, `.description()` (the caption under
+it), `.required()`, `.showsInfo()` (the info glyph after the title), `.size()`,
+`.invalid()`, `.disabled()`, `.trailingIcon()` and `.labels({ countrySelect })`.
 
 ### Composition bars
 
@@ -2730,8 +2743,9 @@ and `@oxy.so/bloom-data` beside it.
   video playback,
   hover cards,
   expandable text,
-  menubars.
-  composition bars.
+  menubars,
+  composition bars,
+  phone inputs.
 
 **Not built**
 
