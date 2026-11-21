@@ -15,12 +15,12 @@ import {
 import { sampledTiming } from '../motion/timing';
 
 /**
- * Bloom's gesture layer (native): Gesture Handler 3 hooks write motion values
- * from their own callbacks, and the one mapper binds them to a view. The
- * Gesture Handler mock records a hook's callbacks on `__handlers`, so these
- * fire the gesture's real callbacks with real payloads.
+ * Bloom's gesture layer (native): Gesture Handler's builder gestures write
+ * motion values from their own callbacks, and the one mapper binds them to a
+ * view. The Gesture Handler mock records a builder's callbacks on
+ * `__handlers`, so these fire the gesture's real callbacks with real payloads.
  */
-type Handlers = Record<string, (event: Record<string, unknown>) => void>;
+type Handlers = Record<string, (event: Record<string, unknown>, extra?: unknown) => void>;
 interface Recorded {
   __handlers: Handlers;
   __config: Record<string, unknown>;
@@ -118,11 +118,6 @@ describe('useDrag', () => {
 });
 
 describe('useDrag, shared with a scroll view or taken by hand', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { GestureStateManager } = require('react-native-gesture-handler') as {
-    GestureStateManager: { __calls: Array<{ action: string; handlerTag: number }> };
-  };
-
   function mountDrag(initial: number, options: Omit<DragOptions, 'axis'>) {
     let value!: MotionValue;
     function Box() {
@@ -145,10 +140,11 @@ describe('useDrag, shared with a scroll view or taken by hand', () => {
     expect(drag.gesture.__config).toMatchObject({
       activeOffsetY: [-10, 10],
       manualActivation: false,
-      simultaneousWith: undefined,
     });
+    expect(drag.gesture.__config.simultaneousWithExternalGesture).toBeUndefined();
     expect(drag.gesture.__handlers.onTouchesMove).toBeUndefined();
-    expect(drag.gesture.__handlers.onDeactivate).toBeUndefined();
+    expect(drag.gesture.__handlers.onStart).toBeUndefined();
+    expect(drag.gesture.__handlers.onEnd).toBeUndefined();
   });
 
   it('follows past its bounds at the overdrag share, from where the value was when it took the touch', () => {
@@ -156,7 +152,7 @@ describe('useDrag, shared with a scroll view or taken by hand', () => {
     expect(drag.gesture.__config.activeOffsetY).toBeUndefined();
     act(() => {
       drag.gesture.__handlers.onBegin?.({});
-      drag.gesture.__handlers.onActivate?.({});
+      drag.gesture.__handlers.onStart?.({});
       drag.gesture.__handlers.onUpdate?.({ translationY: -50, velocityY: 0 });
     });
     expect(drag.value()).toBeCloseTo(-15);
@@ -174,7 +170,7 @@ describe('useDrag, shared with a scroll view or taken by hand', () => {
       return null;
     }
     render(<Box />);
-    expect(gesture.__config.simultaneousWith).toBe(scroll);
+    expect(gesture.__config.simultaneousWithExternalGesture).toEqual([scroll]);
   });
 
   it('a refused touch moves nothing and releases nothing; a refused move holds the value', () => {
@@ -188,7 +184,7 @@ describe('useDrag, shared with a scroll view or taken by hand', () => {
     act(() => {
       drag.gesture.__handlers.onBegin?.({});
       drag.gesture.__handlers.onUpdate?.({ translationY: 30, velocityY: 0 });
-      drag.gesture.__handlers.onDeactivate?.({ velocityY: 800 });
+      drag.gesture.__handlers.onEnd?.({ velocityY: 800 }, true);
     });
     expect(drag.value()).toBe(10);
     expect(released).toEqual([]);
@@ -197,7 +193,7 @@ describe('useDrag, shared with a scroll view or taken by hand', () => {
       drag.gesture.__handlers.onBegin?.({});
       drag.gesture.__handlers.onUpdate?.({ translationY: 30, velocityY: 0 });
       drag.gesture.__handlers.onUpdate?.({ translationY: 150, velocityY: 0 });
-      drag.gesture.__handlers.onDeactivate?.({ velocityY: 800 });
+      drag.gesture.__handlers.onEnd?.({ velocityY: 800 }, true);
     });
     expect(drag.value()).toBe(40);
     // The release reads the velocity the gesture reports at its end.
@@ -214,22 +210,18 @@ describe('useDrag, shared with a scroll view or taken by hand', () => {
     });
     expect(drag.gesture.__config).toMatchObject({ manualActivation: true });
     expect(drag.gesture.__config.activeOffsetY).toBeUndefined();
-    GestureStateManager.__calls.length = 0;
-    const touch = (absoluteY: number) => ({
-      handlerTag: 7,
-      changedTouches: [{ absoluteX: 0, absoluteY }],
-    });
+    // The state manager the builder hands each touch callback, recording what the drag decided.
+    const decided: string[] = [];
+    const manager = { activate: () => decided.push('activate'), fail: () => decided.push('fail') };
+    const touch = (absoluteY: number) => ({ changedTouches: [{ absoluteX: 0, absoluteY }] });
     act(() => {
-      drag.gesture.__handlers.onTouchesDown?.(touch(300));
-      drag.gesture.__handlers.onTouchesMove?.(touch(303));
-      drag.gesture.__handlers.onTouchesMove?.(touch(312));
-      drag.gesture.__handlers.onTouchesMove?.(touch(290));
+      drag.gesture.__handlers.onTouchesDown?.(touch(300), manager);
+      drag.gesture.__handlers.onTouchesMove?.(touch(303), manager);
+      drag.gesture.__handlers.onTouchesMove?.(touch(312), manager);
+      drag.gesture.__handlers.onTouchesMove?.(touch(290), manager);
     });
     expect(asked).toEqual([3, 12, -10]);
-    expect(GestureStateManager.__calls).toEqual([
-      { action: 'activate', handlerTag: 7 },
-      { action: 'fail', handlerTag: 7 },
-    ]);
+    expect(decided).toEqual(['activate', 'fail']);
   });
 });
 

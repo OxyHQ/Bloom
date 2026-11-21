@@ -12,8 +12,8 @@ import { CheckoutSheet, emptyCheckoutDraft } from '../checkout-sheet';
 import { Dialog, useDialogControl } from '../dialog';
 
 /**
- * The sheet's drags are Bloom's gesture layer (`useDrag` on Gesture Handler
- * 3's hooks). The Gesture Handler mock records each hook's config and
+ * The sheet's drags are Bloom's gesture layer (`useDrag` on Gesture Handler's
+ * builder). The Gesture Handler mock records each builder's settings and
  * callbacks, so these fire the sheet's real callbacks with real payloads: the
  * activation decisions, how far the sheet follows the finger, and the one
  * release rule (`shouldClosePan`) with its springs. There is no `Platform.OS`
@@ -31,16 +31,11 @@ jest.mock('react-native-reanimated', () => ({
       handlers.onScroll?.(event),
 }));
 
-type Handler = (event: Record<string, unknown>) => void;
+type Handler = (event: Record<string, unknown>, extra?: unknown) => void;
 interface Recorded {
   __handlers: Record<string, Handler | undefined>;
   __config: Record<string, unknown>;
 }
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { GestureStateManager } = require('react-native-gesture-handler') as {
-  GestureStateManager: { __calls: Array<{ action: string; handlerTag: number }> };
-};
 
 const WINDOW_HEIGHT = 812; // the react-native mock's window
 
@@ -83,14 +78,14 @@ function sheetTransform(view: View): { translateY: number; scale: number } {
 function swipe(gesture: Recorded, translation: number, velocity: number) {
   act(() => {
     gesture.__handlers.onBegin?.({});
-    gesture.__handlers.onActivate?.({});
+    gesture.__handlers.onStart?.({});
     gesture.__handlers.onUpdate?.({
       translationX: 0,
       translationY: translation,
       velocityX: 0,
       velocityY: velocity,
     });
-    gesture.__handlers.onDeactivate?.({ velocityX: 0, velocityY: velocity, canceled: false });
+    gesture.__handlers.onEnd?.({ velocityX: 0, velocityY: velocity }, true);
     gesture.__handlers.onFinalize?.({});
   });
 }
@@ -132,13 +127,10 @@ describe('BottomSheet drags (legacy body drag, the default)', () => {
     const scroll = found.find((d) => d.gesture.__handlers.onUpdate === undefined)?.gesture;
     expect(drags(view)).toHaveLength(1);
     expect(scroll).toBeDefined();
-    expect(body.__config).toMatchObject({
-      enabled: true,
-      manualActivation: false,
-      activeOffsetY: undefined,
-      failOffsetY: undefined,
-    });
-    expect(body.__config.simultaneousWith).toBe(scroll);
+    expect(body.__config).toMatchObject({ enabled: true, manualActivation: false });
+    expect(body.__config.activeOffsetY).toBeUndefined();
+    expect(body.__config.failOffsetY).toBeUndefined();
+    expect(body.__config.simultaneousWithExternalGesture).toEqual([scroll]);
   });
 
   it('follows the finger from where the sheet was when it took the touch, and shrinks with it', () => {
@@ -146,7 +138,7 @@ describe('BottomSheet drags (legacy body drag, the default)', () => {
     const body = bodyDrag(view);
     act(() => {
       body.__handlers.onBegin?.({});
-      body.__handlers.onActivate?.({});
+      body.__handlers.onStart?.({});
       body.__handlers.onUpdate?.({ translationY: 120, velocityY: 300 });
     });
     redraw();
@@ -163,7 +155,7 @@ describe('BottomSheet drags (legacy body drag, the default)', () => {
     const body = bodyDrag(view);
     act(() => {
       body.__handlers.onBegin?.({});
-      body.__handlers.onActivate?.({});
+      body.__handlers.onStart?.({});
       body.__handlers.onUpdate?.({ translationY: -50, velocityY: 0 });
     });
     redraw();
@@ -191,7 +183,7 @@ describe('BottomSheet drags (legacy body drag, the default)', () => {
     );
     act(() => {
       body.__handlers.onBegin?.({});
-      body.__handlers.onActivate?.({});
+      body.__handlers.onStart?.({});
       body.__handlers.onUpdate?.({ translationY: 30, velocityY: 0 });
     });
     act(() => scrollView.props.onScroll({ contentOffset: { y: 20 } }));
@@ -210,31 +202,28 @@ describe('BottomSheet drags (manualActivation)', () => {
       activeOffsetY: [-8, 8],
       manualActivation: false,
     });
-    expect(body?.__config).toMatchObject({ manualActivation: true, activeOffsetY: undefined });
-    expect(body?.__config.simultaneousWith).toBe(handle);
+    expect(body?.__config).toMatchObject({ manualActivation: true });
+    expect(body?.__config.activeOffsetY).toBeUndefined();
+    expect(body?.__config.simultaneousWithExternalGesture).toEqual([handle]);
   });
 
   it('takes a touch moving down past 8dp at the top, gives it up moving up', () => {
     const { view } = renderSheet({ manualActivation: true });
     const body = bodyDrag(view);
-    GestureStateManager.__calls.length = 0;
-    const touch = (absoluteY: number) => ({
-      handlerTag: 3,
-      changedTouches: [{ absoluteX: 0, absoluteY }],
+    // The state manager the builder hands each touch callback, recording what the drag decided.
+    const decided: string[] = [];
+    const manager = { activate: () => decided.push('activate'), fail: () => decided.push('fail') };
+    const touch = (absoluteY: number) => ({ changedTouches: [{ absoluteX: 0, absoluteY }] });
+    act(() => {
+      body.__handlers.onTouchesDown?.(touch(400), manager);
+      body.__handlers.onTouchesMove?.(touch(406), manager); // wait
+      body.__handlers.onTouchesMove?.(touch(409), manager); // down 9: activate
     });
     act(() => {
-      body.__handlers.onTouchesDown?.(touch(400));
-      body.__handlers.onTouchesMove?.(touch(406)); // wait
-      body.__handlers.onTouchesMove?.(touch(409)); // down 9: activate
+      body.__handlers.onTouchesDown?.(touch(400), manager);
+      body.__handlers.onTouchesMove?.(touch(395), manager); // up 5: fail
     });
-    act(() => {
-      body.__handlers.onTouchesDown?.(touch(400));
-      body.__handlers.onTouchesMove?.(touch(395)); // up 5: fail
-    });
-    expect(GestureStateManager.__calls).toEqual([
-      { action: 'activate', handlerTag: 3 },
-      { action: 'fail', handlerTag: 3 },
-    ]);
+    expect(decided).toEqual(['activate', 'fail']);
   });
 
   it('the body drag only moves the sheet down from where it started', () => {
@@ -270,7 +259,7 @@ describe('BottomSheet geometry under a drag', () => {
     const body = bodyDrag(view);
     act(() => {
       body.__handlers.onBegin?.({});
-      body.__handlers.onActivate?.({});
+      body.__handlers.onStart?.({});
       body.__handlers.onUpdate?.({ translationY: 80, velocityY: 0 });
       keyboard.value = 300;
     });
@@ -295,7 +284,7 @@ describe('BottomSheet geometry under a drag', () => {
     const body = bodyDrag(view);
     act(() => {
       body.__handlers.onBegin?.({});
-      body.__handlers.onActivate?.({});
+      body.__handlers.onStart?.({});
       body.__handlers.onUpdate?.({ translationY: 100, velocityY: 0 });
     });
     redraw();
