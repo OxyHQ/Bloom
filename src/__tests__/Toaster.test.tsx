@@ -339,16 +339,21 @@ describe('ToastOutlet', () => {
     });
     expect(viewCountOf(rendered)).toBeGreaterThan(idleViews);
 
-    // Native: the row's anchor carries its exit as a Reanimated layout Keyframe,
-    // which plays on a native snapshot after the row unmounts (no JS).
+    // The row carries no layout animation: its exit plays while the toaster's
+    // Presence keeps it, and it goes when the exit ends.
     expect(
       rendered.UNSAFE_root.findAll((node) => node.props.exiting instanceof Keyframe).length,
-    ).toBeGreaterThan(0);
-    show(() => {
+    ).toBe(0);
+    act(() => {
       toast.dismiss(id);
     });
-    // Row gone at once, host still up for its grace period.
+    expect(rendered.getByText('Bye')).toBeTruthy();
+    const leaving = rendered.UNSAFE_root.find(
+      (node) => typeof node.props.onCSSAnimationEnd === 'function' && typeof node.type === 'string',
+    );
+    act(() => leaving.props.onCSSAnimationEnd());
     expect(rendered.queryByText('Bye')).toBeNull();
+    // Host still up for its grace period.
     expect(viewCountOf(rendered)).toBeGreaterThan(idleViews);
 
     advance(ENTERING_ANIMATION_DURATION);

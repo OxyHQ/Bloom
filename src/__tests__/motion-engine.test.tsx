@@ -1,7 +1,6 @@
 import React from 'react';
 import { Text } from 'react-native';
 import { act, render } from '@testing-library/react-native';
-import { Keyframe } from 'react-native-reanimated';
 
 import {
   MOTION,
@@ -118,7 +117,7 @@ describe('transitions and Presence', () => {
     expect(rise.remove.motion).toBe(MOTION.enter);
   });
 
-  it('a removal on native is a Reanimated layout Keyframe, played after the view unmounts', () => {
+  it('a removal plays while the Presence keeps the child, as a CSS animation, and the child goes when it ends', () => {
     const leave = defineKeyframes(
       [
         { at: 0, opacity: 1 },
@@ -127,14 +126,32 @@ describe('transitions and Presence', () => {
       ],
       'exit',
     );
-    const { UNSAFE_root } = render(
-      <MotionView exit={{ keyframes: leave, material: false }} testID="box" />,
+    function Row({ id }: { id: string; exit?: boolean }) {
+      return (
+        <MotionView exit={{ keyframes: leave, material: false }} testID={`row-${id}`}>
+          <Text>{id}</Text>
+        </MotionView>
+      );
+    }
+    const list = (ids: string[]) => (
+      <Presence items={ids.map((id) => <Row key={id} id={id} exit />)} />
     );
-    const box = UNSAFE_root.find((n) => n.props.testID === 'box' && typeof n.type === 'string');
-    expect(box.props.exiting).toBeInstanceOf(Keyframe);
+    const rendered = render(list(['a', 'b']));
+    const host = () =>
+      rendered.UNSAFE_root.find((n) => n.props.testID === 'row-a' && typeof n.type === 'string');
+    // At rest a row plays nothing and carries no layout animation.
+    expect(host().props.exiting).toBeUndefined();
+    expect(styleOf(host()).animationName).toBeUndefined();
+    rendered.rerender(list(['b']));
+    // Kept while it leaves, holding its last frame.
+    expect(rendered.getByText('a')).toBeTruthy();
+    expect(styleOf(host()).animationFillMode).toBe('forwards');
+    act(() => host().props.onCSSAnimationEnd());
+    expect(rendered.queryByText('a')).toBeNull();
+    expect(rendered.getByText('b')).toBeTruthy();
   });
 
-  it('Presence on native passes the list through: a removed child goes at once', () => {
+  it('Presence passes a list with no leaver through: a removed child goes at once', () => {
     const list = (ids: string[]) => (
       <Presence items={ids.map((id) => <Text key={id}>{id}</Text>)} />
     );

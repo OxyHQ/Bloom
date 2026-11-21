@@ -203,11 +203,14 @@ describe('colours, loops, a delay and an anchor', () => {
       animationDelay: 1000,
       animationFillMode: 'backwards',
     });
-    const leave = mount(
-      VStack([Text('a').transition(opacity.animation('exit')).delay('75').id('a')]),
-    );
-    const exiting = all(leave, 'Animated.View')[0]?.props.exiting as { delayV?: number };
-    expect(exiting.delayV).toBe(75);
+    const leaving = (ids: string[]) =>
+      VStack(ids.map((id) => Text(id).transition(opacity.animation('exit')).delay('75').id(id)));
+    const leave = mount(leaving(['a']));
+    update(leave, leaving([]));
+    expect(flat(all(leave, 'Animated.View')[0]?.props.style)).toMatchObject({
+      animationDelay: 75,
+      animationFillMode: 'forwards',
+    });
   });
 
   it('an anchor rests on the box with its geometry: Tailwind’s origin, physical left and right', () => {
@@ -243,17 +246,18 @@ describe('.transition() in a keyed list', () => {
     });
   });
 
-  it('native: a removed child goes at once; its removal is a layout Keyframe Reanimated plays after', () => {
+  it('a removed child stays while its removal plays, holding its last frame, then goes', () => {
     const r = mount(list(['a', 'b']));
     const [a] = all(r, 'Animated.View');
-    expect(a?.props.exiting).toMatchObject({
-      definitions: {
-        0: { opacity: 1 },
-        100: { opacity: 0, easing: { bezier: [0, 0, 1, 1] } },
-      },
-      durationV: 180,
-    });
+    expect(a?.props.exiting).toBeUndefined();
     update(r, list(['b']));
+    const [leaving] = all(r, 'Animated.View');
+    expect(textOf(leaving)).toBe('a');
+    expect(flat(leaving?.props.style)).toMatchObject({
+      animationDuration: 180,
+      animationFillMode: 'forwards',
+    });
+    act(() => (leaving?.props.onCSSAnimationEnd as () => void)());
     expect(all(r, 'Animated.View').map(textOf)).toEqual(['b']);
   });
 
