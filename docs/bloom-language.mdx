@@ -3321,3 +3321,12 @@ and `@oxy.so/bloom-data` beside it.
   the Chrome check compares an overlay's presenting view (an open picker's
   trigger), not its portal; the web suite compares the portal, an open
   picker's grouped rows included.
+- Product components: a colour list (a composer loader's four, a chat
+  background's gradient, a story ring's) stays Bloom's, as a list of roles has
+  no prop to paint; a component's secondary look options (a chat header's
+  title layout, a follow button's material) keep Bloom's names in its
+  options rather than a modifier; a mark that moves on the JS thread (the
+  thinking marks, the working row, the typing dots) is compared by Jest, not
+  in Chrome; an overlay a product component presents (the checkout sheet) is
+  compared by Jest, as Chrome's check reads the table's cells. The product
+  families only one app uses are not drawn yet.
