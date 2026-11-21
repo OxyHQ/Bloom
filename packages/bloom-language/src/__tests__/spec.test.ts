@@ -119,6 +119,13 @@ import type {
   RatingSummaryView,
 } from '../controls/rating';
 import type { MeterView, MeterRingView, StatBarView } from '../controls/stat-bar';
+  TableView,
+  TableHeaderView,
+  TableColumnView,
+  TableBodyView,
+  TableRowView,
+  TableCellView,
+} from '../controls/table';
 import type { ColorPreset, ContentFit } from '../tokens';
 import type {
   SettingsDateFieldView,
@@ -373,7 +380,19 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<MeterView>, Of<'meter'>>,
       Same<MethodsOf<MeterRingView>, Of<'meterRing'>>,
       Same<MethodsOf<StatBarView>, Of<'statBar'>>,
+      Same<MethodsOf<TableView>, Of<'table'>>,
+      Same<MethodsOf<TableHeaderView>, Of<'tableHeader'>>,
+      Same<MethodsOf<TableColumnView>, Of<'tableColumn'>>,
+      Same<MethodsOf<TableBodyView>, Of<'tableBody'>>,
+      Same<MethodsOf<TableRowView>, Of<'tableRow'>>,
+      Same<MethodsOf<TableCellView>, Of<'tableCell'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

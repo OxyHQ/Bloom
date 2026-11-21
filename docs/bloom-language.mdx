@@ -1781,6 +1781,36 @@ reduced motion (its label names the sticker), a frame's width alone is its
 edge, and `.decorative()` hides it from assistive technology when its container
 names it. A sticker with no animation is its still: an `Image`.
 
+### Tables
+
+```ts
+Table(
+  TableHeader(
+    TableColumn('Name').width('160').sort(direction, toggleSort),
+    TableColumn('Amount').share(2).align('end'),
+  ),
+  TableBody(
+    ...invoices.map((invoice) =>
+      TableRow(TableCell(invoice.name), TableCell(invoice.total)).selected(invoice.picked).id(invoice.id),
+    ),
+  ).emptyState('No invoices yet'),
+).size('sm').minWidth('640').label('Invoices')
+```
+
+Bloom's `Table`, `TableHeader`, `TableColumn`, `TableBody`, `TableRow` and
+`TableCell`, drawn in place so the table reads its columns' layout as Bloom's
+does. `.size('sm' | 'md')` is the row density, `.minWidth(space)` the width
+below which the table scrolls sideways. A column's label and a cell's content
+are a string or number (drawn in the table's own type) or a view. A column and
+a cell take `.width(space | 'fit')` (`fit` hugs the content), `.share(n)` of
+the remaining width, `.minWidth()` and `.align('start' | 'center' | 'end')`; a
+cell follows its column unless it sets its own. A column takes
+`.sort(direction, action)` (`ascending`, `descending`, or `none`, which keeps
+the chevron's room) and `.prefix(view)` (a select-all checkbox, outside the
+sort button). A body takes `.emptyState()`, a row `.selected(bool)`. The
+header's columns are read as Bloom's `TableColumn` elements: give them their
+layout with these modifiers, not a box of their own.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2207,7 +2237,8 @@ and `@oxy.so/bloom-data` beside it.
   `BottomSheet` is Bloom's `Dialog`; Bloom's sheet has no detents, so neither
   does the node.
 - Generic components (see [Generic components](#generic-components)), drawn as
-  Bloom's own: the date and time pickers, ratings, meters and progress bars, stickers.
+  Bloom's own: the date and time pickers, ratings, meters and progress bars, stickers,
+  tables.
 
 **Not built**
 
