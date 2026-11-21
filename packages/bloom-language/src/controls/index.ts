@@ -27,6 +27,7 @@ import { ANIMATED_CHECKS } from './animated-check';
 import { CONTEXT_MENUS } from './context-menu';
 import { COLLAPSIBLES } from './collapsible';
 import { DROP_ZONES } from './drop-zone';
+import { MEDIA_INSET_BORDERS } from './media-inset-border';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -61,4 +62,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...CONTEXT_MENUS,
   ...COLLAPSIBLES,
   ...DROP_ZONES,
+  ...MEDIA_INSET_BORDERS,
 };

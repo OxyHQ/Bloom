@@ -41,6 +41,7 @@ import { ANIMATED_CHECK_CASES } from '../../parity/animated-check.cases';
 import { CONTEXT_MENU_CASES } from '../../parity/context-menu.cases';
 import { COLLAPSIBLE_CASES } from '../../parity/collapsible.cases';
 import { DROP_ZONE_CASES } from '../../parity/drop-zone.cases';
+import { MEDIA_INSET_BORDER_CASES } from '../../parity/media-inset-border.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -87,6 +88,7 @@ export const FAMILIES = {
   contextMenu: CONTEXT_MENU_CASES,
   collapsible: COLLAPSIBLE_CASES,
   dropZone: DROP_ZONE_CASES,
+  mediaInsetBorder: MEDIA_INSET_BORDER_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';

@@ -38,6 +38,7 @@ import type { ColorSwatchPickerKind } from './controls/color-swatch-picker';
 import type { InputOtpKind } from './controls/input-otp';
 import type { OtpCharacters } from './tokens';
 import type { AnimatedCheckKind } from './controls/animated-check';
+import type { MediaInsetBorderKind } from './controls/media-inset-border';
 import type { TagSuggestion } from '@oxy.so/bloom/tag-field';
 import type { FileUploadFile, FileUploadProps } from '@oxy.so/bloom/file-upload';
 import type { TooltipKind } from './controls/tooltip';
@@ -767,6 +768,10 @@ export interface ValueModifiers {
   length: number;
   characters: OtpCharacters;
   onComplete: (code: string) => void;
+  // Media inset borders (controls/media-inset-border.tsx)
+  opaque: boolean;
+  mediaCorner: Exclude<CornerName, 'concentric'>;
+
   // Collapsibles (controls/collapsible.tsx)
   revealsOnAppear: boolean;
   keepsMounted: boolean;
@@ -1177,6 +1182,7 @@ export type NodeKind =
   | ContextMenuKind
   | CollapsibleKind
   | DropZoneKind
+  | MediaInsetBorderKind
   | AnimatedCheckKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
@@ -2857,6 +2863,14 @@ export class Node {
   }
   onDragLeave(value: () => void): Node {
     return this.set('onDragLeave', value);
+  }
+
+  // Media inset borders (controls/media-inset-border.tsx)
+  opaque(value = true): Node {
+    return this.set('opaque', value);
+  }
+  mediaCorner(value: Exclude<CornerName, 'concentric'>): Node {
+    return this.set('mediaCorner', value);
   }
 
   // Context menus (controls/context-menu.tsx)

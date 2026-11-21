@@ -1094,3 +1094,21 @@ fn drop_zones_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn media_inset_borders_are_checked() {
+    let imports = "import { MediaInsetBorder, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = () => MediaInsetBorder(Text('a')).opaque().mediaCorner('lg').frame({ width: '160', height: '96' });\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("MediaInsetBorder().mediaCorner('huge')", "Unknown corner token 'huge' for .mediaCorner()"),
+        ("MediaInsetBorder().contentFit('cover')", "MediaInsetBorder has no modifier .contentFit()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (t) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
