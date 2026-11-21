@@ -393,7 +393,7 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("contentInset", &["space"]),
     ("inset", &["space"]),
     ("illustration", &["value"]),
-    ("suggestions", &["children"]),
+    ("suggestions", &["value", "value?"]),
     ("suggestionsLabel", &["value"]),
     ("onReorder", &["value"]),
     ("reorderable", &["value?"]),
@@ -443,7 +443,7 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("width", &["columnWidth"]),
     ("pinning", &["footerPinning"]),
     ("ignoresSafeArea", &["value?"]),
-    ("query", &["value", "value"]),
+    ("query", &["value"]),
     ("filter", &["value"]),
     ("keywords", &["children"]),
     ("content", &["value"]),
@@ -597,6 +597,20 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("onPressDay", &["value"]),
     ("openDelay", &["value"]),
     ("collapses", &[]),
+    ("allowsCreate", &["value"]),
+    ("onMaxReached", &["value"]),
+    ("normalize", &["value"]),
+    ("file", &["value"]),
+    ("uploadProgress", &["value"]),
+    ("onFileSelected", &["value"]),
+    ("onUploadComplete", &["value"]),
+    ("onReject", &["value"]),
+    ("picker", &["value"]),
+    ("allowedExtensions", &["value"]),
+    ("maxBytes", &["value"]),
+    ("fileIcon", &["value"]),
+    ("nativeControls", &["value"]),
+    ("allowsPictureInPicture", &["value"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -750,6 +764,9 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "breadcrumb", constructors: &["Breadcrumb"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "alert", "dialog", "popover", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "colorPreset", "seed", "screenActive", "initialHeaderHeight", "initialFooterHeight", "size", "collapses", "separatorView", "labels"], size: Some("controlSize"), tint: None, style: None, shape: None },
     NodeSpec { kind: "breadcrumbItem", constructors: &["BreadcrumbItem"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "alert", "dialog", "popover", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "colorPreset", "seed", "screenActive", "initialHeaderHeight", "initialFooterHeight", "size", "icon", "prefix", "link", "active", "disabled", "hoverMenu"], size: Some("controlSize"), tint: None, style: None, shape: None },
     NodeSpec { kind: "activityHeatmap", constructors: &["ActivityHeatmap"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "alert", "dialog", "popover", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "colorPreset", "seed", "screenActive", "initialHeaderHeight", "initialFooterHeight", "days", "endDate", "levels", "emptyTint", "cellSize", "spacing", "weekStart", "labels", "onPressDay"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "tagField", constructors: &["TagField"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "alert", "dialog", "popover", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "colorPreset", "seed", "screenActive", "initialHeaderHeight", "initialFooterHeight", "placeholder", "suggestions", "allowsCreate", "max", "onMaxReached", "normalize", "query", "tint", "size", "disabled", "invalid", "labels"], size: Some("controlSize"), tint: Some("accentTone"), style: None, shape: None },
+    NodeSpec { kind: "fileUpload", constructors: &["FileUpload"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "alert", "dialog", "popover", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "colorPreset", "seed", "screenActive", "initialHeaderHeight", "initialFooterHeight", "file", "uploadProgress", "onFileSelected", "onUploadComplete", "onReject", "picker", "allowedExtensions", "maxBytes", "fileIcon", "disabled", "labels"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "video", constructors: &["Video"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "alert", "dialog", "popover", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "colorPreset", "seed", "screenActive", "initialHeaderHeight", "initialFooterHeight", "contentFit", "nativeControls", "allowsPictureInPicture"], size: None, tint: None, style: None, shape: None },
 ];
 
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,

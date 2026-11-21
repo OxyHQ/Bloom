@@ -724,7 +724,18 @@
     "stepperSize": ["sm", "md"],
     "stepperStyle": ["separate", "outline"],
     "tooltipSide": ["top", "bottom"],
-    "tooltipSize": ["sm", "md"]
+    "tooltipSize": ["sm", "md"],
+    "accentTone": [
+      "default",
+      "primary",
+      "vivid",
+      "secondary",
+      "tertiary",
+      "success",
+      "warning",
+      "error",
+      "info"
+    ]
   },
   "glass": {
     "$comment": [
@@ -1299,7 +1310,24 @@
     "onPressDay": ["value"],
     "side": ["tooltipSide"],
     "openDelay": ["value"],
-    "collapses": []
+    "collapses": [],
+    "suggestions": ["value", "value?"],
+    "allowsCreate": ["value"],
+    "onMaxReached": ["value"],
+    "normalize": ["value"],
+    "query": ["value"],
+    "invalid": ["value?"],
+    "file": ["value"],
+    "uploadProgress": ["value"],
+    "onFileSelected": ["value"],
+    "onUploadComplete": ["value"],
+    "onReject": ["value"],
+    "picker": ["value"],
+    "allowedExtensions": ["value"],
+    "maxBytes": ["value"],
+    "fileIcon": ["value"],
+    "nativeControls": ["value"],
+    "allowsPictureInPicture": ["value"]
   },
   "universal": [
     "padding",
@@ -2676,6 +2704,45 @@
         "labels",
         "onPressDay"
       ]
+    },
+    "tagField": {
+      "constructors": ["TagField"],
+      "modifiers": [
+        "placeholder",
+        "suggestions",
+        "allowsCreate",
+        "max",
+        "onMaxReached",
+        "normalize",
+        "query",
+        "tint",
+        "size",
+        "disabled",
+        "invalid",
+        "labels"
+      ],
+      "tint": "accentTone",
+      "size": "controlSize"
+    },
+    "fileUpload": {
+      "constructors": ["FileUpload"],
+      "modifiers": [
+        "file",
+        "uploadProgress",
+        "onFileSelected",
+        "onUploadComplete",
+        "onReject",
+        "picker",
+        "allowedExtensions",
+        "maxBytes",
+        "fileIcon",
+        "disabled",
+        "labels"
+      ]
+    },
+    "video": {
+      "constructors": ["Video"],
+      "modifiers": ["contentFit", "nativeControls", "allowsPictureInPicture"]
     }
   },
   "sfSymbols": {
