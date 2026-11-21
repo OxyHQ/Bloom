@@ -214,3 +214,15 @@ export {
   StatBar,
 } from './controls/stat-bar';
 export type { MeterRingView, MeterView, StatBarView } from './controls/stat-bar';
+
+// Tables (controls/table.tsx)
+export { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from './controls/table';
+export type {
+  TableBodyView,
+  TableCellView,
+  TableColumnView,
+  TableContent,
+  TableHeaderView,
+  TableRowView,
+  TableView,
+} from './controls/table';

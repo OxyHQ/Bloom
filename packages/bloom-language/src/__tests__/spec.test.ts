@@ -95,6 +95,14 @@ import type {
   RatingSummaryView,
 } from '../controls/rating';
 import type { MeterView, MeterRingView, StatBarView } from '../controls/stat-bar';
+import type {
+  TableView,
+  TableHeaderView,
+  TableColumnView,
+  TableBodyView,
+  TableRowView,
+  TableCellView,
+} from '../controls/table';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -305,7 +313,19 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<MeterView>, Of<'meter'>>,
       Same<MethodsOf<MeterRingView>, Of<'meterRing'>>,
       Same<MethodsOf<StatBarView>, Of<'statBar'>>,
+      Same<MethodsOf<TableView>, Of<'table'>>,
+      Same<MethodsOf<TableHeaderView>, Of<'tableHeader'>>,
+      Same<MethodsOf<TableColumnView>, Of<'tableColumn'>>,
+      Same<MethodsOf<TableBodyView>, Of<'tableBody'>>,
+      Same<MethodsOf<TableRowView>, Of<'tableRow'>>,
+      Same<MethodsOf<TableCellView>, Of<'tableCell'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

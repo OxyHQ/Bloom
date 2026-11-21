@@ -18,6 +18,7 @@ import type { AppShellProps } from '@oxy.so/bloom/app-shell';
 import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
+import type { TableKind } from './controls/table';
 import type { StatBarKind } from './controls/stat-bar';
 import type { RatingKind } from './controls/rating';
 import type { MeterReveal } from '@oxy.so/bloom/stat-bar';
@@ -67,6 +68,8 @@ import {
   type LoadingStyle,
   type RatingCountStyle,
   type MeterCap,
+  type ColumnWidthToken,
+  type TableSort,
   type RatingStyle,
   type Presence,
   type ShapeName,
@@ -291,6 +294,15 @@ export interface ValueModifiers {
   content: Child;
   onStop: readonly [action: () => void, label: string];
   rangeLabels: readonly [min: string | undefined, max: string | undefined];
+
+  // Tables (controls/table.tsx)
+  width: ColumnWidthToken;
+  share: number;
+  minWidth: SpaceToken;
+  sort: readonly [direction: TableSort, action: () => void];
+  prefix: Child;
+  emptyState: string | number | Child;
+  selected: boolean;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -585,7 +597,8 @@ export type NodeKind =
   | 'lottie'
   | DatePickerKind
   | RatingKind
-  | StatBarKind;
+  | StatBarKind
+  | TableKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1330,6 +1343,29 @@ export class Node {
   }
   rangeLabels(min: string | undefined, max?: string): Node {
     return this.set('rangeLabels', [min, max]);
+  }
+
+  // Tables (controls/table.tsx)
+  width(value: ColumnWidthToken): Node {
+    return this.set('width', value);
+  }
+  share(value: number): Node {
+    return this.set('share', value);
+  }
+  minWidth(value: SpaceToken): Node {
+    return this.set('minWidth', value);
+  }
+  sort(direction: TableSort, action: () => void): Node {
+    return this.set('sort', [direction, action]);
+  }
+  prefix(value: Child): Node {
+    return this.set('prefix', value);
+  }
+  emptyState(value: string | number | Child): Node {
+    return this.set('emptyState', value);
+  }
+  selected(value: boolean): Node {
+    return this.set('selected', value);
   }
 }
 
