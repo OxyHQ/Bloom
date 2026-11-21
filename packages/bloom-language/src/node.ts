@@ -146,6 +146,7 @@ import type { CardFormKind } from './controls/card-form';
 import type { MediaKind } from './controls/media';
 import type { ListingKind } from './controls/listings';
 import type { ChatKind } from './controls/chat';
+import type { CrmKind } from './controls/crm';
 import type { AgentKind } from './controls/agents';
 import type { MediaControlKind } from './controls/media-controls';
 import type { StatCardKind } from './controls/stat-cards';
@@ -304,6 +305,7 @@ import {
   type ChoiceListStyle,
   type PaymentStatusStyle,
   type PriceLineTone,
+  type PipelineLayout,
   type FollowButtonSize,
   type MapPriceMarkerSize,
   type MapMarkerState,
@@ -1309,7 +1311,8 @@ export type Modifier =
         | NoteCardLayout
         | OutlineNavStyle
         | ChoiceListStyle
-        | PaymentStatusStyle;
+        | PaymentStatusStyle
+        | PipelineLayout;
     }
   | {
       readonly kind: 'shape';
@@ -1619,7 +1622,8 @@ export type NodeKind =
   | AddressesKind
   | PaymentMethodsKind
   | PriceBreakdownKind
-  | PaymentStatusKind;
+  | PaymentStatusKind
+  | CrmKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -2001,7 +2005,8 @@ export class Node {
       | NoteCardLayout
       | OutlineNavStyle
       | ChoiceListStyle
-      | PaymentStatusStyle,
+      | PaymentStatusStyle
+      | PipelineLayout,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
