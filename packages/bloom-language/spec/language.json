@@ -564,7 +564,8 @@
     "labelSize": ["xs", "sm", "md"],
     "radioStyle": ["default", "card", "chip", "swatch"],
     "segmentedStyle": ["solid", "plain"],
-    "searchCollapse": ["auto"]
+    "searchCollapse": ["auto"],
+    "otpCharacters": ["numeric", "alphanumeric"]
   },
   "glass": {
     "$comment": [
@@ -998,7 +999,10 @@
     "completion": ["value"],
     "focused": ["value"],
     "trigger": ["value"],
-    "leadingView": ["children"]
+    "leadingView": ["children"],
+    "length": ["value"],
+    "characters": ["otpCharacters"],
+    "onComplete": ["value"]
   },
   "universal": [
     "padding",
@@ -1844,6 +1848,18 @@
       "constructors": ["OptionGroup"],
       "universal": false,
       "modifiers": []
+    },
+    "inputOtp": {
+      "constructors": ["InputOtp"],
+      "modifiers": [
+        "length",
+        "characters",
+        "onComplete",
+        "invalid",
+        "disabled",
+        "groupSize",
+        "autoFocus"
+      ]
     }
   },
   "sfSymbols": {

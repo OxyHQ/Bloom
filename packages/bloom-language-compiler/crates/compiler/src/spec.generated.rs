@@ -118,6 +118,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("radioStyle", &["default", "card", "chip", "swatch"]),
     ("segmentedStyle", &["solid", "plain"]),
     ("searchCollapse", &["auto"]),
+    ("otpCharacters", &["numeric", "alphanumeric"]),
 ];
 
 /// The modifiers a variant (`when(condition, v => v…)`) can change.
@@ -427,6 +428,9 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("focused", &["value"]),
     ("trigger", &["value"]),
     ("leadingView", &["children"]),
+    ("length", &["value"]),
+    ("characters", &["otpCharacters"]),
+    ("onComplete", &["value"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -526,6 +530,7 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "option", constructors: &["Option"], modifiers: &["description", "disabled", "testID", "leadingView", "tint", "foreground"], size: None, tint: Some("color"), style: None, shape: None },
     NodeSpec { kind: "search", constructors: &["Search"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "placeholder", "size", "disabled", "collapsible", "presented", "tokens", "keyboard", "autocapitalize", "autocorrect", "submitLabel", "onSubmit", "autoFocus", "trigger", "trailing", "focused"], size: Some("controlSize"), tint: None, style: None, shape: None },
     NodeSpec { kind: "optionGroup", constructors: &["OptionGroup"], modifiers: &[], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "inputOtp", constructors: &["InputOtp"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "length", "characters", "onComplete", "invalid", "disabled", "groupSize", "autoFocus"], size: None, tint: None, style: None, shape: None },
 ];
 
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,
