@@ -2150,6 +2150,20 @@ small, or a view), `.onPress()`, `.label()` (its one accessible name) and
 `.id()` (its label by default), and no box. The strip takes
 `.minItemWidth(space)` (`96` by default) and `.contentInset(space)`.
 
+### Photo grids
+
+```ts
+SortablePhotoGrid([photos, setPhotos]).onRemove(remove).onRetry(retry).onAdd(pick).max(10)
+```
+
+Bloom's `SortablePhotoGrid`: the binding's photos (Bloom's `SortablePhoto`:
+an id, a uri, and an upload's status and progress), the first one the cover; a
+drag on the web or a move button writes the new order. It takes
+`.onRemove(id => …)`, `.onRetry(id => …)`, `.onAdd()` (the add tile),
+`.max(n)`, `.addHint()`, `.columns(n)`, `.imageVariant()` (the image
+resolver's variant each photo is drawn at), `.disabled()` and `.labels()`;
+`.label()` names the grid.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2590,7 +2604,7 @@ and `@oxy.so/bloom-data` beside it.
   drop zones,
   media inset borders,
   image aspect ratios (Bloom's cache, through `.aspectRatio()` and `.onLoad()`),
-  fact strips.
+  fact strips, photo grids.
 
 **Not built**
 
