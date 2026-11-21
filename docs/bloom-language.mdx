@@ -2372,6 +2372,20 @@ bar), `.introDelay(seconds)`, `.liveRole('alert' | 'status')` and
 in a browser two side by side are caught at different moments of their
 countdowns.
 
+### Link previews
+
+```ts
+LinkPreview(await oxy.getLinkPreview(url))
+LinkPreview({ url, title, image: contentImageSources(cover) }).coverFill().frame({ height: '180' })
+```
+
+Bloom's `LinkPreviewCard`: an unfurled link, its cover, site, title,
+description and byline. `LinkPreview(preview)` takes the Oxy SDK's link
+preview as it comes (its `url`, `title`, `description`, `image` (one URL or
+the same image at several widths), `siteName` and `author`). A press opens the
+url unless `.onPress()` replaces it; `.coverFill()` lets the cover fill the
+height the card is given (a fixed-height row), the text a footer under it.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2825,7 +2839,8 @@ and `@oxy.so/bloom-data` beside it.
   media flights,
   avatar flights,
   input groups,
-  notifications.
+  notifications,
+  link previews.
 
 **Not built**
 

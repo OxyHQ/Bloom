@@ -99,3 +99,4 @@ export const AvatarFlightLayer = 'AvatarFlightLayer';
 export const InputGroup = 'InputGroup';
 export const InputGroupAddon = 'InputGroupAddon';
 export const Notification = 'Notification';
+export const LinkPreviewCard = 'LinkPreviewCard';
