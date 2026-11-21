@@ -128,7 +128,7 @@ export function Select(props: SelectProps) {
   const [value, onValueChange] = useControllableState<string | undefined>({
     value: valueProp,
     defaultValue,
-    controlled: Object.hasOwn(props, 'value'),
+    controlled: Object.prototype.hasOwnProperty.call(props, 'value'),
     onChange: (next) => {
       if (next !== undefined) onValueChangeProp?.(next);
     },
@@ -144,7 +144,7 @@ export function Select(props: SelectProps) {
     if (!visible) control.close();
   }, [visible, control]);
   // A controlled `open` drives the sheet; unset, the trigger and the sheet keep their own.
-  const openControlled = Object.hasOwn(props, 'open');
+  const openControlled = Object.prototype.hasOwnProperty.call(props, 'open');
 
   const valueStoreState = useState<unknown>(undefined);
 
