@@ -508,7 +508,8 @@
     "tableSize": ["sm", "md"],
     "tableAlign": ["start", "center", "end"],
     "tableSort": ["ascending", "descending", "none"],
-    "columnWidthExtra": ["fit"]
+    "columnWidthExtra": ["fit"],
+    "listSeparator": ["none", "line", "inset"]
   },
   "glass": {
     "$comment": [
@@ -828,7 +829,38 @@
     "sort": ["tableSort", "value"],
     "prefix": ["value"],
     "emptyState": ["value"],
-    "selected": ["value"]
+    "selected": ["value"],
+    "supporting": ["value"],
+    "supportingLines": ["value"],
+    "footnote": ["value"],
+    "attachments": ["value"],
+    "compactPadding": ["space"],
+    "onPrefetch": ["value"],
+    "checkable": ["value"],
+    "selecting": ["value"],
+    "selectionLabel": ["value"],
+    "rowActions": ["value", "value"],
+    "swipeActions": ["value", "value?"],
+    "swipeEnabled": ["value"],
+    "contextMenu": ["value"],
+    "separator": ["listSeparator"],
+    "scrollable": ["value?"],
+    "scrollHeight": ["space"],
+    "stickyHeaders": ["value?"],
+    "sectionIndex": ["value"],
+    "listHeader": ["value"],
+    "listFooter": ["value"],
+    "loadingRows": ["value"],
+    "itemKey": ["value"],
+    "itemType": ["value"],
+    "estimatedItemSize": ["value"],
+    "onEndReached": ["value", "value?"],
+    "refreshable": ["value", "value"],
+    "stickyIndices": ["value"],
+    "restorationKey": ["value"],
+    "tuning": ["value"],
+    "onSelectAll": ["value"],
+    "onClear": ["value"]
   },
   "universal": [
     "padding",
@@ -1289,6 +1321,67 @@
     "tableCell": {
       "constructors": ["TableCell"],
       "modifiers": ["width", "share", "minWidth", "align"]
+    },
+    "listItem": {
+      "constructors": ["ListItem", "PersonRow", "CallRow", "ConversationRow", "MailRow"],
+      "modifiers": [
+        "supporting",
+        "supportingLines",
+        "prefix",
+        "trailing",
+        "content",
+        "footnote",
+        "attachments",
+        "density",
+        "compactPadding",
+        "active",
+        "disabled",
+        "link",
+        "onPrefetch",
+        "checkable",
+        "selecting",
+        "selectionLabel",
+        "rowActions",
+        "swipeActions",
+        "swipeEnabled",
+        "contextMenu"
+      ]
+    },
+    "list": {
+      "constructors": ["List", "SectionedList"],
+      "modifiers": [
+        "separator",
+        "scrollable",
+        "scrollHeight",
+        "stickyHeaders",
+        "sectionIndex",
+        "listHeader",
+        "listFooter",
+        "emptyState",
+        "loading",
+        "loadingRows"
+      ]
+    },
+    "virtualList": {
+      "constructors": ["VirtualList"],
+      "modifiers": [
+        "itemKey",
+        "itemType",
+        "estimatedItemSize",
+        "columns",
+        "onEndReached",
+        "refreshable",
+        "stickyIndices",
+        "restorationKey",
+        "listHeader",
+        "listFooter",
+        "emptyState",
+        "tuning"
+      ]
+    },
+    "listSelectionBar": {
+      "constructors": ["ListSelectionBar"],
+      "modifiers": ["selecting", "onSelectAll", "onClear", "rowActions", "labels"]
     }
   },
   "sfSymbols": {

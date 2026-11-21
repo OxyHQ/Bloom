@@ -1253,6 +1253,11 @@ export const ENUMS = {
   ],
   "columnWidthExtra": [
     "fit"
+  ],
+  "listSeparator": [
+    "none",
+    "line",
+    "inset"
   ]
 } as const;
 
@@ -1908,6 +1913,103 @@ export const MODIFIERS = {
     "value"
   ],
   "selected": [
+    "value"
+  ],
+  "supporting": [
+    "value"
+  ],
+  "supportingLines": [
+    "value"
+  ],
+  "footnote": [
+    "value"
+  ],
+  "attachments": [
+    "value"
+  ],
+  "compactPadding": [
+    "space"
+  ],
+  "onPrefetch": [
+    "value"
+  ],
+  "checkable": [
+    "value"
+  ],
+  "selecting": [
+    "value"
+  ],
+  "selectionLabel": [
+    "value"
+  ],
+  "rowActions": [
+    "value",
+    "value"
+  ],
+  "swipeActions": [
+    "value",
+    "value?"
+  ],
+  "swipeEnabled": [
+    "value"
+  ],
+  "contextMenu": [
+    "value"
+  ],
+  "separator": [
+    "listSeparator"
+  ],
+  "scrollable": [
+    "value?"
+  ],
+  "scrollHeight": [
+    "space"
+  ],
+  "stickyHeaders": [
+    "value?"
+  ],
+  "sectionIndex": [
+    "value"
+  ],
+  "listHeader": [
+    "value"
+  ],
+  "listFooter": [
+    "value"
+  ],
+  "loadingRows": [
+    "value"
+  ],
+  "itemKey": [
+    "value"
+  ],
+  "itemType": [
+    "value"
+  ],
+  "estimatedItemSize": [
+    "value"
+  ],
+  "onEndReached": [
+    "value",
+    "value?"
+  ],
+  "refreshable": [
+    "value",
+    "value"
+  ],
+  "stickyIndices": [
+    "value"
+  ],
+  "restorationKey": [
+    "value"
+  ],
+  "tuning": [
+    "value"
+  ],
+  "onSelectAll": [
+    "value"
+  ],
+  "onClear": [
     "value"
   ]
 } as const;
@@ -4962,6 +5064,301 @@ export const NODE_MODIFIERS = {
     "share",
     "minWidth",
     "align"
+  ],
+  "listItem": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "supporting",
+    "supportingLines",
+    "prefix",
+    "trailing",
+    "content",
+    "footnote",
+    "attachments",
+    "density",
+    "compactPadding",
+    "active",
+    "disabled",
+    "link",
+    "onPrefetch",
+    "checkable",
+    "selecting",
+    "selectionLabel",
+    "rowActions",
+    "swipeActions",
+    "swipeEnabled",
+    "contextMenu"
+  ],
+  "list": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "separator",
+    "scrollable",
+    "scrollHeight",
+    "stickyHeaders",
+    "sectionIndex",
+    "listHeader",
+    "listFooter",
+    "emptyState",
+    "loading",
+    "loadingRows"
+  ],
+  "virtualList": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "itemKey",
+    "itemType",
+    "estimatedItemSize",
+    "columns",
+    "onEndReached",
+    "refreshable",
+    "stickyIndices",
+    "restorationKey",
+    "listHeader",
+    "listFooter",
+    "emptyState",
+    "tuning"
+  ],
+  "listSelectionBar": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "selecting",
+    "onSelectAll",
+    "onClear",
+    "rowActions",
+    "labels"
   ]
 } as const;
 
@@ -5025,5 +5422,14 @@ export const CONSTRUCTORS = {
   "TableColumn": "tableColumn",
   "TableBody": "tableBody",
   "TableRow": "tableRow",
-  "TableCell": "tableCell"
+  "TableCell": "tableCell",
+  "ListItem": "listItem",
+  "PersonRow": "listItem",
+  "CallRow": "listItem",
+  "ConversationRow": "listItem",
+  "MailRow": "listItem",
+  "List": "list",
+  "SectionedList": "list",
+  "VirtualList": "virtualList",
+  "ListSelectionBar": "listSelectionBar"
 } as const;

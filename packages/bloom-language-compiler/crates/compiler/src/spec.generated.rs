@@ -96,6 +96,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("tableAlign", &["start", "center", "end"]),
     ("tableSort", &["ascending", "descending", "none"]),
     ("columnWidthExtra", &["fit"]),
+    ("listSeparator", &["none", "line", "inset"]),
 ];
 
 /// The modifiers a variant (`when(condition, v => v…)`) can change.
@@ -291,6 +292,37 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("prefix", &["value"]),
     ("emptyState", &["value"]),
     ("selected", &["value"]),
+    ("supporting", &["value"]),
+    ("supportingLines", &["value"]),
+    ("footnote", &["value"]),
+    ("attachments", &["value"]),
+    ("compactPadding", &["space"]),
+    ("onPrefetch", &["value"]),
+    ("checkable", &["value"]),
+    ("selecting", &["value"]),
+    ("selectionLabel", &["value"]),
+    ("rowActions", &["value", "value"]),
+    ("swipeActions", &["value", "value?"]),
+    ("swipeEnabled", &["value"]),
+    ("contextMenu", &["value"]),
+    ("separator", &["listSeparator"]),
+    ("scrollable", &["value?"]),
+    ("scrollHeight", &["space"]),
+    ("stickyHeaders", &["value?"]),
+    ("sectionIndex", &["value"]),
+    ("listHeader", &["value"]),
+    ("listFooter", &["value"]),
+    ("loadingRows", &["value"]),
+    ("itemKey", &["value"]),
+    ("itemType", &["value"]),
+    ("estimatedItemSize", &["value"]),
+    ("onEndReached", &["value", "value?"]),
+    ("refreshable", &["value", "value"]),
+    ("stickyIndices", &["value"]),
+    ("restorationKey", &["value"]),
+    ("tuning", &["value"]),
+    ("onSelectAll", &["value"]),
+    ("onClear", &["value"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -351,6 +383,10 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "tableBody", constructors: &["TableBody"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "emptyState"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "tableRow", constructors: &["TableRow"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "selected"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "tableCell", constructors: &["TableCell"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "width", "share", "minWidth", "align"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "listItem", constructors: &["ListItem", "PersonRow", "CallRow", "ConversationRow", "MailRow"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "supporting", "supportingLines", "prefix", "trailing", "content", "footnote", "attachments", "density", "compactPadding", "active", "disabled", "link", "onPrefetch", "checkable", "selecting", "selectionLabel", "rowActions", "swipeActions", "swipeEnabled", "contextMenu"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "list", constructors: &["List", "SectionedList"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "separator", "scrollable", "scrollHeight", "stickyHeaders", "sectionIndex", "listHeader", "listFooter", "emptyState", "loading", "loadingRows"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "virtualList", constructors: &["VirtualList"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "itemKey", "itemType", "estimatedItemSize", "columns", "onEndReached", "refreshable", "stickyIndices", "restorationKey", "listHeader", "listFooter", "emptyState", "tuning"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "listSelectionBar", constructors: &["ListSelectionBar"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "selecting", "onSelectAll", "onClear", "rowActions", "labels"], size: None, tint: None, style: None, shape: None },
 ];
 
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,
