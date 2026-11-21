@@ -118,6 +118,7 @@ import type {
   AccordionTriggerView,
   AccordionContentView,
 } from '../controls/accordion';
+import type { CodeView, PreView, CodeLinesView, CodeBlockView } from '../controls/code';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -348,7 +349,15 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<AccordionItemView>, Of<'accordionItem'>>,
       Same<MethodsOf<AccordionTriggerView>, Of<'accordionTrigger'>>,
       Same<MethodsOf<AccordionContentView>, Of<'accordionContent'>>,
+      Same<MethodsOf<CodeView>, Of<'code'>>,
+      Same<MethodsOf<PreView>, Of<'pre'>>,
+      Same<MethodsOf<CodeLinesView>, Of<'codeLines'>>,
+      Same<MethodsOf<CodeBlockView>, Of<'codeBlock'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

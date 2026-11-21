@@ -1,6 +1,7 @@
 import type { NodeKind } from '../node';
 import { ACCORDIONS } from './accordion';
 import { CAROUSELS } from './carousel';
+import { CODES } from './code';
 import { DATE_PICKERS } from './date-picker';
 import type { ControlRenderer } from './draw';
 import { LISTS } from './list';
@@ -24,4 +25,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...MARKDOWN,
   ...SLIDERS,
   ...ACCORDIONS,
+  ...CODES,
 };

@@ -177,6 +177,7 @@ export type CarouselAlign = (typeof ENUMS.carouselAlign)[number];
 export type DotsShape = (typeof ENUMS.dotsShape)[number];
 export type DotsStyle = (typeof ENUMS.dotsStyle)[number];
 export type MarkdownSize = (typeof ENUMS.markdownSize)[number];
+export type CodeLinesSize = (typeof ENUMS.codeLinesSize)[number];
 /** A table column's width: a space rung, or `fit` to hug its content. */
 export type ColumnWidthToken = SpaceToken | (typeof ENUMS.columnWidthExtra)[number];
 
