@@ -23,7 +23,14 @@ export {
 } from './entity';
 export { environment } from './environment';
 export { type Model, type ModelOptions, type ModelRecord, model } from './model';
-export { type Action, type ActionOptions, action } from './action';
+export {
+  type Action,
+  type ActionOptions,
+  type ActionStatus,
+  action,
+  actionStatus,
+  StoreClosedError,
+} from './action';
 export { type EventSocket, type RealtimeHandlers, realtime } from './realtime';
 export {
   type FetchStatus,
@@ -39,10 +46,13 @@ export {
 } from './source';
 export {
   DataProvider,
+  type ActionView,
   type ListView,
   type RecordView,
   type Skip,
   skip,
+  useAction,
+  useActionStatus,
   useEntity,
   useList,
   useListState,
