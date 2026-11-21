@@ -1,5 +1,11 @@
+import { createElement } from 'react';
+
 export const BloomImage = 'BloomImage';
-export const Button = 'BloomButton';
+/** Bloom's Button and its `Button.Group`, as Bloom's own object carries the group. */
+export const Button = Object.assign(
+  (props: Record<string, unknown>) => createElement('BloomButton', props),
+  { Group: 'BloomButtonGroup' },
+);
 export const EngagementAction = 'EngagementAction';
 export const EngagementBar = 'EngagementBar';
 export const EngagementGroup = 'EngagementGroup';

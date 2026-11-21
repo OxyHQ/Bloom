@@ -145,4 +145,89 @@ const states: ParityCase[] = [
   },
 ];
 
-export const BUTTON_CASES: ParityCase[] = [...matrix, ...sizes, ...content, ...states];
+const leftovers: ParityCase[] = [
+  {
+    name: 'a paired fill and label from roles',
+    language: () =>
+      toElement(L.Button(L.Text('Continue')).colors('primary', 'onPrimary').onPress(onPress)),
+    bloom: () => (
+      <Themed>
+        {(colors) => (
+          <Button
+            colors={{ background: colors.primary, foreground: colors.primaryForeground }}
+            onPress={onPress}
+          >
+            Continue
+          </Button>
+        )}
+      </Themed>
+    ),
+  },
+  ...ENUMS.linkTone.map((tone) => ({
+    name: `link tone ${tone}`,
+    language: () =>
+      toElement(L.Button(L.Text('Terms')).style('plain').linkTone(tone).onPress(onPress)),
+    bloom: () => (
+      <Button appearance="plain" linkTone={tone} onPress={onPress}>
+        Terms
+      </Button>
+    ),
+  })),
+  {
+    name: 'inverted',
+    language: () => toElement(L.Button(L.Text('Join')).inverted().onPress(onPress)),
+    bloom: () => (
+      <Button inverted onPress={onPress}>
+        Join
+      </Button>
+    ),
+  },
+  ...ENUMS.density.map((density) => ({
+    name: `density ${density}`,
+    language: () => toElement(L.Button(L.Text('Edit')).density(density)),
+    bloom: () => <Button density={density}>Edit</Button>,
+  })),
+  {
+    name: 'an icon button that fits its content',
+    language: () => toElement(L.Button(L.Icon(RiMoreFill)).shape('fit').label('More')),
+    bloom: () => <Button leadingIcon={RiMoreFill} grow accessibilityLabel="More" />,
+  },
+  {
+    name: 'a group, vertical, separated, at a size',
+    language: () =>
+      toElement(
+        L.ButtonGroup(L.Button(L.Text('Day')), L.Button(L.Text('Week')))
+          .axis('vertical')
+          .separated()
+          .size('sm')
+          .label('Range'),
+      ),
+    bloom: () => (
+      <Button.Group orientation="vertical" separated size="sm" accessibilityLabel="Range">
+        <Button>Day</Button>
+        <Button>Week</Button>
+      </Button.Group>
+    ),
+  },
+  {
+    name: 'a group without dividers',
+    language: () =>
+      toElement(
+        L.ButtonGroup(L.Button(L.Text('Bold')), L.Button(L.Text('Italic'))).dividers(false),
+      ),
+    bloom: () => (
+      <Button.Group dividers={false}>
+        <Button>Bold</Button>
+        <Button>Italic</Button>
+      </Button.Group>
+    ),
+  },
+];
+
+export const BUTTON_CASES: ParityCase[] = [
+  ...matrix,
+  ...sizes,
+  ...content,
+  ...states,
+  ...leftovers,
+];

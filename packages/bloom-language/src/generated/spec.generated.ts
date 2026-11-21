@@ -727,7 +727,17 @@ export const ENUMS = {
   ],
   "buttonShape": [
     "circle",
-    "pill"
+    "pill",
+    "fit"
+  ],
+  "linkTone": [
+    "primary",
+    "secondary",
+    "text"
+  ],
+  "density": [
+    "default",
+    "compact"
   ],
   "appearance": [
     "solid",
@@ -1407,6 +1417,25 @@ export const MODIFIERS = {
   "when": [
     "condition",
     "variant"
+  ],
+  "colors": [
+    "color",
+    "color"
+  ],
+  "linkTone": [
+    "linkTone"
+  ],
+  "inverted": [
+    "value?"
+  ],
+  "density": [
+    "density"
+  ],
+  "dividers": [
+    "value?"
+  ],
+  "separated": [
+    "value?"
   ]
 } as const;
 
@@ -2293,7 +2322,66 @@ export const NODE_MODIFIERS = {
     "pressed",
     "link",
     "lines",
-    "underline"
+    "underline",
+    "colors",
+    "linkTone",
+    "inverted",
+    "density"
+  ],
+  "buttonGroup": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "onReselect",
+    "when",
+    "axis",
+    "size",
+    "dividers",
+    "separated"
   ],
   "fab": [
     "padding",
@@ -2798,6 +2886,7 @@ export const CONSTRUCTORS = {
   "AspectRatio": "ratio",
   "Grid": "grid",
   "Button": "button",
+  "ButtonGroup": "buttonGroup",
   "FAB": "fab",
   "Menu": "menu",
   "Item": "menuItem",

@@ -46,6 +46,7 @@ import type {
   SkeletonGroupView,
   SkeletonView,
   BottomBarView,
+  ButtonGroupView,
   ButtonView,
   ComposedView,
   EmbedView,
@@ -216,6 +217,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<SkeletonGroupView>, Of<'skeletonGroup'>>,
       Same<MethodsOf<ImageView>, Of<'image'>>,
       Same<MethodsOf<ButtonView>, Of<'button'>>,
+      Same<MethodsOf<ButtonGroupView>, Of<'buttonGroup'>>,
       Same<MethodsOf<ActionView>, Of<'action'>>,
       Same<MethodsOf<ActionBarView>, Of<'actionBar'>>,
       Same<MethodsOf<ActionGroupView>, Of<'actionGroup'>>,
@@ -240,6 +242,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<RouteView>, Of<'route'>>,
       Same<MethodsOf<TabNavigatorView>, Of<'tabView'>>,
     ] = [
+      true,
       true,
       true,
       true,

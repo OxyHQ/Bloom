@@ -18,6 +18,7 @@ import {
   type SkeletonShape,
   type SkeletonView,
   type BottomBarView,
+  type ButtonGroupView,
   type ButtonView,
   type Child,
   type EmbedView,
@@ -129,6 +130,11 @@ export function Image(source: BloomImageSource | null | undefined, alt?: string)
 /** Bloom `Button`. An `Icon` child is its glyph; `Text` children are its label. */
 export function Button(...children: Child[]): ButtonView {
   return new Node('button', null, children);
+}
+
+/** Bloom `Button.Group`: its `Button`s joined on one material. */
+export function ButtonGroup(...buttons: Child[]): ButtonGroupView {
+  return new Node('buttonGroup', null, buttons);
 }
 
 /** Bloom `EngagementAction`: one glyph (and count) in an action bar. `label` names it for assistive technology. */

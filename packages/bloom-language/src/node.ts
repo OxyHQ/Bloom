@@ -32,7 +32,9 @@ import {
   type OverlayAlignment,
   type ShadowName,
   type ZIndexName,
+  type ButtonLinkTone,
   type ButtonShape,
+  type ControlDensity,
   type ContentFit,
   type DurationName,
   type Edge,
@@ -216,6 +218,12 @@ export interface ValueModifiers {
   pressScale: true;
   hoverHighlight: boolean | undefined;
   pressed: boolean;
+  colors: readonly [ColorToken, ColorToken];
+  linkTone: ButtonLinkTone;
+  inverted: boolean;
+  density: ControlDensity;
+  dividers: boolean;
+  separated: boolean;
   columns: number;
   minCellWidth: SpaceToken;
   flow: GridFlow;
@@ -397,6 +405,7 @@ export type NodeKind =
   | 'avatar'
   | 'image'
   | 'button'
+  | 'buttonGroup'
   | 'action'
   | 'actionBar'
   | 'actionGroup'
@@ -959,6 +968,25 @@ export class Node {
   pressed(value: boolean): Node {
     return this.set('pressed', value);
   }
+  colors(background: ColorToken, foreground: ColorToken): Node {
+    const value = [background, foreground] as const;
+    return this.with({ kind: 'colors', key: `colors:${background}:${foreground}`, value });
+  }
+  linkTone(value: ButtonLinkTone): Node {
+    return this.with({ kind: 'linkTone', key: `linkTone:${value}`, value });
+  }
+  inverted(value = true): Node {
+    return this.with({ kind: 'inverted', key: `inverted:${value}`, value });
+  }
+  density(value: ControlDensity): Node {
+    return this.with({ kind: 'density', key: `density:${value}`, value });
+  }
+  dividers(value = true): Node {
+    return this.with({ kind: 'dividers', key: `dividers:${value}`, value });
+  }
+  separated(value = true): Node {
+    return this.with({ kind: 'separated', key: `separated:${value}`, value });
+  }
 }
 
 const FRAME_KEYS = OBJECTS.frame.keys;
@@ -1248,6 +1276,30 @@ export interface ButtonView extends ViewModifiers<ButtonView> {
   lines(value: number): ButtonView;
   /** The label carries its underline at rest (a `plain` action inside running copy). */
   underline(): ButtonView;
+  /**
+   * A paired fill and label from two colour roles (Bloom's `colors`), for a
+   * brand action; the geometry stays the button's.
+   */
+  colors(background: ColorToken, foreground: ColorToken): ButtonView;
+  /** A `plain` link's ink: the accent (`primary`), the secondary text, or the reading colour (`text`). */
+  linkTone(value: ButtonLinkTone): ButtonView;
+  /** The theme's background and foreground swapped: a high-contrast action. */
+  inverted(value?: boolean): ButtonView;
+  /** The control's geometry over the nearest Bloom scope's: `default` or `compact`. */
+  density(value: ControlDensity): ButtonView;
+}
+/**
+ * Bloom `Button.Group`: buttons joined on one material, `horizontal` by
+ * default (`.axis('vertical')` stacks them), with hairlines between them.
+ */
+export interface ButtonGroupView extends ViewModifiers<ButtonGroupView> {
+  axis(value: Axis): ButtonGroupView;
+  /** Every button's size. */
+  size(value: BloomSize): ButtonGroupView;
+  /** The hairlines between controls (on by default). */
+  dividers(value?: boolean): ButtonGroupView;
+  /** Flat segments with a gap between them, under the shared outer pill. */
+  separated(value?: boolean): ButtonGroupView;
 }
 /**
  * Bloom `Fab`: the prominent action, drawn on the platform's glass (see
