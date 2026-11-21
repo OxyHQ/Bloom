@@ -35,9 +35,13 @@ import {
  * The store is the one in scope when the action was called. If its account is
  * left before the answer, nothing is applied: the store is closed.
  *
- * A `key` makes the action exclusive: while a call with the same key is in
- * flight (of this action or any other), another resolves to `undefined` at
- * once without running. A like and its undo share a key, say.
+ * A `key` makes calls of one target exclusive (of this action or any other:
+ * a like and its undo share a key, say). While a call with the key is
+ * running, another resolves to `undefined` at once without running. While it
+ * is still waiting (offline, or for its turn), a new call replaces it: the
+ * waiting call's layer and outbox entry go, its caller gets `undefined`, and
+ * the new call goes through. Unstar right after star leaves one call,
+ * `setStarred(id, false)`.
  *
  * A `durable` action's calls survive a restart. Each call is kept in the
  * account's outbox, with its arguments and its layer, until it settles or the
@@ -45,19 +49,36 @@ import {
  * reconnect. When the store opens again, the outbox is read and each call
  * replayed in order: its layer shows at once and it runs when online, under
  * the same settle and rollback rules. Durable calls of a store run one at a
- * time, in call order, so a delete never overtakes the write before it. A
- * call may reach the server twice (its answer was lost to a restart), so make
- * the arguments say the target state (`setStarred(id, true)`, not a toggle).
+ * time, in call order, so a delete never overtakes the write before it.
+ *
+ * A durable call states its target, never a toggle: `setStarred(id, true)`,
+ * not `toggleStar(id)`. A call may reach the server twice (its answer was
+ * lost to a restart), and a replaced call is replaced by its target; both are
+ * only safe when the arguments say the state the server should end in.
  */
 export interface ActionOptions<A extends unknown[], R> {
-  /** A stable name, unique per app; required with `durable`. Outbox entries name their action by it. */
+  /**
+   * A stable name, unique per app; required with `durable`. Outbox entries
+   * name their action by it. Defining an action again under a name (a module
+   * re-run by Fast Refresh) replaces it.
+   */
   name?: string;
-  /** Keep each call in the account's outbox until it settles. Its arguments must be JSON-serialisable. */
+  /**
+   * Keep each call in the account's outbox until it settles. Its arguments
+   * must be JSON-serialisable and state the target (`setStarred(id, true)`).
+   */
   durable?: boolean;
   key?: (...args: A) => string;
   optimistic?: (...args: A) => void;
   run: (...args: A) => Promise<R>;
   settle?: (result: R, ...args: A) => void;
+  /**
+   * Told when the server refuses a call (`run` threw), after its rollback:
+   * the place for the app's own error toast. A replayed call has no caller,
+   * so this is the only place its refusal is seen; a live call's caller gets
+   * the error too.
+   */
+  onRejected?: (error: unknown, ...args: A) => void;
 }
 
 export type Action<A extends unknown[], R> = (...args: A) => Promise<R | undefined>;
@@ -97,10 +118,10 @@ class Calls {
   status: ActionStatus = IDLE_STATUS;
   readonly listeners = new Set<Listener>();
   /**
-   * Keys of the calls in flight. One space for every action, so a like and its
-   * undo can share a key and exclude each other.
+   * The call in flight for each key. One space for every action, so a like
+   * and its undo can share a key.
    */
-  readonly keys = new Set<string>();
+  readonly keys = new Map<string, Call>();
   /** The durable calls not settled, in call order: what the outbox holds. Replaced, never mutated. */
   entries: readonly OutboxEntry[] = [];
   /** Whether the outbox was read from the durable copy; until then it is not written. */
@@ -150,22 +171,74 @@ export class StoreClosedError extends Error {
   }
 }
 
-/** Waits for the network, counted as paused; rejects if the store closes first. */
-async function whenOnline(store: Store, calls: Calls): Promise<void> {
-  const controller = new AbortController();
-  const abort = () => controller.abort(new StoreClosedError());
-  store.cleanups.add(abort);
+/** Ends a waiting call that a newer call with its key replaced. */
+class ReplacedError extends Error {
+  constructor() {
+    super('bloom-data: replaced by a newer call with the same key');
+    this.name = 'ReplacedError';
+  }
+}
+
+// biome-ignore lint/suspicious/noExplicitAny: actions of every argument and result type
+type AnyOptions = ActionOptions<any, any>;
+
+/** A call of an action, from its layer to its end. */
+interface Call {
+  readonly options: AnyOptions;
+  readonly args: readonly unknown[];
+  readonly layer: Layer | null;
+  readonly key: string | undefined;
+  /** The outbox entry of a durable call. */
+  readonly entry: OutboxEntry | undefined;
+  /** Aborted when its store closes, or when a newer call with its key replaces it. */
+  readonly controller: AbortController;
+  /** `run` is under way: a newer call with the key is excluded rather than replacing it. */
+  running: boolean;
+}
+
+/** Counts a call as pending and makes it the one in flight for its key. */
+function begin(calls: Calls, call: Omit<Call, 'controller' | 'running'>): Call {
+  const started: Call = { ...call, controller: new AbortController(), running: false };
+  if (started.key !== undefined) calls.keys.set(started.key, started);
+  calls.change(1, 0);
+  return started;
+}
+
+/** Ends a call that has not run yet, for a newer one with its key: its layer and outbox entry go. */
+function replace(store: Store, calls: Calls, call: Call): void {
+  store.batch(() => {
+    if (call.layer) store.dropLayer(call.layer);
+    if (call.entry) leave(store, calls, call.entry);
+  });
+  call.controller.abort(new ReplacedError());
+}
+
+/** Waits for the network, counted as paused; rejects when `signal` aborts first. */
+async function whenOnline(calls: Calls, signal: AbortSignal): Promise<void> {
+  signal.throwIfAborted();
   calls.change(-1, 1);
   try {
-    await waitUntil(() => environment.online, controller.signal);
+    await waitUntil(() => environment.online, signal);
   } finally {
-    store.cleanups.delete(abort);
     calls.change(1, -1);
   }
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: durable actions of every argument and result type
-type AnyOptions = ActionOptions<any, any>;
+/** Resolves with `turn`, or rejects when `signal` aborts first. */
+function untilAborted(turn: Promise<void>, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const onAbort = () => reject(signal.reason);
+    if (signal.aborted) {
+      onAbort();
+      return;
+    }
+    signal.addEventListener('abort', onAbort, { once: true });
+    void turn.then(() => {
+      signal.removeEventListener('abort', onAbort);
+      resolve();
+    });
+  });
+}
 
 /** Durable actions by name: what an outbox entry is replayed through. */
 const durables = new Map<string, AnyOptions>();
@@ -180,20 +253,10 @@ function leave(store: Store, calls: Calls, entry: OutboxEntry): void {
   save(store, calls);
 }
 
-/** A call of an action: what runs after its layer is in place. */
-interface Call {
-  readonly options: AnyOptions;
-  readonly args: readonly unknown[];
-  readonly layer: Layer | null;
-  readonly key: string | undefined;
-  /** The outbox entry of a durable call. */
-  readonly entry: OutboxEntry | undefined;
-}
-
 /**
- * Runs a call whose layer is in place and which counts as pending: waits for
- * the network and (a durable call) for the durable calls before it, then
- * settles or rolls back.
+ * Runs a call whose layer is in place: waits for the network and (a durable
+ * call) for the durable calls before it, then settles or rolls back.
+ * Resolves `undefined` when a newer call with its key replaced it.
  */
 async function perform(
   store: Store,
@@ -201,25 +264,30 @@ async function perform(
   call: Call,
   after: Promise<void> | undefined,
 ): Promise<unknown> {
-  const { options, args, layer, key, entry } = call;
+  const { options, args, layer, key, entry, controller } = call;
+  const { signal } = controller;
+  const closed = () => controller.abort(new StoreClosedError());
+  store.cleanups.add(closed);
   try {
     if (after) {
-      if (!environment.online) await whenOnline(store, calls);
-      await after;
+      if (!environment.online) await whenOnline(calls, signal);
+      await untilAborted(after, signal);
     }
     let result: unknown;
     for (;;) {
       // Online, `run` starts in this same tick, as it always did.
-      if (!environment.online) await whenOnline(store, calls);
+      if (!environment.online) await whenOnline(calls, signal);
+      signal.throwIfAborted();
       // Its account was left while it waited for its turn: it stays in that account's outbox.
       if (store.closed) throw new StoreClosedError();
+      call.running = true;
       try {
         result = await withStore(store, () => options.run(...args));
         break;
       } catch (error) {
-        // A durable call that failed while offline stays queued.
-        if (entry && !environment.online) continue;
-        throw error;
+        // A durable call that failed while offline stays queued, waiting again.
+        if (!entry || environment.online) throw error;
+        call.running = false;
       }
     }
     store.batch(() => {
@@ -229,15 +297,25 @@ async function perform(
     });
     return result;
   } catch (error) {
+    // Its layer and entry went when it was replaced.
+    if (error instanceof ReplacedError) return undefined;
     // A closed store ignores both: the call stays in its account's outbox.
     store.batch(() => {
       if (layer) store.dropLayer(layer);
       if (entry) leave(store, calls, entry);
     });
+    if (!(error instanceof StoreClosedError) && !store.closed) {
+      try {
+        withStore(store, () => options.onRejected?.(error, ...args));
+      } catch (handlerError) {
+        reportError(handlerError);
+      }
+    }
     throw error;
   } finally {
+    store.cleanups.delete(closed);
     calls.change(-1, 0);
-    if (key !== undefined) calls.keys.delete(key);
+    if (key !== undefined && calls.keys.get(key) === call) calls.keys.delete(key);
   }
 }
 
@@ -267,32 +345,33 @@ async function replay(store: Store, calls: Calls): Promise<void> {
     // Newest first: each restored layer goes beneath the ones standing, so
     // they end up in call order, under any call made since the store opened.
     for (const entry of [...stored].reverse()) {
-      // Dropped: an action an app update removed, or a key already in flight.
+      // Dropped: an action an app update removed, or a call a newer one with
+      // its key replaced (made since the store opened, or later in the outbox).
       const options = durables.get(entry.name);
       if (!options) continue;
       const key = options.key?.(...entry.args);
       if (key !== undefined && calls.keys.has(key)) continue;
-      if (key !== undefined) calls.keys.add(key);
-      replayed.unshift({
-        options,
-        args: entry.args,
-        key,
-        entry,
-        layer: store.restoreLayer(entry.layer),
-      });
+      replayed.unshift(
+        begin(calls, {
+          options,
+          args: entry.args,
+          key,
+          entry,
+          layer: store.restoreLayer(entry.layer),
+        }),
+      );
     }
     calls.entries = [...replayed.map((call) => call.entry as OutboxEntry), ...calls.entries];
     calls.loaded = true;
     save(store, calls);
   });
-  calls.change(replayed.length, 0);
   // What the calls changed is read from disk first, to show and settle into.
   await Promise.all(
     replayed.map((call) => call.layer && store.hydrateLayer(call.layer).catch(reportError)),
   );
   let turn: Promise<void> = Promise.resolve();
   for (const call of replayed) {
-    // No caller waits for a replayed call: a refusal is its rollback.
+    // No caller waits for a replayed call: a refusal goes to `onRejected`.
     turn = perform(store, calls, call, turn).then(settled, settled);
   }
   await turn;
@@ -308,44 +387,39 @@ export function action<A extends unknown[], R>(options: ActionOptions<A, R>): Ac
   const { name, durable } = options;
   if (durable) {
     if (!name) throw new Error('bloom-data: a durable action needs a name');
-    if (durables.has(name)) throw new Error(`bloom-data: two durable actions are named '${name}'`);
+    // A second definition under a name replaces the first: a module re-run by
+    // Fast Refresh. Two modules using one name cannot be told from that.
     durables.set(name, options);
   }
   return async (...args) => {
     const store = currentStore();
     const calls = callsOf(store);
     const key = options.key?.(...args);
-    if (key !== undefined) {
-      if (calls.keys.has(key)) return undefined;
-      calls.keys.add(key);
-    }
-    calls.change(1, 0);
+    const held = key === undefined ? undefined : calls.keys.get(key);
+    if (held?.running) return undefined;
+    if (held) replace(store, calls, held);
     const optimistic = options.optimistic;
     const layer = optimistic
       ? withStore(store, () => store.layer(() => optimistic(...args)))
       : null;
-    if (!durable || !name) {
-      return (await perform(
-        store,
-        calls,
-        { options, args, layer, key, entry: undefined },
-        undefined,
-      )) as R;
+    let entry: OutboxEntry | undefined;
+    if (durable && name) {
+      nextCallId += 1;
+      entry = {
+        id: `${Date.now().toString(36)}-${nextCallId.toString(36)}`,
+        name,
+        args,
+        at: Date.now(),
+        layer: layer ? store.saveLayer(layer) : { records: [], lists: [] },
+      };
+      // A new array: the stored outbox record shares the old one.
+      calls.entries = [...calls.entries, entry];
+      save(store, calls);
     }
-    nextCallId += 1;
-    const entry: OutboxEntry = {
-      id: `${Date.now().toString(36)}-${nextCallId.toString(36)}`,
-      name,
-      args,
-      at: Date.now(),
-      layer: layer ? store.saveLayer(layer) : { records: [], lists: [] },
-    };
-    // A new array: the stored outbox record shares the old one.
-    calls.entries = [...calls.entries, entry];
-    save(store, calls);
-    const after = turnOf(store, calls);
-    const done = perform(store, calls, { options, args, layer, key, entry }, after);
+    const call = begin(calls, { options, args, layer, key, entry });
+    if (!entry) return (await perform(store, calls, call, undefined)) as R | undefined;
+    const done = perform(store, calls, call, turnOf(store, calls));
     calls.turn = done.then(settled, settled);
-    return (await done) as R;
+    return (await done) as R | undefined;
   };
 }

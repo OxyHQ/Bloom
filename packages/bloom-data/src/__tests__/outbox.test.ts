@@ -49,12 +49,13 @@ interface Message {
 const Message = entity<Message>('outbox-message', { id: (m) => m.id, persist: true });
 const Mailbox = list('outbox-mailbox', { of: Message, persist: true });
 
-const star = action({
+/** States its target, never a toggle: star then unstar can replace one another. */
+const setStarred = action({
   name: 'inbox.star',
   durable: true,
   key: (id: string, _starred: boolean) => `star:${id}`,
   optimistic: (id: string, starred: boolean) => Message.merge(id, { starred }),
-  run: (id: string) => server.call('star', id),
+  run: (id: string, starred: boolean) => server.call('star', `${id} ${starred}`),
 });
 const markRead = action({
   name: 'inbox.read',
@@ -62,11 +63,14 @@ const markRead = action({
   optimistic: (id: string, read: boolean) => Message.merge(id, { read }),
   run: (id: string) => server.call('read', id),
 });
+/** The refusals the app showed in its toast. */
+const toasts: string[] = [];
 const archive = action({
   name: 'inbox.archive',
   durable: true,
   optimistic: (id: string) => Mailbox.remove('inbox', [id]),
   run: (id: string) => server.call('archive', id),
+  onRejected: (error, id: string) => toasts.push(`${id}: ${(error as Error).message}`),
 });
 const remove = action({
   name: 'inbox.delete',
@@ -170,6 +174,7 @@ beforeEach(() => {
   server.refused.clear();
   server.latency = 0;
   server.gate = undefined;
+  toasts.length = 0;
 });
 afterEach(async () => {
   await Promise.all(stores.splice(0).map((store) => store.close()));
@@ -194,7 +199,13 @@ describe('durable actions', () => {
     await first.flush();
 
     environment.setOnline(false);
-    const calls = [star('m1', true), markRead('m2', true), archive('m3'), remove('m4'), pin('m5')];
+    const calls = [
+      setStarred('m1', true),
+      markRead('m2', true),
+      archive('m3'),
+      remove('m4'),
+      pin('m5'),
+    ];
     expect(Mailbox.get('inbox')?.ids).toEqual(['m5', 'm1', 'm2']);
     await kill(first, calls);
     expect(started()).toEqual([]);
@@ -221,12 +232,14 @@ describe('durable actions', () => {
     environment.setOnline(true);
     await idle(second);
     expect(started()).toEqual([
-      'start star m1',
+      'start star m1 true',
       'start read m2',
       'start archive m3',
       'start delete m4',
       'start pin m5',
     ]);
+    // The replayed refusal has no caller: the app's toast shows it.
+    expect(toasts).toEqual(['m3: refused archive m3']);
     // The refused archive rolled back; the rest are written into the server copy.
     expect(Mailbox.get('inbox')?.ids).toEqual(['m5', 'm1', 'm2', 'm3']);
     expect(second.listSlot(Mailbox.definition, 'inbox')?.base?.ids).toEqual([
@@ -296,10 +309,10 @@ describe('durable actions', () => {
     server.gate = new Promise<void>((resolve) => {
       answer = resolve;
     });
-    const call = star('m1', true);
+    const call = setStarred('m1', true);
     // The request is out, its answer not back, when the app is killed.
     await nextFrames();
-    expect(started()).toEqual(['start star m1']);
+    expect(started()).toEqual(['start star m1 true']);
     await first.close();
     server.gate = undefined;
     answer();
@@ -311,7 +324,7 @@ describe('durable actions', () => {
     await Message.load(['m1']);
     expect(Message.get('m1')?.starred).toBe(true);
     await idle(second);
-    expect(started()).toEqual(['start star m1', 'start star m1']);
+    expect(started()).toEqual(['start star m1 true', 'start star m1 true']);
     await second.close();
     expect(storedCalls('inflight.db')).toEqual([]);
   });
@@ -320,7 +333,7 @@ describe('durable actions', () => {
     const accounts = createAccounts({ persister: (account) => sqlite(`${account}.db`) });
     accounts.open('alice');
     environment.setOnline(false);
-    const call = star('m1', true);
+    const call = setStarred('m1', true);
     await nextFrames();
     accounts.open('bob');
     await expect(call).rejects.toBeInstanceOf(StoreClosedError);
@@ -334,7 +347,7 @@ describe('durable actions', () => {
     const alice = accounts.open('alice');
     await nextFrames();
     await idle(alice);
-    expect(started()).toEqual(['start star m1']);
+    expect(started()).toEqual(['start star m1 true']);
     await accounts.close();
   });
 
@@ -346,14 +359,14 @@ describe('durable actions', () => {
       answer = resolve;
     });
     // The first is at the server; the second waits for its turn.
-    const first = star('m1', true);
+    const first = setStarred('m1', true);
     const second = markRead('m2', true);
     await nextFrames();
     accounts.open('bob');
     answer();
     await first;
     await expect(second).rejects.toBeInstanceOf(StoreClosedError);
-    expect(started()).toEqual(['start star m1']);
+    expect(started()).toEqual(['start star m1 true']);
     await accounts.close();
   });
 
@@ -394,15 +407,94 @@ describe('durable actions', () => {
   it('leaves no outbox entry behind a call that settles', async () => {
     const store = launch(sqlite('settled.db'));
     Message.put(message('m1'));
-    await expect(star('m1', true)).resolves.toEqual({ ok: true });
+    await expect(setStarred('m1', true)).resolves.toEqual({ ok: true });
     await store.close();
     expect(storedCalls('settled.db')).toEqual([]);
   });
 
-  it('refuses two durable actions with one name', () => {
-    expect(() => action({ name: 'inbox.star', durable: true, run: async () => undefined })).toThrow(
-      "two durable actions are named 'inbox.star'",
-    );
+  it('Inbox: unstar right after star leaves one queued call, before and after a restart', async () => {
+    const first = launch(sqlite('toggle.db'));
+    Message.put(message('m1'));
+    await first.flush();
+    environment.setOnline(false);
+    const star = setStarred('m1', true);
+    expect(Message.get('m1')?.starred).toBe(true);
+    const unstar = setStarred('m1', false);
+    await expect(star).resolves.toBeUndefined();
+    expect(Message.get('m1')?.starred).toBe(false);
+    expect(actionStatus(first)).toEqual({ pending: 0, paused: 1 });
+    const starAgain = setStarred('m1', true);
+    await expect(unstar).resolves.toBeUndefined();
+    await kill(first, [starAgain]);
+    expect(storedCalls('toggle.db').map((call) => call.args)).toEqual([['m1', true]]);
+
+    const second = launch(sqlite('toggle.db'));
+    await nextFrames();
+    expect(Message.get('m1')?.starred).toBe(true);
+    // The replayed call is still waiting: a new one replaces it.
+    void setStarred('m1', false);
+    expect(Message.get('m1')?.starred).toBe(false);
+    expect(second.slot(Message.definition, 'm1')?.layers).toHaveLength(1);
+    environment.setOnline(true);
+    await idle(second);
+    expect(started()).toEqual(['start star m1 false']);
+    expect(Message.get('m1')?.starred).toBe(false);
+  });
+
+  it('keeps a call that is running exclusive', async () => {
+    launch(sqlite('running.db'));
+    Message.put(message('m1'));
+    let answer!: () => void;
+    server.gate = new Promise<void>((resolve) => {
+      answer = resolve;
+    });
+    const star = setStarred('m1', true);
+    await nextFrames();
+    expect(started()).toEqual(['start star m1 true']);
+    await expect(setStarred('m1', false)).resolves.toBeUndefined();
+    answer();
+    await expect(star).resolves.toEqual({ ok: true });
+    expect(started()).toEqual(['start star m1 true']);
+    expect(Message.get('m1')?.starred).toBe(true);
+  });
+
+  it('tells onRejected about a live refusal too, after the rollback', async () => {
+    launch(sqlite('refused.db'));
+    Message.put(message('m1'));
+    Mailbox.set('inbox', () => ({
+      ids: ['m1'],
+      extra: undefined,
+      next: undefined,
+      hasMore: false,
+      visited: [],
+      updatedAt: 1,
+      origin: 'network',
+    }));
+    server.refused.add('archive m1');
+    await expect(archive('m1')).rejects.toThrow('refused archive m1');
+    expect(Mailbox.get('inbox')?.ids).toEqual(['m1']);
+    expect(toasts).toEqual(['m1: refused archive m1']);
+  });
+
+  it('replaces a durable action defined again under its name (Fast Refresh)', async () => {
+    const define = (version: string) =>
+      action({
+        name: 'notes.save',
+        durable: true,
+        run: (id: string) => server.call(`save ${version}`, id),
+      });
+    const save = define('v1');
+    const first = launch(sqlite('refresh.db'));
+    environment.setOnline(false);
+    const call = save('n1');
+    await kill(first, [call]);
+    // The module runs again with the edited action.
+    define('v2');
+    const second = launch(sqlite('refresh.db'));
+    await nextFrames();
+    environment.setOnline(true);
+    await idle(second);
+    expect(started()).toEqual(['start save v2 n1']);
     expect(() => action({ durable: true, run: async () => undefined })).toThrow('needs a name');
   });
 });
