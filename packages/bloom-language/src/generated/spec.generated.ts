@@ -1279,6 +1279,11 @@ export const ENUMS = {
   "dotsStyle": [
     "default",
     "onMedia"
+  ],
+  "markdownSize": [
+    "sm",
+    "md",
+    "lg"
   ]
 } as const;
 
@@ -2053,6 +2058,15 @@ export const MODIFIERS = {
     "space"
   ],
   "page": [
+    "value"
+  ],
+  "streaming": [
+    "value?"
+  ],
+  "onLinkPress": [
+    "value"
+  ],
+  "codeBlock": [
     "value"
   ]
 } as const;
@@ -5607,6 +5621,72 @@ export const NODE_MODIFIERS = {
     "style",
     "max",
     "labels"
+  ],
+  "markdown": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "streaming",
+    "size",
+    "onLinkPress",
+    "codeBlock"
   ]
 } as const;
 
@@ -5682,5 +5762,6 @@ export const CONSTRUCTORS = {
   "ListSelectionBar": "listSelectionBar",
   "Carousel": "carousel",
   "CarouselItem": "carouselItem",
-  "CarouselDots": "carouselDots"
+  "CarouselDots": "carouselDots",
+  "Markdown": "markdown"
 } as const;

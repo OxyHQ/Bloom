@@ -102,6 +102,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("carouselAlign", &["start", "center"]),
     ("dotsShape", &["pill", "dot"]),
     ("dotsStyle", &["default", "onMedia"]),
+    ("markdownSize", &["sm", "md", "lg"]),
 ];
 
 /// The modifiers a variant (`when(condition, v => v…)`) can change.
@@ -336,6 +337,9 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("dots", &["value?"]),
     ("contentInset", &["space"]),
     ("page", &["value"]),
+    ("streaming", &["value?"]),
+    ("onLinkPress", &["value"]),
+    ("codeBlock", &["value"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -403,6 +407,7 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "carousel", constructors: &["Carousel"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "headerContent", "footerContent", "loop", "groupSize", "arrows", "arrowsVisibility", "arrowsInset", "hidesUnavailableArrows", "dots", "align", "spacing", "contentInset", "page", "labels"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "carouselItem", constructors: &["CarouselItem"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "width"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "carouselDots", constructors: &["CarouselDots"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "shape", "style", "max", "labels"], size: None, tint: None, style: Some("dotsStyle"), shape: Some("dotsShape") },
+    NodeSpec { kind: "markdown", constructors: &["Markdown"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "streaming", "size", "onLinkPress", "codeBlock"], size: Some("markdownSize"), tint: None, style: None, shape: None },
 ];
 
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,
