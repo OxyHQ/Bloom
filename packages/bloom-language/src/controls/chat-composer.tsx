@@ -1,6 +1,5 @@
 import {
   AttachmentMenu as BloomAttachmentMenu,
-  type AttachmentMenuItem,
   type AttachmentMenuProps,
   ChatComposer as BloomChatComposer,
   type ChatComposerIcon,
@@ -106,12 +105,10 @@ export type SuggestionListOptions = Omit<
   Drawn | 'kind' | 'suggestions' | 'size' | 'loading' | 'maxHeight'
 > & { readonly maxHeight?: SpaceToken };
 export type VoiceRecorderOptions = Omit<VoiceRecorderProps, Drawn | 'state' | 'seconds'>;
-/** An attachment kind; it is tinted with the accent (a colour of its own would be a hex). */
-export type AttachmentItem = Omit<AttachmentMenuItem, 'color'>;
 export type AttachmentMenuOptions = Omit<
   AttachmentMenuProps,
-  'style' | 'testID' | 'children' | 'layout' | 'columns' | 'recent' | 'items'
-> & { readonly recent?: Child; readonly items?: readonly AttachmentItem[] };
+  'style' | 'testID' | 'children' | 'layout' | 'columns' | 'recent'
+> & { readonly recent?: Child };
 export type EmojiPickerOptions = Omit<
   EmojiPickerProps,
   Drawn | 'groups' | 'size' | 'tabs' | 'height'
