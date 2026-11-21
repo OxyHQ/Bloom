@@ -197,6 +197,11 @@ export type RatingStyle = (typeof ENUMS.ratingStyle)[number];
 export type RatingCountStyle = (typeof ENUMS.ratingCountStyle)[number];
 export type RatingInputSize = (typeof ENUMS.ratingInputSize)[number];
 export type MeterCap = (typeof ENUMS.meterCap)[number];
+export type TableSize = (typeof ENUMS.tableSize)[number];
+export type TableAlign = (typeof ENUMS.tableAlign)[number];
+export type TableSort = (typeof ENUMS.tableSort)[number];
+/** A table column's width: a space rung, or `fit` to hug its content. */
+export type ColumnWidthToken = SpaceToken | (typeof ENUMS.columnWidthExtra)[number];
 
 export {
   COLORS,

@@ -91,3 +91,4 @@ export const DateAndTimePickers: Story = { args: { family: 'datePicker' } };
 export const Ratings: Story = { args: { family: 'rating' } };
 export const MetersAndProgress: Story = { args: { family: 'statBar' } };
 export const Stickers: Story = { args: { family: 'sticker' } };
+export const Tables: Story = { args: { family: 'table' } };

@@ -794,3 +794,24 @@ fn a_sticker_is_checked() {
     let output = check("export const x = (u) => Lottie(u).decorative(true);\n");
     assert_eq!(output.diagnostics[0].message, ".decorative() takes 0 argument(s), not 1");
 }
+
+#[test]
+fn tables_are_checked() {
+    let imports = "import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (sort, box) => Table(TableHeader(TableColumn('Name').width('160').minWidth('96').sort('ascending', sort).prefix(box), TableColumn('Score').share(2).align('end'), TableColumn('').width('fit')), TableBody(TableRow(TableCell('Ana'), TableCell(42).align('center')).selected(true)).emptyState(Text('None'))).size('sm').minWidth('640');\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("Table().size('lg')", "Unknown tableSize token 'lg' for .size()"),
+        ("TableColumn('a').sort('up', s)", "Unknown tableSort token 'up' for .sort()"),
+        ("TableColumn('a').width('auto')", "Unknown columnWidth token 'auto' for .width()"),
+        ("TableCell('a').sort('none', s)", "TableCell has no modifier .sort()"),
+        ("TableRow().emptyState('x')", "TableRow has no modifier .emptyState()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (s) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
