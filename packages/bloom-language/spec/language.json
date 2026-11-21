@@ -545,7 +545,8 @@
     "directionsDensity": ["comfortable", "compact"],
     "mailComposeStyle": ["sheet", "docked"],
     "noteToolbarSize": ["md", "sm"],
-    "tripCardOrientation": ["auto", "horizontal", "vertical"]
+    "tripCardOrientation": ["auto", "horizontal", "vertical"],
+    "searchModeTabsStyle": ["tabs", "segmented"]
   },
   "glass": {
     "$comment": [
@@ -1601,7 +1602,18 @@
       "constructors": ["BookingBar"],
       "modifiers": ["loading", "disabled"]
     },
-    "priceBreakdown": { "constructors": ["PriceBreakdown"], "modifiers": [] }
+    "priceBreakdown": { "constructors": ["PriceBreakdown"], "modifiers": [] },
+    "homeSearchBar": { "constructors": ["HomeSearchBar"], "modifiers": [] },
+    "searchModeTabs": {
+      "constructors": ["SearchModeTabs"],
+      "modifiers": ["style"],
+      "style": "searchModeTabsStyle"
+    },
+    "propertyTypePicker": {
+      "constructors": ["PropertyTypePicker"],
+      "modifiers": ["columns", "disabled"]
+    },
+    "savedSearchCard": { "constructors": ["SavedSearchCard"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
