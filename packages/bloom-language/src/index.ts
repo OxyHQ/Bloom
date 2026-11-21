@@ -462,3 +462,7 @@ export type {
   NotificationStatus,
   NotificationView,
 } from './controls/notification';
+
+// Link previews (controls/link-preview.tsx)
+export { LinkPreview } from './controls/link-preview';
+export type { LinkPreviewData, LinkPreviewView } from './controls/link-preview';

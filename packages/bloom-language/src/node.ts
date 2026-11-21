@@ -25,6 +25,7 @@ import type { MenubarKind } from './controls/menubar';
 import type { ContextMenuAnchor } from '@oxy.so/bloom/context-menu';
 import type { FileUploadKind } from './controls/file-upload';
 import type { VideoViewKind } from './controls/video-view';
+import type { LinkPreviewKind } from './controls/link-preview';
 import type { InputGroupKind } from './controls/input-group';
 import type { NotificationKind } from './controls/notification';
 import type { CompositionBarKind } from './controls/composition-bar';
@@ -549,6 +550,9 @@ export interface ValueModifiers {
   introDelay: number;
   liveRole: LiveRole;
 
+  // Link previews (controls/link-preview.tsx)
+  coverFill: boolean;
+
   // Inputs (controls/inputs.tsx)
   required: boolean;
   floatingLabel: true;
@@ -937,7 +941,8 @@ export type NodeKind =
   | FactStripKind
   | ExpandableTextKind
   | CompositionBarKind
-  | NotificationKind;
+  | NotificationKind
+  | LinkPreviewKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -2143,6 +2148,11 @@ export class Node {
   }
   liveRole(value: LiveRole): Node {
     return this.set('liveRole', value);
+  }
+
+  // Link previews (controls/link-preview.tsx)
+  coverFill(value = true): Node {
+    return this.set('coverFill', value);
   }
 
   // Inputs (controls/inputs.tsx)

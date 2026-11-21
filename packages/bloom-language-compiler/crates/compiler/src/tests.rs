@@ -1187,3 +1187,14 @@ fn notifications_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn link_previews_are_checked() {
+    let imports = "import { LinkPreview } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid =
+        check("export const x = (p, f) => LinkPreview(p).coverFill().onPress(f).frame({ width: '320' });\n");
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = (p) => LinkPreview(p).streaming();\n");
+    assert_eq!(output.diagnostics[0].message, "LinkPreview has no modifier .streaming()");
+}
