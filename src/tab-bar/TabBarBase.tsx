@@ -133,6 +133,13 @@ type BarContextValue = {
 };
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+/**
+ * The bar's lens jelly, a fraction of the engine's: the engine swells a control by a lift of its
+ * height, so a ~310 dp bar grows ~11 dp at each end under a press and leans up to ~15 dp more under
+ * a drag across its tabs, past the 10 dp gap to the action beside it (seen on a Pixel 8a: the
+ * stretched bar covered the FAB). At 0.35 both stay inside the gap.
+ */
+const BAR_JELLY = 0.35;
 
 const BarContext = createContext<BarContextValue | null>(null);
 const subscribeHydration = () => () => {};
@@ -822,7 +829,7 @@ function TabBarBody({
         <OptionalGesture enabled={!scrollable && !collapseActive} gesture={gesture}>
           <Animated.View style={[barStyle, surfaceFillVars(recipe.paint.material.publishedFill)]}>
             {lens ? (
-              <LensButtonHost style={{ alignSelf: 'stretch', flex: 1 }}>
+              <LensButtonHost jelly={BAR_JELLY} style={{ alignSelf: 'stretch', flex: 1 }}>
                 <View style={{ flex: 1 }}>{barContent}</View>
               </LensButtonHost>
             ) : (

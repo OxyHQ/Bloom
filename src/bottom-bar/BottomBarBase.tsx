@@ -32,6 +32,7 @@ import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
 import { useClaimBottomEdge, useMeasuredBottomEdgeClaim } from '../layout/bottom-edge';
 import { FAB_METRICS } from '../fab/constants';
+import { FabDiameterContext } from '../fab/fab-diameter';
 import { windowEdgeGap } from '../layout/edge';
 import { useMinimizeState } from '../tab-bar/context';
 import {
@@ -584,7 +585,10 @@ export function BottomBarBase({
               }}
             >
               <SearchPresentationContext.Provider value={adaptiveAction ? searchHost : null}>
-                {action}
+                {/* Beside the bar, its FAB is the bar's height: one row. */}
+                <FabDiameterContext.Provider value={above || dock ? undefined : EXPANDED_HEIGHT}>
+                  {action}
+                </FabDiameterContext.Provider>
               </SearchPresentationContext.Provider>
             </View>
           </Animated.View>

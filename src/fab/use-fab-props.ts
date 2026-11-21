@@ -1,8 +1,9 @@
-import { createElement } from 'react';
+import { createElement, useContext } from 'react';
 import { useBloomAppearance } from '../appearance/context';
 import { resolveButtonPalette } from '../button/shared';
 import { useTheme } from '../theme/use-theme';
 import { FAB_METRICS } from './constants';
+import { FabDiameterContext } from './fab-diameter';
 import { FabLabel } from './FabLabel';
 import type { ButtonProps } from '../button/types';
 import type { FabProps } from './types';
@@ -24,7 +25,7 @@ export function useFabProps({
   const resolved = useBloomAppearance({ size, tone }, { size: 'md', tone: 'action' });
   const palette = resolveButtonPalette(appearance, theme, resolved.tone);
   const foreground = props.disabled ? palette.disabled.foreground : palette.rest.foreground;
-  const diameter = FAB_METRICS[resolved.size].diameter;
+  const diameter = useContext(FabDiameterContext) ?? FAB_METRICS[resolved.size].diameter;
   const glyphSize =
     typeof iconSize === 'number' && Number.isFinite(iconSize) && iconSize > 0
       ? iconSize

@@ -51,6 +51,8 @@ export interface LensMenuConfig {
 export interface LensTriggerConfig {
   tintColor?: string;
   tintOpacity?: number;
+  /** How far the press and the drag deform the lens, a multiplier of the engine's own (1). */
+  jelly?: number;
   absorb?: { duration?: number; damping?: number };
 }
 
