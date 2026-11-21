@@ -1,6 +1,7 @@
+import { Button } from '@oxy.so/bloom/button';
 import { Checkbox } from '@oxy.so/bloom/checkbox';
 import { Field } from '@oxy.so/bloom/field';
-import { RiMailLine, RiSearchLine } from '@oxy.so/bloom/icons';
+import { RiMailLine, RiMicLine, RiSearchLine } from '@oxy.so/bloom/icons';
 import { Label } from '@oxy.so/bloom/label';
 import { RadioGroup } from '@oxy.so/bloom/radio';
 import { Search } from '@oxy.so/bloom/search';
@@ -12,10 +13,12 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectIcon,
   SelectItem,
   SelectItemIndicator,
   SelectItemText,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@oxy.so/bloom/select';
@@ -23,6 +26,7 @@ import { tokens } from '@oxy.so/bloom/styles';
 import { Switch } from '@oxy.so/bloom/switch';
 import {
   TextField,
+  TextFieldGhost,
   TextFieldIcon,
   TextFieldInput,
   TextFieldPrefix,
@@ -32,9 +36,10 @@ import { Textarea } from '@oxy.so/bloom/textarea';
 
 import type { Binding } from '../src/binding';
 import * as L from '../src/controls/inputs';
+import * as P from '../src/primitives';
 import { ENUMS } from '../src/generated/spec.generated';
 import { toElement } from '../src/render';
-import type { ParityCase } from './support/cases';
+import { type ParityCase, Themed } from './support/cases';
 
 const set = () => {};
 const on: Binding<boolean> = [true, set];
@@ -647,6 +652,285 @@ const searches: ParityCase[] = [
   },
 ];
 
+// ── Wave 2's remaining inputs ────────────────────────────────────
+
+const SWATCHES = [
+  { value: 'primary', label: 'Blue' },
+  { value: 'success', label: 'Green' },
+  { value: 'warning', label: 'Amber' },
+  { value: 'error', label: 'Red' },
+] as const;
+
+const GROCERIES = [
+  { value: 'apple', label: 'Apple', group: 'Fruit' },
+  { value: 'pear', label: 'Pear', group: 'Fruit' },
+  { value: 'leek', label: 'Leek', group: 'Vegetable' },
+];
+
+const more: ParityCase[] = [
+  {
+    name: 'TextField with a trailing icon',
+    language: () => toElement(L.TextField(text, 'Email').trailingIcon(RiMailLine)),
+    bloom: () => (
+      <TextField>
+        <TextFieldInput label="Email" value="Ada Lovelace" onValueChange={set} />
+        <TextFieldIcon icon={RiMailLine} position="trailing" />
+      </TextField>
+    ),
+  },
+  {
+    name: 'TextField with an icon, a suffix and a trailing icon',
+    language: () =>
+      toElement(
+        L.TextField(['ada', set], 'Handle')
+          .icon(RiSearchLine)
+          .suffix('.oxy.so')
+          .trailingIcon(RiMailLine),
+      ),
+    bloom: () => (
+      <TextField>
+        <TextFieldIcon icon={RiSearchLine} />
+        <TextFieldInput label="Handle" value="ada" onValueChange={set} />
+        <TextFieldSuffix label=".oxy.so">.oxy.so</TextFieldSuffix>
+        <TextFieldIcon icon={RiMailLine} position="trailing" />
+      </TextField>
+    ),
+  },
+  {
+    name: 'TextField with a completion',
+    language: () => toElement(L.TextField(['acme.', set], 'Workspace').completion('oxy.so')),
+    bloom: () => (
+      <TextField>
+        <TextFieldGhost value="oxy.so">acme.</TextFieldGhost>
+        <TextFieldInput label="Workspace" value="acme." onValueChange={set} />
+      </TextField>
+    ),
+  },
+  {
+    name: 'TextField with its focus bound',
+    language: () => toElement(L.TextField(text, 'Name').focused(off)),
+    bloom: () => (
+      <TextField>
+        <TextFieldInput
+          label="Name"
+          value="Ada Lovelace"
+          onValueChange={set}
+          onFocus={set}
+          onBlur={set}
+        />
+      </TextField>
+    ),
+  },
+  {
+    name: 'TextEditor with its focus bound',
+    language: () => toElement(L.TextEditor(text, 'Bio').focused(off)),
+    bloom: () => (
+      <Textarea label="Bio" value="Ada Lovelace" onValueChange={set} onFocus={set} onBlur={set} />
+    ),
+  },
+  {
+    name: 'Search with its focus bound',
+    language: () => toElement(L.Search(empty).focused(off)),
+    bloom: () => <Search value="" onValueChange={set} onFocus={set} onBlur={set} />,
+  },
+  {
+    name: 'Search with trailing content',
+    language: () =>
+      toElement(
+        L.Search(empty).trailing(
+          P.Button(P.Icon(RiMicLine)).style('plain').shape('circle').label('Voice'),
+        ),
+      ),
+    bloom: () => (
+      <Search
+        value=""
+        onValueChange={set}
+        trailing={
+          <Button appearance="plain" icon={RiMicLine} iconOnly accessibilityLabel="Voice" />
+        }
+      />
+    ),
+  },
+  {
+    name: 'Search collapsible, its trigger subtle and small',
+    language: () =>
+      toElement(
+        L.Search(empty)
+          .collapsible()
+          .presented([false, set])
+          .trigger(P.Button().style('subtle').tint('accent').size('sm').testID('find')),
+      ),
+    bloom: () => (
+      <Search
+        value=""
+        onValueChange={set}
+        presentation="collapsible"
+        open={false}
+        onOpenChange={set}
+        triggerProps={{ appearance: 'subtle', tone: 'accent', size: 'sm', testID: 'find' }}
+      />
+    ),
+  },
+  {
+    name: 'Search with padding and a width, as its container',
+    language: () => toElement(L.Search(empty).padding('sm').frame({ width: '320' })),
+    bloom: () => (
+      <Search
+        value=""
+        onValueChange={set}
+        containerStyle={{
+          paddingTop: space.sm,
+          paddingBottom: space.sm,
+          paddingStart: space.sm,
+          paddingEnd: space.sm,
+          width: 320,
+        }}
+      />
+    ),
+  },
+  {
+    name: 'RadioGroup of swatches',
+    language: () =>
+      toElement(
+        L.RadioGroup(
+          ['success', set],
+          SWATCHES.map((swatch) => L.Option(swatch.value, swatch.label).tint(swatch.value)),
+        )
+          .style('swatch')
+          .label('Colour'),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RadioGroup
+            variant="swatch"
+            label="Colour"
+            value="success"
+            onValueChange={set}
+            options={SWATCHES.map((swatch) => ({
+              value: swatch.value,
+              label: swatch.label,
+              color: c[swatch.value],
+            }))}
+          />
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'RadioGroup of swatches, a dot of its own and the accent',
+    language: () =>
+      toElement(
+        L.RadioGroup(
+          ['warning', set],
+          L.Option('warning', 'Amber').tint('warning').foreground('black'),
+          L.Option('accent', 'Accent'),
+        )
+          .style('swatch')
+          .label('Colour'),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RadioGroup
+            variant="swatch"
+            label="Colour"
+            value="warning"
+            onValueChange={set}
+            options={[
+              { value: 'warning', label: 'Amber', color: c.warning, foreground: c.black },
+              { value: 'accent', label: 'Accent' },
+            ]}
+          />
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'Picker with groups',
+    language: () =>
+      toElement(
+        L.Picker(
+          ['pear', set],
+          L.OptionGroup('Fruit', L.Option('apple', 'Apple'), L.Option('pear', 'Pear')),
+          L.OptionGroup('Vegetable', L.Option('leek', 'Leek')),
+        )
+          .placeholder('Pick one')
+          .label('Groceries'),
+      ),
+    bloom: () => (
+      <Select value="pear" onValueChange={set}>
+        <SelectTrigger label="Groceries">
+          <SelectValue placeholder="Pick one" />
+          <SelectIcon />
+        </SelectTrigger>
+        <SelectContent
+          label="Groceries"
+          items={GROCERIES}
+          renderItem={(item, index) => {
+            const row = (
+              <SelectItem value={item.value} label={item.label}>
+                <SelectItemIndicator />
+                <SelectItemText>{item.label}</SelectItemText>
+              </SelectItem>
+            );
+            return GROCERIES[index - 1]?.group === item.group ? (
+              row
+            ) : (
+              <SelectGroup>
+                <SelectLabel>{item.group}</SelectLabel>
+                {row}
+              </SelectGroup>
+            );
+          }}
+        />
+      </Select>
+    ),
+  },
+  {
+    name: 'Picker whose rows carry a mark, the chosen one in its trigger',
+    language: () =>
+      toElement(
+        L.Picker(
+          ['apple', set],
+          L.Option('apple', 'Apple').leadingView(P.Icon(RiMailLine).size('md')),
+          L.Option('pear', 'Pear'),
+        ).label('Fruit'),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => {
+          const mark = <RiMailLine size="md" fill={c.text} />;
+          const items = [
+            { value: 'apple', label: 'Apple', leading: mark },
+            { value: 'pear', label: 'Pear', leading: undefined },
+          ];
+          return (
+            <Select value="apple" onValueChange={set}>
+              <SelectTrigger label="Fruit">
+                <SelectValue
+                  leading={(item) => (item as (typeof items)[number] | undefined)?.leading ?? null}
+                />
+                <SelectIcon />
+              </SelectTrigger>
+              <SelectContent
+                label="Fruit"
+                items={items}
+                renderItem={(item) => (
+                  <SelectItem value={item.value} label={item.label} leading={item.leading}>
+                    <SelectItemIndicator />
+                    <SelectItemText>{item.label}</SelectItemText>
+                  </SelectItem>
+                )}
+              />
+            </Select>
+          );
+        }}
+      </Themed>
+    ),
+  },
+];
+
 export const INPUT_CASES: ParityCase[] = [
   ...toggles,
   ...checkboxes,
@@ -657,4 +941,5 @@ export const INPUT_CASES: ParityCase[] = [
   ...editors,
   ...forms,
   ...searches,
+  ...more,
 ];

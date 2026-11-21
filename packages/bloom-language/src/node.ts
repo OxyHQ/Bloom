@@ -477,6 +477,11 @@ export interface ValueModifiers {
   tabs: true;
   collapsible: SearchCollapse | undefined;
   tokens: Binding<readonly SearchToken[]>;
+  trailingIcon: IconComponent;
+  completion: string;
+  focused: Binding<boolean>;
+  trigger: ViewNode;
+  leadingView: readonly Child[];
 
   // Overlays and feedback (controls/overlays.tsx)
 
@@ -1929,6 +1934,21 @@ export class Node {
   }
   tokens(value: Binding<readonly SearchToken[]>): Node {
     return this.set('tokens', value);
+  }
+  trailingIcon(value: IconComponent): Node {
+    return this.set('trailingIcon', value);
+  }
+  completion(value: string): Node {
+    return this.set('completion', value);
+  }
+  focused(value: Binding<boolean>): Node {
+    return this.set('focused', value);
+  }
+  trigger(value: ViewNode): Node {
+    return this.set('trigger', value);
+  }
+  leadingView(...value: Child[]): Node {
+    return this.set('leadingView', value);
   }
 
   // Overlays and feedback (controls/overlays.tsx)

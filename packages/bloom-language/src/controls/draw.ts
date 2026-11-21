@@ -1,6 +1,12 @@
-import type { ReactElement, ReactNode } from 'react';
+import {
+  type ComponentType,
+  createElement,
+  Fragment,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 
-import type { Child, Modifier, Node } from '../node';
+import { type Child, isNode, type Modifier, type Node, type Press } from '../node';
 import type { ColorToken } from '../tokens';
 
 /**
@@ -52,7 +58,68 @@ export interface ControlDraw {
   render(child: Child): ReactNode;
   /** Children, one slot each, as a stack draws them. */
   children(children: readonly Child[]): ReactNode[];
+  /**
+   * A press as a handler, in the view's environment: a function as it is, a
+   * `navigate()` through the navigator the view is drawn under. For a Bloom
+   * prop that takes a handler (an empty state's action, a suggestion).
+   */
+  press(value: Press | undefined): (() => void) | undefined;
 }
 
 /** A control's renderer: its node, drawn as the Bloom component it stands for. */
 export type ControlRenderer = (draw: ControlDraw) => ReactElement;
+
+/** The value of `node`'s last modifier of this kind (another node's, read as data). */
+export function lastOf<K extends Modifier['kind']>(
+  node: Node,
+  kind: K,
+): Extract<Modifier, { kind: K }> | undefined {
+  let found: Extract<Modifier, { kind: K }> | undefined;
+  for (const modifier of node.modifiers)
+    if (modifier.kind === kind) found = modifier as Extract<Modifier, { kind: K }>;
+  return found;
+}
+
+/** Language children, flattened to nodes (arrays flattened, absent ones left out). */
+export function nodesOf(children: readonly Child[]): Node[] {
+  const out: Node[] = [];
+  for (const child of children) {
+    if (Array.isArray(child)) out.push(...nodesOf(child));
+    else if (isNode(child)) out.push(child);
+  }
+  return out;
+}
+
+/** A slot of views (a leading or trailing view) as one element. */
+export function slot(d: ControlDraw, children: readonly Child[] | undefined): ReactNode {
+  if (children === undefined || children.length === 0) return undefined;
+  if (children.length === 1) return d.render(children[0] as Child);
+  return createElement(Fragment, null, ...d.children(children));
+}
+
+const boxedAs = new Map<string, Map<unknown, ComponentType<Record<string, unknown>>>>();
+
+/**
+ * `host` taking the view's box as its `prop` instead of its `style`: for a Bloom
+ * component whose outer box is another prop (Search's `containerStyle`). The
+ * one component per host and prop draws no view of its own.
+ */
+export function boxAs(
+  host: ComponentType<never>,
+  prop: string,
+): ComponentType<Record<string, unknown>> {
+  let byHost = boxedAs.get(prop);
+  if (byHost === undefined) {
+    byHost = new Map();
+    boxedAs.set(prop, byHost);
+  }
+  let boxed = byHost.get(host);
+  if (boxed === undefined) {
+    const named = ({ style, ...props }: Record<string, unknown>) =>
+      createElement(host as ComponentType<Record<string, unknown>>, { ...props, [prop]: style });
+    named.displayName = `BoxAs(${prop})`;
+    boxed = named;
+    byHost.set(host, boxed);
+  }
+  return boxed;
+}

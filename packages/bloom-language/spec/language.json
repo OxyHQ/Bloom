@@ -997,7 +997,8 @@
     "trailingIcon": ["value"],
     "completion": ["value"],
     "focused": ["value"],
-    "trigger": ["value"]
+    "trigger": ["value"],
+    "leadingView": ["children"]
   },
   "universal": [
     "padding",

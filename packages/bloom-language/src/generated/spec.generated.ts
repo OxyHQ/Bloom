@@ -2359,6 +2359,9 @@ export const MODIFIERS = {
   ],
   "trigger": [
     "value"
+  ],
+  "leadingView": [
+    "children"
   ]
 } as const;
 

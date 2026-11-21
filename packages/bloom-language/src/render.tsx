@@ -2161,6 +2161,7 @@ function renderHost(
         pressAround: (drawn) => pressAround(p, behaviour, key, drawn),
         render: (child) => renderChild(child, ctx, undefined),
         children: (children) => renderChildren(children, ctx),
+        press: (value) => pressOf(value, ctx.env),
       });
     }
   }

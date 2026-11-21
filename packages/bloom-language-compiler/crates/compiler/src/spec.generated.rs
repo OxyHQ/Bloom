@@ -426,6 +426,7 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("completion", &["value"]),
     ("focused", &["value"]),
     ("trigger", &["value"]),
+    ("leadingView", &["children"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[

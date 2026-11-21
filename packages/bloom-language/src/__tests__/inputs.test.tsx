@@ -10,6 +10,7 @@ import {
   Label,
   type LabelView,
   Option,
+  OptionGroup,
   type OptionView,
   Picker,
   type PickerView,
@@ -138,6 +139,85 @@ describe('inputs', () => {
     expect(search.props.presentation).toBe('collapsible');
     act(() => search.props.onRemoveToken('pdf'));
     expect(setTokens).toHaveBeenCalledWith([{ key: 'mine', label: 'Mine' }]);
+  });
+
+  it('focus is a binding: focusing writes it, and setting it focuses the input', () => {
+    let setFocused!: (value: boolean) => void;
+    const Screen = view(function Screen() {
+      const focused = useState(false);
+      setFocused = focused[1];
+      return TextField(useState(''), 'Name').focused(focused);
+    });
+    const renderer = mount(toElement(Screen()));
+    const input = () => renderer.root.findByType('TextFieldInput' as never);
+    const native = {
+      focused: false,
+      isFocused: () => native.focused,
+      focus: jest.fn(),
+      blur: jest.fn(),
+    };
+    input().props.inputRef.current = native;
+    native.focused = true;
+    act(() => input().props.onFocus());
+    native.focused = false;
+    act(() => input().props.onBlur());
+    expect(native.focus).not.toHaveBeenCalled();
+    act(() => setFocused(true));
+    expect(native.focus).toHaveBeenCalledTimes(1);
+    native.focused = true;
+    act(() => setFocused(false));
+    expect(native.blur).toHaveBeenCalledTimes(1);
+  });
+
+  it('a picker’s groups head their first row, and an option’s mark follows the choice', () => {
+    const renderer = mount(
+      toElement(
+        Picker(
+          ['kiwi', () => {}],
+          OptionGroup(
+            'Fruit',
+            Option('kiwi', 'Kiwi').leadingView(Label('K')),
+            Option('fig', 'Fig'),
+          ),
+          OptionGroup('Vegetable', Option('leek', 'Leek')),
+        ),
+      ),
+    );
+    const content = renderer.root.findByType('SelectContent' as never);
+    const items = content.props.items as { value: string; group: string }[];
+    expect(items.map((item) => [item.value, item.group])).toEqual([
+      ['kiwi', 'Fruit'],
+      ['fig', 'Fruit'],
+      ['leek', 'Vegetable'],
+    ]);
+    const rows = items.map((item, index) => content.props.renderItem(item, index));
+    expect(rows.map((row: { type: unknown }) => row.type)).toEqual([
+      'SelectGroup',
+      'SelectItem',
+      'SelectGroup',
+    ]);
+    const leading = renderer.root.findByType('SelectValue' as never).props.leading;
+    expect(leading(items[0])).toBe((items[0] as unknown as { leading: unknown }).leading);
+    expect(leading(items[1])).toBeNull();
+  });
+
+  it('a swatch’s colours are roles the theme paints', () => {
+    const renderer = mount(
+      toElement(
+        RadioGroup(
+          ['lime', () => {}],
+          Option('lime', 'Lime').tint('primary').foreground('background'),
+        )
+          .style('swatch')
+          .label('Colour'),
+      ),
+    );
+    const group = renderer.root.findByType('RadioGroup' as never);
+    expect(group.props.variant).toBe('swatch');
+    expect(group.props.options[0]).toMatchObject({
+      color: 'rgb(0 0 255)',
+      foreground: 'rgb(255 255 255)',
+    });
   });
 
   it('builds every input', () => {
