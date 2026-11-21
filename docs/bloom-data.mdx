@@ -238,9 +238,16 @@ back with its records in one query) took the queries themselves to 5 to
 stalls. The sync read avoids every hop for the one read that decides the first
 frame.
 
-Web keeps no durable copy for now. expo-sqlite on web needs `SharedArrayBuffer`,
-and so COOP and COEP headers, which break popup sign-in. The `Persister`
-interface leaves room for IndexedDB.
+On the web, `indexedDbPersister(name)` from `@oxy.so/bloom-data/indexeddb`
+keeps the copy in IndexedDB, one database per account (expo-sqlite on web
+needs `SharedArrayBuffer`, and so COOP and COEP headers, which break popup
+sign-in). IndexedDB has no synchronous API, so `list.loadNow` finds nothing
+there; `hasIndexedDb()` says whether the runtime has it.
+
+`createAccounts().forget(account)` closes an account's store and deletes its
+copy (`Persister.destroy`): sign-out leaves nothing of the account behind.
+`sqlitePersister(open, remove)` deletes the file with `remove`
+(`() => SQLite.deleteDatabaseAsync(name)`); without it, it empties it.
 
 ## Stores, accounts and the server
 
