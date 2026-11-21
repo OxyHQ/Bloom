@@ -107,6 +107,7 @@ export const DURATION = ${ts(scales.duration)} as const;
 export const LENGTH = ${ts(scales.length)} as const;
 export const Z_INDEX = ${ts(scales.zIndex)} as const;
 export const SHADOW = ${ts(scales.shadow)} as const;
+export const SCALE = ${ts(scales.scale)} as const;
 export const BREAKPOINT = ${ts(scales.breakpoint)} as const;
 
 /** What a variant (\`when()\`) can change, and the web selector of each scheme and state condition. */
@@ -180,6 +181,10 @@ const LOGICAL = {
   borderEndColor: 'border-inline-end-color',
   start: 'inset-inline-start',
   end: 'inset-inline-end',
+  borderTopStartRadius: 'border-start-start-radius',
+  borderTopEndRadius: 'border-start-end-radius',
+  borderBottomStartRadius: 'border-end-start-radius',
+  borderBottomEndRadius: 'border-end-end-radius',
 };
 /** react-native-web's precedence group for logical longhands. */
 const LOGICAL_ORDER = 2.2;
@@ -190,25 +195,32 @@ const roleValue = (role) => webColor(colors[role][1]);
 const rules = [];
 const classes = {};
 
-/** One class for one property at one value. `key` is what the runtime looks the class up by. */
+/**
+ * One class for one property at one value. `key` is what the runtime looks the
+ * class up by. A value react-native-web writes as more than one rule (a
+ * `pointerEvents` of `none` also reaches the children, `>*`) keeps each rule,
+ * under the language's class name.
+ */
 function addClass(property, value, key) {
   if (classes[key]) return;
   const name = `bl${hash(key)}`;
-  let declarations;
-  let order;
   if (LOGICAL[property]) {
     const css = typeof value === 'number' ? `${value}px` : value;
-    declarations = `${LOGICAL[property]}:${css};`;
-    order = LOGICAL_ORDER;
+    rules.push({ order: LOGICAL_ORDER, name, text: `.${name}{${LOGICAL[property]}:${css};}` });
   } else {
     const [, ordered] = atomic(preprocess({ [property]: value }, {}));
     if (ordered.length !== 1)
       throw new Error(`${property}: expected one rule, got ${ordered.length}`);
-    const [[ruleTexts, ruleOrder]] = ordered;
-    declarations = ruleTexts[0].slice(ruleTexts[0].indexOf('{') + 1, -1);
-    order = ruleOrder;
+    const [[ruleTexts, order]] = ordered;
+    for (const text of ruleTexts) {
+      const own = /^\.[\w-]+/.exec(text)[0];
+      rules.push({
+        order,
+        name,
+        text: `.${name}${text.slice(own.length).replace(/^(\S*) \{/, '$1{')}`,
+      });
+    }
   }
-  rules.push({ order, name, text: `.${name}{${declarations}}` });
   classes[key] = name;
 }
 
@@ -239,7 +251,12 @@ for (const property of [
 }
 for (const property of objects.frame.keys)
   for (const value of Object.values(scales.length)) valueClass(property, value);
-for (const value of numbers(scales.corner)) valueClass('borderRadius', value);
+for (const value of numbers(scales.corner)) {
+  valueClass('borderRadius', value);
+  // A corner per side (style.ts, corner): logical, as the edges are.
+  for (const corner of ['TopStart', 'TopEnd', 'BottomStart', 'BottomEnd'])
+    valueClass(`border${corner}Radius`, value);
+}
 valueClass('overflow', 'hidden');
 for (const value of numbers(scales.opacity)) valueClass('opacity', value);
 // Borders: react-native-web's hairline is 1px.
@@ -288,6 +305,12 @@ for (const value of Object.values(scales.alignment)) {
 }
 valueClass('flex', 1);
 for (const value of numbers(scales.shrink)) valueClass('flexShrink', value);
+for (const value of [...spaceValues, ...Object.values(scales.length)])
+  valueClass('flexBasis', value);
+// Hit testing, and a view only assistive technology reads (style.ts, placement).
+for (const value of ['none', 'auto']) valueClass('pointerEvents', value);
+valueClass('borderWidth', 0);
+valueClass('clipPath', 'inset(50%)');
 // Type: sizes, ramp line heights, every size at every leading and every tracking, weights.
 for (const value of fontSizes) valueClass('fontSize', value);
 const lineHeights = new Set(Object.values(typeRamp).map((s) => s[1]));
@@ -313,6 +336,12 @@ valueClass('fontStyle', 'italic');
 for (const value of ['underline', 'line-through', 'underline line-through'])
   valueClass('textDecorationLine', value);
 for (const value of enums.textCase) valueClass('textTransform', value);
+valueClass('fontVariant', ['tabular-nums']);
+// A web list (render.tsx, stack): its markers, and each row as a list item.
+for (const value of enums.listMarker) valueClass('listStyleType', value);
+valueClass('display', 'list-item');
+valueClass('wordBreak', 'break-all');
+valueClass('overflowWrap', 'break-word');
 
 // react-native-web's precedence (shorthands before longhands), then by name, so
 // the sheet is the same text on every run.
@@ -340,6 +369,7 @@ const tokenSets = {
   length: [...Object.keys(scales.space), ...Object.keys(scales.length)],
   zIndex: Object.keys(scales.zIndex),
   shadow: Object.keys(scales.shadow),
+  scale: Object.keys(scales.scale),
   ring: [...Object.keys(colors), ...enums.ringExtra],
   corner: [...Object.keys(scales.corner), ...enums.cornerExtra],
   font: [...typeFamilies, ...Object.keys(scales.fontSize), ...enums.fontFamily],

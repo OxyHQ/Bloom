@@ -31,6 +31,10 @@ import {
   type LengthToken,
   type OverlayAlignment,
   type ShadowName,
+  type ScaleName,
+  type CornerSide,
+  type WordBreak,
+  type ListMarker,
   type ZIndexName,
   type ButtonLinkTone,
   type ButtonShape,
@@ -201,6 +205,9 @@ export interface ValueModifiers {
   underline: true;
   strikethrough: true;
   textCase: TextCase;
+  monospacedDigit: true;
+  wordBreak: WordBreak;
+  listMarker: ListMarker;
   lineStyle: DividerStyle;
   verified: boolean;
   live: boolean;
@@ -274,6 +281,10 @@ export type Modifier =
   | { readonly kind: 'offset'; readonly key: string; readonly value: OffsetSpec }
   | { readonly kind: 'zIndex'; readonly key: string; readonly value: ZIndexName }
   | { readonly kind: 'hidden'; readonly key: string; readonly value: boolean }
+  | { readonly kind: 'basis'; readonly key: string; readonly value: LengthToken }
+  | { readonly kind: 'scale'; readonly key: string; readonly value: ScaleName }
+  | { readonly kind: 'allowsHitTesting'; readonly key: string; readonly value: boolean }
+  | { readonly kind: 'accessibilityOnly'; readonly key: string }
   | {
       readonly kind: 'overlay';
       readonly key: string;
@@ -319,7 +330,12 @@ export type Modifier =
       readonly width: BorderWidthName;
       readonly edge: BorderEdge;
     }
-  | { readonly kind: 'corner'; readonly key: string; readonly value: CornerName }
+  | {
+      readonly kind: 'corner';
+      readonly key: string;
+      readonly value: CornerName;
+      readonly side: CornerSide;
+    }
   | { readonly kind: 'cornerCurve'; readonly key: string; readonly value: CornerCurve }
   | { readonly kind: 'opacity'; readonly key: string; readonly value: OpacityName }
   | { readonly kind: 'glass'; readonly key: string; readonly value: GlassValue }
@@ -627,6 +643,18 @@ export class Node {
   hidden(value = true): Node {
     return this.with({ kind: 'hidden', key: `hidden:${value}`, value });
   }
+  basis(value: LengthToken): Node {
+    return this.with({ kind: 'basis', key: `basis:${tokenKey(value)}`, value });
+  }
+  scale(value: ScaleName): Node {
+    return this.with({ kind: 'scale', key: `scale:${value}`, value });
+  }
+  allowsHitTesting(value: boolean): Node {
+    return this.with({ kind: 'allowsHitTesting', key: `hit:${value}`, value });
+  }
+  accessibilityOnly(): Node {
+    return this.with({ kind: 'accessibilityOnly', key: 'a11yOnly' });
+  }
   overlay(content: ViewNode, alignment: OverlayAlignment = 'center'): Node {
     return this.with({ kind: 'overlay', key: 'overlay', content, alignment, behind: false });
   }
@@ -661,8 +689,9 @@ export class Node {
   border(value: ColorToken, width: BorderWidthName = 'hairline', edge: BorderEdge = 'all'): Node {
     return this.with({ kind: 'border', key: `b:${value}:${width}:${edge}`, value, width, edge });
   }
-  corner(value: CornerName): Node {
-    return this.with({ kind: 'corner', key: `r:${value}`, value });
+  corner(value: CornerName, side: CornerSide = 'all'): Node {
+    const key = side === 'all' ? `r:${value}` : `r:${value}:${side}`;
+    return this.with({ kind: 'corner', key, value, side });
   }
   cornerCurve(value: CornerCurve): Node {
     return this.with({ kind: 'cornerCurve', key: `rc:${value}`, value });
@@ -922,6 +951,12 @@ export class Node {
   textCase(value: TextCase): Node {
     return this.set('textCase', value);
   }
+  monospacedDigit(): Node {
+    return this.set('monospacedDigit', true);
+  }
+  wordBreak(value: WordBreak): Node {
+    return this.with({ kind: 'wordBreak', key: `break:${value}`, value });
+  }
   lineStyle(value: DividerStyle): Node {
     return this.set('lineStyle', value);
   }
@@ -978,6 +1013,9 @@ export class Node {
   }
   hoverHighlight(value?: boolean): Node {
     return this.set('hoverHighlight', value);
+  }
+  listMarker(value: ListMarker): Node {
+    return this.with({ kind: 'listMarker', key: `list:${value}`, value });
   }
   pressed(value: boolean): Node {
     return this.set('pressed', value);
@@ -1050,6 +1088,17 @@ export interface ViewModifiers<Self> extends ViewNode {
   zIndex(value: ZIndexName): Self;
   /** Leaves the layout (`display: none`) while staying mounted; `hidden(false)` puts it back, as a variant does. */
   hidden(value?: boolean): Self;
+  /** Its length along its parent's axis before free space is shared (`flex-basis`): a space rung, a length of the parent, or `fit`. */
+  basis(value: LengthToken): Self;
+  /** Drawn scaled about its centre, where it is laid out; its siblings keep their places. */
+  scale(value: ScaleName): Self;
+  /** `false`: touches and the pointer pass through the view and everything inside it, to what is under it. */
+  allowsHitTesting(value: boolean): Self;
+  /**
+   * Read by assistive technology and not drawn: a 1pt clipped box out of the
+   * layout (Tailwind's `sr-only`). A screen reader still announces it.
+   */
+  accessibilityOnly(): Self;
   /** A fill: a colour role, or a role at a named opacity (`'primary/10'`); or a view behind it, placed at `alignment` (centred by default). */
   background(value: ColorToken): Self;
   background(value: ViewNode, alignment?: OverlayAlignment): Self;
@@ -1073,7 +1122,7 @@ export interface ViewModifiers<Self> extends ViewNode {
    * shape it sits in, less the inset between them: a glass's, another
    * concentric box's, a Bloom card's).
    */
-  corner(value: CornerName): Self;
+  corner(value: CornerName, side?: CornerSide): Self;
   /** `smooth`: the platform's continuous corner (a squircle on the web), as Bloom's surfaces draw theirs. */
   cornerCurve(value: CornerCurve): Self;
   opacity(value: OpacityName): Self;
@@ -1162,6 +1211,12 @@ export interface StackView extends ViewModifiers<StackView> {
    * the web; or while `active` (a coordinated highlight), on every platform.
    */
   hoverHighlight(active?: boolean): StackView;
+  /**
+   * Web: a list, each child a row behind the marker (an HTML list and its
+   * items, `list-style-type`); give it the room for the markers with a
+   * leading padding. Native draws no markers, as React Native has none.
+   */
+  listMarker(value: ListMarker): StackView;
 }
 /**
  * Text, drawn by Bloom's `Text` (its type ramp, its families, its desktop
@@ -1196,6 +1251,10 @@ export interface TextView extends ViewModifiers<TextView> {
   strikethrough(): TextView;
   /** Draws the text in upper case, lower case, or with each word capitalised. */
   textCase(value: TextCase): TextView;
+  /** Digits of one width, so numbers in a column or a counter line up (`font-variant: tabular-nums`). */
+  monospacedDigit(): TextView;
+  /** Web: where a line may break inside a word (`all`, `words`); native text keeps its platform's breaking. */
+  wordBreak(value: WordBreak): TextView;
 }
 export interface IconView extends ViewModifiers<IconView> {
   size(value: IconSizeToken): IconView;

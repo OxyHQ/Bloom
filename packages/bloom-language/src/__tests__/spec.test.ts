@@ -21,7 +21,9 @@ import {
   LEADING_PX,
   type NODE_MODIFIERS,
   OPACITY,
+  SCALE,
   SHADOW,
+  BORDER_WIDTH,
   SPACE,
   TYPE_RAMP,
   TRACKING,
@@ -107,6 +109,9 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
       [TRACKING, 'em', 1],
       [TRACKING_PX, 'px', 1],
       [OPACITY, '', 100],
+      [Z_INDEX, '', 1],
+      [SCALE, '', 100],
+      [BORDER_WIDTH as unknown as Record<string, number>, '', 1],
     ];
     let checked = 0;
     for (const [scale, unit, factor] of scales) {
@@ -176,11 +181,28 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
   });
 
   it('shadows are Bloom’s elevation roles; stacking levels are Bloom’s Z_INDEX', () => {
-    expect(SHADOW).toEqual(SHADOW_BOX);
+    // A shadow that is no role is Tailwind's own, named by its exact box-shadow.
+    const roles = Object.fromEntries(
+      Object.entries(SHADOW).filter(([name, value]) => name !== value),
+    );
+    expect(roles).toEqual(SHADOW_BOX);
+    expect(Object.keys(SHADOW).length - Object.keys(roles).length).toBe(7);
     const levels = read('styles/z-index.ts');
-    for (const [name, level] of Object.entries(Z_INDEX)) {
+    for (const [name, level] of Object.entries(named(Z_INDEX))) {
       expect(levels).toMatch(new RegExp(`\\n\\s+${name}: ${level},`));
     }
+  });
+
+  it('scale factors are Bloom’s own: a press, the engagement pop’s dip and swell', () => {
+    expect(named(SCALE)).toEqual({ dip: 0.7, pressed: 0.98, full: 1, swell: 1.2 });
+    expect(read('pressable-scale/PressableScale.tsx')).toMatch(
+      new RegExp(`targetScale = ${SCALE.pressed},`),
+    );
+    expect(read('engagement-bar/EngagementPop.tsx')).toMatch(
+      new RegExp(
+        `withTiming\\(${SCALE.dip}, QUICK\\),\\n\\s+withTiming\\(${SCALE.swell}, SWELL\\),\\n\\s+withTiming\\(${SCALE.full}, SETTLE\\)`,
+      ),
+    );
   });
 
   it('the strongest glass tint is the opacity Surface already gives an opaque fill on the web', () => {
