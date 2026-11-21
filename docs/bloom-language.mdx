@@ -2105,6 +2105,24 @@ types of files it takes), `.dragActions(actions, preferred?)` (`copy`, `move`,
 `.disabled()`, and `.onDragEnter()`, `.onDragOver()` and `.onDragLeave()`.
 Where the platform has no drop target, it is a view that takes nothing.
 
+### Image aspect ratios
+
+```ts
+const Photo = view(({ uri }: { uri: string }) => {
+  const [ratio, setRatio] = useState(() => getAspectRatio(uri) ?? DEFAULT_ASPECT_RATIO);
+  return Image(uri).frame({ width: 'full' }).aspectRatio(ratio).onLoad(({ width, height }) => {
+    setAspectRatio(uri, width / height);
+    setRatio(width / height);
+  });
+});
+```
+
+Bloom's `image-aspect-ratio-cache` is an API, not a view, so the language takes
+it as it is (`@oxy.so/bloom/image-aspect-ratio-cache`): the one cache of image
+shapes by URI that a feed's thumbnails and the gallery share. A view reads it
+into `.aspectRatio()` and records what `.onLoad()` measures, so a list stops
+jumping and the gallery opens at the right shape.
+
 ### Media inset borders
 
 ```ts
@@ -2549,7 +2567,8 @@ and `@oxy.so/bloom-data` beside it.
   one-time codes,
   colour swatch pickers,
   animated checks, context menus, collapsibles, drop zones,
-  media inset borders.
+  media inset borders,
+  image aspect ratios (Bloom's cache, through `.aspectRatio()` and `.onLoad()`).
 
 **Not built**
 
