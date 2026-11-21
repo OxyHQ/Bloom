@@ -2178,6 +2178,9 @@ export const MODIFIERS = {
   ],
   "indicator": [
     "selectionIndicator"
+  ],
+  "fade": [
+    "color"
   ]
 } as const;
 
@@ -5765,7 +5768,8 @@ export const NODE_MODIFIERS = {
     "swipe",
     "spacing",
     "contentInset",
-    "disabled"
+    "disabled",
+    "fade"
   ],
   "cappedChipRow": [
     "padding",
