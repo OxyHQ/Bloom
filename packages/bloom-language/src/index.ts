@@ -335,6 +335,10 @@ export type { SortablePhotoGridView } from './controls/sortable-media';
 export { CategoryBar } from './controls/category-bar';
 export type { CategoryBarLabels, CategoryBarView } from './controls/category-bar';
 
+// Phone inputs (controls/phone-input.tsx)
+export { PhoneInput } from './controls/phone-input';
+export type { PhoneInputLabels, PhoneInputView } from './controls/phone-input';
+
 // Inputs (controls/inputs.tsx)
 export {
   Checkbox,

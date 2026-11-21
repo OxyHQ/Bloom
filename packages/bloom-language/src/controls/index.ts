@@ -30,6 +30,7 @@ import { TABLES } from './table';
 import { TAG_FIELDS } from './tag-field';
 import { TOOLTIPS } from './tooltip';
 import { VIDEOS } from './video-view';
+import { PHONE_INPUTS } from './phone-input';
 import { CATEGORY_BARS } from './category-bar';
 import { CHOICE_LISTS } from './choice-list';
 import { VIDEO_PLAYBACK } from './video-playback';
@@ -63,6 +64,7 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...TAG_FIELDS,
   ...FILE_UPLOADS,
   ...VIDEOS,
+  ...PHONE_INPUTS,
   ...CATEGORY_BARS,
   ...CHOICE_LISTS,
   ...VIDEO_PLAYBACK,
