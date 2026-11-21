@@ -506,7 +506,11 @@
     "chartShape": ["curved", "sharp"],
     "radarVariant": ["filled", "dots", "lines", "score"],
     "sparklineTone": ["accent", "positive", "negative", "neutral"],
-    "aiChatLineTone": ["primary", "secondary"]
+    "aiChatLineTone": ["primary", "secondary"],
+    "statCardsVariant": ["plain", "footer"],
+    "playButtonSize": ["sm", "md", "lg"],
+    "playButtonStyle": ["accent", "inverse", "plain"],
+    "playbackTimes": ["inline", "below"]
   },
   "glass": {
     "$comment": [
@@ -1222,7 +1226,28 @@
     "aiChatHeader": { "constructors": ["AiChatHeader"], "modifiers": [] },
     "aiChatMobileHeader": { "constructors": ["AiChatMobileHeader"], "modifiers": [] },
     "aiChatCodePanel": { "constructors": ["AiChatCodePanel"], "modifiers": [] },
-    "aiChatGalleryPanel": { "constructors": ["AiChatGalleryPanel"], "modifiers": [] }
+    "aiChatGalleryPanel": { "constructors": ["AiChatGalleryPanel"], "modifiers": [] },
+    "statCard": {
+      "constructors": ["StatCard"],
+      "modifiers": ["style"],
+      "style": "statCardsVariant"
+    },
+    "statCards": {
+      "constructors": ["StatCards"],
+      "modifiers": ["style", "columns"],
+      "style": "statCardsVariant"
+    },
+    "playButton": {
+      "constructors": ["PlayButton"],
+      "modifiers": ["size", "style", "loading", "disabled"],
+      "size": "playButtonSize",
+      "style": "playButtonStyle"
+    },
+    "playbackProgress": {
+      "constructors": ["PlaybackProgress"],
+      "modifiers": ["style", "disabled"],
+      "style": "playbackTimes"
+    }
   },
   "sfSymbols": {
     "$comment": [
