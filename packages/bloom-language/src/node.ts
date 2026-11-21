@@ -64,6 +64,7 @@ import {
   type BorderWidthName,
   type ColorName,
   type ColorToken,
+  type InkToken,
   type CornerCurve,
   type CornerName,
   type DividerStyle,
@@ -337,16 +338,16 @@ export type Modifier =
   | {
       readonly kind: 'ring';
       readonly key: string;
-      readonly value: ColorToken | 'none';
+      readonly value: InkToken | 'none';
       readonly width: BorderWidthName;
       readonly offset: SpaceToken | undefined;
     }
   | { readonly kind: 'shrink'; readonly key: string; readonly value: ShrinkPriority }
-  | { readonly kind: 'background'; readonly key: string; readonly value: ColorToken }
+  | { readonly kind: 'background'; readonly key: string; readonly value: InkToken }
   | {
       readonly kind: 'border';
       readonly key: string;
-      readonly value: ColorToken;
+      readonly value: InkToken;
       readonly width: BorderWidthName;
       readonly edge: BorderEdge;
     }
@@ -360,7 +361,7 @@ export type Modifier =
   | { readonly kind: 'opacity'; readonly key: string; readonly value: OpacityName }
   | { readonly kind: 'glass'; readonly key: string; readonly value: GlassValue }
   | { readonly kind: 'blur'; readonly key: string }
-  | { readonly kind: 'foreground'; readonly key: string; readonly value: ColorToken }
+  | { readonly kind: 'foreground'; readonly key: string; readonly value: InkToken }
   | { readonly kind: 'font'; readonly key: string; readonly value: FontName }
   | { readonly kind: 'weight'; readonly key: string; readonly value: WeightName }
   | { readonly kind: 'leading'; readonly key: string; readonly value: LeadingToken }
@@ -734,16 +735,16 @@ export class Node {
     const key = `when:${condition}(${modifiers.map((modifier) => modifier.key).join(';')})`;
     return this.with({ kind: 'when', key, condition, modifiers });
   }
-  ring(value: ColorToken | 'none', width: BorderWidthName = 'thin', offset?: SpaceToken): Node {
-    const key = `ring:${value}:${width}:${offset === undefined ? '' : tokenKey(offset)}`;
+  ring(value: InkToken | 'none', width: BorderWidthName = 'thin', offset?: SpaceToken): Node {
+    const key = `ring:${tokenKey(value)}:${width}:${offset === undefined ? '' : tokenKey(offset)}`;
     return this.with({ kind: 'ring', key, value, width, offset });
   }
   shrink(value: ShrinkPriority): Node {
     return this.with({ kind: 'shrink', key: `shrink:${value}`, value });
   }
   /** A colour role behind the view, or a view behind it (at an alignment, SwiftUI's `background(alignment:)`). */
-  background(value: ColorToken | ViewNode, alignment: OverlayAlignment = 'center'): Node {
-    if (typeof value !== 'string') {
+  background(value: InkToken | ViewNode, alignment: OverlayAlignment = 'center'): Node {
+    if (isNode(value)) {
       return this.with({
         kind: 'overlay',
         key: 'overlay',
@@ -752,10 +753,17 @@ export class Node {
         behind: true,
       });
     }
-    return this.with({ kind: 'background', key: `bg:${value}`, value });
+    const ink = value as InkToken;
+    return this.with({ kind: 'background', key: `bg:${tokenKey(ink)}`, value: ink });
   }
-  border(value: ColorToken, width: BorderWidthName = 'hairline', edge: BorderEdge = 'all'): Node {
-    return this.with({ kind: 'border', key: `b:${value}:${width}:${edge}`, value, width, edge });
+  border(value: InkToken, width: BorderWidthName = 'hairline', edge: BorderEdge = 'all'): Node {
+    return this.with({
+      kind: 'border',
+      key: `b:${tokenKey(value)}:${width}:${edge}`,
+      value,
+      width,
+      edge,
+    });
   }
   corner(value: CornerName, side: CornerSide = 'all'): Node {
     const key = side === 'all' ? `r:${value}` : `r:${value}:${side}`;
@@ -773,8 +781,8 @@ export class Node {
   blur(): Node {
     return this.with({ kind: 'blur', key: 'blur' });
   }
-  foreground(value: ColorToken): Node {
-    return this.with({ kind: 'foreground', key: `fg:${value}`, value });
+  foreground(value: InkToken): Node {
+    return this.with({ kind: 'foreground', key: `fg:${tokenKey(value)}`, value });
   }
   font(value: FontName): Node {
     return this.with({ kind: 'font', key: `font:${value}`, value });
@@ -1207,13 +1215,13 @@ export interface ViewModifiers<Self> extends ViewNode {
    */
   accessibilityOnly(): Self;
   /** A fill: a colour role, or a role at a named opacity (`'primary/10'`); or a view behind it, placed at `alignment` (centred by default). */
-  background(value: ColorToken): Self;
+  background(value: InkToken): Self;
   background(value: ViewNode, alignment?: OverlayAlignment): Self;
   /** A view over this one, the size of this one as drawn so far, placed at `alignment` (centred by default). */
   overlay(content: ViewNode, alignment?: OverlayAlignment): Self;
-  border(value: ColorToken, width?: BorderWidthName, edge?: BorderEdge): Self;
+  border(value: InkToken, width?: BorderWidthName, edge?: BorderEdge): Self;
   /** A ring outside the box (an outline, which takes no room): a role, `thin` by default, `offset` from the edge; `none` removes one. */
-  ring(value: ColorToken | 'none', width?: BorderWidthName, offset?: SpaceToken): Self;
+  ring(value: InkToken | 'none', width?: BorderWidthName, offset?: SpaceToken): Self;
   /** Bloom's elevation under the box: `s`, `m` or `floating`. */
   shadow(value: ShadowName): Self;
   /**
@@ -1245,7 +1253,7 @@ export interface ViewModifiers<Self> extends ViewNode {
    */
   blur(): Self;
   /** Text and icon colour for this view and everything inside it; a role, or a role at an opacity token (`'muted/70'`). */
-  foreground(value: ColorToken): Self;
+  foreground(value: InkToken): Self;
   /** A ramp step or a size rung; or `mono`, Bloom's monospaced face, which keeps the size. */
   font(value: FontName): Self;
   weight(value: WeightName): Self;

@@ -55,9 +55,24 @@ const inks: ParityCase[] = (Object.keys(COLORS) as ColorName[]).flatMap((role) =
   },
 ]);
 
-const row = defineTokens({ iconSize: { context: 13 } });
+const row = defineTokens({ iconSize: { context: 13 }, color: { brand: '#1877f2' } });
 
 const placed: ParityCase[] = [
+  {
+    // An app's brand colour: the hex it declares, the same in both schemes.
+    name: 'a glyph and a box in an app colour',
+    language: () =>
+      toElement(
+        L.HStack(L.Icon(Heart).size('sm'))
+          .foreground(row.color.brand)
+          .border(row.color.brand, 'thin'),
+      ),
+    bloom: () => (
+      <RN.View style={{ flexDirection: 'row', borderWidth: 1, borderColor: '#1877f2' }}>
+        <Heart size="sm" fill="#1877f2" />
+      </RN.View>
+    ),
+  },
   {
     name: 'an app token size',
     language: () => toElement(L.Icon(Heart).size(row.iconSize.context)),

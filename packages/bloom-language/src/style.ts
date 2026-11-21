@@ -32,7 +32,9 @@ import {
   type ZIndexName,
   type ShadowName,
   type ColorName,
+  type AppToken,
   type ColorToken,
+  type InkToken,
   type CornerCurve,
   type OpacityName,
   type Edge,
@@ -164,6 +166,16 @@ export function cachedStyle(
     cache.set(id, out);
   }
   return out;
+}
+
+/** What a view paints with: a role as its `RoleRef`, an app's own colour as its hex. */
+export function ink(token: InkToken): RoleRef | string {
+  return typeof token === 'string' ? role(token) : token.value;
+}
+
+/** An app's own colour (`defineTokens({ color })`), not a Bloom role. */
+export function isAppColor(value: unknown): value is AppToken<'color'> {
+  return typeof value === 'object' && value !== null && (value as AppToken).scale === 'color';
 }
 
 function isRole(value: StyleValue): value is RoleRef {
@@ -533,12 +545,12 @@ function modifiersStyle(layer: Layer, modifiers: readonly LayerModifier[]): Reso
         }
         break;
       case 'background':
-        style.backgroundColor = role(modifier.value);
+        style.backgroundColor = ink(modifier.value);
         break;
       case 'border': {
         const prefix = BORDER_EDGE_KEY[modifier.edge];
         style[`${prefix}Width`] = resolveBorderWidth(modifier.width);
-        style[`${prefix}Color`] = role(modifier.value);
+        style[`${prefix}Color`] = ink(modifier.value);
         break;
       }
       case 'corner':
@@ -589,7 +601,7 @@ function ringStyle(style: Resolved, ring: Extract<Modifier, { kind: 'ring' }>): 
     if (IS_WEB) style.outlineStyle = 'none';
     return;
   }
-  style.outlineColor = role(ring.value);
+  style.outlineColor = ink(ring.value);
   style.outlineStyle = 'solid';
   style.outlineWidth = resolveBorderWidth(ring.width);
   if (ring.offset !== undefined) style.outlineOffset = resolveSpace(ring.offset);
@@ -855,7 +867,7 @@ export function stackStyle(
 // ── Text ─────────────────────────────────────────────────────────
 
 export interface TextTraits {
-  foreground: ColorToken | undefined;
+  foreground: InkToken | undefined;
   /** The size: a ramp step or a size rung. */
   font: Exclude<FontName, FontFamilyName> | undefined;
   /** The face beside the size (`.font('mono')`); Bloom's own when unset. */
@@ -901,7 +913,7 @@ const TABULAR: readonly string[] = Object.freeze(['tabular-nums']);
 const FAMILY: Record<FontFamilyName, string> = { mono: fontFamilyStyle('mono').fontFamily };
 
 /** The colour role text and icons paint with: the environment's, or the spec's default. */
-export function foregroundOf(traits: TextTraits): ColorToken {
+export function foregroundOf(traits: TextTraits): InkToken {
   return traits.foreground ?? ENVIRONMENT_DEFAULTS.foreground;
 }
 
@@ -977,7 +989,7 @@ export function textStyle(
   if (look.link && (span === undefined ? traits.foreground === undefined : !span.has('foreground')))
     style.color = role(LINK_INK);
   else if (sets('foreground') && traits.foreground !== undefined)
-    style.color = role(traits.foreground);
+    style.color = ink(traits.foreground);
   if (look.align !== undefined) style.textAlign = TEXT_ALIGN[look.align];
   if (look.italic) style.fontStyle = 'italic';
   const underline = look.underline || look.link;

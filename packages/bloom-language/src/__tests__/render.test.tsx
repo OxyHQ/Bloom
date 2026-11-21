@@ -217,6 +217,42 @@ describe('styles are resolved once per theme', () => {
     expect(hosts(r, 'Text')[0]?.props.style.color).toBe(DARK.textSecondary);
   });
 
+  it('an app colour paints a background, a border, text and a glyph as its hex, in every scheme', () => {
+    const brand = defineTokens({ color: { blue: '#1877f2' } }).color.blue;
+    const node = HStack(Text('a'), Icon(Glyph))
+      .background(brand)
+      .border(brand, 'thin')
+      .foreground(brand);
+    for (const scheme of [LIGHT, DARK]) {
+      const r = mount(toElement(node), scheme);
+      expect(hosts(r, 'View')[0]?.props.style).toMatchObject({
+        backgroundColor: '#1877f2',
+        borderColor: '#1877f2',
+      });
+      expect(hosts(r, 'Text')[0]?.props.style.color).toBe('#1877f2');
+      expect(r.root.findByType(Glyph).props.fill).toBe('#1877f2');
+    }
+  });
+
+  it('an app colour is a hex, and it does not vary', () => {
+    expect(() => defineTokens({ color: { blue: 'blue' as `#${string}` } })).toThrow(
+      'color.blue is not a hex colour',
+    );
+    const brand = defineTokens({ color: { blue: '#1877f2' } }).color.blue;
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const r = mount(
+      toElement(
+        HStack(Text('a'))
+          .onPress(() => {})
+          .background('surface')
+          .when('pressed', (v) => v.background(brand)),
+      ),
+    );
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('an app colour'));
+    warn.mockRestore();
+    expect(JSON.stringify(r.toJSON())).not.toContain('#1877f2');
+  });
+
   it('app tokens resolve to their declared values', () => {
     const t = defineTokens({ space: { gutter: 64 }, leading: { tight: 1.25 } });
     const r = mount(
