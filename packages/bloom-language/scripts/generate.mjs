@@ -277,7 +277,7 @@ const tokenSets = {
   space: Object.keys(scales.space),
   padding: [...Object.keys(scales.space), ...negative],
   spacing: [...Object.keys(scales.space), ...enums.spacingExtra],
-  corner: Object.keys(scales.corner),
+  corner: [...Object.keys(scales.corner), ...enums.cornerExtra],
   font: [...typeFamilies, ...Object.keys(scales.fontSize)],
   weight: Object.keys(scales.weight),
   leading: Object.keys(scales.leading),

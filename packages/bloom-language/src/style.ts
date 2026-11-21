@@ -236,8 +236,10 @@ export function layerStyle(layer: Layer | undefined): Resolved {
         break;
       }
       case 'corner':
-        style.borderRadius = resolveCorner(modifier.value);
+        if (modifier.value !== 'concentric') style.borderRadius = resolveCorner(modifier.value);
         style.overflow = 'hidden';
+        break;
+      case 'cornerCurve':
         break;
       case 'opacity':
         style.opacity = OPACITY[modifier.value];

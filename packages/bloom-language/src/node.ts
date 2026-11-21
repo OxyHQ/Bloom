@@ -30,7 +30,10 @@ import {
   type AvatarSizeName,
   type BorderWidthName,
   type ColorName,
+  type CornerCurve,
   type CornerName,
+  type DividerStyle,
+  type GridFlow,
   type FontName,
   type HitSlopName,
   type IconSizeToken,
@@ -168,6 +171,10 @@ export interface ValueModifiers {
   underline: true;
   strikethrough: true;
   textCase: TextCase;
+  lineStyle: DividerStyle;
+  columns: number;
+  minCellWidth: SpaceToken;
+  flow: GridFlow;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -205,6 +212,7 @@ export type Modifier =
       readonly edge: BorderEdge;
     }
   | { readonly kind: 'corner'; readonly key: string; readonly value: CornerName }
+  | { readonly kind: 'cornerCurve'; readonly key: string; readonly value: CornerCurve }
   | { readonly kind: 'opacity'; readonly key: string; readonly value: OpacityName }
   | { readonly kind: 'glass'; readonly key: string; readonly value: GlassValue }
   | { readonly kind: 'foreground'; readonly key: string; readonly value: ColorName }
@@ -303,7 +311,10 @@ export type NodeKind =
   | 'menuItem'
   | 'menuSubmenu'
   | 'menuSection'
-  | 'menuDivider'
+  | 'divider'
+  | 'fill'
+  | 'ratio'
+  | 'grid'
   | 'menuContent'
   | 'menuActions'
   | 'header'
@@ -471,6 +482,9 @@ export class Node {
   }
   corner(value: CornerName): Node {
     return this.with({ kind: 'corner', key: `r:${value}`, value });
+  }
+  cornerCurve(value: CornerCurve): Node {
+    return this.with({ kind: 'cornerCurve', key: `rc:${value}`, value });
   }
   opacity(value: OpacityName): Node {
     return this.with({ kind: 'opacity', key: `o:${value}`, value });
@@ -712,6 +726,18 @@ export class Node {
   textCase(value: TextCase): Node {
     return this.set('textCase', value);
   }
+  lineStyle(value: DividerStyle): Node {
+    return this.set('lineStyle', value);
+  }
+  columns(value: number): Node {
+    return this.set('columns', value);
+  }
+  minCellWidth(value: SpaceToken): Node {
+    return this.set('minCellWidth', value);
+  }
+  flow(value: GridFlow): Node {
+    return this.set('flow', value);
+  }
 }
 
 const FRAME_KEYS = ['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight'] as const;
@@ -728,7 +754,14 @@ export interface ViewModifiers<Self> extends ViewNode {
   shrink(value: ShrinkPriority): Self;
   background(value: ColorName): Self;
   border(value: ColorName, width?: BorderWidthName, edge?: BorderEdge): Self;
+  /**
+   * Rounds the box: a radius rung, `full`, or `concentric` (the radius of the
+   * shape it sits in, less the inset between them: a glass's, another
+   * concentric box's, a Bloom card's).
+   */
   corner(value: CornerName): Self;
+  /** `smooth`: the platform's continuous corner (a squircle on the web), as Bloom's surfaces draw theirs. */
+  cornerCurve(value: CornerCurve): Self;
   opacity(value: OpacityName): Self;
   /**
    * A glass material behind the view: `regular` (the default) or `clear`,
@@ -877,7 +910,7 @@ export interface MenuView extends ViewModifiers<MenuView> {
   actions(value: MenuActionsView): MenuView;
 }
 /** What a menu holds: rows, and at most one `menu()` content. */
-export type MenuRow = MenuItemView | MenuSubmenuView | MenuSectionView | MenuDividerView;
+export type MenuRow = MenuItemView | MenuSubmenuView | MenuSectionView | DividerView;
 export type MenuChild = MenuRow | false | null | undefined | readonly MenuChild[];
 export interface MenuItemView extends ViewNode {
   icon(value: IconComponent): MenuItemView;
@@ -902,7 +935,38 @@ export interface MenuSectionView extends ViewNode {
   /** A quiet heading above the section's rows. */
   title(value: string): MenuSectionView;
 }
-export type MenuDividerView = ViewNode;
+/**
+ * Bloom `Divider`: a line across its stack, vertical in an `HStack`. A label
+ * (a `Text`, or any view) sits on it. In a menu, it is the line between rows.
+ */
+export interface DividerView extends ViewModifiers<DividerView> {
+  /** `single` (default) hairline, `double` framing hairlines, or a `fill` strip. */
+  lineStyle(value: DividerStyle): DividerView;
+  /** Where the label sits on the line. */
+  align(value: 'start' | 'center' | 'end'): DividerView;
+  /** The space on each side of the line, along its stack. */
+  spacing(value: SpaceToken): DividerView;
+  /** The line's colour role; the neutral separator by default. */
+  tint(value: ColorName): DividerView;
+}
+/** Bloom `Fill`: its children over the whole of the view it is in (an absolute inset). */
+export type FillView = ViewModifiers<FillView>;
+/** Bloom `AspectRatio`: the width of its parent, the height its ratio gives. */
+export type AspectRatioView = ViewModifiers<AspectRatioView>;
+/**
+ * Bloom `ResponsiveGrid`: as many columns of equal cells as fit, up to
+ * `columns`, each at least `minCellWidth` wide; one column below that.
+ */
+export interface GridView extends ViewModifiers<GridView> {
+  /** The most columns (Bloom's default: 2). */
+  columns(value: number): GridView;
+  /** A cell's narrowest width before the grid drops a column (Bloom's default: 320). */
+  minCellWidth(value: SpaceToken): GridView;
+  /** The space between cells, both ways. */
+  spacing(value: SpaceToken): GridView;
+  /** `rows` (default) aligns cells in rows; `columns` stacks each column. */
+  flow(value: GridFlow): GridView;
+}
 /** A `menu()` content placed in a menu: its rows are built while the menu is open. */
 export type MenuContentView = ViewNode;
 /** An `actions()` view: what a menu's tagged rows do, built when one is chosen. */

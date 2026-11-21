@@ -219,7 +219,11 @@
     ],
     "truncation": ["head", "middle", "tail", "clip"],
     "textAlign": ["start", "center", "end", "justify"],
-    "textCase": ["uppercase", "lowercase", "capitalize"]
+    "textCase": ["uppercase", "lowercase", "capitalize"],
+    "cornerExtra": ["concentric"],
+    "cornerCurve": ["round", "smooth"],
+    "dividerStyle": ["single", "double", "fill"],
+    "gridFlow": ["rows", "columns"]
   },
   "glass": {
     "$comment": [
@@ -252,7 +256,14 @@
     "danger": "error",
     "info": "info"
   },
-  "layers": [["padding"], ["frame"], ["background", "glass"], ["border"], ["corner"], ["opacity"]],
+  "layers": [
+    ["padding"],
+    ["frame"],
+    ["background", "glass"],
+    ["border"],
+    ["corner", "cornerCurve"],
+    ["opacity"]
+  ],
   "environment": {
     "$comment": "The text and icon traits a view hands everything inside it, and what each is when nothing sets it.",
     "traits": ["foreground", "font", "weight", "leading"],
@@ -346,7 +357,12 @@
     "italic": [],
     "underline": [],
     "strikethrough": [],
-    "textCase": ["textCase"]
+    "textCase": ["textCase"],
+    "cornerCurve": ["cornerCurve"],
+    "lineStyle": ["dividerStyle"],
+    "columns": ["value"],
+    "minCellWidth": ["space"],
+    "flow": ["gridFlow"]
   },
   "universal": [
     "padding",
@@ -356,6 +372,7 @@
     "background",
     "border",
     "corner",
+    "cornerCurve",
     "opacity",
     "glass",
     "foreground",
@@ -426,6 +443,18 @@
       "modifiers": ["contentFit", "aspectRatio", "tint", "transition", "onLoad", "onError"],
       "tint": "color"
     },
+    "fill": {
+      "constructors": ["Fill"],
+      "modifiers": []
+    },
+    "ratio": {
+      "constructors": ["AspectRatio"],
+      "modifiers": []
+    },
+    "grid": {
+      "constructors": ["Grid"],
+      "modifiers": ["columns", "minCellWidth", "spacing", "flow"]
+    },
     "button": {
       "constructors": ["Button"],
       "modifiers": ["style", "shape", "size", "tint", "disabled", "loading"],
@@ -466,10 +495,10 @@
       "universal": false,
       "modifiers": ["title"]
     },
-    "menuDivider": {
+    "divider": {
       "constructors": ["Divider"],
-      "universal": false,
-      "modifiers": []
+      "modifiers": ["lineStyle", "align", "spacing", "tint"],
+      "tint": "color"
     },
     "menuContent": {
       "constructors": [],
