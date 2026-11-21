@@ -2735,6 +2735,12 @@
       "constructors": ["ColorSwatchPicker"],
       "modifiers": ["labels", "size", "disabled"],
       "size": "space"
+    },
+    "animatedCheck": {
+      "constructors": ["AnimatedCheck"],
+      "modifiers": ["size", "tint"],
+      "size": "space",
+      "tint": "color"
     }
   },
   "sfSymbols": {
