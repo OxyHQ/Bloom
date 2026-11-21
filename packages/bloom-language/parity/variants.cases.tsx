@@ -4,6 +4,7 @@ import { useWindowBreakpoint } from '@oxy.so/bloom/hooks';
 import { tokens } from '@oxy.so/bloom/styles';
 import { useTheme } from '@oxy.so/bloom/theme';
 import { Text } from '@oxy.so/bloom/typography';
+import { RiHeart3Line } from '@oxy.so/bloom/icons';
 
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
@@ -122,6 +123,61 @@ export const VARIANT_CASES: ParityCase[] = [
         style={{ flexDirection: 'row' }}
       >
         <Text>a</Text>
+      </RN.Pressable>
+    ),
+  },
+  {
+    name: 'a variant inside a variant (md, then dark), at rest',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a'))
+          .padding('sm')
+          .when('md', (v) => v.when('dark', (d) => d.padding('lg'))),
+      ),
+    bloom: () => (
+      <Tiered>
+        {(atLeast) => (
+          <Schemed>
+            {(dark) => (
+              <RN.View style={padding(atLeast('md') && dark ? space.lg : space.sm)}>
+                <Text>a</Text>
+              </RN.View>
+            )}
+          </Schemed>
+        )}
+      </Tiered>
+    ),
+  },
+  {
+    name: 'an icon whose ink a hover varies, at rest',
+    language: () =>
+      toElement(
+        L.HStack(L.Icon(RiHeart3Line))
+          .onPress(onPress)
+          .foreground('muted')
+          .when('hovered', (v) => v.foreground('primary')),
+      ),
+    // The web answers the hover with CSS: the glyph paints currentColor, its colour a class.
+    bloom: () => (
+      <RN.Pressable
+        onPress={onPress}
+        {...(RN.Platform.OS === 'web' ? null : { onHoverIn: onPress, onHoverOut: onPress })}
+        style={{ flexDirection: 'row' }}
+      >
+        <Themed>
+          {(colors) =>
+            RN.Platform.OS === 'web' ? (
+              <RiHeart3Line
+                fill="currentColor"
+                width={20}
+                height={20}
+                style={{ color: 'var(--muted-foreground)' }}
+              />
+            ) : (
+              <RiHeart3Line fill={colors.textSecondary} width={20} height={20} />
+            )
+          }
+        </Themed>
       </RN.Pressable>
     ),
   },

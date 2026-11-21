@@ -12,7 +12,7 @@ import { useTheme, useThemePaint, withAlpha, type ThemeColors } from '@oxy.so/bl
 
 import { COLORS } from './generated/spec.generated';
 import type { ColorName } from './tokens';
-import { TIERS, type LiveCondition, type Tier } from './variants';
+import { TIERS, termsOf, type LiveCondition, type LiveTerm, type Tier } from './variants';
 
 /**
  * What a `Painted` leaf fills from the theme: style properties painted from
@@ -28,11 +28,12 @@ export interface Paint {
   readonly variants?: readonly PaintVariant[];
 }
 
-/** One live variant of a native style: its values, and the properties painted from roles. */
+/** One live variant of a native style: its values, the properties painted from roles, and the props (an icon's `fill`). */
 export interface PaintVariant {
   readonly condition: LiveCondition;
   readonly style: object;
   readonly styleRoles: readonly (readonly [string, ColorName, number?])[];
+  readonly propRoles?: readonly (readonly [string, ColorName, number?])[];
 }
 
 const IS_WEB = Platform.OS === 'web';
@@ -109,8 +110,13 @@ export const IDLE: Interaction = Object.freeze({ hovered: false, focused: false,
 export const InteractionContext = createContext<Interaction>(IDLE);
 InteractionContext.displayName = 'BloomInteraction';
 
-/** Whether a live condition holds: the window's tier from the variant's up, the scheme, a state. */
+/** Whether a live condition holds: every term it joins does. */
 function holds(condition: LiveCondition, tier: Tier, dark: boolean, state: Interaction): boolean {
+  return termsOf(condition).every((term) => termHolds(term, tier, dark, state));
+}
+
+/** Whether one term holds: the window's tier from the variant's up, the scheme, a state. */
+function termHolds(condition: LiveTerm, tier: Tier, dark: boolean, state: Interaction): boolean {
   switch (condition) {
     case 'dark':
       return dark;
@@ -149,15 +155,22 @@ function conditionedProps(
   let props = byHolding.get(holding);
   if (props === undefined) {
     const style: Record<string, unknown> = { ...(base.style as object | undefined) };
+    const next: Record<string, unknown> = { ...base };
+    const paintColor = (role: ColorName, opacity: number | undefined) => {
+      const color = colors[COLORS[role].paint];
+      return opacity === undefined ? color : atOpacity(color, opacity);
+    };
     (paint.variants ?? []).forEach((variant, index) => {
       if ((holding & (1 << index)) === 0) return;
       Object.assign(style, variant.style);
-      for (const [key, role, opacity] of variant.styleRoles) {
-        const color = colors[COLORS[role].paint];
-        style[key] = opacity === undefined ? color : atOpacity(color, opacity);
-      }
+      for (const [key, role, opacity] of variant.styleRoles) style[key] = paintColor(role, opacity);
+      for (const [key, role, opacity] of variant.propRoles ?? [])
+        next[key] = paintColor(role, opacity);
     });
-    props = Object.freeze({ ...base, style: Object.freeze(style) });
+    // A paint of props alone (an icon's fill) gains no style.
+    if (base.style !== undefined || Object.keys(style).length > 0)
+      next.style = Object.freeze(style);
+    props = Object.freeze(next);
     byHolding.set(holding, props);
   }
   return props;

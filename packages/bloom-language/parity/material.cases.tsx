@@ -1,10 +1,12 @@
 import * as RN from 'react-native';
+import type { ReactNode } from 'react';
 import { AspectRatio } from '@oxy.so/bloom/aspect-ratio';
 import { BlurIsland } from '@oxy.so/bloom/blur';
 import { ConcentricView } from '@oxy.so/bloom/concentric';
 import { Divider } from '@oxy.so/bloom/divider';
 import { Fill } from '@oxy.so/bloom/fill';
 import { ResponsiveGrid } from '@oxy.so/bloom/grid';
+import { useWindowBreakpoint } from '@oxy.so/bloom/hooks';
 import { RiHeart3Line } from '@oxy.so/bloom/icons';
 import { surfaceStyle } from '@oxy.so/bloom/shapes';
 import { tokens } from '@oxy.so/bloom/styles';
@@ -20,6 +22,14 @@ import { defineTokens } from '../src/tokens';
 import { type ParityCase, Themed } from './support/cases';
 
 const { space, borderRadius } = tokens;
+const TIERS = ['base', 'sm', 'md', 'lg', 'xl', '2xl'];
+
+/** Bloom JSX that reads the window's tier as an app does (`useWindowBreakpoint()`). */
+function Tiered({ children }: { children: (atLeast: (tier: string) => boolean) => ReactNode }) {
+  const tier = useWindowBreakpoint();
+  return children((at) => TIERS.indexOf(tier) >= TIERS.indexOf(at));
+}
+
 const padding = (value: number) => ({
   paddingTop: value,
   paddingBottom: value,
@@ -48,6 +58,30 @@ const surface: ParityCase[] = [
           <Text>Glass</Text>
         </RN.View>
       </Surface>
+    ),
+  },
+  {
+    name: 'a glass whose padding varies: the padding is a view just inside it',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('Glass'))
+          .padding('sm')
+          .glass()
+          .corner('xl')
+          .when('lg', (v) => v.padding('md')),
+      ),
+    bloom: () => (
+      <Tiered>
+        {(atLeast) => (
+          <Surface radius={borderRadius.xl}>
+            <RN.View style={padding(atLeast('lg') ? space.md : space.sm)}>
+              <RN.View>
+                <Text>Glass</Text>
+              </RN.View>
+            </RN.View>
+          </Surface>
+        )}
+      </Tiered>
     ),
   },
   {

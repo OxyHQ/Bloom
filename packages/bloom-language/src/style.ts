@@ -8,8 +8,8 @@ import { fontFamilyStyle, type TypeScaleVariant } from '@oxy.so/bloom/typography
 import { COLORS, ENVIRONMENT_DEFAULTS, FONT_SIZE, LAYER_RANK } from './generated/spec.generated';
 import { WEB_CLASS } from './generated/web-sheet.generated';
 import type { Paint, PaintVariant } from './paint';
-import { LIVE_ORDER, warnNoClass, type LiveCondition, type Planned } from './variants';
-import { adoptLanguageVariants } from './web-sheet';
+import { compareLive, warnNoClass, type LiveCondition, type Planned } from './variants';
+import { adoptLanguageVariants, variantSuffix } from './web-sheet';
 import {
   ALIGNMENT,
   OPACITY,
@@ -102,7 +102,7 @@ export type StyleValue = number | string | RoleRef | object;
 /** A style as resolved: style properties to numbers, strings, roles or structured values. */
 export type Resolved = Record<string, StyleValue>;
 
-/** A style's live variants, in the order they apply (`LIVE_ORDER`): what each condition overrides. */
+/** A style's live variants, in the order they apply (`compareLive`): what each condition overrides. */
 export type VariantStyles = readonly (readonly [LiveCondition, Resolved])[];
 
 /** Variant styles gathered from several sources (a layer, the placement…), in the order they apply. */
@@ -113,9 +113,9 @@ export function joinVariants(...lists: (VariantStyles | undefined)[]): VariantSt
       byCondition.set(condition, Object.assign(byCondition.get(condition) ?? {}, style));
     }
   }
-  return LIVE_ORDER.filter((condition) => byCondition.has(condition)).map(
-    (condition) => [condition, byCondition.get(condition) as Resolved] as const,
-  );
+  return [...byCondition.keys()]
+    .sort(compareLive)
+    .map((condition) => [condition, byCondition.get(condition) as Resolved] as const);
 }
 
 /**
@@ -249,7 +249,7 @@ function webStyle(
         continue;
       }
       classes ??= { $$css: true };
-      classes[`${key}@${condition}`] = `${name}-${condition}`;
+      classes[`${key}@${condition}`] = `${name}-${variantSuffix(condition)}`;
     }
   }
   const parts = [classes, inline].filter((part) => part !== undefined).map(Object.freeze);

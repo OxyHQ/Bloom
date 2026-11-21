@@ -435,8 +435,21 @@ inside; a stack's layout to its host; a placement to its outermost box.
   box. On the web a state selector reaches what is inside the anchor, so a
   view with state variants inside another one answers the outer one's state
   too; on native each leaf reads the nearest box's.
-- Icons keep their base ink under a variant (their fill is a prop, not CSS),
-  a glass or concentric layer cannot vary, and variants do not nest.
+- **Icons** follow a varied foreground. On the web the glyph paints
+  `currentColor` and its colour is a class under each condition (CSS answers
+  a hover, as it does for text); on native the glyph's leaf is a
+  `Conditioned` one that fills it from the environment.
+- **A material's padding varies.** A glass, an island or a concentric box is a
+  Bloom component, which takes its style as an object; a varied padding of
+  one is a view just inside it, the same room, which takes the variant. Its
+  other variants (a fill, a border, its corner) are left out, said once in
+  development.
+- **Variants nest.** `when('md', (v) => v.when('hovered', (h) => h.padding('lg')))`
+  holds while both do (`md:hover:`): native reads both; the web writes the
+  widest breakpoint's query around the other terms' selectors, the scheme's
+  around the states', and two states of one view are one anchor
+  (`.blsg:hover:active`). A joined condition's sheet comes after the single
+  ones, and its selector is at least as specific as its strongest term's.
 
 ## Text
 

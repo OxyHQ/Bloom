@@ -70,6 +70,7 @@ import {
   type SkeletonProps,
   type Child,
   type EmbedProps,
+  type IconComponent,
   type IconProps,
   type ImageProps,
   type MenuProps,
@@ -82,7 +83,7 @@ import {
   type TextRun,
   type ViewNodeProps,
 } from './node';
-import { ENVIRONMENT, TONE_ROLE } from './generated/spec.generated';
+import { ENVIRONMENT, LAYER_RANK, TONE_ROLE } from './generated/spec.generated';
 import { regular, type GlassValue } from './glass';
 import { getPlatformGlass } from './platform/glass-host';
 import { MenuHost } from './platform/menu-host';
@@ -112,6 +113,7 @@ import {
   textVariant,
   textVariants,
   type Layer,
+  type LayerModifier,
   type PlaceModifier,
   type Placement,
   type Resolved,
@@ -125,6 +127,9 @@ import {
 import { StateHost } from './state-host';
 import {
   STATES,
+  both,
+  compareLive,
+  termsOf,
   settle,
   varies,
   warnNotVaried,
@@ -289,7 +294,7 @@ function plan(node: Node): Plan {
     }
     if (modifier.kind === 'when') {
       const condition = settle(modifier.condition, disabled);
-      if (condition !== false) planVariant(result, condition, modifier.modifiers);
+      if (condition !== false) planVariant(result, condition, modifier.modifiers, disabled);
       continue;
     }
     if (ENV_KINDS.has(modifier.kind)) {
@@ -367,10 +372,23 @@ function plan(node: Node): Plan {
  * in the environment, a stack's layout on its host, a placement on its
  * outermost box.
  */
-function planVariant(result: Plan, condition: Planned, modifiers: readonly Modifier[]): void {
-  if (condition !== null && STATES.has(condition) && !result.states.includes(condition))
-    result.states.push(condition);
+function planVariant(
+  result: Plan,
+  condition: Planned,
+  modifiers: readonly Modifier[],
+  disabled: boolean,
+): void {
+  for (const term of condition === null ? [] : termsOf(condition)) {
+    if (STATES.has(term) && !result.states.includes(term)) result.states.push(term);
+  }
   for (const modifier of modifiers) {
+    if (modifier.kind === 'when') {
+      // A variant inside a variant holds while both conditions do.
+      const inner = settle(modifier.condition, disabled);
+      if (inner !== false)
+        planVariant(result, both(condition, inner), modifier.modifiers, disabled);
+      continue;
+    }
     if (!varies(modifier)) {
       warnNotVaried(modifier);
       continue;
@@ -605,9 +623,26 @@ function drawNode(node: Node, ctx: Context, key: string | number | undefined): R
   );
 
   for (let i = 0; i < wrappers.length; i++) {
-    const layer = wrappers[i] as Layer;
+    let layer = wrappers[i] as Layer;
     const outermost = i === wrappers.length - 1;
     const flexOf = outermost ? flex : '';
+    const material = materialPadding(layer);
+    if (material !== undefined) {
+      // The varied padding is a view of its own inside the material, which takes the variants.
+      const { inner } = material;
+      element = drawHost(
+        View,
+        cachedStyle(
+          'host',
+          `L|${inner.key}|`,
+          () => layerStyle(inner),
+          () => layerVariants(inner),
+        ),
+        {},
+        element,
+      );
+      layer = material.outer;
+    }
     element = wrapLayer(
       layer,
       flexOf,
@@ -633,6 +668,49 @@ function boxStyle(layer: Layer | undefined, flex: string, p: Plan): Resolved {
 /** A box's live variants: its layer's, and its place's when it is the outermost box. */
 function boxVariants(layer: Layer | undefined, flex: string, p: Plan): VariantStyles {
   return joinVariants(layerVariants(layer), flex ? placeVariants(p.place) : undefined);
+}
+
+/**
+ * A material (a glass, an island, a concentric box) is a Bloom component, which
+ * takes its style as an object, so nothing varies it on the web. Its padding
+ * can vary all the same: a padding is the same room on a view just inside the
+ * material, so a varied one moves there with its variants (`outer` is the
+ * material without it). What else varies on a material is left out, said once
+ * in development.
+ */
+function materialPadding(layer: Layer): { outer: Layer; inner: Layer } | undefined {
+  if (layer.glass === undefined && !layer.blur && !layer.concentric) return undefined;
+  const live = layer.variants.filter(([condition]) => condition !== null);
+  if (live.length === 0) return undefined;
+  if (live.some(([, modifier]) => modifier.kind !== 'padding'))
+    warnOnce(
+      'material-variant',
+      '[Bloom language] a glass, an island or a concentric box varies only its padding: its other variants are left out.',
+    );
+  if (!live.some(([, modifier]) => modifier.kind === 'padding')) return undefined;
+  const isPadding = (modifier: LayerModifier) => modifier.kind === 'padding';
+  const inner: Layer = {
+    modifiers: layer.modifiers.filter(isPadding),
+    variants: layer.variants.filter(([, modifier]) => isPadding(modifier)),
+    key: `${layer.key}|inside`,
+    rank: LAYER_RANK.padding,
+    edges: layer.edges,
+    glass: undefined,
+    concentric: false,
+    curve: undefined,
+    blur: false,
+    overlays: [],
+    corners: 0,
+    follows: [],
+  };
+  const outer: Layer = {
+    ...layer,
+    modifiers: layer.modifiers.filter((modifier) => !isPadding(modifier)),
+    variants: layer.variants.filter(([, modifier]) => !isPadding(modifier)),
+    key: `${layer.key}|around`,
+    edges: 0,
+  };
+  return { outer, inner };
 }
 
 /** A padding of nothing: what opens the view of its own a varied Bloom component takes. */
@@ -998,6 +1076,59 @@ function iconPaint(color: ColorToken): Paint {
   return paint;
 }
 
+const iconVariantPaints = new Map<string, Paint>();
+
+/**
+ * An icon's glyph, filled with the foreground it is drawn in. A foreground a
+ * live variant changes is answered where every other variant is: on the web by
+ * CSS (the glyph paints `currentColor`, and its colour is a class under each
+ * condition), on native by a `Conditioned` leaf that fills it from the
+ * environment.
+ */
+function iconGlyph(
+  icon: IconComponent,
+  env: Env,
+  size: number,
+  key: string | number | undefined,
+): ReactElement {
+  const color = foregroundOf(env.text);
+  // In the order they apply, as every other host's variants are.
+  const live = (env.text.variants ?? [])
+    .flatMap(([condition, changed]) =>
+      changed.foreground === undefined ? [] : [[condition, changed.foreground] as const],
+    )
+    .sort(([a], [b]) => compareLive(a, b));
+  if (live.length === 0)
+    return draw(Painted, { host: icon, paint: iconPaint(color), width: size, height: size, key });
+  if (IS_WEB) {
+    const out = cachedStyle(
+      'host',
+      `IC|${env.key}`,
+      () => ({ color: role(color) }),
+      () => joinVariants(live.map(([condition, ink]) => [condition, { color: role(ink) }])),
+    );
+    return drawHost(icon, out, { fill: 'currentColor', width: size, height: size, key });
+  }
+  let paint = iconVariantPaints.get(env.key);
+  if (paint === undefined) {
+    const fill = (ink: ColorToken): readonly [string, ColorName, number?] => {
+      const { role: name, opacity } = role(ink);
+      return opacity === undefined ? ['fill', name] : ['fill', name, opacity];
+    };
+    paint = {
+      ...iconPaint(color),
+      variants: live.map(([condition, ink]) => ({
+        condition,
+        style: {},
+        styleRoles: [],
+        propRoles: [fill(ink)],
+      })),
+    };
+    iconVariantPaints.set(env.key, paint);
+  }
+  return draw(Conditioned, { host: icon, paint, width: size, height: size, key });
+}
+
 function renderHost(
   node: Node,
   p: Plan,
@@ -1093,13 +1224,12 @@ function renderHost(
         (ownValue(p, 'size')?.value as IconSizeToken | undefined) ?? 'md',
       );
       const bare = !boxed && !behaviour;
-      const glyph = draw(Painted, {
-        host: (node.props as IconProps).icon,
-        paint: iconPaint(foregroundOf(ctx.env.text)),
-        width: size,
-        height: size,
-        key: bare ? key : undefined,
-      });
+      const glyph = iconGlyph(
+        (node.props as IconProps).icon,
+        ctx.env,
+        size,
+        bare ? key : undefined,
+      );
       if (bare) return glyph;
       const host = behaviour ? hostFor(p) : View;
       return drawHost(host, box('host', 'I'), hostProps(behaviour, key), glyph);
