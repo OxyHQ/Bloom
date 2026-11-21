@@ -85,6 +85,7 @@ export const SPACE = ${ts(scales.space)} as const;
 export const CORNER = ${ts(scales.corner)} as const;
 export const FONT_SIZE = ${ts(scales.fontSize)} as const;
 export const LEADING = ${ts(scales.leading)} as const;
+export const TRACKING = ${ts(scales.tracking)} as const;
 export const WEIGHT = ${ts(scales.weight)} as const;
 export const ICON_SIZE = ${ts(scales.iconSize)} as const;
 export const AVATAR_SIZE = ${ts(scales.avatarSize)} as const;
@@ -236,14 +237,16 @@ valueClass('justifyContent', 'space-between');
 for (const value of Object.values(scales.alignment)) valueClass('alignItems', value);
 valueClass('flex', 1);
 for (const value of numbers(scales.shrink)) valueClass('flexShrink', value);
-// Type: sizes, ramp line heights, every size at every leading, tracking, weights.
+// Type: sizes, ramp line heights, every size at every leading and every tracking, weights.
 for (const value of fontSizes) valueClass('fontSize', value);
 const lineHeights = new Set(Object.values(typeRamp).map((s) => s[1]));
 for (const size of fontSizes)
   for (const ratio of Object.values(scales.leading)) lineHeights.add(size * ratio);
 for (const value of lineHeights) valueClass('lineHeight', value);
-for (const value of new Set(Object.values(typeRamp).map((s) => s[2])))
-  valueClass('letterSpacing', value);
+const letterSpacings = new Set(Object.values(typeRamp).map((s) => s[2]));
+for (const size of fontSizes)
+  for (const em of Object.values(scales.tracking)) letterSpacings.add(size * em);
+for (const value of letterSpacings) valueClass('letterSpacing', value);
 for (const value of new Set([
   ...Object.values(scales.weight),
   ...Object.values(typeRamp).map((s) => s[3]),
@@ -283,9 +286,10 @@ const tokenSets = {
   padding: [...Object.keys(scales.space), ...negative],
   spacing: [...Object.keys(scales.space), ...enums.spacingExtra],
   corner: [...Object.keys(scales.corner), ...enums.cornerExtra],
-  font: [...typeFamilies, ...Object.keys(scales.fontSize)],
+  font: [...typeFamilies, ...Object.keys(scales.fontSize), ...enums.fontFamily],
   weight: Object.keys(scales.weight),
   leading: Object.keys(scales.leading),
+  tracking: Object.keys(scales.tracking),
   color: Object.keys(colors),
   borderWidth: Object.keys(scales.borderWidth),
   opacity: Object.keys(scales.opacity),

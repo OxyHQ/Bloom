@@ -64,6 +64,14 @@
       "open": 1.5555555555555556,
       "relaxed": 1.625
     },
+    "tracking": {
+      "tight": -0.025,
+      "close": -0.02,
+      "snug": -0.01,
+      "wide": 0.025,
+      "wider": 0.05,
+      "widest": 0.1
+    },
     "weight": {
       "light": "300",
       "regular": "400",
@@ -260,6 +268,7 @@
     "truncation": ["head", "middle", "tail", "clip"],
     "textAlign": ["start", "center", "end", "justify"],
     "textCase": ["uppercase", "lowercase", "capitalize"],
+    "fontFamily": ["mono"],
     "cornerExtra": ["concentric"],
     "cornerCurve": ["round", "smooth"],
     "dividerStyle": ["single", "double", "fill"],
@@ -353,7 +362,7 @@
   ],
   "environment": {
     "$comment": "The text and icon traits a view hands everything inside it, and what each is when nothing sets it.",
-    "traits": ["foreground", "font", "weight", "leading"],
+    "traits": ["foreground", "font", "weight", "leading", "tracking"],
     "defaults": {
       "foreground": "foreground",
       "rampWeight": "regular"
@@ -375,6 +384,7 @@
     "font": ["font"],
     "weight": ["weight"],
     "leading": ["leading"],
+    "tracking": ["tracking"],
     "spacing": ["spacing"],
     "align": ["alignment"],
     "lines": ["value"],
@@ -484,6 +494,7 @@
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
