@@ -573,6 +573,11 @@
     "scrollIndicators": ["automatic", "visible", "hidden"],
     "keyboardDismiss": ["never", "immediately", "interactively"],
     "keyboardTaps": ["never", "always", "handled"],
+    "scrollbarVisibility": ["scroll", "hover", "always", "never"],
+    "scrollbarSide": ["start", "end"],
+    "scrollbarSize": ["sm", "md"],
+    "scrollSurfaceStyle": ["primary", "secondary", "full"],
+    "resizeHandleStyle": ["grip", "pill"],
     "dragIndicator": ["visible", "hidden"],
     "sheetMaterial": ["surface", "flat"],
     "sheetSizing": ["content", "fill"],
@@ -930,7 +935,23 @@
     "bar": ["value?"],
     "sidebar": ["value?"],
     "sidebarAfter": ["value"],
-    "accessory": ["value"]
+    "accessory": ["value"],
+    "scrollbar": ["scrollbarVisibility"],
+    "scrollbarSide": ["scrollbarSide"],
+    "stickyHeader": ["value"],
+    "stickyFooter": ["value"],
+    "fadeHeight": ["space"],
+    "fadeBottom": ["value?"],
+    "matchSurfacePaint": ["value?"],
+    "summary": ["value"],
+    "onReveal": ["value"],
+    "peek": ["value?"],
+    "barHeight": ["space"],
+    "collapsedHeight": ["space"],
+    "thickness": ["space"],
+    "onResizeStart": ["value"],
+    "onResizeEnd": ["value"],
+    "onNudge": ["value"]
   },
   "universal": [
     "padding",
@@ -1489,6 +1510,70 @@
       "constructors": ["StickySection"],
       "universal": false,
       "modifiers": ["testID"]
+    },
+    "scrollArea": {
+      "constructors": ["ScrollArea"],
+      "modifiers": [
+        "contentMargins",
+        "spacing",
+        "axis",
+        "scrollbar",
+        "scrollbarSide",
+        "size",
+        "scrollDismissesKeyboard",
+        "keyboardTaps"
+      ],
+      "size": "scrollbarSize"
+    },
+    "scrollSurface": {
+      "constructors": ["ScrollSurface"],
+      "modifiers": [
+        "contentMargins",
+        "spacing",
+        "axis",
+        "scrollbar",
+        "scrollbarSide",
+        "size",
+        "scrollDismissesKeyboard",
+        "keyboardTaps",
+        "stickyHeader",
+        "stickyFooter",
+        "fadeHeight",
+        "fadeBottom",
+        "matchSurfacePaint",
+        "style"
+      ],
+      "size": "scrollbarSize",
+      "style": "scrollSurfaceStyle"
+    },
+    "autoHideBar": {
+      "constructors": ["AutoHideBar"],
+      "universal": false,
+      "modifiers": [
+        "summary",
+        "collapsed",
+        "onReveal",
+        "peek",
+        "barHeight",
+        "collapsedHeight",
+        "label",
+        "testID"
+      ]
+    },
+    "resizeHandle": {
+      "constructors": ["ResizeHandle"],
+      "universal": false,
+      "modifiers": [
+        "axis",
+        "style",
+        "thickness",
+        "onResizeStart",
+        "onResizeEnd",
+        "onNudge",
+        "label",
+        "testID"
+      ],
+      "style": "resizeHandleStyle"
     },
     "pageFooter": {
       "constructors": ["PageFooter"],
