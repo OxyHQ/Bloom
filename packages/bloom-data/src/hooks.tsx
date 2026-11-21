@@ -5,8 +5,12 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
+  useState,
   useSyncExternalStore,
 } from 'react';
+
+import { type Action, type ActionStatus, actionStatus, listenActionStatus } from './action';
 
 import type { EntityDefinition, ListState } from './definition';
 import type { Entity, List } from './entity';
@@ -390,4 +394,68 @@ export function useModel<T, S>(
     void withStore(store, () => model.load());
   }, [model, store]);
   return useEntityIn(store, model.entity, MODEL_ID, read) as T | S | undefined;
+}
+
+/** A component's calls of one action: run it, and what its last call is doing. */
+export interface ActionView<A extends unknown[], R> {
+  /** Calls the action in the tree's store. Rejects when the call fails (the error is also kept here). */
+  readonly run: (...args: A) => Promise<R | undefined>;
+  /** The last call is running or waiting for the network. */
+  readonly isPending: boolean;
+  /** The last call's failure, until the next call or `reset`. */
+  readonly error: unknown;
+  /** The last call's result. */
+  readonly data: R | undefined;
+  readonly reset: () => void;
+}
+
+interface CallState<R> {
+  readonly isPending: boolean;
+  readonly error: unknown;
+  readonly data: R | undefined;
+}
+
+const NO_CALL: CallState<never> = { isPending: false, error: null, data: undefined };
+
+/**
+ * One action as a component calls it: `run` acts on the tree's store, and the
+ * view says whether its last call is pending and how it ended. Only the last
+ * call reports: an earlier one that ends later changes nothing.
+ */
+export function useAction<A extends unknown[], R>(action: Action<A, R>): ActionView<A, R> {
+  const store = useStore();
+  const [state, setState] = useState<CallState<R>>(NO_CALL);
+  const calls = useRef(0);
+  const run = useCallback(
+    async (...args: A) => {
+      calls.current += 1;
+      const call = calls.current;
+      setState({ isPending: true, error: null, data: undefined });
+      try {
+        const data = await withStore(store, () => action(...args));
+        if (call === calls.current) setState({ isPending: false, error: null, data });
+        return data;
+      } catch (error) {
+        if (call === calls.current) setState({ isPending: false, error, data: undefined });
+        throw error;
+      }
+    },
+    [action, store],
+  );
+  const reset = useCallback(() => {
+    calls.current += 1;
+    setState(NO_CALL);
+  }, []);
+  return { ...state, run, reset };
+}
+
+/** What the tree's store's actions are doing (running, waiting for the network). */
+export function useActionStatus(): ActionStatus {
+  const store = useStore();
+  const subscribe = useCallback(
+    (listener: Listener) => listenActionStatus(store, listener),
+    [store],
+  );
+  const getSnapshot = () => actionStatus(store);
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
