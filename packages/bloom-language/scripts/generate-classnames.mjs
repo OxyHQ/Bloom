@@ -134,6 +134,8 @@ function spaceValue(text) {
 const mapped = (language) => ({ status: 'mapped', language });
 const token = (scale, value, language) => ({ status: 'token', scale, value, language });
 const modifier = (language) => ({ status: 'modifier', language });
+const motion = (language) => ({ status: 'motion', language });
+const appToken = (scale, value, language) => ({ status: 'appToken', scale, value, language });
 const structure = (language) => ({ status: 'structure', language });
 const drop = (language) => ({ status: 'drop', language });
 
@@ -177,6 +179,14 @@ function colorVariable(name) {
 }
 
 function color(name, make) {
+  // A raw hex is an app's brand colour: the app's own token, never a Bloom role.
+  const hex = /^\[(#[0-9a-fA-F]{3,8})\](?:\/(.+))?$/.exec(name);
+  if (hex)
+    return appToken(
+      'color',
+      hex[2] === undefined ? hex[1] : `${hex[1]} at ${hex[2]}%`,
+      make('app.color.<name>'),
+    );
   const { base, alpha, variable } = colorVariable(name);
   const fixed = roleByVariable[TW_FIXED[base]];
   if (TW_PALETTE.test(base) && !fixed) return token('color', base, make('…'));
@@ -224,13 +234,133 @@ function fontSize(name) {
   );
 }
 
-function corner(name) {
+/** Tailwind's corner sides: `t` is the top two, `tl` one; `l`/`r` lead and trail, as the edges do. */
+const CORNER_SIDE = {
+  t: 'top',
+  b: 'bottom',
+  l: 'leading',
+  r: 'trailing',
+  s: 'leading',
+  e: 'trailing',
+  tl: 'top-leading',
+  tr: 'top-trailing',
+  bl: 'bottom-leading',
+  br: 'bottom-trailing',
+  ss: 'top-leading',
+  se: 'top-trailing',
+  es: 'bottom-leading',
+  ee: 'bottom-trailing',
+};
+
+function corner(name, side) {
   const value =
     name === '' ? TW_RADIUS[''] : (presetRadius[name] ?? TW_RADIUS[name] ?? spaceValue(name));
   if (value === undefined) return deadKey(name, 'radius');
-  if (value >= 9999) return mapped(".corner('full')");
+  const sideArg = side ? `, '${side}'` : '';
+  if (value >= 9999) return mapped(`.corner('full'${sideArg})`);
   const name2 = rung(scales.corner, value);
-  return name2 ? mapped(`.corner('${name2}')`) : token('corner', `${value}px`, '.corner(…)');
+  return name2
+    ? mapped(`.corner('${name2}'${sideArg})`)
+    : token('corner', `${value}px`, `.corner(…${sideArg})`);
+}
+
+/** Tailwind v4's own shadows (theme.css): each is a numeric token named by its exact box-shadow. */
+const TW_SHADOW = {
+  '2xs': '0 1px rgb(0 0 0 / 0.05)',
+  xs: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+  '': '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+  sm: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+  md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+  lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+  xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+  '2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
+};
+
+/**
+ * The motion layer (`@oxy.so/bloom/motion`, the language's motion modifiers on
+ * feat/bloom-language-motion): what of Tailwind's transitions and tw-animate's
+ * enter and exit it plays, and what it has no equivalent for.
+ */
+const MOTION_LAYER = 'feat/bloom-language-motion';
+function motionUtility(utility) {
+  let m;
+  if (utility === 'transition-none') return drop('a view animates only what it says');
+  if (utility === 'transition-opacity' || utility === 'transition-transform')
+    return motion(
+      `.animation(motion): a change of the view’s ${utility === 'transition-opacity' ? 'opacity' : 'offset, scale or rotation'} plays with motion (${MOTION_LAYER})`,
+    );
+  if (utility === 'transition-colors')
+    return modifier(
+      'a colour transition: the motion engine animates geometry and opacity, not colour',
+    );
+  if (utility === 'transition' || utility === 'transition-all')
+    return modifier(
+      'a transition of every property: .animation(motion) plays geometry and opacity, not colours or shadows',
+    );
+  if (/^transition-\[/.test(utility))
+    return modifier(
+      'a layout transition (a frame’s width): the motion engine moves views, not frames',
+    );
+  if ((m = /^duration-(\d+)$/.exec(utility)))
+    return token(
+      'motion',
+      `${m[1]}ms`,
+      'an app motion (defineTokens({ motion: { duration, easing } })): Tailwind’s curve is none of Bloom’s',
+    );
+  if (utility === 'ease-linear')
+    return motion(`easing 'linear' in the view’s motion (Bloom’s linear curve; ${MOTION_LAYER})`);
+  if ((m = /^ease-(.+)$/.exec(utility)))
+    return token('motion', `ease-${m[1]}`, 'an app motion’s curve: Tailwind’s is none of Bloom’s');
+  if (utility === 'animate-in')
+    return motion(
+      `.transition(…): its insertion, the fade, zoom and slide beside it (${MOTION_LAYER})`,
+    );
+  if (utility === 'animate-out')
+    return motion(`.transition(asymmetric(insert, remove)): its removal (${MOTION_LAYER})`);
+  if ((m = /^(animate-(?:spin|pulse|bounce|ping))$/.exec(utility)))
+    return modifier(
+      `a looping animation (${m[1]}): the motion engine plays keyframes on a trigger, never in a loop`,
+    );
+  if ((m = /^delay-/.exec(utility))) return modifier('a delay before a motion plays');
+  if (/^(animate|transition)(-|$)/.test(utility))
+    return modifier('a motion the engine has no name for');
+  return undefined;
+}
+
+/** tw-animate's enter and exit: a transition's halves. */
+function enterExit(utility) {
+  let m;
+  if ((m = /^fade-(in|out)(?:-(\d+))?$/.exec(utility))) {
+    const from = m[2] === undefined ? 0 : Number(m[2]) / 100;
+    return from === 0
+      ? motion(
+          `opacity, the ${m[1] === 'in' ? 'insertion' : 'removal'} of .transition(…) (${MOTION_LAYER})`,
+        )
+      : token('opacity', `${from}`, 'opacity from a partial value, in .transition(…)');
+  }
+  if ((m = /^zoom-(in|out)(?:-(\d+))?$/.exec(utility))) {
+    const factor = m[2] === undefined ? 0 : Number(m[2]) / 100;
+    const name = rung(scales.scale, factor);
+    return name
+      ? motion(
+          `scale('${name}'), the ${m[1] === 'in' ? 'insertion' : 'removal'} of .transition(…) (${MOTION_LAYER})`,
+        )
+      : token('scale', `${factor}`, `scale(…) in .transition(…)`);
+  }
+  if (
+    (m = /^slide-(in|out)-(?:from|to)-(top|bottom|left|right|start|end)(?:-(.+))?$/.exec(utility))
+  ) {
+    const edge = {
+      top: 'top',
+      bottom: 'bottom',
+      left: 'leading',
+      right: 'trailing',
+      start: 'leading',
+      end: 'trailing',
+    }[m[2]];
+    return space(m[3] ?? '0', (t) => `move('${edge}', ${t}) in .transition(…) (${MOTION_LAYER})`);
+  }
+  return undefined;
 }
 
 const ALIGN = {
@@ -347,8 +477,9 @@ function resolve(utility) {
     if (value === 'auto')
       return drop('a view’s size is its content’s unless a frame says otherwise');
     if (['screen', 'dvh', 'svh'].includes(value)) return structure('a screen() fills the window');
-    if (['fit', 'min', 'max'].includes(value))
-      return modifier(`an intrinsic size (${utility}): fit-content and its kin`);
+    if (value === 'fit') return mapped(frame("'fit'"));
+    if (['min', 'max'].includes(value))
+      return modifier(`an intrinsic size (${utility}): min-content and max-content`);
     const out = space(value, frame);
     if (out) return out;
     const container = {
@@ -427,11 +558,9 @@ function resolve(utility) {
   if (utility === 'select-text' || utility === 'select-all') return mapped('.selectable()');
   // Fills, borders, corners, opacity.
   if ((m = /^bg-(.+)$/.exec(utility))) return color(m[1], (r) => `.background(${r})`);
-  if ((m = /^rounded(?:-(t|b|l|r|s|e|tl|tr|bl|br))?(?:-(.+))?$/.exec(utility))) {
-    if (m[1]) return modifier('a corner per side');
-    return corner(m[2] ?? '');
-  }
-  if ((m = /^border(?:-([xytbserl]))?(?:-(\d+|hairline))?$/.exec(utility))) {
+  if ((m = /^rounded(?:-(tl|tr|bl|br|ss|se|es|ee|t|b|l|r|s|e))?(?:-(.+))?$/.exec(utility)))
+    return corner(m[2] ?? '', m[1] && CORNER_SIDE[m[1]]);
+  if ((m = /^border(?:-([xytbserl]))?(?:-(\d+|hairline|\[\d+px\]))?$/.exec(utility))) {
     const edge = {
       '': 'all',
       t: 'top',
@@ -442,7 +571,7 @@ function resolve(utility) {
       r: 'trailing',
     }[m[1] ?? ''];
     if (edge === undefined) return modifier('a border on two sides');
-    const width = m[2] ?? '1';
+    const width = (m[2] ?? '1').replace(/^\[(\d+)px\]$/, '$1');
     if (width === '0') return drop('no border is the default');
     const name = width === 'hairline' ? 'hairline' : rung(scales.borderWidth, Number(width));
     const call = `.border(role, ${name ? `'${name}'` : '…'}${edge === 'all' ? '' : `, '${edge}'`})`;
@@ -464,6 +593,9 @@ function resolve(utility) {
     const value = m[1] ?? '';
     if (scales.shadow[value] !== undefined) return mapped(`.shadow('${value}')`);
     if (value === 'none') return drop('a view has no shadow unless it says so');
+    const exact = TW_SHADOW[value];
+    if (exact !== undefined && scales.shadow[exact] !== undefined)
+      return mapped(`.shadow('${exact}')`);
     return token('shadow', utility, '.shadow(…)');
   }
   if ((m = /^(ring|outline)(?:-(.+))?$/.exec(utility))) {
@@ -477,7 +609,12 @@ function resolve(utility) {
         : token('borderWidth', `${width}px`, '.ring(role, …)');
     }
     const arbitrary = /^\[(\d+)px\]$/.exec(value);
-    if (arbitrary) return token('borderWidth', `${arbitrary[1]}px`, '.ring(role, …)');
+    if (arbitrary) {
+      const name = rung(scales.borderWidth, Number(arbitrary[1]));
+      return name
+        ? mapped(`.ring(role, '${name}')`)
+        : token('borderWidth', `${arbitrary[1]}px`, '.ring(role, …)');
+    }
     if ((m = /^offset-(.+)$/.exec(value))) {
       if (kind === 'outline' || /^\d+$/.test(m[1]))
         return space(m[1], (t) => `.ring(role, width, ${t})`);
@@ -497,8 +634,41 @@ function resolve(utility) {
       return structure('a view centred on its parent: .overlay(view, alignment) on the parent');
     return space(value, (t) => `.offset({ ${axis}: ${t} })`, negative === '-');
   }
-  if (/^(transition|duration|ease|delay|animate)(-|$)/.test(utility))
-    return modifier('motion (the motion runtime)');
+  if (/^(transition|duration|ease|delay|animate)(-|$)/.test(utility)) return motionUtility(utility);
+  const entered = enterExit(utility);
+  if (entered) return entered;
+  // Small modifiers.
+  if (utility === 'tabular-nums') return mapped('.monospacedDigit()');
+  if (utility === 'pointer-events-none') return mapped('.allowsHitTesting(false)');
+  if (utility === 'pointer-events-auto') return mapped('.allowsHitTesting(true)');
+  if (utility === 'sr-only') return mapped('.accessibilityOnly()');
+  if (utility === 'break-all') return mapped(".wordBreak('all')");
+  if (utility === 'break-words' || utility === 'wrap-break-word')
+    return mapped(".wordBreak('words')");
+  if (utility === 'break-normal')
+    return drop('a line breaks between words unless it says otherwise');
+  if ((m = /^list-(disc|decimal)$/.exec(utility)))
+    return mapped(`.listMarker('${m[1]}') (a stack)`);
+  if (utility === 'list-none') return drop('a stack draws no markers unless it says so');
+  if ((m = /^(-?)rotate-(\d+)$/.exec(utility)))
+    return token(
+      'rotation',
+      `${m[1]}${m[2]}°`,
+      `.rotation(…) (${MOTION_LAYER}: none, quarter, half)`,
+    );
+  if (/^origin-/.test(utility))
+    return modifier('a transform origin: a view scales and rotates about its centre');
+  if ((m = /^scale-(\d+|\[\d*\.?\d+\])$/.exec(utility))) {
+    const factor = m[1].startsWith('[') ? Number(m[1].slice(1, -1)) : Number(m[1]) / 100;
+    const name = rung(scales.scale, factor);
+    return name ? mapped(`.scale('${name}')`) : token('scale', `${factor}`, '.scale(…)');
+  }
+  if ((m = /^basis-(.+)$/.exec(utility))) {
+    const value = m[1];
+    if (value === 'auto') return drop('a view’s basis is its size unless it says otherwise');
+    if (value === 'full' || scales.length[value] !== undefined) return mapped(`.basis('${value}')`);
+    return space(value, (t) => `.basis(${t})`);
+  }
   if (
     /^(pointer-events|isolate|sr-only|not-sr-only|tabular-nums|object|fill|stroke|blur|backdrop|scale|rotate|origin|transform|will-change|appearance|resize|list|divide|break|hyphens|indent|align|order|basis|columns|box)(-|$)/.test(
       utility,
@@ -524,6 +694,8 @@ const STATUS = {
   structure: 'Expressed by the view’s structure',
   drop: 'Redundant in the language',
   token: 'Needs a named token (raw value)',
+  appToken: 'An app’s own token (a brand colour)',
+  motion: 'Maps to the motion layer',
   modifier: 'Needs a modifier the language lacks',
   app: 'An app’s own class',
 };
@@ -715,9 +887,33 @@ ${table(byStatus('drop'), columns)}
 
 ${table(byStatus('token'), tokenColumns)}
 
+## Maps to the motion layer
+
+Bloom's motion engine (\`@oxy.so/bloom/motion\`) and the language's motion
+modifiers (\`.animation()\`, \`.transition()\`, \`.keyframes()\`) are on
+\`${MOTION_LAYER}\`. What it plays is here; its durations and curves are
+motion tokens: Tailwind's default curve (\`cubic-bezier(0.4, 0, 0.2, 1)\`) is
+none of Bloom's, so a \`duration-*\` is an app motion
+(\`defineTokens({ motion: { duration, easing } })\`) unless it is one of Bloom's.
+What the engine has no equivalent for (a colour transition, a loop, a delay, a
+transform origin) is under *Needs a modifier the language lacks*.
+
+${table(byStatus('motion'), columns)}
+
 ## Needs a modifier the language lacks
 
 ${table(byStatus('modifier'), columns)}
+
+## An app's own token
+
+A raw hex (\`bg-[#0d0d0d]\`, \`text-[#5b6573]\`) is an app's brand colour, not
+a Bloom role: it becomes the app's own token, declared once with
+\`defineTokens\`, never a Bloom token. Every one is listed, whatever its count.
+
+${table(
+  rows.filter((row) => row.status === 'appToken'),
+  tokenColumns,
+)}
 
 ## An app's own class
 
