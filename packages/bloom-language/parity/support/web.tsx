@@ -14,6 +14,7 @@
 import type { ReactNode } from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
+import { Dimensions } from 'react-native';
 import { BloomThemeProvider } from '@oxy.so/bloom/theme';
 
 import type { ParityCase, Scheme } from './cases';
@@ -27,6 +28,16 @@ export interface DomTree {
   children: (DomTree | string)[];
 }
 
+/**
+ * Whether a media query holds: jsdom lays nothing out, so the viewport is the
+ * width react-native-web reports to JavaScript (`Dimensions`), the one a
+ * component reading the window's breakpoint sees. Only `min-width` is written.
+ */
+function viewportMatches(media: string): boolean {
+  const width = Dimensions.get('window').width;
+  return [...media.matchAll(/min-width:\s*(\d+)px/g)].every((match) => width >= Number(match[1]));
+}
+
 function styleRules(): CSSStyleRule[] {
   const sheets: CSSStyleSheet[] = [...Array.from(document.styleSheets)];
   const adopted = (document as Document & { adoptedStyleSheets?: CSSStyleSheet[] })
@@ -36,6 +47,8 @@ function styleRules(): CSSStyleRule[] {
   const collect = (list: CSSRuleList) => {
     for (const rule of Array.from(list)) {
       if ('selectorText' in rule) rules.push(rule as CSSStyleRule);
+      else if ('media' in rule && !viewportMatches((rule as CSSMediaRule).media.mediaText))
+        continue;
       else if ('cssRules' in rule) collect((rule as CSSGroupingRule).cssRules);
     }
   };

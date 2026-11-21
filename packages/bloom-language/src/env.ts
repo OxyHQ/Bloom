@@ -3,6 +3,7 @@ import { createContext } from 'react';
 import type { Modifier } from './node';
 import type { TextTraits } from './style';
 import { isFontFamily } from './tokens';
+import type { LiveCondition, Planned } from './variants';
 
 /**
  * The environment a view hands its descendants: the text and icon traits
@@ -62,33 +63,63 @@ type EnvModifier = Extract<
   { kind: 'foreground' | 'font' | 'weight' | 'leading' | 'tracking' }
 >;
 
-export function deriveEnv(parent: Env, modifiers: readonly Modifier[]): Env {
+function applyTrait(text: Partial<TextTraits>, modifier: EnvModifier): void {
+  switch (modifier.kind) {
+    case 'foreground':
+      text.foreground = modifier.value;
+      break;
+    case 'font':
+      // A family (`mono`) sets the face and keeps the size; a size keeps the face.
+      if (isFontFamily(modifier.value)) text.family = modifier.value;
+      else text.font = modifier.value;
+      break;
+    case 'weight':
+      text.weight = modifier.value;
+      break;
+    case 'leading':
+      text.leading = modifier.value;
+      break;
+    case 'tracking':
+      text.tracking = modifier.value;
+      break;
+  }
+}
+
+/**
+ * The environment under `modifiers`, and under `variants` (the traits a
+ * `when()` changes: one that holds is a trait like any other; a live one is
+ * kept beside the traits, for the text that draws them).
+ */
+export function deriveEnv(
+  parent: Env,
+  modifiers: readonly Modifier[],
+  variants: readonly (readonly [Planned, Modifier])[] = [],
+): Env {
   let key = '';
   for (const modifier of modifiers) key += `;${modifier.key}`;
+  for (const [condition, modifier] of variants) key += `;?${condition ?? ''}${modifier.key}`;
   let env = parent.derived.get(key);
   if (env) return env;
   const text: TextTraits = { ...parent.text };
-  for (const modifier of modifiers as readonly EnvModifier[]) {
-    switch (modifier.kind) {
-      case 'foreground':
-        text.foreground = modifier.value;
-        break;
-      case 'font':
-        // A family (`mono`) sets the face and keeps the size; a size keeps the face.
-        if (isFontFamily(modifier.value)) text.family = modifier.value;
-        else text.font = modifier.value;
-        break;
-      case 'weight':
-        text.weight = modifier.value;
-        break;
-      case 'leading':
-        text.leading = modifier.value;
-        break;
-      case 'tracking':
-        text.tracking = modifier.value;
-        break;
-    }
+  const own: Partial<TextTraits> = {};
+  for (const modifier of modifiers as readonly EnvModifier[]) applyTrait(own, modifier);
+  Object.assign(text, own);
+  // A trait set here is the view's own: what a variant above said of it no longer reaches in.
+  const live: (readonly [LiveCondition, Partial<TextTraits>])[] = [];
+  for (const [condition, changed] of parent.text.variants ?? []) {
+    const kept = Object.fromEntries(Object.entries(changed).filter(([trait]) => !(trait in own)));
+    if (Object.keys(kept).length > 0) live.push([condition, kept]);
   }
+  for (const [condition, modifier] of variants) {
+    if (condition === null) {
+      applyTrait(text, modifier as EnvModifier);
+      continue;
+    }
+    const changed: Partial<TextTraits> = {};
+    applyTrait(changed, modifier as EnvModifier);
+    live.push([condition, changed]);
+  }
+  text.variants = live.length > 0 ? live : undefined;
   env = {
     key: `${parent.key}${key}`,
     text: Object.freeze(text) as TextTraits,

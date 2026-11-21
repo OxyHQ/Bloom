@@ -83,25 +83,47 @@ import { MenuHost } from './platform/menu-host';
 import { HeaderHost } from './platform/header-host';
 import { BottomBarHost } from './platform/bottom-bar-host';
 import {
+  PLACE_KINDS,
+  STACK_KINDS,
   addToLayers,
+  addVariantToLayers,
+  applyPlacement,
   cachedStyle,
   emptyPlacement,
   foregroundOf,
   isLayerModifier,
+  joinVariants,
   layerStyle,
   role,
+  layerVariants,
+  layoutOf,
+  layoutStyle,
   overlayStyle,
   placeStyle,
+  placeVariants,
   stackStyle,
   textStyle,
   textVariant,
+  textVariants,
   type Layer,
+  type PlaceModifier,
   type Placement,
   type Resolved,
+  type StackModifier,
   type StyleOut,
   type Target,
+  type VariantStyles,
 } from './style';
-import { Painted, type Paint } from './paint';
+import { StateHost } from './state-host';
+import {
+  STATES,
+  settle,
+  varies,
+  warnNotVaried,
+  type LiveCondition,
+  type Planned,
+} from './variants';
+import { Conditioned, Painted, type Paint } from './paint';
 import {
   DURATION,
   HIT_SLOP,
@@ -165,12 +187,34 @@ const ROLE: Record<Role, string | undefined> = {
 
 const ENV_KINDS: ReadonlySet<string> = new Set(ENVIRONMENT);
 
+/** Marks the props of a box drawn by a `StateHost`: its value says whether the box is pressable. */
+const STATEFUL = '$$stateful';
+
+/** A style with nothing to draw: for a host that takes only props. */
+const NO_OUT: StyleOut = Object.freeze({ style: undefined, paint: undefined });
+
+/** The nodes drawn by a Bloom component, which takes its style as an object (so cannot vary it on the web). */
+const DRAWN_BY_HOSTS: ReadonlySet<string> = new Set([
+  'stack',
+  'spacer',
+  'text',
+  'icon',
+  'embed',
+  'view',
+]);
+
 /** One pass over a node's modifiers: what it draws with, sorted by what it affects. */
 interface Plan {
   layers: Layer[];
   /** What places the view in its parent (its outermost box). */
   place: Placement;
   env: Modifier[];
+  /** The text traits variants change, for the environment of what is inside. */
+  envVariants: [Planned, Modifier][];
+  /** What variants change of a stack's own layout. */
+  hostVariants: [Planned, StackModifier][];
+  /** The states the view's variants answer: its outermost box tracks them (`StateHost`). */
+  states: LiveCondition[];
   pressable: boolean;
   onPress: PressHandler | undefined;
   /** A press that goes somewhere (`navigate()`), resolved against the environment's navigator. */
@@ -198,6 +242,9 @@ function plan(node: Node): Plan {
     layers: [],
     place: emptyPlacement(),
     env: [],
+    envVariants: [],
+    hostVariants: [],
+    states: [],
     pressable: false,
     onPress: undefined,
     navigation: undefined,
@@ -217,9 +264,17 @@ function plan(node: Node): Plan {
   const onGlass = node.modifiers.some((modifier) => modifier.kind === 'glass');
   const modifiers =
     node.kind === 'fab' && !onGlass ? [FAB_GLASS, ...node.modifiers] : node.modifiers;
+  // A `disabled` variant answers the view's own `disabled()`, wherever it is chained.
+  let disabled = false;
+  for (const modifier of modifiers) if (modifier.kind === 'disabled') disabled = modifier.value;
   for (const modifier of modifiers) {
     if (isLayerModifier(modifier)) {
       addToLayers(result.layers, modifier);
+      continue;
+    }
+    if (modifier.kind === 'when') {
+      const condition = settle(modifier.condition, disabled);
+      if (condition !== false) planVariant(result, condition, modifier.modifiers);
       continue;
     }
     if (ENV_KINDS.has(modifier.kind)) {
@@ -228,20 +283,13 @@ function plan(node: Node): Plan {
     }
     switch (modifier.kind) {
       case 'grow':
-        result.place.grow = true;
-        result.place.key += ';grow';
-        break;
       case 'shrink':
-        result.place.shrink = modifier.value;
-        result.place.key += `;${modifier.key}`;
-        break;
       case 'alignSelf':
       case 'position':
       case 'offset':
       case 'zIndex':
       case 'hidden':
-        (result.place as unknown as Record<string, unknown>)[modifier.kind] = modifier.value;
-        result.place.key += `;${modifier.key}`;
+        applyPlacement(result.place, modifier);
         break;
       case 'onPress':
         result.pressable = true;
@@ -292,6 +340,51 @@ function plan(node: Node): Plan {
     result.control = { tint: controlTint(node.kind, result) };
   }
   return result;
+}
+
+/**
+ * A variant's modifiers, each where it overrides what the chain set before
+ * it: a box modifier in the view that set the same thing last, a text trait
+ * in the environment, a stack's layout on its host, a placement on its
+ * outermost box.
+ */
+function planVariant(result: Plan, condition: Planned, modifiers: readonly Modifier[]): void {
+  if (condition !== null && STATES.has(condition) && !result.states.includes(condition))
+    result.states.push(condition);
+  for (const modifier of modifiers) {
+    if (!varies(modifier)) {
+      warnNotVaried(modifier);
+      continue;
+    }
+    const mark = `;?${condition ?? ''}${modifier.key}`;
+    if (isLayerModifier(modifier)) addVariantToLayers(result.layers, condition, modifier);
+    else if (ENV_KINDS.has(modifier.kind)) result.envVariants.push([condition, modifier]);
+    else if (PLACE_KINDS.has(modifier.kind)) {
+      result.place.variants.push([condition, modifier as PlaceModifier]);
+      result.place.key += mark;
+    } else if (STACK_KINDS.has(modifier.kind)) {
+      result.hostVariants.push([condition, modifier as StackModifier]);
+    }
+  }
+}
+
+/** The style key of a stack's own variants, '' with none. */
+function hostVariantKey(p: Plan): string {
+  return p.hostVariants
+    .map(([condition, modifier]) => `?${condition ?? ''}${modifier.key}`)
+    .join(';');
+}
+
+/** A stack's layout variants: the ones that hold go into its layout, the live ones are styles under their condition. */
+function hostVariants(p: Plan): VariantStyles {
+  return joinVariants(
+    p.hostVariants
+      .filter(([condition]) => condition !== null)
+      .map(([condition, modifier]) => [
+        condition as LiveCondition,
+        layoutStyle(layoutOf([modifier])),
+      ]),
+  );
 }
 
 /** A press modifier's value as a handler in an environment, for a host that wires presses itself. */
@@ -353,6 +446,12 @@ function behaviourProps(p: Plan): Record<string, unknown> | undefined {
   if (p.onHoverIn) props.onHoverIn = p.onHoverIn;
   if (p.onHoverOut) props.onHoverOut = p.onHoverOut;
   if (IS_WEB && p.hoverGroup) props.className = 'group';
+  if (p.pressable && p.own.get('disabled')?.kind === 'disabled') {
+    const disabled = ownValue(p, 'disabled')?.value;
+    if (disabled) props.disabled = true;
+  }
+  // A box whose variants answer its state is drawn by a `StateHost` (drawHost).
+  if (p.states.length > 0) props[STATEFUL] = p.pressable ? p.states : [];
   for (const _ in props) return props;
   return undefined;
 }
@@ -386,6 +485,12 @@ function drawHost(
   props: Record<string, unknown>,
   ...children: ReactNode[]
 ): ReactElement {
+  if (STATEFUL in props) {
+    const { [STATEFUL]: states, ...rest } = props;
+    return draw(StateHost, { ...rest, host, out, states }, ...children);
+  }
+  if (out.paint?.variants !== undefined)
+    return draw(Conditioned, { ...props, host, paint: out.paint }, ...children);
   if (out.paint !== undefined)
     return draw(Painted, { ...props, host, paint: out.paint }, ...children);
   if (out.style !== undefined) props.style = out.style;
@@ -430,7 +535,10 @@ function renderNode(node: Node, ctx: Context, key: string | number | undefined):
  */
 function drawNode(node: Node, ctx: Context, key: string | number | undefined): ReactNode {
   const p = plan(node);
-  const env = p.env.length > 0 ? deriveEnv(ctx.env, p.env) : ctx.env;
+  const env =
+    p.env.length > 0 || p.envVariants.length > 0
+      ? deriveEnv(ctx.env, p.env, p.envVariants)
+      : ctx.env;
   if (p.navigation !== undefined) p.onPress = navigationPress(env, p.navigation);
   // What the node's children render in: its environment, and no row (a stack sets its own).
   const inner: Context =
@@ -438,10 +546,17 @@ function drawNode(node: Node, ctx: Context, key: string | number | undefined): R
   const reactKey = p.id ?? key;
   if (node.kind === 'skeleton') return drawSkeleton(node, p, inner, reactKey);
   const layers = p.layers;
+  // A Bloom component cannot vary its style, so a varied box (or a varied
+  // place) of one is a view of its own around it.
+  const variedBox =
+    !DRAWN_BY_HOSTS.has(node.kind) &&
+    ((layers[0]?.variants.length ?? 0) > 0 || p.place.variants.length > 0 || p.states.length > 0);
+  if (variedBox && layers.length === 0) addVariantToLayers(layers, null, EMPTY_PADDING);
   // A glass layer is a Surface and a blur layer an island, which the host cannot
   // be, and an overlay layer holds its views beside the host; so the host takes
   // the innermost layer only when that layer is plain.
   const hostTakesLayer =
+    !variedBox &&
     layers.length > 0 &&
     (layers[0] as Layer).glass === undefined &&
     !(layers[0] as Layer).blur &&
@@ -491,6 +606,19 @@ function boxStyle(layer: Layer | undefined, flex: string, p: Plan): Resolved {
   const style = layerStyle(layer);
   return flex ? Object.assign(style, placeStyle(p.place)) : style;
 }
+
+/** A box's live variants: its layer's, and its place's when it is the outermost box. */
+function boxVariants(layer: Layer | undefined, flex: string, p: Plan): VariantStyles {
+  return joinVariants(layerVariants(layer), flex ? placeVariants(p.place) : undefined);
+}
+
+/** A padding of nothing: what opens the view of its own a varied Bloom component takes. */
+const EMPTY_PADDING = Object.freeze({
+  kind: 'padding',
+  key: 'p:all:none',
+  edge: 'all',
+  value: 'none',
+}) as Extract<Modifier, { kind: 'padding' }>;
 
 /**
  * What an overlay layer's view holds: its view backgrounds, the content as
@@ -547,7 +675,9 @@ function wrapLayer(
         key: ownKey,
       };
       const drawn = drawHost(PlatformGlass, out, props, ...children);
-      return behaviour && p.pressable ? draw(hostFor(p), { ...behaviour, key }, drawn) : drawn;
+      return behaviour && p.pressable
+        ? drawHost(hostFor(p), NO_OUT, { ...behaviour, key }, drawn)
+        : drawn;
     }
     const out = cachedStyle('component', styleKey, () => resolved);
     const props: Record<string, unknown> = {
@@ -576,7 +706,9 @@ function wrapLayer(
             },
             ...children,
           );
-    return behaviour && p.pressable ? draw(hostFor(p), { ...behaviour, key }, surface) : surface;
+    return behaviour && p.pressable
+      ? drawHost(hostFor(p), NO_OUT, { ...behaviour, key }, surface)
+      : surface;
   }
   if (layer.blur) {
     // Bloom's floating island: its material, its shadow and its clip; a capsule
@@ -595,7 +727,9 @@ function wrapLayer(
       },
       ...children,
     );
-    return behaviour && p.pressable ? draw(hostFor(p), { ...behaviour, key }, island) : island;
+    return behaviour && p.pressable
+      ? drawHost(hostFor(p), NO_OUT, { ...behaviour, key }, island)
+      : island;
   }
   if (layer.concentric) {
     // Bloom's concentric geometry: the radius of the shape it sits in, less the inset.
@@ -607,9 +741,16 @@ function wrapLayer(
       { ...outer, radius: 'concentric', key: behaviour && p.pressable ? undefined : key },
       ...children,
     );
-    return behaviour && p.pressable ? draw(hostFor(p), { ...behaviour, key }, view) : view;
+    return behaviour && p.pressable
+      ? drawHost(hostFor(p), NO_OUT, { ...behaviour, key }, view)
+      : view;
   }
-  const out = cachedStyle('host', styleKey, () => boxStyle(layer, flex, p));
+  const out = cachedStyle(
+    'host',
+    styleKey,
+    () => boxStyle(layer, flex, p),
+    () => boxVariants(layer, flex, p),
+  );
   return drawHost(behaviour ? hostFor(p) : View, out, { ...behaviour, key }, ...children);
 }
 
@@ -686,7 +827,12 @@ function renderHost(
 ): ReactElement {
   const layerKey = layer?.key ?? '';
   const box = (target: Target, prefix: string): StyleOut =>
-    cachedStyle(target, `${prefix}|${layerKey}|${flex}`, () => boxStyle(layer, flex, p));
+    cachedStyle(
+      target,
+      `${prefix}|${layerKey}|${flex}`,
+      () => boxStyle(layer, flex, p),
+      () => boxVariants(layer, flex, p),
+    );
   const boxed = layer !== undefined || flex !== '';
 
   switch (node.kind) {
@@ -699,9 +845,18 @@ function renderHost(
         wrap: ownValue(p, 'wrap')?.value,
         axis: ownValue(p, 'axis')?.value,
       };
-      const styleKey = `S|${axis}|${layout.spacing === undefined ? '' : tokenKey(layout.spacing)}|${layout.align ?? ''}|${layout.justify ?? ''}|${layout.wrap ?? ''}|${layout.axis ?? ''}|${layerKey}|${flex}`;
-      const out = cachedStyle('host', styleKey, () =>
-        Object.assign(stackStyle(axis, layout), boxStyle(layer, flex, p)),
+      const styleKey = `S|${axis}|${layout.spacing === undefined ? '' : tokenKey(layout.spacing)}|${layout.align ?? ''}|${layout.justify ?? ''}|${layout.wrap ?? ''}|${layout.axis ?? ''}|${hostVariantKey(p)}|${layerKey}|${flex}`;
+      const out = cachedStyle(
+        'host',
+        styleKey,
+        () => {
+          // A layout variant that holds is the layout's own value.
+          for (const [condition, modifier] of p.hostVariants) {
+            if (condition === null) Object.assign(layout, layoutOf([modifier]));
+          }
+          return Object.assign(stackStyle(axis, layout), boxStyle(layer, flex, p));
+        },
+        () => joinVariants(hostVariants(p), boxVariants(layer, flex, p)),
       );
       const row: Context = axis === 'horizontal' ? { ...ctx, inRow: true } : ctx;
       const children =
@@ -719,13 +874,26 @@ function renderHost(
       return drawHost(host, out, hostProps(behaviour, key), ...children);
     }
     case 'spacer': {
-      const out = cachedStyle('host', `SP|${layerKey}|${flex}`, () =>
-        Object.assign({ flex: 1 }, boxStyle(layer, flex, p)),
+      const out = cachedStyle(
+        'host',
+        `SP|${layerKey}|${flex}`,
+        () => Object.assign({ flex: 1 }, boxStyle(layer, flex, p)),
+        () => boxVariants(layer, flex, p),
       );
       return drawHost(behaviour ? hostFor(p) : View, out, hostProps(behaviour, key));
     }
     case 'text':
-      return drawText(node, p, ctx, layerKey, flex, () => boxStyle(layer, flex, p), behaviour, key);
+      return drawText(
+        node,
+        p,
+        ctx,
+        layerKey,
+        flex,
+        () => boxStyle(layer, flex, p),
+        () => boxVariants(layer, flex, p),
+        behaviour,
+        key,
+      );
     case 'icon': {
       const size = resolveIconSize(
         (ownValue(p, 'size')?.value as IconSizeToken | undefined) ?? 'md',
@@ -1138,7 +1306,7 @@ function drawContainer(
   const outer = Object.keys(rest).length > 0;
   const props: Record<string, unknown> = { ...own, testID, key: outer ? undefined : key };
   const element = drawHost(component, out, props, ...renderChildren(node.children, ctx));
-  return outer ? draw(hostFor(p), { ...rest, key }, element) : element;
+  return outer ? drawHost(hostFor(p), NO_OUT, { ...rest, key }, element) : element;
 }
 
 /** A Badge node's props for Bloom's Badge, standalone or attached. */
@@ -1284,6 +1452,7 @@ function drawText(
   layerKey: string,
   flex: string,
   box: () => Resolved,
+  boxVaried: () => VariantStyles,
   behaviour: Record<string, unknown> | undefined,
   key: string | number | undefined,
 ): ReactElement {
@@ -1342,6 +1511,7 @@ function drawText(
     'host',
     `T|${ctx.env.key}|${span === undefined ? '' : `s:${spanKey}`}|${lookKey}|${layerKey}|${flex}`,
     () => Object.assign(textStyle(traits, look, span), box()),
+    () => joinVariants(textVariants(traits), boxVaried()),
   );
   return drawHost(host, out, props, ...runs);
 }

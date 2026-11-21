@@ -10,6 +10,7 @@ import { LAYOUT_CASES } from '../../parity/layout.cases';
 import { PIECES_CASES } from '../../parity/pieces.cases';
 import { MATERIAL_CASES } from '../../parity/material.cases';
 import { TEXT_CASES } from '../../parity/text.cases';
+import { VARIANT_CASES } from '../../parity/variants.cases';
 
 /**
  * Each language node beside the Bloom element it stands for: the same cases
@@ -63,3 +64,4 @@ export const AvatarsAndGroups: Story = { args: { cases: AVATAR_CASES } };
 export const SmallPieces: Story = { args: { cases: PIECES_CASES } };
 export const Buttons: Story = { args: { cases: BUTTON_CASES } };
 export const Layout: Story = { args: { cases: LAYOUT_CASES } };
+export const Variants: Story = { args: { cases: VARIANT_CASES } };
