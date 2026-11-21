@@ -18,6 +18,8 @@ export interface EntityDefinition {
   readonly onStore: ((records: readonly Plain[]) => void) | undefined;
   /** The persisted schema version, or `null` when the type is memory only. */
   readonly persistVersion: number | null;
+  /** Whether stored rows age out (`persistMaxAgeMs`). A model's never do. */
+  readonly expires: boolean;
   /** Secondary keys, by name: a record's value for each (`undefined`: none). */
   readonly indexes: ReadonlyArray<readonly [string, (record: Plain) => string | undefined]>;
 }
@@ -62,6 +64,11 @@ const persisted = new Map<string, EntityDefinition>();
  */
 export function registerPersisted(definition: EntityDefinition): void {
   if (definition.persistVersion !== null) persisted.set(definition.type, definition);
+}
+
+/** The persisted types whose rows never age out. */
+export function persistedKeep(): string[] {
+  return [...persisted.values()].filter((d) => !d.expires).map((d) => d.type);
 }
 
 export function persistedVersions(): Record<string, number> {
