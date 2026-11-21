@@ -1253,3 +1253,21 @@ fn a_heatmaps_colour_scale_is_checked() {
     let output = check("export const x = (days) => ActivityHeatmap(days).colorScale();\n");
     assert_eq!(output.diagnostics[0].message, ".colorScale() takes 1 argument(s), not 0");
 }
+
+#[test]
+fn menubars_are_checked() {
+    let imports = "import { Menubar, MenubarMenu, Item, Divider } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (open, acts, f) => Menubar(MenubarMenu('File', Item('New').shortcut('Mod+N').onPress(f), Divider()).id('file').disabled(false).testID('file')).openMenu(open).actions(acts).label('App').padding('xs');\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("MenubarMenu('File').padding('xs')", "MenubarMenu has no modifier .padding()"),
+        ("Menubar().openMenu()", ".openMenu() takes 1 argument(s), not 0"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (t) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

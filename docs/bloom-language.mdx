@@ -2244,6 +2244,25 @@ selects none; a press sets it, the selected one's included). It takes
 (`3xl` by default), `.backdrop(color)` (the surface the web edge fades
 blend into) and `.labels({ previous, next })` (the web arrows' names).
 
+### Menubars
+
+```ts
+Menubar(
+  MenubarMenu('File', Item('New tab').shortcut('Mod+T').tag('newTab'), Divider(), Item('Close').tag('close')),
+  MenubarMenu('Edit', Item('Undo').shortcut('Mod+Z').tag('undo')),
+).actions(AppActions()).label('Application')
+```
+
+Bloom's `Menubar`: its `MenubarMenu`s in a row, one open at a time. A menu's
+title is its trigger, its rows are a `Menu`'s, and `.id()` names it (its title
+by default); it takes `.disabled()` and `.testID()` (its title's). The bar takes
+`.openMenu([id, setId])` (the open menu when the screen owns it, `undefined`
+while none is), `.actions()` for its tagged rows, `.label()` and a box. A row's
+`.shortcut('Mod+N')` is its key chord: Bloom's menubar draws it beside the
+title and runs the row from it, open or closed (the other menus draw no
+shortcut). An item's platform action (Undo, Copy…, Settings) and alternates
+are not in the vocabulary yet.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2690,7 +2709,8 @@ and `@oxy.so/bloom-data` beside it.
   category bars,
   video playback,
   hover cards,
-  expandable text.
+  expandable text,
+  menubars.
 
 **Not built**
 

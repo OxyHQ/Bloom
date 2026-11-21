@@ -29,6 +29,7 @@ import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 import type { TagFieldKind } from './controls/tag-field';
 import type { ContextMenuKind } from './controls/context-menu';
 import type { HoverCardKind } from './controls/hover-card';
+import type { MenubarKind } from './controls/menubar';
 import type { ContextMenuAnchor } from '@oxy.so/bloom/context-menu';
 import type { FileUploadKind } from './controls/file-upload';
 import type { VideoViewKind } from './controls/video-view';
@@ -818,6 +819,10 @@ export interface ValueModifiers {
   closeDelay: number;
   padded: boolean;
 
+  // Menubars (controls/menubar.tsx)
+  openMenu: Binding<string | undefined>;
+  shortcut: string;
+
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1220,6 +1225,7 @@ export type NodeKind =
   | MediaInsetBorderKind
   | SortableMediaKind
   | HoverCardKind
+  | MenubarKind
   | AnimatedCheckKind
   | FactStripKind
   | ExpandableTextKind;
@@ -2963,6 +2969,14 @@ export class Node {
     return this.set('padded', value);
   }
 
+  // Menubars (controls/menubar.tsx)
+  openMenu(value: Binding<string | undefined>): Node {
+    return this.set('openMenu', value);
+  }
+  shortcut(value: string): Node {
+    return this.set('shortcut', value);
+  }
+
 }
 
 const FRAME_KEYS = OBJECTS.frame.keys;
@@ -3456,6 +3470,8 @@ export interface MenuItemView extends ViewNode {
   onPress(value: (() => void) | undefined): MenuItemView;
   /** The row's action by name: the menu's `actions()` resolve it when the row is chosen. */
   tag(value: string): MenuItemView;
+  /** The key chord that runs it from a menubar (`Mod+N`, `Mod+Shift+Z`), drawn beside its title there. */
+  shortcut(value: string): MenuItemView;
   testID(value: string): MenuItemView;
 }
 export interface MenuSubmenuView extends ViewNode {
