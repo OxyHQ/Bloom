@@ -1,19 +1,18 @@
 /**
- * Android and OxyOS: the lens menu. The engine draws the panel, its rows and
- * its motion natively; React gives it the rows as data and their glyphs as
- * views. Where the engine cannot run, Bloom's own menu.
+ * Android and OxyOS: the lens menu, which is the upstream app's menu component on Bloom's lens
+ * engine (`@oxy.so/bloom-lens`). This host only adapts Bloom's menu to it: the rows become its
+ * own parts (glyphs as views in the row's ink), the trigger is its trigger, and Bloom gives the
+ * colours (the panel's tint, the rows' ink, the scheme) and the face (Inter). Where the lens
+ * cannot run, Bloom's own menu.
  *
- * The lens view is the trigger, as in the engine's upstream app. It is mounted
- * with the trigger and stays: it draws the trigger (its glass too, when the
- * trigger is on glass), sees the press first (the glass springs under the
- * finger) and opens natively from where it is, with no remount. Rows given as
- * they are (tagged, or with their own handlers) are data the view holds
- * before it opens, so a press is one call to the engine. A `menu()` content
- * builds its rows on the press that opens it: the view opens itself as they
- * arrive (`openWithItems`) and lets them go once the engine says the menu has
- * finished closing, so the closing motion is never cut short.
+ * Every trigger is the upstream app's glass trigger: its lens is the trigger's base, which the
+ * menu grows out of and takes back, with the upstream app's trigger config (`absorb` over
+ * 0.48 s); a trigger on `.glass()` gives that base its tint and frost. Its press layer opens the
+ * menu natively (a trigger's own press is left out: a trigger opens its menu). Rows given as they are (tagged, or with handlers) are there before it opens. A
+ * `menu()` content is built by the trigger's own press instead: the view opens itself as its rows
+ * arrive (`openWithItems`) and lets them go once the menu has finished closing.
  */
-import { useCallback, useMemo, useRef, useState, type ComponentType } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { resolveSurfaceLevel } from '@oxy.so/bloom/styles';
 import { useTheme } from '@oxy.so/bloom/theme';
@@ -21,32 +20,27 @@ import { fontFamilyStyle } from '@oxy.so/bloom/typography';
 
 import { glassTriggerConfig } from './lens-glass';
 import { useMenuChoice } from './menu-actions';
-import { glyph, DropdownMenuHost } from './menu-dropdown';
+import { DropdownMenuHost } from './menu-dropdown';
 import {
   builtOnOpen,
-  menuHandlers,
   pressableTrigger,
   readMenuRows,
   setApart,
   splitTriggerGlass,
   triggerCorner,
+  triggerLabel,
+  withoutPress,
   type MenuRowData,
 } from './menu-rows';
 import type { MenuHostProps } from './host.types';
-import {
-  getNativeLens,
-  LENS_GLASS_TRIGGER_ABSORB,
-  LENS_ICON_HOST_ID,
-  type LensNativeHandle,
-  type LensNativeItem,
-  type LensNativeProps,
-} from './lens';
-import type { Child } from '../node';
+import { getLens, type Lens, type LensRow } from './lens';
+import { Icon } from '../primitives';
+import type { Child, IconComponent } from '../node';
 
 export function MenuHost(props: MenuHostProps) {
-  const NativeLens = getNativeLens();
-  if (!NativeLens) return <DropdownMenuHost {...props} />;
-  return <LensMenuHost {...props} NativeLens={NativeLens} />;
+  const lens = getLens();
+  if (!lens) return <DropdownMenuHost {...props} />;
+  return <LensMenuHost {...props} lens={lens} />;
 }
 
 function LensMenuHost({
@@ -55,20 +49,15 @@ function LensMenuHost({
   actions,
   testID,
   render,
-  NativeLens,
-}: MenuHostProps & { NativeLens: ComponentType<LensNativeProps> }) {
+  lens,
+}: MenuHostProps & { lens: Lens }) {
   const theme = useTheme();
-  const native = useRef<LensNativeHandle | null>(null);
   // The choice outlives the open menu: the engine closes the menu as a row is chosen.
   const { choose, running } = useMenuChoice(actions);
   // A `menu()` content is read only from the press that opens it until the menu has closed.
   const deferred = builtOnOpen(nodes);
   const [building, setBuilding] = useState(false);
   const rows = deferred && !building ? NO_ROWS : readMenuRows(nodes, choose);
-  const handlers = menuHandlers(rows);
-  const icons: Child[] = [];
-  const items = useSame(lensItems(rows, icons));
-  // A trigger on glass gives the menu that glass: the menu draws it, and morphs out of it.
   const { trigger, glass } = splitTriggerGlass(given);
   const dark = theme.isDark;
   const config = useMemo(() => {
@@ -80,48 +69,37 @@ function LensMenuHost({
       destructiveColor: theme.colors.errorSubtleForeground,
       separatorColor: surface.border,
     };
-  }, [theme, dark]);
-  // Without glass, the menu morphs out of untinted glass in the trigger's shape.
+  }, [theme]);
   const triggerConfig = useSame(
     glass
-      ? { ...glassTriggerConfig(glass, undefined, theme.colors), absorb: LENS_GLASS_TRIGGER_ABSORB }
-      : undefined,
+      ? { ...glassTriggerConfig(glass, undefined, theme.colors), ...TRIGGER_CONFIG }
+      : TRIGGER_CONFIG,
   );
-  const open = deferred ? () => setBuilding(true) : () => void native.current?.open();
   const closed = useCallback(() => setBuilding(false), []);
+  const { Menu, lensRows } = lens;
   return (
     <>
-      <NativeLens
-        ref={native}
-        items={items}
-        lens={glass !== undefined}
-        morph
-        cornerRadius={triggerCorner(given)}
-        colorScheme={dark ? 'dark' : 'light'}
-        fontFamily={MENU_FONT_FAMILY}
-        alignment="auto"
-        config={config}
-        triggerConfig={triggerConfig}
-        openWithItems={deferred}
-        style={TRIGGER_STYLE}
-        onItemSelect={(event) => handlers[event.nativeEvent.id]?.()}
-        onMenuClosed={deferred ? closed : undefined}
-      >
-        <View testID={testID}>{render(pressableTrigger(trigger, open))}</View>
-        <View
-          nativeID={LENS_ICON_HOST_ID}
-          collapsable={false}
-          pointerEvents="none"
-          style={ICON_HOST}
+      <Menu colorScheme={dark ? 'dark' : 'light'}>
+        <Menu.Trigger
+          lens
+          cornerRadius={triggerCorner(given)}
+          config={triggerConfig}
+          openOnPress={!deferred}
+          openWithItems={deferred}
+          onMenuClosed={deferred ? closed : undefined}
+          accessibilityLabel={triggerLabel(given)}
+          style={TRIGGER_STYLE}
         >
-          {icons.map((icon, slot) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: the slot index is the identity the engine uses
-            <View key={slot} collapsable={false} style={ICON_SLOT}>
-              {render(icon)}
-            </View>
-          ))}
-        </View>
-      </NativeLens>
+          <View testID={testID}>
+            {render(
+              deferred ? pressableTrigger(trigger, () => setBuilding(true)) : withoutPress(trigger),
+            )}
+          </View>
+        </Menu.Trigger>
+        <Menu.Content fontFamily={MENU_FONT_FAMILY} config={config}>
+          {lensRows(toLensRows(rows, render))}
+        </Menu.Content>
+      </Menu>
       {running}
     </>
   );
@@ -134,49 +112,56 @@ function useSame<T>(value: T): T {
   return useMemo(() => value, [key]);
 }
 
-/** The rows as the engine takes them, collecting each glyph into its slot. */
-function lensItems(rows: readonly MenuRowData[], icons: Child[]): LensNativeItem[] {
-  const items: LensNativeItem[] = [];
+/** A row's glyph: Bloom's 20pt icon in the row's ink, or its negative one. */
+function lensGlyph(icon: IconComponent, destructive: boolean): Child {
+  return Icon(icon)
+    .size('md')
+    .foreground(destructive ? 'error' : 'foreground');
+}
+
+/** The rows as the lens menu takes them: a section is a heading set apart by separators. */
+function toLensRows(rows: readonly MenuRowData[], render: MenuHostProps['render']): LensRow[] {
+  const out: LensRow[] = [];
   rows.forEach((row, index) => {
-    if (setApart(rows, index)) items.push({ id: `${row.id}-`, title: '', separator: true });
+    if (setApart(rows, index)) out.push({ kind: 'separator', id: `${row.id}-` });
     switch (row.kind) {
       case 'divider':
-        items.push({ id: row.id, title: '', separator: true });
+        out.push({ kind: 'separator', id: row.id });
         break;
       case 'section':
-        if (row.title) items.push({ id: `${row.id}h`, title: row.title, heading: true });
-        items.push(...lensItems(row.rows, icons));
+        if (row.title) out.push({ kind: 'heading', id: `${row.id}h`, title: row.title });
+        out.push(...toLensRows(row.rows, render));
         break;
-      case 'submenu': {
-        const item: LensNativeItem = {
+      // A disabled submenu is a row that cannot be opened; the lens menu's submenus take no glyph.
+      case 'submenu':
+        out.push(
+          row.disabled
+            ? { kind: 'item', id: row.id, title: row.title, disabled: true }
+            : { kind: 'submenu', id: row.id, title: row.title, rows: toLensRows(row.rows, render) },
+        );
+        break;
+      case 'item':
+        out.push({
+          kind: 'item',
           id: row.id,
           title: row.title,
-          items: lensItems(row.rows, icons),
-        };
-        if (row.icon) item.iconSlot = icons.push(glyph(row.icon, false)) - 1;
-        if (row.disabled) item.disabled = true;
-        items.push(item);
+          subtitle: row.subtitle,
+          icon: row.icon ? render(lensGlyph(row.icon, row.destructive)) : undefined,
+          checked: row.checked,
+          destructive: row.destructive || undefined,
+          disabled: row.disabled || undefined,
+          keepOpen: row.keepOpen || undefined,
+          onSelect: row.onPress,
+        });
         break;
-      }
-      case 'item': {
-        const item: LensNativeItem = { id: row.id, title: row.title };
-        if (row.subtitle) item.subtitle = row.subtitle;
-        if (row.icon) item.iconSlot = icons.push(glyph(row.icon, row.destructive)) - 1;
-        if (row.checked !== undefined) item.checked = row.checked;
-        if (row.destructive) item.destructive = true;
-        if (row.disabled) item.disabled = true;
-        if (row.keepOpen) item.keepOpen = true;
-        items.push(item);
-        break;
-      }
     }
   });
-  return items;
+  return out;
 }
 
 const NO_ROWS: readonly MenuRowData[] = [];
+/** The upstream app's glass trigger config: the menu goes back into it over 0.48 s. */
+const TRIGGER_CONFIG = { absorb: { duration: 0.48 } } as const;
 /** The rows' face: Bloom's sans (Inter), the family the app registered for every Bloom text. */
 const MENU_FONT_FAMILY = fontFamilyStyle('sans').fontFamily;
 const TRIGGER_STYLE = { alignSelf: 'flex-start' } as const;
-const ICON_HOST = { position: 'absolute', left: 0, top: 0 } as const;
-const ICON_SLOT = { alignSelf: 'flex-start' } as const;

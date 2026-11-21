@@ -127,8 +127,9 @@ Two surfaces; CenteredDialog/ResponsiveSheet removed without shims. API/migratio
 
 ## Lens menu (floating/lens, bloom-language platform/menu-host.android)
 
-- Engine = upstream app + `packages/bloom-lens/patches/bloom.patch` only; `sync-from-upstream.sh` must reproduce the tree (diff zero). The view IS the trigger: mounted with it, never on press. A press is one `ref.open()`; rows that exist only once open arrive as items and the view opens itself (`openWithItems`, re-armed when emptied after `onMenuClosed`). Mount-on-press gave a late open, a morph from a fresh view, no press jelly, and on glass swapped the trigger's own lens view. android-hosts.test.tsx, NativeLensMenu.test.tsx (one call, same view)
-- Bloom gives colours only (menu palette, theme scheme, quiet glyph ink, a coloured trigger's own fill); every other glass/motion value is the engine's default as the upstream app uses it (panel tint opacity unset, plain trigger untinted, glass trigger `absorb` 0.48 s). Items/config memoized by content: a re-render sends the engine nothing
+- `packages/bloom-lens` IS the upstream app: engine (`android/`) and menu component (`src/menu`, verbatim) via `sync-from-upstream.sh` + `patches/bloom.patch`, `patches/menu/bloom.patch` only (names Bloom needs, `openWithItems`, `onMenuClosed`); the sync must reproduce the tree. Bloom's menus, glass and lens controls are thin adapters (`lensRows`, colours, Inter); never re-implement trigger, rows or open. A Bloom-side rebuild of the trigger looked and felt different on a Pixel 8a: the owner's verdict
+- The trigger is the view, mounted with it; a press is one `open()`. Mount-on-press gave a late open, a morph from a fresh view and no press jelly. Rows built only on open: `openWithItems`, re-armed when emptied after `onMenuClosed`. android-hosts.test.tsx (real component, native view stubbed), NativeLensMenu.test.tsx
+- Bloom gives colours only; every other value is the upstream app's (panel opacity unset, plain trigger untinted, trigger `absorb` 0.48 s). Every language `Menu` trigger draws its lens base at rest (the menu grows out of it): a lens in a scroll costs a draw per frame and does not follow overscroll
 
 ## Theme/tokens
 

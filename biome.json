@@ -25,7 +25,8 @@
       "!src/theme/__tests__/fixtures",
       "!src/theme/__tests__/__fixtures__",
       "!src/agent-avatar/__tests__/artwork-golden.json",
-      "!packages/bloom-lens/src"
+      "!packages/bloom-lens/src/menu",
+      "!packages/bloom-lens/src/chrome"
     ]
   },
   "formatter": {

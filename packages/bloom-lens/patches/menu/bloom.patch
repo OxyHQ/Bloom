@@ -1,0 +1,89 @@
+diff -ruN a/components/menu-trigger/interface.ts b/components/menu-trigger/interface.ts
+--- a/components/menu-trigger/interface.ts	2026-11-21 11:04:38.285268309 +0200
++++ b/components/menu-trigger/interface.ts	2026-11-21 11:04:48.325272545 +0200
+@@ -18,7 +18,7 @@
+   items: TNativeMenuItem[];
+   onItemSelect?: (event: { nativeEvent: TMenuSelectEvent }) => void;
+   onMenuOpenChange?: (event: { nativeEvent: { open: boolean } }) => void;
+-  glass?: boolean;
++  lens?: boolean;
+   morph?: boolean;
+   cornerRadius?: number;
+   colorScheme?: TMenuScheme;
+@@ -27,6 +27,8 @@
+   alignment?: TMenuAlignment;
+   config?: TMenuConfig;
+   triggerConfig?: TMenuTriggerConfig;
++  openWithItems?: boolean;
++  onMenuClosed?: () => void;
+   style?: StyleProp<ViewStyle>;
+   children?: ReactNode;
+ }
+diff -ruN a/components/menu-trigger/menu-trigger.android.tsx b/components/menu-trigger/menu-trigger.android.tsx
+--- a/components/menu-trigger/menu-trigger.android.tsx	2026-11-21 11:04:38.285250845 +0200
++++ b/components/menu-trigger/menu-trigger.android.tsx	2026-11-21 11:04:48.325370440 +0200
+@@ -8,11 +8,13 @@
+ import { NativeMenu } from "./native-menu.android";
+ 
+ const MenuTriggerBase: FC<IMenuTrigger> = ({
+-  glass,
++  lens,
+   morph,
+   cornerRadius,
+   config,
+   openOnPress = true,
++  openWithItems,
++  onMenuClosed,
+   accessibilityLabel,
+   style,
+   children,
+@@ -30,10 +32,12 @@
+       fontFamily={menu?.content.fontFamily}
+       alignment={menu?.content.alignment}
+       config={menu?.content.config}
+-      glass={glass}
++      lens={lens}
+       morph={morph}
+       cornerRadius={cornerRadius}
+       triggerConfig={config}
++      openWithItems={openWithItems}
++      onMenuClosed={onMenuClosed}
+       style={style}
+       onItemSelect={(event: { nativeEvent: TMenuSelectEvent }): void =>
+         menu?.select(event.nativeEvent)
+diff -ruN a/constants/menu.const.ts b/constants/menu.const.ts
+--- a/constants/menu.const.ts	2026-11-21 11:04:38.285345254 +0200
++++ b/constants/menu.const.ts	2026-11-21 11:04:48.325246069 +0200
+@@ -5,7 +5,7 @@
+   dark: { base: "rgba(255, 255, 255, 0.96)", destructive: "#FF5254" },
+   light: { base: "rgba(0, 0, 0, 0.92)", destructive: "#DC1E30" },
+ };
+-const MENU_ICON_HOST_ID: string = "glass-menu-icons";
+-const MENU_NATIVE_VIEW: string = "GlassMenuAndroid";
++const MENU_ICON_HOST_ID: string = "lens-icons";
++const MENU_NATIVE_VIEW: string = "BloomLensMenu";
+ 
+ export { MENU_ICON_COLORS, MENU_ICON_HOST_ID, MENU_NATIVE_VIEW };
+diff -ruN a/interface.ts b/interface.ts
+--- a/interface.ts	2026-11-21 11:04:38.285333372 +0200
++++ b/interface.ts	2026-11-21 11:04:48.325300619 +0200
+@@ -112,13 +112,17 @@
+ }
+ 
+ interface IMenuTrigger {
+-  glass?: boolean;
+-  // Morph from the trigger when it has no glass (glass={false}): the panel grows out of the trigger's rectangle,
++  lens?: boolean;
++  // Morph from the trigger when it has no glass (lens={false}): the panel grows out of the trigger's rectangle,
+   // corner radius and tint, as with glass. Default true. Ignored with glass (a glass trigger always morphs).
+   morph?: boolean;
+   cornerRadius?: number;
+   config?: TMenuTriggerConfig;
+   openOnPress?: boolean;
++  // Bloom: the rows arrive only as the menu opens; the view opens itself with them, again after they are emptied.
++  openWithItems?: boolean;
++  // Bloom: the menu has finished closing (its motion ended).
++  onMenuClosed?: () => void;
+   accessibilityLabel?: string;
+   style?: StyleProp<ViewStyle>;
+   children?: ReactNode;

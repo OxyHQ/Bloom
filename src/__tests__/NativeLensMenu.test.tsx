@@ -17,7 +17,7 @@ import { BlurWindow } from '../blur';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme';
-import type { LensNativeProps } from '../floating/lens/native-lens';
+import { lens } from './lens-stub';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -44,26 +44,13 @@ import {
 } from '../dropdown-menu/DropdownMenu';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '../select/Select';
 
-let lastProps: LensNativeProps | undefined;
-/** How many times a native view was mounted: an open must not mount one. */
-let mounts = 0;
-
-/** The engine's handle on the stub: what a press asks of the engine. */
-const handle = { open: jest.fn(async () => {}), close: jest.fn(async () => {}) };
-
-function NativeLensStub(props: LensNativeProps) {
-  lastProps = props;
-  useImperativeHandle(props.ref, () => handle);
-  useEffect(() => {
-    mounts += 1;
-  }, []);
-  return <View testID="native-lens">{props.children}</View>;
-}
-
 jest.mock('../floating/lens/native-lens', () => ({
   ...jest.requireActual('../floating/lens/native-lens'),
-  getNativeLens: () => NativeLensStub,
+  getNativeLens: () => jest.requireActual('./lens-stub').stubLens,
 }));
+
+/** What the native view was last given. */
+const props = () => lens.last;
 
 function wrap(ui: React.ReactElement) {
   return render(
@@ -74,10 +61,7 @@ function wrap(ui: React.ReactElement) {
 }
 
 beforeEach(() => {
-  lastProps = undefined;
-  mounts = 0;
-  handle.open.mockClear();
-  handle.close.mockClear();
+  lens.reset();
 });
 
 describe('DropdownMenu as the native lens menu', () => {
@@ -111,7 +95,7 @@ describe('DropdownMenu as the native lens menu', () => {
       </DropdownMenu>,
     );
     expect(screen.getByTestId('native-lens')).toBeTruthy();
-    const items = lastProps?.items ?? [];
+    const items = props()?.items ?? [];
     expect(items.map((item) => item.title)).toEqual([
       'View as',
       'Grid',
@@ -125,7 +109,7 @@ describe('DropdownMenu as the native lens menu', () => {
     expect(items[2]).toMatchObject({ checked: false });
     expect(items[5]).toMatchObject({ destructive: true });
     expect(items[6]?.items?.map((item) => item.title)).toEqual(['Mail']);
-    act(() => lastProps?.onItemSelect?.({ nativeEvent: { id: items[5]?.id ?? '', index: 5 } }));
+    act(() => props()?.onItemSelect?.({ nativeEvent: { id: items[5]?.id ?? '', index: 5 } }));
     expect(onShare).toHaveBeenCalledTimes(1);
   });
 
@@ -140,20 +124,15 @@ describe('DropdownMenu as the native lens menu', () => {
         </DropdownMenuContent>
       </DropdownMenu>,
     );
-    expect(lastProps).toMatchObject({
-      morph: true,
-      fontFamily: 'Inter',
-      alignment: 'auto',
-      openWithItems: false,
-    });
+    expect(props()).toMatchObject({ fontFamily: 'Inter', openWithItems: false });
     // Bloom's colours, the engine's own glass: the panel at its transparency, a plain trigger
     // morphing out of untinted glass.
-    expect(lastProps?.config?.tintOpacity).toBeUndefined();
-    expect(lastProps?.triggerConfig).toBeUndefined();
-    expect(lastProps?.items.map((item) => item.title)).toEqual(['Share']);
+    expect(props()?.config?.tintOpacity).toBeUndefined();
+    expect(props()?.triggerConfig).toBeUndefined();
+    expect(props()?.items.map((item) => item.title)).toEqual(['Share']);
     fireEvent.press(screen.getByText('Open'));
-    expect(handle.open).toHaveBeenCalledTimes(1);
-    expect(mounts).toBe(1);
+    expect(lens.handle.open).toHaveBeenCalledTimes(1);
+    expect(lens.mounts).toBe(1);
   });
 
   it('keeps its sheet when a row leaves the vocabulary', () => {
@@ -169,7 +148,7 @@ describe('DropdownMenu as the native lens menu', () => {
         </DropdownMenuContent>
       </DropdownMenu>,
     );
-    expect(lastProps).toBeUndefined();
+    expect(props()).toBeUndefined();
   });
 });
 
@@ -185,8 +164,8 @@ describe('a lens trigger', () => {
         </DropdownMenuContent>
       </DropdownMenu>,
     );
-    expect(lastProps?.lens).toBe(true);
-    expect(lastProps?.triggerConfig).toMatchObject({
+    expect(props()?.lens).toBe(true);
+    expect(props()?.triggerConfig).toMatchObject({
       tintOpacity: 0.96,
       absorb: { duration: 0.48 },
     });
@@ -198,32 +177,32 @@ describe('a DropdownMenu whose rows a component of its own renders, only while i
     const onDelete = jest.fn();
     const screen = wrap(<Menu onDelete={onDelete} />);
     expect(screen.getByTestId('native-lens')).toBeTruthy();
-    expect(lastProps?.items).toEqual([]);
-    expect(lastProps?.openWithItems).toBe(true);
+    expect(props()?.items).toEqual([]);
+    expect(props()?.openWithItems).toBe(true);
 
     fireEvent.press(screen.getByText('Open'));
     // The same view, given its rows: it opens itself with them.
-    expect(mounts).toBe(1);
-    expect(lastProps?.openWithItems).toBe(true);
-    const items = lastProps?.items ?? [];
+    expect(lens.mounts).toBe(1);
+    expect(props()?.openWithItems).toBe(true);
+    const items = props()?.items ?? [];
     expect(items.map((item) => item.title)).toEqual(['Share', '', 'Delete']);
-    act(() => lastProps?.onItemSelect?.({ nativeEvent: { id: items[2]?.id ?? '', index: 2 } }));
+    act(() => props()?.onItemSelect?.({ nativeEvent: { id: items[2]?.id ?? '', index: 2 } }));
     expect(onDelete).toHaveBeenCalledTimes(1);
   });
 
   it('keeps the rows until the native menu has finished closing, then the view waits for the next', () => {
     const screen = wrap(<Menu onDelete={() => {}} />);
     fireEvent.press(screen.getByText('Open'));
-    act(() => lastProps?.onMenuOpenChange?.({ nativeEvent: { open: true } }));
+    act(() => props()?.onMenuOpenChange?.({ nativeEvent: { open: true } }));
     // The native menu starts closing: the owner unmounts its rows, the motion goes on.
-    act(() => lastProps?.onMenuOpenChange?.({ nativeEvent: { open: false } }));
-    expect(lastProps?.items).toHaveLength(3);
-    act(() => lastProps?.onMenuClosed?.());
-    expect(lastProps?.items).toEqual([]);
+    act(() => props()?.onMenuOpenChange?.({ nativeEvent: { open: false } }));
+    expect(props()?.items).toHaveLength(3);
+    act(() => props()?.onMenuClosed?.());
+    expect(props()?.items).toEqual([]);
     // Opened again: the same view, its rows again.
     fireEvent.press(screen.getByText('Open'));
-    expect(lastProps?.items).toHaveLength(3);
-    expect(mounts).toBe(1);
+    expect(props()?.items).toHaveLength(3);
+    expect(lens.mounts).toBe(1);
   });
 
   it('keeps its sheet when those rows leave the vocabulary', () => {
@@ -238,7 +217,7 @@ describe('a DropdownMenu whose rows a component of its own renders, only while i
       </DropdownMenu>,
     );
     // The view around the trigger is given no rows: the sheet draws them.
-    expect(lastProps?.items).toEqual([]);
+    expect(props()?.items).toEqual([]);
   });
 });
 
@@ -287,8 +266,8 @@ describe('a Button as the trigger of a lens menu', () => {
         </DropdownMenuContent>
       </DropdownMenu>,
     );
-    expect(lastProps?.cornerRadius).toBe(14);
-    expect(lastProps?.triggerConfig?.tintColor).toMatch(/^(#|rgb)/);
+    expect(props()?.cornerRadius).toBe(14);
+    expect(props()?.triggerConfig?.tintColor).toMatch(/^(#|rgb)/);
   });
 });
 
@@ -312,7 +291,7 @@ describe('ContextMenu as the native lens menu', () => {
         </ContextMenuContent>
       </ContextMenu>,
     );
-    expect(lastProps?.items.map((item) => item.title)).toEqual(['Copy', 'Paste', 'Share', '']);
+    expect(props()?.items.map((item) => item.title)).toEqual(['Copy', 'Paste', 'Share', '']);
   });
 });
 
@@ -339,12 +318,12 @@ describe('Select as the native lens menu', () => {
         />
       </Select>,
     );
-    const items = lastProps?.items ?? [];
+    const items = props()?.items ?? [];
     expect(items.map((item) => [item.title, item.checked])).toEqual([
       ['Apple', true],
       ['Pear', false],
     ]);
-    act(() => lastProps?.onItemSelect?.({ nativeEvent: { id: items[1]?.id ?? '', index: 1 } }));
+    act(() => props()?.onItemSelect?.({ nativeEvent: { id: items[1]?.id ?? '', index: 1 } }));
     expect(onValueChange).toHaveBeenCalledWith('pear');
   });
 });
@@ -358,7 +337,7 @@ describe('a ButtonGroup with the lens material', () => {
       </Button.Group>,
     );
     expect(screen.getByTestId('native-lens')).toBeTruthy();
-    expect(lastProps?.items).toEqual([]);
+    expect(props()?.items).toEqual([]);
     expect(screen.getByLabelText('Actions')).toBeTruthy();
     act(() => screen.getByText('Share').props.onPress?.());
   });

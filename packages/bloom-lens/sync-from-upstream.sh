@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Pulls the glass menu engine from the upstream working tree, renames its package to Bloom's, and
-# reapplies Bloom's own changes (patches/*.patch: themable row ink, the BloomLensMenu module name, opening
-# on mount and the closed event).
+# reapplies Bloom's own changes (patches/*.patch: themable row ink, the BloomLensMenu module name and Bloom's
+# names for its lens prop and icon host, opening with rows that arrive as the menu opens, and the closed event).
+# It also takes the menu's JavaScript and the chrome's TypeScript; patches/menu/*.patch carries Bloom's changes to
+# the menu's JavaScript (the same names, and those two props).
 # Usage: sync-from-upstream.sh [upstream-java-dir]
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -22,4 +24,15 @@ if [ -d "$TS_UP" ]; then
     cp "$TS_UP/$f" "$TS_DST/$f"
   done
 fi
+# The menu's JavaScript, verbatim: the Menu, its trigger and trigger button, its content, rows, labels, separators,
+# submenus and action rows, the icon host, the context, constants and interface (upstream src/ without its web files
+# and its chrome, taken above), and the module's entry. Bloom's changes are patches/menu/*.patch.
+MODULE_UP="${UP%/android/src/main/java/expo/modules/glassmenuandroid}"
+MENU_DST="$HERE/src/menu"
+rm -rf "$MENU_DST"; mkdir -p "$MENU_DST"
+(cd "$MODULE_UP/src" && find . -type f \( -name '*.ts' -o -name '*.tsx' \) ! -name '*.web.ts' ! -name '*.web.tsx' \
+  ! -path './components/chrome/*' -exec cp --parents {} "$MENU_DST/" \;)
+# The entry sits beside src/ upstream and inside it here: its imports drop the `src/` segment.
+sed 's#"\./src/#"./#' "$MODULE_UP/index.ts" > "$MENU_DST/index.ts"
+(cd "$MENU_DST" && for p in "$HERE"/patches/menu/*.patch; do patch -p1 --no-backup-if-mismatch < "$p"; done)
 echo "synced from $UP"

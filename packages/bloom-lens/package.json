@@ -9,10 +9,15 @@
     "android",
     "expo-module.config.json",
     "patches",
-    "src"
+    "src",
+    "NOTICE"
   ],
   "peerDependencies": {
     "expo": "*",
-    "react-native": "*"
-  }
+    "react-native": "*",
+    "react": "*"
+  },
+  "main": "src/index.ts",
+  "react-native": "src/index.ts",
+  "types": "src/index.ts"
 }

@@ -27,16 +27,31 @@ import { menu } from '../primitives';
 import { toElement } from '../render';
 import { resolveCorner } from '../tokens';
 
-/** The engine's handle on the stand-in view: what a press asks of the engine. */
+/**
+ * The lens is the upstream app's menu component itself (`@oxy.so/bloom-lens`, its Android files);
+ * only its native view is a stand-in, whose props are the contract with the engine.
+ */
 const mockLensHandle = { open: jest.fn(async () => {}), close: jest.fn(async () => {}) };
-jest.mock('../platform/lens', () => {
-  const { createElement, forwardRef, useImperativeHandle } = jest.requireActual('react');
-  const NativeLens = forwardRef(function NativeLens(props: object, ref: unknown) {
-    useImperativeHandle(ref, () => mockLensHandle);
-    return createElement('BloomLensMenu', props);
-  });
-  return { ...jest.requireActual('../platform/lens'), getNativeLens: () => NativeLens };
-});
+jest.mock(
+  'expo',
+  () => {
+    const { createElement, forwardRef, useImperativeHandle } = jest.requireActual('react');
+    const NativeLens = forwardRef(function NativeLens(props: object, ref: unknown) {
+      useImperativeHandle(ref, () => mockLensHandle);
+      return createElement('BloomLensMenu', props);
+    });
+    return { requireNativeView: () => NativeLens };
+  },
+  { virtual: true },
+);
+const LENS_MENU = '../../../bloom-lens/src/menu/components';
+jest.mock('../../../bloom-lens/src/menu/components/menu-trigger/menu-trigger', () =>
+  jest.requireActual(`${LENS_MENU}/menu-trigger/menu-trigger.android`),
+);
+jest.mock('../platform/lens', () => ({
+  ...jest.requireActual('../platform/lens'),
+  getLens: () => jest.requireActual('@oxy.so/bloom-lens'),
+}));
 beforeEach(() => {
   mockLensHandle.open.mockClear();
   mockLensHandle.close.mockClear();
@@ -150,38 +165,41 @@ describe('the menu is the lens menu', () => {
     Submenu('Share', Item('Link')),
   ).label('Post options');
 
-  it('closed, the lens view is the trigger: mounted around it, holding the rows and their glyphs', () => {
+  it('closed, the trigger is the upstream glass trigger, holding the rows and their glyphs', () => {
     const r = mount(toElement(node));
     const lens = only(r, 'BloomLensMenu');
     expect(lens.props).toMatchObject({
-      lens: false,
-      morph: true,
+      lens: true,
+      colorScheme: 'light',
       fontFamily: 'Inter',
-      alignment: 'auto',
       openWithItems: false,
+      // The upstream app's glass trigger config.
+      triggerConfig: { absorb: { duration: 0.48 } },
     });
-    expect(lens.props.cornerRadius).toBeUndefined();
+    // The upstream defaults: the menu morphs, at its rows' width, from the side the trigger is on;
+    // a capsule base; the panel at the engine's own transparency.
+    expect(lens.props.morph).toBeUndefined();
+    expect(lens.props.alignment).toBeUndefined();
     expect(lens.props.menuWidth).toBeUndefined();
-    // Bloom's colours, the engine's own glass: the panel at its transparency, a plain trigger
-    // morphing out of untinted glass.
+    expect(lens.props.cornerRadius).toBeUndefined();
     expect(lens.props.config.tintOpacity).toBeUndefined();
-    expect(lens.props.triggerConfig).toBeUndefined();
     expect(lens.props.items).toEqual([
       { id: 'r0', title: 'Copy', iconSlot: 0 },
-      { id: 'r1-', title: '', separator: true },
-      { id: 'r1h', title: 'Danger', heading: true },
+      { id: 'separator-1', title: '', separator: true },
+      { id: 'heading-2', title: 'Danger', heading: true },
       { id: 'r1.0', title: 'Delete', iconSlot: 1, destructive: true },
-      { id: 'r2', title: '', separator: true },
+      { id: 'separator-4', title: '', separator: true },
       { id: 'r3', title: 'Share', items: [{ id: 'r3.0', title: 'Link' }] },
     ]);
+    // Bloom gives the colours: the panel's tint and the rows' ink.
     expect(lens.props.config).toMatchObject({
       textColor: LIGHT.text,
       mutedColor: LIGHT.textSecondary,
     });
-    // The glyphs are drawn as views, one per slot, in the menu's ink.
+    // The glyphs are views in the icon host, one per slot, in the row's ink.
     const glyphs = hosts(r, 'Glyph').map((glyph) => glyph.props.fill);
-    expect(glyphs.slice(-2)).toEqual([LIGHT.textSecondary, LIGHT.error]);
-    // The menu's name is its trigger's.
+    expect(glyphs.slice(-2)).toEqual([LIGHT.text, LIGHT.error]);
+    // The upstream press layer is the trigger's, named after the menu.
     expect(only(r, 'Pressable').props.accessibilityLabel).toBe('Post options');
   });
 
@@ -191,7 +209,7 @@ describe('the menu is the lens menu', () => {
     act(() => only(r, 'Pressable').props.onPress());
     expect(mockLensHandle.open).toHaveBeenCalledTimes(1);
     expect(only(r, 'BloomLensMenu')).toBe(lens);
-    act(() => lens.props.onItemSelect({ nativeEvent: { id: 'r1.0' } }));
+    act(() => lens.props.onItemSelect({ nativeEvent: { id: 'r1.0', index: 3, title: 'Delete' } }));
     expect(remove).toHaveBeenCalledTimes(1);
   });
 
@@ -206,13 +224,12 @@ describe('the menu is the lens menu', () => {
     expect(after.triggerConfig).toBe(before.triggerConfig);
   });
 
-  it('a menu() content is built on the press; the view opens itself with its rows, and lets them go once closed', () => {
+  it('a menu() content is built by the trigger’s press; the view opens itself with its rows, and lets them go once closed', () => {
     builtRows.mockClear();
     const r = mount(toElement(Menu(Icon(Glyph), Rows())));
     const lens = only(r, 'BloomLensMenu');
     expect(lens.props).toMatchObject({ items: [], openWithItems: true });
     expect(builtRows).not.toHaveBeenCalled();
-    expect(hosts(r, 'Glyph')).toHaveLength(1);
     act(() => only(r, 'Pressable').props.onPress());
     // No call: the view opens itself as the rows arrive.
     expect(mockLensHandle.open).not.toHaveBeenCalled();
@@ -235,11 +252,10 @@ describe('the menu is the lens menu', () => {
     expect(only(r, 'Pressable').props.accessibilityLabel).toBe('More');
   });
 
-  it('a trigger on glass gives the menu its glass: one view draws it, and the menu morphs out of it', () => {
+  it('a trigger on glass gives its base that glass, its shape the base’s corner', () => {
     const r = mount(
       toElement(Menu(Button(Icon(Glyph)).corner('lg').glass(regular.tint('primary')), Item('a'))),
     );
-    // Closed, the one lens view draws the button's glass and already holds the rows.
     const lens = only(r, 'BloomLensMenu');
     expect(lens.props).toMatchObject({
       lens: true,
@@ -248,9 +264,8 @@ describe('the menu is the lens menu', () => {
       items: [{ id: 'r0', title: 'a' }],
     });
     expect(only(r, 'BloomButton').props.material).toBeUndefined();
-    act(() => only(r, 'BloomButton').props.onPress());
+    act(() => only(r, 'Pressable').props.onPress());
     expect(mockLensHandle.open).toHaveBeenCalledTimes(1);
-    expect(only(r, 'BloomLensMenu')).toBe(lens);
   });
 });
 
@@ -293,11 +308,10 @@ describe('the lens menu: tagged rows', () => {
     const r = mount(
       toElement(Menu(Icon(Glyph).onPress(undefined), Item('Copy').tag('copy')).actions(Actions())),
     );
-    const open = r.root.find((instance) => typeof instance.props.onPress === 'function');
-    act(() => open.props.onPress());
+    act(() => only(r, 'Pressable').props.onPress());
     expect(mockLensHandle.open).toHaveBeenCalledTimes(1);
     const lens = only(r, 'BloomLensMenu');
-    act(() => lens.props.onItemSelect({ nativeEvent: { id: 'r0' } }));
+    act(() => lens.props.onItemSelect({ nativeEvent: { id: 'r0', index: 0, title: 'Copy' } }));
     expect(copy).toHaveBeenCalledTimes(1);
     expect(built).toHaveBeenCalledTimes(1);
     expect(only(r, 'BloomLensMenu')).toBe(lens);

@@ -485,27 +485,23 @@ function parseSelectOptions(
   value: string | undefined,
   onValueChange: (next: string | undefined) => void,
 ): ParsedLensMenu | null {
-  const parsed: ParsedLensMenu = { items: [], icons: [], handlers: {} };
+  const rows: ParsedLensMenu['rows'] = [];
   for (const [index, item] of items.entries()) {
     const option = renderItem(item, index, value);
     if (!isValidElement<SelectItemProps>(option) || option.type !== SelectItem) return null;
     const { label, value: optionValue, disabled, leading } = option.props;
     if (typeof label !== 'string') return null;
-    const id = valueExtractor(item);
-    const row: ParsedLensMenu['items'][number] = {
-      id,
+    rows.push({
+      kind: 'item',
+      id: valueExtractor(item),
       title: label,
       checked: optionValue === value,
-    };
-    if (disabled) row.disabled = true;
-    if (leading != null && leading !== false) {
-      parsed.icons.push(leading);
-      row.iconSlot = parsed.icons.length - 1;
-    }
-    parsed.items.push(row);
-    parsed.handlers[id] = () => onValueChange(optionValue);
+      disabled: disabled || undefined,
+      icon: leading != null && leading !== false ? leading : undefined,
+      onSelect: () => onValueChange(optionValue),
+    });
   }
-  return parsed.items.length > 0 ? parsed : null;
+  return rows.length > 0 ? { rows } : null;
 }
 
 // ---------------------------------------------------------------------------

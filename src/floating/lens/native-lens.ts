@@ -1,104 +1,110 @@
 /**
- * The optional boundary for Bloom's native lens menu (Android, API 33+).
+ * The optional boundary for Bloom's lens (Android, API 33+): `@oxy.so/bloom-lens`, the upstream
+ * app's menu component (its `Menu`, `Menu.Trigger` and `Menu.Content`, verbatim) on the lens
+ * engine. Bloom's menus and lens controls adapt to it: they give it their rows, their shape and
+ * Bloom's colours, and it draws, presses and opens.
  *
- * The overlay, its material and its motion are drawn and animated natively
- * (`android/.../lensmenu`); React only describes rows. The view exists only in
- * a binary built with Bloom's Expo module, so it is resolved lazily and its
- * absence is not an error: the menu keeps its sheet.
+ * The module exists only in a binary built with it, so it is resolved lazily and its absence is
+ * not an error: the menu keeps its sheet and a control its shared paint.
  *
- * The `require` is a direct statement of a `try` block so Metro treats `expo`
- * as an optional dependency (see `media-flight/expo-video-module.ts`).
+ * The `require`s are direct statements of a `try` block so Metro treats `expo` and the module as
+ * optional dependencies (see `media-flight/expo-video-module.ts`).
  */
 import type { ComponentType, ReactNode, Ref } from 'react';
 import { Platform, type StyleProp, type ViewStyle } from 'react-native';
 
-export interface LensNativeItem {
-  id: string;
-  title: string;
-  iconSlot?: number;
-  checked?: boolean;
-  destructive?: boolean;
-  disabled?: boolean;
-  keepOpen?: boolean;
-  separator?: boolean;
-  heading?: boolean;
-  /** A sub-menu row: its rows (one level). */
-  items?: LensNativeItem[];
+/** A row as the lens menu takes it (`lensRows` turns them into the menu's own parts). */
+export type LensRow =
+  | {
+      kind: 'item';
+      id: string;
+      title: string;
+      subtitle?: string;
+      /** The row's glyph, a view. */
+      icon?: ReactNode;
+      checked?: boolean;
+      destructive?: boolean;
+      disabled?: boolean;
+      keepOpen?: boolean;
+      onSelect?: () => void;
+    }
+  | { kind: 'submenu'; id: string; title: string; rows: readonly LensRow[] }
+  | { kind: 'heading'; id: string; title: string }
+  | { kind: 'separator'; id: string };
+
+/** The menu's handle: open (from a point's box, or the trigger) and close. */
+export interface LensHandle {
+  open: (from?: { x: number; y: number; width: number; height: number }) => void;
+  close: () => void;
 }
 
-export interface LensNativeHandle {
-  open: (x?: number, y?: number, width?: number, height?: number) => Promise<void>;
-  close: () => Promise<void>;
-}
-
-/** The menu panel's material and row ink; a missing colour keeps the engine's own. */
-export interface LensNativeConfig {
+/** The panel's tint and the rows' ink; a missing colour keeps the engine's own. */
+export interface LensMenuConfig {
   tintColor?: string;
-  tintOpacity?: number;
   textColor?: string;
   mutedColor?: string;
   destructiveColor?: string;
   separatorColor?: string;
 }
 
-/** The trigger's material. */
-export interface LensNativeTriggerConfig {
+/** The trigger's lens: its tint, and how it takes its menu back. */
+export interface LensTriggerConfig {
   tintColor?: string;
   tintOpacity?: number;
-  /** How the trigger takes its menu back as it closes, in seconds and a damping ratio. */
   absorb?: { duration?: number; damping?: number };
 }
 
-/** A lens trigger takes its menu back over 0.48 s, as the engine's upstream app's does. */
-export const LENS_TRIGGER_ABSORB = { duration: 0.48 } as const;
-
-export interface LensNativeProps {
-  ref?: Ref<LensNativeHandle>;
-  items: LensNativeItem[];
-  lens?: boolean;
-  /** A trigger without lens: the menu still grows out of its shape (the engine's default). */
-  morph?: boolean;
-  cornerRadius?: number;
+type LensMenuComponent = ComponentType<{
+  ref?: Ref<LensHandle>;
   colorScheme?: 'light' | 'dark' | 'auto';
-  config?: LensNativeConfig;
-  triggerConfig?: LensNativeTriggerConfig;
-  /** The panel's width in dp; omitted, the rows' own width. */
-  menuWidth?: number;
-  /** The rows' face, a family the app registered; omitted, the engine's bundled Inter. */
-  fontFamily?: string;
-  /** Which edge of the trigger the panel hangs from; `auto` follows the side of the screen it is on. */
-  alignment?: 'auto' | 'start' | 'center' | 'end';
-  /**
-   * The rows arrive only as the menu opens: the view opens itself once it has them, and again
-   * each time they arrive after being emptied.
-   */
-  openWithItems?: boolean;
-  style?: StyleProp<ViewStyle>;
+  onOpenChange?: (open: boolean) => void;
   children?: ReactNode;
-  onItemSelect?: (event: { nativeEvent: { id: string; index: number } }) => void;
-  onMenuOpenChange?: (event: { nativeEvent: { open: boolean } }) => void;
-  /** The menu has finished closing (its motion ended, or another menu took its place). */
-  onMenuClosed?: () => void;
+}> & {
+  Trigger: ComponentType<{
+    /** Draw the trigger's lens: its base, which the menu grows out of. */
+    lens?: boolean;
+    cornerRadius?: number;
+    config?: LensTriggerConfig;
+    /** The trigger opens its menu on a press (its own press layer over the content). */
+    openOnPress?: boolean;
+    /** The rows arrive only as the menu opens: the view opens itself with them. */
+    openWithItems?: boolean;
+    /** The menu has finished closing. */
+    onMenuClosed?: () => void;
+    style?: StyleProp<ViewStyle>;
+    children?: ReactNode;
+  }>;
+  Content: ComponentType<{
+    fontFamily?: string;
+    config?: LensMenuConfig;
+    children?: ReactNode;
+  }>;
+};
+
+export interface Lens {
+  Menu: LensMenuComponent;
+  lensRows: (rows: readonly LensRow[]) => ReactNode[];
 }
 
-/** The id of the view that hosts the rows' icons; the native side looks it up. */
-export const LENS_ICON_HOST_ID = 'lens-icons';
+/** A lens trigger takes its menu back over 0.48 s, as the upstream app's trigger does. */
+export const LENS_TRIGGER_CONFIG = { absorb: { duration: 0.48 } } as const;
 
 const MIN_ANDROID_API = 33;
 
-let resolved: ComponentType<LensNativeProps> | null | undefined;
+let resolved: Lens | null | undefined;
 
-/** The native lens menu view, or `null` where it cannot run. */
-export function getNativeLens(): ComponentType<LensNativeProps> | null {
+/** The lens, or `null` where it cannot run. */
+export function getNativeLens(): Lens | null {
   if (resolved !== undefined) return resolved;
   resolved = null;
   if (Platform.OS !== 'android' || Number(Platform.Version) < MIN_ANDROID_API) return resolved;
   if (typeof require !== 'function') return resolved;
   try {
     const expo = require('expo') as {
-      requireNativeView?: <P>(name: string) => ComponentType<P>;
+      requireOptionalNativeModule?: (name: string) => unknown;
     };
-    resolved = expo.requireNativeView?.<LensNativeProps>('BloomLensMenu') ?? null;
+    if (!expo.requireOptionalNativeModule?.('BloomLensMenu')) return resolved;
+    resolved = require('@oxy.so/bloom-lens') as Lens;
   } catch {
     resolved = null;
   }

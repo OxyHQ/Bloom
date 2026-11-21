@@ -4,7 +4,7 @@ import { COLORS, GLASS, GLASS_OPACITY } from '../generated/spec.generated';
 import type { GlassValue } from '../glass';
 import type { RoleRef } from '../style';
 import type { ColorName } from '../tokens';
-import type { LensNativeTriggerConfig } from './lens';
+import type { LensTriggerConfig } from './lens';
 
 /**
  * A glass value as the lens engine draws it: the material's frost, and the
@@ -17,7 +17,7 @@ export function glassTriggerConfig(
   fallback: ColorName | undefined,
   colors: ThemeColors,
   fill?: RoleRef,
-): LensNativeTriggerConfig {
+): LensTriggerConfig {
   const material = GLASS[glass.material];
   if (fill !== undefined)
     return {

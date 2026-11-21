@@ -864,28 +864,25 @@ const PostMenu = menu(function PostMenu({ post }: { post: Post }) {
 Menu(MORE, PostMenu({ post }))
 ```
 
-- *Android:* the lens view is the trigger, as in the engine's upstream app. It is
-  mounted with the trigger and stays: it draws the trigger (on glass, its glass
-  too: one view, which the menu morphs out of), sees the press first (the glass
-  springs under the finger) and opens natively from where it is, with no
-  remount. Rows given as they are (tagged, or with handlers) are data the view
-  holds before it opens, their glyphs views in the engine's icon slots, so a
-  press is one call to the engine. A `menu()` content is built on the press:
-  the view opens itself as its rows arrive (`openWithItems`) and lets them go
-  once the engine says the menu has closed. The view takes what the upstream
-  app gives it: the rows in Bloom's Inter (`fontFamily`), the rows' own width,
-  `alignment` `auto` (the panel hangs from the side of the screen the trigger
-  is on), and the morph out of the trigger's shape (`morph`, its `.corner()` as
-  `cornerRadius`, a capsule without one). Bloom gives the colours: the panel's
-  tint and the rows' ink are its menu palette (the first surface level), a
-  glyph in the quiet ink, and the scheme is the theme's. Every other glass and
-  motion value is the upstream app's: the panel at the engine's own
-  transparency, the engine's frost, refraction, rim, shine, highlight, jelly
-  and springs, a trigger without glass morphing out of untinted glass, and a
-  trigger on glass taking its menu back over 0.48 s (`absorb`). Submenus,
-  scrub, haptics and predictive back are the engine's own. A row's `.subtitle`
-  is drawn only here: the system menu and Bloom's menu show the title alone.
-  Without the engine, Bloom's menu.
+- *Android:* the lens menu is the upstream app's menu component itself
+  (`@oxy.so/bloom-lens`: its `Menu`, `Menu.Trigger` and `Menu.Content`,
+  copied verbatim by `sync-from-upstream.sh`), and this host only adapts the
+  `Menu` to it. Every trigger is the upstream app's glass trigger: its lens is
+  the trigger's base, drawn at rest, which the menu grows out of and goes back
+  into (`absorb` over 0.48 s, the upstream app's trigger config); a trigger on
+  `.glass()` gives that base its tint and frost, and its `.corner()` the base's
+  radius (a capsule without one). The trigger's press layer opens the menu
+  natively (a trigger's own press is left out); press-and-drag across the open
+  panel, submenus, haptics and predictive back are the component's own. Rows
+  given as they are (tagged, or with handlers) become its `Menu.Item`,
+  `Menu.Submenu`, `Menu.Label` and `Menu.Separator`, a glyph a view in the row's
+  ink (a submenu takes none; a disabled one is a disabled row). A `menu()`
+  content is built by the trigger's own press: the view opens itself as its
+  rows arrive (`openWithItems`) and lets them go once the menu has closed
+  (`onMenuClosed`). Bloom gives only the colours (the panel's tint and the
+  rows' ink from its menu palette, the theme's scheme) and the face (Inter);
+  every other value is the upstream app's. A row's `.subtitle` is drawn only
+  here. Without the lens, Bloom's menu.
 - *iOS:* the system menu takes its rows before it opens and opens itself, so
   a `menu()` content (built only while open) is Bloom's menu there; rows given
   as they are (tagged, or with handlers) are the system's. Each row, submenu

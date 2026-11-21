@@ -19,24 +19,16 @@ import {
   useRef,
   useState,
 } from 'react';
-import { View } from 'react-native';
-
 import { useTheme } from '../../theme/use-theme';
 import { useMenuPalette } from '../menu-palette';
 import { MENU_FONT_FAMILY } from '../menu-type';
-import {
-  LENS_TRIGGER_ABSORB,
-  LENS_ICON_HOST_ID,
-  type LensNativeHandle,
-  type LensNativeItem,
-  getNativeLens,
-} from './native-lens';
+import { LENS_TRIGGER_CONFIG, type LensHandle, type LensRow, getNativeLens } from './native-lens';
 import type { ParsedLensMenu } from './parse-lens-menu';
 import { useLensTint } from './use-lens-tint';
 
 /** A menu's rows, read as data for the native lens menu. */
 export interface MenuLens extends ParsedLensMenu {
-  nativeRef: RefObject<LensNativeHandle | null>;
+  nativeRef: RefObject<LensHandle | null>;
   /** Whether the menu was open as these rows arrived: a native view mounted now opens itself. */
   open: boolean;
   /**
@@ -44,7 +36,6 @@ export interface MenuLens extends ParsedLensMenu {
    * the native view, mounted with the trigger, opens itself as they arrive.
    */
   deferred: boolean;
-  select: (id: string) => void;
   /** The native menu opened or closed itself. */
   openChange: (open: boolean) => void;
   /** The native menu has finished closing. */
@@ -128,7 +119,7 @@ export function useLensMenu({
   setOpen,
 }: UseLensMenuOptions): LensMenuState {
   const available = getNativeLens() != null;
-  const nativeRef = useRef<LensNativeHandle | null>(null);
+  const nativeRef = useRef<LensHandle | null>(null);
   const nativeOpen = useRef(false);
   const element = available ? findElement(children, content) : null;
   const [provided, setProvided] = useState<Record<string, unknown> | null>(null);
@@ -162,15 +153,7 @@ export function useLensMenu({
     setProvided(null);
   }, []);
 
-  const handlers = useRef(parsed?.handlers ?? {});
-  handlers.current = parsed?.handlers ?? {};
-  const itemsKey = parsed ? JSON.stringify(parsed.items) : '';
-  const items = useMemo<LensNativeItem[] | undefined>(
-    () => (itemsKey ? JSON.parse(itemsKey) : undefined),
-    [itemsKey],
-  );
-  const icons = parsed?.icons;
-  const select = useCallback((id: string) => handlers.current[id]?.(), []);
+  const rows = parsed?.rows;
   const openChange = useCallback(
     (next: boolean) => {
       nativeOpen.current = next;
@@ -184,7 +167,7 @@ export function useLensMenu({
   // native menu's own opens and closes arrive through `openChange` first and find nothing to do.
   // A native view that mounts with the menu open opens itself (`MenuLens.open`): it cannot take
   // a call before it is mounted.
-  const present = items != null;
+  const present = rows != null;
   const mounted = useRef(false);
   useEffect(() => {
     if (!present) {
@@ -204,30 +187,19 @@ export function useLensMenu({
   const deferred = available && !element;
   const host = useMemo(
     () =>
-      (items && icons) || deferred
-        ? {
-            items: items ?? NO_ITEMS,
-            icons: icons ?? NO_ICONS,
-            handlers: handlers.current,
-            nativeRef,
-            open,
-            deferred,
-            select,
-            openChange,
-            closed,
-          }
+      rows || deferred
+        ? { rows: rows ?? NO_ROWS, nativeRef, open, deferred, openChange, closed }
         : undefined,
-    [items, icons, deferred, open, select, openChange, closed],
+    [rows, deferred, open, openChange, closed],
   );
   return {
-    lens: items ? host : undefined,
+    lens: rows ? host : undefined,
     host,
     contentProvider: deferred ? provider : undefined,
   };
 }
 
-const NO_ITEMS: LensNativeItem[] = [];
-const NO_ICONS: ReactNode[] = [];
+const NO_ROWS: LensRow[] = [];
 
 /**
  * For a family's `Content`: provides its props to the root when the root cannot see it (see
@@ -280,7 +252,7 @@ interface LensTriggerProps {
  * theme (as the sheet always was).
  */
 export function LensTrigger({ lens, triggerLens, tone, tint, children }: LensTriggerProps) {
-  const NativeLens = getNativeLens();
+  const native = getNativeLens();
   const dark = useTheme().isDark;
   const primary = useLensTint().color;
   const { surface, border, text, textSecondary, destructive } = useMenuPalette();
@@ -301,55 +273,39 @@ export function LensTrigger({ lens, triggerLens, tone, tint, children }: LensTri
   const [openAtMount] = useState(lens.open);
   // A coloured trigger (a tint, the primary tone, a filled Button) morphs out of its own colour;
   // any other out of the untinted lens, as the engine's upstream app does. A lens trigger takes
-  // its menu back as the upstream app's lens trigger does.
+  // its menu back as the upstream app's trigger does.
   const fill = tint ?? (tone === 'primary' ? primary : origin?.tint);
   const triggerConfig = useMemo(
     () =>
       fill || triggerLens
         ? {
             ...(fill ? { tintColor: fill, tintOpacity: 0.96 } : null),
-            ...(triggerLens ? { absorb: LENS_TRIGGER_ABSORB } : null),
+            ...(triggerLens ? LENS_TRIGGER_CONFIG : null),
           }
         : undefined,
     [fill, triggerLens],
   );
-  if (!NativeLens) return <>{children}</>;
+  if (!native) return <>{children}</>;
+  const { Menu, lensRows } = native;
+  // The family's trigger handles its press (and opens through `nativeRef`): no press layer.
   return (
-    <NativeLens
-      ref={lens.nativeRef}
-      items={lens.items}
-      lens={triggerLens}
-      morph
-      cornerRadius={origin?.radius}
-      colorScheme={dark ? 'dark' : 'light'}
-      fontFamily={MENU_FONT_FAMILY.fontFamily}
-      alignment="auto"
-      config={config}
-      triggerConfig={triggerConfig}
-      openWithItems={lens.deferred || openAtMount}
-      style={TRIGGER_STYLE}
-      onItemSelect={(event) => lens.select(event.nativeEvent.id)}
-      onMenuOpenChange={(event) => lens.openChange(event.nativeEvent.open)}
-      onMenuClosed={lens.closed}
-    >
-      <LensOriginContext.Provider value={setOrigin}>{children}</LensOriginContext.Provider>
-      <View
-        nativeID={LENS_ICON_HOST_ID}
-        collapsable={false}
-        pointerEvents="none"
-        style={ICON_HOST_STYLE}
+    <Menu ref={lens.nativeRef} colorScheme={dark ? 'dark' : 'light'} onOpenChange={lens.openChange}>
+      <Menu.Trigger
+        lens={triggerLens}
+        cornerRadius={origin?.radius}
+        config={triggerConfig}
+        openOnPress={false}
+        openWithItems={lens.deferred || openAtMount}
+        onMenuClosed={lens.closed}
+        style={TRIGGER_STYLE}
       >
-        {lens.icons.map((icon, index) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: the slot index is the identity the native side uses
-          <View key={index} collapsable={false} style={ICON_SLOT_STYLE}>
-            {icon}
-          </View>
-        ))}
-      </View>
-    </NativeLens>
+        <LensOriginContext.Provider value={setOrigin}>{children}</LensOriginContext.Provider>
+      </Menu.Trigger>
+      <Menu.Content fontFamily={MENU_FONT_FAMILY.fontFamily} config={config}>
+        {lensRows(lens.rows)}
+      </Menu.Content>
+    </Menu>
   );
 }
 
 const TRIGGER_STYLE = { alignSelf: 'flex-start' } as const;
-const ICON_HOST_STYLE = { position: 'absolute', left: 0, top: 0 } as const;
-const ICON_SLOT_STYLE = { alignSelf: 'flex-start' } as const;
