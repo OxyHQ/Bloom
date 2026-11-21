@@ -308,7 +308,26 @@ const inline: ParityCase[] = [
   },
 ];
 
+/** The rungs that name what apps render today: off-ramp weights, Tailwind's leadings. */
+const named: ParityCase[] = [
+  ...(['light', 'extrabold'] as const).map((weight) => ({
+    name: `body, ${weight}`,
+    language: () => L.Text('Weighed').font('body').weight(weight),
+    bloom: () => (
+      <Text variant="body-regular" style={{ fontWeight: weight === 'light' ? '300' : '800' }}>
+        Weighed
+      </Text>
+    ),
+  })),
+  ...(['close', 'easy'] as const).map((leading) => ({
+    name: `size md, leading ${leading}`,
+    language: () => L.Text('Lines').font('md').leading(leading),
+    bloom: () => <Text style={{ fontSize: 15, lineHeight: 15 * LEADING[leading] }}>Lines</Text>,
+  })),
+].map((c) => ({ ...c, language: () => toElement(c.language()) }));
+
 export const TEXT_CASES: ParityCase[] = [
+  ...named,
   ...ramp,
   ...sizes,
   ...inks,

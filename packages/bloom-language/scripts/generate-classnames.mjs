@@ -379,7 +379,7 @@ function resolve(utility) {
     if (edge === undefined) return modifier('a border on two sides');
     const width = m[2] ?? '1';
     if (width === '0') return drop('no border is the default');
-    const name = width === 'hairline' ? 'hairline' : width === '1' ? 'thin' : undefined;
+    const name = width === 'hairline' ? 'hairline' : rung(scales.borderWidth, Number(width));
     const call = `.border(role, ${name ? `'${name}'` : '…'}${edge === 'all' ? '' : `, '${edge}'`})`;
     return name ? mapped(call) : token('borderWidth', `${width}px`, call);
   }

@@ -13,6 +13,7 @@ import {
   SHRINK,
   resolveBorderWidth,
   resolveCorner,
+  rampStep,
   resolveFont,
   resolveSpace,
   type Alignment,
@@ -346,7 +347,7 @@ export function isRampFont(font: FontName | undefined): font is TypeFamily {
 /** The `variant` Bloom's `Text` takes for these traits, when their font is a ramp step. */
 export function textVariant(traits: TextTraits): TypeScaleVariant | undefined {
   if (!isRampFont(traits.font)) return undefined;
-  return `${traits.font}-${traits.weight ?? ENVIRONMENT_DEFAULTS.rampWeight}` as TypeScaleVariant;
+  return rampStep(traits.font, traits.weight) as TypeScaleVariant;
 }
 
 /**
@@ -369,6 +370,12 @@ export function textStyle(
     if (span === undefined && isRampFont(traits.font)) {
       if (font.lineHeight !== undefined && traits.leading !== undefined)
         style.lineHeight = font.lineHeight;
+      // A weight the ramp has no step for is written over the regular step.
+      if (
+        traits.weight !== undefined &&
+        !rampStep(traits.font, traits.weight).endsWith(traits.weight)
+      )
+        style.fontWeight = font.fontWeight as string;
     } else Object.assign(style, font);
   }
   if (look.link && (span === undefined ? traits.foreground === undefined : !span.has('foreground')))

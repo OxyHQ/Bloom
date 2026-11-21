@@ -309,4 +309,21 @@ const boxes: ParityCase[] = [
   },
 ];
 
-export const MATERIAL_CASES: ParityCase[] = [...surface, ...dividers, ...boxes];
+const named: ParityCase[] = [
+  {
+    name: 'a faded, thick-bordered box',
+    language: () => toElement(L.VStack().border('border', 'thick').opacity('faded')),
+    bloom: () => (
+      <Themed>
+        {(c) => <RN.View style={{ borderWidth: 2, borderColor: c.border, opacity: 0.7 }} />}
+      </Themed>
+    ),
+  },
+  {
+    name: 'a soft box',
+    language: () => toElement(L.VStack().opacity('soft')),
+    bloom: () => <RN.View style={{ opacity: 0.8 }} />,
+  },
+];
+
+export const MATERIAL_CASES: ParityCase[] = [...surface, ...dividers, ...boxes, ...named];
