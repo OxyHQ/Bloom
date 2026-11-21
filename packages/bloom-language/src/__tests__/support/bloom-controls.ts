@@ -64,3 +64,4 @@ export const ContextMenuSubContent = 'ContextMenuSubContent';
 export const Collapsible = 'Collapsible';
 export const DropZone = 'DropZone';
 export const MediaInsetBorder = 'MediaInsetBorder';
+export const FactStrip = 'FactStrip';

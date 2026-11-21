@@ -2134,6 +2134,22 @@ inside a media edge so a white photo still has a boundary. `.opaque()` is the
 full-contrast border (softened by default); `.mediaCorner()` follows the
 media's corner (a view's `.corner()` clips, which the hairline must not).
 
+### Fact strips
+
+```ts
+FactStrip(
+  Fact('1.2K ratings', '4.7').caption(Rating(4.7).style('stars').showsValue(false)),
+  Fact('Category', 'Productivity').caption('Work').onPress(openCategory),
+).contentInset('lg').label('About this app')
+```
+
+Bloom's `FactStrip`: its facts side by side with a hairline between them,
+scrolling sideways when they do not fit. `Fact(label, value)` is one fact (a
+string value is drawn large, or a view); it takes `.caption()` (a string drawn
+small, or a view), `.onPress()`, `.label()` (its one accessible name) and
+`.id()` (its label by default), and no box. The strip takes
+`.minItemWidth(space)` (`96` by default) and `.contentInset(space)`.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2569,6 +2585,9 @@ and `@oxy.so/bloom-data` beside it.
   animated checks, context menus, collapsibles, drop zones,
   media inset borders,
   image aspect ratios (Bloom's cache, through `.aspectRatio()` and `.onLoad()`).
+  media inset borders.
+  animated checks,
+  fact strips.
 
 **Not built**
 
