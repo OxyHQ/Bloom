@@ -127,7 +127,10 @@ function compareInPage() {
     }
     ka.forEach((child, index) => walk(child, kb[index], `${path}/${index}`, name));
   };
-  const rows = document.querySelectorAll('[data-testid^="bloom-"]');
+  // The table's cells only: an overlay a case presents portals its own `bloom-…` test ids into the page.
+  const rows = [...document.querySelectorAll('[data-testid^="bloom-"]')].filter((cell) =>
+    /^bloom-\d+$/.test(cell.dataset.testid),
+  );
   for (const bloom of rows) {
     const index = bloom.dataset.testid.slice('bloom-'.length);
     const language = document.querySelector(`[data-testid="language-${index}"]`);
@@ -206,7 +209,10 @@ function elementAtPathInPage(testid, path) {
 async function compareHeldStates(page) {
   const differences = [];
   const count = await page.evaluate(
-    () => document.querySelectorAll('[data-testid^="bloom-"]').length,
+    () =>
+      [...document.querySelectorAll('[data-testid^="bloom-"]')].filter((cell) =>
+        /^bloom-\d+$/.test(cell.dataset.testid),
+      ).length,
   );
   for (let index = 0; index < count; index++) {
     const hosts = await page.evaluate(pressHostsInPage, index);
