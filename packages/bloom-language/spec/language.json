@@ -531,7 +531,11 @@
     "filterTriggerSize": ["sm", "md", "lg"],
     "guestPickerSize": ["sm", "md"],
     "tenancyLayout": ["auto", "wide", "narrow"],
-    "rentOutstandingTone": ["default", "error"]
+    "rentOutstandingTone": ["default", "error"],
+    "callMode": ["voice", "video"],
+    "callControlSize": ["sm", "md", "lg"],
+    "groupCallLayout": ["grid", "spotlight"],
+    "incomingCallAnswer": ["buttons", "slide"]
   },
   "glass": {
     "$comment": [
@@ -819,7 +823,8 @@
     "bubbleTint": ["color"],
     "contentTint": ["color"],
     "placeholderTint": ["color"],
-    "gradient": ["colors"]
+    "gradient": ["colors"],
+    "answerStyle": ["incomingCallAnswer"]
   },
   "universal": [
     "padding",
@@ -1478,7 +1483,37 @@
     "evictionReportCard": { "constructors": ["EvictionReportCard"], "modifiers": ["lines"] },
     "evictionTimeline": { "constructors": ["EvictionTimeline"], "modifiers": [] },
     "placeReviewSummary": { "constructors": ["PlaceReviewSummary"], "modifiers": [] },
-    "writeReviewPrompt": { "constructors": ["WriteReviewPrompt"], "modifiers": [] }
+    "writeReviewPrompt": { "constructors": ["WriteReviewPrompt"], "modifiers": [] },
+    "callScreen": {
+      "constructors": ["CallScreen"],
+      "modifiers": ["style", "tint", "size"],
+      "style": "callMode",
+      "tint": "color",
+      "size": "callControlSize"
+    },
+    "callMinimisedPill": {
+      "constructors": ["CallMinimisedPill"],
+      "modifiers": ["style", "tint"],
+      "style": "callMode",
+      "tint": "color"
+    },
+    "groupCallGrid": {
+      "constructors": ["GroupCallGrid"],
+      "modifiers": ["style", "columns", "spacing", "aspectRatio"],
+      "style": "groupCallLayout"
+    },
+    "incomingCallScreen": {
+      "constructors": ["IncomingCallScreen"],
+      "modifiers": ["style", "tint", "answerStyle"],
+      "style": "callMode",
+      "tint": "color"
+    },
+    "incomingCallBanner": {
+      "constructors": ["IncomingCallBanner"],
+      "modifiers": ["style", "tint"],
+      "style": "callMode",
+      "tint": "color"
+    }
   },
   "sfSymbols": {
     "$comment": [
