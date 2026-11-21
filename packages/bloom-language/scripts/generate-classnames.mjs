@@ -270,19 +270,43 @@ function resolve(utility) {
   if (utility === 'shrink' || utility === 'flex-shrink') return mapped(".shrink('normal')");
   if ((m = /^items-(start|center|end|stretch|baseline)$/.exec(utility)))
     return mapped(`.align('${ALIGN[m[1]]}')`);
-  if (utility === 'justify-between') return mapped(".spacing('between')");
-  if (/^(justify|self|content|place)-/.test(utility) || utility === 'flex-wrap')
-    return modifier('a stack’s distribution (justify, self, wrap)');
-  if (
-    utility === 'absolute' ||
-    utility === 'relative' ||
-    /^-?(inset|top|bottom|left|right|start|end)-/.test(utility)
-  ) {
-    if (utility === 'inset-0') return structure('Fill(…) (with `absolute`), or ZStack(…)');
-    if (utility === 'relative') return drop('ZStack(…) is the positioned parent');
-    return modifier('position (absolute placement beyond Fill and ZStack)');
+  if ((m = /^justify-(start|center|end|between|around|evenly)$/.exec(utility)))
+    return mapped(`.justify('${m[1]}')`);
+  if ((m = /^self-(start|center|end|stretch|baseline)$/.exec(utility)))
+    return mapped(`.alignSelf('${ALIGN[m[1]]}')`);
+  if (utility === 'flex-wrap') return mapped('.wrap()');
+  if (utility === 'flex-nowrap') return mapped('.wrap(false)');
+  // place-items sets justify-items too, which a stack does not read.
+  if ((m = /^place-items-(start|center|end|stretch|baseline)$/.exec(utility)))
+    return mapped(`.align('${ALIGN[m[1]]}')`);
+  if (/^(justify-items|justify-self|place-self|place-content)-/.test(utility))
+    return structure('a Grid(…) cell’s placement');
+  if (/^content-/.test(utility)) return modifier('the alignment of wrapped lines (align-content)');
+  if (utility === 'relative') return drop('a view is the positioned parent of what it pins');
+  if (utility === 'absolute') return mapped('.position(…) (the edges it is pinned at)');
+  if (utility === 'inset-0') return structure('Fill(…), or .overlay(view) on the parent');
+  if ((m = /^(-?)(inset|inset-x|inset-y|top|bottom|left|right|start|end)-(.+)$/.exec(utility))) {
+    const [, negative, side, value] = m;
+    if (value.includes('/') || value === 'auto')
+      return structure('a view centred on its parent: .overlay(view, alignment) on the parent');
+    const edges = {
+      inset: ['top', 'bottom', 'leading', 'trailing'],
+      'inset-x': ['leading', 'trailing'],
+      'inset-y': ['top', 'bottom'],
+      top: ['top'],
+      bottom: ['bottom'],
+      left: ['leading'],
+      start: ['leading'],
+      right: ['trailing'],
+      end: ['trailing'],
+    }[side];
+    return space(
+      value,
+      (t) => `.position({ ${edges.map((edge) => `${edge}: ${t}`).join(', ')} })`,
+      negative === '-',
+    );
   }
-  if (utility === 'hidden') return structure('a conditional child (`show && view`)');
+  if (utility === 'hidden') return mapped('.hidden() (or a conditional child, `show && view`)');
   if (
     utility === 'block' ||
     utility === 'inline-block' ||
@@ -296,7 +320,11 @@ function resolve(utility) {
   // Spacing.
   if ((m = /^(-?)(p|m)([xytbserl]?)-(.+)$/.exec(utility))) {
     const [, negative, kind, edge, value] = m;
-    if (value === 'auto') return modifier('centring (`mx-auto`): a frame and an alignment');
+    if (value === 'auto') {
+      // In a column (every NativeWind view is one), auto side margins centre the box: its own alignment.
+      if (kind === 'm' && edge === 'x') return mapped(".alignSelf('center') (in a column)");
+      return structure('Spacer() on the side the auto margin takes');
+    }
     // A margin is padding outside the view's fill (SwiftUI has no margin); a negative one pulls outward.
     return space(
       value,
@@ -309,15 +337,19 @@ function resolve(utility) {
   // Frames.
   if ((m = /^(w|h|min-w|min-h|max-w|max-h|size)-(.+)$/.exec(utility))) {
     const [, kind, value] = m;
-    if (
-      ['full', 'screen', 'auto', 'fit', 'min', 'max', 'dvh', 'svh'].includes(value) ||
-      value.includes('/')
-    )
-      return modifier(
-        `a relative size (${utility}): \`grow\` and \`align('stretch')\` cover the full ones`,
-      );
     const keys = kind === 'size' ? ['width', 'height'] : [FRAME[kind]];
-    const out = space(value, (t) => `.frame({ ${keys.map((k) => `${k}: ${t}`).join(', ')} })`);
+    const frame = (t) => `.frame({ ${keys.map((k) => `${k}: ${t}`).join(', ')} })`;
+    if (value === 'full') return mapped(frame("'full'"));
+    if (value.includes('/')) {
+      const fraction = scales.length[value] === undefined ? undefined : value;
+      return fraction ? mapped(frame(`'${fraction}'`)) : token('length', value, frame('…'));
+    }
+    if (value === 'auto')
+      return drop('a view’s size is its content’s unless a frame says otherwise');
+    if (['screen', 'dvh', 'svh'].includes(value)) return structure('a screen() fills the window');
+    if (['fit', 'min', 'max'].includes(value))
+      return modifier(`an intrinsic size (${utility}): fit-content and its kin`);
+    const out = space(value, frame);
     if (out) return out;
     const container = {
       xs: 320,
@@ -428,12 +460,47 @@ function resolve(utility) {
   // What the language says by other means, or does not say.
   if (utility === 'cursor-pointer') return drop('a pressable view takes the pointer');
   if (utility === 'group') return mapped('.hoverGroup()');
-  if (/^(shadow|ring|outline|elevation)(-|$)/.test(utility))
-    return modifier('an elevation or focus ring');
+  if ((m = /^shadow(?:-(.+))?$/.exec(utility))) {
+    const value = m[1] ?? '';
+    if (scales.shadow[value] !== undefined) return mapped(`.shadow('${value}')`);
+    if (value === 'none') return drop('a view has no shadow unless it says so');
+    return token('shadow', utility, '.shadow(…)');
+  }
+  if ((m = /^(ring|outline)(?:-(.+))?$/.exec(utility))) {
+    const [, kind, value = ''] = m;
+    if (value === 'none' || value === 'hidden' || value === '0') return mapped(".ring('none')");
+    if (value === '' || /^\d+$/.test(value)) {
+      const width = value === '' ? 1 : Number(value);
+      const name = rung(scales.borderWidth, width);
+      return name
+        ? mapped(`.ring(role, '${name}')`)
+        : token('borderWidth', `${width}px`, '.ring(role, …)');
+    }
+    const arbitrary = /^\[(\d+)px\]$/.exec(value);
+    if (arbitrary) return token('borderWidth', `${arbitrary[1]}px`, '.ring(role, …)');
+    if ((m = /^offset-(.+)$/.exec(value))) {
+      if (kind === 'outline' || /^\d+$/.test(m[1]))
+        return space(m[1], (t) => `.ring(role, width, ${t})`);
+      return modifier('a ring’s gap colour (ring-offset-<colour>)');
+    }
+    return color(value, (r) => `.ring(${r})`) ?? undefined;
+  }
+  if ((m = /^z-(.+)$/.exec(utility))) {
+    if (m[1] === 'auto') return drop('a view stacks in its order unless it says otherwise');
+    const level = Number(m[1].replace(/^\[(\d+)\]$/, '$1'));
+    const name = rung(scales.zIndex, level);
+    return name ? mapped(`.zIndex('${name}')`) : token('zIndex', `${level}`, '.zIndex(…)');
+  }
+  if ((m = /^(-?)translate-([xy])-(.+)$/.exec(utility))) {
+    const [, negative, axis, value] = m;
+    if (value.includes('/') || value.includes('['))
+      return structure('a view centred on its parent: .overlay(view, alignment) on the parent');
+    return space(value, (t) => `.offset({ ${axis}: ${t} })`, negative === '-');
+  }
   if (/^(transition|duration|ease|delay|animate)(-|$)/.test(utility))
     return modifier('motion (the motion runtime)');
   if (
-    /^(z|pointer-events|isolate|sr-only|not-sr-only|tabular-nums|object|fill|stroke|blur|backdrop|scale|rotate|translate|-translate|origin|transform|will-change|appearance|resize|list|divide|break|hyphens|indent|align|order|basis|columns|box)(-|$)/.test(
+    /^(pointer-events|isolate|sr-only|not-sr-only|tabular-nums|object|fill|stroke|blur|backdrop|scale|rotate|origin|transform|will-change|appearance|resize|list|divide|break|hyphens|indent|align|order|basis|columns|box)(-|$)/.test(
       utility,
     )
   )
@@ -551,9 +618,35 @@ const tokenColumns = [
   ['Apps', (r) => r.apps, 'right'],
 ];
 
+/** A Tailwind variant prefix as the language's `when()` condition, when it has one. */
+const CONDITION = {
+  sm: 'sm',
+  md: 'md',
+  lg: 'lg',
+  xl: 'xl',
+  '2xl': '2xl',
+  dark: 'dark',
+  hover: 'hovered',
+  active: 'pressed',
+  focus: 'focused',
+  'focus-visible': 'focused',
+  disabled: 'disabled',
+  web: 'web',
+  native: 'native',
+  ios: 'ios',
+  android: 'android',
+};
+const variantUses = Object.values(usage.variants).reduce((n, count) => n + count, 0);
+const coveredUses = Object.entries(usage.variants)
+  .filter(([variant]) => CONDITION[variant] !== undefined)
+  .reduce((n, [, count]) => n + count, 0);
+const variantShare = `${((100 * coveredUses) / variantUses).toFixed(1)}%`;
 const variantLine = Object.entries(usage.variants)
   .slice(0, 16)
-  .map(([variant, n]) => `\`${variant}:\` ${n}`)
+  .map(
+    ([variant, n]) =>
+      `\`${variant}:\` ${n}${CONDITION[variant] ? ` (\`when('${CONDITION[variant]}')\`)` : ''}`,
+  )
   .join(', ');
 
 const page = `---
@@ -582,8 +675,9 @@ ${appsLine}. \`scripts/generate-classnames.mjs\` writes this page.
 
 ${summaryTable}
 
-${allUses} uses of ${rows.length} utilities. Variant prefixes (the language has
-none yet: a breakpoint, a state or a scheme is a decision per family): ${variantLine}.
+${allUses} uses of ${rows.length} utilities. Variant prefixes are \`when(condition, …)\`
+over the utility they prefix; ${coveredUses} of their ${variantUses} uses (${variantShare}) have a
+condition: ${variantLine}.
 
 ## Raw values that need a token
 
@@ -638,8 +732,9 @@ const summary = `${START}
 
 ${summaryTable}
 
-${allUses} uses of ${rows.length} utilities across ${Object.keys(usage.apps).length} apps. The values
-with no rung, by scale (the owner names each as a token or keeps it out):
+${allUses} uses of ${rows.length} utilities across ${Object.keys(usage.apps).length} apps. Of the
+${variantUses} variant prefixes written over them, ${coveredUses} (${variantShare}) are a \`when()\`
+condition. The values with no rung, by scale (the owner names each as a token or keeps it out):
 
 ${tokenTable}
 
