@@ -229,6 +229,13 @@ export function webTree(element: ReactNode, scheme: Scheme = 'light'): unknown {
   ids = new Map();
   const scope = ancestorScope(subject, rules);
   const tree = Array.from(subject.children).map((child) => walk(child, rules, scope));
+  // What the element portals out of its tree (a sheet, a dialog) is drawn in
+  // the document's other roots; each is compared with its own inheritance.
+  for (const root of Array.from(document.body.children)) {
+    if (root === container) continue;
+    for (const child of Array.from(root.children))
+      tree.push(walk(child, rules, ancestorScope(child, rules)));
+  }
   act(() => root.unmount());
   container.remove();
   return tree;

@@ -1965,6 +1965,8 @@ function renderHost(
     case 'menuContent':
     case 'menuActions':
     case 'tab':
+    // A bottom sheet is a `.sheet()`'s content, drawn by the sheet that presents it.
+    case 'bottomSheet':
       return null as unknown as ReactElement;
     // Navigators are drawn by the router's layout(); placed in a view, they draw nothing.
     case 'appLayout':

@@ -17,6 +17,7 @@ export const AppShell = slotted('AppShell', ['bottomBar', 'children']);
 export const Screen = slotted('Screen', ['header', 'children', 'bottomBar']);
 export const ScreenScrollView = 'ScreenScrollView';
 export const Dialog = slotted('Dialog', ['children']);
+export const BottomSheet = slotted('BottomSheet', ['children', 'footer']);
 export const TabPagerLayout = 'TabPagerLayout';
 export const Slot = 'Slot';
 
