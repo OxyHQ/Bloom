@@ -202,6 +202,169 @@ const elevation: ParityCase[] = [
   },
 ];
 
+/** Tailwind's own shadows (theme.css), each a token named by its exact box-shadow. */
+const TAILWIND_SHADOWS = [
+  '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+  '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+] as const;
+
+const small: ParityCase[] = [
+  ...TAILWIND_SHADOWS.map((shadow) => ({
+    name: `Tailwind's shadow ${shadow.slice(0, 16)}…`,
+    language: () => toElement(L.VStack(L.Text('card')).shadow(shadow)),
+    bloom: () => (
+      <RN.View style={{ boxShadow: shadow }}>
+        <Text>card</Text>
+      </RN.View>
+    ),
+  })),
+  {
+    name: 'Tailwind’s z-50 and a 3px ring',
+    language: () => toElement(L.VStack(L.Text('a')).zIndex('50').ring('primary', '3')),
+    bloom: () => (
+      <Themed>
+        {(colors) => (
+          <RN.View
+            style={{
+              outlineColor: colors.primary,
+              outlineStyle: 'solid',
+              outlineWidth: 3,
+              zIndex: 50,
+            }}
+          >
+            <Text>a</Text>
+          </RN.View>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'the top corners rounded',
+    language: () => toElement(L.VStack(L.Text('sheet')).corner('3xl', 'top')),
+    bloom: () => (
+      <RN.View
+        style={{
+          borderTopStartRadius: 28,
+          borderTopEndRadius: 28,
+          overflow: 'hidden',
+        }}
+      >
+        <Text>sheet</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'two sides rounded apart, in one view',
+    language: () =>
+      toElement(L.VStack(L.Text('a')).corner('lg', 'leading').corner('sm', 'bottom-trailing')),
+    bloom: () => (
+      <RN.View
+        style={{
+          borderTopStartRadius: borderRadius.lg,
+          borderBottomStartRadius: borderRadius.lg,
+          borderBottomEndRadius: borderRadius.sm,
+          overflow: 'hidden',
+        }}
+      >
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a shadow around a corner of the top',
+    language: () => toElement(L.VStack(L.Text('a')).corner('lg', 'top').shadow('s')),
+    bloom: () => (
+      <RN.View
+        style={{
+          ...bloomShadowStyle('s'),
+          borderTopStartRadius: borderRadius.lg,
+          borderTopEndRadius: borderRadius.lg,
+        }}
+      >
+        <RN.View
+          style={{
+            borderTopStartRadius: borderRadius.lg,
+            borderTopEndRadius: borderRadius.lg,
+            overflow: 'hidden',
+          }}
+        >
+          <Text>a</Text>
+        </RN.View>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a basis, a scale, no hit testing',
+    language: () =>
+      toElement(L.VStack(L.Text('a')).basis('none').scale('105').allowsHitTesting(false)),
+    // react-native-web drops an inline pointerEvents: an app's web view takes it as the prop's class.
+    bloom: () =>
+      RN.Platform.OS === 'web' ? (
+        <RN.View pointerEvents="none" style={{ flexBasis: 0, transform: [{ scale: 1.05 }] }}>
+          <Text>a</Text>
+        </RN.View>
+      ) : (
+        <RN.View style={{ flexBasis: 0, transform: [{ scale: 1.05 }], pointerEvents: 'none' }}>
+          <Text>a</Text>
+        </RN.View>
+      ),
+  },
+  {
+    name: 'an offset, then a scale',
+    language: () => toElement(L.VStack(L.Text('a')).offset({ y: '-xs' }).scale('pressed')),
+    bloom: () => (
+      <RN.View style={{ transform: [{ translateY: -space.xs }, { scale: 0.98 }] }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'hit testing again, a basis of the parent',
+    language: () => toElement(L.VStack(L.Text('a')).basis('1/2').allowsHitTesting(true)),
+    bloom: () =>
+      RN.Platform.OS === 'web' ? (
+        <RN.View pointerEvents="auto" style={{ flexBasis: '50%' }}>
+          <Text>a</Text>
+        </RN.View>
+      ) : (
+        <RN.View style={{ flexBasis: '50%', pointerEvents: 'auto' }}>
+          <Text>a</Text>
+        </RN.View>
+      ),
+  },
+  {
+    name: 'a frame as wide as its content',
+    language: () => toElement(L.HStack(L.Text('chip')).frame({ width: 'fit' })),
+    bloom: () => (
+      <RN.View style={{ flexDirection: 'row', width: 'fit-content' }}>
+        <Text>chip</Text>
+      </RN.View>
+    ),
+  },
+  ...ENUMS.listMarker.map((marker) => ({
+    name: `a web list, ${marker}`,
+    language: () =>
+      toElement(L.VStack(L.Text('one'), L.Text('two')).listMarker(marker).padding('leading', 'xl')),
+    // Tailwind's list-disc is web CSS on a list and its items; native draws no marker.
+    bloom: () =>
+      RN.Platform.OS === 'web' ? (
+        <RN.View role="list" style={{ listStyleType: marker, paddingStart: space.xl }}>
+          <RN.View role="listitem" style={{ display: 'list-item' }}>
+            <Text>one</Text>
+          </RN.View>
+          <RN.View role="listitem" style={{ display: 'list-item' }}>
+            <Text>two</Text>
+          </RN.View>
+        </RN.View>
+      ) : (
+        <RN.View style={{ paddingStart: space.xl }}>
+          <Text>one</Text>
+          <Text>two</Text>
+        </RN.View>
+      ),
+  })),
+];
+
 const shapes: ParityCase[] = [
   {
     name: 'a filled silhouette',
@@ -248,5 +411,6 @@ export const LAYOUT_CASES: ParityCase[] = [
   ...placement,
   ...overlays,
   ...elevation,
+  ...small,
   ...shapes,
 ];

@@ -169,7 +169,7 @@ and slot gives the same element, so a node that keeps its identity across render
 costs one comparison, and React skips its subtree. A fresh node is interpreted.
 
 **Web CSS is generated at build time.** `scripts/generate.mjs` writes one atomic
-class per property and token value (417 today), with declarations from
+class per property and token value (about 1,800 today), with declarations from
 react-native-web's own style compiler, so a class says exactly what
 react-native-web would have written inline. The runtime hands react-native-web
 `$$css` class objects for language hosts; a value with no class (an app token's
@@ -239,8 +239,12 @@ mechanism each:
 Which values are numeric tokens: every value the className table found in two
 or more places that a request named (space, corner and type steps, the px line
 heights, every tracking), and the frame sizes apps use ten times or more
-(`'160'`, `'224'`, `'384'`, `'1200'`…). Anything else stays an app's
-`defineTokens`.
+(`'160'`, `'224'`, `'384'`, `'1200'`…). Tailwind's own values are numeric
+tokens too where apps use them: its stacking levels `'20'` `'30'` `'50'`, its
+shadows (each named by its exact box-shadow), the 3px ring (`'3'`), and the
+scale factors apps write (`'95'` `'99'` `'103'` `'105'` `'110'`, in percent).
+Anything else stays an app's `defineTokens`. A raw hex colour is an app's
+brand colour: the app's own token, never a Bloom one (see [className](#classname)).
 
 The vocabulary is closed. Every value is a name from the spec, whose every rung
 `spec.test.ts` holds equal to Bloom's own table, so a rung cannot drift from Bloom.
@@ -251,12 +255,15 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `spacing(v)` | space: the gap between a stack's children |
 | `justify(j)`, `wrap()`, `axis(a)` | a stack's distribution: `start` `center` `end` `between` `around` `evenly`; lines that wrap; `horizontal` or `vertical` over its constructor's (see [Layout](#layout)) |
 | `frame({ width, height, min…, max… })` | space, or a length of the parent: `full`, `1/2` `1/3` `2/3` `1/4` `3/4` `1/5` `2/5` `3/5` |
-| `grow()`, `shrink(p)` | `never` `normal` `first` |
+| `frame({ width: 'fit' })` | as wide (or tall) as its content: `fit-content` (`w-fit`) |
+| `grow()`, `shrink(p)`, `basis(l)` | `never` `normal` `first`; a frame length, its `flex-basis` |
 | `align(a)`, `alignSelf(a)` | `start` `center` `end` `stretch` `baseline` (a stack's children; the view's own place) |
 | `position({ top, bottom, leading, trailing })`, `offset({ x, y })` | space, negatives included (see [Layout](#layout)) |
-| `zIndex(z)`, `hidden(on?)` | Bloom's `Z_INDEX`: `base` `raised` `floating` `dropdown`; out of the layout |
+| `zIndex(z)`, `hidden(on?)` | Bloom's `Z_INDEX`: `base` `raised` `floating` `dropdown`, or Tailwind's `'20'` `'30'` `'50'`; out of the layout |
+| `scale(s)` | drawn scaled about its centre: Bloom's `dip` 0.7, `pressed` 0.98, `full`, `swell` 1.2, or a percent (`'95'` `'105'`…) |
+| `allowsHitTesting(on)`, `accessibilityOnly()` | `false`: touches pass through it and everything in it; read by a screen reader and not drawn (`sr-only`) |
 | `overlay(view, alignment?)`, `background(view, alignment?)` | a view over or under this one, at `center` `top` `bottom` `leading` `trailing` `top-leading` … `bottom-trailing` |
-| `shadow(s)`, `ring(c, width?, offset?)` | Bloom's elevation `s` `m` `floating`; a colour role (or a role at an opacity, or `none`) as an outline |
+| `shadow(s)`, `ring(c, width?, offset?)` | Bloom's elevation `s` `m` `floating`, or one of Tailwind's shadows by its exact box-shadow; a colour role (or a role at an opacity, or `none`) as an outline, `thin` `thick` or `'3'` wide |
 | `when(condition, (v) => v…)` | a variant: `sm` `md` `lg` `xl` `2xl`, `dark`, `hovered` `focused` `pressed` `disabled`, `web` `native` `ios` `android` (see [Variants](#variants)) |
 | `font(f)` | a Bloom type-ramp step (`body`, `headline`, `caption-1`…: size, line height and tracking, as `Text variant`) or a size rung (`sm` 13, `md` 15…), a numeric size (`'11'` `'14'` `'16'` `'18'` `'24'` `'30'` `'36'`), or `mono` (Bloom's monospaced face, beside the size) |
 | `weight(w)` | `light` `regular` `medium` `semibold` `bold` `extrabold` |
@@ -264,7 +271,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `leading(l)` | Bloom line heights (ratios of the size) `tight` 1.15, `close` 1.25, `snug` 1.3, `easy` 1.375, `normal` 1.5, `relaxed` 1.625; or an exact px height (`'14px'` … `'40px'`) |
 | `foreground(c)`, `background(c)` | colour roles: `foreground` `muted` `primary` `surface` `card` `mutedFill` `border` `error` `destructive` `primaryText` `white` `black`…, or a role at an opacity token (`'muted/70'`) |
 | `border(c, width?, edge?)` | colour role (or a role at an opacity); `hairline` (the platform hairline), `thin` or `thick` |
-| `corner(r)`, `cornerCurve(c)` | radius rungs, numeric radii (`'6'` `'10'` `'14'` `'18'` `'22'`), `full`, `concentric`; `round` `smooth` (see [Material](#material)) |
+| `corner(r, side?)`, `cornerCurve(c)` | radius rungs, numeric radii (`'6'` `'10'` `'14'` `'18'` `'22'`), `full`, `concentric`; the corners it rounds: `all`, `top` `bottom` `leading` `trailing`, or one (`top-leading`…); `round` `smooth` (see [Material](#material)) |
 | `opacity(o)` | `transparent` 0, `half` 0.5, `opaque` 1; or a percent (`'10'` `'20'` `'30'` `'40'` `'60'` `'70'` `'80'` `'90'`) |
 | `size(s)` | icon rungs, avatar rungs, or Bloom sizes, by node |
 | `style(a)` / `shape(s)` / `tint(t)` | Bloom appearance / `circle` `pill` / Bloom tone |
@@ -272,7 +279,8 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `blur()` | Bloom's floating island (`BlurIsland`) |
 | `onPress`, `onLongPress`, `onHover`, `hoverGroup` | handlers. `onPress(undefined)` keeps the pressable host, out of the focus order. |
 | `label`, `hint`, `role`, `hitSlop`, `testID`, `id` | accessibility and identity |
-| `lines(n)`, `noWrap()`, `truncation`, `selectable`, `textStyle`, `link`, `textAlign`, `italic`, `underline`, `strikethrough`, `textCase` | text only (see [Text](#text)) |
+| `lines(n)`, `noWrap()`, `truncation`, `selectable`, `textStyle`, `link`, `textAlign`, `italic`, `underline`, `strikethrough`, `textCase`, `monospacedDigit`, `wordBreak` | text only (see [Text](#text)) |
+| `listMarker(m)` | a stack only: a web list behind `disc` or `decimal` markers (see [Layout](#layout)) |
 | `contentFit`, `aspectRatio`, `tint`, `transition`, `onLoad`, `onError` | `Image` only (see [Image](#image)) |
 | `count`, `active`, `tint` | `Action` only |
 | `trailing(...)`, `countFormat(fn)` | `ActionBar` only |
@@ -329,13 +337,39 @@ VStack(...).background('surface').corner('xl').shadow('m')
   `position` is for what is truly absolute. `.offset({ x, y })` draws the view
   shifted (`x` right, `y` down, physical) without moving its siblings.
 - **Stacking.** `zIndex` takes Bloom's own levels (`Z_INDEX`): `base` 0,
-  `raised` 1, `floating` 10, `dropdown` 40. Tailwind's `z-20`, `z-30` and `z-50`
-  have no rung.
+  `raised` 1, `floating` 10, `dropdown` 40; Tailwind's `z-20`, `z-30` and
+  `z-50` are the numeric tokens `'20'`, `'30'`, `'50'`.
 - **Elevation.** `.shadow(role)` is Bloom's `bloomShadowStyle(role)`: the web's
   box-shadow, native's shadow and elevation (`floating` is a box-shadow on
   both). It is the outermost layer. A shadow never shares a view with a
   corner's clip, since iOS clips a view's own shadow: after a `corner` it is a
-  view of its own around the clipped box, with the same radius.
+  view of its own around the clipped box, with the same radii. Tailwind's own
+  shadows are tokens named by their exact box-shadow
+  (`.shadow('0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)')`
+  is `shadow-sm`), drawn as that box-shadow on every platform.
+- **Corners per side.** `.corner(r, side)` rounds only those corners
+  (`rounded-t-3xl` is `.corner('3xl', 'top')`); `leading` and `trailing`
+  follow the reading direction, as the edges do. Corners of other sides join
+  one view; a corner rounded twice wraps, as a padding of the same edge does.
+  A glass or an island takes one radius, so a corner of some sides only is
+  left out on it.
+- **Scale and basis.** `.scale(s)` draws the view scaled about its centre,
+  after its offset (Tailwind's translate, then scale), without moving its
+  siblings. `.basis(length)` is its `flex-basis` (`basis-0` is
+  `.basis('none')`).
+- **Hit testing.** `.allowsHitTesting(false)` lets touches and the pointer
+  through the view and everything inside it, as SwiftUI's does
+  (`pointer-events-none`); `true` takes them again. react-native-web drops an
+  inline `pointerEvents`, so on the web a Bloom component's is a box of its own
+  around it.
+- **Read, not drawn.** `.accessibilityOnly()` is Tailwind's `sr-only`: a
+  1pt clipped box out of the layout that a screen reader still announces.
+  Native has no clip path or white-space, so it is the box alone, as
+  NativeWind drew it there.
+- **Web lists.** `.listMarker('disc' | 'decimal')` on a stack makes it an
+  HTML list and each child a list item, so the browser draws its markers
+  (`list-disc`); give it the room with a leading padding. Native draws no
+  markers, as React Native has none.
 - **Rings.** `.ring(role, width?, offset?)` is an outline (Bloom's focus ring
   recipe): it draws outside the box and takes no room. `ring('none')` is the
   web's `outline: none`. It sits in the border's layer.
@@ -390,7 +424,8 @@ inside; a stack's layout to its host; a placement to its outermost box.
   beats a hover. A value with no class (an app token, an offset) cannot vary
   on the web: it is left out, said once in development.
 - **What varies** is the spec's `variants.modifiers`: box, text and stack
-  style, placement, elevation and rings. Anything else inside `when()` is left
+  style, placement (a basis and hit testing included), elevation and rings.
+  A scale or an offset is a transform, which has no class to vary on the web. Anything else inside `when()` is left
   out and said once in development; the compiler rejects it (`A variant cannot
   change .onPress()`), and checks the condition and every value.
 - **A Bloom component** (Avatar, Button, Image…) takes its style as an
@@ -446,6 +481,11 @@ Text('Read the ', Text('terms').link('https://oxy.so/terms'), '.').font('caption
   an ink, a link) and inherits the rest, so a span of an `h1` keeps the
   heading's size.
 
+- **Digits and breaking.** `.monospacedDigit()` draws digits of one width
+  (`tabular-nums`, React Native's `fontVariant`). `.wordBreak('all')` lets a
+  web line break anywhere (`break-all`), `.wordBreak('words')` only inside a
+  word too long for its line (`break-words`); React Native has no such
+  breaking, so native text keeps its own, as NativeWind drew it there.
 - **Mono.** `.font('mono')` is Bloom's monospaced face, the family
   `font-mono` gives Bloom's `Text` (`fontFamilyStyle('mono')`, exported from
   `@oxy.so/bloom/typography`). A family sits beside the size: it keeps the
@@ -593,7 +633,9 @@ ButtonGroup(Button(Text('Day')), Button(Text('Week'))).separated().size('sm')
 
 Not in the language: a brand fill that is no colour role (a raw hex in
 `colors`), the state colours over artwork (`color`, `hoverColor`…), which are
-raw values with no token, and a group's `material="lens"`.
+raw values with no token. A group's `material="lens"` is `.glass()` on the
+`ButtonGroup`: the lens where the device has one, its shared Surface
+elsewhere (the group's material has no tint or clear variant).
 
 ## Avatars
 
@@ -1115,3 +1157,8 @@ a theme switch; each fixture also pins how many chains the compiler hoists.
 - On the web, hover groups (`hoverGroup()`) set the `group` class through
   `react-native-css`. Web behaviour of the language row is unmeasured.
 - The web stylesheet is not in server-rendered HTML.
+- An app's brand colour: the className table names each raw hex as the app's
+  own token, but `defineTokens` has no colour scale yet.
+- A scale or an offset cannot vary on the web (a transform has no class), and
+  the motion classes wait for `feat/bloom-language-motion` (the className
+  table maps them onto its modifiers).

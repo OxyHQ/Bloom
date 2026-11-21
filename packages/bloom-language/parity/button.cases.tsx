@@ -222,6 +222,17 @@ const leftovers: ParityCase[] = [
       </Button.Group>
     ),
   },
+  {
+    name: 'a group on glass: the lens group',
+    language: () =>
+      toElement(L.ButtonGroup(L.Button(L.Text('Back')), L.Button(L.Text('Next'))).glass()),
+    bloom: () => (
+      <Button.Group material="lens">
+        <Button>Back</Button>
+        <Button>Next</Button>
+      </Button.Group>
+    ),
+  },
 ];
 
 export const BUTTON_CASES: ParityCase[] = [

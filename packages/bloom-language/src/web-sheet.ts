@@ -29,20 +29,26 @@ export function adoptLanguageSheet(): void {
  * renders.
  */
 export function variantSheet(condition: LiveCondition): string {
+  // A rule is `.<class><rest>{…}`: `rest` is what follows the class in its
+  // selector (`>*` for what a `pointerEvents` rule reaches), kept after it.
   const rules = WEB_SHEET.split('\n').map((rule) => {
     const open = rule.indexOf('{');
-    return [rule.slice(1, open), rule.slice(open)] as const;
+    const selector = rule.slice(1, open);
+    const end = /^[\w-]+/.exec(selector)?.[0].length ?? selector.length;
+    return [selector.slice(0, end), selector.slice(end), rule.slice(open)] as const;
   });
   const width = (BREAKPOINT as Record<string, number | undefined>)[condition];
   if (width !== undefined) {
-    const body = rules.map(([name, declarations]) => `.${name}-${condition}${declarations}`);
+    const body = rules.map(
+      ([name, rest, declarations]) => `.${name}-${condition}${rest}${declarations}`,
+    );
     return `@media (min-width: ${width}px){${body.join('')}}`;
   }
   const selector = VARIANT_SELECTORS[condition as keyof typeof VARIANT_SELECTORS];
   return rules
     .map(
-      ([name, declarations]) =>
-        `${selector.replaceAll('&', `.${name}-${condition}`)}${declarations}`,
+      ([name, rest, declarations]) =>
+        `${selector.replaceAll('&', `.${name}-${condition}${rest}`)}${declarations}`,
     )
     .join('\n');
 }

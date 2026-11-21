@@ -1,3 +1,4 @@
+import * as RN from 'react-native';
 import { Avatar } from '@oxy.so/bloom/avatar';
 import { AvatarGroup, type AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 import { Badge } from '@oxy.so/bloom/badge';
@@ -24,6 +25,19 @@ const avatars: ParityCase[] = [
     language: () => toElement(L.Avatar(PHOTO).size(size)),
     bloom: () => <Avatar source={PHOTO} size={AVATAR_SIZE[size]} />,
   })),
+  {
+    name: 'an avatar touches pass through',
+    language: () => toElement(L.Avatar(PHOTO).allowsHitTesting(false)),
+    // react-native-web drops an inline pointerEvents, so on the web the avatar's box takes it.
+    bloom: () =>
+      RN.Platform.OS === 'web' ? (
+        <RN.View pointerEvents="none">
+          <Avatar source={PHOTO} />
+        </RN.View>
+      ) : (
+        <Avatar source={PHOTO} style={{ pointerEvents: 'none' }} />
+      ),
+  },
   {
     name: 'an app token size',
     language: () => toElement(L.Avatar(PHOTO).size(row.avatarSize.feed)),

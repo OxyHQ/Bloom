@@ -21,6 +21,13 @@ describe('modifier order maps onto as few views as it allows', () => {
     ]);
   });
 
+  it('corners of other sides join one view; a corner rounded again wraps', () => {
+    expect(layersOf(Text('x').corner('lg', 'top').corner('sm', 'bottom-trailing'))).toEqual([
+      'r:lg:top;r:sm:bottom-trailing',
+    ]);
+    expect(layersOf(Text('x').corner('lg').corner('sm', 'top'))).toEqual(['r:lg', 'r:sm:top']);
+  });
+
   it('a second padding on the same edge adds, so it wraps', () => {
     expect(layersOf(Text('x').padding('md').padding('leading', 'lg'))).toEqual([
       'p:all:md',

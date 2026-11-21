@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 
 import type { FrameSpec, GlassValue, Modifier, OffsetSpec, PositionEdges } from './node';
-import { bloomShadowStyle } from '@oxy.so/bloom/design-tokens';
+import { SHADOW_BOX, bloomShadowStyle, type ShadowRole } from '@oxy.so/bloom/design-tokens';
 import { surfaceStyle } from '@oxy.so/bloom/shapes';
 import { fontFamilyStyle, type TypeScaleVariant } from '@oxy.so/bloom/typography';
 
@@ -13,6 +13,7 @@ import { adoptLanguageVariants } from './web-sheet';
 import {
   ALIGNMENT,
   OPACITY,
+  SCALE,
   SHRINK,
   Z_INDEX,
   resolveBorderWidth,
@@ -25,9 +26,13 @@ import {
   type Axis,
   type BorderEdge,
   type CornerName,
+  type CornerSide,
+  type LengthToken,
+  type ScaleName,
   type Justify,
   type OverlayAlignment,
   type ZIndexName,
+  type ShadowName,
   type ColorName,
   type ColorToken,
   type CornerCurve,
@@ -41,6 +46,7 @@ import {
   type SpaceToken,
   type TextAlignment,
   type TextCase,
+  type WordBreak,
   type TypeFamily,
   type WeightName,
 } from './tokens';
@@ -279,13 +285,53 @@ export interface Layer {
   blur: boolean;
   /** Views drawn over (and, `behind`, under) what the layer holds: \`overlay()\` and \`background(view)\`. */
   overlays: Extract<Modifier, { kind: 'overlay' }>[];
+  /** The corners the layer's `corner()`s round, a bit each (`CORNER_BITS`). */
+  corners: number;
   /**
-   * A shadow layer's outline: the corner of the clipped box it is drawn around.
+   * A shadow layer's outline: the corners of the clipped box it is drawn around.
    * A shadow never shares a view with a corner's clip (iOS clips a view's own
-   * shadow to its bounds), so it is a view of its own with the same radius.
+   * shadow to its bounds), so it is a view of its own with the same radii.
    */
-  follows: CornerName | undefined;
+  follows: readonly CornerModifier[];
 }
+
+type CornerModifier = Extract<Modifier, { kind: 'corner' }>;
+
+/** Each corner a `corner()` side rounds, a bit each: top-leading, top-trailing, bottom-leading, bottom-trailing. */
+const CORNER_BITS: Record<CornerSide, number> = {
+  all: 0b1111,
+  top: 0b0011,
+  bottom: 0b1100,
+  leading: 0b0101,
+  trailing: 0b1010,
+  'top-leading': 0b0001,
+  'top-trailing': 0b0010,
+  'bottom-leading': 0b0100,
+  'bottom-trailing': 0b1000,
+};
+
+/** Each corner's radius, logical as the edges are: leading and trailing follow the reading direction. */
+const CORNER_RADIUS: readonly (readonly [number, string])[] = [
+  [0b0001, 'borderTopStartRadius'],
+  [0b0010, 'borderTopEndRadius'],
+  [0b0100, 'borderBottomStartRadius'],
+  [0b1000, 'borderBottomEndRadius'],
+];
+
+/** The radius a corner writes: one `borderRadius`, or a radius per corner it rounds. */
+function cornerRadius(style: Resolved, corner: CornerModifier): void {
+  if (corner.value === 'concentric') return;
+  const radius = resolveCorner(corner.value);
+  if (corner.side === 'all') {
+    style.borderRadius = radius;
+    return;
+  }
+  const bits = CORNER_BITS[corner.side];
+  for (const [bit, key] of CORNER_RADIUS) if (bits & bit) style[key] = radius;
+}
+
+/** The radius keys a per-side corner writes: a glass or an island takes one radius, so it has none of these. */
+export const SIDE_RADII: readonly string[] = CORNER_RADIUS.map(([, key]) => key);
 
 const EDGE_BITS: Record<Edge, number> = {
   all: 0b1111,
@@ -306,11 +352,15 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   const rank = LAYER_RANK[modifier.kind];
   const current = layers[layers.length - 1];
   const edges = modifier.kind === 'padding' ? EDGE_BITS[modifier.edge] : 0;
+  const corners = modifier.kind === 'corner' ? CORNER_BITS[modifier.side] : 0;
+  // A second padding of an edge (or corner of a corner) the view has wraps it; other edges join it.
   const repeats =
     current !== undefined &&
     (modifier.kind === 'padding'
       ? (current.edges & edges) !== 0
-      : current.modifiers.some((existing) => existing.kind === modifier.kind));
+      : modifier.kind === 'corner'
+        ? (current.corners & corners) !== 0
+        : current.modifiers.some((existing) => existing.kind === modifier.kind));
   const glass = modifier.kind === 'glass' ? modifier.value : undefined;
   const concentric = modifier.kind === 'corner' && modifier.value === 'concentric';
   const curve = modifier.kind === 'cornerCurve' ? modifier.value : undefined;
@@ -318,15 +368,18 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   const overlay = modifier.kind === 'overlay' ? modifier : undefined;
   const clip =
     modifier.kind === 'shadow'
-      ? current?.modifiers.find((existing) => existing.kind === 'corner')
+      ? current?.modifiers.filter(
+          (existing): existing is CornerModifier => existing.kind === 'corner',
+        )
       : undefined;
+  const clipped = clip !== undefined && clip.length > 0;
   // Overlays stack: a second one joins the first, over it (or, behind, under it).
   const sameKind = repeats && modifier.kind !== 'overlay';
-  if (current === undefined || rank < current.rank || sameKind || clip !== undefined) {
+  if (current === undefined || rank < current.rank || sameKind || clipped) {
     layers.push({
       modifiers: [modifier],
       variants: [],
-      key: clip ? `${modifier.key}@${clip.key}` : modifier.key,
+      key: clipped ? `${modifier.key}@${clip.map((corner) => corner.key).join(',')}` : modifier.key,
       rank,
       edges,
       glass,
@@ -334,7 +387,8 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
       curve,
       blur,
       overlays: overlay ? [overlay] : [],
-      follows: clip?.kind === 'corner' ? clip.value : undefined,
+      corners,
+      follows: clipped ? clip : [],
     });
     return;
   }
@@ -342,6 +396,7 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   current.key = `${current.key};${modifier.key}`;
   current.rank = rank;
   current.edges |= edges;
+  current.corners |= corners;
   if (glass) current.glass = glass;
   if (concentric) current.concentric = true;
   if (curve) current.curve = curve;
@@ -355,6 +410,8 @@ function sameSlot(a: LayerModifier, b: LayerModifier): boolean {
   if (a.kind === 'padding' && b.kind === 'padding')
     return (EDGE_BITS[a.edge] & EDGE_BITS[b.edge]) !== 0;
   if (a.kind === 'border' && b.kind === 'border') return a.edge === b.edge;
+  if (a.kind === 'corner' && b.kind === 'corner')
+    return (CORNER_BITS[a.side] & CORNER_BITS[b.side]) !== 0;
   return true;
 }
 
@@ -386,7 +443,8 @@ export function addVariantToLayers(
       curve: undefined,
       blur: false,
       overlays: [],
-      follows: undefined,
+      corners: 0,
+      follows: [],
     };
     layers.push(target);
   }
@@ -459,7 +517,7 @@ function modifiersStyle(layer: Layer, modifiers: readonly LayerModifier[]): Reso
         break;
       }
       case 'corner':
-        if (modifier.value !== 'concentric') style.borderRadius = resolveCorner(modifier.value);
+        cornerRadius(style, modifier);
         style.overflow = 'hidden';
         break;
       case 'cornerCurve':
@@ -474,9 +532,8 @@ function modifiersStyle(layer: Layer, modifiers: readonly LayerModifier[]): Reso
         break;
       case 'shadow':
         // Bloom's elevation: the web's box-shadow, native's shadow and elevation.
-        Object.assign(style, bloomShadowStyle(modifier.value));
-        if (layer.follows !== undefined && layer.follows !== 'concentric')
-          style.borderRadius = resolveCorner(layer.follows);
+        shadowStyle(style, modifier.value);
+        for (const corner of layer.follows) cornerRadius(style, corner);
         break;
       case 'glass':
       case 'blur':
@@ -485,6 +542,16 @@ function modifiersStyle(layer: Layer, modifiers: readonly LayerModifier[]): Reso
     }
   }
   return style;
+}
+
+/**
+ * Bloom's elevation for a role: the web's box-shadow, native's shadow and
+ * elevation (`bloomShadowStyle`). A Tailwind shadow is named by its exact
+ * box-shadow, which every platform draws as it is.
+ */
+function shadowStyle(style: Resolved, shadow: ShadowName): void {
+  if (shadow in SHADOW_BOX) Object.assign(style, bloomShadowStyle(shadow as ShadowRole));
+  else style.boxShadow = shadow;
 }
 
 /**
@@ -536,6 +603,10 @@ export interface Placement {
   offset: OffsetSpec | undefined;
   zIndex: ZIndexName | undefined;
   hidden: boolean | undefined;
+  basis: LengthToken | undefined;
+  scale: ScaleName | undefined;
+  allowsHitTesting: boolean | undefined;
+  accessibilityOnly: boolean;
   /** What variants change in the view's place. */
   variants: [Planned, PlaceModifier][];
   /** The cache key of everything above, '' when nothing places the view. */
@@ -545,7 +616,20 @@ export interface Placement {
 /** The modifiers that place a view in its parent. */
 export type PlaceModifier = Extract<
   Modifier,
-  { kind: 'grow' | 'shrink' | 'alignSelf' | 'position' | 'offset' | 'zIndex' | 'hidden' }
+  {
+    kind:
+      | 'grow'
+      | 'shrink'
+      | 'alignSelf'
+      | 'position'
+      | 'offset'
+      | 'zIndex'
+      | 'hidden'
+      | 'basis'
+      | 'scale'
+      | 'allowsHitTesting'
+      | 'accessibilityOnly';
+  }
 >;
 export const PLACE_KINDS: ReadonlySet<string> = new Set([
   'grow',
@@ -555,11 +639,16 @@ export const PLACE_KINDS: ReadonlySet<string> = new Set([
   'offset',
   'zIndex',
   'hidden',
+  'basis',
+  'scale',
+  'allowsHitTesting',
+  'accessibilityOnly',
 ]);
 
 /** Sets what `modifier` says about the view's place. */
 export function applyPlacement(place: Placement, modifier: PlaceModifier): void {
   if (modifier.kind === 'grow') place.grow = true;
+  else if (modifier.kind === 'accessibilityOnly') place.accessibilityOnly = true;
   else (place as unknown as Record<string, unknown>)[modifier.kind] = modifier.value;
   place.key += `;${modifier.key}`;
 }
@@ -593,10 +682,35 @@ export function emptyPlacement(): Placement {
     offset: undefined,
     zIndex: undefined,
     hidden: undefined,
+    basis: undefined,
+    scale: undefined,
+    allowsHitTesting: undefined,
+    accessibilityOnly: false,
     variants: [],
     key: '',
   };
 }
+
+/**
+ * Tailwind's `sr-only`: out of the layout, one point square, clipped. Native
+ * has neither a clip path nor white-space, as NativeWind drew it there.
+ */
+const ACCESSIBILITY_ONLY: Resolved = Object.freeze({
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  paddingTop: 0,
+  paddingBottom: 0,
+  paddingStart: 0,
+  paddingEnd: 0,
+  marginTop: -1,
+  marginBottom: -1,
+  marginStart: -1,
+  marginEnd: -1,
+  overflow: 'hidden',
+  borderWidth: 0,
+  ...(IS_WEB ? { clipPath: 'inset(50%)', whiteSpace: 'nowrap' } : null),
+});
 
 const POSITION_EDGE: Record<keyof PositionEdges, string> = {
   top: 'top',
@@ -606,8 +720,9 @@ const POSITION_EDGE: Record<keyof PositionEdges, string> = {
 };
 
 /**
- * `grow`, `shrink`, `alignSelf`, `position`, `offset`, `zIndex` and `hidden`
- * place the view in its parent, so they belong to its outermost box. Neither
+ * `grow`, `shrink`, `basis`, `alignSelf`, `position`, `offset`, `scale`,
+ * `zIndex`, `hidden`, hit testing and `accessibilityOnly` place the view in
+ * its parent, so they belong to its outermost box. Neither
  * `grow` nor `shrink` lowers the minimum width; a view that must shrink below
  * its content says so with `.frame({ minWidth: 'none' })`.
  */
@@ -615,6 +730,7 @@ export function placeStyle(place: Placement): Resolved {
   const style: Resolved = {};
   if (place.grow) style.flex = 1;
   if (place.shrink !== undefined) style.flexShrink = SHRINK[place.shrink];
+  if (place.basis !== undefined) style.flexBasis = resolveLength(place.basis);
   if (place.alignSelf !== undefined) style.alignSelf = ALIGNMENT[place.alignSelf];
   if (place.position !== undefined) {
     style.position = 'absolute';
@@ -623,15 +739,20 @@ export function placeStyle(place: Placement): Resolved {
       if (token !== undefined) style[POSITION_EDGE[edge]] = resolveSpace(token);
     }
   }
-  if (place.offset !== undefined) {
-    const { x, y } = place.offset;
+  if (place.accessibilityOnly) Object.assign(style, ACCESSIBILITY_ONLY);
+  // Moved, then scaled about its centre: Tailwind's translate and scale, composed in that order.
+  if (place.offset !== undefined || place.scale !== undefined) {
+    const { x, y } = place.offset ?? {};
     style.transform = [
       ...(x === undefined ? [] : [{ translateX: resolveSpace(x) }]),
       ...(y === undefined ? [] : [{ translateY: resolveSpace(y) }]),
+      ...(place.scale === undefined ? [] : [{ scale: SCALE[place.scale] }]),
     ];
   }
   if (place.zIndex !== undefined) style.zIndex = Z_INDEX[place.zIndex];
   if (place.hidden !== undefined) style.display = place.hidden ? 'none' : 'flex';
+  if (place.allowsHitTesting !== undefined)
+    style.pointerEvents = place.allowsHitTesting ? 'auto' : 'none';
   for (const [condition, modifier] of place.variants) {
     if (condition === null) Object.assign(style, placeStyle(placementOf([modifier])));
   }
@@ -732,6 +853,8 @@ const PLAIN_LOOK: TextLook = {
   strikethrough: false,
   textCase: undefined,
   link: false,
+  tabular: false,
+  wordBreak: undefined,
 };
 
 /** A text's live variants: what each sets of the traits it changes (a colour, a whole font). */
@@ -748,6 +871,9 @@ export function textVariants(traits: TextTraits): VariantStyles {
     ]),
   );
 }
+
+/** Digits of one width: React Native's `fontVariant`, the web's `font-variant`. */
+const TABULAR: readonly string[] = Object.freeze(['tabular-nums']);
 
 /** Each family's face, as Bloom's `Text` sets it for `font-mono`. */
 const FAMILY: Record<FontFamilyName, string> = { mono: fontFamilyStyle('mono').fontFamily };
@@ -767,6 +893,10 @@ export interface TextLook {
   readonly textCase: TextCase | undefined;
   /** A link: Bloom's inline link ink (`primary`) unless the chain names its own, and an underline. */
   readonly link: boolean;
+  /** `monospacedDigit()`: digits of one width. */
+  readonly tabular: boolean;
+  /** Web: where a line may break inside a word. */
+  readonly wordBreak: WordBreak | undefined;
 }
 
 /** React Native's alignment: `start` and `end` are its `left` and `right`, which it flips right to left. */
@@ -839,5 +969,9 @@ export function textStyle(
   }
   if (look.textCase !== undefined) style.textTransform = look.textCase;
   if (look.noWrap && IS_WEB) style.whiteSpace = 'nowrap';
+  if (look.tabular) style.fontVariant = TABULAR;
+  // React Native has no word breaking of its own to set; the web's is CSS.
+  if (look.wordBreak === 'all' && IS_WEB) style.wordBreak = 'break-all';
+  if (look.wordBreak === 'words' && IS_WEB) style.overflowWrap = 'break-word';
   return style;
 }

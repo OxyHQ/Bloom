@@ -75,6 +75,10 @@ const FOLDED: Record<string, string> = {
   'inset-inline-end': 'right',
   'border-inline-start-color': 'border-left-color',
   'border-inline-end-color': 'border-right-color',
+  'border-start-start-radius': 'border-top-left-radius',
+  'border-start-end-radius': 'border-top-right-radius',
+  'border-end-start-radius': 'border-bottom-left-radius',
+  'border-end-end-radius': 'border-bottom-right-radius',
 };
 
 const SIDES = ['top', 'right', 'bottom', 'left'];
