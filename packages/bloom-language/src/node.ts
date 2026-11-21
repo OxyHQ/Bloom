@@ -20,6 +20,7 @@ import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/blo
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 
 import type { AgentAvatarKind } from './controls/agent-avatar';
+import type { ChatComposerKind } from './controls/chat-composer';
 import type { ContainerKind } from './controls/containers';
 import type { InputKind } from './controls/inputs';
 import type { OverlayKind } from './controls/overlays';
@@ -64,6 +65,9 @@ import {
   type BadgeStyle,
   type LoadingStyle,
   type AgentMood,
+  type ReactionPickerSize,
+  type ComposerButtonTone,
+  type AttachmentLayout,
   type Presence,
   type ShapeName,
   type BorderWidthName,
@@ -257,6 +261,10 @@ export interface ValueModifiers {
   mood: AgentMood;
   interactive: boolean;
   portrait: boolean;
+
+  // Chat composer (controls/chat-composer.tsx)
+  iconSize: IconSizeToken;
+  surface: boolean;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -401,18 +409,30 @@ export type Modifier =
   | {
       readonly kind: 'size';
       readonly key: string;
-      readonly value: IconSizeToken | AvatarSizeToken | BloomSize | BadgeSize | SpaceToken;
+      readonly value:
+        | IconSizeToken
+        | AvatarSizeToken
+        | BloomSize
+        | BadgeSize
+        | SpaceToken
+        | ReactionPickerSize;
     }
   | {
       readonly kind: 'style';
       readonly key: string;
-      readonly value: BloomAppearance | BadgeStyle | LoadingStyle;
+      readonly value: BloomAppearance | BadgeStyle | LoadingStyle | AttachmentLayout;
     }
   | { readonly kind: 'shape'; readonly key: string; readonly value: ButtonShape | ShapeName }
   | {
       readonly kind: 'tint';
       readonly key: string;
-      readonly value: EngagementTone | BloomTone | ColorName | AvatarColor;
+      readonly value:
+        | EngagementTone
+        | BloomTone
+        | ColorName
+        | AvatarColor
+        | ColorToken
+        | ComposerButtonTone;
     }
   | { readonly kind: 'count'; readonly key: string; readonly value: number | null | undefined }
   | { readonly kind: 'active'; readonly key: string; readonly value: boolean | undefined }
@@ -548,7 +568,8 @@ export type NodeKind =
   | InputKind
   | OverlayKind
   | ContainerKind
-  | AgentAvatarKind;
+  | AgentAvatarKind
+  | ChatComposerKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -852,16 +873,26 @@ export class Node {
   onError(value: ImageErrorHandler | undefined): Node {
     return this.with({ kind: 'onError', key: 'onError', value });
   }
-  size(value: IconSizeToken | AvatarSizeToken | BloomSize | BadgeSize | SpaceToken): Node {
+  size(
+    value:
+      | IconSizeToken
+      | AvatarSizeToken
+      | BloomSize
+      | BadgeSize
+      | SpaceToken
+      | ReactionPickerSize,
+  ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
-  style(value: BloomAppearance | BadgeStyle | LoadingStyle): Node {
+  style(value: BloomAppearance | BadgeStyle | LoadingStyle | AttachmentLayout): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
   shape(value: ButtonShape | ShapeName): Node {
     return this.with({ kind: 'shape', key: `shape:${value}`, value });
   }
-  tint(value: EngagementTone | BloomTone | ColorName | AvatarColor): Node {
+  tint(
+    value: EngagementTone | BloomTone | ColorName | AvatarColor | ColorToken | ComposerButtonTone,
+  ): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
   }
   count(value: number | null | undefined): Node {
@@ -1199,6 +1230,14 @@ export class Node {
   }
   portrait(value = true): Node {
     return this.set('portrait', value);
+  }
+
+  // Chat composer (controls/chat-composer.tsx)
+  iconSize(value: IconSizeToken): Node {
+    return this.set('iconSize', value);
+  }
+  surface(value = true): Node {
+    return this.set('surface', value);
   }
 }
 

@@ -1097,6 +1097,39 @@ play a motion when they change; `onReady`, `onLoadingChange`, `catalog` and
   picker's thumbnails).
 - `AgentAvatarProvider` stays the app's: it is where the vector catalog comes from.
 
+### Chat composer
+
+```ts
+ChatComposer([text, setText], { placeholder: 'Message', onSend: send, onAttachPress: attach,
+  banner: replyTo ? ComposerBanner('reply', replyTo.author, { preview: replyTo.text, onClose: clear }) : undefined })
+CompactComposer([text, setText], { maxLength: 280, onSubmit: post, avatar: Avatar(me.avatar) })
+ComposerIconButton(MicIcon, 'Record').tint('accent').size('4xl').onPress(record)
+MessageContextMenu(Bubble({ message }), items, { onSelect, reactions: ['❤️', '👍'] })
+```
+
+Bloom's `chat-composer` family. A composer writes the text its binding holds
+(`ChatComposer`'s `value`/`onValueChange`, `CompactComposer`'s
+`value`/`onChangeText`); its slots (`notice`, `banner`, `leading`,
+`emojiSlot`, `recorder`; `avatar`, `attachments`) are language children, as is
+a suggestion's `leading`. `.disabled()` disables either.
+
+- `ComposerBanner(kind, title, options?)`: `reply`, `edit`, `forward` or
+  `note`; `.tint(role)` its accent.
+- `ComposerIconButton(icon, label, options?)`: `.tint('plain' | 'accent')`,
+  `.size()` a space token (36 by default), `.iconSize()` an icon rung,
+  `.disabled()`; `.onPress()` and `.onLongPress()` are its own.
+- `SuggestionList(kind, suggestions, options?)`: `mention`, `command` or
+  `emoji`; `.size()` a control size, `.loading()`; its `maxHeight` a space token.
+- `VoiceRecorder(state, seconds, options?)`: `recording`, `locked` or `preview`.
+- `AttachmentMenu(trigger, options?)`: the trigger is a child (a `Button`);
+  `.style('grid' | 'list')`, `.columns(n)`. An item's own colour is not taken
+  (it would be a hex): items are tinted with the accent.
+- `EmojiPicker(groups, options?)`: `.size()` a control size; a tab's `content`
+  is a child, its `height` a space token.
+- `ReactionPicker(emojis?, options?)`: `.size('sm' | 'md')`, `.surface(false)`.
+- `MessageContextMenu(message, items, options?)`: the message is the child it
+  opens on.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -1472,7 +1505,10 @@ and `@oxy.so/bloom-data` beside it.
 - The className table (`docs/bloom-language-classnames.mdx`), which says what
   each utility the apps use becomes.
 - Product components (wave 5), each Bloom's own with parity on native,
-  web and Chrome: `AgentAvatar`.
+  web and Chrome: `AgentAvatar`; the chat composer family (`ChatComposer`,
+  `CompactComposer`, `ComposerBanner`, `ComposerIconButton`, `SuggestionList`,
+  `VoiceRecorder`, `AttachmentMenu`, `EmojiPicker`, `ReactionPicker`,
+  `MessageContextMenu`).
 
 **Not built**
 

@@ -540,3 +540,30 @@ fn agent_avatars_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_chat_composer_family_is_checked() {
+    let imports = "import { AttachmentMenu, ChatComposer, ComposerBanner, ComposerIconButton, EmojiPicker, ReactionPicker, SuggestionList, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (t, i, s, g, m) => VStack(ChatComposer(t).disabled(), ComposerBanner('reply', 'Ana').tint('success/half'), ComposerIconButton(i, 'Send').tint('accent').size('4xl').iconSize('lg').disabled(), SuggestionList('mention', s).size('sm').loading(), AttachmentMenu(m).style('list').columns(3), EmojiPicker(g).size('lg'), ReactionPicker().size('sm').surface(false));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        (
+            "ComposerIconButton(i, 'a').tint('primary')",
+            "Unknown composerButtonTone token 'primary' for .tint()",
+        ),
+        ("ComposerIconButton(i, 'a').size('huge')", "Unknown space token 'huge' for .size()"),
+        ("ComposerIconButton(i, 'a').iconSize('big')", "Unknown iconSize token 'big' for .iconSize()"),
+        ("ComposerBanner('reply', 'a').tint('gold')", "Unknown color token 'gold' for .tint()"),
+        ("AttachmentMenu(i).style('tiles')", "Unknown attachmentLayout token 'tiles' for .style()"),
+        ("ReactionPicker().size('lg')", "Unknown reactionPickerSize token 'lg' for .size()"),
+        ("SuggestionList('mention', i).size('xl')", "Unknown controlSize token 'xl' for .size()"),
+        ("ChatComposer(i).tint('accent')", "ChatComposer has no modifier .tint()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (i) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

@@ -164,6 +164,9 @@ export type BadgePlacement = (typeof ENUMS.badgePlacement)[number];
 export type LoadingStyle = (typeof ENUMS.loadingStyle)[number];
 /** How an agent's character feels: Bloom `AgentAvatar`'s moods. */
 export type AgentMood = (typeof ENUMS.agentMood)[number];
+export type ComposerButtonTone = (typeof ENUMS.composerButtonTone)[number];
+export type AttachmentLayout = (typeof ENUMS.attachmentLayout)[number];
+export type ReactionPickerSize = (typeof ENUMS.reactionPickerSize)[number];
 
 export {
   COLORS,

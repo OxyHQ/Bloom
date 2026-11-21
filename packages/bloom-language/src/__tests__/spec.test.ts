@@ -82,6 +82,18 @@ import type {
   TextView,
 } from '../node';
 import type { AgentAvatarView } from '../controls/agent-avatar';
+import type {
+  ChatComposerView,
+  CompactComposerView,
+  ComposerBannerView,
+  ComposerIconButtonView,
+  SuggestionListView,
+  VoiceRecorderView,
+  AttachmentMenuView,
+  EmojiPickerView,
+  ReactionPickerView,
+  MessageContextMenuView,
+} from '../controls/chat-composer';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -281,7 +293,27 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<RouteView>, Of<'route'>>,
       Same<MethodsOf<TabNavigatorView>, Of<'tabView'>>,
       Same<MethodsOf<AgentAvatarView>, Of<'agentAvatar'>>,
+      Same<MethodsOf<ChatComposerView>, Of<'chatComposer'>>,
+      Same<MethodsOf<CompactComposerView>, Of<'compactComposer'>>,
+      Same<MethodsOf<ComposerBannerView>, Of<'composerBanner'>>,
+      Same<MethodsOf<ComposerIconButtonView>, Of<'composerIconButton'>>,
+      Same<MethodsOf<SuggestionListView>, Of<'suggestionList'>>,
+      Same<MethodsOf<VoiceRecorderView>, Of<'voiceRecorder'>>,
+      Same<MethodsOf<AttachmentMenuView>, Of<'attachmentMenu'>>,
+      Same<MethodsOf<EmojiPickerView>, Of<'emojiPicker'>>,
+      Same<MethodsOf<ReactionPickerView>, Of<'reactionPicker'>>,
+      Same<MethodsOf<MessageContextMenuView>, Of<'messageContextMenu'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,
