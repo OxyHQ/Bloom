@@ -1,7 +1,9 @@
 import { Platform } from 'react-native';
 
 import type { FrameSpec, GlassValue, Modifier } from './node';
-import { COLORS, ENVIRONMENT_DEFAULTS, LAYER_RANK } from './generated/spec.generated';
+import type { TypeScaleVariant } from '@oxy.so/bloom/typography';
+
+import { COLORS, ENVIRONMENT_DEFAULTS, FONT_SIZE, LAYER_RANK } from './generated/spec.generated';
 import { WEB_CLASS } from './generated/web-sheet.generated';
 import type { Paint } from './paint';
 import {
@@ -20,6 +22,9 @@ import {
   type LeadingToken,
   type ShrinkPriority,
   type SpaceToken,
+  type TextAlignment,
+  type TextCase,
+  type TypeFamily,
   type WeightName,
 } from './tokens';
 
@@ -288,9 +293,78 @@ export function foregroundOf(traits: TextTraits): ColorName {
   return traits.foreground ?? ENVIRONMENT_DEFAULTS.foreground;
 }
 
-export function textStyle(traits: TextTraits, noWrap: boolean): Resolved {
-  const style: Resolved = { ...resolveFont(traits.font, traits.weight, traits.leading) };
-  style.color = role(foregroundOf(traits));
-  if (noWrap && IS_WEB) style.whiteSpace = 'nowrap';
+/** What a text's own chain sets beyond the environment's traits (its `own` modifiers). */
+export interface TextLook {
+  readonly noWrap: boolean;
+  readonly align: TextAlignment | undefined;
+  readonly italic: boolean;
+  readonly underline: boolean;
+  readonly strikethrough: boolean;
+  readonly textCase: TextCase | undefined;
+  /** A link: Bloom's inline link ink (`primary`) unless the chain names its own, and an underline. */
+  readonly link: boolean;
+}
+
+/** React Native's alignment: `start` and `end` are its `left` and `right`, which it flips right to left. */
+const TEXT_ALIGN: Record<TextAlignment, string> = {
+  start: 'left',
+  center: 'center',
+  end: 'right',
+  justify: 'justify',
+};
+
+/** The colour of a link with no ink of its own: Bloom's inline link (`markdown/InlineMarkdown`). */
+const LINK_INK: ColorName = 'primary';
+
+/** A ramp step, by family: the type Bloom's `Text` sets from its `variant`. */
+export function isRampFont(font: FontName | undefined): font is TypeFamily {
+  return font !== undefined && !(font in FONT_SIZE);
+}
+
+/** The `variant` Bloom's `Text` takes for these traits, when their font is a ramp step. */
+export function textVariant(traits: TextTraits): TypeScaleVariant | undefined {
+  if (!isRampFont(traits.font)) return undefined;
+  return `${traits.font}-${traits.weight ?? ENVIRONMENT_DEFAULTS.rampWeight}` as TypeScaleVariant;
+}
+
+/**
+ * A text's style. The outermost text is Bloom's `Text`: a ramp font is its
+ * `variant` (see `textVariant`), so only a size rung, a weight without a ramp
+ * font, a leading and a colour the environment sets are written here; with no
+ * colour, Bloom's own ink stays. A nested text is an inline span (`span` holds
+ * the traits its own chain sets): it writes only those, and inherits the rest
+ * from the text it is in.
+ */
+export function textStyle(
+  traits: TextTraits,
+  look: TextLook,
+  span: ReadonlySet<keyof TextTraits> | undefined,
+): Resolved {
+  const style: Resolved = {};
+  const sets = (trait: keyof TextTraits) => span === undefined || span.has(trait);
+  if (sets('font') || sets('weight') || sets('leading')) {
+    const font = resolveFont(traits.font, traits.weight, traits.leading);
+    if (span === undefined && isRampFont(traits.font)) {
+      if (font.lineHeight !== undefined && traits.leading !== undefined)
+        style.lineHeight = font.lineHeight;
+    } else Object.assign(style, font);
+  }
+  if (look.link && (span === undefined ? traits.foreground === undefined : !span.has('foreground')))
+    style.color = role(LINK_INK);
+  else if (sets('foreground') && traits.foreground !== undefined)
+    style.color = role(traits.foreground);
+  if (look.align !== undefined) style.textAlign = TEXT_ALIGN[look.align];
+  if (look.italic) style.fontStyle = 'italic';
+  const underline = look.underline || look.link;
+  if (underline || look.strikethrough) {
+    style.textDecorationLine =
+      underline && look.strikethrough
+        ? 'underline line-through'
+        : underline
+          ? 'underline'
+          : 'line-through';
+  }
+  if (look.textCase !== undefined) style.textTransform = look.textCase;
+  if (look.noWrap && IS_WEB) style.whiteSpace = 'nowrap';
   return style;
 }

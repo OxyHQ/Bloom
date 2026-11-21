@@ -30,6 +30,7 @@ module.exports = {
     '^@oxy.so/bloom/icons/shared$': `${support}/bloom-icons.ts`,
     '^@oxy.so/bloom/icons/Ri[A-Za-z0-9]+$': `${support}/bloom-icon-modules.ts`,
     '^@oxy.so/bloom/avatar$': `${support}/bloom-avatar.ts`,
+    '^@oxy.so/bloom/hooks$': `${support}/bloom-hooks.ts`,
     '^@oxy.so/bloom/theme$': `${support}/bloom-theme.ts`,
     '^@oxy.so/bloom/app-shell/hooks$': `${support}/bloom-app-shell-hooks.ts`,
     '^@oxy.so/bloom/(button|engagement-bar|image|surface|fab|page-header|bottom-bar|dropdown-menu)$': `${support}/bloom-components.ts`,

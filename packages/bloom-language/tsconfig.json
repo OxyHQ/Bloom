@@ -15,6 +15,6 @@
     "moduleSuffixes": [".ios", ".android", ".web", ""],
     "types": ["jest", "node"]
   },
-  "include": ["src"],
+  "include": ["src", "parity"],
   "exclude": ["lib", "node_modules"]
 }

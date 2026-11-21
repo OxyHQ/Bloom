@@ -8,6 +8,7 @@ import TestRenderer, {
 import { tokens } from '@oxy.so/bloom/styles';
 import { TYPE_SCALE } from '@oxy.so/bloom/typography';
 import { DARK, LIGHT, PaintContext } from './support/bloom-theme';
+import { opened } from './support/bloom-hooks';
 import {
   Action,
   ActionBar,
@@ -76,21 +77,44 @@ describe('rendering through React Native hosts', () => {
     });
   });
 
-  it('text resolves its type and colour from tokens and the theme', () => {
+  it('text is Bloom’s Text: a ramp font is its variant, a colour role is painted from the theme', () => {
     const r = mount(
       toElement(Text('hi').font('headline').weight('semibold').foreground('muted').lines(1)),
     );
     const [text] = hosts(r, 'Text');
-    const step = TYPE_SCALE['headline-semibold'];
-    expect(text?.props.style).toEqual({
-      fontSize: step.fontSize,
-      lineHeight: step.lineHeight,
-      letterSpacing: step.letterSpacing,
-      fontWeight: step.fontWeight,
-      color: LIGHT.textSecondary,
-    });
+    expect(text?.props.variant).toBe('headline-semibold');
+    expect(text?.props.style).toEqual({ color: LIGHT.textSecondary });
     expect(text?.props.numberOfLines).toBe(1);
+    expect(text?.props.ellipsizeMode).toBe('tail');
     expect(text?.props.children).toBe('hi');
+  });
+
+  it('a text with no colour of its own keeps Bloom’s ink; a leading on a ramp font sets its line height', () => {
+    const r = mount(toElement(Text('hi').font('body').leading('relaxed')));
+    const [text] = hosts(r, 'Text');
+    expect(text?.props.variant).toBe('body-regular');
+    expect(text?.props.style).toEqual({
+      lineHeight: TYPE_SCALE['body-regular'].fontSize * 1.625,
+    });
+  });
+
+  it('a text style is the Bloom typography component it names', () => {
+    const r = mount(
+      toElement(VStack(Text('Title').textStyle('h1'), Text('Intro').textStyle('lead'))),
+    );
+    expect(hosts(r, 'H1')[0]?.props.children).toBe('Title');
+    expect(hosts(r, 'Lead')[0]?.props.children).toBe('Intro');
+  });
+
+  it('a link is Bloom’s inline link: primary, underlined, opened outside the app', () => {
+    const r = mount(toElement(Text('Read the ', Text('terms').link('https://oxy.so/terms'))));
+    const [, link] = hosts(r, 'Text');
+    expect(link?.props.role).toBe('link');
+    expect(link?.props.style).toEqual({ color: LIGHT.primary, textDecorationLine: 'underline' });
+    const stopPropagation = jest.fn();
+    act(() => link?.props.onPress({ stopPropagation }));
+    expect(stopPropagation).toHaveBeenCalled();
+    expect(opened).toContain('https://oxy.so/terms');
   });
 
   it('foreground and font flow down to text and icons inside, as an environment', () => {
@@ -121,11 +145,7 @@ describe('rendering through React Native hosts', () => {
     const r = mount(
       toElement(HStack(Text('a').shrink('first').frame({ minWidth: 'none' }), VStack().grow())),
     );
-    expect(hosts(r, 'Text')[0]?.props.style).toEqual({
-      color: LIGHT.text,
-      minWidth: 0,
-      flexShrink: 10,
-    });
+    expect(hosts(r, 'Text')[0]?.props.style).toEqual({ minWidth: 0, flexShrink: 10 });
     expect(hosts(r, 'View')[1]?.props.style).toEqual({ flex: 1 });
   });
 
@@ -147,11 +167,14 @@ describe('rendering through React Native hosts', () => {
     expect(hosts(r, 'Text').map((t) => t.props.children)).toEqual(['first', 'maybe', 'a', 'b']);
   });
 
-  it('inline spans are nested Text', () => {
+  it('inline spans are nested Text that set only what their own chain names', () => {
     const r = mount(toElement(Text('Reposted by ', Text('Ana').weight('semibold')).font('sm')));
     const [outer, inner] = hosts(r, 'Text');
     expect(outer?.props.children[0]).toBe('Reposted by ');
-    expect(inner?.props.style).toEqual({ fontSize: 13, fontWeight: '600', color: LIGHT.text });
+    expect(outer?.props.style).toEqual({ fontSize: 13 });
+    // The span's weight with the text's size rung; the ink is inherited.
+    expect(inner?.props.style).toEqual({ fontSize: 13, fontWeight: '600' });
+    expect(inner?.props.variant).toBeUndefined();
   });
 
   it('an onPress modifier makes the host pressable even with no handler, out of the focus order', () => {
@@ -201,7 +224,6 @@ describe('styles are resolved once per theme', () => {
     expect(hosts(r, 'Text')[0]?.props.style).toEqual({
       fontSize: 15,
       lineHeight: 18.75,
-      color: LIGHT.text,
       paddingStart: 64,
     });
   });
@@ -446,7 +468,8 @@ describe('the cost of a view and of a theme switch', () => {
     );
     const [x, y] = hosts(r, 'Text');
     expect(x?.props.style.color).toBe(LIGHT.textSecondary);
-    expect(y?.props.style.color).toBe(LIGHT.text);
+    // Outside the changed environment, Bloom's Text keeps its own ink.
+    expect(y?.props.style).toBeUndefined();
   });
 
   it('a node that keeps its identity renders the same element, so React skips it', () => {

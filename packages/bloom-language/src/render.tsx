@@ -20,6 +20,24 @@ import { EngagementAction, EngagementBar, EngagementGroup } from '@oxy.so/bloom/
 import { BloomImage } from '@oxy.so/bloom/image';
 import { Fab as BloomFab } from '@oxy.so/bloom/fab';
 import { Surface } from '@oxy.so/bloom/surface';
+import { openExternal } from '@oxy.so/bloom/hooks';
+import {
+  Blockquote,
+  H1,
+  H2,
+  H3,
+  H4,
+  H5,
+  H6,
+  Large,
+  Lead,
+  Muted,
+  P,
+  Small,
+  Subtitle,
+  Text as BloomText,
+  Title,
+} from '@oxy.so/bloom/typography';
 
 import {
   isNode,
@@ -55,6 +73,7 @@ import {
   layerStyle,
   stackStyle,
   textStyle,
+  textVariant,
   type Layer,
   type Resolved,
   type StyleOut,
@@ -72,8 +91,10 @@ import {
   type IconSizeToken,
   type Role,
   type ShrinkPriority,
+  type TextStyleName,
 } from './tokens';
 import { deriveEnv, EnvContext, type Env } from './env';
+import type { TextTraits } from './style';
 import { adoptLanguageSheet } from './web-sheet';
 
 const IS_WEB = Platform.OS === 'web';
@@ -306,6 +327,8 @@ function flexKey(p: Plan): string {
 interface Context {
   env: Env;
   provided: Env;
+  /** Inside a text: a `Text` here is an inline span of it. */
+  inText?: boolean;
 }
 
 /**
@@ -337,12 +360,13 @@ function renderNode(node: Node, ctx: Context, key: string | number | undefined):
     last !== undefined &&
     last.env === ctx.env &&
     last.provided === ctx.provided &&
-    last.key === key
+    last.key === key &&
+    last.inText === ctx.inText
   ) {
     return last.element;
   }
   const element = drawNode(node, ctx, key);
-  node.rendered = { env: ctx.env, provided: ctx.provided, key, element };
+  node.rendered = { env: ctx.env, provided: ctx.provided, key, inText: ctx.inText, element };
   return element;
 }
 
@@ -355,7 +379,8 @@ function drawNode(node: Node, ctx: Context, key: string | number | undefined): R
   const p = plan(node);
   const env = p.env.length > 0 ? deriveEnv(ctx.env, p.env) : ctx.env;
   if (p.navigation !== undefined) p.onPress = navigationPress(env, p.navigation);
-  const inner: Context = env === ctx.env ? ctx : { env, provided: ctx.provided };
+  const inner: Context =
+    env === ctx.env ? ctx : { env, provided: ctx.provided, inText: ctx.inText };
   const reactKey = p.id ?? key;
   const layers = p.layers;
   // A glass layer is a Surface, which the host cannot be; so the host takes
@@ -557,22 +582,8 @@ function renderHost(
       );
       return drawHost(behaviour ? hostFor(p) : View, out, hostProps(behaviour, key));
     }
-    case 'text': {
-      const noWrap = ownValue(p, 'noWrap') !== undefined;
-      const out = cachedStyle(
-        'host',
-        `T|${ctx.env.key}|${noWrap ? 'nw' : ''}|${layerKey}|${flex}`,
-        () => Object.assign(textStyle(ctx.env.text, noWrap), boxStyle(layer, flex, p)),
-      );
-      const lines = ownValue(p, 'lines')?.value;
-      const props = hostProps(behaviour, key);
-      if (lines !== undefined) {
-        props.numberOfLines = lines;
-        props.ellipsizeMode = 'tail';
-      }
-      if (behaviour?.focusable !== undefined) delete props.focusable;
-      return drawHost(RNText, out, props, ...renderRuns((node.props as TextProps).runs, ctx));
-    }
+    case 'text':
+      return drawText(node, p, ctx, layerKey, flex, () => boxStyle(layer, flex, p), behaviour, key);
     case 'icon': {
       const size = resolveIconSize(
         (ownValue(p, 'size')?.value as IconSizeToken | undefined) ?? 'md',
@@ -820,6 +831,127 @@ function namedTrigger(trigger: Child, label: string | undefined): Child {
     : trigger.label(label);
 }
 
+// ── Text ─────────────────────────────────────────────────────────
+
+/** Bloom's typography components, by the text style that draws each; `Text` without one. */
+const TEXT_HOSTS: Record<TextStyleName, Host> = {
+  title: Title,
+  subtitle: Subtitle,
+  h1: H1,
+  h2: H2,
+  h3: H3,
+  h4: H4,
+  h5: H5,
+  h6: H6,
+  paragraph: P,
+  lead: Lead,
+  large: Large,
+  small: Small,
+  muted: Muted,
+  blockquote: Blockquote,
+};
+
+const linkPresses = new Map<string, PressHandler>();
+
+/**
+ * A link's press, as Bloom's inline link takes it: it stays in its text (not
+ * the row around it), the web's anchor follows itself, and native opens the
+ * page outside the app. One handler per address, so a text keeps its props.
+ */
+function linkPress(href: string): PressHandler {
+  let press = linkPresses.get(href);
+  if (press === undefined) {
+    press = (event) => {
+      event.stopPropagation();
+      if (!IS_WEB) openExternal(href);
+    };
+    linkPresses.set(href, press);
+  }
+  return press;
+}
+
+/** The env traits a span's own chain sets: all a span writes (see `textStyle`). */
+function spanTraits(p: Plan): ReadonlySet<keyof TextTraits> {
+  return new Set(p.env.map((modifier) => modifier.kind as keyof TextTraits));
+}
+
+/**
+ * A text. The outermost is Bloom's `Text` (or the typography component its
+ * `textStyle` names), its ramp font as Bloom's `variant`; a nested one is a
+ * React Native span inside it, so it inherits the type it does not set.
+ */
+function drawText(
+  node: Node,
+  p: Plan,
+  ctx: Context,
+  layerKey: string,
+  flex: string,
+  box: () => Resolved,
+  behaviour: Record<string, unknown> | undefined,
+  key: string | number | undefined,
+): ReactElement {
+  const traits = ctx.env.text;
+  const span = ctx.inText ? spanTraits(p) : undefined;
+  const link = ownValue(p, 'link')?.value;
+  const look = {
+    noWrap: ownValue(p, 'noWrap') !== undefined,
+    align: ownValue(p, 'textAlign')?.value,
+    italic: ownValue(p, 'italic') !== undefined,
+    underline: ownValue(p, 'underline') !== undefined,
+    strikethrough: ownValue(p, 'strikethrough') !== undefined,
+    textCase: ownValue(p, 'textCase')?.value,
+    link: link !== undefined,
+  };
+  const textStyleName = span === undefined ? ownValue(p, 'textStyle')?.value : undefined;
+  const lookKey = `${look.noWrap ? 'nw' : ''}|${look.align ?? ''}|${look.italic ? 'i' : ''}|${look.underline ? 'u' : ''}|${look.strikethrough ? 's' : ''}|${look.textCase ?? ''}|${look.link ? 'a' : ''}`;
+  const spanKey = span === undefined ? '' : [...span].sort().join(',');
+  const blockquote = textStyleName === 'blockquote';
+  const props = hostProps(behaviour, key);
+  delete props.focusable;
+  const lines = ownValue(p, 'lines')?.value;
+  const truncation = ownValue(p, 'truncation')?.value;
+  if (lines !== undefined) props.numberOfLines = lines;
+  if (lines !== undefined || truncation !== undefined) props.ellipsizeMode = truncation ?? 'tail';
+  const selectable = ownValue(p, 'selectable')?.value;
+  if (selectable !== undefined) props.selectable = selectable;
+  if (link !== undefined) {
+    props.role = 'link';
+    props.onPress = p.onPress ?? linkPress(link);
+    if (IS_WEB) {
+      props.href = link;
+      if (/^https?:/i.test(link)) props.hrefAttrs = LINK_TARGET;
+    }
+  }
+  const variant = span === undefined && !blockquote ? textVariant(traits) : undefined;
+  if (variant !== undefined) props.variant = variant;
+  let runs = renderRuns((node.props as TextProps).runs, ctx);
+  if (blockquote) {
+    // Bloom's quotation is a box around its own text: the box takes the
+    // layers, and what the chain sets for the text is a span inside it.
+    const own = textStyle(traits, look, spanTraits(p));
+    if (Object.keys(own).length > 0) {
+      const inner = cachedStyle('host', `TQ|${ctx.env.key}|${spanKey}|${lookKey}`, () => own);
+      runs = [drawHost(RNText, inner, {}, ...runs)];
+    }
+    return drawHost(
+      Blockquote,
+      cachedStyle('component', `Q|${layerKey}|${flex}`, box),
+      props,
+      ...runs,
+    );
+  }
+  const host = span !== undefined ? RNText : textStyleName ? TEXT_HOSTS[textStyleName] : BloomText;
+  const out = cachedStyle(
+    'host',
+    `T|${ctx.env.key}|${span === undefined ? '' : `s:${spanKey}`}|${lookKey}|${layerKey}|${flex}`,
+    () => Object.assign(textStyle(traits, look, span), box()),
+  );
+  return drawHost(host, out, props, ...runs);
+}
+
+/** A web link to another site opens beside the app, as Bloom's inline link does. */
+const LINK_TARGET = Object.freeze({ target: '_blank', rel: 'noopener noreferrer' });
+
 function buttonContent(children: readonly Child[]): {
   icon: IconProps['icon'] | undefined;
   glyph: Node | undefined;
@@ -899,9 +1031,10 @@ function renderDepthChildren(children: readonly Child[], ctx: Context): ReactNod
 
 function renderRuns(runs: readonly TextRun[], ctx: Context): ReactNode[] {
   const out: ReactNode[] = [];
+  const inner: Context = ctx.inText ? ctx : { ...ctx, inText: true };
   for (const run of runs) {
     if (typeof run === 'string' || typeof run === 'number') out.push(String(run));
-    else out.push(isNode(run) ? renderNode(run, ctx, undefined) : null);
+    else out.push(isNode(run) ? renderNode(run, inner, undefined) : null);
   }
   return out;
 }

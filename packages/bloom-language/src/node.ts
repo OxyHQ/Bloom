@@ -416,6 +416,8 @@ export interface Rendered {
   readonly env: unknown;
   readonly provided: unknown;
   readonly key: string | number | undefined;
+  /** Drawn inside a text, as an inline span. */
+  readonly inText: boolean | undefined;
   readonly element: ReactNode;
 }
 
