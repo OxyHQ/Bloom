@@ -519,7 +519,13 @@
     "chatStatusTone": ["muted", "accent"],
     "messageTone": ["incoming", "outgoing"],
     "fileMessageStyle": ["bubble", "compact"],
-    "videoMessageStyle": ["thumbnail", "videoNote"]
+    "videoMessageStyle": ["thumbnail", "videoNote"],
+    "listingHeaderSize": ["large", "medium"],
+    "listingPhotoLayout": ["auto", "grid", "carousel"],
+    "mapMarkerState": ["default", "active", "visited"],
+    "mapPriceMarkerSize": ["default", "compact"],
+    "followButtonSize": ["sm", "md", "lg"],
+    "shelfLayout": ["row", "grid", "paged"]
   },
   "glass": {
     "$comment": [
@@ -1359,7 +1365,53 @@
       "constructors": ["VoiceMessage"],
       "modifiers": ["tint", "bubbleTint", "contentTint"],
       "tint": "messageTone"
-    }
+    },
+    "amenityList": { "constructors": ["AmenityList"], "modifiers": [] },
+    "hostCard": { "constructors": ["HostCard"], "modifiers": [] },
+    "listingHeader": {
+      "constructors": ["ListingHeader"],
+      "modifiers": ["size"],
+      "size": "listingHeaderSize"
+    },
+    "listingHeaderAction": { "constructors": ["ListingHeaderAction"], "modifiers": [] },
+    "listingPhotoGrid": {
+      "constructors": ["ListingPhotoGrid"],
+      "modifiers": ["style"],
+      "style": "listingPhotoLayout"
+    },
+    "reviewCard": { "constructors": ["ReviewCard"], "modifiers": ["lines"] },
+    "mapClusterMarker": {
+      "constructors": ["MapClusterMarker"],
+      "modifiers": ["style"],
+      "style": "mapMarkerState"
+    },
+    "mapPriceMarker": {
+      "constructors": ["MapPriceMarker"],
+      "modifiers": ["style", "size"],
+      "style": "mapMarkerState",
+      "size": "mapPriceMarkerSize"
+    },
+    "mapSearchAreaButton": { "constructors": ["MapSearchAreaButton"], "modifiers": ["disabled"] },
+    "followButton": {
+      "constructors": ["FollowButton"],
+      "modifiers": ["style", "tint", "size", "loading"],
+      "style": "appearance",
+      "tint": "tone",
+      "size": "followButtonSize"
+    },
+    "shelf": {
+      "constructors": ["Shelf"],
+      "modifiers": ["style", "spacing"],
+      "style": "shelfLayout"
+    },
+    "shelfSkeleton": {
+      "constructors": ["ShelfSkeleton"],
+      "modifiers": ["style", "spacing"],
+      "style": "shelfLayout"
+    },
+    "subscriptionPlans": { "constructors": ["SubscriptionPlans"], "modifiers": [] },
+    "subscriptionPrice": { "constructors": ["SubscriptionPrice"], "modifiers": [] },
+    "userHoverCard": { "constructors": ["UserHoverCard"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
