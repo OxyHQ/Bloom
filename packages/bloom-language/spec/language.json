@@ -1017,7 +1017,11 @@
     "opaque": ["value?"],
     "mediaCorner": ["corner"],
     "caption": ["value"],
-    "minItemWidth": ["space"]
+    "minItemWidth": ["space"],
+    "onRetry": ["value"],
+    "onAdd": ["value"],
+    "addHint": ["value"],
+    "imageVariant": ["value"]
   },
   "universal": [
     "padding",
@@ -1916,6 +1920,20 @@
       "constructors": ["Fact"],
       "universal": false,
       "modifiers": ["caption", "onPress", "label", "id"]
+    },
+    "sortablePhotoGrid": {
+      "constructors": ["SortablePhotoGrid"],
+      "modifiers": [
+        "onRemove",
+        "onRetry",
+        "onAdd",
+        "max",
+        "addHint",
+        "columns",
+        "imageVariant",
+        "disabled",
+        "labels"
+      ]
     }
   },
   "sfSymbols": {
