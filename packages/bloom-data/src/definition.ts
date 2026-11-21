@@ -18,6 +18,8 @@ export interface EntityDefinition {
   readonly onStore: ((records: readonly Plain[]) => void) | undefined;
   /** The persisted schema version, or `null` when the type is memory only. */
   readonly persistVersion: number | null;
+  /** Secondary keys, by name: a record's value for each (`undefined`: none). */
+  readonly indexes: ReadonlyArray<readonly [string, (record: Plain) => string | undefined]>;
 }
 
 export interface RefDefinition {

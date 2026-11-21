@@ -103,6 +103,13 @@ export interface ListSourceOptions<A extends unknown[], T, E, X> extends CommonO
 }
 
 export interface RecordSourceOptions<A extends unknown[], T> extends CommonOptions<A> {
+  /**
+   * The key is the value of this entity `index` (a username), not the
+   * record's id: the record is found through the index, so one already held
+   * under that value (from a list, say) shows at once. Such a read has no
+   * disk copy of its own.
+   */
+  index?: string;
   /** The record, or `null` when the server says it is gone (it is then removed). */
   load: (request: { readonly signal: AbortSignal }, ...args: NoInfer<A>) => Promise<T | null>;
   put?: PutOptions;
@@ -134,6 +141,10 @@ export interface ListSource<A extends unknown[], E> extends BaseSource<A> {
 export interface RecordSource<A extends unknown[], T> extends BaseSource<A> {
   readonly kind: 'record';
   readonly entity: Entity<T>;
+  /** The entity index the key is a value of; `undefined`: the key is the id. */
+  readonly index: string | undefined;
+  /** The id of the record the key names in `store`, if it is held. */
+  idIn(store: Store, args: A): string | undefined;
 }
 
 interface Query {
@@ -202,10 +213,18 @@ export function source(
       ? store.listSlot((target as List<unknown>).definition, options.key(...args), true)
       : undefined;
 
+  const index = isList ? undefined : (options as RecordSourceOptions<unknown[], unknown>).index;
+
+  /** The id of the record a record source's key names, if it is held. */
+  const idIn = (store: Store, args: unknown[]): string | undefined => {
+    const definition = (target as Entity<unknown>).definition;
+    const key = options.key(...args);
+    if (index !== undefined) return store.lookup(definition, index, key);
+    return store.slot(definition, key)?.value ? key : undefined;
+  };
+
   const hasData = (store: Store, args: unknown[]): boolean =>
-    isList
-      ? Boolean(listOf(store, args)?.state)
-      : Boolean(store.slot((target as Entity<unknown>).definition, options.key(...args))?.value);
+    isList ? Boolean(listOf(store, args)?.state) : idIn(store, args) !== undefined;
 
   const isStale = (store: Store, query: Query): boolean => {
     if (!hasData(store, query.args) || query.state.origin !== 'network') return true;
@@ -230,8 +249,11 @@ export function source(
       store.batch(() => {
         if (!isList) {
           const definition = (target as Entity<unknown>).definition;
-          if (answer === null) store.remove(definition, options.key(...query.args));
-          else store.put(definition, answer as Plain, options.put);
+          if (answer !== null) store.put(definition, answer as Plain, options.put);
+          else {
+            const id = idIn(store, query.args);
+            if (id !== undefined) store.remove(definition, id);
+          }
           return;
         }
         const listOptions = options as ListSourceOptions<unknown[], unknown, unknown, unknown>;
@@ -387,7 +409,8 @@ export function source(
 
   /** Reads the disk copy while the network read runs, and shows it if it lands first. */
   const hydrate = (store: Store, query: Query) => {
-    if (query.diskTried || !store.persister || hasData(store, query.args)) return;
+    if (query.diskTried || !store.persister || index !== undefined || hasData(store, query.args))
+      return;
     query.diskTried = true;
     const key = options.key(...query.args);
     const read = isList
@@ -485,5 +508,11 @@ export function source(
       },
     };
   }
-  return { ...base, kind: 'record', entity: target as Entity<unknown> };
+  return {
+    ...base,
+    kind: 'record',
+    entity: target as Entity<unknown>,
+    index,
+    idIn: (store, args) => idIn(store, args),
+  };
 }
