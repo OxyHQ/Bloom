@@ -142,6 +142,7 @@ be preserved"), so keep the controller in a custom hook (`usePostRowModel`).
 | `Button` | Bloom `Button` (`style` is its appearance, `tint` its tone, `shape` is icon-only: `circle` square, `pill` wide; see [Button](#button)) |
 | `ActionBar` / `Action` / `ActionGroup` | Bloom `EngagementBar` / `EngagementAction` / `EngagementGroup` |
 | `.glass()` | Bloom `Surface` (see [Glass](#glass)) |
+| `.blur()` | Bloom `BlurIsland` (`@oxy.so/bloom/blur`; see [Material](#material)) |
 | `.corner('concentric')` | Bloom `ConcentricView` (a glass: `Surface radius="concentric"`) |
 | `Divider` | Bloom `Divider` (in a menu, the line between rows) |
 | `Fill` / `AspectRatio` / `Grid` | Bloom `Fill` / `AspectRatio` / `ResponsiveGrid` |
@@ -218,6 +219,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `size(s)` | icon rungs, avatar rungs, or Bloom sizes, by node |
 | `style(a)` / `shape(s)` / `tint(t)` | Bloom appearance / `circle` `pill` / Bloom tone |
 | `glass(material?)` | `regular`, `clear`, `.tint(role, 'subtle' \| 'medium' \| 'strong'?)` |
+| `blur()` | Bloom's floating island (`BlurIsland`) |
 | `onPress`, `onLongPress`, `onHover`, `hoverGroup` | handlers. `onPress(undefined)` keeps the pressable host, out of the focus order. |
 | `label`, `hint`, `role`, `hitSlop`, `testID`, `id` | accessibility and identity |
 | `lines(n)`, `noWrap()`, `truncation`, `selectable`, `textStyle`, `link`, `textAlign`, `italic`, `underline`, `strikethrough`, `textCase` | text only (see [Text](#text)) |
@@ -357,11 +359,24 @@ VStack(
   the widths apps use, 128 to 300), `.spacing(space)`, `.flow('rows' |
   'columns')`.
 
+- **Islands.** `.blur()` floats the view over content as Bloom's
+  `BlurIsland`: the shared material with its shadow, drawn by the lens on
+  Android 13+ where the device has it. It is a capsule unless the layer's
+  `.corner()` names a radius, and takes the layer's `cornerCurve`; a
+  `.background(role)` in the layer is its fill, painted from the theme on
+  every platform (the island composites its tint for what sits on it). It
+  sits in the fill's layer, as `.glass()` does: `.padding('sm').blur()` is
+  one island, `.blur().padding('sm')` pads outside it. A `Button` inside
+  keeps its own material; an island of shared controls is not built yet.
+
+  ```ts
+  HStack(Icon(RiFilterLine), Text('Filters')).spacing('xs').padding('sm').blur()
+  ```
+
 Not built: a silhouette of its own (Bloom's `shapes` `Fill`, `Image` and
-`Border` at a fixed size; apps reach silhouettes through `Avatar`'s shape), and
-Bloom's `BlurIsland` (the floating capsule with its shadow): `blur/` is
-internal to Bloom on purpose (`family-layout.test.ts`), and publishing it is
-the owner's decision. Blur itself is the glass.
+`Border` at a fixed size; apps reach silhouettes through `Avatar`'s shape).
+A glass is the platform's own material (see [Glass](#glass)); an island is
+Bloom's.
 
 ## Button
 

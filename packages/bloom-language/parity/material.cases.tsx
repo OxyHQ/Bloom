@@ -1,5 +1,6 @@
 import * as RN from 'react-native';
 import { AspectRatio } from '@oxy.so/bloom/aspect-ratio';
+import { BlurIsland } from '@oxy.so/bloom/blur';
 import { ConcentricView } from '@oxy.so/bloom/concentric';
 import { Divider } from '@oxy.so/bloom/divider';
 import { Fill } from '@oxy.so/bloom/fill';
@@ -326,4 +327,47 @@ const named: ParityCase[] = [
   },
 ];
 
-export const MATERIAL_CASES: ParityCase[] = [...surface, ...dividers, ...boxes, ...named];
+/** `.blur()`: Bloom's floating island, a capsule unless a corner names its radius. */
+const islands: ParityCase[] = [
+  {
+    name: 'blur is Bloom’s BlurIsland',
+    language: () => toElement(L.HStack(L.Text('Island')).padding('sm').blur()),
+    bloom: () => (
+      <BlurIsland style={padding(space.sm)}>
+        <RN.View style={{ flexDirection: 'row' }}>
+          <Text>Island</Text>
+        </RN.View>
+      </BlurIsland>
+    ),
+  },
+  {
+    name: 'a blur with a corner and a smooth curve',
+    language: () => toElement(L.VStack().blur().corner('xl').cornerCurve('smooth')),
+    bloom: () => (
+      <BlurIsland radius={borderRadius.xl} cornerCurve="smooth">
+        <RN.View />
+      </BlurIsland>
+    ),
+  },
+  {
+    name: 'a blur filled from a role',
+    language: () => toElement(L.VStack().background('popover').blur()),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <BlurIsland style={{ backgroundColor: c.backgroundTertiary }}>
+            <RN.View />
+          </BlurIsland>
+        )}
+      </Themed>
+    ),
+  },
+];
+
+export const MATERIAL_CASES: ParityCase[] = [
+  ...surface,
+  ...islands,
+  ...dividers,
+  ...boxes,
+  ...named,
+];

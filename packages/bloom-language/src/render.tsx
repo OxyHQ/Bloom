@@ -27,6 +27,7 @@ import { Button as BloomButton } from '@oxy.so/bloom/button';
 import { EngagementAction, EngagementBar, EngagementGroup } from '@oxy.so/bloom/engagement-bar';
 import { BloomImage } from '@oxy.so/bloom/image';
 import { Fab as BloomFab } from '@oxy.so/bloom/fab';
+import { BlurIsland } from '@oxy.so/bloom/blur';
 import { Surface } from '@oxy.so/bloom/surface';
 import { AspectRatio as BloomAspectRatio } from '@oxy.so/bloom/aspect-ratio';
 import { ConcentricView } from '@oxy.so/bloom/concentric';
@@ -421,11 +422,12 @@ function drawNode(node: Node, ctx: Context, key: string | number | undefined): R
   const reactKey = p.id ?? key;
   if (node.kind === 'skeleton') return drawSkeleton(node, p, inner, reactKey);
   const layers = p.layers;
-  // A glass layer is a Surface, which the host cannot be; so the host takes
-  // the innermost layer only when that layer is plain.
+  // A glass layer is a Surface and a blur layer an island, which the host cannot
+  // be; so the host takes the innermost layer only when that layer is plain.
   const hostTakesLayer =
     layers.length > 0 &&
     (layers[0] as Layer).glass === undefined &&
+    !(layers[0] as Layer).blur &&
     !(layers[0] as Layer).concentric;
   const hostLayer = hostTakesLayer ? (layers[0] as Layer) : undefined;
   const wrappers = hostTakesLayer ? layers.slice(1) : layers;
@@ -534,6 +536,25 @@ function wrapLayer(
             child,
           );
     return behaviour && p.pressable ? draw(hostFor(p), { ...behaviour, key }, surface) : surface;
+  }
+  if (layer.blur) {
+    // Bloom's floating island: its material, its shadow and its clip; a capsule
+    // unless the layer's corner names the radius.
+    const { borderRadius: corner, overflow: _clip, ...resolved } = boxStyle(layer, flex, p);
+    const out = cachedStyle('material', styleKey, () => resolved);
+    const outer = behaviour && !p.pressable ? behaviour : null;
+    const island = drawHost(
+      BlurIsland,
+      out,
+      {
+        ...(typeof corner === 'number' ? { radius: corner } : null),
+        ...(layer.curve ? { cornerCurve: layer.curve } : null),
+        ...outer,
+        key: behaviour && p.pressable ? undefined : key,
+      },
+      child,
+    );
+    return behaviour && p.pressable ? draw(hostFor(p), { ...behaviour, key }, island) : island;
   }
   if (layer.concentric) {
     // Bloom's concentric geometry: the radius of the shape it sits in, less the inset.

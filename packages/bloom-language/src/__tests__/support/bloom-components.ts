@@ -3,6 +3,7 @@ export const Button = 'BloomButton';
 export const EngagementAction = 'EngagementAction';
 export const EngagementBar = 'EngagementBar';
 export const EngagementGroup = 'EngagementGroup';
+export const BlurIsland = 'BlurIsland';
 export const Surface = 'Surface';
 export const Fab = 'BloomFab';
 export const PageHeader = 'PageHeader';
