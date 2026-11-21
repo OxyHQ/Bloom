@@ -304,3 +304,19 @@ fn tracking_and_the_mono_face_are_checked() {
     let font = compiled("export const x = () => Text('x').font('serif');\n");
     assert_eq!(font.diagnostics[0].message, "Unknown font token 'serif' for .font()");
 }
+
+#[test]
+fn a_variant_is_checked_against_what_a_variant_changes() {
+    let ok = compiled(
+        "export const x = () => HStack().padding('sm').when('md', (v) => v.padding('lg').justify('center')).when('dark', v => { return v.background('surface'); });\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.iter().map(|d| &d.message).collect::<Vec<_>>());
+    let output = compiled("export const x = () => HStack().when('tablet', (v) => v.padding('lg'));\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown condition token 'tablet' for .when()");
+    let output = compiled("export const x = () => HStack().when('md', (v) => v.padding('huge'));\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown padding token 'huge' for .padding()");
+    let output = compiled("export const x = () => HStack().when('hovered', (v) => v.onPress(go));\n");
+    assert_eq!(output.diagnostics[0].message, "A variant cannot change .onPress()");
+    let output = compiled("export const x = () => Text('a').when('md', (v) => v.justify('center'));\n");
+    assert_eq!(output.diagnostics[0].message, "A variant cannot change .justify()");
+}

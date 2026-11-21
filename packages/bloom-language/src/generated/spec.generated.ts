@@ -216,6 +216,46 @@ export const SHADOW = {
   "m": "0 4px 12px rgb(0 0 0 / 0.08), 0 2px 6px rgb(0 0 0 / 0.12)",
   "floating": "0 0 1px 0 rgb(0 0 0 / 0.12), 0 4px 8px 0 rgb(0 0 0 / 0.12)"
 } as const;
+export const BREAKPOINT = {
+  "sm": 640,
+  "md": 768,
+  "lg": 1024,
+  "xl": 1280,
+  "2xl": 1536
+} as const;
+
+/** What a variant (`when()`) can change, and the web selector of each scheme and state condition. */
+export const VARIANT_MODIFIERS = [
+  "padding",
+  "frame",
+  "background",
+  "border",
+  "ring",
+  "corner",
+  "opacity",
+  "shadow",
+  "foreground",
+  "font",
+  "weight",
+  "leading",
+  "spacing",
+  "align",
+  "justify",
+  "wrap",
+  "axis",
+  "grow",
+  "shrink",
+  "alignSelf",
+  "position",
+  "zIndex",
+  "hidden"
+] as const;
+export const VARIANT_SELECTORS = {
+  "dark": ".dark &",
+  "hovered": ".blsg:hover &, .blsg:hover&",
+  "focused": ".blsg:focus-visible &, .blsg:focus-visible&",
+  "pressed": ".blsg:active &, .blsg:active&"
+} as const;
 
 /** Bloom's type ramp: `<family>-<weight>` → [fontSize, lineHeight, letterSpacing, fontWeight]. */
 export const TYPE_FAMILIES = [
@@ -746,6 +786,22 @@ export const ENUMS = {
   ],
   "ringExtra": [
     "none"
+  ],
+  "condition": [
+    "sm",
+    "md",
+    "lg",
+    "xl",
+    "2xl",
+    "dark",
+    "hovered",
+    "focused",
+    "pressed",
+    "disabled",
+    "web",
+    "native",
+    "ios",
+    "android"
   ],
   "overlayAlignment": [
     "center",
@@ -1347,6 +1403,10 @@ export const MODIFIERS = {
   ],
   "pressed": [
     "value"
+  ],
+  "when": [
+    "condition",
+    "variant"
   ]
 } as const;
 
@@ -1401,11 +1461,13 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
+    "when",
     "spacing",
     "align",
     "justify",
     "wrap",
     "axis",
+    "disabled",
     "hoverHighlight"
   ],
   "spacer": [
@@ -1456,7 +1518,8 @@ export const NODE_MODIFIERS = {
     "headingLevel",
     "footer",
     "sheet",
-    "onReselect"
+    "onReselect",
+    "when"
   ],
   "text": [
     "padding",
@@ -1507,6 +1570,7 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
+    "when",
     "lines",
     "noWrap",
     "truncation",
@@ -1568,6 +1632,7 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
+    "when",
     "size"
   ],
   "avatar": [
@@ -1619,6 +1684,7 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
+    "when",
     "size",
     "tint",
     "shape",
@@ -1676,6 +1742,7 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
+    "when",
     "layout",
     "size",
     "shape",
@@ -1736,6 +1803,7 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
+    "when",
     "style",
     "tint",
     "size",
@@ -1793,6 +1861,7 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
+    "when",
     "size"
   ],
   "loading": [
@@ -1844,6 +1913,7 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
+    "when",
     "style",
     "size",
     "tint"
@@ -1896,7 +1966,8 @@ export const NODE_MODIFIERS = {
     "headingLevel",
     "footer",
     "sheet",
-    "onReselect"
+    "onReselect",
+    "when"
   ],
   "skeletonGroup": [
     "padding",
@@ -1946,7 +2017,8 @@ export const NODE_MODIFIERS = {
     "headingLevel",
     "footer",
     "sheet",
-    "onReselect"
+    "onReselect",
+    "when"
   ],
   "image": [
     "padding",
@@ -1997,6 +2069,7 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
+    "when",
     "contentFit",
     "aspectRatio",
     "tint",
@@ -2052,7 +2125,8 @@ export const NODE_MODIFIERS = {
     "headingLevel",
     "footer",
     "sheet",
-    "onReselect"
+    "onReselect",
+    "when"
   ],
   "ratio": [
     "padding",
@@ -2102,7 +2176,8 @@ export const NODE_MODIFIERS = {
     "headingLevel",
     "footer",
     "sheet",
-    "onReselect"
+    "onReselect",
+    "when"
   ],
   "grid": [
     "padding",
@@ -2153,6 +2228,7 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
+    "when",
     "columns",
     "minCellWidth",
     "spacing",
@@ -2207,6 +2283,7 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
+    "when",
     "style",
     "shape",
     "size",
@@ -2267,6 +2344,7 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
+    "when",
     "style",
     "size",
     "tint",
@@ -2322,6 +2400,7 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
+    "when",
     "actions"
   ],
   "menuItem": [
@@ -2391,6 +2470,7 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
+    "when",
     "lineStyle",
     "align",
     "spacing",
@@ -2475,6 +2555,7 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
+    "when",
     "count",
     "active",
     "tint"
@@ -2528,6 +2609,7 @@ export const NODE_MODIFIERS = {
     "footer",
     "sheet",
     "onReselect",
+    "when",
     "trailing",
     "countFormat",
     "size"
@@ -2580,7 +2662,8 @@ export const NODE_MODIFIERS = {
     "headingLevel",
     "footer",
     "sheet",
-    "onReselect"
+    "onReselect",
+    "when"
   ],
   "embed": [
     "padding",
@@ -2630,7 +2713,8 @@ export const NODE_MODIFIERS = {
     "headingLevel",
     "footer",
     "sheet",
-    "onReselect"
+    "onReselect",
+    "when"
   ],
   "view": [
     "padding",
@@ -2680,7 +2764,8 @@ export const NODE_MODIFIERS = {
     "headingLevel",
     "footer",
     "sheet",
-    "onReselect"
+    "onReselect",
+    "when"
   ],
   "appLayout": [
     "primaryAction",

@@ -26,6 +26,7 @@ import {
   type Alignment,
   type Axis,
   type BorderEdge,
+  type Condition,
   type Justify,
   type LengthToken,
   type OverlayAlignment,
@@ -80,6 +81,7 @@ export type {
   Alignment,
   Axis,
   BorderEdge,
+  Condition,
   Justify,
   OverlayAlignment,
   ButtonShape,
@@ -273,6 +275,13 @@ export type Modifier =
       readonly behind: boolean;
     }
   | { readonly kind: 'shadow'; readonly key: string; readonly value: ShadowName }
+  | {
+      readonly kind: 'when';
+      readonly key: string;
+      readonly condition: Condition;
+      /** What the variant changes: modifiers over the values the chain set before it. */
+      readonly modifiers: readonly Modifier[];
+    }
   | {
       readonly kind: 'ring';
       readonly key: string;
@@ -600,6 +609,11 @@ export class Node {
   }
   shadow(value: ShadowName): Node {
     return this.with({ kind: 'shadow', key: `sh:${value}`, value });
+  }
+  when(condition: Condition, build: (variant: Node) => Node): Node {
+    const { modifiers } = build(new Node(this.kind, undefined, []));
+    const key = `when:${condition}(${modifiers.map((modifier) => modifier.key).join(';')})`;
+    return this.with({ kind: 'when', key, condition, modifiers });
   }
   ring(value: ColorToken | 'none', width: BorderWidthName = 'thin', offset?: SpaceToken): Node {
     const key = `ring:${value}:${width}:${offset === undefined ? '' : tokenKey(offset)}`;
@@ -996,6 +1010,14 @@ export interface ViewModifiers<Self> extends ViewNode {
   /** Bloom's elevation under the box: `s`, `m` or `floating`. */
   shadow(value: ShadowName): Self;
   /**
+   * A variant: while `condition` holds, the modifiers `build` chains onto the
+   * view override the values set before this call (`.padding('sm').when('md',
+   * (v) => v.padding('lg'))`). Only style modifiers vary (the spec's
+   * `variants.modifiers`); on the web a breakpoint, the scheme and a state are
+   * CSS, on native environment reads.
+   */
+  when(condition: Condition, build: (variant: Self) => Self): Self;
+  /**
    * Rounds the box: a radius rung, `full`, or `concentric` (the radius of the
    * shape it sits in, less the inset between them: a glass's, another
    * concentric box's, a Bloom card's).
@@ -1082,6 +1104,8 @@ export interface StackView extends ViewModifiers<StackView> {
   wrap(value?: boolean): StackView;
   /** Lays the children out along `horizontal` or `vertical`, over the constructor's own (a breakpoint variant's row). */
   axis(value: Axis): StackView;
+  /** A pressable stack that takes no presses, announced as disabled; what `when('disabled', …)` answers. */
+  disabled(value?: boolean): StackView;
   /**
    * Bloom's hover wash behind the stack (`SubtleHover`): under the pointer, on
    * the web; or while `active` (a coordinated highlight), on every platform.

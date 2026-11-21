@@ -93,6 +93,12 @@ export type ShadowName = keyof typeof SHADOW;
 /** How a stack spreads its children along its axis. */
 export type Justify = (typeof ENUMS.justify)[number];
 export type Axis = (typeof ENUMS.axis)[number];
+/**
+ * When a variant (`when()`) holds: a breakpoint tier and up (`sm`…`2xl`), the
+ * dark scheme, a state of the view (`hovered`, `focused`, `pressed`,
+ * `disabled`) or a platform (`web`, `native`, `ios`, `android`).
+ */
+export type Condition = (typeof ENUMS.condition)[number];
 /** Where an overlay or a view background sits in its view: SwiftUI's `Alignment`. */
 export type OverlayAlignment = (typeof ENUMS.overlayAlignment)[number];
 /** How much of a glass tint shows: a named transparency, never a number. */
