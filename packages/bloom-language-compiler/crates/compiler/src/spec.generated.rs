@@ -132,6 +132,11 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("shellPresentation", &["continuous", "framed", "floating"]),
     ("panelRole", &["main", "collection", "detail", "inspector", "context", "canvas"]),
     ("colorPreset", &["teal", "blue", "green", "yellow", "red", "purple", "pink", "sky", "orange", "mint", "oxy", "faircoin", "pumpkin", "gray", "brown", "peach", "rose", "mono", "grove", "ember", "merlot", "cobalt", "jade", "pine", "olive", "lagoon", "navy", "azure", "violet", "lavender", "plum", "cherry", "chocolate", "graphite", "forest-fire", "malachite-rush", "moss-voltage", "viridian-orbit", "acid-canopy", "pacific-flare", "reef-pulse", "electric-tide", "arctic-signal", "ultramarine-gold", "midnight-citrus", "persimmon-wave", "solar-flux", "paprika-current", "crimson-spark", "flamenco-sun", "saffron-depth", "clay-current", "bronze-neon", "copper-field", "umber-signal", "amethyst-current", "ruby-current", "orchid-flare", "garnet-acid", "indigo-ember", "raspberry-gold", "ink-orange", "charcoal-lime", "pewter-current", "gemies"]),
+    ("scrollbarVisibility", &["scroll", "hover", "always", "never"]),
+    ("scrollbarSide", &["start", "end"]),
+    ("scrollbarSize", &["sm", "md"]),
+    ("scrollSurfaceStyle", &["primary", "secondary", "full"]),
+    ("resizeHandleStyle", &["grip", "pill"]),
 ];
 
 /// The modifiers a variant (`when(condition, v => v…)`) can change.
@@ -438,6 +443,22 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("screenActive", &["value?"]),
     ("initialHeaderHeight", &["space"]),
     ("initialFooterHeight", &["space"]),
+    ("scrollbar", &["scrollbarVisibility"]),
+    ("scrollbarSide", &["scrollbarSide"]),
+    ("stickyHeader", &["value"]),
+    ("stickyFooter", &["value"]),
+    ("fadeHeight", &["space"]),
+    ("fadeBottom", &["value?"]),
+    ("matchSurfacePaint", &["value?"]),
+    ("summary", &["value"]),
+    ("onReveal", &["value"]),
+    ("peek", &["value?"]),
+    ("barHeight", &["space"]),
+    ("collapsedHeight", &["space"]),
+    ("thickness", &["space"]),
+    ("onResizeStart", &["value"]),
+    ("onResizeEnd", &["value"]),
+    ("onNudge", &["value"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -539,6 +560,10 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "toolbarView", constructors: &["Toolbar"], modifiers: &["trailing", "accessory", "size", "testID"], size: Some("controlSize"), tint: None, style: None, shape: None },
     NodeSpec { kind: "stickySection", constructors: &["StickySection"], modifiers: &["testID"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "pageFooter", constructors: &["PageFooter"], modifiers: &["toolbar", "pinning", "scrollEdge", "ignoresSafeArea", "testID"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "scrollArea", constructors: &["ScrollArea"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "alert", "dialog", "popover", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "colorPreset", "seed", "screenActive", "initialHeaderHeight", "initialFooterHeight", "contentMargins", "spacing", "axis", "scrollbar", "scrollbarSide", "size", "scrollDismissesKeyboard", "keyboardTaps"], size: Some("scrollbarSize"), tint: None, style: None, shape: None },
+    NodeSpec { kind: "scrollSurface", constructors: &["ScrollSurface"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "alert", "dialog", "popover", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "colorPreset", "seed", "screenActive", "initialHeaderHeight", "initialFooterHeight", "contentMargins", "spacing", "axis", "scrollbar", "scrollbarSide", "size", "scrollDismissesKeyboard", "keyboardTaps", "stickyHeader", "stickyFooter", "fadeHeight", "fadeBottom", "matchSurfacePaint", "style"], size: Some("scrollbarSize"), tint: None, style: Some("scrollSurfaceStyle"), shape: None },
+    NodeSpec { kind: "autoHideBar", constructors: &["AutoHideBar"], modifiers: &["summary", "collapsed", "onReveal", "peek", "barHeight", "collapsedHeight", "label", "testID"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "resizeHandle", constructors: &["ResizeHandle"], modifiers: &["axis", "style", "thickness", "onResizeStart", "onResizeEnd", "onNudge", "label", "testID"], size: None, tint: None, style: Some("resizeHandleStyle"), shape: None },
 ];
 
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,

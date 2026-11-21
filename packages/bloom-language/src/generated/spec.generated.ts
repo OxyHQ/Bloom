@@ -1576,6 +1576,29 @@ export const ENUMS = {
     "charcoal-lime",
     "pewter-current",
     "gemies"
+  ],
+  "scrollbarVisibility": [
+    "scroll",
+    "hover",
+    "always",
+    "never"
+  ],
+  "scrollbarSide": [
+    "start",
+    "end"
+  ],
+  "scrollbarSize": [
+    "sm",
+    "md"
+  ],
+  "scrollSurfaceStyle": [
+    "primary",
+    "secondary",
+    "full"
+  ],
+  "resizeHandleStyle": [
+    "grip",
+    "pill"
   ]
 } as const;
 
@@ -2562,6 +2585,54 @@ export const MODIFIERS = {
   ],
   "initialFooterHeight": [
     "space"
+  ],
+  "scrollbar": [
+    "scrollbarVisibility"
+  ],
+  "scrollbarSide": [
+    "scrollbarSide"
+  ],
+  "stickyHeader": [
+    "value"
+  ],
+  "stickyFooter": [
+    "value"
+  ],
+  "fadeHeight": [
+    "space"
+  ],
+  "fadeBottom": [
+    "value?"
+  ],
+  "matchSurfacePaint": [
+    "value?"
+  ],
+  "summary": [
+    "value"
+  ],
+  "onReveal": [
+    "value"
+  ],
+  "peek": [
+    "value?"
+  ],
+  "barHeight": [
+    "space"
+  ],
+  "collapsedHeight": [
+    "space"
+  ],
+  "thickness": [
+    "space"
+  ],
+  "onResizeStart": [
+    "value"
+  ],
+  "onResizeEnd": [
+    "value"
+  ],
+  "onNudge": [
+    "value"
   ]
 } as const;
 
@@ -7357,6 +7428,206 @@ export const NODE_MODIFIERS = {
     "scrollEdge",
     "ignoresSafeArea",
     "testID"
+  ],
+  "scrollArea": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "alert",
+    "dialog",
+    "popover",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
+    "contentMargins",
+    "spacing",
+    "axis",
+    "scrollbar",
+    "scrollbarSide",
+    "size",
+    "scrollDismissesKeyboard",
+    "keyboardTaps"
+  ],
+  "scrollSurface": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "alert",
+    "dialog",
+    "popover",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
+    "contentMargins",
+    "spacing",
+    "axis",
+    "scrollbar",
+    "scrollbarSide",
+    "size",
+    "scrollDismissesKeyboard",
+    "keyboardTaps",
+    "stickyHeader",
+    "stickyFooter",
+    "fadeHeight",
+    "fadeBottom",
+    "matchSurfacePaint",
+    "style"
+  ],
+  "autoHideBar": [
+    "summary",
+    "collapsed",
+    "onReveal",
+    "peek",
+    "barHeight",
+    "collapsedHeight",
+    "label",
+    "testID"
+  ],
+  "resizeHandle": [
+    "axis",
+    "style",
+    "thickness",
+    "onResizeStart",
+    "onResizeEnd",
+    "onNudge",
+    "label",
+    "testID"
   ]
 } as const;
 
@@ -7459,5 +7730,9 @@ export const CONSTRUCTORS = {
   "Destination": "destination",
   "Toolbar": "toolbarView",
   "StickySection": "stickySection",
-  "PageFooter": "pageFooter"
+  "PageFooter": "pageFooter",
+  "ScrollArea": "scrollArea",
+  "ScrollSurface": "scrollSurface",
+  "AutoHideBar": "autoHideBar",
+  "ResizeHandle": "resizeHandle"
 } as const;

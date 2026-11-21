@@ -694,7 +694,12 @@
       "charcoal-lime",
       "pewter-current",
       "gemies"
-    ]
+    ],
+    "scrollbarVisibility": ["scroll", "hover", "always", "never"],
+    "scrollbarSide": ["start", "end"],
+    "scrollbarSize": ["sm", "md"],
+    "scrollSurfaceStyle": ["primary", "secondary", "full"],
+    "resizeHandleStyle": ["grip", "pill"]
   },
   "glass": {
     "$comment": [
@@ -1126,7 +1131,23 @@
     "seed": ["value"],
     "screenActive": ["value?"],
     "initialHeaderHeight": ["space"],
-    "initialFooterHeight": ["space"]
+    "initialFooterHeight": ["space"],
+    "scrollbar": ["scrollbarVisibility"],
+    "scrollbarSide": ["scrollbarSide"],
+    "stickyHeader": ["value"],
+    "stickyFooter": ["value"],
+    "fadeHeight": ["space"],
+    "fadeBottom": ["value?"],
+    "matchSurfacePaint": ["value?"],
+    "summary": ["value"],
+    "onReveal": ["value"],
+    "peek": ["value?"],
+    "barHeight": ["space"],
+    "collapsedHeight": ["space"],
+    "thickness": ["space"],
+    "onResizeStart": ["value"],
+    "onResizeEnd": ["value"],
+    "onNudge": ["value"]
   },
   "universal": [
     "padding",
@@ -2049,6 +2070,70 @@
       "constructors": ["PageFooter"],
       "universal": false,
       "modifiers": ["toolbar", "pinning", "scrollEdge", "ignoresSafeArea", "testID"]
+    },
+    "scrollArea": {
+      "constructors": ["ScrollArea"],
+      "modifiers": [
+        "contentMargins",
+        "spacing",
+        "axis",
+        "scrollbar",
+        "scrollbarSide",
+        "size",
+        "scrollDismissesKeyboard",
+        "keyboardTaps"
+      ],
+      "size": "scrollbarSize"
+    },
+    "scrollSurface": {
+      "constructors": ["ScrollSurface"],
+      "modifiers": [
+        "contentMargins",
+        "spacing",
+        "axis",
+        "scrollbar",
+        "scrollbarSide",
+        "size",
+        "scrollDismissesKeyboard",
+        "keyboardTaps",
+        "stickyHeader",
+        "stickyFooter",
+        "fadeHeight",
+        "fadeBottom",
+        "matchSurfacePaint",
+        "style"
+      ],
+      "size": "scrollbarSize",
+      "style": "scrollSurfaceStyle"
+    },
+    "autoHideBar": {
+      "constructors": ["AutoHideBar"],
+      "universal": false,
+      "modifiers": [
+        "summary",
+        "collapsed",
+        "onReveal",
+        "peek",
+        "barHeight",
+        "collapsedHeight",
+        "label",
+        "testID"
+      ]
+    },
+    "resizeHandle": {
+      "constructors": ["ResizeHandle"],
+      "universal": false,
+      "modifiers": [
+        "axis",
+        "style",
+        "thickness",
+        "onResizeStart",
+        "onResizeEnd",
+        "onNudge",
+        "label",
+        "testID"
+      ],
+      "style": "resizeHandleStyle"
     }
   },
   "sfSymbols": {
