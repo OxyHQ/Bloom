@@ -26,6 +26,9 @@ import type { CommandItem as BloomCommandItem } from '@oxy.so/bloom/command';
 import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
+import type { ListKind, VirtualListTuning } from './controls/list';
+import type { ListAction, ListProps } from '@oxy.so/bloom/list';
+import type { SwipeRowActions, SwipeRowProps } from '@oxy.so/bloom/swipe-row';
 import type { TableKind } from './controls/table';
 import type { StatBarKind } from './controls/stat-bar';
 import type { RatingKind } from './controls/rating';
@@ -122,6 +125,7 @@ import {
   type MeterCap,
   type ColumnWidthToken,
   type TableSort,
+  type ListSeparator,
   type RatingStyle,
   type Presence,
   type ShapeName,
@@ -618,6 +622,39 @@ export interface ValueModifiers {
   prefix: Child;
   emptyState: string | number | Child;
   selected: boolean;
+
+  // Rows and lists (controls/list.tsx)
+  supporting: string | Child;
+  supportingLines: 1 | 2 | 3 | 'adaptive';
+  footnote: Child;
+  attachments: Child;
+  compactPadding: SpaceToken;
+  onPrefetch: () => void;
+  checkable: Binding<boolean>;
+  selecting: boolean;
+  selectionLabel: string;
+  rowActions: readonly [actions: readonly ListAction[], onAction: (key: string) => void];
+  swipeActions: readonly [actions: SwipeRowActions, full: SwipeRowProps['fullSwipeAction']];
+  swipeEnabled: boolean;
+  contextMenu: Child;
+  separator: ListSeparator;
+  scrollable: boolean;
+  scrollHeight: SpaceToken;
+  stickyHeaders: boolean;
+  sectionIndex: NonNullable<ListProps['sectionIndex']>;
+  listHeader: Child;
+  listFooter: Child;
+  loadingRows: number;
+  itemKey: (item: never, index: number) => string;
+  itemType: (item: never, index: number) => string | number | undefined;
+  estimatedItemSize: number;
+  onEndReached: readonly [action: () => void, threshold: number | undefined];
+  refreshable: readonly [refreshing: boolean, onRefresh: () => void];
+  stickyIndices: readonly number[];
+  restorationKey: string;
+  tuning: VirtualListTuning;
+  onSelectAll: (checked: boolean) => void;
+  onClear: () => void;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -988,7 +1025,8 @@ export type NodeKind =
   | DatePickerKind
   | RatingKind
   | StatBarKind
-  | TableKind;
+  | TableKind
+  | ListKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -2349,6 +2387,101 @@ export class Node {
   }
   selected(value: boolean): Node {
     return this.set('selected', value);
+  }
+
+  // Rows and lists (controls/list.tsx)
+  supporting(value: string | Child): Node {
+    return this.set('supporting', value);
+  }
+  supportingLines(value: 1 | 2 | 3 | 'adaptive'): Node {
+    return this.set('supportingLines', value);
+  }
+  footnote(value: Child): Node {
+    return this.set('footnote', value);
+  }
+  attachments(value: Child): Node {
+    return this.set('attachments', value);
+  }
+  compactPadding(value: SpaceToken): Node {
+    return this.set('compactPadding', value);
+  }
+  onPrefetch(value: () => void): Node {
+    return this.set('onPrefetch', value);
+  }
+  checkable(value: Binding<boolean>): Node {
+    return this.set('checkable', value);
+  }
+  selecting(value: boolean): Node {
+    return this.set('selecting', value);
+  }
+  selectionLabel(value: string): Node {
+    return this.set('selectionLabel', value);
+  }
+  rowActions(actions: readonly ListAction[], onAction: (key: string) => void): Node {
+    return this.set('rowActions', [actions, onAction]);
+  }
+  swipeActions(actions: SwipeRowActions, full?: SwipeRowProps['fullSwipeAction']): Node {
+    return this.set('swipeActions', [actions, full]);
+  }
+  swipeEnabled(value: boolean): Node {
+    return this.set('swipeEnabled', value);
+  }
+  contextMenu(value: Child): Node {
+    return this.set('contextMenu', value);
+  }
+  separator(value: ListSeparator): Node {
+    return this.set('separator', value);
+  }
+  scrollable(value = true): Node {
+    return this.set('scrollable', value);
+  }
+  scrollHeight(value: SpaceToken): Node {
+    return this.set('scrollHeight', value);
+  }
+  stickyHeaders(value = true): Node {
+    return this.set('stickyHeaders', value);
+  }
+  sectionIndex(value: NonNullable<ListProps['sectionIndex']>): Node {
+    return this.set('sectionIndex', value);
+  }
+  listHeader(value: Child): Node {
+    return this.set('listHeader', value);
+  }
+  listFooter(value: Child): Node {
+    return this.set('listFooter', value);
+  }
+  loadingRows(value: number): Node {
+    return this.set('loadingRows', value);
+  }
+  itemKey(value: (item: never, index: number) => string): Node {
+    return this.set('itemKey', value);
+  }
+  itemType(value: (item: never, index: number) => string | number | undefined): Node {
+    return this.set('itemType', value);
+  }
+  estimatedItemSize(value: number): Node {
+    return this.set('estimatedItemSize', value);
+  }
+  onEndReached(action: () => void, threshold?: number): Node {
+    return this.set('onEndReached', [action, threshold]);
+  }
+  refreshable(refreshing: boolean, onRefresh: () => void): Node {
+    return this.set('refreshable', [refreshing, onRefresh]);
+  }
+  stickyIndices(value: readonly number[]): Node {
+    return this.set('stickyIndices', value);
+  }
+  restorationKey(value: string): Node {
+    return this.set('restorationKey', value);
+  }
+  tuning(value: VirtualListTuning): Node {
+    return this.set('tuning', value);
+  }
+  onSelectAll(value: (checked: boolean) => void): Node {
+    return this.set('onSelectAll', value);
+  }
+  onClear(value: () => void): Node {
+    return this.set('onClear', value);
   }
 }
 

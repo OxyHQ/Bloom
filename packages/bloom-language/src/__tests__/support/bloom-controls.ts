@@ -18,3 +18,7 @@ export const TableColumn = 'TableColumn';
 export const TableBody = 'TableBody';
 export const TableRow = 'TableRow';
 export const TableCell = 'TableCell';
+export const List = 'List';
+export const ListItem = 'ListItem';
+export const ListSelectionBar = 'ListSelectionBar';
+export const VirtualList = 'VirtualList';

@@ -449,3 +449,25 @@ export type {
   TableRowView,
   TableView,
 } from './controls/table';
+
+// Rows and lists (controls/list.tsx)
+export {
+  CallRow,
+  ConversationRow,
+  List,
+  ListItem,
+  ListSelectionBar,
+  MailRow,
+  PersonRow,
+  SectionedList,
+  VirtualList,
+} from './controls/list';
+export type {
+  ListItemView,
+  ListSelectionBarView,
+  ListText,
+  ListView,
+  SupportingLines,
+  VirtualListTuning,
+  VirtualListView,
+} from './controls/list';

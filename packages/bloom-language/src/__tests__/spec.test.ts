@@ -126,6 +126,11 @@ import type { MeterView, MeterRingView, StatBarView } from '../controls/stat-bar
   TableRowView,
   TableCellView,
 } from '../controls/table';
+  ListItemView,
+  ListView,
+  VirtualListView,
+  ListSelectionBarView,
+} from '../controls/list';
 import type { ColorPreset, ContentFit } from '../tokens';
 import type {
   SettingsDateFieldView,
@@ -386,7 +391,15 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<TableBodyView>, Of<'tableBody'>>,
       Same<MethodsOf<TableRowView>, Of<'tableRow'>>,
       Same<MethodsOf<TableCellView>, Of<'tableCell'>>,
+      Same<MethodsOf<ListItemView>, Of<'listItem'>>,
+      Same<MethodsOf<ListView>, Of<'list'>>,
+      Same<MethodsOf<VirtualListView>, Of<'virtualList'>>,
+      Same<MethodsOf<ListSelectionBarView>, Of<'listSelectionBar'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,
