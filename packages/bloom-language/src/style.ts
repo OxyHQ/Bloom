@@ -6,8 +6,16 @@ import { surfaceStyle } from '@oxy.so/bloom/shapes';
 import { fontFamilyStyle, type TypeScaleVariant } from '@oxy.so/bloom/typography';
 
 import { COLORS, ENVIRONMENT_DEFAULTS, FONT_SIZE, LAYER_RANK } from './generated/spec.generated';
-import { WEB_CLASS } from './generated/web-sheet.generated';
-import type { Paint, PaintVariant } from './paint';
+import { GEOMETRY_VAR, WEB_CLASS } from './generated/web-sheet.generated';
+import { resolveRotation, resolveScale } from './motion/tokens';
+import {
+  GEOMETRY_KEYS,
+  composeGeometry,
+  type Geometry,
+  type GeometryKey,
+  type Paint,
+  type PaintVariant,
+} from './paint';
 import { compareLive, warnNoClass, type LiveCondition, type Planned } from './variants';
 import { adoptVariantClasses, variantSuffix } from './web-sheet';
 import {
@@ -209,7 +217,7 @@ function serialize(resolved: Resolved, target: Target, variants: VariantStyles):
     if (keys.length === 0 && variants.length === 0) return NO_OBJECT_STYLE;
     const out =
       variants.length === 0
-        ? { style: Object.freeze(inked(resolved)), paint: undefined }
+        ? { style: Object.freeze(composeGeometry(inked(resolved))), paint: undefined }
         : paintOut(
             inked(resolved),
             variants.map(([condition, styled]) => [condition, inked(styled)] as const),
@@ -232,23 +240,36 @@ function inked(resolved: Resolved): Resolved {
   return out;
 }
 
-/** The native form (and a web component's with variants): values, the roles a `Painted` leaf paints, the variants a `Conditioned` one picks. */
+/**
+ * The native form (and a web component's with variants): values, the roles a
+ * `Painted` leaf paints, the variants a `Conditioned` one picks. Geometry is
+ * composed into one transform here, or, with variants, by the leaf once it
+ * has the components that hold.
+ */
 function paintOut(resolved: Resolved, variants: VariantStyles): StyleOut {
-  const { style, styleRoles } = split(resolved);
+  const { style: values, styleRoles } = split(resolved);
   if (variants.length > 0) {
     const varied: PaintVariant[] = variants.map(([condition, styled]) => ({
       condition,
       ...split(styled),
     }));
-    const base = Object.keys(resolved).length > 0 ? style : undefined;
+    const base = Object.keys(resolved).length > 0 ? values : undefined;
     return {
       style: undefined,
       paint: { style: base, styleRoles, propRoles: [], variants: varied },
     };
   }
+  const style = composeGeometry(values);
   if (styleRoles.length === 0) return { style, paint: undefined };
   return { style: undefined, paint: { style, styleRoles, propRoles: [] } };
 }
+
+const GEOMETRY_UNIT: Readonly<Record<GeometryKey, string>> = {
+  translateX: 'px',
+  translateY: 'px',
+  rotate: 'deg',
+  scale: '',
+};
 
 /**
  * The web form: react-native-web `$$css` class objects for every value the
@@ -268,10 +289,22 @@ function webStyle(resolved: Resolved, keys: string[], variants: VariantStyles): 
     if (name !== undefined) {
       classes ??= { $$css: true };
       classes[key] = name;
+    } else if (key in GEOMETRY_VAR) {
+      // A component with no class (an app token's offset) is its custom property, inline.
+      inline ??= {};
+      inline[GEOMETRY_VAR[key as GeometryKey]] =
+        `${String(value)}${GEOMETRY_UNIT[key as GeometryKey]}`;
     } else {
       inline ??= {};
       inline[key] = isRole(value) ? webInk(value) : value;
     }
+  }
+  // Geometry: one custom property per component (above, and in each variant),
+  // composed by the one transform of the components the view has.
+  const components = GEOMETRY_KEYS.filter((key) => resolved[key] !== undefined);
+  if (components.length > 0) {
+    classes ??= { $$css: true };
+    classes.transform = WEB_CLASS[`transform:${components.join('+')}`] as string;
   }
   // A variant is the same class under its condition's CSS, keyed apart from the
   // base so styleq keeps both; its rule reaches the page with it (web-sheet.ts).
@@ -642,8 +675,13 @@ export interface Placement {
   basis: LengthToken | undefined;
   allowsHitTesting: boolean | undefined;
   accessibilityOnly: boolean;
-  /** Its resting geometry (`motionPlan`'s transform), when nothing moves it: see render.tsx `renderNode`. */
-  transform: readonly object[] | undefined;
+  /**
+   * Its geometry (`motionPlan`'s, by component) and the point it turns about,
+   * when its box draws them: at rest with nothing to move it, or when a
+   * variant changes it (see render.tsx `renderNode`).
+   */
+  geometry: Geometry | undefined;
+  anchor: string | undefined;
   /** What variants change in the view's place. */
   variants: [Planned, PlaceModifier][];
   /** The cache key of everything above, '' when nothing places the view. */
@@ -663,7 +701,8 @@ export type PlaceModifier = Extract<
       | 'hidden'
       | 'basis'
       | 'allowsHitTesting'
-      | 'accessibilityOnly';
+      | 'accessibilityOnly'
+      | GeometryModifier['kind'];
   }
 >;
 export const PLACE_KINDS: ReadonlySet<string> = new Set([
@@ -676,12 +715,45 @@ export const PLACE_KINDS: ReadonlySet<string> = new Set([
   'basis',
   'allowsHitTesting',
   'accessibilityOnly',
+  // Only from a variant: a view's own geometry is the motion layer's (render.tsx, `motionPlan`).
+  'scale',
+  'offset',
+  'rotation',
 ]);
+
+/** The modifiers that move a view where it is laid out: its transform. */
+export type GeometryModifier = Extract<Modifier, { kind: 'scale' | 'offset' | 'rotation' }>;
+export const GEOMETRY_KINDS: ReadonlySet<string> = new Set(['scale', 'offset', 'rotation']);
+
+const isToken = (value: unknown): value is SpaceToken | AppToken<'space'> =>
+  typeof value === 'string' || (typeof value === 'object' && value !== null && 'scale' in value);
+
+/**
+ * The transform components a geometry modifier sets, resolved; a
+ * `MotionValue` (which a variant never takes: render.tsx, `planVariant`) sets none.
+ */
+export function geometryOf(modifier: GeometryModifier): Geometry {
+  switch (modifier.kind) {
+    case 'scale':
+      return typeof modifier.value === 'string' ? { scale: resolveScale(modifier.value) } : {};
+    case 'rotation':
+      return typeof modifier.value === 'string' ? { rotate: resolveRotation(modifier.value) } : {};
+    case 'offset': {
+      const { x, y } = modifier.value;
+      const out: { translateX?: number; translateY?: number } = {};
+      if (isToken(x)) out.translateX = resolveSpace(x);
+      if (isToken(y)) out.translateY = resolveSpace(y);
+      return out;
+    }
+  }
+}
 
 /** Sets what `modifier` says about the view's place. */
 export function applyPlacement(place: Placement, modifier: PlaceModifier): void {
   if (modifier.kind === 'grow') place.grow = true;
   else if (modifier.kind === 'accessibilityOnly') place.accessibilityOnly = true;
+  else if (GEOMETRY_KINDS.has(modifier.kind))
+    place.geometry = { ...place.geometry, ...geometryOf(modifier as GeometryModifier) };
   else (place as unknown as Record<string, unknown>)[modifier.kind] = modifier.value;
   place.key += `;${modifier.key}`;
 }
@@ -717,7 +789,8 @@ export function emptyPlacement(): Placement {
     basis: undefined,
     allowsHitTesting: undefined,
     accessibilityOnly: false,
-    transform: undefined,
+    geometry: undefined,
+    anchor: undefined,
     variants: [],
     key: '',
   };
@@ -763,8 +836,9 @@ export function flexOnly(place: Placement): Resolved {
 /**
  * `grow`, `shrink`, `basis`, `alignSelf`, `position`, `zIndex`, `hidden`,
  * hit testing and `accessibilityOnly` place the view in its parent, so they
- * belong to its outermost box. (`offset` and `scale` move it where it is laid
- * out: the motion layer draws them, render.tsx `motionPlan`.) Neither
+ * belong to its outermost box. (`offset`, `scale` and `rotation` move it where
+ * it is laid out: the motion layer collects them, render.tsx `motionPlan`, and
+ * the box draws them here, by component, when nothing else does.) Neither
  * `grow` nor `shrink` lowers the minimum width; a view that must shrink below
  * its content says so with `.frame({ minWidth: 'none' })`.
  */
@@ -782,7 +856,8 @@ export function placeStyle(place: Placement): Resolved {
     }
   }
   if (place.accessibilityOnly) Object.assign(style, ACCESSIBILITY_ONLY);
-  if (place.transform !== undefined) style.transform = place.transform as StyleValue;
+  if (place.geometry !== undefined) Object.assign(style, place.geometry);
+  if (place.anchor !== undefined) style.transformOrigin = place.anchor;
   if (place.zIndex !== undefined) style.zIndex = Z_INDEX[place.zIndex];
   if (place.hidden !== undefined) style.display = place.hidden ? 'none' : 'flex';
   if (place.allowsHitTesting !== undefined)

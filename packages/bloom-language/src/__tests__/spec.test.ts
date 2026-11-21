@@ -106,7 +106,7 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
     expect(HIT_SLOP).toEqual(tokens.hitSlop);
     // The language names Bloom's one disabled fade neutrally: it is any half opacity, not only a disabled control's.
     expect(OPACITY.half).toBe(tokens.DISABLED_OPACITY);
-    expect(DURATION).toEqual(tokens.animation.duration);
+    expect(named(DURATION)).toEqual(tokens.animation.duration);
   });
 
   it('a numeric token is its own value, in its scale’s unit: an exact value carried over from apps', () => {
@@ -122,6 +122,7 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
       [SCALE, '', 100],
       [BORDER_WIDTH as unknown as Record<string, number>, '', 1],
       [ROTATION, '', 1],
+      [DURATION, '', 1],
     ];
     let checked = 0;
     for (const [scale, unit, factor] of scales) {

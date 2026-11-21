@@ -299,6 +299,58 @@ export const VARIANT_CASES: ParityCase[] = [
       ),
   },
   {
+    name: 'a pressed scale and a hovered offset, at rest (each its own component)',
+    language: () =>
+      toElement(
+        L.HStack(L.Text('a'))
+          .onPress(onPress)
+          .when('pressed', (v) => v.scale('95'))
+          .when('hovered', (v) => v.offset({ y: '-xs' })),
+      ),
+    // The web's held states are compared in Chrome (verify-parity-web.mjs).
+    bloom: () => (
+      <RN.Pressable
+        onPress={onPress}
+        {...TRACKED}
+        style={
+          RN.Platform.OS === 'web'
+            ? ({ pressed, hovered }: { pressed: boolean; hovered?: boolean }) => ({
+                flexDirection: 'row' as const,
+                transform: [{ translateY: hovered ? -space.xs : 0 }, { scale: pressed ? 0.95 : 1 }],
+              })
+            : { flexDirection: 'row', transform: [{ translateY: 0 }, { scale: 1 }] }
+        }
+      >
+        <Text>a</Text>
+      </RN.Pressable>
+    ),
+  },
+  {
+    name: 'a breakpoint’s scale and turn (md)',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a'))
+          .scale('pressed')
+          .when('md', (v) => v.scale('105').rotation('45')),
+      ),
+    bloom: () => (
+      <Tiered>
+        {(atLeast) => (
+          <RN.View
+            style={{
+              transform: [
+                { rotate: atLeast('md') ? '45deg' : '0deg' },
+                { scale: atLeast('md') ? 1.05 : 0.98 },
+              ],
+            }}
+          >
+            <Text>a</Text>
+          </RN.View>
+        )}
+      </Tiered>
+    ),
+  },
+  {
     name: 'a platform variant',
     language: () => toElement(L.VStack(L.Text('a')).when('web', (v) => v.padding('lg'))),
     bloom: () => (

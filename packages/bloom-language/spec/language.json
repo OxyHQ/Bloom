@@ -256,10 +256,27 @@
       "2xl": 1536
     },
     "duration": {
+      "$comment": "Milliseconds: Bloom's own durations (tokens.animation.duration), then Tailwind's other delays (delay-75, delay-500, delay-700, delay-1000), each named by its milliseconds. An image's cross-fade and a motion's delay take them.",
       "instant": 100,
       "fast": 150,
       "normal": 200,
-      "slow": 300
+      "slow": 300,
+      "75": 75,
+      "500": 500,
+      "700": 700,
+      "1000": 1000
+    },
+    "anchor": {
+      "$comment": "The point a view scales and rotates about (SwiftUI's UnitPoint as an anchor, Tailwind's origin-*): its transform-origin, the point Tailwind's origin-* of the same name computes. Leading and trailing are left and right, as an offset's x is: a transform never mirrors.",
+      "center": "center",
+      "top": "top",
+      "bottom": "bottom",
+      "leading": "left",
+      "trailing": "right",
+      "top-leading": "top left",
+      "top-trailing": "top right",
+      "bottom-leading": "bottom left",
+      "bottom-trailing": "bottom right"
     },
     "rotation": {
       "$comment": "Degrees: Bloom's own turns, then the exact angle apps write in two or more places, named by its degrees (Tailwind's rotate-45 is '45').",
@@ -583,6 +600,9 @@
       "hidden",
       "basis",
       "allowsHitTesting",
+      "scale",
+      "offset",
+      "rotation",
       "when"
     ],
     "selectors": {
@@ -601,7 +621,8 @@
     "inOutQuad": [0.455, 0.03, 0.515, 0.955],
     "outQuart": [0.165, 0.84, 0.44, 1],
     "outExpo": [0.16, 1, 0.3, 1],
-    "backOut": [0.34, 1.2, 0.64, 1]
+    "backOut": [0.34, 1.2, 0.64, 1],
+    "pulse": [0.4, 0, 0.6, 1]
   },
   "motion": {
     "$comment": "Bloom's motion table (MOTION in @oxy.so/bloom/motion) by name, the timings Bloom's own animations play: { duration, easing } (an easing above) or a spring { response, dampingRatio }. spec.test.ts holds this table equal to Bloom's.",
@@ -617,7 +638,24 @@
     "roll": { "duration": 400, "easing": "outExpo" },
     "enter": { "duration": 300, "easing": "outQuart" },
     "exit": { "duration": 180, "easing": "linear" },
-    "restack": { "duration": 600, "easing": "outQuart" }
+    "restack": { "duration": 600, "easing": "outQuart" },
+    "spin": { "duration": 1000, "easing": "linear" },
+    "pulse": { "duration": 2000, "easing": "pulse" }
+  },
+  "loops": {
+    "$comment": "Keyframes that repeat forever (.repeatForever(loop)): Tailwind's animate-spin (a turn, 1s linear) and animate-pulse (half opacity at the midpoint, 2s on its own curve), frame for frame, each played by the motion of the same name. Frames are what defineKeyframes takes.",
+    "spin": {
+      "frames": [{ "at": 0, "rotate": 0 }, { "at": 1, "rotate": 360 }],
+      "motion": "spin"
+    },
+    "pulse": {
+      "frames": [
+        { "at": 0, "opacity": 1 },
+        { "at": 0.5, "opacity": 0.5 },
+        { "at": 1, "opacity": 1 }
+      ],
+      "motion": "pulse"
+    }
   },
   "environment": {
     "$comment": "The text and icon traits a view hands everything inside it, and what each is when nothing sets it. fontSize is the size of a Bloom Text with no variant, which a leading or a tracking measures from when no font is set.",
@@ -769,6 +807,9 @@
     "animation": ["motion", "value?"],
     "transition": ["transition"],
     "keyframes": ["keyframes", "value"],
+    "repeatForever": ["loop"],
+    "delay": ["duration"],
+    "anchor": ["anchor"],
     "matchedGeometry": ["value", "namespace"],
     "drag": ["motionValue", "value?"],
     "swipe": ["swipeDirection", "value"],
@@ -835,6 +876,9 @@
     "animation",
     "transition",
     "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
     "matchedGeometry",
     "drag",
     "swipe"

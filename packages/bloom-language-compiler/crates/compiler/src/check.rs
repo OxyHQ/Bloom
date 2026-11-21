@@ -13,7 +13,7 @@ use oxc_span::{GetSpan, Span};
 
 use crate::diagnostics::suggest;
 use crate::module::{Binding, Module};
-use crate::spec::{MODIFIERS, NODES, NodeSpec, OBJECTS, TOKEN_SETS, VARIANT_MODIFIERS};
+use crate::spec::{FADING_LOOPS, MODIFIERS, NODES, NodeSpec, OBJECTS, TOKEN_SETS, VARIANT_MODIFIERS};
 
 pub struct Problem {
     pub span: Span,
@@ -125,6 +125,11 @@ fn fades_view(modifier: &str, arguments: &[Argument], module: &Module, scoping: 
             !matches!(value.without_parentheses(), Expression::StringLiteral(s) if s.value == "opaque")
         }
         "transition" | "keyframes" => fades(value, module, scoping),
+        // A loop token fades when its frames do (the spec's loops); keyframes of the app's own as above.
+        "repeatForever" => match value.without_parentheses() {
+            Expression::StringLiteral(s) => FADING_LOOPS.contains(&s.value.as_str().unwrap_or_default()),
+            _ => fades(value, module, scoping),
+        },
         _ => false,
     }
 }
@@ -389,9 +394,35 @@ fn check_variant(
                 )),
             });
         }
+        // A variant varies geometry by token: a view that follows a MotionValue moves by the value.
+        if let Some(value) = arguments
+            .iter()
+            .filter_map(Argument::as_expression)
+            .find(|value| follows_motion_value(value, module, scoping))
+        {
+            return Err(Problem {
+                span: value.span(),
+                message: format!(".{modifier}() inside when() takes tokens, not a MotionValue"),
+                help: Some(
+                    "a variant changes geometry by token; bind the MotionValue outside when() and move it with animate()"
+                        .into(),
+                ),
+            });
+        }
         check_arguments(modifier, arguments, spec, call_span, module, scoping)?;
     }
     Ok(())
+}
+
+/// Whether a value is a `MotionValue`, or an object (an offset) with one on an axis.
+fn follows_motion_value(value: &Expression, module: &Module, scoping: &Scoping) -> bool {
+    match value.without_parentheses() {
+        Expression::ObjectExpression(object) => object.properties.iter().any(|property| {
+            matches!(property, ObjectPropertyKind::ObjectProperty(property)
+                if module.is_motion_value_ref(&property.value, scoping))
+        }),
+        value => module.is_motion_value_ref(value, scoping),
+    }
 }
 
 fn is_literal(value: &Expression) -> bool {

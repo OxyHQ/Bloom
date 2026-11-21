@@ -48,7 +48,15 @@ export { useNamespace } from './motion/namespace';
 export { animate, useMotionValue } from './motion/values';
 export type { MotionValue } from './motion/values';
 export type { Namespace } from './motion/namespace';
-export type { EasingName, MotionName, MotionToken, RotationName, ScaleName } from './motion/tokens';
+export type {
+  AnchorName,
+  EasingName,
+  LoopName,
+  MotionName,
+  MotionToken,
+  RotationName,
+  ScaleName,
+} from './motion/tokens';
 export { defineTokens } from './tokens';
 export { Node, isNode } from './node';
 export type {
