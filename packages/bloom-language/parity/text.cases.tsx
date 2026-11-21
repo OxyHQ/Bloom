@@ -324,6 +324,22 @@ const named: ParityCase[] = [
     language: () => L.Text('Lines').font('md').leading(leading),
     bloom: () => <Text style={{ fontSize: 15, lineHeight: 15 * LEADING[leading] }}>Lines</Text>,
   })),
+  // Tailwind's `text-base` (16/24), `text-lg` (18/28) and `text-[11px]`, as apps set them.
+  {
+    name: 'text-base: size md-lg, leading normal',
+    language: () => L.Text('Base').font('md-lg').leading('normal'),
+    bloom: () => <Text style={{ fontSize: 16, lineHeight: 24 }}>Base</Text>,
+  },
+  {
+    name: 'text-lg: size lg-xl, leading open',
+    language: () => L.Text('Large').font('lg-xl').leading('open'),
+    bloom: () => <Text style={{ fontSize: 18, lineHeight: 28 }}>Large</Text>,
+  },
+  {
+    name: 'text-[11px]: size 2xs-xs',
+    language: () => L.Text('Small').font('2xs-xs'),
+    bloom: () => <Text style={{ fontSize: 11 }}>Small</Text>,
+  },
 ].map((c) => ({ ...c, language: () => toElement(c.language()) }));
 
 export const TEXT_CASES: ParityCase[] = [

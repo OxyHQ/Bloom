@@ -325,6 +325,39 @@ const named: ParityCase[] = [
     language: () => toElement(L.VStack().opacity('soft')),
     bloom: () => <RN.View style={{ opacity: 0.8 }} />,
   },
+  // The steps between Bloom's rungs, at the values apps render today (Tailwind's scale).
+  ...(
+    [
+      ['xs-sm', 6],
+      ['sm-md', 10],
+      ['md-lg', 14],
+      ['3xl-4xl', 36],
+      ['4xl-5xl', 48],
+      ['6xl', 64],
+    ] as const
+  ).flatMap(([rung, value]) => [
+    {
+      name: `padding and spacing ${rung}`,
+      language: () => toElement(L.HStack(L.Spacer(), L.Spacer()).spacing(rung).padding(rung)),
+      bloom: () => (
+        <RN.View style={{ flexDirection: 'row', gap: value, ...padding(value) }}>
+          <RN.View style={{ flex: 1 }} />
+          <RN.View style={{ flex: 1 }} />
+        </RN.View>
+      ),
+    },
+    {
+      name: `pulled out by ${rung}, a frame of ${rung}`,
+      language: () =>
+        toElement(L.VStack().padding('top', `-${rung}`).frame({ width: rung, height: rung })),
+      bloom: () => <RN.View style={{ width: value, height: value, marginTop: -value }} />,
+    },
+  ]),
+  {
+    name: 'corner xs-sm (rounded-md)',
+    language: () => toElement(L.VStack().corner('xs-sm')),
+    bloom: () => <RN.View style={{ borderRadius: 6, overflow: 'hidden' }} />,
+  },
 ];
 
 /** `.blur()`: Bloom's floating island, a capsule unless a corner names its radius. */

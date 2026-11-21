@@ -24,10 +24,10 @@ Alia `841e8843a`, Allo `ba28b38`, Astro `8ae8386`, Atlas `037990e`, Authenticato
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 442 | 36543 | 68.0% |
+| Maps to a modifier and a token | 542 | 38889 | 72.4% |
 | Expressed by the view’s structure | 35 | 3445 | 6.4% |
 | Redundant in the language | 16 | 436 | 0.8% |
-| Needs a named token (raw value) | 680 | 6888 | 12.8% |
+| Needs a named token (raw value) | 580 | 4542 | 8.5% |
 | Needs a modifier the language lacks | 266 | 4574 | 8.5% |
 | An app’s own class | 481 | 1834 | 3.4% |
 
@@ -38,13 +38,13 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 
 | Scale | Uses | Raw values with no rung (uses) |
 | --- | ---: | --- |
-| space | 2525 | 6px (467), 10px (277), 64px (171), 48px (151), 14px (141), 36px (129), 1px (91), 28px (86), 44px (85), 56px (68), 96px (63), 224px (59) |
 | color | 1644 | --muted (338), --card (276), --destructive (254), white (201), --primary-text (106), black (77), transparent (63), --surface-foreground (36), --accent (33), --error-text (25), --primary-subtle (20), --warning-text (19) |
-| font | 1285 | 16px / 24px (501), 18px / 28px (151), 11px (114), 11px / 14px (104), 20px / 28px (92), 24px / 32px (90), 14px (64), 16px (29), 15px / 22px (27), 30px / 36px (22), 36px / 40px (12), 24px (12) |
+| space | 1189 | 1px (91), 28px (86), 44px (85), 56px (68), 96px (63), 224px (59), 160px (55), 192px (43), 384px (34), 288px (31), 1200px (29), 80px (28) |
 | opacity | 669 | --muted-foreground at 70% (178), --primary at 10% (95), --destructive at 10% (32), --border at 60% (30), 0.6 (30), --muted at 40% (28), --muted at 50% (19), --primary at 20% (19), --primary at 30% (17), 0.9 (16), --muted at 30% (15), --border at 50% (11) |
+| font | 482 | 11px / 14px (104), 20px / 28px (92), 24px / 32px (90), 14px (64), 15px / 22px (27), 30px / 36px (22), 36px / 40px (12), 24px (12), 10.5px (8), 28px (7), 12.5px (5), 23px (5) |
 | leading | 321 | 20px (93), 24px (70), 16px (44), 18px (28), 28px (18), 1 (15), 22px (14), 14px (6), 29px (6), 17px (5), 40px (3), 32px (3) |
-| corner | 287 | 6px (207), 22px (14), 14px (12), 10px (9), 18px (9), 15px (8), 23px (6), 5px (4), 13px (3), 27px (3), 25px (2), 26px (2) |
 | tracking | 150 | 0.05em (61), 0.025em (50), -0.025em (17), -0.02em (5), 0.1em (4), -0.01em (3), -0.5px (2), 0.04em (2), 0.5px (2), -0.2px (1), -0.4px (1), 1.5px (1) |
+| corner | 80 | 22px (14), 14px (12), 10px (9), 18px (9), 15px (8), 23px (6), 5px (4), 13px (3), 27px (3), 25px (2), 26px (2), 3px (2) |
 | borderWidth | 6 | 4px (6) |
 | weight | 1 | 900 (1) |
 
@@ -67,6 +67,7 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `gap-4` | .spacing('lg') | 567 | 25 |
 | `font-medium` | .weight('medium') | 546 | 20 |
 | `rounded-full` | .corner('full') | 542 | 21 |
+| `text-base` | .font('md-lg').leading('normal') | 501 | 20 |
 | `text-center` | .textAlign('center') | 499 | 24 |
 | `justify-between` | .spacing('between') | 490 | 25 |
 | `gap-1` | .spacing('xs') | 476 | 22 |
@@ -88,8 +89,10 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `rounded-lg` | .corner('sm') | 217 | 17 |
 | `mt-1` | .padding('top', 'xs') (outside the fill) | 215 | 19 |
 | `text-primary` | .foreground('primary') | 214 | 16 |
+| `gap-1.5` | .spacing('xs-sm') | 209 | 17 |
 | `mt-2` | .padding('top', 'sm') (outside the fill) | 207 | 19 |
 | `border-b` | .border(role, 'thin', 'bottom') | 201 | 18 |
+| `rounded-md` | .corner('xs-sm') | 194 | 13 |
 | `text-[15px]` | .font('md') | 194 | 12 |
 | `gap-6` | .spacing('2xl') | 185 | 20 |
 | `items-start` | .align('start') | 177 | 22 |
@@ -98,6 +101,7 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `mb-3` | .padding('bottom', 'md') (outside the fill) | 162 | 15 |
 | `text-text-tertiary` | .foreground('muted') | 161 | 4 |
 | `px-5` | .padding('horizontal', 'xl') | 156 | 14 |
+| `text-lg` | .font('lg-xl').leading('open') | 151 | 18 |
 | `uppercase` | .textCase('uppercase') | 151 | 15 |
 | `px-6` | .padding('horizontal', '2xl') | 144 | 18 |
 | `py-1` | .padding('vertical', 'xs') | 143 | 19 |
@@ -110,6 +114,7 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `gap-0.5` | .spacing('2xs') | 124 | 16 |
 | `bg-primary` | .background('primary') | 121 | 14 |
 | `gap-space-4` | .spacing('xs') | 121 | 3 |
+| `text-[11px]` | .font('2xs-xs') | 114 | 15 |
 | `mb-4` | .padding('bottom', 'lg') (outside the fill) | 110 | 14 |
 | `mb-1` | .padding('bottom', 'xs') (outside the fill) | 103 | 13 |
 | `px-8` | .padding('horizontal', '3xl') | 103 | 11 |
@@ -117,19 +122,24 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `rounded-radius-max` | .corner('full') | 97 | 3 |
 | `items-end` | .align('end') | 96 | 19 |
 | `mb-6` | .padding('bottom', '2xl') (outside the fill) | 96 | 12 |
+| `py-16` | .padding('vertical', '6xl') | 88 | 11 |
 | `h-10` | .frame({ height: '4xl' }) | 82 | 18 |
+| `py-2.5` | .padding('vertical', 'sm-md') | 82 | 16 |
 | `border-t` | .border(role, 'thin', 'top') | 80 | 17 |
 | `pt-2` | .padding('top', 'sm') | 79 | 19 |
 | `gap-5` | .spacing('xl') | 78 | 16 |
 | `px-space-16` | .padding('horizontal', 'lg') | 77 | 3 |
 | `p-2` | .padding('all', 'sm') | 76 | 15 |
+| `h-9` | .frame({ height: '3xl-4xl' }) | 75 | 12 |
 | `p-6` | .padding('all', '2xl') | 73 | 18 |
+| `py-1.5` | .padding('vertical', 'xs-sm') | 73 | 15 |
 | `pb-4` | .padding('bottom', 'lg') | 72 | 12 |
 | `pb-2` | .padding('bottom', 'sm') | 71 | 17 |
 | `p-5` | .padding('all', 'xl') | 69 | 15 |
 | `shrink-0` | .shrink('never') | 68 | 15 |
 | `opacity-80` | .opacity('soft') | 66 | 11 |
 | `py-0.5` | .padding('vertical', '2xs') | 66 | 14 |
+| `py-3.5` | .padding('vertical', 'md-lg') | 66 | 6 |
 | `w-10` | .frame({ width: '4xl' }) | 65 | 13 |
 | `pt-3` | .padding('top', 'md') | 63 | 15 |
 | `bg-border` | .background('border') | 61 | 14 |
@@ -143,11 +153,15 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `text-[10px]` | .font('2xs') | 55 | 10 |
 | `opacity-50` | .opacity('disabled') | 54 | 8 |
 | `py-6` | .padding('vertical', '2xl') | 54 | 11 |
+| `gap-2.5` | .spacing('sm-md') | 53 | 13 |
 | `p-space-16` | .padding('all', 'lg') | 53 | 3 |
 | `mt-6` | .padding('top', '2xl') (outside the fill) | 52 | 8 |
 | `text-bodySmall` | .font('body-2') | 51 | 2 |
 | `text-primary-foreground` | .foreground('onPrimary') | 51 | 13 |
+| `w-9` | .frame({ width: '3xl-4xl' }) | 50 | 10 |
+| `h-12` | .frame({ height: '4xl-5xl' }) | 47 | 10 |
 | `shrink` | .shrink('normal') | 47 | 9 |
+| `w-12` | .frame({ width: '4xl-5xl' }) | 47 | 12 |
 | `rounded` | .corner('xs') | 46 | 11 |
 | `mb-8` | .padding('bottom', '3xl') (outside the fill) | 44 | 6 |
 | `mr-3` | .padding('trailing', 'md') (outside the fill) | 43 | 6 |
@@ -160,6 +174,8 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `p-1` | .padding('all', 'xs') | 39 | 10 |
 | `min-h-0` | .frame({ minHeight: 'none' }) | 38 | 10 |
 | `pt-1` | .padding('top', 'xs') | 38 | 14 |
+| `px-1.5` | .padding('horizontal', 'xs-sm') | 37 | 10 |
+| `px-2.5` | .padding('horizontal', 'sm-md') | 37 | 12 |
 | `px-space-12` | .padding('horizontal', 'md') | 37 | 3 |
 | `py-8` | .padding('vertical', '3xl') | 37 | 9 |
 | `mx-4` | .padding('horizontal', 'lg') (outside the fill) | 35 | 7 |
@@ -168,15 +184,20 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `pb-6` | .padding('bottom', '2xl') | 34 | 13 |
 | `mb-0.5` | .padding('bottom', '2xs') (outside the fill) | 33 | 5 |
 | `rounded-radius-16` | .corner('lg') | 33 | 2 |
+| `mb-1.5` | .padding('bottom', 'xs-sm') (outside the fill) | 32 | 8 |
 | `ml-2` | .padding('leading', 'sm') (outside the fill) | 32 | 9 |
+| `mt-1.5` | .padding('top', 'xs-sm') (outside the fill) | 32 | 10 |
 | `mt-5` | .padding('top', 'xl') (outside the fill) | 32 | 9 |
 | `p-0` | .padding('all', 'none') | 31 | 6 |
 | `py-space-8` | .padding('vertical', 'sm') | 31 | 2 |
 | `ml-3` | .padding('leading', 'md') (outside the fill) | 30 | 8 |
 | `w-8` | .frame({ width: '3xl' }) | 30 | 13 |
+| `text-[16px]` | .font('md-lg') | 29 | 3 |
 | `whitespace-nowrap` | .noWrap() | 29 | 4 |
+| `py-12` | .padding('vertical', '4xl-5xl') | 28 | 13 |
 | `mb-5` | .padding('bottom', 'xl') (outside the fill) | 27 | 9 |
 | `space-y-3` | .spacing('md') | 27 | 2 |
+| `w-16` | .frame({ width: '6xl' }) | 27 | 10 |
 | `mr-2` | .padding('trailing', 'sm') (outside the fill) | 25 | 5 |
 | `pt-6` | .padding('top', '2xl') | 25 | 7 |
 | `rounded-[24px]` | .corner('2xl') | 25 | 6 |
@@ -188,6 +209,7 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `text-right` | .textAlign('end') | 24 | 8 |
 | `p-space-12` | .padding('all', 'md') | 23 | 3 |
 | `py-space-12` | .padding('vertical', 'md') | 23 | 3 |
+| `h-16` | .frame({ height: '6xl' }) | 22 | 10 |
 | `mt-space-4` | .padding('top', 'xs') (outside the fill) | 22 | 2 |
 | `pb-8` | .padding('bottom', '3xl') | 22 | 6 |
 | `rounded-[4px]` | .corner('xs') | 22 | 3 |
@@ -200,32 +222,41 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `border-input` | .border('input') | 20 | 7 |
 | `my-1` | .padding('vertical', 'xs') (outside the fill) | 20 | 5 |
 | `my-2` | .padding('vertical', 'sm') (outside the fill) | 20 | 4 |
+| `p-3.5` | .padding('all', 'md-lg') | 20 | 3 |
 | `pr-3` | .padding('trailing', 'md') | 20 | 6 |
+| `p-1.5` | .padding('all', 'xs-sm') | 19 | 8 |
 | `pt-8` | .padding('top', '3xl') | 19 | 8 |
+| `px-3.5` | .padding('horizontal', 'md-lg') | 19 | 8 |
 | `flex-shrink` | .shrink('normal') | 18 | 4 |
 | `group` | .hoverGroup() | 18 | 6 |
 | `h-3` | .frame({ height: 'md' }) | 18 | 7 |
+| `h-1.5` | .frame({ height: 'xs-sm' }) | 17 | 7 |
 | `h-2` | .frame({ height: 'sm' }) | 17 | 9 |
 | `italic` | .italic() | 17 | 6 |
+| `mt-2.5` | .padding('top', 'sm-md') (outside the fill) | 17 | 5 |
 | `pt-0.5` | .padding('top', '2xs') | 17 | 8 |
 | `pt-5` | .padding('top', 'xl') | 17 | 8 |
 | `rounded-[20px]` | .corner('xl') | 17 | 6 |
 | `text-error` | .foreground('error') | 17 | 2 |
 | `text-left` | .textAlign('start') | 17 | 8 |
+| `h-2.5` | .frame({ height: 'sm-md' }) | 16 | 10 |
 | `items-baseline` | .align('baseline') | 16 | 12 |
 | `rounded-[28px]` | .corner('3xl') | 16 | 5 |
 | `font-normal` | .weight('regular') | 15 | 9 |
 | `gap-8` | .spacing('3xl') | 15 | 9 |
 | `h-5` | .frame({ height: 'xl' }) | 15 | 9 |
 | `w-2` | .frame({ width: 'sm' }) | 15 | 7 |
+| `w-2.5` | .frame({ width: 'sm-md' }) | 15 | 11 |
 | `bg-foreground` | .background('foreground') | 14 | 8 |
 | `leading-snug` | .leading('easy') | 14 | 5 |
 | `py-space-24` | .padding('vertical', '2xl') | 14 | 2 |
+| `size-3.5` | .frame({ width: 'md-lg', height: 'md-lg' }) | 14 | 2 |
 | `capitalize` | .textCase('capitalize') | 13 | 4 |
 | `gap-0` | .spacing('none') | 13 | 4 |
 | `h-4` | .frame({ height: 'lg' }) | 13 | 4 |
 | `p-8` | .padding('all', '3xl') | 13 | 7 |
 | `py-space-16` | .padding('vertical', 'lg') | 13 | 3 |
+| `rounded-[6px]` | .corner('xs-sm') | 13 | 4 |
 | `rounded-sm` | .corner('2xs') | 13 | 6 |
 | `truncate` | .lines(1) | 13 | 2 |
 | `w-5` | .frame({ width: 'xl' }) | 13 | 9 |
@@ -241,6 +272,7 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `leading-relaxed` | .leading('relaxed') | 11 | 5 |
 | `mb-10` | .padding('bottom', '4xl') (outside the fill) | 11 | 4 |
 | `mb-space-32` | .padding('bottom', '3xl') (outside the fill) | 11 | 2 |
+| `ml-1.5` | .padding('leading', 'xs-sm') (outside the fill) | 11 | 3 |
 | `ml-4` | .padding('leading', 'lg') (outside the fill) | 11 | 7 |
 | `pb-5` | .padding('bottom', 'xl') | 11 | 5 |
 | `pl-4` | .padding('leading', 'lg') | 11 | 5 |
@@ -254,6 +286,7 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `grow` | .grow() | 9 | 5 |
 | `h-0.5` | .frame({ height: '2xs' }) | 9 | 6 |
 | `h-1` | .frame({ height: 'xs' }) | 9 | 4 |
+| `mb-2.5` | .padding('bottom', 'sm-md') (outside the fill) | 9 | 2 |
 | `mb-space-24` | .padding('bottom', '2xl') (outside the fill) | 9 | 2 |
 | `mt-10` | .padding('top', '4xl') (outside the fill) | 9 | 5 |
 | `mt-space-12` | .padding('top', 'md') (outside the fill) | 9 | 2 |
@@ -265,11 +298,14 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `text-[17px]` | .font('lg') | 9 | 5 |
 | `w-3` | .frame({ width: 'md' }) | 9 | 6 |
 | `items-stretch` | .align('stretch') | 8 | 4 |
+| `mr-1.5` | .padding('trailing', 'xs-sm') (outside the fill) | 8 | 2 |
+| `mt-16` | .padding('top', '6xl') (outside the fill) | 8 | 2 |
 | `opacity-100` | .opacity('opaque') | 8 | 4 |
 | `p-space-20` | .padding('all', 'xl') | 8 | 2 |
 | `pb-space-8` | .padding('bottom', 'sm') | 8 | 3 |
 | `pt-space-16` | .padding('top', 'lg') | 8 | 2 |
 | `px-space-4` | .padding('horizontal', 'xs') | 8 | 2 |
+| `text-[18px]` | .font('lg-xl') | 8 | 4 |
 | `border-l-2` | .border(role, 'thick', 'leading') | 7 | 5 |
 | `gap-space-20` | .spacing('xl') | 7 | 3 |
 | `line-through` | .strikethrough() | 7 | 3 |
@@ -282,17 +318,25 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `font-extrabold` | .weight('extrabold') | 6 | 3 |
 | `gap-[2px]` | .spacing('2xs') | 6 | 2 |
 | `mb-space-8` | .padding('bottom', 'sm') (outside the fill) | 6 | 2 |
+| `min-h-12` | .frame({ minHeight: '4xl-5xl' }) | 6 | 2 |
 | `min-h-8` | .frame({ minHeight: '3xl' }) | 6 | 3 |
 | `p-0.5` | .padding('all', '2xs') | 6 | 4 |
+| `p-2.5` | .padding('all', 'sm-md') | 6 | 3 |
 | `pb-space-16` | .padding('bottom', 'lg') | 6 | 2 |
+| `pl-1.5` | .padding('leading', 'xs-sm') | 6 | 3 |
 | `pr-2` | .padding('trailing', 'sm') | 6 | 5 |
+| `pr-2.5` | .padding('trailing', 'sm-md') | 6 | 3 |
+| `pt-16` | .padding('top', '6xl') | 6 | 4 |
 | `rounded-none` | .corner('none') | 6 | 4 |
+| `size-2.5` | .frame({ width: 'sm-md', height: 'sm-md' }) | 6 | 3 |
 | `size-8` | .frame({ width: '3xl', height: '3xl' }) | 6 | 2 |
 | `text-[22px]` | .font('2xl') | 6 | 3 |
 | `w-4` | .frame({ width: 'lg' }) | 6 | 6 |
 | `-mt-3` | .padding('top', '-md') (outside the fill) | 5 | 3 |
 | `border-background` | .border('background') | 5 | 3 |
 | `border-foreground` | .border('foreground') | 5 | 3 |
+| `min-h-16` | .frame({ minHeight: '6xl' }) | 5 | 4 |
+| `mr-2.5` | .padding('trailing', 'sm-md') (outside the fill) | 5 | 2 |
 | `pb-10` | .padding('bottom', '4xl') | 5 | 4 |
 | `pl-0` | .padding('leading', 'none') | 5 | 2 |
 | `pr-8` | .padding('trailing', '3xl') | 5 | 2 |
@@ -307,14 +351,20 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `-mx-1` | .padding('horizontal', '-xs') (outside the fill) | 4 | 2 |
 | `border-surface` | .border('surface') | 4 | 3 |
 | `font-light` | .weight('light') | 4 | 4 |
+| `gap-3.5` | .spacing('md-lg') | 4 | 4 |
 | `min-h-6` | .frame({ minHeight: '2xl' }) | 4 | 2 |
 | `mx-2` | .padding('horizontal', 'sm') (outside the fill) | 4 | 4 |
 | `p-10` | .padding('all', '4xl') | 4 | 2 |
 | `pe-3` | .padding('trailing', 'md') | 4 | 2 |
 | `pl-2` | .padding('leading', 'sm') | 4 | 4 |
 | `pr-1` | .padding('trailing', 'xs') | 4 | 3 |
+| `pt-1.5` | .padding('top', 'xs-sm') | 4 | 2 |
+| `px-12` | .padding('horizontal', '4xl-5xl') | 4 | 2 |
 | `py-space-32` | .padding('vertical', '3xl') | 4 | 2 |
+| `size-12` | .frame({ width: '4xl-5xl', height: '4xl-5xl' }) | 4 | 2 |
+| `space-y-1.5` | .spacing('xs-sm') | 4 | 2 |
 | `w-0.5` | .frame({ width: '2xs' }) | 4 | 4 |
+| `w-1.5` | .frame({ width: 'xs-sm' }) | 4 | 3 |
 | `w-[2px]` | .frame({ width: '2xs' }) | 4 | 4 |
 | `-ml-1` | .padding('leading', '-xs') (outside the fill) | 3 | 2 |
 | `-ml-3` | .padding('leading', '-md') (outside the fill) | 3 | 2 |
@@ -322,17 +372,21 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `bg-error` | .background('error') | 3 | 2 |
 | `bg-muted-foreground` | .background('muted') | 3 | 3 |
 | `bg-primary-foreground` | .background('onPrimary') | 3 | 2 |
+| `h-3.5` | .frame({ height: 'md-lg' }) | 3 | 3 |
 | `line-clamp-1` | .lines(1) | 3 | 2 |
 | `line-clamp-2` | .lines(2) | 3 | 2 |
 | `min-w-5` | .frame({ minWidth: 'xl' }) | 3 | 3 |
 | `pb-0` | .padding('bottom', 'none') | 3 | 2 |
 | `pb-0.5` | .padding('bottom', '2xs') | 3 | 2 |
+| `pb-1.5` | .padding('bottom', 'xs-sm') | 3 | 3 |
 | `pb-space-12` | .padding('bottom', 'md') | 3 | 2 |
 | `pl-1` | .padding('leading', 'xs') | 3 | 3 |
 | `ps-space-16` | .padding('leading', 'lg') | 3 | 2 |
 | `pt-0` | .padding('top', 'none') | 3 | 2 |
 | `rounded-[12px]` | .corner('md') | 3 | 3 |
+| `size-16` | .frame({ width: '6xl', height: '6xl' }) | 3 | 2 |
 | `size-6` | .frame({ width: '2xl', height: '2xl' }) | 3 | 3 |
+| `w-3.5` | .frame({ width: 'md-lg' }) | 3 | 3 |
 | `bg-input` | .background('input') | 2 | 2 |
 | `gap-10` | .spacing('4xl') | 2 | 2 |
 | `h-[60px]` | .frame({ height: '5xl' }) | 2 | 2 |
@@ -340,16 +394,22 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `min-h-[60px]` | .frame({ minHeight: '5xl' }) | 2 | 2 |
 | `min-w-6` | .frame({ minWidth: '2xl' }) | 2 | 2 |
 | `ml-0.5` | .padding('leading', '2xs') (outside the fill) | 2 | 2 |
+| `mr-3.5` | .padding('trailing', 'md-lg') (outside the fill) | 2 | 2 |
 | `mr-4` | .padding('trailing', 'lg') (outside the fill) | 2 | 2 |
+| `mr-[10px]` | .padding('trailing', 'sm-md') (outside the fill) | 2 | 2 |
 | `mt-0` | .padding('top', 'none') (outside the fill) | 2 | 2 |
+| `mt-3.5` | .padding('top', 'md-lg') (outside the fill) | 2 | 2 |
 | `mt-space-20` | .padding('top', 'xl') (outside the fill) | 2 | 2 |
 | `mx-0` | .padding('horizontal', 'none') (outside the fill) | 2 | 2 |
 | `mx-3` | .padding('horizontal', 'md') (outside the fill) | 2 | 2 |
+| `mx-3.5` | .padding('horizontal', 'md-lg') (outside the fill) | 2 | 2 |
 | `my-3` | .padding('vertical', 'md') (outside the fill) | 2 | 2 |
 | `my-6` | .padding('vertical', '2xl') (outside the fill) | 2 | 2 |
 | `my-8` | .padding('vertical', '3xl') (outside the fill) | 2 | 2 |
 | `pr-6` | .padding('trailing', '2xl') | 2 | 2 |
 | `pt-10` | .padding('top', '4xl') | 2 | 2 |
+| `pt-12` | .padding('top', '4xl-5xl') | 2 | 2 |
+| `px-[14px]` | .padding('horizontal', 'md-lg') | 2 | 2 |
 | `size-5` | .frame({ width: 'xl', height: 'xl' }) | 2 | 2 |
 | `w-1` | .frame({ width: 'xs' }) | 2 | 2 |
 | `w-[60px]` | .frame({ width: '5xl' }) | 2 | 2 |
@@ -398,39 +458,23 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 
 | Utility | Raw value | Becomes | Uses | Apps |
 | --- | --- | --- | ---: | ---: |
-| `text-base` | 16px / 24px | .font(…) | 501 | 20 |
 | `bg-muted` | --muted | .background(…) | 331 | 17 |
 | `bg-card` | --card | .background(…) | 264 | 17 |
 | `text-destructive` | --destructive | .foreground(…) | 239 | 15 |
-| `gap-1.5` | 6px | .spacing(…) | 209 | 17 |
-| `rounded-md` | 6px | .corner(…) | 194 | 13 |
-| `text-lg` | 18px / 28px | .font(…) | 151 | 18 |
-| `text-[11px]` | 11px | .font(…) | 114 | 15 |
 | `text-primary-text` | --primary-text | .foreground(…) | 106 | 3 |
 | `bg-primary/10` | --primary at 10% | .background('primary') | 95 | 12 |
-| `text-caption` | 11px / 14px | .font(…) | 94 | 2 |
+| `text-caption` | 11px / 14px | .font('2xs-xs') (line height 14px has no rung) | 94 | 2 |
 | `text-xl` | 20px / 28px | .font('xl') (line height 28px has no rung) | 92 | 19 |
 | `text-2xl` | 24px / 32px | .font(…) | 90 | 16 |
 | `text-white` | white | .foreground(…) | 89 | 13 |
-| `py-16` | 64px | .padding('vertical', …) | 88 | 11 |
-| `py-2.5` | 10px | .padding('vertical', …) | 82 | 16 |
 | `leading-5` | 20px | .leading(…) | 81 | 12 |
-| `h-9` | 36px | .frame({ height: … }) | 75 | 12 |
-| `py-1.5` | 6px | .padding('vertical', …) | 73 | 15 |
-| `py-3.5` | 14px | .padding('vertical', …) | 66 | 6 |
 | `text-[14px]` | 14px | .font(…) | 64 | 4 |
 | `tracking-wider` | 0.05em | a tracking modifier | 61 | 7 |
 | `bg-transparent` | transparent | .background(…) | 58 | 11 |
 | `leading-6` | 24px | .leading(…) | 57 | 9 |
-| `gap-2.5` | 10px | .spacing(…) | 53 | 13 |
 | `tracking-wide` | 0.025em | a tracking modifier | 50 | 8 |
-| `w-9` | 36px | .frame({ width: … }) | 50 | 10 |
-| `h-12` | 48px | .frame({ height: … }) | 47 | 10 |
-| `w-12` | 48px | .frame({ width: … }) | 47 | 12 |
 | `bg-white` | white | .background(…) | 44 | 8 |
 | `leading-4` | 16px | .leading(…) | 39 | 8 |
-| `px-1.5` | 6px | .padding('horizontal', …) | 37 | 10 |
-| `px-2.5` | 10px | .padding('horizontal', …) | 37 | 12 |
 | `h-11` | 44px | .frame({ height: … }) | 36 | 10 |
 | `h-7` | 28px | .frame({ height: … }) | 36 | 13 |
 | `h-[1px]` | 1px | .frame({ height: … }) | 36 | 3 |
@@ -440,56 +484,41 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `min-w-48` | 192px | .frame({ minWidth: … }) | 34 | 3 |
 | `bg-accent` | --accent | .background(…) | 33 | 8 |
 | `bg-destructive/10` | --destructive at 10% | .background(…) | 32 | 8 |
-| `mb-1.5` | 6px | .padding('bottom', …) (outside the fill) | 32 | 8 |
-| `mt-1.5` | 6px | .padding('top', …) (outside the fill) | 32 | 10 |
 | `border-border/60` | --border at 60% | .border('border') | 30 | 2 |
 | `opacity-60` | 0.6 | .opacity(…) | 30 | 9 |
 | `max-w-[1200px]` | 1200px | .frame({ maxWidth: … }) | 29 | 4 |
-| `text-[16px]` | 16px | .font(…) | 29 | 3 |
 | `bg-muted/40` | --muted at 40% | .background(…) | 28 | 5 |
 | `leading-[18px]` | 18px | .leading(…) | 28 | 7 |
-| `py-12` | 48px | .padding('vertical', …) | 28 | 13 |
-| `w-16` | 64px | .frame({ width: … }) | 27 | 10 |
 | `w-11` | 44px | .frame({ width: … }) | 26 | 7 |
 | `w-56` | 224px | .frame({ width: … }) | 25 | 5 |
 | `text-error-text` | --error-text | .foreground(…) | 24 | 2 |
 | `py-24` | 96px | .padding('vertical', …) | 23 | 3 |
 | `text-body` | 15px / 22px | .font('md') (line height 22px has no rung) | 23 | 2 |
-| `h-16` | 64px | .frame({ height: … }) | 22 | 10 |
 | `max-w-sm` | 384px | .frame({ maxWidth: … }) | 22 | 12 |
 | `text-3xl` | 30px / 36px | .font(…) | 22 | 12 |
 | `bg-primary-subtle` | --primary-subtle | .background(…) | 20 | 3 |
-| `p-3.5` | 14px | .padding('all', …) | 20 | 3 |
 | `bg-muted/50` | --muted at 50% | .background(…) | 19 | 5 |
 | `min-w-40` | 160px | .frame({ minWidth: … }) | 19 | 2 |
-| `p-1.5` | 6px | .padding('all', …) | 19 | 8 |
-| `px-3.5` | 14px | .padding('horizontal', …) | 19 | 8 |
 | `text-warning-text` | --warning-text | .foreground(…) | 19 | 3 |
 | `bg-black/60` | black | .background(…) | 18 | 5 |
 | `bg-primary/20` | --primary at 20% | .background('primary') | 18 | 5 |
 | `border-primary/30` | --primary at 30% | .border('primary') | 17 | 3 |
-| `h-1.5` | 6px | .frame({ height: … }) | 17 | 7 |
 | `max-w-2xl` | 672px | .frame({ maxWidth: … }) | 17 | 8 |
 | `max-w-md` | 448px | .frame({ maxWidth: … }) | 17 | 9 |
-| `mt-2.5` | 10px | .padding('top', …) (outside the fill) | 17 | 5 |
 | `w-14` | 56px | .frame({ width: … }) | 17 | 7 |
-| `h-2.5` | 10px | .frame({ height: … }) | 16 | 10 |
 | `max-w-3xl` | 768px | .frame({ maxWidth: … }) | 16 | 6 |
 | `opacity-90` | 0.9 | .opacity(…) | 16 | 5 |
 | `bg-muted/30` | --muted at 30% | .background(…) | 15 | 4 |
 | `border-destructive` | --destructive | .border(…) | 15 | 6 |
 | `leading-none` | 1 | .leading(…) | 15 | 7 |
-| `w-2.5` | 10px | .frame({ width: … }) | 15 | 11 |
 | `w-7` | 28px | .frame({ width: … }) | 15 | 9 |
 | `leading-7` | 28px | .leading(…) | 14 | 5 |
 | `leading-[22px]` | 22px | .leading(…) | 14 | 6 |
 | `rounded-[22px]` | 22px | .corner(…) | 14 | 3 |
-| `size-3.5` | 14px | .frame({ width: …, height: … }) | 14 | 2 |
 | `text-sidebar-foreground` | --sidebar-foreground | .foreground(…) | 14 | 2 |
 | `tracking-tight` | -0.025em | a tracking modifier | 14 | 6 |
 | `h-24` | 96px | .frame({ height: … }) | 13 | 5 |
 | `leading-[24px]` | 24px | .leading(…) | 13 | 2 |
-| `rounded-[6px]` | 6px | .corner(…) | 13 | 4 |
 | `w-24` | 96px | .frame({ width: … }) | 13 | 7 |
 | `w-32` | 128px | .frame({ width: … }) | 13 | 5 |
 | `leading-[20px]` | 20px | .leading(…) | 12 | 4 |
@@ -502,7 +531,6 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `max-w-[640px]` | 640px | .frame({ maxWidth: … }) | 11 | 7 |
 | `max-w-xs` | 320px | .frame({ maxWidth: … }) | 11 | 6 |
 | `min-h-[44px]` | 44px | .frame({ minHeight: … }) | 11 | 4 |
-| `ml-1.5` | 6px | .padding('leading', …) (outside the fill) | 11 | 3 |
 | `text-green-500` | green-500 | .foreground(…) | 11 | 2 |
 | `bg-fill` | --card | .background(…) | 10 | 2 |
 | `bg-sidebar-border` | --sidebar-border | .background(…) | 10 | 3 |
@@ -517,7 +545,6 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `bg-sidebar-accent` | --sidebar-accent | .background(…) | 9 | 2 |
 | `border-border/40` | --border at 40% | .border('border') | 9 | 2 |
 | `max-w-[720px]` | 720px | .frame({ maxWidth: … }) | 9 | 3 |
-| `mb-2.5` | 10px | .padding('bottom', …) (outside the fill) | 9 | 2 |
 | `min-w-64` | 256px | .frame({ minWidth: … }) | 9 | 2 |
 | `rounded-[10px]` | 10px | .corner(…) | 9 | 4 |
 | `rounded-[18px]` | 18px | .corner(…) | 9 | 3 |
@@ -528,12 +555,9 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `border-destructive/40` | --destructive at 40% | .border(…) | 8 | 3 |
 | `border-ring` | --ring | .border(…) | 8 | 3 |
 | `max-w-[320px]` | 320px | .frame({ maxWidth: … }) | 8 | 2 |
-| `mr-1.5` | 6px | .padding('trailing', …) (outside the fill) | 8 | 2 |
-| `mt-16` | 64px | .padding('top', …) (outside the fill) | 8 | 2 |
 | `opacity-40` | 0.4 | .opacity(…) | 8 | 5 |
 | `rounded-[15px]` | 15px | .corner(…) | 8 | 4 |
 | `text-[10.5px]` | 10.5px | .font(…) | 8 | 3 |
-| `text-[18px]` | 18px | .font(…) | 8 | 4 |
 | `text-accent-foreground` | --accent-foreground | .foreground(…) | 8 | 2 |
 | `text-red-500` | red-500 | .foreground(…) | 8 | 2 |
 | `text-success-text` | --success-text | .foreground(…) | 8 | 4 |
@@ -555,16 +579,10 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `max-h-72` | 288px | .frame({ maxHeight: … }) | 6 | 2 |
 | `max-w-[420px]` | 420px | .frame({ maxWidth: … }) | 6 | 4 |
 | `max-w-[520px]` | 520px | .frame({ maxWidth: … }) | 6 | 4 |
-| `min-h-12` | 48px | .frame({ minHeight: … }) | 6 | 2 |
 | `min-h-14` | 56px | .frame({ minHeight: … }) | 6 | 3 |
 | `min-w-[260px]` | 260px | .frame({ minWidth: … }) | 6 | 2 |
 | `my-7` | 28px | .padding('vertical', …) (outside the fill) | 6 | 2 |
-| `p-2.5` | 10px | .padding('all', …) | 6 | 3 |
-| `pl-1.5` | 6px | .padding('leading', …) | 6 | 3 |
-| `pr-2.5` | 10px | .padding('trailing', …) | 6 | 3 |
-| `pt-16` | 64px | .padding('top', …) | 6 | 4 |
 | `rounded-[23px]` | 23px | .corner(…) | 6 | 2 |
-| `size-2.5` | 10px | .frame({ width: …, height: … }) | 6 | 3 |
 | `text-black` | black | .foreground(…) | 6 | 2 |
 | `text-foreground/80` | --foreground at 80% | .foreground('foreground') | 6 | 3 |
 | `bg-fill-secondary` | --muted | .background(…) | 5 | 2 |
@@ -576,12 +594,10 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `h-64` | 256px | .frame({ height: … }) | 5 | 4 |
 | `leading-[17px]` | 17px | .leading(…) | 5 | 2 |
 | `max-w-xl` | 576px | .frame({ maxWidth: … }) | 5 | 4 |
-| `min-h-16` | 64px | .frame({ minHeight: … }) | 5 | 4 |
 | `min-h-[140px]` | 140px | .frame({ minHeight: … }) | 5 | 3 |
 | `min-h-[52px]` | 52px | .frame({ minHeight: … }) | 5 | 4 |
 | `min-w-32` | 128px | .frame({ minWidth: … }) | 5 | 4 |
 | `min-w-[140px]` | 140px | .frame({ minWidth: … }) | 5 | 2 |
-| `mr-2.5` | 10px | .padding('trailing', …) (outside the fill) | 5 | 2 |
 | `py-20` | 80px | .padding('vertical', …) | 5 | 2 |
 | `text-[12.5px]` | 12.5px | .font(…) | 5 | 2 |
 | `text-destructive/80` | --destructive at 80% | .foreground(…) | 5 | 2 |
@@ -593,7 +609,6 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `bg-black/30` | black | .background(…) | 4 | 3 |
 | `bg-warning-subtle` | --warning-subtle | .background(…) | 4 | 2 |
 | `bg-white/20` | white | .background(…) | 4 | 2 |
-| `gap-3.5` | 14px | .spacing(…) | 4 | 4 |
 | `max-h-40` | 160px | .frame({ maxHeight: … }) | 4 | 3 |
 | `max-h-80` | 320px | .frame({ maxHeight: … }) | 4 | 3 |
 | `max-w-[380px]` | 380px | .frame({ maxWidth: … }) | 4 | 2 |
@@ -602,17 +617,12 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `min-w-24` | 96px | .frame({ minWidth: … }) | 4 | 3 |
 | `min-w-36` | 144px | .frame({ minWidth: … }) | 4 | 3 |
 | `mt-7` | 28px | .padding('top', …) (outside the fill) | 4 | 2 |
-| `pt-1.5` | 6px | .padding('top', …) | 4 | 2 |
-| `px-12` | 48px | .padding('horizontal', …) | 4 | 2 |
 | `rounded-[5px]` | 5px | .corner(…) | 4 | 2 |
-| `size-12` | 48px | .frame({ width: …, height: … }) | 4 | 2 |
-| `space-y-1.5` | 6px | .spacing(…) | 4 | 2 |
 | `text-[34px]` | 34px | .font(…) | 4 | 3 |
 | `text-[9px]` | 9px | .font(…) | 4 | 2 |
 | `text-card-foreground` | --card-foreground | .foreground(…) | 4 | 3 |
 | `text-white/90` | white | .foreground(…) | 4 | 3 |
 | `tracking-widest` | 0.1em | a tracking modifier | 4 | 4 |
-| `w-1.5` | 6px | .frame({ width: … }) | 4 | 3 |
 | `w-28` | 112px | .frame({ width: … }) | 4 | 4 |
 | `w-44` | 176px | .frame({ width: … }) | 4 | 4 |
 | `w-[260px]` | 260px | .frame({ width: … }) | 4 | 4 |
@@ -620,7 +630,6 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `bg-card/60` | --card at 60% | .background(…) | 3 | 2 |
 | `bg-muted/20` | --muted at 20% | .background(…) | 3 | 2 |
 | `bg-primary/15` | --primary at 15% | .background('primary') | 3 | 3 |
-| `h-3.5` | 14px | .frame({ height: … }) | 3 | 3 |
 | `h-32` | 128px | .frame({ height: … }) | 3 | 2 |
 | `h-[18px]` | 18px | .frame({ height: … }) | 3 | 2 |
 | `h-[34px]` | 34px | .frame({ height: … }) | 3 | 2 |
@@ -645,17 +654,14 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `min-w-[180px]` | 180px | .frame({ minWidth: … }) | 3 | 2 |
 | `mt-px` | 1px | .padding('top', …) (outside the fill) | 3 | 2 |
 | `p-px` | 1px | .padding('all', …) | 3 | 3 |
-| `pb-1.5` | 6px | .padding('bottom', …) | 3 | 3 |
 | `pt-14` | 56px | .padding('top', …) | 3 | 2 |
 | `rounded-[13px]` | 13px | .corner(…) | 3 | 3 |
 | `size-14` | 56px | .frame({ width: …, height: … }) | 3 | 2 |
-| `size-16` | 64px | .frame({ width: …, height: … }) | 3 | 2 |
 | `text-blue-500` | blue-500 | .foreground(…) | 3 | 2 |
 | `text-foreground/60` | --foreground at 60% | .foreground('foreground') | 3 | 2 |
 | `text-white/75` | white | .foreground(…) | 3 | 2 |
 | `text-white/85` | white | .foreground(…) | 3 | 3 |
 | `text-yellow-400` | yellow-400 | .foreground(…) | 3 | 3 |
-| `w-3.5` | 14px | .frame({ width: … }) | 3 | 3 |
 | `w-[7px]` | 7px | .frame({ width: … }) | 3 | 2 |
 | `bg-background/50` | --background at 50% | .background('background') | 2 | 2 |
 | `bg-background/85` | --background at 85% | .background('background') | 2 | 2 |
@@ -686,17 +692,11 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `min-h-[80px]` | 80px | .frame({ minHeight: … }) | 2 | 2 |
 | `min-w-[80px]` | 80px | .frame({ minWidth: … }) | 2 | 2 |
 | `ml-[1px]` | 1px | .padding('leading', …) (outside the fill) | 2 | 2 |
-| `mr-3.5` | 14px | .padding('trailing', …) (outside the fill) | 2 | 2 |
-| `mr-[10px]` | 10px | .padding('trailing', …) (outside the fill) | 2 | 2 |
-| `mt-3.5` | 14px | .padding('top', …) (outside the fill) | 2 | 2 |
-| `mx-3.5` | 14px | .padding('horizontal', …) (outside the fill) | 2 | 2 |
 | `opacity-45` | 0.45 | .opacity(…) | 2 | 2 |
 | `opacity-75` | 0.75 | .opacity(…) | 2 | 2 |
 | `p-[18px]` | 18px | .padding('all', …) | 2 | 2 |
-| `pt-12` | 48px | .padding('top', …) | 2 | 2 |
 | `pt-7` | 28px | .padding('top', …) | 2 | 2 |
 | `px-7` | 28px | .padding('horizontal', …) | 2 | 2 |
-| `px-[14px]` | 14px | .padding('horizontal', …) | 2 | 2 |
 | `rounded-[26px]` | 26px | .corner(…) | 2 | 2 |
 | `text-5xl` | 48px / 48px | .font(…) | 2 | 2 |
 | `text-[13.5px]` | 13.5px | .font(…) | 2 | 2 |

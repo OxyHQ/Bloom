@@ -118,10 +118,8 @@
   "text-base": {
    "count": 501,
    "apps": 20,
-   "status": "token",
-   "scale": "font",
-   "value": "16px / 24px",
-   "language": ".font(…)"
+   "status": "mapped",
+   "language": ".font('md-lg').leading('normal')"
   },
   "text-center": {
    "count": 499,
@@ -306,10 +304,8 @@
   "gap-1.5": {
    "count": 209,
    "apps": 17,
-   "status": "token",
-   "scale": "space",
-   "value": "6px",
-   "language": ".spacing(…)"
+   "status": "mapped",
+   "language": ".spacing('xs-sm')"
   },
   "mt-2": {
    "count": 207,
@@ -326,10 +322,8 @@
   "rounded-md": {
    "count": 194,
    "apps": 13,
-   "status": "token",
-   "scale": "corner",
-   "value": "6px",
-   "language": ".corner(…)"
+   "status": "mapped",
+   "language": ".corner('xs-sm')"
   },
   "text-[15px]": {
    "count": 194,
@@ -390,10 +384,8 @@
   "text-lg": {
    "count": 151,
    "apps": 18,
-   "status": "token",
-   "scale": "font",
-   "value": "18px / 28px",
-   "language": ".font(…)"
+   "status": "mapped",
+   "language": ".font('lg-xl').leading('open')"
   },
   "uppercase": {
    "count": 151,
@@ -500,10 +492,8 @@
   "text-[11px]": {
    "count": 114,
    "apps": 15,
-   "status": "token",
-   "scale": "font",
-   "value": "11px",
-   "language": ".font(…)"
+   "status": "mapped",
+   "language": ".font('2xs-xs')"
   },
   "mb-4": {
    "count": 110,
@@ -587,7 +577,7 @@
    "status": "token",
    "scale": "font",
    "value": "11px / 14px",
-   "language": ".font(…)"
+   "language": ".font('2xs-xs') (line height 14px has no rung)"
   },
   "text-xl": {
    "count": 92,
@@ -622,10 +612,8 @@
   "py-16": {
    "count": 88,
    "apps": 11,
-   "status": "token",
-   "scale": "space",
-   "value": "64px",
-   "language": ".padding('vertical', …)"
+   "status": "mapped",
+   "language": ".padding('vertical', '6xl')"
   },
   "h-10": {
    "count": 82,
@@ -636,10 +624,8 @@
   "py-2.5": {
    "count": 82,
    "apps": 16,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".padding('vertical', …)"
+   "status": "mapped",
+   "language": ".padding('vertical', 'sm-md')"
   },
   "leading-5": {
    "count": 81,
@@ -682,10 +668,8 @@
   "h-9": {
    "count": 75,
    "apps": 12,
-   "status": "token",
-   "scale": "space",
-   "value": "36px",
-   "language": ".frame({ height: … })"
+   "status": "mapped",
+   "language": ".frame({ height: '3xl-4xl' })"
   },
   "p-6": {
    "count": 73,
@@ -696,10 +680,8 @@
   "py-1.5": {
    "count": 73,
    "apps": 15,
-   "status": "token",
-   "scale": "space",
-   "value": "6px",
-   "language": ".padding('vertical', …)"
+   "status": "mapped",
+   "language": ".padding('vertical', 'xs-sm')"
   },
   "hidden": {
    "count": 72,
@@ -758,10 +740,8 @@
   "py-3.5": {
    "count": 66,
    "apps": 6,
-   "status": "token",
-   "scale": "space",
-   "value": "14px",
-   "language": ".padding('vertical', …)"
+   "status": "mapped",
+   "language": ".padding('vertical', 'md-lg')"
   },
   "w-10": {
    "count": 65,
@@ -888,10 +868,8 @@
   "gap-2.5": {
    "count": 53,
    "apps": 13,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".spacing(…)"
+   "status": "mapped",
+   "language": ".spacing('sm-md')"
   },
   "p-space-16": {
    "count": 53,
@@ -928,18 +906,14 @@
   "w-9": {
    "count": 50,
    "apps": 10,
-   "status": "token",
-   "scale": "space",
-   "value": "36px",
-   "language": ".frame({ width: … })"
+   "status": "mapped",
+   "language": ".frame({ width: '3xl-4xl' })"
   },
   "h-12": {
    "count": 47,
    "apps": 10,
-   "status": "token",
-   "scale": "space",
-   "value": "48px",
-   "language": ".frame({ height: … })"
+   "status": "mapped",
+   "language": ".frame({ height: '4xl-5xl' })"
   },
   "shrink": {
    "count": 47,
@@ -950,10 +924,8 @@
   "w-12": {
    "count": 47,
    "apps": 12,
-   "status": "token",
-   "scale": "space",
-   "value": "48px",
-   "language": ".frame({ width: … })"
+   "status": "mapped",
+   "language": ".frame({ width: '4xl-5xl' })"
   },
   "rounded": {
    "count": 46,
@@ -1100,18 +1072,14 @@
   "px-1.5": {
    "count": 37,
    "apps": 10,
-   "status": "token",
-   "scale": "space",
-   "value": "6px",
-   "language": ".padding('horizontal', …)"
+   "status": "mapped",
+   "language": ".padding('horizontal', 'xs-sm')"
   },
   "px-2.5": {
    "count": 37,
    "apps": 12,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".padding('horizontal', …)"
+   "status": "mapped",
+   "language": ".padding('horizontal', 'sm-md')"
   },
   "px-space-12": {
    "count": 37,
@@ -1266,10 +1234,8 @@
   "mb-1.5": {
    "count": 32,
    "apps": 8,
-   "status": "token",
-   "scale": "space",
-   "value": "6px",
-   "language": ".padding('bottom', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('bottom', 'xs-sm') (outside the fill)"
   },
   "ml-2": {
    "count": 32,
@@ -1280,10 +1246,8 @@
   "mt-1.5": {
    "count": 32,
    "apps": 10,
-   "status": "token",
-   "scale": "space",
-   "value": "6px",
-   "language": ".padding('top', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('top', 'xs-sm') (outside the fill)"
   },
   "mt-5": {
    "count": 32,
@@ -1386,10 +1350,8 @@
   "text-[16px]": {
    "count": 29,
    "apps": 3,
-   "status": "token",
-   "scale": "font",
-   "value": "16px",
-   "language": ".font(…)"
+   "status": "mapped",
+   "language": ".font('md-lg')"
   },
   "whitespace-nowrap": {
    "count": 29,
@@ -1422,10 +1384,8 @@
   "py-12": {
    "count": 28,
    "apps": 13,
-   "status": "token",
-   "scale": "space",
-   "value": "48px",
-   "language": ".padding('vertical', …)"
+   "status": "mapped",
+   "language": ".padding('vertical', '4xl-5xl')"
   },
   "text-shop-bodyTitleSmall": {
    "count": 28,
@@ -1454,10 +1414,8 @@
   "w-16": {
    "count": 27,
    "apps": 10,
-   "status": "token",
-   "scale": "space",
-   "value": "64px",
-   "language": ".frame({ width: … })"
+   "status": "mapped",
+   "language": ".frame({ width: '6xl' })"
   },
   "w-11": {
    "count": 26,
@@ -1580,10 +1538,8 @@
   "h-16": {
    "count": 22,
    "apps": 10,
-   "status": "token",
-   "scale": "space",
-   "value": "64px",
-   "language": ".frame({ height: … })"
+   "status": "mapped",
+   "language": ".frame({ height: '6xl' })"
   },
   "max-w-sm": {
    "count": 22,
@@ -1732,10 +1688,8 @@
   "p-3.5": {
    "count": 20,
    "apps": 3,
-   "status": "token",
-   "scale": "space",
-   "value": "14px",
-   "language": ".padding('all', …)"
+   "status": "mapped",
+   "language": ".padding('all', 'md-lg')"
   },
   "pr-3": {
    "count": 20,
@@ -1786,10 +1740,8 @@
   "p-1.5": {
    "count": 19,
    "apps": 8,
-   "status": "token",
-   "scale": "space",
-   "value": "6px",
-   "language": ".padding('all', …)"
+   "status": "mapped",
+   "language": ".padding('all', 'xs-sm')"
   },
   "pt-8": {
    "count": 19,
@@ -1800,10 +1752,8 @@
   "px-3.5": {
    "count": 19,
    "apps": 8,
-   "status": "token",
-   "scale": "space",
-   "value": "14px",
-   "language": ".padding('horizontal', …)"
+   "status": "mapped",
+   "language": ".padding('horizontal', 'md-lg')"
   },
   "text-warning-text": {
    "count": 19,
@@ -1864,10 +1814,8 @@
   "h-1.5": {
    "count": 17,
    "apps": 7,
-   "status": "token",
-   "scale": "space",
-   "value": "6px",
-   "language": ".frame({ height: … })"
+   "status": "mapped",
+   "language": ".frame({ height: 'xs-sm' })"
   },
   "h-2": {
    "count": 17,
@@ -1900,10 +1848,8 @@
   "mt-2.5": {
    "count": 17,
    "apps": 5,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".padding('top', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('top', 'sm-md') (outside the fill)"
   },
   "overflow-auto": {
    "count": 17,
@@ -1958,10 +1904,8 @@
   "h-2.5": {
    "count": 16,
    "apps": 10,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".frame({ height: … })"
+   "status": "mapped",
+   "language": ".frame({ height: 'sm-md' })"
   },
   "items-baseline": {
    "count": 16,
@@ -2102,10 +2046,8 @@
   "w-2.5": {
    "count": 15,
    "apps": 11,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".frame({ width: … })"
+   "status": "mapped",
+   "language": ".frame({ width: 'sm-md' })"
   },
   "w-7": {
    "count": 15,
@@ -2190,10 +2132,8 @@
   "size-3.5": {
    "count": 14,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "14px",
-   "language": ".frame({ width: …, height: … })"
+   "status": "mapped",
+   "language": ".frame({ width: 'md-lg', height: 'md-lg' })"
   },
   "text-sidebar-foreground": {
    "count": 14,
@@ -2308,10 +2248,8 @@
   "rounded-[6px]": {
    "count": 13,
    "apps": 4,
-   "status": "token",
-   "scale": "corner",
-   "value": "6px",
-   "language": ".corner(…)"
+   "status": "mapped",
+   "language": ".corner('xs-sm')"
   },
   "rounded-sm": {
    "count": 13,
@@ -2556,10 +2494,8 @@
   "ml-1.5": {
    "count": 11,
    "apps": 3,
-   "status": "token",
-   "scale": "space",
-   "value": "6px",
-   "language": ".padding('leading', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('leading', 'xs-sm') (outside the fill)"
   },
   "ml-4": {
    "count": 11,
@@ -2685,7 +2621,7 @@
    "status": "token",
    "scale": "font",
    "value": "11px / 14px",
-   "language": ".font(…)"
+   "language": ".font('2xs-xs') (line height 14px has no rung)"
   },
   "h-18": {
    "count": 10,
@@ -2870,10 +2806,8 @@
   "mb-2.5": {
    "count": 9,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".padding('bottom', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('bottom', 'sm-md') (outside the fill)"
   },
   "mb-space-12": {
    "count": 9,
@@ -3120,18 +3054,14 @@
   "mr-1.5": {
    "count": 8,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "6px",
-   "language": ".padding('trailing', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('trailing', 'xs-sm') (outside the fill)"
   },
   "mt-16": {
    "count": 8,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "64px",
-   "language": ".padding('top', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('top', '6xl') (outside the fill)"
   },
   "opacity-100": {
    "count": 8,
@@ -3162,10 +3092,8 @@
   "pe-2.5": {
    "count": 8,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".padding('trailing', …)"
+   "status": "mapped",
+   "language": ".padding('trailing', 'sm-md')"
   },
   "pt-space-16": {
    "count": 8,
@@ -3240,10 +3168,8 @@
   "text-[18px]": {
    "count": 8,
    "apps": 4,
-   "status": "token",
-   "scale": "font",
-   "value": "18px",
-   "language": ".font(…)"
+   "status": "mapped",
+   "language": ".font('lg-xl')"
   },
   "text-accent-foreground": {
    "count": 8,
@@ -3758,10 +3684,8 @@
   "min-h-12": {
    "count": 6,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "48px",
-   "language": ".frame({ minHeight: … })"
+   "status": "mapped",
+   "language": ".frame({ minHeight: '4xl-5xl' })"
   },
   "min-h-14": {
    "count": 6,
@@ -3816,10 +3740,8 @@
   "p-2.5": {
    "count": 6,
    "apps": 3,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".padding('all', …)"
+   "status": "mapped",
+   "language": ".padding('all', 'sm-md')"
   },
   "pb-": {
    "count": 6,
@@ -3836,10 +3758,8 @@
   "pl-1.5": {
    "count": 6,
    "apps": 3,
-   "status": "token",
-   "scale": "space",
-   "value": "6px",
-   "language": ".padding('leading', …)"
+   "status": "mapped",
+   "language": ".padding('leading', 'xs-sm')"
   },
   "pr-2": {
    "count": 6,
@@ -3850,10 +3770,8 @@
   "pr-2.5": {
    "count": 6,
    "apps": 3,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".padding('trailing', …)"
+   "status": "mapped",
+   "language": ".padding('trailing', 'sm-md')"
   },
   "pt-": {
    "count": 6,
@@ -3864,10 +3782,8 @@
   "pt-16": {
    "count": 6,
    "apps": 4,
-   "status": "token",
-   "scale": "space",
-   "value": "64px",
-   "language": ".padding('top', …)"
+   "status": "mapped",
+   "language": ".padding('top', '6xl')"
   },
   "px-space-32": {
    "count": 6,
@@ -3916,10 +3832,8 @@
   "size-2.5": {
    "count": 6,
    "apps": 3,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".frame({ width: …, height: … })"
+   "status": "mapped",
+   "language": ".frame({ width: 'sm-md', height: 'sm-md' })"
   },
   "size-8": {
    "count": 6,
@@ -4216,10 +4130,8 @@
   "min-h-16": {
    "count": 5,
    "apps": 4,
-   "status": "token",
-   "scale": "space",
-   "value": "64px",
-   "language": ".frame({ minHeight: … })"
+   "status": "mapped",
+   "language": ".frame({ minHeight: '6xl' })"
   },
   "min-h-[140px]": {
    "count": 5,
@@ -4264,10 +4176,8 @@
   "mr-2.5": {
    "count": 5,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".padding('trailing', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('trailing', 'sm-md') (outside the fill)"
   },
   "mt-space-16": {
    "count": 5,
@@ -4660,10 +4570,8 @@
   "gap-3.5": {
    "count": 4,
    "apps": 4,
-   "status": "token",
-   "scale": "space",
-   "value": "14px",
-   "language": ".spacing(…)"
+   "status": "mapped",
+   "language": ".spacing('md-lg')"
   },
   "gap-[12px]": {
    "count": 4,
@@ -4886,18 +4794,14 @@
   "pt-1.5": {
    "count": 4,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "6px",
-   "language": ".padding('top', …)"
+   "status": "mapped",
+   "language": ".padding('top', 'xs-sm')"
   },
   "px-12": {
    "count": 4,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "48px",
-   "language": ".padding('horizontal', …)"
+   "status": "mapped",
+   "language": ".padding('horizontal', '4xl-5xl')"
   },
   "px-[12px]": {
    "count": 4,
@@ -4946,10 +4850,8 @@
   "size-12": {
    "count": 4,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "48px",
-   "language": ".frame({ width: …, height: … })"
+   "status": "mapped",
+   "language": ".frame({ width: '4xl-5xl', height: '4xl-5xl' })"
   },
   "size-space-24": {
    "count": 4,
@@ -4960,18 +4862,14 @@
   "space-y-1.5": {
    "count": 4,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "6px",
-   "language": ".spacing(…)"
+   "status": "mapped",
+   "language": ".spacing('xs-sm')"
   },
   "space-y-2.5": {
    "count": 4,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".spacing(…)"
+   "status": "mapped",
+   "language": ".spacing('sm-md')"
   },
   "text-[#5b6573]": {
    "count": 4,
@@ -5046,10 +4944,8 @@
   "w-1.5": {
    "count": 4,
    "apps": 3,
-   "status": "token",
-   "scale": "space",
-   "value": "6px",
-   "language": ".frame({ width: … })"
+   "status": "mapped",
+   "language": ".frame({ width: 'xs-sm' })"
   },
   "w-28": {
    "count": 4,
@@ -5434,10 +5330,8 @@
   "h-3.5": {
    "count": 3,
    "apps": 3,
-   "status": "token",
-   "scale": "space",
-   "value": "14px",
-   "language": ".frame({ height: … })"
+   "status": "mapped",
+   "language": ".frame({ height: 'md-lg' })"
   },
   "h-32": {
    "count": 3,
@@ -5634,18 +5528,14 @@
   "mb-12": {
    "count": 3,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "48px",
-   "language": ".padding('bottom', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('bottom', '4xl-5xl') (outside the fill)"
   },
   "mb-16": {
    "count": 3,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "64px",
-   "language": ".padding('bottom', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('bottom', '6xl') (outside the fill)"
   },
   "mb-7": {
    "count": 3,
@@ -5698,10 +5588,8 @@
   "min-h-[64px]": {
    "count": 3,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "64px",
-   "language": ".frame({ minHeight: … })"
+   "status": "mapped",
+   "language": ".frame({ minHeight: '6xl' })"
   },
   "min-h-[72px]": {
    "count": 3,
@@ -5866,10 +5754,8 @@
   "pb-1.5": {
    "count": 3,
    "apps": 3,
-   "status": "token",
-   "scale": "space",
-   "value": "6px",
-   "language": ".padding('bottom', …)"
+   "status": "mapped",
+   "language": ".padding('bottom', 'xs-sm')"
   },
   "pb-[88px]": {
    "count": 3,
@@ -5920,10 +5806,8 @@
   "pt-2.5": {
    "count": 3,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".padding('top', …)"
+   "status": "mapped",
+   "language": ".padding('top', 'sm-md')"
   },
   "pt-safe": {
    "count": 3,
@@ -6020,10 +5904,8 @@
   "size-16": {
    "count": 3,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "64px",
-   "language": ".frame({ width: …, height: … })"
+   "status": "mapped",
+   "language": ".frame({ width: '6xl', height: '6xl' })"
   },
   "size-6": {
    "count": 3,
@@ -6170,10 +6052,8 @@
   "w-3.5": {
    "count": 3,
    "apps": 3,
-   "status": "token",
-   "scale": "space",
-   "value": "14px",
-   "language": ".frame({ width: … })"
+   "status": "mapped",
+   "language": ".frame({ width: 'md-lg' })"
   },
   "w-[29em]": {
    "count": 3,
@@ -7262,10 +7142,8 @@
   "ml-2.5": {
    "count": 2,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".padding('leading', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('leading', 'sm-md') (outside the fill)"
   },
   "ml-[1px]": {
    "count": 2,
@@ -7278,10 +7156,8 @@
   "mr-3.5": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "14px",
-   "language": ".padding('trailing', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('trailing', 'md-lg') (outside the fill)"
   },
   "mr-4": {
    "count": 2,
@@ -7292,10 +7168,8 @@
   "mr-[10px]": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".padding('trailing', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('trailing', 'sm-md') (outside the fill)"
   },
   "mt-0": {
    "count": 2,
@@ -7306,18 +7180,14 @@
   "mt-12": {
    "count": 2,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "48px",
-   "language": ".padding('top', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('top', '4xl-5xl') (outside the fill)"
   },
   "mt-3.5": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "14px",
-   "language": ".padding('top', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('top', 'md-lg') (outside the fill)"
   },
   "mt-[8px]": {
    "count": 2,
@@ -7340,10 +7210,8 @@
   "mx-1.5": {
    "count": 2,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "6px",
-   "language": ".padding('horizontal', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('horizontal', 'xs-sm') (outside the fill)"
   },
   "mx-3": {
    "count": 2,
@@ -7354,10 +7222,8 @@
   "mx-3.5": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "14px",
-   "language": ".padding('horizontal', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('horizontal', 'md-lg') (outside the fill)"
   },
   "mx-[8px]": {
    "count": 2,
@@ -7428,10 +7294,8 @@
   "p-12": {
    "count": 2,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "48px",
-   "language": ".padding('all', …)"
+   "status": "mapped",
+   "language": ".padding('all', '4xl-5xl')"
   },
   "p-[16px]": {
    "count": 2,
@@ -7470,10 +7334,8 @@
   "pb-3.5": {
    "count": 2,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "14px",
-   "language": ".padding('bottom', …)"
+   "status": "mapped",
+   "language": ".padding('bottom', 'md-lg')"
   },
   "pb-safe": {
    "count": 2,
@@ -7550,10 +7412,8 @@
   "ps-1.5": {
    "count": 2,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "6px",
-   "language": ".padding('leading', …)"
+   "status": "mapped",
+   "language": ".padding('leading', 'xs-sm')"
   },
   "ps-space-12": {
    "count": 2,
@@ -7570,10 +7430,8 @@
   "pt-12": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "48px",
-   "language": ".padding('top', …)"
+   "status": "mapped",
+   "language": ".padding('top', '4xl-5xl')"
   },
   "pt-7": {
    "count": 2,
@@ -7618,10 +7476,8 @@
   "px-[14px]": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "14px",
-   "language": ".padding('horizontal', …)"
+   "status": "mapped",
+   "language": ".padding('horizontal', 'md-lg')"
   },
   "px-space-6": {
    "count": 2,
@@ -8264,18 +8120,14 @@
   "-mt-16": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "64px",
-   "language": ".padding('top', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('top', '-6xl') (outside the fill)"
   },
   "-mt-2.5": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".padding('top', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('top', '-sm-md') (outside the fill)"
   },
   "-mx-2": {
    "count": 1,
@@ -9446,10 +9298,8 @@
   "gap-16": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "64px",
-   "language": ".spacing(…)"
+   "status": "mapped",
+   "language": ".spacing('6xl')"
   },
   "gap-[--spacing(var(--gap))]": {
    "count": 1,
@@ -9784,10 +9634,8 @@
   "h-[48px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "48px",
-   "language": ".frame({ height: … })"
+   "status": "mapped",
+   "language": ".frame({ height: '4xl-5xl' })"
   },
   "h-[55px]": {
    "count": 1,
@@ -9808,10 +9656,8 @@
   "h-[6px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "6px",
-   "language": ".frame({ height: … })"
+   "status": "mapped",
+   "language": ".frame({ height: 'xs-sm' })"
   },
   "h-[75vh]": {
    "count": 1,
@@ -10204,10 +10050,8 @@
   "max-h-12": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "48px",
-   "language": ".frame({ maxHeight: … })"
+   "status": "mapped",
+   "language": ".frame({ maxHeight: '4xl-5xl' })"
   },
   "max-h-64": {
    "count": 1,
@@ -10236,10 +10080,8 @@
   "max-h-[48px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "48px",
-   "language": ".frame({ maxHeight: … })"
+   "status": "mapped",
+   "language": ".frame({ maxHeight: '4xl-5xl' })"
   },
   "max-h-[85%]": {
    "count": 1,
@@ -10472,10 +10314,8 @@
   "mb-9": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "36px",
-   "language": ".padding('bottom', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('bottom', '3xl-4xl') (outside the fill)"
   },
   "mb-[11px]": {
    "count": 1,
@@ -10666,10 +10506,8 @@
   "min-h-[36px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "36px",
-   "language": ".frame({ minHeight: … })"
+   "status": "mapped",
+   "language": ".frame({ minHeight: '3xl-4xl' })"
   },
   "min-h-[40px]": {
    "count": 1,
@@ -10680,10 +10518,8 @@
   "min-h-[48px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "48px",
-   "language": ".frame({ minHeight: … })"
+   "status": "mapped",
+   "language": ".frame({ minHeight: '4xl-5xl' })"
   },
   "min-h-[50px]": {
    "count": 1,
@@ -10774,10 +10610,8 @@
   "min-w-16": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "64px",
-   "language": ".frame({ minWidth: … })"
+   "status": "mapped",
+   "language": ".frame({ minWidth: '6xl' })"
   },
   "min-w-30": {
    "count": 1,
@@ -10850,10 +10684,8 @@
   "min-w-[48px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "48px",
-   "language": ".frame({ minWidth: … })"
+   "status": "mapped",
+   "language": ".frame({ minWidth: '4xl-5xl' })"
   },
   "min-w-[8rem]": {
    "count": 1,
@@ -10892,10 +10724,8 @@
   "ml-16": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "64px",
-   "language": ".padding('leading', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('leading', '6xl') (outside the fill)"
   },
   "ml-7": {
    "count": 1,
@@ -10988,10 +10818,8 @@
   "mx-2.5": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".padding('horizontal', …) (outside the fill)"
+   "status": "mapped",
+   "language": ".padding('horizontal', 'sm-md') (outside the fill)"
   },
   "mx-7": {
    "count": 1,
@@ -11216,18 +11044,14 @@
   "pb-12": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "48px",
-   "language": ".padding('bottom', …)"
+   "status": "mapped",
+   "language": ".padding('bottom', '4xl-5xl')"
   },
   "pb-16": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "64px",
-   "language": ".padding('bottom', …)"
+   "status": "mapped",
+   "language": ".padding('bottom', '6xl')"
   },
   "pb-20": {
    "count": 1,
@@ -11256,18 +11080,14 @@
   "pb-[10px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".padding('bottom', …)"
+   "status": "mapped",
+   "language": ".padding('bottom', 'sm-md')"
   },
   "pb-[14px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "14px",
-   "language": ".padding('bottom', …)"
+   "status": "mapped",
+   "language": ".padding('bottom', 'md-lg')"
   },
   "pb-[38px]": {
    "count": 1,
@@ -11286,10 +11106,8 @@
   "pb-[6px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "6px",
-   "language": ".padding('bottom', …)"
+   "status": "mapped",
+   "language": ".padding('bottom', 'xs-sm')"
   },
   "pb-[8px]": {
    "count": 1,
@@ -11360,10 +11178,8 @@
   "pl-2.5": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".padding('leading', …)"
+   "status": "mapped",
+   "language": ".padding('leading', 'sm-md')"
   },
   "pl-7": {
    "count": 1,
@@ -11470,18 +11286,14 @@
   "pr-1.5": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "6px",
-   "language": ".padding('trailing', …)"
+   "status": "mapped",
+   "language": ".padding('trailing', 'xs-sm')"
   },
   "pr-16": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "64px",
-   "language": ".padding('trailing', …)"
+   "status": "mapped",
+   "language": ".padding('trailing', '6xl')"
   },
   "pr-7": {
    "count": 1,
@@ -11494,10 +11306,8 @@
   "pr-9": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "36px",
-   "language": ".padding('trailing', …)"
+   "status": "mapped",
+   "language": ".padding('trailing', '3xl-4xl')"
   },
   "pr-space-16": {
    "count": 1,
@@ -11570,10 +11380,8 @@
   "pt-3.5": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "14px",
-   "language": ".padding('top', …)"
+   "status": "mapped",
+   "language": ".padding('top', 'md-lg')"
   },
   "pt-4.5": {
    "count": 1,
@@ -11586,10 +11394,8 @@
   "pt-[10px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".padding('top', …)"
+   "status": "mapped",
+   "language": ".padding('top', 'sm-md')"
   },
   "pt-[5px]": {
    "count": 1,
@@ -11662,10 +11468,8 @@
   "py-[10px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "10px",
-   "language": ".padding('vertical', …)"
+   "status": "mapped",
+   "language": ".padding('vertical', 'sm-md')"
   },
   "py-[12px]": {
    "count": 1,
@@ -12046,10 +11850,8 @@
   "size-9": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "36px",
-   "language": ".frame({ width: …, height: … })"
+   "status": "mapped",
+   "language": ".frame({ width: '3xl-4xl', height: '3xl-4xl' })"
   },
   "size-[120px]": {
    "count": 1,
@@ -12776,10 +12578,8 @@
   "w-[6px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "6px",
-   "language": ".frame({ width: … })"
+   "status": "mapped",
+   "language": ".frame({ width: 'xs-sm' })"
   },
   "w-[72px]": {
    "count": 1,

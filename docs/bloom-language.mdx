@@ -199,22 +199,32 @@ families (Inter, the display face for titles), its desktop scale under a
 
 ## Modifiers
 
+**Steps between rungs.** Where apps render a value between two of Bloom's
+rungs today (Tailwind's `p-1.5`, `text-base`, `rounded-md`), the step is a
+rung named by both neighbours: `xs-sm` is 6, between `xs` 4 and `sm` 8. Bloom
+names them in its t-shirt tables (`tokens.space['xs-sm']`), and keeps them out
+of its class vocabulary (`SPACING_STEPS`, `RADIUS_STEPS` in
+`design-tokens/scales.ts`): apps already write `py-space-6`, which matches no
+rule and renders nothing today. Tailwind's `text-base` is
+`.font('md-lg').leading('normal')` (16/24), `text-lg`
+`.font('lg-xl').leading('open')` (18/28).
+
 The vocabulary is closed. Every value is a name from the spec, whose every rung
 `spec.test.ts` holds equal to Bloom's own table, so a rung cannot drift from Bloom.
 
 | Modifier | Values |
 | --- | --- |
-| `padding(edge?, v)` | space: `none` `2xs` `xs` `sm` `md` `lg` `xl` `2xl`…`5xl`; `-lg` and the like pull outward (a margin) |
+| `padding(edge?, v)` | space: `none` `2xs` `xs` `sm` `md` `lg` `xl` `2xl`…`6xl`, and the steps between rungs (`xs-sm` 6, `sm-md` 10, `md-lg` 14, `3xl-4xl` 36, `4xl-5xl` 48); `-lg` and the like pull outward (a margin) |
 | `spacing(v)` | space, or `between` |
 | `frame({ width, height, min…, max… })` | space |
 | `grow()`, `shrink(p)` | `never` `normal` `first` |
 | `align(a)` | `start` `center` `end` `stretch` `baseline` |
-| `font(f)` | a Bloom type-ramp step (`body`, `headline`, `caption-1`…: size, line height and tracking, as `Text variant`) or a size rung (`sm` 13, `md` 15…) |
-| `weight(w)` | `regular` `medium` `semibold` `bold` |
-| `leading(l)` | Bloom line heights `tight` `snug` `normal` `relaxed` |
+| `font(f)` | a Bloom type-ramp step (`body`, `headline`, `caption-1`…: size, line height and tracking, as `Text variant`) or a size rung (`2xs-xs` 11, `sm` 13, `md` 15, `md-lg` 16, `lg-xl` 18…) |
+| `weight(w)` | `light` `regular` `medium` `semibold` `bold` `extrabold` |
+| `leading(l)` | Bloom line heights `tight` 1.15, `close` 1.25, `snug` 1.3, `easy` 1.375, `normal` 1.5, `open` (28 on 18), `relaxed` 1.625 |
 | `foreground(c)`, `background(c)` | colour roles: `foreground` `muted` `primary` `surface` `border` `error` `success`… |
 | `border(c, width?, edge?)` | colour role; `hairline` (the platform hairline) or `thin` |
-| `corner(r)`, `cornerCurve(c)` | radius rungs, `full`, `concentric`; `round` `smooth` (see [Material](#material)) |
+| `corner(r)`, `cornerCurve(c)` | radius rungs (`xs-sm` 6 among them), `full`, `concentric`; `round` `smooth` (see [Material](#material)) |
 | `opacity(o)` | `transparent` `disabled` `opaque` |
 | `size(s)` | icon rungs, avatar rungs, or Bloom sizes, by node |
 | `style(a)` / `shape(s)` / `tint(t)` | Bloom appearance / `circle` `pill` / Bloom tone |
@@ -236,14 +246,13 @@ lack, the app names it once with `defineTokens`. It is still a name at each call
 site:
 
 ```ts
-const row = defineTokens({ space: { gutter: 64 }, iconSize: { context: 13 }, leading: { tight: 1.25 } });
+const row = defineTokens({ space: { context: 18 }, iconSize: { context: 13 } });
 Icon(RiRepeat2Line).size(row.iconSize.context);
 ```
 
-Mention's row needs seven of them: the 64px body gutter, the 18px context row and
-the 3px gap before its text, the 13, 14 and 18px glyphs, and `leading-tight` (1.25).
-`leading-tight` is a class-vocabulary value that Bloom's JS `lineHeight.tight`
-(1.15) does not match. The owner decides whether these become Bloom rungs.
+Mention's row needed seven of them. Two are Bloom rungs now: the 64px body
+gutter is `6xl` and `leading-tight` (1.25) is `close`. The 18px context row,
+the 3px gap before its text and the 13, 14 and 18px glyphs stay app tokens.
 
 ## Text
 
@@ -805,10 +814,10 @@ the owner's decision, or an app's `defineTokens`) before a codemod moves it.
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 442 | 36543 | 68.0% |
+| Maps to a modifier and a token | 542 | 38889 | 72.4% |
 | Expressed by the view’s structure | 35 | 3445 | 6.4% |
 | Redundant in the language | 16 | 436 | 0.8% |
-| Needs a named token (raw value) | 680 | 6888 | 12.8% |
+| Needs a named token (raw value) | 580 | 4542 | 8.5% |
 | Needs a modifier the language lacks | 266 | 4574 | 8.5% |
 | An app’s own class | 481 | 1834 | 3.4% |
 
@@ -817,13 +826,13 @@ with no rung, by scale (the owner names each as a token or keeps it out):
 
 | Scale | Uses | Raw values with no rung (uses) |
 | --- | ---: | --- |
-| space | 2525 | 6px (467), 10px (277), 64px (171), 48px (151), 14px (141), 36px (129), 1px (91), 28px (86), 44px (85), 56px (68), 96px (63), 224px (59) |
 | color | 1644 | --muted (338), --card (276), --destructive (254), white (201), --primary-text (106), black (77), transparent (63), --surface-foreground (36), --accent (33), --error-text (25), --primary-subtle (20), --warning-text (19) |
-| font | 1285 | 16px / 24px (501), 18px / 28px (151), 11px (114), 11px / 14px (104), 20px / 28px (92), 24px / 32px (90), 14px (64), 16px (29), 15px / 22px (27), 30px / 36px (22), 36px / 40px (12), 24px (12) |
+| space | 1189 | 1px (91), 28px (86), 44px (85), 56px (68), 96px (63), 224px (59), 160px (55), 192px (43), 384px (34), 288px (31), 1200px (29), 80px (28) |
 | opacity | 669 | --muted-foreground at 70% (178), --primary at 10% (95), --destructive at 10% (32), --border at 60% (30), 0.6 (30), --muted at 40% (28), --muted at 50% (19), --primary at 20% (19), --primary at 30% (17), 0.9 (16), --muted at 30% (15), --border at 50% (11) |
+| font | 482 | 11px / 14px (104), 20px / 28px (92), 24px / 32px (90), 14px (64), 15px / 22px (27), 30px / 36px (22), 36px / 40px (12), 24px (12), 10.5px (8), 28px (7), 12.5px (5), 23px (5) |
 | leading | 321 | 20px (93), 24px (70), 16px (44), 18px (28), 28px (18), 1 (15), 22px (14), 14px (6), 29px (6), 17px (5), 40px (3), 32px (3) |
-| corner | 287 | 6px (207), 22px (14), 14px (12), 10px (9), 18px (9), 15px (8), 23px (6), 5px (4), 13px (3), 27px (3), 25px (2), 26px (2) |
 | tracking | 150 | 0.05em (61), 0.025em (50), -0.025em (17), -0.02em (5), 0.1em (4), -0.01em (3), -0.5px (2), 0.04em (2), 0.5px (2), -0.2px (1), -0.4px (1), 1.5px (1) |
+| corner | 80 | 22px (14), 14px (12), 10px (9), 18px (9), 15px (8), 23px (6), 5px (4), 13px (3), 27px (3), 25px (2), 26px (2), 3px (2) |
 | borderWidth | 6 | 4px (6) |
 | weight | 1 | 900 (1) |
 
