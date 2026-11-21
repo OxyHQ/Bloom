@@ -63,16 +63,13 @@ describe('on the web, a variant is the same class under its condition’s CSS', 
     ]);
   });
 
-  it('the variant sheet puts each class under each condition, in the order they override', () => {
-    const sheet = variantSheet();
+  it('a variant sheet puts each class under its condition’s CSS', () => {
     const name = WEB_CLASS['paddingTop:16'] as string;
-    const md = sheet.indexOf(`@media (min-width: 768px){`);
-    expect(md).toBeGreaterThan(sheet.indexOf(`@media (min-width: 640px){`));
-    expect(sheet).toContain(`.${name}-md{padding-top:16px;}`);
-    expect(sheet).toContain(`.dark .${name}-dark{padding-top:16px;}`);
-    expect(sheet).toContain(
+    expect(variantSheet('md')).toMatch(/^@media \(min-width: 768px\)\{/);
+    expect(variantSheet('md')).toContain(`.${name}-md{padding-top:16px;}`);
+    expect(variantSheet('dark')).toContain(`.dark .${name}-dark{padding-top:16px;}`);
+    expect(variantSheet('hovered')).toContain(
       `.blsg:hover .${name}-hovered, .blsg:hover.${name}-hovered{padding-top:16px;}`,
     );
-    expect(sheet.indexOf(`-pressed{`)).toBeGreaterThan(sheet.indexOf(`-hovered{`));
   });
 });

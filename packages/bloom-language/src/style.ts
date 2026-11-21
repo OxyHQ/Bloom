@@ -234,8 +234,8 @@ function webStyle(
   }
   // A variant is the same class under its condition's CSS (web-sheet.ts), keyed
   // apart from the base so styleq keeps both.
-  if (variants.length > 0) adoptLanguageVariants();
   for (const [condition, styled] of variants) {
+    adoptLanguageVariants(condition);
     for (const key of Object.keys(styled)) {
       const name = classOf(key, styled[key] as StyleValue);
       if (name === undefined) {
