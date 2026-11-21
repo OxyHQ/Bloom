@@ -33,9 +33,23 @@ Bloom's state-driven animations play on one engine (`@oxy.so/bloom/motion`):
 
 - **Motion is a table.** `MOTION` names every timing Bloom plays (`press`, `pop`,
   `roll`, `slide`, `thumb`, `fade`, `enter`, `exit`, `restack`, the recipes'
-  `present` and `dismiss`, and the springs `select` and `expand`), each a
-  `MotionSpec`; `EASING` names the curves, `SCALE` the press and pop scales.
-  Components read them; the Bloom language's `motion` tokens mirror them.
+  `present` and `dismiss`, one turn of Tailwind's loops `spin` and `pulse`, and
+  the springs `select` and `expand`), each a `MotionSpec`; `EASING` names the
+  curves (`pulse` is Tailwind's `animate-pulse` curve), `SCALE` the press and
+  pop scales. Components read them; the Bloom language's `motion` tokens
+  mirror them.
+- **A timing can wait.** `withDelay(timing, ms)` is the same motion started
+  later: a `transitionDelay`/`animationDelay` on native, the transition's and
+  `element.animate()`'s `delay` on the web, the native removal's
+  `Keyframe.delay()`. A playing that waits can hold its first frame meanwhile
+  (`fill: 'backwards'`), and leaves the box when it ends, as `'none'` does.
+- **A playing can loop.** `Play.repeat` plays its frames forever
+  (`animationIterationCount: 'infinite'` on native, `iterations: Infinity` on
+  the web) until the playing changes; the caller stops it under reduced motion.
+- **A transition can take the colours.** `transitionStyle(timing, true)` also
+  transitions the box's fill, border (each side), outline and text colour
+  (the web's `currentColor` glyph follows the text colour). Without it the
+  style is the transform and opacity transition Bloom's own motion views take.
 - **Keyframes and transitions are data.** `defineKeyframes(frames, motion)`
   writes what a CSS `@keyframes` block is: a frame's `easing` curves the stretch
   from it to the next, else the motion's curve does, per stretch.

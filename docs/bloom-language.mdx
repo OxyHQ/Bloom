@@ -263,7 +263,8 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `align(a)`, `alignSelf(a)` | `start` `center` `end` `stretch` `baseline` (a stack's children; the view's own place) |
 | `position({ top, bottom, leading, trailing })`, `offset({ x, y })` | space, negatives included (see [Layout](#layout)) |
 | `zIndex(z)`, `hidden(on?)` | Bloom's `Z_INDEX`: `base` `raised` `floating` `dropdown`, or Tailwind's `'20'` `'30'` `'50'`; out of the layout |
-| `scale(s)` | drawn scaled about its centre: Bloom's `dip` 0.7, `pressed` 0.98, `full`, `swell` 1.2, or a percent (`'95'` `'105'`…) |
+| `scale(s)` | drawn scaled about its anchor (its centre unless `anchor` says otherwise): Bloom's `dip` 0.7, `pressed` 0.98, `full`, `swell` 1.2, or a percent (`'95'` `'105'`…) |
+| `anchor(a)` | the point the view scales and rotates about (SwiftUI's `anchor:`, Tailwind's `origin-*`): `center` `top` `bottom` `leading` `trailing` `top-leading` `top-trailing` `bottom-leading` `bottom-trailing`; leading and trailing are left and right, as an offset's x |
 | `allowsHitTesting(on)`, `accessibilityOnly()` | `false`: touches pass through it and everything in it; read by a screen reader and not drawn (`sr-only`) |
 | `overlay(view, alignment?)`, `background(view, alignment?)` | a view over or under this one, at `center` `top` `bottom` `leading` `trailing` `top-leading` … `bottom-trailing` |
 | `shadow(s)`, `ring(c, width?, offset?)` | Bloom's elevation `s` `m` `floating`, or one of Tailwind's shadows by its exact box-shadow; a colour role (or a role at an opacity, or `none`) as an outline, `thin` `thick` or `'3'` wide |
@@ -368,9 +369,10 @@ VStack(...).background('surface').corner('xl').shadow('m')
   A glass or an island takes one radius, so a corner of some sides only is
   left out on it.
 - **Scale and basis.** `.scale(s)` draws the view scaled about its centre,
-  after its offset (Tailwind's translate, then scale), without moving its
-  siblings. `.basis(length)` is its `flex-basis` (`basis-0` is
-  `.basis('none')`).
+  after its offset (Tailwind's translate, then rotate, then scale), without
+  moving its siblings; `.anchor(point)` moves the point it scales and rotates
+  about (`origin-top-left` is `.anchor('top-leading')`). `.basis(length)` is
+  its `flex-basis` (`basis-0` is `.basis('none')`).
 - **Hit testing.** `.allowsHitTesting(false)` lets touches and the pointer
   through the view and everything inside it, as SwiftUI's does
   (`pointer-events-none`); `true` takes them again. react-native-web drops an
@@ -449,10 +451,25 @@ inside; a stack's layout to its host; a placement to its outermost box.
   would be a second resolver; the runtime's rule per class is the same
   bytes, and only for what renders.
 - **What varies** is the spec's `variants.modifiers`: box, text and stack
-  style, placement (a basis and hit testing included), elevation and rings.
-  A scale or an offset is a transform, which has no class to vary on the web. Anything else inside `when()` is left
+  style, placement (a basis and hit testing included), elevation, rings and
+  geometry (`.scale()`, `.offset()`, `.rotation()`). Anything else inside `when()` is left
   out and said once in development; the compiler rejects it (`A variant cannot
   change .onPress()`), and checks the condition and every value.
+- **Geometry varies by component.** A transform is one property, so a view
+  whose geometry varies draws it as its outermost box's placement, one value
+  per component (translate x, translate y, rotate, scale), and a variant
+  overrides only the components it sets (`active:scale-95 hover:-translate-y-1`
+  holds both while both do). Native composes the components into one
+  `transform` after the variants that hold; on the web each component is a
+  custom property class (`--bl-tx`, `--bl-ty`, `--bl-r`, `--bl-s`) composed by
+  one `transform` class of the components the view has, so a hover, press or
+  breakpoint class sets only its property. A component a variant sets rests at
+  its identity. Resting geometry draws the same way (the same transform it
+  always computed). Under `.animation()` the change plays: on native the box
+  whose state the variant answers is itself the animated host, on the web the
+  transform's CSS transition. Geometry a `MotionValue`, a gesture or press
+  feedback moves takes no variant (the one mapper writes it): its variants are
+  left out, said once, and a `MotionValue` inside `when()` is a compiler error.
 - **A Bloom component** (Avatar, Button, Image…) reads its style as an
   object, which CSS cannot vary, so on every platform its variants go into
   its own style, picked by a `Conditioned` leaf from the window's
@@ -1042,18 +1059,22 @@ feedback) play on the same engine.
 
 Motion is a token, like every other value: Bloom's motion table (`MOTION`) by
 name, `press`, `present`, `dismiss`, `fade`, `slide`, `thumb`, `pop`, `roll`,
-`enter`, `exit`, `restack`, and the springs `select` and `expand` (SwiftUI's
-`response` and `dampingRatio`); `spec.test.ts` holds the spec's table equal to
-Bloom's. An app names its own with `defineTokens({ motion: { … } })`, which
-gives Bloom `MotionSpec`s. Curves are named too (`ease`, `inOutQuad`,
-`outQuart`, `outExpo`, `backOut`, `linear`).
+`enter`, `exit`, `restack`, `spin`, `pulse`, and the springs `select` and
+`expand` (SwiftUI's `response` and `dampingRatio`); `spec.test.ts` holds the
+spec's table equal to Bloom's. An app names its own with `defineTokens({
+motion: { … } })`, which gives Bloom `MotionSpec`s. Curves are named too
+(`ease`, `inOutQuad`, `outQuart`, `outExpo`, `backOut`, `linear`, and `pulse`,
+Tailwind's `animate-pulse` curve `[0.4, 0, 0.6, 1]`).
 
 | Modifier | Meaning (SwiftUI) |
 | --- | --- |
 | `.scale(s)`, `.offset({ x?, y? })`, `.rotation(r)` | Geometry that moves the view without moving its neighbours: `scale` tokens `dip` `pressed` `full` `swell`; offsets are space tokens (negative ones too); `rotation` `none` `quarter` `half`. Each takes a `MotionValue` in place of a token, and the view follows it. |
-| `.animation(motion, value?)` | `.animation(_:value:)`: changes to this view's geometry and opacity, and what animates inside it in the same body (a matched geometry, a content transition, keyframes or a transition without their own motion), play with `motion`. With a value, only on a render where the value changed. |
+| `.animation(motion, value?)` | `.animation(_:value:)`: changes to this view's geometry, opacity and colours (the fill, border, outline and text colour of its moving box: `transition-colors`), and what animates inside it in the same body (a matched geometry, a content transition, keyframes or a transition without their own motion), play with `motion`. A variant's change plays too (`hover:bg-muted`, `active:scale-95`). With a value, only on a render where the value changed. |
 | `.transition(t)` | Insertion and removal: `opacity`, `scale('dip')`, `move(edge, distance)`, `t.combined(u)`, `asymmetric(insert, remove)`, `t.animation(motion)`. A half may be keyframes of the app's own. |
 | `.keyframes(k, trigger)` | `keyframeAnimator`: plays `k` each time `trigger` changes to a truthy value (a boolean turning on, or a counter such as a press id). |
+| `.repeatForever(loop)` | `keyframeAnimator(repeating: true)`: plays a loop again and again while the view is on screen: `'spin'` (a turn, 1 s linear: `animate-spin`), `'pulse'` (half opacity at the midpoint, 2 s: `animate-pulse`), frame for frame, or keyframes of the app's own. It plays when nothing else does, after an insertion ends; never under reduced motion. |
+| `.delay(d)` | What the view plays waits `d` first (its `.animation()` changes, its insertion and removal, its keyframes, its loop): Bloom's durations `instant` 100, `fast` 150, `normal` 200, `slow` 300, or Tailwind's other delays `'75'` `'500'` `'700'` `'1000'` (ms). A delayed playing holds its first frame while it waits. |
+| `.anchor(a)` | The point its scale and rotation (and its keyframes' and transition's) turn about; see [Modifiers](#modifiers). |
 | `.matchedGeometry(id, ns)` | `matchedGeometryEffect`: the view that takes `id` moves from where the last view with it was. `const ns = useNamespace()`. |
 | `.contentTransition('roll', direction?)` | `Text` only; `.contentTransition(.numericText(value:))`: a change of the text inside an animation rolls the old text out and the new one in (Bloom's `rollKeyframes`, as `RollingText` rolls), up when `direction` rose and down when it fell. |
 | `.pressScale()` | Press feedback (`PressableScale`): eases to `pressed` while a finger holds the view. Off for a mouse on the web and under reduced motion. |
@@ -1109,11 +1130,26 @@ A moving node is drawn by one component (`MotionNode`), so nodes without motion
 stay plain elements with no hooks. Its outermost host becomes its animated twin
 (`Animated.View`, `Animated.Text`, an animated `Pressable`) when it rests moved or
 animates its resting state (geometry, opacity, a transition, a matched geometry,
-press feedback), from the first render, because a CSS transition needs its host
-before the change. A node with only keyframes is animated only while they play,
-as `EngagementPop` mounts its layer. A Bloom component (a Surface, an Avatar, a
-bare glyph) cannot take motion itself, so it moves in one box, which takes the
-view's place in its parent.
+press feedback, or, under its own `.animation()`, a colour, an opacity or
+geometry it paints or varies), from the first render, because a CSS transition
+needs its host before the change. A box whose variants answer its state is that
+host itself (its `StateHost` draws the twin), so a pressed or hovered variant's
+change plays where it is drawn. A node with only keyframes or a loop is animated
+only while they play, as `EngagementPop` mounts its layer. A Bloom component (a
+Surface, an Avatar, a bare glyph) cannot take motion itself, so it moves in one
+box, which takes the view's place in its parent.
+
+**Colours, loops and delays.** The moving box's transition covers its
+`transform`, `opacity` and colours (`backgroundColor`, each border side's
+colour, `outlineColor`, `color`; on the web `color`, `background-color`,
+`border-color` and `outline-color`, and a glyph paints `currentColor`), the one
+transition Reanimated's CSS engine and the browser play. A loop is the
+engine's keyframes with an infinite iteration count (a CSS animation on native,
+`element.animate()` with `iterations: Infinity` on the web), the lowest of the
+one playing at a time, so it starts once an insertion ends and gives way to
+keyframes; reduced motion stops it. A delay is the timing's own
+(`transitionDelay`/`animationDelay`, the Web Animations delay, the native
+removal's `Keyframe.delay()`), and a delayed playing fills backwards.
 
 **Removal.** Native: a removed child unmounts at once and its removal plays
 after, as a Reanimated layout animation on a native snapshot (no JS). Web: a
@@ -1126,17 +1162,18 @@ flattens the material (AGENTS.rules.md, Material). The engine routes the fade of
 a box that holds a material host: the box only moves, and the fade plays, with
 the same frames, on the material's own layers and on each piece of content on
 it. Native glass fades its own host. The compiler rejects a fade above glass
-(`.transition(opacity)`, fading keyframes or `.opacity()` on a view whose
-children hold `.glass()`), since the renderer cannot route a fade it does not
-own.
+(`.transition(opacity)`, fading keyframes, a pulse loop or `.opacity()` on a
+view whose children hold `.glass()`), since the renderer cannot route a fade it
+does not own.
 
-**Compiler.** `motion`, `scale`, `rotation` and `contentTransition` values are
-token sets it checks; `.offset()` keys and values are checked like `.frame()`'s;
-a string where a transition or keyframes value belongs is an error. A `const`
-from `useMotionValue` is a `MotionValue` in any scope: it may go in `.offset()`,
+**Compiler.** `motion`, `scale`, `rotation`, `contentTransition`, `loop`
+(`.repeatForever()`), `duration` (`.delay()`) and `anchor` values are token sets
+it checks; `.offset()` keys and values are checked like `.frame()`'s; a string
+where a transition or keyframes value belongs is an error. A `const` from
+`useMotionValue` is a `MotionValue` in any scope: it may go in `.offset()`,
 `.scale()`, `.rotation()` and as `.drag()`'s value; anywhere a token goes it is
-an error, and so is a literal as `.drag()`'s value. `.swipe()`'s direction is a
-checked token.
+an error, and so is a literal as `.drag()`'s value, or one inside `when()`
+(a variant varies geometry by token). `.swipe()`'s direction is a checked token.
 `opacity`, `move`, `scale`, `asymmetric` and `defineKeyframes` are pure, so a
 chain that names them (`.transition(asymmetric(move('top', 'xl'), opacity))`)
 hoists like any other static chain, and a module constant holding one is static.
@@ -1367,37 +1404,49 @@ and `@oxy.so/bloom-data` beside it.
   rings, corners and their curve, text styles, links, truncation.
 - Variants: breakpoints, the scheme, a view's own hover, focus
   (`:focus-visible`) and press, `disabled` and the platforms; nested
-  variants; on the web a sheet per condition holding only the classes that
+  variants; geometry (`.scale()`, `.offset()`, `.rotation()`) by component,
+  a custom property per component on the web, played by `.animation()`;
+  on the web a sheet per condition holding only the classes that
   render; a Bloom component's variants in its own style, its state tracked by
   its box (a component with no press of its own takes it on a host around
   it); the innermost pressable owns a hover or a press, as react-native-web's
   does.
-- Motion (`@oxy.so/bloom/motion`): motion tokens and curves, `.animation()`,
-  `.transition()`, `.keyframes()`, `.matchedGeometry()`,
-  `.contentTransition('roll')`, `.pressScale()`, geometry (`.scale()`,
-  `.offset()`, `.rotation()`) as tokens or bound to a `MotionValue`, `.drag()`
-  and `.swipe()` on Gesture Handler 3. Resting geometry that nothing plays is
-  the box's own style. Bloom's pop, roll, toast and press feedback play on the
-  same engine.
+- Motion (`@oxy.so/bloom/motion`): motion tokens and curves, `.animation()`
+  (geometry, opacity and colours: `transition-colors`), `.transition()`,
+  `.keyframes()`, loops (`.repeatForever('spin' | 'pulse')`, Tailwind's
+  `animate-spin` and `animate-pulse`, or an app's keyframes), `.delay()`
+  (Bloom's durations and Tailwind's delays), `.anchor()` (a transform origin),
+  `.matchedGeometry()`, `.contentTransition('roll')`, `.pressScale()`, geometry
+  (`.scale()`, `.offset()`, `.rotation()`) as tokens or bound to a
+  `MotionValue`, `.drag()` and `.swipe()` on Gesture Handler 3. Resting
+  geometry that nothing plays is the box's own style. Bloom's pop, roll, toast
+  and press feedback play on the same engine.
 - The className table (`docs/bloom-language-classnames.mdx`), which says what
   each utility the apps use becomes.
 
 **Not built**
 
-- Variants: a scale or an offset under `when()` (geometry is the motion
-  layer's, and the web has no transform class to vary); an app colour under
-  `when()` (it has no class); a glass's frame, border, corner and fill (only a
-  material's padding varies); `EngagementAction` takes no state variants.
+- Variants: an app colour under `when()` (it has no class); a glass's frame,
+  border, corner and fill (only a material's padding varies); `EngagementAction`
+  takes no state variants; an `.anchor()` under `when()`; geometry a
+  `MotionValue`, a gesture or press feedback moves (the one mapper writes it).
+  A Bloom component's varied geometry changes at once under `.animation()`: it
+  moves in a box of its own, which its state does not reach.
 - A Bloom pressable inside a pressable stack on the web: the stack's CSS
   answers its nearest anchor, and a Bloom component carries none, so the
   outer stack still answers a hover of the inner component (native leaves
   read the nearest press host and are right).
-- Motion: `transition-colors` (the engine plays geometry and opacity, not
-  colour), loops (`animate-spin`, `animate-pulse`), a `delay`, a transform
-  `origin`; `withAnimation`, `map()`, `.pinch`, `.onDoubleTap`, the bottom
+- Motion: `withAnimation`, `map()`, `.pinch`, `.onDoubleTap`, the bottom
   sheet's drag, `.contentTransition('numeric')`, matched geometry across
-  screens. An `.animation()` scope reaches its own body, not the bodies of
-  `view()`s inside it; a removal plays only for a keyed list's child.
+  screens; Tailwind's `animate-bounce` and `animate-ping` as loop tokens (an
+  app loops its own keyframes); `transition-all` (frames and shadows). A
+  colour plays on the view's moving box only: a fill of a box inside the view
+  (`.background()` before a `.padding()`), the ink of a text inside it, and on
+  native a `Text`'s own ink (Bloom's `Text` has no animated twin) and a
+  glyph's fill change at once. An `.animation()` scope reaches its own body,
+  not the bodies of `view()`s inside it; a removal plays only for a keyed
+  list's child. Colour transitions, loops and delays are measured in tests
+  and jsdom, not yet on a device.
 - Renderers: everything renders through React Native and react-native-web;
   no SwiftUI, native-view or CSS renderer yet. iOS is typechecked and tested
   against stand-ins, not run on a device. The web stylesheet is not in
