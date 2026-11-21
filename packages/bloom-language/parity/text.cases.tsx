@@ -393,6 +393,25 @@ const tracked: ParityCase[] = [
       </Text>
     ),
   },
+  // No font: the leading and the tracking measure from Bloom Text's own 13px, which stays unwritten.
+  {
+    name: 'no font, leading relaxed and tracking wide',
+    language: () => toElement(L.Text('Default').leading('relaxed').tracking('wide')),
+    bloom: () => (
+      <Text style={{ lineHeight: 13 * LEADING.relaxed, letterSpacing: 13 * TRACKING.wide }}>
+        Default
+      </Text>
+    ),
+  },
+  {
+    name: 'no font, a leading from the stack',
+    language: () => toElement(L.VStack(L.Text('Default')).leading('close')),
+    bloom: () => (
+      <RN.View>
+        <Text style={{ lineHeight: 13 * LEADING.close }}>Default</Text>
+      </RN.View>
+    ),
+  },
   {
     name: 'font mono',
     language: () => toElement(L.Text('const x = 1').font('mono')),
