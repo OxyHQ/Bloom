@@ -123,3 +123,4 @@ export const CategoryBars: Story = { args: { family: 'categoryBar' } };
 export const Menubars: Story = { args: { family: 'menubar' } };
 export const CompositionBars: Story = { args: { family: 'compositionBar' } };
 export const PhoneInputs: Story = { args: { family: 'phoneInput' } };
+export const MediaFlights: Story = { args: { family: 'mediaFlight' } };

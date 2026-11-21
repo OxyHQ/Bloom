@@ -23,6 +23,7 @@ import { FILE_UPLOADS } from './file-upload';
 import { VIDEOS } from './video-view';
 import { PHONE_INPUTS } from './phone-input';
 import { CATEGORY_BARS } from './category-bar';
+import { MEDIA_FLIGHTS } from './media-flight';
 import { CHOICE_LISTS } from './choice-list';
 import { VIDEO_PLAYBACK } from './video-playback';
 import { COLOR_SWATCH_PICKERS } from './color-swatch-picker';
@@ -68,6 +69,7 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...VIDEOS,
   ...PHONE_INPUTS,
   ...CATEGORY_BARS,
+  ...MEDIA_FLIGHTS,
   ...CHOICE_LISTS,
   ...VIDEO_PLAYBACK,
   ...COLOR_SWATCH_PICKERS,
