@@ -60,9 +60,11 @@ const STORIES = process.argv.filter((arg) => arg.startsWith('language-parity--')
 /**
  * What a cell draws, as a tree: each element's tag, its attributes other than
  * `class`, `style`, `data-testid` and `id`, its text, every computed style
- * property (its `::before` and `::after` included) and its laid-out size.
+ * property (its `::before` and `::after` included) and its laid-out size. With
+ * `portals` (a page that draws one side alone), what it presents into Bloom's
+ * portal root (a sheet, a dialog) follows it.
  */
-function describeInPage(testid) {
+function describeInPage(testid, portals) {
   const SKIP = new Set(['class', 'style', 'data-testid', 'id']);
   // React's useId counts across the page; an id is compared by its order in its cell.
   const REACT_ID = /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
@@ -112,7 +114,9 @@ function describeInPage(testid) {
       children: [...element.children].map(describe),
     };
   };
-  return [...document.querySelector(`[data-testid="${testid}"]`).children].map(describe);
+  const roots = [...document.querySelector(`[data-testid="${testid}"]`).children];
+  if (portals) roots.push(...(document.getElementById('bloom-portal-root')?.children ?? []));
+  return roots.map(describe);
 }
 
 /**
@@ -196,13 +200,42 @@ function elementAtPathInPage(testid, path) {
 }
 
 /**
- * What a side draws, read with its page in front: Chrome throttles a page in
- * the background (its frames and its input), which an isolated case's own
- * pages would otherwise make of the table's.
+ * What the two sides draw, read with their page in front (Chrome throttles a
+ * page in the background, its frames and its input, which an isolated case's
+ * own pages would otherwise make of the table's). Two cells of one page are
+ * read in one call, so a motion that JS drives (a spinner) is read in the same
+ * frame on both sides.
  */
-async function describeSide({ page, testid }) {
-  await page.bringToFront();
-  return page.evaluate(describeInPage, testid);
+async function describeSides(sides) {
+  const [left, right] = sides;
+  if (left.page === right.page) {
+    await left.page.bringToFront();
+    return left.page.evaluate(
+      `[${[left, right].map(({ testid }) => `(${describeInPage})(${JSON.stringify(testid)}, false)`).join(', ')}]`,
+    );
+  }
+  const out = [];
+  for (const { page, testid } of sides) {
+    await page.bringToFront();
+    out.push(await page.evaluate(describeInPage, testid, true));
+  }
+  return out;
+}
+
+/**
+ * Waits until what a page that draws one side alone stops changing: a sheet or
+ * a dialog it presents plays its entrance first (by CSS or by JS), and the
+ * table's comparison is of what rests. Gives up after 10s; a motion that never
+ * ends (a spinner) then shows as a difference, not a pass.
+ */
+async function atRest(page) {
+  let last = '';
+  for (let tries = 0; tries < 40; tries++) {
+    const now = JSON.stringify(await page.evaluate(describeInPage, 'parity-frame', true));
+    if (now === last) return;
+    last = now;
+    await new Promise((done) => setTimeout(done, 250));
+  }
 }
 
 /** Waits for what a page draws: its first cell, its fonts, then the transitions it starts. */
@@ -217,6 +250,8 @@ async function settle(page, testid) {
  */
 async function compareHeldStates(sides, name) {
   const differences = [];
+  // Each side alone in its page: what it portals is its own.
+  const alone = sides[0].page !== sides[1].page;
   await sides[1].page.bringToFront();
   const hosts = await sides[1].page.evaluate(pressHostsInPage, sides[1].testid);
   for (const { path, point } of hosts) {
@@ -240,7 +275,7 @@ async function compareHeldStates(sides, name) {
             .filter((animation) => animation.effect?.getTiming().iterations !== Infinity);
           await Promise.all(finite.map((animation) => animation.finished.catch(() => {})));
         });
-        drawn.push(await page.evaluate(describeInPage, testid));
+        drawn.push(await page.evaluate(describeInPage, testid, alone));
         if (state === 'pressed') await page.mouse.up();
         await page.mouse.move(0, 0);
       }
@@ -292,11 +327,11 @@ try {
               `${BASE}/iframe.html?id=language-parity-frame--one-side&viewMode=story&args=${frame};side:${side}&globals=theme:${theme}`,
             );
             await settle(framePage, 'parity-frame');
+            await atRest(framePage);
             sides.push({ page: framePage, testid: 'parity-frame' });
           }
         }
-        const left = await describeSide(sides[0]);
-        const right = await describeSide(sides[1]);
+        const [left, right] = await describeSides(sides);
         // Two empty cells are equal and prove nothing, unless that is the case's claim.
         if ((left.length === 0) !== empty)
           differences.push(`${label}: ${empty ? 'draws something' : 'draws nothing'}`);
