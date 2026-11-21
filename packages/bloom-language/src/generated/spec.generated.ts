@@ -278,9 +278,9 @@ export const VARIANT_MODIFIERS = [
 ] as const;
 export const VARIANT_SELECTORS = {
   "dark": ".dark &",
-  "hovered": ".blsg:hover &, .blsg:hover&",
-  "focused": ".blsg:focus-visible &, .blsg:focus-visible&",
-  "pressed": ".blsg:active &, .blsg:active&"
+  "hovered": "&:is(.blsg:hover:where(:not(:has(.blsg:hover))), .blsg:hover:where(:not(:has(.blsg:hover))) *):where(:not(.blsg:hover:where(:not(:has(.blsg:hover))) .blsg, .blsg:hover:where(:not(:has(.blsg:hover))) .blsg *))",
+  "focused": "&:is(.blsg:focus-visible, .blsg:focus-visible *):where(:not(.blsg:focus-visible .blsg, .blsg:focus-visible .blsg *))",
+  "pressed": "&:is(.blsg:active:where(:not(:has(.blsg:active))), .blsg:active:where(:not(:has(.blsg:active))) *):where(:not(.blsg:active:where(:not(:has(.blsg:active))) .blsg, .blsg:active:where(:not(:has(.blsg:active))) .blsg *))"
 } as const;
 
 /** Bloom's type ramp: `<family>-<weight>` → [fontSize, lineHeight, letterSpacing, fontWeight]. */

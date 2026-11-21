@@ -405,7 +405,7 @@ inside; a stack's layout to its host; a placement to its outermost box.
 | --- | --- | --- | --- |
 | `sm` `md` `lg` `xl` `2xl` | the window at that tier of Bloom's `BREAKPOINTS` or wider | `@media (min-width: …)` | the leaf reads `useWindowBreakpoint()`, which re-renders it only across a breakpoint |
 | `dark` | the dark scheme | `.dark &` (Bloom puts `dark` on the root) | the leaf reads the theme it already paints from |
-| `hovered` `focused` `pressed` | the view's own state (`focused` is a keyboard's focus, `:focus-visible`) | `.blsg:hover &`: the view's outermost box carries the anchor class | the outermost box (`StateHost`) tracks the states its variants answer and hands them to the view's leaves |
+| `hovered` `focused` `pressed` | the view's own state (`focused` is a keyboard's focus, `:focus-visible`) | the view's outermost box carries the anchor class `blsg`, and a class answers its nearest anchor's state (see below) | the outermost box (`StateHost`) tracks the states its variants answer and hands them to the view's leaves |
 | `disabled` | the view's own `.disabled()` (Button, FAB, a pressable stack) | settled when it renders | settled when it renders |
 | `web` `native` `ios` `android` | the platform | settled | settled |
 
@@ -413,43 +413,67 @@ inside; a stack's layout to its host; a placement to its outermost box.
   on the web, by the leaf that draws each host on native (`Conditioned`, a
   `Painted` leaf that also reads the breakpoint, the scheme and the state),
   which builds its props once per palette and set of holding variants.
-- **The variant sheets** are every class of the generated sheet again under
-  each live condition (`<class>-md`, `<class>-hovered`…): one constructed
-  sheet per condition, placed after the language's own in the order they
-  override and composed from the generated sheet the first time a variant of
-  that condition renders, so a page pays only for the conditions it uses
-  (about 1,660 rules, 60 to 140 KB of CSS, each). A breakpoint's rule has the base's specificity and comes
-  after it (a wider breakpoint after a narrower); the scheme's selector is one
-  class stronger and a state's two, so a state beats the scheme and a press
-  beats a hover. A value with no class (an app token, an offset) cannot vary
-  on the web: it is left out, said once in development.
+- **The variant sheets** hold only the variant classes that have rendered.
+  A variant is a generated class again under its condition (`<class>-md`,
+  `<class>-hovered`…); the first time a style naming one is resolved (styles
+  are cached by key, so once), its rule joins its condition's constructed
+  sheet, kept in the generated sheet's order. One sheet per live condition,
+  placed after the language's own in the order they override, so a page
+  parses one rule per variant class it draws: the Variants parity story
+  draws 13 (about 1.4 KB), where a whole sheet per condition was 1,806 rules
+  and 69 to 186 KB each. A breakpoint's rule has the base's specificity and
+  comes after it (a wider breakpoint after a narrower); the scheme's selector
+  is one class stronger and a state's two, so a state beats the scheme and a
+  press beats a hover. A value with no class (an app token, an offset)
+  cannot vary on a language host on the web: it is left out, said once in
+  development.
+- **No build step.** The compiler checks every variant (its condition, its
+  modifiers, each value) but emits no CSS: which classes a variant draws
+  depends on where it lands (the text traits a font, weight or leading
+  variant combines with, the layer a box modifier joins, the corner a
+  shadow follows), which only the runtime resolves. Emitting at build time
+  would be a second resolver; the runtime's rule per class is the same
+  bytes, and only for what renders.
 - **What varies** is the spec's `variants.modifiers`: box, text and stack
   style, placement (a basis and hit testing included), elevation and rings.
   A scale or an offset is a transform, which has no class to vary on the web. Anything else inside `when()` is left
   out and said once in development; the compiler rejects it (`A variant cannot
   change .onPress()`), and checks the condition and every value.
-- **A Bloom component** (Avatar, Button, Image…) takes its style as an
-  object, so a varied box, place or state of one is a view of its own around
-  it, which takes the variant.
-- **States are the view's**, as SwiftUI's: the anchor is the view's outermost
-  box. On the web a state selector reaches what is inside the anchor, so a
-  view with state variants inside another one answers the outer one's state
-  too; on native each leaf reads the nearest box's.
+- **A Bloom component** (Avatar, Button, Image…) reads its style as an
+  object, which CSS cannot vary, so on every platform its variants go into
+  its own style, picked by a `Conditioned` leaf from the window's
+  breakpoint, the scheme and its state (on the web each role is its CSS
+  variable, as in its inline style). No view is put around it, so its layout
+  is the one it has without a variant. Its state is tracked by its box in
+  JavaScript on the web too (the component takes `onPressIn`/`onHoverIn`…
+  as Bloom's Button does).
+- **States are the view's**, as SwiftUI's: the anchor is the view's
+  outermost box, and a class answers its NEAREST anchor (its own box or the
+  closest around it), as a native leaf reads the nearest press host. A
+  state is the innermost anchor's in it, as react-native-web's Pressable
+  takes it (a hover or a press of an inner pressable is not the outer
+  one's): the selector is the anchor in that state with no anchor in the
+  same state inside it (`:has()`), and no anchor between it and the class
+  (the spec's `variants.selectors`; the `:where()` parts add no
+  specificity). So a pressable inside another answers only its own press
+  and hover, on every platform (the parity case, held in Chrome by
+  `verify-parity-web.mjs`). A text trait a variant sets above a nested
+  pressable answers that nearest one on both platforms.
 - **Icons** follow a varied foreground. On the web the glyph paints
   `currentColor` and its colour is a class under each condition (CSS answers
   a hover, as it does for text); on native the glyph's leaf is a
   `Conditioned` one that fills it from the environment.
 - **A material's padding varies.** A glass, an island or a concentric box is a
-  Bloom component, which takes its style as an object; a varied padding of
-  one is a view just inside it, the same room, which takes the variant. Its
-  other variants (a fill, a border, its corner) are left out, said once in
-  development.
+  Bloom material drawn from its own props; a varied padding of one is a view
+  just inside it, the same room, which takes the variant. Its other variants
+  (a fill, a border, its corner) are left out, said once in development.
 - **Variants nest.** `when('md', (v) => v.when('hovered', (h) => h.padding('lg')))`
   holds while both do (`md:hover:`): native reads both; the web writes the
-  widest breakpoint's query around the other terms' selectors, the scheme's
-  around the states', and two states of one view are one anchor
-  (`.blsg:hover:active`). A joined condition's sheet comes after the single
-  ones, and its selector is at least as specific as its strongest term's.
+  widest breakpoint's query around the other terms' selectors, each state's
+  selector around the class (both answer its nearest anchor, so two states
+  are one view's) and the scheme's around the states'. A joined condition's
+  sheet comes after the single ones, and its selector is at least as specific
+  as its strongest term's.
 
 ## Text
 

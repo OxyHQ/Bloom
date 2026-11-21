@@ -96,6 +96,29 @@ describe('when(): a variant overrides what the chain set before it', () => {
     expect(text().props.style).toEqual({ color: LIGHT.primary });
   });
 
+  it('a pressable inside a pressable answers its own press, never the outer one’s', () => {
+    const r = mount(
+      HStack(
+        Text('a'),
+        HStack(Text('b'))
+          .onPress(() => {})
+          .when('pressed', (v) => v.opacity('half')),
+      )
+        .onPress(() => {})
+        .when('pressed', (v) => v.opacity('70')),
+    );
+    const [outer, inner] = [0, 1].map(
+      (index) => (): ReactTestInstance => ofType(r, 'Pressable')[index] as ReactTestInstance,
+    ) as [() => ReactTestInstance, () => ReactTestInstance];
+    act(() => outer().props.onPressIn());
+    expect(outer().props.style).toEqual({ flexDirection: 'row', opacity: 0.7 });
+    expect(inner().props.style).toEqual({ flexDirection: 'row' });
+    act(() => outer().props.onPressOut());
+    act(() => inner().props.onPressIn());
+    expect(inner().props.style).toEqual({ flexDirection: 'row', opacity: 0.5 });
+    expect(outer().props.style).toEqual({ flexDirection: 'row' });
+  });
+
   it('a platform and the view’s own disabled() are settled when it renders', () => {
     const [stack] = ofType(
       mount(
@@ -130,11 +153,22 @@ describe('when(): a variant overrides what the chain set before it', () => {
     expect(row?.props.style).toEqual({ flexDirection: 'row', display: 'flex' });
   });
 
-  it('a varied Bloom component is drawn in a view of its own, which takes the variant', () => {
-    windowTier.current = 'sm';
+  it('a varied Bloom component takes the variant in its own style, with no view around it', () => {
     const r = mount(Avatar('a.png').when('sm', (v) => v.padding('xs')));
-    const [box] = ofType(r, 'View');
-    expect(box?.props.style).toMatchObject({ paddingTop: 4 });
+    const avatar = (): ReactTestInstance => ofType(r, 'BloomAvatar')[0] as ReactTestInstance;
+    expect(ofType(r, 'View')).toHaveLength(0);
+    expect(avatar().props.style).toBeUndefined();
+    windowTier.current = 'sm';
+    remount(
+      r,
+      Avatar('a.png').when('sm', (v) => v.padding('xs')),
+    );
+    expect(avatar().props.style).toEqual({
+      paddingTop: 4,
+      paddingBottom: 4,
+      paddingStart: 4,
+      paddingEnd: 4,
+    });
   });
 
   it('a modifier a variant cannot change is left out, said once in development', () => {
