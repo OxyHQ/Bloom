@@ -8,8 +8,9 @@
  * named stand-ins of Bloom; this one renders Bloom itself, so a difference in
  * what either side draws fails here.
  *
- * - native: React Native's hosts as Bloom's mock names them, the Android
- *   files of the language (OxyOS takes them too), compared as committed trees.
+ * - native: React Native's hosts as Bloom's mock names them, each module's
+ *   Android file, then its native file, then its default, as Metro resolves
+ *   them for Android (OxyOS takes them too), compared as committed trees.
  * - web: react-native-web in jsdom, compared as DOM elements and the CSS that
  *   reaches each one.
  */
@@ -56,8 +57,18 @@ module.exports = {
     {
       ...shared,
       displayName: 'parity native',
-      moduleFileExtensions: ['android.tsx', 'android.ts', ...root.moduleFileExtensions],
-      moduleNameMapper: { ...bloomSource, ...rootMapper },
+      moduleFileExtensions: [
+        'android.tsx',
+        'android.ts',
+        'native.tsx',
+        'native.ts',
+        ...root.moduleFileExtensions,
+      ],
+      moduleNameMapper: {
+        ...bloomSource,
+        '^expo-font$': `${PACKAGE}/parity/support/expo-font.ts`,
+        ...rootMapper,
+      },
       setupFiles: [...shared.setupFiles, `${PACKAGE}/parity/support/android.ts`],
       testMatch: ['<rootDir>/packages/bloom-language/parity/*.parity.test.tsx'],
     },
