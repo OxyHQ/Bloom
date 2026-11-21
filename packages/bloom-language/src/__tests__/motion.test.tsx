@@ -252,7 +252,7 @@ describe('.transition() in a keyed list', () => {
     expect(a?.props.exiting).toBeUndefined();
     update(r, list(['b']));
     const [leaving] = all(r, 'Animated.View');
-    expect(textOf(leaving)).toBe('a');
+    expect(leaving && textOf(leaving)).toBe('a');
     expect(flat(leaving?.props.style)).toMatchObject({
       animationDuration: 180,
       animationFillMode: 'forwards',
