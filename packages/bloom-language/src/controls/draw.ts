@@ -27,6 +27,11 @@ export interface ControlDraw {
   /** Draws a Bloom component with the view's innermost box as its `style`, when it has one. */
   component(host: unknown, props: Record<string, unknown>, ...children: ReactNode[]): ReactElement;
   /**
+   * `element` in a view of its own that takes the view's box, when it has
+   * one: for a component whose `style` is not its outer box.
+   */
+  around(element: ReactElement): ReactElement;
+  /**
    * Draws what `drawn` returns, with the view's press on a host around it when
    * the view is pressable (for a component that takes no press of its own).
    */

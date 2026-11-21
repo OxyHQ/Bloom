@@ -19,8 +19,21 @@ import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 
+import type { SearchToken } from '@oxy.so/bloom/search';
+
+import type { Binding } from './binding';
 import type { ContainerKind } from './controls/containers';
-import type { InputKind } from './controls/inputs';
+import type {
+  Autocapitalize,
+  ContentType,
+  InputKind,
+  Keyboard,
+  RadioStyle,
+  SearchCollapse,
+  SegmentedStyle,
+  SubmitLabel,
+  TextareaResize,
+} from './controls/inputs';
 import type { OverlayKind } from './controls/overlays';
 import { OBJECTS } from './generated/spec.generated';
 import { regular, type GlassValue } from './glass';
@@ -246,6 +259,33 @@ export interface ValueModifiers {
   flow: GridFlow;
 
   // Inputs (controls/inputs.tsx)
+  placeholder: string;
+  invalid: boolean;
+  required: boolean;
+  floatingLabel: true;
+  revealable: true;
+  prefix: string;
+  suffix: string;
+  keyboard: Keyboard;
+  autocapitalize: Autocapitalize;
+  autocorrect: boolean;
+  contentType: ContentType;
+  submitLabel: SubmitLabel;
+  onSubmit: () => void;
+  autoFocus: true;
+  maxLength: number;
+  description: string;
+  error: string | null | undefined;
+  readOnly: true;
+  indeterminate: boolean;
+  rows: number;
+  autoResize: number | undefined;
+  resize: TextareaResize;
+  showCount: true;
+  tabs: true;
+  collapsible: SearchCollapse | undefined;
+  presented: Binding<boolean>;
+  tokens: Binding<readonly SearchToken[]>;
 
   // Overlays and feedback (controls/overlays.tsx)
 
@@ -399,7 +439,7 @@ export type Modifier =
   | {
       readonly kind: 'style';
       readonly key: string;
-      readonly value: BloomAppearance | BadgeStyle | LoadingStyle;
+      readonly value: BloomAppearance | BadgeStyle | LoadingStyle | RadioStyle | SegmentedStyle;
     }
   | { readonly kind: 'shape'; readonly key: string; readonly value: ButtonShape | ShapeName }
   | {
@@ -847,7 +887,7 @@ export class Node {
   size(value: IconSizeToken | AvatarSizeToken | BloomSize | BadgeSize | SpaceToken): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
-  style(value: BloomAppearance | BadgeStyle | LoadingStyle): Node {
+  style(value: BloomAppearance | BadgeStyle | LoadingStyle | RadioStyle | SegmentedStyle): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
   shape(value: ButtonShape | ShapeName): Node {
@@ -1177,6 +1217,87 @@ export class Node {
   }
 
   // Inputs (controls/inputs.tsx)
+  placeholder(value: string): Node {
+    return this.set('placeholder', value);
+  }
+  invalid(value = true): Node {
+    return this.set('invalid', value);
+  }
+  required(value = true): Node {
+    return this.set('required', value);
+  }
+  floatingLabel(): Node {
+    return this.set('floatingLabel', true);
+  }
+  revealable(): Node {
+    return this.set('revealable', true);
+  }
+  prefix(value: string): Node {
+    return this.set('prefix', value);
+  }
+  suffix(value: string): Node {
+    return this.set('suffix', value);
+  }
+  keyboard(value: Keyboard): Node {
+    return this.set('keyboard', value);
+  }
+  autocapitalize(value: Autocapitalize): Node {
+    return this.set('autocapitalize', value);
+  }
+  autocorrect(value: boolean): Node {
+    return this.set('autocorrect', value);
+  }
+  contentType(value: ContentType): Node {
+    return this.set('contentType', value);
+  }
+  submitLabel(value: SubmitLabel): Node {
+    return this.set('submitLabel', value);
+  }
+  onSubmit(value: () => void): Node {
+    return this.set('onSubmit', value);
+  }
+  autoFocus(): Node {
+    return this.set('autoFocus', true);
+  }
+  maxLength(value: number): Node {
+    return this.set('maxLength', value);
+  }
+  description(value: string): Node {
+    return this.set('description', value);
+  }
+  error(value: string | null | undefined): Node {
+    return this.set('error', value);
+  }
+  readOnly(): Node {
+    return this.set('readOnly', true);
+  }
+  indeterminate(value = true): Node {
+    return this.set('indeterminate', value);
+  }
+  rows(value: number): Node {
+    return this.set('rows', value);
+  }
+  autoResize(maxRows?: number): Node {
+    return this.set('autoResize', maxRows);
+  }
+  resize(value: TextareaResize): Node {
+    return this.set('resize', value);
+  }
+  showCount(): Node {
+    return this.set('showCount', true);
+  }
+  tabs(): Node {
+    return this.set('tabs', true);
+  }
+  collapsible(value?: SearchCollapse): Node {
+    return this.set('collapsible', value);
+  }
+  presented(value: Binding<boolean>): Node {
+    return this.set('presented', value);
+  }
+  tokens(value: Binding<readonly SearchToken[]>): Node {
+    return this.set('tokens', value);
+  }
 
   // Overlays and feedback (controls/overlays.tsx)
 
