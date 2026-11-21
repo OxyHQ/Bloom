@@ -1918,6 +1918,24 @@ Bloom's `Accordion`, `AccordionItem`, `AccordionTrigger` and
 `.disabled()`; a trigger's title is a string in its type or a view, and
 `.indicator(view)` replaces its chevron.
 
+### Code
+
+```ts
+Code('bun run build')
+Pre(output).lineNumbers()
+CodeLines(patch).language('ts').highlight(['+2', '-3'])
+CodeBlock(snippet).language('tsx').filename('row.tsx').diff(3, 1)
+```
+
+Bloom's `Code` (inline monospace), `Pre` (preformatted text in its well; its
+box is the well), `CodeLines` and `CodeBlock`. Each but `Code` takes
+`.language()` (JavaScript and TypeScript are highlighted) and
+`.lineNumbers()`; numbered lines and a card take `.highlight(['+2', '-3',
+'4'])` and `.wrap()`, lines `.size('sm' | 'md')`, and a card
+`.languageLabel()`, `.filename()`, `.diff(additions, deletions)`,
+`.copyable(false)`, `.onCopy()`, `.headerContent(view)` and `.labels({ copy,
+copied })`.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2346,7 +2364,7 @@ and `@oxy.so/bloom-data` beside it.
 - Generic components (see [Generic components](#generic-components)), drawn as
   Bloom's own: the date and time pickers, ratings, meters and progress bars, stickers,
   tables, rows and lists, carousels, markdown, sliders,
-  accordions.
+  accordions, code.
 
 **Not built**
 

@@ -32,3 +32,7 @@ export const Accordion = 'Accordion';
 export const AccordionItem = 'AccordionItem';
 export const AccordionTrigger = 'AccordionTrigger';
 export const AccordionContent = 'AccordionContent';
+export const Code = 'Code';
+export const CodeBlock = 'CodeBlock';
+export const CodeLines = 'CodeLines';
+export const Pre = 'Pre';

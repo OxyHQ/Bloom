@@ -26,6 +26,7 @@ import type { CommandItem as BloomCommandItem } from '@oxy.so/bloom/command';
 import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
+import type { CodeKind } from './controls/code';
 import type { AccordionKind } from './controls/accordion';
 import type { AccordionTransition } from '@oxy.so/bloom/accordion';
 import type { SliderKind } from './controls/slider';
@@ -695,6 +696,16 @@ export interface ValueModifiers {
   allowsMultiple: true;
   revealMotion: AccordionTransition;
   indicator: Child;
+
+  // Code (controls/code.tsx)
+  language: string;
+  lineNumbers: boolean;
+  highlight: readonly string[];
+  languageLabel: string;
+  filename: string;
+  diff: readonly [additions: number, deletions: number];
+  copyable: boolean;
+  onCopy: (code: string) => void | Promise<void>;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1075,7 +1086,8 @@ export type NodeKind =
   | CarouselKind
   | MarkdownKind
   | SliderKind
-  | AccordionKind;
+  | AccordionKind
+  | CodeKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -2600,6 +2612,32 @@ export class Node {
   }
   indicator(value: Child): Node {
     return this.set('indicator', value);
+  }
+
+  // Code (controls/code.tsx)
+  language(value: string): Node {
+    return this.set('language', value);
+  }
+  lineNumbers(value = true): Node {
+    return this.set('lineNumbers', value);
+  }
+  highlight(value: readonly string[]): Node {
+    return this.set('highlight', value);
+  }
+  languageLabel(value: string): Node {
+    return this.set('languageLabel', value);
+  }
+  filename(value: string): Node {
+    return this.set('filename', value);
+  }
+  diff(additions: number, deletions: number): Node {
+    return this.set('diff', [additions, deletions]);
+  }
+  copyable(value: boolean): Node {
+    return this.set('copyable', value);
+  }
+  onCopy(value: (code: string) => void | Promise<void>): Node {
+    return this.set('onCopy', value);
   }
 }
 
