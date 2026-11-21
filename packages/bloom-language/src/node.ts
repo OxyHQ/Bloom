@@ -4160,7 +4160,7 @@ export interface ViewModifiers<Self> extends ViewNode {
   /**
    * How long what this view plays waits before it starts: a change under its
    * `.animation()`, its transition's insertion and removal, its keyframes and
-   * its loop (Bloom's durations, or Tailwind's other delays `'75'` … `'1000'`).
+   * its loop (a duration token: Bloom's `instant`, `fast`, `normal`, `slow`, or an exact one apps write).
    */
   delay(value: DurationName): Self;
   /**

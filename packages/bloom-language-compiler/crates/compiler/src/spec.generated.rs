@@ -42,7 +42,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("iconSize", &["2xs", "xs", "sm", "md", "lg", "xl", "2xl", "3xl"]),
     ("avatarSize", &["xs", "sm", "md", "lg", "xl"]),
     ("glassOpacity", &["subtle", "medium", "strong"]),
-    ("duration", &["0", "75", "500", "700", "800", "1000", "2500", "instant", "fast", "normal", "slow"]),
+    ("duration", &["0", "800", "2500", "instant", "fast", "normal", "slow"]),
     ("rotation", &["45", "none", "quarter", "half"]),
     ("motion", &["press", "select", "expand", "present", "dismiss", "fade", "slide", "thumb", "pop", "roll", "enter", "exit", "restack", "spin", "pulse"]),
     ("typeRamp", &["large-title-regular", "large-title-medium", "large-title-semibold", "large-title-bold", "display-1-regular", "display-1-medium", "display-1-semibold", "display-1-bold", "display-2-regular", "display-2-medium", "display-2-semibold", "display-2-bold", "display-3-regular", "display-3-medium", "display-3-semibold", "display-3-bold", "display-4-regular", "display-4-medium", "display-4-semibold", "display-4-bold", "title-1-regular", "title-1-medium", "title-1-semibold", "title-1-bold", "title-2-regular", "title-2-medium", "title-2-semibold", "title-2-bold", "title-3-regular", "title-3-medium", "title-3-semibold", "title-3-bold", "headline-regular", "headline-medium", "headline-semibold", "headline-bold", "body-regular", "body-medium", "body-semibold", "body-bold", "body-2-regular", "body-2-medium", "body-2-semibold", "body-2-bold", "caption-1-regular", "caption-1-medium", "caption-1-semibold", "caption-1-bold", "caption-2-regular", "caption-2-medium", "caption-2-semibold", "caption-2-bold"]),
