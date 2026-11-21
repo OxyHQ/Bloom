@@ -399,3 +399,6 @@ export type {
   VideoViewabilityScopeView,
   VideoViewabilityView,
 } from './controls/video-playback';
+// Hover cards (controls/hover-card.tsx)
+export { HoverCard } from './controls/hover-card';
+export type { HoverCardView } from './controls/hover-card';
