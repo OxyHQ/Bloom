@@ -57,6 +57,7 @@ import type { ContainerKind } from './controls/containers';
 import type { InputKind } from './controls/inputs';
 import type { OverlayKind } from './controls/overlays';
 import type { MusicLibraryKind } from './controls/music-library';
+import type { QueuePanelKind } from './controls/queue-panel';
 import { OBJECTS } from './generated/spec.generated';
 import { regular, type GlassValue } from './glass';
 import type { KeyframesValue } from './motion/keyframes';
@@ -115,6 +116,7 @@ import {
   type PipelineLayout,
   type ReleaseCardLayout,
   type ReleaseStatusBadgeSize,
+  type QueuePanelStyle,
   type LibraryItemStyle,
   type FollowButtonSize,
   type MapPriceMarkerSize,
@@ -540,7 +542,8 @@ export type Modifier =
         | TransportStyle
         | RowActionStyle
         | ThemeToggleStyle
-        | LibraryItemStyle;
+        | LibraryItemStyle
+        | QueuePanelStyle;
     }
   | {
       readonly kind: 'shape';
@@ -733,7 +736,8 @@ export type NodeKind =
   | OrderConfirmationKind
   | MediaPlayerKind
   | LogisticsKind
-  | MusicLibraryKind;
+  | MusicLibraryKind
+  | QueuePanelKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1087,7 +1091,8 @@ export class Node {
       | TransportStyle
       | RowActionStyle
       | ThemeToggleStyle
-      | LibraryItemStyle,
+      | LibraryItemStyle
+      | QueuePanelStyle,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }

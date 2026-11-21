@@ -1021,3 +1021,20 @@ fn the_music_library_is_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_queue_panel_is_checked() {
+    let imports = "import { QueuePanel, QueuePanelRow } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid =
+        check("export const x = (o, t) => [QueuePanel(o).style('sheet'), QueuePanelRow(t).label('Play')];\n");
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("QueuePanel(o).style('drawer')", "Unknown queuePanelStyle token 'drawer' for .style()"),
+        ("QueuePanelRow(o).style('panel')", "QueuePanelRow has no modifier .style()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (o) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

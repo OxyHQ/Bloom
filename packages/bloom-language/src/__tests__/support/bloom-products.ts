@@ -200,3 +200,6 @@ export const RecentSearches = 'RecentSearches';
 export const SearchField = 'SearchField';
 export const SearchResultTabs = 'SearchResultTabs';
 export const TopResultCard = 'TopResultCard';
+export const QueuePanel = 'QueuePanel';
+export const QueuePanelRow = 'QueuePanelRow';
+export const RecentlyPlayedList = 'RecentlyPlayedList';

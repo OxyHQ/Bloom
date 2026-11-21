@@ -38,6 +38,7 @@ import type { ControlRenderer } from './draw';
 import { INPUTS } from './inputs';
 import { OVERLAYS } from './overlays';
 import { MUSIC_LIBRARY } from './music-library';
+import { QUEUE_PANELS } from './queue-panel';
 
 /**
  * The renderer of each control kind: the Bloom components apps compose most
@@ -82,4 +83,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...MEDIA_PLAYERS,
   ...LOGISTICS,
   ...MUSIC_LIBRARY,
+  ...QUEUE_PANELS,
 };

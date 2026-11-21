@@ -1624,6 +1624,20 @@ view, query and rail are controlled when given, with their handlers; its
 tiles, or its own cells as the `children` child; `.spacing()` its gap, its
 `minTileWidth` a space token).
 
+### Queue panel
+
+```ts
+QueuePanel({ nowPlaying, queue, context, contextName, onReorder: move, onPlay: play, onClose: close }).style('sheet')
+QueuePanelRow(track, { current, trailing: Button(Text('More')) }).onPress(play)
+```
+
+Bloom's `queue-panel`: `QueuePanel(options)` (the playing track, the queue,
+the context and what was played, its tab controlled when given, and its
+handlers; `.style('panel' | 'sheet')`, the web's and native's default, and
+its panel's `width` a space token), `QueuePanelRow(track, options?)` (its
+`trailing` a child; `.onPress()` its own, `.label()` its name) and
+`RecentlyPlayedList(items, options?)`.
+
 ### Route stops, note cards and the share sheet
 
 ```ts

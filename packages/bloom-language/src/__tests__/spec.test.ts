@@ -318,6 +318,11 @@ import type {
   RecentSearchesView,
   BrowseGridView,
 } from '../controls/music-library';
+import type {
+  QueuePanelView,
+  QueuePanelRowView,
+  RecentlyPlayedListView,
+} from '../controls/queue-panel';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -719,7 +724,13 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<SearchResultTabsView>, Of<'searchResultTabs'>>,
       Same<MethodsOf<RecentSearchesView>, Of<'recentSearches'>>,
       Same<MethodsOf<BrowseGridView>, Of<'browseGrid'>>,
+      Same<MethodsOf<QueuePanelView>, Of<'queuePanel'>>,
+      Same<MethodsOf<QueuePanelRowView>, Of<'queuePanelRow'>>,
+      Same<MethodsOf<RecentlyPlayedListView>, Of<'recentlyPlayedList'>>,
     ] = [
+      true,
+      true,
+      true,
       true,
       true,
       true,
