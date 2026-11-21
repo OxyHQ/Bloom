@@ -515,7 +515,8 @@
     "carouselAlign": ["start", "center"],
     "dotsShape": ["pill", "dot"],
     "dotsStyle": ["default", "onMedia"],
-    "markdownSize": ["sm", "md", "lg"]
+    "markdownSize": ["sm", "md", "lg"],
+    "codeLinesSize": ["sm", "md"]
   },
   "glass": {
     "$comment": [
@@ -886,7 +887,15 @@
     "valueFormat": ["value"],
     "allowsMultiple": [],
     "revealMotion": ["value"],
-    "indicator": ["value"]
+    "indicator": ["value"],
+    "language": ["value"],
+    "lineNumbers": ["value?"],
+    "highlight": ["value"],
+    "languageLabel": ["value"],
+    "filename": ["value"],
+    "diff": ["value", "value"],
+    "copyable": ["value"],
+    "onCopy": ["value"]
   },
   "universal": [
     "padding",
@@ -1490,7 +1499,30 @@
     },
     "accordionItem": { "constructors": ["AccordionItem"], "modifiers": ["disabled"] },
     "accordionTrigger": { "constructors": ["AccordionTrigger"], "modifiers": ["indicator"] },
-    "accordionContent": { "constructors": ["AccordionContent"], "modifiers": [] }
+    "accordionContent": { "constructors": ["AccordionContent"], "modifiers": [] },
+    "code": { "constructors": ["Code"], "modifiers": [] },
+    "pre": { "constructors": ["Pre"], "modifiers": ["language", "lineNumbers"] },
+    "codeLines": {
+      "constructors": ["CodeLines"],
+      "modifiers": ["language", "lineNumbers", "highlight", "wrap", "size"],
+      "size": "codeLinesSize"
+    },
+    "codeBlock": {
+      "constructors": ["CodeBlock"],
+      "modifiers": [
+        "language",
+        "lineNumbers",
+        "highlight",
+        "wrap",
+        "languageLabel",
+        "filename",
+        "diff",
+        "copyable",
+        "onCopy",
+        "headerContent",
+        "labels"
+      ]
+    }
   },
   "sfSymbols": {
     "$comment": [
