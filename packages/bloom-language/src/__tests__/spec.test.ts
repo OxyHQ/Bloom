@@ -126,6 +126,7 @@ import type { ActivityHeatmapView } from '../controls/activity-heatmap';
 import type { TagFieldView } from '../controls/tag-field';
 import type { FileUploadView } from '../controls/file-upload';
 import type { VideoView } from '../controls/video-view';
+import type { InputGroupView, InputGroupAddonView } from '../controls/input-group';
 import type { CompositionBarView } from '../controls/composition-bar';
 import type { PhoneInputView } from '../controls/phone-input';
 import type { AvatarAnchorView, AvatarFlightLayerView } from '../controls/avatar-flight';
@@ -398,6 +399,8 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<TagFieldView>, Of<'tagField'>>,
       Same<MethodsOf<FileUploadView>, Of<'fileUpload'>>,
       Same<MethodsOf<VideoView>, Of<'video'>>,
+      Same<MethodsOf<InputGroupView>, Of<'inputGroup'>>,
+      Same<MethodsOf<InputGroupAddonView>, Of<'inputGroupAddon'>>,
       Same<MethodsOf<PhoneInputView>, Of<'phoneInput'>>,
       Same<MethodsOf<AvatarAnchorView>, Of<'avatarAnchor'>>,
       Same<MethodsOf<AvatarFlightLayerView>, Of<'avatarFlightLayer'>>,
@@ -427,6 +430,8 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<MenubarMenuView>, Of<'menubarMenu'>>,
       Same<MethodsOf<CompositionBarView>, Of<'compositionBar'>>,
     ] = [
+      true,
+      true,
       true,
       true,
       true,

@@ -1764,6 +1764,24 @@ painted from the theme); the binding holds the chosen segment's key (a press
 sets it to the pressed one); the hint shows while none is chosen.
 `.readoutFormat((amount, percent) => text)` words the readout.
 
+### Input groups
+
+```ts
+InputGroup(
+  InputGroupAddon('https://'),
+  TextField([domain, setDomain], 'Domain').placeholder('oxy'),
+  InputGroupAddon(Button(Text('Go')).size('sm').style('subtle')).divider().flush(),
+).size('sm')
+```
+
+Bloom's `InputGroup` and `InputGroupAddon`: one bordered box around a control
+and the things attached to it. A group's children are drawn in order: the
+addons before the control lead, the rest trail, and the control (a
+`TextField`, a `Search`) draws bare in the group's shell. A group takes
+`.size()`, `.invalid()` and `.disabled()`. An addon holds a string (Bloom's
+subdued label) or views; it takes `.divider()` (a hairline on its inner edge)
+and `.flush()` (no padding of its own, for a control with its own hit area).
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2163,10 +2181,9 @@ and `@oxy.so/bloom-data` beside it.
   menubars,
   composition bars,
   phone inputs,
-  menubars,
-  composition bars,
   media flights,
-  avatar flights.
+  avatar flights,
+  input groups.
 
 **Not built**
 

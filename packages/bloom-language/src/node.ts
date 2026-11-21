@@ -25,6 +25,7 @@ import type { MenubarKind } from './controls/menubar';
 import type { ContextMenuAnchor } from '@oxy.so/bloom/context-menu';
 import type { FileUploadKind } from './controls/file-upload';
 import type { VideoViewKind } from './controls/video-view';
+import type { InputGroupKind } from './controls/input-group';
 import type { CompositionBarKind } from './controls/composition-bar';
 import type { PhoneInputKind } from './controls/phone-input';
 import type { Country } from '@oxy.so/bloom/phone-input';
@@ -530,6 +531,9 @@ export interface ValueModifiers {
   surfaceType: VideoSurfaceType;
   flightId: string;
   videoSlot: VideoSlot;
+  // Input groups (controls/input-group.tsx)
+  divider: boolean;
+  flush: boolean;
 
   // Inputs (controls/inputs.tsx)
   required: boolean;
@@ -896,6 +900,7 @@ export type NodeKind =
   | TagFieldKind
   | FileUploadKind
   | VideoViewKind
+  | InputGroupKind
   | PhoneInputKind
   | AvatarFlightKind
   | CategoryBarKind
@@ -2086,6 +2091,14 @@ export class Node {
   }
   videoSlot(value: VideoSlot): Node {
     return this.set('videoSlot', value);
+  }
+
+  // Input groups (controls/input-group.tsx)
+  divider(value = true): Node {
+    return this.set('divider', value);
+  }
+  flush(value = true): Node {
+    return this.set('flush', value);
   }
 
   // Inputs (controls/inputs.tsx)

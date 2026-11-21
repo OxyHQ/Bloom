@@ -1149,3 +1149,22 @@ fn avatar_flights_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn input_groups_are_checked() {
+    let imports = "import { InputGroup, InputGroupAddon, TextField } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (text) => InputGroup(InputGroupAddon('https://').divider().flush(false), TextField(text, 'Domain')).size('sm').invalid().disabled();\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("InputGroup().size('xl')", "Unknown controlSize token 'xl' for .size()"),
+        ("InputGroupAddon('@').size('sm')", "InputGroupAddon has no modifier .size()"),
+        ("InputGroup().divider()", "InputGroup has no modifier .divider()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = () => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

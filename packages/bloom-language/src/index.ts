@@ -339,6 +339,14 @@ export type { CategoryBarLabels, CategoryBarView } from './controls/category-bar
 export { PhoneInput } from './controls/phone-input';
 export type { PhoneInputLabels, PhoneInputView } from './controls/phone-input';
 
+// Input groups (controls/input-group.tsx)
+export { InputGroup, InputGroupAddon } from './controls/input-group';
+export type {
+  InputGroupAddonView,
+  InputGroupContent,
+  InputGroupView,
+} from './controls/input-group';
+
 // Inputs (controls/inputs.tsx)
 export {
   Checkbox,

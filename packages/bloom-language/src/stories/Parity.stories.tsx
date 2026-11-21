@@ -37,6 +37,7 @@ import { MATERIAL_CASES } from '../../parity/material.cases';
 import { TEXT_CASES } from '../../parity/text.cases';
 import { VARIANT_CASES } from '../../parity/variants.cases';
 import { VIDEO_CASES } from '../../parity/video-view.cases';
+import { INPUT_GROUP_CASES } from '../../parity/input-group.cases';
 import { PHONE_INPUT_CASES } from '../../parity/phone-input.cases';
 import { AVATAR_FLIGHT_CASES } from '../../parity/avatar-flight.cases';
 import { CATEGORY_BAR_CASES } from '../../parity/category-bar.cases';
@@ -143,3 +144,4 @@ export const CompositionBars: Story = { args: { cases: COMPOSITION_BAR_CASES } }
 export const PhoneInputs: Story = { args: { cases: PHONE_INPUT_CASES } };
 export const MediaFlights: Story = { args: { cases: MEDIA_FLIGHT_CASES } };
 export const AvatarFlights: Story = { args: { cases: AVATAR_FLIGHT_CASES } };
+export const InputGroups: Story = { args: { cases: INPUT_GROUP_CASES } };
