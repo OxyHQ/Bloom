@@ -5,10 +5,14 @@
  * colours (the panel's tint, the rows' ink, the scheme) and the face (Inter). Where the lens
  * cannot run, Bloom's own menu.
  *
- * Every trigger is the upstream app's glass trigger: its lens is the trigger's base, which the
- * menu grows out of and takes back, with the upstream app's trigger config (`absorb` over
- * 0.48 s); a trigger on `.glass()` gives that base its tint and frost. Its press layer opens the
- * menu natively (a trigger's own press is left out: a trigger opens its menu). Rows given as they are (tagged, or with handlers) are there before it opens. A
+ * Every trigger has a base the menu grows out of and goes back into, with the upstream app's
+ * trigger config (`absorb` over 0.48 s), as the upstream app's buttons do. A trigger on
+ * `.glass()` (a header's, a bar's: the fixed layer) is its glass trigger: the lens is the base,
+ * with the glass's tint and frost. Any other (a feed row's ⋯) is its plain trigger with a base the
+ * app draws: a capsule in the menu panel's colour, which the menu morphs out of in that colour. A
+ * lens in a scroll would draw over the fixed layer (the engine draws every lens above the window)
+ * and cost a draw per frame. The press layer opens the menu natively (a trigger's own press is
+ * left out: a trigger opens its menu). Rows given as they are (tagged, or with handlers) are there before it opens. A
  * `menu()` content is built by the trigger's own press instead: the view opens itself as its rows
  * arrive (`openWithItems`) and lets them go once the menu has finished closing.
  */
@@ -70,19 +74,22 @@ function LensMenuHost({
       separatorColor: surface.border,
     };
   }, [theme]);
+  const base = config.tintColor;
   const triggerConfig = useSame(
     glass
       ? { ...glassTriggerConfig(glass, undefined, theme.colors), ...TRIGGER_CONFIG }
-      : TRIGGER_CONFIG,
+      : { tintColor: base, tintOpacity: 1, ...TRIGGER_CONFIG },
   );
+  const corner = triggerCorner(given);
   const closed = useCallback(() => setBuilding(false), []);
   const { Menu, lensRows } = lens;
   return (
     <>
       <Menu colorScheme={dark ? 'dark' : 'light'}>
         <Menu.Trigger
-          lens
-          cornerRadius={triggerCorner(given)}
+          lens={glass !== undefined}
+          morph
+          cornerRadius={corner}
           config={triggerConfig}
           openOnPress={!deferred}
           openWithItems={deferred}
@@ -90,7 +97,12 @@ function LensMenuHost({
           accessibilityLabel={triggerLabel(given)}
           style={TRIGGER_STYLE}
         >
-          <View testID={testID}>
+          <View
+            testID={testID}
+            style={
+              glass ? undefined : { backgroundColor: base, borderRadius: corner ?? CAPSULE_RADIUS }
+            }
+          >
             {render(
               deferred ? pressableTrigger(trigger, () => setBuilding(true)) : withoutPress(trigger),
             )}
@@ -165,3 +177,5 @@ const TRIGGER_CONFIG = { absorb: { duration: 0.48 } } as const;
 /** The rows' face: Bloom's sans (Inter), the family the app registered for every Bloom text. */
 const MENU_FONT_FAMILY = fontFamilyStyle('sans').fontFamily;
 const TRIGGER_STYLE = { alignSelf: 'flex-start' } as const;
+/** A radius past any trigger's half height: a capsule. */
+const CAPSULE_RADIUS = 999;

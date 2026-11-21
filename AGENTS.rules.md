@@ -129,7 +129,7 @@ Two surfaces; CenteredDialog/ResponsiveSheet removed without shims. API/migratio
 
 - `packages/bloom-lens` IS the upstream app: engine (`android/`) and menu component (`src/menu`, verbatim) via `sync-from-upstream.sh` + `patches/bloom.patch`, `patches/menu/bloom.patch` only (names Bloom needs, `openWithItems`, `onMenuClosed`); the sync must reproduce the tree. Bloom's menus, glass and lens controls are thin adapters (`lensRows`, colours, Inter); never re-implement trigger, rows or open. A Bloom-side rebuild of the trigger looked and felt different on a Pixel 8a: the owner's verdict
 - The trigger is the view, mounted with it; a press is one `open()`. Mount-on-press gave a late open, a morph from a fresh view and no press jelly. Rows built only on open: `openWithItems`, re-armed when emptied after `onMenuClosed`. android-hosts.test.tsx (real component, native view stubbed), NativeLensMenu.test.tsx
-- Bloom gives colours only; every other value is the upstream app's (panel opacity unset, plain trigger untinted, trigger `absorb` 0.48 s). Every language `Menu` trigger draws its lens base at rest (the menu grows out of it): a lens in a scroll costs a draw per frame and does not follow overscroll
+- Bloom gives colours only; every other value is the upstream app's (panel opacity unset, trigger `absorb` 0.48 s). A language `Menu` trigger always has a base the menu morphs out of: on `.glass()` (fixed layer) the lens; otherwise an app-drawn capsule in the panel colour with `morph`. Never a lens in a scroll: the engine draws every lens in a window overlay, so a feed ⋯ on glass was drawn OVER the bottom bar and FAB (Pixel 8a screenshot), and each costs a draw per frame
 
 ## Theme/tokens
 
