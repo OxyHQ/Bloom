@@ -148,6 +148,7 @@ export type {
   BadgePlacement,
   BadgeSize,
   BadgeStyle,
+  InkToken,
   BorderWidthName,
   ColorName,
   CornerCurve,

@@ -71,6 +71,15 @@ describe('on the web, styles are classes from the generated sheet', () => {
     ]);
   });
 
+  it('an app colour has no class: it is inline, as the hex it declares', () => {
+    const brand = defineTokens({ color: { blue: '#1877f2' } }).color.blue;
+    const r = mount(toElement(VStack(Text('a')).padding('top', 'md').background(brand)));
+    expect(r.root.findByType('View' as never).props.style).toEqual([
+      { $$css: true, paddingTop: WEB_CLASS['paddingTop:12'] },
+      { backgroundColor: '#1877f2' },
+    ]);
+  });
+
   it('text reads no theme on the web; an icon’s fill still paints from it', () => {
     const r = mount(toElement(VStack(Text('a'), Icon(Glyph).foreground('primary'))));
     expect(

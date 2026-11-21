@@ -82,6 +82,8 @@ export type OpacityName = keyof typeof OPACITY;
  * set, never an arbitrary number.
  */
 export type ColorToken = ColorName | `${ColorName}/${OpacityName}`;
+/** What a view's background, foreground, border and ring paint with: a role (at an opacity), or an app's own colour. */
+export type InkToken = ColorToken | AppToken<'color'>;
 export type BorderWidthName = keyof typeof BORDER_WIDTH;
 export type HitSlopName = keyof typeof HIT_SLOP;
 export type ShrinkPriority = keyof typeof SHRINK;
@@ -184,10 +186,18 @@ export function resolveBorderWidth(width: BorderWidthName): number {
 // ── App tokens ───────────────────────────────────────────────────
 
 /** The scales an app may extend with named values of its own. */
-export type AppTokenScale = 'space' | 'iconSize' | 'avatarSize' | 'leading' | 'motion';
+export type AppTokenScale = 'space' | 'iconSize' | 'avatarSize' | 'leading' | 'motion' | 'color';
 
-/** What a token of each scale holds: a number, or for `motion` a Bloom `MotionSpec`. */
-type AppTokenValue<S extends AppTokenScale> = S extends 'motion' ? MotionSpec : number;
+/**
+ * What a token of each scale holds: a number; for `motion` a Bloom `MotionSpec`;
+ * for `color` a hex colour (`#1877f2`, `#1877f2cc`), the same in both schemes: an
+ * app's brand colour, which no Bloom role is.
+ */
+type AppTokenValue<S extends AppTokenScale> = S extends 'motion'
+  ? MotionSpec
+  : S extends 'color'
+    ? `#${string}`
+    : number;
 
 /** A scale's tokens as `defineTokens` returns them: a motion is its `MotionSpec`, anything else an `AppToken`. */
 type AppTokenOf<S extends AppTokenScale> = S extends 'motion' ? MotionSpec : AppToken<S>;
@@ -234,6 +244,8 @@ export function defineTokens<T extends { [S in AppTokenScale]?: Record<string, A
         named[name] = Object.freeze({ ...(entries[name] as MotionSpec) }) as unknown as AppToken;
         continue;
       }
+      if (scale === 'color' && !/^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(String(entries[name])))
+        throw new Error(`[Bloom language] defineTokens: color.${name} is not a hex colour`);
       nextAppToken += 1;
       named[name] = Object.freeze({
         scale,

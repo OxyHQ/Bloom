@@ -101,6 +101,8 @@ import {
   cachedStyle,
   emptyPlacement,
   foregroundOf,
+  ink,
+  isAppColor,
   isLayerModifier,
   joinVariants,
   layerStyle,
@@ -553,6 +555,14 @@ function planVariant(
     }
     if (!varies(modifier)) {
       warnNotVaried(modifier);
+      continue;
+    }
+    if (condition !== null && 'value' in modifier && isAppColor(modifier.value)) {
+      // An app's colour has no class to vary on the web, so it varies nowhere.
+      warnOnce(
+        'app-color-variant',
+        '[Bloom language] an app colour (defineTokens({ color })) does not vary: a live variant keeps its roles only.',
+      );
       continue;
     }
     const mark = `;?${condition ?? ''}${modifier.key}`;
@@ -1378,40 +1388,58 @@ function iconGlyph(
   key: string | number | undefined,
 ): ReactElement {
   const color = foregroundOf(env.text);
-  // In the order they apply, as every other host's variants are.
+  // In the order they apply, as every other host's variants are. (A variant's
+  // ink is a role: an app's own colour does not vary, `planVariant`.)
   const live = (env.text.variants ?? [])
     .flatMap(([condition, changed]) =>
-      changed.foreground === undefined ? [] : [[condition, changed.foreground] as const],
+      changed.foreground === undefined
+        ? []
+        : [[condition, changed.foreground as ColorToken] as const],
     )
     .sort(([a], [b]) => compareLive(a, b));
+  // An app's own colour is the glyph's fill as it is, on every platform.
+  const own = isAppColor(color) ? color.value : undefined;
   if (live.length === 0)
-    return draw(Painted, { host: icon, paint: iconPaint(color), width: size, height: size, key });
+    return own !== undefined
+      ? draw(icon, { fill: own, width: size, height: size, key })
+      : draw(Painted, {
+          host: icon,
+          paint: iconPaint(color as ColorToken),
+          width: size,
+          height: size,
+          key,
+        });
   if (IS_WEB) {
     const out = cachedStyle(
       'host',
       `IC|${env.key}`,
-      () => ({ color: role(color) }),
-      () => joinVariants(live.map(([condition, ink]) => [condition, { color: role(ink) }])),
+      () => ({ color: ink(color) }),
+      () => joinVariants(live.map(([condition, varied]) => [condition, { color: role(varied) }])),
     );
     return drawHost(icon, out, { fill: 'currentColor', width: size, height: size, key });
   }
   let paint = iconVariantPaints.get(env.key);
   if (paint === undefined) {
-    const fill = (ink: ColorToken): readonly [string, ColorName, number?] => {
-      const { role: name, opacity } = role(ink);
+    const fill = (varied: ColorToken): readonly [string, ColorName, number?] => {
+      const { role: name, opacity } = role(varied);
       return opacity === undefined ? ['fill', name] : ['fill', name, opacity];
     };
     paint = {
-      ...iconPaint(color),
-      variants: live.map(([condition, ink]) => ({
+      ...(own === undefined
+        ? iconPaint(color as ColorToken)
+        : { style: undefined, styleRoles: [], propRoles: [] }),
+      variants: live.map(([condition, varied]) => ({
         condition,
         style: {},
         styleRoles: [],
-        propRoles: [fill(ink)],
+        propRoles: [fill(varied)],
       })),
     };
     iconVariantPaints.set(env.key, paint);
   }
+  // An app colour at rest is the glyph's own fill; a variant that holds paints over it.
+  if (own !== undefined)
+    return draw(Conditioned, { host: icon, paint, fill: own, width: size, height: size, key });
   return draw(Conditioned, { host: icon, paint, width: size, height: size, key });
 }
 

@@ -59,6 +59,20 @@ fn a_frozen_token_table_is_static_and_the_hoist_follows_its_declaration() {
 }
 
 #[test]
+fn an_app_colour_is_a_static_token_where_a_role_goes() {
+    let source = "const brand = defineTokens({ color: { blue: '#1877f2' } });\nexport function Row() {\n  return HStack(Text('a')).background(brand.color.blue).foreground(brand.color.blue);\n}\n";
+    let output = compiled(source);
+    assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics.first().map(|d| &d.message));
+    assert!(
+        output.code.contains(
+            "const _bloomStatic0 = HStack(Text(\"a\")).background(brand.color.blue).foreground(brand.color.blue);"
+        ),
+        "{}",
+        output.code
+    );
+}
+
+#[test]
 fn a_local_that_shadows_an_import_is_not_the_import() {
     let code = compiled("export function Row(Text) {\n  return Text('x').font('body');\n}\n").code;
     assert!(!code.contains("_bloomStatic"), "{code}");

@@ -306,6 +306,16 @@ Mention's row needed seven of them. Two are Bloom rungs now: the 64px body
 gutter is `'64'` and `leading-tight` (1.25) is `close`. The 18px context row,
 the 3px gap before its text and the 13, 14 and 18px glyphs stay app tokens.
 
+An app's brand colour is an app token too: `defineTokens({ color: { blue:
+'#1877f2' } })` declares a hex (checked when it is declared), the same in both
+schemes, and `.background()`, `.foreground()` (text and glyphs), `.border()`
+and `.ring()` take it where they take a role. It paints as its hex on every
+platform (inline on the web: no class names it). It does not vary: a live
+`when()` keeps its roles only and says so once in development, since the web
+would need a class for it. The paints that are props of a Bloom component
+(`.tint()`, `.fill()`, `.stroke()`, a button's `.colors()`, a glass tint) take
+roles only.
+
 ## Layout
 
 ```ts
@@ -1347,8 +1357,6 @@ a theme switch; each fixture also pins how many chains the compiler hoists.
 - On the web, hover groups (`hoverGroup()`) set the `group` class through
   `react-native-css`. Web behaviour of the language row is unmeasured.
 - The web stylesheet is not in server-rendered HTML.
-- An app's brand colour: the className table names each raw hex as the app's
-  own token, but `defineTokens` has no colour scale yet.
 - A scale or an offset cannot vary (it is geometry the motion layer draws, not a class).
 - Animations, not built: gestures (`.drag`, `.swipe`, `.pinch`,
   `.onDoubleTap`), `MotionValue` and `map()`, `withAnimation`, and the bottom
