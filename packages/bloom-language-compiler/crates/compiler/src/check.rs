@@ -198,6 +198,8 @@ fn check_value(
         },
         "size" => spec.size.map_or(Ok(()), |set| check_token(modifier, set, value)),
         "tint" => spec.tint.map_or(Ok(()), |set| check_token(modifier, set, value)),
+        "style" => spec.style.map_or(Ok(()), |set| check_token(modifier, set, value)),
+        "shape" => spec.shape.map_or(Ok(()), |set| check_token(modifier, set, value)),
         set => check_token(modifier, set, value),
     }
 }

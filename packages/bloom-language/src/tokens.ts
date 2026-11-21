@@ -84,6 +84,21 @@ export type Truncation = (typeof ENUMS.truncation)[number];
 /** How a text's lines align: `start` and `end` follow the reading direction. */
 export type TextAlignment = (typeof ENUMS.textAlign)[number];
 export type TextCase = (typeof ENUMS.textCase)[number];
+/** Bloom's silhouettes (`shapes`): `circle`, `squircle` and the named shapes. */
+export type ShapeName = (typeof ENUMS.shapeName)[number];
+/** The initials disc's tint (Bloom `Avatar`'s `color`). */
+export type AvatarColor = (typeof ENUMS.avatarColor)[number];
+/** A presence dot's state (Bloom `PresenceDot`). */
+export type Presence = (typeof ENUMS.presence)[number];
+export type AvatarLayout = (typeof ENUMS.avatarLayout)[number];
+export type AvatarOverflow = (typeof ENUMS.avatarOverflow)[number];
+/** How loudly a badge paints (Bloom `Badge`'s `variant`); `onMedia` reads over a photograph. */
+export type BadgeStyle = (typeof ENUMS.badgeStyle)[number];
+/** Bloom's badge rungs: the counters (`xs`…`lg`) and the labels (`label-small`, `label-medium`). */
+export type BadgeSize = (typeof ENUMS.badgeSize)[number];
+export type BadgePlacement = (typeof ENUMS.badgePlacement)[number];
+/** Bloom `Loading`'s presentations: a spinner, the bar at the top, a line beside its text. */
+export type LoadingStyle = (typeof ENUMS.loadingStyle)[number];
 
 export { COLORS, DURATION, GLASS_OPACITY, HIT_SLOP, OPACITY, SHRINK, ALIGNMENT };
 
@@ -96,7 +111,7 @@ export function resolveBorderWidth(width: BorderWidthName): number {
 // ── App tokens ───────────────────────────────────────────────────
 
 /** The scales an app may extend with named values of its own. */
-export type AppTokenScale = 'space' | 'iconSize' | 'leading';
+export type AppTokenScale = 'space' | 'iconSize' | 'avatarSize' | 'leading';
 
 /**
  * A named value an app declares once, for a measurement Bloom's scales do not
@@ -151,6 +166,8 @@ export function defineTokens<T extends { [S in AppTokenScale]?: Record<string, n
 export type SpaceToken = SpaceName | AppToken<'space'>;
 export type PaddingToken = SpaceName | NegativeSpaceName | AppToken<'space'>;
 export type IconSizeToken = IconSizeName | AppToken<'iconSize'>;
+/** An avatar rung, or an app's own diameter (Bloom's avatar takes any; it is 40 with none). */
+export type AvatarSizeToken = AvatarSizeName | AppToken<'avatarSize'>;
 export type LeadingToken = LeadingName | AppToken<'leading'>;
 
 // ── Resolution (pure; the renderer caches the results) ──────────
@@ -174,8 +191,8 @@ export function resolveIconSize(token: IconSizeToken): number {
   return typeof token === 'string' ? ICON_SIZE[token] : token.value;
 }
 
-export function resolveAvatarSize(token: AvatarSizeName): number {
-  return AVATAR_SIZE[token];
+export function resolveAvatarSize(token: AvatarSizeToken): number {
+  return typeof token === 'string' ? AVATAR_SIZE[token] : token.value;
 }
 
 export interface FontStyle {

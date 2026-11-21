@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 import type { BloomImageSource } from '@oxy.so/bloom/image';
 
 import {
@@ -8,7 +9,14 @@ import {
   type ActionOptions,
   type ActionView,
   type AvatarOptions,
+  type AvatarGroupView,
   type AvatarView,
+  type BadgeView,
+  type IconCircleView,
+  type LoadingView,
+  type SkeletonGroupView,
+  type SkeletonShape,
+  type SkeletonView,
   type BottomBarView,
   type ButtonView,
   type Child,
@@ -75,6 +83,39 @@ export function Icon(icon: IconComponent): IconView {
 /** Bloom `Avatar`. `source` is a URL or a file id the app's `ImageResolver` resolves. */
 export function Avatar(source: string | null | undefined, options: AvatarOptions = {}): AvatarView {
   return new Node('avatar', { source, options }, NO_CHILDREN);
+}
+
+/**
+ * Bloom `AvatarGroup`: its members (Bloom's `AvatarGroupItem`: `uri`, `name`,
+ * `initials`…), first on top.
+ */
+export function AvatarGroup(items: readonly AvatarGroupItem[]): AvatarGroupView {
+  return new Node('avatarGroup', { items }, NO_CHILDREN);
+}
+
+/** Bloom `Badge`: a count or a label (a dot with none, `.dot()`). Attach it with `.badge(Badge(…))`. */
+export function Badge(content?: string | number): BadgeView {
+  return new Node('badge', { content }, NO_CHILDREN);
+}
+
+/** Bloom `IconCircle`: an icon on a tinted disc. */
+export function IconCircle(icon: IconComponent): IconCircleView {
+  return new Node('iconCircle', { icon }, NO_CHILDREN);
+}
+
+/** Bloom `Loading`: a spinner; a `Text` is what it says beside or below it. */
+export function Loading(text?: TextView): LoadingView {
+  return new Node('loading', null, text === undefined ? NO_CHILDREN : [text]);
+}
+
+/** A Bloom skeleton shape, sized by its frame (a `text` line by its font). */
+export function Skeleton(shape: SkeletonShape): SkeletonView {
+  return new Node('skeleton', { shape }, NO_CHILDREN);
+}
+
+/** Bloom `Skeleton.Region`: the shapes of what is loading, announced once. */
+export function SkeletonGroup(...children: Child[]): SkeletonGroupView {
+  return new Node('skeletonGroup', null, children);
 }
 
 /**
