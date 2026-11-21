@@ -9,6 +9,14 @@ export {
   BottomBar,
   BottomSheet,
   Button,
+  NavItem,
+  PageFooter,
+  Rail,
+  RailItem,
+  Sidebar,
+  TreeFolder,
+  TreeItem,
+  TreeSection,
   ButtonGroup,
   Shape,
   AspectRatio,
@@ -38,6 +46,7 @@ export {
   VStack,
   ZStack,
 } from './primitives';
+export type { SidebarRow, TreeRow } from './primitives';
 export { view } from './view';
 export { clear, regular, GlassValue } from './glass';
 export type { GlassMaterial } from './glass';
@@ -118,6 +127,18 @@ export type {
   ScreenFooter,
   ScrollViewNode,
   BottomSheetView,
+  SidebarView,
+  NavItemView,
+  TreeSectionView,
+  TreeFolderView,
+  TreeItemView,
+  RailView,
+  RailItemView,
+  PageFooterView,
+  SidebarVariant,
+  SidebarSurface,
+  SidebarSize,
+  FooterPinning,
   SheetFooter,
   DragIndicator,
   SheetMaterial,

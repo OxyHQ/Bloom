@@ -43,3 +43,26 @@ export const Text = 'SkeletonText';
 export const Circle = 'SkeletonCircle';
 export const Pill = 'SkeletonPill';
 export const Box = 'SkeletonBox';
+// The app chrome: Sidebar, Rail and PageFooter, drawing their slots as the real ones do.
+export function Sidebar(props: Record<string, unknown>) {
+  return createElement(
+    'Sidebar',
+    props,
+    props.header as never,
+    props.toolbar as never,
+    props.footer as never,
+  );
+}
+export function Rail(props: Record<string, unknown>) {
+  const items = (props.items as { icon: unknown; activeIcon?: unknown }[]) ?? [];
+  return createElement(
+    'Rail',
+    props,
+    props.header as never,
+    ...items.map((item) => item.icon as never),
+    props.footer as never,
+  );
+}
+export function PageFooter(props: Record<string, unknown>) {
+  return createElement('PageFooter', props, props.children as never, props.actions as never);
+}

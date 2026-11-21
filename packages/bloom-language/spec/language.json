@@ -1226,7 +1226,16 @@
     "navItem": {
       "constructors": ["NavItem"],
       "universal": false,
-      "modifiers": ["id", "activeIcon", "badge", "link", "shortcut", "secondary", "onPress", "onLongPress"]
+      "modifiers": [
+        "id",
+        "activeIcon",
+        "badge",
+        "link",
+        "shortcut",
+        "secondary",
+        "onPress",
+        "onLongPress"
+      ]
     },
     "treeSection": {
       "constructors": ["TreeSection"],
