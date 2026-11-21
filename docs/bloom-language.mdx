@@ -1077,9 +1077,11 @@ as `EngagementPop` mounts its layer. A Bloom component (a Surface, an Avatar, a
 bare glyph) cannot take motion itself, so it moves in one box, which takes the
 view's place in its parent.
 
-**Removal.** A list slot (`items.map(…)`) is Bloom's `Presence`: it keeps a
-child that left until its removal ends, holding its last frame. Only children
-keyed by `.id()` can leave: by index, a removal and a reorder look the same.
+**Removal.** Native: a removed child unmounts at once and its removal plays
+after, as a Reanimated layout animation on a native snapshot (no JS). Web: a
+list slot (`items.map(…)`) is Bloom's `Presence`, which keeps a child that left
+until its removal ends, holding its last frame. Only children keyed by `.id()`
+can leave: by index, a removal and a reorder look the same.
 
 **Glass.** On the web, an opacity below 1 on a glass host or any ancestor of one
 flattens the material (AGENTS.rules.md, Material). The engine routes the fade of
@@ -1101,7 +1103,8 @@ hoists like any other static chain, and a module constant holding one is static.
 
 The engagement bar's pop (`EngagementPop`: the glyph's keyframes and the ring's
 burst) and count roll (`RollingText`), the toast's enter and exit (`ToastRow`,
-`animations.ts`, its rows kept by a `Presence` while they leave) and press
+`animations.ts`; native exits are layout animations, web rows are kept by a
+`Presence` while they leave) and press
 feedback (`PressableScale`) play on the engine, at their old geometry, curves
 and timings. The tab indicator follows the pager's drag, so it stays on shared
 values, timed by the engine's table. Mention's language row draws Bloom's

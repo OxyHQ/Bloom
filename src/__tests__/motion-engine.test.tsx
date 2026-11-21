@@ -1,6 +1,7 @@
 import React from 'react';
 import { Text } from 'react-native';
-import { act, render } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
+import { Keyframe } from 'react-native-reanimated';
 
 import {
   MOTION,
@@ -100,35 +101,29 @@ describe('transitions and Presence', () => {
     expect(rise.remove.motion).toBe(MOTION.enter);
   });
 
-  function Row({
-    label,
-    leaving,
-  }: {
-    label: string;
-    exit?: boolean;
-    leaving?: { onLeft: () => void };
-  }) {
-    return <Text onPress={leaving?.onLeft}>{leaving ? `${label} (leaving)` : label}</Text>;
-  }
-
-  it('keeps a keyed child that left, marked leaving, until it says it has left', () => {
-    const list = (ids: string[]) => (
-      <Presence items={ids.map((id) => <Row key={id} exit label={id} />)} />
+  it('a removal on native is a Reanimated layout Keyframe, played after the view unmounts', () => {
+    const leave = defineKeyframes(
+      [
+        { at: 0, opacity: 1 },
+        { at: 0.5, opacity: 0.35, easing: 'linear' },
+        { at: 1, opacity: 0 },
+      ],
+      'exit',
     );
-    const rendered = render(list(['a', 'b']));
-    rendered.rerender(list(['b']));
-    expect(rendered.getByText('a (leaving)')).toBeTruthy();
-    act(() => rendered.getByText('a (leaving)').props.onPress());
-    expect(rendered.queryByText('a (leaving)')).toBeNull();
-    expect(rendered.getByText('b')).toBeTruthy();
+    const { UNSAFE_root } = render(
+      <MotionView exit={{ keyframes: leave, material: false }} testID="box" />,
+    );
+    const box = UNSAFE_root.find((n) => n.props.testID === 'box' && typeof n.type === 'string');
+    expect(box.props.exiting).toBeInstanceOf(Keyframe);
   });
 
-  it('passes a list with no leaving child through', () => {
+  it('Presence on native passes the list through: a removed child goes at once', () => {
     const list = (ids: string[]) => (
-      <Presence items={ids.map((id) => <Row key={id} label={id} />)} />
+      <Presence items={ids.map((id) => <Text key={id}>{id}</Text>)} />
     );
     const rendered = render(list(['a', 'b']));
     rendered.rerender(list(['b']));
-    expect(rendered.queryByText(/^a/)).toBeNull();
+    expect(rendered.queryByText('a')).toBeNull();
+    expect(rendered.getByText('b')).toBeTruthy();
   });
 });
