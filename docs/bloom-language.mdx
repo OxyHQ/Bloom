@@ -1652,6 +1652,21 @@ and `@oxy.so/bloom-data` beside it.
   same engine.
 - The className table (`docs/bloom-language-classnames.mdx`), which says what
   each utility the apps use becomes.
+- Inputs (see [Inputs](#inputs)): `TextField`, `SecureField`, `TextEditor`,
+  `Field`, `Label`, `Toggle`, `Checkbox`, `RadioGroup`, `Segmented`, `Picker`
+  with their `Option`, and `Search`, each value a `Binding` (`[value,
+  setValue]`, what `useState` returns).
+- Overlays and feedback (see [Overlays and feedback](#overlays-and-feedback)):
+  `.alert()`, `.dialog()` and `.popover()` on any view, each shown while its
+  binding holds (Bloom's `AlertDialog`, `Dialog` and `Popover`, the view as the
+  popover's trigger); `ConnectionStatus`; `toast` as Bloom's imperative call
+  with a title or a language view. Web parity compares an open overlay's
+  portaled DOM.
+- Containers (see [Containers](#containers)): `Card` and its parts, `Row`
+  (Bloom's `Item`), `GroupedSection` and `GroupedSectionItem`, `Chip` (a filter
+  chip through a binding), `EmptyState` (its actions read from `Button` nodes),
+  `Admonition`, `Tabs`/`TabItem` (the selection a binding), `Kbd` and
+  `ErrorBoundary`.
 
 **Not built**
 
@@ -1683,3 +1698,16 @@ and `@oxy.so/bloom-data` beside it.
   fallback.
 - Replacing `className`: the codemods read the className table; what it
   flags needs a modifier or a named token first.
+- Inputs: a trailing `TextFieldIcon`, `TextFieldGhost`, the swatch radio, a
+  picker's groups and custom rows, a search's custom trigger and trailing
+  content, focus as a binding (`onFocus`, `onBlur`, an input's ref). A
+  field that takes the focus as it appears is compared by Jest, not in
+  Chrome (a page has one focus).
+- Overlays: an alert's icon; a dialog's header, footer, frame, widths and
+  content padding, and placements for `sm`, `lg` and `xl`; popover offsets and
+  widths; `toast.custom`; ConnectionStatus's own words and delays. The Chrome
+  check compares an overlay's presenting view, not its portal.
+- Containers: a chip's role and variant, chip rows, a row's density,
+  grouped-section icons, dividers and collapse, an empty state's suggestions
+  and illustration, a tab's reordering, `TabsContent`, `SelectionCard`, and an
+  error boundary's fallback as a function.
