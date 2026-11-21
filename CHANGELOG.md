@@ -1,5 +1,11 @@
 # Changelog
 
+## 22.1.11
+
+### Fixed
+
+- `FontLoader` no longer sets `Text.defaultProps.style`. React 19 applies `defaultProps` to class components only and React Native's `Text` is a function component, so that default never reached a text: a raw `Text` that named no family drew the system face. Bloom's `Text` names its own family; a raw `Text` or `TextInput` gets Inter from `@oxy.so/app-preset`'s Metro config (`metro/base-font/`). `docs/fonts.mdx` says so.
+
 ## 22.1.10
 
 ### Fixed
