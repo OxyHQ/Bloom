@@ -601,6 +601,25 @@ export class Store {
     return layer;
   }
 
+  /**
+   * Reads the records and lists a layer touches from the durable copy (those
+   * not held), so a restored layer shows at once and commits into the
+   * server's copy rather than into nothing.
+   */
+  async hydrateLayer(layer: Layer): Promise<void> {
+    const ids = new Map<EntityDefinition, string[]>();
+    for (const slot of layer.slots) {
+      if (slot.base) continue;
+      const held = ids.get(slot.definition) ?? [];
+      held.push(slot.id);
+      ids.set(slot.definition, held);
+    }
+    await Promise.all([
+      ...[...ids].map(([definition, missing]) => this.hydrate(definition, missing)),
+      ...[...layer.lists].map((slot) => this.hydrateList(slot.definition, slot.key)),
+    ]);
+  }
+
   // ── Reads ───────────────────────────────────────────────────
 
   /** The record with its refs resolved, as a plain object. Cached until a dependency changes. */
