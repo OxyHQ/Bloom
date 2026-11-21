@@ -736,7 +736,8 @@
     "socialIntent": ["continue", "signIn", "signUp"],
     "galleryStyle": ["overlay", "page"],
     "galleryIndicator": ["dots", "thumbnails"],
-    "dataTableStyle": ["table", "inset"]
+    "dataTableStyle": ["table", "inset"],
+    "agentMood": ["neutral", "sad"]
   },
   "glass": {
     "$comment": [
@@ -1373,7 +1374,10 @@
     "sizeToggle": ["value"],
     "bordered": ["value"],
     "onDragChange": ["value"],
-    "root": []
+    "root": [],
+    "mood": ["agentMood"],
+    "interactive": ["value?"],
+    "portrait": ["value?"]
   },
   "universal": [
     "padding",
@@ -3053,7 +3057,12 @@
       "modifiers": ["onReorder", "onDragChange", "trailing", "disabled"]
     },
     "sortableChip": { "constructors": ["SortableChip"], "universal": false, "modifiers": [] },
-    "viewport": { "constructors": ["Viewport"], "universal": false, "modifiers": ["root"] }
+    "viewport": { "constructors": ["Viewport"], "universal": false, "modifiers": ["root"] },
+    "agentAvatar": {
+      "constructors": ["AgentAvatar"],
+      "modifiers": ["size", "mood", "paused", "interactive", "portrait"],
+      "size": "avatarSize"
+    }
   },
   "sfSymbols": {
     "$comment": [
