@@ -961,7 +961,8 @@
     "reorderable": ["value?"],
     "iconOnly": [],
     "dragTranslation": ["motionValue"],
-    "indicator": ["selectionIndicator"]
+    "indicator": ["selectionIndicator"],
+    "fade": ["color"]
   },
   "universal": [
     "padding",
@@ -1608,7 +1609,7 @@
     },
     "chipRow": {
       "constructors": ["ChipRow"],
-      "modifiers": ["spacing", "contentInset", "disabled"]
+      "modifiers": ["spacing", "contentInset", "disabled", "fade"]
     },
     "cappedChipRow": {
       "constructors": ["CappedChipRow"],
