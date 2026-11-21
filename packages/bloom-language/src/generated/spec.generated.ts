@@ -2451,6 +2451,12 @@ export const MODIFIERS = {
   ],
   "colorScale": [
     "value"
+  ],
+  "openMenu": [
+    "value"
+  ],
+  "shortcut": [
+    "value"
   ]
 } as const;
 
@@ -3794,7 +3800,8 @@ export const NODE_MODIFIERS = {
     "keepOpen",
     "onPress",
     "testID",
-    "tag"
+    "tag",
+    "shortcut"
   ],
   "menuSubmenu": [
     "icon",
@@ -8949,6 +8956,75 @@ export const NODE_MODIFIERS = {
     "spacing",
     "backdrop",
     "labels"
+  ],
+  "menubar": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "openMenu",
+    "actions"
+  ],
+  "menubarMenu": [
+    "id",
+    "disabled",
+    "testID"
   ]
 } as const;
 
@@ -9074,5 +9150,7 @@ export const CONSTRUCTORS = {
   "VideoViewabilityScope": "videoViewabilityScope",
   "HoverCard": "hoverCard",
   "ExpandableText": "expandableText",
-  "CategoryBar": "categoryBar"
+  "CategoryBar": "categoryBar",
+  "Menubar": "menubar",
+  "MenubarMenu": "menubarMenu"
 } as const;
