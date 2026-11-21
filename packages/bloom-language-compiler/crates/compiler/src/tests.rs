@@ -623,3 +623,15 @@ fn the_toolbar_and_the_sticky_section_are_checked_against_the_spec() {
     let size = chrome("export const T = () => Toolbar().size('xl');\n");
     assert_eq!(first_message(&size), Some("Unknown controlSize token 'xl' for .size()"));
 }
+
+#[test]
+fn a_screen_s_colour_activity_and_starting_heights_are_checked_against_the_spec() {
+    let fine = chrome(
+        "export const S = (seed) => Text('a').colorPreset('rose').seed(seed).screenActive(false).screenActive().initialHeaderHeight('64').initialFooterHeight('96');\n",
+    );
+    assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
+    let preset = chrome("export const S = () => Text('a').colorPreset('magenta');\n");
+    assert_eq!(first_message(&preset), Some("Unknown colorPreset token 'magenta' for .colorPreset()"));
+    let height = chrome("export const S = () => Text('a').initialHeaderHeight('65');\n");
+    assert_eq!(first_message(&height), Some("Unknown space token '65' for .initialHeaderHeight()"));
+}

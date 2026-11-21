@@ -1096,6 +1096,10 @@ modifiers above (see [Navigation](#navigation)), the rest of Bloom `Screen`:
 | `.floatingAction(view, { placement, visibility })` | `primaryAction`, `primaryActionPlacement`, `primaryActionVisibility` |
 | `.contentClearance(space)` | `contentClearance` |
 | `.navigationScope('inherit' \| 'shared' \| 'isolated')` | `navigationScope` |
+| `.colorPreset(name)` | `colorPreset`: one of Bloom's presets (`AppColorName`), the screen's own recipe for its content, panel and shell, restored when it leaves |
+| `.seed('#rrggbb')` | `seed`: the colours from one RGB seed (a colour the person chose), over the preset |
+| `.screenActive(false)` | `active={false}`: a retained screen drives no scroll, chrome or reselect |
+| `.initialHeaderHeight(space)`, `.initialFooterHeight(space)` | `headerHeight`, `bottomBarHeight`: the chrome's heights before it measures itself (safe area included) |
 
 The insets are Bloom `Screen`'s own: the header and the footer measure
 themselves, the safe area comes from the screen's context, and the content
@@ -1104,8 +1108,9 @@ pads its ends clear of both. The keyboard is the footer's
 the keyboard and keeps the focused field above it) and the scroll view's
 (`scrollDismissesKeyboard`, `keyboardTaps`).
 
-Not in the language yet: a screen's colour (`colorPreset`, `seed`), `active`
-and the initial chrome heights (`headerHeight`, `bottomBarHeight`).
+A seed is the one colour a screen takes as a value rather than a token: it
+is data (what the person picked), as an image's source is. `screenActive`
+is named for the screen, since `.active()` is an action's state.
 
 ### Bottom sheet
 

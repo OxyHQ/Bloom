@@ -24,6 +24,7 @@ import { toElement } from '../render';
 import {
   resolveSpace,
   type ChromePlacement,
+  type ColorPreset,
   type NavigationScope,
   type ScreenKind,
   type ScreenScroll,
@@ -114,6 +115,8 @@ export function ScreenHost({ root }: { root: Child }) {
   const action = chrome.action;
   const values = chrome.values;
   const clearance = values.contentClearance as SpaceToken | undefined;
+  const headerHeight = values.initialHeaderHeight as SpaceToken | undefined;
+  const footerHeight = values.initialFooterHeight as SpaceToken | undefined;
   return (
     <>
       <Screen
@@ -129,6 +132,11 @@ export function ScreenHost({ root }: { root: Child }) {
         primaryActionVisibility={action?.options?.visibility}
         contentClearance={clearance === undefined ? undefined : resolveSpace(clearance)}
         navigationScope={values.navigationScope as NavigationScope | undefined}
+        colorPreset={values.colorPreset as ColorPreset | undefined}
+        seed={values.seed as string | undefined}
+        active={values.screenActive as boolean | undefined}
+        headerHeight={headerHeight === undefined ? undefined : resolveSpace(headerHeight)}
+        bottomBarHeight={footerHeight === undefined ? undefined : resolveSpace(footerHeight)}
         reselect={chrome.onReselect ? { refresh: chrome.onReselect } : undefined}
         bottomBar={footer ? toElement(footer.content) : undefined}
         bottomBarPlacement={footerOptions?.placement}

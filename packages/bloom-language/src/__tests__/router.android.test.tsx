@@ -334,6 +334,28 @@ describe('screen() on Android', () => {
     expect(hosts(r, 'ScreenScrollView')).toHaveLength(1);
   });
 
+  it('the root’s colour, activity and starting chrome heights reach Screen', () => {
+    const Tinted = screen(() =>
+      Text('a')
+        .colorPreset('rose')
+        .seed('#8e5137')
+        .screenActive(false)
+        .initialHeaderHeight('64')
+        .initialFooterHeight('96'),
+    );
+    expect(only(mount(createElement(Tinted)), 'Screen').props).toMatchObject({
+      colorPreset: 'rose',
+      seed: '#8e5137',
+      active: false,
+      headerHeight: 64,
+      bottomBarHeight: 96,
+    });
+    // What the chain leaves out stays Bloom's default.
+    const plain = only(mount(createElement(screen(() => Text('a')))), 'Screen').props;
+    for (const name of ['colorPreset', 'seed', 'active', 'headerHeight', 'bottomBarHeight'])
+      expect(plain[name]).toBeUndefined();
+  });
+
   it('a ScrollView is Bloom’s ScreenScrollView: its margins, gap, indicators, keyboard and end', () => {
     const more = jest.fn();
     const Feed = screen(() =>

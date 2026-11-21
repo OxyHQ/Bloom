@@ -87,6 +87,7 @@ import {
   type ScreenScroll,
   type ChromePlacement,
   type NavigationScope,
+  type ColorPreset,
   type ActionPlacement,
   type ScrollIndicators,
   type KeyboardDismiss,
@@ -137,6 +138,7 @@ export type {
   KeyboardDismiss,
   KeyboardTaps,
   NavigationScope,
+  ColorPreset,
   ScreenKind,
   ScreenScroll,
   ScrollIndicators,
@@ -265,6 +267,11 @@ export interface ValueModifiers {
   underlay: Child;
   contentClearance: SpaceToken;
   navigationScope: NavigationScope;
+  colorPreset: ColorPreset;
+  seed: string;
+  screenActive: boolean;
+  initialHeaderHeight: SpaceToken;
+  initialFooterHeight: SpaceToken;
   refreshable: RefreshAction;
   scrollIndicators: ScrollIndicators;
   scrollDismissesKeyboard: KeyboardDismiss;
@@ -1188,6 +1195,21 @@ export class Node {
   navigationScope(value: NavigationScope): Node {
     return this.set('navigationScope', value);
   }
+  colorPreset(value: ColorPreset): Node {
+    return this.set('colorPreset', value);
+  }
+  seed(value: string): Node {
+    return this.set('seed', value);
+  }
+  screenActive(value = true): Node {
+    return this.set('screenActive', value);
+  }
+  initialHeaderHeight(value: SpaceToken): Node {
+    return this.set('initialHeaderHeight', value);
+  }
+  initialFooterHeight(value: SpaceToken): Node {
+    return this.set('initialFooterHeight', value);
+  }
   contentMargins(edgeOrValue: Edge | SpaceToken, value?: SpaceToken): Node {
     const edge: Edge = value === undefined ? 'all' : (edgeOrValue as Edge);
     const token = value === undefined ? (edgeOrValue as SpaceToken) : value;
@@ -1703,6 +1725,26 @@ export interface ViewModifiers<Self> extends ViewNode {
   contentClearance(value: SpaceToken): Self;
   /** `isolated` keeps the shell's collapse and navigation motion out of a modal screen; `inherit` by default. */
   navigationScope(value: NavigationScope): Self;
+  /**
+   * The screen's own colour recipe, one of Bloom's presets (Bloom `Screen`'s
+   * `colorPreset`): its content, its panel and the shell around it, restored
+   * when it leaves.
+   */
+  colorPreset(value: ColorPreset): Self;
+  /**
+   * The screen's colours from one RGB seed (`#rrggbb`, Bloom `Screen`'s `seed`,
+   * a colour the person chose): over `colorPreset`, the roles from Bloom's colour engine.
+   */
+  seed(value: string): Self;
+  /**
+   * Whether the screen is in front (Bloom `Screen`'s `active`): a retained
+   * screen (`false`) drives no scroll, chrome or reselect. `true` by default.
+   */
+  screenActive(value?: boolean): Self;
+  /** The header's height before it measures itself (Bloom `Screen`'s `headerHeight`, safe area included). */
+  initialHeaderHeight(value: SpaceToken): Self;
+  /** The footer's height before it measures itself (Bloom `Screen`'s `bottomBarHeight`, safe area included). */
+  initialFooterHeight(value: SpaceToken): Self;
   rotation(value: RotationName | MotionValue): Self;
   /**
    * SwiftUI's `.animation(_:value:)`: changes to this view's scale, offset,
