@@ -25,6 +25,7 @@ import { COLOR_SWATCH_PICKERS } from './color-swatch-picker';
 import { INPUT_OTPS } from './input-otp';
 import { ANIMATED_CHECKS } from './animated-check';
 import { CONTEXT_MENUS } from './context-menu';
+import { COLLAPSIBLES } from './collapsible';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -57,4 +58,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...INPUT_OTPS,
   ...ANIMATED_CHECKS,
   ...CONTEXT_MENUS,
+  ...COLLAPSIBLES,
 };

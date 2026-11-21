@@ -61,3 +61,4 @@ export const ContextMenuSeparator = 'ContextMenuSeparator';
 export const ContextMenuSub = 'ContextMenuSub';
 export const ContextMenuSubTrigger = 'ContextMenuSubTrigger';
 export const ContextMenuSubContent = 'ContextMenuSubContent';
+export const Collapsible = 'Collapsible';

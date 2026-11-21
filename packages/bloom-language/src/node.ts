@@ -31,6 +31,7 @@ import type { ContextMenuKind } from './controls/context-menu';
 import type { ContextMenuAnchor } from '@oxy.so/bloom/context-menu';
 import type { FileUploadKind } from './controls/file-upload';
 import type { VideoViewKind } from './controls/video-view';
+import type { CollapsibleKind } from './controls/collapsible';
 import type { ColorSwatchPickerKind } from './controls/color-swatch-picker';
 import type { InputOtpKind } from './controls/input-otp';
 import type { OtpCharacters } from './tokens';
@@ -764,6 +765,10 @@ export interface ValueModifiers {
   length: number;
   characters: OtpCharacters;
   onComplete: (code: string) => void;
+  // Collapsibles (controls/collapsible.tsx)
+  revealsOnAppear: boolean;
+  keepsMounted: boolean;
+
   // Context menus (controls/context-menu.tsx)
   presentedAt: Binding<ContextMenuAnchor | null>;
 
@@ -1160,6 +1165,7 @@ export type NodeKind =
   | InputOtpKind
   | ColorSwatchPickerKind
   | ContextMenuKind
+  | CollapsibleKind
   | AnimatedCheckKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
@@ -2814,6 +2820,14 @@ export class Node {
   onComplete(value: (code: string) => void): Node {
     return this.set('onComplete', value);
   }
+  // Collapsibles (controls/collapsible.tsx)
+  revealsOnAppear(value = true): Node {
+    return this.set('revealsOnAppear', value);
+  }
+  keepsMounted(value: boolean): Node {
+    return this.set('keepsMounted', value);
+  }
+
   // Context menus (controls/context-menu.tsx)
   presentedAt(value: Binding<ContextMenuAnchor | null>): Node {
     return this.set('presentedAt', value);

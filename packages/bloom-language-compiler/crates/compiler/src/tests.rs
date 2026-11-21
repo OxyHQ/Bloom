@@ -1058,3 +1058,21 @@ fn context_menus_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn collapsibles_are_checked() {
+    let imports = "import { Collapsible, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (open, motion) => Collapsible(open, Text('a')).revealMotion(motion).revealsOnAppear().keepsMounted(false).padding('md');\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("Collapsible(t).keepsMounted()", ".keepsMounted() takes 1 argument(s), not 0"),
+        ("Collapsible(t).collapses()", "Collapsible has no modifier .collapses()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (t) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
