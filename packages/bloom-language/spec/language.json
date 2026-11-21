@@ -897,7 +897,7 @@
     }
   },
   "modifiers": {
-    "$comment": "name: parameter types, in order. A trailing ? is optional; padding takes (value) or (edge, value). motionValue: a MotionValue (useMotionValue); scale, offset and rotation take one in place of a token.",
+    "$comment": "name: parameter types, in order. A trailing ? is optional; padding takes (value) or (edge, value). motionValue: a MotionValue (useMotionValue); scale, offset and rotation take one in place of a token. colors: a list of colours, each a color token (a role, a role at an opacity) or an app colour.",
     "padding": ["edge?", "padding"],
     "frame": ["frame"],
     "grow": [],
@@ -1409,7 +1409,8 @@
     "activeTint": ["color"],
     "bubbleTint": ["color"],
     "contentTint": ["color"],
-    "placeholderTint": ["color"]
+    "placeholderTint": ["color"],
+    "gradient": ["colors"]
   },
   "universal": [
     "padding",
@@ -3230,12 +3231,12 @@
     "agentLogToolCall": { "constructors": ["AgentLogToolCall"], "modifiers": [] },
     "agentLogToolCalls": { "constructors": ["AgentLogToolCalls"], "modifiers": [] },
     "agentLogWorkingRow": { "constructors": ["AgentLogWorkingRow"], "modifiers": [] },
-    "composerLoader": { "constructors": ["ComposerLoader"], "modifiers": [] },
+    "composerLoader": { "constructors": ["ComposerLoader"], "modifiers": ["gradient"] },
     "conversationSidebar": { "constructors": ["ConversationSidebar"], "modifiers": [] },
     "questionnaire": { "constructors": ["Questionnaire"], "modifiers": [] },
     "chatBackground": {
       "constructors": ["ChatBackground"],
-      "modifiers": ["style", "tint"],
+      "modifiers": ["style", "tint", "gradient"],
       "style": "chatBackgroundStyle",
       "tint": "color"
     },
@@ -3261,7 +3262,7 @@
     "chatSearchField": { "constructors": ["ChatSearchField"], "modifiers": [] },
     "chatSearchResults": { "constructors": ["ChatSearchResults"], "modifiers": [] },
     "storiesRow": { "constructors": ["StoriesRow"], "modifiers": ["spacing"] },
-    "storyRing": { "constructors": ["StoryRing"], "modifiers": [] },
+    "storyRing": { "constructors": ["StoryRing"], "modifiers": ["gradient"] },
     "typingDots": { "constructors": ["TypingDots"], "modifiers": ["tint"], "tint": "color" },
     "contactMessage": {
       "constructors": ["ContactMessage"],

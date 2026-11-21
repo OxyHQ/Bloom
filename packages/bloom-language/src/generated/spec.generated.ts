@@ -3511,6 +3511,9 @@ export const MODIFIERS = {
   ],
   "placeholderTint": [
     "color"
+  ],
+  "gradient": [
+    "colors"
   ]
 } as const;
 
@@ -19850,7 +19853,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "gradient"
   ],
   "conversationSidebar": [
     "padding",
@@ -20092,7 +20096,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "style",
-    "tint"
+    "tint",
+    "gradient"
   ],
   "chatDateHeader": [
     "padding",
@@ -20977,7 +20982,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "gradient"
   ],
   "typingDots": [
     "padding",
