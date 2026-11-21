@@ -60,23 +60,25 @@ Bloom's state-driven animations play on one engine (`@oxy.so/bloom/motion`):
   transition on an `Animated.View`, on the UI thread, with no worklet, no shared
   value and no JS per frame. Two identical rules alternate by playing, so a
   new playing restarts even mid-play. A playing that ends holding no last
-  frame leaves the box: a finished CSS animation still attached to a view
-  inside a removal's layout animation cost a slow UI frame on every toast
-  exit (Pixel 8a).
+  frame leaves the box, so a box carries no finished animation into what
+  comes later.
 - **The web plays them with the Web Animations API and CSS**, with no
   Reanimated: `element.animate()` before the frame paints, each frame carrying
   its stretch's curve and the whole running linearly. A box that holds a
   material host never fades (see below): it only moves, and the same frames fade
   each material host's own layers (`::before`, `::after`) and each piece of
   content that holds no material (`surfacePresenceTargets`).
-- **Leaving.** A `MotionView`'s `exit` is how it leaves. Native: a Reanimated
-  layout `Keyframe` (`exitingOf`), played on a native snapshot after the view
-  unmounts, so a removed child is gone at once and its exit runs no JS. Web:
-  `Presence` keeps a keyed child that left (`exit`) and hands it a `Leaving`
-  through `LeavingContext`; the `MotionView` with the `exit` plays it and calls
-  `onLeft()`, and nothing else in the child re-renders (the toast's rows). Only
-  that view is the leaver: a moving view inside it (the toast's enter) ignores
-  the leaving, or it would let the child go at once.
+- **Leaving.** A `MotionView`'s `exit` is how it leaves, the same on every
+  platform: `Presence` keeps a keyed child that left (`exit`) and hands it a
+  `Leaving` through `LeavingContext`; the `MotionView` with the `exit` plays it
+  as it plays any keyframes and calls `onLeft()`, and nothing else in the
+  child re-renders (the toast's rows). Only that view is the leaver: a moving
+  view inside it (the toast's enter) ignores the leaving, or it would let the
+  child go at once. A native exit was a Reanimated layout `Keyframe` on a
+  snapshot after the unmount for a while: it ran no JS, but the frame each exit
+  started in was slow on a Pixel 8a (twice the janky frames over eight toasts,
+  with or without a curve on its stretches), so the row stays mounted for its
+  exit, as on the web.
 - **Press feedback** (`usePressScale`, `PressableScale`): native retargets one
   shared value with the `press` motion, read by one mapper; the web is a class
   whose `:active` rule scales a touch press with the CSS `scale` property.

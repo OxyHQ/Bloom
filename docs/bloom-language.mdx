@@ -1148,13 +1148,12 @@ engine's keyframes with an infinite iteration count (a CSS animation on native,
 `element.animate()` with `iterations: Infinity` on the web), the lowest of the
 one playing at a time, so it starts once an insertion ends and gives way to
 keyframes; reduced motion stops it. A delay is the timing's own
-(`transitionDelay`/`animationDelay`, the Web Animations delay, the native
-removal's `Keyframe.delay()`), and a delayed playing fills backwards.
+(`transitionDelay`/`animationDelay`, the Web Animations delay), and a delayed
+playing fills backwards.
 
-**Removal.** Native: a removed child unmounts at once and its removal plays
-after, as a Reanimated layout animation on a native snapshot (no JS). Web: a
-list slot (`items.map(…)`) is Bloom's `Presence`, which keeps a child that left
-until its removal ends, holding its last frame. Only children keyed by `.id()`
+**Removal.** A list slot (`items.map(…)`) is Bloom's `Presence`, on every
+platform: it keeps a child that left until its removal ends, holding its last
+frame. Only children keyed by `.id()`
 can leave: by index, a removal and a reorder look the same.
 
 **Glass.** On the web, an opacity below 1 on a glass host or any ancestor of one
@@ -1182,8 +1181,7 @@ hoists like any other static chain, and a module constant holding one is static.
 
 The engagement bar's pop (`EngagementPop`: the glyph's keyframes and the ring's
 burst) and count roll (`RollingText`), the toast's enter and exit (`ToastRow`,
-`animations.ts`; native exits are layout animations, web rows are kept by a
-`Presence` while they leave) and press
+`animations.ts`; a row is kept by a `Presence` while it leaves) and press
 feedback (`PressableScale`) play on the engine, at their old geometry, curves
 and timings. The tab indicator follows the pager's drag, so it stays on shared
 values, timed by the engine's table. Mention's language row draws Bloom's
