@@ -324,7 +324,7 @@
   "layers": [
     ["padding"],
     ["frame"],
-    ["background", "glass"],
+    ["background", "glass", "blur"],
     ["border"],
     ["corner", "cornerCurve"],
     ["opacity"]
@@ -348,6 +348,7 @@
     "corner": ["corner"],
     "opacity": ["opacity"],
     "glass": ["glass?"],
+    "blur": [],
     "foreground": ["color"],
     "font": ["font"],
     "weight": ["weight"],
@@ -456,6 +457,7 @@
     "cornerCurve",
     "opacity",
     "glass",
+    "blur",
     "foreground",
     "font",
     "weight",
