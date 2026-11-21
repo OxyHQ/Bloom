@@ -92,6 +92,9 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("scrollIndicators", &["automatic", "visible", "hidden"]),
     ("keyboardDismiss", &["never", "immediately", "interactively"]),
     ("keyboardTaps", &["never", "always", "handled"]),
+    ("dragIndicator", &["visible", "hidden"]),
+    ("sheetMaterial", &["surface", "flat"]),
+    ("sheetSizing", &["content", "fill"]),
 ];
 
 /// The modifiers a variant (`when(condition, v => v…)`) can change.
@@ -259,6 +262,14 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("scrollIndicators", &["scrollIndicators"]),
     ("scrollDismissesKeyboard", &["keyboardDismiss"]),
     ("keyboardTaps", &["keyboardTaps"]),
+    ("detached", &["value?"]),
+    ("dragIndicator", &["dragIndicator"]),
+    ("material", &["sheetMaterial"]),
+    ("scrollable", &["value?"]),
+    ("sizing", &["sheetSizing"]),
+    ("interactiveDismissDisabled", &["value?"]),
+    ("onDismissAttempt", &["value"]),
+    ("manualActivation", &["value?"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -302,6 +313,7 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "route", constructors: &["Sheet"], modifiers: &[], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "tabView", constructors: &["TabView"], modifiers: &[], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "scrollView", constructors: &["ScrollView"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "contentMargins", "spacing", "refreshable", "onEndReached", "scrollIndicators", "scrollDismissesKeyboard", "keyboardTaps"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "bottomSheet", constructors: &["BottomSheet"], modifiers: &["detached", "dragIndicator", "material", "scrollable", "sizing", "interactiveDismissDisabled", "onDismissAttempt", "manualActivation", "footer", "progress", "label"], size: None, tint: None, style: None, shape: None },
 ];
 
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,

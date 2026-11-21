@@ -1248,6 +1248,18 @@ export const ENUMS = {
     "never",
     "always",
     "handled"
+  ],
+  "dragIndicator": [
+    "visible",
+    "hidden"
+  ],
+  "sheetMaterial": [
+    "surface",
+    "flat"
+  ],
+  "sheetSizing": [
+    "content",
+    "fill"
   ]
 } as const;
 
@@ -1821,6 +1833,30 @@ export const MODIFIERS = {
   ],
   "keyboardTaps": [
     "keyboardTaps"
+  ],
+  "detached": [
+    "value?"
+  ],
+  "dragIndicator": [
+    "dragIndicator"
+  ],
+  "material": [
+    "sheetMaterial"
+  ],
+  "scrollable": [
+    "value?"
+  ],
+  "sizing": [
+    "sheetSizing"
+  ],
+  "interactiveDismissDisabled": [
+    "value?"
+  ],
+  "onDismissAttempt": [
+    "value"
+  ],
+  "manualActivation": [
+    "value?"
   ]
 } as const;
 
@@ -3980,6 +4016,19 @@ export const NODE_MODIFIERS = {
     "scrollIndicators",
     "scrollDismissesKeyboard",
     "keyboardTaps"
+  ],
+  "bottomSheet": [
+    "detached",
+    "dragIndicator",
+    "material",
+    "scrollable",
+    "sizing",
+    "interactiveDismissDisabled",
+    "onDismissAttempt",
+    "manualActivation",
+    "footer",
+    "progress",
+    "label"
   ]
 } as const;
 
@@ -4023,5 +4072,6 @@ export const CONSTRUCTORS = {
   "Stack": "navStack",
   "Sheet": "route",
   "TabView": "tabView",
-  "ScrollView": "scrollView"
+  "ScrollView": "scrollView",
+  "BottomSheet": "bottomSheet"
 } as const;

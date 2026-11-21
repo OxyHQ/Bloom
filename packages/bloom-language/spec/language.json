@@ -505,7 +505,10 @@
     "actionPlacement": ["start", "center", "end"],
     "scrollIndicators": ["automatic", "visible", "hidden"],
     "keyboardDismiss": ["never", "immediately", "interactively"],
-    "keyboardTaps": ["never", "always", "handled"]
+    "keyboardTaps": ["never", "always", "handled"],
+    "dragIndicator": ["visible", "hidden"],
+    "sheetMaterial": ["surface", "flat"],
+    "sheetSizing": ["content", "fill"]
   },
   "glass": {
     "$comment": [
@@ -797,7 +800,15 @@
     "onEndReached": ["value", "value?"],
     "scrollIndicators": ["scrollIndicators"],
     "scrollDismissesKeyboard": ["keyboardDismiss"],
-    "keyboardTaps": ["keyboardTaps"]
+    "keyboardTaps": ["keyboardTaps"],
+    "detached": ["value?"],
+    "dragIndicator": ["dragIndicator"],
+    "material": ["sheetMaterial"],
+    "scrollable": ["value?"],
+    "sizing": ["sheetSizing"],
+    "interactiveDismissDisabled": ["value?"],
+    "onDismissAttempt": ["value"],
+    "manualActivation": ["value?"]
   },
   "universal": [
     "padding",
@@ -1148,6 +1159,23 @@
         "scrollIndicators",
         "scrollDismissesKeyboard",
         "keyboardTaps"
+      ]
+    },
+    "bottomSheet": {
+      "constructors": ["BottomSheet"],
+      "universal": false,
+      "modifiers": [
+        "detached",
+        "dragIndicator",
+        "material",
+        "scrollable",
+        "sizing",
+        "interactiveDismissDisabled",
+        "onDismissAttempt",
+        "manualActivation",
+        "footer",
+        "progress",
+        "label"
       ]
     }
   },
