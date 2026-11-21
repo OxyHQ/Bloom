@@ -129,6 +129,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("socialIntent", &["continue", "signIn", "signUp"]),
     ("galleryStyle", &["overlay", "page"]),
     ("galleryIndicator", &["dots", "thumbnails"]),
+    ("dataTableStyle", &["table", "inset"]),
 ];
 
 /// The modifiers a variant (`when(condition, v => v…)`) can change.
@@ -496,6 +497,15 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("triggerTitle", &["value"]),
     ("plainRun", &["value"]),
     ("linkView", &["value"]),
+    ("cell", &["value"]),
+    ("sortable", &["value?"]),
+    ("sortsDescendingFirst", &["value?"]),
+    ("summary", &["value"]),
+    ("sorting", &["value"]),
+    ("rowSelection", &["value"]),
+    ("pageSize", &["value"]),
+    ("sizeToggle", &["value"]),
+    ("bordered", &["value"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -631,6 +641,11 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "gallery", constructors: &["Gallery"], modifiers: &["page", "style", "pageIndicator", "mediaCorner", "nativeControls", "videoOverlay", "sourceAnchors", "labels"], size: None, tint: None, style: Some("galleryStyle"), shape: None },
     NodeSpec { kind: "meetingScheduler", constructors: &["MeetingScheduler"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "fullScreenCover", "bounds", "unavailable", "weekStart", "locale", "labels", "timeSlots", "hourFormat", "onTimezonePress", "triggerTitle", "disabled", "presented"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "inlineMarkdown", constructors: &["InlineMarkdown"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "fullScreenCover", "streaming", "onLinkPress", "plainRun", "linkView", "suffix"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "dataTable", constructors: &["DataTable"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "fullScreenCover", "title", "summary", "toolbar", "sorting", "rowSelection", "pageSize", "page", "size", "sizeToggle", "bordered", "emptyState", "minWidth", "style", "labels"], size: Some("tableSize"), tint: None, style: Some("dataTableStyle"), shape: None },
+    NodeSpec { kind: "dataColumn", constructors: &["DataColumn"], modifiers: &["label", "width", "share", "minWidth", "basis", "align", "cell", "sortable", "sortsDescendingFirst"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "dataTableFilter", constructors: &["DataTableFilter"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "fullScreenCover", "disabled"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "dataTableSearch", constructors: &["DataTableSearch"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "fullScreenCover", "placeholder"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "dataTableSelect", constructors: &["DataTableSelect"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "fullScreenCover", "size", "disabled"], size: Some("tableSize"), tint: None, style: None, shape: None },
 ];
 
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,
