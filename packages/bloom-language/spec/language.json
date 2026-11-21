@@ -3357,7 +3357,11 @@
     },
     "subscriptionPlans": { "constructors": ["SubscriptionPlans"], "modifiers": [] },
     "subscriptionPrice": { "constructors": ["SubscriptionPrice"], "modifiers": [] },
-    "userHoverCard": { "constructors": ["UserHoverCard"], "modifiers": [] }
+    "userHoverCard": { "constructors": ["UserHoverCard"], "modifiers": [] },
+    "cardForm": { "constructors": ["CardForm"], "modifiers": ["disabled"] },
+    "cardFormCountry": { "constructors": ["CardFormCountry"], "modifiers": ["disabled"] },
+    "cardFormPostcode": { "constructors": ["CardFormPostcode"], "modifiers": ["disabled"] },
+    "cardFormHostedField": { "constructors": ["CardFormHostedField"], "modifiers": ["disabled"] }
   },
   "sfSymbols": {
     "$comment": [
