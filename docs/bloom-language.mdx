@@ -1090,6 +1090,81 @@ header node of the screen's own is drawn in the page on every platform),
 and kept while it closes. The root's `.testID` names the Screen itself, not a
 box around the content.
 
+## Overlays and feedback
+
+What a view presents is a modifier on it, as in SwiftUI: a binding
+(`[value, setValue]`, what `useState` returns) says whether it shows, and
+dismissing it sets the binding false.
+
+```ts
+const [confirming, setConfirming] = useState(false);
+Button(Text('Delete')).onPress(() => setConfirming(true)).alert(
+  [confirming, setConfirming],
+  Alert('Delete post?').message('It cannot be undone.').confirmLabel('Delete').destructive().onConfirm(remove),
+)
+const sharing = useState(false);
+Button(Text('Share')).onPress(() => sharing[1](true)).dialog(
+  sharing,
+  Dialog(ShareSheet({ post })).title('Share').presentAt('bottom', 'center').buttons([{ label: 'Done' }]),
+)
+// The popover's trigger is the view: pressing it opens the popover.
+Button(Icon(RiInformationLine)).shape('circle').label('Details').popover(
+  useState(false),
+  Popover(Text(post.summary)).label('Details').side('bottom', 'end'),
+)
+ConnectionStatus()
+toast.success('Saved')
+```
+
+| Chain | Draws |
+| --- | --- |
+| `.alert(isPresented, Alert(title))` | Bloom `AlertDialog` beside the view (`open`, `onOpenChange`) |
+| `.dialog(isPresented, Dialog(...content))` | Bloom `Dialog` beside the view (`open`, `onClose`), its content the children |
+| `.popover(isPresented, Popover(...content))` | Bloom `Popover`: the view is its `PopoverTrigger asChild`, the content its `PopoverContent` |
+| `ConnectionStatus()` | Bloom `ConnectionStatusToasts` |
+| `toast(…)` | Bloom's `toast` |
+
+- **Alert.** `.message(text)` is the text under the title;
+  `.confirmLabel()`, `.cancelLabel()` (Bloom's localized words without them),
+  `.onConfirm(fn)`, `.onCancel(fn)` (the cancel button, Escape or the
+  backdrop), `.destructive()`, `.hideCancel()` (an acknowledgement),
+  `.defaultAction('confirm' | 'cancel')` (the initial focus and Enter),
+  `.dismissible(false)`, `.testID()`.
+- **Dialog.** `.title()`, `.message()`, `.label()` (its name without a title),
+  `.buttons([...])` (Bloom's `DialogAction`s: `label`, `onPress`, `color`,
+  `disabled`, `loading`…), `.presentAt(base, md?)` (`center` `bottom` `left`
+  `right` `start` `end`; the second from the `md` breakpoint, so
+  `.presentAt('bottom', 'center')` is Bloom's `{ base: 'bottom', md: 'center' }`),
+  `.dismissOnBackdrop(false)`, `.scrollable()`, `.testID()`.
+- **Popover.** `.label()`, `.side(side, align?)` (`top` `bottom` `left`
+  `right`; `start` `center` `end`), `.testID()`. Pressing the view opens it, as
+  Bloom's trigger does, through the binding.
+- **Not views.** `Alert`, `Dialog` and `Popover` are what a view presents; the
+  types keep them out of a stack. An alert and a dialog are drawn beside the
+  view that presents them (each portals itself over the screen), as an app
+  writes them next to the control that opens them; their content is in the
+  view's environment.
+- **Toast.** A toast is an event, not a view: `toast`, `toast.success`
+  `.error` `.warning` `.info` `.loading`, `.promise`, `.dismiss` and
+  `.wiggle` are Bloom's own calls, made from a press or an effect, and Bloom's
+  toaster (mounted by the app's shell) draws them. A title is handed to Bloom
+  as it is; a language view becomes the whole row, as Bloom's custom toast.
+- **ConnectionStatus.** Bloom's offline, reconnecting and restored toasts, with
+  Bloom's words and timings. It draws nothing in place: place it once, near the
+  app's root.
+
+Parity (`parity/overlays.cases.tsx`) covers every alert, dialog placement and
+popover side, open and closed. Native compares the committed trees; the web
+also compares what a case portals into the document's body, so an open
+overlay's DOM and CSS are held equal. The Chrome check compares each cell in
+place: the presenting view (an overlay's portal is outside the cells).
+
+Not in the language: an alert's `icon` (a React node with no token), a dialog's
+`header`, `footer`, `frame`, `width`/`maxWidth` and `contentPadding` (numbers
+with no rung), a placement for `sm`, `lg` or `xl`, a popover's offsets and
+widths, `toast.custom` (a view is the custom toast), and `ConnectionStatus`'s
+own words and delays (Bloom's localized ones stay).
+
 ## Image
 
 `Image(source, alt?)` is Bloom's `BloomImage`: expo-image on a device,
