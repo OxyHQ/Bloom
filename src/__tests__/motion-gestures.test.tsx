@@ -83,7 +83,7 @@ describe('the one mapper', () => {
 
 describe('useDrag', () => {
   it('moves the value with the finger from where it was, within its bounds, and reports the end once', () => {
-    const ends: Array<{ value: number; velocity: number }> = [];
+    const ends: Array<{ value: number; velocity: number; released: boolean }> = [];
     let value!: MotionValue;
     function Box() {
       value = useMotionValue(20);
@@ -113,7 +113,63 @@ describe('useDrag', () => {
     act(() => gesture.__handlers.onUpdate?.({ translationX: 300, velocityX: 900 }));
     expect(getMotionValue(value)).toBe(100);
     act(() => gesture.__handlers.onFinalize?.({}));
-    expect(ends).toEqual([{ value: 100, velocity: 900 }]);
+    // Never let go by the gesture (no deactivation): not released.
+    expect(ends).toEqual([{ value: 100, velocity: 900, released: false }]);
+  });
+
+  it('reports whether a touch it took was let go or cancelled', () => {
+    const ends: boolean[] = [];
+    function Box() {
+      const value = useMotionValue(0);
+      const gesture = useDrag(value, { axis: 'y', onEnd: (end) => ends.push(end.released) });
+      return (
+        <GestureDetector gesture={gesture as never}>
+          <View />
+        </GestureDetector>
+      );
+    }
+    const { UNSAFE_root } = render(<Box />);
+    const gesture = UNSAFE_root.findAll((node) => node.props.gesture !== undefined)[0]?.props
+      .gesture as Recorded;
+    for (const canceled of [false, true]) {
+      act(() => {
+        gesture.__handlers.onBegin?.({});
+        gesture.__handlers.onUpdate?.({ translationY: 30, velocityY: 0 });
+        gesture.__handlers.onDeactivate?.({ velocityY: 0, canceled });
+        gesture.__handlers.onFinalize?.({});
+      });
+    }
+    expect(ends).toEqual([true, false]);
+  });
+
+  it('a long press lifts it: JS hears the lift and each move’s position along the axis', () => {
+    const heard: string[] = [];
+    function Box() {
+      const value = useMotionValue(0);
+      const gesture = useDrag(value, {
+        axis: 'y',
+        activeOffset: null,
+        activateAfterLongPress: 350,
+        startOn: 'activation',
+        onActivate: () => heard.push('lift'),
+        onMove: (position) => heard.push(`at ${position}`),
+      });
+      return (
+        <GestureDetector gesture={gesture as never}>
+          <View />
+        </GestureDetector>
+      );
+    }
+    const { UNSAFE_root } = render(<Box />);
+    const gesture = UNSAFE_root.findAll((node) => node.props.gesture !== undefined)[0]?.props
+      .gesture as Recorded;
+    expect(gesture.__config).toMatchObject({ activateAfterLongPress: 350 });
+    act(() => {
+      gesture.__handlers.onBegin?.({});
+      gesture.__handlers.onActivate?.({});
+      gesture.__handlers.onUpdate?.({ translationY: 12, velocityY: 0, absoluteY: 212 });
+    });
+    expect(heard).toEqual(['lift', 'at 212']);
   });
 });
 
@@ -148,7 +204,8 @@ describe('useDrag, shared with a scroll view or taken by hand', () => {
       simultaneousWith: undefined,
     });
     expect(drag.gesture.__handlers.onTouchesMove).toBeUndefined();
-    expect(drag.gesture.__handlers.onDeactivate).toBeUndefined();
+    expect(drag.gesture.__handlers.onActivate).toBeUndefined();
+    expect(drag.gesture.__config).not.toHaveProperty('activateAfterLongPress', expect.anything());
   });
 
   it('follows past its bounds at the overdrag share, from where the value was when it took the touch', () => {
