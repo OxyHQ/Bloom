@@ -100,6 +100,13 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   };
 
   render(): ReactNode {
+    const { style } = this.props;
+    const shown = this.shown();
+    return style === undefined ? shown : <View style={style}>{shown}</View>;
+  }
+
+  /** The content, or the fallback in its place. */
+  private shown(): ReactNode {
     if (this.state.hasError && this.state.error) {
       const { fallback } = this.props;
 

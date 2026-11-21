@@ -1,4 +1,5 @@
 import type { ReactNode, ErrorInfo } from 'react';
+import type { StyleProp, ViewStyle } from 'react-native';
 import type { EmptyStateProps } from '../empty-state/types';
 
 /**
@@ -59,6 +60,11 @@ export interface ErrorBoundaryProps {
   /** Callback when an error is caught */
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
   testID?: string;
+  /**
+   * The boundary's own box: a view that holds the content, and the fallback in
+   * its place. Without it the boundary draws no view of its own.
+   */
+  style?: StyleProp<ViewStyle>;
 }
 
 /** Recovery UI for a panel inside a healthy Bloom provider. */

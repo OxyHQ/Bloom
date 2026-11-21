@@ -159,6 +159,7 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
   accessibilityHint,
   accessibilityRole,
   leftInset,
+  style,
 }) {
   const theme = useTheme();
   const compact = useBloomContentDensity() === 'compact';
@@ -260,7 +261,7 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
         aria-busy={accessibilityState?.busy}
         aria-expanded={accessibilityState?.expanded}
         aria-checked={accessibilityState?.checked}
-        style={[isDisabled && styles.disabled, pressed && { opacity: pressedOpacity }]}
+        style={[isDisabled && styles.disabled, pressed && { opacity: pressedOpacity }, style]}
       >
         {content}
       </Pressable>
@@ -286,6 +287,7 @@ export const GroupedSectionItem = memo<GroupedSectionItemProps>(function Grouped
       aria-busy={accessibilityState?.busy}
       aria-expanded={accessibilityState?.expanded}
       aria-checked={accessibilityState?.checked}
+      style={style}
     >
       {content}
     </View>
