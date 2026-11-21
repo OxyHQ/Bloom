@@ -21,6 +21,7 @@ import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 import type { TagFieldKind } from './controls/tag-field';
 import type { FileUploadKind } from './controls/file-upload';
 import type { VideoViewKind } from './controls/video-view';
+import type { ColorSwatchPickerKind } from './controls/color-swatch-picker';
 import type { InputOtpKind } from './controls/input-otp';
 import type { OtpCharacters } from './tokens';
 import type { TagSuggestion } from '@oxy.so/bloom/tag-field';
@@ -814,6 +815,7 @@ export type NodeKind =
   | TagFieldKind
   | FileUploadKind
   | VideoViewKind
+  | ColorSwatchPickerKind
   | InputOtpKind
   | InputKind
   | OverlayKind

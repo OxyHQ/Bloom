@@ -312,6 +312,10 @@ export type { VideoView } from './controls/video-view';
 export { InputOtp } from './controls/input-otp';
 export type { InputOtpView } from './controls/input-otp';
 
+// Colour swatch pickers (controls/color-swatch-picker.tsx)
+export { ColorSwatchPicker } from './controls/color-swatch-picker';
+export type { ColorSwatchPickerView } from './controls/color-swatch-picker';
+
 // Inputs (controls/inputs.tsx)
 export {
   Checkbox,

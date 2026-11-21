@@ -20,6 +20,7 @@ import { TABLES } from './table';
 import { TAG_FIELDS } from './tag-field';
 import { TOOLTIPS } from './tooltip';
 import { VIDEOS } from './video-view';
+import { COLOR_SWATCH_PICKERS } from './color-swatch-picker';
 import { INPUT_OTPS } from './input-otp';
 
 /**
@@ -48,5 +49,6 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...TAG_FIELDS,
   ...FILE_UPLOADS,
   ...VIDEOS,
+  ...COLOR_SWATCH_PICKERS,
   ...INPUT_OTPS,
 };
