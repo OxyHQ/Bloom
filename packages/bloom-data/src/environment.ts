@@ -8,7 +8,8 @@
  * import, so a server render touches no browser API.
  */
 
-type EnvironmentEvent = 'online' | 'focus';
+/** Every change is told: a banner needs going offline as much as a read needs coming back. */
+export type EnvironmentEvent = 'online' | 'offline' | 'focus' | 'blur';
 type EnvironmentListener = (event: EnvironmentEvent) => void;
 
 let online = true;
@@ -27,13 +28,13 @@ export const environment = {
   setOnline(next: boolean): void {
     if (online === next) return;
     online = next;
-    if (next) emit('online');
+    emit(next ? 'online' : 'offline');
   },
   /** Report whether the app is in front. Coming to the front refetches stale reads. */
   setFocused(next: boolean): void {
     if (focused === next) return;
     focused = next;
-    if (next) emit('focus');
+    emit(next ? 'focus' : 'blur');
   },
   subscribe(listener: EnvironmentListener): () => void {
     listeners.add(listener);
