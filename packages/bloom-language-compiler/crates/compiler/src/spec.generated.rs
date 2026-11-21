@@ -17,13 +17,13 @@ pub struct NodeSpec {
 
 /// Token set name → its token names.
 pub const TOKEN_SETS: &[(&str, &[&str])] = &[
-    ("space", &["none", "2xs", "xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "5xl"]),
-    ("padding", &["none", "2xs", "xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "5xl", "-none", "-2xs", "-xs", "-sm", "-md", "-lg", "-xl", "-2xl", "-3xl", "-4xl", "-5xl"]),
-    ("spacing", &["none", "2xs", "xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "5xl", "between"]),
-    ("corner", &["none", "2xs", "xs", "sm", "md", "lg", "xl", "2xl", "3xl", "full", "concentric"]),
-    ("font", &["large-title", "display-1", "display-2", "display-3", "display-4", "title-1", "title-2", "title-3", "headline", "body", "body-2", "caption-1", "caption-2", "2xs", "xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "5xl"]),
+    ("space", &["none", "2xs", "xs", "xs-sm", "sm", "sm-md", "md", "md-lg", "lg", "xl", "2xl", "3xl", "3xl-4xl", "4xl", "4xl-5xl", "5xl", "6xl"]),
+    ("padding", &["none", "2xs", "xs", "xs-sm", "sm", "sm-md", "md", "md-lg", "lg", "xl", "2xl", "3xl", "3xl-4xl", "4xl", "4xl-5xl", "5xl", "6xl", "-none", "-2xs", "-xs", "-xs-sm", "-sm", "-sm-md", "-md", "-md-lg", "-lg", "-xl", "-2xl", "-3xl", "-3xl-4xl", "-4xl", "-4xl-5xl", "-5xl", "-6xl"]),
+    ("spacing", &["none", "2xs", "xs", "xs-sm", "sm", "sm-md", "md", "md-lg", "lg", "xl", "2xl", "3xl", "3xl-4xl", "4xl", "4xl-5xl", "5xl", "6xl", "between"]),
+    ("corner", &["none", "2xs", "xs", "xs-sm", "sm", "md", "lg", "xl", "2xl", "3xl", "full", "concentric"]),
+    ("font", &["large-title", "display-1", "display-2", "display-3", "display-4", "title-1", "title-2", "title-3", "headline", "body", "body-2", "caption-1", "caption-2", "2xs", "2xs-xs", "xs", "sm", "md", "md-lg", "lg", "lg-xl", "xl", "2xl", "3xl", "4xl", "5xl"]),
     ("weight", &["light", "regular", "medium", "semibold", "bold", "extrabold"]),
-    ("leading", &["tight", "close", "snug", "easy", "normal", "relaxed"]),
+    ("leading", &["tight", "close", "snug", "easy", "normal", "open", "relaxed"]),
     ("color", &["foreground", "muted", "primary", "onPrimary", "secondary", "onSecondary", "tertiary", "onTertiary", "background", "surface", "popover", "border", "input", "success", "warning", "error", "info"]),
     ("borderWidth", &["hairline", "thin", "thick"]),
     ("opacity", &["transparent", "disabled", "faded", "soft", "opaque"]),

@@ -1,4 +1,4 @@
-import { RADIUS, SPACING } from '../design-tokens/scales';
+import { RADIUS, RADIUS_STEPS, SPACING, SPACING_STEPS } from '../design-tokens/scales';
 
 /**
  * The t-shirt-keyed VIEW of `design-tokens/scales.ts`.
@@ -22,14 +22,21 @@ import { RADIUS, SPACING } from '../design-tokens/scales';
 export const space = {
   _2xs: SPACING['space-2'],
   xs: SPACING['space-4'],
+  /** A step between two rungs is named by both: 6, between `xs` and `sm`. */
+  'xs-sm': SPACING_STEPS['space-6'],
   sm: SPACING['space-8'],
+  'sm-md': SPACING_STEPS['space-10'],
   md: SPACING['space-12'],
+  'md-lg': SPACING_STEPS['space-14'],
   lg: SPACING['space-16'],
   xl: SPACING['space-20'],
   _2xl: SPACING['space-24'],
   _3xl: SPACING['space-32'],
+  '3xl-4xl': SPACING_STEPS['space-36'],
   _4xl: SPACING['space-40'],
+  '4xl-5xl': SPACING_STEPS['space-48'],
   _5xl: SPACING['space-60'],
+  _6xl: SPACING_STEPS['space-64'],
 } as const;
 
 /**
@@ -37,10 +44,16 @@ export const space = {
  */
 export const fontSize = {
   _2xs: 10,
+  /** 11: Tailwind's `text-[11px]`, between `2xs` and `xs`. */
+  '2xs-xs': 11,
   xs: 12,
   sm: 13,
   md: 15,
+  /** 16: Tailwind's `text-base`. */
+  'md-lg': 16,
   lg: 17,
+  /** 18: Tailwind's `text-lg`. */
+  'lg-xl': 18,
   xl: 20,
   _2xl: 22,
   _3xl: 26,
@@ -59,6 +72,8 @@ export const lineHeight = {
   /** 1.375: the line height apps set with Tailwind's `leading-snug`. */
   easy: 1.375,
   normal: 1.5,
+  /** 1.75 / 1.125: Tailwind's `text-lg` line height (28px on its 18px). */
+  open: 1.75 / 1.125,
   relaxed: 1.625,
 } as const;
 
@@ -70,6 +85,8 @@ export const borderRadius = {
   none: RADIUS['radius-0'],
   _2xs: RADIUS['radius-2'],
   xs: RADIUS['radius-4'],
+  /** 6: Tailwind's `rounded-md`, between `xs` and `sm`. */
+  'xs-sm': RADIUS_STEPS['radius-6'],
   sm: RADIUS['radius-8'],
   md: RADIUS['radius-12'],
   lg: RADIUS['radius-16'],
