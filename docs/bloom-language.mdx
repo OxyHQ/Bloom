@@ -249,7 +249,10 @@ scale factors apps write (`'95'` `'99'` `'103'` `'105'` `'110'`, in percent).
 The same rule takes the leftovers apps write in two or more places: the
 stacking levels `'2'` and `'60'` (`z-[2]`, `z-[60]`), the 4px border (`'4'`,
 `border-4`), the opacities `'45'` and `'75'`, and the 45° turn (`'45'`,
-`rotate-45`). Anything else stays an app's `defineTokens`. A raw hex colour is an app's
+`rotate-45`), and the dialog and popover widths apps give Bloom's `width`,
+`maxWidth` and `minWidth` that the className table also finds in two or more
+places: `'240'` `'300'` `'380'` `'400'` `'420'` `'440'` `'480'` `'512'` `'560'`
+`'720'`. Anything else stays an app's `defineTokens`. A raw hex colour is an app's
 brand colour: the app's own token, never a Bloom one (see [className](#classname)).
 
 The vocabulary is closed. Every value is a name from the spec, whose every rung
@@ -805,7 +808,7 @@ writes it. It is the one mechanism for every input (SwiftUI's `$value`); a
 | `Checkbox(isOn, label?)` | `Checkbox` | `.description`, `.size`, `.tint`, `.disabled`, `.readOnly()`, `.indeterminate()` |
 | `RadioGroup(selection, ...options)` | `RadioGroup` | `.style('default' \| 'card' \| 'chip' \| 'swatch')`, `.size`, `.tint`, `.disabled`; `.label()` names the group |
 | `Segmented(selection, ...options)` | `SegmentedControl` with its `Item` and `ItemText` | `.style('solid' \| 'plain')`, `.size`, `.disabled`, `.tabs()` (a tab list, not a choice) |
-| `Picker(selection, ...options)` | `Select`: its trigger (`SelectValue`, `SelectIcon`) and its list (`SelectItem` with its indicator and text) | `.placeholder`, `.size`, `.disabled`; `.label()` names it |
+| `Picker(selection, ...options)` | `Select`: its trigger (`SelectValue`, `SelectIcon`) and its list (`SelectItem` with its indicator and text) | `.placeholder`, `.size`, `.disabled`, `.presented(isOpen)` (its list open through a binding: Bloom's controlled `open`); `.label()` names it |
 | `Option(value, label)` | an option of the three above | `.description` (a radio's), `.disabled`, `.testID`, `.leadingView(...)` (a picker row's mark), `.tint(role)` and `.foreground(role)` (a swatch's colour and its chosen dot) |
 | `OptionGroup(label, ...options)` | a picker's `SelectGroup` with its `SelectLabel`, heading its first row | none |
 | `Search(text)` | `Search` | `.placeholder`, `.size`, `.disabled`, `.collapsible('auto'?)` (a button that opens the field), `.presented(isOpen)`, `.tokens(tokens)` (removing a token writes the binding), `.trigger(Button)`, `.trailing(...)`, `.focused(binding)`, `.submitLabel`, `.onSubmit`, the keyboard modifiers |
@@ -1154,8 +1157,11 @@ toast.success('Saved')
   dialog header: a collapsing title, its slots), `.footer(view)`,
   `.page(frame)` (Bloom's `frame`: a page of a dialog that navigates, by its
   key), `.frame({ width, maxWidth })` and `.padding(space)` (its
-  `contentPadding`), `.dismissOnBackdrop(false)`, `.scrollable()`, `.testID()`.
-  A width with no rung is an app token (`defineTokens({ space: { sheet: 560 } })`).
+  `contentPadding`), `.sideGutter(space)` (its `minSideGutter`),
+  `.maxHeightRatio(0.9)` (its height ceiling as a fraction of the window's),
+  `.dismissOnBackdrop(false)`, `.scrollable()`, `.testID()`. The widths apps
+  use are numeric tokens (`.frame({ maxWidth: '560' })`); another is an app
+  token (`defineTokens({ space: { sheet: 609 } })`).
 - **Popover.** `.label()`, `.side(side, align?)` (`top` `bottom` `left`
   `right`; `start` `center` `end`), `.sideOffset(space)` (the gap to the view),
   `.alignOffset(space)` (a shift along the side, negatives included),
@@ -1261,7 +1267,8 @@ ErrorBoundary(Feed()).title('The feed failed').resetKey(userId)
   Bloom's card radius (`radius-0` … `radius-max`, `panel`, `concentric`),
   `.elevation('none' | 's' | 'm' | 'floating')`, `.outline('none' |
   'hairline' | 'thin' | 'medium')` its own stroke, `.clipped()` clips the
-  content to the corner. `.onPress` is the card's own press (`.disabled()`,
+  content to the corner, `.cornerCurve('round' | 'smooth')` is its own curve
+  (Bloom's `cornerCurve`, beside its radius). `.onPress` is the card's own press (`.disabled()`,
   `.label()`, `.role('link')`). `CardTitle` and `CardDescription` take
   `.lines(n)`. The box modifiers (padding, frame, background) are the card's
   `style`, as an app writes them.
@@ -1286,8 +1293,10 @@ ErrorBoundary(Feed()).title('The feed failed').resetKey(userId)
   `.role('checkbox' | 'radio' | 'tab')` (what it is to assistive technology).
   `.style('inverted')` is Bloom's inverted chip; its `color` is `.tint()`.
 - **Chip rows.** `ChipRow(...)` takes `.spacing()`, `.contentInset()`,
-  `.role('radiogroup' | 'tablist')`, `.label()`, `.disabled()` and `.fade(role)`
-  (the colour its web edges fade into, painted from the theme);
+  `.role('radiogroup' | 'tablist')`, `.label()`, `.disabled()`, `.fade(role)`
+  (the colour its web edges fade into, painted from the theme), `.ringInset()`
+  (room for a chip's focus ring) and `.keyboardTaps('always' | 'never' |
+  'handled')` (whether a tap reaches a chip while the keyboard is open);
   `CappedChipRow(...)` takes `.lines(n)`, `.spacing()`, `.role('list')` and
   `.label()`.
 - **EmptyState.** `.icon()`, `.description()`, `.media('glyph' | 'circle')`,
@@ -1313,16 +1322,16 @@ ErrorBoundary(Feed()).title('The feed failed').resetKey(userId)
   `.selected(on)` with `.onPress()` a radio, the screen choosing. It takes
   `.description()`, `.icon()`, `.indicator('check' | 'radio')`,
   `.illustration(view)` (its media), `.density('compact')`, `.disabled()`,
-  `.invalid()`, and its body as content.
+  `.invalid()`, `.nativeID(id)` and `.describedBy(id)` (its description's id),
+  and its body as content.
 - **Kbd** takes `.size('sm' | 'md')`. **ErrorBoundary** takes `.title()`,
   `.message()`, `.retryLabel()`, `.resetKey()`, `.onError()` and
   `.fallback(view)` or `.fallback(({ error, retry }) => view)`, and the box
   modifiers: Bloom's boundary then draws one view of that style around its
   content (and its fallback), and none without one.
 
-Not in the language: a card's `cornerCurve`, a `ChipRow`'s ring inset and
-keyboard taps, a selection card's described-by wiring, and the class recipes
-(`className` and its kin), which the className table maps.
+Not in the language: the class recipes (`className` and its kin), which the
+className table maps.
 
 ## Interop
 
@@ -1556,10 +1565,10 @@ the owner's decision, or an app's `defineTokens`) before a codemod moves it.
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 1016 | 46909 | 87.3% |
+| Maps to a modifier and a token | 1038 | 46963 | 87.4% |
 | Expressed by the view’s structure | 53 | 3445 | 6.4% |
 | Redundant in the language | 32 | 513 | 1.0% |
-| Needs a named token (raw value) | 300 | 725 | 1.3% |
+| Needs a named token (raw value) | 278 | 671 | 1.2% |
 | An app’s own token (a brand colour) | 30 | 76 | 0.1% |
 | Maps to the motion layer | 9 | 105 | 0.2% |
 | Needs a modifier the language lacks | 30 | 194 | 0.4% |
@@ -1571,8 +1580,8 @@ condition. The values with no rung, by scale (the owner names each as a token or
 
 | Scale | Uses | Raw values with no rung (uses) |
 | --- | ---: | --- |
-| space | 257 | 720px (9), 18px (9), 420px (8), 600px (8), 144px (8), 520px (7), 100px (7), 220px (7), 240px (7), 565px (6), 52px (6), 112px (6) |
 | color | 219 | --primary-subtle (20), --ring (18), --sidebar-foreground (14), green-500 (12), --sidebar-border (12), red-500 (10), --sidebar-accent (9), red-400 (9), --sidebar-accent-foreground (9), --sidebar (8), --sidebar-ring (8), --accent-foreground (8) |
+| space | 203 | 18px (9), 600px (8), 144px (8), 520px (7), 100px (7), 220px (7), 565px (6), 52px (6), 112px (6), 7px (6), 150px (6), 88px (6) |
 | opacity | 88 | --ring at 50% (16), --foreground at 5% (7), black at [0.04]% (7), white at [0.06]% (6), --primary at 5% (5), white at 15% (4), white at 25% (4), black at 25% (3), --primary at 15% (3), --surface at 25% (3), white at 85% (3), --background at 85% (2) |
 | font | 55 | 10.5px (8), 28px (7), 12.5px (5), 23px (5), 34px (4), 9px (4), 48px / 48px (2), 11.5px (2), 13.5px (2), 15.5px (2), 21px (2), 29px (2) |
 | leading | 42 | 1 (15), 29px (6), 17px (5), 15px (2), 41px (2), 12px (1), 13px (1), 19px (1), 21px (1), 23px (1), 26px (1), 27px (1) |
@@ -1754,7 +1763,6 @@ and `@oxy.so/bloom-data` beside it.
   flags needs a modifier or a named token first.
 - Parity: a field that takes the focus as it appears and a toast are
   compared by Jest, not in Chrome (a page has one focus and one toast store);
-  the Chrome check compares an overlay's presenting view, not its portal. A
-  picker is compared closed (Bloom's select has no open prop), so its grouped
-  rows are held by the unit suite.
-- Containers: a card's `cornerCurve`.
+  the Chrome check compares an overlay's presenting view (an open picker's
+  trigger), not its portal; the web suite compares the portal, an open
+  picker's grouped rows included.
