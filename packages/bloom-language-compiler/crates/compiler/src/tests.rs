@@ -344,6 +344,19 @@ fn a_variant_is_checked_against_what_a_variant_changes() {
     assert_eq!(output.diagnostics[0].message, "A variant cannot change .onPress()");
     let output = compiled("export const x = () => Text('a').when('md', (v) => v.justify('center'));\n");
     assert_eq!(output.diagnostics[0].message, "A variant cannot change .justify()");
+    // A variant inside a variant is checked as one.
+    let output = compiled(
+        "export const x = () => HStack().when('md', (v) => v.when('hovered', (h) => h.padding('lg')));\n",
+    );
+    assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics);
+    let output = compiled(
+        "export const x = () => HStack().when('md', (v) => v.when('hover', (h) => h.padding('lg')));\n",
+    );
+    assert_eq!(output.diagnostics[0].message, "Unknown condition token 'hover' for .when()");
+    let output = compiled(
+        "export const x = () => HStack().when('md', (v) => v.when('dark', (d) => d.onPress(go)));\n",
+    );
+    assert_eq!(output.diagnostics[0].message, "A variant cannot change .onPress()");
 }
 
 #[test]

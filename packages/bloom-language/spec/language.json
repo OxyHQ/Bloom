@@ -537,7 +537,8 @@
     "$comment": [
       "when(condition, v => v…): the modifiers inside override the values the chain set before it, while the condition holds.",
       "modifiers: what a variant can change (style only). On the web a live condition is CSS over the generated sheet's classes; native reads it from the environment (the window's breakpoint, the theme, the view's own press host).",
-      "disabled and the platforms are known when the view renders: a variant under one is applied or dropped then."
+      "disabled and the platforms are known when the view renders: a variant under one is applied or dropped then.",
+      "when: a variant inside a variant holds while both conditions do (md and hovered: `when('md', v => v.when('hovered', …))`)."
     ],
     "modifiers": [
       "padding",
@@ -564,7 +565,8 @@
       "zIndex",
       "hidden",
       "basis",
-      "allowsHitTesting"
+      "allowsHitTesting",
+      "when"
     ],
     "selectors": {
       "$comment": "The web selector of each scheme and state condition, & standing for the class it styles. A breakpoint is a min-width media query at its breakpoint rung. The anchor class blsg is on the view's outermost box: a state is the state of the view, not of whatever is under the pointer.",

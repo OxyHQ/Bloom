@@ -83,7 +83,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
 ];
 
 /// The modifiers a variant (`when(condition, v => v…)`) can change.
-pub const VARIANT_MODIFIERS: &[&str] = &["padding", "frame", "background", "border", "ring", "corner", "opacity", "shadow", "foreground", "font", "weight", "leading", "spacing", "align", "justify", "wrap", "axis", "grow", "shrink", "alignSelf", "position", "zIndex", "hidden", "basis", "allowsHitTesting"];
+pub const VARIANT_MODIFIERS: &[&str] = &["padding", "frame", "background", "border", "ring", "corner", "opacity", "shadow", "foreground", "font", "weight", "leading", "spacing", "align", "justify", "wrap", "axis", "grow", "shrink", "alignSelf", "position", "zIndex", "hidden", "basis", "allowsHitTesting", "when"];
 
 /// Modifier → its parameter types, in order (`?` optional).
 pub const MODIFIERS: &[(&str, &[&str])] = &[
