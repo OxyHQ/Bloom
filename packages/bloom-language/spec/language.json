@@ -536,9 +536,33 @@
     "loadingStyle": ["spinner", "top", "inline"],
     "contentTransition": ["roll"],
     "swipeDirection": ["left", "right", "up", "down"],
-    "keyboard": ["default", "email-address", "numeric", "number-pad", "decimal-pad", "phone-pad", "url", "web-search"],
+    "keyboard": [
+      "default",
+      "email-address",
+      "numeric",
+      "number-pad",
+      "decimal-pad",
+      "phone-pad",
+      "url",
+      "web-search"
+    ],
     "autocapitalize": ["none", "sentences", "words", "characters"],
-    "contentType": ["off", "email", "username", "password", "new-password", "current-password", "one-time-code", "name", "given-name", "family-name", "tel", "postal-code", "street-address", "url"],
+    "contentType": [
+      "off",
+      "email",
+      "username",
+      "password",
+      "new-password",
+      "current-password",
+      "one-time-code",
+      "name",
+      "given-name",
+      "family-name",
+      "tel",
+      "postal-code",
+      "street-address",
+      "url"
+    ],
     "submitLabel": ["done", "go", "next", "search", "send"],
     "textareaResize": ["none", "vertical"],
     "labelSize": ["xs", "sm", "md"],
@@ -1295,12 +1319,46 @@
     },
     "textField": {
       "constructors": ["TextField", "SecureField"],
-      "modifiers": ["placeholder", "size", "disabled", "invalid", "floatingLabel", "revealable", "icon", "prefix", "suffix", "keyboard", "autocapitalize", "autocorrect", "contentType", "submitLabel", "onSubmit", "autoFocus", "maxLength"],
+      "modifiers": [
+        "placeholder",
+        "size",
+        "disabled",
+        "invalid",
+        "floatingLabel",
+        "revealable",
+        "icon",
+        "prefix",
+        "suffix",
+        "keyboard",
+        "autocapitalize",
+        "autocorrect",
+        "contentType",
+        "submitLabel",
+        "onSubmit",
+        "autoFocus",
+        "maxLength"
+      ],
       "size": "controlSize"
     },
     "textEditor": {
       "constructors": ["TextEditor"],
-      "modifiers": ["placeholder", "description", "size", "disabled", "invalid", "required", "rows", "autoResize", "resize", "maxLength", "showCount", "keyboard", "autocapitalize", "autocorrect", "autoFocus"],
+      "modifiers": [
+        "placeholder",
+        "description",
+        "size",
+        "disabled",
+        "invalid",
+        "required",
+        "rows",
+        "autoResize",
+        "resize",
+        "maxLength",
+        "showCount",
+        "keyboard",
+        "autocapitalize",
+        "autocorrect",
+        "autoFocus"
+      ],
       "size": "controlSize"
     },
     "field": {
@@ -1349,7 +1407,20 @@
     },
     "search": {
       "constructors": ["Search"],
-      "modifiers": ["placeholder", "size", "disabled", "collapsible", "presented", "tokens", "keyboard", "autocapitalize", "autocorrect", "submitLabel", "onSubmit", "autoFocus"],
+      "modifiers": [
+        "placeholder",
+        "size",
+        "disabled",
+        "collapsible",
+        "presented",
+        "tokens",
+        "keyboard",
+        "autocapitalize",
+        "autocorrect",
+        "submitLabel",
+        "onSubmit",
+        "autoFocus"
+      ],
       "size": "controlSize"
     }
   },
