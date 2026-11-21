@@ -143,6 +143,50 @@ describe('durable copy', () => {
     expect(await Feed.load('home')).toBe(false);
   });
 
+  it('reads the boot list synchronously, with the posts it names and theirs, before anything renders', async () => {
+    const first = open('boot.db');
+    Post.put([post('1', { quotedPost: post('q') }), post('2')]);
+    Feed.set('home', () => ({
+      ids: ['1', '2'],
+      extra: { cards: [] },
+      next: undefined,
+      hasMore: false,
+      visited: [],
+      updatedAt: 1,
+      origin: 'network',
+    }));
+    await first.store.flush();
+    await first.store.close();
+
+    let db: TestDatabase | undefined;
+    const store = new Store({
+      persister: sqlitePersister(() => {
+        db = openTestDatabase('boot.db');
+        return db;
+      }),
+    });
+    stores.push(store);
+    setActiveStore(store);
+    expect(Feed.loadNow('home')).toBe(true);
+    // In memory now, before any await.
+    expect(Feed.get('home')).toMatchObject({ ids: ['1', '2'], origin: 'disk' });
+    expect(Post.get('1')?.quotedPost?.text).toBe('post q');
+    expect(Post.get('1')?.user.name).toBe('User 1');
+    expect(db?.log.every((sql) => sql.startsWith('sync:'))).toBe(true);
+    // Held now; and the asynchronous paths reuse the copy it opened.
+    expect(Feed.loadNow('home')).toBe(false);
+    Post.merge('2', { text: 'written later' });
+    await store.flush();
+    expect(db?.rows("SELECT json FROM bloom_records WHERE id = '2'")[0]?.json).toContain(
+      'written later',
+    );
+  });
+
+  it('reads nothing synchronously from a copy opened asynchronously', async () => {
+    open('async.db');
+    expect(Feed.loadNow('home')).toBe(false);
+  });
+
   it('never lets the disk copy overwrite a record written since the screen opened', async () => {
     const first = open('a.db');
     Post.put(post('1', { text: 'old' }));

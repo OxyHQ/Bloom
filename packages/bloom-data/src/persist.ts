@@ -11,7 +11,15 @@ export interface Persister {
    * for `maxAgeMs` are deleted too (the persister may do that with its first
    * write, to keep opening short).
    */
-  open(options: { versions: Readonly<Record<string, number>>; maxAgeMs: number }): Promise<void>;
+  open(options: OpenOptions): Promise<void>;
+  /**
+   * The synchronous boot read (`list.loadNow`), when the copy supports it:
+   * open now, then read one list and the records it names. Each returns
+   * `false`/`null`/`[]` when the copy has no synchronous access.
+   */
+  openNow?(options: OpenOptions): boolean;
+  readListNow?(type: string, key: string, recordType: string): StoredList | null;
+  readRecordsNow?(type: string, ids: readonly string[]): ReadonlyArray<StoredRecord>;
   /** The stored JSON of the records that exist among `ids`. */
   readRecords(type: string, ids: readonly string[]): Promise<ReadonlyArray<StoredRecord>>;
   /**
@@ -22,6 +30,11 @@ export interface Persister {
   /** One transaction: records and lists to upsert, or (`json: null`) delete. */
   write(batch: PersistBatch): Promise<void>;
   close(): Promise<void>;
+}
+
+export interface OpenOptions {
+  readonly versions: Readonly<Record<string, number>>;
+  readonly maxAgeMs: number;
 }
 
 export interface StoredRecord {

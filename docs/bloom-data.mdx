@@ -82,6 +82,8 @@ Differences from the design proposal, each with its reason:
   append then rewrites one row.
 - `model()` (one record for app and UI state) is not built yet. It is
   `entity` with a single id, and nothing has needed it so far.
+- Reads at boot have one synchronous form (`list.loadNow`), for the first
+  frame of a cold start; see [The boot read](#the-boot-read).
 
 ## Entities
 
@@ -195,23 +197,44 @@ account that has since been left is dropped.
 
 ## Persistence
 
-`sqlitePersister(() => SQLite.openDatabaseAsync(name))` from
-`@oxy.so/bloom-data/sqlite` keeps a durable copy, using only expo-sqlite's
-asynchronous API.
+`sqlitePersister(open)` from `@oxy.so/bloom-data/sqlite` keeps a durable copy
+in one SQLite file. `open` returns expo-sqlite's database:
+`SQLite.openDatabaseSync(name)` to allow the boot read below, or
+`SQLite.openDatabaseAsync(name)` for the asynchronous API alone.
 
 - Writes go out after the frame, in one transaction, from a queue of changed
   records and lists. Only the server's copy is written, never a layer still in
-  flight.
+  flight. Upserts and deletes are multi-row statements.
 - Reads happen when a screen opens (`useList` and `useRecord` read the disk
-  copy while the network read runs) or at boot (`list.load(key)`,
-  `entity.load(ids)`), never
-  during render. Memory always wins over disk.
+  copy while the network read runs, and concurrent reads of one list share
+  one read) or at boot, never during render. Memory always wins over disk.
 - A changed entity `persist.version` drops that type's rows when the file
-  opens. Rows not written for 7 days are dropped too.
+  opens. Rows not written for 7 days are dropped with the first write.
 - `createAccounts({ persister: (account) => ... })` opens one store, and one
-  file, per account. `open(account)` closes the previous store: its queued
-  writes still reach its own file, and anything that lands for it later is
-  dropped.
+  file, per account. `open(account)` closes the previous store at once: its
+  queued writes still reach its own file, and anything that lands for it later
+  is dropped.
+
+### The boot read
+
+`list.loadNow(key)` is the one synchronous read. It runs at boot, for the
+screen the app opens on, before that screen's tree mounts. It opens the file,
+reads the list with its records in one query, then the records those name (a
+quoted or boosted post), and puts them in memory, so the first frame shows the
+last session. It never runs during render. On a Pixel 8a it takes 6 to 9 ms for
+a 20-post feed. Everything after it is asynchronous, on the same connection.
+
+Why one synchronous read: each expo-sqlite asynchronous call is three or four
+JS-to-native hops (prepare, execute, read, finalize), and each hop's promise
+waits for a free turn of the JS thread. During startup that thread stalls for
+200 to 650 ms at a time (measured with an event-loop lag sampler in a release
+build). A cold start reading the home feed asynchronously therefore got its
+first post from the network, about 5 s later than a synchronous read.
+Cutting the statements per call (open is one script and one read, a list comes
+back with its records in one query) took the queries themselves to 5 to
+240 ms. But opening the file asynchronously still took 1.4 s, inside those
+stalls. The sync read avoids every hop for the one read that decides the first
+frame.
 
 Web keeps no durable copy for now. expo-sqlite on web needs `SharedArrayBuffer`,
 and so COOP and COEP headers, which break popup sign-in. The `Persister`
@@ -226,6 +249,47 @@ when it started, otherwise the active store. A store makes no timer, listener or
 disk access until it is used, and the hooks pass React a server snapshot, so a
 server render reads a request's own store and nothing else
 (`src/__tests__/server.test.tsx`).
+
+## Plan: the Oxy SDK on the same model
+
+Mention's posts and feeds are on this store
+(Mention `feat/bloom-data-posts`). Users, sessions and every SDK-owned list are
+not yet. They live in `@oxy.so/services`, which peers on `@tanstack/react-query`,
+both React Query persisters, `zustand` and AsyncStorage, so every app keeps
+those in its tree whatever it does itself. The move is its own step:
+
+1. **Publish `@oxy.so/bloom-data`**, or re-export it from
+   `@oxy.so/bloom-language`, so the SDK can depend on it. Until then Mention pins
+   a local pack.
+2. **A `User` entity in the SDK.** `@oxy.so/services` exports
+   `User = entity<User>('user', …)` and writes every user it fetches into it.
+   Apps declare `refs: { user: User }` on their own entities, so one copy of
+   each person serves every post, notification and profile. That retires
+   Mention's `lib/actorCache.ts` and `stores/identityUpdates.ts`.
+   - One guard comes first. A degraded user (the "unresolved author" placeholder
+     an Oxy outage returns) must not replace a resolved one. That is the
+     entity's `accept` rule, and the reason Mention does not normalise
+     `post.user` yet.
+3. **Sessions open stores.** The SDK's session epoch drives
+   `createAccounts().open(account)`, in place of each app's account-switch
+   boundary. A store per account replaces the SDK's own cache wipes.
+4. **The SDK's queries and mutations move.** About 66 files in
+   `packages/services/src` use React Query or zustand:
+   - user and profile reads become record sources;
+   - lists (followers, sessions, devices) become list sources;
+   - writes become actions;
+   - the zustand stores (follow state, assets, theme) become entities or
+     `model()`, which is built then.
+5. **Transport stays the SDK's.** Sources load through
+   `oxyServices.createLinkedClient()`, and sockets authenticate per handshake
+   with `getAccessToken()`, as today.
+6. **Peers drop.** `@tanstack/react-query`, both persisters, `zustand` and
+   AsyncStorage leave `@oxy.so/services`' peers when the last caller moves, then
+   each app's manifest.
+
+Each step ships on its own, with the SDK's gates and a consumer check in an
+app. During each one, the old and new paths coexist only for the flows being
+moved.
 
 ## Gates
 
