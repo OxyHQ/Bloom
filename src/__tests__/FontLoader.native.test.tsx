@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, type TextProps } from 'react-native';
+import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 
 type UseFontsResult = readonly [boolean, Error | null];
@@ -16,22 +16,9 @@ function setUseFontsResult(result: UseFontsResult): void {
   mockUseFontsResult = result;
 }
 
-type TextWithDefaults = typeof Text & {
-  defaultProps?: Partial<TextProps>;
-};
-
-function resetTextDefaults(): void {
-  (Text as TextWithDefaults).defaultProps = undefined;
-}
-
 describe('FontLoader (native)', () => {
-  beforeEach(() => {
-    resetTextDefaults();
-  });
-
   afterEach(() => {
     setUseFontsResult([true, null]);
-    resetTextDefaults();
   });
 
   it('renders children when fonts are loaded and enabled', () => {
@@ -76,8 +63,6 @@ describe('FontLoader (native)', () => {
     );
     expect(getByText('content')).toBeTruthy();
     expect(queryByText('fallback')).toBeNull();
-    // Inter is not made the default: it may be the face that failed.
-    expect((Text as TextWithDefaults).defaultProps?.style).toBeUndefined();
     // Reported once (the renderer's own deprecation notice may also log).
     const reports = error.mock.calls.filter((call) => String(call[0]).startsWith('[bloom]'));
     expect(reports).toHaveLength(1);
@@ -105,61 +90,16 @@ describe('FontLoader (native)', () => {
     expect(getByText('content')).toBeTruthy();
   });
 
-  it('prepends Inter to Text.defaultProps.style once fonts are loaded', () => {
+  // The loader sets no default family: React 19 ignores `defaultProps` on a
+  // function component such as `Text`, so the family a text draws is named by
+  // the text (Bloom's `Text`) or by the app's `react-native` module.
+  it('leaves Text.defaultProps alone', () => {
     setUseFontsResult([true, null]);
     render(
       <FontLoader enabled>
         <Text>content</Text>
       </FontLoader>,
     );
-    const defaults = (Text as TextWithDefaults).defaultProps;
-    expect(defaults?.style).toEqual({ fontFamily: 'Inter' });
-  });
-
-  it('does not touch Text.defaultProps until fonts are loaded', () => {
-    setUseFontsResult([false, null]);
-    render(
-      <FontLoader enabled>
-        <Text>content</Text>
-      </FontLoader>,
-    );
-    expect((Text as TextWithDefaults).defaultProps?.style).toBeUndefined();
-  });
-
-  it('preserves a pre-existing default style by appending it after Inter', () => {
-    const preExisting = { color: '#abcdef' } as const;
-    (Text as TextWithDefaults).defaultProps = { style: preExisting };
-    setUseFontsResult([true, null]);
-    render(
-      <FontLoader enabled>
-        <Text>content</Text>
-      </FontLoader>,
-    );
-    const style = (Text as TextWithDefaults).defaultProps?.style;
-    expect(Array.isArray(style)).toBe(true);
-    if (Array.isArray(style)) {
-      expect(style[0]).toEqual({ fontFamily: 'Inter' });
-      expect(style[1]).toBe(preExisting);
-    }
-  });
-
-  it('is idempotent across multiple FontLoader mounts', () => {
-    setUseFontsResult([true, null]);
-    const first = render(
-      <FontLoader enabled>
-        <Text>first</Text>
-      </FontLoader>,
-    );
-    first.unmount();
-    const second = render(
-      <FontLoader enabled>
-        <Text>second</Text>
-      </FontLoader>,
-    );
-    second.unmount();
-    const style = (Text as TextWithDefaults).defaultProps?.style;
-    // Should still be the single, plain BlomusModernus object — not nested
-    // arrays or duplicated entries.
-    expect(style).toEqual({ fontFamily: 'Inter' });
+    expect((Text as { defaultProps?: unknown }).defaultProps).toBeUndefined();
   });
 });
