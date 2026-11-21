@@ -2460,7 +2460,14 @@ export const MODIFIERS = {
   ],
   "readoutFormat": [
     "value"
-  ]
+  ],
+  "country": [
+    "value"
+  ],
+  "countries": [
+    "value"
+  ],
+  "showsInfo": []
 } as const;
 
 /** The modifiers each node kind takes. */
@@ -9091,6 +9098,79 @@ export const NODE_MODIFIERS = {
     "drag",
     "swipe",
     "readoutFormat"
+  ],
+  "phoneInput": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "country",
+    "countries",
+    "placeholder",
+    "description",
+    "required",
+    "showsInfo",
+    "size",
+    "invalid",
+    "disabled",
+    "trailingIcon",
+    "labels"
   ]
 } as const;
 
@@ -9219,5 +9299,6 @@ export const CONSTRUCTORS = {
   "CategoryBar": "categoryBar",
   "Menubar": "menubar",
   "MenubarMenu": "menubarMenu",
-  "CompositionBar": "compositionBar"
+  "CompositionBar": "compositionBar",
+  "PhoneInput": "phoneInput"
 } as const;

@@ -1029,7 +1029,10 @@
     "colorScale": ["value"],
     "openMenu": ["value"],
     "shortcut": ["value"],
-    "readoutFormat": ["value"]
+    "readoutFormat": ["value"],
+    "country": ["value"],
+    "countries": ["value"],
+    "showsInfo": []
   },
   "universal": [
     "padding",
@@ -1986,7 +1989,24 @@
       "universal": false,
       "modifiers": ["id", "disabled", "testID"]
     },
-    "compositionBar": { "constructors": ["CompositionBar"], "modifiers": ["readoutFormat"] }
+    "compositionBar": { "constructors": ["CompositionBar"], "modifiers": ["readoutFormat"] },
+    "phoneInput": {
+      "constructors": ["PhoneInput"],
+      "modifiers": [
+        "country",
+        "countries",
+        "placeholder",
+        "description",
+        "required",
+        "showsInfo",
+        "size",
+        "invalid",
+        "disabled",
+        "trailingIcon",
+        "labels"
+      ],
+      "size": "controlSize"
+    }
   },
   "sfSymbols": {
     "$comment": [
