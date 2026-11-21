@@ -36,6 +36,8 @@ import type { DropZoneKind } from './controls/drop-zone';
 import type { DragAction, DropTargetDragEvent } from '@oxy.so/bloom/drop-zone';
 import type { CollapsibleKind } from './controls/collapsible';
 import type { FactStripKind } from './controls/fact-strip';
+import type { ChoiceListKind } from './controls/choice-list';
+import type { ChoiceOptionBox } from './controls/choice-list';
 import type { ColorSwatchPickerKind } from './controls/color-swatch-picker';
 import type { InputOtpKind } from './controls/input-otp';
 import type { OtpCharacters } from './tokens';
@@ -789,6 +791,8 @@ export interface ValueModifiers {
   // Fact strips (controls/fact-strip.tsx)
   caption: string | Child;
   minItemWidth: SpaceToken;
+  // Choice lists (controls/choice-list.tsx)
+  optionBox: ChoiceOptionBox;
 
   // Photo grids (controls/sortable-media.tsx)
   onRetry: (id: string) => void;
@@ -1189,6 +1193,7 @@ export type NodeKind =
   | TagFieldKind
   | FileUploadKind
   | VideoViewKind
+  | ChoiceListKind
   | InputOtpKind
   | ColorSwatchPickerKind
   | ContextMenuKind
@@ -2907,6 +2912,11 @@ export class Node {
   }
   imageVariant(value: string): Node {
     return this.set('imageVariant', value);
+  }
+
+  // Choice lists (controls/choice-list.tsx)
+  optionBox(value: ChoiceOptionBox): Node {
+    return this.set('optionBox', value);
   }
 
   // Context menus (controls/context-menu.tsx)
