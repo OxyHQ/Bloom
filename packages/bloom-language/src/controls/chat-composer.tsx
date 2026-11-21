@@ -60,9 +60,6 @@ export type ChatComposerKind =
 /** What every part leaves to the language: its box, its name and its test id. */
 type Drawn = 'style' | 'testID' | 'accessibilityLabel';
 
-/** A suggestion row, its leading slot a language child. */
-export type Suggestion = Omit<ChatComposerSuggestion, 'leading'> & { readonly leading?: Child };
-
 /** Bloom `ChatComposer`'s data: its handlers, attachments and suggestions, its slots as language children. */
 export type ChatComposerOptions = Omit<
   ChatComposerProps,
@@ -78,14 +75,12 @@ export type ChatComposerOptions = Omit<
   | 'leading'
   | 'emojiSlot'
   | 'recorder'
-  | 'suggestions'
 > & {
   readonly notice?: Child;
   readonly banner?: Child;
   readonly leading?: Child;
   readonly emojiSlot?: Child;
   readonly recorder?: Child;
-  readonly suggestions?: readonly Suggestion[];
 };
 /** Bloom `CompactComposer`'s data: the limit and the submit are required, as Bloom's are. */
 export type CompactComposerOptions = Omit<
@@ -109,16 +104,7 @@ export type AttachmentMenuOptions = Omit<
   AttachmentMenuProps,
   'style' | 'testID' | 'children' | 'layout' | 'columns' | 'recent'
 > & { readonly recent?: Child };
-export type EmojiPickerOptions = Omit<
-  EmojiPickerProps,
-  Drawn | 'groups' | 'size' | 'tabs' | 'height'
-> & {
-  readonly tabs?: readonly {
-    readonly key: string;
-    readonly label: string;
-    readonly content: Child;
-    readonly icon?: ChatComposerIcon;
-  }[];
+export type EmojiPickerOptions = Omit<EmojiPickerProps, Drawn | 'groups' | 'size' | 'height'> & {
   readonly height?: SpaceToken;
 };
 export type ReactionPickerOptions = Omit<
@@ -210,7 +196,7 @@ export function ComposerIconButton(
 }
 export function SuggestionList(
   kind: SuggestionKind,
-  suggestions: readonly Suggestion[],
+  suggestions: readonly ChatComposerSuggestion[],
   options: SuggestionListOptions = {},
 ): SuggestionListView {
   return new Node('suggestionList', { kind, suggestions, options }, []);
@@ -258,9 +244,6 @@ interface Props<O> {
 }
 const propsOf = <O,>(d: ControlDraw) => d.node.props as Props<O>;
 
-const suggestions = (d: ControlDraw, list: readonly Suggestion[] | undefined) =>
-  list?.map((s) => (s.leading === undefined ? s : { ...s, leading: d.render(s.leading) }));
-
 export const CHAT_COMPOSERS: Record<ChatComposerKind, ControlRenderer> = {
   chatComposer: (d) => {
     const { text, options } = propsOf<ChatComposerOptions>(d);
@@ -277,7 +260,6 @@ export const CHAT_COMPOSERS: Record<ChatComposerKind, ControlRenderer> = {
         leading: slot(d, options.leading),
         emojiSlot: slot(d, options.emojiSlot),
         recorder: slot(d, options.recorder),
-        suggestions: suggestions(d, options.suggestions),
       }),
     );
   },
@@ -321,13 +303,13 @@ export const CHAT_COMPOSERS: Record<ChatComposerKind, ControlRenderer> = {
     });
   },
   suggestionList: (d) => {
-    const { kind, suggestions: list, options } = propsOf<SuggestionListOptions>(d);
+    const { kind, suggestions, options } = propsOf<SuggestionListOptions>(d);
     return d.pressAround((props) =>
       d.component(BloomSuggestionList, {
         ...props,
         ...options,
         kind,
-        suggestions: suggestions(d, list as readonly Suggestion[]),
+        suggestions,
         size: d.own('size')?.value,
         loading: d.own('loading')?.value,
         maxHeight: length(options.maxHeight),
@@ -363,7 +345,6 @@ export const CHAT_COMPOSERS: Record<ChatComposerKind, ControlRenderer> = {
         groups,
         size: d.own('size')?.value,
         height: length(options.height),
-        tabs: options.tabs?.map((tab) => ({ ...tab, content: d.render(tab.content) })),
       }),
     );
   },
