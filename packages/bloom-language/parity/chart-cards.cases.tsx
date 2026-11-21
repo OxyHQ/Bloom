@@ -242,7 +242,7 @@ const cards: ParityCase[] = [
 const pieces: ParityCase[] = [
   {
     name: 'ChartCardSurface',
-    language: () => toElement(L.ChartCardSurface({}, L.Text('Inside'))),
+    language: () => toElement(L.ChartCardSurface(L.Text('Inside'))),
     bloom: () => (
       <ChartCardSurface>
         <Text>Inside</Text>
@@ -252,7 +252,11 @@ const pieces: ParityCase[] = [
   {
     name: 'ChartCardSurface spaced, a height',
     language: () =>
-      toElement(L.ChartCardSurface({ height: '200' }, L.Text('A'), L.Text('B')).spacing('sm')),
+      toElement(
+        L.ChartCardSurface([L.Text('A').id('a'), L.Text('B').id('b')], { height: '200' }).spacing(
+          'sm',
+        ),
+      ),
     bloom: () => (
       <ChartCardSurface height={200} gap={8}>
         <Text>A</Text>

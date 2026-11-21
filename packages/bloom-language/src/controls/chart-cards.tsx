@@ -43,7 +43,7 @@ import type {
   SpaceToken,
 } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
-import { length } from './product';
+import { length, product } from './product';
 
 /** Dashboard chart cards and the pieces they share. */
 export type ChartCardKind =
@@ -162,12 +162,12 @@ export function AreaChartCard(options: AreaChartCardOptions = {}): AreaChartCard
 export function BarListCard(options: BarListCardOptions = {}): BarListCardView {
   return new Node('barListCard', { options }, []);
 }
-/** Bloom `ChartCardSurface` around `children`. */
+/** Bloom `ChartCardSurface` around `content` (a list of views, keyed by `.id()`, is its children). */
 export function ChartCardSurface(
-  options: ChartCardSurfaceOptions,
-  ...children: Child[]
+  content: Child,
+  options: ChartCardSurfaceOptions = {},
 ): ChartCardSurfaceView {
-  return new Node('chartCardSurface', { options }, children);
+  return new Node('chartCardSurface', { options }, [content]);
 }
 export function ChartHeadline(
   label: string,
@@ -218,76 +218,43 @@ export function TokensChartCard(
   return new Node('tokensChartCard', { data, options }, []);
 }
 
-interface CardProps<O> {
-  readonly options: O;
-  readonly [key: string]: unknown;
-}
-const propsOf = <O,>(d: ControlDraw) => d.node.props as CardProps<O>;
-
 /** A card's own colours, painted from their roles. */
 const inks = (d: ControlDraw) => ({
   color: d.own('tint')?.value as ColorToken | undefined,
   activeColor: d.own('activeTint')?.value,
 });
 
-/** A card that takes its content as props: the node's props, its options spread, drawn with its colours. */
-function card(host: unknown, extra: (d: ControlDraw) => Record<string, unknown>): ControlRenderer {
-  return (d) => {
-    const { options, ...content } = propsOf<object>(d);
-    return d.pressAround((props) =>
-      d.painted(host, { ...props, ...options, ...content, ...extra(d) }, inks(d)),
-    );
-  };
-}
-const none = () => ({});
-
 export const CHART_CARDS: Record<ChartCardKind, ControlRenderer> = {
-  areaChartCard: card(BloomAreaChartCard, (d) => ({
-    variant: d.own('style')?.value,
-    shape: d.own('shape')?.value,
-  })),
-  barListCard: card(BloomBarListCard, none),
-  chartCardSurface: (d) => {
-    const { options } = propsOf<ChartCardSurfaceOptions>(d);
-    const { height } = options;
-    return d.pressAround((props) =>
-      d.component(
-        BloomChartCardSurface,
-        {
-          ...props,
-          ...options,
-          height: height === 'auto' ? height : length(height),
-          gap: length(d.own('spacing')?.value as SpaceToken | undefined),
-        },
-        ...d.children(d.node.children),
-      ),
-    );
-  },
-  chartHeadline: card(BloomChartHeadline, none),
-  chartStatTiles: card(BloomChartStatTiles, none),
-  contributionsCard: card(BloomContributionsCard, none),
-  heatmapChartCard: card(BloomHeatmapChartCard, none),
-  lineChartCard: card(BloomLineChartCard, (d) => ({ shape: d.own('shape')?.value })),
-  radarChartCard: card(BloomRadarChartCard, (d) => ({ variant: d.own('style')?.value })),
-  sleepScoreCard: card(BloomSleepScoreCard, (d) => ({
-    height: length(propsOf<SleepScoreCardOptions>(d).options.height),
-  })),
-  sparkline: (d) => {
-    const { data, options } = propsOf<SparklineOptions>(d);
-    return d.pressAround((props) =>
-      d.component(BloomSparkline, {
-        ...props,
-        ...options,
-        data,
-        tone: d.own('tint')?.value,
-        width: length(options.width),
-        height: length(options.height),
-      }),
-    );
-  },
-  stageBarsCard: card(BloomStageBarsCard, none),
-  stepsCard: card(BloomStepsCard, none),
-  tokensChartCard: card(BloomTokensChartCard, (d) => ({
-    plotHeight: length(propsOf<TokensChartCardOptions>(d).options.plotHeight),
-  })),
+  areaChartCard: product(BloomAreaChartCard, {
+    own: (d) => ({ variant: d.own('style')?.value, shape: d.own('shape')?.value }),
+  }),
+  barListCard: product(BloomBarListCard, { colors: inks }),
+  chartCardSurface: product(BloomChartCardSurface, {
+    own: (d) => {
+      const { height } = (d.node.props as { options: ChartCardSurfaceOptions }).options;
+      return {
+        height: height === 'auto' ? height : length(height),
+        gap: length(d.own('spacing')?.value as SpaceToken | undefined),
+      };
+    },
+  }),
+  chartHeadline: product(BloomChartHeadline),
+  chartStatTiles: product(BloomChartStatTiles),
+  contributionsCard: product(BloomContributionsCard, { colors: inks }),
+  heatmapChartCard: product(BloomHeatmapChartCard, { colors: inks }),
+  lineChartCard: product(BloomLineChartCard, {
+    own: (d) => ({ shape: d.own('shape')?.value }),
+    colors: inks,
+  }),
+  radarChartCard: product(BloomRadarChartCard, {
+    own: (d) => ({ variant: d.own('style')?.value }),
+  }),
+  sleepScoreCard: product(BloomSleepScoreCard, { lengths: ['height'] }),
+  sparkline: product(BloomSparkline, {
+    lengths: ['width', 'height'],
+    own: (d) => ({ tone: d.own('tint')?.value }),
+  }),
+  stageBarsCard: product(BloomStageBarsCard),
+  stepsCard: product(BloomStepsCard, { colors: inks }),
+  tokensChartCard: product(BloomTokensChartCard, { lengths: ['plotHeight'], colors: inks }),
 };

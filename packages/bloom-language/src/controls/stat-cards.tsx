@@ -8,6 +8,7 @@ import {
 import { Node, type ViewModifiers } from '../node';
 import type { StatCardsVariant } from '../tokens';
 import type { ControlRenderer } from './draw';
+import { product } from './product';
 
 /** KPI stat cards: one, or a responsive grid of them. */
 type StatCardsColumns = NonNullable<StatCardsProps['columns']>;
@@ -36,21 +37,8 @@ export function StatCards(stats: readonly StatCardsItem[]): StatCardsView {
 }
 
 export const STAT_CARDS: Record<StatCardKind, ControlRenderer> = {
-  statCard: (d) =>
-    d.pressAround((props) =>
-      d.component(BloomStatCard, {
-        ...props,
-        stat: (d.node.props as { stat: StatCardsItem }).stat,
-        variant: d.own('style')?.value,
-      }),
-    ),
-  statCards: (d) =>
-    d.pressAround((props) =>
-      d.component(BloomStatCards, {
-        ...props,
-        stats: (d.node.props as { stats: readonly StatCardsItem[] }).stats,
-        variant: d.own('style')?.value,
-        columns: d.own('columns')?.value,
-      }),
-    ),
+  statCard: product(BloomStatCard, { own: (d) => ({ variant: d.own('style')?.value }) }),
+  statCards: product(BloomStatCards, {
+    own: (d) => ({ variant: d.own('style')?.value, columns: d.own('columns')?.value }),
+  }),
 };

@@ -2588,7 +2588,7 @@ Bloom's `chat-composer` family. A composer writes the text its binding holds
 ```ts
 LineChartCard({ title: 'Revenue', data, ranges, onRangeChange }).shape('sharp').tint('primary')
 BarListCard({ title: 'Sources', items, stats }).tint('success')
-ChartCardSurface({}, ChartHeadline('Revenue', { value, delta }), Sparkline(points).tint('positive')).spacing('sm')
+ChartCardSurface([ChartHeadline('Revenue', { value, delta }).id('h'), Sparkline(points).tint('positive').id('s')]).spacing('sm')
 ```
 
 Bloom's `chart-cards` family. A card takes its data as options, as Bloom's
@@ -2607,8 +2607,9 @@ card cannot be drawn without comes first (`SleepScoreCard(metrics)`,
 - `Sparkline(values, options?)`: `.tint('accent' | 'positive' | 'negative' |
   'neutral')`; its `width` and `height` are space tokens, as are a sleep
   card's `height` and a tokens card's `plotHeight`.
-- `ChartCardSurface(options, ...children)`: the card the others are drawn on;
-  `.spacing()` its gap, its `height` a space token or `auto`.
+- `ChartCardSurface(content, options?)`: the card the others are drawn on (a
+  list of views is its children, keyed by `.id()`); `.spacing()` its gap, its
+  `height` a space token or `auto`.
 
 ### Composer panel
 

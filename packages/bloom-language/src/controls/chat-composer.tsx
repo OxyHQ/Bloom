@@ -42,7 +42,7 @@ import type {
 } from '../tokens';
 import { resolveIconSize } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
-import { length, slot } from './product';
+import { length, product, slot } from './product';
 
 /** The chat composer's family: the message bar, its banners and buttons, and the pickers and menus around it. */
 export type ChatComposerKind =
@@ -170,13 +170,13 @@ export function ChatComposer(
   text: Binding<string>,
   options: ChatComposerOptions = {},
 ): ChatComposerView {
-  return new Node('chatComposer', { text, options }, []);
+  return new Node('chatComposer', { binding: text, options }, []);
 }
 export function CompactComposer(
   text: Binding<string>,
   options: CompactComposerOptions,
 ): CompactComposerView {
-  return new Node('compactComposer', { text, options }, []);
+  return new Node('compactComposer', { binding: text, options }, []);
 }
 /** Bloom `ComposerBanner`: a `reply`, `edit`, `forward` or `note`, and its title. */
 export function ComposerBanner(
@@ -245,49 +245,20 @@ interface Props<O> {
 const propsOf = <O,>(d: ControlDraw) => d.node.props as Props<O>;
 
 export const CHAT_COMPOSERS: Record<ChatComposerKind, ControlRenderer> = {
-  chatComposer: (d) => {
-    const { text, options } = propsOf<ChatComposerOptions>(d);
-    const [value, onValueChange] = text as Binding<string>;
-    return d.pressAround((props) =>
-      d.component(BloomChatComposer, {
-        ...props,
-        ...options,
-        value,
-        onValueChange,
-        disabled: d.own('disabled')?.value,
-        notice: slot(d, options.notice),
-        banner: slot(d, options.banner),
-        leading: slot(d, options.leading),
-        emojiSlot: slot(d, options.emojiSlot),
-        recorder: slot(d, options.recorder),
-      }),
-    );
-  },
-  compactComposer: (d) => {
-    const { text, options } = propsOf<CompactComposerOptions>(d);
-    const [value, onChangeText] = text as Binding<string>;
-    return d.pressAround((props) =>
-      d.component(BloomCompactComposer, {
-        ...props,
-        ...options,
-        value,
-        onChangeText,
-        disabled: d.own('disabled')?.value,
-        avatar: slot(d, options.avatar),
-        attachments: slot(d, options.attachments),
-      }),
-    );
-  },
-  composerBanner: (d) => {
-    const { kind, title, options } = propsOf<ComposerBannerOptions>(d);
-    return d.pressAround((props) =>
-      d.painted(
-        BloomComposerBanner,
-        { ...props, ...options, kind, title, trailing: slot(d, options.trailing) },
-        { accentColor: d.own('tint')?.value as ColorToken | undefined },
-      ),
-    );
-  },
+  chatComposer: product(BloomChatComposer, {
+    binding: ['value', 'onValueChange'],
+    slots: ['notice', 'banner', 'leading', 'emojiSlot', 'recorder'],
+    own: (d) => ({ disabled: d.own('disabled')?.value }),
+  }),
+  compactComposer: product(BloomCompactComposer, {
+    binding: ['value', 'onChangeText'],
+    slots: ['avatar', 'attachments'],
+    own: (d) => ({ disabled: d.own('disabled')?.value }),
+  }),
+  composerBanner: product(BloomComposerBanner, {
+    slots: ['trailing'],
+    colors: (d) => ({ accentColor: d.own('tint')?.value as ColorToken | undefined }),
+  }),
   composerIconButton: (d) => {
     const { icon, label, options } = propsOf<ComposerIconButtonOptions>(d);
     const iconSize = d.own('iconSize')?.value;
@@ -302,70 +273,21 @@ export const CHAT_COMPOSERS: Record<ChatComposerKind, ControlRenderer> = {
       disabled: d.own('disabled')?.value,
     });
   },
-  suggestionList: (d) => {
-    const { kind, suggestions, options } = propsOf<SuggestionListOptions>(d);
-    return d.pressAround((props) =>
-      d.component(BloomSuggestionList, {
-        ...props,
-        ...options,
-        kind,
-        suggestions,
-        size: d.own('size')?.value,
-        loading: d.own('loading')?.value,
-        maxHeight: length(options.maxHeight),
-      }),
-    );
-  },
-  voiceRecorder: (d) => {
-    const { state, seconds, options } = propsOf<VoiceRecorderOptions>(d);
-    return d.pressAround((props) =>
-      d.component(BloomVoiceRecorder, { ...props, ...options, state, seconds }),
-    );
-  },
-  attachmentMenu: (d) => {
-    const { options } = propsOf<AttachmentMenuOptions>(d);
-    return d.component(
-      BloomAttachmentMenu,
-      {
-        ...d.props(),
-        ...options,
-        layout: d.own('style')?.value,
-        columns: d.own('columns')?.value,
-        recent: slot(d, options.recent),
-      },
-      ...d.children(d.node.children),
-    );
-  },
-  emojiPicker: (d) => {
-    const { groups, options } = propsOf<EmojiPickerOptions>(d);
-    return d.pressAround((props) =>
-      d.component(BloomEmojiPicker, {
-        ...props,
-        ...options,
-        groups,
-        size: d.own('size')?.value,
-        height: length(options.height),
-      }),
-    );
-  },
-  reactionPicker: (d) => {
-    const { emojis, options } = propsOf<ReactionPickerOptions>(d);
-    return d.pressAround((props) =>
-      d.component(BloomReactionPicker, {
-        ...props,
-        ...options,
-        emojis,
-        size: d.own('size')?.value,
-        surface: d.own('surface')?.value,
-      }),
-    );
-  },
-  messageContextMenu: (d) => {
-    const { items, options } = propsOf<MessageContextMenuOptions>(d);
-    return d.component(
-      BloomMessageContextMenu,
-      { ...d.props(), ...options, items },
-      ...d.children(d.node.children),
-    );
-  },
+  suggestionList: product(BloomSuggestionList, {
+    lengths: ['maxHeight'],
+    own: (d) => ({ size: d.own('size')?.value, loading: d.own('loading')?.value }),
+  }),
+  voiceRecorder: product(BloomVoiceRecorder),
+  attachmentMenu: product(BloomAttachmentMenu, {
+    slots: ['recent'],
+    own: (d) => ({ layout: d.own('style')?.value, columns: d.own('columns')?.value }),
+  }),
+  emojiPicker: product(BloomEmojiPicker, {
+    lengths: ['height'],
+    own: (d) => ({ size: d.own('size')?.value }),
+  }),
+  reactionPicker: product(BloomReactionPicker, {
+    own: (d) => ({ size: d.own('size')?.value, surface: d.own('surface')?.value }),
+  }),
+  messageContextMenu: product(BloomMessageContextMenu),
 };
