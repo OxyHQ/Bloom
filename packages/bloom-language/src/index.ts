@@ -543,6 +543,10 @@ export type { ColorSwatchPickerView } from './controls/color-swatch-picker';
 export { Collapsible } from './controls/collapsible';
 export type { CollapsibleView } from './controls/collapsible';
 
+// Drop zones (controls/drop-zone.tsx)
+export { DropZone } from './controls/drop-zone';
+export type { DropZoneView } from './controls/drop-zone';
+
 // Animated checks (controls/animated-check.tsx)
 export { AnimatedCheck } from './controls/animated-check';
 export type { AnimatedCheckView } from './controls/animated-check';

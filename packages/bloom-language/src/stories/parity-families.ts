@@ -40,6 +40,7 @@ import { COLOR_SWATCH_PICKER_CASES } from '../../parity/color-swatch-picker.case
 import { ANIMATED_CHECK_CASES } from '../../parity/animated-check.cases';
 import { CONTEXT_MENU_CASES } from '../../parity/context-menu.cases';
 import { COLLAPSIBLE_CASES } from '../../parity/collapsible.cases';
+import { DROP_ZONE_CASES } from '../../parity/drop-zone.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -85,6 +86,7 @@ export const FAMILIES = {
   animatedCheck: ANIMATED_CHECK_CASES,
   contextMenu: CONTEXT_MENU_CASES,
   collapsible: COLLAPSIBLE_CASES,
+  dropZone: DROP_ZONE_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';
