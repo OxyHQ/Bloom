@@ -93,6 +93,9 @@ import { MenuHost } from './platform/menu-host';
 import { HeaderHost } from './platform/header-host';
 import { BottomBarHost } from './platform/bottom-bar-host';
 import { ScrollViewHost } from './chrome/scroll-view-host';
+import { SidebarHost } from './chrome/sidebar-host';
+import { RailHost } from './chrome/rail-host';
+import { PageFooterHost } from './chrome/page-footer-host';
 import {
   PLACE_KINDS,
   STACK_KINDS,
@@ -1992,7 +1995,38 @@ function renderHost(
     case 'tab':
     // A bottom sheet is a `.sheet()`'s content, drawn by the sheet that presents it.
     case 'bottomSheet':
+    // A sidebar's and a rail's rows are read by the column that holds them.
+    case 'navItem':
+    case 'treeSection':
+    case 'treeFolder':
+    case 'treeItem':
+    case 'railItem':
       return null as unknown as ReactElement;
+    case 'sidebar':
+      return draw(SidebarHost, {
+        key,
+        node,
+        render: (child: Child) => renderChild(child, ctx, undefined),
+        press: (value: Press | undefined) => pressOf(value, ctx.env),
+      });
+    case 'rail':
+      return draw(RailHost, {
+        key,
+        node,
+        render: (child: Child) => renderChild(child, ctx, undefined),
+        press: (value: Press | undefined) => pressOf(value, ctx.env),
+      });
+    case 'pageFooter':
+      return draw(
+        PageFooterHost,
+        {
+          key,
+          node,
+          render: (child: Child) => renderChild(child, ctx, undefined),
+          press: (value: Press | undefined) => pressOf(value, ctx.env),
+        },
+        ...renderChildren(node.children, ctx),
+      );
     // Navigators are drawn by the router's layout(); placed in a view, they draw nothing.
     case 'appLayout':
     case 'navStack':

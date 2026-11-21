@@ -1310,6 +1310,70 @@ its footer follows its body. The system sheet has no title bar, so a
 `@expo/ui`, Bloom's sheet. Bloom's sheet has no detents; neither does the
 node.
 
+### Sidebar, Rail and PageFooter
+
+```ts
+Sidebar(
+  NavItem(t('home'), RiHome5Line).id('home').activeIcon(RiHome5Fill).link('/'),
+  NavItem(t('search'), RiSearchLine).id('search').shortcut('⌘K'),
+  NavItem(t('settings'), RiSettings3Line).id('settings').secondary(),
+  TreeSection(
+    t('projects'),
+    TreeFolder(t('archive'), ...archived.map((p) => TreeItem(p.name).id(p.id))),
+    ...projects.map((p) => TreeItem(p.name).id(p.id).icon(RiFileLine).subtitle(p.owner)),
+  ).trailing(Button(Icon(RiAddLine)).label(t('new')).onPress(create)),
+)
+  .selection(current)
+  .surface('docked')
+  .footer(AccountRow())
+```
+
+`Sidebar(...rows)` is Bloom's `Sidebar`. Its rows are the plain data Bloom's
+sidebar reads, so they are rows, not views: a `NavItem(label, icon)` is a
+`SidebarNavItem` (`.id` its key, the label by default; `.activeIcon`,
+`.badge`, `.link` its `href`, `.shortcut`, `.onPress`, `.onLongPress`;
+`.secondary()` pins it at the foot, Bloom's `secondaryItems`), and a
+`TreeSection(label, ...rows)` is a `SidebarTree`, its `TreeFolder(label,
+...items)` folders and `TreeItem(label, ...items)` rows nested to any depth
+(`.icon`, `.subtitle` the row's description, `.meta`, `.link`, `.trailing`
+its actions, `.disabled`, `.expanded` and `.onExpandedChange` its open state,
+`.emptyLabel`). A section also takes `.collapsible`, `.loading` and `.error`.
+
+| Modifier | Bloom `Sidebar` |
+| --- | --- |
+| `.selection(id)` | `selected` and `selectedTreeItem`: one selection over destinations and tree rows |
+| `.onSelect(id => …)` | `onTreeItemPress`, and `onNavigate` (a linking destination; it then takes over the link's push) |
+| `.header(view \| false)`, `.toolbar(...)`, `.footer(view)` | `header`, `toolbar`, `footer` |
+| `.variant('panel' \| 'rail')`, `.surface('card' \| 'plain' \| 'docked')`, `.size('sm' \| 'md' \| 'lg')` | `variant`, `surface`, `size` |
+| `.collapsed()`, `.onCollapsedChange(fn)` | `collapsed`, `onCollapsedChange` |
+| `.searchable(false)`, `.themeToggle(false)` | `showSearch`, `showThemeToggle` |
+| `.logo(logo)`, `.account(account)`, `.label(text)` | `logo`, `account`, `accessibilityLabel` |
+
+A row's `navigate()` press goes through the navigator of the `layout()` or
+`screen()` it is drawn under. What a chain leaves out is not in the data at
+all, so Bloom's defaults hold. Not in the language yet: the sidebar's modes,
+team, plan, onboarding card, its search query, and tree drag and drop.
+
+`Rail(...items)` is Bloom's `Rail`: each `RailItem(label, glyph)` an item
+whose glyph is a view the app draws in its own ink
+(`RailItem('Home', Icon(RiHome5Line).foreground('muted')).activeIcon(Icon(RiHome5Fill).foreground('primary'))`,
+as apps hand Bloom's rail their elements), with `.selection`, `.onSelect`,
+`.header`, `.footer` and `.width(space)`.
+
+`PageFooter(...children)` is Bloom's `PageFooter`: its children, then its
+actions (`.toolbar(...)`), on its scrim. `.pinning('absolute' \| 'sticky' \|
+'document' \| 'inline')` is its `position`, `.scrollEdge` its `scrim`,
+`.ignoresSafeArea()` its `safeArea={false}`.
+
+| | Android, OxyOS | iOS (not verified) | Web |
+| --- | --- | --- | --- |
+| `Sidebar`, `Rail`, `PageFooter` | Bloom's | Bloom's (the iPad system sidebar is not built; see below) | Bloom's |
+
+The iPad's system sidebar (SwiftUI's `NavigationSplitView`) is not something
+`@expo/ui` offers: it has a `List` in the sidebar style, but the shell's
+sidebar column, its width, collapse and drawer are Bloom's `AppShell`. The
+sidebar stays Bloom's on iPad until that is decided.
+
 ## Image
 
 `Image(source, alt?)` is Bloom's `BloomImage`: expo-image on a device,
