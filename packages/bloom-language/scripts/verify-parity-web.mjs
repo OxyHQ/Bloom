@@ -282,6 +282,9 @@ try {
       await page.goto(`${BASE}/iframe.html?id=${id}&viewMode=story&globals=theme:${theme}`);
       await page.waitForSelector('[data-testid="language-0"]', { timeout: 60000 });
       await page.evaluate(() => document.fonts.ready);
+      // The page at rest: a control that measures its own layout and moves into
+      // place (a segmented control's thumb) settles after the fonts load.
+      await page.evaluate(() => new Promise((done) => setTimeout(done, 1000)));
       const { pairs, differences } = await page.evaluate(compareInPage);
       differences.push(...(await compareHeldStates(page)));
       if (differences.length > 0) failed += 1;
