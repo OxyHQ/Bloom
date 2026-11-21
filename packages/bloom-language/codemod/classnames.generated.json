@@ -1678,10 +1678,8 @@
   "text-warning-text": {
    "count": 19,
    "apps": 3,
-   "status": "token",
-   "scale": "color",
-   "value": "--warning-text",
-   "language": ".foreground(…)"
+   "status": "mapped",
+   "language": ".foreground('warningText')"
   },
   "bg-black/60": {
    "count": 18,
@@ -3042,10 +3040,8 @@
   "text-success-text": {
    "count": 8,
    "apps": 4,
-   "status": "token",
-   "scale": "color",
-   "value": "--success-text",
-   "language": ".foreground(…)"
+   "status": "mapped",
+   "language": ".foreground('successText')"
   },
   "text-text-inverse": {
    "count": 8,
@@ -3670,10 +3666,8 @@
   "text-info-text": {
    "count": 6,
    "apps": 1,
-   "status": "token",
-   "scale": "color",
-   "value": "--info-text",
-   "language": ".foreground(…)"
+   "status": "mapped",
+   "language": ".foreground('infoText')"
   },
   "text-shop-captionMedium": {
    "count": 6,
@@ -3784,10 +3778,8 @@
   "border-warning-text/40": {
    "count": 5,
    "apps": 1,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--warning-text at 40%",
-   "language": ".border(…)"
+   "status": "mapped",
+   "language": ".border('warningText/40')"
   },
   "bottom-4": {
    "count": 5,

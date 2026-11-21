@@ -52,6 +52,8 @@ function normalize(node: ReactTestRendererJSON | string): HostTree | string {
   if (typeof node === 'string') return node;
   const props: Record<string, unknown> = {};
   for (const key of Object.keys(node.props).sort()) {
+    // A ref is how a host is reached, never what it draws.
+    if (key === 'ref') continue;
     const prop = node.props[key];
     if (prop === undefined) continue;
     props[key] = key === 'style' ? value(StyleSheet.flatten(prop) ?? {}) : value(prop);

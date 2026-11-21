@@ -202,15 +202,9 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
   });
 
   it('scale factors are Bloom’s own: a press, the engagement pop’s dip and swell', () => {
+    // Bloom's PressableScale and engagement pop play these through its motion
+    // engine (`SCALE` in @oxy.so/bloom/motion), which the motion table test holds equal.
     expect(named(SCALE)).toEqual({ dip: 0.7, pressed: 0.98, full: 1, swell: 1.2 });
-    expect(read('pressable-scale/PressableScale.tsx')).toMatch(
-      new RegExp(`targetScale = ${SCALE.pressed},`),
-    );
-    expect(read('engagement-bar/EngagementPop.tsx')).toMatch(
-      new RegExp(
-        `withTiming\\(${SCALE.dip}, QUICK\\),\\n\\s+withTiming\\(${SCALE.swell}, SWELL\\),\\n\\s+withTiming\\(${SCALE.full}, SETTLE\\)`,
-      ),
-    );
   });
 
   it('the strongest glass tint is the opacity Surface already gives an opaque fill on the web', () => {

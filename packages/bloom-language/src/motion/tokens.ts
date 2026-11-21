@@ -1,7 +1,10 @@
-import { MOTION, SCALE, type MotionSpec } from '@oxy.so/bloom/motion';
+import { MOTION, type MotionSpec } from '@oxy.so/bloom/motion';
 
 import type { EASING, ROTATION } from '../generated/spec.generated';
-import { ROTATION as ROTATIONS } from '../generated/spec.generated';
+import { ROTATION as ROTATIONS, SCALE } from '../generated/spec.generated';
+import type { ScaleName } from '../tokens';
+
+export type { ScaleName };
 
 /**
  * Motion as tokens: Bloom's motion table (`MOTION` in `@oxy.so/bloom/motion`)
@@ -12,8 +15,6 @@ import { ROTATION as ROTATIONS } from '../generated/spec.generated';
 export type MotionName = keyof typeof MOTION;
 export type MotionToken = MotionName | MotionSpec;
 export type EasingName = keyof typeof EASING;
-/** How much a view is scaled: `pressed` (0.98), `dip` (0.7), `swell` (1.2), `full` (1). */
-export type ScaleName = keyof typeof SCALE;
 /** A rotation: `none`, `quarter`, `half`. */
 export type RotationName = keyof typeof ROTATION;
 
@@ -36,6 +37,7 @@ export function motionKey(token: MotionToken): string {
   return key;
 }
 
+/** A scale factor: Bloom's named rungs (`pressed` 0.98, `dip`, `swell`, `full`) and the apps' exact ones (`'105'`). */
 export function resolveScale(token: ScaleName): number {
   return SCALE[token];
 }

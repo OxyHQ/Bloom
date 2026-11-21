@@ -86,13 +86,8 @@ describe('a view’s place in its parent', () => {
       mount(toElement(VStack(Text('a')).position({ top: 'none', trailing: '-xs' }))),
     );
     expect(pinned?.props.style).toEqual({ position: 'absolute', top: 0, end: -tokens.space.xs });
-    // An offset is geometry the motion layer draws: its host's animated twin takes it.
-    const shifted = mount(toElement(VStack(Text('a')).offset({ y: '2xs' }))).root.find(
-      (instance) => instance.type === 'Animated.View',
-    );
-    expect(Object.assign({}, ...[shifted.props.style].flat(3))).toMatchObject({
-      transform: [{ translateY: 2 }],
-    });
+    const [shifted] = views(mount(toElement(VStack(Text('a')).offset({ y: '2xs' }))));
+    expect(shifted?.props.style).toEqual({ transform: [{ translateY: 2 }] });
   });
 
   it('a frame takes lengths relative to the parent', () => {

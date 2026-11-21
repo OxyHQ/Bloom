@@ -633,6 +633,8 @@ function behaviourProps(p: Plan): Record<string, unknown> | undefined {
   if (p.label !== undefined) props.accessibilityLabel = p.label;
   if (p.hint !== undefined) props.accessibilityHint = p.hint;
   if (p.role !== undefined) props.accessibilityRole = ROLE[p.role];
+  // Press feedback is Bloom's PressableScale, which a button is.
+  else if (p.pressable && p.motion?.pressScale) props.accessibilityRole = 'button';
   if (p.testID !== undefined) props.testID = p.testID;
   if (p.hitSlop !== undefined) props.hitSlop = p.hitSlop;
   if (p.pressable) {
@@ -768,6 +770,13 @@ function renderNode(node: Node, ctx: Context, key: string | number | undefined):
     return last.element;
   }
   const p = plan(node);
+  if (p.motion !== undefined && ctx.animation === undefined && restsStill(p.motion)) {
+    // Resting geometry with nothing to play it and no `.animation()` above: the
+    // outermost box's own style, as a view moved by hand is drawn.
+    p.place.transform = p.motion.transform;
+    p.place.key += `;t:${p.motion.transformKey}`;
+    p.motion = undefined;
+  }
   const element =
     p.motion === undefined ? drawNode(node, p, ctx, key, undefined) : drawMoving(node, p, ctx, key);
   node.rendered = {
@@ -780,6 +789,20 @@ function renderNode(node: Node, ctx: Context, key: string | number | undefined):
     element,
   };
   return element;
+}
+
+/** A node whose motion is its resting geometry alone: tokens, no value, nothing that plays. */
+function restsStill(motion: MotionPlan): boolean {
+  return (
+    motion.animation === undefined &&
+    motion.transition === undefined &&
+    motion.keyframes === undefined &&
+    motion.matched === undefined &&
+    !motion.pressScale &&
+    motion.bound === undefined &&
+    motion.drag === undefined &&
+    motion.swipe === undefined
+  );
 }
 
 /** A node with motion modifiers: `MotionNode` holds its motion state and draws it with `Outer`. */

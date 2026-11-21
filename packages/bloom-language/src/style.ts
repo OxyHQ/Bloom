@@ -630,6 +630,8 @@ export interface Placement {
   basis: LengthToken | undefined;
   allowsHitTesting: boolean | undefined;
   accessibilityOnly: boolean;
+  /** Its resting geometry (`motionPlan`'s transform), when nothing moves it: see render.tsx `renderNode`. */
+  transform: readonly object[] | undefined;
   /** What variants change in the view's place. */
   variants: [Planned, PlaceModifier][];
   /** The cache key of everything above, '' when nothing places the view. */
@@ -703,6 +705,7 @@ export function emptyPlacement(): Placement {
     basis: undefined,
     allowsHitTesting: undefined,
     accessibilityOnly: false,
+    transform: undefined,
     variants: [],
     key: '',
   };
@@ -767,6 +770,7 @@ export function placeStyle(place: Placement): Resolved {
     }
   }
   if (place.accessibilityOnly) Object.assign(style, ACCESSIBILITY_ONLY);
+  if (place.transform !== undefined) style.transform = place.transform as StyleValue;
   if (place.zIndex !== undefined) style.zIndex = Z_INDEX[place.zIndex];
   if (place.hidden !== undefined) style.display = place.hidden ? 'none' : 'flex';
   if (place.allowsHitTesting !== undefined)

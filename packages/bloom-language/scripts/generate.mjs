@@ -404,7 +404,6 @@ const tokenSets = {
   avatarSize: Object.keys(scales.avatarSize),
   glassOpacity: Object.keys(scales.glassOpacity),
   duration: Object.keys(scales.duration),
-  scale: Object.keys(scales.scale),
   rotation: Object.keys(scales.rotation),
   motion: Object.keys(motion),
   ...enums,
