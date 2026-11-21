@@ -3,14 +3,17 @@
 //! values are the runtime's; TypeScript checks them where it can, and this is
 //! the backstop for JavaScript, casts and generated code.
 
-use oxc_ast::ast::{Argument, Expression, ObjectPropertyKind, Program, PropertyKey};
+use oxc_ast::ast::{
+    Argument, ArrowFunctionBody, BindingPattern, Expression, ObjectPropertyKind, Program, PropertyKey,
+    Statement,
+};
 use oxc_ast_visit::{Visit, walk};
 use oxc_semantic::Scoping;
 use oxc_span::{GetSpan, Span};
 
 use crate::diagnostics::suggest;
 use crate::module::{Binding, Module};
-use crate::spec::{MODIFIERS, NODES, NodeSpec, OBJECTS, TOKEN_SETS};
+use crate::spec::{MODIFIERS, NODES, NodeSpec, OBJECTS, TOKEN_SETS, VARIANT_MODIFIERS};
 
 pub struct Problem {
     pub span: Span,
@@ -149,6 +152,7 @@ fn check_value(
 ) -> Result<(), Problem> {
     match param {
         "value" | "children" => Ok(()),
+        "variant" => check_variant(value, spec, module, scoping),
         param if OBJECTS.iter().any(|(name, _, _)| *name == param) => {
             let &(_, keys, set) = OBJECTS.iter().find(|(name, _, _)| *name == param).expect("matched above");
             let Expression::ObjectExpression(object) = value.without_parentheses() else { return Ok(()) };
@@ -203,6 +207,66 @@ fn check_value(
         "shape" => spec.shape.map_or(Ok(()), |set| check_token(modifier, set, value)),
         set => check_token(modifier, set, value),
     }
+}
+
+/// A variant (`when(condition, (v) => v.padding('lg'))`): the chain the arrow
+/// returns on its parameter takes only the modifiers a variant can change,
+/// each one the node takes, with valid arguments. A variant written any other
+/// way (a function declared elsewhere) is the runtime's.
+fn check_variant(
+    value: &Expression,
+    spec: &NodeSpec,
+    module: &Module,
+    scoping: &Scoping,
+) -> Result<(), Problem> {
+    let Expression::ArrowFunctionExpression(arrow) = value.without_parentheses() else { return Ok(()) };
+    let [param] = arrow.params.items.as_slice() else { return Ok(()) };
+    let BindingPattern::BindingIdentifier(param) = &param.pattern else { return Ok(()) };
+    let body = match &arrow.body {
+        ArrowFunctionBody::FunctionBody(body) => match body.statements.as_slice() {
+            [Statement::ReturnStatement(statement)] => match &statement.argument {
+                Some(argument) => argument,
+                None => return Ok(()),
+            },
+            _ => return Ok(()),
+        },
+        body => match body.as_expression() {
+            Some(expression) => expression,
+            None => return Ok(()),
+        },
+    };
+    let mut modifiers = Vec::new();
+    let mut current = body.without_parentheses();
+    while let Expression::CallExpression(call) = current {
+        let Expression::StaticMemberExpression(member) = &call.callee else { return Ok(()) };
+        modifiers.push((
+            member.property.name.as_str(),
+            member.property.span,
+            call.arguments.as_slice(),
+            call.span,
+        ));
+        current = member.object.without_parentheses();
+    }
+    let Expression::Identifier(root) = current else { return Ok(()) };
+    if root.name != param.name {
+        return Ok(());
+    }
+    for (modifier, span, arguments, call_span) in modifiers.into_iter().rev() {
+        if !VARIANT_MODIFIERS.contains(&modifier) || !spec.modifiers.contains(&modifier) {
+            let varies: Vec<&str> =
+                VARIANT_MODIFIERS.iter().copied().filter(|name| spec.modifiers.contains(name)).collect();
+            return Err(Problem {
+                span,
+                message: format!("A variant cannot change .{modifier}()"),
+                help: Some(with_suggestion(
+                    suggest(modifier, &varies),
+                    format!("a variant changes: {}", varies.join(", ")),
+                )),
+            });
+        }
+        check_arguments(modifier, arguments, spec, call_span, module, scoping)?;
+    }
+    Ok(())
 }
 
 /// A string literal must be one of `set`'s tokens; anything else is the runtime's.

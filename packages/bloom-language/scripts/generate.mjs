@@ -107,6 +107,11 @@ export const DURATION = ${ts(scales.duration)} as const;
 export const LENGTH = ${ts(scales.length)} as const;
 export const Z_INDEX = ${ts(scales.zIndex)} as const;
 export const SHADOW = ${ts(scales.shadow)} as const;
+export const BREAKPOINT = ${ts(scales.breakpoint)} as const;
+
+/** What a variant (\`when()\`) can change, and the web selector of each scheme and state condition. */
+export const VARIANT_MODIFIERS = ${ts(spec.variants.modifiers)} as const;
+export const VARIANT_SELECTORS = ${ts(withoutComment(spec.variants.selectors))} as const;
 
 /** Bloom's type ramp: \`<family>-<weight>\` → [fontSize, lineHeight, letterSpacing, fontWeight]. */
 export const TYPE_FAMILIES = ${ts(typeFamilies)} as const;
@@ -381,6 +386,9 @@ ${Object.entries(tokenSets)
   .map(([name, tokens]) => `    (${rustStr(name)}, ${rustList(tokens)}),`)
   .join('\n')}
 ];
+
+/// The modifiers a variant (\`when(condition, v => v…)\`) can change.
+pub const VARIANT_MODIFIERS: &[&str] = ${rustList(spec.variants.modifiers)};
 
 /// Modifier → its parameter types, in order (\`?\` optional).
 pub const MODIFIERS: &[(&str, &[&str])] = &[

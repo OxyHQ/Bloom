@@ -218,6 +218,14 @@
       "m": "0 4px 12px rgb(0 0 0 / 0.08), 0 2px 6px rgb(0 0 0 / 0.12)",
       "floating": "0 0 1px 0 rgb(0 0 0 / 0.12), 0 4px 8px 0 rgb(0 0 0 / 0.12)"
     },
+    "breakpoint": {
+      "$comment": "Bloom's BREAKPOINTS (styles/breakpoints.ts): each tier's min-width.",
+      "sm": 640,
+      "md": 768,
+      "lg": 1024,
+      "xl": 1280,
+      "2xl": 1536
+    },
     "duration": {
       "instant": 100,
       "fast": 150,
@@ -334,6 +342,22 @@
     "justify": ["start", "center", "end", "between", "around", "evenly"],
     "axis": ["horizontal", "vertical"],
     "ringExtra": ["none"],
+    "condition": [
+      "sm",
+      "md",
+      "lg",
+      "xl",
+      "2xl",
+      "dark",
+      "hovered",
+      "focused",
+      "pressed",
+      "disabled",
+      "web",
+      "native",
+      "ios",
+      "android"
+    ],
     "overlayAlignment": [
       "center",
       "top",
@@ -470,6 +494,45 @@
     "edges": { "keys": ["top", "bottom", "leading", "trailing"], "tokens": "padding" },
     "offset": { "keys": ["x", "y"], "tokens": "padding" }
   },
+  "variants": {
+    "$comment": [
+      "when(condition, v => v…): the modifiers inside override the values the chain set before it, while the condition holds.",
+      "modifiers: what a variant can change (style only). On the web a live condition is CSS over the generated sheet's classes; native reads it from the environment (the window's breakpoint, the theme, the view's own press host).",
+      "disabled and the platforms are known when the view renders: a variant under one is applied or dropped then."
+    ],
+    "modifiers": [
+      "padding",
+      "frame",
+      "background",
+      "border",
+      "ring",
+      "corner",
+      "opacity",
+      "shadow",
+      "foreground",
+      "font",
+      "weight",
+      "leading",
+      "spacing",
+      "align",
+      "justify",
+      "wrap",
+      "axis",
+      "grow",
+      "shrink",
+      "alignSelf",
+      "position",
+      "zIndex",
+      "hidden"
+    ],
+    "selectors": {
+      "$comment": "The web selector of each scheme and state condition, & standing for the class it styles. A breakpoint is a min-width media query at its breakpoint rung. The anchor class blsg is on the view's outermost box: a state is the state of the view, not of whatever is under the pointer.",
+      "dark": ".dark &",
+      "hovered": ".blsg:hover &, .blsg:hover&",
+      "focused": ".blsg:focus-visible &, .blsg:focus-visible&",
+      "pressed": ".blsg:active &, .blsg:active&"
+    }
+  },
   "environment": {
     "$comment": "The text and icon traits a view hands everything inside it, and what each is when nothing sets it. fontSize is the size of a Bloom Text with no variant, which a leading or a tracking measures from when no font is set.",
     "traits": ["foreground", "font", "weight", "leading", "tracking"],
@@ -598,7 +661,8 @@
     "hoverCard": ["value?"],
     "pressScale": [],
     "hoverHighlight": ["value?"],
-    "pressed": ["value"]
+    "pressed": ["value"],
+    "when": ["condition", "variant"]
   },
   "universal": [
     "padding",
@@ -648,13 +712,14 @@
     "headingLevel",
     "footer",
     "sheet",
-    "onReselect"
+    "onReselect",
+    "when"
   ],
   "nodes": {
     "$comment": "kind: { constructors, own modifiers beyond the universal ones (universal: false takes only its own), the token sets its size(), tint(), style() and shape() read }",
     "stack": {
       "constructors": ["HStack", "VStack", "ZStack"],
-      "modifiers": ["spacing", "align", "justify", "wrap", "axis", "hoverHighlight"]
+      "modifiers": ["spacing", "align", "justify", "wrap", "axis", "disabled", "hoverHighlight"]
     },
     "spacer": {
       "constructors": ["Spacer"],
