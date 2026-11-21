@@ -546,7 +546,9 @@
     "pipelineLayout": ["auto", "board", "single"],
     "mediaCardSize": ["large", "medium", "small"],
     "mediaCardLayout": ["tile", "row"],
-    "lyricsSize": ["large", "medium", "small"]
+    "lyricsSize": ["large", "medium", "small"],
+    "releaseCardLayout": ["grid", "row"],
+    "releaseStatusBadgeSize": ["sm", "md"]
   },
   "glass": {
     "$comment": [
@@ -1599,7 +1601,30 @@
       "modifiers": ["size"],
       "size": "lyricsSize"
     },
-    "lyricsPreviewCard": { "constructors": ["LyricsPreviewCard"], "modifiers": ["lines"] }
+    "lyricsPreviewCard": { "constructors": ["LyricsPreviewCard"], "modifiers": ["lines"] },
+    "audienceOverview": { "constructors": ["AudienceOverview"], "modifiers": [] },
+    "streamsChart": { "constructors": ["StreamsChart"], "modifiers": [] },
+    "topTracksTable": { "constructors": ["TopTracksTable"], "modifiers": [] },
+    "audienceBreakdown": { "constructors": ["AudienceBreakdown"], "modifiers": [] },
+    "releaseCard": {
+      "constructors": ["ReleaseCard"],
+      "modifiers": ["style"],
+      "style": "releaseCardLayout"
+    },
+    "releaseStatusBadge": {
+      "constructors": ["ReleaseStatusBadge"],
+      "modifiers": ["size"],
+      "size": "releaseStatusBadgeSize"
+    },
+    "releaseTimeline": { "constructors": ["ReleaseTimeline"], "modifiers": ["axis"] },
+    "trackUploadRow": { "constructors": ["TrackUploadRow"], "modifiers": [] },
+    "trackMetadataForm": { "constructors": ["TrackMetadataForm"], "modifiers": ["disabled"] },
+    "artistChipsInput": { "constructors": ["ArtistChipsInput"], "modifiers": ["disabled"] },
+    "isrcField": { "constructors": ["IsrcField"], "modifiers": ["disabled"] },
+    "creditsEditor": { "constructors": ["CreditsEditor"], "modifiers": ["disabled"] },
+    "artworkUploader": { "constructors": ["ArtworkUploader"], "modifiers": ["disabled"] },
+    "payoutSummaryCard": { "constructors": ["PayoutSummaryCard"], "modifiers": [] },
+    "pitchCard": { "constructors": ["PitchCard"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
