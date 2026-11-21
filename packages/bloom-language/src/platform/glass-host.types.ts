@@ -2,6 +2,7 @@ import type { ComponentType, ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { GlassValue } from '../glass';
+import type { RoleRef } from '../style';
 import type { ColorName } from '../tokens';
 
 /** What a platform's glass takes: the material, the shape, and what sits on it. */
@@ -11,6 +12,8 @@ export interface GlassHostProps {
   radius: number | undefined;
   /** The tint when the glass has none of its own: the fill of the control it is under. */
   fallbackTint?: ColorName;
+  /** The tint a variant sets while it holds (`.when(…, (v) => v.background(token))`), over the glass's own: the role at its opacity, if it names one. */
+  fill?: RoleRef;
   /** The glass answers touch (a pressable view on it). */
   interactive?: boolean;
   style?: StyleProp<ViewStyle>;

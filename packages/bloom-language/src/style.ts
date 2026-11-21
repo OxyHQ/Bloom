@@ -128,6 +128,11 @@ export interface StyleOut {
   readonly paint: Paint | undefined;
   /** The web: the host reads its style as an object (a Bloom component), so it takes no class and tracks its state in JS. */
   readonly object?: true;
+  /**
+   * The web: a language host that tracks its state in JS (around a Bloom
+   * component) is also the anchor the CSS of the views it holds answers.
+   */
+  readonly anchor?: true;
 }
 
 /**

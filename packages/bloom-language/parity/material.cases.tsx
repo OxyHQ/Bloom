@@ -1,5 +1,5 @@
 import * as RN from 'react-native';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { AspectRatio } from '@oxy.so/bloom/aspect-ratio';
 import { BlurIsland } from '@oxy.so/bloom/blur';
 import { ConcentricView } from '@oxy.so/bloom/concentric';
@@ -36,6 +36,30 @@ const padding = (value: number) => ({
   paddingStart: value,
   paddingEnd: value,
 });
+
+const onPress = () => {};
+
+interface Held {
+  pressed: boolean;
+  hovered: boolean;
+}
+
+/** Bloom JSX that tracks a pressable's press and hover as an app does, to draw by them. */
+function Tracked({
+  children,
+}: {
+  children: (held: Held, handlers: Record<string, () => void>) => ReactNode;
+}) {
+  const [held, setHeld] = useState<Held>({ pressed: false, hovered: false });
+  const set = (key: keyof Held, on: boolean) => () =>
+    setHeld((current) => (current[key] === on ? current : { ...current, [key]: on }));
+  return children(held, {
+    onPressIn: set('pressed', true),
+    onPressOut: set('pressed', false),
+    onHoverIn: set('hovered', true),
+    onHoverOut: set('hovered', false),
+  });
+}
 
 const surface: ParityCase[] = [
   {
@@ -82,6 +106,79 @@ const surface: ParityCase[] = [
           </Surface>
         )}
       </Tiered>
+    ),
+  },
+  {
+    name: 'a glass whose frame, border, corner and fill vary: its own style, radius and fill',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('Glass'))
+          .padding('sm')
+          .glass()
+          .corner('xl')
+          .when('lg', (v) =>
+            v
+              .frame({ width: '96' })
+              .border('border', 'thin')
+              .corner('2xl')
+              .background('primary/40'),
+          ),
+      ),
+    bloom: () => (
+      <Tiered>
+        {(atLeast) => (
+          <Themed>
+            {(c) => (
+              <Surface
+                radius={atLeast('lg') ? borderRadius._2xl : borderRadius.xl}
+                fill={atLeast('lg') ? withAlpha(c.primary, 0.4) : undefined}
+                style={{
+                  ...padding(space.sm),
+                  ...(atLeast('lg') ? { width: 96, borderWidth: 1, borderColor: c.border } : null),
+                }}
+              >
+                <RN.View>
+                  <Text>Glass</Text>
+                </RN.View>
+              </Surface>
+            )}
+          </Themed>
+        )}
+      </Tiered>
+    ),
+  },
+  {
+    name: 'a pressable glass whose fill a press and corner a hover vary',
+    language: () =>
+      toElement(
+        L.HStack(L.Text('Glass'))
+          .padding('sm')
+          .onPress(onPress)
+          .glass(regular.tint('primary', 'subtle'))
+          .when('pressed', (v) => v.background('primary'))
+          .when('hovered', (v) => v.corner('2xl')),
+      ),
+    // The box around the glass tracks the press and hover its material's variants answer.
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Tracked>
+            {(held, handlers) => (
+              <RN.Pressable onPress={onPress} {...handlers}>
+                <Surface
+                  fill={held.pressed ? c.primary : withAlpha(c.primary, GLASS_OPACITY.subtle)}
+                  radius={held.hovered ? borderRadius._2xl : undefined}
+                  style={padding(space.sm)}
+                >
+                  <RN.View style={{ flexDirection: 'row' }}>
+                    <Text>Glass</Text>
+                  </RN.View>
+                </Surface>
+              </RN.Pressable>
+            )}
+          </Tracked>
+        )}
+      </Themed>
     ),
   },
   {

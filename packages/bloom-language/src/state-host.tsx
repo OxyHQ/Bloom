@@ -36,12 +36,17 @@ interface StateHostProps {
 
 const ANCHOR = Object.freeze({ $$css: true, blStateAnchor: 'blsg' });
 
+/** A style with the anchor class after it. */
+function anchored(style: unknown): unknown {
+  return style === undefined ? ANCHOR : [style, ANCHOR].flat();
+}
+
 function WebStateHost(props: StateHostProps): ReactElement {
-  // A Bloom component reads its style as an object: no anchor class, its state read in JS.
+  // A Bloom component reads its style as an object: no anchor class, its state
+  // read in JS. A language host around one tracks in JS and is the anchor too.
   if (props.out.object) return createElement(TrackedStateHost, props);
   const { host, out, states: _, ...rest } = props;
-  const style = out.style === undefined ? ANCHOR : [out.style, ANCHOR].flat();
-  return createElement(host, { ...rest, style });
+  return createElement(host, { ...rest, style: anchored(out.style) });
 }
 
 type Handler = ((event: unknown) => void) | undefined;
@@ -83,9 +88,10 @@ function TrackedStateHost({ host, out, states, ...props }: StateHostProps): Reac
     };
     handlers.onBlur = chain('onBlur', 'focused', false);
   }
+  const style = Platform.OS === 'web' && out.anchor ? anchored(out.style) : out.style;
   const box =
     out.paint === undefined
-      ? createElement(host, { ...props, ...handlers, style: out.style })
+      ? createElement(host, { ...props, ...handlers, style })
       : createElement(out.paint.variants ? Conditioned : Painted, {
           ...props,
           ...handlers,

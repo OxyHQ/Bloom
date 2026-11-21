@@ -16,7 +16,7 @@ import type { GlassHostProps, PlatformGlass } from './glass-host.types';
 
 const NO_ITEMS: LensNativeItem[] = [];
 
-function LensGlass({ glass, radius, fallbackTint, style, children }: GlassHostProps) {
+function LensGlass({ glass, radius, fallbackTint, fill, style, children }: GlassHostProps) {
   const NativeLens = getNativeLens();
   const theme = useTheme();
   if (!NativeLens) return null;
@@ -26,7 +26,7 @@ function LensGlass({ glass, radius, fallbackTint, style, children }: GlassHostPr
       lens
       colorScheme={theme.isDark ? 'dark' : 'light'}
       cornerRadius={radius}
-      triggerConfig={glassTriggerConfig(glass, fallbackTint, theme.colors)}
+      triggerConfig={glassTriggerConfig(glass, fallbackTint, theme.colors, fill)}
       style={style}
     >
       {children}

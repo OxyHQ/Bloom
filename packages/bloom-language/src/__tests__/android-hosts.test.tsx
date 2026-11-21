@@ -57,6 +57,32 @@ describe('glass is the lens', () => {
     });
   });
 
+  it('a glass’s variants reach the lens: a fill its tint, a corner its radius, a frame its style', () => {
+    const r = mount(
+      toElement(
+        HStack(Text('a'))
+          .onPress(() => {})
+          .glass(regular.tint('primary', 'medium'))
+          .corner('lg')
+          .when('pressed', (v) => v.background('error/40').corner('xl').frame({ height: '4xl' })),
+      ),
+    );
+    const lens = () => only(r, 'BloomLensMenu');
+    expect(lens().props).toMatchObject({
+      cornerRadius: 16,
+      triggerConfig: { blur: 1, tintColor: LIGHT.primary, tintOpacity: 0.48 },
+    });
+    expect(lens().props.style).toBeUndefined();
+    act(() => only(r, 'Pressable').props.onPressIn());
+    expect(lens().props).toMatchObject({
+      cornerRadius: 20,
+      style: { height: 40 },
+      triggerConfig: { blur: 1, tintColor: LIGHT.error, tintOpacity: 0.4 },
+    });
+    act(() => only(r, 'Pressable').props.onPressOut());
+    expect(lens().props.triggerConfig).toMatchObject({ tintColor: LIGHT.primary });
+  });
+
   it('a Button on glass keeps its press and ink; the glass draws its fill, tinted with its tone', () => {
     const onPress = jest.fn();
     const r = mount(toElement(Button(Icon(Glyph)).shape('circle').glass().onPress(onPress)));

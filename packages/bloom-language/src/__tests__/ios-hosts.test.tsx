@@ -4,7 +4,7 @@
  */
 import { createContext, createElement, type ReactNode } from 'react';
 
-import { DARK, LIGHT } from './support/bloom-theme';
+import { DARK, LIGHT, withAlpha } from './support/bloom-theme';
 import { act, Glyph, hosts, mount, only, quietRenderer } from './support/mount';
 import { Button, Header, HStack, Icon, Item, Menu, menu, Section, Text } from '../primitives';
 import { clear } from '../glass';
@@ -60,6 +60,24 @@ describe('glass is Liquid Glass', () => {
     });
     expect(only(r, 'GlassView').props.tintColor).not.toBe(LIGHT.primary);
     expect(only(r, 'BloomButton').props.material).toBe('shared');
+  });
+
+  it('a glass’s fill and corner vary as its tintColor and radius, its frame as its style', () => {
+    const r = mount(
+      toElement(
+        HStack(Text('a'))
+          .onPress(() => {})
+          .glass()
+          .corner('lg')
+          .when('pressed', (v) => v.background('primary/40').corner('xl').frame({ width: '4xl' })),
+      ),
+    );
+    const glass = () => only(r, 'GlassView');
+    expect(glass().props.tintColor).toBeUndefined();
+    expect(glass().props.style).toEqual([undefined, { borderRadius: 16 }]);
+    act(() => only(r, 'Pressable').props.onPressIn());
+    expect(glass().props.tintColor).toBe(withAlpha(LIGHT.primary, 0.4));
+    expect(glass().props.style).toEqual([{ width: 40 }, { borderRadius: 20 }]);
   });
 
   it('a view on untinted glass is not interactive', () => {

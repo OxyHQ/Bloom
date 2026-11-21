@@ -5,10 +5,11 @@ import TestRenderer, {
   type ReactTestRenderer,
 } from 'react-test-renderer';
 
-import { DARK, LIGHT, PaintContext } from './support/bloom-theme';
+import { DARK, LIGHT, PaintContext, withAlpha } from './support/bloom-theme';
 import { windowTier } from './support/bloom-hooks';
 import { Action, ActionBar, Avatar, Badge, HStack, Icon, Text, VStack } from '../primitives';
 import { both } from '../variants';
+import { regular } from '../glass';
 import { toElement } from '../render';
 import type { Child } from '../node';
 
@@ -215,21 +216,68 @@ describe('when(): a variant overrides what the chain set before it', () => {
     expect(glyph().props.fill).toBe(LIGHT.primary);
   });
 
-  it('a glass varies its padding on a view inside it; its other variants are left out', () => {
+  it('a glass varies its padding on a view inside it, its fill as its own; an opacity is left out', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
     windowTier.current = 'md';
     const r = mount(
       VStack(Text('a'))
         .padding('sm')
         .glass()
-        .when('md', (v) => v.padding('lg').background('primary')),
+        .when('md', (v) => v.padding('lg').background('primary').opacity('half')),
     );
     const [surface] = ofType(r, 'Surface');
+    // The fill is Surface's, painted from the role; never a fade of the material.
     expect(surface?.props.style).toBeUndefined();
+    expect(surface?.props.fill).toBe(LIGHT.primary);
     const inside = surface?.findAll((i) => (i.type as unknown) === 'View')[0];
     expect(inside?.props.style).toMatchObject({ paddingTop: 16, paddingEnd: 16 });
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('varies only its padding'));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('a material is never faded'));
     warn.mockRestore();
+  });
+
+  it('a glass’s frame and border vary its style, its corner its radius, at rest and while held', () => {
+    const glass = () =>
+      HStack(Text('a'))
+        .onPress(() => {})
+        .glass()
+        .corner('lg')
+        .when('md', (v) => v.frame({ width: '4xl' }))
+        .when('pressed', (v) => v.corner('xl').border('border', 'thin').background('primary/40'));
+    const r = mount(glass());
+    const surface = (): ReactTestInstance => ofType(r, 'Surface')[0] as ReactTestInstance;
+    expect(surface().props).toMatchObject({ radius: 16 });
+    expect(surface().props.style).toBeUndefined();
+    expect(surface().props.fill).toBeUndefined();
+    // The box around the glass tracks the press the material's variants answer.
+    const host = ofType(r, 'Pressable')[0] as ReactTestInstance;
+    act(() => host.props.onPressIn());
+    expect(surface().props).toMatchObject({
+      radius: 20,
+      style: { borderWidth: 1, borderColor: LIGHT.border },
+    });
+    expect(surface().props.fill).toBe(withAlpha(LIGHT.primary, 0.4));
+    act(() => host.props.onPressOut());
+    windowTier.current = 'md';
+    remount(r, glass());
+    expect(surface().props).toMatchObject({ radius: 16, style: { width: 40 } });
+    expect(surface().props.fill).toBeUndefined();
+  });
+
+  it('a tinted glass’s fill is its tint at rest, and a variant’s while it holds', () => {
+    const r = mount(
+      VStack()
+        .glass(regular.tint('primary'))
+        .when('dark', (v) => v.background('error')),
+    );
+    expect(ofType(r, 'Surface')[0]?.props.fill).toBe(LIGHT.primary);
+    remount(
+      r,
+      VStack()
+        .glass(regular.tint('primary'))
+        .when('dark', (v) => v.background('error')),
+      DARK,
+    );
+    expect(ofType(r, 'Surface')[0]?.props.fill).toBe(DARK.error);
   });
 });
 

@@ -54,8 +54,15 @@ function loadBlur(): BlurModule | null {
   return blur;
 }
 
-/** The tint, as a colour with its transparency: the glass's own, else the control's fill. */
-function tintOf({ glass, fallbackTint }: GlassHostProps, colors: ThemeColors): string | undefined {
+/** The tint, as a colour with its transparency: a variant's fill while it holds, else the glass's own, else the control's fill. */
+function tintOf(
+  { glass, fallbackTint, fill }: GlassHostProps,
+  colors: ThemeColors,
+): string | undefined {
+  if (fill !== undefined) {
+    const color = colors[COLORS[fill.role].paint] as string;
+    return fill.opacity === undefined ? color : withAlpha(color, fill.opacity);
+  }
   const role = glass.tintColor ?? fallbackTint;
   if (role === undefined) return undefined;
   const name = glass.tintOpacity ?? (glass.tintColor ? GLASS[glass.material].tintOpacity : null);

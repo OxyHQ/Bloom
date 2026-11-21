@@ -489,10 +489,21 @@ inside; a stack's layout to its host; a placement to its outermost box.
   `currentColor` and its colour is a class under each condition (CSS answers
   a hover, as it does for text); on native the glyph's leaf is a
   `Conditioned` one that fills it from the environment.
-- **A material's padding varies.** A glass, an island or a concentric box is a
-  Bloom material drawn from its own props; a varied padding of one is a view
-  just inside it, the same room, which takes the variant. Its other variants
-  (a fill, a border, its corner) are left out, said once in development.
+- **A material's variants.** A glass, an island or a concentric box is a
+  Bloom material drawn from its own props. A varied padding of one is a view
+  just inside it, the same room, which takes the variant. A glass also varies
+  its frame and border (the material's own style), its corner (the radius it
+  clips to: one radius, so a corner of some sides or a concentric one is left
+  out) and its fill (`.background(token)`: Surface's `fill`, the lens's tint,
+  Liquid Glass's `tintColor`, over the glass's own tint while it holds). They
+  reach the material as its props, picked by a `Conditioned` leaf from the
+  breakpoint, the scheme and the state, built once per palette and set of
+  holding variants (nothing is resolved per render); a state the material
+  answers is tracked by the box around the glass, which is also the anchor
+  of the CSS of the views inside it. A material is never faded (an opacity
+  under `when()` is left out: an opacity on a material host or its ancestor
+  takes its backdrop blur away), and an island's or a concentric box's other
+  variants are left out too, each said once in development.
 - **Variants nest.** `when('md', (v) => v.when('hovered', (h) => h.padding('lg')))`
   holds while both do (`md:hover:`): native reads both; the web writes the
   widest breakpoint's query around the other terms' selectors, each state's
@@ -770,8 +781,12 @@ exported values; `.tint(role, opacity?)` returns a tinted copy.
 
 Opacities are tokens (`glassOpacity` in the spec): `subtle` 0.24, `medium` 0.48,
 `strong` 0.72 (`strong` is Surface's own web tint, `SURFACE_TINT_OPACITY`).
-Native paints `withAlpha`; the web paints `color-mix(…)`, because a web paint can
-be a CSS variable.
+The fill is Bloom's `withAlpha` of the role's colour, as an app writes it:
+Surface computes its material from its fill, and a `color-mix(…)` hid the
+opacity from it (the web drew a `subtle` or `medium` tint at 72%, which the
+Chrome check now catches: it compares a Surface's `::before` and `::after`,
+where its material is drawn). A web paint that is a CSS variable (Bloom's
+prepaint) is the one the browser mixes, with `color-mix(…)`.
 
 Each platform draws the glass itself (`src/platform/glass-host.*`), and Surface
 is what is left where it cannot:
@@ -789,6 +804,12 @@ is what is left where it cannot:
   under the tint. Both are optional.
 - **Web:** Surface, Bloom's frosted material (`blur(24px)` with the measured
   saturation and contrast under the tint). The web has no glass.
+
+A glass's variants (its frame, border, corner and fill; see
+[Variants](#variants)) reach each platform's glass as its props: the lens's
+`cornerRadius` and tint, Liquid Glass's radius and `tintColor`, Surface's
+`radius` and `fill`. Not verified on a device: they are held by unit tests
+on the lens and iOS stand-ins, and by parity and Chrome on Surface.
 
 **A control on glass.** A `Button` or `FAB` on glass keeps its own press,
 ink, size and name (Bloom's `material="shared"`); the glass draws its fill.
@@ -1374,7 +1395,8 @@ and `@oxy.so/bloom-data` beside it.
   rings, corners and their curve, text styles, links, truncation.
 - Variants: breakpoints, the scheme, a view's own hover, focus
   (`:focus-visible`) and press, `disabled` and the platforms; nested
-  variants; on the web a sheet per condition holding only the classes that
+  variants; a glass's padding, frame, border, corner and fill, as the
+  material's own props; on the web a sheet per condition holding only the classes that
   render; a Bloom component's variants in its own style, its state tracked by
   its box (a component with no press of its own takes it on a host around
   it); the innermost pressable owns a hover or a press, as react-native-web's
@@ -1393,8 +1415,10 @@ and `@oxy.so/bloom-data` beside it.
 
 - Variants: a scale or an offset under `when()` (geometry is the motion
   layer's, and the web has no transform class to vary); an app colour under
-  `when()` (it has no class); a glass's frame, border, corner and fill (only a
-  material's padding varies).
+  `when()` (it has no class); a material's opacity (never faded); an
+  island's or a concentric box's frame, border, corner and fill (only their
+  padding varies); a state variant of the glass under a Button or FAB (the
+  control tracks its own state, inside the glass).
 - A pressable of another component inside a pressable stack on the web
   (`Embed`, or a Bloom component the language does not draw): it carries no
   press host class, so the stack still answers a hover or a press of it.

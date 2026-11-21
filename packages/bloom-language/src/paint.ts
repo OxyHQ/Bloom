@@ -34,12 +34,17 @@ export interface Paint {
   readonly variants?: readonly PaintVariant[];
 }
 
-/** One live variant of a native style: its values, the properties painted from roles, and the props (an icon's `fill`). */
+/**
+ * One live variant of a native style: its values, the properties painted from
+ * roles, and the props: painted from roles (an icon's `fill`) or as they are
+ * (a glass's radius).
+ */
 export interface PaintVariant {
   readonly condition: LiveCondition;
   readonly style: object;
   readonly styleRoles: readonly (readonly [string, ColorName, number?])[];
   readonly propRoles?: readonly (readonly [string, ColorName, number?])[];
+  readonly props?: Readonly<Record<string, unknown>>;
 }
 
 const IS_WEB = Platform.OS === 'web';
@@ -175,6 +180,7 @@ function conditionedProps(
     (paint.variants ?? []).forEach((variant, index) => {
       if ((holding & (1 << index)) === 0) return;
       Object.assign(style, variant.style);
+      Object.assign(next, variant.props);
       for (const [key, role, opacity] of variant.styleRoles) style[key] = paintColor(role, opacity);
       for (const [key, role, opacity] of variant.propRoles ?? [])
         next[key] = paintColor(role, opacity);
