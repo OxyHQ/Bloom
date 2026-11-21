@@ -101,6 +101,7 @@ import type { DatePickerKind } from './controls/date-picker';
 import type { HourFormat, WeekStart } from '@oxy.so/bloom/date-picker';
 
 import type { AgentAvatarKind } from './controls/agent-avatar';
+import type { AgentKind } from './controls/agents';
 import type { MediaControlKind } from './controls/media-controls';
 import type { StatCardKind } from './controls/stat-cards';
 import type { AiChatKind } from './controls/ai-chat';
@@ -204,6 +205,8 @@ import {
   type TooltipSide,
   type RatingStyle,
   type AgentMood,
+  type AgentThinkingTone,
+  type AgentThinkingStyle,
   type PlaybackTimes,
   type PlayButtonStyle,
   type PlayButtonSize,
@@ -1096,7 +1099,8 @@ export type Modifier =
         | RadarVariant
         | StatCardsVariant
         | PlayButtonStyle
-        | PlaybackTimes;
+        | PlaybackTimes
+        | AgentThinkingStyle;
     }
   | {
       readonly kind: 'shape';
@@ -1114,7 +1118,8 @@ export type Modifier =
         | ColorToken
         | ComposerButtonTone
         | SparklineTone
-        | AiChatLineTone;
+        | AiChatLineTone
+        | AgentThinkingTone;
     }
   | {
       readonly kind: 'count';
@@ -1354,7 +1359,8 @@ export type NodeKind =
   | ComposerPanelKind
   | AiChatKind
   | StatCardKind
-  | MediaControlKind;
+  | MediaControlKind
+  | AgentKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1694,7 +1700,8 @@ export class Node {
       | RadarVariant
       | StatCardsVariant
       | PlayButtonStyle
-      | PlaybackTimes,
+      | PlaybackTimes
+      | AgentThinkingStyle,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
@@ -1710,7 +1717,8 @@ export class Node {
       | ColorToken
       | ComposerButtonTone
       | SparklineTone
-      | AiChatLineTone,
+      | AiChatLineTone
+      | AgentThinkingTone,
   ): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
   }

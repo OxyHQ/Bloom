@@ -140,3 +140,4 @@ export const ComposerPanels: Story = { args: { family: 'composerPanel' } };
 export const AiChat: Story = { args: { family: 'aiChat' } };
 export const StatCards: Story = { args: { family: 'statCard' } };
 export const MediaControls: Story = { args: { family: 'mediaControl' } };
+export const Agents: Story = { args: { family: 'agent' } };
