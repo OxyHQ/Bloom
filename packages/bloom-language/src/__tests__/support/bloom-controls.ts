@@ -98,3 +98,4 @@ export const AvatarAnchor = 'AvatarAnchor';
 export const AvatarFlightLayer = 'AvatarFlightLayer';
 export const InputGroup = 'InputGroup';
 export const InputGroupAddon = 'InputGroupAddon';
+export const Notification = 'Notification';
