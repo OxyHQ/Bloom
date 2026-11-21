@@ -84,6 +84,8 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("loadingStyle", &["spinner", "top", "inline"]),
     ("contentTransition", &["roll"]),
     ("swipeDirection", &["left", "right", "up", "down"]),
+    ("hourFormat", &["12h", "24h"]),
+    ("timeFieldSize", &["sm", "md"]),
 ];
 
 /// The modifiers a variant (`when(condition, v => v…)`) can change.
@@ -237,6 +239,18 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("loop", &[]),
     ("paused", &["value"]),
     ("fallback", &["value"]),
+    ("bounds", &["value", "value?"]),
+    ("unavailable", &["value"]),
+    ("weekStart", &["value"]),
+    ("locale", &["value"]),
+    ("placeholder", &["value"]),
+    ("presented", &["value"]),
+    ("labels", &["value"]),
+    ("quickSelect", &["value"]),
+    ("initialMonth", &["value"]),
+    ("months", &["value"]),
+    ("step", &["value"]),
+    ("hourFormat", &["hourFormat"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -279,6 +293,11 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "navStack", constructors: &["Stack"], modifiers: &[], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "route", constructors: &["Sheet"], modifiers: &[], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "tabView", constructors: &["TabView"], modifiers: &[], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "datePicker", constructors: &["DatePicker"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "bounds", "unavailable", "weekStart", "locale", "placeholder", "disabled", "presented", "labels"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "dateRangePicker", constructors: &["DateRangePicker"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "bounds", "unavailable", "weekStart", "locale", "placeholder", "disabled", "presented", "labels", "quickSelect"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "calendar", constructors: &["Calendar"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "bounds", "unavailable", "weekStart", "locale", "initialMonth", "labels"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "rangeCalendar", constructors: &["RangeCalendar"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "bounds", "unavailable", "weekStart", "locale", "initialMonth", "months", "labels"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "timeField", constructors: &["TimeField"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "bounds", "step", "hourFormat", "size", "placeholder", "disabled"], size: Some("timeFieldSize"), tint: None, style: None, shape: None },
 ];
 
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,
