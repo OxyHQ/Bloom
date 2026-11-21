@@ -6,6 +6,7 @@ import { CONTAINERS } from './containers';
 import { SETTINGS } from './settings';
 import { DATE_PICKERS } from './date-picker';
 import { RATINGS } from './rating';
+import { STAT_BARS } from './stat-bar';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -19,4 +20,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...SETTINGS,
   ...DATE_PICKERS,
   ...RATINGS,
+  ...STAT_BARS,
 };

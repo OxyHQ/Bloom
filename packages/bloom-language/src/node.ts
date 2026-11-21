@@ -26,6 +26,7 @@ import type { CommandItem as BloomCommandItem } from '@oxy.so/bloom/command';
 import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
+import type { StatBarKind } from './controls/stat-bar';
 import type { RatingKind } from './controls/rating';
 import type { MeterReveal } from '@oxy.so/bloom/stat-bar';
 import type { DatePickerKind } from './controls/date-picker';
@@ -117,6 +118,7 @@ import {
   type BadgeStyle,
   type LoadingStyle,
   type RatingCountStyle,
+  type MeterCap,
   type RatingStyle,
   type Presence,
   type ShapeName,
@@ -590,6 +592,20 @@ export interface ValueModifiers {
   valueLabel: string;
   labelWidth: SpaceToken;
   reveal: MeterReveal;
+
+  // Meters and progress bars (controls/stat-bar.tsx)
+  valueText: string;
+  indeterminate: boolean;
+  decorative: true;
+  trackTint: ColorToken;
+  thickness: SpaceToken;
+  fillDuration: DurationName;
+  barCorner: Exclude<CornerName, 'concentric'>;
+  backdrop: ColorToken;
+  cap: MeterCap;
+  content: Child;
+  onStop: readonly [action: () => void, label: string];
+  rangeLabels: readonly [min: string | undefined, max: string | undefined];
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -958,7 +974,8 @@ export type NodeKind =
   | 'resizeHandle'
   | SettingsKind
   | DatePickerKind
-  | RatingKind;
+  | RatingKind
+  | StatBarKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -2258,6 +2275,44 @@ export class Node {
   }
   reveal(value: MeterReveal): Node {
     return this.set('reveal', value);
+  }
+
+  // Meters and progress bars (controls/stat-bar.tsx)
+  valueText(value: string): Node {
+    return this.set('valueText', value);
+  }
+  indeterminate(value = true): Node {
+    return this.set('indeterminate', value);
+  }
+  decorative(): Node {
+    return this.set('decorative', true);
+  }
+  trackTint(value: ColorToken): Node {
+    return this.set('trackTint', value);
+  }
+  thickness(value: SpaceToken): Node {
+    return this.set('thickness', value);
+  }
+  fillDuration(value: DurationName): Node {
+    return this.set('fillDuration', value);
+  }
+  barCorner(value: Exclude<CornerName, 'concentric'>): Node {
+    return this.set('barCorner', value);
+  }
+  backdrop(value: ColorToken): Node {
+    return this.set('backdrop', value);
+  }
+  cap(value: MeterCap): Node {
+    return this.set('cap', value);
+  }
+  content(value: Child): Node {
+    return this.set('content', value);
+  }
+  onStop(action: () => void, label: string): Node {
+    return this.set('onStop', [action, label]);
+  }
+  rangeLabels(min: string | undefined, max?: string): Node {
+    return this.set('rangeLabels', [min, max]);
   }
 }
 

@@ -1745,6 +1745,33 @@ value)` takes `.max()`, `.valueLabel()`, `.labelWidth(space)` and `.reveal()`;
 `RatingSummary(average, count, distribution)` takes `.labels({ count, outOf,
 noRatings })`.
 
+### Meters and progress bars
+
+```ts
+Meter(3, 5).valueText('3 of 5').label('Steps')
+ProgressBar(sent, total).tint('success').label('Upload')
+ProgressBar(0).indeterminate().label('Transcoding')
+MeterRing(score, 10).size('80').content(Text(String(score))).label('Match')
+ProgressRing(progress).onStop(cancel, 'Stop downloading').label('Download')
+StatBar('Points', 720, 1000).rangeLabels('0', '1,000').trailing(Icon(RiTrophyLine).size('sm'))
+SplitBar('Inflow', 62, '$1.2k', '$740')
+```
+
+Bloom's `Meter`, `MeterRing` and `StatBar`. `Meter(value, total?)` and
+`MeterRing(value, total?)` are a measurement (a score, a charge: ARIA's
+`meter`); `ProgressBar` and `ProgressRing` are the same components as a task's
+progress (`progressbar`). Name each with `.label()`. Both take
+`.valueText()`, `.indeterminate()`, `.decorative()` (no role, hidden: the
+drawing inside a control that names itself), `.tint()` and `.trackTint()`
+(roles), `.thickness(space)` and `.fillDuration(duration)` (the web's ease to a
+new value). A bar is the width of its parent unless framed, and takes
+`.barCorner(corner)` and `.reveal()`; a ring takes `.size(space)`,
+`.backdrop(role)`, `.cap('round' | 'butt')`, `.content(view)`,
+`.onStop(action, label)` and, decorative, `.progress(sharedValue)`.
+`StatBar(label, value, max)` takes `.rangeLabels(min, max)`, `.trailing(view)`,
+`.tint()`, `.trackTint()` and `.thickness()`; `SplitBar(label, percent, left,
+right)` is its split.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2171,7 +2198,7 @@ and `@oxy.so/bloom-data` beside it.
   `BottomSheet` is Bloom's `Dialog`; Bloom's sheet has no detents, so neither
   does the node.
 - Generic components (see [Generic components](#generic-components)), drawn as
-  Bloom's own: the date and time pickers, ratings.
+  Bloom's own: the date and time pickers, ratings, meters and progress bars.
 
 **Not built**
 

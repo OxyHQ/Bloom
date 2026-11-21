@@ -118,6 +118,7 @@ import type {
   RatingBarView,
   RatingSummaryView,
 } from '../controls/rating';
+import type { MeterView, MeterRingView, StatBarView } from '../controls/stat-bar';
 import type { ColorPreset, ContentFit } from '../tokens';
 import type {
   SettingsDateFieldView,
@@ -369,7 +370,13 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<RatingInputView>, Of<'ratingInput'>>,
       Same<MethodsOf<RatingBarView>, Of<'ratingBar'>>,
       Same<MethodsOf<RatingSummaryView>, Of<'ratingSummary'>>,
+      Same<MethodsOf<MeterView>, Of<'meter'>>,
+      Same<MethodsOf<MeterRingView>, Of<'meterRing'>>,
+      Same<MethodsOf<StatBarView>, Of<'statBar'>>,
     ] = [
+      true,
+      true,
+      true,
       true,
       true,
       true,
