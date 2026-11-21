@@ -103,3 +103,5 @@ export const SettingsValueField = 'SettingsValueField';
 export const SettingsSelect = 'SettingsSelect';
 export const SettingsTextField = 'SettingsTextField';
 export const SettingsDateField = 'SettingsDateField';
+export const StoryRing = 'StoryRing';
+export const TypingDots = 'TypingDots';

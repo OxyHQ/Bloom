@@ -2714,6 +2714,41 @@ composer; its `radius`, `line` and `offset` space tokens),
   agent works; their cases are compared by Jest as they mount, not in Chrome,
   where two side by side are read at different frames.
 
+### Chat
+
+```ts
+ChatHeader(chat.name, { status, avatarSource: chat.avatar, onPressBack: back }).tint('accent')
+ChatBackground(Thread(), { source: wallpaper }).style('image')
+ImageMessage(photo.url, { aspectRatio: photo.ratio, caption: Text(photo.caption) }).tint('outgoing')
+StoryRing(Avatar(friend.avatar), { size: '56', state: 'unseen' }).onPress(openStory)
+```
+
+The person-to-person chat families two or more apps share: the screen's
+parts (`ChatBackground`, `ChatDateHeader`, `ChatEmptyState`, `ChatHeader`,
+`ChatInfoPanel`, `PinnedMessageBar`, `ScrollToBottomButton`), the list's
+(`ChatFolderTabs`, `ChatSearchField`, `ChatSearchResults`, `StoriesRow`), the
+indicators (`StoryRing`, `TypingDots`) and the media in a bubble
+(`ContactMessage`, `DocumentGrid`, `FileMessage`, `GifMessage`,
+`ImageMessage`, `LocationMessage`, `PollMessage`, `SharedMediaGrid`,
+`StickerMessage`, `VideoMessage`, `VoiceMessage`).
+
+- A component's main variant is `.style()` (a background's, a date header's
+  placement, an info panel's, a file's, a video's); its tone `.tint()` (a
+  header's status, and a bubble's media `incoming` or `outgoing`); a bubble's
+  own colours `.bubbleTint()` and `.contentTint()`, and media that loads
+  `.placeholderTint()`, all roles. A row's gap is `.spacing()`.
+- Lengths in the options (widths, sizes, offsets, paddings) are space tokens,
+  a radius a corner rung, a background's opacities opacity tokens. Its slots
+  (an empty state's action, a header's avatar and accessory, an image's
+  caption, a ring's badge, a map from `renderMap`) are language children.
+- `ChatSearchField(query)` writes its binding; `ChatFolderTabs` is named with
+  `.label()`; `ScrollToBottomButton` and `StoryRing` take `.onPress()`
+  themselves. `PollMessage(question, choices, options?)`: the choices are
+  Bloom's `options`.
+- A background's gradient colours and a story ring's colours are Bloom's (a
+  list of roles has no prop to paint). The typing dots pulse on the JS
+  thread: compared by Jest, not in Chrome.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -3189,7 +3224,8 @@ and `@oxy.so/bloom-data` beside it.
   `StatCard`, `StatCards`; `PlayButton`, `PlaybackProgress`; the agent
   families (`AgentLimitsCard`, `UsageCard`, `AgentThinking`, `AgentProgress`,
   `AgentProgressLoadingText`, the agent log's five, `ComposerLoader`,
-  `ConversationSidebar`, `Questionnaire`).
+  `ConversationSidebar`, `Questionnaire`); the chat families (the chat
+  screen's, chat list's, indicators' and message media's 24).
 
 **Not built**
 

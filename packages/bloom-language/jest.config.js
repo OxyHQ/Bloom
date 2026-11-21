@@ -41,7 +41,7 @@ module.exports = {
     '^@oxy.so/bloom/(card|item|grouped-section|chip|empty-state|admonition|tabs|kbd|error-boundary)$': `${support}/bloom-containers.ts`,
     '^@oxy.so/bloom/(app-shell|screen|dialog|tab-pager|tab-pager/expo-router|panel-routing/expo-router|bottom-sheet)$': `${support}/bloom-router.ts`,
     '^@oxy.so/bloom/(alert-dialog|connection-status|popover|toast)$': `${support}/bloom-overlays.ts`,
-    '^@oxy.so/bloom/(agent-avatar|chat-composer|chart-cards|composer-panel|ai-chat|stat-cards|media-controls|agent-limits-card|usage-card|agent-thinking|agent-progress|agent-log|composer-loader|conversation-sidebar|questionnaire)$': `${support}/bloom-products.ts`,
+    '^@oxy.so/bloom/(agent-avatar|chat-composer|chart-cards|composer-panel|ai-chat|stat-cards|media-controls|agent-limits-card|usage-card|agent-thinking|agent-progress|agent-log|composer-loader|conversation-sidebar|questionnaire|chat-screen|chat-list|message-media)$': `${support}/bloom-products.ts`,
     // Optional native modules: absent unless a test mocks one in.
     '^(expo|expo-blur|expo-glass-effect|expo-router|@expo/ui/swift-ui/modifiers)$': `${support}/absent/$1.ts`,
     '^@expo/ui/swift-ui$': `${support}/absent/@expo/ui/swift-ui/index.ts`,
