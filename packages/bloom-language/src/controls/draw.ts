@@ -7,6 +7,7 @@ import {
 } from 'react';
 
 import { type Child, isNode, type Modifier, type Node, type Press } from '../node';
+import type { TextTraits } from '../style';
 import type { ColorToken, Role } from '../tokens';
 
 /**
@@ -26,6 +27,12 @@ export interface ControlDraw {
   readonly testID: string | undefined;
   /** `.role()`: what the view is to assistive technology. */
   readonly role: Role | undefined;
+  /**
+   * The text environment the control is drawn in: its own `.font()`,
+   * `.weight()` and `.foreground()` over what it inherits, as a `Text` there
+   * reads them. For a component that sets text.
+   */
+  readonly text: TextTraits;
   /** The view's React key, for the component that is its outermost host. */
   readonly key: string | number | undefined;
   /**

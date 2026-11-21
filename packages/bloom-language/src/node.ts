@@ -34,12 +34,14 @@ import type { FileUploadKind } from './controls/file-upload';
 import type { VideoViewKind } from './controls/video-view';
 import type { SortableMediaKind } from './controls/sortable-media';
 import type { VideoPlaybackKind } from './controls/video-playback';
+import type { ExpandableTextKind } from './controls/expandable-text';
 import type { DropZoneKind } from './controls/drop-zone';
 import type { DragAction, DropTargetDragEvent } from '@oxy.so/bloom/drop-zone';
 import type { CollapsibleKind } from './controls/collapsible';
 import type { FactStripKind } from './controls/fact-strip';
 import type { ChoiceListKind } from './controls/choice-list';
 import type { ChoiceOptionBox } from './controls/choice-list';
+import type { ExpandableTextStyle } from './controls/expandable-text';
 import type { ColorSwatchPickerKind } from './controls/color-swatch-picker';
 import type { InputOtpKind } from './controls/input-otp';
 import type { OtpCharacters } from './tokens';
@@ -970,6 +972,7 @@ export type Modifier =
       readonly key: string;
       readonly value:
         | BloomAppearance
+        | ExpandableTextStyle
         | BadgeStyle
         | LoadingStyle
         | RadioStyle
@@ -1213,7 +1216,8 @@ export type NodeKind =
   | SortableMediaKind
   | HoverCardKind
   | AnimatedCheckKind
-  | FactStripKind;
+  | FactStripKind
+  | ExpandableTextKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1532,6 +1536,7 @@ export class Node {
   style(
     value:
       | BloomAppearance
+      | ExpandableTextStyle
       | BadgeStyle
       | LoadingStyle
       | RadioStyle

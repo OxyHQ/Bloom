@@ -73,3 +73,4 @@ export const VideoViewabilityScope = 'VideoViewabilityScope';
 export const HoverCard = 'HoverCard';
 export const HoverCardTrigger = 'HoverCardTrigger';
 export const HoverCardContent = 'HoverCardContent';
+export const ExpandableText = 'ExpandableText';

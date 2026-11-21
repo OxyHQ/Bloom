@@ -33,6 +33,7 @@ import { MEDIA_INSET_BORDERS } from './media-inset-border';
 import { FACT_STRIPS } from './fact-strip';
 import { SORTABLE_MEDIA } from './sortable-media';
 import { HOVER_CARDS } from './hover-card';
+import { EXPANDABLE_TEXTS } from './expandable-text';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -73,4 +74,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...FACT_STRIPS,
   ...SORTABLE_MEDIA,
   ...HOVER_CARDS,
+  ...EXPANDABLE_TEXTS,
 };
