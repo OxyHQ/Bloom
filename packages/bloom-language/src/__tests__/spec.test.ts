@@ -137,6 +137,11 @@ import type {
   TokensChartCardView,
 } from '../controls/chart-cards';
 import type {
+  ComposerPanelView,
+  ComposerPillView,
+  ComposerPanelStatusTabView,
+} from '../controls/composer-panel';
+import type {
   DatePickerView,
   DateRangePickerView,
   CalendarView,
@@ -581,7 +586,13 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<StageBarsCardView>, Of<'stageBarsCard'>>,
       Same<MethodsOf<StepsCardView>, Of<'stepsCard'>>,
       Same<MethodsOf<TokensChartCardView>, Of<'tokensChartCard'>>,
+      Same<MethodsOf<ComposerPanelView>, Of<'composerPanel'>>,
+      Same<MethodsOf<ComposerPillView>, Of<'composerPill'>>,
+      Same<MethodsOf<ComposerPanelStatusTabView>, Of<'composerPanelStatusTab'>>,
     ] = [
+      true,
+      true,
+      true,
       true,
       true,
       true,

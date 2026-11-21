@@ -51,6 +51,7 @@ import { VIEWPORTS } from './viewport';
 import { AGENT_AVATARS } from './agent-avatar';
 import { CHAT_COMPOSERS } from './chat-composer';
 import { CHART_CARDS } from './chart-cards';
+import { COMPOSER_PANELS } from './composer-panel';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -109,4 +110,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...AGENT_AVATARS,
   ...CHAT_COMPOSERS,
   ...CHART_CARDS,
+  ...COMPOSER_PANELS,
 };
