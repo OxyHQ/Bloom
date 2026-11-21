@@ -415,3 +415,14 @@ export type {
   RangeCalendarView,
   TimeFieldView,
 } from './controls/date-picker';
+
+// Ratings (controls/rating.tsx)
+export { Rating, RatingBar, RatingInput, RatingSummary } from './controls/rating';
+export type {
+  RatingBarView,
+  RatingInputView,
+  RatingLabels,
+  RatingSummaryLabels,
+  RatingSummaryView,
+  RatingView,
+} from './controls/rating';

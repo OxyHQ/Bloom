@@ -113,6 +113,11 @@ import type {
   RangeCalendarView,
   TimeFieldView,
 } from '../controls/date-picker';
+  RatingView,
+  RatingInputView,
+  RatingBarView,
+  RatingSummaryView,
+} from '../controls/rating';
 import type { ColorPreset, ContentFit } from '../tokens';
 import type {
   SettingsDateFieldView,
@@ -360,7 +365,15 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<CalendarView>, Of<'calendar'>>,
       Same<MethodsOf<RangeCalendarView>, Of<'rangeCalendar'>>,
       Same<MethodsOf<TimeFieldView>, Of<'timeField'>>,
+      Same<MethodsOf<RatingView>, Of<'rating'>>,
+      Same<MethodsOf<RatingInputView>, Of<'ratingInput'>>,
+      Same<MethodsOf<RatingBarView>, Of<'ratingBar'>>,
+      Same<MethodsOf<RatingSummaryView>, Of<'ratingSummary'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

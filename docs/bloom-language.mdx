@@ -1722,6 +1722,29 @@ locale). A picker adds `.placeholder()`, `.disabled()` and
 that form, `.step(minutes)`, `.hourFormat('12h' | '24h')` (what is drawn; the
 value stays 24h), `.size('sm' | 'md')`, `.placeholder()` and `.disabled()`.
 
+### Ratings
+
+```ts
+Rating(place.rating).count(place.reviews).size('sm')
+Rating(4.3).style('stars').starTint('warning').countTint('muted')
+RatingInput([score, setScore]).size('lg').label('Overall rating')
+RatingBar('Cleanliness', 4.9).valueLabel('4.9')
+RatingSummary(average, count, distribution)
+```
+
+Bloom's `Rating`, `RatingInput`, `RatingBar` and `RatingSummary`. `Rating(value)`
+takes a number or a string drawn as given (`null` draws `New`): `.count()`,
+`.countStyle('parenthesis' | 'reviews')`, `.size('sm' | 'md')`,
+`.style('compact' | 'stars')`, `.showsValue(false)`, `.starSize(space)`,
+`.fillValue(n)` (what the stars fill to, apart from a localised string),
+`.labels({ reviews, new })`, and its colours as roles: `.tint()` (stars and
+value, over a brand colour), `.starTint()`, `.countTint()`, `.emptyTint()`.
+`RatingInput([value, set])` takes `.max()`, `.size('sm' | 'md' | 'lg')`,
+`.disabled()` and `.starLabel(fn)`; name it with `.label()`. `RatingBar(label,
+value)` takes `.max()`, `.valueLabel()`, `.labelWidth(space)` and `.reveal()`;
+`RatingSummary(average, count, distribution)` takes `.labels({ count, outOf,
+noRatings })`.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2148,7 +2171,7 @@ and `@oxy.so/bloom-data` beside it.
   `BottomSheet` is Bloom's `Dialog`; Bloom's sheet has no detents, so neither
   does the node.
 - Generic components (see [Generic components](#generic-components)), drawn as
-  Bloom's own: the date and time pickers.
+  Bloom's own: the date and time pickers, ratings.
 
 **Not built**
 

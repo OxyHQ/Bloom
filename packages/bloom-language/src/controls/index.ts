@@ -5,6 +5,7 @@ import { OVERLAYS } from './overlays';
 import { CONTAINERS } from './containers';
 import { SETTINGS } from './settings';
 import { DATE_PICKERS } from './date-picker';
+import { RATINGS } from './rating';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -17,4 +18,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...CONTAINERS,
   ...SETTINGS,
   ...DATE_PICKERS,
+  ...RATINGS,
 };
