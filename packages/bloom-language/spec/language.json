@@ -512,7 +512,14 @@
     "playButtonStyle": ["accent", "inverse", "plain"],
     "playbackTimes": ["inline", "below"],
     "agentThinkingStyle": ["wave", "spin", "stars", "infinity"],
-    "agentThinkingTone": ["subtle", "default", "primary", "accent"]
+    "agentThinkingTone": ["subtle", "default", "primary", "accent"],
+    "chatBackgroundStyle": ["plain", "pattern", "gradient", "image"],
+    "chatDateHeaderStyle": ["floating", "inline"],
+    "chatInfoPanelStyle": ["pane", "screen"],
+    "chatStatusTone": ["muted", "accent"],
+    "messageTone": ["incoming", "outgoing"],
+    "fileMessageStyle": ["bubble", "compact"],
+    "videoMessageStyle": ["thumbnail", "videoNote"]
   },
   "glass": {
     "$comment": [
@@ -796,7 +803,10 @@
     "portrait": ["value?"],
     "iconSize": ["iconSize"],
     "surface": ["value?"],
-    "activeTint": ["color"]
+    "activeTint": ["color"],
+    "bubbleTint": ["color"],
+    "contentTint": ["color"],
+    "placeholderTint": ["color"]
   },
   "universal": [
     "padding",
@@ -1270,7 +1280,86 @@
     "agentLogWorkingRow": { "constructors": ["AgentLogWorkingRow"], "modifiers": [] },
     "composerLoader": { "constructors": ["ComposerLoader"], "modifiers": [] },
     "conversationSidebar": { "constructors": ["ConversationSidebar"], "modifiers": [] },
-    "questionnaire": { "constructors": ["Questionnaire"], "modifiers": [] }
+    "questionnaire": { "constructors": ["Questionnaire"], "modifiers": [] },
+    "chatBackground": {
+      "constructors": ["ChatBackground"],
+      "modifiers": ["style", "tint"],
+      "style": "chatBackgroundStyle",
+      "tint": "color"
+    },
+    "chatDateHeader": {
+      "constructors": ["ChatDateHeader"],
+      "modifiers": ["style"],
+      "style": "chatDateHeaderStyle"
+    },
+    "chatEmptyState": { "constructors": ["ChatEmptyState"], "modifiers": [] },
+    "chatHeader": {
+      "constructors": ["ChatHeader"],
+      "modifiers": ["tint"],
+      "tint": "chatStatusTone"
+    },
+    "chatInfoPanel": {
+      "constructors": ["ChatInfoPanel"],
+      "modifiers": ["style"],
+      "style": "chatInfoPanelStyle"
+    },
+    "pinnedMessageBar": { "constructors": ["PinnedMessageBar"], "modifiers": [] },
+    "scrollToBottomButton": { "constructors": ["ScrollToBottomButton"], "modifiers": [] },
+    "chatFolderTabs": { "constructors": ["ChatFolderTabs"], "modifiers": ["spacing"] },
+    "chatSearchField": { "constructors": ["ChatSearchField"], "modifiers": [] },
+    "chatSearchResults": { "constructors": ["ChatSearchResults"], "modifiers": [] },
+    "storiesRow": { "constructors": ["StoriesRow"], "modifiers": ["spacing"] },
+    "storyRing": { "constructors": ["StoryRing"], "modifiers": [] },
+    "typingDots": { "constructors": ["TypingDots"], "modifiers": ["tint"], "tint": "color" },
+    "contactMessage": {
+      "constructors": ["ContactMessage"],
+      "modifiers": ["tint", "bubbleTint", "contentTint"],
+      "tint": "messageTone"
+    },
+    "documentGrid": { "constructors": ["DocumentGrid"], "modifiers": [] },
+    "fileMessage": {
+      "constructors": ["FileMessage"],
+      "modifiers": ["style", "tint", "bubbleTint", "contentTint"],
+      "style": "fileMessageStyle",
+      "tint": "messageTone"
+    },
+    "gifMessage": {
+      "constructors": ["GifMessage"],
+      "modifiers": ["tint", "bubbleTint", "contentTint", "placeholderTint"],
+      "tint": "messageTone"
+    },
+    "imageMessage": {
+      "constructors": ["ImageMessage"],
+      "modifiers": ["tint", "bubbleTint", "contentTint", "placeholderTint"],
+      "tint": "messageTone"
+    },
+    "locationMessage": {
+      "constructors": ["LocationMessage"],
+      "modifiers": ["tint", "bubbleTint", "contentTint"],
+      "tint": "messageTone"
+    },
+    "pollMessage": {
+      "constructors": ["PollMessage"],
+      "modifiers": ["tint", "bubbleTint", "contentTint"],
+      "tint": "messageTone"
+    },
+    "sharedMediaGrid": { "constructors": ["SharedMediaGrid"], "modifiers": ["columns", "spacing"] },
+    "stickerMessage": {
+      "constructors": ["StickerMessage"],
+      "modifiers": ["tint", "bubbleTint", "contentTint"],
+      "tint": "messageTone"
+    },
+    "videoMessage": {
+      "constructors": ["VideoMessage"],
+      "modifiers": ["style", "tint", "bubbleTint", "contentTint", "placeholderTint"],
+      "style": "videoMessageStyle",
+      "tint": "messageTone"
+    },
+    "voiceMessage": {
+      "constructors": ["VoiceMessage"],
+      "modifiers": ["tint", "bubbleTint", "contentTint"],
+      "tint": "messageTone"
+    }
   },
   "sfSymbols": {
     "$comment": [
