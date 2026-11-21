@@ -374,6 +374,7 @@ export interface ValueModifiers {
   iconOnly: true;
   dragTranslation: MotionValue;
   indicator: SelectionIndicator;
+  fade: ColorName;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1582,6 +1583,9 @@ export class Node {
   }
   indicator(value: SelectionIndicator): Node {
     return this.set('indicator', value);
+  }
+  fade(value: ColorName): Node {
+    return this.set('fade', value);
   }
 }
 

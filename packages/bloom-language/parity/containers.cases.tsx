@@ -40,7 +40,7 @@ import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import { navigate } from '../src/router/nodes';
-import type { ParityCase } from './support/cases';
+import { type ParityCase, Themed } from './support/cases';
 
 const onPress = () => {};
 const setTab = (_value: string) => {};
@@ -689,6 +689,21 @@ const more: ParityCase[] = [
           Week
         </Chip>
       </ChipRow>
+    ),
+  },
+  {
+    name: 'ChipRow fading into the card',
+    language: () =>
+      toElement(C.ChipRow(C.Chip(L.Text('All')), C.Chip(L.Text('Unread'))).fade('card')),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <ChipRow fadeColor={c.card}>
+            <Chip>All</Chip>
+            <Chip>Unread</Chip>
+          </ChipRow>
+        )}
+      </Themed>
     ),
   },
   {
