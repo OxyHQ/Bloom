@@ -1036,7 +1036,9 @@
     "showsInfo": [],
     "surfaceType": ["videoSurface"],
     "flightId": ["value"],
-    "videoSlot": ["value"]
+    "videoSlot": ["value"],
+    "divider": ["value?"],
+    "flush": ["value?"]
   },
   "universal": [
     "padding",
@@ -2031,7 +2033,13 @@
       "constructors": ["AvatarFlightLayer"],
       "universal": false,
       "modifiers": []
-    }
+    },
+    "inputGroup": {
+      "constructors": ["InputGroup"],
+      "modifiers": ["size", "invalid", "disabled"],
+      "size": "controlSize"
+    },
+    "inputGroupAddon": { "constructors": ["InputGroupAddon"], "modifiers": ["divider", "flush"] }
   },
   "sfSymbols": {
     "$comment": [

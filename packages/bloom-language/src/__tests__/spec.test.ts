@@ -131,7 +131,13 @@ import type { PhoneInputView } from '../controls/phone-input';
 import type { AvatarAnchorView, AvatarFlightLayerView } from '../controls/avatar-flight';
 import type { ExpandableTextView } from '../controls/expandable-text';
 import type { CategoryBarView } from '../controls/category-bar';
-import type { MediaFlightLayerView, MediaFlightHostView, MediaSurfaceView, MediaPosterView, EmptyMediaSurfaceView } from '../controls/media-flight';
+import type {
+  MediaFlightLayerView,
+  MediaFlightHostView,
+  MediaSurfaceView,
+  MediaPosterView,
+  EmptyMediaSurfaceView,
+} from '../controls/media-flight';
 import type { FactStripView, FactView } from '../controls/fact-strip';
 import type { ChoiceListView } from '../controls/choice-list';
 import type {

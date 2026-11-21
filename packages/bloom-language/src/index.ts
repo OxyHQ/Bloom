@@ -426,8 +426,22 @@ export { CompositionBar } from './controls/composition-bar';
 export type { CompositionBarView, CompositionSegment } from './controls/composition-bar';
 
 // Media flights (controls/media-flight.tsx)
-export { EmptyMediaSurface, MediaFlightHost, MediaFlightLayer, MediaPoster, MediaSurface } from './controls/media-flight';
-export type { EmptyMediaSurfaceView, MediaFit, MediaFlightHostView, MediaFlightLayerView, MediaPosterView, MediaSurfaceView, VideoSlot } from './controls/media-flight';
+export {
+  EmptyMediaSurface,
+  MediaFlightHost,
+  MediaFlightLayer,
+  MediaPoster,
+  MediaSurface,
+} from './controls/media-flight';
+export type {
+  EmptyMediaSurfaceView,
+  MediaFit,
+  MediaFlightHostView,
+  MediaFlightLayerView,
+  MediaPosterView,
+  MediaSurfaceView,
+  VideoSlot,
+} from './controls/media-flight';
 
 // Avatar flights (controls/avatar-flight.tsx)
 export { AvatarAnchor, AvatarFlightLayer } from './controls/avatar-flight';
