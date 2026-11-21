@@ -29,8 +29,8 @@ Alia `841e8843a`, Allo `ba28b38`, Astro `8ae8386`, Atlas `037990e`, Authenticato
 | Redundant in the language | 32 | 513 | 1.0% |
 | Needs a named token (raw value) | 300 | 725 | 1.3% |
 | An app’s own token (a brand colour) | 30 | 76 | 0.1% |
-| Maps to the motion layer | 9 | 105 | 0.2% |
-| Needs a modifier the language lacks | 30 | 194 | 0.4% |
+| Maps to the motion layer | 13 | 236 | 0.4% |
+| Needs a modifier the language lacks | 26 | 63 | 0.1% |
 | An app’s own class | 450 | 1753 | 3.3% |
 
 53720 uses of 1920 utilities. Variant prefixes are `when(condition, …)`
@@ -840,15 +840,18 @@ when the fill is a role's colour.
 ## Maps to the motion layer
 
 Bloom's motion engine (`@oxy.so/bloom/motion`) plays the language's motion
-modifiers (`.animation()`, `.transition()`, `.keyframes()`). What it plays
-is here. Tailwind's durations and curves are none of Bloom's motion tokens
-(its default curve is `cubic-bezier(0.4, 0, 0.2, 1)`), so each is an app's own
-motion, declared with its exact numbers (*An app's own token*).
-What the engine has no equivalent for (a colour transition, a loop, a delay, a
-transform origin) is under *Needs a modifier the language lacks*.
+modifiers (`.animation()`, `.transition()`, `.keyframes()`,
+`.repeatForever()`, `.delay()`, `.anchor()`). What it plays is here.
+Tailwind's durations and curves are none of Bloom's motion tokens (its default
+curve is `cubic-bezier(0.4, 0, 0.2, 1)`), so each is an app's own motion,
+declared with its exact numbers (*An app's own token*); its spin and pulse are
+the language's loops, and its delays the duration tokens. What the engine has
+no equivalent for (a transition of every property, a layout transition, a
+bounce or a ping) is under *Needs a modifier the language lacks*.
 
 | Utility | Language | Uses | Apps |
 | --- | --- | ---: | ---: |
+| `transition-colors` | .animation(motion): a change of the view’s colours (fill, border, outline, ink) plays with motion (the motion layer) | 116 | 7 |
 | `transition-transform` | .animation(motion): a change of the view’s offset, scale or rotation plays with motion (the motion layer) | 16 | 3 |
 | `animate-in` | .transition(…): its insertion, the fade, zoom and slide beside it (the motion layer) | 14 | 3 |
 | `fade-in-0` | opacity, the insertion of .transition(…) (the motion layer) | 14 | 3 |
@@ -858,24 +861,23 @@ transform origin) is under *Needs a modifier the language lacks*.
 | `zoom-out-95` | scale('95'), the removal of .transition(…) (the motion layer) | 9 | 2 |
 | `ease-linear` | easing 'linear' in the view’s motion (Bloom’s linear curve; the motion layer) | 8 | 2 |
 | `transition-opacity` | .animation(motion): a change of the view’s opacity plays with motion (the motion layer) | 8 | 3 |
+| `animate-pulse` | .repeatForever('pulse'): Tailwind’s animate-pulse, frame for frame, repeating (the motion layer) | 6 | 3 |
+| `transition` | .animation(motion): a change of the view’s colours, opacity and geometry plays with motion; a shadow or a filter changes at once (the motion layer) | 6 | 5 |
+| `animate-spin` | .repeatForever('spin'): Tailwind’s animate-spin, frame for frame, repeating (the motion layer) | 3 | 3 |
 
 ## Needs a modifier the language lacks
 
 | Utility | Language | Uses | Apps |
 | --- | --- | ---: | ---: |
-| `transition-colors` | a colour transition: the motion engine animates geometry and opacity, not colour | 116 | 7 |
-| `transition-all` | a transition of every property: .animation(motion) plays geometry and opacity, not colours or shadows | 7 | 4 |
-| `animate-pulse` | a looping animation (animate-pulse): the motion engine plays keyframes on a trigger, never in a loop | 6 | 3 |
-| `transition` | a transition of every property: .animation(motion) plays geometry and opacity, not colours or shadows | 6 | 5 |
+| `transition-all` | a transition of every property: .animation(motion) plays colours, opacity and geometry, not a frame or a shadow | 7 | 4 |
 | `ring-offset-background` | a ring’s gap colour (ring-offset-<colour>) | 5 | 3 |
 | `align-middle` | `align` (no modifier) | 4 | 2 |
-| `animate-spin` | a looping animation (animate-spin): the motion engine plays keyframes on a trigger, never in a loop | 3 | 3 |
 | `border-y` | a border on two sides | 3 | 3 |
 | `content-start` | the alignment of wrapped lines (align-content) | 3 | 2 |
 | `fill-foreground` | `fill` (no modifier) | 3 | 3 |
 | `isolate` | `isolate` (no modifier) | 3 | 2 |
-| `origin-(--radix-dropdown-menu-content-transform-origin)` | a transform origin: a view scales and rotates about its centre | 3 | 2 |
-| `origin-(--radix-tooltip-content-transform-origin)` | a transform origin: a view scales and rotates about its centre | 3 | 3 |
+| `origin-(--radix-dropdown-menu-content-transform-origin)` | a transform origin a library measures (a popover’s anchor): the language’s anchors are named points | 3 | 2 |
+| `origin-(--radix-tooltip-content-transform-origin)` | a transform origin a library measures (a popover’s anchor): the language’s anchors are named points | 3 | 3 |
 | `backdrop-blur-md` | `backdrop` (no modifier) | 2 | 2 |
 | `resize-none` | `resize` (no modifier) | 2 | 2 |
 | `text-balance` | text wrapping (balance, pretty) | 2 | 2 |
