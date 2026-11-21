@@ -107,6 +107,7 @@ import type {
   TabView,
   TextView,
 } from '../node';
+import type { AgentAvatarView } from '../controls/agent-avatar';
 import type {
   DatePickerView,
   DateRangePickerView,
@@ -527,7 +528,9 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<DataTableFilterView>, Of<'dataTableFilter'>>,
       Same<MethodsOf<DataTableSearchView>, Of<'dataTableSearch'>>,
       Same<MethodsOf<DataTableSelectView>, Of<'dataTableSelect'>>,
+      Same<MethodsOf<AgentAvatarView>, Of<'agentAvatar'>>,
     ] = [
+      true,
       true,
       true,
       true,
