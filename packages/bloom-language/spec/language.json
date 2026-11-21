@@ -360,10 +360,23 @@
   "enums": {
     "edge": ["all", "horizontal", "vertical", "top", "bottom", "leading", "trailing"],
     "borderEdge": ["all", "top", "bottom", "leading", "trailing"],
-    "role": ["button", "link", "header", "image", "text", "none"],
+    "role": [
+      "button",
+      "link",
+      "header",
+      "image",
+      "text",
+      "none",
+      "checkbox",
+      "radio",
+      "tab",
+      "radiogroup",
+      "tablist",
+      "list"
+    ],
     "buttonShape": ["circle", "pill", "fit"],
     "linkTone": ["primary", "secondary", "text"],
-    "density": ["default", "compact"],
+    "density": ["default", "compact", "comfortable"],
     "appearance": ["solid", "subtle", "outline", "plain"],
     "tone": [
       "neutral",
@@ -572,7 +585,20 @@
     "labelSize": ["xs", "sm", "md"],
     "radioStyle": ["default", "card", "chip", "swatch"],
     "segmentedStyle": ["solid", "plain"],
-    "searchCollapse": ["auto"]
+    "searchCollapse": ["auto"],
+    "chipStyle": ["solid", "subtle", "outline", "plain", "inverted"],
+    "accentTone": [
+      "default",
+      "primary",
+      "vivid",
+      "secondary",
+      "tertiary",
+      "success",
+      "warning",
+      "error",
+      "info"
+    ],
+    "selectionIndicator": ["check", "radio"]
   },
   "glass": {
     "$comment": [
@@ -925,7 +951,17 @@
     "reconnectingMessage": ["value"],
     "restoredMessage": ["value"],
     "reconnectingDelay": ["value"],
-    "restoredDuration": ["value"]
+    "restoredDuration": ["value"],
+    "contentInset": ["space"],
+    "inset": ["space"],
+    "illustration": ["value"],
+    "suggestions": ["children"],
+    "suggestionsLabel": ["value"],
+    "onReorder": ["value"],
+    "reorderable": ["value?"],
+    "iconOnly": [],
+    "dragTranslation": ["motionValue"],
+    "indicator": ["selectionIndicator"]
   },
   "universal": [
     "padding",
@@ -1311,13 +1347,14 @@
         "destructive",
         "selected",
         "active",
-        "highlighted"
+        "highlighted",
+        "density"
       ],
       "size": "controlSize"
     },
     "groupedSection": {
       "constructors": ["GroupedSection"],
-      "modifiers": ["title", "caption", "style", "separator", "radius"],
+      "modifiers": ["title", "caption", "style", "separator", "radius", "density"],
       "style": "groupedSectionStyle"
     },
     "groupedSectionItem": {
@@ -1335,19 +1372,39 @@
         "onPress",
         "label",
         "hint",
-        "testID"
+        "testID",
+        "padding",
+        "frame",
+        "grow",
+        "shrink",
+        "alignSelf",
+        "background",
+        "border",
+        "corner",
+        "opacity"
       ]
     },
     "chip": {
       "constructors": ["Chip"],
       "modifiers": ["style", "tint", "size", "hue", "toggle", "selected", "onClose", "disabled"],
-      "style": "appearance",
+      "style": "chipStyle",
       "tint": "tone",
       "size": "chipSize"
     },
     "emptyState": {
       "constructors": ["EmptyState"],
-      "modifiers": ["icon", "description", "media", "style", "action", "secondaryAction"],
+      "modifiers": [
+        "icon",
+        "description",
+        "media",
+        "style",
+        "action",
+        "secondaryAction",
+        "illustration",
+        "suggestions",
+        "suggestionsLabel",
+        "caption"
+      ],
       "style": "emptyStateStyle"
     },
     "admonition": {
@@ -1358,13 +1415,22 @@
     },
     "tabs": {
       "constructors": ["Tabs"],
-      "modifiers": ["style", "fullWidth"],
+      "modifiers": ["style", "fullWidth", "onReorder", "dragTranslation"],
       "style": "tabsStyle"
     },
     "tabItem": {
       "constructors": ["TabItem"],
       "universal": false,
-      "modifiers": ["icon", "count", "disabled", "testID"]
+      "modifiers": [
+        "icon",
+        "count",
+        "disabled",
+        "testID",
+        "iconOnly",
+        "reorderable",
+        "trailing",
+        "onLongPress"
+      ]
     },
     "kbd": {
       "constructors": ["Kbd"],
@@ -1374,7 +1440,24 @@
     "errorBoundary": {
       "constructors": ["ErrorBoundary"],
       "universal": false,
-      "modifiers": ["title", "message", "retryLabel", "resetKey", "onError", "fallback", "testID"]
+      "modifiers": [
+        "title",
+        "message",
+        "retryLabel",
+        "resetKey",
+        "onError",
+        "fallback",
+        "testID",
+        "padding",
+        "frame",
+        "grow",
+        "shrink",
+        "alignSelf",
+        "background",
+        "border",
+        "corner",
+        "opacity"
+      ]
     },
     "embed": {
       "constructors": ["Embed"],
@@ -1522,6 +1605,48 @@
       "constructors": ["OptionGroup"],
       "universal": false,
       "modifiers": []
+    },
+    "chipRow": {
+      "constructors": ["ChipRow"],
+      "modifiers": ["spacing", "contentInset", "disabled"]
+    },
+    "cappedChipRow": {
+      "constructors": ["CappedChipRow"],
+      "modifiers": ["spacing", "lines"]
+    },
+    "groupedSectionIcon": {
+      "constructors": ["GroupedSectionIcon"],
+      "universal": false,
+      "modifiers": ["tint", "testID"],
+      "tint": "accentTone"
+    },
+    "groupedSectionDivider": {
+      "constructors": ["GroupedSectionDivider"],
+      "universal": false,
+      "modifiers": ["inset"]
+    },
+    "groupedSectionCollapse": {
+      "constructors": ["GroupedSectionCollapse"],
+      "universal": false,
+      "modifiers": ["testID"]
+    },
+    "tabContent": {
+      "constructors": ["TabContent"],
+      "modifiers": []
+    },
+    "selectionCard": {
+      "constructors": ["SelectionCard"],
+      "modifiers": [
+        "toggle",
+        "selected",
+        "description",
+        "icon",
+        "indicator",
+        "illustration",
+        "density",
+        "disabled",
+        "invalid"
+      ]
     }
   },
   "sfSymbols": {
