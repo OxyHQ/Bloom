@@ -764,7 +764,10 @@
     "mapMarkerState": ["default", "active", "visited"],
     "mapPriceMarkerSize": ["default", "compact"],
     "followButtonSize": ["sm", "md", "lg"],
-    "shelfLayout": ["row", "grid", "paged"]
+    "shelfLayout": ["row", "grid", "paged"],
+    "priceScale": ["linear", "log"],
+    "featureFilterStyle": ["chips", "checkboxes"],
+    "filterTriggerSize": ["sm", "md", "lg"]
   },
   "glass": {
     "$comment": [
@@ -3363,7 +3366,31 @@
     "cardFormCountry": { "constructors": ["CardFormCountry"], "modifiers": ["disabled"] },
     "cardFormPostcode": { "constructors": ["CardFormPostcode"], "modifiers": ["disabled"] },
     "cardFormHostedField": { "constructors": ["CardFormHostedField"], "modifiers": ["disabled"] },
-    "checkoutSheet": { "constructors": ["CheckoutSheet"], "modifiers": [] }
+    "checkoutSheet": { "constructors": ["CheckoutSheet"], "modifiers": [] },
+    "filterSection": { "constructors": ["FilterSection"], "modifiers": ["dividers"] },
+    "priceRangeFilter": {
+      "constructors": ["PriceRangeFilter"],
+      "modifiers": ["style", "disabled"],
+      "style": "priceScale"
+    },
+    "countFilter": { "constructors": ["CountFilter"], "modifiers": ["disabled"] },
+    "toggleChipGroup": { "constructors": ["ToggleChipGroup"], "modifiers": ["disabled"] },
+    "amenityFilter": { "constructors": ["AmenityFilter"], "modifiers": ["disabled"] },
+    "switchFilterRow": { "constructors": ["SwitchFilterRow"], "modifiers": ["disabled"] },
+    "filterFooter": { "constructors": ["FilterFooter"], "modifiers": ["loading"] },
+    "filterTriggerButton": {
+      "constructors": ["FilterTriggerButton"],
+      "modifiers": ["size", "disabled"],
+      "size": "filterTriggerSize"
+    },
+    "areaRangeFilter": { "constructors": ["AreaRangeFilter"], "modifiers": ["disabled"] },
+    "availabilityFilter": { "constructors": ["AvailabilityFilter"], "modifiers": ["disabled"] },
+    "featureFilter": {
+      "constructors": ["FeatureFilter"],
+      "modifiers": ["style", "disabled"],
+      "style": "featureFilterStyle"
+    },
+    "floorFilter": { "constructors": ["FloorFilter"], "modifiers": ["disabled"] }
   },
   "sfSymbols": {
     "$comment": [
