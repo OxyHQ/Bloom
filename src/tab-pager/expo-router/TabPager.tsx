@@ -273,10 +273,18 @@ export function TabPager({
     barPositions,
   ]);
 
-  // Warm the neighbours of the resting page on the frame AFTER it settled,
-  // never on the frame that is already rendering the destination.
+  // Warm the neighbours of the resting page once the JS thread is idle after it
+  // settled: never on the frame that is already rendering the destination, and
+  // at launch not while the first page is still mounting its content (a
+  // neighbour mounted then competes with the first page's first paint). A swipe
+  // admits them at once (below). Without idle callbacks, the frame after.
   useEffect(() => {
-    const frame = requestAnimationFrame(() => admit(neighbourKeys(settledPage)));
+    const warm = () => admit(neighbourKeys(settledPage));
+    if (typeof requestIdleCallback === 'function') {
+      const idle = requestIdleCallback(warm);
+      return () => cancelIdleCallback(idle);
+    }
+    const frame = requestAnimationFrame(warm);
     return () => cancelAnimationFrame(frame);
   }, [settledPage, admit, neighbourKeys]);
 
