@@ -1578,6 +1578,8 @@ export interface LottieView extends ViewModifiers<LottieView> {
   paused(value: boolean): LottieView;
   /** What draws in its place where it cannot play (reduced motion, no player). */
   fallback(value: Child): LottieView;
+  /** Hidden from assistive technology: its container already names it (a sticker message's press). */
+  decorative(): LottieView;
 }
 export interface IconView extends ViewModifiers<IconView> {
   size(value: IconSizeToken): IconView;

@@ -586,3 +586,15 @@ fn meters_and_progress_bars_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn a_sticker_is_checked() {
+    let imports = "import { Lottie, Image } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (u, s) => Lottie(u).loop().paused(false).fallback(Image(s, 'Party')).frame({ width: '96' }).decorative();\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = (u) => Lottie(u).decorative(true);\n");
+    assert_eq!(output.diagnostics[0].message, ".decorative() takes 0 argument(s), not 1");
+}
