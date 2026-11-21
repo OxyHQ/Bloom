@@ -42,6 +42,20 @@
         "default": "./lib/commonjs/sqlite.js"
       }
     },
+    "./indexeddb": {
+      "react-native": {
+        "types": "./lib/typescript/module/indexeddb.d.ts",
+        "default": "./src/indexeddb.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/indexeddb.d.ts",
+        "default": "./lib/module/indexeddb.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/indexeddb.d.ts",
+        "default": "./lib/commonjs/indexeddb.js"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -87,5 +101,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "packageManager": "bun@1.4.3"
+  "packageManager": "bun@1.4.3",
+  "devDependencies": {
+    "fake-indexeddb": "6.0.1"
+  }
 }

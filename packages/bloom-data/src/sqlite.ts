@@ -132,6 +132,8 @@ function parseList(rows: readonly ListRow[]): StoredList | null {
  */
 export function sqlitePersister(
   open: () => AsyncDatabase | SyncDatabase | Promise<AsyncDatabase>,
+  /** Deletes the database file (`() => SQLite.deleteDatabaseAsync(name)`); without it, `destroy` empties it. */
+  remove?: () => Promise<void>,
 ): Persister {
   let database: Promise<AsyncDatabase> | undefined;
   let syncDatabase: SyncDatabase | undefined;
@@ -293,6 +295,20 @@ export function sqlitePersister(
       database = undefined;
       syncDatabase = undefined;
       await handle.closeAsync();
+    },
+
+    async destroy() {
+      if (remove) {
+        await this.close();
+        await remove();
+        return;
+      }
+      const handle = await db();
+      await handle.execAsync(SCHEMA);
+      await handle.execAsync(
+        'DELETE FROM bloom_records; DELETE FROM bloom_lists; DELETE FROM bloom_versions;',
+      );
+      await this.close();
     },
   };
 }

@@ -56,6 +56,12 @@ export interface Accounts {
    */
   open(account: string): Store;
   close(): Promise<void>;
+  /**
+   * Forgets an account on this device: closes its store if it is open, then
+   * deletes its durable copy. For sign-out, so nothing of the account stays
+   * behind.
+   */
+  forget(account: string): Promise<void>;
 }
 
 export interface AccountOptions extends Omit<StoreOptions, 'persister'> {
@@ -88,6 +94,10 @@ export function createAccounts(options: AccountOptions = {}): Accounts {
       account = undefined;
       if (active === previous) setActiveStore(undefined);
       await previous?.close();
+    },
+    async forget(forgotten) {
+      if (account === forgotten) await this.close();
+      await options.persister?.(forgotten)?.destroy();
     },
   };
 }
