@@ -27,6 +27,8 @@ import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 import type { TagFieldKind } from './controls/tag-field';
+import type { ContextMenuKind } from './controls/context-menu';
+import type { ContextMenuAnchor } from '@oxy.so/bloom/context-menu';
 import type { FileUploadKind } from './controls/file-upload';
 import type { VideoViewKind } from './controls/video-view';
 import type { ColorSwatchPickerKind } from './controls/color-swatch-picker';
@@ -762,6 +764,9 @@ export interface ValueModifiers {
   length: number;
   characters: OtpCharacters;
   onComplete: (code: string) => void;
+  // Context menus (controls/context-menu.tsx)
+  presentedAt: Binding<ContextMenuAnchor | null>;
+
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1154,6 +1159,7 @@ export type NodeKind =
   | VideoViewKind
   | InputOtpKind
   | ColorSwatchPickerKind
+  | ContextMenuKind
   | AnimatedCheckKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
@@ -2808,6 +2814,11 @@ export class Node {
   onComplete(value: (code: string) => void): Node {
     return this.set('onComplete', value);
   }
+  // Context menus (controls/context-menu.tsx)
+  presentedAt(value: Binding<ContextMenuAnchor | null>): Node {
+    return this.set('presentedAt', value);
+  }
+
 }
 
 const FRAME_KEYS = OBJECTS.frame.keys;

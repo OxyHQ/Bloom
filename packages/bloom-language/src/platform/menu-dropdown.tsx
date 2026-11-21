@@ -4,7 +4,7 @@
  * binary, an Android before 13, an iOS without `@expo/ui`). Its content mounts
  * only while the menu is open.
  */
-import { Fragment, useCallback, useState, type ReactNode } from 'react';
+import { Fragment, useCallback, useState, type ComponentType, type ReactNode } from 'react';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -17,6 +17,10 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
+  type DropdownMenuCheckboxItemProps,
+  type DropdownMenuItemProps,
+  type DropdownMenuSubContentProps,
+  type DropdownMenuSubTriggerProps,
 } from '@oxy.so/bloom/dropdown-menu';
 
 import { Icon } from '../primitives';
@@ -62,7 +66,7 @@ function DropdownRows({
   );
   return (
     <DropdownMenuContent label={label} testID={testID}>
-      {drawRows(data, leading)}
+      {drawMenuRows(data, leading, DROPDOWN_PARTS)}
     </DropdownMenuContent>
   );
 }
@@ -76,44 +80,74 @@ export function glyph(icon: IconComponent, destructive: boolean): Child {
 
 type Leading = (icon: IconComponent | undefined, destructive: boolean) => ReactNode;
 
-function drawRows(rows: readonly MenuRowData[], leading: Leading): ReactNode[] {
+/**
+ * The row parts of one of Bloom's menus. Its dropdown, context and menubar menus
+ * draw the same rows, with the same props, each under its own part names.
+ */
+export interface MenuParts {
+  Item: ComponentType<DropdownMenuItemProps>;
+  CheckboxItem: ComponentType<DropdownMenuCheckboxItemProps>;
+  Label: ComponentType<{ children?: ReactNode }>;
+  Separator: ComponentType<Record<string, never>>;
+  Group: ComponentType<{ children?: ReactNode }>;
+  Sub: ComponentType<{ children?: ReactNode }>;
+  SubTrigger: ComponentType<DropdownMenuSubTriggerProps>;
+  SubContent: ComponentType<DropdownMenuSubContentProps>;
+}
+
+const DROPDOWN_PARTS: MenuParts = {
+  Item: DropdownMenuItem,
+  CheckboxItem: DropdownMenuCheckboxItem,
+  Label: DropdownMenuLabel,
+  Separator: DropdownMenuSeparator,
+  Group: DropdownMenuGroup,
+  Sub: DropdownMenuSub,
+  SubTrigger: DropdownMenuSubTrigger,
+  SubContent: DropdownMenuSubContent,
+};
+
+/** Rows as the parts of one of Bloom's menus; a section is set apart from the rows beside it. */
+export function drawMenuRows(
+  rows: readonly MenuRowData[],
+  leading: Leading,
+  parts: MenuParts,
+): ReactNode[] {
   return rows.map((row, index) => (
     <Fragment key={row.id}>
-      {setApart(rows, index) ? <DropdownMenuSeparator /> : null}
-      {drawRow(row, leading)}
+      {setApart(rows, index) ? <parts.Separator /> : null}
+      {drawRow(row, leading, parts)}
     </Fragment>
   ));
 }
 
-function drawRow(row: MenuRowData, leading: Leading): ReactNode {
+function drawRow(row: MenuRowData, leading: Leading, parts: MenuParts): ReactNode {
+  const { Item, CheckboxItem, Label, Separator, Group, Sub, SubTrigger, SubContent } = parts;
   switch (row.kind) {
     case 'divider':
-      return <DropdownMenuSeparator />;
+      return <Separator />;
     case 'section':
       return (
-        <DropdownMenuGroup>
-          {row.title ? <DropdownMenuLabel>{row.title}</DropdownMenuLabel> : null}
-          {drawRows(row.rows, leading)}
-        </DropdownMenuGroup>
+        <Group>
+          {row.title ? <Label>{row.title}</Label> : null}
+          {drawMenuRows(row.rows, leading, parts)}
+        </Group>
       );
     case 'submenu':
       return (
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger
+        <Sub>
+          <SubTrigger
             leading={leading(row.icon, false)}
             disabled={row.disabled}
             testID={row.testID}
           >
             {row.title}
-          </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent label={row.title}>
-            {drawRows(row.rows, leading)}
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
+          </SubTrigger>
+          <SubContent label={row.title}>{drawMenuRows(row.rows, leading, parts)}</SubContent>
+        </Sub>
       );
     case 'item':
       return row.checked === undefined ? (
-        <DropdownMenuItem
+        <Item
           leading={leading(row.icon, row.destructive)}
           variant={row.destructive ? 'destructive' : 'default'}
           disabled={row.disabled}
@@ -122,9 +156,9 @@ function drawRow(row: MenuRowData, leading: Leading): ReactNode {
           testID={row.testID}
         >
           {row.title}
-        </DropdownMenuItem>
+        </Item>
       ) : (
-        <DropdownMenuCheckboxItem
+        <CheckboxItem
           leading={leading(row.icon, row.destructive)}
           checked={row.checked}
           onCheckedChange={() => row.onPress?.()}
@@ -133,7 +167,7 @@ function drawRow(row: MenuRowData, leading: Leading): ReactNode {
           testID={row.testID}
         >
           {row.title}
-        </DropdownMenuCheckboxItem>
+        </CheckboxItem>
       );
   }
 }
