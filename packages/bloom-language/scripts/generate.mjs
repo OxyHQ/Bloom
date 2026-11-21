@@ -85,7 +85,11 @@ export const SPACE = ${ts(scales.space)} as const;
 export const CORNER = ${ts(scales.corner)} as const;
 export const FONT_SIZE = ${ts(scales.fontSize)} as const;
 export const LEADING = ${ts(scales.leading)} as const;
+/** Line heights carried over from apps, in px. */
+export const LEADING_PX = ${ts(scales.leadingPx)} as const;
 export const TRACKING = ${ts(scales.tracking)} as const;
+/** Letter spacing carried over from apps, in px. */
+export const TRACKING_PX = ${ts(scales.trackingPx)} as const;
 export const WEIGHT = ${ts(scales.weight)} as const;
 export const ICON_SIZE = ${ts(scales.iconSize)} as const;
 export const AVATAR_SIZE = ${ts(scales.avatarSize)} as const;
@@ -242,10 +246,12 @@ for (const value of fontSizes) valueClass('fontSize', value);
 const lineHeights = new Set(Object.values(typeRamp).map((s) => s[1]));
 for (const size of fontSizes)
   for (const ratio of Object.values(scales.leading)) lineHeights.add(size * ratio);
+for (const value of Object.values(scales.leadingPx)) lineHeights.add(value);
 for (const value of lineHeights) valueClass('lineHeight', value);
 const letterSpacings = new Set(Object.values(typeRamp).map((s) => s[2]));
 for (const size of fontSizes)
   for (const em of Object.values(scales.tracking)) letterSpacings.add(size * em);
+for (const value of Object.values(scales.trackingPx)) letterSpacings.add(value);
 for (const value of letterSpacings) valueClass('letterSpacing', value);
 for (const value of new Set([
   ...Object.values(scales.weight),
@@ -288,8 +294,8 @@ const tokenSets = {
   corner: [...Object.keys(scales.corner), ...enums.cornerExtra],
   font: [...typeFamilies, ...Object.keys(scales.fontSize), ...enums.fontFamily],
   weight: Object.keys(scales.weight),
-  leading: Object.keys(scales.leading),
-  tracking: Object.keys(scales.tracking),
+  leading: [...Object.keys(scales.leading), ...Object.keys(scales.leadingPx)],
+  tracking: [...Object.keys(scales.tracking), ...Object.keys(scales.trackingPx)],
   color: Object.keys(colors),
   borderWidth: Object.keys(scales.borderWidth),
   opacity: Object.keys(scales.opacity),
