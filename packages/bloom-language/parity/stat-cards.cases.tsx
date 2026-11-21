@@ -6,6 +6,16 @@ import * as L from '../src/index';
 import { toElement } from '../src/render';
 import type { ParityCase } from './support/cases';
 
+const REVENUE = {
+  icon: RiLineChartLine,
+  label: 'Revenue',
+  value: '$152,313',
+  delta: '-1.2%',
+  deltaColor: 'rose' as const,
+  tone: 'orange' as const,
+  caption: 'From last month',
+  hint: 'Gross, before refunds',
+};
 const STATS = [
   {
     icon: RiUserLine,
@@ -14,24 +24,15 @@ const STATS = [
     delta: '+5.3%',
     deltaColor: 'lime' as const,
   },
-  {
-    icon: RiLineChartLine,
-    label: 'Revenue',
-    value: '$152,313',
-    delta: '-1.2%',
-    deltaColor: 'rose' as const,
-    tone: 'orange' as const,
-    caption: 'From last month',
-    hint: 'Gross, before refunds',
-  },
+  REVENUE,
   { icon: RiUserLine, label: 'Churn', value: '2.1%', delta: '0%', deltaColor: 'neutral' as const },
 ];
 
 export const STAT_CARD_CASES: ParityCase[] = [
   ...ENUMS.statCardsVariant.map((variant) => ({
     name: `StatCard ${variant}`,
-    language: () => toElement(L.StatCard(STATS[1]!).style(variant)),
-    bloom: () => <StatCard stat={STATS[1]!} variant={variant} />,
+    language: () => toElement(L.StatCard(REVENUE).style(variant)),
+    bloom: () => <StatCard stat={REVENUE} variant={variant} />,
   })),
   {
     name: 'StatCards',
