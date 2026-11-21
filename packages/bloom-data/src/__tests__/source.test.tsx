@@ -373,3 +373,31 @@ describe('source extras', () => {
     expect(tree.toJSON()).toBe('1');
   });
 });
+
+describe('environment events', () => {
+  it('tells every change, and reads again only on coming online or to the front', async () => {
+    const { environment, source, setActiveStore, Store } = await import('../index');
+    const { Post, post } = await import('./fixtures');
+    const events: string[] = [];
+    const stop = environment.subscribe((event) => events.push(event));
+    environment.setOnline(false);
+    environment.setFocused(false);
+    environment.setFocused(true);
+    environment.setOnline(true);
+    stop();
+    expect(events).toEqual(['offline', 'blur', 'focus', 'online']);
+    const store = new Store();
+    setActiveStore(store);
+    const load = jest.fn(async (_request: unknown, id: string) => post(id));
+    const byId = source(Post, { key: (id: string) => id, load });
+    const off = byId.observe(store, ['e1']);
+    await Promise.resolve();
+    await Promise.resolve();
+    const calls = load.mock.calls.length;
+    environment.setOnline(false);
+    environment.setFocused(false);
+    expect(load.mock.calls.length).toBe(calls);
+    off();
+    await store.close();
+  });
+});

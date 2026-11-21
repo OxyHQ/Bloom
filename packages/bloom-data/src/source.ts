@@ -429,7 +429,7 @@ export function source(
     if (store.sources.has(id)) return;
     store.sources.add(id);
     const stop = environment.subscribe((event) => {
-      if (event === 'focus' ? !refetchOnFocus : !refetchOnReconnect) return;
+      if (event === 'focus' ? !refetchOnFocus : event !== 'online' || !refetchOnReconnect) return;
       for (const [key, value] of store.queries) {
         if (!key.startsWith(`${id}\u0000`)) continue;
         const query = value as Query;
