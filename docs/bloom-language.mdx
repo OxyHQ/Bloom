@@ -2139,6 +2139,23 @@ shapes by URI that a feed's thumbnails and the gallery share. A view reads it
 into `.aspectRatio()` and records what `.onLoad()` measures, so a list stops
 jumping and the gallery opens at the right shape.
 
+### Video playback
+
+```ts
+VideoPlayback(AppLayout(...))                       // once, at the root
+VideoViewability(onScreen, ...posts.map((post) => VideoViewabilityScope(post.id, PostRow(post))))
+```
+
+Bloom's `video-playback`: one audible player app-wide and visibility-driven
+autoplay. Its providers are views around what they hold, with no box of their
+own: `VideoPlayback(...)` (`VideoPlaybackProvider`; `.autoplay(false)` overrides
+the viewer's preference for a subtree), `VideoViewability(viewable, ...)` (a
+list's keys on screen: a set derived while rendering, or the store
+`createViewableKeysStore()` makes for its callbacks) and
+`VideoViewabilityScope(key, ...)`. Its hooks (`useVideoPlayback`,
+`useViewableVisible`, `useVideoPlaybackControl`) are used as they are inside a
+`view()`.
+
 ### Media inset borders
 
 ```ts
@@ -2622,7 +2639,12 @@ and `@oxy.so/bloom-data` beside it.
   image aspect ratios (Bloom's cache, through `.aspectRatio()` and `.onLoad()`),
   fact strips,
   photo grids,
-  choice lists.
+  choice lists,
+  photo grids.
+  fact strips.
+  image aspect ratios (Bloom's cache,
+  through `.aspectRatio()` and `.onLoad()`),
+  video playback.
 
 **Not built**
 
