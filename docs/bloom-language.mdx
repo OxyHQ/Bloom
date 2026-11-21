@@ -139,7 +139,7 @@ be preserved"), so keep the controller in a custom hook (`usePostRowModel`).
 | `Skeleton` / `SkeletonGroup` | Bloom's skeleton shapes / `Skeleton.Region` |
 | `.pressScale()` / `.hoverHighlight()` | Bloom `PressableScale` as the pressable host / `SubtleHover` as the stack's first child |
 | `Image` | Bloom `BloomImage` (`@oxy.so/bloom/image`), sized and clipped by its own box (see [Image](#image)) |
-| `Button` | Bloom `Button` (`style` is its appearance, `tint` its tone, `shape` is icon-only) |
+| `Button` | Bloom `Button` (`style` is its appearance, `tint` its tone, `shape` is icon-only: `circle` square, `pill` wide; see [Button](#button)) |
 | `ActionBar` / `Action` / `ActionGroup` | Bloom `EngagementBar` / `EngagementAction` / `EngagementGroup` |
 | `.glass()` | Bloom `Surface` (see [Glass](#glass)) |
 | `.corner('concentric')` | Bloom `ConcentricView` (a glass: `Surface radius="concentric"`) |
@@ -362,6 +362,36 @@ Not built: a silhouette of its own (Bloom's `shapes` `Fill`, `Image` and
 Bloom's `BlurIsland` (the floating capsule with its shadow): `blur/` is
 internal to Bloom on purpose (`family-layout.test.ts`), and publishing it is
 the owner's decision. Blur itself is the glass.
+
+## Button
+
+`Button(...content)` is Bloom's `Button` in every variant apps use:
+
+```ts
+Button(Text('Save')).style('solid').tint('accent').size('md').onPress(save)
+Button(Icon(RiAddLine), Text('New post')).loading(saving)
+Button(Text('Next'), Icon(RiArrowRightLine)).style('outline')
+Button(Icon(RiMoreFill)).style('subtle').shape('circle').label('More')
+Button(Text('Bold')).style('subtle').pressed(bold).onPress(toggleBold)
+Button(Text('Docs')).style('plain').link('https://oxy.so/docs').underline()
+```
+
+- **Content.** An `Icon` before the `Text` is the leading glyph, one after it
+  the trailing glyph; the `Text` runs are the label. A glyph with an ink of
+  its own (`Icon(X).foreground(role)`) is drawn as it is.
+- **Look.** `.style('solid' | 'subtle' | 'outline' | 'plain')`, `.tint(tone)`
+  (Bloom's tones, `vivid` included), `.size('xs'…'lg')`; `.shape('circle')`
+  is the square icon-only button, `.shape('pill')` the wide one.
+- **State.** `.loading()`, `.disabled()`, `.pressed(on)` (a toggle,
+  announced as pressed), `.link(href)` (an anchor on the web, opened on
+  native), `.lines(n)`, `.underline()` (at rest).
+- **On glass** it keeps its own press, ink and name; the glass draws its fill
+  (see [Glass](#glass)).
+
+Not in the language: a raw brand fill (`colors={{ background, foreground }}`,
+28 call sites) and the state colours over artwork (`color`, `hoverColor`…),
+which are raw values with no token; `linkTone` (15 call sites), `inverted`,
+`density`, `grow` and Bloom's `Button.Group`.
 
 ## Avatars
 

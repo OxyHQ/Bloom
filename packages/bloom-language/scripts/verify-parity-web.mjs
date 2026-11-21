@@ -49,7 +49,7 @@ function compareInPage() {
   const SKIP = new Set(['class', 'style', 'data-testid', 'id']);
   const differences = [];
   // React's useId counts across the page; an id is compared by its order in its case.
-  const REACT_ID = /(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
+  const REACT_ID = /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
   let maps = [new Map(), new Map()];
   const ids = (side, text) =>
     text.replace(REACT_ID, (id) => {

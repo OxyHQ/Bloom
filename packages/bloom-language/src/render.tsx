@@ -807,8 +807,9 @@ function renderHost(
     case 'button': {
       const props = hostProps(behaviour, key);
       delete props.focusable;
-      const { icon, glyph, label } = buttonContent(node.children);
+      const { icon, glyph, label, trailing } = buttonContent(node.children);
       const shape = ownValue(p, 'shape')?.value;
+      const iconOnly = icon !== undefined && label === undefined && shape !== undefined;
       // A glyph in an ink of its own (`Icon(X).foreground(role)`) is drawn as
       // it is; otherwise the button tints its icon with its tone.
       const inked = glyph?.modifiers.some((modifier) => modifier.kind === 'foreground');
@@ -818,11 +819,17 @@ function renderHost(
         size: ownValue(p, 'size')?.value,
         leadingIcon: inked ? undefined : icon,
         icon: inked && glyph ? renderNode(glyph, ctx, undefined) : undefined,
-        iconOnly:
-          icon !== undefined && label === undefined && shape !== undefined ? true : undefined,
+        trailingIcon: trailing,
+        // A circle is Bloom's square icon button; a pill, its wide one.
+        iconOnly: iconOnly ? true : undefined,
+        wide: iconOnly && shape === 'pill' ? true : undefined,
         children: label,
         disabled: ownValue(p, 'disabled')?.value,
         loading: ownValue(p, 'loading')?.value,
+        pressed: ownValue(p, 'pressed')?.value,
+        href: ownValue(p, 'link')?.value,
+        numberOfLines: ownValue(p, 'lines')?.value,
+        underline: ownValue(p, 'underline') === undefined ? undefined : 'rest',
         material: p.control ? 'shared' : undefined,
       });
       if (!boxed) return draw(BloomButton, props);
@@ -1266,18 +1273,27 @@ function drawText(
 /** A web link to another site opens beside the app, as Bloom's inline link does. */
 const LINK_TARGET = Object.freeze({ target: '_blank', rel: 'noopener noreferrer' });
 
+/**
+ * A button's content: its first `Icon` before any `Text` is the leading glyph,
+ * an `Icon` after a `Text` the trailing one, and the `Text` runs its label.
+ */
 function buttonContent(children: readonly Child[]): {
   icon: IconProps['icon'] | undefined;
   glyph: Node | undefined;
   label: string | undefined;
+  trailing: IconProps['icon'] | undefined;
 } {
   let icon: IconProps['icon'] | undefined;
   let glyph: Node | undefined;
   let label: string | undefined;
+  let trailing: IconProps['icon'] | undefined;
   for (const child of flatten(children)) {
-    if (child.kind === 'icon' && icon === undefined) {
-      icon = (child.props as IconProps).icon;
-      glyph = child;
+    if (child.kind === 'icon') {
+      if (label !== undefined) trailing ??= (child.props as IconProps).icon;
+      else if (icon === undefined) {
+        icon = (child.props as IconProps).icon;
+        glyph = child;
+      }
     }
     if (child.kind === 'text') {
       const text = (child.props as TextProps).runs
@@ -1286,7 +1302,7 @@ function buttonContent(children: readonly Child[]): {
       label = label === undefined ? text : `${label} ${text}`;
     }
   }
-  return { icon, glyph, label };
+  return { icon, glyph, label, trailing };
 }
 
 function flatten(children: readonly Child[]): Node[] {
