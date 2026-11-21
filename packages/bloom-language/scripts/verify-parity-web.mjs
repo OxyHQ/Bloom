@@ -63,15 +63,17 @@ function compareInPage() {
   const differences = [];
   // React's useId counts across the page, and Bloom counts a few SVG ids itself
   // (bloom-stat-tile3); an id is compared by its order in its case.
-  const REACT_ID =
-    /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)|\bbloom-[a-z]+(?:-[a-z]+)*-?\d+(?![\w-])/g;
+  const REACT_ID = /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
+  const BLOOM_ID = /\bbloom-[a-z]+(?:-[a-z]+)*-?\d+(?![\w-])/g;
   let maps = [new Map(), new Map()];
-  const ids = (side, text) =>
-    text.replace(REACT_ID, (id) => {
-      const map = maps[side];
+  const ids = (side, text) => {
+    const map = maps[side];
+    const byOrder = (id) => {
       if (!map.has(id)) map.set(id, `id${map.size}`);
       return map.get(id);
-    });
+    };
+    return text.replace(REACT_ID, byOrder).replace(BLOOM_ID, byOrder);
+  };
   const describe = (element, side) => {
     const attributes = {};
     for (const { name, value } of [...element.attributes].sort((a, b) =>
@@ -154,14 +156,14 @@ function describeCellInPage(testid) {
   const out = [];
   // React's useId counts across the page, and Bloom counts a few SVG ids itself;
   // an id (a clip path's, a gradient's) is compared by its order in the cell.
-  const REACT_ID =
-    /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)|\bbloom-[a-z]+(?:-[a-z]+)*-?\d+(?![\w-])/g;
+  const REACT_ID = /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
+  const BLOOM_ID = /\bbloom-[a-z]+(?:-[a-z]+)*-?\d+(?![\w-])/g;
   const map = new Map();
-  const ids = (text) =>
-    text.replace(REACT_ID, (id) => {
-      if (!map.has(id)) map.set(id, `id${map.size}`);
-      return map.get(id);
-    });
+  const byOrder = (id) => {
+    if (!map.has(id)) map.set(id, `id${map.size}`);
+    return map.get(id);
+  };
+  const ids = (text) => text.replace(REACT_ID, byOrder).replace(BLOOM_ID, byOrder);
   const walk = (element, path) => {
     const style = getComputedStyle(element);
     const css = {};

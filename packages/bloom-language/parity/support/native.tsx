@@ -26,21 +26,23 @@ export interface HostTree {
  * (`bloom-stat-tile3`, `bloom-story-ring-2`); an id is compared by its order in
  * the tree, not its count.
  */
-const REACT_ID =
-  /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)|\bbloom-[a-z]+(?:-[a-z]+)*-?\d+(?![\w-])/g;
+const REACT_ID = /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
+const BLOOM_ID = /\bbloom-[a-z]+(?:-[a-z]+)*-?\d+(?![\w-])/g;
 let ids: Map<string, string> = new Map();
+
+function byOrder(id: string): string {
+  let seen = ids.get(id);
+  if (seen === undefined) {
+    seen = `id${ids.size}`;
+    ids.set(id, seen);
+  }
+  return seen;
+}
 
 function value(input: unknown): unknown {
   if (typeof input === 'function') return '[function]';
-  if (typeof input === 'string')
-    return input.replace(REACT_ID, (id) => {
-      let seen = ids.get(id);
-      if (seen === undefined) {
-        seen = `id${ids.size}`;
-        ids.set(id, seen);
-      }
-      return seen;
-    });
+  // React's first: an id Bloom names with a React id inside it is then one id.
+  if (typeof input === 'string') return input.replace(REACT_ID, byOrder).replace(BLOOM_ID, byOrder);
   if (Array.isArray(input)) return input.map(value);
   if (input !== null && typeof input === 'object') {
     const out: Record<string, unknown> = {};
