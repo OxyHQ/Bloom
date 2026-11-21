@@ -266,17 +266,13 @@
       "2xl": 1536
     },
     "duration": {
-      "$comment": "Milliseconds: Bloom's own durations (tokens.animation.duration), then the exact durations apps write and Tailwind's other delays (delay-75, delay-500, delay-700, delay-1000), each named by its milliseconds ('2500' is 2500 ms; '0' stills a count-up). An image's cross-fade and a motion's delay take them.",
+      "$comment": "Milliseconds: Bloom's own durations (tokens.animation.duration), then the exact durations apps write, each named by its milliseconds ('2500' is 2500 ms; '0' stills a count-up). An image's cross-fade and a motion's delay take them; no app writes a Tailwind delay-* (codemod/classname-usage.json).",
       "instant": 100,
       "fast": 150,
       "normal": 200,
       "slow": 300,
       "0": 0,
-      "75": 75,
-      "500": 500,
-      "700": 700,
       "800": 800,
-      "1000": 1000,
       "2500": 2500
     },
     "anchor": {

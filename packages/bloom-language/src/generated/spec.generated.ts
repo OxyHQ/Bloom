@@ -204,11 +204,7 @@ export const GLASS_OPACITY = {
 } as const;
 export const DURATION = {
   "0": 0,
-  "75": 75,
-  "500": 500,
-  "700": 700,
   "800": 800,
-  "1000": 1000,
   "2500": 2500,
   "instant": 100,
   "fast": 150,
