@@ -2,6 +2,7 @@ import type { ComponentType } from 'react';
 import * as RN from 'react-native';
 import { InlineMarkdown } from '@oxy.so/bloom/markdown';
 import { tokens } from '@oxy.so/bloom/styles';
+import { withAlpha } from '@oxy.so/bloom/theme';
 import {
   Blockquote,
   H1,
@@ -342,8 +343,40 @@ const named: ParityCase[] = [
   },
 ].map((c) => ({ ...c, language: () => toElement(c.language()) }));
 
+/**
+ * A role at a named opacity, as an app draws `text-muted-foreground/70` today:
+ * the mix Tailwind writes on the web, the colour at that alpha on native.
+ */
+const translucent: ParityCase[] = (
+  [
+    ['muted/faded', 'textSecondary', 'muted-foreground', 0.7],
+    ['primary/sheer', 'primary', 'primary', 0.3],
+    ['destructive/faint', 'destructive', 'destructive', 0.1],
+  ] as const
+).map(([token, key, variable, amount]) => ({
+  name: `foreground ${token}`,
+  language: () => toElement(L.Text('Ink').foreground(token)),
+  bloom: () => (
+    <Themed>
+      {(c) => (
+        <Text
+          style={{
+            color:
+              RN.Platform.OS === 'web'
+                ? `color-mix(in oklab, var(--${variable}) ${amount * 100}%, transparent)`
+                : withAlpha(c[key], amount),
+          }}
+        >
+          Ink
+        </Text>
+      )}
+    </Themed>
+  ),
+}));
+
 export const TEXT_CASES: ParityCase[] = [
   ...named,
+  ...translucent,
   ...ramp,
   ...sizes,
   ...inks,

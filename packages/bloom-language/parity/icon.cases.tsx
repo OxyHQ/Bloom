@@ -3,6 +3,7 @@ import * as RN from 'react-native';
 import * as icons from '@oxy.so/bloom/icons';
 import type { Props as IconProps, sizes } from '@oxy.so/bloom/icons/shared';
 import { tokens } from '@oxy.so/bloom/styles';
+import { withAlpha } from '@oxy.so/bloom/theme';
 
 import { COLORS, ICON_SIZE } from '../src/generated/spec.generated';
 import * as L from '../src/primitives';
@@ -102,5 +103,29 @@ const placed: ParityCase[] = [
 ];
 
 /** Sizes, inks and placement on one glyph; `ICON_CASES_EVERY` draws every icon. */
-export const ICON_CASES: ParityCase[] = [...rungs, ...inks, ...placed];
+/** An icon in an ink at a named opacity: its fill at that alpha (on the web, the mix Bloom's paint writes). */
+const translucent: ParityCase[] = [
+  {
+    name: 'foreground muted/faded',
+    language: () => toElement(L.HStack(L.Icon(Heart)).foreground('muted/faded')),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RN.View style={{ flexDirection: 'row' }}>
+            <Heart
+              size="md"
+              fill={
+                RN.Platform.OS === 'web'
+                  ? `color-mix(in srgb, ${c.textSecondary} 70%, transparent)`
+                  : withAlpha(c.textSecondary, 0.7)
+              }
+            />
+          </RN.View>
+        )}
+      </Themed>
+    ),
+  },
+];
+
+export const ICON_CASES: ParityCase[] = [...rungs, ...inks, ...translucent, ...placed];
 export const ICON_CASES_EVERY: ParityCase[] = every;

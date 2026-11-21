@@ -19,7 +19,9 @@ import {
   type Alignment,
   type BorderEdge,
   type ColorName,
+  type ColorToken,
   type CornerCurve,
+  type OpacityName,
   type Edge,
   type FontName,
   type LeadingToken,
@@ -45,16 +47,36 @@ const IS_WEB = Platform.OS === 'web';
  *   so a theme switch re-renders nothing at all.
  */
 
-/** A colour role inside a resolved style. Interned, so a style compares by identity. */
+/** A colour role inside a resolved style, at its opacity if it names one. Interned, so a style compares by identity. */
 export interface RoleRef {
+  readonly token: ColorToken;
   readonly role: ColorName;
+  readonly opacity: number | undefined;
 }
-const ROLE_REFS = Object.fromEntries(
-  (Object.keys(COLORS) as ColorName[]).map((role) => [role, Object.freeze({ role })]),
-) as Record<ColorName, RoleRef>;
+const ROLE_REFS = new Map<ColorToken, RoleRef>();
 
-export function role(name: ColorName): RoleRef {
-  return ROLE_REFS[name];
+export function role(token: ColorToken): RoleRef {
+  let ref = ROLE_REFS.get(token);
+  if (ref === undefined) {
+    const [name, amount] = token.split('/') as [ColorName, OpacityName | undefined];
+    ref = Object.freeze({
+      token,
+      role: name,
+      opacity: amount === undefined ? undefined : OPACITY[amount],
+    });
+    ROLE_REFS.set(token, ref);
+  }
+  return ref;
+}
+
+/**
+ * A role's web paint: its CSS variable (or fixed colour), and at an opacity the
+ * mix Tailwind writes for `/70`, so the web draws what the class drew.
+ */
+export function webInk(ref: RoleRef): string {
+  const web = COLORS[ref.role].web;
+  if (ref.opacity === undefined) return web;
+  return `color-mix(in oklab, ${web} ${Number((ref.opacity * 100).toFixed(4))}%, transparent)`;
 }
 
 /** A style as resolved: style properties to numbers, strings or roles. */
@@ -103,10 +125,13 @@ function serialize(resolved: Resolved, target: Target): StyleOut {
   if (IS_WEB && target !== 'material')
     return { style: webStyle(resolved, keys, target), paint: undefined };
   const values: Record<string, number | string> = {};
-  const roles: [string, ColorName][] = [];
+  const roles: (readonly [string, ColorName, number?])[] = [];
   for (const key of keys) {
     const value = resolved[key] as number | string | RoleRef;
-    if (isRole(value)) roles.push([key, value.role]);
+    if (isRole(value))
+      roles.push(
+        value.opacity === undefined ? [key, value.role] : [key, value.role, value.opacity],
+      );
     else values[key] = value;
   }
   const style = Object.freeze(values);
@@ -127,14 +152,14 @@ function webStyle(resolved: Resolved, keys: string[], target: 'host' | 'componen
     const value = resolved[key] as number | string | RoleRef;
     const name =
       target === 'host'
-        ? WEB_CLASS[isRole(value) ? `${key}:@${value.role}` : `${key}:${value}`]
+        ? WEB_CLASS[isRole(value) ? `${key}:@${value.token}` : `${key}:${value}`]
         : undefined;
     if (name !== undefined) {
       classes ??= { $$css: true };
       classes[key] = name;
     } else {
       inline ??= {};
-      inline[key] = isRole(value) ? `var(--${COLORS[value.role].css})` : value;
+      inline[key] = isRole(value) ? webInk(value) : value;
     }
   }
   const parts = [classes, inline].filter((part) => part !== undefined).map(Object.freeze);
@@ -314,14 +339,14 @@ export function stackStyle(
 // ── Text ─────────────────────────────────────────────────────────
 
 export interface TextTraits {
-  foreground: ColorName | undefined;
+  foreground: ColorToken | undefined;
   font: FontName | undefined;
   weight: WeightName | undefined;
   leading: LeadingToken | undefined;
 }
 
 /** The colour role text and icons paint with: the environment's, or the spec's default. */
-export function foregroundOf(traits: TextTraits): ColorName {
+export function foregroundOf(traits: TextTraits): ColorToken {
   return traits.foreground ?? ENVIRONMENT_DEFAULTS.foreground;
 }
 

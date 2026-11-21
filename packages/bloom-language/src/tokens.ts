@@ -60,6 +60,12 @@ export type AvatarSizeName = keyof typeof AVATAR_SIZE;
  */
 export type ColorName = keyof typeof COLORS;
 export type OpacityName = keyof typeof OPACITY;
+/**
+ * What a colour modifier takes: a role, or a role at a named opacity
+ * (`'muted/faded'` is `muted` at 70%), Tailwind's `/70` with a name for the
+ * amount, never a number.
+ */
+export type ColorToken = ColorName | `${ColorName}/${OpacityName}`;
 export type BorderWidthName = keyof typeof BORDER_WIDTH;
 export type HitSlopName = keyof typeof HIT_SLOP;
 export type ShrinkPriority = keyof typeof SHRINK;

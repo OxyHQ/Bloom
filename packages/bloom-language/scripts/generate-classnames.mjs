@@ -73,10 +73,12 @@ for (const file of ['src/design-tokens/color-roles.ts', 'src/design-tokens/compo
     colorUtilities[match[1]] = match[2] ?? match[3];
 }
 
-/** The language's colour role for a theme variable. */
+/** The language's colour role for a theme variable (or, for a fixed colour, the colour). */
 const roleByVariable = Object.fromEntries(
   Object.entries(colors).map(([role, [, css]]) => [css, role]),
 );
+/** Tailwind's own colours that a fixed role paints exactly. */
+const TW_FIXED = { white: '#ffffff', black: '#000000' };
 
 const rung = (table, value) =>
   Object.entries(table).find(([, v]) => typeof v === 'number' && Math.abs(v - value) < 1e-9)?.[0];
@@ -166,12 +168,18 @@ function colorVariable(name) {
 
 function color(name, make) {
   const { base, alpha, variable } = colorVariable(name);
-  if (TW_PALETTE.test(base)) return token('color', base, make('…'));
-  if (variable === undefined) return undefined;
-  const role = roleByVariable[variable];
-  if (alpha !== undefined)
-    return token('opacity', `--${variable} at ${alpha}%`, role ? make(`'${role}'`) : make('…'));
-  return role ? mapped(make(`'${role}'`)) : token('color', `--${variable}`, make('…'));
+  const fixed = roleByVariable[TW_FIXED[base]];
+  if (TW_PALETTE.test(base) && !fixed) return token('color', base, make('…'));
+  if (variable === undefined && !fixed) return undefined;
+  const role = fixed ?? roleByVariable[variable];
+  const label = fixed ? base : `--${variable}`;
+  if (alpha !== undefined) {
+    // A role at an opacity rung is `'role/opacity'`; any other amount needs a rung.
+    const amount = /^\d+$/.test(alpha) ? rung(scales.opacity, Number(alpha) / 100) : undefined;
+    if (role && amount) return mapped(make(`'${role}/${amount}'`));
+    return token('opacity', `${label} at ${alpha}%`, role ? make(`'${role}/…'`) : make('…'));
+  }
+  return role ? mapped(make(`'${role}'`)) : token('color', label, make('…'));
 }
 
 function fontSize(name) {

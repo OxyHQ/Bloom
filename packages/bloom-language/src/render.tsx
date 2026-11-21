@@ -89,6 +89,7 @@ import {
   foregroundOf,
   isLayerModifier,
   layerStyle,
+  role,
   stackStyle,
   textStyle,
   textVariant,
@@ -111,6 +112,7 @@ import {
   resolveIconSize,
   tokenKey,
   type ColorName,
+  type ColorToken,
   type IconSizeToken,
   type Role,
   type ShrinkPriority,
@@ -617,13 +619,16 @@ function hostProps(
   return props;
 }
 
-const iconPaints = new Map<ColorName, Paint>();
+const iconPaints = new Map<ColorToken, Paint>();
 
-/** An icon's fill, painted from its foreground role. */
-function iconPaint(color: ColorName): Paint {
+/** An icon's fill, painted from its foreground role (at its opacity, if it names one). */
+function iconPaint(color: ColorToken): Paint {
   let paint = iconPaints.get(color);
   if (paint === undefined) {
-    paint = { style: undefined, styleRoles: [], propRoles: [['fill', color]] };
+    const { role: name, opacity } = role(color);
+    const fill: readonly [string, ColorName, number?] =
+      opacity === undefined ? ['fill', name] : ['fill', name, opacity];
+    paint = { style: undefined, styleRoles: [], propRoles: [fill] };
     iconPaints.set(color, paint);
   }
   return paint;

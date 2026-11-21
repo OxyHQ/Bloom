@@ -205,10 +205,16 @@ fn check_value(
 }
 
 /// A string literal must be one of `set`'s tokens; anything else is the runtime's.
+/// A colour may name an opacity after its role (`'muted/faded'`): both halves are checked.
 fn check_token(modifier: &str, set: &str, value: &Expression) -> Result<(), Problem> {
     let Expression::StringLiteral(literal) = value.without_parentheses() else { return Ok(()) };
-    let names = tokens(set);
     let token = literal.value.as_str().unwrap_or_default();
+    let (token, set, names) = match token.split_once('/') {
+        Some((role, opacity)) if set == "color" && tokens("color").contains(&role) => {
+            (opacity, "opacity", tokens("opacity"))
+        }
+        _ => (token, set, tokens(set)),
+    };
     if names.contains(&token) {
         return Ok(());
     }

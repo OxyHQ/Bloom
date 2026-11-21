@@ -247,3 +247,15 @@ fn material_avatar_and_small_piece_modifiers_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn a_colour_at_a_named_opacity_checks_both_halves() {
+    let valid = compiled(
+        "export const x = () => HStack().background('primary/faint').border('border/dim').foreground('muted/faded').blur();\n",
+    );
+    assert!(valid.diagnostics.is_empty() && valid.hoisted == 1);
+    let opacity = compiled("export const x = () => HStack().foreground('muted/70');\n");
+    assert_eq!(opacity.diagnostics[0].message, "Unknown opacity token '70' for .foreground()");
+    let role = compiled("export const x = () => HStack().background('grey/faint');\n");
+    assert_eq!(role.diagnostics[0].message, "Unknown color token 'grey/faint' for .background()");
+}
