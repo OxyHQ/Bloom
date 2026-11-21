@@ -565,7 +565,11 @@
       "info"
     ],
     "lockupSize": ["sm", "md", "lg"],
-    "engagementBarTone": ["default", "onImage"]
+    "engagementBarTone": ["default", "onImage"],
+    "titleAlign": ["start", "center"],
+    "titleLayout": ["inline", "stacked"],
+    "titleAppearance": ["plain", "capsule"],
+    "dismissIcon": ["close", "unpin"]
   },
   "glass": {
     "$comment": [
@@ -861,7 +865,11 @@
     "metaOverlay": ["value?"],
     "senderTint": ["color"],
     "divider": ["value?"],
-    "showZeroCounts": ["value?"]
+    "showZeroCounts": ["value?"],
+    "titleAlign": ["titleAlign"],
+    "titleLayout": ["titleLayout"],
+    "titleAppearance": ["titleAppearance"],
+    "dismissIcon": ["dismissIcon"]
   },
   "universal": [
     "padding",
@@ -1351,7 +1359,15 @@
     "chatEmptyState": { "constructors": ["ChatEmptyState"], "modifiers": [] },
     "chatHeader": {
       "constructors": ["ChatHeader"],
-      "modifiers": ["tint"],
+      "modifiers": [
+        "tint",
+        "presentation",
+        "titleAlign",
+        "titleLayout",
+        "titleAppearance",
+        "density",
+        "dividers"
+      ],
       "tint": "chatStatusTone"
     },
     "chatInfoPanel": {
@@ -1359,9 +1375,9 @@
       "modifiers": ["style"],
       "style": "chatInfoPanelStyle"
     },
-    "pinnedMessageBar": { "constructors": ["PinnedMessageBar"], "modifiers": [] },
+    "pinnedMessageBar": { "constructors": ["PinnedMessageBar"], "modifiers": ["dismissIcon"] },
     "scrollToBottomButton": { "constructors": ["ScrollToBottomButton"], "modifiers": [] },
-    "chatFolderTabs": { "constructors": ["ChatFolderTabs"], "modifiers": ["spacing"] },
+    "chatFolderTabs": { "constructors": ["ChatFolderTabs"], "modifiers": ["spacing", "dividers"] },
     "chatSearchField": { "constructors": ["ChatSearchField"], "modifiers": [] },
     "chatSearchResults": { "constructors": ["ChatSearchResults"], "modifiers": [] },
     "storiesRow": { "constructors": ["StoriesRow"], "modifiers": ["spacing"] },
@@ -1372,7 +1388,7 @@
       "modifiers": ["tint", "bubbleTint", "contentTint"],
       "tint": "messageTone"
     },
-    "documentGrid": { "constructors": ["DocumentGrid"], "modifiers": [] },
+    "documentGrid": { "constructors": ["DocumentGrid"], "modifiers": ["dividers"] },
     "fileMessage": {
       "constructors": ["FileMessage"],
       "modifiers": ["style", "tint", "bubbleTint", "contentTint"],

@@ -1473,6 +1473,22 @@ export const ENUMS = {
   "engagementBarTone": [
     "default",
     "onImage"
+  ],
+  "titleAlign": [
+    "start",
+    "center"
+  ],
+  "titleLayout": [
+    "inline",
+    "stacked"
+  ],
+  "titleAppearance": [
+    "plain",
+    "capsule"
+  ],
+  "dismissIcon": [
+    "close",
+    "unpin"
   ]
 } as const;
 
@@ -2055,6 +2071,18 @@ export const MODIFIERS = {
   ],
   "showZeroCounts": [
     "value?"
+  ],
+  "titleAlign": [
+    "titleAlign"
+  ],
+  "titleLayout": [
+    "titleLayout"
+  ],
+  "titleAppearance": [
+    "titleAppearance"
+  ],
+  "dismissIcon": [
+    "dismissIcon"
   ]
 } as const;
 
@@ -7611,7 +7639,13 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
-    "tint"
+    "tint",
+    "presentation",
+    "titleAlign",
+    "titleLayout",
+    "titleAppearance",
+    "density",
+    "dividers"
   ],
   "chatInfoPanel": [
     "padding",
@@ -7736,7 +7770,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "dismissIcon"
   ],
   "scrollToBottomButton": [
     "padding",
@@ -7861,7 +7896,8 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
-    "spacing"
+    "spacing",
+    "dividers"
   ],
   "chatSearchField": [
     "padding",
@@ -8301,7 +8337,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "dividers"
   ],
   "fileMessage": [
     "padding",
