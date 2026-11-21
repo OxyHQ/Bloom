@@ -321,9 +321,10 @@ Text('Read the ', Text('terms').link('https://oxy.so/terms'), '.').font('caption
 - **Tracking.** `.tracking(t)` is letter spacing in em of the text's size,
   Tailwind's `tracking-*`: `tight` −0.025, `close` −0.02, `snug` −0.01,
   `wide` 0.025, `wider` 0.05, `widest` 0.1 (the values apps write). It is a
-  trait of the environment, as `leading` is, and like `leading` it needs a
-  font to measure from: a text with no font keeps Bloom's own spacing. Over a
-  ramp step it replaces the step's own tracking.
+  trait of the environment, as `leading` is. Both measure from the text's
+  size: its font's, or with no font the 13px of Bloom's `Text` without a
+  variant (the size itself stays Bloom's, unwritten). Over a ramp step it
+  replaces the step's own tracking.
 
 ## Icons
 

@@ -257,12 +257,12 @@ export function resolveFont(
     if (font !== undefined) style.fontSize = FONT_SIZE[font];
     if (weight !== undefined) style.fontWeight = WEIGHT[weight];
   }
-  if (leading !== undefined && style.fontSize !== undefined) {
+  // Both measure from the size: the font's, else Bloom's `Text` with no variant (its size is not written).
+  const size = style.fontSize ?? ENVIRONMENT_DEFAULTS.fontSize;
+  if (leading !== undefined) {
     const ratio = typeof leading === 'string' ? LEADING[leading] : leading.value;
-    style.lineHeight = style.fontSize * ratio;
+    style.lineHeight = size * ratio;
   }
-  // Tracking is in em, so it needs the size; a text with no font keeps Bloom's own.
-  if (tracking !== undefined && style.fontSize !== undefined)
-    style.letterSpacing = style.fontSize * TRACKING[tracking];
+  if (tracking !== undefined) style.letterSpacing = size * TRACKING[tracking];
   return style;
 }

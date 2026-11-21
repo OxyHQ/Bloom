@@ -899,7 +899,7 @@ export interface ViewModifiers<Self> extends ViewNode {
   font(value: FontName): Self;
   weight(value: WeightName): Self;
   leading(value: LeadingToken): Self;
-  /** Letter spacing for this view's text, in em of its size (`tight` … `widest`); needs a font to measure from. */
+  /** Letter spacing for this view's text, in em of its size (`tight` … `widest`): its font's, else Bloom Text's 13px. */
   tracking(value: TrackingName): Self;
   onPress(value: Press | undefined): Self;
   onLongPress(value: (() => void) | undefined): Self;

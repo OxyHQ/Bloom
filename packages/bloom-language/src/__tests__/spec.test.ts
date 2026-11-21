@@ -11,6 +11,7 @@ import {
   CORNER,
   DURATION,
   ENVIRONMENT,
+  ENVIRONMENT_DEFAULTS,
   FONT_SIZE,
   GLASS_OPACITY,
   HIT_SLOP,
@@ -125,6 +126,12 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
         new RegExp(`\\n\\s+${paint}: ${variable ? `g\\('${variable}'\\)` : `'${web}'`},`),
       );
     }
+  });
+
+  it('a text with no font measures its leading and tracking from Bloom Text’s own size', () => {
+    expect(read('typography/Typography.tsx')).toMatch(
+      new RegExp(`DEFAULT_TEXT_TYPOGRAPHY: TextStyle = \\{\\n\\s+fontSize: ${ENVIRONMENT_DEFAULTS.fontSize},`),
+    );
   });
 
   it('the strongest glass tint is the opacity Surface already gives an opaque fill on the web', () => {
