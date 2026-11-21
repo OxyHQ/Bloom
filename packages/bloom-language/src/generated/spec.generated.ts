@@ -57,6 +57,14 @@ export const LEADING = {
   "open": 1.5555555555555556,
   "relaxed": 1.625
 } as const;
+export const TRACKING = {
+  "tight": -0.025,
+  "close": -0.02,
+  "snug": -0.01,
+  "wide": 0.025,
+  "wider": 0.05,
+  "widest": 0.1
+} as const;
 export const WEIGHT = {
   "light": "300",
   "regular": "400",
@@ -677,6 +685,9 @@ export const ENUMS = {
     "lowercase",
     "capitalize"
   ],
+  "fontFamily": [
+    "mono"
+  ],
   "cornerExtra": [
     "concentric"
   ],
@@ -829,7 +840,8 @@ export const ENVIRONMENT = [
   "foreground",
   "font",
   "weight",
-  "leading"
+  "leading",
+  "tracking"
 ] as const;
 export const ENVIRONMENT_DEFAULTS = {
   "foreground": "foreground",
@@ -878,6 +890,9 @@ export const MODIFIERS = {
   ],
   "leading": [
     "leading"
+  ],
+  "tracking": [
+    "tracking"
   ],
   "spacing": [
     "spacing"
@@ -1161,6 +1176,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -1205,6 +1221,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -1246,6 +1263,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -1298,6 +1316,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -1340,6 +1359,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -1388,6 +1408,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -1439,6 +1460,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -1487,6 +1509,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -1529,6 +1552,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -1573,6 +1597,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -1614,6 +1639,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -1655,6 +1681,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -1702,6 +1729,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -1743,6 +1771,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -1784,6 +1813,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -1829,6 +1859,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -1880,6 +1911,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -1926,6 +1958,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -1986,6 +2019,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -2061,6 +2095,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -2105,6 +2140,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -2149,6 +2185,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -2190,6 +2227,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
@@ -2231,6 +2269,7 @@ export const NODE_MODIFIERS = {
     "font",
     "weight",
     "leading",
+    "tracking",
     "onPress",
     "onLongPress",
     "onHover",
