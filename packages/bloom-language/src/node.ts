@@ -110,6 +110,7 @@ import type { PlaceReviewKind } from './controls/place-reviews';
 import type { CallUiKind } from './controls/call-ui';
 import type { ChatPeopleKind } from './controls/chat-people';
 import type { MessageBubbleKind } from './controls/message-bubble';
+import type { MapChromeKind } from './controls/map-chrome';
 import type { CardFormKind } from './controls/card-form';
 import type { MediaKind } from './controls/media';
 import type { ListingKind } from './controls/listings';
@@ -231,6 +232,8 @@ import {
   type SelectedChipsLayout,
   type MessagePosition,
   type MessageMediaFit,
+  type MapAttributionStyle,
+  type LocationPuckMode,
   type FollowButtonSize,
   type MapPriceMarkerSize,
   type MapMarkerState,
@@ -1175,7 +1178,9 @@ export type Modifier =
         | TenancyLayout
         | CallMode
         | GroupCallLayout
-        | SelectedChipsLayout;
+        | SelectedChipsLayout
+        | MapAttributionStyle
+        | LocationPuckMode;
     }
   | {
       readonly kind: 'shape';
@@ -1451,7 +1456,8 @@ export type NodeKind =
   | PlaceReviewKind
   | CallUiKind
   | ChatPeopleKind
-  | MessageBubbleKind;
+  | MessageBubbleKind
+  | MapChromeKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1811,7 +1817,9 @@ export class Node {
       | TenancyLayout
       | CallMode
       | GroupCallLayout
-      | SelectedChipsLayout,
+      | SelectedChipsLayout
+      | MapAttributionStyle
+      | LocationPuckMode,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }

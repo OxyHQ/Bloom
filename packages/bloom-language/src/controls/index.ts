@@ -69,6 +69,7 @@ import { PLACE_REVIEWS } from './place-reviews';
 import { CALL_UIS } from './call-ui';
 import { CHAT_PEOPLE } from './chat-people';
 import { MESSAGE_BUBBLES } from './message-bubble';
+import { MAP_CHROME } from './map-chrome';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -145,4 +146,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...CALL_UIS,
   ...CHAT_PEOPLE,
   ...MESSAGE_BUBBLES,
+  ...MAP_CHROME,
 };
