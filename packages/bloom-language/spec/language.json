@@ -777,7 +777,9 @@
     "incomingCallAnswer": ["buttons", "slide"],
     "selectedChipsLayout": ["scroll", "wrap"],
     "messagePosition": ["single", "first", "middle", "last"],
-    "messageMediaFit": ["bleed", "inset", "bare"]
+    "messageMediaFit": ["bleed", "inset", "bare"],
+    "mapAttributionStyle": ["island", "inline"],
+    "locationPuckMode": ["following", "compass", "navigating"]
   },
   "glass": {
     "$comment": [
@@ -3480,7 +3482,19 @@
       "modifiers": ["groupPosition", "mediaFit", "tail", "metaOverlay", "senderTint"]
     },
     "typingBubble": { "constructors": ["TypingBubble"], "modifiers": [] },
-    "messageList": { "constructors": ["MessageList"], "modifiers": [] }
+    "messageList": { "constructors": ["MessageList"], "modifiers": [] },
+    "mapScaleBar": {
+      "constructors": ["MapScaleBar"],
+      "modifiers": ["style"],
+      "style": "mapAttributionStyle"
+    },
+    "mapControls": { "constructors": ["MapControls"], "modifiers": ["axis", "align"] },
+    "locationPuck": {
+      "constructors": ["LocationPuck"],
+      "modifiers": ["style"],
+      "style": "locationPuckMode"
+    },
+    "navigationBanner": { "constructors": ["NavigationBanner"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
