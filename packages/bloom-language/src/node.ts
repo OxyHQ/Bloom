@@ -20,6 +20,8 @@ import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/blo
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 
 import type { AgentAvatarKind } from './controls/agent-avatar';
+import type { MediaControlKind } from './controls/media-controls';
+import type { StatCardKind } from './controls/stat-cards';
 import type { AiChatKind } from './controls/ai-chat';
 import type { ComposerPanelKind } from './controls/composer-panel';
 import type { ChartCardKind } from './controls/chart-cards';
@@ -68,6 +70,10 @@ import {
   type BadgeStyle,
   type LoadingStyle,
   type AgentMood,
+  type PlaybackTimes,
+  type PlayButtonStyle,
+  type PlayButtonSize,
+  type StatCardsVariant,
   type AiChatLineTone,
   type SparklineTone,
   type RadarVariant,
@@ -426,7 +432,8 @@ export type Modifier =
         | BloomSize
         | BadgeSize
         | SpaceToken
-        | ReactionPickerSize;
+        | ReactionPickerSize
+        | PlayButtonSize;
     }
   | {
       readonly kind: 'style';
@@ -437,7 +444,10 @@ export type Modifier =
         | LoadingStyle
         | AttachmentLayout
         | AreaVariant
-        | RadarVariant;
+        | RadarVariant
+        | StatCardsVariant
+        | PlayButtonStyle
+        | PlaybackTimes;
     }
   | {
       readonly kind: 'shape';
@@ -595,7 +605,9 @@ export type NodeKind =
   | ChatComposerKind
   | ChartCardKind
   | ComposerPanelKind
-  | AiChatKind;
+  | AiChatKind
+  | StatCardKind
+  | MediaControlKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -906,7 +918,8 @@ export class Node {
       | BloomSize
       | BadgeSize
       | SpaceToken
-      | ReactionPickerSize,
+      | ReactionPickerSize
+      | PlayButtonSize,
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
@@ -917,7 +930,10 @@ export class Node {
       | LoadingStyle
       | AttachmentLayout
       | AreaVariant
-      | RadarVariant,
+      | RadarVariant
+      | StatCardsVariant
+      | PlayButtonStyle
+      | PlaybackTimes,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }

@@ -1206,6 +1206,32 @@ content is the component's children as Bloom takes them, one each, keyed by
   `AiChatGalleryPanel(generations, options?)` (its `stylePresets` a child);
   their `width` is a length (a space token or a fraction of the parent).
 
+### Stat cards
+
+```ts
+StatCards(kpis).style('footer').columns(3)
+StatCard({ icon: UsersIcon, label: 'Users', value: '14,592', delta: '+5.3%', deltaColor: 'lime' })
+```
+
+Bloom's `stat-cards`: `StatCard(stat)` and `StatCards(stats)` take Bloom's
+`StatCardsItem`s. `.style('plain' | 'footer')`; `.columns(1 | 2 | 3 | 4)`, the
+grid's columns at its widest. Bloom's `count` is `stats.slice(0, n)`.
+
+### Media controls
+
+```ts
+PlayButton(playing, { subject: track.title }).size('lg').onPress(toggle)
+PlaybackProgress(position, duration, { onSeek: seek, showTimes: true }).style('below')
+```
+
+Bloom's `media-controls`: `PlayButton(playing, options?)` (`subject`,
+`playLabel`, `pauseLabel`, `interactive`): `.size('sm' | 'md' | 'lg')`,
+`.style('accent' | 'inverse' | 'plain')`, `.loading()`, `.disabled()`;
+`.onPress()` and `.onLongPress()` are its own. `PlaybackProgress(value,
+duration, options?)` (`buffered`, `onSeek`, `onSeekPreview`, `showTimes`,
+`showRemaining`, `keyboardStep`, `formatValueText`): `.style('inline' |
+'below')` places its times, `.disabled()`.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -1591,7 +1617,8 @@ and `@oxy.so/bloom-data` beside it.
   composer panel (`ComposerPanel`, `ComposerPill`, `ComposerPanelStatusTab`);
   the AI chat (`AiChatShell`, `AiChatContainer`, `AiChatThread`,
   `AiChatUserMessage`, `AiChatAssistantMessage`, `AiChatMessageLine`,
-  `AiChatHeader`, `AiChatMobileHeader`, `AiChatCodePanel`, `AiChatGalleryPanel`).
+  `AiChatHeader`, `AiChatMobileHeader`, `AiChatCodePanel`, `AiChatGalleryPanel`);
+  `StatCard`, `StatCards`; `PlayButton`, `PlaybackProgress`.
 
 **Not built**
 

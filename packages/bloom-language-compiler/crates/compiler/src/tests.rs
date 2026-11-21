@@ -627,3 +627,24 @@ fn the_ai_chat_is_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn stat_cards_and_media_controls_are_checked() {
+    let imports = "import { PlaybackProgress, PlayButton, StatCard, StatCards, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (s, p) => VStack(StatCard(s).style('footer'), StatCards(s).style('plain').columns(3), PlayButton(p).size('lg').style('inverse').loading().disabled(), PlaybackProgress(1, 2).style('below').disabled());\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("StatCards(s).style('tiles')", "Unknown statCardsVariant token 'tiles' for .style()"),
+        ("PlayButton(s).size('xl')", "Unknown playButtonSize token 'xl' for .size()"),
+        ("PlayButton(s).style('solid')", "Unknown playButtonStyle token 'solid' for .style()"),
+        ("PlaybackProgress(1, 2).style('above')", "Unknown playbackTimes token 'above' for .style()"),
+        ("StatCard(s).columns(2)", "StatCard has no modifier .columns()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (s) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

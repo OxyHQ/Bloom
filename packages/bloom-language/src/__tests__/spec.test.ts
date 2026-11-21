@@ -127,6 +127,8 @@ import type {
   AiChatCodePanelView,
   AiChatGalleryPanelView,
 } from '../controls/ai-chat';
+import type { StatCardView, StatCardsView } from '../controls/stat-cards';
+import type { PlayButtonView, PlaybackProgressView } from '../controls/media-controls';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -363,7 +365,15 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<AiChatMobileHeaderView>, Of<'aiChatMobileHeader'>>,
       Same<MethodsOf<AiChatCodePanelView>, Of<'aiChatCodePanel'>>,
       Same<MethodsOf<AiChatGalleryPanelView>, Of<'aiChatGalleryPanel'>>,
+      Same<MethodsOf<StatCardView>, Of<'statCard'>>,
+      Same<MethodsOf<StatCardsView>, Of<'statCards'>>,
+      Same<MethodsOf<PlayButtonView>, Of<'playButton'>>,
+      Same<MethodsOf<PlaybackProgressView>, Of<'playbackProgress'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,
