@@ -17,15 +17,15 @@ pub struct NodeSpec {
 
 /// Token set name → its token names.
 pub const TOKEN_SETS: &[(&str, &[&str])] = &[
-    ("space", &["none", "2xs", "xs", "xs-sm", "sm", "sm-md", "md", "md-lg", "lg", "xl", "2xl", "3xl", "3xl-4xl", "4xl", "4xl-5xl", "5xl", "6xl"]),
-    ("padding", &["none", "2xs", "xs", "xs-sm", "sm", "sm-md", "md", "md-lg", "lg", "xl", "2xl", "3xl", "3xl-4xl", "4xl", "4xl-5xl", "5xl", "6xl", "-none", "-2xs", "-xs", "-xs-sm", "-sm", "-sm-md", "-md", "-md-lg", "-lg", "-xl", "-2xl", "-3xl", "-3xl-4xl", "-4xl", "-4xl-5xl", "-5xl", "-6xl"]),
-    ("spacing", &["none", "2xs", "xs", "xs-sm", "sm", "sm-md", "md", "md-lg", "lg", "xl", "2xl", "3xl", "3xl-4xl", "4xl", "4xl-5xl", "5xl", "6xl", "between"]),
-    ("corner", &["none", "2xs", "xs", "xs-sm", "sm", "md", "lg", "xl", "2xl", "3xl", "full", "concentric"]),
-    ("font", &["large-title", "display-1", "display-2", "display-3", "display-4", "title-1", "title-2", "title-3", "headline", "body", "body-2", "caption-1", "caption-2", "2xs", "2xs-xs", "xs", "sm", "md", "md-lg", "lg", "lg-xl", "xl", "2xl", "3xl", "4xl", "5xl", "mono"]),
+    ("space", &["none", "none-2xs", "2xs", "xs", "xs-sm", "sm", "sm-md", "md", "md-lg", "lg", "xl", "2xl", "2xl-3xl", "3xl", "3xl-4xl", "4xl", "4xl-5xl", "5xl", "6xl", "7xl"]),
+    ("padding", &["none", "none-2xs", "2xs", "xs", "xs-sm", "sm", "sm-md", "md", "md-lg", "lg", "xl", "2xl", "2xl-3xl", "3xl", "3xl-4xl", "4xl", "4xl-5xl", "5xl", "6xl", "7xl", "-none", "-none-2xs", "-2xs", "-xs", "-xs-sm", "-sm", "-sm-md", "-md", "-md-lg", "-lg", "-xl", "-2xl", "-2xl-3xl", "-3xl", "-3xl-4xl", "-4xl", "-4xl-5xl", "-5xl", "-6xl", "-7xl"]),
+    ("spacing", &["none", "none-2xs", "2xs", "xs", "xs-sm", "sm", "sm-md", "md", "md-lg", "lg", "xl", "2xl", "2xl-3xl", "3xl", "3xl-4xl", "4xl", "4xl-5xl", "5xl", "6xl", "7xl", "between"]),
+    ("corner", &["none", "2xs", "xs", "xs-sm", "sm", "sm-md", "md", "md-lg", "lg", "lg-xl", "xl", "xl-2xl", "2xl", "3xl", "full", "concentric"]),
+    ("font", &["large-title", "display-1", "display-2", "display-3", "display-4", "title-1", "title-2", "title-3", "headline", "body", "body-2", "caption-1", "caption-2", "2xs", "2xs-xs", "xs", "sm", "sm-md", "md", "md-lg", "lg", "lg-xl", "xl", "2xl", "2xl-3xl", "3xl", "4xl", "5xl", "mono"]),
     ("weight", &["light", "regular", "medium", "semibold", "bold", "extrabold"]),
-    ("leading", &["tight", "close", "snug", "easy", "normal", "open", "relaxed"]),
+    ("leading", &["tight", "close", "close-snug", "snug", "snug-easy", "easy", "easy-normal", "normal", "open", "relaxed"]),
     ("tracking", &["tight", "close", "snug", "wide", "wider", "widest"]),
-    ("color", &["foreground", "muted", "primary", "onPrimary", "secondary", "onSecondary", "tertiary", "onTertiary", "background", "surface", "popover", "border", "input", "success", "warning", "error", "info", "mutedFill", "card", "destructive", "primaryText", "white", "black"]),
+    ("color", &["foreground", "muted", "primary", "onPrimary", "secondary", "onSecondary", "tertiary", "onTertiary", "background", "surface", "popover", "border", "input", "success", "warning", "error", "info", "mutedFill", "card", "destructive", "primaryText", "white", "black", "transparent", "onSurface", "accent", "errorText"]),
     ("borderWidth", &["hairline", "thin", "thick"]),
     ("opacity", &["transparent", "faint", "pale", "sheer", "hazy", "half", "dim", "faded", "soft", "soft-opaque", "opaque"]),
     ("hitSlop", &["sm", "md", "lg"]),
