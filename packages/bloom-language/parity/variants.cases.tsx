@@ -222,6 +222,40 @@ export const VARIANT_CASES: ParityCase[] = [
     ),
   },
   {
+    name: 'a Bloom pressable inside a pressable: the hover and press are its own',
+    language: () =>
+      toElement(
+        L.HStack(L.Text('a'), L.Avatar('https://cdn.oxy.so/avatars/ana.jpg').onPress(onPress))
+          .padding('sm')
+          .onPress(onPress)
+          .when('pressed', (v) => v.opacity('70'))
+          .when('hovered', (v) => v.background('surface')),
+      ),
+    // react-native-web's Pressable keeps a hover and a press inside an inner one
+    // from the outer one (Chrome holds both, verify-parity-web.mjs).
+    bloom: () => (
+      <Themed>
+        {(colors) => (
+          <RN.Pressable
+            onPress={onPress}
+            {...TRACKED}
+            style={
+              RN.Platform.OS === 'web'
+                ? (state: { pressed: boolean; hovered?: boolean }) => ({
+                    ...padding(space.sm),
+                    ...stated(colors.backgroundSecondary, 0.7)(state),
+                  })
+                : { flexDirection: 'row', ...padding(space.sm) }
+            }
+          >
+            <Text>a</Text>
+            <Avatar source="https://cdn.oxy.so/avatars/ana.jpg" onPress={onPress} />
+          </RN.Pressable>
+        )}
+      </Themed>
+    ),
+  },
+  {
     name: 'a Bloom component’s breakpoint variant, in its own style',
     language: () =>
       toElement(

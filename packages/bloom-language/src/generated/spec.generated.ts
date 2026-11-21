@@ -289,9 +289,9 @@ export const VARIANT_MODIFIERS = [
 ] as const;
 export const VARIANT_SELECTORS = {
   "dark": ".dark &",
-  "hovered": "&:is(.blsg:hover:where(:not(:has(.blsg:hover))), .blsg:hover:where(:not(:has(.blsg:hover))) *):where(:not(.blsg:hover:where(:not(:has(.blsg:hover))) .blsg, .blsg:hover:where(:not(:has(.blsg:hover))) .blsg *))",
+  "hovered": "&:is(.blsg:hover:where(:not(:has(.blsp:hover))), .blsg:hover:where(:not(:has(.blsp:hover))) *):where(:not(.blsg:hover:where(:not(:has(.blsp:hover))) .blsg, .blsg:hover:where(:not(:has(.blsp:hover))) .blsg *))",
   "focused": "&:is(.blsg:focus-visible, .blsg:focus-visible *):where(:not(.blsg:focus-visible .blsg, .blsg:focus-visible .blsg *))",
-  "pressed": "&:is(.blsg:active:where(:not(:has(.blsg:active))), .blsg:active:where(:not(:has(.blsg:active))) *):where(:not(.blsg:active:where(:not(:has(.blsg:active))) .blsg, .blsg:active:where(:not(:has(.blsg:active))) .blsg *))"
+  "pressed": "&:is(.blsg:active:where(:not(:has(.blsp:active))), .blsg:active:where(:not(:has(.blsp:active))) *):where(:not(.blsg:active:where(:not(:has(.blsp:active))) .blsg, .blsg:active:where(:not(:has(.blsp:active))) .blsg *))"
 } as const;
 
 /** Cubic-bezier curves by name. */

@@ -9,12 +9,14 @@
  * tag, its attributes other than `class`, `style` and `data-testid`, its text,
  * every computed style property, and its laid-out size, in light and dark.
  *
- * Then each press host of a language cell (a view whose variants answer its
- * state carries the anchor class `blsg`) is held: the pointer over it (at a
- * point no inner host covers), then pressed, at the same place in both cells,
+ * Then each press host of a language cell is held: a view whose variants
+ * answer its state (the anchor class `blsg`) and every pressable
+ * react-native-web draws (Bloom's press host class `blsp`: the language's
+ * hosts, Bloom's Avatar and EngagementAction). The pointer goes over it (at a
+ * point no inner host covers), then presses, at the same place in both cells,
  * and the two cells are compared again on every computed style and size. So a
  * state variant draws what Bloom's own pressed or hovered style draws, and a
- * press host inside another answers only its own state.
+ * hover or press inside a pressable, a Bloom one included, is that one's.
  *
  * Usage: start Storybook (`bun run storybook`), then
  *   node packages/bloom-language/scripts/verify-parity-web.mjs [--url http://localhost:6006] [--width 1200]
@@ -151,20 +153,22 @@ function describeCellInPage(testid) {
 }
 
 /**
- * The press hosts of a language cell, by path, each with a point (relative to
- * its box) where the pointer is over it and no press host inside it.
+ * The press hosts of a language cell (an anchor, a pressable), by path, each
+ * with a point (relative to its box) where the pointer is over it and no press
+ * host inside it.
  */
 function pressHostsInPage(index) {
+  const HOSTS = '.blsg, .blsp';
   const cell = document.querySelector(`[data-testid="language-${index}"]`);
   const hosts = [];
   const walk = (element, path) => {
-    if (element.classList.contains('blsg')) {
+    if (element.matches(HOSTS)) {
       const box = element.getBoundingClientRect();
       let point = null;
       for (let y = 1; y < box.height && !point; y += 2)
         for (let x = 1; x < box.width && !point; x += 2) {
           const hit = document.elementFromPoint(box.x + x, box.y + y);
-          if (hit && hit.closest('.blsg') === element) point = { x, y };
+          if (hit && hit.closest(HOSTS) === element) point = { x, y };
         }
       if (point) hosts.push({ path, point });
     }
@@ -201,8 +205,15 @@ async function compareHeldStates(page) {
           }
           await page.mouse.move(origin.x + point.x, origin.y + point.y);
           if (state === 'pressed') await page.mouse.down();
-          // Bloom's Pressable draws its state on React's next render.
-          await page.evaluate(() => new Promise((done) => setTimeout(done, 50)));
+          // Bloom's Pressable draws its state on React's next render; a
+          // transition it starts (an action's wash) is compared where it ends.
+          await page.evaluate(async () => {
+            await new Promise((done) => setTimeout(done, 50));
+            const finite = document
+              .getAnimations()
+              .filter((animation) => animation.effect?.getTiming().iterations !== Infinity);
+            await Promise.all(finite.map((animation) => animation.finished.catch(() => {})));
+          });
           drawn.push(await page.evaluate(describeCellInPage, `${side}-${index}`));
           if (state === 'pressed') await page.mouse.up();
           await page.mouse.move(0, 0);
