@@ -100,6 +100,8 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("resizeHandleStyle", &["grip", "pill"]),
     ("modePresentation", &["segmented", "toggle"]),
     ("teamPlacement", &["header", "footer"]),
+    ("keyboard", &["default", "email-address", "numeric", "number-pad", "decimal-pad", "phone-pad", "url", "web-search"]),
+    ("contentType", &["off", "email", "username", "password", "new-password", "current-password", "one-time-code", "name", "given-name", "family-name", "tel", "postal-code", "street-address", "url"]),
     ("dragIndicator", &["visible", "hidden"]),
     ("sheetMaterial", &["surface", "flat"]),
     ("sheetSizing", &["content", "fill"]),
@@ -361,6 +363,16 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("draggable", &["value?"]),
     ("droppable", &["value?"]),
     ("dropBeside", &["value?"]),
+    ("description", &["value"]),
+    ("inset", &["space"]),
+    ("muted", &["value?"]),
+    ("compact", &["value?"]),
+    ("keyboard", &["keyboard"]),
+    ("contentType", &["contentType"]),
+    ("savedToast", &["value?"]),
+    ("minDate", &["value"]),
+    ("maxDate", &["value"]),
+    ("dateFormat", &["value"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -427,6 +439,11 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "scrollSurface", constructors: &["ScrollSurface"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "colorPreset", "seed", "screenActive", "initialHeaderHeight", "initialFooterHeight", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "contentMargins", "spacing", "axis", "scrollbar", "scrollbarSide", "size", "scrollDismissesKeyboard", "keyboardTaps", "stickyHeader", "stickyFooter", "fadeHeight", "fadeBottom", "matchSurfacePaint", "style"], size: Some("scrollbarSize"), tint: None, style: Some("scrollSurfaceStyle"), shape: None },
     NodeSpec { kind: "autoHideBar", constructors: &["AutoHideBar"], modifiers: &["summary", "collapsed", "onReveal", "peek", "barHeight", "collapsedHeight", "label", "testID"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "resizeHandle", constructors: &["ResizeHandle"], modifiers: &["axis", "style", "thickness", "onResizeStart", "onResizeEnd", "onNudge", "label", "testID"], size: None, tint: None, style: Some("resizeHandleStyle"), shape: None },
+    NodeSpec { kind: "settingsSection", constructors: &["SettingsSection"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "colorPreset", "seed", "screenActive", "initialHeaderHeight", "initialFooterHeight", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "description", "trailing", "inset"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "settingsValue", constructors: &["SettingsValue"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "colorPreset", "seed", "screenActive", "initialHeaderHeight", "initialFooterHeight", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "icon", "muted"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "settingsSelect", constructors: &["SettingsSelect"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "onReselect", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "colorPreset", "seed", "screenActive", "initialHeaderHeight", "initialFooterHeight", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "compact", "size", "disabled", "width"], size: Some("controlSize"), tint: None, style: None, shape: None },
+    NodeSpec { kind: "settingsTextField", constructors: &["SettingsTextField"], modifiers: &["icon", "placeholder", "keyboard", "contentType", "disabled", "savedToast", "testID"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "settingsDateField", constructors: &["SettingsDateField"], modifiers: &["minDate", "maxDate", "dateFormat", "savedToast", "testID"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "pageFooter", constructors: &["PageFooter"], modifiers: &["toolbar", "pinning", "scrollEdge", "ignoresSafeArea", "testID"], size: None, tint: None, style: None, shape: None },
 ];
 

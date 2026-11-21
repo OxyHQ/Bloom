@@ -580,6 +580,32 @@
     "resizeHandleStyle": ["grip", "pill"],
     "modePresentation": ["segmented", "toggle"],
     "teamPlacement": ["header", "footer"],
+    "keyboard": [
+      "default",
+      "email-address",
+      "numeric",
+      "number-pad",
+      "decimal-pad",
+      "phone-pad",
+      "url",
+      "web-search"
+    ],
+    "contentType": [
+      "off",
+      "email",
+      "username",
+      "password",
+      "new-password",
+      "current-password",
+      "one-time-code",
+      "name",
+      "given-name",
+      "family-name",
+      "tel",
+      "postal-code",
+      "street-address",
+      "url"
+    ],
     "dragIndicator": ["visible", "hidden"],
     "sheetMaterial": ["surface", "flat"],
     "sheetSizing": ["content", "fill"],
@@ -965,7 +991,17 @@
     "onDrop": ["value"],
     "draggable": ["value?"],
     "droppable": ["value?"],
-    "dropBeside": ["value?"]
+    "dropBeside": ["value?"],
+    "description": ["value"],
+    "inset": ["space"],
+    "muted": ["value?"],
+    "compact": ["value?"],
+    "keyboard": ["keyboard"],
+    "contentType": ["contentType"],
+    "savedToast": ["value?"],
+    "minDate": ["value"],
+    "maxDate": ["value"],
+    "dateFormat": ["value"]
   },
   "universal": [
     "padding",
@@ -1607,6 +1643,37 @@
         "testID"
       ],
       "style": "resizeHandleStyle"
+    },
+    "settingsSection": {
+      "constructors": ["SettingsSection"],
+      "modifiers": ["description", "trailing", "inset"]
+    },
+    "settingsValue": {
+      "constructors": ["SettingsValue"],
+      "modifiers": ["icon", "muted"]
+    },
+    "settingsSelect": {
+      "constructors": ["SettingsSelect"],
+      "modifiers": ["compact", "size", "disabled", "width"],
+      "size": "controlSize"
+    },
+    "settingsTextField": {
+      "constructors": ["SettingsTextField"],
+      "universal": false,
+      "modifiers": [
+        "icon",
+        "placeholder",
+        "keyboard",
+        "contentType",
+        "disabled",
+        "savedToast",
+        "testID"
+      ]
+    },
+    "settingsDateField": {
+      "constructors": ["SettingsDateField"],
+      "universal": false,
+      "modifiers": ["minDate", "maxDate", "dateFormat", "savedToast", "testID"]
     },
     "pageFooter": {
       "constructors": ["PageFooter"],
