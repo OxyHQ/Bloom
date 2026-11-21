@@ -165,18 +165,16 @@ describe('one family layout', () => {
     // stays out of `exports` and the root barrel because none of it is API a
     // consumer should reach for.
     //
-    // `blur/` is the same shape: ONE authority for the translucent material —
-    // blur, accent tint, sheen and lit rim — that the surfaces which float over
-    // content compose instead of each inventing it. Bloom already solved the shared material
-    // three times independently (`frosted-icon-button`, `tab-bar`,
-    // `progressive-blur`) and this exists so there is not a fourth.
-    //
-    // Internal DELIBERATELY, and the direction matters: publishing it later is
-    // additive, unpublishing it would be a breaking change, and only one
-    // consumer (`Button`) has landed on it so far. Whether apps should be able
-    // to build their own blurred surfaces is a real question and not one this gate
-    // should answer by default.
-    const INTERNAL_DIRECTORIES: readonly string[] = ['blur', 'floating'];
+    // `blur/` was internal on the same grounds until 2026-11-21: ONE authority
+    // for the translucent material (blur, accent tint, sheen and lit rim) that
+    // the surfaces which float over content compose instead of each inventing
+    // it. It is published now (`@oxy.so/bloom/blur`), the owner's decision,
+    // because the Bloom language draws `BlurIsland` for `.blur()`: a package
+    // that composes Bloom cannot reach an internal directory, and a second
+    // island built from Surface would be the fourth copy of the material this
+    // family exists to prevent. Publishing was additive; unpublishing it now
+    // would be a breaking change.
+    const INTERNAL_DIRECTORIES: readonly string[] = ['floating'];
 
     const pkg = JSON.parse(readFileSync(join(SRC, '..', 'package.json'), 'utf8')) as {
       exports: Record<string, Record<string, unknown> | string>;

@@ -19,7 +19,7 @@ Keep shadow on the outer control and clip only the inner paint layer; clipping t
 
 `expo-blur` couples tint and blur intensity; CSS backdrop blur does not. Native and web therefore require separate visual checks whenever their materials change. Android blur must target content in a separate native window. A BlurView inside its own BlurTargetView can crash in native rendering (recursive RenderNode traversal), which is also why no surface mounts its own `BlurView` on Android. On iOS, where a `BlurView` needs no target, floating surfaces draw the system's material (see [Surface](./surface.mdx)). Never expose the app-root target directly to an inline control; only `BlurWindow` inside an actual Modal may publish it. The separate-window check in `blur-target.tsx` preserves that boundary.
 
-`BlurTargetProvider`, `BlurWindow` and `useWindowedBlurTarget` live in `src/blur/` and are internal; `BloomProvider` mounts the provider and `BottomSheet` the window.
+`BlurIsland`, `BlurTargetProvider`, `BlurWindow` and `useWindowedBlurTarget` are published at `@oxy.so/bloom/blur`; `BloomProvider` mounts the provider and `BottomSheet` the window, so an app rarely mounts either itself.
 
 ## Floating islands
 
@@ -35,6 +35,8 @@ island, not the button, owns the material. Where the device has the lens, each i
 elsewhere each keeps the Surface paint.
 
 ```tsx
+import { BlurIsland } from '@oxy.so/bloom/blur';
+
 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
   <BlurIsland>
     <Button iconOnly appearance="plain" material="shared" icon={RiFilterLine} accessibilityLabel="Filter" />
