@@ -708,7 +708,11 @@
     "ratingStyle": ["compact", "stars"],
     "ratingCountStyle": ["parenthesis", "reviews"],
     "ratingInputSize": ["sm", "md", "lg"],
-    "meterCap": ["round", "butt"]
+    "meterCap": ["round", "butt"],
+    "tableSize": ["sm", "md"],
+    "tableAlign": ["start", "center", "end"],
+    "tableSort": ["ascending", "descending", "none"],
+    "columnWidthExtra": ["fit"]
   },
   "glass": {
     "$comment": [
@@ -1206,7 +1210,14 @@
     "cap": ["meterCap"],
     "content": ["value"],
     "onStop": ["value", "value"],
-    "rangeLabels": ["value", "value?"]
+    "rangeLabels": ["value", "value?"],
+    "width": ["columnWidth"],
+    "share": ["value"],
+    "minWidth": ["space"],
+    "sort": ["tableSort", "value"],
+    "prefix": ["value"],
+    "emptyState": ["value"],
+    "selected": ["value"]
   },
   "universal": [
     "padding",
@@ -2344,6 +2355,18 @@
       "constructors": ["StatBar", "SplitBar"],
       "modifiers": ["tint", "trackTint", "thickness", "trailing", "rangeLabels"],
       "tint": "color"
+    },
+    "table": { "constructors": ["Table"], "modifiers": ["size", "minWidth"], "size": "tableSize" },
+    "tableHeader": { "constructors": ["TableHeader"], "modifiers": [] },
+    "tableColumn": {
+      "constructors": ["TableColumn"],
+      "modifiers": ["width", "share", "minWidth", "align", "sort", "prefix"]
+    },
+    "tableBody": { "constructors": ["TableBody"], "modifiers": ["emptyState"] },
+    "tableRow": { "constructors": ["TableRow"], "modifiers": ["selected"] },
+    "tableCell": {
+      "constructors": ["TableCell"],
+      "modifiers": ["width", "share", "minWidth", "align"]
     }
   },
   "sfSymbols": {

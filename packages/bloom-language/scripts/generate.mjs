@@ -390,6 +390,7 @@ const tokenSets = {
   scale: Object.keys(scales.scale),
   ring: [...Object.keys(colors), ...enums.ringExtra],
   corner: [...Object.keys(scales.corner), ...enums.cornerExtra],
+  columnWidth: [...Object.keys(scales.space), ...enums.columnWidthExtra],
   font: [...typeFamilies, ...Object.keys(scales.fontSize), ...enums.fontFamily],
   weight: Object.keys(scales.weight),
   leading: [...Object.keys(scales.leading), ...Object.keys(scales.leadingPx)],
