@@ -118,3 +118,4 @@ export const PhotoGrids: Story = { args: { family: 'sortableMedia' } };
 export const ChoiceLists: Story = { args: { family: 'choiceList' } };
 export const VideoPlayback: Story = { args: { family: 'videoPlayback' } };
 export const HoverCards: Story = { args: { family: 'hoverCard' } };
+export const ExpandableText: Story = { args: { family: 'expandableText' } };

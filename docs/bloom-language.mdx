@@ -2211,6 +2211,22 @@ the view's box, `.label()` names the card. It takes `.presented([open, set])`
 'bottom')`, `.align('start' | 'center' | 'end')`, `.padded(false)` (a card
 whose content paints its own surface) and `.disabled()`.
 
+### Expandable text
+
+```ts
+ExpandableText(review.body).lines(3)
+ExpandableText(app.description, [open, setOpen]).style('inline').font('caption-1')
+```
+
+Bloom's `ExpandableText`: text clamped to `.lines(n)` (3 by default; 0 never
+clamps) with a control to read the rest, drawn only when something is hidden.
+`.style('below' | 'inline')` places the control (a "Show more" under it, or a
+"More" over the end of its last line that opens it for good), and
+`.labels({ more, less })` words it. The binding, when given, holds whether it
+is open. Its type and colour are the text environment's (`.font()`,
+`.weight()`, `.foreground()`, set on it or above it), as a `Text`'s are: a
+control is handed that environment (`ControlDraw.text`).
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2656,6 +2672,9 @@ and `@oxy.so/bloom-data` beside it.
   choice lists,
   video playback.
   hover cards.
+  image aspect ratios (Bloom's cache, through `.aspectRatio()` and `.onLoad()`),
+  fact strips,
+  expandable text.
 
 **Not built**
 
