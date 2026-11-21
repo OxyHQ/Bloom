@@ -57,25 +57,27 @@ const argWidth = process.argv.indexOf('--width');
 const WIDTH = argWidth !== -1 ? Number(process.argv[argWidth + 1]) : 1200;
 const STORIES = process.argv.filter((arg) => arg.startsWith('language-parity--'));
 
-/** Every pair of a story, compared in the page; returns the differences. */
-function compareInPage() {
+/**
+ * What a cell draws, as a tree: each element's tag, its attributes other than
+ * `class`, `style`, `data-testid` and `id`, its text, every computed style
+ * property (its `::before` and `::after` included) and its laid-out size.
+ */
+function describeInPage(testid) {
   const SKIP = new Set(['class', 'style', 'data-testid', 'id']);
-  const differences = [];
-  // React's useId counts across the page; an id is compared by its order in its case.
+  // React's useId counts across the page; an id is compared by its order in its cell.
   const REACT_ID = /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
-  let maps = [new Map(), new Map()];
-  const ids = (side, text) =>
+  const map = new Map();
+  const ids = (text) =>
     text.replace(REACT_ID, (id) => {
-      const map = maps[side];
       if (!map.has(id)) map.set(id, `id${map.size}`);
       return map.get(id);
     });
-  const describe = (element, side) => {
+  const describe = (element) => {
     const attributes = {};
     for (const { name, value } of [...element.attributes].sort((a, b) =>
       a.name < b.name ? -1 : 1,
     ))
-      if (!SKIP.has(name)) attributes[name] = ids(side, value);
+      if (!SKIP.has(name)) attributes[name] = ids(value);
     const style = getComputedStyle(element);
     // A running animation (a skeleton's shimmer) is sampled when it is read and
     // synced to when it mounted: what it animates is compared by its animation.
@@ -85,100 +87,88 @@ function compareInPage() {
     // Custom properties are inputs, named per instance (React ids); what they set is compared.
     for (let i = 0; i < style.length; i++)
       if (!style[i].startsWith('--') && !(animated && MOVING.has(style[i])))
-        css[style[i]] = ids(side, style.getPropertyValue(style[i]));
+        css[style[i]] = ids(style.getPropertyValue(style[i]));
     // What a pseudo-element draws (Surface's material is its ::before and ::after).
     for (const pseudo of ['::before', '::after']) {
       const drawn = getComputedStyle(element, pseudo);
       if (drawn.content === 'none' || drawn.content === 'normal') continue;
       for (let i = 0; i < drawn.length; i++)
         if (!drawn[i].startsWith('--'))
-          css[`${pseudo} ${drawn[i]}`] = ids(side, drawn.getPropertyValue(drawn[i]));
+          css[`${pseudo} ${drawn[i]}`] = ids(drawn.getPropertyValue(drawn[i]));
     }
     // Layout rounds a fraction of a pixel differently at different places on the page.
     const box = element.getBoundingClientRect();
     const px = (n) => Math.round(n * 100) / 100;
-    return { tag: element.tagName, attributes, css, size: `${px(box.width)}x${px(box.height)}` };
+    const text = [...element.childNodes]
+      .filter((child) => child.nodeType === 3)
+      .map((child) => child.textContent)
+      .join('');
+    return {
+      tag: element.tagName,
+      attributes,
+      css,
+      size: `${px(box.width)}x${px(box.height)}`,
+      text,
+      children: [...element.children].map(describe),
+    };
   };
-  const walk = (a, b, path, name) => {
-    const left = describe(a, 0);
-    const right = describe(b, 1);
-    const at = `${name} ${path}`;
-    if (left.tag !== right.tag) differences.push(`${at}: <${left.tag}> vs <${right.tag}>`);
-    if (JSON.stringify(left.attributes) !== JSON.stringify(right.attributes))
-      differences.push(
-        `${at}: attributes ${JSON.stringify(left.attributes)} vs ${JSON.stringify(right.attributes)}`,
-      );
-    for (const property of new Set([...Object.keys(left.css), ...Object.keys(right.css)])) {
-      if (left.css[property] !== right.css[property])
-        differences.push(`${at}: ${property} ${left.css[property]} vs ${right.css[property]}`);
-    }
-    if (left.size !== right.size) differences.push(`${at}: size ${left.size} vs ${right.size}`);
-    const text = (node) =>
-      [...node.childNodes]
-        .filter((child) => child.nodeType === 3)
-        .map((child) => child.textContent)
-        .join('');
-    if (text(a) !== text(b)) differences.push(`${at}: text "${text(a)}" vs "${text(b)}"`);
-    const ka = [...a.children];
-    const kb = [...b.children];
-    if (ka.length !== kb.length) {
-      differences.push(`${at}: ${ka.length} children vs ${kb.length}`);
-      return;
-    }
-    ka.forEach((child, index) => walk(child, kb[index], `${path}/${index}`, name));
-  };
-  // The table's cells only: an overlay a case presents portals its own `bloom-…` test ids into the page.
-  const rows = [...document.querySelectorAll('[data-testid^="bloom-"]')].filter((cell) =>
-    /^bloom-\d+$/.test(cell.dataset.testid),
-  );
-  for (const bloom of rows) {
-    const index = bloom.dataset.testid.slice('bloom-'.length);
-    const language = document.querySelector(`[data-testid="language-${index}"]`);
-    const name = bloom.previousElementSibling?.textContent ?? index;
-    maps = [new Map(), new Map()];
-    // The two cells are the table's; what each case draws is inside them.
-    const left = [...bloom.children];
-    const right = [...language.children];
-    if (left.length !== right.length)
-      differences.push(`[${name}]: ${left.length} roots vs ${right.length}`);
-    else left.forEach((child, at) => walk(child, right[at], `/${at}`, `[${name}]`));
-  }
-  return { pairs: rows.length, differences };
-}
-
-/** What a cell draws, element by element: every computed style and the laid-out size. */
-function describeCellInPage(testid) {
-  const cell = document.querySelector(`[data-testid="${testid}"]`);
-  const out = [];
-  const walk = (element, path) => {
-    const style = getComputedStyle(element);
-    const css = {};
-    for (let i = 0; i < style.length; i++)
-      if (!style[i].startsWith('--')) css[style[i]] = style.getPropertyValue(style[i]);
-    for (const pseudo of ['::before', '::after']) {
-      const drawn = getComputedStyle(element, pseudo);
-      if (drawn.content === 'none' || drawn.content === 'normal') continue;
-      for (let i = 0; i < drawn.length; i++)
-        if (!drawn[i].startsWith('--'))
-          css[`${pseudo} ${drawn[i]}`] = drawn.getPropertyValue(drawn[i]);
-    }
-    const box = element.getBoundingClientRect();
-    const px = (n) => Math.round(n * 100) / 100;
-    out.push({ path, tag: element.tagName, css, size: `${px(box.width)}x${px(box.height)}` });
-    [...element.children].forEach((child, index) => walk(child, `${path}/${index}`));
-  };
-  [...cell.children].forEach((child, index) => walk(child, `/${index}`));
-  return out;
+  return [...document.querySelector(`[data-testid="${testid}"]`).children].map(describe);
 }
 
 /**
- * The press hosts of a language cell (an anchor, a pressable), by path, each
- * with a point (relative to its box) where the pointer is over it and no press
- * host inside it.
+ * The differences between two described cells. `full` compares tags,
+ * attributes and text too; a held state compares what it draws (style, size).
  */
-function pressHostsInPage(index) {
+function compareTrees(left, right, name, full = true) {
+  const differences = [];
+  const walk = (a, b, path) => {
+    const at = `${name} ${path}`;
+    if (full && a.tag !== b.tag) differences.push(`${at}: <${a.tag}> vs <${b.tag}>`);
+    if (full && JSON.stringify(a.attributes) !== JSON.stringify(b.attributes))
+      differences.push(
+        `${at}: attributes ${JSON.stringify(a.attributes)} vs ${JSON.stringify(b.attributes)}`,
+      );
+    for (const property of new Set([...Object.keys(a.css), ...Object.keys(b.css)]))
+      if (a.css[property] !== b.css[property])
+        differences.push(`${at}: ${property} ${a.css[property]} vs ${b.css[property]}`);
+    if (a.size !== b.size) differences.push(`${at}: size ${a.size} vs ${b.size}`);
+    if (full && a.text !== b.text) differences.push(`${at}: text "${a.text}" vs "${b.text}"`);
+    if (a.children.length !== b.children.length) {
+      differences.push(`${at}: ${a.children.length} children vs ${b.children.length}`);
+      return;
+    }
+    a.children.forEach((child, index) => walk(child, b.children[index], `${path}/${index}`));
+  };
+  if (left.length !== right.length)
+    differences.push(`${name}: ${left.length} roots vs ${right.length}`);
+  else left.forEach((child, at) => walk(child, right[at], `/${at}`));
+  return differences;
+}
+
+/**
+ * The table's cases: the index, the name, an isolated case's frame story
+ * args, and whether drawing nothing is the case's claim. Only `bloom-<n>` cells are rows: an overlay a case presents
+ * portals its own `bloom-…` test ids into the page.
+ */
+function rowsInPage() {
+  return [...document.querySelectorAll('[data-testid^="bloom-"]')]
+    .filter((cell) => /^bloom-\d+$/.test(cell.dataset.testid))
+    .map((cell) => ({
+      index: Number(cell.dataset.testid.slice('bloom-'.length)),
+      name: cell.previousElementSibling?.textContent ?? '',
+      frame: cell.dataset.parityFrame ?? null,
+      empty: cell.dataset.parityEmpty !== undefined,
+    }));
+}
+
+/**
+ * The press hosts of a cell (an anchor, a pressable), by path, each with a
+ * point (relative to its box) where the pointer is over it and no press host
+ * inside it.
+ */
+function pressHostsInPage(testid) {
   const HOSTS = '.blsg, .blsp';
-  const cell = document.querySelector(`[data-testid="language-${index}"]`);
+  const cell = document.querySelector(`[data-testid="${testid}"]`);
   const hosts = [];
   const walk = (element, path) => {
     if (element.matches(HOSTS)) {
@@ -205,62 +195,48 @@ function elementAtPathInPage(testid, path) {
   return { x: box.x, y: box.y };
 }
 
-/** Holds each press host of each case, hovered then pressed, in both cells; returns the differences. */
-async function compareHeldStates(page) {
+/** Waits for what a page draws: its first cell, its fonts, then the transitions it starts. */
+async function settle(page, testid) {
+  await page.waitForSelector(`[data-testid="${testid}"]`, { timeout: 60000 });
+  await page.evaluate(() => document.fonts.ready);
+  // The page at rest: a control that measures its own layout and moves into
+  // place (a segmented control's thumb) settles after the fonts load.
+  await page.evaluate(() => new Promise((done) => setTimeout(done, 1000)));
+}
+
+/**
+ * Holds each press host of a case, hovered then pressed, on both sides; each
+ * side is `{ page, testid }` (a table cell, or an isolated case's own page).
+ */
+async function compareHeldStates(sides, name) {
   const differences = [];
-  const count = await page.evaluate(
-    () =>
-      [...document.querySelectorAll('[data-testid^="bloom-"]')].filter((cell) =>
-        /^bloom-\d+$/.test(cell.dataset.testid),
-      ).length,
-  );
-  for (let index = 0; index < count; index++) {
-    const hosts = await page.evaluate(pressHostsInPage, index);
-    for (const { path, point } of hosts) {
-      for (const state of ['hovered', 'pressed']) {
-        const drawn = [];
-        for (const side of ['bloom', 'language']) {
-          const origin = await page.evaluate(elementAtPathInPage, `${side}-${index}`, path);
-          if (!origin) {
-            differences.push(`[case ${index}] ${state} ${path}: no ${side} element`);
-            continue;
-          }
-          await page.mouse.move(origin.x + point.x, origin.y + point.y);
-          if (state === 'pressed') await page.mouse.down();
-          // Bloom's Pressable draws its state on React's next render; a
-          // transition it starts (an action's wash) is compared where it ends.
-          await page.evaluate(async () => {
-            await new Promise((done) => setTimeout(done, 50));
-            const finite = document
-              .getAnimations()
-              .filter((animation) => animation.effect?.getTiming().iterations !== Infinity);
-            await Promise.all(finite.map((animation) => animation.finished.catch(() => {})));
-          });
-          drawn.push(await page.evaluate(describeCellInPage, `${side}-${index}`));
-          if (state === 'pressed') await page.mouse.up();
-          await page.mouse.move(0, 0);
-        }
-        if (drawn.length !== 2) continue;
-        const [left, right] = drawn;
-        if (left.length !== right.length) {
-          differences.push(
-            `[case ${index}] ${state} ${path}: ${left.length} vs ${right.length} elements`,
-          );
+  const hosts = await sides[1].page.evaluate(pressHostsInPage, sides[1].testid);
+  for (const { path, point } of hosts) {
+    for (const state of ['hovered', 'pressed']) {
+      const drawn = [];
+      for (const { page, testid } of sides) {
+        const origin = await page.evaluate(elementAtPathInPage, testid, path);
+        if (!origin) {
+          differences.push(`${name} ${state} ${path}: no ${testid} element`);
           continue;
         }
-        left.forEach((a, at) => {
-          const b = right[at];
-          for (const property of new Set([...Object.keys(a.css), ...Object.keys(b.css)]))
-            if (a.css[property] !== b.css[property])
-              differences.push(
-                `[case ${index}] ${state} ${path} at ${a.path}: ${property} ${a.css[property]} vs ${b.css[property]}`,
-              );
-          if (a.size !== b.size)
-            differences.push(
-              `[case ${index}] ${state} ${path} at ${a.path}: size ${a.size} vs ${b.size}`,
-            );
+        await page.mouse.move(origin.x + point.x, origin.y + point.y);
+        if (state === 'pressed') await page.mouse.down();
+        // Bloom's Pressable draws its state on React's next render; a
+        // transition it starts (an action's wash) is compared where it ends.
+        await page.evaluate(async () => {
+          await new Promise((done) => setTimeout(done, 50));
+          const finite = document
+            .getAnimations()
+            .filter((animation) => animation.effect?.getTiming().iterations !== Infinity);
+          await Promise.all(finite.map((animation) => animation.finished.catch(() => {})));
         });
+        drawn.push(await page.evaluate(describeInPage, testid));
+        if (state === 'pressed') await page.mouse.up();
+        await page.mouse.move(0, 0);
       }
+      if (drawn.length === 2)
+        differences.push(...compareTrees(drawn[0], drawn[1], `${name} ${state} ${path}`, false));
     }
   }
   return differences;
@@ -277,18 +253,46 @@ try {
   const ids = STORIES.length
     ? STORIES
     : Object.keys(index.entries).filter((id) => id.startsWith('language-parity--'));
+  // An isolated case's sides, each alone in a page of the same viewport.
+  const framePages = [await browser.newPage(), await browser.newPage()];
+  for (const framePage of framePages) {
+    framePage.on('pageerror', (error) => console.log(`     page error: ${error.message}`));
+    await framePage.setViewport({ width: WIDTH, height: 900 });
+  }
   for (const id of ids) {
     for (const theme of ['light', 'dark']) {
       await page.goto(`${BASE}/iframe.html?id=${id}&viewMode=story&globals=theme:${theme}`);
-      await page.waitForSelector('[data-testid="language-0"]', { timeout: 60000 });
-      await page.evaluate(() => document.fonts.ready);
-      // The page at rest: a control that measures its own layout and moves into
-      // place (a segmented control's thumb) settles after the fonts load.
-      await page.evaluate(() => new Promise((done) => setTimeout(done, 1000)));
-      const { pairs, differences } = await page.evaluate(compareInPage);
-      differences.push(...(await compareHeldStates(page)));
+      await settle(page, 'language-0');
+      const rows = await page.evaluate(rowsInPage);
+      const differences = [];
+      for (const { index, name, frame, empty } of rows) {
+        const label = `[${name}]`;
+        let sides = [
+          { page, testid: `bloom-${index}` },
+          { page, testid: `language-${index}` },
+        ];
+        if (frame) {
+          sides = [];
+          for (const [at, side] of ['bloom', 'language'].entries()) {
+            const framePage = framePages[at];
+            await framePage.goto(
+              `${BASE}/iframe.html?id=language-parity-frame--one-side&viewMode=story&args=${frame};side:${side}&globals=theme:${theme}`,
+            );
+            await settle(framePage, 'parity-frame');
+            sides.push({ page: framePage, testid: 'parity-frame' });
+          }
+        }
+        const [left, right] = await Promise.all(
+          sides.map(({ page: at, testid }) => at.evaluate(describeInPage, testid)),
+        );
+        // Two empty cells are equal and prove nothing, unless that is the case's claim.
+        if ((left.length === 0) !== empty)
+          differences.push(`${label}: ${empty ? 'draws something' : 'draws nothing'}`);
+        differences.push(...compareTrees(left, right, label));
+        differences.push(...(await compareHeldStates(sides, label)));
+      }
       if (differences.length > 0) failed += 1;
-      console.log(`${differences.length ? 'FAIL' : 'ok  '} ${id} ${theme}: ${pairs} pairs`);
+      console.log(`${differences.length ? 'FAIL' : 'ok  '} ${id} ${theme}: ${rows.length} pairs`);
       for (const difference of differences.slice(0, 40)) console.log(`     ${difference}`);
       if (differences.length > 40) console.log(`     … ${differences.length - 40} more`);
     }
