@@ -35,6 +35,8 @@ export interface Persister {
 export interface OpenOptions {
   readonly versions: Readonly<Record<string, number>>;
   readonly maxAgeMs: number;
+  /** Types whose rows never age out (a model's value). */
+  readonly keep: readonly string[];
 }
 
 export interface StoredRecord {
