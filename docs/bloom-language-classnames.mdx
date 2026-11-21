@@ -24,11 +24,11 @@ Alia `841e8843a`, Allo `ba28b38`, Astro `8ae8386`, Atlas `037990e`, Authenticato
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 629 | 40689 | 75.7% |
+| Maps to a modifier and a token | 637 | 41294 | 76.9% |
 | Expressed by the view’s structure | 35 | 3445 | 6.4% |
 | Redundant in the language | 16 | 436 | 0.8% |
-| Needs a named token (raw value) | 493 | 2742 | 5.1% |
-| Needs a modifier the language lacks | 266 | 4574 | 8.5% |
+| Needs a named token (raw value) | 486 | 2602 | 4.8% |
+| Needs a modifier the language lacks | 265 | 4109 | 7.6% |
 | An app’s own class | 481 | 1834 | 3.4% |
 
 53720 uses of 1920 utilities. Variant prefixes (the language has
@@ -42,11 +42,20 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | font | 482 | 11px / 14px (104), 20px / 28px (92), 24px / 32px (90), 14px (64), 15px / 22px (27), 30px / 36px (22), 36px / 40px (12), 24px (12), 10.5px (8), 28px (7), 12.5px (5), 23px (5) |
 | color | 392 | transparent (63), --surface-foreground (36), --accent (33), --error-text (25), --primary-subtle (20), --warning-text (19), --sidebar-foreground (14), green-500 (12), --sidebar-border (12), red-500 (10), --sidebar-accent (9), red-400 (9) |
 | leading | 321 | 20px (93), 24px (70), 16px (44), 18px (28), 28px (18), 1 (15), 22px (14), 14px (6), 29px (6), 17px (5), 40px (3), 32px (3) |
-| tracking | 150 | 0.05em (61), 0.025em (50), -0.025em (17), -0.02em (5), 0.1em (4), -0.01em (3), -0.5px (2), 0.04em (2), 0.5px (2), -0.2px (1), -0.4px (1), 1.5px (1) |
 | opacity | 121 | 0.9 (16), --foreground at 5% (7), black at [0.04]% (7), white at [0.06]% (6), --primary at 5% (5), --warning-text at 40% (5), white at 90% (4), white at 15% (4), white at 25% (4), --background at 90% (3), black at 25% (3), --primary at 15% (3) |
 | corner | 80 | 22px (14), 14px (12), 10px (9), 18px (9), 15px (8), 23px (6), 5px (4), 13px (3), 27px (3), 25px (2), 26px (2), 3px (2) |
+| tracking | 10 | -0.5px (2), 0.04em (2), 0.5px (2), -0.2px (1), -0.4px (1), 1.5px (1), 2px (1) |
 | borderWidth | 6 | 4px (6) |
 | weight | 1 | 900 (1) |
+
+## Icons
+
+A Bloom icon element given no fill and no style colour (`<RiHeartLine />`;
+a `text-*` class is a style colour) paints `primary`, wherever it sits. A language `Icon(X)` paints the foreground of the view it is
+in, as SwiftUI's does (`foreground` when nothing sets one). So the codemod
+writes `.foreground('primary')` on every icon element that had neither, which keeps
+the primary it painted. An icon given a fill keeps it as `.foreground(role)`
+when the fill is a role's colour.
 
 ## Maps to a modifier and a token
 
@@ -72,6 +81,7 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `justify-between` | .spacing('between') | 490 | 25 |
 | `gap-1` | .spacing('xs') | 476 | 22 |
 | `bg-surface` | .background('surface') | 470 | 9 |
+| `font-mono` | .font('mono') | 465 | 13 |
 | `p-4` | .padding('all', 'lg') | 458 | 24 |
 | `rounded-2xl` | .corner('lg') | 435 | 15 |
 | `bg-background` | .background('background') | 430 | 21 |
@@ -150,6 +160,7 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `pt-3` | .padding('top', 'md') | 63 | 15 |
 | `bg-border` | .background('border') | 61 | 14 |
 | `px-1` | .padding('horizontal', 'xs') | 61 | 16 |
+| `tracking-wider` | .tracking('wider') | 61 | 7 |
 | `bg-popover` | .background('popover') | 60 | 3 |
 | `h-8` | .frame({ height: '3xl' }) | 57 | 18 |
 | `text-[12px]` | .font('xs') | 57 | 6 |
@@ -164,6 +175,7 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `mt-6` | .padding('top', '2xl') (outside the fill) | 52 | 8 |
 | `text-bodySmall` | .font('body-2') | 51 | 2 |
 | `text-primary-foreground` | .foreground('onPrimary') | 51 | 13 |
+| `tracking-wide` | .tracking('wide') | 50 | 8 |
 | `w-9` | .frame({ width: '3xl-4xl' }) | 50 | 10 |
 | `h-12` | .frame({ height: '4xl-5xl' }) | 47 | 10 |
 | `shrink` | .shrink('normal') | 47 | 9 |
@@ -268,6 +280,7 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `leading-snug` | .leading('easy') | 14 | 5 |
 | `py-space-24` | .padding('vertical', '2xl') | 14 | 2 |
 | `size-3.5` | .frame({ width: 'md-lg', height: 'md-lg' }) | 14 | 2 |
+| `tracking-tight` | .tracking('tight') | 14 | 6 |
 | `capitalize` | .textCase('capitalize') | 13 | 4 |
 | `gap-0` | .spacing('none') | 13 | 4 |
 | `h-4` | .frame({ height: 'lg' }) | 13 | 4 |
@@ -402,6 +415,7 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `py-space-32` | .padding('vertical', '3xl') | 4 | 2 |
 | `size-12` | .frame({ width: '4xl-5xl', height: '4xl-5xl' }) | 4 | 2 |
 | `space-y-1.5` | .spacing('xs-sm') | 4 | 2 |
+| `tracking-widest` | .tracking('widest') | 4 | 4 |
 | `w-0.5` | .frame({ width: '2xs' }) | 4 | 4 |
 | `w-1.5` | .frame({ width: 'xs-sm' }) | 4 | 3 |
 | `w-[2px]` | .frame({ width: '2xs' }) | 4 | 4 |
@@ -511,10 +525,8 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `text-2xl` | 24px / 32px | .font(…) | 90 | 16 |
 | `leading-5` | 20px | .leading(…) | 81 | 12 |
 | `text-[14px]` | 14px | .font(…) | 64 | 4 |
-| `tracking-wider` | 0.05em | a tracking modifier | 61 | 7 |
 | `bg-transparent` | transparent | .background(…) | 58 | 11 |
 | `leading-6` | 24px | .leading(…) | 57 | 9 |
-| `tracking-wide` | 0.025em | a tracking modifier | 50 | 8 |
 | `leading-4` | 16px | .leading(…) | 39 | 8 |
 | `h-11` | 44px | .frame({ height: … }) | 36 | 10 |
 | `h-7` | 28px | .frame({ height: … }) | 36 | 13 |
@@ -547,7 +559,6 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `leading-[22px]` | 22px | .leading(…) | 14 | 6 |
 | `rounded-[22px]` | 22px | .corner(…) | 14 | 3 |
 | `text-sidebar-foreground` | --sidebar-foreground | .foreground(…) | 14 | 2 |
-| `tracking-tight` | -0.025em | a tracking modifier | 14 | 6 |
 | `h-24` | 96px | .frame({ height: … }) | 13 | 5 |
 | `leading-[24px]` | 24px | .leading(…) | 13 | 2 |
 | `w-24` | 96px | .frame({ width: … }) | 13 | 7 |
@@ -631,7 +642,6 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `text-[9px]` | 9px | .font(…) | 4 | 2 |
 | `text-card-foreground` | --card-foreground | .foreground(…) | 4 | 3 |
 | `text-white/90` | white at 90% | .foreground('white/…') | 4 | 3 |
-| `tracking-widest` | 0.1em | a tracking modifier | 4 | 4 |
 | `w-28` | 112px | .frame({ width: … }) | 4 | 4 |
 | `w-44` | 176px | .frame({ width: … }) | 4 | 4 |
 | `w-[260px]` | 260px | .frame({ width: … }) | 4 | 4 |
@@ -720,7 +730,6 @@ none yet: a breakpoint, a state or a scheme is a decision per family): `web:` 36
 | `justify-center` | a stack’s distribution (justify, self, wrap) | 889 | 25 |
 | `flex-wrap` | a stack’s distribution (justify, self, wrap) | 599 | 25 |
 | `w-full` | a relative size (w-full): `grow` and `align('stretch')` cover the full ones | 493 | 24 |
-| `font-mono` | Bloom’s monospaced family | 465 | 13 |
 | `absolute` | position (absolute placement beyond Fill and ZStack) | 275 | 22 |
 | `self-start` | a stack’s distribution (justify, self, wrap) | 120 | 16 |
 | `justify-end` | a stack’s distribution (justify, self, wrap) | 116 | 18 |

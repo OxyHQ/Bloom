@@ -2,10 +2,11 @@ import { createContext } from 'react';
 
 import type { Modifier } from './node';
 import type { TextTraits } from './style';
+import { isFontFamily } from './tokens';
 
 /**
  * The environment a view hands its descendants: the text and icon traits
- * (`foreground`, `font`, `weight`, `leading`) set above it, as SwiftUI's
+ * (`foreground`, `font`, `weight`, `leading`, `tracking`) set above it, as SwiftUI's
  * environment carries `.font` and `.foregroundStyle` down.
  *
  * Inside one render pass it travels with the renderer's context; across a
@@ -36,7 +37,14 @@ export type Navigate = (
 
 export const ROOT_ENV: Env = {
   key: '',
-  text: { foreground: undefined, font: undefined, weight: undefined, leading: undefined },
+  text: {
+    foreground: undefined,
+    font: undefined,
+    family: undefined,
+    weight: undefined,
+    leading: undefined,
+    tracking: undefined,
+  },
   derived: new Map(),
   navigate: undefined,
 };
@@ -49,7 +57,10 @@ export function navigatorEnv(navigate: Navigate): Env {
 export const EnvContext = createContext<Env>(ROOT_ENV);
 EnvContext.displayName = 'BloomEnvironment';
 
-type EnvModifier = Extract<Modifier, { kind: 'foreground' | 'font' | 'weight' | 'leading' }>;
+type EnvModifier = Extract<
+  Modifier,
+  { kind: 'foreground' | 'font' | 'weight' | 'leading' | 'tracking' }
+>;
 
 export function deriveEnv(parent: Env, modifiers: readonly Modifier[]): Env {
   let key = '';
@@ -63,13 +74,18 @@ export function deriveEnv(parent: Env, modifiers: readonly Modifier[]): Env {
         text.foreground = modifier.value;
         break;
       case 'font':
-        text.font = modifier.value;
+        // A family (`mono`) sets the face and keeps the size; a size keeps the face.
+        if (isFontFamily(modifier.value)) text.family = modifier.value;
+        else text.font = modifier.value;
         break;
       case 'weight':
         text.weight = modifier.value;
         break;
       case 'leading':
         text.leading = modifier.value;
+        break;
+      case 'tracking':
+        text.tracking = modifier.value;
         break;
     }
   }

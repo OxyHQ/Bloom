@@ -137,7 +137,7 @@ describe('the spec drives the rules', () => {
   it('layering and the environment are the spec’s', () => {
     expect(LAYER_RANK.padding).toBeLessThan(LAYER_RANK.background);
     expect(LAYER_RANK.glass).toBe(LAYER_RANK.background);
-    expect(ENVIRONMENT).toEqual(['foreground', 'font', 'weight', 'leading']);
+    expect(ENVIRONMENT).toEqual(['foreground', 'font', 'weight', 'leading', 'tracking']);
   });
 
   it('each node type exposes exactly the modifiers the spec gives its kind', () => {

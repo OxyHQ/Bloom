@@ -20,3 +20,7 @@ export const Large = 'Large';
 export const Small = 'Small';
 export const Muted = 'Muted';
 export const Blockquote = 'Blockquote';
+/** Bloom's family style, as the native renderer names it (`fontFamilyStyle` in Typography.tsx). */
+export const fontFamilyStyle = (kind: 'display' | 'sans' | 'mono') => ({
+  fontFamily: kind === 'mono' ? 'JetBrains Mono' : kind === 'sans' ? 'Inter' : 'BlomusModernus',
+});

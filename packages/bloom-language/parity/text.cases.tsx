@@ -20,11 +20,12 @@ import {
   Text,
   Title,
   TYPE_SCALE,
+  fontFamilyStyle,
   type TextProps,
   type TypeScaleVariant,
 } from '@oxy.so/bloom/typography';
 
-import { COLORS, FONT_SIZE, LEADING } from '../src/generated/spec.generated';
+import { COLORS, FONT_SIZE, LEADING, TRACKING } from '../src/generated/spec.generated';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import type { ColorName, FontSizeName, TextStyleName, TypeFamily, WeightName } from '../src/tokens';
@@ -374,8 +375,50 @@ const translucent: ParityCase[] = (
   ),
 }));
 
+/** Tracking, in em of the size as Tailwind's `tracking-*`; and Bloom's monospaced face (`font-mono`). */
+const tracked: ParityCase[] = [
+  ...(Object.keys(TRACKING) as (keyof typeof TRACKING)[]).map((tracking) => ({
+    name: `size md, tracking ${tracking}`,
+    language: () => toElement(L.Text('Track').font('md').tracking(tracking)),
+    bloom: () => (
+      <Text style={{ fontSize: 15, letterSpacing: 15 * TRACKING[tracking] }}>Track</Text>
+    ),
+  })),
+  {
+    name: 'caption-1, tracking wider (uppercase labels)',
+    language: () => toElement(L.Text('Label').font('caption-1').tracking('wider')),
+    bloom: () => (
+      <Text variant="caption-1-regular" style={{ letterSpacing: 12 * 0.05 }}>
+        Label
+      </Text>
+    ),
+  },
+  {
+    name: 'font mono',
+    language: () => toElement(L.Text('const x = 1').font('mono')),
+    bloom: () => <Text style={fontFamilyStyle('mono')}>const x = 1</Text>,
+  },
+  {
+    name: 'body in mono, from the stack',
+    language: () => toElement(L.VStack(L.Text('code')).font('body').font('mono')),
+    bloom: () => (
+      <RN.View>
+        <Text variant="body-regular" style={fontFamilyStyle('mono')}>
+          code
+        </Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a mono size rung keeps its size',
+    language: () => toElement(L.Text('12').font('mono').font('xs')),
+    bloom: () => <Text style={{ fontSize: 12, ...fontFamilyStyle('mono') }}>12</Text>,
+  },
+];
+
 export const TEXT_CASES: ParityCase[] = [
   ...named,
+  ...tracked,
   ...translucent,
   ...ramp,
   ...sizes,

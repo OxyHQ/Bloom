@@ -8,7 +8,7 @@ import {
   CORNER,
   DURATION,
   ENVIRONMENT_DEFAULTS,
-  type ENUMS,
+  ENUMS,
   FONT_SIZE,
   GLASS_OPACITY,
   HIT_SLOP,
@@ -17,6 +17,7 @@ import {
   OPACITY,
   SHRINK,
   SPACE,
+  TRACKING,
   type TYPE_FAMILIES,
   TYPE_RAMP,
   WEIGHT,
@@ -48,7 +49,14 @@ export type TypeFamily = (typeof TYPE_FAMILIES)[number];
  * `caption-1`…: size, line height and tracking together, exactly as Bloom
  * `Text variant` sets them) or a bare size rung (`sm`, `md`…).
  */
-export type FontName = TypeFamily | FontSizeName;
+export type FontName = TypeFamily | FontSizeName | FontFamilyName;
+/**
+ * A family beside the size: `mono` is Bloom's monospaced face. It keeps the
+ * size and weight the text has, as a size keeps the family.
+ */
+export type FontFamilyName = (typeof ENUMS.fontFamily)[number];
+/** Letter spacing in em of the font size: Tailwind's `tracking-*`. */
+export type TrackingName = keyof typeof TRACKING;
 export type WeightName = keyof typeof WEIGHT;
 export type LeadingName = keyof typeof LEADING;
 export type IconSizeName = keyof typeof ICON_SIZE;
@@ -218,6 +226,11 @@ function isFontSizeName(font: FontName): font is FontSizeName {
   return font in FONT_SIZE;
 }
 
+/** Whether a font names a family (`mono`), which sets the face and not the size. */
+export function isFontFamily(font: FontName): font is FontFamilyName {
+  return (ENUMS.fontFamily as readonly string[]).includes(font);
+}
+
 /**
  * A text's type, from its font, weight and leading together. A ramp step
  * reads Bloom's ramp entry for that family and weight (the ramp's line height
@@ -225,9 +238,10 @@ function isFontSizeName(font: FontName): font is FontSizeName {
  * leading only when they are given.
  */
 export function resolveFont(
-  font: FontName | undefined,
+  font: Exclude<FontName, FontFamilyName> | undefined,
   weight: WeightName | undefined,
   leading: LeadingToken | undefined,
+  tracking?: TrackingName,
 ): FontStyle {
   const style: FontStyle = {};
   if (font !== undefined && !isFontSizeName(font)) {
@@ -247,5 +261,8 @@ export function resolveFont(
     const ratio = typeof leading === 'string' ? LEADING[leading] : leading.value;
     style.lineHeight = style.fontSize * ratio;
   }
+  // Tracking is in em, so it needs the size; a text with no font keeps Bloom's own.
+  if (tracking !== undefined && style.fontSize !== undefined)
+    style.letterSpacing = style.fontSize * TRACKING[tracking];
   return style;
 }

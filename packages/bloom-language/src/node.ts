@@ -52,6 +52,7 @@ import {
   type IconSizeName,
   type IconSizeToken,
   type LeadingToken,
+  type TrackingName,
   type OpacityName,
   type PaddingToken,
   type SpaceToken,
@@ -250,6 +251,7 @@ export type Modifier =
   | { readonly kind: 'font'; readonly key: string; readonly value: FontName }
   | { readonly kind: 'weight'; readonly key: string; readonly value: WeightName }
   | { readonly kind: 'leading'; readonly key: string; readonly value: LeadingToken }
+  | { readonly kind: 'tracking'; readonly key: string; readonly value: TrackingName }
   | { readonly kind: 'spacing'; readonly key: string; readonly value: SpaceToken | 'between' }
   | { readonly kind: 'align'; readonly key: string; readonly value: Alignment }
   | { readonly kind: 'lines'; readonly key: string; readonly value: number }
@@ -568,6 +570,9 @@ export class Node {
   }
   leading(value: LeadingToken): Node {
     return this.with({ kind: 'leading', key: `lh:${tokenKey(value)}`, value });
+  }
+  tracking(value: TrackingName): Node {
+    return this.with({ kind: 'tracking', key: `ls:${value}`, value });
   }
   spacing(value: SpaceToken | 'between'): Node {
     return this.with({ kind: 'spacing', key: `gap:${tokenKey(value)}`, value });
@@ -890,9 +895,12 @@ export interface ViewModifiers<Self> extends ViewNode {
   blur(): Self;
   /** Text and icon colour for this view and everything inside it; a role, or a role at a named opacity (`'muted/faded'`). */
   foreground(value: ColorToken): Self;
+  /** A ramp step or a size rung; or `mono`, Bloom's monospaced face, which keeps the size. */
   font(value: FontName): Self;
   weight(value: WeightName): Self;
   leading(value: LeadingToken): Self;
+  /** Letter spacing for this view's text, in em of its size (`tight` … `widest`); needs a font to measure from. */
+  tracking(value: TrackingName): Self;
   onPress(value: Press | undefined): Self;
   onLongPress(value: (() => void) | undefined): Self;
   onHover(enter: (() => void) | undefined, leave: (() => void) | undefined): Self;
