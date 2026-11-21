@@ -1609,6 +1609,25 @@ the app's own player (`{ kind: 'video', player, poster? }`). A surface takes
 are Bloom's controller, `useMediaFlight()` (`measureAnchor`, `flyTo`,
 `flyBack`, `handOff`, all by id), used as it is inside a `view()`.
 
+### Avatar flights
+
+```ts
+const Thread = view(() => {
+  const flights = useAvatarFlights();
+  return ZStack(
+    VStack(AvatarAnchor(flights, 'composer', Avatar(agent.image)), AvatarAnchor(flights, reply.id, Text(reply.text))),
+    AvatarFlightLayer(flights),
+  );
+});
+```
+
+Bloom's `avatar-flight`: avatars that fly from one place on the screen to
+another. `AvatarAnchor(flights, key, ...)` is a place they leave and land (the
+view's box is its style; it hides while its avatar is in the air) and
+`AvatarFlightLayer(flights)` where they fly. The flights are Bloom's hooks,
+used as they are inside a `view()`: `useAvatarFlights()` (`launch`, `cancel`,
+by anchor key), `useAvatarJoin()` and `centeredLanding`.
+
 ### Media inset borders
 
 ```ts
@@ -2145,7 +2164,9 @@ and `@oxy.so/bloom-data` beside it.
   composition bars,
   phone inputs,
   composition bars,
-  media flights.
+  media flights,
+  media flights,
+  avatar flights.
 
 **Not built**
 

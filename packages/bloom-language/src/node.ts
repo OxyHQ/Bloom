@@ -28,6 +28,7 @@ import type { VideoViewKind } from './controls/video-view';
 import type { CompositionBarKind } from './controls/composition-bar';
 import type { PhoneInputKind } from './controls/phone-input';
 import type { Country } from '@oxy.so/bloom/phone-input';
+import type { AvatarFlightKind } from './controls/avatar-flight';
 import type { CategoryBarKind } from './controls/category-bar';
 import type { VideoSlot } from './controls/media-flight';
 import type { VideoSurfaceType } from '@oxy.so/bloom/media-flight';
@@ -896,6 +897,7 @@ export type NodeKind =
   | FileUploadKind
   | VideoViewKind
   | PhoneInputKind
+  | AvatarFlightKind
   | CategoryBarKind
   | MediaFlightKind
   | ChoiceListKind

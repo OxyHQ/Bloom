@@ -1131,3 +1131,21 @@ fn media_flights_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn avatar_flights_are_checked() {
+    let imports = "import { AvatarAnchor, AvatarFlightLayer, Text, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (f) => VStack(AvatarAnchor(f, 'a', Text('A')).frame({ width: '44', height: '44' }), AvatarFlightLayer(f));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("AvatarFlightLayer(t).padding('md')", "AvatarFlightLayer has no modifier .padding()"),
+        ("AvatarAnchor(t, 'a').contentFit('cover')", "AvatarAnchor has no modifier .contentFit()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (t) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
