@@ -928,7 +928,13 @@ export const ENUMS = {
     "header",
     "image",
     "text",
-    "none"
+    "none",
+    "checkbox",
+    "radio",
+    "tab",
+    "radiogroup",
+    "tablist",
+    "list"
   ],
   "buttonShape": [
     "circle",
@@ -942,7 +948,8 @@ export const ENUMS = {
   ],
   "density": [
     "default",
-    "compact"
+    "compact",
+    "comfortable"
   ],
   "appearance": [
     "solid",
@@ -1372,6 +1379,28 @@ export const ENUMS = {
   ],
   "searchCollapse": [
     "auto"
+  ],
+  "chipStyle": [
+    "solid",
+    "subtle",
+    "outline",
+    "plain",
+    "inverted"
+  ],
+  "accentTone": [
+    "default",
+    "primary",
+    "vivid",
+    "secondary",
+    "tertiary",
+    "success",
+    "warning",
+    "error",
+    "info"
+  ],
+  "selectionIndicator": [
+    "check",
+    "radio"
   ]
 } as const;
 
@@ -2121,6 +2150,34 @@ export const MODIFIERS = {
   ],
   "restoredDuration": [
     "value"
+  ],
+  "contentInset": [
+    "space"
+  ],
+  "inset": [
+    "space"
+  ],
+  "illustration": [
+    "value"
+  ],
+  "suggestions": [
+    "children"
+  ],
+  "suggestionsLabel": [
+    "value"
+  ],
+  "onReorder": [
+    "value"
+  ],
+  "reorderable": [
+    "value?"
+  ],
+  "iconOnly": [],
+  "dragTranslation": [
+    "motionValue"
+  ],
+  "indicator": [
+    "selectionIndicator"
   ]
 } as const;
 
@@ -4291,7 +4348,8 @@ export const NODE_MODIFIERS = {
     "destructive",
     "selected",
     "active",
-    "highlighted"
+    "highlighted",
+    "density"
   ],
   "groupedSection": [
     "padding",
@@ -4361,7 +4419,8 @@ export const NODE_MODIFIERS = {
     "caption",
     "style",
     "separator",
-    "radius"
+    "radius",
+    "density"
   ],
   "groupedSectionItem": [
     "leadingView",
@@ -4375,7 +4434,16 @@ export const NODE_MODIFIERS = {
     "onPress",
     "label",
     "hint",
-    "testID"
+    "testID",
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "background",
+    "border",
+    "corner",
+    "opacity"
   ],
   "chip": [
     "padding",
@@ -4519,7 +4587,11 @@ export const NODE_MODIFIERS = {
     "media",
     "style",
     "action",
-    "secondaryAction"
+    "secondaryAction",
+    "illustration",
+    "suggestions",
+    "suggestionsLabel",
+    "caption"
   ],
   "admonition": [
     "padding",
@@ -4653,13 +4725,19 @@ export const NODE_MODIFIERS = {
     "drag",
     "swipe",
     "style",
-    "fullWidth"
+    "fullWidth",
+    "onReorder",
+    "dragTranslation"
   ],
   "tabItem": [
     "icon",
     "count",
     "disabled",
-    "testID"
+    "testID",
+    "iconOnly",
+    "reorderable",
+    "trailing",
+    "onLongPress"
   ],
   "kbd": [
     "padding",
@@ -4734,7 +4812,16 @@ export const NODE_MODIFIERS = {
     "resetKey",
     "onError",
     "fallback",
-    "testID"
+    "testID",
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "background",
+    "border",
+    "corner",
+    "opacity"
   ],
   "embed": [
     "padding",
@@ -5611,7 +5698,291 @@ export const NODE_MODIFIERS = {
     "trailing",
     "focused"
   ],
-  "optionGroup": []
+  "optionGroup": [],
+  "chipRow": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "alert",
+    "dialog",
+    "popover",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "spacing",
+    "contentInset",
+    "disabled"
+  ],
+  "cappedChipRow": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "alert",
+    "dialog",
+    "popover",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "spacing",
+    "lines"
+  ],
+  "groupedSectionIcon": [
+    "tint",
+    "testID"
+  ],
+  "groupedSectionDivider": [
+    "inset"
+  ],
+  "groupedSectionCollapse": [
+    "testID"
+  ],
+  "tabContent": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "alert",
+    "dialog",
+    "popover",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe"
+  ],
+  "selectionCard": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "alert",
+    "dialog",
+    "popover",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "toggle",
+    "selected",
+    "description",
+    "icon",
+    "indicator",
+    "illustration",
+    "density",
+    "disabled",
+    "invalid"
+  ]
 } as const;
 
 /** The constructor functions, by the node kind they make. */
@@ -5686,5 +6057,12 @@ export const CONSTRUCTORS = {
   "Picker": "picker",
   "Option": "option",
   "Search": "search",
-  "OptionGroup": "optionGroup"
+  "OptionGroup": "optionGroup",
+  "ChipRow": "chipRow",
+  "CappedChipRow": "cappedChipRow",
+  "GroupedSectionIcon": "groupedSectionIcon",
+  "GroupedSectionDivider": "groupedSectionDivider",
+  "GroupedSectionCollapse": "groupedSectionCollapse",
+  "TabContent": "tabContent",
+  "SelectionCard": "selectionCard"
 } as const;
