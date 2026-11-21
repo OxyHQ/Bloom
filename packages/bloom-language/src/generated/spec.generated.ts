@@ -1708,6 +1708,11 @@ export const ENUMS = {
   "otpCharacters": [
     "numeric",
     "alphanumeric"
+  ],
+  "dragAction": [
+    "copy",
+    "move",
+    "link"
   ]
 } as const;
 
@@ -3136,6 +3141,25 @@ export const MODIFIERS = {
     "value?"
   ],
   "keepsMounted": [
+    "value"
+  ],
+  "fileTypes": [
+    "value"
+  ],
+  "dragActions": [
+    "value",
+    "dragAction?"
+  ],
+  "folder": [
+    "value"
+  ],
+  "onDragEnter": [
+    "value"
+  ],
+  "onDragOver": [
+    "value"
+  ],
+  "onDragLeave": [
     "value"
   ]
 } as const;
@@ -12666,6 +12690,92 @@ export const NODE_MODIFIERS = {
     "revealMotion",
     "revealsOnAppear",
     "keepsMounted"
+  ],
+  "dropZone": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "alert",
+    "dialog",
+    "popover",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
+    "fileTypes",
+    "dragActions",
+    "folder",
+    "disabled",
+    "onDragEnter",
+    "onDragOver",
+    "onDragLeave"
   ]
 } as const;
 
@@ -12836,5 +12946,6 @@ export const CONSTRUCTORS = {
   "ColorSwatchPicker": "colorSwatchPicker",
   "AnimatedCheck": "animatedCheck",
   "ContextMenu": "contextMenu",
-  "Collapsible": "collapsible"
+  "Collapsible": "collapsible",
+  "DropZone": "dropZone"
 } as const;
