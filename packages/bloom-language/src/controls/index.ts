@@ -22,6 +22,7 @@ import { TAG_FIELDS } from './tag-field';
 import { FILE_UPLOADS } from './file-upload';
 import { VIDEOS } from './video-view';
 import { PHONE_INPUTS } from './phone-input';
+import { AVATAR_FLIGHTS } from './avatar-flight';
 import { CATEGORY_BARS } from './category-bar';
 import { MEDIA_FLIGHTS } from './media-flight';
 import { CHOICE_LISTS } from './choice-list';
@@ -68,6 +69,7 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...FILE_UPLOADS,
   ...VIDEOS,
   ...PHONE_INPUTS,
+  ...AVATAR_FLIGHTS,
   ...CATEGORY_BARS,
   ...MEDIA_FLIGHTS,
   ...CHOICE_LISTS,
