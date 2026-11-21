@@ -50,6 +50,7 @@ import { SORTABLE_CHIP_ROWS } from './sortable-chip-row';
 import { VIEWPORTS } from './viewport';
 import { AGENT_AVATARS } from './agent-avatar';
 import { CHAT_COMPOSERS } from './chat-composer';
+import { CHART_CARDS } from './chart-cards';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -107,4 +108,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...VIEWPORTS,
   ...AGENT_AVATARS,
   ...CHAT_COMPOSERS,
+  ...CHART_CARDS,
 };

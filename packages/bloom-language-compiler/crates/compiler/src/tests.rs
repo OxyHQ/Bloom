@@ -1568,3 +1568,26 @@ fn the_chat_composer_family_is_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn chart_cards_are_checked() {
+    let imports = "import { AreaChartCard, BarListCard, ChartCardSurface, LineChartCard, RadarChartCard, Sparkline, StepsCard, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (d) => VStack(AreaChartCard({ data: d }).style('percent').shape('sharp'), BarListCard().tint('success'), ChartCardSurface({}).spacing('sm'), LineChartCard().shape('curved').tint('primary').activeTint('error/half'), RadarChartCard().style('score'), Sparkline(d).tint('negative'), StepsCard(d).tint('info').activeTint('primary'));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("AreaChartCard().style('stream')", "Unknown areaVariant token 'stream' for .style()"),
+        ("AreaChartCard().shape('step')", "Unknown chartShape token 'step' for .shape()"),
+        ("RadarChartCard().style('filled-dots')", "Unknown radarVariant token 'filled-dots' for .style()"),
+        ("Sparkline(d).tint('primary')", "Unknown sparklineTone token 'primary' for .tint()"),
+        ("LineChartCard().activeTint('gold')", "Unknown color token 'gold' for .activeTint()"),
+        ("ChartCardSurface({}).spacing('roomy')", "Unknown space token 'roomy' for .spacing()"),
+        ("RadarChartCard().tint('primary')", "RadarChartCard has no modifier .tint()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (d) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
