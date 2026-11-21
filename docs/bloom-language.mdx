@@ -1278,6 +1278,23 @@ track), `.thumbSize()`, `.fillTint()`, `.trackTint()` and `.thumbTint()`
 (roles), `.showsValue(false)` (no bubble) and `.valueFormat(fn)`; a range
 slider names its thumbs with `.labels({ lower, upper })`.
 
+### Accordions
+
+```ts
+Accordion(
+  [open, setOpen],
+  AccordionItem('shipping', AccordionTrigger('Shipping'), AccordionContent(Text(shipping))),
+  AccordionItem('returns', AccordionTrigger('Returns'), AccordionContent(Text(returns))).disabled(),
+).allowsMultiple()
+```
+
+Bloom's `Accordion`, `AccordionItem`, `AccordionTrigger` and
+`AccordionContent`, fully controlled: the binding holds the open item's value
+(or the values, with `.allowsMultiple()`, or `undefined`). An accordion takes
+`.size()` and `.revealMotion('spring' | { duration, easing })`; an item
+`.disabled()`; a trigger's title is a string in its type or a view, and
+`.indicator(view)` replaces its chevron.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -1654,7 +1671,8 @@ and `@oxy.so/bloom-data` beside it.
   each utility the apps use becomes.
 - Generic components (see [Generic components](#generic-components)), drawn as
   Bloom's own: the date and time pickers, ratings, meters and progress bars, stickers,
-  tables, rows and lists, carousels, markdown, sliders.
+  tables, rows and lists, carousels, markdown, sliders,
+  accordions.
 
 **Not built**
 

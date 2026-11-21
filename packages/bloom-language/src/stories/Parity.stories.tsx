@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { Text } from '@oxy.so/bloom/typography';
 
 import type { ParityCase } from '../../parity/support/cases';
+import { ACCORDION_CASES } from '../../parity/accordion.cases';
 import { AVATAR_CASES } from '../../parity/avatar.cases';
 import { BUTTON_CASES } from '../../parity/button.cases';
 import { CAROUSEL_CASES } from '../../parity/carousel.cases';
@@ -83,3 +84,4 @@ export const RowsAndLists: Story = { args: { cases: LIST_CASES } };
 export const Carousels: Story = { args: { cases: CAROUSEL_CASES } };
 export const Markdown: Story = { args: { cases: MARKDOWN_CASES } };
 export const Sliders: Story = { args: { cases: SLIDER_CASES } };
+export const Accordions: Story = { args: { cases: ACCORDION_CASES } };

@@ -112,6 +112,12 @@ import type {
 import type { CarouselView, CarouselItemView, CarouselDotsView } from '../controls/carousel';
 import type { MarkdownView } from '../controls/markdown';
 import type { SliderView, RangeSliderView } from '../controls/slider';
+import type {
+  AccordionView,
+  AccordionItemView,
+  AccordionTriggerView,
+  AccordionContentView,
+} from '../controls/accordion';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -338,7 +344,15 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<MarkdownView>, Of<'markdown'>>,
       Same<MethodsOf<SliderView>, Of<'slider'>>,
       Same<MethodsOf<RangeSliderView>, Of<'rangeSlider'>>,
+      Same<MethodsOf<AccordionView>, Of<'accordion'>>,
+      Same<MethodsOf<AccordionItemView>, Of<'accordionItem'>>,
+      Same<MethodsOf<AccordionTriggerView>, Of<'accordionTrigger'>>,
+      Same<MethodsOf<AccordionContentView>, Of<'accordionContent'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,
