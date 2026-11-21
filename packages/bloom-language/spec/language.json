@@ -552,7 +552,8 @@
     "transportSize": ["sm", "md", "lg"],
     "transportStyle": ["music", "podcast"],
     "rowActionStyle": ["plain", "outline"],
-    "themeToggleStyle": ["sidebar", "segmented", "sidebar-segmented", "bare-segmented"]
+    "themeToggleStyle": ["sidebar", "segmented", "sidebar-segmented", "bare-segmented"],
+    "libraryItemStyle": ["compact", "list", "grid", "rail"]
   },
   "glass": {
     "$comment": [
@@ -1706,7 +1707,18 @@
       "constructors": ["ThemeToggle"],
       "modifiers": ["style", "collapsed"],
       "style": "themeToggleStyle"
-    }
+    },
+    "libraryPanel": { "constructors": ["LibraryPanel"], "modifiers": [] },
+    "libraryItem": {
+      "constructors": ["LibraryItem"],
+      "modifiers": ["style"],
+      "style": "libraryItemStyle"
+    },
+    "searchField": { "constructors": ["SearchField"], "modifiers": [] },
+    "topResultCard": { "constructors": ["TopResultCard"], "modifiers": [] },
+    "searchResultTabs": { "constructors": ["SearchResultTabs"], "modifiers": [] },
+    "recentSearches": { "constructors": ["RecentSearches"], "modifiers": [] },
+    "browseGrid": { "constructors": ["BrowseGrid"], "modifiers": ["spacing"] }
   },
   "sfSymbols": {
     "$comment": [
