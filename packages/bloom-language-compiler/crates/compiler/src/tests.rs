@@ -727,3 +727,13 @@ fn the_card_form_is_checked() {
     let output = check("export const x = (c) => CardForm(c).size('sm');\n");
     assert_eq!(output.diagnostics[0].message, "CardForm has no modifier .size()");
 }
+
+#[test]
+fn the_checkout_sheet_is_checked() {
+    let imports = "import { CheckoutSheet } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check("export const x = (o) => CheckoutSheet(o).label('Checkout');\n");
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = (o) => CheckoutSheet(o).style('solid');\n");
+    assert_eq!(output.diagnostics[0].message, "CheckoutSheet has no modifier .style()");
+}

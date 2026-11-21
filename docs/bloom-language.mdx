@@ -1336,6 +1336,19 @@ holds (a payment provider's `hostedFields` are language children);
 `CardFormHostedField(label, focused, options)` frames a provider's field,
 its `content` a function of the field's control. Each takes `.disabled()`.
 
+### Checkout sheet
+
+```ts
+CheckoutSheet({ open, step, direction, request, draft, onDraft, onStep, onBack, onClose, onAuthorize,
+  savedCards, onCard, label: t, formatAmount, cardEntry: ProviderCardFields() })
+```
+
+Bloom's `checkout-sheet`: `CheckoutSheet(options)` is controlled by the app
+as Bloom's is (its request, draft, step and their handlers, its words and
+amounts); `methodContent`, `footer`, `resultIllustration`, `cardEntry` and
+`notice` are language children. Its open sheet is compared by Jest; in
+Chrome it is presented outside the parity table's cells.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -1728,7 +1741,7 @@ and `@oxy.so/bloom-data` beside it.
   `ConversationSidebar`, `Questionnaire`); the chat families (the chat
   screen's, chat list's, indicators' and message media's 24); the listing
   details, map markers, follow button, shelves, subscription plans and user
-  hover card; the card form and its parts.
+  hover card; the card form and its parts; the checkout sheet.
 
 **Not built**
 

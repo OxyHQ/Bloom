@@ -523,3 +523,7 @@ export type {
   CardFormPostcodeView,
   CardFormView,
 } from './controls/card-form';
+
+// Checkout sheet (controls/checkout-sheet.tsx)
+export { CheckoutSheet } from './controls/checkout-sheet';
+export type { CheckoutSheetOptions, CheckoutSheetView } from './controls/checkout-sheet';
