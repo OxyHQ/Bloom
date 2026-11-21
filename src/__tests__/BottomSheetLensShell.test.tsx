@@ -8,19 +8,14 @@ import { Modal, Text, View } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 
 import BottomSheet, { type BottomSheetRef } from '../bottom-sheet';
-import type { LensNativeProps } from '../floating/lens/native-lens';
 import { PortalOutlet, PortalProvider } from '../portal';
 import { BloomThemeProvider } from '../theme';
 
 let lens = false;
 
-function NativeLensStub(props: LensNativeProps) {
-  return <View testID="native-lens">{props.children}</View>;
-}
-
 jest.mock('../floating/lens/native-lens', () => ({
   ...jest.requireActual('../floating/lens/native-lens'),
-  getNativeLens: () => (lens ? NativeLensStub : null),
+  getNativeLens: () => (lens ? jest.requireActual('./lens-stub').stubLens : null),
 }));
 
 function renderSheet() {

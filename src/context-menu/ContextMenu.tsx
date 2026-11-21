@@ -241,7 +241,7 @@ export function ContextMenuTrigger({
         onLongPress: (event) => {
           const point = pressPoint(event);
           // The native lens menu morphs out of the press: a small box around the point.
-          if (lens) void lens.nativeRef.current?.open(...(point ? lensOrigin(point) : []));
+          if (lens) lens.nativeRef.current?.open(point ? lensOrigin(point) : undefined);
           else openAt(point);
         },
         disabled,
@@ -265,8 +265,13 @@ export function ContextMenuTrigger({
 }
 
 /** The 44-dp box around a press point that the native lens menu opens from. */
-function lensOrigin(point: FloatingAnchor): [number, number, number, number] {
-  return [point.left - 22, point.top - 22, 44, 44];
+function lensOrigin(point: FloatingAnchor): {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+} {
+  return { x: point.left - 22, y: point.top - 22, width: 44, height: 44 };
 }
 
 /** The anchor view's frame in the window, measured as the menu opens. */

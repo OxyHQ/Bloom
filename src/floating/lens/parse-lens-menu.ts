@@ -2,14 +2,14 @@
  * Reads a menu's rows as data for the native lens menu.
  *
  * The native overlay draws its own rows, so it takes a CLOSED vocabulary: a
- * title, an icon, a check, destructive, disabled, a separator or a heading. The
+ * title, an icon, a check, destructive, disabled, a separator, a heading or a sub-menu. The
  * parse is therefore all-or-nothing: one part outside the vocabulary (a body
  * that is not a string, a sub-menu, a swatch row, a wrapper component) and it
  * returns `null`, and the menu keeps its sheet, which draws anything.
  */
 import { Children, Fragment, isValidElement, type ReactElement, type ReactNode } from 'react';
 
-import type { LensNativeItem } from './native-lens';
+import type { LensRow } from './native-lens';
 import type {
   MenuCheckboxRowProps,
   MenuGroupProps,
@@ -37,11 +37,8 @@ export interface LensMenuParts {
 }
 
 export interface ParsedLensMenu {
-  items: LensNativeItem[];
-  /** Leading nodes, in the order of the items' `iconSlot`s. */
-  icons: ReactNode[];
-  /** What each row does when chosen, by item id. */
-  handlers: Record<string, () => void>;
+  /** The rows, each item with its leading node and what choosing it does. */
+  rows: LensRow[];
 }
 
 function walk(children: ReactNode, visit: (element: ReactElement) => boolean): boolean {
@@ -60,9 +57,7 @@ function walk(children: ReactNode, visit: (element: ReactElement) => boolean): b
 }
 
 export function parseLensMenu(children: ReactNode, parts: LensMenuParts): ParsedLensMenu | null {
-  const items: LensNativeItem[] = [];
-  const icons: ReactNode[] = [];
-  const handlers: Record<string, () => void> = {};
+  const items: LensRow[] = [];
   // Where the rows being read go: the menu, or the sub-menu being read (the native menu nests one level).
   let out = items;
   let next = 0;
@@ -71,17 +66,12 @@ export function parseLensMenu(children: ReactNode, parts: LensMenuParts): Parsed
     id: string,
     title: unknown,
     leading: ReactNode,
-    flags: Pick<LensNativeItem, 'checked' | 'destructive' | 'disabled' | 'keepOpen'>,
+    flags: { checked?: boolean; destructive?: boolean; disabled?: boolean; keepOpen?: boolean },
     run: () => void,
   ): boolean => {
     if (typeof title !== 'string') return false;
-    const item: LensNativeItem = { id, title, ...flags };
-    if (leading != null && leading !== false) {
-      icons.push(leading);
-      item.iconSlot = icons.length - 1;
-    }
-    out.push(item);
-    handlers[id] = run;
+    const icon = leading != null && leading !== false ? leading : undefined;
+    out.push({ kind: 'item', id, title, icon, ...flags, onSelect: run });
     return true;
   };
 
@@ -136,11 +126,11 @@ export function parseLensMenu(children: ReactNode, parts: LensMenuParts): Parsed
       if (element.type === parts.Label) {
         const title = (element.props as MenuLabelProps).children;
         if (typeof title !== 'string') return false;
-        out.push({ id, title, heading: true });
+        out.push({ kind: 'heading', id, title });
         return true;
       }
       if (element.type === parts.Separator) {
-        out.push({ id, title: '', separator: true });
+        out.push({ kind: 'separator', id });
         return true;
       }
       if (element.type === parts.Sub) return readSub(element, group, id);
@@ -164,21 +154,20 @@ export function parseLensMenu(children: ReactNode, parts: LensMenuParts): Parsed
     });
     const trigger = read.trigger;
     if (!found || !trigger || typeof trigger.children !== 'string') return false;
-    const children: LensNativeItem[] = [];
+    // A disabled sub-menu is a row that cannot be opened; the lens menu's sub-menus take no glyph.
+    if (trigger.disabled) {
+      items.push({ kind: 'item', id, title: trigger.children, disabled: true });
+      return true;
+    }
+    const children: LensRow[] = [];
     out = children;
     const ok = walk(read.content, visitRows(group));
     out = items;
     if (!ok || children.length === 0) return false;
-    const sub: LensNativeItem = { id, title: trigger.children, items: children };
-    if (trigger.leading != null && trigger.leading !== false) {
-      icons.push(trigger.leading);
-      sub.iconSlot = icons.length - 1;
-    }
-    if (trigger.disabled) sub.disabled = true;
-    items.push(sub);
+    items.push({ kind: 'submenu', id, title: trigger.children, rows: children });
     return true;
   };
 
   if (!walk(children, visitRows({}))) return null;
-  return items.length > 0 ? { items, icons, handlers } : null;
+  return items.length > 0 ? { rows: items } : null;
 }

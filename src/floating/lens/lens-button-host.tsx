@@ -10,8 +10,6 @@ import { useTheme } from '../../theme/use-theme';
 import { useLensAvailable } from './lens-material';
 import { getNativeLens } from './native-lens';
 
-const NO_ITEMS: never[] = [];
-
 /** The style keys that place a control among its siblings: they belong to the lens host. */
 const PLACEMENT_KEYS = [
   'position',
@@ -102,20 +100,23 @@ interface LensButtonHostProps {
 }
 
 export function LensButtonHost({ tint, radius, style, children }: LensButtonHostProps) {
-  const NativeLens = useLensAvailable() ? getNativeLens() : null;
+  const native = useLensAvailable() ? getNativeLens() : null;
   const dark = useTheme().isDark;
-  if (!NativeLens) return <>{Children.only(children)}</>;
+  if (!native) return <>{Children.only(children)}</>;
+  const { Menu } = native;
+  // The upstream app's lens button: its menu trigger with no rows, the control's own press kept.
   return (
-    <NativeLens
-      items={NO_ITEMS}
-      lens
-      colorScheme={dark ? 'dark' : 'light'}
-      cornerRadius={radius}
-      triggerConfig={tint ? { tintColor: tint, tintOpacity: 0.96 } : undefined}
-      style={[HOST, style]}
-    >
-      {children}
-    </NativeLens>
+    <Menu colorScheme={dark ? 'dark' : 'light'}>
+      <Menu.Trigger
+        lens
+        openOnPress={false}
+        cornerRadius={radius}
+        config={tint ? { tintColor: tint, tintOpacity: 0.96 } : undefined}
+        style={[HOST, style]}
+      >
+        {children}
+      </Menu.Trigger>
+    </Menu>
   );
 }
 

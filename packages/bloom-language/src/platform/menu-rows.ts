@@ -214,3 +214,17 @@ export function triggerCorner(trigger: Child): number | undefined {
   }
   return undefined;
 }
+
+/** The trigger's accessible name: its own label, or the one the menu gave it. */
+export function triggerLabel(trigger: Child): string | undefined {
+  return isNode(trigger) ? lastOf(trigger, 'label')?.value : undefined;
+}
+
+/** The trigger without a press of its own: the lens trigger's press layer opens the menu. */
+export function withoutPress(trigger: Child): Child {
+  if (!isNode(trigger)) return trigger;
+  const modifiers = trigger.modifiers.filter((modifier) => modifier.kind !== 'onPress');
+  return modifiers.length === trigger.modifiers.length
+    ? trigger
+    : new Node(trigger.kind, trigger.props, trigger.children, modifiers);
+}

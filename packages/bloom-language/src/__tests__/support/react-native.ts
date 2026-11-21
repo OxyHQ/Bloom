@@ -12,3 +12,5 @@ export const StyleSheet = {
   flatten: (style: unknown) => style,
 };
 export const useWindowDimensions = () => ({ width: 400, height: 800, scale: 1, fontScale: 1 });
+/** The system's scheme; the lens menu reads it for its `auto` scheme. */
+export const useColorScheme = () => 'light';
