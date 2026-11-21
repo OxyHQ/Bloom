@@ -21,6 +21,7 @@ import {
   type SkeletonView,
   type BottomBarView,
   type ButtonGroupView,
+  type ScrollViewNode,
   type ShapeProps,
   type ShapeView,
   type ButtonView,
@@ -268,6 +269,22 @@ export function BottomBar(
 /** The page header, or the navigation bar (`.presentation('navigation')`), titled `title`. */
 export function Header(title?: string): HeaderView {
   return new Node('header', { title }, NO_CHILDREN);
+}
+
+/**
+ * The screen's scroller (Bloom `ScreenScrollView`): its children are the
+ * content, in a column, bound to the screen's header fade, bottom bar fold,
+ * reselect and keyboard.
+ *
+ * ```ts
+ * ScrollView(Text(title).font('title-1'), Text(body))
+ *   .contentMargins('md')
+ *   .spacing('sm')
+ *   .refreshable(refresh)
+ * ```
+ */
+export function ScrollView(...children: Child[]): ScrollViewNode {
+  return new Node('scrollView', null, children);
 }
 
 /**

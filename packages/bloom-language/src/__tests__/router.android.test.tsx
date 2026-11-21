@@ -7,7 +7,7 @@ import { createElement, type ReactNode } from 'react';
 
 import { act, Glyph, hosts, mount, only, OtherGlyph, quietRenderer } from './support/mount';
 import { pager, router } from './support/bloom-router';
-import { Button, Embed, Header, Icon, Text, VStack } from '../primitives';
+import { Button, Embed, FAB, Header, Icon, ScrollView, Text, VStack } from '../primitives';
 import { AppLayout, layout, navigate, screen, Sheet, Stack, TabView } from '../router';
 import { InPagerContext } from '../router/pager';
 
@@ -153,7 +153,8 @@ describe('screen() on Android', () => {
     });
     const r = mount(createElement(Notifications));
     const s = only(r, 'Screen');
-    expect(s.props.scroll).toBe('auto');
+    // Bloom's own default: the screen's viewport scrolls (`auto`) when the body names no kind.
+    expect(s.props.scroll).toBeUndefined();
     expect(s.props.reselect.refresh).toBe(refresh);
     const header = only(r, 'PageHeader');
     expect(header.props).toMatchObject({ title: 'Notifications', presentation: 'floating' });
@@ -217,6 +218,79 @@ describe('screen() on Android', () => {
       onBack: back,
     });
     expect(hosts(r, 'Text').some((t) => t.props.children === 'p7')).toBe(true);
+  });
+
+  it('the root’s scroll, kind, insets, underlay, floating action and scroll edge reach Screen and PageHeader', () => {
+    const Feed = screen(() =>
+      ScrollView(Text('row'))
+        .title('Feed')
+        .scrollEdge('always')
+        .screenKind('collection')
+        .screenScroll('content')
+        .documentScroll()
+        .headerPlacement('overlay')
+        .underlay(Embed(createElement('Wallpaper')))
+        .floatingAction(FAB(Icon(Glyph)).label('New'), { placement: 'center', visibility: 'alone' })
+        .contentClearance('2xl')
+        .navigationScope('isolated'),
+    );
+    const r = mount(createElement(Feed));
+    const s = only(r, 'Screen');
+    expect(s.props).toMatchObject({
+      kind: 'collection',
+      scroll: 'content',
+      documentScroll: true,
+      headerPlacement: 'overlay',
+      primaryActionPlacement: 'center',
+      primaryActionVisibility: 'alone',
+      contentClearance: 24,
+      navigationScope: 'isolated',
+    });
+    expect(s.props.underlay).toBeTruthy();
+    expect(s.props.primaryAction).toBeTruthy();
+    expect(only(r, 'PageHeader').props.scrim).toBe('always');
+    expect(hosts(r, 'ScreenScrollView')).toHaveLength(1);
+  });
+
+  it('a ScrollView is Bloom’s ScreenScrollView: its margins, gap, indicators, keyboard and end', () => {
+    const more = jest.fn();
+    const Feed = screen(() =>
+      ScrollView(Text('a'), Text('b'))
+        .contentMargins('horizontal', 'lg')
+        .contentMargins('top', 'sm')
+        .spacing('md')
+        .scrollIndicators('hidden')
+        .scrollDismissesKeyboard('interactively')
+        .keyboardTaps('handled')
+        .onEndReached(more, 3),
+    );
+    const scroll = only(mount(createElement(Feed)), 'ScreenScrollView');
+    expect(scroll.props).toMatchObject({
+      contentContainerStyle: { paddingHorizontal: 16, paddingTop: 8, gap: 12 },
+      showsVerticalScrollIndicator: false,
+      showsHorizontalScrollIndicator: false,
+      keyboardDismissMode: 'interactive',
+      keyboardShouldPersistTaps: 'handled',
+      onEndReached: more,
+      onEndReachedThreshold: 3,
+    });
+    // Nothing the chain leaves out reaches it, so Bloom's own defaults hold.
+    expect(
+      Object.keys(only(mount(createElement(screen(() => ScrollView()))), 'ScreenScrollView').props),
+    ).toEqual(['children']);
+  });
+
+  it('pull to refresh shows until what the action returns settles', async () => {
+    let settle!: () => void;
+    const refresh = jest.fn(() => new Promise<void>((resolve) => (settle = resolve)));
+    const r = mount(createElement(screen(() => ScrollView(Text('a')).refreshable(refresh))));
+    const control = () => only(r, 'ScreenScrollView').props.refreshControl;
+    expect(control().props.refreshing).toBe(false);
+    act(() => control().props.onRefresh());
+    expect(refresh).toHaveBeenCalledTimes(1);
+    expect(control().props.refreshing).toBe(true);
+    await act(async () => settle());
+    expect(control().props.refreshing).toBe(false);
   });
 
   it('a sheet is Bloom’s Dialog: built while open, kept while it closes', () => {

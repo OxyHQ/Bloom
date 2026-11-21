@@ -1192,6 +1192,75 @@ Chrome check compares each cell in place: the presenting view (an overlay's
 portal is outside the cells). Toasts are compared by the Jest suites only: a
 page has one toast store, so two toasters side by side would each draw both.
 
+## App chrome
+
+The chrome around an app's pages, each the Bloom component an app draws
+today: the language node hands it the same props, so it looks and behaves
+the same, and `parity/` proves it (see [Component parity](#component-parity)).
+
+### Screen and ScrollView
+
+```ts
+export default screen(function Feed() {
+  const { posts, more, refresh } = useFeed();
+  return ScrollView(posts.map((post) => PostRow({ post }).id(post.id)))
+    .contentMargins('horizontal', 'lg')
+    .spacing('sm')
+    .refreshable(refresh)
+    .onEndReached(more)
+    .keyboardTaps('handled')
+    .title(t('feed.title'))
+    .scrollEdge('auto')
+    .screenScroll('content')
+    .floatingAction(FAB(Icon(RiQuillPenLine)).label(t('compose')).onPress(compose));
+});
+```
+
+`ScrollView(...children)` is Bloom's `ScreenScrollView`, the screen's
+scroller: it binds the header's scroll-edge fade, the bottom bar's fold, the
+screen's reselect and, under a footer that follows the keyboard, keeps the
+focused input above it. Its children are its content, in a column; it must be
+inside a screen, as Bloom's is.
+
+| Modifier | Bloom `ScreenScrollView` |
+| --- | --- |
+| `.contentMargins(edge?, space)`, `.spacing(space)` | `contentContainerStyle`'s padding (a later margin of an edge replaces the earlier) and `gap` |
+| `.refreshable(action)` | a `RefreshControl` that spins from the pull until what `action` returns settles |
+| `.onEndReached(action, threshold?)` | `onEndReached`, `onEndReachedThreshold` (2 viewports by default) |
+| `.scrollIndicators('automatic' \| 'visible' \| 'hidden')` | `showsVerticalScrollIndicator` and `showsHorizontalScrollIndicator` |
+| `.scrollDismissesKeyboard('never' \| 'immediately' \| 'interactively')` | `keyboardDismissMode` `none`, `on-drag`, `interactive` |
+| `.keyboardTaps('never' \| 'always' \| 'handled')` | `keyboardShouldPersistTaps` |
+
+Only what the chain names reaches the scroll view, so Bloom's own defaults
+hold (`keyboardShouldPersistTaps="handled"` among them). Box modifiers
+(`padding`, `frame`, `background`) are a view around the scroller, as
+SwiftUI's are; room inside the scroll is `contentMargins`.
+
+A `screen()` body's root takes, besides the header, footer and sheet
+modifiers above (see [Navigation](#navigation)), the rest of Bloom `Screen`:
+
+| Modifier | Bloom `Screen` |
+| --- | --- |
+| `.screenKind('document' \| 'form' \| 'collection' \| 'table' \| 'canvas')` | `kind` (a collection or table scrolls by its list, a canvas not at all) |
+| `.screenScroll('auto' \| 'content' \| 'none')` | `scroll`: the screen's viewport, the list in it, or none |
+| `.documentScroll()` | `documentScroll`: on the web the window scrolls the page |
+| `.headerPlacement('inset' \| 'overlay')` | `headerPlacement` |
+| `.scrollEdge('auto' \| 'always' \| 'none')` | the composed header's `scrim` |
+| `.underlay(view)` | `underlay`, behind header, content and footer |
+| `.floatingAction(view, { placement, visibility })` | `primaryAction`, `primaryActionPlacement`, `primaryActionVisibility` |
+| `.contentClearance(space)` | `contentClearance` |
+| `.navigationScope('inherit' \| 'shared' \| 'isolated')` | `navigationScope` |
+
+The insets are Bloom `Screen`'s own: the header and the footer measure
+themselves, the safe area comes from the screen's context, and the content
+pads its ends clear of both. The keyboard is the footer's
+(`.footer(content, { keyboard })`: `hide`, `visible`, or `follow`, which rides
+the keyboard and keeps the focused field above it) and the scroll view's
+(`scrollDismissesKeyboard`, `keyboardTaps`).
+
+Not in the language yet: a screen's colour (`colorPreset`, `seed`), `active`
+and the initial chrome heights (`headerHeight`, `bottomBarHeight`).
+
 ## Image
 
 `Image(source, alt?)` is Bloom's `BloomImage`: expo-image on a device,

@@ -6,7 +6,7 @@
  * and the object it merges to are the same paint; handlers by presence), and
  * its children in order. Nothing is allowed to differ.
  */
-import type { ReactNode } from 'react';
+import { isValidElement, type ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
 import TestRenderer, { act, type ReactTestRendererJSON } from 'react-test-renderer';
 import { BloomThemeProvider } from '@oxy.so/bloom/theme';
@@ -37,6 +37,15 @@ function value(input: unknown): unknown {
       return seen;
     });
   if (Array.isArray(input)) return input.map(value);
+  // An element handed to a host as a prop (a scroll view's refresh control) is
+  // what it draws: its type and props, not who created it.
+  if (isValidElement(input)) {
+    const type = input.type as string | { displayName?: string; name?: string } | undefined;
+    return {
+      element: typeof type === 'object' ? (type.displayName ?? type.name) : type,
+      props: value(input.props),
+    };
+  }
   if (input !== null && typeof input === 'object') {
     const out: Record<string, unknown> = {};
     for (const key of Object.keys(input).sort()) {

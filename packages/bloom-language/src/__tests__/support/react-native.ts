@@ -2,6 +2,7 @@
 export const View = 'View';
 export const Text = 'Text';
 export const Pressable = 'Pressable';
+export const RefreshControl = 'RefreshControl';
 export const Platform = {
   OS: 'ios',
   select: <T>(spec: { ios?: T; default?: T }) => spec.ios ?? spec.default,
