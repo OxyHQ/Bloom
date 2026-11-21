@@ -495,6 +495,44 @@
     "badgeStyle": ["solid", "subtle", "outlined", "onMedia"],
     "badgeSize": ["xs", "sm", "md", "lg", "label-small", "label-medium"],
     "badgePlacement": ["top-right", "top-left", "bottom-right", "bottom-left"],
+    "cardRadius": [
+      "radius-0",
+      "radius-2",
+      "radius-4",
+      "radius-8",
+      "radius-12",
+      "radius-16",
+      "radius-20",
+      "radius-24",
+      "radius-28",
+      "radius-max",
+      "panel",
+      "concentric"
+    ],
+    "cardElevation": ["none", "s", "m", "floating"],
+    "cardBorder": ["none", "hairline", "thin", "medium"],
+    "groupedSectionStyle": ["plain", "filled"],
+    "groupedSeparator": ["space", "line", "none"],
+    "chipSize": ["xs", "sm", "md", "lg", "xl", "2xl"],
+    "chipHue": [
+      "lime",
+      "rose",
+      "yellow",
+      "cyan",
+      "blue",
+      "purple",
+      "orange",
+      "brown",
+      "pink",
+      "neutral",
+      "gray",
+      "soft"
+    ],
+    "emptyStateStyle": ["comfortable", "compact"],
+    "emptyStateMedia": ["glyph", "circle"],
+    "admonitionStyle": ["info", "tip", "warning", "error", "apology"],
+    "tabsStyle": ["underline", "pill", "filled"],
+    "kbdSize": ["sm", "md"],
     "loadingStyle": ["spinner", "top", "inline"],
     "contentTransition": ["roll"],
     "swipeDirection": ["left", "right", "up", "down"],
@@ -763,6 +801,26 @@
     "hoverCard": ["value?"],
     "pressScale": [],
     "hoverHighlight": ["value?"],
+    "radius": ["cardRadius"],
+    "elevation": ["cardElevation"],
+    "outline": ["cardBorder"],
+    "clipped": [],
+    "leadingView": ["children"],
+    "selected": ["value?"],
+    "highlighted": ["value?"],
+    "caption": ["value"],
+    "separator": ["groupedSeparator"],
+    "value": ["value"],
+    "chevron": ["value?"],
+    "toggle": ["value"],
+    "onClose": ["value", "value?"],
+    "hue": ["chipHue"],
+    "media": ["emptyStateMedia"],
+    "secondaryAction": ["value"],
+    "message": ["value"],
+    "retryLabel": ["value"],
+    "resetKey": ["value"],
+    "fullWidth": ["value?"],
     "pressed": ["value"],
     "when": ["condition", "variant"],
     "colors": ["color", "color"],
@@ -1114,6 +1172,98 @@
     "lottie": {
       "constructors": ["Lottie"],
       "modifiers": ["loop", "paused", "fallback"]
+    },
+    "card": {
+      "constructors": ["Card"],
+      "modifiers": ["style", "tint", "radius", "elevation", "outline", "clipped", "disabled"],
+      "style": "appearance",
+      "tint": "tone"
+    },
+    "cardHeader": { "constructors": ["CardHeader"], "modifiers": [] },
+    "cardBody": { "constructors": ["CardBody"], "modifiers": [] },
+    "cardFooter": { "constructors": ["CardFooter"], "modifiers": [] },
+    "cardTitle": { "constructors": ["CardTitle"], "universal": false, "modifiers": ["lines"] },
+    "cardDescription": {
+      "constructors": ["CardDescription"],
+      "universal": false,
+      "modifiers": ["lines"]
+    },
+    "row": {
+      "constructors": ["Row"],
+      "modifiers": [
+        "size",
+        "subtitle",
+        "leadingView",
+        "trailing",
+        "lines",
+        "disabled",
+        "destructive",
+        "selected",
+        "active",
+        "highlighted"
+      ],
+      "size": "controlSize"
+    },
+    "groupedSection": {
+      "constructors": ["GroupedSection"],
+      "modifiers": ["title", "caption", "style", "separator", "radius"],
+      "style": "groupedSectionStyle"
+    },
+    "groupedSectionItem": {
+      "constructors": ["GroupedSectionItem"],
+      "universal": false,
+      "modifiers": [
+        "leadingView",
+        "description",
+        "value",
+        "trailing",
+        "chevron",
+        "lines",
+        "destructive",
+        "disabled",
+        "onPress",
+        "label",
+        "hint",
+        "testID"
+      ]
+    },
+    "chip": {
+      "constructors": ["Chip"],
+      "modifiers": ["style", "tint", "size", "hue", "toggle", "selected", "onClose", "disabled"],
+      "style": "appearance",
+      "tint": "tone",
+      "size": "chipSize"
+    },
+    "emptyState": {
+      "constructors": ["EmptyState"],
+      "modifiers": ["icon", "description", "media", "style", "action", "secondaryAction"],
+      "style": "emptyStateStyle"
+    },
+    "admonition": {
+      "constructors": ["Admonition"],
+      "modifiers": ["style", "size"],
+      "style": "admonitionStyle",
+      "size": "controlSize"
+    },
+    "tabs": {
+      "constructors": ["Tabs"],
+      "modifiers": ["style", "fullWidth"],
+      "style": "tabsStyle"
+    },
+    "tabItem": {
+      "constructors": ["TabItem"],
+      "universal": false,
+      "modifiers": ["icon", "count", "disabled", "testID"]
+    },
+    "kbd": {
+      "constructors": ["Kbd"],
+      "modifiers": ["size"],
+      "size": "kbdSize"
+    },
+    "errorBoundary": {
+      "constructors": ["ErrorBoundary"],
+      "universal": false,
+      "modifiers": ["title", "message", "retryLabel", "resetKey", "onError", "fallback", "testID"]
     },
     "embed": {
       "constructors": ["Embed"],
