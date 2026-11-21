@@ -268,28 +268,35 @@ export const VARIANT_CASES: ParityCase[] = [
           .when('hovered', (v) => v.foreground('primary')),
       ),
     // The web answers the hover with CSS: the glyph paints currentColor, its colour a class.
-    bloom: () => (
-      <RN.Pressable
-        onPress={onPress}
-        {...(RN.Platform.OS === 'web' ? null : { onHoverIn: onPress, onHoverOut: onPress })}
-        style={{ flexDirection: 'row' }}
-      >
-        <Themed>
-          {(colors) =>
-            RN.Platform.OS === 'web' ? (
-              <RiHeart3Line
-                fill="currentColor"
-                width={20}
-                height={20}
-                style={{ color: 'var(--muted-foreground)' }}
-              />
-            ) : (
-              <RiHeart3Line fill={colors.textSecondary} width={20} height={20} />
-            )
-          }
-        </Themed>
-      </RN.Pressable>
-    ),
+    // Bloom JSX answers it with react-native-web's hovered state (held in Chrome).
+    bloom: () =>
+      RN.Platform.OS === 'web' ? (
+        <RN.Pressable onPress={onPress} style={{ flexDirection: 'row' }}>
+          {(state) => (
+            <RiHeart3Line
+              fill="currentColor"
+              width={20}
+              height={20}
+              style={{
+                color: (state as { hovered?: boolean }).hovered
+                  ? 'var(--primary)'
+                  : 'var(--muted-foreground)',
+              }}
+            />
+          )}
+        </RN.Pressable>
+      ) : (
+        <RN.Pressable
+          onPress={onPress}
+          onHoverIn={onPress}
+          onHoverOut={onPress}
+          style={{ flexDirection: 'row' }}
+        >
+          <Themed>
+            {(colors) => <RiHeart3Line fill={colors.textSecondary} width={20} height={20} />}
+          </Themed>
+        </RN.Pressable>
+      ),
   },
   {
     name: 'a platform variant',
