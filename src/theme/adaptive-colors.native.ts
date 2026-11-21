@@ -62,6 +62,11 @@ export type AdaptiveColors = Omit<
   | 'errorForeground'
   | 'warningForeground'
   | 'infoForeground'
+  // What the class vocabulary paints with: `--destructive` and Tailwind's fixed white and
+  // black, which the platform palette does not replace for a `className` either.
+  | 'destructive'
+  | 'white'
+  | 'black'
 >;
 
 const c = (v: unknown): string => v as string;

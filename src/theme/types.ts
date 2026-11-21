@@ -83,6 +83,17 @@ export interface ThemeColors {
   card: string;
   shadow: string;
   overlay: string;
+
+  /**
+   * `--destructive`, the fill apps paint with `bg-destructive` and `text-destructive`: the
+   * engine's error role, as the CSS variable has it. Not `error` (the policy's status fill)
+   * and not `negative` (which a platform palette replaces).
+   */
+  destructive: string;
+  /** White, the same in every theme: what apps paint with Tailwind's `white`. */
+  white: string;
+  /** Black, the same in every theme: what apps paint with Tailwind's `black`. */
+  black: string;
 }
 
 /**

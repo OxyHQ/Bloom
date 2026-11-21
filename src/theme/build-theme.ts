@@ -152,6 +152,12 @@ function buildColorsFromPreset(
       card: g('card'),
       shadow: isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)',
       overlay: 'rgba(0, 0, 0, 0.5)',
+
+      // What `bg-destructive`, `text-white` and `text-black` paint today: the
+      // `--destructive` variable, and Tailwind's fixed white and black.
+      destructive: g('destructive'),
+      white: '#ffffff',
+      black: '#000000',
     },
   };
 }
