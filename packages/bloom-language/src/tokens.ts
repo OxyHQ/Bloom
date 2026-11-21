@@ -162,6 +162,10 @@ export type BadgeSize = (typeof ENUMS.badgeSize)[number];
 export type BadgePlacement = (typeof ENUMS.badgePlacement)[number];
 /** Bloom `Loading`'s presentations: a spinner, the bar at the top, a line beside its text. */
 export type LoadingStyle = (typeof ENUMS.loadingStyle)[number];
+export type RatingSize = (typeof ENUMS.ratingSize)[number];
+export type RatingStyle = (typeof ENUMS.ratingStyle)[number];
+export type RatingCountStyle = (typeof ENUMS.ratingCountStyle)[number];
+export type RatingInputSize = (typeof ENUMS.ratingInputSize)[number];
 
 export {
   COLORS,

@@ -18,6 +18,8 @@ import type { AppShellProps } from '@oxy.so/bloom/app-shell';
 import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
+import type { RatingKind } from './controls/rating';
+import type { MeterReveal } from '@oxy.so/bloom/stat-bar';
 import type { DatePickerKind } from './controls/date-picker';
 import type { HourFormat, WeekStart } from '@oxy.so/bloom/date-picker';
 import type { Binding } from './binding';
@@ -62,6 +64,8 @@ import {
   type BadgeSize,
   type BadgeStyle,
   type LoadingStyle,
+  type RatingCountStyle,
+  type RatingStyle,
   type Presence,
   type ShapeName,
   type BorderWidthName,
@@ -258,6 +262,19 @@ export interface ValueModifiers {
   months: 1 | 2;
   step: number;
   hourFormat: HourFormat;
+
+  // Ratings (controls/rating.tsx)
+  countStyle: RatingCountStyle;
+  showsValue: boolean;
+  starSize: SpaceToken;
+  starTint: ColorToken;
+  countTint: ColorToken;
+  emptyTint: ColorToken;
+  fillValue: number;
+  starLabel: (value: number, max: number) => string;
+  valueLabel: string;
+  labelWidth: SpaceToken;
+  reveal: MeterReveal;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -407,7 +424,7 @@ export type Modifier =
   | {
       readonly kind: 'style';
       readonly key: string;
-      readonly value: BloomAppearance | BadgeStyle | LoadingStyle;
+      readonly value: BloomAppearance | BadgeStyle | LoadingStyle | RatingStyle;
     }
   | { readonly kind: 'shape'; readonly key: string; readonly value: ButtonShape | ShapeName }
   | {
@@ -415,7 +432,11 @@ export type Modifier =
       readonly key: string;
       readonly value: EngagementTone | BloomTone | ColorName | AvatarColor;
     }
-  | { readonly kind: 'count'; readonly key: string; readonly value: number | null | undefined }
+  | {
+      readonly kind: 'count';
+      readonly key: string;
+      readonly value: number | string | null | undefined;
+    }
   | { readonly kind: 'active'; readonly key: string; readonly value: boolean | undefined }
   | { readonly kind: 'trailing'; readonly key: string; readonly value: readonly Child[] }
   | {
@@ -546,7 +567,8 @@ export type NodeKind =
   | 'route'
   | 'tabView'
   | 'lottie'
-  | DatePickerKind;
+  | DatePickerKind
+  | RatingKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -853,7 +875,7 @@ export class Node {
   size(value: IconSizeToken | AvatarSizeToken | BloomSize | BadgeSize | SpaceToken): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
-  style(value: BloomAppearance | BadgeStyle | LoadingStyle): Node {
+  style(value: BloomAppearance | BadgeStyle | LoadingStyle | RatingStyle): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
   shape(value: ButtonShape | ShapeName): Node {
@@ -862,7 +884,7 @@ export class Node {
   tint(value: EngagementTone | BloomTone | ColorName | AvatarColor): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
   }
-  count(value: number | null | undefined): Node {
+  count(value: number | string | null | undefined): Node {
     return this.with({ kind: 'count', key: 'count', value });
   }
   active(value: boolean | undefined): Node {
@@ -1218,6 +1240,41 @@ export class Node {
   }
   hourFormat(value: HourFormat): Node {
     return this.set('hourFormat', value);
+  }
+
+  // Ratings (controls/rating.tsx)
+  countStyle(value: RatingCountStyle): Node {
+    return this.set('countStyle', value);
+  }
+  showsValue(value: boolean): Node {
+    return this.set('showsValue', value);
+  }
+  starSize(value: SpaceToken): Node {
+    return this.set('starSize', value);
+  }
+  starTint(value: ColorToken): Node {
+    return this.set('starTint', value);
+  }
+  countTint(value: ColorToken): Node {
+    return this.set('countTint', value);
+  }
+  emptyTint(value: ColorToken): Node {
+    return this.set('emptyTint', value);
+  }
+  fillValue(value: number): Node {
+    return this.set('fillValue', value);
+  }
+  starLabel(value: (value: number, max: number) => string): Node {
+    return this.set('starLabel', value);
+  }
+  valueLabel(value: string): Node {
+    return this.set('valueLabel', value);
+  }
+  labelWidth(value: SpaceToken): Node {
+    return this.set('labelWidth', value);
+  }
+  reveal(value: MeterReveal): Node {
+    return this.set('reveal', value);
   }
 }
 
