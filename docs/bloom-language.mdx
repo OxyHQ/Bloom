@@ -16,7 +16,7 @@ existing components and tokens, so a screen written in it looks the same as the
 JSX it replaces. A build-time compiler (`packages/bloom-language-compiler`)
 optimises it; the runtime stays complete without it. One spec
 (`packages/bloom-language/spec/language.json`) defines the vocabulary both use.
-Native renderers come later (see [What comes next](#what-comes-next)).
+Native renderers come later (see [Built and not built](#built-and-not-built)).
 
 ## Syntax
 
@@ -285,7 +285,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `lines(n)`, `noWrap()`, `truncation`, `selectable`, `textStyle`, `link`, `textAlign`, `italic`, `underline`, `strikethrough`, `textCase`, `monospacedDigit`, `wordBreak` | text only (see [Text](#text)) |
 | `listMarker(m)` | a stack only: a web list behind `disc` or `decimal` markers (see [Layout](#layout)) |
 | `contentFit`, `aspectRatio`, `tint`, `crossFade`, `onLoad`, `onError` | `Image` only (see [Image](#image)) |
-| `contentTransition('roll', direction?)` | text only (see [Animation](#animation)) |
+| `contentTransition('roll', direction?)` | text only (see [Animations](#animations)) |
 | `count`, `active`, `tint` | `Action` only |
 | `trailing(...)`, `countFormat(fn)` | `ActionBar` only |
 
@@ -631,7 +631,7 @@ VStack(
   every platform (the island composites its tint for what sits on it). It
   sits in the fill's layer, as `.glass()` does: `.padding('sm').blur()` is
   one island, `.blur().padding('sm')` pads outside it. A `Button` inside
-  keeps its own material (see [Not built yet](#not-built-yet)).
+  keeps its own material (see [Built and not built](#built-and-not-built)).
 
   ```ts
   HStack(Icon(RiFilterLine), Text('Filters')).spacing('xs').padding('sm').blur()
@@ -1331,41 +1331,77 @@ about what a token means, and its output is the same program on every platform.
 and web, and compares the committed trees on mount, after a re-render, and after
 a theme switch; each fixture also pins how many chains the compiler hoists.
 
-## What comes next
+## Built and not built
 
-- **Native renderers.** Menu, glass and the navigation bar already draw with
-  each platform's own component (see [Platform components](#platform-components)).
-  A renderer takes the same node and modifier list. iOS
-  maps it to SwiftUI views and modifiers (the vocabulary was chosen to map one to
-  one). Android and OxyOS map it to native views and the lens glass engine. Each
-  renderer replaces `render.tsx` for its platform, and paints roles natively, so
-  a theme switch costs no JS. The node model, the spec and `view()` stay.
-- **Compiler distribution.** Prebuilt addons per platform from CI, and a WASI
-  fallback.
-- **Replacing `className`.** The codemods read the [className](#classname)
-  table; the utilities it flags need a modifier or a named token first.
+One line holds the whole language (`feat/bloom-language-next`): the core,
+spec and compiler; the platform components and navigation; the primitives,
+numeric tokens, layout and style modifiers and variants; the motion engine;
+and `@oxy.so/bloom-data` beside it.
 
-## Not built yet
+**Built**
 
-- No native or CSS renderer: everything renders through React Native and
-  react-native-web.
+- The node model, `view()`, the one spec (runtime tables, web sheet and the
+  compiler's tables from `spec/language.json`) and the compiler (checks,
+  hoisting), with unit tests, cargo tests and parity against hand-written
+  Bloom on native and web, light and dark.
+- Primitives: stacks, `Spacer`, `Text` (Bloom's `Text`, its families and
+  ramp, mono), `Icon`, `Image`, `Embed`, `Avatar` and `AvatarGroup`, `Badge`,
+  `IconCircle`, `Loading`, `Skeleton`, `Shape`, `Divider`, `Fill`,
+  `AspectRatio`, `Grid`, `Button`, `ButtonGroup`, `FAB`, `Lottie`, the action
+  bar.
+- Platform components per platform (Menu, Button, Header, BottomBar, FAB, the
+  glass: the lens on Android and OxyOS, `glassEffect` on iOS, Bloom's
+  material on the web) and navigation (`AppLayout`, stacks, routes, tabs, the
+  iOS system components).
+- Tokens: Bloom's named rungs, numeric tokens by one rule (an exact value apps
+  write in two or more places, named by its value), and an app's own tokens
+  (`defineTokens`: space, icon and avatar sizes, leading, motion, and brand
+  colours).
+- Layout and style modifiers: distribution, placement, overlays, elevation,
+  rings, corners and their curve, text styles, links, truncation.
+- Variants: breakpoints, the scheme, a view's own hover, focus
+  (`:focus-visible`) and press, `disabled` and the platforms; nested
+  variants; on the web a sheet per condition holding only the classes that
+  render; a Bloom component's variants in its own style, its state tracked by
+  its box (a component with no press of its own takes it on a host around
+  it); the innermost pressable owns a hover or a press, as react-native-web's
+  does.
+- Motion (`@oxy.so/bloom/motion`): motion tokens and curves, `.animation()`,
+  `.transition()`, `.keyframes()`, `.matchedGeometry()`,
+  `.contentTransition('roll')`, `.pressScale()`, geometry (`.scale()`,
+  `.offset()`, `.rotation()`) as tokens or bound to a `MotionValue`, `.drag()`
+  and `.swipe()` on Gesture Handler 3. Resting geometry that nothing plays is
+  the box's own style. Bloom's pop, roll, toast and press feedback play on the
+  same engine.
+- The className table (`docs/bloom-language-classnames.mdx`), which says what
+  each utility the apps use becomes.
+
+**Not built**
+
+- Variants: a scale or an offset under `when()` (geometry is the motion
+  layer's, and the web has no transform class to vary); an app colour under
+  `when()` (it has no class); a glass's frame, border, corner and fill (only a
+  material's padding varies); `EngagementAction` takes no state variants.
+- A Bloom pressable inside a pressable stack on the web: the stack's CSS
+  answers its nearest anchor, and a Bloom component carries none, so the
+  outer stack still answers a hover of the inner component (native leaves
+  read the nearest press host and are right).
+- Motion: `transition-colors` (the engine plays geometry and opacity, not
+  colour), loops (`animate-spin`, `animate-pulse`), a `delay`, a transform
+  `origin`; `withAnimation`, `map()`, `.pinch`, `.onDoubleTap`, the bottom
+  sheet's drag, `.contentTransition('numeric')`, matched geometry across
+  screens. An `.animation()` scope reaches its own body, not the bodies of
+  `view()`s inside it; a removal plays only for a keyed list's child.
+- Renderers: everything renders through React Native and react-native-web;
+  no SwiftUI, native-view or CSS renderer yet. iOS is typechecked and tested
+  against stand-ins, not run on a device. The web stylesheet is not in
+  server-rendered HTML. On the web, `hoverGroup()` sets `group` through
+  `react-native-css`.
 - An island of shared controls: a `Button` inside `.blur()` draws its own
   material rather than Bloom's `material="shared"` on the island's.
-- `ZStack` is basic: the first child sets the size and the rest cover it. There
-  is no alignment inside it; `.overlay(view, alignment)` is the aligned form.
-- iOS is written and typechecked against `expo-glass-effect`, `@expo/ui` and
-  expo-router (its native `Stack`, `Stack.Toolbar` and `NativeTabs`), and
-  tested against stand-ins of each; it is not verified on a device (no Mac
-  here).
-- On the web, hover groups (`hoverGroup()`) set the `group` class through
-  `react-native-css`. Web behaviour of the language row is unmeasured.
-- The web stylesheet is not in server-rendered HTML.
-- A scale or an offset cannot vary (it is geometry the motion layer draws, not a class).
-- Animations, not built: gestures (`.drag`, `.swipe`, `.pinch`,
-  `.onDoubleTap`), `MotionValue` and `map()`, `withAnimation`, and the bottom
-  sheet's drag; `.contentTransition('numeric')` (digit wheels); matched geometry
-  across screens. The spec lists none of them, so the compiler rejects them.
-- An `.animation()` scope reaches the nodes of its own body, not the bodies of
-  `view()`s inside it. A removal plays only for a child of a keyed list; a
-  conditional child (`flag ? X : null`) leaves at once. Geometry modifiers apply
-  to the view's outermost box wherever they stand in the chain.
+- `ZStack` is basic: the first child sets the size and the rest cover it;
+  `.overlay(view, alignment)` is the aligned form.
+- Compiler distribution: prebuilt addons per platform from CI, and a WASI
+  fallback.
+- Replacing `className`: the codemods read the className table; what it
+  flags needs a modifier or a named token first.
