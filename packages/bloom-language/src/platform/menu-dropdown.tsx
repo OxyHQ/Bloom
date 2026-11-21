@@ -80,13 +80,18 @@ export function glyph(icon: IconComponent, destructive: boolean): Child {
 
 type Leading = (icon: IconComponent | undefined, destructive: boolean) => ReactNode;
 
+/** A row's key chord, which only a menubar's rows take. */
+interface Shortcut {
+  shortcut?: string;
+}
+
 /**
  * The row parts of one of Bloom's menus. Its dropdown, context and menubar menus
  * draw the same rows, with the same props, each under its own part names.
  */
 export interface MenuParts {
-  Item: ComponentType<DropdownMenuItemProps>;
-  CheckboxItem: ComponentType<DropdownMenuCheckboxItemProps>;
+  Item: ComponentType<DropdownMenuItemProps & Shortcut>;
+  CheckboxItem: ComponentType<DropdownMenuCheckboxItemProps & Shortcut>;
   Label: ComponentType<{ children?: ReactNode }>;
   Separator: ComponentType<Record<string, never>>;
   Group: ComponentType<{ children?: ReactNode }>;
@@ -145,7 +150,8 @@ function drawRow(row: MenuRowData, leading: Leading, parts: MenuParts): ReactNod
           <SubContent label={row.title}>{drawMenuRows(row.rows, leading, parts)}</SubContent>
         </Sub>
       );
-    case 'item':
+    case 'item': {
+      const shortcut = row.shortcut === undefined ? undefined : { shortcut: row.shortcut };
       return row.checked === undefined ? (
         <Item
           leading={leading(row.icon, row.destructive)}
@@ -154,6 +160,7 @@ function drawRow(row: MenuRowData, leading: Leading, parts: MenuParts): ReactNod
           keepOpen={row.keepOpen}
           onPress={row.onPress}
           testID={row.testID}
+          {...shortcut}
         >
           {row.title}
         </Item>
@@ -165,9 +172,11 @@ function drawRow(row: MenuRowData, leading: Leading, parts: MenuParts): ReactNod
           disabled={row.disabled}
           keepOpen={row.keepOpen}
           testID={row.testID}
+          {...shortcut}
         >
           {row.title}
         </CheckboxItem>
       );
+    }
   }
 }

@@ -120,3 +120,4 @@ export const VideoPlayback: Story = { args: { family: 'videoPlayback' } };
 export const HoverCards: Story = { args: { family: 'hoverCard' } };
 export const ExpandableText: Story = { args: { family: 'expandableText' } };
 export const CategoryBars: Story = { args: { family: 'categoryBar' } };
+export const Menubars: Story = { args: { family: 'menubar' } };
