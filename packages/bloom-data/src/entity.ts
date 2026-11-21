@@ -41,6 +41,13 @@ export interface EntityOptions<T> {
    */
   combine?: (incoming: T, held: T) => T;
   /**
+   * Secondary keys, by name: the value a record is also found by (a
+   * username), or `null`/`undefined` for none. Normalise it here (trim, case),
+   * and the same way where it is looked up. `lookup` and a source with
+   * `index` read it; it is kept from memory, never read from disk.
+   */
+  index?: Readonly<Record<string, (record: T) => string | null | undefined>>;
+  /**
    * Told, once per batch, about every record of this type a write stored,
    * whichever path wrote it (a source page, a `put`, a record embedded in
    * another). For work that follows a record's server state.
@@ -71,6 +78,8 @@ export interface Entity<T> {
   referencing<U>(target: Entity<U>, id: string): string[];
   /** Every id held in memory. */
   ids(): string[];
+  /** The id of the held record whose `index` value is `value`. */
+  lookup(index: string, value: string): string | undefined;
   /** Reads records from the durable copy into memory (never overwriting memory). */
   load(ids: readonly string[]): Promise<void>;
 }
@@ -105,6 +114,13 @@ export function entity<T extends object>(type: string, options: EntityOptions<T>
     combine: options.combine as EntityDefinition['combine'],
     onStore: options.onStore as EntityDefinition['onStore'],
     persistVersion,
+    indexes: Object.entries(options.index ?? {}).map(([name, keyOf]) => [
+      name,
+      (record: Plain) => {
+        const value = keyOf(record as T);
+        return value === null || value === undefined || value === '' ? undefined : value;
+      },
+    ]),
   };
   registerPersisted(definition);
 
@@ -137,6 +153,7 @@ export function entity<T extends object>(type: string, options: EntityOptions<T>
     remove: (id) => currentStore().remove(definition, id),
     referencing: (target, id) => currentStore().referencing(definition, target.definition, id),
     ids: () => currentStore().ids(definition),
+    lookup: (index, value) => currentStore().lookup(definition, index, value),
     load: (ids) => currentStore().hydrate(definition, ids),
   };
 }

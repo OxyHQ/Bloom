@@ -51,6 +51,12 @@ export class Slot {
   }
 }
 
+/** A secondary key's value: the record it names now, and who reads it. */
+export class IndexSlot {
+  id: string | undefined = undefined;
+  listeners: Set<Listener> | undefined = undefined;
+}
+
 export class ListSlot {
   state: ListState | undefined = undefined;
   changedAt = 0;
@@ -166,6 +172,49 @@ export class Store {
     return slot;
   }
 
+  // ── Secondary keys ──────────────────────────────────────────
+
+  private readonly indexSlots = new Map<string, IndexSlot>();
+
+  indexSlot(definition: EntityDefinition, index: string, value: string): IndexSlot {
+    const key = `${definition.type}\u0000${index}\u0000${value}`;
+    let slot = this.indexSlots.get(key);
+    if (!slot) {
+      slot = new IndexSlot();
+      this.indexSlots.set(key, slot);
+    }
+    return slot;
+  }
+
+  /** The id of the held record whose `index` value is `value`. */
+  lookup(definition: EntityDefinition, index: string, value: string): string | undefined {
+    const id = this.indexSlots.get(`${definition.type}\u0000${index}\u0000${value}`)?.id;
+    return id !== undefined && this.slot(definition, id)?.base ? id : undefined;
+  }
+
+  /** Moves a record's secondary keys from what `previous` gave to what its base gives now. */
+  private reindex(slot: Slot, previous: Plain | undefined): void {
+    for (const [index, keyOf] of slot.definition.indexes) {
+      const before = previous ? keyOf(previous) : undefined;
+      const after = slot.base ? keyOf(slot.base) : undefined;
+      if (before === after) continue;
+      if (before !== undefined) {
+        const left = this.indexSlot(slot.definition, index, before);
+        if (left.id === slot.id) {
+          left.id = undefined;
+          this.queue(left.listeners);
+        }
+      }
+      if (after !== undefined) {
+        const joined = this.indexSlot(slot.definition, index, after);
+        if (joined.id !== slot.id) {
+          joined.id = slot.id;
+          this.queue(joined.listeners);
+        }
+      }
+    }
+  }
+
   /** Every id of `definition` held in memory. */
   ids(definition: EntityDefinition): string[] {
     const ids: string[] = [];
@@ -228,7 +277,7 @@ export class Store {
     }
   }
 
-  listen(target: Slot | ListSlot, listener: Listener): () => void {
+  listen(target: Slot | ListSlot | IndexSlot, listener: Listener): () => void {
     target.listeners ??= new Set();
     target.listeners.add(listener);
     return () => {
@@ -370,7 +419,9 @@ export class Store {
   }
 
   private writeBase(slot: Slot, base: Plain | undefined): void {
+    const previous = slot.base;
     slot.base = base === undefined ? undefined : share(slot.base, base);
+    this.reindex(slot, previous);
     slot.touchedAt = Date.now();
     if (slot.definition.persistVersion !== null && this.persister) {
       this.dirtyRecords.add(slot);
@@ -631,6 +682,7 @@ export class Store {
           set.add(refId);
         }
         slot.base = base;
+        this.reindex(slot, undefined);
         slot.touchedAt = Date.now();
         this.recompute(slot);
       }
