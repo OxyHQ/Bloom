@@ -3,7 +3,7 @@
  * its motion natively; React gives it the rows as data and their glyphs as
  * views. Where the engine cannot run, Bloom's own menu.
  *
- * The lens view is the trigger, as in the engine's own demo. It is mounted
+ * The lens view is the trigger, as in the engine's upstream app. It is mounted
  * with the trigger and stays: it draws the trigger (its glass too, when the
  * trigger is on glass), sees the press first (the glass springs under the
  * finger) and opens natively from where it is, with no remount. Rows given as
