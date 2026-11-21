@@ -261,3 +261,7 @@ export type {
 // Markdown (controls/markdown.tsx)
 export { Markdown } from './controls/markdown';
 export type { MarkdownView } from './controls/markdown';
+
+// Sliders (controls/slider.tsx)
+export { RangeSlider, Slider } from './controls/slider';
+export type { RangeSliderView, SliderView } from './controls/slider';

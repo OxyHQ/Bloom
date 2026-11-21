@@ -5,6 +5,7 @@ import type { ControlRenderer } from './draw';
 import { LISTS } from './list';
 import { MARKDOWN } from './markdown';
 import { RATINGS } from './rating';
+import { SLIDERS } from './slider';
 import { STAT_BARS } from './stat-bar';
 import { TABLES } from './table';
 
@@ -20,4 +21,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...LISTS,
   ...CAROUSELS,
   ...MARKDOWN,
+  ...SLIDERS,
 };
