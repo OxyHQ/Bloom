@@ -255,7 +255,7 @@ describe('when(): a variant overrides what the chain set before it', () => {
       radius: 20,
       style: { borderWidth: 1, borderColor: LIGHT.border },
     });
-    expect(surface().props.fill).toBe(withAlpha(LIGHT.primary, 0.4));
+    expect(surface().props.fill).toBe(withAlpha(LIGHT.primary as string, 0.4));
     act(() => host.props.onPressOut());
     windowTier.current = 'md';
     remount(r, glass());
