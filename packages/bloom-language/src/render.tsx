@@ -141,7 +141,7 @@ import {
   type LiveCondition,
   type Planned,
 } from './variants';
-import { Conditioned, Painted, type Paint } from './paint';
+import { Conditioned, Painted, type Paint, type PaintVariant } from './paint';
 import {
   DURATION,
   HIT_SLOP,
@@ -992,10 +992,12 @@ function materialPadding(layer: Layer): { outer: Layer; inner: Layer } | undefin
   if (layer.glass === undefined && !layer.blur && !layer.concentric) return undefined;
   const live = layer.variants.filter(([condition]) => condition !== null);
   if (live.length === 0) return undefined;
-  if (live.some(([, modifier]) => modifier.kind !== 'padding'))
+  const takes = (modifier: LayerModifier) =>
+    modifier.kind === 'padding' || (layer.glass !== undefined && GLASS_VARIES.has(modifier.kind));
+  if (live.some(([, modifier]) => !takes(modifier)))
     warnOnce(
       'material-variant',
-      '[Bloom language] a glass, an island or a concentric box varies only its padding: its other variants are left out.',
+      '[Bloom language] a glass varies its padding, frame, border, corner and fill, an island or a concentric box only its padding: its other variants are left out (a material is never faded).',
     );
   if (!live.some(([, modifier]) => modifier.kind === 'padding')) return undefined;
   const isPadding = (modifier: LayerModifier) => modifier.kind === 'padding';
@@ -1021,6 +1023,66 @@ function materialPadding(layer: Layer): { outer: Layer; inner: Layer } | undefin
     edges: 0,
   };
   return { outer, inner };
+}
+
+/** What a glass varies besides its padding (a view just inside it): its own frame, border, corner and fill. */
+const GLASS_VARIES: ReadonlySet<string> = new Set(['frame', 'border', 'corner', 'background']);
+
+/** What a glass's live variants change, each where the material takes it. */
+interface GlassVariants {
+  /** Its frame and border: the material's own style. */
+  readonly style: VariantStyles;
+  /** Its corner (the radius it clips to) and fill (its tint), as the material's props. */
+  readonly props: readonly (readonly [LiveCondition, { radius?: number; fill?: ColorToken }])[];
+  /** Whether one answers the view's state: the box around the glass then tracks it. */
+  readonly stateful: boolean;
+}
+
+const glassVariantsByKey = new Map<string, GlassVariants>();
+
+/**
+ * A glass's live variants (its padding is a view inside it, `materialPadding`).
+ * A glass is the platform's material, which takes its corner and fill as props
+ * and is never faded: a frame or a border varies its style, a corner its
+ * radius (one radius: a corner of some sides, or concentric, is left out), a
+ * fill its tint. Built once per layer.
+ */
+function glassVariants(layer: Layer): GlassVariants {
+  let varied = glassVariantsByKey.get(layer.key);
+  if (varied !== undefined) return varied;
+  const live = layer.variants.filter(
+    (entry): entry is [LiveCondition, LayerModifier] => entry[0] !== null,
+  );
+  const props = new Map<LiveCondition, { radius?: number; fill?: ColorToken }>();
+  for (const [condition, modifier] of live) {
+    if (modifier.kind === 'corner') {
+      if (modifier.side !== 'all' || modifier.value === 'concentric') {
+        warnOnce(
+          'glass-corner-variant',
+          '[Bloom language] a glass’s corner varies as one radius: a corner of some sides, or concentric, is left out of when().',
+        );
+        continue;
+      }
+      props.set(condition, { ...props.get(condition), radius: resolveCorner(modifier.value) });
+    } else if (modifier.kind === 'background' && !isAppColor(modifier.value)) {
+      props.set(condition, { ...props.get(condition), fill: modifier.value });
+    }
+  }
+  varied = {
+    style: layerVariants({
+      ...layer,
+      variants: live.filter(
+        ([, modifier]) => modifier.kind === 'frame' || modifier.kind === 'border',
+      ),
+    }),
+    props: [...props].sort(([a], [b]) => compareLive(a, b)),
+    stateful: live.some(
+      ([condition, modifier]) =>
+        GLASS_VARIES.has(modifier.kind) && termsOf(condition).some((term) => STATES.has(term)),
+    ),
+  };
+  glassVariantsByKey.set(layer.key, varied);
+  return varied;
 }
 
 /** A padding of nothing: what opens the view of its own a Bloom component's hit testing takes on the web. */
@@ -1070,13 +1132,20 @@ function wrapLayer(
     const { corner, resolved } = materialRadius(boxStyle(layer, flex, p));
     const radius = typeof corner === 'number' ? corner : undefined;
     const surfaceRadius = layer.concentric ? 'concentric' : radius;
+    const varied = glassVariants(layer);
     const outer = behaviour && !p.pressable ? behaviour : null;
     const ownKey = behaviour && p.pressable ? undefined : key;
+    // A variant of the material that answers the view's state reads it from the
+    // box around the glass, which then tracks it in JS (on the web too).
+    const around = varied.stateful ? AROUND : NO_OUT;
     const PlatformGlass = getPlatformGlass();
     if (PlatformGlass !== null) {
       // The platform draws the glass (the lens, Liquid Glass, the system blur).
-      const out = cachedStyle('host', `${styleKey}|${p.control ? 'c' : ''}`, () =>
-        p.control ? Object.assign({ alignSelf: 'flex-start' }, resolved) : resolved,
+      const out = cachedStyle(
+        'host',
+        `${styleKey}|${p.control ? 'c' : ''}`,
+        () => (p.control ? Object.assign({ alignSelf: 'flex-start' }, resolved) : resolved),
+        () => varied.style,
       );
       const props: Record<string, unknown> = {
         ...outer,
@@ -1086,12 +1155,29 @@ function wrapLayer(
         interactive: p.pressable || p.control !== undefined,
         key: ownKey,
       };
-      const drawn = drawHost(PlatformGlass, out, props, ...children);
+      // A fill that varies is the glass's tint, the token as the platform's glass takes it.
+      const paint = variedPaint(`G|${styleKey}|${p.control ? 'c' : ''}|P`, out, NO_ROLES, () =>
+        varied.props.map(([condition, { radius, fill }]) => [
+          condition,
+          {
+            props: {
+              ...(radius === undefined ? null : { radius }),
+              ...(fill === undefined ? null : { fill: role(fill) }),
+            },
+          },
+        ]),
+      );
+      const drawn = drawHost(PlatformGlass, paint ? painted(out, paint) : out, props, ...children);
       return behaviour && p.pressable
-        ? drawOutermost(box, hostFor(p), NO_OUT, { ...behaviour, key }, drawn)
+        ? drawOutermost(box, hostFor(p), around, { ...behaviour, key }, drawn)
         : drawn;
     }
-    const out = cachedStyle('component', styleKey, () => resolved);
+    const out = cachedStyle(
+      'component',
+      styleKey,
+      () => resolved,
+      () => varied.style,
+    );
     const props: Record<string, unknown> = {
       radius: surfaceRadius,
       ...(layer.curve ? { cornerCurve: layer.curve } : null),
@@ -1099,27 +1185,28 @@ function wrapLayer(
       ...outer,
       key: ownKey,
     };
+    // Surface's fill is a colour painted from a role: the glass's own (or the
+    // control's), and the one a variant names while it holds.
     const fill = glass.fillRole ?? p.control?.tint;
-    const surface =
+    const opacity = glass.fillRole === undefined ? undefined : glass.fillOpacity;
+    const paint = variedPaint(
+      `G|${styleKey}|${fill ?? ''}|${opacity ?? ''}`,
+      out,
       fill === undefined
-        ? drawHost(Surface, out, props, ...children)
-        : draw(
-            Painted,
-            {
-              ...props,
-              host: Surface,
-              paint: propPaint(
-                styleKey,
-                out,
-                'fill',
-                fill,
-                glass.fillRole === undefined ? undefined : glass.fillOpacity,
-              ),
-            },
-            ...children,
-          );
+        ? NO_ROLES
+        : [opacity === undefined ? ['fill', fill] : ['fill', fill, opacity]],
+      () =>
+        varied.props.map(([condition, { radius, fill: varying }]) => [
+          condition,
+          {
+            props: radius === undefined ? undefined : { radius },
+            propRoles: varying === undefined ? undefined : [propRole('fill', varying)],
+          },
+        ]),
+    );
+    const surface = drawHost(Surface, paint ? painted(out, paint) : out, props, ...children);
     return behaviour && p.pressable
-      ? drawOutermost(box, hostFor(p), NO_OUT, { ...behaviour, key }, surface)
+      ? drawOutermost(box, hostFor(p), around, { ...behaviour, key }, surface)
       : surface;
   }
   if (layer.blur) {
@@ -1301,46 +1388,86 @@ function pairPaint(
   out: StyleOut,
   [background, foreground]: readonly [ColorToken, ColorToken],
 ): Paint {
-  const id = `${styleKey}|pair|${background}|${foreground}`;
-  let paint = propPaints.get(id);
-  if (paint === undefined) {
-    const base = out.paint ?? {
-      style: out.style as object | undefined,
-      styleRoles: [],
-      propRoles: [],
-    };
-    const [fill, ink] = [role(background), role(foreground)];
-    paint = {
-      style: base.style,
-      styleRoles: base.styleRoles,
-      variants: base.variants,
-      propRoles: [
-        fill.opacity === undefined
-          ? ['background', fill.role]
-          : ['background', fill.role, fill.opacity],
-        ink.opacity === undefined
-          ? ['foreground', ink.role]
-          : ['foreground', ink.role, ink.opacity],
-      ],
-    };
-    propPaints.set(id, paint);
-  }
-  return paint;
+  return variedPaint(
+    `${styleKey}|pair|${background}|${foreground}`,
+    out,
+    [propRole('background', background), propRole('foreground', foreground)],
+    NO_VARIANTS,
+  ) as Paint;
 }
 
 const NO_STYLE_OUT: StyleOut = Object.freeze({ style: undefined, paint: undefined });
-
-const propPaints = new Map<string, Paint>();
 
 /** A component's style out drawn with `paint` (its style and the props painted from roles). */
 function painted(out: StyleOut, paint: Paint): StyleOut {
   return { style: undefined, paint, ...(out.object ? { object: true } : null) };
 }
 
+/** One prop painted from a colour token (a role at an opacity included). */
+function propRole(prop: string, token: ColorToken): readonly [string, ColorName, number?] {
+  const { role: name, opacity } = role(token);
+  return opacity === undefined ? [prop, name] : [prop, name, opacity];
+}
+
+const NO_ROLES: Paint['propRoles'] = Object.freeze([]);
+
+/** What a variant changes of a component's props: values as they are, and props painted from roles. */
+interface VariedProps {
+  readonly props?: Readonly<Record<string, unknown>>;
+  readonly propRoles?: Paint['propRoles'];
+}
+
+const variedPaints = new Map<string, Paint | null>();
+
 /**
- * A component's style (painted on native) plus one prop painted from a role:
- * a glass Surface's `fill`, an image's `tintColor`. One per style, prop and role.
+ * A component's style (painted on native, and its live variants) plus props
+ * painted from roles (a glass Surface's `fill`, an image's `tintColor`), and
+ * what live variants change of its props, each under its condition beside the
+ * style's (a glass's radius and fill). `undefined` when it adds nothing to the
+ * style. Built once per `id`.
  */
+function variedPaint(
+  id: string,
+  out: StyleOut,
+  propRoles: Paint['propRoles'],
+  variants: () => readonly (readonly [LiveCondition, VariedProps])[],
+): Paint | undefined {
+  let paint = variedPaints.get(id);
+  if (paint === undefined) {
+    const varied = variants();
+    if (propRoles.length === 0 && varied.length === 0) paint = null;
+    else {
+      const base = out.paint ?? {
+        style: out.style as object | undefined,
+        styleRoles: [],
+        propRoles: [],
+      };
+      const byCondition = new Map<LiveCondition, PaintVariant>();
+      for (const variant of base.variants ?? []) byCondition.set(variant.condition, variant);
+      for (const [condition, extra] of varied) {
+        const current = byCondition.get(condition) ?? { condition, style: {}, styleRoles: [] };
+        byCondition.set(condition, {
+          ...current,
+          props: { ...current.props, ...extra.props },
+          propRoles: [...(current.propRoles ?? []), ...(extra.propRoles ?? [])],
+        });
+      }
+      const list = [...byCondition.values()].sort((a, b) => compareLive(a.condition, b.condition));
+      paint = {
+        style: base.style,
+        styleRoles: base.styleRoles,
+        propRoles,
+        ...(list.length > 0 ? { variants: list } : null),
+      };
+    }
+    variedPaints.set(id, paint);
+  }
+  return paint ?? undefined;
+}
+
+const NO_VARIANTS = () => [];
+
+/** A component's style plus one prop painted from a role. */
 function propPaint(
   styleKey: string,
   out: StyleOut,
@@ -1348,25 +1475,12 @@ function propPaint(
   role: ColorName,
   opacity?: number,
 ): Paint {
-  const id = `${styleKey}|${prop}|${role}|${opacity ?? ''}`;
-  let paint = propPaints.get(id);
-  if (paint === undefined) {
-    const base = out.paint ?? {
-      style: out.style as object | undefined,
-      styleRoles: [],
-      propRoles: [],
-    };
-    const propRole: readonly [string, ColorName, number?] =
-      opacity === undefined ? [prop, role] : [prop, role, opacity];
-    paint = {
-      style: base.style,
-      styleRoles: base.styleRoles,
-      propRoles: [propRole],
-      variants: base.variants,
-    };
-    propPaints.set(id, paint);
-  }
-  return paint;
+  return variedPaint(
+    `${styleKey}|${prop}|${role}|${opacity ?? ''}`,
+    out,
+    [opacity === undefined ? [prop, role] : [prop, role, opacity]],
+    NO_VARIANTS,
+  ) as Paint;
 }
 
 /** The outermost box's host: pressable when the view takes presses or hovers, a hover group's class host on the web. */
@@ -2036,7 +2150,12 @@ function namedTrigger(trigger: Child, label: string | undefined): Child {
  * states in JavaScript on every platform, so the variants in the component's
  * own style (a `Conditioned` leaf) answer them.
  */
-const AROUND: StyleOut = Object.freeze({ style: undefined, paint: undefined, object: true });
+const AROUND: StyleOut = Object.freeze({
+  style: undefined,
+  paint: undefined,
+  object: true,
+  anchor: true,
+});
 
 /** `drawn` with its press on a host around it when the view is pressable; its props otherwise, as before. */
 function pressAround(
