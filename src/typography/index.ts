@@ -16,6 +16,7 @@ export {
   Muted,
   Blockquote,
   fontFamilies,
+  fontFamilyStyle,
 } from './Typography';
 export type { TextProps, BlockquoteProps } from './types';
 export { TYPE_SCALE, typeScale } from './scale';
