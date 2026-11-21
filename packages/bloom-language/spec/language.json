@@ -696,12 +696,12 @@
       "gemies"
     ],
     "scrollbarVisibility": ["scroll", "hover", "always", "never"],
-    "scrollbarSide": ["start", "end"],
+    "scrollbarSide": ["end", "start"],
     "scrollbarSize": ["sm", "md"],
     "scrollSurfaceStyle": ["primary", "secondary", "full"],
     "resizeHandleStyle": ["grip", "pill"],
     "modePresentation": ["segmented", "toggle"],
-    "teamPlacement": ["header", "footer"],
+    "teamPlacement": ["footer", "header"],
     "hourFormat": ["12h", "24h"],
     "timeFieldSize": ["sm", "md"],
     "ratingSize": ["sm", "md"],
@@ -792,33 +792,17 @@
     "offeringBadgeStyle": ["tinted", "onMedia"],
     "activityFeedGrouping": ["day", "none"],
     "orderStatusBarStyle": ["surface", "plain"],
-    "accentTone": [
-      "default",
-      "primary",
-      "vivid",
-      "secondary",
-      "tertiary",
-      "success",
-      "warning",
-      "error",
-      "info"
-    ],
     "lockupSize": ["sm", "md", "lg"],
     "engagementBarTone": ["default", "onImage"],
     "titleAlign": ["start", "center"],
     "titleLayout": ["inline", "stacked"],
     "titleAppearance": ["plain", "capsule"],
     "dismissIcon": ["close", "unpin"],
-    "sidebarVariant": ["panel", "rail"],
-    "sidebarSize": ["sm", "md", "lg"],
-    "sidebarSurface": ["card", "plain", "docked"],
     "contentAlignment": ["start", "center"],
     "primaryActionPlacement": ["bottom", "top"],
     "railLabels": ["visible", "hidden"],
     "railSelection": ["pill", "icon"],
     "modesPresentation": ["segmented", "toggle"],
-    "scrollbarSide": ["end", "start"],
-    "teamPlacement": ["footer", "header"],
     "blend": [
       "normal",
       "multiply",
@@ -841,7 +825,9 @@
     "buttonMaterial": ["surface", "flat", "shared", "lens"],
     "radarLegend": ["bottom", "top", "overlay"],
     "methodTitleAlign": ["left", "center"],
-    "voiceSize": ["sm", "md", "lg"]
+    "voiceSize": ["sm", "md", "lg"],
+    "noteCardLayout": ["grid", "row"],
+    "shareSheetSize": ["sm", "md", "lg"]
   },
   "glass": {
     "$comment": [
@@ -1203,7 +1189,7 @@
     "suggestionsLabel": ["value"],
     "onReorder": ["value"],
     "reorderable": ["value?"],
-    "iconOnly": [],
+    "iconOnly": ["value?"],
     "dragTranslation": ["motionValue"],
     "indicator": ["selectionIndicator"],
     "fade": ["color"],
@@ -1228,7 +1214,7 @@
     "scrollDismissesKeyboard": ["keyboardDismiss"],
     "detached": ["value?"],
     "dragIndicator": ["dragIndicator"],
-    "material": ["sheetMaterial"],
+    "material": ["buttonMaterial"],
     "sizing": ["sheetSizing"],
     "interactiveDismissDisabled": ["value?"],
     "onDismissAttempt": ["value"],
@@ -1494,7 +1480,6 @@
     "tail": ["value?"],
     "metaOverlay": ["value?"],
     "senderTint": ["color"],
-    "divider": ["value?"],
     "showZeroCounts": ["value?"],
     "titleAlign": ["titleAlign"],
     "titleLayout": ["titleLayout"],
@@ -1506,13 +1491,9 @@
     "railLabels": ["railLabels"],
     "railSelection": ["railSelection"],
     "modesPresentation": ["modesPresentation"],
-    "scrollbarSide": ["scrollbarSide"],
-    "teamPlacement": ["teamPlacement"],
     "textVariant": ["typeRamp"],
     "blend": ["blend"],
     "bloomOnly": ["value?"],
-    "material": ["buttonMaterial"],
-    "iconOnly": ["value?"],
     "round": ["value?"],
     "eyebrow": ["value?"],
     "sidebarScrollbarSide": ["scrollbarSide"],
@@ -3785,7 +3766,24 @@
     "selectedAgentPreview": { "constructors": ["SelectedAgentPreview"], "modifiers": [] },
     "multiAgentChat": { "constructors": ["MultiAgentChat"], "modifiers": [] },
     "agentChatHistory": { "constructors": ["AgentChatHistory"], "modifiers": ["surface"] },
-    "agentChat": { "constructors": ["AgentChat"], "modifiers": ["titleAlign"] }
+    "agentChat": { "constructors": ["AgentChat"], "modifiers": ["titleAlign"] },
+    "routeStops": { "constructors": ["RouteStops"], "modifiers": ["density"] },
+    "noteCard": {
+      "constructors": ["NoteCard"],
+      "modifiers": ["style", "tint", "loading"],
+      "style": "noteCardLayout",
+      "tint": "accentTone"
+    },
+    "noteCardSkeleton": {
+      "constructors": ["NoteCardSkeleton"],
+      "modifiers": ["style", "lines"],
+      "style": "noteCardLayout"
+    },
+    "shareSheet": {
+      "constructors": ["ShareSheet"],
+      "modifiers": ["size"],
+      "size": "shareSheetSize"
+    }
   },
   "sfSymbols": {
     "$comment": [
