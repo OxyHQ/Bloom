@@ -97,7 +97,14 @@ import { RailHost } from './chrome/rail-host';
 import { PageFooterHost } from './chrome/page-footer-host';
 import { CommandHost } from './chrome/command-host';
 import { SettingsHost } from './chrome/settings-host';
-import { StickySectionHost, ToolbarHost } from './chrome/layout-hosts';
+import {
+  AutoHideBarHost,
+  ResizeHandleHost,
+  ScrollAreaHost,
+  ScrollSurfaceHost,
+  StickySectionHost,
+  ToolbarHost,
+} from './chrome/layout-hosts';
 import {
   PLACE_KINDS,
   STACK_KINDS,
@@ -1591,6 +1598,12 @@ function iconGlyph(
   return draw(Conditioned, { host: icon, paint, width: size, height: size, key });
 }
 
+/** The language's scrolls, each Bloom's own: the screen's, a scroll of its own, and one on a surface. */
+const SCROLL_HOSTS = {
+  scrollView: ScrollViewHost,
+  scrollArea: ScrollAreaHost,
+  scrollSurface: ScrollSurfaceHost,
+} as const;
 function renderHost(
   node: Node,
   p: Plan,
@@ -1948,10 +1961,12 @@ function renderHost(
         render: (child: Child) => renderChild(child, ctx, undefined),
         press: (value: Press | undefined) => pressOf(value, ctx.env),
       });
-    case 'scrollView': {
+    case 'scrollView':
+    case 'scrollArea':
+    case 'scrollSurface': {
       // The content's children keep their places as a stack's do.
       const scroller = draw(
-        ScrollViewHost,
+        SCROLL_HOSTS[node.kind],
         {
           key: boxed ? undefined : key,
           node,
@@ -2005,6 +2020,24 @@ function renderHost(
         },
         ...renderChildren(node.children, ctx),
       );
+    case 'autoHideBar':
+      return draw(
+        AutoHideBarHost,
+        {
+          key,
+          node,
+          render: (child: Child) => renderChild(child, ctx, undefined),
+          press: (value: Press | undefined) => pressOf(value, ctx.env),
+        },
+        ...renderChildren(node.children, ctx),
+      );
+    case 'resizeHandle':
+      return draw(ResizeHandleHost, {
+        key,
+        node,
+        render: (child: Child) => renderChild(child, ctx, undefined),
+        press: (value: Press | undefined) => pressOf(value, ctx.env),
+      });
     case 'stickySection':
       return draw(
         StickySectionHost,

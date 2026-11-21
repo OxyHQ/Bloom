@@ -82,4 +82,4 @@ export const BottomSheetPresented: Story = { args: { family: 'sheet' } };
 export const SidebarRailAndPageFooter: Story = { args: { family: 'navigation' } };
 export const CommandAndSettings: Story = { args: { family: 'overlays' } };
 export const ShellPanelsAndInspector: Story = { args: { family: 'shell' } };
-export const ToolbarAndStickySection: Story = { args: { family: 'toolbar' } };
+export const LayoutFamily: Story = { args: { family: 'toolbar' } };

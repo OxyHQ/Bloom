@@ -91,6 +91,11 @@ import {
   type ActionPlacement,
   type ScrollIndicators,
   type KeyboardDismiss,
+  type ScrollbarVisibility,
+  type ScrollbarSide,
+  type ScrollbarSize,
+  type ScrollSurfaceStyle,
+  type ResizeHandleStyle,
   type KeyboardTaps,
   type DragIndicator,
   type SheetMaterial,
@@ -137,6 +142,11 @@ export type {
   ChromePlacement,
   KeyboardDismiss,
   KeyboardTaps,
+  ScrollbarVisibility,
+  ScrollbarSide,
+  ScrollbarSize,
+  ScrollSurfaceStyle,
+  ResizeHandleStyle,
   NavigationScope,
   ColorPreset,
   ScreenKind,
@@ -325,6 +335,22 @@ export interface ValueModifiers {
   sidebar: boolean;
   sidebarAfter: string;
   accessory: Child;
+  scrollbar: ScrollbarVisibility;
+  scrollbarSide: ScrollbarSide;
+  stickyHeader: Child;
+  stickyFooter: Child;
+  fadeHeight: SpaceToken;
+  fadeBottom: boolean;
+  matchSurfacePaint: boolean;
+  summary: Child | string;
+  onReveal: () => void;
+  peek: boolean;
+  barHeight: SpaceToken;
+  collapsedHeight: SpaceToken;
+  thickness: SpaceToken;
+  onResizeStart: () => void;
+  onResizeEnd: () => void;
+  onNudge: (distance: number) => void;
   bottomBar: boolean;
   shell: ShellOptions;
   tag: string;
@@ -522,7 +548,12 @@ export type Modifier =
   | {
       readonly kind: 'style';
       readonly key: string;
-      readonly value: BloomAppearance | BadgeStyle | LoadingStyle;
+      readonly value:
+        | BloomAppearance
+        | BadgeStyle
+        | LoadingStyle
+        | ScrollSurfaceStyle
+        | ResizeHandleStyle;
     }
   | { readonly kind: 'shape'; readonly key: string; readonly value: ButtonShape | ShapeName }
   | {
@@ -706,6 +737,10 @@ export type NodeKind =
   | 'destination'
   | 'toolbarView'
   | 'stickySection'
+  | 'scrollArea'
+  | 'scrollSurface'
+  | 'autoHideBar'
+  | 'resizeHandle'
   | 'lottie';
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
@@ -1015,7 +1050,9 @@ export class Node {
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
-  style(value: BloomAppearance | BadgeStyle | LoadingStyle): Node {
+  style(
+    value: BloomAppearance | BadgeStyle | LoadingStyle | ScrollSurfaceStyle | ResizeHandleStyle,
+  ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
   shape(value: ButtonShape | ShapeName): Node {
@@ -1384,6 +1421,54 @@ export class Node {
   }
   accessory(value: Child): Node {
     return this.set('accessory', value);
+  }
+  scrollbar(value: ScrollbarVisibility): Node {
+    return this.set('scrollbar', value);
+  }
+  scrollbarSide(value: ScrollbarSide): Node {
+    return this.set('scrollbarSide', value);
+  }
+  stickyHeader(value: Child): Node {
+    return this.set('stickyHeader', value);
+  }
+  stickyFooter(value: Child): Node {
+    return this.set('stickyFooter', value);
+  }
+  fadeHeight(value: SpaceToken): Node {
+    return this.set('fadeHeight', value);
+  }
+  fadeBottom(value = true): Node {
+    return this.set('fadeBottom', value);
+  }
+  matchSurfacePaint(value = true): Node {
+    return this.set('matchSurfacePaint', value);
+  }
+  summary(value: Child | string): Node {
+    return this.set('summary', value);
+  }
+  onReveal(value: () => void): Node {
+    return this.set('onReveal', value);
+  }
+  peek(value = true): Node {
+    return this.set('peek', value);
+  }
+  barHeight(value: SpaceToken): Node {
+    return this.set('barHeight', value);
+  }
+  collapsedHeight(value: SpaceToken): Node {
+    return this.set('collapsedHeight', value);
+  }
+  thickness(value: SpaceToken): Node {
+    return this.set('thickness', value);
+  }
+  onResizeStart(value: () => void): Node {
+    return this.set('onResizeStart', value);
+  }
+  onResizeEnd(value: () => void): Node {
+    return this.set('onResizeEnd', value);
+  }
+  onNudge(value: (distance: number) => void): Node {
+    return this.set('onNudge', value);
   }
   primaryAction(icon: IconComponent, label: string, destination: string): Node {
     return this.with({ kind: 'primaryAction', key: 'primaryAction', icon, label, destination });
@@ -2419,6 +2504,96 @@ export interface ToolbarView extends ViewNode {
 /** Bloom `StickySection`: a section that docks under the header as the page scrolls past it. */
 export interface StickySectionView extends ViewNode {
   testID(value: string): StickySectionView;
+}
+
+/** What Bloom's `ScrollArea` and `ScrollSurface` both take: the scroll and its bar. */
+interface ScrollAreaModifiers<Self> extends ViewModifiers<Self> {
+  /** Room around the content, inside the scroll (the content container's padding). */
+  contentMargins(value: SpaceToken): Self;
+  contentMargins(edge: Edge, value: SpaceToken): Self;
+  /** The gap between the content's children. */
+  spacing(value: SpaceToken): Self;
+  /** `horizontal` scrolls across; `vertical` by default. */
+  axis(value: Axis): Self;
+  /** When its bar shows: as it scrolls (`scroll`, default), on `hover`, `always`, `never`. */
+  scrollbar(value: ScrollbarVisibility): Self;
+  /** The inline edge a vertical bar sits on (`end` by default); the web's, as the platform draws a native one. */
+  scrollbarSide(value: ScrollbarSide): Self;
+  /** The bar's thickness: `sm` (default) or `md`. */
+  size(value: ScrollbarSize): Self;
+  /** A drag `immediately` dismisses the keyboard, or drags it away `interactively`; `never` by default. */
+  scrollDismissesKeyboard(value: KeyboardDismiss): Self;
+  /** Whether a tap with the keyboard up reaches the content: `handled` by a control, `always`, or `never` (default). */
+  keyboardTaps(value: KeyboardTaps): Self;
+}
+
+/**
+ * Bloom `ScrollArea`: a scroll of its own (not the screen's) with Bloom's
+ * scroll bar. Its box modifiers are a view around it, as a `ScrollView`'s are.
+ */
+export type ScrollAreaView = ScrollAreaModifiers<ScrollAreaView>;
+
+/**
+ * Bloom `ScrollSurface`: a `ScrollArea` on a surface, its ends fading into it,
+ * with sticky chrome at its top and foot.
+ */
+export interface ScrollSurfaceView extends ScrollAreaModifiers<ScrollSurfaceView> {
+  /** Kept at its top while it fits beside the footer. */
+  stickyHeader(value: Child): ScrollSurfaceView;
+  /** Kept at its foot; chrome too tall to keep scrolls. */
+  stickyFooter(value: Child): ScrollSurfaceView;
+  /** The depth of each end's fade (24 by default). */
+  fadeHeight(value: SpaceToken): ScrollSurfaceView;
+  /** Whether its foot fades too (it does by default). */
+  fadeBottom(value?: boolean): ScrollSurfaceView;
+  /** The fade takes the paint of the nearest material, not the surface's colour. */
+  matchSurfacePaint(value?: boolean): ScrollSurfaceView;
+  /** The surface it sits on: `primary` (default), `secondary` or `full`. */
+  style(value: ScrollSurfaceStyle): ScrollSurfaceView;
+}
+
+/**
+ * Bloom `AutoHideBar`: a bar over a body that steps aside to a strip while
+ * `collapsed`, peeking back under the pointer. The constructor's first view
+ * is the bar, the rest its body.
+ */
+export interface AutoHideBarView extends ViewNode {
+  /** What the collapsed strip shows; a string is drawn muted. */
+  summary(value: Child | string): AutoHideBarView;
+  /** The owner's decision that the bar steps aside (a page scrolled down). */
+  collapsed(value?: boolean): AutoHideBarView;
+  /** The strip was pressed: the owner clears `collapsed`. */
+  onReveal(value: () => void): AutoHideBarView;
+  /** Hovering the strip shows the bar over the body for a while (on by default). */
+  peek(value?: boolean): AutoHideBarView;
+  /** The bar's height (41 by default). */
+  barHeight(value: SpaceToken): AutoHideBarView;
+  /** The strip's height (20 by default). */
+  collapsedHeight(value: SpaceToken): AutoHideBarView;
+  /** Names the strip's button. */
+  label(value: string | undefined): AutoHideBarView;
+  testID(value: string): AutoHideBarView;
+}
+
+/**
+ * Bloom `ResizeHandle`: the separator between two panes that a drag or the
+ * keyboard resizes. Its constructor takes `onResize`, told the distance along
+ * the resize axis from where the drag started.
+ */
+export interface ResizeHandleView extends ViewNode {
+  /** `vertical` (default) resizes widths; `horizontal` heights. */
+  axis(value: Axis): ResizeHandleView;
+  /** `grip` (default), a panel edge's grip; `pill`, a bar centred on the gap. */
+  style(value: ResizeHandleStyle): ResizeHandleView;
+  /** The depth of its hit strip, across the separator. */
+  thickness(value: SpaceToken): ResizeHandleView;
+  onResizeStart(value: () => void): ResizeHandleView;
+  onResizeEnd(value: () => void): ResizeHandleView;
+  /** A keyboard nudge (on the web, the arrow keys move it by 16). */
+  onNudge(value: (distance: number) => void): ResizeHandleView;
+  /** Names the separator. */
+  label(value: string | undefined): ResizeHandleView;
+  testID(value: string): ResizeHandleView;
 }
 
 /** The app's root layout: its navigator in the shell, the primary action, the bottom bar. */
