@@ -147,17 +147,25 @@ function compareInPage() {
 function describeCellInPage(testid) {
   const cell = document.querySelector(`[data-testid="${testid}"]`);
   const out = [];
+  // React's useId counts across the page; an id (a clip path's) is compared by its order in the cell.
+  const REACT_ID = /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
+  const map = new Map();
+  const ids = (text) =>
+    text.replace(REACT_ID, (id) => {
+      if (!map.has(id)) map.set(id, `id${map.size}`);
+      return map.get(id);
+    });
   const walk = (element, path) => {
     const style = getComputedStyle(element);
     const css = {};
     for (let i = 0; i < style.length; i++)
-      if (!style[i].startsWith('--')) css[style[i]] = style.getPropertyValue(style[i]);
+      if (!style[i].startsWith('--')) css[style[i]] = ids(style.getPropertyValue(style[i]));
     for (const pseudo of ['::before', '::after']) {
       const drawn = getComputedStyle(element, pseudo);
       if (drawn.content === 'none' || drawn.content === 'normal') continue;
       for (let i = 0; i < drawn.length; i++)
         if (!drawn[i].startsWith('--'))
-          css[`${pseudo} ${drawn[i]}`] = drawn.getPropertyValue(drawn[i]);
+          css[`${pseudo} ${drawn[i]}`] = ids(drawn.getPropertyValue(drawn[i]));
     }
     const box = element.getBoundingClientRect();
     const px = (n) => Math.round(n * 100) / 100;
