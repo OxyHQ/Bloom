@@ -63,6 +63,7 @@ import {
   isNode,
   Navigation,
   type Node,
+  type NodeKind,
   type ActionProps,
   type AvatarGroupProps,
   type AvatarProps,
@@ -2128,6 +2129,7 @@ function renderHost(
         label: p.label,
         hint: p.hint,
         testID: p.testID,
+        key,
         props: () => {
           const props = hostProps(behaviour, key);
           delete props.focusable;

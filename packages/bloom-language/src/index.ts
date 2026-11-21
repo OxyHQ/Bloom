@@ -307,3 +307,9 @@ export type { FileUploadView } from './controls/file-upload';
 // Videos (controls/video-view.tsx)
 export { Video } from './controls/video-view';
 export type { VideoView } from './controls/video-view';
+
+// Inputs (controls/inputs.tsx)
+
+// Overlays and feedback (controls/overlays.tsx)
+
+// Containers (controls/containers.tsx)

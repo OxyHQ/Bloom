@@ -18,6 +18,8 @@ export interface ControlDraw {
   readonly label: string | undefined;
   readonly hint: string | undefined;
   readonly testID: string | undefined;
+  /** The view's React key, for the component that is its outermost host. */
+  readonly key: string | number | undefined;
   /**
    * The view's press and accessibility props, and its key, for a component
    * that is the outermost host: what the component takes as its own props.

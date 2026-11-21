@@ -46,6 +46,9 @@ import type { DatePickerKind } from './controls/date-picker';
 import type { HourFormat, WeekStart } from '@oxy.so/bloom/date-picker';
 import type { Binding } from './binding';
 
+import type { ContainerKind } from './controls/containers';
+import type { InputKind } from './controls/inputs';
+import type { OverlayKind } from './controls/overlays';
 import { OBJECTS } from './generated/spec.generated';
 import { regular, type GlassValue } from './glass';
 import type { KeyframesValue } from './motion/keyframes';
@@ -438,6 +441,12 @@ export interface ValueModifiers {
   fileIcon: (file: FileUploadFile) => Child;
   nativeControls: boolean;
   allowsPictureInPicture: boolean;
+
+  // Inputs (controls/inputs.tsx)
+
+  // Overlays and feedback (controls/overlays.tsx)
+
+  // Containers (controls/containers.tsx)
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -756,7 +765,10 @@ export type NodeKind =
   | ActivityHeatmapKind
   | TagFieldKind
   | FileUploadKind
-  | VideoViewKind;
+  | VideoViewKind
+  | InputKind
+  | OverlayKind
+  | ContainerKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1806,6 +1818,12 @@ export class Node {
   allowsPictureInPicture(value: boolean): Node {
     return this.set('allowsPictureInPicture', value);
   }
+
+  // Inputs (controls/inputs.tsx)
+
+  // Overlays and feedback (controls/overlays.tsx)
+
+  // Containers (controls/containers.tsx)
 }
 
 const FRAME_KEYS = OBJECTS.frame.keys;
