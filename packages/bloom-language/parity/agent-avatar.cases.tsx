@@ -17,6 +17,16 @@ export const AGENT_AVATAR_CASES: ParityCase[] = [
     language: () => toElement(L.AgentAvatar(BERET)),
     bloom: () => <AgentAvatar character={BERET} />,
   },
+  // In view as the page loads: the renderer draws an avatar once it is on screen.
+  {
+    name: 'AgentAvatar pressable',
+    language: () => toElement(L.AgentAvatar(BERET).onPress(onPress).label('Open Ana')),
+    bloom: () => (
+      <Pressable onPress={onPress} accessibilityLabel="Open Ana">
+        <AgentAvatar character={BERET} />
+      </Pressable>
+    ),
+  },
   ...(Object.keys(AVATAR_SIZE) as AvatarSizeName[]).map((size) => ({
     name: `AgentAvatar size ${size}`,
     language: () => toElement(L.AgentAvatar(BERET).size(size)),
@@ -60,15 +70,6 @@ export const AGENT_AVATAR_CASES: ParityCase[] = [
         workingCycles={2}
         accessibilityLabel="Ana"
       />
-    ),
-  },
-  {
-    name: 'AgentAvatar pressable',
-    language: () => toElement(L.AgentAvatar(BERET).onPress(onPress).label('Open Ana')),
-    bloom: () => (
-      <Pressable onPress={onPress} accessibilityLabel="Open Ana">
-        <AgentAvatar character={BERET} />
-      </Pressable>
     ),
   },
   {
