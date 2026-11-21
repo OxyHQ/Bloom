@@ -132,7 +132,7 @@ be preserved"), so keep the controller in a custom hook (`usePostRowModel`).
 | --- | --- |
 | `HStack` / `VStack` / `ZStack` | React Native `View` (`Pressable` when it takes presses or hovers) |
 | `Spacer` | `View` with `flex: 1` |
-| `Text` | React Native `Text`, styled from tokens. Nested `Text` is an inline span. |
+| `Text` | Bloom `Text` (or the typography component its `textStyle` names), its ramp font as `variant`. A nested `Text` is a React Native span inside it. |
 | `Icon` | the Bloom icon component, at a size rung, filled with the foreground |
 | `Avatar` | Bloom `Avatar` |
 | `Image` | Bloom `BloomImage` (`@oxy.so/bloom/image`), sized and clipped by its own box (see [Image](#image)) |
@@ -186,9 +186,9 @@ generated from the spec, not by scanning (no PostCSS plugin).
 - *Not covered:* server rendering. An adopted sheet is not in server HTML; an
   app with Expo static rendering needs the sheet in its document head first.
 
-Fonts follow the existing text host. A language `Text` is the same React Native
-text node a className-styled `Text` is: Inter from Bloom's font loader on
-native, and the inherited family on the web.
+Fonts are Bloom's: a language `Text` is Bloom's `Text`, so it takes Bloom's
+families (Inter, the display face for titles), its desktop scale under a
+`TypographyScope` and its own ink when no colour is set (see [Text](#text)).
 
 ## Modifiers
 
@@ -214,7 +214,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `glass(material?)` | `regular`, `clear`, `.tint(role, 'subtle' \| 'medium' \| 'strong'?)` |
 | `onPress`, `onLongPress`, `onHover`, `hoverGroup` | handlers. `onPress(undefined)` keeps the pressable host, out of the focus order. |
 | `label`, `hint`, `role`, `hitSlop`, `testID`, `id` | accessibility and identity |
-| `lines(n)`, `noWrap()` | text only |
+| `lines(n)`, `noWrap()`, `truncation`, `selectable`, `textStyle`, `link`, `textAlign`, `italic`, `underline`, `strikethrough`, `textCase` | text only (see [Text](#text)) |
 | `contentFit`, `aspectRatio`, `tint`, `transition`, `onLoad`, `onError` | `Image` only (see [Image](#image)) |
 | `count`, `active`, `tint` | `Action` only |
 | `trailing(...)`, `countFormat(fn)` | `ActionBar` only |
@@ -236,6 +236,53 @@ Mention's row needs seven of them: the 64px body gutter, the 18px context row an
 the 3px gap before its text, the 13, 14 and 18px glyphs, and `leading-tight` (1.25).
 `leading-tight` is a class-vocabulary value that Bloom's JS `lineHeight.tight`
 (1.15) does not match. The owner decides whether these become Bloom rungs.
+
+## Text
+
+`Text(...runs)` is Bloom's `Text`: the type ramp, Bloom's families (Inter, and
+the display face for `large-title`, `display-*` and `title-*`), the desktop
+scale under a `TypographyScope`, and Bloom's ink when nothing sets a colour.
+
+```ts
+Text('Notifications').font('title-1').weight('bold')
+Text(post.text).font('body').lines(3)
+Text('Settings').textStyle('h2')
+Text('Read the ', Text('terms').link('https://oxy.so/terms'), '.').font('caption-1')
+```
+
+- **Type.** `.font(family)` with `.weight(w)` is Bloom's `variant`
+  (`body` + `semibold` is `body-semibold`; `regular` when no weight is set). A
+  size rung (`.font('sm')`) sets the size alone, and a weight or a leading
+  only when given. `.leading()` on a ramp font replaces its line height.
+- **Bloom's typography components.** `.textStyle(name)` draws one: `title`,
+  `subtitle`, `h1`…`h6`, `paragraph` (`P`), `lead`, `large`, `small`, `muted`,
+  `blockquote`. Each keeps what the component brings: a heading's role and
+  `aria-level`, `H2`'s rule, a paragraph's breakpoint spacing, `Lead`'s and
+  `Muted`'s ink. A font of the chain is the component's `variant`, as Bloom's
+  own props merge. A quotation is a box around its text: its layers go on the
+  box, and what the chain sets for the text is a span inside it.
+- **Truncation.** `.lines(n)` is `numberOfLines`, cut at the tail;
+  `.truncation('head' | 'middle' | 'tail' | 'clip')` says where.
+  `.noWrap()` keeps a web line from wrapping.
+- **Selection.** `.selectable()` lets the reader select and copy it.
+- **Links.** `.link(href)` is Bloom's inline link, as its Markdown draws one:
+  the primary ink and an underline, announced as a link, an anchor on the web
+  (a page of another site opens beside the app) and opened outside the app on
+  native. Its own `.foreground()` replaces the ink, its own `.onPress()` the
+  opening.
+- **Lines and marks.** `.textAlign('start' | 'center' | 'end' | 'justify')`
+  (`start` and `end` follow the reading direction), `.italic()`,
+  `.underline()`, `.strikethrough()`, `.textCase('uppercase' | 'lowercase' |
+  'capitalize')`. On the web the alignment stays inline: react-native-web
+  writes it per direction, which one class cannot.
+- **Spans.** A `Text` inside a `Text` is a React Native span, as Bloom's
+  Markdown nests its runs: it writes only what its own chain names (a weight,
+  an ink, a link) and inherits the rest, so a span of an `h1` keeps the
+  heading's size.
+
+Not in the language yet: Bloom's monospaced family (Bloom picks it only from a
+`font-mono` class today, and exports no style for it) and tracking (Bloom has no
+tracking scale; see [className](#classname)).
 
 ## Glass
 
@@ -559,6 +606,29 @@ within each build). Two runs were disturbed and are in the medians: one compiled
 run (the adb daemon failed mid-run; JS ticks +40%) and one JSX run (about 60%
 more frames counted than any other). For this row, the compiler's gain is not
 measurable on device: what it can fold is three small chains.
+
+## Component parity
+
+Every node that stands for a Bloom component is proven against it:
+`packages/bloom-language/parity` renders each case twice, the language node
+and the Bloom element an app draws today, under Bloom's real provider, in light
+and dark (`bun run test:parity`; `bun run test` runs it too).
+
+- **Native:** Bloom's own test environment (its React Native and native-module
+  mocks from the repository root), the language's Android files. The two
+  committed host trees must be equal: every host's type, every prop (styles
+  flattened, handlers by presence) and its children.
+- **Web:** react-native-web in jsdom. Each element is compared on its tag, its
+  attributes other than `class` and `style`, its text, and the CSS that
+  reaches it: every matching rule of every sheet (the language's adopted one
+  included) and its inline style, applied in order, variables resolved, one
+  value per longhand.
+- **In a browser:** the `Language/Parity` stories put each case's two sides in
+  a row, and `scripts/verify-parity-web.mjs` compares every pair in Chrome:
+  tags, attributes, text, every computed style property and the laid-out size.
+
+The cases are one list per family (`parity/<family>.cases.tsx`), which the
+three read. A case that cannot be equal is a decision, never a tolerance.
 
 ## One spec
 

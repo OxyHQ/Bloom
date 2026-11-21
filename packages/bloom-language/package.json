@@ -56,7 +56,8 @@
     "generate": "node scripts/generate.mjs",
     "build": "bob build",
     "typescript": "tsc --noEmit -p .",
-    "test": "jest"
+    "test": "jest && jest -c parity/jest.config.js",
+    "test:parity": "jest -c parity/jest.config.js"
   },
   "peerDependencies": {
     "@expo/ui": ">=58.0.0",

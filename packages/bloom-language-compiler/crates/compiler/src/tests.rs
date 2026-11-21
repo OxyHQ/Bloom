@@ -202,3 +202,22 @@ fn chains_nested_in_a_hoisted_chain_are_checked() {
     assert!(!token.changed);
     assert_eq!(token.diagnostics[0].message, "Unknown font token 'bodyy' for .font()");
 }
+
+#[test]
+fn text_styles_truncation_and_links_are_checked() {
+    let valid = compiled(
+        "export const x = (href) => Text('x').textStyle('h2').lines(2).truncation('middle').selectable().link(href).textAlign('center').italic().underline().strikethrough().textCase('uppercase');\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let style = compiled("export const x = () => Text('x').textStyle('h7');\n");
+    assert_eq!(style.diagnostics[0].message, "Unknown textStyle token 'h7' for .textStyle()");
+    let cut = compiled("export const x = () => Text('x').truncation('end');\n");
+    assert_eq!(cut.diagnostics[0].message, "Unknown truncation token 'end' for .truncation()");
+    let align = compiled("export const x = () => Text('x').textAlign('left');\n");
+    assert_eq!(align.diagnostics[0].message, "Unknown textAlign token 'left' for .textAlign()");
+    // Text's own modifiers stay on text.
+    let stack = compiled("export const x = () => VStack().italic();\n");
+    assert_eq!(stack.diagnostics[0].message, "VStack has no modifier .italic()");
+    let arity = compiled("export const x = () => Text('x').underline('double');\n");
+    assert_eq!(arity.diagnostics[0].message, ".underline() takes 0 argument(s), not 1");
+}
