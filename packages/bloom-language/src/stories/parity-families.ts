@@ -38,6 +38,7 @@ import { VIDEO_CASES } from '../../parity/video-view.cases';
 import { INPUT_OTP_CASES } from '../../parity/input-otp.cases';
 import { COLOR_SWATCH_PICKER_CASES } from '../../parity/color-swatch-picker.cases';
 import { ANIMATED_CHECK_CASES } from '../../parity/animated-check.cases';
+import { CONTEXT_MENU_CASES } from '../../parity/context-menu.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -81,6 +82,7 @@ export const FAMILIES = {
   inputOtp: INPUT_OTP_CASES,
   colorSwatchPicker: COLOR_SWATCH_PICKER_CASES,
   animatedCheck: ANIMATED_CHECK_CASES,
+  contextMenu: CONTEXT_MENU_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';

@@ -36,7 +36,7 @@ module.exports = {
     '^@oxy.so/bloom/theme$': `${support}/bloom-theme.ts`,
     '^@oxy.so/bloom/app-shell/hooks$': `${support}/bloom-app-shell-hooks.ts`,
     '^@oxy.so/bloom/(blur|button|engagement-bar|image|surface|fab|page-header|bottom-bar|dropdown-menu|aspect-ratio|concentric|divider|fill|grid|avatar-group|badge|chat-indicators|icon-circle|loading|skeleton|subtle-hover|sidebar|rail|page-footer|command|settings-modal|layout)$': `${support}/bloom-components.ts`,
-    '^@oxy.so/bloom/(input-otp|color-swatch-picker|animated-check)$': `${support}/bloom-controls.ts`,
+    '^@oxy.so/bloom/(input-otp|color-swatch-picker|animated-check|context-menu)$': `${support}/bloom-controls.ts`,
     '^@oxy.so/bloom/(text-field|textarea|field|label|switch|checkbox|radio|segmented-control|select|search)$': `${support}/bloom-inputs.ts`,
     '^@oxy.so/bloom/(card|item|grouped-section|chip|empty-state|admonition|tabs|kbd|error-boundary)$': `${support}/bloom-containers.ts`,
     '^@oxy.so/bloom/(app-shell|screen|dialog|tab-pager|tab-pager/expo-router|panel-routing/expo-router|bottom-sheet)$': `${support}/bloom-router.ts`,

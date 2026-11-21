@@ -1,6 +1,5 @@
 import type { NodeKind } from '../node';
 import type { ControlRenderer } from './draw';
-import { ANIMATED_CHECKS } from './animated-check';
 import { INPUTS } from './inputs';
 import { OVERLAYS } from './overlays';
 import { CONTAINERS } from './containers';
@@ -24,6 +23,8 @@ import { FILE_UPLOADS } from './file-upload';
 import { VIDEOS } from './video-view';
 import { COLOR_SWATCH_PICKERS } from './color-swatch-picker';
 import { INPUT_OTPS } from './input-otp';
+import { ANIMATED_CHECKS } from './animated-check';
+import { CONTEXT_MENUS } from './context-menu';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -55,4 +56,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...COLOR_SWATCH_PICKERS,
   ...INPUT_OTPS,
   ...ANIMATED_CHECKS,
+  ...CONTEXT_MENUS,
 };
