@@ -1418,6 +1418,14 @@ export const ENUMS = {
     "continue",
     "signIn",
     "signUp"
+  ],
+  "galleryStyle": [
+    "overlay",
+    "page"
+  ],
+  "galleryIndicator": [
+    "dots",
+    "thumbnails"
   ]
 } as const;
 
@@ -2546,6 +2554,19 @@ export const MODIFIERS = {
   "fullWidth": [],
   "intent": [
     "socialIntent"
+  ],
+  "fullScreenCover": [
+    "value",
+    "value"
+  ],
+  "pageIndicator": [
+    "galleryIndicator"
+  ],
+  "videoOverlay": [
+    "value"
+  ],
+  "sourceAnchors": [
+    "value"
   ]
 } as const;
 
@@ -2612,6 +2633,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "spacing",
     "align",
     "justify",
@@ -2681,7 +2703,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "fullScreenCover"
   ],
   "text": [
     "padding",
@@ -2744,6 +2767,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "lines",
     "noWrap",
     "truncation",
@@ -2820,6 +2844,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "size"
   ],
   "avatar": [
@@ -2883,6 +2908,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "size",
     "tint",
     "shape",
@@ -2952,6 +2978,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "layout",
     "size",
     "shape",
@@ -3024,6 +3051,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "style",
     "tint",
     "size",
@@ -3093,6 +3121,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "size"
   ],
   "loading": [
@@ -3156,6 +3185,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "style",
     "size",
     "tint"
@@ -3220,7 +3250,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "fullScreenCover"
   ],
   "skeletonGroup": [
     "padding",
@@ -3282,7 +3313,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "fullScreenCover"
   ],
   "image": [
     "padding",
@@ -3345,6 +3377,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "contentFit",
     "aspectRatio",
     "tint",
@@ -3412,7 +3445,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "fullScreenCover"
   ],
   "ratio": [
     "padding",
@@ -3474,7 +3508,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "fullScreenCover"
   ],
   "grid": [
     "padding",
@@ -3537,6 +3572,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "columns",
     "minCellWidth",
     "spacing",
@@ -3603,6 +3639,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "style",
     "shape",
     "size",
@@ -3679,6 +3716,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "size",
     "fill",
     "stroke",
@@ -3745,6 +3783,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "axis",
     "size",
     "dividers",
@@ -3811,6 +3850,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "style",
     "size",
     "tint",
@@ -3878,6 +3918,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "actions"
   ],
   "menuItem": [
@@ -3961,6 +4002,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "lineStyle",
     "align",
     "spacing",
@@ -4057,6 +4099,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "count",
     "active",
     "tint"
@@ -4122,6 +4165,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "trailing",
     "countFormat",
     "size"
@@ -4186,7 +4230,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "fullScreenCover"
   ],
   "lottie": [
     "padding",
@@ -4249,6 +4294,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "loop",
     "paused",
     "fallback",
@@ -4314,7 +4360,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "fullScreenCover"
   ],
   "view": [
     "padding",
@@ -4376,7 +4423,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "fullScreenCover"
   ],
   "appLayout": [
     "primaryAction",
@@ -4448,6 +4496,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "bounds",
     "unavailable",
     "weekStart",
@@ -4518,6 +4567,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "bounds",
     "unavailable",
     "weekStart",
@@ -4589,6 +4639,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "bounds",
     "unavailable",
     "weekStart",
@@ -4657,6 +4708,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "bounds",
     "unavailable",
     "weekStart",
@@ -4726,6 +4778,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "bounds",
     "step",
     "hourFormat",
@@ -4794,6 +4847,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "count",
     "countStyle",
     "size",
@@ -4868,6 +4922,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "max",
     "size",
     "disabled",
@@ -4934,6 +4989,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "max",
     "valueLabel",
     "labelWidth",
@@ -5000,6 +5056,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "labels"
   ],
   "meter": [
@@ -5063,6 +5120,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "valueText",
     "indeterminate",
     "decorative",
@@ -5134,6 +5192,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "valueText",
     "indeterminate",
     "decorative",
@@ -5209,6 +5268,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "tint",
     "trackTint",
     "thickness",
@@ -5276,6 +5336,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "size",
     "minWidth"
   ],
@@ -5339,7 +5400,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "fullScreenCover"
   ],
   "tableColumn": [
     "padding",
@@ -5402,6 +5464,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "width",
     "share",
     "minWidth",
@@ -5470,6 +5533,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "emptyState"
   ],
   "tableRow": [
@@ -5533,6 +5597,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "selected"
   ],
   "tableCell": [
@@ -5596,6 +5661,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "width",
     "share",
     "minWidth",
@@ -5662,6 +5728,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "supporting",
     "supportingLines",
     "prefix",
@@ -5744,6 +5811,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "separator",
     "scrollable",
     "scrollHeight",
@@ -5816,6 +5884,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "itemKey",
     "itemType",
     "estimatedItemSize",
@@ -5890,6 +5959,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "selecting",
     "onSelectAll",
     "onClear",
@@ -5957,6 +6027,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "headerContent",
     "footerContent",
     "loop",
@@ -6033,6 +6104,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "width"
   ],
   "carouselDots": [
@@ -6096,6 +6168,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "shape",
     "style",
     "max",
@@ -6162,6 +6235,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "streaming",
     "size",
     "onLinkPress",
@@ -6228,6 +6302,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "size",
     "tint",
     "bounds",
@@ -6304,6 +6379,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "size",
     "tint",
     "bounds",
@@ -6381,6 +6457,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "size",
     "allowsMultiple",
     "revealMotion"
@@ -6446,6 +6523,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "disabled"
   ],
   "accordionTrigger": [
@@ -6509,6 +6587,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "indicator"
   ],
   "accordionContent": [
@@ -6571,7 +6650,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "fullScreenCover"
   ],
   "code": [
     "padding",
@@ -6633,7 +6713,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "fullScreenCover"
   ],
   "pre": [
     "padding",
@@ -6696,6 +6777,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "language",
     "lineNumbers"
   ],
@@ -6760,6 +6842,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "language",
     "lineNumbers",
     "highlight",
@@ -6827,6 +6910,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "language",
     "lineNumbers",
     "highlight",
@@ -6900,6 +6984,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "bounds",
     "step",
     "disabled",
@@ -6970,6 +7055,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "bounds",
     "step",
     "disabled",
@@ -7042,6 +7128,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "presented",
     "side",
     "openDelay",
@@ -7108,6 +7195,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "size",
     "collapses",
     "separatorView",
@@ -7174,6 +7262,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "size",
     "icon",
     "prefix",
@@ -7243,6 +7332,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "days",
     "endDate",
     "levels",
@@ -7315,6 +7405,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "placeholder",
     "suggestions",
     "allowsCreate",
@@ -7389,6 +7480,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "file",
     "uploadProgress",
     "onFileSelected",
@@ -7462,6 +7554,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "contentFit",
     "nativeControls",
     "allowsPictureInPicture"
@@ -7527,6 +7620,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "placeholder",
     "size",
     "disabled",
@@ -7609,6 +7703,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "placeholder",
     "description",
     "size",
@@ -7687,6 +7782,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "description",
     "error",
     "required",
@@ -7753,6 +7849,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "size",
     "required",
     "disabled"
@@ -7818,6 +7915,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "size",
     "tint",
     "disabled"
@@ -7883,6 +7981,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "description",
     "size",
     "tint",
@@ -7951,6 +8050,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "style",
     "size",
     "tint",
@@ -8017,6 +8117,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "style",
     "size",
     "disabled",
@@ -8083,6 +8184,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "placeholder",
     "size",
     "disabled"
@@ -8156,6 +8258,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "placeholder",
     "size",
     "disabled",
@@ -8234,6 +8337,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "length",
     "characters",
     "onComplete",
@@ -8303,6 +8407,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "labels",
     "size",
     "disabled"
@@ -8368,6 +8473,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "size",
     "tint"
   ],
@@ -8432,6 +8538,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "actions",
     "presentedAt",
     "disabled"
@@ -8497,6 +8604,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "revealMotion",
     "revealsOnAppear",
     "keepsMounted"
@@ -8562,6 +8670,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "fileTypes",
     "dragActions",
     "folder",
@@ -8631,6 +8740,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "opaque",
     "mediaCorner"
   ],
@@ -8695,6 +8805,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "minItemWidth",
     "contentInset"
   ],
@@ -8765,6 +8876,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "onRemove",
     "onRetry",
     "onAdd",
@@ -8836,6 +8948,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "axis",
     "spacing",
     "optionBox",
@@ -8907,6 +9020,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "presented",
     "openDelay",
     "closeDelay",
@@ -8976,6 +9090,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "lines",
     "style",
     "labels"
@@ -9041,6 +9156,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "trailing",
     "spacing",
     "backdrop",
@@ -9107,6 +9223,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "openMenu",
     "actions"
   ],
@@ -9176,6 +9293,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "readoutFormat"
   ],
   "phoneInput": [
@@ -9239,6 +9357,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "country",
     "countries",
     "placeholder",
@@ -9313,6 +9432,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "contentFit",
     "nativeControls",
     "surfaceType",
@@ -9380,6 +9500,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "contentFit",
     "nativeControls",
     "surfaceType",
@@ -9447,6 +9568,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "contentFit"
   ],
   "emptyMediaSurface": [
@@ -9509,7 +9631,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "fullScreenCover"
   ],
   "avatarAnchor": [
     "padding",
@@ -9571,7 +9694,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "fullScreenCover"
   ],
   "avatarFlightLayer": [],
   "inputGroup": [
@@ -9635,6 +9759,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "size",
     "invalid",
     "disabled"
@@ -9700,6 +9825,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "divider",
     "flush"
   ],
@@ -9764,6 +9890,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "description",
     "timestamp",
     "status",
@@ -9838,6 +9965,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "coverFill"
   ],
   "socialButton": [
@@ -9901,6 +10029,7 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "fullScreenCover",
     "size",
     "style",
     "iconOnly",
@@ -9908,6 +10037,16 @@ export const NODE_MODIFIERS = {
     "intent",
     "link",
     "disabled"
+  ],
+  "gallery": [
+    "page",
+    "style",
+    "pageIndicator",
+    "mediaCorner",
+    "nativeControls",
+    "videoOverlay",
+    "sourceAnchors",
+    "labels"
   ]
 } as const;
 
@@ -10049,5 +10188,6 @@ export const CONSTRUCTORS = {
   "InputGroupAddon": "inputGroupAddon",
   "Notification": "notification",
   "LinkPreview": "linkPreview",
-  "SocialButton": "socialButton"
+  "SocialButton": "socialButton",
+  "Gallery": "gallery"
 } as const;

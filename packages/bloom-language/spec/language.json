@@ -573,7 +573,9 @@
     "liveRole": ["alert", "status"],
     "socialButtonSize": ["md", "sm"],
     "socialButtonStyle": ["colorful", "black", "white"],
-    "socialIntent": ["continue", "signIn", "signUp"]
+    "socialIntent": ["continue", "signIn", "signUp"],
+    "galleryStyle": ["overlay", "page"],
+    "galleryIndicator": ["dots", "thumbnails"]
   },
   "glass": {
     "$comment": [
@@ -1056,7 +1058,11 @@
     "coverFill": ["value?"],
     "iconOnly": [],
     "fullWidth": [],
-    "intent": ["socialIntent"]
+    "intent": ["socialIntent"],
+    "fullScreenCover": ["value", "value"],
+    "pageIndicator": ["galleryIndicator"],
+    "videoOverlay": ["value"],
+    "sourceAnchors": ["value"]
   },
   "universal": [
     "padding",
@@ -1118,7 +1124,8 @@
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "fullScreenCover"
   ],
   "nodes": {
     "$comment": "kind: { constructors, own modifiers beyond the universal ones (universal: false takes only its own), the token sets its size(), tint(), style() and shape() read }",
@@ -2081,6 +2088,21 @@
       "modifiers": ["size", "style", "iconOnly", "fullWidth", "intent", "link", "disabled"],
       "size": "socialButtonSize",
       "style": "socialButtonStyle"
+    },
+    "gallery": {
+      "constructors": ["Gallery"],
+      "universal": false,
+      "modifiers": [
+        "page",
+        "style",
+        "pageIndicator",
+        "mediaCorner",
+        "nativeControls",
+        "videoOverlay",
+        "sourceAnchors",
+        "labels"
+      ],
+      "style": "galleryStyle"
     }
   },
   "sfSymbols": {
