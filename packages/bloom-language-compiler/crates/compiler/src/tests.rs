@@ -948,3 +948,23 @@ fn steppers_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn tooltips_breadcrumbs_and_heatmaps_are_checked() {
+    let imports = "import { Tooltip, Breadcrumb, BreadcrumbItem, ActivityHeatmap, Text, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (open, icon, data, f, menu) => VStack(Tooltip(Text('i'), 'About').presented(open).side('top').openDelay(0).size('md'), Breadcrumb(BreadcrumbItem('Home').link('/').icon(icon).prefix(Text('a')).active(true).disabled().hoverMenu(menu).size('sm')).size('sm').collapses().separatorView(Text('/')).labels({}), ActivityHeatmap(data).days(56).endDate('2026-11-21').levels([1]).emptyTint('mutedFill').cellSize('10').spacing('2xs').weekStart(1).labels({}).onPressDay(f));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("Tooltip(t, 'a').side('left')", "Unknown tooltipSide token 'left' for .side()"),
+        ("Tooltip(t, 'a').size('lg')", "Unknown tooltipSize token 'lg' for .size()"),
+        ("ActivityHeatmap(t).cellSize('big')", "Unknown space token 'big' for .cellSize()"),
+        ("Breadcrumb().side('top')", "Breadcrumb has no modifier .side()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (t) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

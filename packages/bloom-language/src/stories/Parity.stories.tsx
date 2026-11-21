@@ -99,3 +99,6 @@ export const Sliders: Story = { args: { family: 'slider' } };
 export const Accordions: Story = { args: { family: 'accordion' } };
 export const Code: Story = { args: { family: 'code' } };
 export const Steppers: Story = { args: { family: 'stepper' } };
+export const Tooltips: Story = { args: { family: 'tooltip' } };
+export const Breadcrumbs: Story = { args: { family: 'breadcrumb' } };
+export const ActivityHeatmaps: Story = { args: { family: 'activityHeatmap' } };
