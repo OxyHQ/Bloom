@@ -114,6 +114,10 @@ export interface DialogView extends PresentedNode {
   frame(value: DialogFrame): DialogView;
   /** The padding around its content (Bloom's `contentPadding`). */
   padding(value: SpaceToken): DialogView;
+  /** The least room kept beside it on a narrow screen (Bloom's `minSideGutter`). */
+  sideGutter(value: SpaceToken): DialogView;
+  /** Its height ceiling, as a fraction of the window's (`0.9`). */
+  maxHeightRatio(value: number): DialogView;
   /** `false`: a press on the backdrop does not dismiss it. */
   dismissOnBackdrop(value: boolean): DialogView;
   /** Its content scrolls when it is taller than the dialog. */
@@ -296,6 +300,8 @@ function drawDialog(
       width: space(own.frame?.width as SpaceToken | undefined),
       maxWidth: space(own.frame?.maxWidth as SpaceToken | undefined),
       contentPadding: space(own.padding),
+      minSideGutter: space(own.sideGutter),
+      maxHeightRatio: own.maxHeightRatio,
       title: own.title,
       description: own.message,
       label: own.label,

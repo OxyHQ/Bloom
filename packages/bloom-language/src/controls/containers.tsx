@@ -117,6 +117,8 @@ export type BoundaryFallback = (context: ErrorBoundaryFallbackContext) => Child;
 export type ChipStyle = (typeof ENUMS.chipStyle)[number];
 /** A grouped-section icon's disc: one of Bloom's accent tones. */
 export type AccentTone = (typeof ENUMS.accentTone)[number];
+/** Whether a tap on a chip reaches it while the software keyboard is open (React Native's `keyboardShouldPersistTaps`). */
+export type KeyboardTaps = (typeof ENUMS.keyboardTaps)[number];
 /** A selection card's mark: a `check` (several chosen) or a `radio` (one). */
 export type SelectionIndicator = (typeof ENUMS.selectionIndicator)[number];
 /** The box modifiers a component with a box but no press of the language's own takes. */
@@ -249,6 +251,10 @@ export interface ChipRowView extends ViewModifiers<ChipRowView> {
   disabled(value?: boolean): ChipRowView;
   /** The colour its edges fade into on the web (the surface behind it by default). */
   fade(value: ColorName): ChipRowView;
+  /** The room kept on every side for a chip's focus ring (4 by default). */
+  ringInset(value: SpaceToken): ChipRowView;
+  /** Whether a tap on a chip reaches it while the keyboard is open (`handled` by default). */
+  keyboardTaps(value: KeyboardTaps): ChipRowView;
 }
 /** Bloom `CappedChipRow`: chips that wrap, up to `.lines(n)`, the rest behind a "+N" chip. */
 export interface CappedChipRowView extends ViewModifiers<CappedChipRowView> {
@@ -334,6 +340,10 @@ export interface SelectionCardView extends ViewModifiers<SelectionCardView> {
   density(value: ContentDensity): SelectionCardView;
   disabled(value?: boolean): SelectionCardView;
   invalid(value?: boolean): SelectionCardView;
+  /** Its id, for a description or a label elsewhere to point at. */
+  nativeID(value: string): SelectionCardView;
+  /** The id of what describes it (a field's hint or error). */
+  describedBy(value: string): SelectionCardView;
 }
 /** Bloom `ErrorBoundary`: its content, or Bloom's fallback when the content throws. */
 export interface ErrorBoundaryView extends ViewNode, BoxModifiers<ErrorBoundaryView> {
@@ -546,6 +556,7 @@ function card(d: ControlDraw): ReactElement {
       appearance: d.own('style')?.value,
       tone: d.own('tint')?.value,
       radius: d.own('radius')?.value,
+      cornerCurve: d.own('cornerCurve')?.value,
       elevation: d.own('elevation')?.value,
       border: d.own('outline')?.value,
       clipContent: d.own('clipped') === undefined ? undefined : true,
@@ -680,6 +691,8 @@ function chipRow(d: ControlDraw): ReactElement {
       ...roled(d),
       gap: space(d.own('spacing')?.value as SpaceToken | undefined),
       contentInset: space(d.own('contentInset')?.value),
+      ringInset: space(d.own('ringInset')?.value),
+      keyboardShouldPersistTaps: d.own('keyboardTaps')?.value,
       disabled: d.own('disabled')?.value,
     },
     ...d.children(d.node.children),
@@ -832,6 +845,8 @@ function selectionCard(d: ControlDraw): ReactElement {
       compact: d.own('density')?.value === 'compact' ? true : undefined,
       disabled: d.own('disabled')?.value,
       invalid: d.own('invalid')?.value,
+      nativeID: d.own('nativeID')?.value,
+      describedBy: d.own('describedBy')?.value,
     },
     ...d.children(d.node.children),
   );

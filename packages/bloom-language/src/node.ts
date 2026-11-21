@@ -26,6 +26,7 @@ import type { Binding } from './binding';
 import type {
   BoundaryErrorHandler,
   BoundaryFallback,
+  KeyboardTaps,
   SelectionIndicator,
   CardBorder,
   CardElevation,
@@ -375,6 +376,12 @@ export interface ValueModifiers {
   dragTranslation: MotionValue;
   indicator: SelectionIndicator;
   fade: ColorName;
+  ringInset: SpaceToken;
+  keyboardTaps: KeyboardTaps;
+  nativeID: string;
+  describedBy: string;
+  sideGutter: SpaceToken;
+  maxHeightRatio: number;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1586,6 +1593,24 @@ export class Node {
   }
   fade(value: ColorName): Node {
     return this.set('fade', value);
+  }
+  ringInset(value: SpaceToken): Node {
+    return this.set('ringInset', value);
+  }
+  keyboardTaps(value: KeyboardTaps): Node {
+    return this.set('keyboardTaps', value);
+  }
+  nativeID(value: string): Node {
+    return this.set('nativeID', value);
+  }
+  describedBy(value: string): Node {
+    return this.set('describedBy', value);
+  }
+  sideGutter(value: SpaceToken): Node {
+    return this.set('sideGutter', value);
+  }
+  maxHeightRatio(value: number): Node {
+    return this.set('maxHeightRatio', value);
   }
 }
 

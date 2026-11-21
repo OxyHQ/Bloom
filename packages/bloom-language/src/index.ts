@@ -275,6 +275,7 @@ export type {
   GroupedSectionCollapseView,
   GroupedSectionDividerView,
   GroupedSectionIconView,
+  KeyboardTaps,
   SelectionCardView,
   SelectionIndicator,
   TabContentView,

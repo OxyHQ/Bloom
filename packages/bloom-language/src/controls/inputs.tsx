@@ -248,6 +248,8 @@ export interface SegmentedView extends ViewModifiers<SegmentedView> {
 export interface PickerView extends ViewModifiers<PickerView> {
   /** Shown while nothing is chosen. */
   placeholder(value: string): PickerView;
+  /** Whether its list is open: opening or dismissing it writes the binding. */
+  presented(value: Binding<boolean>): PickerView;
   size(value: BloomSize): PickerView;
   disabled(value?: boolean): PickerView;
 }
@@ -732,6 +734,7 @@ const chosenMark = (item: unknown) => (item as PickerItem | undefined)?.leading 
 const picker: ControlRenderer = (d) => {
   const [value, setValue] = (d.node.props as ChoiceProps).selection;
   const placeholder = d.own('placeholder')?.value;
+  const presented = d.own('presented')?.value;
   const items = optionsOf(d.node.children).map(({ node, props, group }): PickerItem => {
     const leading = lastOf(node, 'leadingView')?.value;
     return {
@@ -747,6 +750,8 @@ const picker: ControlRenderer = (d) => {
       key={d.key}
       value={value}
       onValueChange={setValue}
+      // Bloom's select is controlled only when `open` is given at all.
+      {...(presented === undefined ? null : { open: presented[0], onOpenChange: presented[1] })}
       size={d.own('size')?.value as BloomSize | undefined}
       disabled={d.own('disabled')?.value}
     >
