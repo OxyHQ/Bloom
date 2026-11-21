@@ -94,3 +94,5 @@ export const MediaFlightHost = 'MediaFlightHost';
 export const MediaSurface = 'MediaSurface';
 export const MediaPoster = 'MediaPoster';
 export const EmptyMediaSurface = 'EmptyMediaSurface';
+export const AvatarAnchor = 'AvatarAnchor';
+export const AvatarFlightLayer = 'AvatarFlightLayer';

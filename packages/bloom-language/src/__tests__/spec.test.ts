@@ -149,6 +149,7 @@ import type { FileUploadView } from '../controls/file-upload';
 import type { VideoView } from '../controls/video-view';
 import type { CompositionBarView } from '../controls/composition-bar';
 import type { PhoneInputView } from '../controls/phone-input';
+import type { AvatarAnchorView, AvatarFlightLayerView } from '../controls/avatar-flight';
 import type { ExpandableTextView } from '../controls/expandable-text';
 import type { CategoryBarView } from '../controls/category-bar';
 import type { MediaFlightLayerView, MediaFlightHostView, MediaSurfaceView, MediaPosterView, EmptyMediaSurfaceView } from '../controls/media-flight';
@@ -457,6 +458,8 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<FileUploadView>, Of<'fileUpload'>>,
       Same<MethodsOf<VideoView>, Of<'video'>>,
       Same<MethodsOf<PhoneInputView>, Of<'phoneInput'>>,
+      Same<MethodsOf<AvatarAnchorView>, Of<'avatarAnchor'>>,
+      Same<MethodsOf<AvatarFlightLayerView>, Of<'avatarFlightLayer'>>,
       Same<MethodsOf<CategoryBarView>, Of<'categoryBar'>>,
       Same<MethodsOf<MediaFlightLayerView>, Of<'mediaFlightLayer'>>,
       Same<MethodsOf<MediaFlightHostView>, Of<'mediaFlightHost'>>,
@@ -483,6 +486,8 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<MenubarMenuView>, Of<'menubarMenu'>>,
       Same<MethodsOf<CompositionBarView>, Of<'compositionBar'>>,
     ] = [
+      true,
+      true,
       true,
       true,
       true,
