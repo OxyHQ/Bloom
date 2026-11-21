@@ -161,7 +161,10 @@ it is cheapest:
 - **Web:** a role is its canonical CSS variable (`muted` is
   `var(--muted-foreground)`) inside a class (below), so a theme switch renders
   nothing. Colours that are props, not styles (an icon's `fill`, a glass
-  Surface's `fill`), still paint from a `Painted` leaf.
+  Surface's `fill`, a chip row's `fadeColor`), still paint from a `Painted`
+  leaf. A swatch radio group is the one other reader: its colours are inside
+  its options, not props of their own, so the group (a leaf too) reads the
+  palette for them.
 
 **A node remembers what it rendered.** Rendering a node in the same environment
 and slot gives the same element, so a node that keeps its identity across renders
